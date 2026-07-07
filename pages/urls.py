@@ -282,6 +282,7 @@ urlpatterns = [
     path('fsr_details/<issues_id>', views.fsr_details, name='fsr_details'),
     path('fsr_commit_status_change/', views.fsr_commit_status_change, name='fsr_commit_status_change'),
     path('fsr_comment_add/<issues_id>', views.fsr_comment_add, name='fsr_comment_add'),
+    path('fsr_edit_commit/<issues_id>', views.fsr_edit_commit, name='fsr_edit_commit'),
     path('fsr_notification/', views.fsr_notification, name='fsr_notification'),
     path('fsr/pdf/', views.fsr_pdf, name='fsr_pdf'),
     path('issues/delete/<int:issue_id>/', views.delete_issue, name='delete_issue'),

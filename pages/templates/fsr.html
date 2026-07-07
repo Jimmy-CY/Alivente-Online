@@ -392,11 +392,11 @@
     <table class="table table-bordered table-striped" id="issuesTable">
         <thead class="thead-light">
             <tr>
-                <th class="text-left sortable" data-sort="property" style="width: {% if perms.auth.can_edit_issues %}16%{% else %}18%{% endif %}; cursor: pointer;">
+                <th class="text-left sortable" data-sort="property" style="width: {% if request.user.is_superuser %}16%{% else %}18%{% endif %}; cursor: pointer;">
                     Property <i class="fas fa-sort sort-icon"></i>
                 </th>
-                <th class="text-left" style="width: {% if perms.auth.can_edit_issues %}20%{% else %}22%{% endif %}">Issue</th>
-                <th class="text-left" style="width: {% if perms.auth.can_edit_issues %}26%{% else %}30%{% endif %}">Description</th>
+                <th class="text-left" style="width: {% if request.user.is_superuser %}20%{% else %}22%{% endif %}">Issue</th>
+                <th class="text-left" style="width: {% if request.user.is_superuser %}26%{% else %}30%{% endif %}">Description</th>
                 <th class="text-center sortable" data-sort="date" style="width: 12%; cursor: pointer;">
                     Date Logged <i class="fas fa-sort sort-icon"></i>
                 </th>
@@ -404,7 +404,7 @@
                     Status <i class="fas fa-sort sort-icon"></i>
                 </th>
                 <th class="text-center" style="width: 10%">Comments</th>
-                {% if perms.auth.can_edit_issues %}
+                {% if request.user.is_superuser %}
                 <th class="text-center" style="width: 8%">Delete</th>
                 {% endif %}
             </tr>
@@ -446,7 +446,7 @@
                                         </a>
                                     </button>
                                 </td>
-                                {% if perms.auth.can_edit_issues %}
+                                {% if request.user.is_superuser %}
                                 <td data-label="Delete" class="text-center action-cell action-cell-delete">
                                     <button type="button"
                                             class="btn btn-danger btn-sm delete-issue-btn"
@@ -470,7 +470,7 @@
                 {% endfor %}
             {% else %}
                 <tr class="no-issues-row">
-                    <td colspan="{% if perms.auth.can_edit_issues %}7{% else %}6{% endif %}" class="text-center">No issues found</td>
+                    <td colspan="{% if request.user.is_superuser %}7{% else %}6{% endif %}" class="text-center">No issues found</td>
                 </tr>
             {% endif %}
         </tbody>

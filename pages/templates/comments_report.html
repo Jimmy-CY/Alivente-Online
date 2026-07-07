@@ -837,7 +837,7 @@
                     <th style="width: 16%">Property</th>
                     <th style="width: 11%; text-align: center;">Status</th>
                     <th style="width: 11%">User</th>
-                    {% if perms.auth.can_edit_issues %}
+                    {% if request.user.is_superuser %}
                     <th style="width: 7%; text-align: center;">Delete</th>
                     {% endif %}
                 </tr>
@@ -874,7 +874,7 @@
                     <td class="user-cell {% if item.is_admin %}admin-user{% else %}regular-user{% endif %}">
                         {{ item.user }}
                     </td>
-                    {% if perms.auth.can_edit_issues %}
+                    {% if request.user.is_superuser %}
                     <td class="delete-cell" style="text-align: center;">
                         <form method="post" action="{% url 'delete_comment' item.comment_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment? This action cannot be undone.');">
                             {% csrf_token %}

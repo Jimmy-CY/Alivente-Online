@@ -53,7 +53,7 @@ from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
 
 from ..forms import IssuesForm
-from ..models import issues, issues_details, props, tenant
+from ..models import IssueAuditLog, issues, issues_details, props, tenant
 from ..utils import render_to_pdf
 
 logger = logging.getLogger(__name__)
@@ -116,9 +116,18 @@ def fsr(request):
 
 
 @login_required
-@permission_required('auth.can_edit_issues', raise_exception=True)
 @require_POST
 def delete_issue(request, issue_id):
+    # Deleting an issue (and all its comments) is destructive and
+    # irreversible, so it is restricted to superusers. Staff with
+    # can_edit_issues may log, comment and edit issues, but not delete them.
+    # This is the enforcement layer; the list template also hides the button
+    # from non-superusers. AJAX endpoint -> return a clean JSON 403.
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {'success': False, 'error': 'Only superusers can delete issues.'},
+            status=403,
+        )
 
     try:
         with transaction.atomic():
@@ -189,6 +198,9 @@ def fsr_details(request, issues_id):
         "issues": isresults,
         "issues_details": idresults,
         "redirect_url": redirect_url,
+        "audit_log": IssueAuditLog.objects.filter(
+            issue_id=issues_id
+        ).select_related('user'),
     }
 
     return render(request, "fsr_details.html", context)
@@ -283,6 +295,90 @@ def fsr_comment_add(request, issues_id):
 
     # If not POST, redirect to details page
     return redirect('fsr_details', issues_id=issues_id)
+
+
+@login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
+@require_POST
+def fsr_edit_commit(request, issues_id):
+    """Edit an issue's heading, description, and/or property, writing a
+    per-field IssueAuditLog row for each field that actually changed.
+
+    Only these three fields are editable here. Status has its own control
+    (fsr_commit_status_change) and Date Logged is immutable, so neither is
+    touched -- and, to keep a partial POST from blanking them, the fields are
+    set by hand rather than through IssuesForm. Any can_edit_issues user may
+    edit; deletion stays the superuser-only action. The before-snapshot is
+    captured BEFORE saving so the diff is accurate, and property changes are
+    logged by name for readable history.
+    """
+    issue = get_object_or_404(issues, pk=issues_id)
+
+    from_param = request.POST.get('from', request.GET.get('from', 'fsr'))
+    detail_url = reverse('fsr_details', args=[issues_id]) + f"?from={from_param}"
+
+    # BEFORE snapshot (must precede save)
+    before_heading = issue.issues_heading or ''
+    before_description = issue.issues_description or ''
+    before_prop_pk = issue.prop.pk if issue.prop else None
+    before_prop_name = issue.prop.prop_name if issue.prop else ''
+
+    # Submitted values
+    new_heading = (request.POST.get('issues_heading') or '').strip()
+    new_description = (request.POST.get('issues_description') or '').strip()
+    new_prop_id = request.POST.get('prop')
+
+    # Validate (the model would not enforce these on a bare .save())
+    if not new_heading:
+        messages.error(request, "Issue heading cannot be empty.")
+        return redirect(detail_url)
+    if len(new_heading) > 255 or len(new_description) > 255:
+        messages.error(request, "Heading and description must be 255 characters or fewer.")
+        return redirect(detail_url)
+
+    new_prop = issue.prop
+    if new_prop_id:
+        try:
+            new_prop = props.objects.get(pk=new_prop_id)
+        except (props.DoesNotExist, ValueError, TypeError):
+            messages.error(request, "Selected property was not found.")
+            return redirect(detail_url)
+
+    # Diff: one audit row per field that actually changed
+    changes = []
+    if before_heading != new_heading:
+        changes.append(('issues_heading', before_heading, new_heading))
+    if before_description != new_description:
+        changes.append(('issues_description', before_description, new_description))
+    new_prop_pk = new_prop.pk if new_prop else None
+    if before_prop_pk != new_prop_pk:
+        changes.append(('prop', before_prop_name, new_prop.prop_name if new_prop else ''))
+
+    if not changes:
+        messages.info(request, "No changes were made.")
+        return redirect(detail_url)
+
+    user = request.user if request.user.is_authenticated else None
+    try:
+        with transaction.atomic():
+            issue.issues_heading = new_heading
+            issue.issues_description = new_description
+            issue.prop = new_prop
+            issue.save()
+            for field_name, old_value, new_value in changes:
+                IssueAuditLog.objects.create(
+                    issue=issue,
+                    user=user,
+                    field_name=field_name,
+                    old_value=old_value,
+                    new_value=new_value,
+                )
+    except Exception as exc:
+        messages.error(request, f"Could not save changes: {exc}")
+        return redirect(detail_url)
+
+    messages.success(request, "Issue updated.")
+    return redirect(detail_url)
 
 
 @login_required
@@ -705,9 +801,17 @@ def comments_report(request):
 
 
 @login_required
-@permission_required('auth.can_edit_issues', raise_exception=True)
 def delete_comment(request, comment_id):
-    """Delete a comment from the issues_details table (admin only)"""
+    """Delete a comment from the issues_details table (superuser only)"""
+
+    # Deleting a comment removes part of an attributed, dated communication
+    # record, so it is restricted to superusers (matching issue deletion).
+    # This view redirects rather than returning JSON, so a non-superuser is
+    # bounced back to the report with an error instead of a 403.
+    if not request.user.is_superuser:
+        messages.error(request, 'Only superusers can delete comments.')
+        period = request.POST.get('period', request.GET.get('period', '30'))
+        return redirect(reverse('comments_report') + '?' + urlencode({'period': period}))
 
     # Only allow POST requests for deletion
     if request.method == 'POST':

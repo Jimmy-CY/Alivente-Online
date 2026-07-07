@@ -1084,6 +1084,62 @@ class issues_details(models.Model):
     class Meta:
         db_table="issues_details"
 
+class IssueAuditLog(models.Model):
+    """Field-level change history for an issue (and, later, its comments).
+
+    One row per changed field per edit: editing the heading and the property
+    in a single save writes two rows. The issue-edit view captures a
+    before-snapshot, diffs it against the submitted values, and writes a row
+    only for fields that actually changed. Rendered as the History section on
+    the issue detail page, and the substrate a later edit-notification email
+    reads from.
+
+    Not workspace-scoped: issues are property-management records with no
+    workspace FK, so their history follows the same unscoped pattern.
+    Property changes store the property NAME in old_value/new_value for
+    readability, not the pk. The `comment` FK stays NULL for issue-field
+    changes; it is populated by the (later) comment-editing step, which shares
+    this same log.
+    """
+    issue = models.ForeignKey(
+        issues,
+        on_delete=models.CASCADE,
+        related_name='audit_log',
+    )
+    comment = models.ForeignKey(
+        issues_details,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='audit_log',
+        help_text='Set when the change was to a comment rather than an issue '
+                  'field; NULL for issue-field changes.',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='issue_edits',
+        help_text='Who made the change. NULL if the account was later removed.',
+    )
+    field_name = models.CharField(
+        max_length=50,
+        help_text="Model field that changed, e.g. 'issues_heading', "
+                  "'issues_description', 'prop'.",
+    )
+    old_value = models.TextField(blank=True, null=True)
+    new_value = models.TextField(blank=True, null=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'issue_audit_log'
+        verbose_name = 'Issue Audit Log Entry'
+        verbose_name_plural = 'Issue Audit Log'
+        ordering = ['-changed_at', '-id']
+
+    def __str__(self):
+        who = self.user.username if self.user else 'unknown'
+        return f"{self.field_name} on issue {self.issue_id} by {who}"
+
 class prop_values(models.Model):
     prop_values_id = models.AutoField(primary_key=True)
     prop = models.ForeignKey(props, on_delete=models.CASCADE)

@@ -77,6 +77,11 @@ Issues (Comments)
                         <h4 class="date-logged-display">Date Logged: {{ isresults.issues_date_logged|date:"M d, Y" }}</h4>
                         <h4 class="property-display">Property: {{ results.prop_name|upper }}</h4>
                         <h4 class="status-display">Status: {{ isresults.issues_status|upper }}</h4>
+                        {% if perms.auth.can_edit_issues %}
+                        <button type="button" class="btn btn-info ei-edit-btn" onclick="openEditIssueModal()">
+                            <i class="fas fa-edit"></i> Edit Issue
+                        </button>
+                        {% endif %}
                     </div>
 
                     <!-- Comments and Status Change Section -->
@@ -151,6 +156,69 @@ Issues (Comments)
                     </div>
                 </div>
             </div>
+
+            <!-- Issue edit history -->
+            <div class="report-container history-container">
+                <div class="report-content">
+                    <h5 class="comments-heading">History</h5>
+                    {% if audit_log %}
+                    <ul class="history-list">
+                        {% for entry in audit_log %}
+                        <li class="history-item">
+                            <div class="history-meta">
+                                {{ entry.changed_at|date:"Y-m-d H:i" }} &mdash;
+                                {{ entry.user.get_full_name|default:entry.user.username|default:"Unknown user" }}
+                                changed
+                                {% if entry.field_name == 'issues_heading' %}Heading{% elif entry.field_name == 'issues_description' %}Description{% elif entry.field_name == 'prop' %}Property{% else %}{{ entry.field_name }}{% endif %}
+                            </div>
+                            <div class="history-diff">
+                                <span class="history-old">{{ entry.old_value|default:"(empty)" }}</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="history-new">{{ entry.new_value|default:"(empty)" }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="history-empty">No edits recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if perms.auth.can_edit_issues %}
+            <div id="editIssueModal" class="ei-modal">
+                <div class="ei-modal-dialog">
+                    <div class="ei-modal-content">
+                        <div class="ei-modal-header">
+                            <h2>Edit Issue</h2>
+                            <button type="button" class="ei-modal-close" onclick="closeEditIssueModal()">&times;</button>
+                        </div>
+                        <form method="post" action="{% url 'fsr_edit_commit' isresults.issues_id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="from" value="{{ request.GET.from|default:'fsr' }}">
+                            <div class="ei-modal-body">
+                                <label class="ei-label" for="ei_heading">Issue Heading</label>
+                                <input type="text" id="ei_heading" name="issues_heading" class="ei-input" maxlength="255" required value="{{ isresults.issues_heading|default:'' }}">
+
+                                <label class="ei-label" for="ei_description">Description</label>
+                                <textarea id="ei_description" name="issues_description" class="ei-input" rows="3" maxlength="255">{{ isresults.issues_description|default:'' }}</textarea>
+
+                                <label class="ei-label" for="ei_prop">Property</label>
+                                <select id="ei_prop" name="prop" class="ei-input" required>
+                                    {% for p in props %}
+                                    <option value="{{ p.prop_id }}" {% if p.prop_id == isresults.prop_id %}selected{% endif %}>{{ p.prop_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="ei-modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeEditIssueModal()">Cancel</button>
+                                <button type="submit" class="btn btn-info">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <script>
             function updateStatus(issueId, newStatus) {
@@ -743,6 +811,36 @@ document.addEventListener('DOMContentLoaded', function() {
         display: none;
     }
 }
+/* ===== Issue edit: button, modal, history (added) ===== */
+.ei-edit-btn { margin-top: 14px; margin-left: 20px; }
+
+.ei-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.5); }
+.ei-modal.show { display: block; }
+.ei-modal-dialog { max-width: 560px; margin: 40px auto; padding: 0 12px; }
+.ei-modal-content { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+.ei-modal-header { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: #fff; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; }
+.ei-modal-header h2 { margin: 0; font-size: 20px; }
+.ei-modal-close { background: none; border: none; color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+.ei-modal-body { padding: 22px; }
+.ei-label { font-weight: 600; color: #495057; margin: 14px 0 6px; display: block; }
+.ei-label:first-child { margin-top: 0; }
+.ei-input { width: 100%; border: 2px solid #e9ecef; border-radius: 6px; padding: 9px 12px; font-size: 14px; font-family: inherit; line-height: 1.4; }
+.ei-input:focus { border-color: #17a2b8; outline: none; box-shadow: 0 0 0 3px rgba(23,162,184,0.1); }
+.ei-modal-footer { padding: 14px 22px; background: #f8f9fa; display: flex; justify-content: flex-end; gap: 10px; }
+
+.history-container { min-height: auto; padding-top: 8px; }
+.history-list { list-style: none; padding: 0; margin: 0; }
+.history-item { padding: 10px 12px; border-left: 3px solid #17a2b8; background: #f8f9fa; border-radius: 4px; margin-bottom: 8px; }
+.history-meta { font-size: 13px; color: #495057; margin-bottom: 4px; }
+.history-diff { font-size: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.history-old { color: #b02a37; text-decoration: line-through; word-break: break-word; }
+.history-new { color: #146c43; font-weight: 600; word-break: break-word; }
+.history-empty { color: #6c757d; font-style: italic; }
+@media (max-width: 768px) {
+    .ei-edit-btn { margin-left: 0; width: 100%; }
+    .ei-modal-dialog { margin: 0; max-width: 100%; padding: 0; }
+    .ei-modal-content { min-height: 100vh; border-radius: 0; }
+}
 </style>
 
 
@@ -796,5 +894,24 @@ document.addEventListener('DOMContentLoaded', function() {
         bindNotifyButtons();
     }
 })();
+</script>
+
+<script>
+// Edit Issue modal controls (self-contained; not Bootstrap)
+function openEditIssueModal() {
+    var m = document.getElementById('editIssueModal');
+    if (m) m.classList.add('show');
+}
+function closeEditIssueModal() {
+    var m = document.getElementById('editIssueModal');
+    if (m) m.classList.remove('show');
+}
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('editIssueModal');
+    if (m && e.target === m) closeEditIssueModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditIssueModal();
+});
 </script>
 {% endblock %}
