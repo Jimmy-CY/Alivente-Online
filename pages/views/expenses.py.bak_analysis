@@ -74,7 +74,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 
-from ..models import act_expense, props, tenant, revenue
+from ..models import act_expense, props
 from ..utils import convert_to_pdf, is_pdf, merge_pdfs
 
 
@@ -930,99 +930,4 @@ def act_expense_report_property(request):
         'prop_name': prop_name,
         'rows': rows,
         'total': total,
-    })
-
-
-@login_required
-@permission_required('auth.can_access_expenses', raise_exception=True)
-def act_expense_analysis_data(request):
-    """
-    JSON for the Expenses-vs-Rent Analysis modal. Per property, per available
-    year: collected rent (the rent of the lease covering each month; 0 for
-    vacant months), months let (x/12), actual (ad-hoc) expenses, and rent source.
-
-    Rent source: 'lease' (year-accurate from the lease rows), 'no-lease'
-    (tenanted property with no lease that year -> rent 0), or 'revenue'
-    (genuinely seasonal property with no leases at all -> current Financials
-    "Rental" figure). Actual expenses = Approved + Paid act_expense rows, to
-    match the "Expenses by Property" report.
-    """
-    MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
-              'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-
-    def rent_from_leases(leases, year):
-        total, let_months = 0.0, 0
-        for m in range(1, 13):
-            d = date(year, m, 1)
-            covering = [l for l in leases
-                        if l.tenant_lease_start_date and l.tenant_lease_end_date
-                        and l.tenant_lease_start_date <= d <= l.tenant_lease_end_date]
-            if covering:
-                lease = max(covering, key=lambda l: l.tenant_lease_start_date)
-                if lease.tenant_rent:
-                    total += float(lease.tenant_rent)
-                    let_months += 1
-        return total, let_months
-
-    def rent_from_revenue(rev_rows):
-        per_month = [0.0] * 12
-        for r in rev_rows:
-            for i, m in enumerate(MONTHS):
-                v = getattr(r, 'revenue_' + m)
-                if v:
-                    per_month[i] += float(v)
-        return sum(per_month), sum(1 for v in per_month if v > 0)
-
-    available_years = [
-        d.year for d in act_expense.objects
-            .exclude(act_expense_date__isnull=True)
-            .dates('act_expense_date', 'year', order='DESC')
-    ]
-
-    properties = []
-    for p in props.objects.all().order_by('prop_country', 'prop_name'):
-        leases = list(tenant.objects.filter(prop=p))
-        has_lease = bool(leases)
-        rev_rows = None
-        year_data = {}
-        any_data = False
-
-        for y in available_years:
-            actual = (act_expense.objects
-                      .filter(prop=p, act_expense_date__year=y,
-                              act_expense_approved='Yes', act_expense_paid='Yes')
-                      .aggregate(t=Sum('act_expense_amount'))['t'] or 0)
-            actual = float(actual)
-
-            if has_lease:
-                rent, let_months = rent_from_leases(leases, y)
-                source = 'lease' if let_months else 'no-lease'
-            else:
-                if rev_rows is None:
-                    rev_rows = list(revenue.objects.filter(
-                        prop=p,
-                        revenue_line_types__revenue_line_types_name__icontains='rental',
-                    ))
-                rent, let_months = rent_from_revenue(rev_rows)
-                source = 'revenue' if rent else 'none'
-
-            if rent or actual:
-                any_data = True
-            year_data[str(y)] = {
-                'rent': round(rent, 2),
-                'months_let': let_months,
-                'actual': round(actual, 2),
-                'source': source,
-            }
-
-        if any_data:
-            properties.append({
-                'prop_id': p.prop_id,
-                'prop_name': p.prop_name or '(Unnamed property)',
-                'years': year_data,
-            })
-
-    return JsonResponse({
-        'available_years': available_years,
-        'properties': properties,
     })

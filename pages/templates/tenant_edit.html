@@ -12,6 +12,14 @@
 
 {% if perms.auth.can_edit_tenants %}
 
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %}" role="alert">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
 {% for tresults in tenant %}
 <form action="{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">
   {% csrf_token %}

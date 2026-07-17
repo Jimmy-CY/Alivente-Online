@@ -88,6 +88,13 @@ class Command(BaseCommand):
         self.stdout.write('Starting invoice creation, lease renewal, invoice checks, and passport expiry checks...')
 
         try:
+            # Sync tenant Active/Inactive from the lease dates BEFORE anything
+            # else, so invoices and the report use the correct current tenants.
+            if self.dry_run:
+                call_command('refresh_tenant_active', '--dry-run')
+            else:
+                call_command('refresh_tenant_active')
+                
             # First, create invoices if needed
             created_invoices_count = self.create_invoices()
 

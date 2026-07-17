@@ -224,14 +224,22 @@ def tenant_commit(request):
 def tenant_edit_commit(request, tenant_id):
     ten = tenant.objects.get(pk=tenant_id)
     if request.method == "POST":
-        form = TenantForm(request.POST or None, instance=ten)
+        form = TenantForm(request.POST, instance=ten)
         if form.is_valid():
-            ten = form.save()
-            _apply_physical_invoice_fields(request, ten)
-            messages.success(request, "Tenant Edited Successfully")
-    results = props.objects.all().order_by('prop_country', 'prop_name')
-    tresults = tenant.objects.all().order_by('tenant_name')
-    return render(request, "tenant.html", {"tenant": tresults, "props": results})
+            try:
+                ten = form.save()
+                _apply_physical_invoice_fields(request, ten)
+                messages.success(request, "Tenant edited successfully")
+                return redirect('tenant')
+            except ValidationError as e:
+                messages.error(request, str(e).replace('__all__: ', ''))
+                return redirect('tenant_edit', tenant_id=tenant_id)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, str(error).replace('__all__: ', ''))
+            return redirect('tenant_edit', tenant_id=tenant_id)
+    return redirect('tenant')
 
 
 @login_required

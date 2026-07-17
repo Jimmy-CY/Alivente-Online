@@ -718,7 +718,6 @@ class tenant(models.Model):
             if hasattr(self, 'prop'):
                 overlapping = tenant.objects.filter(
                     prop=self.prop,
-                    tenant_current='Yes',  # KEY CHANGE - only active tenants
                     tenant_lease_start_date__lte=self.tenant_lease_end_date,
                     tenant_lease_end_date__gte=self.tenant_lease_start_date
                 ).exclude(pk=self.pk)
