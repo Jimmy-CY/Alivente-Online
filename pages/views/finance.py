@@ -55,6 +55,7 @@ from pages.models import (
     revenue, revenue_types, revenue_line_types,
     expense, expense_types, expense_line_types,
     tenant, act_expense, VacancyPeriod,
+    FinancialFigureHistory, record_expense_history, record_revenue_history,
 )
 
 # Helpers split across two modules after the dashboard / properties splits.
@@ -78,6 +79,24 @@ MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
           'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 logger = logging.getLogger(__name__)
+
+
+# ---- Financial history (Phase 1) : effective date + user, both fail-safe ----
+def _fh_eff_date(request):
+    """Effective date for a budgeted/revenue change: the form's 'effective_date'
+    (YYYY-MM-DD) if supplied, otherwise today. Never raises."""
+    raw = (request.POST.get('effective_date') or '').strip()
+    if raw:
+        try:
+            return datetime.strptime(raw, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    return date.today()
+
+
+def _fh_user(request):
+    u = getattr(request, 'user', None)
+    return u if (u is not None and getattr(u, 'is_authenticated', False)) else None
 
 
 # ============================================================================
@@ -154,12 +173,13 @@ def finance_revenue_commit(request):
                 if getattr(revenue_type, f'revenue_types_{month}') == "Yes":
                     monthly_data[f'revenue_{month}'] = revenue_amount
 
-            revenue.objects.update_or_create(
+            _fh_rev, _ = revenue.objects.update_or_create(
                 prop_id=prop_id,
                 revenue_line_types_id=rlt_id,
                 revenue_types_id=rt_id,
                 defaults=monthly_data,
             )
+            transaction.on_commit(lambda o=_fh_rev: record_revenue_history(o, _fh_eff_date(request), source='direct', user=_fh_user(request)))
             messages.success(request, "Revenue added successfully.")
             return redirect('finance_revenue')
 
@@ -221,6 +241,7 @@ def finance_revenue_edit_commit(request, revenue_id):
             for key, value in monthly_data.items():
                 setattr(rev, key, value)
             rev.save()
+            transaction.on_commit(lambda o=rev: record_revenue_history(o, _fh_eff_date(request), source='direct', user=_fh_user(request)))
 
             messages.success(request, "Revenue updated successfully.")
             return redirect('finance_revenue')
@@ -483,12 +504,13 @@ def finance_expense_commit(request):
                     for month in MONTHS:
                         if getattr(expense_type, f'expense_types_{month}') == "Yes":
                             monthly_data[f'expense_{month}'] = property_data['calculated_amount']
-                    expense.objects.update_or_create(
+                    _fh_exp, _ = expense.objects.update_or_create(
                         prop_id=property_data['prop_id'],
                         expense_line_types_id=elt_id,
                         expense_types_id=et_id,
                         defaults=monthly_data,
                     )
+                    transaction.on_commit(lambda o=_fh_exp: record_expense_history(o, _fh_eff_date(request), source='prorata', user=_fh_user(request)))
 
                 messages.success(request, f"{len(selected_properties)} pro-rata expenses created successfully.")
                 return redirect('finance_expense')
@@ -503,12 +525,13 @@ def finance_expense_commit(request):
                 if getattr(expense_type, f'expense_types_{month}') == "Yes":
                     monthly_data[f'expense_{month}'] = expense_amount
 
-            expense.objects.update_or_create(
+            _fh_exp, _ = expense.objects.update_or_create(
                 prop_id=prop_id,
                 expense_line_types_id=elt_id,
                 expense_types_id=et_id,
                 defaults=monthly_data,
             )
+            transaction.on_commit(lambda o=_fh_exp: record_expense_history(o, _fh_eff_date(request), source='budget', user=_fh_user(request)))
             messages.success(request, "Expense added successfully.")
             return redirect('finance_expense')
 
@@ -609,7 +632,8 @@ def finance_expense_edit_commit(request, expense_id):
                     for month in MONTHS:
                         if getattr(expense_type, f'expense_types_{month}') == "Yes":
                             monthly_data[f'expense_{month}'] = property_data['calculated_amount']
-                    expense.objects.create(**monthly_data)
+                    _fh_exp = expense.objects.create(**monthly_data)
+                    transaction.on_commit(lambda o=_fh_exp: record_expense_history(o, _fh_eff_date(request), source='prorata', user=_fh_user(request)))
 
                 messages.success(request, f"{len(selected_properties)} pro-rata expenses updated successfully.")
                 return redirect('finance_expense')
@@ -631,6 +655,7 @@ def finance_expense_edit_commit(request, expense_id):
             for field, value in monthly_data.items():
                 setattr(existing_expense, field, value)
             existing_expense.save()
+            transaction.on_commit(lambda o=existing_expense: record_expense_history(o, _fh_eff_date(request), source='budget', user=_fh_user(request)))
 
             messages.success(request, "Expense updated successfully.")
             return redirect('finance_expense')
@@ -1060,6 +1085,7 @@ def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_type
                         else:
                             setattr(exp, f'expense_{month}', None)
                     exp.save()
+                    transaction.on_commit(lambda o=exp: record_expense_history(o, _fh_eff_date(request), source='prorata_line', user=_fh_user(request)))
 
         messages.success(
             request,
@@ -1362,6 +1388,7 @@ def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
                             else:
                                 setattr(exp, f'expense_{month}', None)
                         exp.save()
+                        transaction.on_commit(lambda o=exp: record_expense_history(o, _fh_eff_date(request), source='prorata_valuation', user=_fh_user(request)))
 
         lt_count = preview_data.get('affected_line_types_count', 0)
         exp_count = preview_data.get('affected_expense_count', 0)

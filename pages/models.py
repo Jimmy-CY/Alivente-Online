@@ -3153,3 +3153,122 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - Profile"
+# =============================================================================
+# Financial Figure History (Phase 1) — append-only record of BUDGETED figures.
+# Installed by install_financial_history.py.  Nothing in the app READS this in
+# Phase 1; it only records. The P&L consumes it in Phase 2.
+#
+# One row per save/edit of a budgeted expense or a direct/seasonal revenue.
+# effective_date = the month a value takes effect FROM (defaults to the day of
+# the edit; the edit form may override it). The twelve monthly columns mirror
+# expense_jan.. / revenue_jan.. so a history row reads exactly like a live row.
+# =============================================================================
+from datetime import date as _fh_date
+import logging as _fh_logging
+
+_fh_log = _fh_logging.getLogger(__name__)
+_FH_MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+
+class FinancialFigureHistory(models.Model):
+    KIND_REVENUE = 'revenue'          # direct / seasonal revenue (revenue table)
+    KIND_BUDGET = 'budget_expense'    # budgeted expense (expense table)
+    KIND_CHOICES = [
+        (KIND_REVENUE, 'Revenue (direct / seasonal)'),
+        (KIND_BUDGET, 'Budgeted expense'),
+    ]
+
+    financial_figure_history_id = models.AutoField(primary_key=True)
+    prop = models.ForeignKey('props', on_delete=models.CASCADE, related_name='figure_history')
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES)
+
+    # pk of the source config row that changed (expense_id / revenue_id)
+    source_pk = models.IntegerField(help_text='expense_id or revenue_id of the source row')
+    line_type = models.CharField(max_length=255, blank=True, null=True,
+        help_text='Denormalised line-type label, e.g. Rental / Insurance.')
+
+    effective_date = models.DateField(help_text='Date from which these values apply.')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True,
+        help_text='Base amount at this version (mirrors expense_amount / revenue_amount).')
+
+    # Monthly snapshot — mirrors the twelve columns on expense / revenue.
+    jan = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    feb = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    mar = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    apr = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    may = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    jun = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    jul = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    aug = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    sep = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    oct = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    nov = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    dec = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    source = models.CharField(max_length=30, blank=True, null=True,
+        help_text='budget | direct | prorata | prorata_line | prorata_valuation | seed')
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'financial_figure_history'
+        verbose_name = 'Financial Figure History'
+        verbose_name_plural = 'Financial Figure History'
+        ordering = ['prop_id', 'kind', '-effective_date', '-changed_at']
+        indexes = [
+            models.Index(fields=['prop', 'kind', 'effective_date']),
+            models.Index(fields=['kind', 'source_pk']),
+        ]
+
+    def __str__(self):
+        return '%s — %s — eff %s' % (self.get_kind_display(), self.line_type, self.effective_date)
+
+
+# ---- Write-hook helpers. Called AFTER commit via transaction.on_commit(); they
+#      NEVER raise, so a history-write problem can't break the user's save. -----
+def record_expense_history(exp, effective_date, *, source='budget', user=None):
+    """Snapshot a budgeted `expense` row into history. Fail-safe (logs, returns
+    None on any error)."""
+    try:
+        months = {m: getattr(exp, 'expense_' + m) for m in _FH_MONTHS}
+        return FinancialFigureHistory.objects.create(
+            prop=exp.prop, kind=FinancialFigureHistory.KIND_BUDGET,
+            source_pk=exp.expense_id, line_type=str(exp.expense_line_types),
+            effective_date=effective_date, amount=exp.expense_amount,
+            source=source, changed_by=user, **months,
+        )
+    except Exception:
+        _fh_log.exception('record_expense_history failed (save itself was not affected)')
+        return None
+
+
+def record_revenue_history(rev, effective_date, *, source='direct', user=None):
+    """Snapshot a `revenue` row into history. Fail-safe."""
+    try:
+        months = {m: getattr(rev, 'revenue_' + m) for m in _FH_MONTHS}
+        return FinancialFigureHistory.objects.create(
+            prop=rev.prop, kind=FinancialFigureHistory.KIND_REVENUE,
+            source_pk=rev.revenue_id, line_type=str(rev.revenue_line_types),
+            effective_date=effective_date, amount=rev.revenue_amount,
+            source=source, changed_by=user, **months,
+        )
+    except Exception:
+        _fh_log.exception('record_revenue_history failed (save itself was not affected)')
+        return None
+
+
+# ---- Phase-2 resolver (unused until the P&L rework; safe to ship now). --------
+def figure_monthly_value_as_of(prop, kind, source_pk, year, month_idx):
+    """The monthly figure in force for `month_idx` (1-12) of `year`: the latest
+    history row whose effective_date falls in that month or earlier. A change
+    dated any day in a month applies to that month and forward. Returns None if
+    no history exists (caller falls back to the live row)."""
+    nxt = _fh_date(year + 1, 1, 1) if month_idx >= 12 else _fh_date(year, month_idx + 1, 1)
+    row = (FinancialFigureHistory.objects
+           .filter(prop=prop, kind=kind, source_pk=source_pk, effective_date__lt=nxt)
+           .order_by('-effective_date', '-changed_at')
+           .first())
+    if row is None:
+        return None
+    return getattr(row, _FH_MONTHS[month_idx - 1])
