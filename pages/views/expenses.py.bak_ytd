@@ -937,78 +937,47 @@ def act_expense_report_property(request):
 @permission_required('auth.can_access_expenses', raise_exception=True)
 def act_expense_analysis_data(request):
     """
-    JSON for the Expenses-vs-Rent Analysis modal.
+    JSON for the Expenses-vs-Rent Analysis modal. Per property, per available
+    year: collected rent (the rent of the lease covering each month; 0 for
+    vacant months), months let (x/12), actual (ad-hoc) expenses, and rent source.
 
-    For every property and year returns BOTH full-year figures (rent,
-    months_let, actual) and YTD figures (rent_ytd, months_let_ytd, actual_ytd)
-    trimmed to January..<last completed month of the current year>. The front
-    end uses the YTD figures whenever the current, unfinished year is being
-    viewed, so an in-progress year is compared like-for-like against the same
-    window of earlier years.
-
-    Actual expenses = Approved + Paid act_expense rows.
-    Rent includes levies: lease rent = tenant_rent + tenant_levies (when
-    present); the revenue fallback sums both the Rental and Levies lines.
-    Rent source: 'lease' | 'no-lease' | 'revenue' | 'none'.
+    Rent source: 'lease' (year-accurate from the lease rows), 'no-lease'
+    (tenanted property with no lease that year -> rent 0), or 'revenue'
+    (genuinely seasonal property with no leases at all -> current Financials
+    "Rental" figure). Actual expenses = Approved + Paid act_expense rows, to
+    match the "Expenses by Property" report.
     """
-    # analysis endpoint version: ytd+levies-v2
     MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
               'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-    MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    today = date.today()
-    current_year = today.year
-    ytd_cutoff = today.month - 1  # last completed month; 0 in January
-
-    def rent_from_leases(leases, year, upto):
+    def rent_from_leases(leases, year):
         total, let_months = 0.0, 0
-        for m in range(1, upto + 1):
+        for m in range(1, 13):
             d = date(year, m, 1)
             covering = [l for l in leases
                         if l.tenant_lease_start_date and l.tenant_lease_end_date
                         and l.tenant_lease_start_date <= d <= l.tenant_lease_end_date]
             if covering:
                 lease = max(covering, key=lambda l: l.tenant_lease_start_date)
-                amt = (lease.tenant_rent or 0) + (lease.tenant_levies or 0)
-                if amt:
-                    total += float(amt)
+                if lease.tenant_rent:
+                    total += float(lease.tenant_rent)
                     let_months += 1
         return total, let_months
 
-    def rent_from_revenue(rev_rows, upto):
+    def rent_from_revenue(rev_rows):
         per_month = [0.0] * 12
         for r in rev_rows:
             for i, m in enumerate(MONTHS):
                 v = getattr(r, 'revenue_' + m)
                 if v:
                     per_month[i] += float(v)
-        s = sum(per_month[:upto])
-        months = sum(1 for v in per_month[:upto] if v > 0)
-        return s, months
-
-    def actual_sum(prop, year, upto):
-        if upto < 1:
-            return 0.0
-        val = (act_expense.objects
-               .filter(prop=prop, act_expense_date__year=year,
-                       act_expense_date__month__lte=upto,
-                       act_expense_approved='Yes', act_expense_paid='Yes')
-               .aggregate(t=Sum('act_expense_amount'))['t'] or 0)
-        return float(val)
+        return sum(per_month), sum(1 for v in per_month if v > 0)
 
     available_years = [
         d.year for d in act_expense.objects
             .exclude(act_expense_date__isnull=True)
             .dates('act_expense_date', 'year', order='DESC')
     ]
-
-    # Also compute one earlier year, so the oldest selectable year still has a
-    # prior-year baseline for its rent-change figure.
-    years_to_compute = list(available_years)
-    if available_years:
-        years_to_compute = sorted(
-            set(available_years) | {min(available_years) - 1}, reverse=True)
 
     properties = []
     for p in props.objects.all().order_by('prop_country', 'prop_name'):
@@ -1018,34 +987,31 @@ def act_expense_analysis_data(request):
         year_data = {}
         any_data = False
 
-        for y in years_to_compute:
+        for y in available_years:
+            actual = (act_expense.objects
+                      .filter(prop=p, act_expense_date__year=y,
+                              act_expense_approved='Yes', act_expense_paid='Yes')
+                      .aggregate(t=Sum('act_expense_amount'))['t'] or 0)
+            actual = float(actual)
+
             if has_lease:
-                rent_f, let_f = rent_from_leases(leases, y, 12)
-                source = 'lease' if let_f else 'no-lease'
+                rent, let_months = rent_from_leases(leases, y)
+                source = 'lease' if let_months else 'no-lease'
             else:
                 if rev_rows is None:
                     rev_rows = list(revenue.objects.filter(
                         prop=p,
-                        revenue_line_types__revenue_line_types_name__iregex=r'rental|levies',
+                        revenue_line_types__revenue_line_types_name__icontains='rental',
                     ))
-                rent_f, let_f = rent_from_revenue(rev_rows, 12)
-                source = 'revenue' if rent_f else 'none'
-            actual_f = actual_sum(p, y, 12)
+                rent, let_months = rent_from_revenue(rev_rows)
+                source = 'revenue' if rent else 'none'
 
-            if ytd_cutoff >= 1:
-                if has_lease:
-                    rent_y, let_y = rent_from_leases(leases, y, ytd_cutoff)
-                else:
-                    rent_y, let_y = rent_from_revenue(rev_rows, ytd_cutoff)
-                actual_y = actual_sum(p, y, ytd_cutoff)
-            else:
-                rent_y, let_y, actual_y = 0.0, 0, 0.0
-
-            if (y in available_years) and (rent_f or actual_f):
+            if rent or actual:
                 any_data = True
             year_data[str(y)] = {
-                'rent': round(rent_f, 2), 'months_let': let_f, 'actual': round(actual_f, 2),
-                'rent_ytd': round(rent_y, 2), 'months_let_ytd': let_y, 'actual_ytd': round(actual_y, 2),
+                'rent': round(rent, 2),
+                'months_let': let_months,
+                'actual': round(actual, 2),
                 'source': source,
             }
 
@@ -1058,8 +1024,5 @@ def act_expense_analysis_data(request):
 
     return JsonResponse({
         'available_years': available_years,
-        'current_year': current_year,
-        'ytd_cutoff_month': ytd_cutoff,
-        'ytd_month_name': MONTH_ABBR[ytd_cutoff - 1] if ytd_cutoff >= 1 else '',
         'properties': properties,
     })

@@ -1955,45 +1955,29 @@ $('#manageModal').on('hidden.bs.modal', function () {
 
 <!-- ==================== EXPENSES vs RENT — ANALYSIS MODAL ==================== -->
 <style>
-.analysis-dialog { max-width: 900px; }
+.analysis-dialog { max-width: 920px; }
 .analysis-dialog .modal-body { max-height: 82vh; overflow-y: auto; }
-.an-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
-.an-yearpick { display:flex; align-items:center; gap:8px; font-size:13px; color:#495057; }
-.an-yearpick select { border:1.5px solid #ced4da; border-radius:8px; padding:4px 10px; font-size:14px; font-weight:600; color:#17a2b8; background:#fff; }
-.an-yearpick label { margin:0; }
-.an-switch { display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none; font-size:13.5px; color:#343a40; font-weight:600; }
-.an-switch input { display:none; }
-.an-track { width:42px; height:24px; border-radius:12px; background:#ced4da; position:relative; transition:background .2s; }
-.an-track::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
-.an-switch input:checked + .an-track { background:#17a2b8; }
-.an-switch input:checked + .an-track::after { left:21px; }
-.an-basisrow { display:flex; align-items:center; gap:10px; margin:6px 0 8px; min-height:22px; flex-wrap:wrap; }
-.an-badge { font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px; }
-.an-badge.ytd { background:#fff3bf; color:#b0810a; border:1px solid #ffe066; }
-.an-badge.full { background:#e9ecef; color:#495057; border:1px solid #dee2e6; }
-.an-sub { font-size:12.5px; color:#868e96; }
-.an-chart-wrap { position:relative; width:100%; height:42vh; min-height:300px; max-height:430px; margin-bottom:6px; }
-.an-quad-key { display:grid; grid-template-columns:1fr 1fr; gap:6px 18px; margin:14px 0 4px; font-size:12px; color:#495057; }
-.an-quad-key div { display:flex; gap:8px; align-items:flex-start; }
-.an-dot { width:12px; height:12px; border-radius:3px; margin-top:2px; flex-shrink:0; }
-table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13.5px; }
-.an-table th, .an-table td { padding:8px 8px; border-bottom:1px solid #f1f3f5; }
-.an-table th { text-align:left; color:#495057; font-weight:600; border-bottom:2px solid #e9ecef; }
-.an-table td.num, .an-table th.num { text-align:right; font-variant-numeric:tabular-nums; }
-.an-table td.ctr, .an-table th.ctr { text-align:center; }
-.an-table tr.danger td { background:#fdecec; }
-.an-src { font-size:11px; color:#adb5bd; }
-.an-flag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
-.an-flag.warn { background:#fdecec; color:#c0322f; }
-.an-flag.ok { background:#e8f6ec; color:#1f7a37; }
-.an-note { font-size:12px; color:#495057; margin-top:10px; margin-bottom:0; }
+.analysis-sub { color:#6c757d; font-size:12.5px; margin: 4px 0 10px; }
+.analysis-chart-wrap { position: relative; width: 100%; height: 40vh; min-height: 260px; max-height: 400px; margin-bottom: 10px; }
+.analysis-quad-key { display:grid; grid-template-columns:1fr 1fr; gap:5px 16px; margin:0 0 14px; font-size:11.5px; color:#495057; }
+.analysis-quad-key .qk { line-height:1.35; }
+.analysis-quad-key .qk b { display:block; }
+.analysis-quad-key .qk.danger b { color:#b02a37; }
+.analysis-quad-key .qk.good b { color:#1f7a37; }
+.analysis-table tbody tr.danger-row { background:#fdecec; }
+.analysis-table td.num, .analysis-table th.num { text-align:right; font-variant-numeric: tabular-nums; }
+.analysis-flag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
+.analysis-flag.warn { background:#fdecec; color:#c0322f; }
+.analysis-flag.ok { background:#e8f6ec; color:#1f7a37; }
+.analysis-src { font-size:11px; color:#adb5bd; }
 @media (max-width: 768px) {
   .analysis-dialog { max-width:100%; margin:0; height:100vh; }
   .analysis-dialog .modal-content { height:100vh; border-radius:0; border:none; display:flex; flex-direction:column; }
   .analysis-dialog .modal-header { flex-shrink:0; padding:12px 14px; }
   .analysis-dialog .modal-body { flex:1 1 auto; max-height:none; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px; }
-  .an-chart-wrap { height:46vh; min-height:300px; }
-  .an-quad-key { grid-template-columns:1fr; }
+  .analysis-chart-wrap { height:44vh; min-height:280px; }
+  .analysis-quad-key { grid-template-columns:1fr; }
+  .analysis-table th, .analysis-table td { font-size:13px; padding:8px 6px; }
 }
 </style>
 <div class="modal fade" id="expenseAnalysisModal" tabindex="-1" role="dialog" aria-labelledby="expenseAnalysisLabel" aria-hidden="true">
@@ -2006,6 +1990,12 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
+        <div class="report-year-bar">
+          <span class="report-year-label"><i class="fas fa-calendar-alt"></i> Years:</span>
+          <label class="report-year-chk"><input type="checkbox" id="analysisYearAll" checked> All years</label>
+          <span id="analysisYearList" class="report-year-list"></span>
+        </div>
+        <p class="analysis-sub" id="analysisSub"></p>
         <div id="analysisLoading" class="text-center text-muted" style="padding:30px;">
           <i class="fas fa-spinner fa-spin"></i> Loading...
         </div>
@@ -2013,29 +2003,30 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
           Not enough data to compare yet.
         </div>
         <div id="analysisContent" style="display:none;">
-          <div class="an-toolbar">
-            <div class="an-yearpick" id="analysisSnapWrap"><label><i class="fas fa-calendar-alt"></i> View year:</label><select id="analysisYear"></select></div>
-            <div class="an-yearpick" id="analysisRangeWrap" style="display:none;"><label><i class="fas fa-calendar-alt"></i> From:</label><select id="analysisFrom"></select><label>To:</label><select id="analysisTo"></select></div>
-            <label class="an-switch"><input type="checkbox" id="analysisHist"><span class="an-track"></span><span id="analysisHistLbl">Show history (comet trails)</span></label>
-          </div>
-          <div class="an-basisrow"><span id="analysisBadge" class="an-badge"></span><span id="analysisSub" class="an-sub"></span></div>
-          <div class="an-chart-wrap"><canvas id="analysisChart"></canvas></div>
-          <div class="an-quad-key">
-            <div><span class="an-dot" style="background:#ffd7d7"></span><b style="color:#c92a2a">Watch</b>&nbsp;— surprise costs over 10% of rent while rent is flat or falling.</div>
-            <div><span class="an-dot" style="background:#ffe8cc"></span><b style="color:#e8590c">Costs high, rent rising</b>&nbsp;— surprises heavy, but rent is growing.</div>
-            <div><span class="an-dot" style="background:#e7f5ff"></span><b style="color:#1971c2">Rent stalled</b>&nbsp;— costs low, but rent isn't growing.</div>
-            <div><span class="an-dot" style="background:#d3f9d8"></span><b style="color:#2f9e44">Healthy</b>&nbsp;— rent rising and surprise costs low.</div>
+          <div class="analysis-chart-wrap"><canvas id="analysisChart"></canvas></div>
+          <div class="analysis-quad-key" id="analysisQuadKey" style="display:none;">
+            <div class="qk danger"><b>&#9888; Watch &middot; top-left</b>Surprise costs over 10% of rent while rent is flat or falling.</div>
+            <div class="qk"><b>Costs high, rent rising &middot; top-right</b>Surprises are high, but rent is growing to cover them.</div>
+            <div class="qk"><b>Rent stalled &middot; bottom-left</b>Surprise costs low, but rent isn't growing.</div>
+            <div class="qk good"><b>&#10003; Healthy &middot; bottom-right</b>Rent growing and surprise costs low.</div>
           </div>
           <div class="table-responsive">
-            <table class="an-table">
-              <thead><tr>
-                <th>Property</th><th class="num">Rent</th><th class="ctr">Let</th>
-                <th class="num">Actual</th><th class="num">% of rent</th><th class="num">Rent &Delta;</th><th class="ctr">Status</th>
-              </tr></thead>
+            <table class="table table-sm table-hover analysis-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th class="num">Rent</th>
+                  <th class="text-center">Let</th>
+                  <th class="num">Actual</th>
+                  <th class="num">% of rent</th>
+                  <th class="num">Rent &Delta;</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
               <tbody id="analysisTableBody"></tbody>
             </table>
           </div>
-          <p class="an-note" id="analysisNote"></p>
+          <p class="text-muted small mb-0" id="analysisNote"></p>
         </div>
       </div>
     </div>
@@ -2045,263 +2036,63 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
 (function() {
     'use strict';
     var ANALYSIS_URL = "{% url 'act_expense_analysis_data' %}";
-    var PALETTE = ['#17a2b8','#e8590c','#2f9e44','#7048e8','#1c7ed6','#e64980','#f08c00','#0ca678','#5c7cfa','#d6336c'];
-    var DANGER_PCT = 10, X_DIV = 0;
+    var DANGER_PCT = 10;
     var chart = null, loaded = false, DATA = null;
-    var state = { year: null, from: null, to: null, history: false };
 
-    function rgba(hex, a){ var n = parseInt(hex.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
-    function euro(n){ return '€' + Number(n||0).toLocaleString('en-IE', {maximumFractionDigits:0}); }
-    function pctTxt(n){ return (n>0?'+':'') + Number(n).toFixed(1) + '%'; }
-    function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function ascYears(){ return (DATA.available_years||[]).slice().sort(function(a,b){ return a-b; }); }
+    function euro(n) { return '€' + Number(n || 0).toLocaleString('en-IE', {maximumFractionDigits: 0}); }
+    function pct(n) { return (n > 0 ? '+' : '') + Number(n).toFixed(1) + '%'; }
+    function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    function focusYear(){ return state.history ? state.to : state.year; }
-    function ytdActive(){ return DATA.ytd_cutoff_month >= 1 && focusYear() === DATA.current_year; }
-
-    function yv(p, y){
-        var d = p.years[String(y)];
-        if (!d) return null;
-        return ytdActive()
-            ? { rent:d.rent_ytd, actual:d.actual_ytd, let:d.months_let_ytd, source:d.source }
-            : { rent:d.rent, actual:d.actual, let:d.months_let, source:d.source };
-    }
-    function pointFor(p, y){
-        var cur = yv(p, y); if (!cur) return null;
-        var prev = yv(p, y-1);
-        var change = (prev && prev.rent) ? ((cur.rent - prev.rent)/prev.rent*100) : null;
-        var pr = cur.rent ? (cur.actual/cur.rent*100) : null;
-        return { x:change, y:pr, year:y, rent:cur.rent, actual:cur.actual, let:cur.let,
-                 source:cur.source, name:p.prop_name,
-                 danger: (pr!=null && pr>=DANGER_PCT && (change==null || change<=0)) };
-    }
-    function plottedYears(){
-        if (!state.history) return [state.year];
-        return ascYears().filter(function(y){ return y >= state.from && y <= state.to; });
+    function effectiveYears() {
+        var all = document.getElementById('analysisYearAll').checked;
+        var picked = [];
+        document.querySelectorAll('#analysisYearList input[type=checkbox]:checked').forEach(function(cb){ picked.push(parseInt(cb.value, 10)); });
+        if (all || picked.length === 0) return (DATA.available_years || []).slice();
+        return picked;
     }
 
-    var quadrantPlugin = {
-        id:'quads',
-        beforeDatasetsDraw:function(c){
-            var xs=c.scales.x, ys=c.scales.y, a=c.chartArea, ctx=c.ctx; if(!xs||!ys||!a) return;
-            var x0=Math.max(a.left,Math.min(a.right,xs.getPixelForValue(X_DIV)));
-            var y10=Math.max(a.top,Math.min(a.bottom,ys.getPixelForValue(DANGER_PCT)));
-            ctx.save(); ctx.globalAlpha=0.32;
-            ctx.fillStyle='#ffd7d7'; ctx.fillRect(a.left,a.top,x0-a.left,y10-a.top);
-            ctx.fillStyle='#ffe8cc'; ctx.fillRect(x0,a.top,a.right-x0,y10-a.top);
-            ctx.fillStyle='#e7f5ff'; ctx.fillRect(a.left,y10,x0-a.left,a.bottom-y10);
-            ctx.fillStyle='#d3f9d8'; ctx.fillRect(x0,y10,a.right-x0,a.bottom-y10);
-            ctx.globalAlpha=1;
-            ctx.setLineDash([5,4]); ctx.lineWidth=1; ctx.strokeStyle='rgba(0,0,0,0.28)';
-            ctx.beginPath(); ctx.moveTo(x0,a.top); ctx.lineTo(x0,a.bottom); ctx.stroke();
-            ctx.strokeStyle='#dc3545';
-            ctx.beginPath(); ctx.moveTo(a.left,y10); ctx.lineTo(a.right,y10); ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.font='700 11px system-ui,sans-serif'; ctx.textBaseline='top';
-            ctx.fillStyle='rgba(201,42,42,.78)'; ctx.textAlign='left'; ctx.fillText('WATCH', a.left+6, a.top+5);
-            ctx.fillStyle='rgba(232,89,12,.8)'; ctx.textAlign='right'; ctx.fillText('COSTS HIGH · RENT RISING', a.right-6, a.top+5);
-            ctx.textBaseline='bottom';
-            ctx.fillStyle='rgba(25,113,194,.8)'; ctx.textAlign='left'; ctx.fillText('RENT STALLED', a.left+6, a.bottom-5);
-            ctx.fillStyle='rgba(47,158,68,.85)'; ctx.textAlign='right'; ctx.fillText('HEALTHY', a.right-6, a.bottom-5);
-            ctx.restore();
-        }
-    };
-    var labelPlugin = {
-        id:'names',
-        afterDatasetsDraw:function(c){
-            var ctx=c.ctx; ctx.save(); ctx.font='600 11px system-ui,sans-serif'; ctx.textBaseline='middle';
-            c.data.datasets.forEach(function(ds,i){
-                var m=c.getDatasetMeta(i); if(!m.data.length||ds._hide) return;
-                var last=m.data[m.data.length-1];
-                var nm=ds.label; if(nm.length>22) nm=nm.slice(0,21)+'…';
-                ctx.fillStyle=ds._base||'#333';
-                var flip=last.x > c.chartArea.right-115;
-                ctx.textAlign=flip?'right':'left';
-                ctx.fillText(nm, last.x+(flip?-11:11), last.y);
-            });
-            ctx.restore();
-        }
-    };
-
-    function buildDatasets(){
-        var years = plottedYears();
-        return (DATA.properties||[]).map(function(p, idx){
-            var col = PALETTE[idx % PALETTE.length];
-            var pts = years.map(function(y){ return pointFor(p, y); })
-                           .filter(function(pt){ return pt && pt.x!=null && pt.y!=null; });
-            if (!pts.length) return { label:p.prop_name, _base:col, _hide:true, data:[] };
-            var n = pts.length;
-            if (state.history && n>1){
-                return {
-                    label:p.prop_name, _base:col,
-                    data: pts.map(function(pt){ return {x:pt.x, y:pt.y, _p:pt}; }),
-                    showLine:true, tension:0.35, fill:false,
-                    borderColor: rgba(col,0.45), borderWidth:1.5,
-                    pointBackgroundColor: pts.map(function(_,i){ return rgba(col, 0.25+0.75*(i/(n-1))); }),
-                    pointBorderColor: pts.map(function(_,i){ return i===n-1?'#fff':rgba(col,0.3); }),
-                    pointBorderWidth: pts.map(function(_,i){ return i===n-1?2:1; }),
-                    pointRadius: pts.map(function(_,i){ return 3+5*(i/(n-1)); }),
-                    pointHoverRadius: 9
-                };
-            }
-            var last = pts[n-1];
-            return {
-                label:p.prop_name, _base:col,
-                data:[{x:last.x, y:last.y, _p:last}], showLine:false,
-                pointBackgroundColor: last.danger ? '#dc3545' : col,
-                pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:8, pointHoverRadius:10
-            };
+    function buildYearCheckboxes(years) {
+        var list = document.getElementById('analysisYearList');
+        if (list.dataset.built === '1') return;
+        list.innerHTML = '';
+        years.forEach(function(y) {
+            var lbl = document.createElement('label');
+            lbl.className = 'report-year-chk';
+            lbl.innerHTML = '<input type="checkbox" value="' + y + '"> ' + y;
+            list.appendChild(lbl);
         });
-    }
-
-    function axisBounds(){
-        var xs=[0], ys=[DANGER_PCT+2];
-        var years = plottedYears();
-        (DATA.properties||[]).forEach(function(p){
-            years.forEach(function(y){
-                var pt=pointFor(p,y); if(pt&&pt.x!=null) xs.push(pt.x); if(pt&&pt.y!=null) ys.push(pt.y);
+        list.dataset.built = '1';
+        var allCb = document.getElementById('analysisYearAll');
+        allCb.addEventListener('change', function() {
+            if (allCb.checked) list.querySelectorAll('input[type=checkbox]').forEach(function(cb){ cb.checked = false; });
+            else if (list.querySelectorAll('input[type=checkbox]:checked').length === 0) { allCb.checked = true; return; }
+            render();
+        });
+        list.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                if (cb.checked) allCb.checked = false;
+                if (list.querySelectorAll('input[type=checkbox]:checked').length === 0) allCb.checked = true;
+                render();
             });
         });
-        var xmin=Math.min.apply(null,xs), xmax=Math.max.apply(null,xs);
-        var xpad=(xmax-xmin)*0.14 || 5; xmin-=xpad; xmax+=xpad;
-        xmin=Math.floor(xmin); xmax=Math.ceil(xmax);
-        if (xmax-xmin < 4){ var cc=(xmax+xmin)/2; xmin=Math.floor(cc-2); xmax=Math.ceil(cc+2); }
-        var ymax=Math.ceil(Math.max.apply(null,ys)*1.12);
-        var xstep=Math.max(1, Math.ceil((xmax-xmin)/8));
-        var ystep=Math.max(1, Math.ceil(ymax/7));
-        return { xmin:xmin, xmax:xmax, ymax:ymax, xstep:xstep, ystep:ystep };
     }
 
-    function renderChart(){
-        var b = axisBounds();
-        if (chart) chart.destroy();
-        chart = new Chart(document.getElementById('analysisChart').getContext('2d'), {
-            type:'scatter',
-            data:{ datasets: buildDatasets() },
-            options:{
-                responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:4, right:8 } },
-                scales:{
-                    x:{ min:b.xmin, max:b.xmax, title:{display:true, text:'Rent change vs prior year (%)'}, ticks:{ stepSize:b.xstep, callback:function(v){ return (v>0?'+':'')+v+'%'; } }, grid:{display:false} },
-                    y:{ min:0, max:b.ymax, title:{display:true, text:'Surprise (ad-hoc) costs as % of rent'}, ticks:{ stepSize:b.ystep, callback:function(v){ return v+'%'; } }, grid:{display:false} }
-                },
-                plugins:{
-                    legend:{ display:false },
-                    tooltip:{ callbacks:{
-                        title:function(items){ return items[0].dataset.label; },
-                        label:function(it){ var d=it.raw && it.raw._p; if(!d) return '';
-                            return d.year+':  rent '+(d.x==null?'—':pctTxt(d.x))+'  ·  costs '+(d.y==null?'—':d.y.toFixed(1)+'% of rent'); }
-                    }}
-                }
-            },
-            plugins:[quadrantPlugin, labelPlugin]
-        });
-    }
-
-    function renderTable(){
-        var body = document.getElementById('analysisTableBody'); body.innerHTML='';
-        var den = ytdActive() ? DATA.ytd_cutoff_month : 12;
-        var fy = focusYear();
-        var rows = [];
-        (DATA.properties||[]).forEach(function(p){
-            var pt = pointFor(p, fy); if(!pt) return;
-            if (!(pt.rent || pt.actual)) return;
-            rows.push(pt);
-        });
-        rows.sort(function(a,b){ return (b.y||0)-(a.y||0); });
-        rows.forEach(function(r){
-            var tr=document.createElement('tr'); if(r.danger) tr.className='danger';
-            var chg = (r.x==null) ? '<span class="an-src">—</span>'
-                : '<span style="color:'+(r.x<0?'#dc3545':'#1f7a37')+';">'+pctTxt(r.x)+'</span>';
-            tr.innerHTML =
-                '<td>'+esc(r.name)+' <span class="an-src">('+esc(r.source)+')</span></td>'+
-                '<td class="num">'+euro(r.rent)+'</td>'+
-                '<td class="ctr">'+r.let+'/'+den+'</td>'+
-                '<td class="num">'+euro(r.actual)+'</td>'+
-                '<td class="num">'+(r.y==null?'—':r.y.toFixed(1)+'%')+'</td>'+
-                '<td class="num">'+chg+'</td>'+
-                '<td class="ctr">'+(r.danger?'<span class="an-flag warn">Watch</span>':'<span class="an-flag ok">OK</span>')+'</td>';
-            body.appendChild(tr);
-        });
-        var flagged = rows.filter(function(r){ return r.danger; }).length;
-        document.getElementById('analysisNote').innerHTML = flagged
-            ? ('<i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i> '+flagged+' propert'+(flagged>1?'ies':'y')+' in the watch zone.')
-            : 'No properties in the watch zone.';
-    }
-
-    function updateChrome(){
-        var badge=document.getElementById('analysisBadge'), sub=document.getElementById('analysisSub');
-        var fy = focusYear();
-        if (ytdActive()){
-            badge.className='an-badge ytd';
-            badge.textContent='YTD · Jan–'+DATA.ytd_month_name+' '+fy;
-            sub.textContent = state.history
-                ? 'Comet trail from '+state.from+' to '+state.to+'. '+fy+' is unfinished, so every year is trimmed to Jan–'+DATA.ytd_month_name+' for a like-for-like comparison.'
-                : fy+' is unfinished, so it is shown year-to-date (Jan–'+DATA.ytd_month_name+'), compared to the same window last year.';
-        } else {
-            badge.className='an-badge full';
-            badge.textContent = state.history ? (state.from+'–'+state.to+' · full years') : (fy+' · full year');
-            sub.textContent = state.history
-                ? 'Comet trail from '+state.from+' to '+state.to+' — each dot is a year on the property’s path.'
-                : 'Snapshot of '+fy+' — one dot per property.';
-        }
-    }
-
-    function render(){ if(!DATA) return; updateChrome(); renderChart(); renderTable(); }
-
-    function fillSelect(sel){
-        sel.innerHTML='';
-        (DATA.available_years||[]).slice().sort(function(a,b){ return b-a; }).forEach(function(y){
-            var o=document.createElement('option'); o.value=y;
-            o.textContent = y + (y===DATA.current_year ? ' (current)' : '');
-            sel.appendChild(o);
-        });
-    }
-    function buildControls(){
-        var selY=document.getElementById('analysisYear');
-        var selF=document.getElementById('analysisFrom');
-        var selT=document.getElementById('analysisTo');
-        if (selY.dataset.built === '1') return;
-        fillSelect(selY); fillSelect(selF); fillSelect(selT);
-        selY.value=state.year; selF.value=state.from; selT.value=state.to;
-        selY.dataset.built='1';
-        selY.addEventListener('change', function(){ state.year=parseInt(selY.value,10); render(); });
-        selF.addEventListener('change', function(){
-            state.from=parseInt(selF.value,10);
-            if (state.from>state.to){ state.to=state.from; selT.value=state.to; }
-            render();
-        });
-        selT.addEventListener('change', function(){
-            state.to=parseInt(selT.value,10);
-            if (state.to<state.from){ state.from=state.to; selF.value=state.from; }
-            render();
-        });
-        document.getElementById('analysisHist').addEventListener('change', function(e){
-            state.history=e.target.checked;
-            document.getElementById('analysisSnapWrap').style.display  = e.target.checked ? 'none' : 'flex';
-            document.getElementById('analysisRangeWrap').style.display = e.target.checked ? 'flex' : 'none';
-            document.getElementById('analysisHistLbl').textContent = e.target.checked ? 'Showing history (comet trails)' : 'Show history (comet trails)';
-            render();
-        });
+    function bubbleRadiusScale(vals) {
+        var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+        return function(v) { return (max === min) ? 11 : 7 + (v - min) / (max - min) * 15; };
     }
 
     function load() {
         var loading = document.getElementById('analysisLoading');
         var empty = document.getElementById('analysisEmpty');
         var content = document.getElementById('analysisContent');
-        loading.style.display='block'; empty.style.display='none'; content.style.display='none';
+        loading.style.display = 'block'; empty.style.display = 'none'; content.style.display = 'none';
         fetch(ANALYSIS_URL, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
             .then(function(r){ return r.json(); })
             .then(function(data) {
                 DATA = data;
-                if (!DATA.properties || !DATA.properties.length || !DATA.available_years || !DATA.available_years.length) {
-                    loading.style.display='none'; empty.style.display='block'; return;
-                }
-                var asc = ascYears();
-                state.year = asc[asc.length-1];
-                state.from = asc[0];
-                state.to   = asc[asc.length-1];
-                buildControls();
-                loading.style.display='none'; content.style.display='block';
+                buildYearCheckboxes(data.available_years || []);
+                loading.style.display = 'none';
                 render();
             })
             .catch(function(err) {
@@ -2310,6 +2101,168 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
             });
     }
 
+    function render() {
+        if (!DATA) return;
+        var empty = document.getElementById('analysisEmpty');
+        var content = document.getElementById('analysisContent');
+        var quadKey = document.getElementById('analysisQuadKey');
+        var years = effectiveYears().slice().sort(function(a,b){ return a - b; });
+        var single = years.length < 2;
+        var y0 = years[0], y1 = years[years.length - 1];
+
+        var rows = [];
+        (DATA.properties || []).forEach(function(p) {
+            var a = p.years[y0], b = p.years[y1];
+            if (!b) return;
+            var rentNow = b.rent, actual = b.actual;
+            var pctRent = rentNow ? (actual / rentNow * 100) : null;
+            var change = (!single && a && a.rent) ? ((b.rent - a.rent) / a.rent * 100) : null;
+            rows.push({
+                id: p.prop_id, name: p.prop_name,
+                rent: rentNow, let: b.months_let, actual: actual,
+                pctRent: pctRent, change: change, source: b.source,
+                danger: (pctRent != null && pctRent >= DANGER_PCT && (change == null || change <= 0))
+            });
+        });
+        rows = rows.filter(function(r){ return r.rent || r.actual; });
+
+        if (!rows.length) { empty.style.display = 'block'; content.style.display = 'none'; return; }
+        content.style.display = 'block'; empty.style.display = 'none';
+
+        document.getElementById('analysisSub').innerHTML = single
+            ? ('Ranking properties by actual (ad-hoc) spend as a % of rent for <b>' + y1 + '</b>. Tick 2+ years to compare movement.')
+            : ('Each bubble is a property. X = rent change ' + y0 + '→' + y1 + '. Y = actual spend as % of rent (' + y1 + '). Bubble size = rent.');
+
+        quadKey.style.display = single ? 'none' : 'grid';
+        if (single) renderRanking(rows, y1); else renderScatter(rows, y0, y1);
+        renderTable(rows, single);
+
+        var flagged = rows.filter(function(r){ return r.danger; }).length;
+        document.getElementById('analysisNote').innerHTML = flagged
+            ? ('<i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i> ' + flagged + ' propert' + (flagged>1?'ies':'y') + ' in the watch zone.')
+            : 'No properties in the watch zone.';
+    }
+
+    // Chart.js inline plugin: quadrant tints, divider lines, corner labels.
+    var quadrantPlugin = {
+        id: 'quadrants',
+        beforeDatasetsDraw: function(chart) {
+            var xs = chart.scales.x, ys = chart.scales.y, area = chart.chartArea, ctx = chart.ctx;
+            if (!xs || !ys) return;
+            var x0 = Math.max(area.left, Math.min(area.right, xs.getPixelForValue(0)));
+            var y10 = Math.max(area.top, Math.min(area.bottom, ys.getPixelForValue(DANGER_PCT)));
+            ctx.save();
+            ctx.fillStyle = 'rgba(220,53,69,0.06)';            // watch (top-left)
+            ctx.fillRect(area.left, area.top, x0 - area.left, y10 - area.top);
+            ctx.fillStyle = 'rgba(40,167,69,0.05)';            // healthy (bottom-right)
+            ctx.fillRect(x0, y10, area.right - x0, area.bottom - y10);
+            ctx.setLineDash([5, 4]); ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0,0,0,0.28)';              // vertical: rent flat
+            ctx.beginPath(); ctx.moveTo(x0, area.top); ctx.lineTo(x0, area.bottom); ctx.stroke();
+            ctx.strokeStyle = '#dc3545';                       // horizontal: 10% of rent
+            ctx.beginPath(); ctx.moveTo(area.left, y10); ctx.lineTo(area.right, y10); ctx.stroke();
+            ctx.restore();
+        },
+        afterDatasetsDraw: function(chart) {
+            var area = chart.chartArea, ctx = chart.ctx;
+            ctx.save();
+            ctx.font = '600 10px system-ui, sans-serif';
+            ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+            ctx.fillStyle = 'rgba(176,42,55,0.8)';
+            ctx.fillText('⚠ Watch', area.left + 6, area.top + 4);
+            ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(108,117,125,0.75)';
+            ctx.fillText('Costs high, rent rising', area.right - 6, area.top + 4);
+            ctx.textBaseline = 'bottom'; ctx.textAlign = 'left';
+            ctx.fillText('Rent stalled', area.left + 6, area.bottom - 4);
+            ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(31,122,55,0.85)';
+            ctx.fillText('✓ Healthy', area.right - 6, area.bottom - 4);
+            ctx.restore();
+        }
+    };
+
+    function renderScatter(rows, y0, y1) {
+        document.querySelector('.analysis-chart-wrap').style.height = '';  // use CSS height
+        var pts = rows.filter(function(r){ return r.change != null && r.pctRent != null; });
+        var rScale = bubbleRadiusScale(pts.map(function(r){ return r.rent || 0; }));
+        var data = pts.map(function(r){ return {x: r.change, y: r.pctRent, r: rScale(r.rent), _r: r}; });
+        var bg = pts.map(function(r){ return r.danger ? 'rgba(220,53,69,0.75)' : 'rgba(23,162,184,0.72)'; });
+        var bd = pts.map(function(r){ return r.danger ? '#b02a37' : '#117a8b'; });
+
+        var xs = pts.map(function(r){ return r.change; });
+        var xmin = Math.min.apply(null, xs.concat([0])), xmax = Math.max.apply(null, xs.concat([0]));
+        var xpad = (xmax - xmin) * 0.12 || 5; xmin -= xpad; xmax += xpad;
+        var maxPct = Math.max.apply(null, pts.map(function(r){ return r.pctRent; }).concat([DANGER_PCT + 2]));
+        var ymax = Math.ceil(maxPct * 1.1);
+
+        if (chart) chart.destroy();
+        var ctx = document.getElementById('analysisChart').getContext('2d');
+        chart = new Chart(ctx, {
+            data: { datasets: [{ type: 'bubble', label: 'Properties', data: data, backgroundColor: bg, borderColor: bd, borderWidth: 1 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                layout: { padding: { top: 4, right: 6 } },
+                scales: {
+                    x: { min: xmin, max: xmax, title: {display: true, text: 'Rent change (%)'},
+                         ticks: { callback: function(v){ return (v>0?'+':'') + v + '%'; } } },
+                    y: { min: 0, max: ymax, title: {display: true, text: 'Actual expenses (% of rent)'},
+                         ticks: { callback: function(v){ return v + '%'; } } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: function(c) {
+                        var r = c.raw && c.raw._r; if (!r) return '';
+                        return [r.name, 'Rent change: ' + (r.change==null?'—':pct(r.change)),
+                                'Actual/rent: ' + r.pctRent.toFixed(1) + '%',
+                                'Rent: ' + euro(r.rent) + '  Actual: ' + euro(r.actual)];
+                    } } }
+                }
+            },
+            plugins: [quadrantPlugin]
+        });
+    }
+
+    function renderRanking(rows, year) {
+        var rk = rows.filter(function(r){ return r.pctRent != null; }).slice().sort(function(a,b){ return b.pctRent - a.pctRent; });
+        var labels = rk.map(function(r){ return r.name; });
+        var vals = rk.map(function(r){ return +r.pctRent.toFixed(1); });
+        var bg = rk.map(function(r){ return r.pctRent >= DANGER_PCT ? 'rgba(220,53,69,0.8)' : '#17a2b8'; });
+        var wrap = document.querySelector('.analysis-chart-wrap');
+        wrap.style.height = Math.max(240, rk.length * 30 + 50) + 'px';
+        if (chart) chart.destroy();
+        var ctx = document.getElementById('analysisChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'Actual % of rent', data: vals, backgroundColor: bg, maxBarThickness: 22 }] },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                scales: { x: { beginAtZero: true, title: {display:true, text:'Actual expenses (% of rent) — ' + year}, ticks: { callback: function(v){ return v + '%'; } } } },
+                plugins: { legend: { display:false }, tooltip: { callbacks: { label: function(c){ return c.parsed.x + '% of rent'; } } } }
+            }
+        });
+    }
+
+    function renderTable(rows, single) {
+        var body = document.getElementById('analysisTableBody');
+        body.innerHTML = '';
+        rows.slice().sort(function(a,b){ return (b.pctRent||0) - (a.pctRent||0); }).forEach(function(r) {
+            var tr = document.createElement('tr');
+            if (r.danger) tr.className = 'danger-row';
+            var chg = (r.change == null) ? '<span class="analysis-src">—</span>'
+                     : ('<span style="color:' + (r.change < 0 ? '#dc3545' : '#1f7a37') + ';">' + pct(r.change) + '</span>');
+            var pctCell = (r.pctRent == null) ? '—' : r.pctRent.toFixed(1) + '%';
+            tr.innerHTML =
+                '<td>' + escapeHtml(r.name) + ' <span class="analysis-src">(' + r.source + ')</span></td>' +
+                '<td class="num">' + euro(r.rent) + '</td>' +
+                '<td class="text-center">' + r.let + '/12</td>' +
+                '<td class="num">' + euro(r.actual) + '</td>' +
+                '<td class="num">' + pctCell + '</td>' +
+                '<td class="num">' + chg + '</td>' +
+                '<td class="text-center">' + (r.danger ? '<span class="analysis-flag warn">Watch</span>' : '<span class="analysis-flag ok">OK</span>') + '</td>';
+            body.appendChild(tr);
+        });
+    }
+
+    // Load on first open (vanilla listener — same reason as the Report modal).
     document.querySelectorAll('[data-target="#expenseAnalysisModal"]').forEach(function(btn) {
         btn.addEventListener('click', function() {
             if (!loaded) { loaded = true; load(); }
