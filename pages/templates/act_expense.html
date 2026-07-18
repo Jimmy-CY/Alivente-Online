@@ -2117,33 +2117,55 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
             ctx.restore();
         }
     };
-    // Name labels next to each property's latest point, with simple collision
-    // avoidance so a cluster at the origin doesn't turn into a jumble.
+    // Every property gets a visible label. When points pile up (e.g. several at
+    // the origin), labels are nudged vertically and joined to their dot by a
+    // thin leader line, rather than hidden. Pinned outliers show their real value.
     var labelPlugin = {
         id:'names',
         afterDatasetsDraw:function(c){
-            var ctx=c.ctx; ctx.save(); ctx.font='600 11px system-ui,sans-serif'; ctx.textBaseline='middle';
+            var ctx=c.ctx, area=c.chartArea; ctx.save();
+            ctx.font='600 11px system-ui,sans-serif'; ctx.textBaseline='middle';
             var items=[];
             c.data.datasets.forEach(function(ds,i){
                 var m=c.getDatasetMeta(i); if(!m.data.length||ds._hide) return;
                 var last=m.data[m.data.length-1];
-                items.push({ ds:ds, x:last.x, y:last.y });
+                items.push({ ds:ds, px:last.x, py:last.y });
             });
-            items.sort(function(a,b){ return a.y-b.y; });
-            var drawn=[];
+            items.sort(function(a,b){ return a.py-b.py; });
+            var placed=[];
+            function free(rect){ return !placed.some(function(r){ return !(rect.x>r.x+r.w || rect.x+rect.w<r.x || rect.y>r.y+r.h || rect.y+rect.h<r.y); }); }
             items.forEach(function(it){
                 var nm=it.ds.label; if(nm.length>20) nm=nm.slice(0,19)+'…';
-                if(it.ds._pinDir>0) nm=nm+' »'; else if(it.ds._pinDir<0) nm='« '+nm;
+                if(it.ds._pinDir!==0){ nm = nm + '  ' + (it.ds._pinVal>0?'+':'') + Math.round(it.ds._pinVal) + '%'; }
                 var tw=ctx.measureText(nm).width;
-                var flip=it.x > c.chartArea.right-(tw+22);
-                var lx = flip ? (it.x-11-tw) : (it.x+11);
-                var rect={ x:lx, y:it.y-7, w:tw, h:14 };
-                var clash=drawn.some(function(r){ return !(rect.x>r.x+r.w || rect.x+rect.w<r.x || rect.y>r.y+r.h || rect.y+rect.h<r.y); });
-                if(clash) return;
-                drawn.push(rect);
+                var rightSide = it.px <= area.right-(tw+24);
+                var baseLx = rightSide ? (it.px+12) : (it.px-12-tw);
+                baseLx = Math.max(area.left+2, Math.min(area.right-2-tw, baseLx));
+                // candidate positions: stack vertically next to the dot, then fan
+                // outward into open space so every label finds a home.
+                var cands=[];
+                for(var k=0;k<=16;k++){ cands.push([baseLx, it.py+k*14]); if(k) cands.push([baseLx, it.py-k*14]); }
+                for(var dx=70; it.px+dx+tw <= area.right-2; dx+=80){
+                    for(var j=0;j<=12;j++){ cands.push([it.px+dx, it.py+j*16]); if(j) cands.push([it.px+dx, it.py-j*16]); }
+                }
+                var chosen=null;
+                for(var ci=0; ci<cands.length; ci++){
+                    var lx=cands[ci][0], ly=cands[ci][1];
+                    if(ly<area.top+8 || ly>area.bottom-8) continue;
+                    if(lx<area.left+2 || lx+tw>area.right-2) continue;
+                    var rect={ x:lx-2, y:ly-8, w:tw+4, h:16 };
+                    if(free(rect)){ chosen={lx:lx, ly:ly, rect:rect}; break; }
+                }
+                if(!chosen) return;
+                placed.push(chosen.rect);
+                if(Math.abs(chosen.ly-it.py)>3 || Math.abs(chosen.lx-(rightSide?it.px+12:it.px-12-tw))>3){
+                    ctx.strokeStyle=rgba(it.ds._base||'#888',0.55); ctx.lineWidth=1;
+                    var anchorX = (chosen.lx >= it.px) ? chosen.lx : (chosen.lx+tw);
+                    ctx.beginPath(); ctx.moveTo(it.px, it.py); ctx.lineTo(anchorX, chosen.ly); ctx.stroke();
+                }
                 ctx.fillStyle=it.ds._base||'#333';
-                ctx.textAlign=flip?'right':'left';
-                ctx.fillText(nm, it.x+(flip?-11:11), it.y);
+                ctx.textAlign='left';
+                ctx.fillText(nm, chosen.lx, chosen.ly);
             });
             ctx.restore();
         }
@@ -2161,7 +2183,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
             var pinDir = (Math.abs(last.x) > X_CAP) ? (last.x>0?1:-1) : 0;
             if (state.history && n>1){
                 return {
-                    label:p.prop_name, _base:col, _pinDir:pinDir,
+                    label:p.prop_name, _base:col, _pinDir:pinDir, _pinVal:(pinDir!==0?last.x:0),
                     data: pts.map(function(pt){ return {x:clampX(pt.x), y:pt.y, _p:pt}; }),
                     showLine:true, tension:0.35, fill:false,
                     borderColor: rgba(col,0.45), borderWidth:1.5,
@@ -2173,7 +2195,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 };
             }
             return {
-                label:p.prop_name, _base:col, _pinDir:pinDir,
+                label:p.prop_name, _base:col, _pinDir:pinDir, _pinVal:(pinDir!==0?last.x:0),
                 data:[{x:clampX(last.x), y:last.y, _p:last}], showLine:false,
                 pointBackgroundColor: last.danger ? '#dc3545' : col,
                 pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:8, pointHoverRadius:10
