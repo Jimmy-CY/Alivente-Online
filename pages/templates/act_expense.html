@@ -1973,6 +1973,7 @@ $('#manageModal').on('hidden.bs.modal', function () {
 .an-badge.full { background:#e9ecef; color:#495057; border:1px solid #dee2e6; }
 .an-sub { font-size:12.5px; color:#868e96; }
 .an-chart-wrap { position:relative; width:100%; height:42vh; min-height:300px; max-height:430px; margin-bottom:6px; }
+#analysisTip { position:absolute; display:none; pointer-events:none; z-index:5; background:rgba(33,37,41,0.92); color:#fff; font-size:12px; line-height:1.55; padding:7px 10px; border-radius:6px; max-width:280px; box-shadow:0 2px 10px rgba(0,0,0,.25); white-space:nowrap; }
 .an-quad-key { display:grid; grid-template-columns:1fr 1fr; gap:6px 18px; margin:14px 0 4px; font-size:12px; color:#495057; }
 .an-quad-key div { display:flex; gap:8px; align-items:flex-start; }
 .an-dot { width:12px; height:12px; border-radius:3px; margin-top:2px; flex-shrink:0; }
@@ -1982,8 +1983,6 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
 .an-table td.num, .an-table th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .an-table td.ctr, .an-table th.ctr { text-align:center; }
 .an-table tr.danger td { background:#fdecec; }
-.an-table tbody tr { cursor:default; }
-.an-table tbody tr:hover td { background:#e6f7fa; }
 .an-src { font-size:11px; color:#adb5bd; }
 .an-flag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
 .an-flag.warn { background:#fdecec; color:#c0322f; }
@@ -2021,7 +2020,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
             <label class="an-switch"><input type="checkbox" id="analysisHist"><span class="an-track"></span><span id="analysisHistLbl">Show history (comet trails)</span></label>
           </div>
           <div class="an-basisrow"><span id="analysisBadge" class="an-badge"></span><span id="analysisSub" class="an-sub"></span></div>
-          <div class="an-chart-wrap"><canvas id="analysisChart"></canvas></div>
+          <div class="an-chart-wrap"><canvas id="analysisChart"></canvas><div id="analysisTip"></div></div>
           <div class="an-quad-key">
             <div><span class="an-dot" style="background:#ffd7d7"></span><b style="color:#c92a2a">Watch</b>&nbsp;— surprise costs over 10% of rent while rent is flat or falling.</div>
             <div><span class="an-dot" style="background:#ffe8cc"></span><b style="color:#e8590c">Costs high, rent rising</b>&nbsp;— surprises heavy, but rent is growing.</div>
@@ -2050,6 +2049,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
     var PALETTE = ['#17a2b8','#e8590c','#2f9e44','#7048e8','#1c7ed6','#e64980','#f08c00','#0ca678','#5c7cfa','#d6336c','#c2255c','#495057'];
     var DANGER_PCT = 10, X_DIV = 0, X_CAP = 50;
     var chart = null, loaded = false, DATA = null;
+    var labelHitboxes = [], canvasHandler = null;
     var state = { year: null, from: null, to: null, history: false };
 
     function rgba(hex, a){ var n = parseInt(hex.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
@@ -2133,11 +2133,12 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         afterDatasetsDraw:function(c){
             var ctx=c.ctx, area=c.chartArea; ctx.save();
             ctx.font='600 11px system-ui,sans-serif'; ctx.textBaseline='middle';
+            labelHitboxes = [];
             var items=[];
             c.data.datasets.forEach(function(ds,i){
                 var m=c.getDatasetMeta(i); if(!m.data.length||ds._hide) return;
                 var last=m.data[m.data.length-1];
-                items.push({ ds:ds, px:last.x, py:last.y });
+                items.push({ ds:ds, px:last.x, py:last.y, di:i });
             });
             items.sort(function(a,b){ return a.py-b.py; });
             var placed=[];
@@ -2166,6 +2167,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 }
                 if(!chosen) return;
                 placed.push(chosen.rect);
+                labelHitboxes.push({ x:chosen.rect.x, y:chosen.rect.y, w:chosen.rect.w, h:chosen.rect.h, di:it.di });
                 if(Math.abs(chosen.ly-it.py)>3 || Math.abs(chosen.lx-(rightSide?it.px+12:it.px-12-tw))>3){
                     ctx.strokeStyle='rgba(120,120,120,0.6)'; ctx.lineWidth=0.75; ctx.setLineDash([2,3]);
                     var anchorX = (chosen.lx >= it.px) ? chosen.lx : (chosen.lx+tw);
@@ -2247,7 +2249,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 plugins:{
                     legend:{ display:false },
                     tooltip:{ mode:'nearest', intersect:true,
-                        filter:function(it, idx){ return idx === 0; },
+                        filter:function(it, idx, arr){ return it.datasetIndex === arr[0].datasetIndex; },
                         callbacks:{
                         title:function(items){ return items[0].dataset.label; },
                         label:function(it){ var d=it.raw && it.raw._p; if(!d) return '';
@@ -2257,6 +2259,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
             },
             plugins:[quadrantPlugin, labelPlugin]
         });
+        bindCanvasHover();
     }
 
     function renderTable(){
@@ -2264,17 +2267,14 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         var den = ytdActive() ? DATA.ytd_cutoff_month : 12;
         var fy = focusYear();
         var rows = [];
-        (DATA.properties||[]).forEach(function(p, idx){
+        (DATA.properties||[]).forEach(function(p){
             var pt = pointFor(p, fy); if(!pt) return;
             if (!(pt.rent || pt.actual)) return;
-            pt._idx = idx;
             rows.push(pt);
         });
         rows.sort(function(a,b){ return (b.y||0)-(a.y||0); });
         rows.forEach(function(r){
             var tr=document.createElement('tr'); if(r.danger) tr.className='danger';
-            tr.addEventListener('mouseenter', function(){ highlightPoint(r._idx); });
-            tr.addEventListener('mouseleave', clearHighlight);
             var chg = (r.x==null) ? '<span class="an-src">—</span>'
                 : '<span style="color:'+(r.x<0?'#dc3545':'#1f7a37')+';">'+pctTxt(r.x)+'</span>';
             tr.innerHTML =
@@ -2311,22 +2311,41 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         }
     }
 
-    // Hovering a table row lights up that property's dot on the chart (and pops
-    // its tooltip), so any property can be found at a glance.
-    function highlightPoint(idx){
-        if(!chart) return;
-        var meta=chart.getDatasetMeta(idx);
-        if(!meta || !meta.data || !meta.data.length) return;
-        var li=meta.data.length-1;
-        chart.setActiveElements([{datasetIndex:idx, index:li}]);
-        if(chart.tooltip){ chart.tooltip.setActiveElements([{datasetIndex:idx, index:li}], {x:0, y:0}); }
-        chart.update();
-    }
-    function clearHighlight(){
-        if(!chart) return;
-        chart.setActiveElements([]);
-        if(chart.tooltip){ chart.tooltip.setActiveElements([], {x:0, y:0}); }
-        chart.update();
+    // Hovering a property's NAME LABEL on the chart (not just its dot) pops that
+    // property's tooltip. Labels are canvas-drawn, so we track their hitboxes
+    // (built in labelPlugin) and drive the tooltip when the cursor is over one.
+    // Hovering a property's NAME LABEL shows a custom tooltip with that
+    // property's info — in the history view, every year on its trail. (Dots keep
+    // Chart.js's own tooltip, which shows the single comet circle you're over.)
+    function bindCanvasHover(){
+        var cv = document.getElementById('analysisChart'); if(!cv) return;
+        var tip = document.getElementById('analysisTip');
+        if(canvasHandler){ cv.removeEventListener('mousemove', canvasHandler.mm); cv.removeEventListener('mouseleave', canvasHandler.ml); }
+        function hideTip(){ if(tip) tip.style.display='none'; }
+        function mm(e){
+            if(!chart || !labelHitboxes.length || !tip){ return; }
+            var rect=cv.getBoundingClientRect();
+            var x=e.clientX-rect.left, y=e.clientY-rect.top;
+            var hit=null;
+            for(var i=0;i<labelHitboxes.length;i++){ var h=labelHitboxes[i];
+                if(x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h){ hit=h; break; } }
+            if(!hit){ hideTip(); return; }
+            var ds=chart.data.datasets[hit.di];
+            var pts=((ds && ds.data) ? ds.data : []).map(function(d){ return d._p; }).filter(Boolean);
+            if(!pts.length){ hideTip(); return; }
+            var html='<div style="font-weight:700;margin-bottom:2px;">'+esc(ds.label)+'</div>';
+            for(var j=0;j<pts.length;j++){ var pp=pts[j];
+                html+='<div>'+pp.year+':&nbsp; rent '+(pp.x==null?'—':pctTxt(pp.x))+' &nbsp;·&nbsp; costs '+(pp.y==null?'—':pp.y.toFixed(1)+'% of rent')+'</div>'; }
+            tip.innerHTML=html; tip.style.display='block';
+            var ww=cv.clientWidth, wh=cv.clientHeight, tw=tip.offsetWidth, th=tip.offsetHeight;
+            var tx=x+14, ty=y+14;
+            if(tx+tw>ww) tx=x-14-tw; if(tx<2) tx=2;
+            if(ty+th>wh) ty=y-14-th; if(ty<2) ty=2;
+            tip.style.left=tx+'px'; tip.style.top=ty+'px';
+        }
+        canvasHandler={ mm:mm, ml:hideTip };
+        cv.addEventListener('mousemove', mm);
+        cv.addEventListener('mouseleave', hideTip);
     }
 
     function render(){ if(!DATA) return; updateChrome(); renderChart(); renderTable(); }
