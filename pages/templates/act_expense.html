@@ -1982,6 +1982,8 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
 .an-table td.num, .an-table th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .an-table td.ctr, .an-table th.ctr { text-align:center; }
 .an-table tr.danger td { background:#fdecec; }
+.an-table tbody tr { cursor:default; }
+.an-table tbody tr:hover td { background:#e6f7fa; }
 .an-src { font-size:11px; color:#adb5bd; }
 .an-flag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
 .an-flag.warn { background:#fdecec; color:#c0322f; }
@@ -2080,15 +2082,21 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         if (!state.history) return [state.year];
         return ascYears().filter(function(y){ return y >= state.from && y <= state.to; });
     }
-    // rent-change axis cap: fit the bulk (90th pct of |change| x1.5), so one
-    // new-lease outlier can't flatten everyone. Outliers get pinned to the edge.
+    // rent-change axis cap: fit the bulk so one new-lease outlier can't flatten
+    // everyone. Walk down the sorted |change| values and drop any that jump far
+    // above the next (a >2.5x leap past 40%); pin those to the edge. Robust for
+    // any number of properties.
     function computeCap(){
         var vals=[], years=plottedYears();
-        (DATA.properties||[]).forEach(function(p){ years.forEach(function(y){ var pt=pointFor(p,y); if(pt&&pt.x!=null) vals.push(Math.abs(pt.x)); }); });
-        if(!vals.length){ X_CAP=10; return; }
+        (DATA.properties||[]).forEach(function(p){ years.forEach(function(y){ var pt=pointFor(p,y); if(pt&&pt.x!=null && isFinite(pt.x)) vals.push(Math.abs(pt.x)); }); });
         vals.sort(function(a,b){ return a-b; });
-        var p90=vals[Math.floor(vals.length*0.9)]; if(p90==null||!isFinite(p90)) p90=vals[vals.length-1];
-        X_CAP = Math.max(10, p90*1.5);
+        if(!vals.length){ X_CAP=10; return; }
+        var cap=vals[vals.length-1];
+        for(var i=vals.length-1; i>=1; i--){
+            if(vals[i] > Math.max(40, vals[i-1]*2.5)) cap=vals[i-1];
+            else break;
+        }
+        X_CAP = Math.max(10, cap*1.3);
     }
 
     var quadrantPlugin = {
@@ -2159,9 +2167,10 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 if(!chosen) return;
                 placed.push(chosen.rect);
                 if(Math.abs(chosen.ly-it.py)>3 || Math.abs(chosen.lx-(rightSide?it.px+12:it.px-12-tw))>3){
-                    ctx.strokeStyle=rgba(it.ds._base||'#888',0.55); ctx.lineWidth=1;
+                    ctx.strokeStyle='rgba(120,120,120,0.6)'; ctx.lineWidth=0.75; ctx.setLineDash([2,3]);
                     var anchorX = (chosen.lx >= it.px) ? chosen.lx : (chosen.lx+tw);
                     ctx.beginPath(); ctx.moveTo(it.px, it.py); ctx.lineTo(anchorX, chosen.ly); ctx.stroke();
+                    ctx.setLineDash([]);
                 }
                 ctx.fillStyle=it.ds._base||'#333';
                 ctx.textAlign='left';
@@ -2255,14 +2264,17 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         var den = ytdActive() ? DATA.ytd_cutoff_month : 12;
         var fy = focusYear();
         var rows = [];
-        (DATA.properties||[]).forEach(function(p){
+        (DATA.properties||[]).forEach(function(p, idx){
             var pt = pointFor(p, fy); if(!pt) return;
             if (!(pt.rent || pt.actual)) return;
+            pt._idx = idx;
             rows.push(pt);
         });
         rows.sort(function(a,b){ return (b.y||0)-(a.y||0); });
         rows.forEach(function(r){
             var tr=document.createElement('tr'); if(r.danger) tr.className='danger';
+            tr.addEventListener('mouseenter', function(){ highlightPoint(r._idx); });
+            tr.addEventListener('mouseleave', clearHighlight);
             var chg = (r.x==null) ? '<span class="an-src">—</span>'
                 : '<span style="color:'+(r.x<0?'#dc3545':'#1f7a37')+';">'+pctTxt(r.x)+'</span>';
             tr.innerHTML =
@@ -2297,6 +2309,24 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 ? 'Comet trail from '+state.from+' to '+state.to+' — each dot is a year on the property’s path.'
                 : 'Snapshot of '+fy+' — one dot per property.';
         }
+    }
+
+    // Hovering a table row lights up that property's dot on the chart (and pops
+    // its tooltip), so any property can be found at a glance.
+    function highlightPoint(idx){
+        if(!chart) return;
+        var meta=chart.getDatasetMeta(idx);
+        if(!meta || !meta.data || !meta.data.length) return;
+        var li=meta.data.length-1;
+        chart.setActiveElements([{datasetIndex:idx, index:li}]);
+        if(chart.tooltip){ chart.tooltip.setActiveElements([{datasetIndex:idx, index:li}], {x:0, y:0}); }
+        chart.update();
+    }
+    function clearHighlight(){
+        if(!chart) return;
+        chart.setActiveElements([]);
+        if(chart.tooltip){ chart.tooltip.setActiveElements([], {x:0, y:0}); }
+        chart.update();
     }
 
     function render(){ if(!DATA) return; updateChrome(); renderChart(); renderTable(); }
