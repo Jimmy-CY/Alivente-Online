@@ -3272,34 +3272,3 @@ def figure_monthly_value_as_of(prop, kind, source_pk, year, month_idx):
     if row is None:
         return None
     return getattr(row, _FH_MONTHS[month_idx - 1])
-# ---- Phase 2: bulk year resolver (one query) for the P&L -----------------------
-def resolve_year_months_bulk(prop_ids, kind, year):
-    """Bulk form of figure_monthly_value_as_of for a whole year.
-
-    Returns {source_pk: [v_jan, ..., v_dec]} — for each source row belonging to
-    prop_ids, the twelve budgeted figures IN FORCE during `year`, resolved month
-    by month (a change takes effect from its own month forward; earlier months
-    and earlier years keep earlier values). One DB query. A source with no
-    history is simply absent from the dict, so the caller keeps its live cells.
-    """
-    from collections import defaultdict
-    rows = (FinancialFigureHistory.objects
-            .filter(prop_id__in=list(prop_ids), kind=kind,
-                    effective_date__lte=_fh_date(year, 12, 31))
-            .order_by('source_pk', 'effective_date', 'changed_at'))
-    by_src = defaultdict(list)
-    for r in rows:
-        by_src[r.source_pk].append(r)
-    out = {}
-    for src, versions in by_src.items():
-        vals = []
-        for m in range(1, 13):
-            chosen = None
-            for v in versions:              # ascending by effective_date
-                if (v.effective_date.year, v.effective_date.month) <= (year, m):
-                    chosen = v
-                else:
-                    break
-            vals.append(getattr(chosen, _FH_MONTHS[m - 1]) if chosen is not None else None)
-        out[src] = vals
-    return out

@@ -56,7 +56,6 @@ from pages.models import (
     expense, expense_types, expense_line_types,
     tenant, act_expense, VacancyPeriod,
     FinancialFigureHistory, record_expense_history, record_revenue_history,
-    resolve_year_months_bulk,
 )
 
 # Helpers split across two modules after the dashboard / properties splits.
@@ -1859,15 +1858,6 @@ def revenue_details_view(request):
     }
     month_name = month_names.get(str(month), "All Months") if month else "All Months"
 
-    # Phase 2: resolve revenue figures to the selected year (same as the P&L).
-    try:
-        _year_int = int(year)
-    except (TypeError, ValueError):
-        _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(revenues.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_REVENUE, _year_int) if _year_int is not None else None)
-
     # Create a list of revenue items with monthly breakdown
     revenue_items = []
     total_amount = 0
@@ -1877,10 +1867,7 @@ def revenue_details_view(request):
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
         for i, month_name_field in enumerate(months, 1):
-            if _year_map is not None and rev.revenue_id in _year_map:
-                month_value = _year_map[rev.revenue_id][i - 1]
-            else:
-                month_value = getattr(rev, f'revenue_{month_name_field}', 0)
+            month_value = getattr(rev, f'revenue_{month_name_field}', 0)
 
             if month_value and month_value > 0:
                 # If specific month is requested, only show that month
@@ -1956,15 +1943,6 @@ def budget_expense_details_view(request):
     }
     month_name = month_names.get(str(month), "All Months") if month else "All Months"
 
-    # Phase 2: resolve budgeted figures to the selected year (same as the P&L).
-    try:
-        _year_int = int(year)
-    except (TypeError, ValueError):
-        _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(expenses.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_BUDGET, _year_int) if _year_int is not None else None)
-
     # Create a list of expense items with monthly breakdown
     expense_items = []
     total_amount = 0
@@ -1974,10 +1952,7 @@ def budget_expense_details_view(request):
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
         for i, month_field in enumerate(months, 1):
-            if _year_map is not None and exp.expense_id in _year_map:
-                month_value = _year_map[exp.expense_id][i - 1]
-            else:
-                month_value = getattr(exp, f'expense_{month_field}', 0)
+            month_value = getattr(exp, f'expense_{month_field}', 0)
 
             if month_value and month_value > 0:
                 # If specific month is requested, only show that month
@@ -2040,15 +2015,6 @@ def total_expense_details_view(request):
     # Order by date
     actual_expenses = actual_expenses.order_by('-act_expense_date')
 
-    # Phase 2: resolve budgeted figures to the selected year.
-    try:
-        _year_int = int(year)
-    except (TypeError, ValueError):
-        _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(budget_expenses.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_BUDGET, _year_int) if _year_int is not None else None)
-
     # Create budget expense items with monthly breakdown (similar to budget_expense_details_view)
     budget_expense_items = []
     for exp in budget_expenses:
@@ -2056,10 +2022,7 @@ def total_expense_details_view(request):
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
         for i, month_name in enumerate(months, 1):
-            if _year_map is not None and exp.expense_id in _year_map:
-                month_value = _year_map[exp.expense_id][i - 1]
-            else:
-                month_value = getattr(exp, f'expense_{month_name}', 0)
+            month_value = getattr(exp, f'expense_{month_name}', 0)
             if month_value and month_value > 0:
                 # If specific month is requested, only show that month
                 if month and int(month) != i:
@@ -2098,26 +2061,21 @@ def total_expense_details_view(request):
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
 def finance_pl_act(request):
-    # Phase 2: the P&L is always viewed FOR A YEAR now. The old "Budget" dropdown
-    # entry is replaced by a Budget/Actuals toggle (`view`): 'budget' shows the
-    # budgeted revenue/expenses for the year; 'actuals' also adds that year's
-    # actual expenses. Budgeted figures are resolved from history per year.
-    AVAILABLE_YEARS = [2026, 2025, 2024]
-
-    view_mode = request.GET.get('view', 'budget')
-    if view_mode not in ('budget', 'actuals'):
-        view_mode = 'budget'
+    # Get selected year from request (default to 'budget')
+    selected_year = request.GET.get('year', 'budget')
 
     # Get selected properties from request
     selected_properties = request.GET.getlist('properties')
 
-    # Year: default to the current year, falling back to the newest available.
-    try:
-        selected_year = int(request.GET.get('year'))
-    except (TypeError, ValueError):
-        selected_year = date.today().year
-    if selected_year not in AVAILABLE_YEARS:
-        selected_year = date.today().year if date.today().year in AVAILABLE_YEARS else AVAILABLE_YEARS[0]
+    # Handle year parameter - can be 'budget' or a year number
+    if selected_year != 'budget':
+        try:
+            selected_year = int(selected_year)
+            # Ensure only 2024, 2025, or 2026 is selectable
+            if selected_year not in [2024, 2025, 2026]:
+                selected_year = 'budget'
+        except (ValueError, TypeError):
+            selected_year = 'budget'
 
     # Single query with comprehensive prefetching
     all_properties = props.objects.filter(prop_status="Active").select_related().prefetch_related(
@@ -2145,23 +2103,6 @@ def finance_pl_act(request):
     for prop in properties:
         revenues.extend(prop.revenue_set.all())
         expenses.extend(prop.expense_set.all())
-
-    # Phase 2: resolve every revenue/expense row to the budgeted figure in force
-    # during the selected year (month by month) by overwriting the in-memory
-    # monthly cells. Every sum below then reads year-correct numbers with no
-    # further change. Rows with no history keep their live cells.
-    _fh_exp_map = resolve_year_months_bulk(selected_prop_ids, FinancialFigureHistory.KIND_BUDGET, selected_year)
-    for _e in expenses:
-        _vals = _fh_exp_map.get(_e.expense_id)
-        if _vals is not None:
-            for _i, _m in enumerate(MONTHS):
-                setattr(_e, 'expense_' + _m, _vals[_i])
-    _fh_rev_map = resolve_year_months_bulk(selected_prop_ids, FinancialFigureHistory.KIND_REVENUE, selected_year)
-    for _r in revenues:
-        _vals = _fh_rev_map.get(_r.revenue_id)
-        if _vals is not None:
-            for _i, _m in enumerate(MONTHS):
-                setattr(_r, 'revenue_' + _m, _vals[_i])
 
     # ========= REVENUE SECTION =========
     revenue_totals = {
@@ -2268,7 +2209,7 @@ def finance_pl_act(request):
 
     # Actual expenses with single aggregate query
     actual_expense_prop_totals = {}
-    if view_mode == 'actuals':
+    if selected_year != 'budget':
         # Single query to get all actual expenses with month grouping
         actual_expenses_aggregated = act_expense.objects.filter(
             act_expense_date__year=selected_year,
@@ -2407,7 +2348,7 @@ def finance_pl_act(request):
             expense_totals_by_line[prop.prop_id][elt.expense_line_types_id] = line_monthly_totals
 
     # ========= PROFIT CALCULATION =========
-    if view_mode == 'budget':
+    if selected_year == 'budget':
         profit_totals = {
             'jan': revenue_totals['jan'] - expense_totals['jan'],
             'feb': revenue_totals['feb'] - expense_totals['feb'],
@@ -2484,8 +2425,6 @@ def finance_pl_act(request):
         'actual_expense_totals': actual_expense_totals,
         'actual_expense_prop_totals': actual_expense_prop_totals,
         'selected_year': selected_year,
-        'view_mode': view_mode,
-        'current_year': date.today().year,
         'selected_properties': selected_properties,
-        'available_years': AVAILABLE_YEARS,
+        'available_years': [2026, 2025, 2024],
     })

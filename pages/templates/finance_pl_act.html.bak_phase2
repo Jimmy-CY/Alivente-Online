@@ -123,28 +123,20 @@
     <!-- Year Dropdown (always visible) -->
     <div class="dropdown pl-year-dropdown">
         <button class="btn btn-info dropdown-toggle" type="button" id="yearDropdown" aria-haspopup="true" aria-expanded="false">
-            {{ selected_year }}
+            {% if selected_year == 'budget' %}Budget{% else %}{{ selected_year }}{% endif %}
         </button>
         <div class="dropdown-menu" aria-labelledby="yearDropdown">
+            <a class="dropdown-item {% if selected_year == 'budget' %}active{% endif %}"
+               href="?year=budget{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+                Budget
+            </a>
             {% for year in available_years %}
                 <a class="dropdown-item {% if year == selected_year %}active{% endif %}"
-                   href="?year={{ year }}&view={{ view_mode }}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+                   href="?year={{ year }}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
                     {{ year }}
                 </a>
             {% endfor %}
         </div>
-    </div>
-
-    <!-- Budget / Actuals toggle -->
-    <div class="btn-group pl-view-toggle" role="group" aria-label="Budget or Actuals">
-        <a class="btn {% if view_mode == 'budget' %}btn-info{% else %}btn-outline-info{% endif %}"
-           href="?year={{ selected_year }}&view=budget{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
-            Budget
-        </a>
-        <a class="btn {% if view_mode == 'actuals' %}btn-info{% else %}btn-outline-info{% endif %}"
-           href="?year={{ selected_year }}&view=actuals{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
-            Actuals
-        </a>
     </div>
 
     <!-- Help button -->
@@ -241,18 +233,18 @@
                 {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                 <tr>
                     <td>{{ line_type.revenue_line_types_name }}</td>
-                    <td class="text-right">{% if line_totals.jan %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.feb %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.mar %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.apr %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.may %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.jun %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.jul %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.aug %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.sep %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.oct %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.nov %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.dec %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.jan %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=1&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.feb %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=2&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.mar %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=3&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.apr %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=4&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.may %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=5&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.jun %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=6&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.jul %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=7&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.aug %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=8&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.sep %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=9&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.oct %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=10&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.nov %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=11&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.dec %}<a href="#" class="revenue-details-link" data-url="{% url 'revenue_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=12&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
                     <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                     <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                 </tr>
@@ -284,7 +276,7 @@
                 </tr>
 
                 <!-- ACTUAL EXPENSES ROW (only if not Budget view) -->
-                {% if view_mode == 'actuals' and actual_expense_totals.year > 0 %}
+                {% if selected_year != 'budget' and actual_expense_totals.year > 0 %}
                 <tr style="background-color: #f8f9fa;">
                     <td>Actual Expenses</td>
                     <td class="text-right">{% if actual_expense_totals.jan %}<a href="#" class="expense-details-link" data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=1&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">{{ actual_expense_totals.jan|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
@@ -310,18 +302,18 @@
                 {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                 <tr>
                     <td>{{ line_type.expense_line_types_name }}</td>
-                    <td class="text-right">{% if line_totals.jan %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.feb %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.mar %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.apr %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.may %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.jun %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.jul %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.aug %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.sep %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.oct %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.nov %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
-                    <td class="text-right">{% if line_totals.dec %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.jan %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=1&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.feb %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=2&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.mar %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=3&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.apr %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=4&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.may %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=5&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.jun %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=6&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.jul %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=7&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.aug %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=8&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.sep %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=9&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.oct %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=10&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.nov %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=11&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
+                    <td class="text-right">{% if line_totals.dec %}<a href="#" class="budget-expense-details-link" data-url="{% url 'budget_expense_details_view' %}?{% if selected_year != 'budget' %}year={{ selected_year|floatformat:'0' }}&{% endif %}month=12&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</a>{% else %}0{% endif %}</td>
                     <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                     <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                 </tr>
@@ -332,7 +324,7 @@
                 <!-- TOTAL EXPENSES -->
                 <tr class="font-weight-bold" style="background-color: #f8f9fa">
                     <td>TOTAL EXPENSES:</td>
-                    {% if view_mode == 'actuals' %}
+                    {% if selected_year != 'budget' %}
                         <td class="text-right">{{ expense_totals.jan|add:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ expense_totals.feb|add:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ expense_totals.mar|add:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
@@ -372,7 +364,7 @@
                 </tr>
                 <tr class="font-weight-bold" style="background-color: #f8f9fa">
                     <td>NET PROFIT:</td>
-                    {% if view_mode == 'actuals' %}
+                    {% if selected_year != 'budget' %}
                         <td class="text-right">{{ revenue_totals.jan|subtract:expense_totals.jan|subtract:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ revenue_totals.feb|subtract:expense_totals.feb|subtract:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ revenue_totals.mar|subtract:expense_totals.mar|subtract:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
@@ -422,14 +414,14 @@
             <div class="roi-card">
                 <span class="font-weight-bold">Net ROI:
                     {% with total_revenue=revenue_totals.year %}{% with total_expense=expense_totals.year %}{% with total_actual_expense=actual_expense_totals.year %}{% with total_purchase=properties|sum_purchase_prices %}
-                    {% if total_purchase > 0 %}{% if view_mode == 'actuals' %}{{ total_revenue|subtract:total_expense|subtract:total_actual_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%{% else %}{{ total_revenue|subtract:total_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%{% endif %}{% else %}N/A{% endif %}
+                    {% if total_purchase > 0 %}{% if selected_year != 'budget' %}{{ total_revenue|subtract:total_expense|subtract:total_actual_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%{% else %}{{ total_revenue|subtract:total_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%{% endif %}{% else %}N/A{% endif %}
                     {% endwith %}{% endwith %}{% endwith %}{% endwith %}
                 </span>
             </div>
             <div class="roi-card">
                 <span class="font-weight-bold">Expenses to Revenue:
                     {% with total_revenue=revenue_totals.year %}{% with total_expense=expense_totals.year %}{% with total_actual_expense=actual_expense_totals.year %}
-                    {% if total_revenue > 0 %}{% if view_mode == 'actuals' %}{{ total_expense|add:total_actual_expense|divide:total_revenue|multiply:100|floatformat:"2" }}%{% else %}{{ total_expense|divide:total_revenue|multiply:100|floatformat:"2" }}%{% endif %}{% else %}N/A{% endif %}
+                    {% if total_revenue > 0 %}{% if selected_year != 'budget' %}{{ total_expense|add:total_actual_expense|divide:total_revenue|multiply:100|floatformat:"2" }}%{% else %}{{ total_expense|divide:total_revenue|multiply:100|floatformat:"2" }}%{% endif %}{% else %}N/A{% endif %}
                     {% endwith %}{% endwith %}{% endwith %}
                 </span>
             </div>
@@ -1173,8 +1165,7 @@ $(document).ready(function() {
         $('#loadingIndicator').show();
         isUpdating = true;
         const urlParams = new URLSearchParams();
-        urlParams.set('year', '{{ selected_year }}');
-        urlParams.set('view', '{{ view_mode }}');
+        urlParams.set('year', '{% if selected_year %}{{ selected_year }}{% else %}budget{% endif %}');
         urlParams.set('selection_made', 'true');
         if (selectedProperties.length === 0) {
             urlParams.set('properties', 'NONE');

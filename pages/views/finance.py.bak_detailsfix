@@ -1859,15 +1859,6 @@ def revenue_details_view(request):
     }
     month_name = month_names.get(str(month), "All Months") if month else "All Months"
 
-    # Phase 2: resolve revenue figures to the selected year (same as the P&L).
-    try:
-        _year_int = int(year)
-    except (TypeError, ValueError):
-        _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(revenues.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_REVENUE, _year_int) if _year_int is not None else None)
-
     # Create a list of revenue items with monthly breakdown
     revenue_items = []
     total_amount = 0
@@ -1877,10 +1868,7 @@ def revenue_details_view(request):
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
         for i, month_name_field in enumerate(months, 1):
-            if _year_map is not None and rev.revenue_id in _year_map:
-                month_value = _year_map[rev.revenue_id][i - 1]
-            else:
-                month_value = getattr(rev, f'revenue_{month_name_field}', 0)
+            month_value = getattr(rev, f'revenue_{month_name_field}', 0)
 
             if month_value and month_value > 0:
                 # If specific month is requested, only show that month
@@ -1956,15 +1944,6 @@ def budget_expense_details_view(request):
     }
     month_name = month_names.get(str(month), "All Months") if month else "All Months"
 
-    # Phase 2: resolve budgeted figures to the selected year (same as the P&L).
-    try:
-        _year_int = int(year)
-    except (TypeError, ValueError):
-        _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(expenses.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_BUDGET, _year_int) if _year_int is not None else None)
-
     # Create a list of expense items with monthly breakdown
     expense_items = []
     total_amount = 0
@@ -1974,10 +1953,7 @@ def budget_expense_details_view(request):
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
         for i, month_field in enumerate(months, 1):
-            if _year_map is not None and exp.expense_id in _year_map:
-                month_value = _year_map[exp.expense_id][i - 1]
-            else:
-                month_value = getattr(exp, f'expense_{month_field}', 0)
+            month_value = getattr(exp, f'expense_{month_field}', 0)
 
             if month_value and month_value > 0:
                 # If specific month is requested, only show that month
@@ -2040,15 +2016,6 @@ def total_expense_details_view(request):
     # Order by date
     actual_expenses = actual_expenses.order_by('-act_expense_date')
 
-    # Phase 2: resolve budgeted figures to the selected year.
-    try:
-        _year_int = int(year)
-    except (TypeError, ValueError):
-        _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(budget_expenses.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_BUDGET, _year_int) if _year_int is not None else None)
-
     # Create budget expense items with monthly breakdown (similar to budget_expense_details_view)
     budget_expense_items = []
     for exp in budget_expenses:
@@ -2056,10 +2023,7 @@ def total_expense_details_view(request):
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
         for i, month_name in enumerate(months, 1):
-            if _year_map is not None and exp.expense_id in _year_map:
-                month_value = _year_map[exp.expense_id][i - 1]
-            else:
-                month_value = getattr(exp, f'expense_{month_name}', 0)
+            month_value = getattr(exp, f'expense_{month_name}', 0)
             if month_value and month_value > 0:
                 # If specific month is requested, only show that month
                 if month and int(month) != i:
