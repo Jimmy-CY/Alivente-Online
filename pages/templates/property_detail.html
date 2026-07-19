@@ -932,13 +932,14 @@
                                                 {% for revenue in property_revenues %}
                                                 <tr>
                                                     <td data-label="Revenue Line Type" class="text-left">
-                                                        <strong>{{ revenue.revenue_line_types.revenue_line_types_name }}</strong>
+                                                        <strong>{{ revenue.line_type }}</strong>
+                                                        {% if revenue.from_lease %}<span class="badge badge-info" style="margin-left:6px;">from lease</span>{% endif %}
                                                     </td>
                                                     <td data-label="Revenue Type" class="text-left">
-                                                        {{ revenue.revenue_types.revenue_types_name }}
+                                                        {% if revenue.vacant %}<span style="color:#b00020;">Vacant &mdash; no active lease</span>{% else %}{{ revenue.rev_type }}{% endif %}
                                                     </td>
                                                     <td data-label="Amount" class="text-right">
-                                                        <span class="amount-display">€{{ revenue.revenue_amount|floatformat:"0"|intcomma }}</span>
+                                                        <span class="amount-display">€{{ revenue.amount|default:0|floatformat:"0"|intcomma }}</span>
                                                     </td>
                                                 </tr>
                                                 {% endfor %}

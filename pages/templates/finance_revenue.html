@@ -454,7 +454,7 @@
             </thead>
             
             {% for pro in props_data %}
-                {% with revenues=pro.revenue_set.all %}
+                {% with revenues=pro.display_revenues %}
                     {% if revenues %}
                         <tbody class="property-group" data-property-id="{{ pro.id }}">
                             <!-- Property header (clickable) -->
@@ -470,14 +470,18 @@
                             {% for rev in revenues %}
                                 <tr class="property-details {% if forloop.last %}last-detail{% endif %}" style="display: none;">
                                     <td>{{ pro.prop_name }}</td>
-                                    <td>{{ rev.revenue_line_types.revenue_line_types_name }}</td>
-                                    <td>{{ rev.revenue_types.revenue_types_name }}</td>
-                                    <td class="amount-cell">€ {{ rev.revenue_amount|floatformat:0|intcomma }}</td>
+                                    <td>{{ rev.line_type }}{% if rev.from_lease %} <span class="property-count-badge">from lease</span>{% endif %}</td>
+                                    <td>{% if rev.vacant %}<span style="color:#b00020;">Vacant &mdash; no active lease</span>{% else %}{{ rev.rev_type }}{% endif %}</td>
+                                    <td class="amount-cell">€ {{ rev.amount|default:0|floatformat:0|intcomma }}</td>
                                     <td style="text-align: center;">
-                                        {% if perms.auth.can_edit_financials %}
+                                        {% if rev.editable and perms.auth.can_edit_financials %}
                                             <a href="{% url 'finance_revenue_edit' rev.revenue_id %}" class="btn-row-edit">
                                                 <i class="fas fa-pencil-alt"></i> Edit
                                             </a>
+                                        {% elif rev.from_lease %}
+                                            <span class="btn-row-edit-disabled" title="Rent/levies come from the lease — edit the lease to change them">
+                                                <i class="fas fa-lock"></i> Lease
+                                            </span>
                                         {% else %}
                                             <span class="btn-row-edit-disabled" title="No permission to edit">
                                                 <i class="fas fa-pencil-alt"></i> Edit

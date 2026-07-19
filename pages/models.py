@@ -1177,6 +1177,11 @@ class revenue_line_types(models.Model):
     revenue_line_types_id = models.AutoField(primary_key=True)
     revenue_line_types_name = models.CharField(max_length=255, blank=True, null=True)
     revenue_line_types_description = models.CharField(max_length=255, blank=True, null=True)
+    # Which lease value (if any) this line type is fed from. '' = normal editable
+    # revenue-table line type; 'rent'/'levies' = driven by the lease, read-only on
+    # leased properties. Replaces the old name-substring matching so renaming the
+    # "Rental"/"Levies" line types no longer breaks lease revenue.
+    lease_role = models.CharField(max_length=10, blank=True, default='')
     
     def __str__(self):
         return str(self.revenue_line_types_name)
@@ -3303,3 +3308,111 @@ def resolve_year_months_bulk(prop_ids, kind, year):
             vals.append(getattr(chosen, _FH_MONTHS[m - 1]) if chosen is not None else None)
         out[src] = vals
     return out
+# =============================================================================
+# Phase 3: lease-driven Revenue for the P&L (both P&Ls share this).
+# Rent + levies come from the lease covering each month (any part of a month =
+# full month; latest-starting lease wins on overlap). Current-year future months
+# with no lease continue at the most recent rent IF the property was rented this
+# year and no later lease is loaded; otherwise VACANT. Seasonal / no-lease
+# properties fall back to the Financials revenue table.
+# =============================================================================
+from calendar import monthrange as _fh_monthrange
+from decimal import Decimal as _fh_Decimal
+
+_FH_REV_MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+               'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+
+def _lease_month(leases, y, m, today):
+    """(tag, lease|None, rent, levies) for month m/year y."""
+    ms = _fh_date(y, m, 1)
+    me = _fh_date(y, m, _fh_monthrange(y, m)[1])
+    over = [l for l in leases
+            if l.tenant_lease_start_date and l.tenant_lease_end_date
+            and l.tenant_lease_start_date <= me and l.tenant_lease_end_date >= ms]
+    if over:
+        l = max(over, key=lambda x: x.tenant_lease_start_date)
+        return ('lease', l, l.tenant_rent or 0, l.tenant_levies or 0)
+    if (y, m) < (today.year, today.month):
+        return ('vacant', None, 0, 0)   # past month -> real vacancy; current/future -> continuation below
+    later = [l for l in leases
+             if l.tenant_lease_start_date and l.tenant_lease_start_date > me]
+    if later:
+        return ('vacant', None, 0, 0)
+    ys = _fh_date(today.year, 1, 1)
+    active = [l for l in leases if l.tenant_lease_end_date and l.tenant_lease_end_date >= ys]
+    if active:
+        l = max(active, key=lambda x: x.tenant_lease_end_date)
+        return ('assumed', l, l.tenant_rent or 0, l.tenant_levies or 0)
+    return ('vacant', None, 0, 0)
+
+
+def lease_monthly_rent_levies(prop, year, today=None):
+    """(rent[12], levies[12], has_leases) for a property/year from its leases."""
+    today = today or _fh_date.today()
+    leases = list(tenant.objects.filter(prop=prop))
+    rent = [0.0] * 12
+    lev = [0.0] * 12
+    if not leases:
+        return rent, lev, False
+    for m in range(1, 13):
+        _t, _l, r, v = _lease_month(leases, year, m, today)
+        rent[m - 1] = float(r or 0)
+        lev[m - 1] = float(v or 0)
+    return rent, lev, True
+
+
+LEASE_ROLE_RENT = 'rent'
+LEASE_ROLE_LEVIES = 'levies'
+
+
+def lease_line_type(role):
+    """The revenue_line_types row feeding lease `role` ('rent'|'levies'), or None."""
+    return revenue_line_types.objects.filter(lease_role=role).first()
+
+
+def lease_revenue_rows(prop, year, rental_lt=None, levies_lt=None, today=None):
+    """Unsaved `revenue` instances for this property's revenue in `year`.
+    Leased: a Rental row (lease rent/mo) + a Levies row (lease levies/mo) + any
+    non rental/levies revenue-table rows. Seasonal: the revenue-table rows as-is."""
+    rent, lev, has = lease_monthly_rent_levies(prop, year, today)
+    if not has:
+        return list(prop.revenue_set.all())
+    if rental_lt is None:
+        rental_lt = lease_line_type(LEASE_ROLE_RENT)
+    if levies_lt is None:
+        levies_lt = lease_line_type(LEASE_ROLE_LEVIES)
+    rows = []
+    if rental_lt is not None:
+        r = revenue(prop=prop, revenue_line_types=rental_lt)
+        for i, mm in enumerate(_FH_REV_MON):
+            setattr(r, 'revenue_' + mm, _fh_Decimal(str(rent[i])))
+        rows.append(r)
+    if levies_lt is not None and any(lev):
+        r = revenue(prop=prop, revenue_line_types=levies_lt)
+        for i, mm in enumerate(_FH_REV_MON):
+            setattr(r, 'revenue_' + mm, _fh_Decimal(str(lev[i])))
+        rows.append(r)
+    for r in prop.revenue_set.all():
+        if not (r.revenue_line_types and r.revenue_line_types.lease_role):
+            rows.append(r)
+    return rows
+
+
+def current_lease_revenue(prop, today=None):
+    """(rent, levies, has_leases, has_active_lease) for a property RIGHT NOW.
+    has_leases -> the property has any lease record ever (a "leased property").
+    has_active_lease -> a lease covers today. Leased but not active -> rent/levies 0
+    (present it as "Vacant - no active lease"). Seasonal (no leases) -> (None, None,
+    False, False); the caller uses the revenue table instead."""
+    today = today or _fh_date.today()
+    leases = list(tenant.objects.filter(prop=prop))
+    if not leases:
+        return (None, None, False, False)
+    active = [l for l in leases
+              if l.tenant_lease_start_date and l.tenant_lease_end_date
+              and l.tenant_lease_start_date <= today <= l.tenant_lease_end_date]
+    if active:
+        l = max(active, key=lambda x: x.tenant_lease_start_date)
+        return (l.tenant_rent or 0, l.tenant_levies or 0, True, True)
+    return (0, 0, True, False)

@@ -140,6 +140,20 @@
     gap: 4px;
 }
 
+.lease-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0c6b3f;
+    background: #e6f4ec;
+    border: 1px solid #b7e0c8;
+    border-radius: 10px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
 .empty-state {
     text-align: center;
     padding: 50px 20px;
@@ -386,7 +400,7 @@
             <tbody>
                 {% for rev in rltresults %}
                 <tr>
-                    <td class="cell-name">{{ rev.revenue_line_types_name }}</td>
+                    <td class="cell-name">{{ rev.revenue_line_types_name }}{% if rev.lease_role %} <span class="lease-badge" title="Fed from the lease — read-only on leased properties">Lease-driven ({{ rev.lease_role }})</span>{% endif %}</td>
                     <td class="cell-description">{{ rev.revenue_line_types_description }}</td>
                     <td style="text-align: center;">
                         {% if perms.auth.can_edit_financials %}

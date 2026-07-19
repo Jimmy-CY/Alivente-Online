@@ -56,7 +56,7 @@ from pages.models import (
     expense, expense_types, expense_line_types,
     tenant, act_expense, VacancyPeriod,
     FinancialFigureHistory, record_expense_history, record_revenue_history,
-    resolve_year_months_bulk,
+    resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
 )
 
 # Helpers split across two modules after the dashboard / properties splits.
@@ -118,30 +118,53 @@ def finance(request):
 @permission_required('auth.can_access_financials', raise_exception=True)
 def finance_revenue(request):
     prop_output = request.POST.get('propname')
-    if prop_output is None or prop_output == "All":
-        props_data = props.objects.prefetch_related(
-            Prefetch(
-                'revenue_set',
-                queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types'),
-            )
-        ).all().order_by('prop_country', 'prop_name')
-    else:
-        props_data = props.objects.prefetch_related(
-            Prefetch(
-                'revenue_set',
-                queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types'),
-            )
-        ).all().order_by('prop_country', 'prop_name').filter(prop_name=prop_output)
+    base = props.objects.prefetch_related(
+        Prefetch(
+            'revenue_set',
+            queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types'),
+        )
+    ).all().order_by('prop_country', 'prop_name')
+    if prop_output and prop_output != "All":
+        base = base.filter(prop_name=prop_output)
+    props_data = list(base)
+    # Phase 3: Rental/Levies come from the LEASE (read-only) for leased properties;
+    # the revenue table is used for seasonal / no-lease properties and for any
+    # manual (non rental/levies) revenue line types.
+    for _p in props_data:
+        _rent, _lev, _has, _active = current_lease_revenue(_p)
+        _disp = []
+        if _has:
+            _disp.append({'line_type': 'Rental', 'rev_type': 'From lease', 'amount': _rent,
+                          'editable': False, 'from_lease': True, 'vacant': not _active, 'revenue_id': None})
+            _disp.append({'line_type': 'Levies', 'rev_type': 'From lease', 'amount': _lev,
+                          'editable': False, 'from_lease': True, 'vacant': not _active, 'revenue_id': None})
+            for _r in _p.revenue_set.all():
+                if not (_r.revenue_line_types and _r.revenue_line_types.lease_role):
+                    _disp.append({'line_type': _r.revenue_line_types.revenue_line_types_name,
+                                  'rev_type': _r.revenue_types.revenue_types_name if _r.revenue_types else '',
+                                  'amount': _r.revenue_amount, 'editable': True, 'from_lease': False,
+                                  'vacant': False, 'revenue_id': _r.revenue_id})
+        else:
+            for _r in _p.revenue_set.all():
+                _disp.append({'line_type': _r.revenue_line_types.revenue_line_types_name,
+                              'rev_type': _r.revenue_types.revenue_types_name if _r.revenue_types else '',
+                              'amount': _r.revenue_amount, 'editable': True, 'from_lease': False,
+                              'vacant': False, 'revenue_id': _r.revenue_id})
+        _p.display_revenues = _disp
     return render(request, "finance_revenue.html", {"props_data": props_data})
 
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_add(request):
+    # Which properties have any lease -> the form disables Rental/Levies for them
+    # (rent/levies come from the lease). Seasonal / no-lease keep them selectable.
+    _leased_ids = list(tenant.objects.values_list('prop_id', flat=True).distinct())
     return render(request, "finance_revenue_add.html", {
         "props_data": props.objects.all().order_by('prop_country', 'prop_name'),
         "revenue_types": revenue_types.objects.all(),
         "revenue_line_types": revenue_line_types.objects.all(),
+        "leased_prop_ids": json.dumps([str(_i) for _i in _leased_ids if _i is not None]),
     })
 
 
@@ -158,6 +181,13 @@ def finance_revenue_commit(request):
 
     if not all([prop_id, rlt_id, rt_id, revenue_amount]):
         messages.error(request, "Missing required fields. Please fill in all marked items.")
+        return redirect('finance_revenue_add')
+
+    # Rent/levies for a leased property come from the lease, not a manual revenue
+    # row. Block adding a Rental/Levies line type for any property that has leases.
+    _rlt = revenue_line_types.objects.filter(pk=rlt_id).first()
+    if _rlt and _rlt.lease_role and tenant.objects.filter(prop_id=prop_id).exists():
+        messages.info(request, "Rent and levies for a leased property come from the lease \u2014 add or edit the lease instead of a revenue row.")
         return redirect('finance_revenue_add')
 
     try:
@@ -197,6 +227,9 @@ def finance_revenue_commit(request):
 @permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_edit(request, revenue_id):
     rev = get_object_or_404(revenue, pk=revenue_id)
+    if rev.revenue_line_types and rev.revenue_line_types.lease_role and tenant.objects.filter(prop=rev.prop).exists():
+        messages.info(request, "Rent and levies come from the lease for this property \u2014 edit the lease to change them.")
+        return redirect('finance_revenue')
     return render(request, "finance_revenue_edit.html", {
         "rev": rev,
         "props_data": props.objects.all().order_by('prop_country', 'prop_name'),
@@ -1859,40 +1892,51 @@ def revenue_details_view(request):
     }
     month_name = month_names.get(str(month), "All Months") if month else "All Months"
 
-    # Phase 2: resolve revenue figures to the selected year (same as the P&L).
+    # Phase 3: revenue for the drill-down comes from LEASES (same engine as the
+    # P&L), so this popup matches the table. Iterate the selected PROPERTIES (a
+    # leased property may have no revenue-table row for Rental/Levies). Seasonal
+    # / ancillary lines fall back to the revenue table inside lease_revenue_rows.
     try:
         _year_int = int(year)
     except (TypeError, ValueError):
         _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(revenues.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_REVENUE, _year_int) if _year_int is not None else None)
+
+    if properties:
+        try:
+            _target_ids = [int(pid.strip()) for pid in properties.split(',') if pid.strip()]
+        except ValueError:
+            _target_ids = []
+        _target_props = list(props.objects.filter(prop_id__in=_target_ids))
+    elif property_id and property_id != 'all':
+        _target_props = list(props.objects.filter(prop_id=property_id))
+    elif prop and prop != 'all':
+        _target_props = list(props.objects.filter(prop_id=prop))
+    else:
+        _target_props = list(props.objects.all())
+
+    months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
     # Create a list of revenue items with monthly breakdown
     revenue_items = []
     total_amount = 0
 
-    for rev in revenues:
-        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-
-        for i, month_name_field in enumerate(months, 1):
-            if _year_map is not None and rev.revenue_id in _year_map:
-                month_value = _year_map[rev.revenue_id][i - 1]
-            else:
-                month_value = getattr(rev, f'revenue_{month_name_field}', 0)
-
-            if month_value and month_value > 0:
-                # If specific month is requested, only show that month
-                if month and int(month) != i:
-                    continue
-
-                revenue_items.append({
-                    'revenue_id': rev.revenue_id,
-                    'property': rev.prop,
-                    'amount': float(month_value),
-                })
-                total_amount += float(month_value)
+    for _pobj in _target_props:
+        _rows = lease_revenue_rows(_pobj, _year_int) if _year_int is not None else list(_pobj.revenue_set.all())
+        for rev in _rows:
+            if line_type and str(getattr(rev, 'revenue_line_types_id', '')) != str(line_type):
+                continue
+            for i, month_name_field in enumerate(months, 1):
+                month_value = getattr(rev, 'revenue_' + month_name_field, 0)
+                if month_value and month_value > 0:
+                    if month and int(month) != i:
+                        continue
+                    revenue_items.append({
+                        'revenue_id': getattr(rev, 'revenue_id', None),
+                        'property': _pobj,
+                        'amount': float(month_value),
+                    })
+                    total_amount += float(month_value)
 
     context = {
         'revenue_items': revenue_items,
@@ -2102,11 +2146,20 @@ def finance_pl_act(request):
     # entry is replaced by a Budget/Actuals toggle (`view`): 'budget' shows the
     # budgeted revenue/expenses for the year; 'actuals' also adds that year's
     # actual expenses. Budgeted figures are resolved from history per year.
-    AVAILABLE_YEARS = [2026, 2025, 2024]
+    _pl_today = date.today()
+    _lease_min = tenant.objects.exclude(tenant_lease_start_date__isnull=True).aggregate(
+        _m=Min('tenant_lease_start_date'))['_m']
+    _earliest_year = _lease_min.year if _lease_min else _pl_today.year
+    # earliest lease year .. current year + 1 (one future "next-year outlook"), newest first
+    AVAILABLE_YEARS = list(range(_earliest_year, _pl_today.year + 2))[::-1]
 
     view_mode = request.GET.get('view', 'budget')
     if view_mode not in ('budget', 'actuals'):
         view_mode = 'budget'
+
+    # Single-property mode: the per-property P&L opens the main P&L pre-filtered
+    # to one property, with the property picker hidden.
+    single_mode = request.GET.get('single') in ('1', 'true', 'yes', 'on')
 
     # Get selected properties from request
     selected_properties = request.GET.getlist('properties')
@@ -2118,6 +2171,29 @@ def finance_pl_act(request):
         selected_year = date.today().year
     if selected_year not in AVAILABLE_YEARS:
         selected_year = date.today().year if date.today().year in AVAILABLE_YEARS else AVAILABLE_YEARS[0]
+
+    # Phase 2.1: for the current (unfinished) year, mark the months that have not
+    # elapsed yet as projections. Column positions in the table are Jan=2..Dec=13.
+    _today = date.today()
+    is_current_year = (selected_year == _today.year)
+    if is_current_year:
+        _first_proj = _today.month
+        projected_cols = list(range(_first_proj + 1, 14))
+        _ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        projection_label = 'Dec' if _first_proj == 12 else (_ABBR[_first_proj - 1] + '–Dec')
+        projection_note = ("The amber columns (%s %d) haven't finished yet — these figures "
+                           "are projections and may change." % (projection_label, selected_year))
+    elif selected_year > _today.year:
+        projected_cols = list(range(2, 14))
+        projection_label = 'Jan–Dec'
+        projection_note = ("%d is a future year — the whole year is a projection "
+                           "(next-year outlook) assuming your current leases continue at "
+                           "today's rent." % selected_year)
+    else:
+        projected_cols = []
+        projection_label = ''
+        projection_note = ''
 
     # Single query with comprehensive prefetching
     all_properties = props.objects.filter(prop_status="Active").select_related().prefetch_related(
@@ -2142,26 +2218,21 @@ def finance_pl_act(request):
     revenues = []
     expenses = []
 
+    # Phase 3: REVENUE comes from the leases (rent + levies per month), not the
+    # budgeted revenue table. Seasonal / no-lease properties fall back to the
+    # table. Budgeted EXPENSES still resolve from the effective-dated history.
+    _rental_lt = next((lt for lt in revenue_line_types_list if lt.lease_role == 'rent'), None)
+    _levies_lt = next((lt for lt in revenue_line_types_list if lt.lease_role == 'levies'), None)
     for prop in properties:
-        revenues.extend(prop.revenue_set.all())
+        revenues.extend(lease_revenue_rows(prop, selected_year, _rental_lt, _levies_lt))
         expenses.extend(prop.expense_set.all())
 
-    # Phase 2: resolve every revenue/expense row to the budgeted figure in force
-    # during the selected year (month by month) by overwriting the in-memory
-    # monthly cells. Every sum below then reads year-correct numbers with no
-    # further change. Rows with no history keep their live cells.
     _fh_exp_map = resolve_year_months_bulk(selected_prop_ids, FinancialFigureHistory.KIND_BUDGET, selected_year)
     for _e in expenses:
         _vals = _fh_exp_map.get(_e.expense_id)
         if _vals is not None:
             for _i, _m in enumerate(MONTHS):
                 setattr(_e, 'expense_' + _m, _vals[_i])
-    _fh_rev_map = resolve_year_months_bulk(selected_prop_ids, FinancialFigureHistory.KIND_REVENUE, selected_year)
-    for _r in revenues:
-        _vals = _fh_rev_map.get(_r.revenue_id)
-        if _vals is not None:
-            for _i, _m in enumerate(MONTHS):
-                setattr(_r, 'revenue_' + _m, _vals[_i])
 
     # ========= REVENUE SECTION =========
     revenue_totals = {
@@ -2486,6 +2557,12 @@ def finance_pl_act(request):
         'selected_year': selected_year,
         'view_mode': view_mode,
         'current_year': date.today().year,
+        'is_current_year': is_current_year,
+        'projected_cols': projected_cols,
+        'projection_label': projection_label,
+        'projection_note': projection_note,
+        'single_mode': single_mode,
+        'single_property': (properties.first() if single_mode else None),
         'selected_properties': selected_properties,
         'available_years': AVAILABLE_YEARS,
     })

@@ -128,7 +128,7 @@
         <div class="dropdown-menu" aria-labelledby="yearDropdown">
             {% for year in available_years %}
                 <a class="dropdown-item {% if year == selected_year %}active{% endif %}"
-                   href="?year={{ year }}&view={{ view_mode }}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+                   href="?year={{ year }}&view={{ view_mode }}{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
                     {{ year }}
                 </a>
             {% endfor %}
@@ -138,11 +138,11 @@
     <!-- Budget / Actuals toggle -->
     <div class="btn-group pl-view-toggle" role="group" aria-label="Budget or Actuals">
         <a class="btn {% if view_mode == 'budget' %}btn-info{% else %}btn-outline-info{% endif %}"
-           href="?year={{ selected_year }}&view=budget{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+           href="?year={{ selected_year }}&view=budget{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
             Budget
         </a>
         <a class="btn {% if view_mode == 'actuals' %}btn-info{% else %}btn-outline-info{% endif %}"
-           href="?year={{ selected_year }}&view=actuals{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+           href="?year={{ selected_year }}&view=actuals{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
             Actuals
         </a>
     </div>
@@ -165,13 +165,15 @@
     </div>
 
     <!-- Back -->
-    <a href="{% url 'finance' %}" class="action-back" title="Back to Finance">
+    <a href="{% if single_mode and single_property %}{% url 'property_management_dashboard' %}?property={{ single_property.prop_id }}{% else %}{% url 'finance' %}{% endif %}" class="action-back" title="Back">
         <i class="fas fa-arrow-left"></i>
         <span class="action-back-label">Back</span>
     </a>
 </div>
 
 <!-- Property Selection Panel -->
+{% if single_mode %}<style>.property-selection-panel { display: none !important; }</style>{% endif %}
+{% if single_mode and single_property %}<h4 style="margin:6px 0 10px;font-weight:600;">{{ single_property.prop_name }}</h4>{% endif %}
 <div class="property-selection-panel">
     <div class="selection-header">
         <h6 class="selection-title">
@@ -210,6 +212,15 @@
 <!-- Profit & Loss Container -->
 <div id="profitLossContainer">
     <div class="table-responsive pl-table-wrap">
+        {% if projected_cols %}
+        <style>
+        {% for c in projected_cols %}.pl-act-table > thead > tr > th:nth-child({{ c }}), .pl-act-table > tbody > tr > td:nth-child({{ c }}) {  background-color: #fff3cd !important; }
+        {% endfor %}
+        </style>
+        <div class="pl-projection-note" style="margin:6px 0;padding:6px 10px;background:#fff3cd;border-left:4px solid #ffc107;border-radius:4px;font-size:0.85rem;color:#7a5b00;">
+            <i class="fas fa-info-circle"></i> {{ projection_note }}
+        </div>
+        {% endif %}
         <table class="table table-sm table-bordered pl-act-table" style="font-size: 0.85rem;">
             <thead class="thead-light">
                 <tr>
@@ -1175,6 +1186,7 @@ $(document).ready(function() {
         const urlParams = new URLSearchParams();
         urlParams.set('year', '{{ selected_year }}');
         urlParams.set('view', '{{ view_mode }}');
+        {% if single_mode %}urlParams.set('single', '1');{% endif %}
         urlParams.set('selection_made', 'true');
         if (selectedProperties.length === 0) {
             urlParams.set('properties', 'NONE');

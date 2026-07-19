@@ -508,11 +508,28 @@ def property_detail(request, property_id, box_type):
 
     # Revenue logic - process when box_type is 'revenues'
     if box_type == 'revenues':
-        # Get all revenue data for this property
-        property_revenues = property_obj.revenue_set.all().order_by('revenue_line_types__revenue_line_types_name', 'revenue_types__revenue_types_name')
-
-        # Calculate total revenue amount
-        total_revenue_amount = sum(rev.revenue_amount for rev in property_revenues)
+        # Phase 3: Rental/Levies come from the LEASE for a leased property; the
+        # revenue table is used for seasonal / no-lease properties and any manual
+        # revenue line types.
+        from pages.models import current_lease_revenue
+        _rent, _lev, _has, _active = current_lease_revenue(property_obj)
+        property_revenues = []
+        if _has:
+            property_revenues.append({'line_type': 'Rental', 'rev_type': 'From lease',
+                'amount': _rent, 'from_lease': True, 'vacant': not _active})
+            property_revenues.append({'line_type': 'Levies', 'rev_type': 'From lease',
+                'amount': _lev, 'from_lease': True, 'vacant': not _active})
+            for _r in property_obj.revenue_set.all().order_by('revenue_line_types__revenue_line_types_name'):
+                if not (_r.revenue_line_types and _r.revenue_line_types.lease_role):
+                    property_revenues.append({'line_type': _r.revenue_line_types.revenue_line_types_name,
+                        'rev_type': _r.revenue_types.revenue_types_name if _r.revenue_types else '',
+                        'amount': _r.revenue_amount, 'from_lease': False, 'vacant': False})
+        else:
+            for _r in property_obj.revenue_set.all().order_by('revenue_line_types__revenue_line_types_name', 'revenue_types__revenue_types_name'):
+                property_revenues.append({'line_type': _r.revenue_line_types.revenue_line_types_name,
+                    'rev_type': _r.revenue_types.revenue_types_name if _r.revenue_types else '',
+                    'amount': _r.revenue_amount, 'from_lease': False, 'vacant': False})
+        total_revenue_amount = sum((row['amount'] or 0) for row in property_revenues)
 
     # Budgeted Expenses logic - process when box_type is 'budgeted-expenses'
     if box_type == 'budgeted-expenses':
@@ -645,9 +662,20 @@ def property_detail(request, property_id, box_type):
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
 def dashboard_pl(request, property_id):
-    """
-    Dedicated view for Profit & Loss dashboard
-    """
+    """Per-property P&L = the main aggregate P&L, pre-filtered to this property,
+    with the property picker hidden (single mode). One implementation keeps the
+    two P&Ls guaranteed identical."""
+    from django.shortcuts import redirect as _redirect
+    from django.urls import reverse as _reverse
+    _params = ['properties=%s' % property_id, 'single=1']
+    _y = request.GET.get('year')
+    _v = request.GET.get('view')
+    if _y:
+        _params.append('year=%s' % _y)
+    if _v:
+        _params.append('view=%s' % _v)
+    return _redirect('%s?%s' % (_reverse('finance_pl_act'), '&'.join(_params)))
+
     property_obj = get_object_or_404(props, prop_id=property_id)
 
     # Get selected year from request

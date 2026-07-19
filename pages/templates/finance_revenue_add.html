@@ -159,6 +159,14 @@
     
     <div class="revenue-form-container">
         
+        {% if messages %}
+        <div class="revenue-messages" style="margin-bottom:16px;">
+            {% for message in messages %}
+            <div class="alert alert-info" style="padding:12px 16px; border-radius:8px; background:#eef3f8; color:#2c3e50; border:1px solid #d7e0ea;">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <!-- Page Header -->
         <div class="page-header">
             <h1><i class="fas fa-coins"></i> Add Revenue</h1>
@@ -196,9 +204,12 @@
                     <select id="revenue_line_types" class="form-control" name="revenue_line_types" required>
                         <option value="">Select Revenue Line Type</option>
                         {% for rlt in revenue_line_types %}
-                            <option value="{{ rlt.revenue_line_types_id }}">{{ rlt.revenue_line_types_name }}</option>
+                            <option value="{{ rlt.revenue_line_types_id }}" data-rlt-name="{{ rlt.revenue_line_types_name }}"{% if rlt.lease_role %} data-lease-driven="1"{% endif %}>{{ rlt.revenue_line_types_name }}</option>
                         {% endfor %}
                     </select>
+                    <small id="rlt-lease-hint" style="display:none; color:#6c757d; margin-top:6px;">
+                        <i class="fas fa-info-circle"></i> Rent &amp; levies come from the lease for this property &mdash; add or change them on the lease, not here.
+                    </small>
                 </div>
                 
                 <!-- Revenue Type -->
@@ -231,6 +242,39 @@
         
     </div>
 </form>
+
+<script>
+(function () {
+    var leased = {{ leased_prop_ids|default:"[]"|safe }};
+    var leasedSet = {};
+    for (var i = 0; i < leased.length; i++) { leasedSet[String(leased[i])] = true; }
+    var propSel = document.getElementById('prop');
+    var rltSel = document.getElementById('revenue_line_types');
+    var hint = document.getElementById('rlt-lease-hint');
+    if (!propSel || !rltSel) { return; }
+    function isLeaseLine(o) { return o.getAttribute('data-lease-driven') === '1'; }
+    function apply() {
+        var leasedProp = leasedSet[String(propSel.value)] === true;
+        for (var i = 0; i < rltSel.options.length; i++) {
+            var o = rltSel.options[i];
+            if (!o.value) { continue; }
+            if (isLeaseLine(o)) {
+                if (leasedProp) {
+                    if (o.selected) { rltSel.value = ''; }
+                    o.disabled = true;
+                    o.style.display = 'none';
+                } else {
+                    o.disabled = false;
+                    o.style.display = '';
+                }
+            }
+        }
+        if (hint) { hint.style.display = leasedProp ? 'block' : 'none'; }
+    }
+    propSel.addEventListener('change', apply);
+    apply();
+})();
+</script>
 
 {% endif %}
 
