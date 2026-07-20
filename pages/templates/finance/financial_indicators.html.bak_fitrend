@@ -79,32 +79,6 @@
         <p id="errorMessage"></p>
         <button class="btn btn-info" onclick="loadDashboard()">Retry</button>
     </div>
-
-    <!-- Trends over the years (Phase B) -->
-    <div id="fiTrendSection" style="margin-top:30px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
-            <h5 style="margin:0; color:#17a2b8;"><i class="fas fa-chart-line"></i> Trends Over the Years</h5>
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <label for="fiTrendIndicator" style="font-weight:600; margin:0;">Indicator</label>
-                <select id="fiTrendIndicator" class="form-control" style="width:auto;">
-                    <option value="netROI">Net ROI (%)</option>
-                    <option value="grossROI">Gross ROI (%)</option>
-                    <option value="expensesToRevenue">Expenses to Revenue (%)</option>
-                    <option value="rentPerSqm">Rent (&euro;/m&sup2;)</option>
-                </select>
-                <label for="fiTrendProperty" style="font-weight:600; margin:0;">Compare</label>
-                <select id="fiTrendProperty" class="form-control" style="width:auto;">
-                    <option value="">Portfolio only</option>
-                </select>
-            </div>
-        </div>
-        <p style="font-size:0.85rem; color:#6c757d; margin:0 0 10px;">
-            <i class="fas fa-info-circle"></i> Basis is automatic: completed years use actual spend, the current year is actual-so-far plus budget, and the future outlook year is budget only. Diamond markers = current/projected years.
-        </p>
-        <div style="position:relative; height:340px;">
-            <canvas id="fiTrendChart"></canvas>
-        </div>
-    </div>
 </div>
 
 <!-- Property Details Modal -->
@@ -1919,86 +1893,6 @@ function loadDashboard() {
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboard();
 });
-</script>
-
-<script>
-// Financial Indicators — multi-year trend (Phase B). Reuses Chart.js (v3).
-(function () {
-    var CHART = null, DATA = null;
-    var PORT = '#17a2b8', PROP = '#e67e22', PROJ = '#f0ad4e';
-    function unit(key) { return key === 'rentPerSqm' ? ' \u20ac/m\u00b2' : '%'; }
-    function pointColors(line) {
-        if (!DATA) return line;
-        return DATA.years.map(function (y) { return y >= DATA.current_year ? PROJ : line; });
-    }
-    function pointStyles() {
-        if (!DATA) return 'circle';
-        return DATA.years.map(function (y) { return y > DATA.current_year ? 'rectRot' : 'circle'; });
-    }
-    function pointRadii() {
-        if (!DATA) return 3;
-        return DATA.years.map(function (y) { return y >= DATA.current_year ? 5 : 3; });
-    }
-    function datasets(ind) {
-        var out = [{
-            label: 'Portfolio', data: DATA.portfolio[ind],
-            borderColor: PORT, backgroundColor: PORT, tension: 0.25, spanGaps: true,
-            pointBackgroundColor: pointColors(PORT), pointStyle: pointStyles(), pointRadius: pointRadii()
-        }];
-        var pid = document.getElementById('fiTrendProperty').value;
-        if (pid) {
-            var p = DATA.properties.filter(function (x) { return String(x.id) === String(pid); })[0];
-            if (p) out.push({
-                label: p.name, data: p[ind],
-                borderColor: PROP, backgroundColor: PROP, tension: 0.25, spanGaps: true,
-                pointBackgroundColor: pointColors(PROP), pointStyle: pointStyles(), pointRadius: pointRadii()
-            });
-        }
-        return out;
-    }
-    function render() {
-        if (!DATA) return;
-        var ind = document.getElementById('fiTrendIndicator').value;
-        var canvas = document.getElementById('fiTrendChart');
-        if (!canvas) return;
-        if (CHART) { CHART.destroy(); CHART = null; }
-        CHART = new Chart(canvas.getContext('2d'), {
-            type: 'line',
-            data: { labels: DATA.years, datasets: datasets(ind) },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true, position: 'bottom' },
-                    tooltip: { callbacks: { label: function (c) {
-                        return c.dataset.label + ': ' + (c.parsed.y == null ? 'n/a' : c.parsed.y + unit(ind));
-                    } } }
-                },
-                scales: { y: { ticks: { callback: function (v) { return v + unit(ind); } } } }
-            }
-        });
-    }
-    function load() {
-        fetch(window.location.pathname + '?trend=1', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(function (r) { return r.json(); })
-            .then(function (d) {
-                if (d.error) { console.error('trend:', d.error); return; }
-                DATA = d;
-                var sel = document.getElementById('fiTrendProperty');
-                (d.properties || []).forEach(function (p) {
-                    var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o);
-                });
-                render();
-            })
-            .catch(function (e) { console.error('trend load failed', e); });
-    }
-    document.addEventListener('DOMContentLoaded', function () {
-        var i = document.getElementById('fiTrendIndicator');
-        var p = document.getElementById('fiTrendProperty');
-        if (i) i.addEventListener('change', render);
-        if (p) p.addEventListener('change', render);
-        if (typeof Chart !== 'undefined') { load(); }
-    });
-})();
 </script>
 
 {% endblock %}

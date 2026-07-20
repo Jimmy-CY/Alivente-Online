@@ -3448,3 +3448,16 @@ def property_annual_budgeted_expenses(prop, year=None):
             for mm in _FH_REV_MON:
                 total += (getattr(e, 'expense_' + mm, 0) or 0)
     return total
+
+
+def property_annual_actual_expenses(prop, year=None):
+    """Annual actual (ad-hoc) expenses for a property in `year`, matching the P&L
+    Actuals view: approved + paid transactions dated in that year."""
+    year = year or _fh_date.today().year
+    agg = act_expense.objects.filter(
+        prop=prop,
+        act_expense_date__year=year,
+        act_expense_approved="Yes",
+        act_expense_paid="Yes",
+    ).aggregate(_t=Sum('act_expense_amount'))
+    return agg['_t'] or _fh_Decimal('0')

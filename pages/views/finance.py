@@ -58,6 +58,7 @@ from pages.models import (
     FinancialFigureHistory, record_expense_history, record_revenue_history,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
+    property_annual_actual_expenses,
 )
 
 # Helpers split across two modules after the dashboard / properties splits.
@@ -1555,6 +1556,75 @@ def occupancy_trends_view(request):
 
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
+def _financial_indicators_trend(request):
+    """JSON: per-year Financial Indicators for the portfolio and each active
+    property, for the trend chart. Auto basis — each year uses budgeted plus
+    whatever actual (ad-hoc) spend exists for it, so completed years reflect real
+    spend, the current year is actual-so-far + budget, and future years are budget
+    only. Value Increase is intentionally excluded (valuations are not dated)."""
+    today = datetime.now().date()
+    current_year = today.year
+    _lease_min = tenant.objects.exclude(tenant_lease_start_date__isnull=True).aggregate(
+        _m=Min('tenant_lease_start_date'))['_m']
+    earliest = _lease_min.year if _lease_min else current_year
+    years = list(range(earliest, current_year + 2))
+    properties = list(props.objects.filter(prop_status='Active').prefetch_related('prop_values_set'))
+
+    meta = {}
+    for prop in properties:
+        pv_list = list(prop.prop_values_set.all())
+        pv = pv_list[0] if pv_list else None
+        meta[prop.prop_id] = {
+            'name': prop.prop_name or ('Property %s' % prop.prop_id),
+            'purchase': float(pv.prop_values_purchase_price) if pv and pv.prop_values_purchase_price else 0.0,
+            'area': float(prop.prop_floor_area) if prop.prop_floor_area else 0.0,
+            'grossROI': [], 'netROI': [], 'expensesToRevenue': [], 'rentPerSqm': [],
+        }
+
+    portfolio = {'grossROI': [], 'netROI': [], 'expensesToRevenue': [], 'rentPerSqm': []}
+    for y in years:
+        t_rev = t_exp = t_pur = t_area = 0.0
+        for prop in properties:
+            rev = float(property_annual_lease_revenue(prop, y))
+            bud = float(property_annual_budgeted_expenses(prop, y))
+            act = float(property_annual_actual_expenses(prop, y))
+            exp = bud + act
+            pm = meta[prop.prop_id]
+            pur = pm['purchase']
+            area = pm['area']
+            pm['grossROI'].append(round(rev / pur * 100, 2) if pur > 0 else None)
+            pm['netROI'].append(round((rev - exp) / pur * 100, 2) if pur > 0 else None)
+            pm['expensesToRevenue'].append(round(exp / rev * 100, 2) if rev > 0 else None)
+            pm['rentPerSqm'].append(round(rev / 12 / area, 2) if area > 0 else None)
+            t_rev += rev
+            t_exp += exp
+            t_pur += pur
+            t_area += area
+        portfolio['grossROI'].append(round(t_rev / t_pur * 100, 2) if t_pur > 0 else None)
+        portfolio['netROI'].append(round((t_rev - t_exp) / t_pur * 100, 2) if t_pur > 0 else None)
+        portfolio['expensesToRevenue'].append(round(t_exp / t_rev * 100, 2) if t_rev > 0 else None)
+        portfolio['rentPerSqm'].append(round(t_rev / 12 / t_area, 2) if t_area > 0 else None)
+
+    prop_series = []
+    for prop in properties:
+        pm = meta[prop.prop_id]
+        prop_series.append({
+            'id': prop.prop_id,
+            'name': pm['name'],
+            'grossROI': pm['grossROI'],
+            'netROI': pm['netROI'],
+            'expensesToRevenue': pm['expensesToRevenue'],
+            'rentPerSqm': pm['rentPerSqm'],
+        })
+
+    return JsonResponse({
+        'years': years,
+        'current_year': current_year,
+        'portfolio': portfolio,
+        'properties': prop_series,
+    })
+
+
 def financial_indicators_view(request):
     """
     Display the Financial Indicators Dashboard - ONLY for Active Properties
@@ -1562,11 +1632,26 @@ def financial_indicators_view(request):
     Reduced queries with prefetch_related
     """
     if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if request.GET.get('trend'):
+            return _financial_indicators_trend(request)
         # AJAX request for property data
         try:
-            # Financial indicators show annual data (no time period selection)
             today = datetime.now().date()
-            current_year = datetime.now().year
+            current_year = today.year
+            # Year + basis selectors (year-aware, effective-dated — mirrors the P&L).
+            _lease_min = tenant.objects.exclude(tenant_lease_start_date__isnull=True).aggregate(
+                _m=Min('tenant_lease_start_date'))['_m']
+            _earliest_year = _lease_min.year if _lease_min else current_year
+            available_years = list(range(_earliest_year, current_year + 2))[::-1]
+            try:
+                selected_year = int(request.GET.get('year'))
+            except (TypeError, ValueError):
+                selected_year = current_year
+            if selected_year not in available_years:
+                selected_year = current_year if current_year in available_years else available_years[0]
+            basis = request.GET.get('basis', 'budget')
+            if basis not in ('budget', 'actuals'):
+                basis = 'budget' 
 
             # Prefetch related data in one query
             properties = props.objects.filter(prop_status='Active').prefetch_related(
@@ -1581,6 +1666,7 @@ def financial_indicators_view(request):
             portfolio_totals = {
                 'total_revenue': Decimal('0.00'),
                 'total_budgeted_expenses': Decimal('0.00'),
+                'total_expense_basis': Decimal('0.00'),
                 'total_purchase_price': Decimal('0.00'),
                 'total_current_value': Decimal('0.00'),
                 'total_floor_area': 0,
@@ -1588,11 +1674,12 @@ def financial_indicators_view(request):
             }
 
             for prop in properties:
-                # Get revenue totals using your existing revenue model structure
-                revenue_total = property_annual_lease_revenue(prop)  # lease-driven, matches the P&L
-
-                # Get ONLY budgeted expense totals using your existing expense model
-                budgeted_expense_total = property_annual_budgeted_expenses(prop)  # effective-dated, matches the P&L
+                # Year-aware, matching the P&L: lease revenue + effective-dated budget.
+                # Actuals basis also folds in that year's actual (ad-hoc) expenses.
+                revenue_total = property_annual_lease_revenue(prop, selected_year)
+                budgeted_expense_total = property_annual_budgeted_expenses(prop, selected_year)
+                actual_expense_total = property_annual_actual_expenses(prop, selected_year) if basis == 'actuals' else Decimal('0.00')
+                expense_basis_total = budgeted_expense_total + actual_expense_total
 
                 # Get property values - ONLY for active properties
                 # Use prefetched data
@@ -1604,6 +1691,7 @@ def financial_indicators_view(request):
                 # Add to portfolio totals
                 portfolio_totals['total_revenue'] += revenue_total
                 portfolio_totals['total_budgeted_expenses'] += budgeted_expense_total
+                portfolio_totals['total_expense_basis'] += expense_basis_total
                 portfolio_totals['total_purchase_price'] += purchase_price or 0
                 portfolio_totals['total_current_value'] += current_value or 0
                 portfolio_totals['total_floor_area'] += prop.prop_floor_area or 0
@@ -1611,8 +1699,8 @@ def financial_indicators_view(request):
 
                 # Calculate individual property indicators for display purposes
                 gross_roi = (revenue_total / purchase_price * 100) if purchase_price > 0 else 0
-                net_roi = ((revenue_total - budgeted_expense_total) / purchase_price * 100) if purchase_price > 0 else 0
-                expense_ratio = (budgeted_expense_total / revenue_total * 100) if revenue_total > 0 else 0
+                net_roi = ((revenue_total - expense_basis_total) / purchase_price * 100) if purchase_price > 0 else 0
+                expense_ratio = (expense_basis_total / revenue_total * 100) if revenue_total > 0 else 0
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
                 value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
 
@@ -1638,12 +1726,12 @@ def financial_indicators_view(request):
                     if portfolio_totals['total_purchase_price'] > 0 else 0
                 ), 2),
                 'netROI': round(float(
-                    ((portfolio_totals['total_revenue'] - portfolio_totals['total_budgeted_expenses']) /
+                    ((portfolio_totals['total_revenue'] - portfolio_totals['total_expense_basis']) /
                      portfolio_totals['total_purchase_price'] * 100)
                     if portfolio_totals['total_purchase_price'] > 0 else 0
                 ), 2),
                 'expensesToRevenue': round(float(
-                    (portfolio_totals['total_budgeted_expenses'] / portfolio_totals['total_revenue'] * 100)
+                    (portfolio_totals['total_expense_basis'] / portfolio_totals['total_revenue'] * 100)
                     if portfolio_totals['total_revenue'] > 0 else 0
                 ), 2),
                 'rentPerSqm': round(float(
@@ -1669,16 +1757,37 @@ def financial_indicators_view(request):
                     'property_count': portfolio_totals['property_count']
                 },
                 'total_active_properties': len(properties_data),
-                'message': f'Showing {len(properties_data)} active properties - Financial Indicators (annual data)'
+                'available_years': available_years,
+                'selected_year': selected_year,
+                'basis': basis,
+                'message': f'Showing {len(properties_data)} active properties - Financial Indicators ({selected_year}, {basis})'
             })
 
         except Exception as e:
             print(traceback.format_exc())
             return JsonResponse({'error': str(e)}, status=500)
 
-    # Regular page load
+    # Regular page load — provide the year list + current selections for the controls.
+    _today2 = datetime.now().date()
+    _lease_min2 = tenant.objects.exclude(tenant_lease_start_date__isnull=True).aggregate(
+        _m=Min('tenant_lease_start_date'))['_m']
+    _earliest2 = _lease_min2.year if _lease_min2 else _today2.year
+    _years = list(range(_earliest2, _today2.year + 2))[::-1]
+    try:
+        _sel_year = int(request.GET.get('year'))
+    except (TypeError, ValueError):
+        _sel_year = _today2.year
+    if _sel_year not in _years:
+        _sel_year = _today2.year if _today2.year in _years else _years[0]
+    _basis = request.GET.get('basis', 'budget')
+    if _basis not in ('budget', 'actuals'):
+        _basis = 'budget'
     context = {
-        'page_title': 'Financial Indicators Dashboard - Portfolio-Wide Analysis (Active Properties)'
+        'page_title': 'Financial Indicators Dashboard - Portfolio-Wide Analysis (Active Properties)',
+        'available_years': _years,
+        'selected_year': _sel_year,
+        'current_year': _today2.year,
+        'basis': _basis,
     }
     return render(request, 'finance/financial_indicators.html', context)
 
