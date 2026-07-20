@@ -92,6 +92,10 @@
                     <option value="expensesToRevenue">Expenses to Revenue (%)</option>
                     <option value="rentPerSqm">Rent (&euro;/m&sup2;)</option>
                 </select>
+                <label style="font-weight:600; margin:0;">Years</label>
+                <select id="fiFromYear" class="form-control" style="width:auto;"></select>
+                <span style="color:#6c757d;">to</span>
+                <select id="fiToYear" class="form-control" style="width:auto;"></select>
                 <label style="font-weight:600; margin:0;">Compare</label>
                 <div id="fiCompareWrap" style="position:relative; display:inline-block;">
                     <button type="button" id="fiCompareBtn" class="btn btn-outline-info" style="min-width:200px; text-align:left;">
@@ -1932,20 +1936,33 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-// Financial Indicators — multi-year trend (checkbox compare). Reuses Chart.js (v3).
+// Financial Indicators — multi-year trend (checkbox compare + year range). Chart.js v3.
 (function () {
     var CHART = null, DATA = null;
     var PORT = '#17a2b8';
     var PALETTE = ['#e67e22', '#2c82c9', '#27ae60', '#8e44ad', '#c0392b', '#16a085',
                    '#d35400', '#2980b9', '#f39c12', '#7f8c8d', '#c2185b', '#00838f'];
     function unit(key) { return key === 'rentPerSqm' ? ' \u20ac/m\u00b2' : '%'; }
-    function styleFor(color) {
+    function styleFor(color, years) {
         return {
             borderColor: color, backgroundColor: color, tension: 0.25, spanGaps: true,
             pointBackgroundColor: color,
-            pointStyle: DATA.years.map(function (y) { return y >= DATA.current_year ? 'rectRot' : 'circle'; }),
-            pointRadius: DATA.years.map(function (y) { return y >= DATA.current_year ? 5 : 3; })
+            pointStyle: years.map(function (y) { return y >= DATA.current_year ? 'rectRot' : 'circle'; }),
+            pointRadius: years.map(function (y) { return y >= DATA.current_year ? 5 : 3; })
         };
+    }
+    function rangeIdx() {
+        var fromEl = document.getElementById('fiFromYear');
+        var toEl = document.getElementById('fiToYear');
+        var from = fromEl ? parseInt(fromEl.value, 10) : DATA.years[0];
+        var to = toEl ? parseInt(toEl.value, 10) : DATA.years[DATA.years.length - 1];
+        if (isNaN(from)) from = DATA.years[0];
+        if (isNaN(to)) to = DATA.years[DATA.years.length - 1];
+        if (from > to) { var tmp = from; from = to; to = tmp; }
+        var i0 = DATA.years.indexOf(from), i1 = DATA.years.indexOf(to);
+        if (i0 < 0) i0 = 0;
+        if (i1 < 0) i1 = DATA.years.length - 1;
+        return [i0, i1];
     }
     function selectedIds() {
         return Array.prototype.slice.call(document.querySelectorAll('.fi-cmp-cb:checked'))
@@ -1956,13 +1973,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var el = document.getElementById('fiCompareLabel');
         if (el) el.textContent = (n === 0) ? 'Portfolio only' : (n + ' selected');
     }
-    function datasets(ind) {
-        var out = [Object.assign({ label: 'Portfolio', data: DATA.portfolio[ind] }, styleFor(PORT))];
+    function datasets(ind, i0, i1, vYears) {
+        var out = [Object.assign({ label: 'Portfolio', data: DATA.portfolio[ind].slice(i0, i1 + 1) }, styleFor(PORT, vYears))];
         var ids = selectedIds(), ci = 0;
         DATA.properties.forEach(function (p) {
             if (ids.indexOf(String(p.id)) === -1) return;
             var color = PALETTE[ci % PALETTE.length]; ci++;
-            out.push(Object.assign({ label: p.name, data: p[ind] }, styleFor(color)));
+            out.push(Object.assign({ label: p.name, data: p[ind].slice(i0, i1 + 1) }, styleFor(color, vYears)));
         });
         return out;
     }
@@ -1972,10 +1989,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var ind = document.getElementById('fiTrendIndicator').value;
         var canvas = document.getElementById('fiTrendChart');
         if (!canvas) return;
+        var idx = rangeIdx();
+        var vYears = DATA.years.slice(idx[0], idx[1] + 1);
         if (CHART) { CHART.destroy(); CHART = null; }
         CHART = new Chart(canvas.getContext('2d'), {
             type: 'line',
-            data: { labels: DATA.years, datasets: datasets(ind) },
+            data: { labels: vYears, datasets: datasets(ind, idx[0], idx[1], vYears) },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
@@ -1986,6 +2005,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 scales: { y: { ticks: { callback: function (v) { return v + unit(ind); } } } }
             }
+        });
+    }
+    function fillYearSelect(sel, years, def) {
+        if (!sel) return;
+        sel.innerHTML = '';
+        years.forEach(function (y) {
+            var o = document.createElement('option'); o.value = y; o.textContent = y;
+            if (y === def) o.selected = true;
+            sel.appendChild(o);
         });
     }
     function buildList() {
@@ -2013,6 +2041,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function (d) {
                 if (d.error) { console.error('trend:', d.error); return; }
                 DATA = d;
+                var ys = d.years || [];
+                fillYearSelect(document.getElementById('fiFromYear'), ys, ys[0]);
+                fillYearSelect(document.getElementById('fiToYear'), ys, ys[ys.length - 1]);
                 buildList();
                 render();
             })
@@ -2025,7 +2056,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var btn = document.getElementById('fiCompareBtn');
         var panel = document.getElementById('fiComparePanel');
         var wrap = document.getElementById('fiCompareWrap');
+        var fromEl = document.getElementById('fiFromYear');
+        var toEl = document.getElementById('fiToYear');
         if (i) i.addEventListener('change', render);
+        if (fromEl) fromEl.addEventListener('change', render);
+        if (toEl) toEl.addEventListener('change', render);
         if (all) all.addEventListener('click', function () { setAll(true); });
         if (none) none.addEventListener('click', function () { setAll(false); });
         if (btn && panel) btn.addEventListener('click', function (e) {
