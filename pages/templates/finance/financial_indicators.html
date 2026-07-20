@@ -2015,10 +2015,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     legend: { display: true, position: 'bottom' },
                     tooltip: { callbacks: { label: function (c) {
-                        return c.dataset.label + ': ' + (c.parsed.y == null ? 'n/a' : c.parsed.y + unit(ind));
+                        return c.dataset.label + ': ' + (c.parsed.y == null ? 'n/a' : c.parsed.y.toFixed(2) + unit(ind));
                     } } }
                 },
-                scales: { y: { ticks: { callback: function (v) { return v + unit(ind); } } } }
+                scales: { y: { ticks: { callback: function (v) { return (ind === 'rentPerSqm' ? v.toFixed(2) : v.toFixed(1)) + unit(ind); } } } }
             }
         });
     }
