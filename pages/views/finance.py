@@ -57,6 +57,7 @@ from pages.models import (
     tenant, act_expense, VacancyPeriod,
     FinancialFigureHistory, record_expense_history, record_revenue_history,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
+    property_annual_lease_revenue, property_annual_budgeted_expenses,
 )
 
 # Helpers split across two modules after the dashboard / properties splits.
@@ -1588,10 +1589,10 @@ def financial_indicators_view(request):
 
             for prop in properties:
                 # Get revenue totals using your existing revenue model structure
-                revenue_total = calculate_property_revenue(prop)
+                revenue_total = property_annual_lease_revenue(prop)  # lease-driven, matches the P&L
 
                 # Get ONLY budgeted expense totals using your existing expense model
-                budgeted_expense_total = calculate_property_budgeted_expenses(prop)
+                budgeted_expense_total = property_annual_budgeted_expenses(prop)  # effective-dated, matches the P&L
 
                 # Get property values - ONLY for active properties
                 # Use prefetched data

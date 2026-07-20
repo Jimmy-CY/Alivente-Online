@@ -3416,3 +3416,35 @@ def current_lease_revenue(prop, today=None):
         l = max(active, key=lambda x: x.tenant_lease_start_date)
         return (l.tenant_rent or 0, l.tenant_levies or 0, True, True)
     return (0, 0, True, False)
+
+
+def property_annual_lease_revenue(prop, year=None):
+    """Annual revenue for a property, matching the P&L exactly: lease-driven rent +
+    levies for a leased property (current-year future months continued at the
+    current rent) plus any ancillary revenue-table rows; the revenue table as-is
+    for seasonal / no-lease properties. Sums the same rows lease_revenue_rows feeds
+    the P&L, so Financial Indicators and the P&L never disagree."""
+    year = year or _fh_date.today().year
+    total = _fh_Decimal('0')
+    for r in lease_revenue_rows(prop, year):
+        for mm in _FH_REV_MON:
+            total += (getattr(r, 'revenue_' + mm, 0) or 0)
+    return total
+
+
+def property_annual_budgeted_expenses(prop, year=None):
+    """Annual budgeted expenses for a property, matching the P&L: each expense row
+    resolved to the effective-dated figure in force during `year` (rows with no
+    history keep their current monthly cells)."""
+    year = year or _fh_date.today().year
+    vals_map = resolve_year_months_bulk([prop.prop_id], FinancialFigureHistory.KIND_BUDGET, year)
+    total = _fh_Decimal('0')
+    for e in prop.expense_set.all():
+        vals = vals_map.get(e.expense_id)
+        if vals is not None:
+            for v in vals:
+                total += (v or 0)
+        else:
+            for mm in _FH_REV_MON:
+                total += (getattr(e, 'expense_' + mm, 0) or 0)
+    return total

@@ -214,7 +214,7 @@
     <div class="table-responsive pl-table-wrap">
         {% if projected_cols %}
         <style>
-        {% for c in projected_cols %}.pl-act-table > thead > tr > th:nth-child({{ c }}), .pl-act-table > tbody > tr > td:nth-child({{ c }}) {  background-color: #fff3cd !important; }
+        {% for c in projected_cols %}.pl-act-table > thead > tr > th:nth-child({{ c }}), .pl-act-table > tbody > tr:not(.section-header) > td:nth-child({{ c }}) {  background-color: #fff3cd !important; }
         {% endfor %}
         </style>
         <div class="pl-projection-note" style="margin:6px 0;padding:6px 10px;background:#fff3cd;border-left:4px solid #ffc107;border-radius:4px;font-size:0.85rem;color:#7a5b00;">
