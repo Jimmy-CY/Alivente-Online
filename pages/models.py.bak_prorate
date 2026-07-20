@@ -3435,37 +3435,18 @@ def property_annual_lease_revenue(prop, year=None):
 def property_annual_budgeted_expenses(prop, year=None):
     """Annual budgeted expenses for a property, matching the P&L: each expense row
     resolved to the effective-dated figure in force during `year` (rows with no
-    history keep their current monthly cells).
-
-    Pro-rated to the months the property was IN SERVICE that year, so a first
-    partial year does not carry a full 12 months of budget against only a few
-    months of rent. "In service from" is the property's earliest lease start (a
-    proxy for the purchase date): before that year -> nothing; the first year ->
-    from the lease-start month to December (any part of a month = a full month);
-    later years -> the full 12. A property with no leases (seasonal / no-lease)
-    is treated as in service all year, unchanged."""
+    history keep their current monthly cells)."""
     year = year or _fh_date.today().year
-    _first_lease = tenant.objects.filter(prop=prop).exclude(
-        tenant_lease_start_date__isnull=True).aggregate(
-            _m=Min('tenant_lease_start_date'))['_m']
-    if _first_lease is None:
-        _start_month = 1                     # no leases -> owned/active all year
-    elif _first_lease.year > year:
-        return _fh_Decimal('0')              # not yet in service this year
-    elif _first_lease.year == year:
-        _start_month = _first_lease.month    # first (partial) year
-    else:
-        _start_month = 1                     # full year
     vals_map = resolve_year_months_bulk([prop.prop_id], FinancialFigureHistory.KIND_BUDGET, year)
     total = _fh_Decimal('0')
     for e in prop.expense_set.all():
         vals = vals_map.get(e.expense_id)
         if vals is not None:
-            for _i in range(_start_month - 1, 12):
-                total += (vals[_i] or 0)
+            for v in vals:
+                total += (v or 0)
         else:
-            for _i in range(_start_month - 1, 12):
-                total += (getattr(e, 'expense_' + _FH_REV_MON[_i], 0) or 0)
+            for mm in _FH_REV_MON:
+                total += (getattr(e, 'expense_' + mm, 0) or 0)
     return total
 
 
