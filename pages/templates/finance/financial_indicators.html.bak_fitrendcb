@@ -92,20 +92,11 @@
                     <option value="expensesToRevenue">Expenses to Revenue (%)</option>
                     <option value="rentPerSqm">Rent (&euro;/m&sup2;)</option>
                 </select>
-                <label style="font-weight:600; margin:0;">Compare</label>
-                <div id="fiCompareWrap" style="position:relative; display:inline-block;">
-                    <button type="button" id="fiCompareBtn" class="btn btn-outline-info" style="min-width:200px; text-align:left;">
-                        <span id="fiCompareLabel">Portfolio only</span>
-                        <i class="fas fa-caret-down" style="float:right; margin-top:4px;"></i>
-                    </button>
-                    <div id="fiComparePanel" style="display:none; position:absolute; z-index:1000; top:calc(100% + 4px); left:0; min-width:240px; max-height:280px; overflow-y:auto; background:#fff; border:1px solid #ced4da; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.15); padding:8px;">
-                        <div style="display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid #eee; margin-bottom:6px;">
-                            <button type="button" id="fiTrendAll" class="btn btn-sm btn-outline-info" style="flex:1;">All</button>
-                            <button type="button" id="fiTrendNone" class="btn btn-sm btn-outline-secondary" style="flex:1;">None</button>
-                        </div>
-                        <div id="fiCompareList"></div>
-                    </div>
-                </div>
+                <label for="fiTrendProperty" style="font-weight:600; margin:0;">Compare</label>
+                <select id="fiTrendProperty" class="form-control" multiple size="4" style="width:auto; min-width:200px;">
+                </select>
+                <button type="button" id="fiTrendAll" class="btn btn-sm btn-outline-info">All</button>
+                <button type="button" id="fiTrendNone" class="btn btn-sm btn-outline-secondary">None</button>
             </div>
         </div>
         <p style="font-size:0.85rem; color:#6c757d; margin:0 0 10px;">
@@ -1932,14 +1923,16 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-// Financial Indicators — multi-year trend (checkbox compare). Reuses Chart.js (v3).
+// Financial Indicators — multi-year trend (Phase B, multi-compare). Reuses Chart.js (v3).
 (function () {
     var CHART = null, DATA = null;
     var PORT = '#17a2b8';
+    // distinct palette for compared properties (portfolio stays teal)
     var PALETTE = ['#e67e22', '#2c82c9', '#27ae60', '#8e44ad', '#c0392b', '#16a085',
                    '#d35400', '#2980b9', '#f39c12', '#7f8c8d', '#c2185b', '#00838f'];
     function unit(key) { return key === 'rentPerSqm' ? ' \u20ac/m\u00b2' : '%'; }
     function styleFor(color) {
+        // shape marks projection (current + future = diamond), colour stays per-line
         return {
             borderColor: color, backgroundColor: color, tension: 0.25, spanGaps: true,
             pointBackgroundColor: color,
@@ -1948,17 +1941,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     function selectedIds() {
-        return Array.prototype.slice.call(document.querySelectorAll('.fi-cmp-cb:checked'))
-            .map(function (c) { return c.value; });
-    }
-    function updateLabel() {
-        var n = selectedIds().length;
-        var el = document.getElementById('fiCompareLabel');
-        if (el) el.textContent = (n === 0) ? 'Portfolio only' : (n + ' selected');
+        var sel = document.getElementById('fiTrendProperty');
+        return Array.prototype.slice.call(sel.selectedOptions || []).map(function (o) { return o.value; });
     }
     function datasets(ind) {
         var out = [Object.assign({ label: 'Portfolio', data: DATA.portfolio[ind] }, styleFor(PORT))];
-        var ids = selectedIds(), ci = 0;
+        var ids = selectedIds();
+        var ci = 0;
         DATA.properties.forEach(function (p) {
             if (ids.indexOf(String(p.id)) === -1) return;
             var color = PALETTE[ci % PALETTE.length]; ci++;
@@ -1968,7 +1957,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function render() {
         if (!DATA) return;
-        updateLabel();
         var ind = document.getElementById('fiTrendIndicator').value;
         var canvas = document.getElementById('fiTrendChart');
         if (!canvas) return;
@@ -1988,53 +1976,35 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    function buildList() {
-        var list = document.getElementById('fiCompareList');
-        if (!list) return;
-        list.innerHTML = '';
-        (DATA.properties || []).forEach(function (p) {
-            var lbl = document.createElement('label');
-            lbl.style.cssText = 'display:flex; align-items:center; gap:8px; padding:4px 6px; cursor:pointer; font-weight:normal; margin:0;';
-            var cb = document.createElement('input');
-            cb.type = 'checkbox'; cb.className = 'fi-cmp-cb'; cb.value = p.id;
-            cb.addEventListener('change', render);
-            lbl.appendChild(cb);
-            lbl.appendChild(document.createTextNode(' ' + p.name));
-            list.appendChild(lbl);
-        });
-    }
-    function setAll(on) {
-        document.querySelectorAll('.fi-cmp-cb').forEach(function (c) { c.checked = on; });
-        render();
-    }
     function load() {
         fetch(window.location.pathname + '?trend=1', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (r) { return r.json(); })
             .then(function (d) {
                 if (d.error) { console.error('trend:', d.error); return; }
                 DATA = d;
-                buildList();
+                var sel = document.getElementById('fiTrendProperty');
+                sel.innerHTML = '';
+                (d.properties || []).forEach(function (p) {
+                    var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o);
+                });
                 render();
             })
             .catch(function (e) { console.error('trend load failed', e); });
     }
+    function setAll(on) {
+        var sel = document.getElementById('fiTrendProperty');
+        Array.prototype.slice.call(sel.options).forEach(function (o) { o.selected = on; });
+        render();
+    }
     document.addEventListener('DOMContentLoaded', function () {
         var i = document.getElementById('fiTrendIndicator');
+        var p = document.getElementById('fiTrendProperty');
         var all = document.getElementById('fiTrendAll');
         var none = document.getElementById('fiTrendNone');
-        var btn = document.getElementById('fiCompareBtn');
-        var panel = document.getElementById('fiComparePanel');
-        var wrap = document.getElementById('fiCompareWrap');
         if (i) i.addEventListener('change', render);
+        if (p) p.addEventListener('change', render);
         if (all) all.addEventListener('click', function () { setAll(true); });
         if (none) none.addEventListener('click', function () { setAll(false); });
-        if (btn && panel) btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
-        });
-        document.addEventListener('click', function (e) {
-            if (panel && wrap && !wrap.contains(e.target)) panel.style.display = 'none';
-        });
         if (typeof Chart !== 'undefined') { load(); }
     });
 })();
