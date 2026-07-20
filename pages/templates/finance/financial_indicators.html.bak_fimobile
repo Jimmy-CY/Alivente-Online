@@ -38,21 +38,6 @@
         </a>
     </div>
 
-    <style>
-    /* Mobile: stack the Financial Indicators controls full-width (matches app standard) */
-    @media (max-width: 768px) {
-        .fi-controls { flex-direction: column !important; align-items: stretch !important; }
-        .fi-controls > div { width: 100%; }
-        .fi-controls select { width: 100% !important; }
-        .fi-trend-header { flex-direction: column !important; align-items: stretch !important; }
-        .fi-trend-controls { flex-direction: column !important; align-items: stretch !important; }
-        .fi-trend-controls select,
-        .fi-trend-controls #fiCompareWrap,
-        .fi-trend-controls #fiCompareBtn { width: 100% !important; }
-        .fi-trend-controls #fiComparePanel { width: 100%; min-width: 0; }
-    }
-    </style>
-
     <!-- Year + Basis controls (year-aware Financial Indicators) -->
     <div class="fi-controls" style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:0 0 18px;">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -97,9 +82,9 @@
 
     <!-- Trends over the years (Phase B) -->
     <div id="fiTrendSection" style="margin-top:30px;">
-        <div class="fi-trend-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
             <h5 style="margin:0; color:#17a2b8;"><i class="fas fa-chart-line"></i> Trends Over the Years</h5>
-            <div class="fi-trend-controls" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <label for="fiTrendIndicator" style="font-weight:600; margin:0;">Indicator</label>
                 <select id="fiTrendIndicator" class="form-control" style="width:auto;">
                     <option value="netROI">Net ROI (%)</option>
