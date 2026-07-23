@@ -2229,7 +2229,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         var ymax=Math.ceil(Math.max.apply(null,ys)*1.12);
         var xstep=Math.max(1, Math.ceil((xmax-xmin)/8));
         var ystep=Math.max(1, Math.ceil(ymax/7));
-        return { xmin:xmin, xmax:xmax, ymax:ymax, ymin:-ystep, xstep:xstep, ystep:ystep };
+        return { xmin:xmin, xmax:xmax, ymax:ymax, xstep:xstep, ystep:ystep };
     }
 
     function renderChart(){
@@ -2244,7 +2244,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 interaction:{ mode:'nearest', intersect:true },
                 scales:{
                     x:{ min:b.xmin, max:b.xmax, title:{display:true, text:'Rent change vs prior year (%)'}, ticks:{ stepSize:b.xstep, callback:function(v){ return (v>0?'+':'')+v+'%'; } }, grid:{display:false} },
-                    y:{ min:b.ymin, max:b.ymax, title:{display:true, text:'Surprise (ad-hoc) costs as % of rent'}, ticks:{ stepSize:b.ystep, callback:function(v){ return v+'%'; } }, grid:{display:false} }
+                    y:{ min:0, max:b.ymax, title:{display:true, text:'Surprise (ad-hoc) costs as % of rent'}, ticks:{ stepSize:b.ystep, callback:function(v){ return v+'%'; } }, grid:{display:false} }
                 },
                 plugins:{
                     legend:{ display:false },

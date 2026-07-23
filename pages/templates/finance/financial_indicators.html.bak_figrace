@@ -2018,7 +2018,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         return c.dataset.label + ': ' + (c.parsed.y == null ? 'n/a' : c.parsed.y.toFixed(2) + unit(ind));
                     } } }
                 },
-                scales: { y: { grace: '10%', ticks: { callback: function (v) { return (ind === 'rentPerSqm' ? v.toFixed(2) : v.toFixed(1)) + unit(ind); } } } }
+                scales: { y: { ticks: { callback: function (v) { return (ind === 'rentPerSqm' ? v.toFixed(2) : v.toFixed(1)) + unit(ind); } } } }
             }
         });
     }
