@@ -586,16 +586,6 @@
 .mobile-action-bar { display: none !important; }
 .mobile-sort-control { display: none !important; }
 
-/* Desktop actions — compact icon buttons, kept on one row */
-.desktop-action-cell { white-space: nowrap; }
-.desktop-action-cell .btn {
-    padding: 4px 8px;
-    font-size: 12px;
-    line-height: 1;
-    margin: 0 2px;
-    vertical-align: middle;
-}
-
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
