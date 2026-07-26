@@ -507,46 +507,6 @@ def physical_invoice_list(request):
 
 @login_required
 @permission_required('auth.can_edit_invoices', raise_exception=True)
-def _build_line_suggestions():
-    """History for the invoice-line autocomplete: every distinct Service ever
-    used on a physical-invoice line, and for each Service the distinct Units and
-    Descriptions captured against it (across all invoices). Services and Units
-    are case-folded for de-duplication; Descriptions keep newest-first order so
-    the most recent wording is offered first for editing."""
-    svc_display, by_service = {}, {}
-    seen_u, seen_d = {}, {}
-    all_units, all_units_seen = [], set()
-    rows = (PhysicalInvoiceLine.objects
-            .exclude(service="")
-            .values_list("service", "unit_of_measure", "description")
-            .order_by("-physical_invoice_line_id"))
-    for svc, uom, desc in rows:
-        svc = (svc or "").strip()
-        if not svc:
-            continue
-        key = svc.upper()
-        if key not in by_service:
-            by_service[key] = {"units": [], "descriptions": []}
-            seen_u[key], seen_d[key] = set(), set()
-            svc_display[key] = svc
-        uom = (uom or "").strip()
-        desc = (desc or "").strip()
-        if uom and uom.upper() not in seen_u[key]:
-            seen_u[key].add(uom.upper())
-            by_service[key]["units"].append(uom)
-        if desc and desc not in seen_d[key]:
-            seen_d[key].add(desc)
-            by_service[key]["descriptions"].append(desc)
-        if uom and uom.upper() not in all_units_seen:
-            all_units_seen.add(uom.upper())
-            all_units.append(uom)
-    for k in by_service:
-        by_service[k]["units"].sort(key=lambda s: s.lower())
-    services = sorted(svc_display.values(), key=lambda s: s.lower())
-    all_units.sort(key=lambda s: s.lower())
-    return {"services": services, "by_service": by_service, "all_units": all_units}
-
-
 def physical_invoice_edit(request, physical_invoice_id):
     """Edit the line rows of a DRAFT physical invoice; Save recomputes totals.
 
@@ -625,7 +585,6 @@ def physical_invoice_edit(request, physical_invoice_id):
         "vat_display": _money(pi.vat),
         "total_display": _money(pi.total),
         "is_editable": pi.is_editable,
-        "pi_suggest": _build_line_suggestions(),
     }
     return render(request, "physical_invoice_edit.html", context)
 
