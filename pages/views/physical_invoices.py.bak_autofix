@@ -505,6 +505,8 @@ def physical_invoice_list(request):
     }
     return render(request, "physical_invoice_list.html", context)
 
+@login_required
+@permission_required('auth.can_edit_invoices', raise_exception=True)
 def _build_line_suggestions():
     """History for the invoice-line autocomplete: every distinct Service ever
     used on a physical-invoice line, and for each Service the distinct Units and
@@ -545,8 +547,6 @@ def _build_line_suggestions():
     return {"services": services, "by_service": by_service, "all_units": all_units}
 
 
-@login_required
-@permission_required('auth.can_edit_invoices', raise_exception=True)
 def physical_invoice_edit(request, physical_invoice_id):
     """Edit the line rows of a DRAFT physical invoice; Save recomputes totals.
 
