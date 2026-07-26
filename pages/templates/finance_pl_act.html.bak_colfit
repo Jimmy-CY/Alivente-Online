@@ -680,17 +680,6 @@ body { overflow-x: hidden; }
     font-size: 0.8rem;
 }
 
-/* Numeric month + total/avg columns: tighter horizontal padding and a slightly
-   smaller font so 6-7 character figures (e.g. 15,564 or -2,499) fit inside the
-   fixed 5.5% columns instead of being clipped with an ellipsis. Desktop/tablet
-   only; phone-landscape sizing is handled inline by applyTableSizing(). */
-.pl-act-table td:not(:first-child),
-.pl-act-table th:not(:first-child) {
-    padding-left: 3px;
-    padding-right: 3px;
-    font-size: 0.75rem;
-}
-
 /* Column widths as percentages of the table — sum to 100% so the table
    fills the wrap on any viewport without forcing horizontal scroll.
    Mirrors the percentages used by the phone-landscape JS in
