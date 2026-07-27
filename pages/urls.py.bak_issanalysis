@@ -291,7 +291,6 @@ urlpatterns = [
     path('comments-report/', views.comments_report, name='comments_report'),
     path('delete-comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     path('issue-details/<int:issue_id>/', views.get_issue_details, name='get_issue_details'),
-    path('issues-analysis-data/', views.issues_analysis_data, name='issues_analysis_data'),
     path('issues/comments/<int:comment_id>/notify-urgent/', views.notify_comment_urgent, name='notify_comment_urgent'),
 
 
