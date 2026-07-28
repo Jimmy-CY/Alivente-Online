@@ -2654,6 +2654,9 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   var BUCKETS=[{label:'0–30 days',min:0,max:30,c:GOOD},{label:'31–90 days',min:31,max:90,c:WARN},
     {label:'90–180 days',min:91,max:180,c:SERIOUS},{label:'180+ days',min:181,max:1e9,c:CRIT}];
   var DATA=null, selected=null, charts={}, loaded=false, dlReady=false;
+  var lastDrill=null, pendingReturn=null;   // for restoring the drill-down after visiting an issue
+  // Captured at parse time — BEFORE the page's refresh handler strips ?refresh via replaceState.
+  var HAD_REFRESH=/[?&]refresh=true/.test(location.search);
 
   function $(id){return document.getElementById(id);}
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -2792,7 +2795,7 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     var open=!list[0].is_resolved;
     var body=list.map(function(i){return '<tr>'+
       '<td data-label="Property">'+esc(i.prop)+'</td>'+
-      '<td data-label="Issue"><a class="ia-link" href="'+esc(i.url)+'" target="_blank" rel="noopener">'+esc(i.head)+'</a>'+(i.desc?'<br><span style="color:#898781">'+esc(i.desc)+'</span>':'')+'</td>'+
+      '<td data-label="Issue"><a class="ia-link" href="'+esc(i.url)+'">'+esc(i.head)+'</a>'+(i.desc?'<br><span style="color:#898781">'+esc(i.desc)+'</span>':'')+'</td>'+
       '<td class="num" data-label="Logged">'+fmtDate(i.logged)+'</td>'+
       '<td class="num" data-label="Status">'+(i.is_resolved?'<span class="ia-badge res">Resolved</span>':'<span class="ia-badge open">'+esc(i.status)+'</span>')+'</td>'+
       '<td class="num" data-label="'+(open?'Age':'Days')+'">'+(i.is_resolved?(i.days_to_resolve!=null?i.days_to_resolve+'d':'–'):(i.age_days!=null?ageChip(i.age_days):'–'))+'</td>'+
@@ -2800,6 +2803,7 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     return '<table class="ia-tbl"><thead><tr><th>Property</th><th>Issue</th><th class="num">Logged</th><th class="num">Status</th><th class="num">'+(open?'Age':'Days')+'</th></tr></thead><tbody>'+body+'</tbody></table>';
   }
   function showDrill(title,list,tag){
+    lastDrill={title:title,list:list,tag:tag||MUTED};
     $('iaDrillTitle').textContent=title;
     $('iaDrillCount').textContent=list.length+' issue'+(list.length===1?'':'s');
     $('iaDrillTag').style.background=tag||MUTED;
@@ -2824,12 +2828,58 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
       $('iaDrillClose').addEventListener('click',closeDrill);
       $('iaDrillOverlay').addEventListener('click',function(e){if(e.target.id==='iaDrillOverlay')closeDrill();});
       document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrill();});
+      // Remember the open drill-down when opening an issue, so Back returns here.
+      $('iaDrillBody').addEventListener('click',function(e){
+        var a=e.target.closest?e.target.closest('a.ia-link'):null; if(!a||!lastDrill)return;
+        try{
+          var at=document.querySelector('#issuesAnalysisModal .ia-tab.active');
+          var payload=JSON.stringify({
+            tab:at?at.dataset.panel:'prop', title:lastDrill.title, tag:lastDrill.tag, list:lastDrill.list
+          });
+          sessionStorage.setItem('iaReturn',payload);
+          console.log('[iaReturn] saved',payload.length,'bytes');
+        }catch(err){ console.log('[iaReturn] save failed',err); }
+      });
     }
     if(window.jQuery){
       jQuery('#issuesAnalysisModal').on('shown.bs.modal',function(){
         if(!loaded){loaded=true; load();}
         else { Object.keys(charts).forEach(function(k){if(charts[k])charts[k].resize();}); }
+        if(pendingReturn){
+          var pr=pendingReturn; pendingReturn=null;
+          try{ sessionStorage.removeItem('iaReturn'); }catch(e){}  // only consume once actually shown
+          console.log('[iaReturn] restoring drill:',pr.title);
+          if(pr.tab){ var tb=document.querySelector('#issuesAnalysisModal .ia-tab[data-panel="'+pr.tab+'"]'); if(tb)tb.click(); }
+          if(pr.list&&pr.list.length){ showDrill(pr.title,pr.list,pr.tag); }
+        }
       });
+    }
+    // Returning from an issue detail page: reopen the modal + the drill-down we left.
+    // Skip on the ?refresh=true bounce (the page reloads itself to strip that param);
+    // the marker is consumed on the clean reload that follows.
+    if(!HAD_REFRESH){
+      var _raw=null; try{ _raw=sessionStorage.getItem('iaReturn'); }catch(_e){}
+      console.log('[iaReturn] on load, marker=', _raw?('present ('+_raw.length+' bytes)'):'null');
+      if(_raw){
+        var _pr=null; try{ _pr=JSON.parse(_raw); }catch(_e){ console.log('[iaReturn] parse failed',_e); }
+        if(_pr){
+          // Wait until Bootstrap's modal plugin is actually available before showing.
+          // (Marker is removed only in the shown.bs.modal handler, once it truly opens.)
+          (function waitAndOpen(tries){
+            if(window.jQuery && jQuery.fn && jQuery.fn.modal){
+              console.log('[iaReturn] modal plugin ready after',tries,'tries — opening');
+              pendingReturn=_pr;
+              jQuery('#issuesAnalysisModal').modal('show');
+            } else if(tries<100){
+              setTimeout(function(){ waitAndOpen(tries+1); }, 50);
+            } else {
+              console.log('[iaReturn] gave up waiting for modal plugin');
+            }
+          })(0);
+        }
+      }
+    } else {
+      console.log('[iaReturn] skipped on ?refresh bounce (will restore on the clean reload)');
     }
   });
 })();
