@@ -2522,13 +2522,6 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
       <div class="modal-body ia-body">
 
         <div class="ia-controls">
-          <div class="ia-ctl">
-            <span>Properties:</span>
-            <div class="ia-dd">
-              <button type="button" class="ia-pill" id="iaPropBtn">All properties <span class="cr">&#9662;</span></button>
-              <div class="ia-dd-menu" id="iaPropMenu" hidden></div>
-            </div>
-          </div>
           <div class="ia-ctl"><span>From:</span><select class="ia-pill" id="iaFrom"></select></div>
           <div class="ia-ctl"><span>To:</span><select class="ia-pill" id="iaTo"></select></div>
         </div>
@@ -2684,23 +2677,8 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   }
 
   function buildControls(){
+    // Analysis always covers every property — no in-modal property selector.
     selected={}; (DATA.properties||[]).forEach(function(p){selected[p.id]=true;});
-    var menu=$('iaPropMenu'); var h='<label class="ia-selall"><input type="checkbox" id="iaSelAll" checked> Select all</label>';
-    (DATA.properties||[]).forEach(function(p){
-      h+='<label><input type="checkbox" class="iaProp" value="'+p.id+'" checked> '+esc(p.name)+'</label>';
-    });
-    menu.innerHTML=h;
-    $('iaSelAll').addEventListener('change',function(){
-      var on=this.checked; menu.querySelectorAll('.iaProp').forEach(function(c){c.checked=on; selected[+c.value]=on;});
-      updatePropBtn(); recompute();
-    });
-    menu.querySelectorAll('.iaProp').forEach(function(c){
-      c.addEventListener('change',function(){ selected[+c.value]=c.checked;
-        var all=menu.querySelectorAll('.iaProp'), on=menu.querySelectorAll('.iaProp:checked');
-        $('iaSelAll').checked=(all.length===on.length); updatePropBtn(); recompute(); });
-    });
-    $('iaPropBtn').onclick=function(e){e.stopPropagation();menu.hidden=!menu.hidden;};
-    document.addEventListener('click',function(e){ if(!$('iaPropMenu').contains(e.target)&&e.target!==$('iaPropBtn')) $('iaPropMenu').hidden=true; });
 
     var years=(DATA.years&&DATA.years.length)?DATA.years.slice():[DATA.current_year];
     var from=$('iaFrom'), to=$('iaTo'); from.innerHTML=''; to.innerHTML='';
@@ -2708,11 +2686,6 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     from.value=years[0]; to.value=years[years.length-1];
     from.onchange=function(){ if(+from.value>+to.value) to.value=from.value; recompute(); };
     to.onchange=function(){ if(+to.value<+from.value) from.value=to.value; recompute(); };
-    updatePropBtn();
-  }
-  function updatePropBtn(){
-    var all=DATA.properties.length, on=DATA.properties.filter(function(p){return selected[p.id];}).length;
-    $('iaPropBtn').innerHTML=(on===all?'All properties':on+' of '+all)+' <span class="cr">&#9662;</span>';
   }
 
   function windowed(){
