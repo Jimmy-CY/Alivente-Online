@@ -2833,12 +2833,10 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
         var a=e.target.closest?e.target.closest('a.ia-link'):null; if(!a||!lastDrill)return;
         try{
           var at=document.querySelector('#issuesAnalysisModal .ia-tab.active');
-          var payload=JSON.stringify({
+          sessionStorage.setItem('iaReturn',JSON.stringify({
             tab:at?at.dataset.panel:'prop', title:lastDrill.title, tag:lastDrill.tag, list:lastDrill.list
-          });
-          sessionStorage.setItem('iaReturn',payload);
-          console.log('[iaReturn] saved',payload.length,'bytes');
-        }catch(err){ console.log('[iaReturn] save failed',err); }
+          }));
+        }catch(err){}
       });
     }
     if(window.jQuery){
@@ -2848,7 +2846,6 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
         if(pendingReturn){
           var pr=pendingReturn; pendingReturn=null;
           try{ sessionStorage.removeItem('iaReturn'); }catch(e){}  // only consume once actually shown
-          console.log('[iaReturn] restoring drill:',pr.title);
           if(pr.tab){ var tb=document.querySelector('#issuesAnalysisModal .ia-tab[data-panel="'+pr.tab+'"]'); if(tb)tb.click(); }
           if(pr.list&&pr.list.length){ showDrill(pr.title,pr.list,pr.tag); }
         }
@@ -2859,27 +2856,21 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     // the marker is consumed on the clean reload that follows.
     if(!HAD_REFRESH){
       var _raw=null; try{ _raw=sessionStorage.getItem('iaReturn'); }catch(_e){}
-      console.log('[iaReturn] on load, marker=', _raw?('present ('+_raw.length+' bytes)'):'null');
       if(_raw){
-        var _pr=null; try{ _pr=JSON.parse(_raw); }catch(_e){ console.log('[iaReturn] parse failed',_e); }
+        var _pr=null; try{ _pr=JSON.parse(_raw); }catch(_e){}
         if(_pr){
           // Wait until Bootstrap's modal plugin is actually available before showing.
           // (Marker is removed only in the shown.bs.modal handler, once it truly opens.)
           (function waitAndOpen(tries){
             if(window.jQuery && jQuery.fn && jQuery.fn.modal){
-              console.log('[iaReturn] modal plugin ready after',tries,'tries — opening');
               pendingReturn=_pr;
               jQuery('#issuesAnalysisModal').modal('show');
             } else if(tries<100){
               setTimeout(function(){ waitAndOpen(tries+1); }, 50);
-            } else {
-              console.log('[iaReturn] gave up waiting for modal plugin');
             }
           })(0);
         }
       }
-    } else {
-      console.log('[iaReturn] skipped on ?refresh bounce (will restore on the clean reload)');
     }
   });
 })();
