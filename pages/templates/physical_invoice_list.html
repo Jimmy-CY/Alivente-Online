@@ -149,13 +149,14 @@ Physical Invoices
     <table class="table table-bordered table-striped text-center pi-table">
       <thead>
         <tr>
-          <th style="width: 12%">Number</th>
-          <th style="text-align: left; width: 26%">Name</th>
-          <th style="width: 9%">Type</th>
-          <th style="width: 15%">Property</th>
-          <th style="width: 13%">Total</th>
-          <th style="width: 10%">Status</th>
-          <th style="width: 15%">Actions</th>
+          <th style="width: 11%">Number</th>
+          <th style="width: 11%">Date</th>
+          <th style="text-align: left; width: 22%">Name</th>
+          <th style="width: 8%">Type</th>
+          <th style="width: 14%">Property</th>
+          <th style="width: 12%">Total</th>
+          <th style="width: 8%">Status</th>
+          <th style="width: 14%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -168,6 +169,7 @@ Physical Invoices
                 <a href="{% url 'physical_invoice_edit' row.pk %}" class="pi-number-link">{{ row.number }}</a>
               {% endif %}
             </td>
+            <td data-label="Date">{{ row.invoice_date_display }}</td>
             <td data-label="Name" style="text-align: left">{{ row.tenant }}</td>
             <td data-label="Type">
               <span class="type-badge type-{% if row.is_customer %}customer{% else %}tenant{% endif %}">{{ row.kind }}</span>
@@ -300,7 +302,7 @@ Physical Invoices
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="pi-empty">
+            <td colspan="8" class="pi-empty">
               <i class="fas fa-inbox"></i>
               <div>{% if show_all %}No physical invoices yet.{% else %}No physical invoices for {{ period_label }}.{% endif %}</div>
               <div class="pi-empty-sub">Drafts appear here once the prepare cron has run for this month.</div>

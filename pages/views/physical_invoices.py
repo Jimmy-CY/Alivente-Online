@@ -442,8 +442,8 @@ def physical_invoice_list(request):
         qs = qs.filter(tenant__isnull=False)
     elif inv_type == "customer":
         qs = qs.filter(tenant__isnull=True)
-    # Order: newest invoice on top, oldest at the bottom (pure chronological),
-    # regardless of status. Recency = period month, then invoice date, then PR number.
+    # Order: Drafts always on top; everything else below, newest -> oldest.
+    # Within each tier, recency = period month, then invoice date, then PR number.
     def _trailing_int(value):
         digits = ""
         for ch in reversed((value or "").strip()):
@@ -454,9 +454,10 @@ def physical_invoice_list(request):
         return int(digits) if digits else 0
 
     def _sort_key(pi):
+        is_draft = 0 if pi.status == PhysicalInvoice.STATUS_DRAFT else 1
         idx = pi.period_year * 12 + pi.period_month
         day = (pi.invoice_date or date.min).toordinal()
-        return (-idx, -day, -_trailing_int(pi.invoice_number))
+        return (is_draft, -idx, -day, -_trailing_int(pi.invoice_number))
 
     qs = sorted(qs, key=_sort_key)
 
@@ -472,6 +473,8 @@ def physical_invoice_list(request):
         rows.append({
             "pk": pi.pk,
             "number": pi.invoice_number or "(on send)",
+            "invoice_date_display": (pi.invoice_date.strftime("%d.%m.%Y")
+                                     if pi.invoice_date else "—"),
             "tenant": who,
             "property": prop_name,
             "kind": "Customer" if is_customer else "Tenant",
