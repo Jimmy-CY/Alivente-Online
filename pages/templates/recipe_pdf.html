@@ -1,0 +1,142 @@
+{% comment %}
+============================================================================
+Recipe PDF export template — rendered server-side by the `recipe_pdf` view
+through xhtml2pdf (pisa). Kept deliberately simple: xhtml2pdf supports only
+a subset of HTML/CSS, so layout uses tables (not flexbox), plain class
+selectors (no descendant combinators), and inline-friendly styles.
+The recipe photo resolves via the view's link_callback (media URL -> disk).
+============================================================================
+{% endcomment %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4; margin: 1.4cm; }
+    body { font-family: Helvetica, Arial, sans-serif; color: #2c3e50; font-size: 11px; line-height: 1.35; }
+
+    h1.title { font-size: 23px; color: #1e8449; margin: 0 0 3px 0; }
+    p.subtitle { color: #6c757d; font-size: 12px; margin: 0; }
+
+    img.photo { width: 175px; }
+
+    td.mcell {
+        background-color: #eafaf1;
+        border: 1px solid #d4efdf;
+        padding: 6px 4px;
+    }
+    div.mlbl { color: #6c757d; font-size: 8px; }
+    div.mval { font-weight: bold; font-size: 12px; color: #2c3e50; }
+
+    span.tag {
+        background-color: #e8f5e9;
+        color: #1e7e34;
+        padding: 2px 7px;
+        font-size: 9px;
+    }
+
+    h2.sec {
+        font-size: 15px;
+        color: #1e8449;
+        border-bottom: 2px solid #d4efdf;
+        padding-bottom: 3px;
+        margin: 16px 0 6px 0;
+    }
+
+    div.grp { font-weight: bold; color: #117a8b; font-size: 12px; margin: 9px 0 3px 0; }
+
+    div.ing { padding: 2px 0; border-bottom: 0.5px solid #eeeeee; }
+    span.amt { font-weight: bold; color: #1e7e34; }
+    span.we { color: #6c757d; }
+
+    div.step { margin-bottom: 6px; }
+    span.num { color: #1e8449; font-weight: bold; }
+    span.tmin { color: #6c757d; font-style: italic; }
+
+    div.foot { margin-top: 18px; color: #adb5bd; font-size: 8px; text-align: center; }
+</style>
+</head>
+<body>
+
+    <!-- Title + photo -->
+    <table width="100%">
+        <tr>
+            <td width="64%" valign="top">
+                <h1 class="title">{{ recipe.recipe_name }}</h1>
+                {% if recipe.recipe_description %}
+                <p class="subtitle">{{ recipe.recipe_description }}</p>
+                {% endif %}
+            </td>
+            <td width="36%" valign="top" align="right">
+                {% if recipe.recipe_image %}
+                <img class="photo" src="{{ recipe.recipe_image.url }}" />
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <!-- Meta boxes -->
+    <table width="100%" cellspacing="4" style="margin-top: 10px;">
+        <tr>
+            {% if recipe.prep_time %}
+            <td class="mcell" align="center"><div class="mlbl">PREP TIME</div><div class="mval">{{ recipe.prep_time }} min</div></td>
+            {% endif %}
+            {% if recipe.cook_time %}
+            <td class="mcell" align="center"><div class="mlbl">COOK TIME</div><div class="mval">{{ recipe.cook_time }} min</div></td>
+            {% endif %}
+            {% if recipe.total_time %}
+            <td class="mcell" align="center"><div class="mlbl">TOTAL TIME</div><div class="mval">{{ recipe.total_time }} min</div></td>
+            {% endif %}
+            <td class="mcell" align="center"><div class="mlbl">SERVINGS</div><div class="mval">{{ recipe.servings }}</div></td>
+            {% if recipe.difficulty_level %}
+            <td class="mcell" align="center"><div class="mlbl">DIFFICULTY</div><div class="mval">{{ recipe.difficulty_level }}</div></td>
+            {% endif %}
+        </tr>
+    </table>
+
+    <!-- Tags -->
+    <div style="margin-top: 10px;">
+        {% for course in recipe.courses.all %}<span class="tag">{{ course.name }}</span>&nbsp;{% endfor %}
+        {% for category in recipe.categories.all %}<span class="tag">{{ category.name }}</span>&nbsp;{% endfor %}
+        {% if recipe.is_vegetarian %}<span class="tag">Vegetarian</span>&nbsp;{% else %}{% for protein in recipe.proteins.all %}<span class="tag">{{ protein.name }}</span>&nbsp;{% endfor %}{% endif %}
+        {% if recipe.author %}<span class="tag">{{ recipe.author }}</span>{% endif %}
+    </div>
+
+    <!-- Ingredients -->
+    <h2 class="sec">Ingredients</h2>
+    {% if ingredients %}
+        {% regroup ingredients by ingredient_group as ingredient_groups %}
+        {% for group in ingredient_groups %}
+            {% if group.grouper %}<div class="grp">{{ group.grouper }}</div>{% endif %}
+            {% for ing in group.list %}
+            <div class="ing">
+                <span class="amt">{{ ing.formatted_amount }}{% if ing.unit %} {{ ing.unit.abbreviation|default:ing.unit.name }}{% endif %}</span>
+                {{ ing.ingredient.name }}{% if ing.preparation %}, {{ ing.preparation.name }}{% endif %}{% if ing.weight_equivalent %} <span class="we">({{ ing.weight_equivalent }})</span>{% endif %}
+            </div>
+            {% endfor %}
+        {% endfor %}
+    {% else %}
+        <div style="color:#6c757d;"><em>No ingredients recorded.</em></div>
+    {% endif %}
+
+    <!-- Instructions -->
+    <h2 class="sec">Instructions</h2>
+    {% if instructions %}
+        {% regroup instructions by instruction_group as instruction_groups %}
+        {% for group in instruction_groups %}
+            {% if group.grouper %}<div class="grp">{{ group.grouper }}</div>{% endif %}
+            {% for step in group.list %}
+            <div class="step">
+                <span class="num">{{ step.step_number }}.</span>
+                {{ step.instruction_text }}{% if step.time_estimate %} <span class="tmin">(~{{ step.time_estimate }} min)</span>{% endif %}
+            </div>
+            {% endfor %}
+        {% endfor %}
+    {% else %}
+        <div style="color:#6c757d;"><em>No instructions recorded.</em></div>
+    {% endif %}
+
+    <div class="foot">Generated by ALIVENTE ONLINE</div>
+
+</body>
+</html>

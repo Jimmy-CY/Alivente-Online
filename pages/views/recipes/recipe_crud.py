@@ -68,8 +68,10 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template
+from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from pages.models import (
@@ -740,6 +742,106 @@ def view_recipe(request, recipe_id):
     }
 
     return render(request, 'view_recipe.html', context)
+
+
+# ============================================
+# VIEW: Recipe PDF (shareable)
+# ============================================
+
+@login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
+def recipe_pdf(request, recipe_id):
+    """Generate a shareable PDF of a recipe.
+
+    Backs the Share button on view_recipe.html: the browser fetches this
+    endpoint and hands the PDF to the native share sheet (Web Share API),
+    mirroring the title-deed share flow. Rendered with xhtml2pdf (pisa) from
+    the recipe_pdf.html template. Read-tier auth, matching view_recipe.
+    """
+    from xhtml2pdf import pisa  # local import — pisa is only needed here
+
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related('courses', 'categories', 'proteins'),
+        recipe_id=recipe_id,
+    )
+
+    # Ingredients with formatted amounts + weight equivalents (mirrors view_recipe)
+    ingredients = RecipeIngredient.objects.filter(recipe=recipe).select_related(
+        'ingredient', 'ingredient__category', 'unit', 'preparation',
+    ).order_by('ingredient_group', 'ingredient_order')
+
+    units_needed = set()
+    for ing in ingredients:
+        if ing.unit and ing.unit.unit_type != 'weight' and ing.amount:
+            units_needed.add(ing.unit_id)
+
+    conversion_map = {}
+    if units_needed:
+        conversions_qs = UnitConversion.objects.filter(
+            from_unit_id__in=units_needed
+        ).select_related('from_unit', 'to_unit', 'specific_ingredient')
+        for conv in conversions_qs:
+            conversion_map.setdefault((conv.from_unit_id, conv.specific_ingredient_id), conv)
+            if conv.specific_ingredient_id is None:
+                conversion_map.setdefault((conv.from_unit_id, None), conv)
+
+    for ing in ingredients:
+        ing.formatted_amount = format_quantity(ing.amount)
+        ing.weight_equivalent = None
+        if ing.unit and ing.unit.unit_type != 'weight':
+            try:
+                amount = float(ing.amount) if ing.amount else 0
+                if amount > 0:
+                    conversion = (
+                        conversion_map.get((ing.unit_id, ing.ingredient_id)) or
+                        conversion_map.get((ing.unit_id, None))
+                    )
+                    if conversion:
+                        weight_amount = round(amount * float(conversion.multiplier), 1)
+                        if weight_amount == int(weight_amount):
+                            weight_amount = int(weight_amount)
+                        if weight_amount > 0:
+                            weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
+                            if weight_unit == 'kg' and weight_amount < 1:
+                                weight_amount = round(weight_amount * 1000)
+                                weight_unit = 'g'
+                            ing.weight_equivalent = f"{weight_amount}{weight_unit}"
+            except Exception:
+                pass
+
+    instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by('step_number')
+
+    html = get_template('recipe_pdf.html').render({
+        'recipe': recipe,
+        'ingredients': ingredients,
+        'instructions': instructions,
+    })
+
+    def link_callback(uri, rel):
+        """Resolve media/static URLs to absolute filesystem paths so pisa can
+        embed the recipe photo. Falls back to the original URI otherwise."""
+        from django.conf import settings
+        media_url = getattr(settings, 'MEDIA_URL', '') or ''
+        media_root = getattr(settings, 'MEDIA_ROOT', '') or ''
+        static_url = getattr(settings, 'STATIC_URL', '') or ''
+        static_root = getattr(settings, 'STATIC_ROOT', '') or ''
+        path = None
+        if media_url and uri.startswith(media_url):
+            path = os.path.join(media_root, uri[len(media_url):])
+        elif static_url and uri.startswith(static_url) and static_root:
+            path = os.path.join(static_root, uri[len(static_url):])
+        if path and os.path.isfile(path):
+            return path
+        return uri
+
+    filename = 'recipe_%s.pdf' % (slugify(recipe.recipe_name) or recipe.recipe_id)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="%s"' % filename
+
+    pisa_status = pisa.CreatePDF(html, dest=response, link_callback=link_callback)
+    if pisa_status.err:
+        return HttpResponse('Recipe PDF generation failed.', status=500)
+    return response
 
 
 # ============================================

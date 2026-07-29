@@ -1861,6 +1861,9 @@ body {
         <button onclick="window.print()" class="btn btn-secondary action-secondary">
             <i class="fas fa-print"></i> Print Recipe
         </button>
+        <button type="button" class="btn btn-info action-secondary" onclick="shareRecipePdf(this)">
+            <i class="fas fa-share-alt"></i> Share
+        </button>
         {% if recipe.recipe_document %}
         <button type="button" class="btn btn-info action-secondary" onclick="viewRecipeDoc('{{ recipe.recipe_document.url }}', '{{ recipe.recipe_document.name }}')">
             <i class="fas fa-paperclip"></i> View Document
@@ -1890,6 +1893,9 @@ body {
                 <button type="button" class="action-more-item" role="menuitem" onclick="window.print()">
                     <i class="fas fa-print"></i> Print Recipe
                 </button>
+                <button type="button" class="action-more-item" role="menuitem" onclick="shareRecipePdf(this)">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
                 {% if recipe.recipe_document %}
                 <button type="button" class="action-more-item" role="menuitem" onclick="viewRecipeDoc('{{ recipe.recipe_document.url }}', '{{ recipe.recipe_document.name }}')">
                     <i class="fas fa-paperclip"></i> View Document
@@ -1908,6 +1914,45 @@ body {
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </button>
     </div>
+
+    <!-- Share recipe as PDF (native share sheet, like title deeds; downloads as fallback) -->
+    <script>
+    async function shareRecipePdf(btn){
+        var url = "{% url 'recipe_pdf' recipe.recipe_id %}";
+        var recipeName = "{{ recipe.recipe_name|escapejs }}";
+        var safe = (recipeName || 'recipe').replace(/[^\w\-]+/g, '_').replace(/^_+|_+$/g, '') || 'recipe';
+        var fname = 'recipe_' + safe.toLowerCase() + '.pdf';
+
+        var orig = btn ? btn.innerHTML : null;
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing…'; }
+
+        try {
+            var resp = await fetch(url);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            var blob = await resp.blob();
+            var file = new File([blob], fname, { type: 'application/pdf' });
+
+            if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: recipeName });
+            } else {
+                // Fallback: download the PDF (e.g. browsers without file-share support)
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fname;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+            }
+        } catch (err) {
+            if (!(err && err.name === 'AbortError')) {   // AbortError = user cancelled the share sheet
+                console.error('Recipe share failed:', err);
+                alert('Sharing failed. The recipe PDF could not be prepared — please try again.');
+            }
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+        }
+    }
+    </script>
 
     <!-- Recipe Header with Image -->
     <div class="recipe-header">
