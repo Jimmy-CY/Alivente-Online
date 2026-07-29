@@ -403,22 +403,29 @@ def physical_invoice_list(request):
             pass
         return None
 
-    # From / To month range. Default both to the upcoming period (single month),
-    # so the screen behaves exactly as before until the range is widened.
-    default_first = _upcoming_period()
-    from_first = _parse_ym(request.GET.get("from")) or default_first
-    to_first = _parse_ym(request.GET.get("to")) or from_first
-    if to_first < from_first:
-        from_first, to_first = to_first, from_first
+    # From / To month range. Default (no filter selected) shows ALL invoices;
+    # selecting a From/To month narrows the list.
+    from_raw = _parse_ym(request.GET.get("from"))
+    to_raw = _parse_ym(request.GET.get("to"))
+    show_all = (from_raw is None and to_raw is None)
 
-    from_idx = from_first.year * 12 + from_first.month
-    to_idx = to_first.year * 12 + to_first.month
-    single_month = (from_idx == to_idx)
-
-    base = PhysicalInvoice.objects.annotate(
-        _pidx=ExpressionWrapper(F("period_year") * 12 + F("period_month"),
-                                output_field=IntegerField())
-    ).filter(_pidx__gte=from_idx, _pidx__lte=to_idx)
+    if show_all:
+        from_first = to_first = None
+        single_month = False
+        base = PhysicalInvoice.objects.all()
+    else:
+        # If only one bound is supplied, treat it as a single month.
+        from_first = from_raw or to_raw
+        to_first = to_raw or from_raw
+        if to_first < from_first:
+            from_first, to_first = to_first, from_first
+        from_idx = from_first.year * 12 + from_first.month
+        to_idx = to_first.year * 12 + to_first.month
+        single_month = (from_idx == to_idx)
+        base = PhysicalInvoice.objects.annotate(
+            _pidx=ExpressionWrapper(F("period_year") * 12 + F("period_month"),
+                                    output_field=IntegerField())
+        ).filter(_pidx__gte=from_idx, _pidx__lte=to_idx)
     counts = {
         "draft": base.filter(status=PhysicalInvoice.STATUS_DRAFT).count(),
         "approved": base.filter(status=PhysicalInvoice.STATUS_APPROVED).count(),
@@ -435,16 +442,8 @@ def physical_invoice_list(request):
         qs = qs.filter(tenant__isnull=False)
     elif inv_type == "customer":
         qs = qs.filter(tenant__isnull=True)
-    # Group by status (Draft -> Approved -> Sent); sort within each group.
-    #   Draft / Approved : newest date first, then name A->Z
-    #   Sent             : PR number descending (highest first)
-    # Single composite key, all ascending, with descending parts negated.
-    _status_rank = {
-        PhysicalInvoice.STATUS_DRAFT: 0,
-        PhysicalInvoice.STATUS_APPROVED: 1,
-        PhysicalInvoice.STATUS_SENT: 2,
-    }
-
+    # Order: newest invoice on top, oldest at the bottom (pure chronological),
+    # regardless of status. Recency = period month, then invoice date, then PR number.
     def _trailing_int(value):
         digits = ""
         for ch in reversed((value or "").strip()):
@@ -455,15 +454,9 @@ def physical_invoice_list(request):
         return int(digits) if digits else 0
 
     def _sort_key(pi):
-        grp = _status_rank.get(pi.status, 99)
-        name = (pi.tenant.tenant_name if pi.tenant_id else (pi.bill_name or "")).lower()
-        if pi.status == PhysicalInvoice.STATUS_SENT:
-            # PR number descending; date/name not needed (numbers are unique).
-            return (grp, -_trailing_int(pi.invoice_number), 0, "")
-        # Draft / Approved: date descending, then name ascending.
         idx = pi.period_year * 12 + pi.period_month
         day = (pi.invoice_date or date.min).toordinal()
-        return (grp, 0, -(idx * 1000 + day), name)
+        return (-idx, -day, -_trailing_int(pi.invoice_number))
 
     qs = sorted(qs, key=_sort_key)
 
@@ -494,10 +487,12 @@ def physical_invoice_list(request):
     context = {
         "rows": rows,
         "counts": counts,
-        "from_value": f"{from_first.year:04d}-{from_first.month:02d}",
-        "to_value": f"{to_first.year:04d}-{to_first.month:02d}",
-        "period_label": (from_first.strftime("%B %Y") if single_month
+        "from_value": "" if show_all else f"{from_first.year:04d}-{from_first.month:02d}",
+        "to_value": "" if show_all else f"{to_first.year:04d}-{to_first.month:02d}",
+        "period_label": ("All invoices" if show_all
+                         else from_first.strftime("%B %Y") if single_month
                          else from_first.strftime("%B %Y") + " \u2013 " + to_first.strftime("%B %Y")),
+        "show_all": show_all,
         "status": status,
         "inv_type": inv_type,
         "next_number_value": cfg.next_number,

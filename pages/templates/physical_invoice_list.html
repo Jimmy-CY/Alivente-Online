@@ -302,7 +302,7 @@ Physical Invoices
           <tr>
             <td colspan="7" class="pi-empty">
               <i class="fas fa-inbox"></i>
-              <div>No physical invoices for {{ period_label }}.</div>
+              <div>{% if show_all %}No physical invoices yet.{% else %}No physical invoices for {{ period_label }}.{% endif %}</div>
               <div class="pi-empty-sub">Drafts appear here once the prepare cron has run for this month.</div>
             </td>
           </tr>
