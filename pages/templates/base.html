@@ -138,7 +138,9 @@
         body.has-sidebar { margin: 0; padding: 0; }
         body.has-sidebar .main-content.with-sidebar {
             margin-left: 0 !important;
-            padding: 0 !important;
+            /* Match the top-nav layout's Bootstrap .container gutters on mobile
+               so Side Menu mode isn't full-bleed (buttons no longer touch edges). */
+            padding: 15px 15px !important;
         }
         body.has-sidebar .main-content.with-sidebar.minimised {
             margin-left: 0 !important;
