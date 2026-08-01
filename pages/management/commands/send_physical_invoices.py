@@ -48,6 +48,7 @@ check_lease_renewal_and_invoices.
 """
 
 import os
+import re
 import smtplib
 import ssl
 from datetime import date
@@ -236,7 +237,12 @@ class Command(BaseCommand):
         sent_count = failed_count = 0
         for pi in approved:
             tenant = pi.tenant
-            to_addr = (getattr(tenant, "tenant_email", "") or "").strip()
+            # tenant_email is a free-text field that may hold several addresses
+            # (separated by "and", commas, spaces, etc.). Pull out every email so
+            # the invoice reaches all recipients recorded on the tenant.
+            raw_email = getattr(tenant, "tenant_email", "") or ""
+            to_list = re.findall(r"[^\s,;<>()]+@[^\s,;<>()]+\.[^\s,;<>()]+", raw_email)
+            to_display = ", ".join(to_list)
 
             try:
                 pdf_bytes = self._render_and_store_pdf(pi, dry_run)
@@ -245,11 +251,11 @@ class Command(BaseCommand):
                 self.stderr.write(f"  ERROR rendering {pi.invoice_number} ({tenant}): {exc}")
                 continue
 
-            if not to_addr:
+            if not to_list:
                 failed_count += 1
                 self.stderr.write(
-                    f"  SKIP {pi.invoice_number} ({tenant}): no tenant_email; "
-                    f"stays approved for retry."
+                    f"  SKIP {pi.invoice_number} ({tenant}): no valid email in "
+                    f"tenant_email; stays approved for retry."
                 )
                 continue
 
@@ -264,22 +270,23 @@ class Command(BaseCommand):
 
             if dry_run or no_email:
                 self.stdout.write(
-                    f"  would send {pi.invoice_number} -> {to_addr}"
+                    f"  would send {pi.invoice_number} -> {to_display}"
                     f"{' (+cc ' + ', '.join(cc_list) + ')' if cc_list else ''}"
                 )
                 # In no-email mode we still link the collection invoice below,
                 # but we do NOT mark the invoice sent.
             else:
                 try:
-                    send_invoice_email(to_addr, cc_list, subject, text_body,
-                                       html_body, pdf_bytes, filename, logo_bytes)
+                    send_invoice_email(to_list[0], to_list[1:] + cc_list, subject,
+                                       text_body, html_body, pdf_bytes, filename,
+                                       logo_bytes)
                 except Exception as exc:
                     failed_count += 1
                     if hasattr(pi, "email_status"):
                         pi.email_status = "failed"
                         pi.save(update_fields=["email_status", "updated_at"])
                     self.stderr.write(
-                        f"  ERROR emailing {pi.invoice_number} ({to_addr}): {exc}; "
+                        f"  ERROR emailing {pi.invoice_number} ({to_display}): {exc}; "
                         f"stays approved for retry."
                     )
                     continue
@@ -287,7 +294,7 @@ class Command(BaseCommand):
                     pi.email_status = "sent"
                 pi.mark_sent()
                 sent_count += 1
-                self.stdout.write(f"  sent {pi.invoice_number} -> {to_addr}")
+                self.stdout.write(f"  sent {pi.invoice_number} -> {to_display}")
 
             # Link the collection invoice for this freshly-handled invoice.
             status = self._link_collection(pi, year, month, dry_run)
