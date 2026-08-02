@@ -250,7 +250,7 @@
       </a>
       {% endif %}
 
-      {% if user.is_superuser or perms.auth.can_access_personal %}
+      {% if user.is_superuser or perms.auth.can_access_passports or perms.auth.can_access_recipes or perms.auth.can_access_celebrations or perms.auth.can_access_crs %}
       <a href="{% url 'personal_page' %}" class="sidebar-link {% if request.resolver_match.url_name == 'personal_page' %}active{% endif %}" data-tooltip="Personal">
           <i class="fas fa-user-circle"></i><span class="link-text">Personal</span>
       </a>
@@ -331,7 +331,7 @@
             </li>
             {% endif %}
             {% if user.is_superuser or perms.auth.can_access_administration %}<li class="nav-item"><a class="nav-link" href="{% url 'admin_apms' %}">Administration</a></li>{% endif %}
-            {% if user.is_superuser or perms.auth.can_access_personal %}<li class="nav-item"><a class="nav-link" href="{% url 'personal_page' %}">Personal</a></li>{% endif %}
+            {% if user.is_superuser or perms.auth.can_access_passports or perms.auth.can_access_recipes or perms.auth.can_access_celebrations or perms.auth.can_access_crs %}<li class="nav-item"><a class="nav-link" href="{% url 'personal_page' %}">Personal</a></li>{% endif %}
             <li class="nav-item"><a class="nav-link" href="{% url 'help_page' %}"><i class="fas fa-question-circle"></i> Help</a></li>
           {% endif %}
         </ul>
