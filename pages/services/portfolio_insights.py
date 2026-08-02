@@ -37,6 +37,7 @@ from django.core.cache import cache
 from pages.models import (
     tenant as Tenant,
     invoices as Invoices,
+    revenue as Revenue,
     _lease_month,
 )
 
@@ -105,31 +106,90 @@ def forward_projection(today=None, months=12):
     today = today or date.today()
     by_prop = _leases_by_property(today)
 
+    # Revenue-table income, loaded once and grouped by property, so the
+    # projection matches the P&L (lease_revenue_rows): for a LEASED property the
+    # P&L adds any ancillary (non lease-role) revenue rows on top of the lease
+    # rent/levies; for a SEASONAL / no-lease property (e.g. Ionion) the income
+    # IS the revenue table. Without this, seasonal properties are invisible and
+    # the summer months understate badly.
+    leased_ids = set(by_prop.keys())
+    rev_by_prop = {}   # prop_id -> {"name": str, "rows": [(lease_role, row), ...]}
+    for rv in Revenue.objects.select_related("prop", "revenue_line_types").all():
+        if rv.prop_id is None:
+            continue
+        role = getattr(rv.revenue_line_types, "lease_role", "") or ""
+        info = rev_by_prop.setdefault(rv.prop_id, {
+            "name": getattr(rv.prop, "prop_name", "") or "",
+            "rows": [],
+        })
+        info["rows"].append((role, rv))
+
+    def _rev_cell(rows_iter, mm):
+        total = 0.0
+        for role, rv in rows_iter:
+            total += float(getattr(rv, "revenue_" + mm, 0) or 0)
+        return total
+
     rows = []
     contracted_total = at_risk_total = 0.0
     for k in range(months):
         y, m = _add_months(today.year, today.month, k)
+        mm = calendar.month_abbr[m].lower()   # -> 'revenue_jan' .. 'revenue_dec'
         contracted = at_risk = 0.0
         vacant_count = 0
         breakdown = []      # per-property income this month, for the hover
-        for _pid, leases in by_prop.items():
+
+        # 1) Leased properties: lease rent/levies (tagged) + ancillary revenue.
+        for pid, leases in by_prop.items():
             tag, lease, rent, levies = _lease_month(leases, y, m, today)
-            amt = float((rent or 0) + (levies or 0))
+            lease_amt = float((rent or 0) + (levies or 0))
+            info = rev_by_prop.get(pid)
+            ancillary = _rev_cell(
+                ((r, rv) for (r, rv) in info["rows"] if not r), mm) if info else 0.0
+
             if tag == "lease":
-                contracted += amt
+                contracted += lease_amt
             elif tag == "assumed":
-                at_risk += amt
-            else:  # 'vacant'
+                at_risk += lease_amt
+            elif not ancillary:      # vacant lease and no other income
                 vacant_count += 1
+            contracted += ancillary
+
+            if tag in ("lease", "assumed") and lease_amt:
+                breakdown.append({
+                    "name": lease.tenant_name or "",
+                    "prop": getattr(lease.prop, "prop_name", "") or "",
+                    "rent": round(float(rent or 0), 2),
+                    "levies": round(float(levies or 0), 2),
+                    "amount": round(lease_amt, 2),
+                    "tag": "contracted" if tag == "lease" else "at_risk",
+                })
+            if ancillary:
+                breakdown.append({
+                    "name": "Other revenue",
+                    "prop": info["name"],
+                    "rent": round(ancillary, 2),
+                    "levies": 0.0,
+                    "amount": round(ancillary, 2),
+                    "tag": "contracted",
+                })
+
+        # 2) Seasonal / no-lease properties: the revenue table as-is (all rows).
+        for pid, info in rev_by_prop.items():
+            if pid in leased_ids:
                 continue
-            breakdown.append({
-                "name": lease.tenant_name or "",
-                "prop": getattr(lease.prop, "prop_name", "") or "",
-                "rent": round(float(rent or 0), 2),
-                "levies": round(float(levies or 0), 2),
-                "amount": round(amt, 2),
-                "tag": "contracted" if tag == "lease" else "at_risk",
-            })
+            seasonal = _rev_cell(info["rows"], mm)
+            if seasonal:
+                contracted += seasonal
+                breakdown.append({
+                    "name": "Seasonal / direct revenue",
+                    "prop": info["name"],
+                    "rent": round(seasonal, 2),
+                    "levies": 0.0,
+                    "amount": round(seasonal, 2),
+                    "tag": "contracted",
+                })
+
         breakdown.sort(key=lambda r: r["amount"], reverse=True)
         contracted_total += contracted
         at_risk_total += at_risk
