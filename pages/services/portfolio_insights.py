@@ -327,7 +327,10 @@ def arrears(today=None):
     for g in rows:
         g["amount"] = round(g["amount"], 2)
         g["amount_fmt"] = _money(g["amount"])
-    rows.sort(key=lambda r: r["days_overdue"], reverse=True)
+    # Worst first: most days overdue, then — when days tie (e.g. everyone one
+    # day late) — the largest outstanding amount. (A "chronic late payer"
+    # tiebreak would need a paid-date history the invoices table doesn't record.)
+    rows.sort(key=lambda r: (r["days_overdue"], r["amount"]), reverse=True)
     return {
         "rows": rows,
         "total": round(total, 2),
