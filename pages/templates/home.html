@@ -84,7 +84,8 @@ Home
         <div class="ins-chart" role="img"
              aria-label="Projected monthly rent for the next 12 months, contracted versus at-risk">
           {% for row in insights.projection.rows %}
-            <div class="ins-bar" title="{{ row.label }}: contracted {{ row.contracted|floatformat:0 }}, at-risk {{ row.at_risk|floatformat:0 }}">
+            <div class="ins-bar" data-i="{{ forloop.counter0 }}" tabindex="0" role="button"
+                 aria-label="{{ row.label }} income — activate for tenant breakdown">
               <div class="ins-bar__stack">
                 <div class="ins-seg ins-seg--atrisk"
                      style="height:{% widthratio row.at_risk insights.projection.max_total 104 %}px"></div>
@@ -266,6 +267,9 @@ Home
 
     <!-- Embedded notification data — read by the drill-down modal JS -->
     <script id="notificationData" type="application/json">{{ notification_data_json|safe }}</script>
+    <!-- Per-month rent-roll breakdown — read by the chart hover/tap -->
+    {{ insights.projection.rows|json_script:"rentRollBreakdown" }}
+    <div id="chartTip" aria-hidden="true"></div>
 
   {% elif perms_map.dashboard %}
     <!-- Dashboard user, but the briefing could not be built this load -->
@@ -344,7 +348,8 @@ Home
 
     /* bar chart */
     .ins-chart { display: flex; align-items: flex-end; gap: 5px; margin: 4px 0; }
-    .ins-bar { flex: 1; text-align: center; min-width: 0; }
+    .ins-bar { flex: 1; text-align: center; min-width: 0; cursor: pointer; }
+    .ins-bar:focus { outline: 2px solid rgba(23,162,184,0.4); outline-offset: 2px; border-radius: 4px; }
     .ins-bar__stack { height: 104px; display: flex; flex-direction: column; justify-content: flex-end; }
     .ins-seg { width: 100%; border-radius: 3px 3px 0 0; }
     .ins-seg--contracted { background: #17a2b8; }
@@ -354,6 +359,24 @@ Home
     .ins-legend__sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
     .ins-legend__sw--c { background: #17a2b8; }
     .ins-legend__sw--a { background: repeating-linear-gradient(45deg, #f5a623, #f5a623 4px, #fcdca0 4px, #fcdca0 8px); }
+
+    /* rent-roll hover tooltip (desktop) */
+    #chartTip { position: fixed; z-index: 1200; display: none; pointer-events: none;
+        background: #fff; border: 1px solid #e9ecef; border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 10px 12px; max-width: 340px;
+        font-size: 12px; color: #2c3e50; }
+    #chartTip .tip-h { font-weight: 700; margin-bottom: 6px; font-size: 13px; }
+    #chartTip .tip-t { width: 100%; border-collapse: collapse; }
+    #chartTip .tip-t td { padding: 3px 6px; vertical-align: top; border-top: 1px solid #f1f3f5; }
+    #chartTip .tip-t tr:first-child td { border-top: none; }
+    #chartTip .tip-n { font-weight: 600; }
+    #chartTip .tip-sub { display: block; font-weight: 400; color: #9aa0a6; font-size: 10px; }
+    #chartTip .tip-r { text-align: right; white-space: nowrap; }
+    #chartTip .tip-tag { text-align: right; font-weight: 700; font-size: 10px; }
+    #chartTip .tip-co { color: #17a2b8; } #chartTip .tip-ar { color: #c2410c; }
+    #chartTip .tip-tot { margin-top: 6px; font-size: 11px; color: #6c757d;
+        border-top: 1px solid #f1f3f5; padding-top: 5px; }
+    #chartTip .tip-empty { color: #6c757d; }
 
     /* list rows */
     .ins-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #e9ecef; }
@@ -648,6 +671,108 @@ Home
         '<thead><tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th>Amount</th><th>Approved Date</th><th>Status</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table></div>';
     }
+  </script>
+
+  <script>
+    // ==================== FORWARD RENT-ROLL — HOVER / TAP ====================
+    // Each bar shows the tenants (with rent + communal) making up that month.
+    // Desktop: a hover tooltip. Touch / click / keyboard: the standard modal.
+    (function() {
+      var el = document.getElementById('rentRollBreakdown');
+      if (!el) return;
+      var monthRows;
+      try { monthRows = JSON.parse(el.textContent || '[]'); } catch (e) { return; }
+
+      var tip = document.getElementById('chartTip');
+
+      function esc(s) { var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
+      function fmt(n) { return '€' + Math.round(n || 0).toLocaleString('en-US'); }
+
+      function tipHtml(row) {
+        var h = '<div class="tip-h">' + esc(row.label) + '</div>';
+        var bd = row.breakdown || [];
+        if (!bd.length) { return h + '<div class="tip-empty">No income this month.</div>'; }
+        h += '<table class="tip-t">';
+        bd.slice(0, 10).forEach(function(b) {
+          h += '<tr>' +
+            '<td class="tip-n">' + esc(b.prop || b.name) + '<span class="tip-sub">' + esc(b.name) + '</span></td>' +
+            '<td class="tip-r">' + fmt(b.rent) + '<span class="tip-sub">rent</span></td>' +
+            '<td class="tip-r">' + fmt(b.levies) + '<span class="tip-sub">communal</span></td>' +
+            '<td class="tip-tag ' + (b.tag === 'at_risk' ? 'tip-ar' : 'tip-co') + '">' +
+              (b.tag === 'at_risk' ? 'at-risk' : 'signed') + '</td>' +
+          '</tr>';
+        });
+        h += '</table>';
+        if (bd.length > 10) { h += '<div class="tip-sub" style="margin-top:5px">+ ' + (bd.length - 10) + ' more — tap the bar for all</div>'; }
+        h += '<div class="tip-tot">Contracted ' + fmt(row.contracted) + ' &middot; At-risk ' + fmt(row.at_risk) + '</div>';
+        return h;
+      }
+
+      function showTip(row, x, y) {
+        tip.innerHTML = tipHtml(row);
+        tip.style.display = 'block';
+        var w = tip.offsetWidth, h = tip.offsetHeight;
+        var left = x + 14; if (left + w > window.innerWidth - 8) left = x - w - 14;
+        var top = y + 14; if (top + h > window.innerHeight - 8) top = y - h - 14;
+        tip.style.left = Math.max(8, left) + 'px';
+        tip.style.top = Math.max(8, top) + 'px';
+      }
+      function hideTip() { tip.style.display = 'none'; }
+
+      function showMonthModal(row) {
+        var bd = row.breakdown || [];
+        var body;
+        if (!bd.length) {
+          body = '<div style="text-align:center;padding:40px;color:#6c757d;">No income this month.</div>';
+        } else {
+          var trs = bd.map(function(b) {
+            return '<tr>' +
+              '<td>' + esc(b.prop || '') + '</td>' +
+              '<td data-label="Tenant">' + esc(b.name || '') + '</td>' +
+              '<td data-label="Rent">' + fmt(b.rent) + '</td>' +
+              '<td data-label="Communal">' + fmt(b.levies) + '</td>' +
+              '<td data-label="Type"><span class="status-badge ' +
+                (b.tag === 'at_risk' ? 'status-warning' : 'status-info') + '">' +
+                (b.tag === 'at_risk' ? 'AT-RISK' : 'SIGNED') + '</span></td>' +
+            '</tr>';
+          }).join('');
+          body = '<div class="table-container"><table class="data-table">' +
+            '<thead><tr><th>Property</th><th>Tenant</th><th>Rent</th><th>Communal</th><th>Type</th></tr></thead>' +
+            '<tbody>' + trs + '</tbody></table></div>';
+        }
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML =
+          '<div class="modal-content">' +
+            '<div class="modal-header">' +
+              '<h3 class="modal-title"><i class="fas fa-chart-line"></i> ' + esc(row.label) + ' — income</h3>' +
+              '<button class="modal-close" type="button" aria-label="Close"><i class="fas fa-times"></i></button>' +
+            '</div>' +
+            '<div class="modal-body">' + body + '</div>' +
+          '</div>';
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay || e.target.closest('.modal-close')) overlay.remove();
+        });
+        function esch(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esch); } }
+        document.addEventListener('keydown', esch);
+        document.body.appendChild(overlay);
+      }
+
+      document.querySelectorAll('.ins-bar').forEach(function(bar) {
+        var i = parseInt(bar.dataset.i, 10);
+        var row = monthRows[i];
+        if (!row) return;
+        bar.addEventListener('mouseenter', function(e) { showTip(row, e.clientX, e.clientY); });
+        bar.addEventListener('mousemove', function(e) { if (tip.style.display === 'block') showTip(row, e.clientX, e.clientY); });
+        bar.addEventListener('mouseleave', hideTip);
+        bar.addEventListener('focus', function() { var r = bar.getBoundingClientRect(); showTip(row, r.left + r.width / 2, r.top); });
+        bar.addEventListener('blur', hideTip);
+        bar.addEventListener('click', function() { hideTip(); showMonthModal(row); });
+        bar.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hideTip(); showMonthModal(row); }
+        });
+      });
+    })();
   </script>
 
 {% endif %}

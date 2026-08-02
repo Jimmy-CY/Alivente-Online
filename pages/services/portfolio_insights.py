@@ -111,8 +111,9 @@ def forward_projection(today=None, months=12):
         y, m = _add_months(today.year, today.month, k)
         contracted = at_risk = 0.0
         vacant_count = 0
+        breakdown = []      # per-property income this month, for the hover
         for _pid, leases in by_prop.items():
-            tag, _l, rent, levies = _lease_month(leases, y, m, today)
+            tag, lease, rent, levies = _lease_month(leases, y, m, today)
             amt = float((rent or 0) + (levies or 0))
             if tag == "lease":
                 contracted += amt
@@ -120,6 +121,16 @@ def forward_projection(today=None, months=12):
                 at_risk += amt
             else:  # 'vacant'
                 vacant_count += 1
+                continue
+            breakdown.append({
+                "name": lease.tenant_name or "",
+                "prop": getattr(lease.prop, "prop_name", "") or "",
+                "rent": round(float(rent or 0), 2),
+                "levies": round(float(levies or 0), 2),
+                "amount": round(amt, 2),
+                "tag": "contracted" if tag == "lease" else "at_risk",
+            })
+        breakdown.sort(key=lambda r: r["amount"], reverse=True)
         contracted_total += contracted
         at_risk_total += at_risk
         rows.append({
@@ -130,6 +141,7 @@ def forward_projection(today=None, months=12):
             "at_risk": round(at_risk, 2),
             "total": round(contracted + at_risk, 2),
             "vacant_count": vacant_count,
+            "breakdown": breakdown,
         })
 
     next3 = rows[:3]
@@ -271,51 +283,80 @@ def arrears(today=None):
 
 
 def churn_risk(today=None, arrears_rows=None):
-    """A light, explainable churn score per active lease. Points accrue for:
-    short tenure, first term (no prior renewal), rent above the portfolio
-    median, being in arrears, and a declined renewal. Returns only scored rows,
-    highest first."""
+    """A light, explainable churn score per current lease. Points accrue for:
+    short tenure (measured over the tenant's whole relationship, not just the
+    current lease), first term (no prior renewal), rent per m² above the
+    portfolio median (size-normalised), being >5 days in arrears, and a declined
+    renewal. Returns only scored rows, highest first."""
     today = today or date.today()
     by_prop = _leases_by_property(today)
 
-    # portfolio median rent across active leases (light benchmark)
+    # Portfolio median rent PER SQM across current leases that carry a floor
+    # area — a size-normalised benchmark, fairer than absolute rent (which just
+    # flags big units). Leases with no floor area recorded are not size-assessed.
     active = [l for leases in by_prop.values()
               for l in leases if _current_lease([l], today) is l]
-    rents = [float(l.tenant_rent or 0) for l in active if l.tenant_rent]
-    median_rent = statistics.median(rents) if rents else 0.0
+    rpsqm = []
+    for a in active:
+        area = getattr(getattr(a, "prop", None), "prop_floor_area", None) or 0
+        if a.tenant_rent and area > 0:
+            rpsqm.append(float(a.tenant_rent) / float(area))
+    median_rpsqm = statistics.median(rpsqm) if rpsqm else 0.0
 
+    # Arrears with a grace period: a tenant only counts as "in arrears" for
+    # churn once they are more than ARREARS_GRACE_DAYS late (a few days late is
+    # not a leaving signal). Map tenant/property -> worst days overdue.
+    ARREARS_GRACE_DAYS = 5
     if arrears_rows is None:
         arrears_rows = arrears(today)["rows"]
-    arr = {(_norm(r["tenant_name"]), _norm(r["prop_name"])) for r in arrears_rows}
+    arr_days = {
+        (_norm(r["tenant_name"]), _norm(r["prop_name"])): r.get("days_overdue", 0)
+        for r in arrears_rows
+    }
 
     out = []
     for _pid, leases in by_prop.items():
         l = _current_lease(leases, today)
         if l is None:
             continue
+
+        # Whole-relationship history for THIS tenant on THIS property (renewals
+        # are stored as separate lease rows), matched by name — so a serial
+        # 1-year renewer is not mistaken for a brand-new short-tenure tenant.
+        same = [x for x in leases
+                if _norm(x.tenant_name) == _norm(l.tenant_name)
+                and x.tenant_lease_start_date]
+        first_start = min((x.tenant_lease_start_date for x in same),
+                          default=l.tenant_lease_start_date)
+        tenure_days = (today - first_start).days if first_start else None
+        prior_terms = sum(
+            1 for x in same
+            if x.tenant_lease_end_date and l.tenant_lease_start_date
+            and x.tenant_lease_end_date <= l.tenant_lease_start_date
+        )
+
         score = 0
         reasons = []
 
-        if l.tenant_lease_start_date and (today - l.tenant_lease_start_date).days < 365:
+        if tenure_days is not None and tenure_days < 365:
             score += 1
             reasons.append("short tenure (<1yr)")
 
-        prior = sum(
-            1 for x in leases
-            if x.tenant_lease_end_date and l.tenant_lease_start_date
-            and x.tenant_lease_end_date < l.tenant_lease_start_date
-        )
-        if prior == 0:
+        if prior_terms == 0:
             score += 1
             reasons.append("first term (no prior renewal)")
 
-        if median_rent and (l.tenant_rent or 0) > median_rent * 1.15:
+        area = getattr(getattr(l, "prop", None), "prop_floor_area", None) or 0
+        if median_rpsqm and l.tenant_rent and area > 0 \
+                and (float(l.tenant_rent) / float(area)) > median_rpsqm * 1.15:
             score += 1
-            reasons.append("rent above portfolio median")
+            reasons.append("rent/m² above median")
 
-        if (_norm(l.tenant_name), _norm(getattr(l.prop, "prop_name", ""))) in arr:
+        days_late = arr_days.get(
+            (_norm(l.tenant_name), _norm(getattr(l.prop, "prop_name", ""))), 0)
+        if days_late > ARREARS_GRACE_DAYS:
             score += 2
-            reasons.append("in arrears")
+            reasons.append("in arrears (>{}d)".format(ARREARS_GRACE_DAYS))
 
         if (l.tenant_renewal_status or "") == "declined":
             score += 3
