@@ -34,714 +34,442 @@ Home
 
   <div class="home-shell">
 
-    {% if today_items %}
-    <!-- ==================== TODAY PANEL ==================== -->
-    <!-- Renders only when there are non-zero actionable items.
-         Tapping a row opens an identical-to-notifications-dashboard modal
-         showing the detail rows for that category. Data is embedded
-         in the page (Option B), so modals open with no round-trip. -->
-    <section class="today-panel" aria-labelledby="todayHeading">
-      <h2 class="section-heading" id="todayHeading">
-        <i class="fas fa-clipboard-list"></i> Today
-      </h2>
-      <div class="today-list" id="todayList">
-        {% for item in today_items %}
-          <button type="button"
-                  class="today-row today-row--{{ item.severity }}"
-                  data-category="{{ item.category }}"
-                  aria-label="{{ item.count }} {{ item.label }}, tap for details">
-            <span class="today-row__icon" aria-hidden="true">
-              <i class="{{ item.icon }}"></i>
+  {% if insights %}
+    <!-- ==================== PORTFOLIO BRIEFING ==================== -->
+    <h2 class="section-heading brief-heading">
+      <i class="fas fa-chart-line"></i> Portfolio Briefing
+    </h2>
+
+    <!-- Executive brief: AI prose when a key is set, else a rule-based summary
+         of the identical figures. Regenerates only when the numbers change. -->
+    <section class="brief" aria-labelledby="briefHeading">
+      <div class="brief-head">
+        <div class="brief-title" id="briefHeading">
+          <i class="fas fa-robot"></i> Executive brief
+          {% if insights.brief.source == 'ai' %}
+            <span class="brief-badge brief-badge--ai" title="Written by Claude from your live figures">AI</span>
+          {% else %}
+            <span class="brief-badge" title="Rule-based summary of your live figures">SUMMARY</span>
+          {% endif %}
+        </div>
+      </div>
+      <p class="brief-body">{{ insights.brief.text }}</p>
+    </section>
+
+    <div class="brief-grid">
+
+      <!-- Forward rent-roll + vacancies drill-down -->
+      <section class="ins-card ins-card--wide">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--rent"><i class="fas fa-chart-line"></i></span>
+          Forward rent-roll &mdash; next 12 months
+        </h3>
+        <p class="ins-card__sub">Rent + levies per month, split by how certain the income is.</p>
+
+        <div class="ins-kpis">
+          <div class="ins-kpi">
+            <span class="ins-kpi__n">{{ insights.projection.next3_total_fmt }}</span>
+            <span class="ins-kpi__k">Next 3 months</span>
+          </div>
+          <div class="ins-kpi">
+            <span class="ins-kpi__n ins-kpi__n--risk">{{ insights.projection.next3_at_risk_fmt }}</span>
+            <span class="ins-kpi__k">Depends on renewals</span>
+          </div>
+          <div class="ins-kpi">
+            <span class="ins-kpi__n">{{ insights.projection.grand_total_fmt }}</span>
+            <span class="ins-kpi__k">12-month total</span>
+          </div>
+        </div>
+
+        <div class="ins-chart" role="img"
+             aria-label="Projected monthly rent for the next 12 months, contracted versus at-risk">
+          {% for row in insights.projection.rows %}
+            <div class="ins-bar" title="{{ row.label }}: contracted {{ row.contracted|floatformat:0 }}, at-risk {{ row.at_risk|floatformat:0 }}">
+              <div class="ins-bar__stack">
+                <div class="ins-seg ins-seg--atrisk"
+                     style="height:{% widthratio row.at_risk insights.projection.max_total 104 %}px"></div>
+                <div class="ins-seg ins-seg--contracted"
+                     style="height:{% widthratio row.contracted insights.projection.max_total 104 %}px"></div>
+              </div>
+              <div class="ins-bar__lbl">{{ row.label|slice:":1" }}</div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="ins-legend">
+          <span><i class="ins-legend__sw ins-legend__sw--c"></i>Contracted (signed lease)</span>
+          <span><i class="ins-legend__sw ins-legend__sw--a"></i>At-risk (renewal assumed, not yet signed)</span>
+        </div>
+
+        {% with it=today_by_category.vacant %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+      </section>
+
+      <!-- Lease expiries (no successor) + expiring / declined drill-downs -->
+      <section class="ins-card">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--exp"><i class="fas fa-calendar-times"></i></span>
+          Lease expiries
+        </h3>
+        <p class="ins-card__sub">Ending &le;90 days with no successor captured.</p>
+
+        {% for e in insights.expiring|slice:":3" %}
+          <div class="ins-row">
+            <div>
+              <div class="ins-who">{{ e.prop_name }}</div>
+              <div class="ins-meta">{{ e.prop_country }}{% if e.tenant_name %} &middot; {{ e.tenant_name }}{% endif %}</div>
+            </div>
+            <span class="ins-tag {% if e.days_to_end <= 30 %}ins-tag--red{% else %}ins-tag--amber{% endif %}">
+              {{ e.days_to_end }}d
             </span>
-            <span class="today-row__count">{{ item.count }}</span>
-            <span class="today-row__label">{{ item.label }}</span>
-            <span class="today-row__chevron" aria-hidden="true">
-              <i class="fas fa-chevron-right"></i>
-            </span>
-          </button>
+          </div>
+        {% empty %}
+          <p class="ins-empty"><i class="fas fa-check-circle"></i> No expiries within 90 days without a successor.</p>
         {% endfor %}
-      </div>
-    </section>
+        {% if insights.expiring|length > 3 %}
+          <p class="ins-more">+ {{ insights.expiring|length|add:"-3" }} more</p>
+        {% endif %}
 
-    <!-- Embedded notification data — read by the modal JS -->
+        {% with it=today_by_category.expiring %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+
+        {% with it=today_by_category.declined %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+      </section>
+
+      <!-- Arrears (= overdue invoices) -->
+      <section class="ins-card ins-card--half">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--arr"><i class="fas fa-triangle-exclamation"></i></span>
+          Arrears &mdash; overdue rent
+        </h3>
+        <p class="ins-card__sub">Unpaid invoices past their payment terms.</p>
+
+        <div class="ins-kpis">
+          <div class="ins-kpi">
+            <span class="ins-kpi__n ins-kpi__n--red">{{ insights.arrears.total_fmt }}</span>
+            <span class="ins-kpi__k">Total overdue</span>
+          </div>
+          <div class="ins-kpi">
+            <span class="ins-kpi__n">{{ insights.arrears.count }}</span>
+            <span class="ins-kpi__k">Tenant{{ insights.arrears.count|pluralize }}</span>
+          </div>
+        </div>
+
+        {% for r in insights.arrears.rows|slice:":3" %}
+          <div class="ins-row">
+            <div>
+              <div class="ins-who">{{ r.tenant_name }}</div>
+              <div class="ins-meta">{{ r.prop_name }} &middot; due {{ r.due_date|date:"j M" }}</div>
+            </div>
+            <span class="ins-amt ins-amt--red">{{ r.amount_fmt }} &middot; {{ r.days_overdue }}d</span>
+          </div>
+        {% empty %}
+          <p class="ins-empty"><i class="fas fa-check-circle"></i> No overdue rent.</p>
+        {% endfor %}
+
+        {% with it=today_by_category.overdue %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">View all overdue invoices</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+      </section>
+
+      <!-- Churn-risk (analytical) -->
+      <section class="ins-card ins-card--half">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--churn"><i class="fas fa-magnifying-glass-chart"></i></span>
+          Churn-risk flags
+        </h3>
+        <p class="ins-card__sub">Explainable score &mdash; every flag shows why.</p>
+
+        {% for c in insights.churn|slice:":4" %}
+          <div class="ins-row">
+            <div>
+              <div class="ins-who">
+                {{ c.tenant_name }}
+                <span class="ins-tag ins-tag--{{ c.level }}">{{ c.level|upper }}</span>
+              </div>
+              <div class="ins-reasons">{{ c.reasons|join:" &middot; " }}</div>
+            </div>
+            <span class="ins-tag ins-tag--grey">{{ c.score }}</span>
+          </div>
+        {% empty %}
+          <p class="ins-empty"><i class="fas fa-check-circle"></i> No churn-risk flags right now.</p>
+        {% endfor %}
+      </section>
+
+      <!-- Action items: operational to-dos with no forward-looking metric -->
+      {% if today_by_category.approval or today_by_category.payment %}
+      <section class="ins-card ins-card--full">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--act"><i class="fas fa-list-check"></i></span>
+          Action items
+        </h3>
+        <div class="ins-actions">
+          {% with it=today_by_category.approval %}{% if it %}
+          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+                  data-category="{{ it.category }}"
+                  aria-label="{{ it.count }} {{ it.label }}, tap for details">
+            <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+            <span class="today-row__count">{{ it.count }}</span>
+            <span class="today-row__label">{{ it.label }}</span>
+            <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+          </button>
+          {% endif %}{% endwith %}
+          {% with it=today_by_category.payment %}{% if it %}
+          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+                  data-category="{{ it.category }}"
+                  aria-label="{{ it.count }} {{ it.label }}, tap for details">
+            <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+            <span class="today-row__count">{{ it.count }}</span>
+            <span class="today-row__label">{{ it.label }}</span>
+            <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+          </button>
+          {% endif %}{% endwith %}
+        </div>
+      </section>
+      {% endif %}
+
+    </div>
+
+    <!-- Embedded notification data — read by the drill-down modal JS -->
     <script id="notificationData" type="application/json">{{ notification_data_json|safe }}</script>
-    {% endif %}
 
-    <!-- ==================== PROPERTY OPERATIONS ==================== -->
-    {% if perms_map.properties or perms_map.tenants or perms_map.suppliers or perms_map.issues or perms_map.dashboard or perms_map.projects %}
-    <section class="home-section" aria-labelledby="propOpsHeading">
-      <h2 class="section-heading" id="propOpsHeading">
-        <i class="fas fa-building"></i> Property Operations
-      </h2>
-      <div class="modules-grid" id="propOpsGrid">
-        {% if perms_map.properties %}
-        <div class="module-tile">
-          <a href="{% url 'properties' %}" class="home-module-btn btn-info">
-            <i class="fas fa-home fa-lg mb-2"></i>
-            <h5>Properties</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.tenants %}
-        <div class="module-tile">
-          <a href="{% url 'tenant' %}" class="home-module-btn btn-info">
-            <i class="fas fa-users fa-lg mb-2"></i>
-            <h5>Tenants</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.suppliers %}
-        <div class="module-tile">
-          <a href="{% url 'suppliers' %}" class="home-module-btn btn-info">
-            <i class="fas fa-hammer fa-lg mb-2"></i>
-            <h5>Suppliers</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.issues %}
-        <div class="module-tile">
-          <a href="{% url 'fsr' %}" class="home-module-btn btn-info">
-            <i class="fas fa-exclamation-circle fa-lg mb-2"></i>
-            <h5>Issues</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.projects %}
-        <div class="module-tile">
-          <a href="{% url 'projects' %}" class="home-module-btn btn-info">
-            <i class="fas fa-tasks fa-lg mb-2"></i>
-            <h5>Projects</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.dashboard %}
-        <div class="module-tile">
-          <a href="{% url 'property_management_dashboard' %}" class="home-module-btn btn-info">
-            <i class="fas fa-tachometer-alt fa-lg mb-2"></i>
-            <h5>Dashboard</h5>
-          </a>
-        </div>
-        {% endif %}
-      </div>
-    </section>
-    {% endif %}
-
-    <!-- ==================== FINANCIAL MANAGEMENT ==================== -->
-    {% if perms_map.invoices or perms_map.expenses or perms_map.petty_cash or perms_map.financials %}
-    <section class="home-section" aria-labelledby="finMgmtHeading">
-      <h2 class="section-heading" id="finMgmtHeading">
-        <i class="fas fa-chart-line"></i> Financial Management
-      </h2>
-      <div class="modules-grid" id="finMgmtGrid">
-        {% if perms_map.invoices %}
-        <div class="module-tile">
-          <a href="{% url 'invoices' %}" class="home-module-btn btn-info">
-            <i class="fas fa-file-invoice fa-lg mb-2"></i>
-            <h5>Invoices</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.expenses %}
-        <div class="module-tile">
-          <a href="{% url 'act_expense_all' %}?from=home" class="home-module-btn btn-info">
-            <i class="fas fa-coins fa-lg mb-2"></i>
-            <h5>Expenses</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.petty_cash %}
-        <div class="module-tile">
-          <a href="{% url 'petty_cash' %}" class="home-module-btn btn-info">
-            <i class="fas fa-money-bill-wave fa-lg mb-2"></i>
-            <h5>Petty Cash</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.financials %}
-        <div class="module-tile">
-          <a href="{% url 'finance' %}" class="home-module-btn btn-info">
-            <i class="fas fa-chart-line fa-lg mb-2"></i>
-            <h5>Financials</h5>
-          </a>
-        </div>
-        {% endif %}
-      </div>
-    </section>
-    {% endif %}
-
-    <!-- ==================== PERSONAL / ADMINISTRATION ==================== -->
-    {% if perms_map.personal or perms_map.administration %}
-    <section class="home-section home-section--secondary">
-      <div class="modules-grid modules-grid--pair">
-        {% if perms_map.personal %}
-        <div class="module-tile">
-          <a href="{% url 'personal_page' %}" class="home-module-btn btn-personal">
-            <i class="fas fa-user-circle fa-lg mb-2"></i>
-            <h5>Personal</h5>
-          </a>
-        </div>
-        {% endif %}
-        {% if perms_map.administration %}
-        <div class="module-tile">
-          <a href="{% url 'admin_apms' %}" class="home-module-btn btn-admin">
-            <i class="fas fa-cogs fa-lg mb-2"></i>
-            <h5>Administration</h5>
-          </a>
-        </div>
-        {% endif %}
-      </div>
-    </section>
-    {% endif %}
+  {% elif perms_map.dashboard %}
+    <!-- Dashboard user, but the briefing could not be built this load -->
+    <div class="brief brief--muted">
+      <div class="brief-title"><i class="fas fa-robot"></i> Portfolio briefing</div>
+      <p class="brief-body">The briefing is momentarily unavailable — please refresh the page.</p>
+    </div>
+  {% else %}
+    <!-- Authenticated, no dashboard access: navigate via the sidebar / top menu -->
+    <div class="text-center my-4">
+      <img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" class="img-fluid" style="max-width:320px;">
+      <p class="text-muted mt-3">Use the menu to navigate to your modules.</p>
+    </div>
+  {% endif %}
 
   </div>
 
   <style>
     /* ==================== SHELL ==================== */
-    .home-shell {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 6px 12px;
-    }
-
-    .home-section {
-        margin-bottom: 26px;
-    }
-    .home-section:last-child {
-        margin-bottom: 0;
-    }
+    .home-shell { max-width: 1080px; margin: 0 auto; padding: 6px 12px; }
 
     .section-heading {
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #6c757d;
-        margin: 0 0 10px 4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.8px; color: #6c757d; margin: 0 0 10px 4px;
+        display: flex; align-items: center; gap: 8px;
     }
-    .section-heading i {
-        color: #17a2b8;
-        font-size: 0.9rem;
-    }
+    .section-heading i { color: #17a2b8; font-size: 0.9rem; }
+    .brief-heading { margin-top: 4px; }
 
-    /* The Personal/Administration row has no heading */
-    .home-section--secondary .section-heading {
-        display: none;
+    /* ==================== EXECUTIVE BRIEF ==================== */
+    .brief {
+        background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+        color: #eafcff; border-radius: 12px; padding: 16px 18px;
+        box-shadow: 0 2px 8px rgba(23,162,184,0.25);
     }
+    .brief--muted { background: #f8f9fa; color: #495057; border: 1px solid #e9ecef; box-shadow: none; }
+    .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .brief-title { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; }
+    .brief-badge {
+        font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em;
+        border-radius: 999px; padding: 3px 9px;
+        background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
+    }
+    .brief-badge--ai { background: #fff; color: #117a8b; border-color: #fff; }
+    .brief-body { margin: 11px 0 0; font-size: 14px; line-height: 1.6; color: #f4feff; }
+    .brief--muted .brief-body { color: #495057; }
 
-    /* ==================== TODAY PANEL ==================== */
-    .today-panel {
-        background: #ffffff;
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 26px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    /* ==================== INSIGHT GRID ==================== */
+    .brief-grid {
+        display: grid; grid-template-columns: repeat(12, 1fr);
+        gap: 14px; margin-top: 14px;
     }
-    .today-panel .section-heading {
-        margin: 0 0 10px 0;
+    .ins-card {
+        grid-column: span 4; background: #fff; border: 1px solid #e9ecef;
+        border-radius: 12px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .today-panel .section-heading i {
-        color: #f5a623;
-    }
+    .ins-card--wide { grid-column: span 8; }
+    .ins-card--half { grid-column: span 6; }
+    .ins-card--full { grid-column: span 12; }
 
-    .today-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
+    .ins-card__title { margin: 0 0 2px; font-size: 13.5px; display: flex; align-items: center; gap: 8px; color: #2c3e50; }
+    .ins-card__sub { color: #6c757d; font-size: 11.5px; margin: 0 0 10px; }
+    .ins-ic { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; font-size: 12px; flex: none; }
+    .ins-ic--rent  { background: #e6f6f8; color: #17a2b8; }
+    .ins-ic--exp   { background: #fff8e1; color: #d39e00; }
+    .ins-ic--arr   { background: #fdecea; color: #dc3545; }
+    .ins-ic--churn { background: #f3eefb; color: #6f42c1; }
+    .ins-ic--act   { background: #eef7f9; color: #117a8b; }
 
-    /* Today row is a <button> for proper a11y, but styled like a row */
+    .ins-kpis { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
+    .ins-kpi { display: flex; flex-direction: column; }
+    .ins-kpi__n { font-size: 22px; font-weight: 800; line-height: 1.1; color: #2c3e50; }
+    .ins-kpi__n--risk { color: #c2410c; }
+    .ins-kpi__n--red { color: #dc3545; }
+    .ins-kpi__k { font-size: 10.5px; color: #6c757d; text-transform: uppercase; letter-spacing: 0.03em; }
+
+    /* bar chart */
+    .ins-chart { display: flex; align-items: flex-end; gap: 5px; margin: 4px 0; }
+    .ins-bar { flex: 1; text-align: center; min-width: 0; }
+    .ins-bar__stack { height: 104px; display: flex; flex-direction: column; justify-content: flex-end; }
+    .ins-seg { width: 100%; border-radius: 3px 3px 0 0; }
+    .ins-seg--contracted { background: #17a2b8; }
+    .ins-seg--atrisk { background: repeating-linear-gradient(45deg, #f5a623, #f5a623 4px, #fcdca0 4px, #fcdca0 8px); }
+    .ins-bar__lbl { font-size: 9px; color: #6c757d; margin-top: 4px; }
+    .ins-legend { display: flex; gap: 14px; font-size: 11px; color: #6c757d; margin-top: 6px; flex-wrap: wrap; }
+    .ins-legend__sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+    .ins-legend__sw--c { background: #17a2b8; }
+    .ins-legend__sw--a { background: repeating-linear-gradient(45deg, #f5a623, #f5a623 4px, #fcdca0 4px, #fcdca0 8px); }
+
+    /* list rows */
+    .ins-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #e9ecef; }
+    .ins-row:first-of-type { border-top: none; }
+    .ins-who { font-weight: 600; font-size: 13px; color: #2c3e50; }
+    .ins-meta { font-size: 11.5px; color: #6c757d; }
+    .ins-reasons { font-size: 11px; color: #6c757d; margin-top: 2px; }
+    .ins-amt { font-weight: 800; font-size: 13px; white-space: nowrap; }
+    .ins-amt--red { color: #dc3545; }
+    .ins-empty { font-size: 12px; color: #6c757d; margin: 4px 0; }
+    .ins-empty i { color: #28a745; }
+    .ins-more { font-size: 11.5px; color: #6c757d; margin: 6px 0 0; }
+
+    .ins-tag { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+    .ins-tag--red    { background: #fdecea; color: #dc3545; }
+    .ins-tag--amber  { background: #fff8e1; color: #d39e00; }
+    .ins-tag--grey   { background: #f1f3f5; color: #495057; }
+    .ins-tag--high   { background: #f3eefb; color: #6f42c1; }
+    .ins-tag--medium { background: #fff8e1; color: #d39e00; }
+    .ins-tag--low    { background: #f1f3f5; color: #495057; }
+
+    .ins-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ins-actions .today-row { flex: 1; min-width: 220px; margin-top: 0; }
+
+    /* ==================== DRILL-DOWN ROWS (reused Today styling) ==================== */
+    /* A drill-down is a <button> for a11y, styled as a highlighted row. It keeps
+       the class name `today-row` so the modal JS below wires it automatically. */
     .today-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #2c3e50;
-        background: #f8f9fa;
-        border: none;
-        border-left: 4px solid #adb5bd;
-        cursor: pointer;
-        text-align: left;
-        width: 100%;
-        font-family: inherit;
+        display: flex; align-items: center; gap: 12px; padding: 11px 13px;
+        border-radius: 8px; text-decoration: none; color: #2c3e50;
+        background: #f8f9fa; border: none; border-left: 4px solid #adb5bd;
+        cursor: pointer; text-align: left; width: 100%; font-family: inherit;
         transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
-    .today-row:focus,
-    .today-row:active {
-        text-decoration: none;
-        color: #2c3e50;
-        outline: 2px solid rgba(23, 162, 184, 0.3);
-        outline-offset: 2px;
-    }
-    /* Hover affordance — desktop only (avoid sticky :hover on touch) */
+    .ins-drill { margin-top: 10px; }
+    .today-row:focus, .today-row:active { text-decoration: none; color: #2c3e50; outline: 2px solid rgba(23,162,184,0.3); outline-offset: 2px; }
     @media (hover: hover) and (pointer: fine) {
-        .today-row:hover {
-            transform: translateX(2px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            text-decoration: none;
-            color: #2c3e50;
-        }
+        .today-row:hover { transform: translateX(2px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-decoration: none; color: #2c3e50; }
     }
-
-    .today-row--urgent {
-        background: #fdecea;
-        border-left-color: #dc3545;
-    }
-    .today-row--urgent .today-row__icon {
-        color: #dc3545;
-    }
-    .today-row--warning {
-        background: #fff8e1;
-        border-left-color: #ffc107;
-    }
-    .today-row--warning .today-row__icon {
-        color: #d39e00;
-    }
-    .today-row--info {
-        background: #e6f6f8;
-        border-left-color: #17a2b8;
-    }
-    .today-row--info .today-row__icon {
-        color: #138496;
-    }
-
-    .today-row__icon {
-        font-size: 1.1rem;
-        width: 28px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-    .today-row__count {
-        font-size: 1.25rem;
-        font-weight: 700;
-        min-width: 32px;
-        text-align: right;
-        flex-shrink: 0;
-    }
-    .today-row__label {
-        flex: 1;
-        font-size: 0.95rem;
-        line-height: 1.3;
-        min-width: 0;
-    }
-    .today-row__chevron {
-        font-size: 0.85rem;
-        color: #adb5bd;
-        flex-shrink: 0;
-    }
-
-    /* ==================== MODULE GRID ==================== */
-    .modules-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        gap: 12px;
-    }
-
-    .module-tile {
-        width: 180px;
-        flex: 0 0 180px;
-    }
-
-    .home-module-btn {
-        height: 90px;
-        width: 180px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-        border-radius: 8px;
-        color: white;
-        text-decoration: none;
-        padding: 8px;
-        text-align: center;
-    }
-
-    .home-module-btn.btn-info {
-        background-color: #17a2b8;
-        border: none;
-    }
-    .home-module-btn.btn-personal {
-        background-color: #28a745;
-        border: none;
-    }
-    .home-module-btn.btn-admin {
-        background-color: #6f42c1;
-        border: none;
-    }
-
-    /* Hover affordance — desktop only */
-    @media (hover: hover) and (pointer: fine) {
-        .home-module-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            text-decoration: none;
-            color: white;
-        }
-        .home-module-btn.btn-info:hover { background-color: #138496; }
-        .home-module-btn.btn-personal:hover { background-color: #218838; }
-        .home-module-btn.btn-admin:hover { background-color: #5a32a3; }
-    }
-
-    .home-module-btn:focus,
-    .home-module-btn:active {
-        text-decoration: none;
-        color: white;
-    }
-
-    .home-module-btn h5 {
-        margin-bottom: 0;
-        font-weight: 500;
-        font-size: 0.85rem;
-        line-height: 1.2;
-    }
-
-    .home-module-btn i {
-        font-size: 1.5rem;
-        margin-bottom: 6px;
-    }
-
-    /* Personal/Admin pair grid — exactly 2 columns at all widths */
-    .modules-grid--pair {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-    .modules-grid--pair .module-tile {
-        width: auto;
-        flex: unset;
-    }
-    .modules-grid--pair .home-module-btn {
-        width: 100%;
-    }
+    .today-row--urgent  { background: #fdecea; border-left-color: #dc3545; }
+    .today-row--urgent  .today-row__icon { color: #dc3545; }
+    .today-row--warning { background: #fff8e1; border-left-color: #ffc107; }
+    .today-row--warning .today-row__icon { color: #d39e00; }
+    .today-row--info    { background: #e6f6f8; border-left-color: #17a2b8; }
+    .today-row--info    .today-row__icon { color: #138496; }
+    .today-row__icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
+    .today-row__count { font-size: 1.25rem; font-weight: 700; min-width: 32px; text-align: right; flex-shrink: 0; }
+    .today-row__label { flex: 1; font-size: 0.95rem; line-height: 1.3; min-width: 0; }
+    .today-row__chevron { font-size: 0.85rem; color: #adb5bd; flex-shrink: 0; }
 
     /* ==================== TABLET (≤767px) ==================== */
     @media (max-width: 767px) {
-        .module-tile { width: 140px; flex: 0 0 140px; }
-        .home-module-btn { width: 140px; height: 75px; }
-        .home-module-btn h5 { font-size: 0.75rem; }
-        .home-module-btn i { font-size: 1.2rem; }
-
-        .modules-grid--pair .module-tile { width: auto; }
-        .modules-grid--pair .home-module-btn { width: 100%; height: 75px; }
+        .brief-grid { grid-template-columns: 1fr; }
+        .ins-card, .ins-card--wide, .ins-card--half, .ins-card--full { grid-column: auto; }
+        .ins-actions .today-row { min-width: 0; }
     }
-
     /* ==================== PHONE PORTRAIT (≤479px) ==================== */
     @media (max-width: 479px) {
-        .home-shell {
-            padding: 4px 8px;
-        }
-        .home-section {
-            margin-bottom: 18px;
-        }
-        .section-heading {
-            font-size: 0.75rem;
-            margin-bottom: 8px;
-        }
-
-        .today-panel {
-            padding: 10px;
-            margin-bottom: 18px;
-            border-radius: 10px;
-        }
-        .today-row {
-            padding: 11px 12px;
-            gap: 10px;
-        }
-        .today-row__icon {
-            font-size: 1rem;
-            width: 24px;
-        }
-        .today-row__count {
-            font-size: 1.15rem;
-            min-width: 28px;
-        }
-        .today-row__label {
-            font-size: 0.9rem;
-        }
-
-        .modules-grid {
-            flex-direction: column;
-            flex-wrap: nowrap;
-            align-items: stretch;
-            gap: 8px;
-        }
-        .module-tile {
-            width: 100%;
-            flex: 0 0 auto;
-        }
-        .home-module-btn {
-            width: 100%;
-            height: 60px;
-            flex-direction: row;
-            justify-content: flex-start;
-            padding-left: 20px;
-        }
-        .home-module-btn i {
-            font-size: 1.3rem;
-            margin-bottom: 0;
-            margin-right: 14px;
-        }
-        .home-module-btn h5 {
-            font-size: 0.95rem;
-        }
-
-        .modules-grid--pair {
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .modules-grid--pair .home-module-btn {
-            flex-direction: column;
-            justify-content: center;
-            padding-left: 8px;
-            height: 70px;
-        }
-        .modules-grid--pair .home-module-btn i {
-            margin-right: 0;
-            margin-bottom: 4px;
-            font-size: 1.2rem;
-        }
-        .modules-grid--pair .home-module-btn h5 {
-            font-size: 0.85rem;
-        }
+        .home-shell { padding: 4px 8px; }
+        .brief { padding: 13px 14px; border-radius: 10px; }
+        .brief-body { font-size: 13px; }
+        .ins-kpi__n { font-size: 19px; }
+        .ins-chart { gap: 3px; }
+        .today-row__label { font-size: 0.9rem; }
     }
 
     /* ==================== MODAL OVERLAY ====================
-       Lifted verbatim from notifications.html so the modal looks
+       Lifted verbatim from notifications.html so the drill-down modal looks
        and behaves identically across both pages. */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-
-    .modal-overlay .modal-content {
-        background: white;
-        border-radius: 12px;
-        max-width: 90vw;
-        max-height: 90vh;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .modal-overlay .modal-header {
-        background: #17a2b8;
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-overlay .modal-title {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .modal-overlay .modal-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-
-    .modal-overlay .modal-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .modal-overlay .modal-body {
-        padding: 20px;
-        max-height: 70vh;
-        overflow-y: auto;
-    }
-
-    .table-container {
-        overflow-x: auto;
-    }
-
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 0;
-    }
-
-    .data-table th {
-        background: #f8f9fa;
-        padding: 12px 15px;
-        text-align: center;
-        border-bottom: 2px solid #dee2e6;
-        font-weight: 600;
-        color: #495057;
-        font-size: 14px;
-    }
-
-    .data-table th:first-child {
-        text-align: left;
-    }
-
-    .data-table td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #dee2e6;
-        text-align: center;
-        font-size: 14px;
-    }
-
-    .data-table td:first-child {
-        text-align: left;
-        font-weight: 500;
-    }
-
-    .data-table tbody tr:hover {
-        background: #f8f9fa;
-    }
-
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-
-    .status-urgent {
-        background: #dc3545;
-        color: white;
-    }
-
-    .status-warning {
-        background: #ffc107;
-        color: #212529;
-    }
-
-    .status-info {
-        background: #17a2b8;
-        color: white;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-overlay .modal-content { background: white; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .modal-overlay .modal-header { background: #17a2b8; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-overlay .modal-title { margin: 0; font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .modal-overlay .modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+    .modal-overlay .modal-close:hover { background: rgba(255,255,255,0.2); }
+    .modal-overlay .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
+    .table-container { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; margin: 0; }
+    .data-table th { background: #f8f9fa; padding: 12px 15px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; color: #495057; font-size: 14px; }
+    .data-table th:first-child { text-align: left; }
+    .data-table td { padding: 12px 15px; border-bottom: 1px solid #dee2e6; text-align: center; font-size: 14px; }
+    .data-table td:first-child { text-align: left; font-weight: 500; }
+    .data-table tbody tr:hover { background: #f8f9fa; }
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .status-urgent { background: #dc3545; color: white; }
+    .status-warning { background: #ffc107; color: #212529; }
+    .status-info { background: #17a2b8; color: white; }
 
     /* Mobile: full-screen modal + table-as-cards (matches notifications.html) */
     @media (max-width: 768px) {
-        .modal-overlay {
-            /* Use dvh (dynamic viewport height) so the overlay matches
-               the actual visible viewport when the address bar is shown. */
-            height: 100dvh;
-        }
+        .modal-overlay { height: 100dvh; }
         .modal-overlay .modal-content {
-            max-width: 100vw;
-            max-height: 100dvh;
-            width: 100vw;
-            height: 100dvh;
-            border-radius: 0;
-            display: flex;
-            flex-direction: column;
-            /* Respect iOS safe-area inset (notch + status bar) so the
-               modal header isn't hidden under the system UI. */
-            padding-top: env(safe-area-inset-top, 0);
-            padding-bottom: env(safe-area-inset-bottom, 0);
+            max-width: 100vw; max-height: 100dvh; width: 100vw; height: 100dvh;
+            border-radius: 0; display: flex; flex-direction: column;
+            padding-top: env(safe-area-inset-top, 0); padding-bottom: env(safe-area-inset-bottom, 0);
             box-sizing: border-box;
         }
-        .modal-overlay .modal-header {
-            padding: 14px 16px;
-            flex-shrink: 0;
-        }
-        .modal-overlay .modal-title {
-            font-size: 16px;
-        }
-        .modal-overlay .modal-body {
-            padding: 14px;
-            max-height: none;
-            flex: 1 1 auto;
-            overflow-y: auto;
-        }
-
-        /* Tables → card layout */
-        .data-table thead {
-            display: none;
-        }
-        .data-table,
-        .data-table tbody,
-        .data-table tr {
-            display: block;
-            width: 100%;
-        }
-        .data-table tr {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-        }
-        .data-table tr:hover {
-            background: white;
-        }
-        .data-table td {
-            display: flex !important;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            padding: 6px 0 !important;
-            border-bottom: none;
-            text-align: right !important;
-            font-size: 13px;
-        }
-        .data-table td:first-child {
-            font-size: 15px;
-            font-weight: 600;
-            color: #2c3e50;
-            padding-bottom: 8px !important;
-            margin-bottom: 4px;
-            border-bottom: 1px solid #f0f0f0 !important;
-            text-align: left !important;
-            display: block !important;
-        }
-        .data-table td:not(:first-child)::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #6c757d;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            text-align: left;
-            flex-shrink: 0;
-        }
-        .status-badge {
-            font-size: 11px;
-        }
+        .modal-overlay .modal-header { padding: 14px 16px; flex-shrink: 0; }
+        .modal-overlay .modal-title { font-size: 16px; }
+        .modal-overlay .modal-body { padding: 14px; max-height: none; flex: 1 1 auto; overflow-y: auto; }
+        .data-table thead { display: none; }
+        .data-table, .data-table tbody, .data-table tr { display: block; width: 100%; }
+        .data-table tr { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+        .data-table tr:hover { background: white; }
+        .data-table td { display: flex !important; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0 !important; border-bottom: none; text-align: right !important; font-size: 13px; }
+        .data-table td:first-child { font-size: 15px; font-weight: 600; color: #2c3e50; padding-bottom: 8px !important; margin-bottom: 4px; border-bottom: 1px solid #f0f0f0 !important; text-align: left !important; display: block !important; }
+        .data-table td:not(:first-child)::before { content: attr(data-label); font-weight: 600; color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; text-align: left; flex-shrink: 0; }
+        .status-badge { font-size: 11px; }
     }
   </style>
 
   <script>
-    // ==================== HOME PAGE TODAY MODAL ====================
+    // ==================== HOME PAGE DRILL-DOWN MODAL ====================
     // Reuses the same modal pattern as notifications.html. The data was
-    // embedded server-side (Option B) so no XHR is needed when the user
-    // taps a Today row.
+    // embedded server-side so no XHR is needed when the user taps a drill-down.
 
     (function() {
       const dataEl = document.getElementById('notificationData');
-      if (!dataEl) return;  // No Today panel — nothing to wire up
+      if (!dataEl) return;  // No briefing data — nothing to wire up
 
       let notificationData = {};
       try {
@@ -751,7 +479,7 @@ Home
         return;
       }
 
-      // Wire up all today rows to open the appropriate modal
+      // Wire up every drill-down (.today-row) to open the appropriate modal.
       document.querySelectorAll('.today-row').forEach(function(row) {
         row.addEventListener('click', function() {
           const category = row.dataset.category;
@@ -780,14 +508,12 @@ Home
           '<div class="modal-body">' + modalData.content + '</div>' +
         '</div>';
 
-      // Click outside or on close button closes the modal
       overlay.addEventListener('click', function(e) {
         if (e.target === overlay || e.target.closest('.modal-close')) {
           overlay.remove();
         }
       });
 
-      // Escape key closes the modal
       function escHandler(e) {
         if (e.key === 'Escape') {
           overlay.remove();
@@ -803,57 +529,27 @@ Home
       const summary = (data && data.summary) || {};
       switch (category) {
         case 'vacant':
-          return {
-            title: 'Vacant Properties (' + (summary.vacantProperties || 0) + ')',
-            icon: 'fas fa-home',
-            content: buildVacantContent(data.vacantProperties || [])
-          };
+          return { title: 'Vacant Properties (' + (summary.vacantProperties || 0) + ')', icon: 'fas fa-home', content: buildVacantContent(data.vacantProperties || []) };
         case 'expiring':
-          return {
-            title: 'Expiring Leases (' + (summary.expiringLeases || 0) + ')',
-            icon: 'fas fa-calendar-times',
-            content: buildExpiringContent(data.expiringLeases || [])
-          };
+          return { title: 'Expiring Leases (' + (summary.expiringLeases || 0) + ')', icon: 'fas fa-calendar-times', content: buildExpiringContent(data.expiringLeases || []) };
         case 'declined':
-          return {
-            title: 'Declined Renewals (' + (summary.declinedRenewals || 0) + ')',
-            icon: 'fas fa-times-circle',
-            content: buildDeclinedContent(data.declinedRenewals || [])
-          };
+          return { title: 'Declined Renewals (' + (summary.declinedRenewals || 0) + ')', icon: 'fas fa-times-circle', content: buildDeclinedContent(data.declinedRenewals || []) };
         case 'overdue':
-          return {
-            title: 'Overdue Invoices (' + (summary.overdueInvoices || 0) + ')',
-            icon: 'fas fa-exclamation-triangle',
-            content: buildOverdueContent(data.overdueInvoices || [])
-          };
+          return { title: 'Overdue Invoices (' + (summary.overdueInvoices || 0) + ')', icon: 'fas fa-exclamation-triangle', content: buildOverdueContent(data.overdueInvoices || []) };
         case 'approval':
-          return {
-            title: 'Expenses Waiting for Approval (' + (summary.expensesWaitingApproval || 0) + ')',
-            icon: 'fas fa-clipboard-check',
-            content: buildApprovalContent(data.expensesWaitingApproval || [])
-          };
+          return { title: 'Expenses Waiting for Approval (' + (summary.expensesWaitingApproval || 0) + ')', icon: 'fas fa-clipboard-check', content: buildApprovalContent(data.expensesWaitingApproval || []) };
         case 'payment':
-          return {
-            title: 'Expenses Waiting for Payment (' + (summary.expensesWaitingPayment || 0) + ')',
-            icon: 'fas fa-credit-card',
-            content: buildPaymentContent(data.expensesWaitingPayment || [])
-          };
+          return { title: 'Expenses Waiting for Payment (' + (summary.expensesWaitingPayment || 0) + ')', icon: 'fas fa-credit-card', content: buildPaymentContent(data.expensesWaitingPayment || []) };
         default:
           return null;
       }
     }
 
-    // Empty-state helper — shouldn't fire (Today only shows non-zero rows)
-    // but kept for safety.
     function emptyState(label) {
       return '<div style="text-align: center; padding: 40px;">' +
         '<i class="fas fa-check-circle" style="color: #28a745; font-size: 48px; margin-bottom: 20px;"></i>' +
-        '<h4 style="color: #28a745;">No ' + label + '</h4>' +
-        '</div>';
+        '<h4 style="color: #28a745;">No ' + label + '</h4></div>';
     }
-
-    // The build*Content functions below mirror those in notifications.html
-    // verbatim so the modals look identical on both pages.
 
     function buildVacantContent(items) {
       if (items.length === 0) return emptyState('vacant properties');
@@ -862,8 +558,7 @@ Home
           '<td>' + (item.prop_name || '') + '</td>' +
           '<td data-label="Country">' + (item.prop_country || '') + '</td>' +
           '<td data-label="Status"><span class="status-badge status-urgent">VACANT</span></td>' +
-          '<td data-label="Action">Contact estate agents ASAP</td>' +
-        '</tr>';
+          '<td data-label="Action">Contact estate agents ASAP</td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
         '<thead><tr><th>Property Name</th><th>Country</th><th>Status</th><th>Action Required</th></tr></thead>' +
@@ -879,8 +574,7 @@ Home
           '<td data-label="Tenant">' + (item.tenant_name || '') + '</td>' +
           '<td data-label="Lease End">' + (item.lease_end_date || '') + '</td>' +
           '<td data-label="Renewal Due">' + (item.renewal_date || '') + '</td>' +
-          '<td data-label="Status"><span class="status-badge status-warning">PENDING</span></td>' +
-        '</tr>';
+          '<td data-label="Status"><span class="status-badge status-warning">PENDING</span></td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
         '<thead><tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th>Renewal Due By</th><th>Status</th></tr></thead>' +
@@ -895,8 +589,7 @@ Home
           '<td data-label="Country">' + (item.prop_country || '') + '</td>' +
           '<td data-label="Current Tenant">' + (item.tenant_name || '') + '</td>' +
           '<td data-label="Lease End">' + (item.lease_end_date || '') + '</td>' +
-          '<td data-label="Status"><span class="status-badge status-urgent">NEED NEW TENANT</span></td>' +
-        '</tr>';
+          '<td data-label="Status"><span class="status-badge status-urgent">NEED NEW TENANT</span></td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
         '<thead><tr><th>Property Name</th><th>Country</th><th>Current Tenant</th><th>Lease End Date</th><th>Status</th></tr></thead>' +
@@ -914,8 +607,7 @@ Home
           '<td data-label="Tenant">' + (item.tenant_name || '') + '</td>' +
           '<td data-label="Amount">€' + formattedAmount + '</td>' +
           '<td data-label="Due Date">' + (item.due_date || '') + '</td>' +
-          '<td data-label="Days Overdue">' + (item.days_overdue || 0) + '</td>' +
-        '</tr>';
+          '<td data-label="Days Overdue">' + (item.days_overdue || 0) + '</td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
         '<thead><tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Amount</th><th>Due Date</th><th>Days Overdue</th></tr></thead>' +
@@ -931,8 +623,7 @@ Home
           '<td data-label="Description">' + (item.description || '') + '</td>' +
           '<td data-label="Amount">€' + parseFloat(item.amount || 0).toFixed(2) + '</td>' +
           '<td data-label="Submitted">' + (item.submitted_date || item.expense_date || '') + '</td>' +
-          '<td data-label="Status"><span class="status-badge status-warning">PENDING APPROVAL</span></td>' +
-        '</tr>';
+          '<td data-label="Status"><span class="status-badge status-warning">PENDING APPROVAL</span></td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
         '<thead><tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th>Amount</th><th>Submitted Date</th><th>Status</th></tr></thead>' +
@@ -948,40 +639,12 @@ Home
           '<td data-label="Description">' + (item.description || '') + '</td>' +
           '<td data-label="Amount">€' + parseFloat(item.amount || 0).toFixed(2) + '</td>' +
           '<td data-label="Approved">' + (item.approved_date || item.expense_date || '') + '</td>' +
-          '<td data-label="Status"><span class="status-badge status-info">APPROVED - AWAITING PAYMENT</span></td>' +
-        '</tr>';
+          '<td data-label="Status"><span class="status-badge status-info">APPROVED - AWAITING PAYMENT</span></td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
         '<thead><tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th>Amount</th><th>Approved Date</th><th>Status</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table></div>';
     }
-  </script>
-
-  <script>
-    // Adjust grid max-width on desktop so tile rows centre nicely.
-    document.addEventListener('DOMContentLoaded', function() {
-      function adjustGrids() {
-        const isDesktop = window.innerWidth >= 768;
-        document.querySelectorAll('.modules-grid:not(.modules-grid--pair)').forEach(function(grid) {
-          if (!isDesktop) {
-            grid.style.maxWidth = '';
-            grid.style.margin = '';
-            return;
-          }
-          const tiles = grid.querySelectorAll('.module-tile');
-          const count = tiles.length;
-          if (count === 0) return;
-          const maxCols = Math.min(count, 6);
-          const tileWidth = 180;
-          const gap = 12;
-          const totalWidth = (maxCols * tileWidth) + ((maxCols - 1) * gap);
-          grid.style.maxWidth = totalWidth + 'px';
-          grid.style.margin = '0 auto 0 0';
-        });
-      }
-      adjustGrids();
-      window.addEventListener('resize', adjustGrids);
-    });
   </script>
 
 {% endif %}

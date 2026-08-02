@@ -31,6 +31,7 @@ from django.core.cache import cache
 from django.shortcuts import render
 
 from ..models import props, supplier, tenant
+from ..services.portfolio_insights import portfolio_insights
 from .notifications_dashboard import get_notification_data
 
 
@@ -181,10 +182,13 @@ def home(request):
                 'administration': request.user.has_perm('auth.can_access_administration'),
             }
 
-    # Today panel - build for authenticated users with dashboard access
-    # (same permission gating as the Notifications Dashboard view itself).
+    # Portfolio briefing + Today drill-downs - build for authenticated users
+    # with dashboard access (same permission gating as the Notifications
+    # Dashboard view itself).
     today_items = []
+    today_by_category = {}
     notification_data_json = '{}'
+    insights = None
     if request.user.is_authenticated and perms.get('dashboard'):
         cache_key = f'home_notification_data_user_{request.user.id}'
         notification_data = cache.get(cache_key)
@@ -203,6 +207,9 @@ def home(request):
                 item for item in all_today_items
                 if perms.get(item['permission'], False)
             ]
+            # Keyed by category so the template can drop each drill-down into
+            # the briefing card it belongs to (e.g. 'overdue' -> Arrears card).
+            today_by_category = {item['category']: item for item in today_items}
             # Embed full data (counts + detail rows) so modals open instantly
             # without a second round-trip. ~few KB of JSON.
             try:
@@ -210,11 +217,23 @@ def home(request):
             except Exception:
                 notification_data_json = '{}'
 
+        # Portfolio briefing (forward projection, expiries, arrears, churn +
+        # AI/templated brief). Read-only; the metrics compute fresh each load
+        # while the AI prose is fingerprint-cached inside the service. Wrapped
+        # so a briefing hiccup can never take the Home page down.
+        summary = (notification_data or {}).get('summary', {}) or {}
+        try:
+            insights = portfolio_insights(today_summary=summary)
+        except Exception:
+            insights = None
+
     return render(request, "home.html", {
         "props": results,
         "tenant": tresults,
         "supplier": sresults,
         "perms_map": perms,
         "today_items": today_items,
+        "today_by_category": today_by_category,
         "notification_data_json": notification_data_json,
+        "insights": insights,
     })
