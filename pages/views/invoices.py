@@ -82,7 +82,11 @@ def invoices_page(request):
 @login_required
 @permission_required('auth.can_edit_invoices', raise_exception=True)
 def invoices_commit(request, invoice_id):
-    inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
+    # Mark paid AND stamp the paid date. .update() is a direct SQL UPDATE that
+    # bypasses the model's save() (which also stamps the date), so the date must
+    # be set explicitly here — this button is the primary "mark paid" path.
+    inv_tbp = invoices.objects.filter(pk=invoice_id).update(
+        invoice_paid="Yes", invoice_paid_date=date.today())
     iresults = invoices.objects.get(pk=invoice_id)
     tresults = tenant.objects.get(pk=iresults.tenant_id)
 

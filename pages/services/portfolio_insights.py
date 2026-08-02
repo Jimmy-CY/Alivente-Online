@@ -64,6 +64,12 @@ def _money(n):
         return "€0"
 
 
+# Days past the due date before an overdue invoice is treated as a genuine
+# collections/churn concern rather than normal billing-cycle lag. Shared by the
+# Arrears card's "more than N days late" figure and the churn arrears factor.
+ARREARS_GRACE_DAYS = 5
+
+
 def _leases_by_property(today):
     """All lease rows grouped by property id -> [lease, ...]."""
     leases = list(Tenant.objects.select_related("prop").all())
@@ -331,12 +337,22 @@ def arrears(today=None):
     # day late) — the largest outstanding amount. (A "chronic late payer"
     # tiebreak would need a paid-date history the invoices table doesn't record.)
     rows.sort(key=lambda r: (r["days_overdue"], r["amount"]), reverse=True)
+
+    # Genuinely-late subset (past the grace period) — shown as a second line on
+    # the card so the headline "total overdue" isn't inflated by the normal
+    # billing cycle (everyone one day past a hard due date).
+    late = [r for r in rows if r["days_overdue"] > ARREARS_GRACE_DAYS]
+    late_total = round(sum(r["amount"] for r in late), 2)
     return {
         "rows": rows,
         "total": round(total, 2),
         "total_fmt": _money(total),
         "tenant_count": len(rows),
         "invoice_count": invoice_count,
+        "late_total": late_total,
+        "late_total_fmt": _money(late_total),
+        "late_count": len(late),
+        "grace_days": ARREARS_GRACE_DAYS,
     }
 
 
@@ -369,7 +385,6 @@ def churn_risk(today=None, arrears_rows=None):
     # Arrears with a grace period: a tenant only counts as "in arrears" for
     # churn once they are more than ARREARS_GRACE_DAYS late (a few days late is
     # not a leaving signal). Map tenant/property -> worst days overdue.
-    ARREARS_GRACE_DAYS = 5
     if arrears_rows is None:
         arrears_rows = arrears(today)["rows"]
     arr_days = {

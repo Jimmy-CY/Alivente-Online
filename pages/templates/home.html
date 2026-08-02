@@ -181,6 +181,14 @@ Home
         </div>
         {% if insights.arrears.invoice_count %}
           <p class="ins-more">across {{ insights.arrears.invoice_count }} invoice{{ insights.arrears.invoice_count|pluralize }}</p>
+          {% if insights.arrears.late_total %}
+            <p class="ins-late"><i class="fas fa-hourglass-half"></i>
+              {{ insights.arrears.late_total_fmt }} more than {{ insights.arrears.grace_days }} days late
+              ({{ insights.arrears.late_count }} tenant{{ insights.arrears.late_count|pluralize }})</p>
+          {% else %}
+            <p class="ins-late ins-late--ok"><i class="fas fa-check-circle"></i>
+              None more than {{ insights.arrears.grace_days }} days late</p>
+          {% endif %}
         {% endif %}
 
         {% for r in insights.arrears.rows|slice:":3" %}
@@ -389,6 +397,9 @@ Home
     .ins-empty { font-size: 13px; color: #6c757d; margin: 4px 0; }
     .ins-empty i { color: #28a745; }
     .ins-more { font-size: 12.5px; color: #6c757d; margin: 6px 0 0; }
+    .ins-late { font-size: 12.5px; font-weight: 700; color: #b45309; margin: 4px 0 0; display: flex; align-items: center; gap: 6px; }
+    .ins-late i { font-size: 11px; }
+    .ins-late--ok { color: #16a34a; font-weight: 600; }
 
     .ins-tag { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
     .ins-tag--red    { background: #fdecea; color: #dc3545; }

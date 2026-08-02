@@ -762,7 +762,23 @@ class invoices(models.Model):
     invoice_date = models.DateField(blank=True, null=True)
     invoice_paid = models.CharField(max_length=255, blank=True, null=True)
     invoice_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    
+    # Date the invoice was marked paid. Captured automatically in save() below
+    # for FUTURE use (e.g. a "traditionally pays late" signal in analytics); no
+    # current report reads it. Null while the invoice is unpaid.
+    invoice_paid_date = models.DateField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # Stamp the paid date the first time the invoice is marked paid, and
+        # clear it if it is set back to unpaid. Living on the model (not the
+        # form) means every save path — form, admin, shell — captures it.
+        is_paid = (self.invoice_paid or "").strip().lower() == "yes"
+        if is_paid and self.invoice_paid_date is None:
+            from datetime import date as _paid_date
+            self.invoice_paid_date = _paid_date.today()
+        elif not is_paid:
+            self.invoice_paid_date = None
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table="invoice"
 
