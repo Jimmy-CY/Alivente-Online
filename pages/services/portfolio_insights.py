@@ -205,16 +205,22 @@ def expiring_no_successor(today=None, within_days=90):
 
 
 def arrears(today=None):
-    """Unpaid invoices for current tenants whose due date (invoice_date +
-    payment_terms) has passed. Mirrors get_overdue_invoices / effective_amount."""
+    """Overdue rent, grouped by tenant. An invoice is overdue when its due date
+    (invoice_date + payment_terms) has passed. Because one tenant can have
+    several overdue invoices, rows are aggregated per tenant: `amount` is the
+    tenant's total across their overdue invoices, `days_overdue` is their worst
+    (oldest) invoice, `invoice_count` how many. The summary carries both counts
+    so the card can read "N tenants ... across M invoices".
+    """
     today = today or date.today()
     unpaid = (
         Invoices.objects
         .filter(invoice_paid="No", tenant__tenant_current="Yes")
         .select_related("tenant", "tenant__prop")
     )
-    rows = []
+    groups = {}
     total = 0.0
+    invoice_count = 0
     for inv in unpaid:
         t = inv.tenant
         if t is None or inv.invoice_date is None:
@@ -224,19 +230,39 @@ def arrears(today=None):
         if due >= today:
             continue  # not yet overdue
         amt = float(inv.effective_amount or 0)
+        days = (today - due).days
         total += amt
-        rows.append({
-            "tenant_name": t.tenant_name,
-            "prop_name": getattr(t.prop, "prop_name", ""),
-            "amount": round(amt, 2),
-            "amount_fmt": _money(amt),
-            "invoice_date": inv.invoice_date,
-            "due_date": due,
-            "days_overdue": (today - due).days,
-        })
+        invoice_count += 1
+        g = groups.get(t.pk)
+        if g is None:
+            g = {
+                "tenant_name": t.tenant_name,
+                "prop_name": getattr(t.prop, "prop_name", ""),
+                "amount": 0.0,
+                "invoice_count": 0,
+                "days_overdue": 0,      # worst (largest) across the tenant
+                "due_date": due,        # oldest due date across the tenant
+            }
+            groups[t.pk] = g
+        g["amount"] += amt
+        g["invoice_count"] += 1
+        if days > g["days_overdue"]:
+            g["days_overdue"] = days
+        if due < g["due_date"]:
+            g["due_date"] = due
+
+    rows = list(groups.values())
+    for g in rows:
+        g["amount"] = round(g["amount"], 2)
+        g["amount_fmt"] = _money(g["amount"])
     rows.sort(key=lambda r: r["days_overdue"], reverse=True)
-    return {"rows": rows, "total": round(total, 2),
-            "total_fmt": _money(total), "count": len(rows)}
+    return {
+        "rows": rows,
+        "total": round(total, 2),
+        "total_fmt": _money(total),
+        "tenant_count": len(rows),
+        "invoice_count": invoice_count,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -354,12 +380,14 @@ def _templated_brief(projection, expiring, arr, churn, today=None, today_summary
             "{} lease{} expire{} within 90 days with no replacement captured: {}{}.".format(
                 n_exp, "" if n_exp == 1 else "s", "s" if n_exp == 1 else "", names, more))
 
-    if arr["count"]:
+    if arr["tenant_count"]:
         worst = arr["rows"][0]
+        tc, ic = arr["tenant_count"], arr["invoice_count"]
+        across = "" if ic == tc else " across {} invoices".format(ic)
         lines.append(
-            "{} tenant{} in arrears totalling {} (worst: {} at {} days).".format(
-                arr["count"], "" if arr["count"] == 1 else "s",
-                _money(arr["total"]), worst["tenant_name"], worst["days_overdue"]))
+            "{} tenant{} in arrears totalling {}{} (worst: {} at {} days).".format(
+                tc, "" if tc == 1 else "s", _money(arr["total"]), across,
+                worst["tenant_name"], worst["days_overdue"]))
 
     high = [c for c in churn if c["level"] == "high"]
     if high:
@@ -396,7 +424,8 @@ def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None):
         "exp": [(e["tenant_name"], str(e["lease_end"]), e["days_to_end"])
                 for e in expiring],
         "arr_total": arr.get("total"),
-        "arr_count": arr.get("count"),
+        "arr_tenants": arr.get("tenant_count"),
+        "arr_invoices": arr.get("invoice_count"),
         "arr_worst": ((arr["rows"][0]["tenant_name"], arr["rows"][0]["days_overdue"])
                       if arr.get("rows") else None),
         "churn": [(c["tenant_name"], c["score"]) for c in churn],
@@ -430,11 +459,11 @@ def _metrics_context(projection, expiring, arr, churn, today, today_summary):
     else:
         parts.append("No leases expiring within 90 days without a successor.")
 
-    if arr.get("count"):
+    if arr.get("tenant_count"):
         worst = arr["rows"][0]
-        parts.append("Arrears: {} tenant(s) overdue, total {}; worst is {} "
-                     "at {} days overdue.".format(
-                         arr["count"], _money(arr["total"]),
+        parts.append("Arrears: {} tenant(s) overdue across {} invoice(s), total {}; "
+                     "worst is {} at {} days overdue.".format(
+                         arr["tenant_count"], arr["invoice_count"], _money(arr["total"]),
                          worst["tenant_name"], worst["days_overdue"]))
     else:
         parts.append("Arrears: none.")

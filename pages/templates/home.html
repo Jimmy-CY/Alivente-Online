@@ -73,7 +73,7 @@ Home
           </div>
           <div class="ins-kpi">
             <span class="ins-kpi__n ins-kpi__n--risk">{{ insights.projection.next3_at_risk_fmt }}</span>
-            <span class="ins-kpi__k">Depends on renewals</span>
+            <span class="ins-kpi__k">At-risk · next 3 mo</span>
           </div>
           <div class="ins-kpi">
             <span class="ins-kpi__n">{{ insights.projection.grand_total_fmt }}</span>
@@ -174,16 +174,19 @@ Home
             <span class="ins-kpi__k">Total overdue</span>
           </div>
           <div class="ins-kpi">
-            <span class="ins-kpi__n">{{ insights.arrears.count }}</span>
-            <span class="ins-kpi__k">Tenant{{ insights.arrears.count|pluralize }}</span>
+            <span class="ins-kpi__n">{{ insights.arrears.tenant_count }}</span>
+            <span class="ins-kpi__k">Tenant{{ insights.arrears.tenant_count|pluralize }}</span>
           </div>
         </div>
+        {% if insights.arrears.invoice_count %}
+          <p class="ins-more">across {{ insights.arrears.invoice_count }} invoice{{ insights.arrears.invoice_count|pluralize }}</p>
+        {% endif %}
 
         {% for r in insights.arrears.rows|slice:":3" %}
           <div class="ins-row">
             <div>
               <div class="ins-who">{{ r.tenant_name }}</div>
-              <div class="ins-meta">{{ r.prop_name }} &middot; due {{ r.due_date|date:"j M" }}</div>
+              <div class="ins-meta">{{ r.prop_name }}{% if r.invoice_count > 1 %} &middot; {{ r.invoice_count }} invoices{% else %} &middot; due {{ r.due_date|date:"j M" }}{% endif %}</div>
             </div>
             <span class="ins-amt ins-amt--red">{{ r.amount_fmt }} &middot; {{ r.days_overdue }}d</span>
           </div>
@@ -307,7 +310,7 @@ Home
         background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
     }
     .brief-badge--ai { background: #fff; color: #117a8b; border-color: #fff; }
-    .brief-body { margin: 11px 0 0; font-size: 14px; line-height: 1.6; color: #f4feff; }
+    .brief-body { margin: 11px 0 0; font-size: 15.5px; line-height: 1.65; color: #f4feff; }
     .brief--muted .brief-body { color: #495057; }
 
     /* ==================== INSIGHT GRID ==================== */
@@ -323,8 +326,8 @@ Home
     .ins-card--half { grid-column: span 6; }
     .ins-card--full { grid-column: span 12; }
 
-    .ins-card__title { margin: 0 0 2px; font-size: 13.5px; display: flex; align-items: center; gap: 8px; color: #2c3e50; }
-    .ins-card__sub { color: #6c757d; font-size: 11.5px; margin: 0 0 10px; }
+    .ins-card__title { margin: 0 0 2px; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #2c3e50; }
+    .ins-card__sub { color: #6c757d; font-size: 12.5px; margin: 0 0 10px; }
     .ins-ic { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; font-size: 12px; flex: none; }
     .ins-ic--rent  { background: #e6f6f8; color: #17a2b8; }
     .ins-ic--exp   { background: #fff8e1; color: #d39e00; }
@@ -337,7 +340,7 @@ Home
     .ins-kpi__n { font-size: 22px; font-weight: 800; line-height: 1.1; color: #2c3e50; }
     .ins-kpi__n--risk { color: #c2410c; }
     .ins-kpi__n--red { color: #dc3545; }
-    .ins-kpi__k { font-size: 10.5px; color: #6c757d; text-transform: uppercase; letter-spacing: 0.03em; }
+    .ins-kpi__k { font-size: 11.5px; color: #6c757d; text-transform: uppercase; letter-spacing: 0.03em; }
 
     /* bar chart */
     .ins-chart { display: flex; align-items: flex-end; gap: 5px; margin: 4px 0; }
@@ -355,14 +358,14 @@ Home
     /* list rows */
     .ins-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #e9ecef; }
     .ins-row:first-of-type { border-top: none; }
-    .ins-who { font-weight: 600; font-size: 13px; color: #2c3e50; }
-    .ins-meta { font-size: 11.5px; color: #6c757d; }
-    .ins-reasons { font-size: 11px; color: #6c757d; margin-top: 2px; }
-    .ins-amt { font-weight: 800; font-size: 13px; white-space: nowrap; }
+    .ins-who { font-weight: 600; font-size: 14.5px; color: #2c3e50; }
+    .ins-meta { font-size: 12.5px; color: #6c757d; }
+    .ins-reasons { font-size: 12px; color: #6c757d; margin-top: 2px; }
+    .ins-amt { font-weight: 800; font-size: 14px; white-space: nowrap; }
     .ins-amt--red { color: #dc3545; }
-    .ins-empty { font-size: 12px; color: #6c757d; margin: 4px 0; }
+    .ins-empty { font-size: 13px; color: #6c757d; margin: 4px 0; }
     .ins-empty i { color: #28a745; }
-    .ins-more { font-size: 11.5px; color: #6c757d; margin: 6px 0 0; }
+    .ins-more { font-size: 12.5px; color: #6c757d; margin: 6px 0 0; }
 
     .ins-tag { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
     .ins-tag--red    { background: #fdecea; color: #dc3545; }
@@ -398,7 +401,7 @@ Home
     .today-row--info    .today-row__icon { color: #138496; }
     .today-row__icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
     .today-row__count { font-size: 1.25rem; font-weight: 700; min-width: 32px; text-align: right; flex-shrink: 0; }
-    .today-row__label { flex: 1; font-size: 0.95rem; line-height: 1.3; min-width: 0; }
+    .today-row__label { flex: 1; font-size: 1.02rem; line-height: 1.3; min-width: 0; }
     .today-row__chevron { font-size: 0.85rem; color: #adb5bd; flex-shrink: 0; }
 
     /* ==================== TABLET (≤767px) ==================== */
@@ -411,10 +414,10 @@ Home
     @media (max-width: 479px) {
         .home-shell { padding: 4px 8px; }
         .brief { padding: 13px 14px; border-radius: 10px; }
-        .brief-body { font-size: 13px; }
+        .brief-body { font-size: 14.5px; }
         .ins-kpi__n { font-size: 19px; }
         .ins-chart { gap: 3px; }
-        .today-row__label { font-size: 0.9rem; }
+        .today-row__label { font-size: 0.96rem; }
     }
 
     /* ==================== MODAL OVERLAY ====================
