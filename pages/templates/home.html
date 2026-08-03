@@ -240,12 +240,13 @@ Home
       </section>
 
       <!-- Action items: operational to-dos with no forward-looking metric -->
-      {% if today_by_category.approval or today_by_category.payment %}
+      {% if today_by_category.approval or today_by_category.payment or insights.expenses.top3 %}
       <section class="ins-card ins-card--full">
         <h3 class="ins-card__title">
           <span class="ins-ic ins-ic--act"><i class="fas fa-list-check"></i></span>
           Action items
         </h3>
+        {% if today_by_category.approval or today_by_category.payment %}
         <div class="ins-actions">
           {% with it=today_by_category.approval %}{% if it %}
           <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
@@ -268,6 +269,46 @@ Home
           </button>
           {% endif %}{% endwith %}
         </div>
+        {% endif %}
+
+        {% if insights.expenses.top3 %}
+        <div class="exp-block">
+          <div class="exp-head">
+            <span class="exp-title"><i class="fas fa-receipt"></i> Non-budgeted spend <span class="exp-sub">(approved &amp; paid)</span></span>
+            <span class="exp-trend">
+              {{ insights.expenses.cur3_fmt }} last 3 mo
+              {% if insights.expenses.qoq_fmt %} &middot;
+                <span class="{% if insights.expenses.qoq_pct > 0 %}exp-up{% else %}exp-down{% endif %}">{{ insights.expenses.qoq_fmt }} vs prev 3 mo</span>{% endif %}
+              {% if insights.expenses.yoy_fmt %} &middot;
+                <span class="{% if insights.expenses.yoy_pct > 0 %}exp-up{% else %}exp-down{% endif %}">{{ insights.expenses.yoy_fmt }} vs last yr</span>{% endif %}
+            </span>
+          </div>
+
+          {% with t=insights.expenses.top3 %}
+          <div class="ins-row">
+            <div>
+              <div class="ins-who">{{ t.prop_name }}
+                {% if t.danger %}<span class="ins-tag red">WATCH</span>{% endif %}</div>
+              <div class="ins-meta">highest, last 3 months{% if t.pct_of_rent != None %} &middot; {{ t.pct_of_rent }}% of rent{% elif t.low_rent %} &middot; little/no rent this period{% endif %}</div>
+            </div>
+            <span class="ins-amt">{{ t.amount_fmt }}</span>
+          </div>
+          {% endwith %}
+
+          {% with t=insights.expenses.top6 %}
+          {% if t %}
+          <div class="ins-row">
+            <div>
+              <div class="ins-who">{{ t.prop_name }}
+                {% if t.danger %}<span class="ins-tag red">WATCH</span>{% endif %}</div>
+              <div class="ins-meta">highest, last 6 months{% if t.pct_of_rent != None %} &middot; {{ t.pct_of_rent }}% of rent{% endif %}</div>
+            </div>
+            <span class="ins-amt">{{ t.amount_fmt }}</span>
+          </div>
+          {% endif %}
+          {% endwith %}
+        </div>
+        {% endif %}
       </section>
       {% endif %}
 
@@ -411,6 +452,16 @@ Home
 
     .ins-actions { display: flex; gap: 10px; flex-wrap: wrap; }
     .ins-actions .today-row { flex: 1; min-width: 220px; margin-top: 0; }
+
+    /* Non-budgeted spend block inside Action items */
+    .exp-block { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef; }
+    .exp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .exp-title { font-size: 13px; font-weight: 700; color: #2c3e50; display: flex; align-items: center; gap: 7px; }
+    .exp-title i { color: #117a8b; font-size: 12px; }
+    .exp-sub { font-weight: 400; color: #9aa0a6; font-size: 11.5px; }
+    .exp-trend { font-size: 12px; color: #6c757d; }
+    .exp-up { color: #b45309; font-weight: 700; }
+    .exp-down { color: #16a34a; font-weight: 700; }
 
     /* ==================== DRILL-DOWN ROWS (reused Today styling) ==================== */
     /* A drill-down is a <button> for a11y, styled as a highlighted row. It keeps

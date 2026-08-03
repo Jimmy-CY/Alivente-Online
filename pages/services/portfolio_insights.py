@@ -38,6 +38,8 @@ from pages.models import (
     tenant as Tenant,
     invoices as Invoices,
     revenue as Revenue,
+    act_expense as Actual,
+    property_annual_lease_revenue,
     _lease_month,
 )
 
@@ -47,9 +49,16 @@ from pages.models import (
 
 
 def _add_months(year, month, k):
-    """(year, month) advanced by k calendar months (k may be 0..N)."""
+    """(year, month) advanced by k calendar months (k may be negative)."""
     idx = year * 12 + (month - 1) + k
     return idx // 12, idx % 12 + 1
+
+
+def _months_before(d, k):
+    """The date k calendar months before d (day clamped to the month length)."""
+    y, m = _add_months(d.year, d.month, -k)
+    last = calendar.monthrange(y, m)[1]
+    return date(y, m, min(d.day, last))
 
 
 def _norm(s):
@@ -456,6 +465,112 @@ def churn_risk(today=None, arrears_rows=None):
 
 
 # ---------------------------------------------------------------------------
+# 4b) Non-budgeted (actual, ad-hoc) expense insight
+# ---------------------------------------------------------------------------
+# "Non-budgeted" = act_expense rows that are BOTH approved and paid (matches the
+# Expenses > Analysis definition). We surface the heaviest-spend property over
+# the trailing 3 and 6 months, its spend as a % of that property's rent (the
+# "surprise burden" — flagged when it breaches 10% of rent, like the Analysis
+# danger rule), and portfolio spend vs the prior quarter and the same quarter a
+# year ago. The % of rent uses the P&L annual revenue (property_annual_lease_
+# revenue) pro-rated to the window — an approximate burden ratio; the Analysis
+# screen remains the precise per-month tool.
+
+_DANGER_PCT_OF_RENT = 10.0
+
+
+def _sum_by_prop(rows):
+    out = {}
+    for e in rows:
+        pid = e.prop_id
+        if pid is None:
+            continue
+        out[pid] = out.get(pid, 0.0) + float(e.act_expense_amount or 0)
+    return out
+
+
+def _period_rent(prop, months, today):
+    """The property's ANNUAL revenue (P&L basis: lease + seasonal + ancillary)
+    spread evenly and pro-rated to `months`. Spreading over 12 months is
+    deliberate: a seasonal property earns in bursts, and an off-season repair
+    should be measured against its whole-year earning capacity, not the ~€0 it
+    made that particular month. For a steadily-leased property this equals its
+    actual period rent anyway. 0.0 only when the property earns nothing at all."""
+    try:
+        annual = float(property_annual_lease_revenue(prop, today.year) or 0)
+    except Exception:
+        annual = 0.0
+    return round(annual * months / 12.0, 2)
+
+
+def expenses_insight(today=None):
+    today = today or date.today()
+    # Rolling, equal-length windows (NOT calendar quarters) so being mid-quarter
+    # never compares a partial period against full ones.
+    m3 = _months_before(today, 3)     # this 3 months = (m3, today]
+    m6 = _months_before(today, 6)
+    m12 = _months_before(today, 12)
+    m15 = _months_before(today, 15)
+
+    # One query: approved + paid actual expenses across the widest window used.
+    rows = list(
+        Actual.objects
+        .filter(act_expense_approved="Yes", act_expense_paid="Yes",
+                act_expense_date__gt=m15, act_expense_date__lte=today)
+        .select_related("prop")
+    )
+
+    def _win(lo, hi):
+        return [e for e in rows if e.act_expense_date and lo < e.act_expense_date <= hi]
+
+    by3 = _sum_by_prop(_win(m3, today))      # last 3 months
+    by6 = _sum_by_prop(_win(m6, today))      # last 6 months
+    prev3 = _sum_by_prop(_win(m6, m3))       # the 3 months before that
+    yoy3 = _sum_by_prop(_win(m15, m12))      # the same 3 months a year ago
+
+    prop_by_pid = {}
+    for e in rows:
+        if e.prop_id is not None and e.prop_id not in prop_by_pid:
+            prop_by_pid[e.prop_id] = e.prop
+
+    def _top(by, months):
+        if not by:
+            return None
+        pid, amt = max(by.items(), key=lambda kv: kv[1])
+        prop = prop_by_pid.get(pid)
+        period_rent = _period_rent(prop, months, today) if prop else 0.0
+        pct = round(amt / period_rent * 100, 1) if period_rent > 0 else None
+        return {
+            "prop_name": getattr(prop, "prop_name", "") or "",
+            "amount": round(amt, 2),
+            "amount_fmt": _money(amt),
+            "pct_of_rent": pct,                       # None when no in-window rent
+            "danger": bool(pct is not None and pct > _DANGER_PCT_OF_RENT),
+            "low_rent": bool(amt > 0 and period_rent <= 0),
+        }
+
+    cur3_total = round(sum(by3.values()), 2)
+    prev3_total = round(sum(prev3.values()), 2)
+    yoy3_total = round(sum(yoy3.values()), 2)
+
+    def _chg(cur, base):
+        return round((cur - base) / base * 100, 1) if base else None
+
+    qoq = _chg(cur3_total, prev3_total)
+    yoy = _chg(cur3_total, yoy3_total)
+    return {
+        "top3": _top(by3, 3),
+        "top6": _top(by6, 6),
+        "cur3": cur3_total, "cur3_fmt": _money(cur3_total),
+        "prev3": prev3_total, "prev3_fmt": _money(prev3_total),
+        "yoy3": yoy3_total, "yoy3_fmt": _money(yoy3_total),
+        "qoq_pct": qoq, "qoq_fmt": (None if qoq is None else "{:+g}%".format(qoq)),
+        "yoy_pct": yoy, "yoy_fmt": (None if yoy is None else "{:+g}%".format(yoy)),
+        "danger_pct": _DANGER_PCT_OF_RENT,
+    }
+
+
+# ---------------------------------------------------------------------------
 # 5) Plain-English brief — AI prose with a rule-based fallback
 # ---------------------------------------------------------------------------
 #
@@ -475,7 +590,8 @@ _COOLDOWN_TTL = 300                     # after an API failure, skip the LLM for
 _COOLDOWN_KEY = "portfolio_brief_cooldown"
 
 
-def _templated_brief(projection, expiring, arr, churn, today=None, today_summary=None):
+def _templated_brief(projection, expiring, arr, churn, today=None,
+                     today_summary=None, expenses=None):
     """Deterministic rule-based summary from the metrics (the fallback)."""
     today = today or date.today()
     lines = []
@@ -523,19 +639,49 @@ def _templated_brief(projection, expiring, arr, churn, today=None, today_summary
         lines.append(
             "{} propert{} currently vacant.".format(vac, "y" if vac == 1 else "ies"))
 
+    # Non-budgeted (approved+paid) expenses
+    if expenses and expenses.get("top3"):
+        t = expenses["top3"]
+        s = "Highest non-budgeted spend over the last 3 months: {} ({}".format(
+            t["prop_name"], t["amount_fmt"])
+        if t.get("pct_of_rent") is not None:
+            s += ", {}% of rent".format(t["pct_of_rent"])
+        elif t.get("low_rent"):
+            s += ", on a property with little/no rental income in that period"
+        s += ")"
+        if t.get("danger"):
+            s += " — above the {}%-of-rent watch line".format(
+                int(expenses.get("danger_pct", 10)))
+        lines.append(s + ".")
+
+        bits = []
+        if expenses.get("qoq_pct") is not None:
+            bits.append("{:+g}% vs the previous 3 months".format(expenses["qoq_pct"]))
+        if expenses.get("yoy_pct") is not None:
+            bits.append("{:+g}% vs the same 3 months last year".format(expenses["yoy_pct"]))
+        if bits:
+            lines.append("Portfolio non-budgeted spend is " + " and ".join(bits) + ".")
+
     if not lines:
         lines.append("All clear — no expiring leases, arrears or churn flags right now.")
 
     return {"lines": lines, "text": " ".join(lines)}
 
 
-def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None):
+def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None,
+                       expenses=None):
     """A stable short hash of the material figures. When any of these change,
     the fingerprint changes and the cached AI prose is regenerated."""
     vac = (today_summary or {}).get("vacantProperties")
     if vac is None:
         vac = projection.get("current_vacancies") or 0
+    exp = expenses or {}
     payload = {
+        "exp_top3": (exp.get("top3") or {}).get("prop_name"),
+        "exp_top3_amt": (exp.get("top3") or {}).get("amount"),
+        "exp_cur3": exp.get("cur3"),
+        "exp_qoq": exp.get("qoq_pct"),
+        "exp_yoy": exp.get("yoy_pct"),
         "next3": projection.get("next3_total"),
         "next3_risk": projection.get("next3_at_risk"),
         "grand": projection.get("grand_total"),
@@ -553,7 +699,8 @@ def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None):
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
-def _metrics_context(projection, expiring, arr, churn, today, today_summary):
+def _metrics_context(projection, expiring, arr, churn, today, today_summary,
+                     expenses=None):
     """Compact, factual figure list handed to the model. The model is told to
     use ONLY these — no invented names or numbers."""
     parts = []
@@ -594,6 +741,35 @@ def _metrics_context(projection, expiring, arr, churn, today, today_summary):
     else:
         parts.append("No high churn-risk tenants.")
 
+    if expenses and expenses.get("top3"):
+        t = expenses["top3"]
+        if t.get("pct_of_rent") is not None:
+            pct = " ({}% of its rent{})".format(
+                t["pct_of_rent"],
+                "; above the {}%-of-rent watch line".format(int(expenses.get("danger_pct", 10)))
+                if t["danger"] else "")
+        elif t.get("low_rent"):
+            pct = " (little/no rental income in that period)"
+        else:
+            pct = ""
+        parts.append("Non-budgeted (approved+paid) expenses, last 3 months — "
+                     "highest: {} at {}{}.".format(t["prop_name"], _money(t["amount"]), pct))
+        if expenses.get("top6"):
+            t6 = expenses["top6"]
+            parts.append("Non-budgeted expenses, last 6 months — highest: {} at {}.".format(
+                t6["prop_name"], _money(t6["amount"])))
+        trend = []
+        if expenses.get("qoq_pct") is not None:
+            trend.append("{:+g}% vs the previous 3 months".format(expenses["qoq_pct"]))
+        if expenses.get("yoy_pct") is not None:
+            trend.append("{:+g}% vs the same 3 months a year ago".format(expenses["yoy_pct"]))
+        line = "Portfolio non-budgeted spend, last 3 months: {}".format(_money(expenses["cur3"]))
+        if trend:
+            line += " (" + ", ".join(trend) + ")"
+        parts.append(line + ".")
+    else:
+        parts.append("No non-budgeted (approved+paid) expenses in the last 3 months.")
+
     return "\n".join(parts)
 
 
@@ -616,10 +792,12 @@ def _llm_brief(metrics_text, today):
     prompt = (
         "You are writing a short executive briefing for the manager of a property "
         "rental portfolio. Today is {today}. Below are the current portfolio figures.\n\n"
-        "Write 3 to 4 sentences of plain-English prose that summarise the near-term "
+        "Write 3 to 5 sentences of plain-English prose that summarise the near-term "
         "income position and flag what needs attention (lease expiries with no successor, "
-        "arrears, churn risk, vacancies). Lead with the income outlook. Refer to specific "
-        "tenants or properties by the exact names given where it helps.\n\n"
+        "arrears, churn risk, vacancies, and non-budgeted expense hot-spots). Lead with the "
+        "income outlook and include a sentence on non-budgeted (ad-hoc) expenses when a "
+        "property stands out or spend is notably up or down. Refer to specific tenants or "
+        "properties by the exact names given where it helps.\n\n"
         "Rules: use ONLY the figures below — never invent names, numbers or facts. "
         "Use the euro sign for money. No bullet points, no headings, no preamble such as "
         "\"Here is\" — return only the briefing prose.\n\n"
@@ -655,7 +833,7 @@ def _llm_brief(metrics_text, today):
 
 
 def build_brief(projection, expiring, arr, churn, today=None,
-                today_summary=None, use_llm=True):
+                today_summary=None, use_llm=True, expenses=None):
     """Return {'lines', 'text', 'source', ...}. 'source' is 'ai' or 'template'.
 
     AI prose is cached against a fingerprint of the numbers, so it regenerates
@@ -664,12 +842,13 @@ def build_brief(projection, expiring, arr, churn, today=None,
     short cooldown after a failure keeps Home from hanging on repeated retries.
     """
     today = today or date.today()
-    templated = _templated_brief(projection, expiring, arr, churn, today, today_summary)
+    templated = _templated_brief(projection, expiring, arr, churn, today,
+                                 today_summary, expenses)
 
     if not use_llm or not os.environ.get("ANTHROPIC_API_KEY"):
         return {"lines": templated["lines"], "text": templated["text"], "source": "template"}
 
-    fp = _brief_fingerprint(projection, expiring, arr, churn, today_summary)
+    fp = _brief_fingerprint(projection, expiring, arr, churn, today_summary, expenses)
     ai_key = "portfolio_brief_ai_" + fp
 
     cached = cache.get(ai_key)
@@ -683,7 +862,8 @@ def build_brief(projection, expiring, arr, churn, today=None,
                 "source": "template"}
 
     prose = _llm_brief(
-        _metrics_context(projection, expiring, arr, churn, today, today_summary), today)
+        _metrics_context(projection, expiring, arr, churn, today, today_summary, expenses),
+        today)
     if prose:
         cache.set(ai_key, prose, _BRIEF_TTL)
         return {"lines": templated["lines"], "text": prose,
@@ -711,13 +891,16 @@ def portfolio_insights(today=None, months=12, within_days=90,
     expiring = expiring_no_successor(today, within_days=within_days)
     arr = arrears(today)
     churn = churn_risk(today, arrears_rows=arr["rows"])
+    expenses = expenses_insight(today)
     brief = build_brief(projection, expiring, arr, churn, today=today,
-                        today_summary=today_summary, use_llm=use_llm)
+                        today_summary=today_summary, use_llm=use_llm,
+                        expenses=expenses)
     return {
         "generated_at": today,
         "projection": projection,
         "expiring": expiring,
         "arrears": arr,
         "churn": churn,
+        "expenses": expenses,
         "brief": brief,
     }
