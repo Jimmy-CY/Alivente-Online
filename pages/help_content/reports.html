@@ -513,44 +513,40 @@
          data-module-group="Financial Management"
          data-module-permission="can_access_financials"
          data-module-parent="Financials"
-         data-module-name="Forecasted Cash Outflows"
+         data-module-name="Forecasted Cashflows"
          data-module-icon="fa-chart-line"
          data-module-category="Reports"
-         data-module-subtitle="A rolling 12-month view of predictable, budgeted expense outflows &mdash; see spikes coming before they hit">
+         data-module-subtitle="A rolling 12-month net view &mdash; projected income against budgeted outflows &mdash; so you see cash cliffs before they hit">
 
   <article data-tab-slug="fc-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
     <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
-    <p>The Forecasted Cash Outflows dashboard shows the <strong>predictable, budgeted expenses</strong> coming up over the next 12 months across your entire portfolio. Its purpose is <strong>cash planning</strong> &mdash; seeing where the big months are, so you can make sure the bank account is ready for them.</p>
+    <p>The <strong>Forecasted Cashflows</strong> dashboard shows your portfolio's expected <strong>money in against money out</strong> over the next 12 months, month by month. It pairs projected <strong>revenue</strong> (from your leases and seasonal income) against projected <strong>outflows</strong> (your budgeted expenses) to give you a rolling <strong>net</strong> position &mdash; and, crucially, to show you the months where money out is set to exceed money in <em>before they arrive</em>.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-toggle-on"></i> Revenue is on by default &mdash; but optional</h6>
+    <p>At the top of the page is an <strong>&ldquo;Include revenue (net cashflow)&rdquo;</strong> switch. It is <strong>on by default</strong>, giving you the full net view. Turn it <strong>off</strong> and the page reverts to a pure <strong>outflows-only</strong> forecast (the classic Forecasted Cash Outflows behaviour), with the heading, legend and chart all switching to outflows only.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Two sides, two sources</h6>
+    <ul>
+      <li><strong style="color:#0f766e;">Income (revenue)</strong> is derived from your <strong>leases</strong> (rent + levies for each month a signed lease covers) plus any <strong>seasonal / direct income</strong> (e.g. Ionion). It uses the same lease engine as the Rent-Roll and the P&amp;L, so the figures reconcile.</li>
+      <li><strong style="color:#d9534f;">Outflows</strong> come from your <strong>budgeted Expense records</strong> in <strong>Financials &rarr; Configuration &rarr; Expenses</strong>, projected forward month by month. These are the predictable, recurring, yearly-repeatable costs (Property Manager fees, Communal Fees, annual audit, Company Tax, etc.).</li>
+    </ul>
 
     <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-      <i class="fas fa-exclamation-triangle"></i> <strong>Important &mdash; this is a budget forecast, not a record of actual expenses.</strong>
-      <p class="mb-0 mt-2">Every amount shown here comes from the <strong>Expense records you've configured in Financials &rarr; Configuration &rarr; Expenses</strong>. These are the recurring, yearly-repeatable, predictable expenses (Property Manager fees, Communal Fees, annual audit, Company Tax, etc.) &mdash; the ones you already know about in advance. There are no approvals, no invoice statuses, and no unexpected one-off expenses. For those use the <strong>Expenses</strong> module in the main sidebar instead.</p>
+      <i class="fas fa-exclamation-triangle"></i> <strong>Two things to keep in mind.</strong>
+      <p class="mb-0 mt-2"><strong>1. Outflows are a budget forecast, not actual paid expenses.</strong> Approvals, invoice statuses and unexpected one-off costs are not here &mdash; for those use the <strong>Expenses</strong> module in the sidebar. <strong>2. Income defaults to contracted leases only.</strong> When a lease expires with no successor captured, that income simply drops out of the forecast &mdash; that drop-off is the cash cliff. You can layer in assumed renewals with the slider (see the <em>Revenue &amp; the Slider</em> tab).</p>
     </div>
 
-    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-clock"></i> The rolling 12-month horizon</h6>
-    <p>The forecast always starts with <strong>today's current month</strong> and projects 12 months forward. Next month it rolls automatically &mdash; what was "month 2" becomes "month 1" and a new month is added at the end. You never need to change the dates yourself.</p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-clock"></i> Rolling 12-month horizon</h6>
+    <p>The forecast always starts with <strong>today's current month</strong> and projects 12 months forward, rolling automatically each month. You never set dates yourself.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Three views of the same data</h6>
-    <p>The dashboard presents the same underlying data in three complementary ways:</p>
-    <ol>
-      <li><strong>Three summary cards</strong> at the top &mdash; time-bucketed totals (Current Month / Next 3 Months / Remaining Months)</li>
-      <li><strong>Bar chart</strong> below &mdash; month-by-month breakdown across the full 12-month horizon</li>
-      <li><strong>Drill-down modal</strong> &mdash; click any bar to see which Expense Line Types drive that month, then click any Line Type to see the property-level breakdown</li>
-    </ol>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where the data comes from</h6>
-    <p>For each <strong>Expense record</strong> in Configuration, the system:</p>
-    <ol>
-      <li>Checks its <strong>Expense Type</strong> to see which months are flagged (e.g. <em>Monthly</em> = all 12 months, <em>June</em> = just June, <em>Quarterly</em> = Jan/Apr/Jul/Oct)</li>
-      <li>For each flagged month within the rolling 12-month horizon, records the Expense Amount as "due" in that month</li>
-      <li>Aggregates across <em>all</em> properties and <em>all</em> Line Types to produce the monthly totals</li>
-    </ol>
-    <p>A change to any Expense record &mdash; or any Pro-Rata distribution &mdash; flows through to this report automatically, with no cache to refresh.</p>
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>&ldquo;Net&rdquo; here means movement, not a bank balance.</strong> Net is simply income &minus; outflows for each month. It does not track a running account balance or an opening figure &mdash; it shows whether each month is self-funding on its own.
+    </div>
 
     <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
-      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> restricted to users with <strong>Financials</strong> access.
     </div>
   </article>
 
@@ -559,83 +555,81 @@
            data-tab-icon="fa-th-large">
     <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
 
-    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;"><i class="fas fa-square" style="color:#dc3545;"></i> The three summary cards</h6>
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;"><i class="fas fa-id-card"></i> The three summary cards</h6>
+    <p>The cards are <strong>cumulative planning horizons</strong>, each starting from now, and each shows <strong>Revenue</strong>, <strong>Expenses</strong> and <strong>Net</strong> (net turns red when negative). The exact month range each card covers is printed in its header.</p>
     <ul>
-      <li><strong style="color:#dc3545;">Current Month (red)</strong> &mdash; total budgeted outflow for the month you're currently in (the "imminent" bucket). This is what you need to cover <em>right now</em>.</li>
-      <li><strong style="color:#fd7e14;">Next 3 Months (orange)</strong> &mdash; total for months 2 through 4 (31 to ~90 days ahead). Near-term cash planning.</li>
-      <li><strong style="color:#28a745;">Remaining Months (green)</strong> &mdash; total for months 5 through 12 (over 90 days out). The horizon for longer-term reserve planning.</li>
+      <li><strong style="color:#dc3545;">Current Month</strong> &mdash; just this month (e.g. <em>Aug 2026</em>).</li>
+      <li><strong style="color:#fd7e14;">Next 3 Months</strong> &mdash; months 1&ndash;3 combined (e.g. <em>Aug &ndash; Oct 2026</em>).</li>
+      <li><strong style="color:#28a745;">Next 12 Months</strong> &mdash; the whole window (e.g. <em>Aug 2026 &ndash; Jul 2027</em>).</li>
+    </ul>
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> Because the horizons are cumulative they <strong>overlap</strong> &mdash; the Next-12 card is not the sum of the other two, it is the full 12 months (and it matches the net summary line below the cards).
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-flag-checkered"></i> The net summary line</h6>
+    <p>Just under the cards a single line reads, for example, <em>&ldquo;Projected 12-month net: &euro;16,873 &middot; first cash-negative month: Jan 2027&rdquo;</em>. The <strong>first cash-negative month</strong> is the earliest month whose own income falls short of its outflows &mdash; your first pinch-point.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The 12-month chart</h6>
+    <p>With revenue on, each month shows <strong>two bars side by side</strong>: a <strong style="color:#0f766e;">teal income bar</strong> (money in) and a <strong style="color:#d9534f;">red outflow bar</strong> (money out). Below each pair the label shows the month and that month's <strong>Net</strong>, coloured green for positive and red for negative &mdash; so a glance across the chart shows exactly which months dip into the red and where the income cliffs fall.</p>
+    <p>With revenue <strong>off</strong>, the chart collapses to a single set of outflow bars in one colour, the legend reads simply <strong>Outflows</strong>, and the chart title changes to <em>Forecasted Outflows (12 Months)</em>.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-ruler-vertical"></i> Gridlines and scale</h6>
+    <p>The Y-axis auto-scales to whichever series is taller (income or outflows) so nothing clips. Gridline labels (e.g. <em>&euro;10,000</em>) appear down the left for reference.</p>
+  </article>
+
+  <article data-tab-slug="fc-slider"
+           data-tab-name="Revenue &amp; the Slider"
+           data-tab-icon="fa-sliders-h">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-sliders-h"></i> Contracted vs assumed income</h5>
+    <p>The income side is deliberately conservative by default: it counts only the rent from <strong>signed leases</strong>, plus seasonal / direct income. Income from a lease that <strong>expires with no successor</strong> captured is treated as <em>at risk</em> and is <strong>left out</strong> &mdash; which is what makes the cliffs visible.</p>
+
+    <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrows-alt-h"></i> The Renewal assumption slider</h6>
+    <p>The slider runs from <strong>Contracted only (0%)</strong> to <strong>Assume renewals (100%)</strong>. It lets you layer that at-risk income back in:</p>
+    <ul>
+      <li><strong>At 0%</strong> &mdash; the conservative floor. Only signed-lease and seasonal income. Expiring leases drop out.</li>
+      <li><strong>At 100%</strong> &mdash; every expiring lease is assumed to renew at its current rent, projected forward.</li>
+      <li><strong>In between</strong> &mdash; that percentage of the at-risk income is counted. Everything on the page (bars, cards, net, first-cash-negative month) updates live as you drag.</li>
     </ul>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-      <i class="fas fa-info-circle"></i> <strong>The colour palette signals urgency, not risk.</strong> Red doesn't mean "bad" &mdash; it means "<em>imminent</em>, happening now." Orange means "<em>coming slowly</em>." Green means "<em>there's still time</em>."
+      <i class="fas fa-calculator"></i> <strong>What a value literally means.</strong> For each month, income = contracted + seasonal + (slider % &times; the expiring-lease income). So 75% means &ldquo;count three-quarters of the rent that's riding on expiring leases.&rdquo; It is an <em>aggregate haircut</em> on that income, not a per-lease prediction &mdash; a sensitivity dial, not a forecast of which specific tenants renew.
     </div>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The 12-month bar chart</h6>
-    <p>Each bar represents one month's total budgeted outflow. Bars are coloured using the same red/orange/green convention as the summary cards, so scanning left-to-right you can see urgency fading:</p>
+    <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-vial"></i> How to use it</h6>
     <ul>
-      <li>Leftmost bar (red) &mdash; current month</li>
-      <li>Next three bars (orange) &mdash; the 31-90 day zone</li>
-      <li>Remaining eight bars (green) &mdash; more distant, over 90 days away</li>
+      <li><strong>Stress test.</strong> Leave it at 0% to see the worst case, push to 100% for the best case &mdash; the gap between them is your renewal risk.</li>
+      <li><strong>Find the break-even.</strong> Slide down until a month flips negative: that tells you the renewal rate below which that month runs short.</li>
+      <li><strong>Model your reality.</strong> If you typically retain, say, ~85% of tenants, sit the slider around there for a realistic middle view.</li>
     </ul>
-
-    <p>Each bar is labelled with the month/year (e.g. <em>Apr 2026</em>) and the total amount (e.g. <em>&euro;2,176.14</em>).</p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-ruler-vertical"></i> The gridlines and scale</h6>
-    <p>The Y-axis auto-scales to fit your data. Gridlines appear at round intervals (&euro;1,000 increments for typical portfolios, smaller increments for smaller totals). Gridline labels like <em>&euro;5,000</em> or <em>&euro;10,000</em> appear on the left-hand side for reference.</p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Interactions</h6>
-    <ul>
-      <li><strong>Hover a bar</strong> &mdash; it slightly scales up to confirm it's clickable</li>
-      <li><strong>Click a bar</strong> &mdash; opens the Monthly Expense Breakdown modal for that specific month</li>
-      <li>See the next tab (<em>Drilling In</em>) for what happens once you click</li>
-    </ul>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-eye"></i> Spotting the patterns</h6>
-    <p>One of the main uses of this report is <strong>spotting irregular months</strong>. Most months will look similar (monthly recurring expenses like Property Manager fees, utilities, and Communal Fees dominate), but certain months stack on top of that a concentration of <strong>annual bills</strong> &mdash; audit fees, property taxes, insurance premiums. Those months stick out visually as taller bars.</p>
-    <p>Seeing a &euro;12k month among a run of &euro;2k months is a visual warning: <strong>make sure the cash reserve can cover it</strong>.</p>
+    <p>The slider only appears when revenue is switched on.</p>
   </article>
 
   <article data-tab-slug="fc-drilling"
-           data-tab-name="Drilling In"
+           data-tab-name="Breakdowns"
            data-tab-icon="fa-search-plus">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> Drilling into the detail</h5>
-    <p>The dashboard is designed as a two-level drill-down &mdash; from <strong>month</strong> to <strong>expense line type</strong> to <strong>property</strong>.</p>
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> Hover for a peek, click for the detail</h5>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 1 &mdash; Click a bar</h6>
-    <p>Clicking any bar opens the <strong>Monthly Expense Breakdown</strong> modal. It shows:</p>
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Hover (desktop)</h6>
+    <p>Hovering any bar pops a small floating table for that month:</p>
     <ul>
-      <li><strong>Total Month</strong> &mdash; the sum across all Line Types for that month (e.g. <em>Total Month: &euro;12,313.34</em>)</li>
-      <li>A <strong>table</strong> with two columns: <em>Expense Line Type</em> and <em>Total Amount</em>, sorted alphabetically</li>
-      <li>Each row is clickable and shows a chevron <i class="fas fa-chevron-right" style="color:#6c757d;"></i> on the right to signal that</li>
+      <li><strong>Income bar</strong> &mdash; each revenue source (tenant lease or seasonal line) with its amount, and a total. Assumed-renewal income appears only when the slider is above 0%, scaled to the slider and tagged <em>(assumed)</em>.</li>
+      <li><strong>Outflow bar</strong> &mdash; that month's expenses grouped by <strong>Expense Line Type</strong>, with a total.</li>
     </ul>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 2 &mdash; Click a Line Type row</h6>
-    <p>Clicking a Line Type row (e.g. <em>Financials (Cyprus) &mdash; &euro;2,810.00</em>) drills <em>into</em> that Line Type and shows the <strong>property-level breakdown</strong>:</p>
-    <ul>
-      <li>A summary card showing the Total Amount and Line Type name</li>
-      <li>One card per property contributing to this Line Type in this month, with:
-        <ul>
-          <li>The property name</li>
-          <li>The euro amount for this property</li>
-          <li>The percentage of the Line Type's total this property contributes (e.g. <em>10.44%</em>)</li>
-        </ul>
-      </li>
-    </ul>
-    <p>For a <strong>Pro-Rata</strong> Line Type, you'll see multiple properties (the distribution). For a <strong>standard</strong> Line Type, usually just one property per bill.</p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-hand-pointer"></i> Click for the full breakdown</h6>
+    <p><strong>Click an income bar</strong> to open a table of every source for that month &mdash; Source, Property, Amount and Type (<em>Contracted</em>, <em>Seasonal / other</em>, or <em>Assumed renewal</em>) &mdash; with the month's total.</p>
+    <p><strong>Click an outflow bar</strong> to open the two-level expense drill-down:</p>
+    <ol>
+      <li>The <strong>Monthly Expense Breakdown</strong> &mdash; every Expense Line Type driving that month, with its total.</li>
+      <li>Click a Line Type row to drill into the <strong>property-level split</strong> &mdash; each property's amount and its percentage of that Line Type (this is your Pro-Rata distribution). A <strong>Back to Monthly View</strong> button returns you to the list.</li>
+    </ol>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-left"></i> Step 3 &mdash; Going back</h6>
-    <p>From the property-level view, a <strong>Back to Monthly View</strong> button appears in the modal footer. Clicking it returns you to the Line Type list for the same month. You can drill in and out freely without closing the modal.</p>
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-mobile-alt"></i> <strong>On mobile</strong> there is no hover &mdash; a <strong>tap</strong> opens the full breakdown modal directly.
+    </div>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example</h6>
-    <p>Take the <strong>June</strong> bar on the chart, which is typically much higher than the months around it. Clicking it might show:</p>
-    <ul>
-      <li><em>Financials (Cyprus)</em> &mdash; &euro;2,810 (annual audit, due in June)</li>
-      <li><em>Prop Tax (Greece)</em> &mdash; &euro;714.34 (annual Greek property taxes)</li>
-      <li><em>Company Tax</em> &mdash; &euro;6,999.99 (annual corporate tax)</li>
-      <li>plus the usual recurring monthly items (Property Manager, Cleaning, etc.)</li>
-    </ul>
-    <p>Drilling into <em>Financials (Cyprus)</em> would then show the split across all 10 Cyprus properties, e.g. <em>Eleftheroupoleos: &euro;293.38 / 10.44%</em>, <em>Ionion - Villa 24: &euro;412.56 / 14.68%</em>, etc. &mdash; the same Pro-Rata distribution you set up in Configuration.</p>
-    <p>This makes June visually distinct on the chart, and the drill-down explains <strong>why</strong> it's distinct.</p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example (outflows)</h6>
+    <p>A tall <strong>June</strong> outflow bar might break down into <em>Financials (Cyprus)</em> &euro;2,810 (annual audit), <em>Prop Tax (Greece)</em> &euro;714, <em>Company Tax</em> &euro;7,000, plus the usual monthly items. Drilling into <em>Financials (Cyprus)</em> shows the Pro-Rata split across the Cyprus properties &mdash; explaining <em>why</em> June towers over its neighbours.</p>
   </article>
 
   <article data-tab-slug="fc-tips"
@@ -643,39 +637,35 @@
            data-tab-icon="fa-lightbulb">
     <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
 
-    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Using the dashboard for cash planning</h6>
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Planning with the net view</h6>
     <ul style="line-height:1.8;">
-      <li><strong>Scan the chart at the start of each month.</strong> The current-month bar tells you what to cover in the next 30 days; the orange bars tell you what's coming in the 60 days after that. Build your cash reserve around the biggest of the visible bars.</li>
-
-      <li><strong>Identify the "annual bills" months.</strong> Most portfolios have 1-3 months a year where annual bills stack up (audit fees, property taxes, insurance renewals). The chart makes them visually obvious &mdash; they're the bars that are 3-5&times; taller than their neighbours. Make sure you're aware of which months those are for your portfolio.</li>
-
-      <li><strong>Drill into unusual bars.</strong> If a month looks unexpectedly high or low, click the bar and check the Line Type list. Often you'll spot a one-off annual bill you'd forgotten about, or a missing bill that should be scheduled but isn't.</li>
-
-      <li><strong>Use the property drill-down to verify Pro-Rata distributions look right.</strong> Click into a Pro-Rata Line Type for any month and confirm the per-property percentages match what you'd expect (they should reflect each property's relative Current Value).</li>
+      <li><strong>Start from the first cash-negative month.</strong> The summary line names the earliest month that dips into the red on the contracted floor. That's the one to plan a reserve for &mdash; or to chase renewals ahead of.</li>
+      <li><strong>Watch the income cliffs.</strong> A month where the teal income bar drops well below its neighbours usually means a lease is expiring with no successor yet captured. Hover it to confirm which tenant, then get the renewal moving.</li>
+      <li><strong>Use the slider as a risk gauge.</strong> The distance between the 0% view and the 100% view <em>is</em> your renewal exposure. If the picture only looks healthy near 100%, you are leaning heavily on renewals that aren't signed yet.</li>
     </ul>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Fixing numbers that don't match reality</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">If the income looks wrong</h6>
     <ul style="line-height:1.8;">
-      <li><strong>If a forecast month is too low,</strong> an Expense record is probably missing. Go to <strong>Configuration &rarr; Expenses</strong>, find the property that should have the missing record, and add it.</li>
+      <li><strong>A month reads lower than expected</strong> &mdash; check that the lease covering it is captured in <strong>Tenants</strong> with the right start/end dates and rent + levies. Uncovered months show no lease income by design.</li>
+      <li><strong>Seasonal income missing</strong> &mdash; confirm the property's income rows are set on the <strong>Revenue</strong> screens for the relevant months.</li>
+    </ul>
 
-      <li><strong>If a forecast month is too high,</strong> look for a double-counted Expense or a wrong Expense Type. E.g. an expense paid quarterly but set to <em>Monthly</em> in Configuration will triple-count. Drill into the Line Type to spot the culprit.</li>
-
-      <li><strong>If a Pro-Rata Line Type's total doesn't match the bill,</strong> check the Line Type's <em>Pro-Rata Amount</em> field. If it's stale, edit it &mdash; the Line Type page will walk you through the cascade so every property's expense gets updated automatically.</li>
-
-      <li><strong>If a property's share looks wrong,</strong> check its <em>Current Value</em> on the Property Valuations page. A stale Current Value skews the pro-rata split. Updating it will trigger the Valuations cascade modal to update every affected distribution.</li>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">If the outflows look wrong</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Too low</strong> &mdash; an Expense record is probably missing in <strong>Configuration &rarr; Expenses</strong>.</li>
+      <li><strong>Too high</strong> &mdash; look for a wrong Expense Type (e.g. a quarterly cost set to <em>Monthly</em>) or a double-count; drill into the Line Type to find it.</li>
+      <li><strong>A Pro-Rata total is off</strong> &mdash; check the Line Type's Pro-Rata Amount, or a property's <em>Current Value</em> (a stale value skews the split).</li>
     </ul>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">General awareness</h6>
     <ul style="line-height:1.8;">
-      <li><strong>This report reflects Configuration instantly.</strong> Any change to an Expense record, Expense Line Type, or Property Valuation that affects Pro-Rata is visible here immediately on next page load &mdash; no refresh or rebuild needed.</li>
-
-      <li><strong>One-off expenses won't show here.</strong> Unexpected repairs, emergency maintenance, and ad-hoc supplier invoices are handled by the <strong>Expenses</strong> module in the sidebar &mdash; separate from this forecast. Don't expect them to appear.</li>
-
-      <li><strong>The forecast is your portfolio's "expected pulse".</strong> Over time you'll know intuitively what a normal month looks like (e.g. &euro;2,000) and which months are spikes (e.g. &euro;12,000). When a month looks <em>wrong</em> &mdash; neither normal nor an expected spike &mdash; that's a strong signal to investigate before the month arrives.</li>
+      <li><strong>It reflects your data instantly.</strong> Changes to leases, revenue rows or Expense records show on the next page load &mdash; no refresh or rebuild.</li>
+      <li><strong>One-off costs won't appear.</strong> Ad-hoc repairs and supplier invoices live in the <strong>Expenses</strong> module, not this budget forecast.</li>
+      <li><strong>Income reconciles with the P&amp;L and Rent-Roll.</strong> The same lease engine feeds all three, so a contracted figure here should match what you see there.</li>
     </ul>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
-      <i class="fas fa-arrow-right"></i> <strong>This dashboard is your 12-month cash radar.</strong> Keep Configuration tidy and this report becomes a reliable early-warning system for when big bills are coming &mdash; so they never arrive as a surprise.
+      <i class="fas fa-arrow-right"></i> <strong>This is your 12-month cash radar.</strong> Keep leases and Configuration tidy and it becomes a reliable early warning &mdash; both for big bills and for income cliffs &mdash; so neither arrives as a surprise.
     </div>
   </article>
 
