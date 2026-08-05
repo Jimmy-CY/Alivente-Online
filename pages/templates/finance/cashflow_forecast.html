@@ -87,6 +87,11 @@
     .cf-tip-num{text-align:right;font-variant-numeric:tabular-nums;padding-left:16px;white-space:nowrap;}
     .cf-tip-tot td{border-top:1px solid #eee;font-weight:700;padding-top:4px;}
     .cf-tip-empty{color:#888;}
+    .cf-slider-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:16px;background:#f4fbfa;border:1px solid #d6ece9;border-radius:10px;}
+    .cf-slider-cap{font-weight:600;color:#0f766e;font-size:.9rem;}
+    .cf-slider-end{font-size:.8rem;color:#666;}
+    .cf-slider{flex:1;min-width:140px;max-width:340px;accent-color:#0f766e;cursor:pointer;}
+    .cf-slider-val{font-weight:700;color:#0f766e;font-variant-numeric:tabular-nums;min-width:44px;text-align:right;}
     .legend-color.income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%);}
     .legend-color.outflow{background:linear-gradient(135deg,#e2685f 0%,#d9534f 100%);}
     .timeline-bar.cf-bar-income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%) !important;}
@@ -97,7 +102,14 @@
             <input type="checkbox" id="cfRevToggle" checked>
             <span><i class="fas fa-coins"></i> Include revenue (net cashflow)</span>
         </label>
-        <span class="cf-hint"><i class="fas fa-info-circle"></i> Confirmed contracted leases only; seasonal / direct income shown separately. Leases assumed to renew are excluded, so income cliffs show.</span>
+        <span class="cf-hint"><i class="fas fa-info-circle"></i> Contracted leases + seasonal income. Slide toward &ldquo;Assume renewals&rdquo; to phase in income from expiring leases.</span>
+    </div>
+    <div class="cf-slider-wrap" id="cfSliderWrap">
+        <span class="cf-slider-cap"><i class="fas fa-sliders-h"></i> Renewal assumption</span>
+        <span class="cf-slider-end">Contracted only</span>
+        <input type="range" id="cfAssumeSlider" class="cf-slider" min="0" max="100" step="5" value="0" aria-label="Renewal assumption">
+        <span class="cf-slider-end">Assume renewals</span>
+        <span class="cf-slider-val" id="cfAssumeVal">0%</span>
     </div>
     <div id="cfHoverTip"></div>
     <!-- Summary Cards -->
@@ -710,6 +722,8 @@
 <script>
 let allExpenses = [];
 let cfRevByKey = {};
+let cfAssumedFrac = 0;
+const cfCanHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 
 /* ============================================================
    [Cashflow] Rotate-to-landscape controller
@@ -769,6 +783,7 @@ let cfRevByKey = {};
    Original cashflow logic preserved
    ============================================================ */
 function cfEuro(n){ var v = Math.round(Number(n)||0); return (v<0?'-':'') + '€' + Math.abs(v).toLocaleString('en-US'); }
+function cfIncTotal(rev){ return rev ? (rev.lease + rev.other + (rev.assumed || 0) * cfAssumedFrac) : 0; }
 function cfShowRevenue(){ var t = document.getElementById('cfRevToggle'); return t ? t.checked : true; }
 
 function cfOutflowByMonth(monthRange){
@@ -789,7 +804,7 @@ function updateSummaryCards(outByMonth, monthRange){
     //   Current  = month 1 ; Short = months 1-3 ; Long = months 1-12
     monthRange.forEach((month, index) => {
         const e = outByMonth[month.key] || 0;
-        const r = (cfRevByKey[month.key] ? cfRevByKey[month.key].total : 0);
+        const r = cfIncTotal(cfRevByKey[month.key]);
         if (index === 0) { b.Current.e += e; b.Current.r += r; }
         if (index <= 2) { b.Short.e += e; b.Short.r += r; }
         b.Long.e += e; b.Long.r += r;
@@ -820,7 +835,7 @@ function updateSummaryCards(outByMonth, monthRange){
     const totNet = b.Long.r - b.Long.e;   // Long = full 12 months (cumulative)
     let firstNeg=null;
     monthRange.forEach(m => {
-        const rr = (cfRevByKey[m.key] ? cfRevByKey[m.key].total : 0);
+        const rr = cfIncTotal(cfRevByKey[m.key]);
         const ee = outByMonth[m.key] || 0;
         if ((rr - ee) < 0 && firstNeg === null) firstNeg = m.name;
     });
@@ -835,6 +850,8 @@ function renderLegend(){
     const subEl = document.getElementById('chartSubtitle');
     if (titleEl) titleEl.textContent = show ? 'Cashflow — Revenue vs Outflows (12 Months)' : 'Forecasted Outflows (12 Months)';
     if (subEl) subEl.textContent = show ? 'Click an income or outflow bar for its monthly breakdown' : 'Click an outflow bar for its monthly breakdown';
+    const sliderWrap = document.getElementById('cfSliderWrap');
+    if (sliderWrap) sliderWrap.style.display = show ? '' : 'none';
     const el = document.getElementById('chartLegend');
     if (!el) return;
     if (show){
@@ -888,7 +905,7 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
 
     const outByMonth = cfOutflowByMonth(monthRange);
     const incByMonth = {};
-    monthRange.forEach(m => { incByMonth[m.key] = (show && cfRevByKey[m.key]) ? cfRevByKey[m.key].total : 0; });
+    monthRange.forEach(m => { incByMonth[m.key] = show ? cfIncTotal(cfRevByKey[m.key]) : 0; });
 
     updateSummaryCards(outByMonth, monthRange);
 
@@ -962,12 +979,15 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         monthElement.querySelectorAll('.timeline-bar').forEach(bar => {
             const kind = bar.getAttribute('data-kind');
             bar.addEventListener('click', () => {
+                cfHideTip();
                 if (kind === 'income') showMonthlyIncome(month.key, month.name);
                 else showMonthlyBreakdown(month.key, month.name, expensesByTypeAndMonth);
             });
-            bar.addEventListener('mouseenter', (e) => cfShowTip(kind === 'income' ? cfIncomeTip(month) : cfOutflowTip(month, expensesByTypeAndMonth), e));
-            bar.addEventListener('mousemove', cfMoveTip);
-            bar.addEventListener('mouseleave', cfHideTip);
+            if (cfCanHover) {
+                bar.addEventListener('mouseenter', (e) => cfShowTip(kind === 'income' ? cfIncomeTip(month) : cfOutflowTip(month, expensesByTypeAndMonth), e));
+                bar.addEventListener('mousemove', cfMoveTip);
+                bar.addEventListener('mouseleave', cfHideTip);
+            }
         });
 
         timelineContainer.appendChild(monthElement);
@@ -981,17 +1001,21 @@ function showMonthlyIncome(monthKey, monthName) {
     const modalTitle = document.getElementById('monthlyExpenseModalLabel');
     const modalBody = document.getElementById('monthlyExpenseModalBody');
     modalTitle.innerHTML = '<i class="fas fa-coins"></i> ' + monthName + ' — Projected Income';
-    if (!rev || !rev.breakdown || !rev.breakdown.length) {
+    let rows = '';
+    ((rev && rev.breakdown) ? rev.breakdown : []).forEach(b => {
+        let amt = b.amount, type;
+        if (b.kind === 'lease') type = 'Contracted';
+        else if (b.kind === 'assumed') { if (cfAssumedFrac <= 0) return; amt = b.amount * cfAssumedFrac; type = 'Assumed renewal'; }
+        else type = 'Seasonal / other';
+        rows += '<tr><td>' + (b.name || '') + '</td><td>' + (b.prop || '') + '</td><td style="text-align:right;">' + cfEuro(amt) + '</td><td style="text-align:center;">' + type + '</td></tr>';
+    });
+    if (!rows) {
         modalBody.innerHTML = '<div class="no-expenses-message"><p>No projected income for this month.</p></div>';
     } else {
-        let rows = '';
-        rev.breakdown.forEach(b => {
-            rows += '<tr><td>' + (b.name || '') + '</td><td>' + (b.prop || '') + '</td><td style="text-align:right;">' + cfEuro(b.amount) + '</td><td style="text-align:center;">' + (b.kind === 'lease' ? 'Contracted' : 'Seasonal / other') + '</td></tr>';
-        });
         modalBody.innerHTML =
             '<table class="table table-hover"><thead><tr><th>Source</th><th>Property</th><th style="text-align:right;">Amount</th><th style="text-align:center;">Type</th></tr></thead><tbody>'
           + rows
-          + '</tbody><tfoot><tr><td colspan="2"><strong>Total</strong></td><td style="text-align:right;"><strong>' + cfEuro(rev.total) + '</strong></td><td></td></tr></tfoot></table>';
+          + '</tbody><tfoot><tr><td colspan="2"><strong>Total</strong></td><td style="text-align:right;"><strong>' + cfEuro(cfIncTotal(rev)) + '</strong></td><td></td></tr></tfoot></table>';
     }
     $('#monthlyExpenseModal').modal('show');
 }
@@ -999,10 +1023,15 @@ function showMonthlyIncome(monthKey, monthName) {
 function cfIncomeTip(month){
     const rev = cfRevByKey[month.key];
     const head = '<div class="cf-tip-h">' + month.name + ' &mdash; Revenue</div>';
-    if (!rev || !rev.breakdown || !rev.breakdown.length) return head + '<div class="cf-tip-empty">No projected income</div>';
+    if (!rev) return head + '<div class="cf-tip-empty">No projected income</div>';
     let rows = '';
-    rev.breakdown.forEach(b => { rows += '<tr><td>' + (b.name || '') + '</td><td class="cf-tip-num">' + cfEuro(b.amount) + '</td></tr>'; });
-    return head + '<table class="cf-tip-t">' + rows + '<tr class="cf-tip-tot"><td>Total</td><td class="cf-tip-num">' + cfEuro(rev.total) + '</td></tr></table>';
+    (rev.breakdown || []).forEach(b => {
+        let amt = b.amount, label = (b.name || '');
+        if (b.kind === 'assumed') { if (cfAssumedFrac <= 0) return; amt = b.amount * cfAssumedFrac; label += ' <em>(assumed)</em>'; }
+        rows += '<tr><td>' + label + '</td><td class="cf-tip-num">' + cfEuro(amt) + '</td></tr>';
+    });
+    if (!rows) return head + '<div class="cf-tip-empty">No projected income</div>';
+    return head + '<table class="cf-tip-t">' + rows + '<tr class="cf-tip-tot"><td>Total</td><td class="cf-tip-num">' + cfEuro(cfIncTotal(rev)) + '</td></tr></table>';
 }
 function cfOutflowTip(month, ebt){
     const head = '<div class="cf-tip-h">' + month.name + ' &mdash; Outflows</div>';
@@ -1189,6 +1218,13 @@ document.addEventListener("DOMContentLoaded", () => {
     loadForecast();
     var _cfT = document.getElementById('cfRevToggle');
     if (_cfT) _cfT.addEventListener('change', function(){
+        if (allExpenses.length || Object.keys(cfRevByKey).length) renderForecast();
+    });
+    var _cfS = document.getElementById('cfAssumeSlider');
+    if (_cfS) _cfS.addEventListener('input', function(){
+        cfAssumedFrac = (parseInt(this.value, 10) || 0) / 100;
+        var v = document.getElementById('cfAssumeVal');
+        if (v) v.textContent = this.value + '%';
         if (allExpenses.length || Object.keys(cfRevByKey).length) renderForecast();
     });
 });

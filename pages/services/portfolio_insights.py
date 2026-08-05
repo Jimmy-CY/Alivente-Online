@@ -954,6 +954,7 @@ def net_cashflow_revenue(today=None, months=12):
         mm = calendar.month_abbr[m].lower()
         lease_in = 0.0
         other_in = 0.0
+        assumed_in = 0.0
         breakdown = []
 
         # Leased properties: contracted lease income (tag 'lease') only.
@@ -972,7 +973,20 @@ def net_cashflow_revenue(today=None, months=12):
                         "amount": round(amt, 2),
                         "kind": "lease",
                     })
-            # 'assumed' (at-risk) intentionally excluded; 'vacant' adds nothing.
+            elif tag == "assumed":
+                # at-risk: the lease expired with no successor captured; this
+                # income exists only if we ASSUME it renews. Returned separately
+                # so the front-end slider can phase it in (0% = contracted floor
+                # .. 100% = assume every expiring lease renews). 'vacant' = 0.
+                amt = float((rent or 0) + (levies or 0))
+                if amt:
+                    assumed_in += amt
+                    breakdown.append({
+                        "name": getattr(lease, "tenant_name", "") or "",
+                        "prop": getattr(lease.prop, "prop_name", "") or "",
+                        "amount": round(amt, 2),
+                        "kind": "assumed",
+                    })
             if ancillary:
                 other_in += ancillary
                 breakdown.append({
@@ -1003,6 +1017,7 @@ def net_cashflow_revenue(today=None, months=12):
             "label": "%s %d" % (calendar.month_abbr[m], y),
             "lease": round(lease_in, 2),
             "other": round(other_in, 2),
+            "assumed": round(assumed_in, 2),
             "total": round(lease_in + other_in, 2),
             "breakdown": breakdown,
         })
