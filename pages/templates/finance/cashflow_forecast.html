@@ -133,9 +133,9 @@
     <div class="chart-panel">
         <div class="chart-header">
             <h5 class="chart-title">
-                <i class="fas fa-chart-line"></i> Cashflow — Revenue vs Outflows (12 Months)
+                <i class="fas fa-chart-line"></i> <span id="chartTitleText">Cashflow — Revenue vs Outflows (12 Months)</span>
             </h5>
-            <p class="chart-subtitle">Click an income or outflow bar for its monthly breakdown</p>
+            <p class="chart-subtitle" id="chartSubtitle">Click an income or outflow bar for its monthly breakdown</p>
         </div>
 
         <div class="chart-legend" id="chartLegend"></div>
@@ -830,9 +830,14 @@ function updateSummaryCards(outByMonth, monthRange){
 }
 
 function renderLegend(){
+    const show = cfShowRevenue();
+    const titleEl = document.getElementById('chartTitleText');
+    const subEl = document.getElementById('chartSubtitle');
+    if (titleEl) titleEl.textContent = show ? 'Cashflow — Revenue vs Outflows (12 Months)' : 'Forecasted Outflows (12 Months)';
+    if (subEl) subEl.textContent = show ? 'Click an income or outflow bar for its monthly breakdown' : 'Click an outflow bar for its monthly breakdown';
     const el = document.getElementById('chartLegend');
     if (!el) return;
-    if (cfShowRevenue()){
+    if (show){
         el.innerHTML =
             '<div class="legend-item"><span class="legend-color income"></span><span class="legend-text">Revenue (in)</span></div>'
           + '<div class="legend-item"><span class="legend-color outflow"></span><span class="legend-text">Outflows (out)</span></div>';
