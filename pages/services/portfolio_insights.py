@@ -904,3 +904,106 @@ def portfolio_insights(today=None, months=12, within_days=90,
         "expenses": expenses,
         "brief": brief,
     }
+
+
+# ---------------------------------------------------------------------------
+# Net cash-flow revenue (CONTRACTED leases only) -- feeds the Forecasted Cash
+# Outflows report's revenue/net toggle. See install_cashflow_net.py.
+# ---------------------------------------------------------------------------
+def net_cashflow_revenue(today=None, months=12):
+    """Per-month projected INCOME for the net cash-flow forecast.
+
+    Contracted-only: lease rent+levies count ONLY for months a signed lease
+    actually covers (``_lease_month`` tag 'lease'). The 'assumed' continuation
+    (at-risk) income is deliberately EXCLUDED, so an expiring lease with no
+    successor simply drops that property's income -- the cash cliff.
+
+    Seasonal / direct revenue (no-lease properties, e.g. Ionion) and any
+    ancillary non-lease-role revenue on leased properties go in a SEPARATE
+    'other' bucket, so the 'lease' figure stays pure signed-lease income.
+    Same resolution as forward_projection / the P&L, so figures reconcile.
+
+    Returns a list (one dict per month):
+        {"year", "month" (1-12), "label", "lease", "other", "total",
+         "breakdown": [{"name","prop","amount","kind"} ...]}
+    """
+    today = today or date.today()
+    by_prop = _leases_by_property(today)
+    leased_ids = set(by_prop.keys())
+
+    rev_by_prop = {}
+    for rv in Revenue.objects.select_related("prop", "revenue_line_types").all():
+        if rv.prop_id is None:
+            continue
+        role = getattr(rv.revenue_line_types, "lease_role", "") or ""
+        info = rev_by_prop.setdefault(rv.prop_id, {
+            "name": getattr(rv.prop, "prop_name", "") or "",
+            "rows": [],
+        })
+        info["rows"].append((role, rv))
+
+    def _rev_cell(rows_iter, mm):
+        total = 0.0
+        for role, rv in rows_iter:
+            total += float(getattr(rv, "revenue_" + mm, 0) or 0)
+        return total
+
+    out = []
+    for k in range(months):
+        y, m = _add_months(today.year, today.month, k)
+        mm = calendar.month_abbr[m].lower()
+        lease_in = 0.0
+        other_in = 0.0
+        breakdown = []
+
+        # Leased properties: contracted lease income (tag 'lease') only.
+        for pid, leases in by_prop.items():
+            tag, lease, rent, levies = _lease_month(leases, y, m, today)
+            info = rev_by_prop.get(pid)
+            ancillary = _rev_cell(
+                ((r, rv) for (r, rv) in info["rows"] if not r), mm) if info else 0.0
+            if tag == "lease":
+                amt = float((rent or 0) + (levies or 0))
+                if amt:
+                    lease_in += amt
+                    breakdown.append({
+                        "name": getattr(lease, "tenant_name", "") or "",
+                        "prop": getattr(lease.prop, "prop_name", "") or "",
+                        "amount": round(amt, 2),
+                        "kind": "lease",
+                    })
+            # 'assumed' (at-risk) intentionally excluded; 'vacant' adds nothing.
+            if ancillary:
+                other_in += ancillary
+                breakdown.append({
+                    "name": "Other revenue",
+                    "prop": info["name"],
+                    "amount": round(ancillary, 2),
+                    "kind": "other",
+                })
+
+        # Seasonal / no-lease properties: revenue table as-is -> 'other'.
+        for pid, info in rev_by_prop.items():
+            if pid in leased_ids:
+                continue
+            seasonal = _rev_cell(info["rows"], mm)
+            if seasonal:
+                other_in += seasonal
+                breakdown.append({
+                    "name": "Seasonal / direct revenue",
+                    "prop": info["name"],
+                    "amount": round(seasonal, 2),
+                    "kind": "other",
+                })
+
+        breakdown.sort(key=lambda r: r["amount"], reverse=True)
+        out.append({
+            "year": y,
+            "month": m,
+            "label": "%s %d" % (calendar.month_abbr[m], y),
+            "lease": round(lease_in, 2),
+            "other": round(other_in, 2),
+            "total": round(lease_in + other_in, 2),
+            "breakdown": breakdown,
+        })
+    return out

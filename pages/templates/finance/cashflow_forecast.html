@@ -2,12 +2,12 @@
 {% load static %}
 {% load help_modal_tags %}
 
-{% block title %}ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS{% endblock %}
+{% block title %}Forecasted Cashflows{% endblock %}
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS</center></h2>
-<h5><center>UPCOMING EXPENSE PLANNING DASHBOARD</center></h5>
+<h2><center>Forecasted Cashflows</center></h2>
+<h5><center>Upcoming Revenue and Expense Planning Dashboard</center></h5>
 <br/>
 
 {% for msg in messages %}
@@ -63,61 +63,82 @@
 
 <!-- Main Dashboard Container -->
 <div id="dashboardContainer" style="display: none;">
+    <!-- FORECASTCF v2 : revenue toggle (top, default ON) -->
+    <style id="cfV2Style">
+    .cf-toggle-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;background:#e8f6f5;border:1px solid #b7e0dd;border-radius:10px;margin-bottom:16px;}
+    .cf-switch{display:flex;align-items:center;gap:8px;font-weight:600;color:#0f766e;cursor:pointer;margin:0;font-size:.98rem;}
+    .cf-switch input{width:17px;height:17px;cursor:pointer;}
+    .cf-hint{color:#555;font-size:.8rem;}
+    #summaryCardsContainer .card-body.cf-compact{padding:8px 12px;}
+    .cf-compact .cf-line{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;padding:2px 0;line-height:1.35;}
+    .cf-compact .cf-lbl{color:#666;}
+    .cf-compact .cf-val{font-weight:700;font-variant-numeric:tabular-nums;}
+    .cf-rev .cf-val{color:#0f766e;}
+    .cf-net{border-top:1px solid #eee;margin-top:3px;padding-top:4px !important;}
+    .cf-net.cf-neg .cf-val{color:#c0392b;}
+    .cf-net.cf-pos .cf-val{color:#0f766e;}
+    .cf-net-note{text-align:center;margin:2px 0 16px;color:#444;font-size:.9rem;}
+    .cf-net-note .cf-neg{color:#c0392b;font-weight:600;}
+    .cf-range{display:block;font-size:10px;font-weight:500;opacity:.9;text-transform:none;letter-spacing:0;margin-top:2px;}
+    #cfHoverTip{position:fixed;z-index:9999;display:none;background:#fff;border:1px solid #cfe3e0;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:10px 12px;font-size:.82rem;max-width:300px;pointer-events:none;color:#2c3e50;}
+    .cf-tip-h{font-weight:700;color:#0f766e;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;}
+    .cf-tip-t{width:100%;border-collapse:collapse;}
+    .cf-tip-t td{padding:2px 0;vertical-align:top;}
+    .cf-tip-num{text-align:right;font-variant-numeric:tabular-nums;padding-left:16px;white-space:nowrap;}
+    .cf-tip-tot td{border-top:1px solid #eee;font-weight:700;padding-top:4px;}
+    .cf-tip-empty{color:#888;}
+    .legend-color.income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%);}
+    .legend-color.outflow{background:linear-gradient(135deg,#e2685f 0%,#d9534f 100%);}
+    .timeline-bar.cf-bar-income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%) !important;}
+    .timeline-bar.cf-bar-out{background:linear-gradient(135deg,#e2685f 0%,#d9534f 100%) !important;}
+    </style>
+    <div class="cf-toggle-bar">
+        <label class="cf-switch">
+            <input type="checkbox" id="cfRevToggle" checked>
+            <span><i class="fas fa-coins"></i> Include revenue (net cashflow)</span>
+        </label>
+        <span class="cf-hint"><i class="fas fa-info-circle"></i> Confirmed contracted leases only; seasonal / direct income shown separately. Leases assumed to renew are excluded, so income cliffs show.</span>
+    </div>
+    <div id="cfHoverTip"></div>
     <!-- Summary Cards -->
-    <div class="summary-grid" id="summaryCardsContainer">
+        <div class="summary-grid" id="summaryCardsContainer">
         <div class="summary-card current-month">
-            <div class="card-header">
-                <h6><i class="fas fa-calendar-day"></i> Current Month</h6>
-            </div>
-            <div class="card-body">
-                <h3 id="currentMonthTotal">€0.00</h3>
-                <p class="card-subtitle">Immediate expenses</p>
+            <div class="card-header"><h6><i class="fas fa-calendar-day"></i> Current Month<span class="cf-range" id="rangeCurrent"></span></h6></div>
+            <div class="card-body cf-compact">
+                <div class="cf-line cf-rev"><span class="cf-lbl">Revenue</span><span class="cf-val" id="revCurrent">€0.00</span></div>
+                <div class="cf-line cf-exp"><span class="cf-lbl">Expenses</span><span class="cf-val" id="expCurrent">€0.00</span></div>
+                <div class="cf-line cf-net cf-pos"><span class="cf-lbl">Net</span><span class="cf-val" id="netCurrent">€0.00</span></div>
             </div>
         </div>
         <div class="summary-card short-term">
-            <div class="card-header">
-                <h6><i class="fas fa-calendar-week"></i> Next 3 Months</h6>
-            </div>
-            <div class="card-body">
-                <h3 id="shortTermTotal">€0.00</h3>
-                <p class="card-subtitle">31-90 days ahead</p>
+            <div class="card-header"><h6><i class="fas fa-calendar-week"></i> Next 3 Months<span class="cf-range" id="rangeShort"></span></h6></div>
+            <div class="card-body cf-compact">
+                <div class="cf-line cf-rev"><span class="cf-lbl">Revenue</span><span class="cf-val" id="revShort">€0.00</span></div>
+                <div class="cf-line cf-exp"><span class="cf-lbl">Expenses</span><span class="cf-val" id="expShort">€0.00</span></div>
+                <div class="cf-line cf-net cf-pos"><span class="cf-lbl">Net</span><span class="cf-val" id="netShort">€0.00</span></div>
             </div>
         </div>
         <div class="summary-card long-term">
-            <div class="card-header">
-                <h6><i class="fas fa-calendar-alt"></i> Remaining Months</h6>
-            </div>
-            <div class="card-body">
-                <h3 id="longTermTotal">€0.00</h3>
-                <p class="card-subtitle">Over 90 days</p>
+            <div class="card-header"><h6><i class="fas fa-calendar-alt"></i> Next 12 Months<span class="cf-range" id="rangeLong"></span></h6></div>
+            <div class="card-body cf-compact">
+                <div class="cf-line cf-rev"><span class="cf-lbl">Revenue</span><span class="cf-val" id="revLong">€0.00</span></div>
+                <div class="cf-line cf-exp"><span class="cf-lbl">Expenses</span><span class="cf-val" id="expLong">€0.00</span></div>
+                <div class="cf-line cf-net cf-pos"><span class="cf-lbl">Net</span><span class="cf-val" id="netLong">€0.00</span></div>
             </div>
         </div>
     </div>
+    <div id="cfNetNote" class="cf-net-note"></div>
 
     <!-- Timeline Visualization Panel -->
     <div class="chart-panel">
         <div class="chart-header">
             <h5 class="chart-title">
-                <i class="fas fa-chart-line"></i> Forecasted Cash Outflows (12 Months)
+                <i class="fas fa-chart-line"></i> Cashflow — Revenue vs Outflows (12 Months)
             </h5>
-            <p class="chart-subtitle">Click bars for detailed expense breakdown by month</p>
+            <p class="chart-subtitle">Click an income or outflow bar for its monthly breakdown</p>
         </div>
 
-        <!-- Legend -->
-        <div class="chart-legend">
-            <div class="legend-item">
-                <span class="legend-color red"></span>
-                <span class="legend-text">Current Month</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color orange"></span>
-                <span class="legend-text">31-90 Days</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color green"></span>
-                <span class="legend-text">Over 90 Days</span>
-            </div>
-        </div>
+        <div class="chart-legend" id="chartLegend"></div>
 
         <div class="chart-container">
             <div id="timeline" class="timeline-chart"></div>
@@ -231,7 +252,7 @@
     overflow: hidden;
     transition: all 0.3s ease;
     border: 1px solid #dee2e6;
-    height: 130px;
+    height: auto;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -688,6 +709,7 @@
 
 <script>
 let allExpenses = [];
+let cfRevByKey = {};
 
 /* ============================================================
    [Cashflow] Rotate-to-landscape controller
@@ -746,19 +768,78 @@ let allExpenses = [];
 /* ============================================================
    Original cashflow logic preserved
    ============================================================ */
-function updateSummaryCards(monthlyTotals, monthRange) {
-    let currentMonthTotal = 0, shortTermTotal = 0, longTermTotal = 0;
+function cfEuro(n){ var v = Math.round(Number(n)||0); return (v<0?'-':'') + '€' + Math.abs(v).toLocaleString('en-US'); }
+function cfShowRevenue(){ var t = document.getElementById('cfRevToggle'); return t ? t.checked : true; }
 
+function cfOutflowByMonth(monthRange){
+    const t = {};
+    monthRange.forEach(m => { t[m.key] = 0; });
+    allExpenses.forEach(exp => {
+        const d = new Date(exp.due_date);
+        const k = `${d.getFullYear()}-${d.getMonth()}`;
+        if (t[k] !== undefined) t[k] += exp.amount;
+    });
+    return t;
+}
+
+function updateSummaryCards(outByMonth, monthRange){
+    const show = cfShowRevenue();
+    const b = { Current:{r:0,e:0}, Short:{r:0,e:0}, Long:{r:0,e:0} };
+    // cumulative planning horizons, all starting from now:
+    //   Current  = month 1 ; Short = months 1-3 ; Long = months 1-12
     monthRange.forEach((month, index) => {
-        const amount = monthlyTotals[month.key] || 0;
-        if (index === 0) currentMonthTotal = amount;
-        else if (index >= 1 && index <= 3) shortTermTotal += amount;
-        else longTermTotal += amount;
+        const e = outByMonth[month.key] || 0;
+        const r = (cfRevByKey[month.key] ? cfRevByKey[month.key].total : 0);
+        if (index === 0) { b.Current.e += e; b.Current.r += r; }
+        if (index <= 2) { b.Short.e += e; b.Short.r += r; }
+        b.Long.e += e; b.Long.r += r;
+    });
+    // show the actual month range covered by each card
+    const _rng = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    if (monthRange.length){
+        _rng('rangeCurrent', monthRange[0].name);
+        _rng('rangeShort', monthRange[0].name.split(' ')[0] + ' – ' + monthRange[Math.min(2, monthRange.length-1)].name);
+        _rng('rangeLong', monthRange[0].name + ' – ' + monthRange[monthRange.length-1].name);
+    }
+    ['Current','Short','Long'].forEach(sfx => {
+        const rEl=document.getElementById('rev'+sfx), eEl=document.getElementById('exp'+sfx), nEl=document.getElementById('net'+sfx);
+        const bk=b[sfx], net=bk.r-bk.e;
+        eEl.textContent = cfEuro(bk.e);
+        rEl.textContent = cfEuro(bk.r);
+        nEl.textContent = cfEuro(net);
+        const netLine = nEl.closest('.cf-net');
+        if (netLine) netLine.className = 'cf-line cf-net ' + (net<0?'cf-neg':'cf-pos');
+        const revLine = rEl.closest('.cf-rev');
+        if (revLine) revLine.style.display = show ? '' : 'none';
+        if (netLine) netLine.style.display = show ? '' : 'none';
     });
 
-    document.getElementById('currentMonthTotal').textContent = `€${currentMonthTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('shortTermTotal').textContent = `€${shortTermTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('longTermTotal').textContent = `€${longTermTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const note = document.getElementById('cfNetNote');
+    if (!note) return;
+    if (!show){ note.innerHTML = ''; return; }
+    const totNet = b.Long.r - b.Long.e;   // Long = full 12 months (cumulative)
+    let firstNeg=null;
+    monthRange.forEach(m => {
+        const rr = (cfRevByKey[m.key] ? cfRevByKey[m.key].total : 0);
+        const ee = outByMonth[m.key] || 0;
+        if ((rr - ee) < 0 && firstNeg === null) firstNeg = m.name;
+    });
+    note.innerHTML = 'Projected 12-month net: <strong class="' + (totNet<0?'cf-neg':'') + '">' + cfEuro(totNet) + '</strong>'
+        + (firstNeg ? ' · <span class="cf-neg">first cash-negative month: ' + firstNeg + '</span>'
+                    : ' · no cash-negative month in the next 12 months');
+}
+
+function renderLegend(){
+    const el = document.getElementById('chartLegend');
+    if (!el) return;
+    if (cfShowRevenue()){
+        el.innerHTML =
+            '<div class="legend-item"><span class="legend-color income"></span><span class="legend-text">Revenue (in)</span></div>'
+          + '<div class="legend-item"><span class="legend-color outflow"></span><span class="legend-text">Outflows (out)</span></div>';
+    } else {
+        el.innerHTML =
+            '<div class="legend-item"><span class="legend-color outflow"></span><span class="legend-text">Outflows</span></div>';
+    }
 }
 
 function renderForecast() {
@@ -791,29 +872,24 @@ function renderForecast() {
         }
     });
 
+    renderLegend();
     renderTimeline(monthRange, allExpenses, expensesByTypeAndMonth);
 }
 
 function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
     const timeline = document.getElementById("timeline");
     timeline.innerHTML = "";
+    const show = cfShowRevenue();
 
-    const monthlyTotals = {};
-    monthRange.forEach(month => { monthlyTotals[month.key] = 0; });
+    const outByMonth = cfOutflowByMonth(monthRange);
+    const incByMonth = {};
+    monthRange.forEach(m => { incByMonth[m.key] = (show && cfRevByKey[m.key]) ? cfRevByKey[m.key].total : 0; });
 
-    expenses.forEach(exp => {
-        const date = new Date(exp.due_date);
-        const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-        if (monthlyTotals[monthKey] !== undefined) {
-            monthlyTotals[monthKey] += exp.amount;
-        }
-    });
+    updateSummaryCards(outByMonth, monthRange);
 
-    updateSummaryCards(monthlyTotals, monthRange);
+    let maxAmount = 1;
+    monthRange.forEach(m => { maxAmount = Math.max(maxAmount, outByMonth[m.key] || 0, show ? (incByMonth[m.key] || 0) : 0); });
 
-    const maxAmount = Math.max(...Object.values(monthlyTotals), 1);
-
-    // Adjust chart height for landscape mobile
     const isMobileLandscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
     const chartHeight = isMobileLandscape ? 200 : 300;
     const baseOffset = isMobileLandscape ? 50 : 60;
@@ -821,8 +897,8 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
     let gridInterval;
     if (maxAmount <= 100) gridInterval = 20;
     else if (maxAmount <= 1000) gridInterval = 200;
-    else gridInterval = 1000;
-
+    else if (maxAmount <= 10000) gridInterval = 1000;
+    else gridInterval = 2000;
     const maxGridValue = Math.ceil(maxAmount / gridInterval) * gridInterval;
 
     const timelineContainer = document.createElement("div");
@@ -832,67 +908,61 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         const gridValue = i * gridInterval;
         const pixelHeight = Math.round((gridValue / maxGridValue) * chartHeight);
         const bottomPosition = baseOffset + pixelHeight;
-
         const gridLine = document.createElement("div");
-        gridLine.style.position = "absolute";
-        gridLine.style.bottom = `${bottomPosition}px`;
-        gridLine.style.left = "0px";
-        gridLine.style.right = "0px";
-        gridLine.style.height = "1px";
-        gridLine.style.borderTop = "2px solid #000";
-        gridLine.style.backgroundColor = "#000";
-        gridLine.style.zIndex = "1";
-        gridLine.style.opacity = "0.2";
-
+        gridLine.style.cssText = `position:absolute;bottom:${bottomPosition}px;left:0;right:0;height:1px;border-top:2px solid #000;background-color:#000;z-index:1;opacity:0.2;`;
         const gridLabel = document.createElement("div");
-        gridLabel.style.position = "absolute";
-        gridLabel.style.bottom = `${bottomPosition - 8}px`;
-        gridLabel.style.left = "5px";
-        gridLabel.style.fontSize = isMobileLandscape ? "9px" : "11px";
-        gridLabel.style.color = "#6c757d";
-        gridLabel.style.background = "white";
-        gridLabel.style.padding = "2px 6px";
-        gridLabel.style.borderRadius = "2px";
-        gridLabel.style.fontWeight = "500";
-        gridLabel.style.zIndex = "2";
-        gridLabel.style.border = "1px solid #e9ecef";
-        gridLabel.style.whiteSpace = "nowrap";
-        gridLabel.style.lineHeight = "1";
+        gridLabel.style.cssText = `position:absolute;bottom:${bottomPosition - 8}px;left:5px;font-size:${isMobileLandscape ? '9px' : '11px'};color:#6c757d;background:white;padding:2px 6px;border-radius:2px;font-weight:500;z-index:2;border:1px solid #e9ecef;white-space:nowrap;line-height:1;`;
         gridLabel.textContent = `€${gridValue.toLocaleString()}`;
-
         timelineContainer.appendChild(gridLine);
         timelineContainer.appendChild(gridLabel);
     }
 
-    const barWidthPercent = 85 / monthRange.length;
+    const slotWidth = 85 / monthRange.length;
     const leftMargin = 8;
 
     monthRange.forEach((month, index) => {
-        const value = monthlyTotals[month.key];
-        const pixelHeight = Math.round((value / maxGridValue) * chartHeight);
-        const leftPercent = leftMargin + (index * barWidthPercent);
-
-        let colorClass = 'green';
-        if (index === 0) colorClass = 'red';
-        else if (index >= 1 && index <= 3) colorClass = 'orange';
-
+        const out = outByMonth[month.key] || 0;
+        const inc = incByMonth[month.key] || 0;
+        const leftPercent = leftMargin + (index * slotWidth);
         const monthElement = document.createElement("div");
         monthElement.className = "timeline-month";
         monthElement.style.left = `${leftPercent}%`;
-        monthElement.style.width = `${barWidthPercent * 0.9}%`;
+        monthElement.style.width = `${slotWidth * 0.9}%`;
 
-        const formattedAmount = value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         const labelFontSize = isMobileLandscape ? '8px' : '10px';
-        const labelBottom = isMobileLandscape ? '-45px' : '-55px';
+        const labelBottom = isMobileLandscape ? '-45px' : '-58px';
+        const outH = Math.round((out / maxGridValue) * chartHeight);
+        const incH = Math.round((inc / maxGridValue) * chartHeight);
 
-        monthElement.innerHTML = `
-            <div class="timeline-bar ${colorClass}" style="height: ${pixelHeight}px; width: 100%; position: absolute; bottom: ${baseOffset}px; z-index: 3;" data-month="${month.key}" data-month-name="${month.name}"></div>
-            <div class="timeline-label" style="position: absolute; bottom: ${labelBottom}; width: 100%; text-align: center; font-size: ${labelFontSize}; color: #6c757d; font-weight: 500; line-height: 1.2;"><strong>${month.name}</strong><br><strong>€${formattedAmount}</strong></div>
-        `;
+        let barsHtml;
+        if (show) {
+            barsHtml =
+                `<div class="timeline-bar cf-bar-income" style="height:${incH}px;width:44%;left:3%;position:absolute;bottom:${baseOffset}px;z-index:3;" data-month="${month.key}" data-kind="income"></div>`
+              + `<div class="timeline-bar cf-bar-out" style="height:${outH}px;width:44%;right:3%;position:absolute;bottom:${baseOffset}px;z-index:3;" data-month="${month.key}" data-month-name="${month.name}" data-kind="out"></div>`;
+        } else {
+            barsHtml = `<div class="timeline-bar cf-bar-out" style="height:${outH}px;width:100%;position:absolute;bottom:${baseOffset}px;z-index:3;" data-month="${month.key}" data-month-name="${month.name}" data-kind="out"></div>`;
+        }
 
-        const bar = monthElement.querySelector('.timeline-bar');
-        bar.addEventListener('click', () => {
-            showMonthlyBreakdown(month.key, month.name, expensesByTypeAndMonth);
+        let labelHtml;
+        if (show) {
+            const net = inc - out;
+            labelHtml = `<strong>${month.name}</strong><br><span style="color:${net < 0 ? '#c0392b' : '#0f766e'};font-weight:700;">Net ${cfEuro(net)}</span>`;
+        } else {
+            labelHtml = `<strong>${month.name}</strong><br><strong>${cfEuro(out)}</strong>`;
+        }
+
+        monthElement.innerHTML = barsHtml
+            + `<div class="timeline-label" style="position:absolute;bottom:${labelBottom};width:100%;text-align:center;font-size:${labelFontSize};color:#6c757d;font-weight:500;line-height:1.2;white-space:nowrap;">${labelHtml}</div>`;
+
+        monthElement.querySelectorAll('.timeline-bar').forEach(bar => {
+            const kind = bar.getAttribute('data-kind');
+            bar.addEventListener('click', () => {
+                if (kind === 'income') showMonthlyIncome(month.key, month.name);
+                else showMonthlyBreakdown(month.key, month.name, expensesByTypeAndMonth);
+            });
+            bar.addEventListener('mouseenter', (e) => cfShowTip(kind === 'income' ? cfIncomeTip(month) : cfOutflowTip(month, expensesByTypeAndMonth), e));
+            bar.addEventListener('mousemove', cfMoveTip);
+            bar.addEventListener('mouseleave', cfHideTip);
         });
 
         timelineContainer.appendChild(monthElement);
@@ -900,6 +970,56 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
 
     timeline.appendChild(timelineContainer);
 }
+
+function showMonthlyIncome(monthKey, monthName) {
+    const rev = cfRevByKey[monthKey];
+    const modalTitle = document.getElementById('monthlyExpenseModalLabel');
+    const modalBody = document.getElementById('monthlyExpenseModalBody');
+    modalTitle.innerHTML = '<i class="fas fa-coins"></i> ' + monthName + ' — Projected Income';
+    if (!rev || !rev.breakdown || !rev.breakdown.length) {
+        modalBody.innerHTML = '<div class="no-expenses-message"><p>No projected income for this month.</p></div>';
+    } else {
+        let rows = '';
+        rev.breakdown.forEach(b => {
+            rows += '<tr><td>' + (b.name || '') + '</td><td>' + (b.prop || '') + '</td><td style="text-align:right;">' + cfEuro(b.amount) + '</td><td style="text-align:center;">' + (b.kind === 'lease' ? 'Contracted' : 'Seasonal / other') + '</td></tr>';
+        });
+        modalBody.innerHTML =
+            '<table class="table table-hover"><thead><tr><th>Source</th><th>Property</th><th style="text-align:right;">Amount</th><th style="text-align:center;">Type</th></tr></thead><tbody>'
+          + rows
+          + '</tbody><tfoot><tr><td colspan="2"><strong>Total</strong></td><td style="text-align:right;"><strong>' + cfEuro(rev.total) + '</strong></td><td></td></tr></tfoot></table>';
+    }
+    $('#monthlyExpenseModal').modal('show');
+}
+
+function cfIncomeTip(month){
+    const rev = cfRevByKey[month.key];
+    const head = '<div class="cf-tip-h">' + month.name + ' &mdash; Revenue</div>';
+    if (!rev || !rev.breakdown || !rev.breakdown.length) return head + '<div class="cf-tip-empty">No projected income</div>';
+    let rows = '';
+    rev.breakdown.forEach(b => { rows += '<tr><td>' + (b.name || '') + '</td><td class="cf-tip-num">' + cfEuro(b.amount) + '</td></tr>'; });
+    return head + '<table class="cf-tip-t">' + rows + '<tr class="cf-tip-tot"><td>Total</td><td class="cf-tip-num">' + cfEuro(rev.total) + '</td></tr></table>';
+}
+function cfOutflowTip(month, ebt){
+    const head = '<div class="cf-tip-h">' + month.name + ' &mdash; Outflows</div>';
+    let rows = '', total = 0;
+    Object.keys(ebt).sort().forEach(lt => {
+        const cell = ebt[lt][month.key];
+        if (cell) { rows += '<tr><td>' + lt + '</td><td class="cf-tip-num">' + cfEuro(cell.total) + '</td></tr>'; total += cell.total; }
+    });
+    if (!rows) return head + '<div class="cf-tip-empty">No outflows</div>';
+    return head + '<table class="cf-tip-t">' + rows + '<tr class="cf-tip-tot"><td>Total</td><td class="cf-tip-num">' + cfEuro(total) + '</td></tr></table>';
+}
+function cfShowTip(html, e){ const tip = document.getElementById('cfHoverTip'); if (!tip) return; tip.innerHTML = html; tip.style.display = 'block'; cfMoveTip(e); }
+function cfMoveTip(e){
+    const tip = document.getElementById('cfHoverTip');
+    if (!tip || tip.style.display !== 'block') return;
+    const pad = 14; let x = e.clientX + pad, y = e.clientY + pad;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    if (x + w > window.innerWidth - 8) x = e.clientX - w - pad;
+    if (y + h > window.innerHeight - 8) y = e.clientY - h - pad;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+function cfHideTip(){ const tip = document.getElementById('cfHoverTip'); if (tip) tip.style.display = 'none'; }
 
 function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
     const modalTitle = document.getElementById('monthlyExpenseModalLabel');
@@ -1035,7 +1155,7 @@ function loadForecast() {
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('errorContainer').style.display = 'none';
 
-    fetch(`?horizon=12`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
+    fetch(`?horizon=12&revenue=1`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
         .then(res => {
             if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
             return res.json();
@@ -1048,6 +1168,8 @@ function loadForecast() {
             } else {
                 document.getElementById('dashboardContainer').style.display = 'block';
                 allExpenses = data.expenses || [];
+                cfRevByKey = {};
+                (data.revenue || []).forEach(r => { cfRevByKey[r.year + '-' + (r.month - 1)] = r; });
                 renderForecast();
             }
         })
@@ -1060,6 +1182,10 @@ function loadForecast() {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadForecast();
+    var _cfT = document.getElementById('cfRevToggle');
+    if (_cfT) _cfT.addEventListener('change', function(){
+        if (allExpenses.length || Object.keys(cfRevByKey).length) renderForecast();
+    });
 });
 
 $(document).on('click', '[data-dismiss="modal"]', function() {

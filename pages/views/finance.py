@@ -1508,7 +1508,11 @@ def cashflow_forecast(request):
                         current_year += 1
 
         expenses.sort(key=lambda x: x["due_date"])
-        return JsonResponse({"expenses": expenses})
+        payload = {"expenses": expenses}
+        if request.GET.get("revenue") == "1":
+            from ..services.portfolio_insights import net_cashflow_revenue
+            payload["revenue"] = net_cashflow_revenue(today=today, months=horizon_months)
+        return JsonResponse(payload)
 
     return render(request, "finance/cashflow_forecast.html")
 
