@@ -90,7 +90,10 @@
     .cf-slider-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:16px;background:#f4fbfa;border:1px solid #d6ece9;border-radius:10px;}
     .cf-slider-cap{font-weight:600;color:#0f766e;font-size:.9rem;}
     .cf-slider-end{font-size:.8rem;color:#666;}
-    .cf-slider{flex:1;min-width:140px;max-width:340px;accent-color:#0f766e;cursor:pointer;}
+    .cf-slider-track{position:relative;flex:1;min-width:140px;max-width:340px;display:flex;align-items:center;}
+    .cf-slider{flex:1;min-width:0;width:100%;accent-color:#0f766e;cursor:pointer;}
+    .cf-breakeven-mark{position:absolute;top:50%;transform:translate(-50%,-50%);width:3px;height:22px;background:#c0392b;border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.65);display:none;}
+    .cf-breakeven-note{font-size:.8rem;font-weight:600;color:#c0392b;white-space:nowrap;}
     .cf-slider-val{font-weight:700;color:#0f766e;font-variant-numeric:tabular-nums;min-width:44px;text-align:right;}
     .legend-color.income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%);}
     .legend-color.outflow{background:linear-gradient(135deg,#e2685f 0%,#d9534f 100%);}
@@ -107,9 +110,13 @@
     <div class="cf-slider-wrap" id="cfSliderWrap">
         <span class="cf-slider-cap"><i class="fas fa-sliders-h"></i> Renewal assumption</span>
         <span class="cf-slider-end">Contracted only</span>
-        <input type="range" id="cfAssumeSlider" class="cf-slider" min="0" max="100" step="5" value="0" aria-label="Renewal assumption">
+        <span class="cf-slider-track" id="cfSliderTrack">
+            <input type="range" id="cfAssumeSlider" class="cf-slider" min="0" max="100" step="5" value="0" aria-label="Renewal assumption">
+            <span class="cf-breakeven-mark" id="cfBreakevenMark"></span>
+        </span>
         <span class="cf-slider-end">Assume renewals</span>
         <span class="cf-slider-val" id="cfAssumeVal">0%</span>
+        <span class="cf-breakeven-note" id="cfBreakevenNote"></span>
     </div>
     <div id="cfHoverTip"></div>
     <!-- Summary Cards -->
@@ -723,6 +730,8 @@
 let allExpenses = [];
 let cfRevByKey = {};
 let cfAssumedFrac = 0;
+let cfLastMonthRange = [];
+let cfLastOutByMonth = {};
 const cfCanHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
 
 /* ============================================================
@@ -784,6 +793,41 @@ const cfCanHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and
    ============================================================ */
 function cfEuro(n){ var v = Math.round(Number(n)||0); return (v<0?'-':'') + '€' + Math.abs(v).toLocaleString('en-US'); }
 function cfIncTotal(rev){ return rev ? (rev.lease + rev.other + (rev.assumed || 0) * cfAssumedFrac) : 0; }
+
+// Lowest renewal-assumption fraction (0..1) at which NO month is cash-negative,
+// or null if some month stays negative even at 100% (unfixable by renewals).
+function cfBreakevenFrac(monthRange, outByMonth){
+    let need = 0, achievable = true;
+    monthRange.forEach(m => {
+        const rev = cfRevByKey[m.key] || {lease:0, other:0, assumed:0};
+        const base = (rev.lease || 0) + (rev.other || 0);
+        const deficit = (outByMonth[m.key] || 0) - base;
+        if (deficit <= 0) return;                 // month already covered
+        const a = rev.assumed || 0;
+        if (a <= 0) { achievable = false; return; }  // renewals can't help this month
+        need = Math.max(need, deficit / a);
+    });
+    if (!achievable || need > 1) return null;
+    return need;
+}
+function cfUpdateBreakeven(monthRange, outByMonth){
+    const mark = document.getElementById('cfBreakevenMark');
+    const note = document.getElementById('cfBreakevenNote');
+    if (!mark) return;
+    const f = cfBreakevenFrac(monthRange, outByMonth);
+    if (f === null){
+        mark.style.display = 'none';
+        if (note) note.innerHTML = '<span title="Even at 100% renewals, at least one month stays cash-negative">no break-even &lt;100%</span>';
+        return;
+    }
+    const pct = Math.round(f * 100);
+    const inp = document.getElementById('cfAssumeSlider');
+    const w = inp ? inp.offsetWidth : 0;
+    mark.style.display = 'block';
+    mark.style.left = w ? (8 + f * (w - 16)) + 'px' : (f * 100) + '%';
+    mark.setAttribute('title', 'Break-even: ' + pct + '% — at or above this, no month is cash-negative');
+    if (note) note.innerHTML = '&#9650; break-even ' + pct + '%';
+}
 function cfShowRevenue(){ var t = document.getElementById('cfRevToggle'); return t ? t.checked : true; }
 
 function cfOutflowByMonth(monthRange){
@@ -908,6 +952,8 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
     monthRange.forEach(m => { incByMonth[m.key] = show ? cfIncTotal(cfRevByKey[m.key]) : 0; });
 
     updateSummaryCards(outByMonth, monthRange);
+    cfLastMonthRange = monthRange; cfLastOutByMonth = outByMonth;
+    if (show) cfUpdateBreakeven(monthRange, outByMonth);
 
     let maxAmount = 1;
     monthRange.forEach(m => { maxAmount = Math.max(maxAmount, outByMonth[m.key] || 0, show ? (incByMonth[m.key] || 0) : 0); });
@@ -1226,6 +1272,9 @@ document.addEventListener("DOMContentLoaded", () => {
         var v = document.getElementById('cfAssumeVal');
         if (v) v.textContent = this.value + '%';
         if (allExpenses.length || Object.keys(cfRevByKey).length) renderForecast();
+    });
+    window.addEventListener('resize', function(){
+        if (cfShowRevenue() && cfLastMonthRange.length) cfUpdateBreakeven(cfLastMonthRange, cfLastOutByMonth);
     });
 });
 
