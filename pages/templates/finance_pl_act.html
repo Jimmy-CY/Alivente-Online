@@ -174,30 +174,36 @@
 <!-- Property Selection Panel -->
 {% if single_mode %}<style>.property-selection-panel { display: none !important; }</style>{% endif %}
 {% if single_mode and single_property %}<h4 style="margin:6px 0 10px;font-weight:600;">{{ single_property.prop_name }}</h4>{% endif %}
-<div class="property-selection-panel">
-    <div class="selection-header">
+<div class="property-selection-panel collapsed" id="propSelectionPanel">
+    <div class="selection-header" onclick="togglePropSelection()">
         <h6 class="selection-title">
             <i class="fas fa-building"></i> Property Selection
+            <span class="selection-count-inline">(<span id="selectionCount">{{ selected_properties|length }} of {{ all_properties|length }}</span> selected)</span>
         </h6>
-        <div class="selection-buttons">
-            <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
-            <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
+        <div class="selection-header-right">
+            <div class="selection-buttons">
+                <button class="btn btn-info btn-sm" id="selectAllBtn" onclick="event.stopPropagation();">Select All</button>
+                <button class="btn btn-secondary btn-sm" id="selectNoneBtn" onclick="event.stopPropagation();">Select None</button>
+            </div>
+            <i class="fas fa-chevron-down selection-toggle-icon" id="propSelectionToggleIcon"></i>
         </div>
     </div>
 
-    <div class="property-grid">
-        {% for prop in all_properties %}
-        <div class="property-checkbox">
-            <input type="checkbox" id="prop-{{ prop.prop_id }}"
-                   data-prop-id="{{ prop.prop_id }}"
-                   {% if prop.prop_id|stringformat:'s' in selected_properties %}checked{% endif %}>
-            <label for="prop-{{ prop.prop_id }}">{{ prop.prop_name }}</label>
+    <div class="prop-selection-content" id="propSelectionContent">
+        <div class="property-grid">
+            {% for prop in all_properties %}
+            <div class="property-checkbox">
+                <input type="checkbox" id="prop-{{ prop.prop_id }}"
+                       data-prop-id="{{ prop.prop_id }}"
+                       {% if prop.prop_id|stringformat:'s' in selected_properties %}checked{% endif %}>
+                <label for="prop-{{ prop.prop_id }}">{{ prop.prop_name }}</label>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 
-    <div class="selection-counter">
-        <span id="selectionCount">{{ selected_properties|length }} of {{ all_properties|length }}</span> properties selected
+        <div class="selection-counter">
+            <span id="selectionCountFull">{{ selected_properties|length }} of {{ all_properties|length }}</span> properties selected
+        </div>
     </div>
 </div>
 
@@ -594,7 +600,16 @@
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
+.selection-header:hover { background-color: rgba(23, 162, 184, 0.05); border-radius: 8px; }
+.selection-header-right { display: flex; align-items: center; gap: 14px; }
+.selection-count-inline { font-size: 0.8em; font-weight: 500; color: #6c757d; margin-left: 4px; }
+.selection-toggle-icon { color: #17a2b8; font-size: 15px; transition: transform 0.3s ease; }
+#propSelectionPanel.collapsed .selection-header { margin-bottom: 0; border-bottom: none; }
+#propSelectionPanel.collapsed .prop-selection-content { display: none; }
+#propSelectionPanel.collapsed .selection-toggle-icon { transform: rotate(-90deg); }
 
 .selection-title {
     font-size: 16px;
@@ -1149,6 +1164,11 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ============================================================
    Original P&L logic preserved
    ============================================================ */
+function togglePropSelection() {
+    var panel = document.getElementById('propSelectionPanel');
+    if (panel) panel.classList.toggle('collapsed');
+}
+
 function updateYearAndReload(year) {
     const url = new URL(window.location.href);
     url.searchParams.set('year', year);
@@ -1187,7 +1207,7 @@ $(document).ready(function() {
 
     function updateSelectionCounter() {
         const checkedCount = allPropertyIds.filter(id => $(`#prop-${id}`)[0].checked).length;
-        $('#selectionCount').text(`${checkedCount} of ${allPropertyIds.length}`);
+        $('#selectionCount, #selectionCountFull').text(`${checkedCount} of ${allPropertyIds.length}`);
     }
 
     function updateProfitLossTable() {

@@ -361,7 +361,16 @@
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
+.selection-header:hover { background-color: rgba(23, 162, 184, 0.05); border-radius: 8px; }
+.selection-header-right { display: flex; align-items: center; gap: 16px; }
+.selection-count-inline { font-size: 0.7em; font-weight: 500; color: #6c757d; margin-left: 6px; }
+.selection-toggle-icon { color: #17a2b8; font-size: 16px; transition: transform 0.3s ease; }
+#propSelectionPanel.collapsed .selection-header { margin-bottom: 0; border-bottom: none; }
+#propSelectionPanel.collapsed .prop-selection-content { display: none; }
+#propSelectionPanel.collapsed .selection-toggle-icon { transform: rotate(-90deg); }
 
 .selection-title {
     font-size: 18px;
@@ -1239,6 +1248,7 @@ class PropertyFinancialDashboard {
         this.portfolioIndicators = portfolioIndicators || {};
         this.portfolioTotals = portfolioTotals || {};
         this.selectedProperties = {};
+        this.propSelectionCollapsed = true;
         this.selectedIndicator = null;
         this.charts = {};
         
@@ -1336,30 +1346,36 @@ class PropertyFinancialDashboard {
             </div>
 
             <!-- Property Selection -->
-            <div class="property-selection-panel">
-                <div class="selection-header">
+            <div class="property-selection-panel${this.propSelectionCollapsed ? ' collapsed' : ''}" id="propSelectionPanel">
+                <div class="selection-header" id="propSelectionHeader">
                     <h5 class="selection-title">
                         <i class="fas fa-building"></i> Property Selection
+                        <span class="selection-count-inline">(${this.getSelectedCount()} of ${this.properties.length} selected)</span>
                     </h5>
-                    <div class="selection-buttons">
-                        <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
-                        <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
+                    <div class="selection-header-right">
+                        <div class="selection-buttons">
+                            <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
+                            <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
+                        </div>
+                        <i class="fas fa-chevron-down selection-toggle-icon"></i>
                     </div>
                 </div>
-                
-                <div class="property-grid">
-                    ${this.properties.map(property => `
-                        <div class="property-checkbox">
-                            <input type="checkbox" 
-                                   id="prop-${property.id}" 
-                                   ${this.selectedProperties[property.id] ? 'checked' : ''}>
-                            <label for="prop-${property.id}">${property.name}</label>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div class="selection-counter">
-                    ${this.getSelectedCount()} of ${this.properties.length} active properties selected
+
+                <div class="prop-selection-content">
+                    <div class="property-grid">
+                        ${this.properties.map(property => `
+                            <div class="property-checkbox">
+                                <input type="checkbox"
+                                       id="prop-${property.id}"
+                                       ${this.selectedProperties[property.id] ? 'checked' : ''}>
+                                <label for="prop-${property.id}">${property.name}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="selection-counter">
+                        ${this.getSelectedCount()} of ${this.properties.length} active properties selected
+                    </div>
                 </div>
             </div>
 
@@ -1512,20 +1528,31 @@ class PropertyFinancialDashboard {
         const selectNoneBtn = document.getElementById('selectNoneBtn');
         
         if (selectAllBtn) {
-            selectAllBtn.addEventListener('click', () => {
+            selectAllBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.properties.forEach(prop => {
                     this.selectedProperties[prop.id] = true;
                 });
                 this.render();
             });
         }
-        
+
         if (selectNoneBtn) {
-            selectNoneBtn.addEventListener('click', () => {
+            selectNoneBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.properties.forEach(prop => {
                     this.selectedProperties[prop.id] = false;
                 });
                 this.render();
+            });
+        }
+
+        const propHeader = document.getElementById('propSelectionHeader');
+        if (propHeader) {
+            propHeader.addEventListener('click', () => {
+                this.propSelectionCollapsed = !this.propSelectionCollapsed;
+                const panel = document.getElementById('propSelectionPanel');
+                if (panel) panel.classList.toggle('collapsed', this.propSelectionCollapsed);
             });
         }
 
