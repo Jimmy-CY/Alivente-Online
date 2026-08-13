@@ -1674,6 +1674,8 @@ def financial_indicators_view(request):
                 'total_purchase_price': Decimal('0.00'),
                 'total_current_value': Decimal('0.00'),
                 'total_floor_area': 0,
+                'total_revenue_prev': Decimal('0.00'),
+                'occupancy_sum': 0.0,
                 'property_count': 0
             }
 
@@ -1708,6 +1710,24 @@ def financial_indicators_view(request):
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
                 value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
 
+                # Occupancy: share of the selected year a signed lease covers
+                # (month basis); Rent growth: this year's lease revenue vs last
+                # year's. Prefetched leases avoid extra queries.
+                _leases = list(prop.tenant_set.all())
+                _covered = 0
+                for _m in range(1, 13):
+                    _ms = date(selected_year, _m, 1)
+                    _me = date(selected_year, _m, monthrange(selected_year, _m)[1])
+                    if any(l.tenant_lease_start_date and l.tenant_lease_end_date
+                           and l.tenant_lease_start_date <= _me and l.tenant_lease_end_date >= _ms
+                           for l in _leases):
+                        _covered += 1
+                occupancy_pct = _covered / 12.0 * 100.0
+                prev_revenue = property_annual_lease_revenue(prop, selected_year - 1)
+                rent_growth = ((revenue_total - prev_revenue) / prev_revenue * 100) if prev_revenue and prev_revenue > 0 else 0
+                portfolio_totals['total_revenue_prev'] += prev_revenue or Decimal('0.00')
+                portfolio_totals['occupancy_sum'] += occupancy_pct
+
                 # Store individual property data
                 properties_data.append({
                     'id': prop.prop_id,
@@ -1718,6 +1738,8 @@ def financial_indicators_view(request):
                     'expensesToRevenue': round(float(expense_ratio), 2),
                     'rentPerSqm': round(float(rent_per_sqm), 2),
                     'valueIncrease': round(float(value_increase), 2),
+                    'occupancy': round(occupancy_pct, 1),
+                    'rentGrowth': round(float(rent_growth), 1),
                     'revenue': float(revenue_total),
                     'expenses': float(budgeted_expense_total),
                     'profit': float(revenue_total - budgeted_expense_total)
@@ -1746,7 +1768,14 @@ def financial_indicators_view(request):
                     ((portfolio_totals['total_current_value'] - portfolio_totals['total_purchase_price']) /
                      portfolio_totals['total_purchase_price'] * 100)
                     if portfolio_totals['total_purchase_price'] > 0 and portfolio_totals['total_current_value'] > 0 else 0
-                ), 2)
+                ), 2),
+                'occupancy': round(
+                    portfolio_totals['occupancy_sum'] / portfolio_totals['property_count'], 1
+                ) if portfolio_totals['property_count'] else 0,
+                'rentGrowth': round(float(
+                    (portfolio_totals['total_revenue'] - portfolio_totals['total_revenue_prev'])
+                    / portfolio_totals['total_revenue_prev'] * 100
+                ), 1) if portfolio_totals['total_revenue_prev'] > 0 else 0
             }
 
             return JsonResponse({

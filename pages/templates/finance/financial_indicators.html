@@ -1253,7 +1253,7 @@ class PropertyFinancialDashboard {
         this.charts = {};
         
         this.sortConfig = {
-            column: null,
+            column: '_rank',
             direction: 'asc'
         };
         
@@ -1308,11 +1308,35 @@ class PropertyFinancialDashboard {
                 sortable: true
             },
         ];
-        
+
+        // Grade direction + which metrics feed the composite score (equal weight).
+        // Net ROI and Rent €/m² are shown+graded but EXCLUDED from the score to
+        // avoid double-counting (Gross ROI + Expenses-to-Revenue already capture
+        // net performance; Rent €/m² is a characteristic, not performance).
+        const _cfg = {
+            grossROI:          { higherIsBetter: true,  inComposite: true  },
+            netROI:            { higherIsBetter: true,  inComposite: false },
+            expensesToRevenue: { higherIsBetter: false, inComposite: true  },
+            rentPerSqm:        { higherIsBetter: true,  inComposite: false },
+            valueIncrease:     { higherIsBetter: true,  inComposite: true  },
+        };
+        this.indicators.forEach(i => Object.assign(i, _cfg[i.key] || {}));
+
+        // Two extra columns shown ONLY in the detailed table (not as cards/charts).
+        this.tableColumns = this.indicators.concat([
+            { key: 'occupancy', label: 'Occupancy (%)', icon: 'fas fa-door-open', color: '#20c997',
+              format: (v) => `${(v || 0).toFixed(1)}%`, higherIsBetter: true, inComposite: true,
+              sortable: true, description: 'Share of the selected year the property was let (signed leases).' },
+            { key: 'rentGrowth', label: 'Rent Growth (%)', icon: 'fas fa-arrow-up', color: '#0f766e',
+              format: (v) => `${(v || 0).toFixed(1)}%`, higherIsBetter: true, inComposite: true,
+              sortable: true, description: "This year's lease revenue vs last year's." },
+        ]);
+
         this.render();
     }
     
     render() {
+        this.prepareScores();
         this.container.innerHTML = this.getHTML();
         this.attachEventListeners();
         this.renderChart();
@@ -1426,8 +1450,10 @@ class PropertyFinancialDashboard {
                             <thead>
                                 <tr>
                                     <th>Active Property</th>
-                                    ${this.indicators.map(indicator => 
-                                        `<th class="sortable-header ${this.sortConfig.column === indicator.key ? 'sorted-' + this.sortConfig.direction : ''}" 
+                                    <th class="sortable-header ${this.sortConfig.column === '_rank' ? 'sorted-' + this.sortConfig.direction : ''}" data-column="_rank">Rank <i class="fas fa-sort sort-icon ${this.getSortIconClass('_rank')}"></i></th>
+                                    <th class="sortable-header ${this.sortConfig.column === '_score' ? 'sorted-' + this.sortConfig.direction : ''}" data-column="_score">Score <i class="fas fa-sort sort-icon ${this.getSortIconClass('_score')}"></i></th>
+                                    ${this.tableColumns.map(indicator =>
+                                        `<th class="sortable-header ${this.sortConfig.column === indicator.key ? 'sorted-' + this.sortConfig.direction : ''}"
                                             data-column="${indicator.key}">
                                             ${indicator.label}
                                             <i class="fas fa-sort sort-icon ${this.getSortIconClass(indicator.key)}"></i>
@@ -1439,8 +1465,10 @@ class PropertyFinancialDashboard {
                                 ${this.getSortedProperties().map(property => `
                                     <tr>
                                         <td>${property.name}</td>
-                                        ${this.indicators.map(indicator => 
-                                            `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(property[indicator.key])}</td>`
+                                        <td data-label="Rank" style="${this.cellColour(this._grade['_rank'][property.id])} font-weight:600;">#${property._rank}</td>
+                                        <td data-label="Score" style="${this.cellColour(this._grade['_score'][property.id])} font-weight:700;">${property._score}</td>
+                                        ${this.tableColumns.map(indicator =>
+                                            `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" style="${this.cellColour(this._grade[indicator.key][property.id])}">${indicator.format(property[indicator.key])}</td>`
                                         ).join('')}
                                     </tr>
                                 `).join('')}
@@ -1448,7 +1476,9 @@ class PropertyFinancialDashboard {
                                 <!-- Portfolio totals row -->
                                 <tr class="average-row">
                                     <td>PORTFOLIO TOTALS</td>
-                                    ${this.indicators.map(indicator => 
+                                    <td data-label="Rank">—</td>
+                                    <td data-label="Score">—</td>
+                                    ${this.tableColumns.map(indicator =>
                                         `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
                                     ).join('')}
                                 </tr>
@@ -1485,6 +1515,44 @@ class PropertyFinancialDashboard {
             
             return this.sortConfig.direction === 'desc' ? comparison * -1 : comparison;
         });
+    }
+
+    // Rank-based scoring: for each column, place properties best->worst and store
+    // a 0..1 grade (0 = best). Composite = equal-weighted mean of (1 - grade) over
+    // the inComposite metrics, x100. Overall rank = order of that score.
+    prepareScores() {
+        const props = this.getSelectedProperties();
+        const n = props.length;
+        const cols = this.tableColumns || this.indicators;
+        this._grade = {};
+        cols.forEach(ind => {
+            const higher = ind.higherIsBetter !== false;
+            const order = [...props].sort((a, b) => higher ? (b[ind.key] - a[ind.key]) : (a[ind.key] - b[ind.key]));
+            const map = {};
+            order.forEach((p, idx) => { map[p.id] = n > 1 ? idx / (n - 1) : 0; });
+            this._grade[ind.key] = map;
+        });
+        const compKeys = cols.filter(i => i.inComposite).map(i => i.key);
+        props.forEach(p => {
+            let sum = 0;
+            compKeys.forEach(k => { sum += (1 - this._grade[k][p.id]); });
+            p._score = compKeys.length ? Math.round(sum / compKeys.length * 100) : 0;
+        });
+        const byScore = [...props].sort((a, b) => b._score - a._score);
+        const sMap = {}, rMap = {};
+        byScore.forEach((p, idx) => {
+            p._rank = idx + 1;
+            const t = n > 1 ? idx / (n - 1) : 0;
+            sMap[p.id] = t; rMap[p.id] = t;
+        });
+        this._grade['_score'] = sMap;
+        this._grade['_rank'] = rMap;
+    }
+
+    cellColour(t) {
+        if (t === undefined || t === null) return '';
+        const hue = (1 - t) * 120;   // 0 = red (worst) .. 120 = green (best)
+        return `background-color: hsl(${hue}, 62%, 90%);`;
     }
 
     getSortIconClass(column) {
