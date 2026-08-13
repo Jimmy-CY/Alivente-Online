@@ -96,10 +96,10 @@
     </div>
 
     <!-- Trends over the years (Phase B) -->
-    <div id="fiTrendSection" class="fi-collapsible collapsed" style="margin-top:30px;">
-        <div class="table-header fi-collapse-header" id="fiTrendToggle" style="background:#f8f9fa; padding:12px 18px; border:1px solid #dee2e6; border-radius:8px;">
-            <h5 style="margin:0; color:#17a2b8;"><i class="fas fa-chart-line"></i> Trends Over the Years</h5>
-            <i class="fas fa-chevron-down fi-collapse-icon" style="color:#17a2b8;"></i>
+    <div id="fiTrendSection" class="indicator-panel fi-collapsible collapsed" style="margin-top:30px;">
+        <div class="indicator-header fi-collapse-header" id="fiTrendToggle">
+            <h5 class="mb-0">TRENDS OVER THE YEARS</h5>
+            <i class="fas fa-chevron-down fi-collapse-icon"></i>
         </div>
         <div class="fi-collapse-content" style="padding-top:16px;">
         <div class="fi-trend-header" style="display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
@@ -1430,7 +1430,14 @@ class PropertyFinancialDashboard {
                 </div>
             </div>
 
-            <!-- Property Selection -->
+            <!-- Financial Indicator Graphs (Property Selection nested inside) -->
+            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.graphs ? ' collapsed' : ''}" data-section="graphs">
+                <div class="indicator-header fi-collapse-header">
+                    <h5 class="mb-0">FINANCIAL INDICATOR GRAPHS</h5>
+                    <i class="fas fa-chevron-down fi-collapse-icon"></i>
+                </div>
+                <div class="fi-collapse-content">
+            <!-- Property Selection (nested in Graphs) -->
             <div class="property-selection-panel${this.propSelectionCollapsed ? ' collapsed' : ''}" id="propSelectionPanel">
                 <div class="selection-header" id="propSelectionHeader">
                     <h5 class="selection-title">
@@ -1464,13 +1471,6 @@ class PropertyFinancialDashboard {
                 </div>
             </div>
 
-            <!-- Financial Indicator Graphs -->
-            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.graphs ? ' collapsed' : ''}" data-section="graphs">
-                <div class="indicator-header fi-collapse-header">
-                    <h5 class="mb-0">FINANCIAL INDICATOR GRAPHS</h5>
-                    <i class="fas fa-chevron-down fi-collapse-icon"></i>
-                </div>
-                <div class="fi-collapse-content">
             <!-- Charts Grid - All Indicators -->
             <div class="charts-grid">
                 ${this.indicators.map(indicator => `
@@ -1507,14 +1507,13 @@ class PropertyFinancialDashboard {
             </div>
 
             <!-- Data Table -->
-            <div class="table-panel fi-collapsible${this.sectionCollapsed.detailed ? ' collapsed' : ''}" data-section="detailed">
-                <div class="table-header fi-collapse-header">
-                    <h5 class="table-title">
-                        <i class="fas fa-table"></i> Detailed Property Data
-                    </h5>
+            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.detailed ? ' collapsed' : ''}" data-section="detailed">
+                <div class="indicator-header fi-collapse-header">
+                    <h5 class="mb-0">DETAILED PROPERTY DATA</h5>
                     <i class="fas fa-chevron-down fi-collapse-icon"></i>
                 </div>
                 <div class="fi-collapse-content">
+                    <div class="table-panel">
 
                 ${this.getSelectedProperties().length > 0 ? `
                     <div class="table-container">
@@ -1546,7 +1545,8 @@ class PropertyFinancialDashboard {
                                         ${this.tableColumns.map(indicator => {
                                             const v = property[indicator.key];
                                             const na = (v === null || v === undefined);
-                                            const show = inactive ? '—' : (na ? 'N/A' : indicator.format(v));
+                                            const naLabel = (indicator.key === 'occupancy') ? 'Seasonal' : 'N/A';
+                                            const show = inactive ? '—' : (na ? naLabel : indicator.format(v));
                                             const style = (inactive || na) ? '' : this.cellColour(this._grade[indicator.key][property.id]);
                                             return `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" style="${style}">${show}</td>`;
                                         }).join('')}
@@ -1571,6 +1571,7 @@ class PropertyFinancialDashboard {
                         <p>No active properties selected for detailed view.</p>
                     </div>
                 `}
+                    </div>
                 </div>
             </div>
         `;
