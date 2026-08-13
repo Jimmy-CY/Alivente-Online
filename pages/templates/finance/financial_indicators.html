@@ -1409,16 +1409,16 @@ class PropertyFinancialDashboard {
         // Net ROI and Rent €/m² are shown+graded but EXCLUDED from the score to
         // avoid double-counting (Gross ROI + Expenses-to-Revenue already capture
         // net performance; Rent €/m² is a characteristic, not performance).
-        // Value Increase is EXCLUDED for now: valuations aren't effective-dated,
-        // so a one-off value bump inflates every later year equally. Re-add once
-        // effective-dated valuations land. Composite = Gross ROI, Expenses-to-
-        // Revenue, Occupancy, Rent Growth (equal weight).
+        // Value Increase is now effective-dated (value in force at year-end), so
+        // it's back IN the composite. Composite = Gross ROI, Expenses-to-Revenue,
+        // Occupancy, Rent Growth, Value Increase (equal weight). A property with
+        // no dated valuation for the year sends null -> N/A, skipped from its score.
         const _cfg = {
             grossROI:          { higherIsBetter: true,  inComposite: true  },
             netROI:            { higherIsBetter: true,  inComposite: false },
             expensesToRevenue: { higherIsBetter: false, inComposite: true  },
             rentPerSqm:        { higherIsBetter: true,  inComposite: false },
-            valueIncrease:     { higherIsBetter: true,  inComposite: false },
+            valueIncrease:     { higherIsBetter: true,  inComposite: true  },
         };
         this.indicators.forEach(i => Object.assign(i, _cfg[i.key] || {}));
 

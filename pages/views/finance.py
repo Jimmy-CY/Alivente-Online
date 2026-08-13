@@ -56,6 +56,7 @@ from pages.models import (
     expense, expense_types, expense_line_types,
     tenant, act_expense, VacancyPeriod,
     FinancialFigureHistory, record_expense_history, record_revenue_history,
+    record_valuation_history, property_value_as_of,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
     property_annual_actual_expenses, _lease_month,
@@ -1189,7 +1190,8 @@ def finance_valuations_commit(request):
         with transaction.atomic():
             form = ValuesForm(request.POST)
             if form.is_valid():
-                form.save()
+                _pv = form.save()
+                transaction.on_commit(lambda o=_pv: record_valuation_history(o, _fh_eff_date(request), user=_fh_user(request)))
                 messages.success(request, "Valuation added successfully.")
                 return redirect('finance_valuations')
             else:
@@ -1223,7 +1225,8 @@ def finance_valuations_edit_commit(request, prop_values_id):
         with transaction.atomic():
             form = ValuesForm(request.POST, instance=vresult)
             if form.is_valid():
-                form.save()
+                _pv = form.save()
+                transaction.on_commit(lambda o=_pv: record_valuation_history(o, _fh_eff_date(request), user=_fh_user(request)))
                 messages.success(request, "Valuation updated successfully.")
                 return redirect('finance_valuations')
             else:
@@ -1398,7 +1401,8 @@ def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
             if not form.is_valid():
                 messages.error(request, f"Form errors: {form.errors}")
                 return redirect('finance_valuations_edit', prop_values_id=prop_values_id)
-            form.save()
+            _pv = form.save()
+            transaction.on_commit(lambda o=_pv: record_valuation_history(o, _fh_eff_date(request), user=_fh_user(request)))
 
             for lt_payload in preview_data['line_types']:
                 lt_id = lt_payload['line_type_id']
@@ -1673,6 +1677,7 @@ def financial_indicators_view(request):
                 'total_expense_basis': Decimal('0.00'),
                 'total_purchase_price': Decimal('0.00'),
                 'total_current_value': Decimal('0.00'),
+                'total_purchase_for_value': Decimal('0.00'),
                 'total_floor_area': 0,
                 'total_revenue_prev': Decimal('0.00'),
                 'occupancy_sum': 0.0,
@@ -1694,6 +1699,10 @@ def financial_indicators_view(request):
                 property_values = property_values_list[0] if property_values_list else None
                 purchase_price = property_values.prop_values_purchase_price if property_values else 0
                 current_value = property_values.prop_values_current_value if property_values else 0
+                # Value Increase is year-aware: use the valuation in force at the
+                # END of the selected year (effective-dated history). None => no
+                # dated valuation applies to that year yet -> N/A, skipped from score.
+                value_as_of = property_value_as_of(prop, selected_year)
 
                 # Active = held in the selected year. Leased props become active
                 # in their first-ever lease year; seasonal / no-lease props (e.g.
@@ -1715,8 +1724,13 @@ def financial_indicators_view(request):
                     portfolio_totals['total_budgeted_expenses'] += budgeted_expense_total
                     portfolio_totals['total_expense_basis'] += expense_basis_total
                     portfolio_totals['total_purchase_price'] += purchase_price or 0
-                    portfolio_totals['total_current_value'] += current_value or 0
                     portfolio_totals['total_floor_area'] += prop.prop_floor_area or 0
+                    # Portfolio Value Increase is apples-to-apples: sum the
+                    # year-aware value AND its matching purchase price only for
+                    # properties that actually have a dated valuation for the year.
+                    if value_as_of is not None and purchase_price and purchase_price > 0:
+                        portfolio_totals['total_current_value'] += value_as_of
+                        portfolio_totals['total_purchase_for_value'] += purchase_price
                     portfolio_totals['total_revenue_prev'] += prev_revenue or Decimal('0.00')
                     portfolio_totals['property_count'] += 1
 
@@ -1728,7 +1742,7 @@ def financial_indicators_view(request):
                 # instead of 0%, which would wrongly reward a vacant year.
                 expense_ratio = (expense_basis_total / revenue_total * 100) if revenue_total > 0 else Decimal('99999999')
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
-                value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
+                value_increase = ((value_as_of - purchase_price) / purchase_price * 100) if (value_as_of is not None and purchase_price and purchase_price > 0) else None
 
                 # Occupancy (Option 1: signed-lease OR assumed-continuation);
                 # N/A for seasonal / no-lease props. Portfolio occupancy = simple
@@ -1777,7 +1791,7 @@ def financial_indicators_view(request):
                     'netROI': round(float(net_roi), 2),
                     'expensesToRevenue': round(float(expense_ratio), 2),
                     'rentPerSqm': round(float(rent_per_sqm), 2),
-                    'valueIncrease': round(float(value_increase), 2),
+                    'valueIncrease': round(float(value_increase), 2) if value_increase is not None else None,
                     'occupancy': occupancy_val,
                     'rentGrowth': round(float(rent_growth), 1) if rent_growth is not None else None,
                     'active': _active,
@@ -1806,9 +1820,9 @@ def financial_indicators_view(request):
                     if portfolio_totals['total_floor_area'] > 0 else 0
                 ), 2),
                 'valueIncrease': round(float(
-                    ((portfolio_totals['total_current_value'] - portfolio_totals['total_purchase_price']) /
-                     portfolio_totals['total_purchase_price'] * 100)
-                    if portfolio_totals['total_purchase_price'] > 0 and portfolio_totals['total_current_value'] > 0 else 0
+                    ((portfolio_totals['total_current_value'] - portfolio_totals['total_purchase_for_value']) /
+                     portfolio_totals['total_purchase_for_value'] * 100)
+                    if portfolio_totals['total_purchase_for_value'] > 0 else 0
                 ), 2),
                 'occupancy': round(
                     portfolio_totals['occupancy_sum'] / portfolio_totals['leased_count'], 1

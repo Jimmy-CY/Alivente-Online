@@ -3324,6 +3324,50 @@ def resolve_year_months_bulk(prop_ids, kind, year):
             vals.append(getattr(chosen, _FH_MONTHS[m - 1]) if chosen is not None else None)
         out[src] = vals
     return out
+
+
+# =============================================================================
+# Effective-dated property valuations (year-aware Value Increase %).
+# Reuses FinancialFigureHistory with kind='valuation': one append-only row per
+# valuation change, source_pk = prop_values_id, amount = the current value at
+# that point. A property's Value Increase for a year uses the value in force at
+# the END of that year — so a value entered in 2026 doesn't retro-apply to 2023.
+# No new table / schema migration: kind is stored as the raw string 'valuation'.
+# =============================================================================
+KIND_VALUATION = 'valuation'
+
+
+def record_valuation_history(pv, effective_date, *, source='valuation', user=None):
+    """Snapshot a `prop_values` current value into effective-dated history.
+    Fail-safe: logs and returns None on any error, so a valuation save is never
+    broken by a history-write problem."""
+    try:
+        if pv is None or pv.prop_values_current_value is None:
+            return None
+        return FinancialFigureHistory.objects.create(
+            prop=pv.prop, kind=KIND_VALUATION,
+            source_pk=pv.prop_values_id, line_type='Valuation',
+            effective_date=effective_date,
+            amount=pv.prop_values_current_value,
+            source=source, changed_by=user,
+        )
+    except Exception:
+        _fh_log.exception('record_valuation_history failed (save itself was not affected)')
+        return None
+
+
+def property_value_as_of(prop, year):
+    """The property's current value in force at the END of `year`: the latest
+    'valuation' history row with effective_date on or before 31 Dec of `year`.
+    Returns a Decimal, or None if no dated valuation applies to that year yet
+    (caller shows Value Increase as N/A and drops it from that year's score)."""
+    row = (FinancialFigureHistory.objects
+           .filter(prop=prop, kind=KIND_VALUATION, effective_date__lte=_fh_date(year, 12, 31))
+           .order_by('-effective_date', '-changed_at')
+           .first())
+    return row.amount if row is not None else None
+
+
 # =============================================================================
 # Phase 3: lease-driven Revenue for the P&L (both P&Ls share this).
 # Rent + levies come from the lease covering each month (any part of a month =
