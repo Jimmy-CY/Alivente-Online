@@ -96,12 +96,16 @@
     </div>
 
     <!-- Trends over the years (Phase B) -->
-    <div id="fiTrendSection" class="indicator-panel fi-collapsible collapsed" style="margin-top:30px;">
-        <div class="indicator-header fi-collapse-header" id="fiTrendToggle">
-            <h5 class="mb-0">TRENDS OVER THE YEARS</h5>
+    <div id="fiTrendSection" class="fi-section s4 fi-collapsible collapsed">
+        <div class="fi-section-head fi-collapse-header" id="fiTrendToggle">
+            <span class="fi-ibadge"><i class="fas fa-chart-area"></i></span>
+            <div class="fi-head-mid">
+                <span class="fi-head-title">Trends Over the Years</span>
+                <span class="fi-head-summary" id="fiTrendSummary">Multi-year performance</span>
+            </div>
             <i class="fas fa-chevron-down fi-collapse-icon"></i>
         </div>
-        <div class="fi-collapse-content" style="padding-top:16px;">
+        <div class="fi-collapse-content" style="padding-top:8px;">
         <div class="fi-trend-header" style="display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
             <div class="fi-trend-controls" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <label for="fiTrendIndicator" style="font-weight:600; margin:0;">Indicator</label>
@@ -377,25 +381,63 @@
 #propSelectionPanel.collapsed .prop-selection-content { display: none; }
 #propSelectionPanel.collapsed .selection-toggle-icon { transform: rotate(-90deg); }
 
-/* Generic collapsible sections (Consolidated / Graphs / Detailed / Trends). */
-.fi-collapse-header {
+/* Collapsible report sections — "Option B" light accent-card style.
+   Consolidated / Graphs / Detailed / Trends. */
+.fi-section {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-left: 5px solid #17a2b8;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+.fi-section:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.09); }
+.fi-section-head {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    padding: 16px 20px;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.fi-collapse-header:hover { filter: brightness(0.97); }
-.fi-collapse-icon { font-size: 16px; transition: transform 0.3s ease; flex: 0 0 auto; }
+.fi-section-head:hover { background: #f8f9fa; }
+.fi-ibadge {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(23, 162, 184, 0.12);
+    color: #17a2b8;
+    flex: 0 0 auto;
+    font-size: 16px;
+}
+.fi-head-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.fi-head-title { font-weight: 700; font-size: 15px; color: #2c3e50; }
+.fi-head-summary { font-size: 13px; color: #6c757d; font-weight: 500; }
+.fi-head-summary b { color: #2c3e50; font-weight: 700; }
+.fi-collapse-icon { font-size: 15px; color: #6c757d; transition: transform 0.3s ease; flex: 0 0 auto; }
+.fi-collapse-content { padding: 0 20px 20px; }
 .fi-collapsible.collapsed .fi-collapse-content { display: none; }
 .fi-collapsible.collapsed .fi-collapse-icon { transform: rotate(-90deg); }
-.fi-collapsible.collapsed .indicator-header { margin-bottom: 0; }
-.fi-collapsible.collapsed .table-header { border-bottom: none; }
-/* Keep the consolidated (teal) header text visually centred despite the flex chevron. */
-.indicator-header.fi-collapse-header .mb-0 { margin: 0 auto; }
-.indicator-header.fi-collapse-header .fi-collapse-icon { color: #ffffff; }
-.table-header.fi-collapse-header .fi-collapse-icon { color: #17a2b8; }
+/* Per-section accent colours */
+.fi-section.s1 { border-left-color: #17a2b8; } .fi-section.s1 .fi-ibadge { background: rgba(23, 162, 184, 0.12); color: #17a2b8; }
+.fi-section.s2 { border-left-color: #0f766e; } .fi-section.s2 .fi-ibadge { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
+.fi-section.s3 { border-left-color: #7c3aed; } .fi-section.s3 .fi-ibadge { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+.fi-section.s4 { border-left-color: #d97706; } .fi-section.s4 .fi-ibadge { background: rgba(217, 119, 6, 0.12); color: #d97706; }
+@media (max-width: 640px) {
+    .fi-section-head { flex-wrap: wrap; }
+    .fi-head-summary { width: 100%; }
+}
+
+/* Expand all / Collapse all control + sticky year/basis bar */
+.fi-bulk-controls { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+.fi-bulk-btn {
+    border: 1px solid #dee2e6; background: #fff; color: #2c3e50;
+    border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background-color 0.2s ease;
+}
+.fi-bulk-btn:hover { background: #f8f9fa; }
 
 .selection-title {
     font-size: 18px;
@@ -1401,11 +1443,31 @@ class PropertyFinancialDashboard {
     }
     
     getHTML() {
+        // At-a-glance summaries shown on each collapsed section header.
+        const pi = this.portfolioIndicators || {};
+        const allProps = this.getSelectedProperties();
+        const activeProps = allProps.filter(p => p.active);
+        const notHeld = allProps.length - activeProps.length;
+        const topProp = activeProps.slice().sort((a, b) => (a._rank || 9999) - (b._rank || 9999))[0];
+        const sumConsolidated = `Gross ROI <b>${(pi.grossROI || 0).toFixed(1)}%</b> · Net ROI <b>${(pi.netROI || 0).toFixed(1)}%</b> · Occupancy <b>${(pi.occupancy || 0).toFixed(0)}%</b>`;
+        const sumGraphs = `<b>${this.getSelectedCount()}</b> of <b>${this.properties.length}</b> properties · <b>${this.indicators.length}</b> indicators`;
+        const sumDetailed = topProp
+            ? `Top <b>${topProp.name} (${topProp._score})</b> · <b>${activeProps.length}</b> ranked${notHeld ? ` · <b>${notHeld}</b> not held` : ''}`
+            : `<b>${allProps.length}</b> selected`;
         return `
+            <div class="fi-bulk-controls">
+                <button class="fi-bulk-btn" id="fiExpandAll"><i class="fas fa-chevron-down"></i> Expand all</button>
+                <button class="fi-bulk-btn" id="fiCollapseAll"><i class="fas fa-chevron-right"></i> Collapse all</button>
+            </div>
+
             <!-- Consolidated Financial Indicators -->
-            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.consolidated ? ' collapsed' : ''}" data-section="consolidated">
-                <div class="indicator-header fi-collapse-header">
-                    <h5 class="mb-0">CONSOLIDATED FINANCIAL INDICATORS</h5>
+            <div class="fi-section s1 fi-collapsible${this.sectionCollapsed.consolidated ? ' collapsed' : ''}" data-section="consolidated">
+                <div class="fi-section-head fi-collapse-header">
+                    <span class="fi-ibadge"><i class="fas fa-chart-line"></i></span>
+                    <div class="fi-head-mid">
+                        <span class="fi-head-title">Consolidated Financial Indicators</span>
+                        <span class="fi-head-summary">${sumConsolidated}</span>
+                    </div>
                     <i class="fas fa-chevron-down fi-collapse-icon"></i>
                 </div>
 
@@ -1431,9 +1493,13 @@ class PropertyFinancialDashboard {
             </div>
 
             <!-- Financial Indicator Graphs (Property Selection nested inside) -->
-            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.graphs ? ' collapsed' : ''}" data-section="graphs">
-                <div class="indicator-header fi-collapse-header">
-                    <h5 class="mb-0">FINANCIAL INDICATOR GRAPHS</h5>
+            <div class="fi-section s2 fi-collapsible${this.sectionCollapsed.graphs ? ' collapsed' : ''}" data-section="graphs">
+                <div class="fi-section-head fi-collapse-header">
+                    <span class="fi-ibadge"><i class="fas fa-chart-bar"></i></span>
+                    <div class="fi-head-mid">
+                        <span class="fi-head-title">Financial Indicator Graphs</span>
+                        <span class="fi-head-summary">${sumGraphs}</span>
+                    </div>
                     <i class="fas fa-chevron-down fi-collapse-icon"></i>
                 </div>
                 <div class="fi-collapse-content">
@@ -1507,13 +1573,16 @@ class PropertyFinancialDashboard {
             </div>
 
             <!-- Data Table -->
-            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.detailed ? ' collapsed' : ''}" data-section="detailed">
-                <div class="indicator-header fi-collapse-header">
-                    <h5 class="mb-0">DETAILED PROPERTY DATA</h5>
+            <div class="fi-section s3 fi-collapsible${this.sectionCollapsed.detailed ? ' collapsed' : ''}" data-section="detailed">
+                <div class="fi-section-head fi-collapse-header">
+                    <span class="fi-ibadge"><i class="fas fa-table"></i></span>
+                    <div class="fi-head-mid">
+                        <span class="fi-head-title">Detailed Property Data</span>
+                        <span class="fi-head-summary">${sumDetailed}</span>
+                    </div>
                     <i class="fas fa-chevron-down fi-collapse-icon"></i>
                 </div>
                 <div class="fi-collapse-content">
-                    <div class="table-panel">
 
                 ${this.getSelectedProperties().length > 0 ? `
                     <div class="table-container">
@@ -1571,7 +1640,6 @@ class PropertyFinancialDashboard {
                         <p>No active properties selected for detailed view.</p>
                     </div>
                 `}
-                    </div>
                 </div>
             </div>
         `;
@@ -1604,15 +1672,28 @@ class PropertyFinancialDashboard {
         // Only ACTIVE properties (held in the selected year) are ranked/scored.
         const active = this.getSelectedProperties().filter(p => p.active);
         const n = active.length;
-        // Grade each column over active properties that have a numeric value —
-        // a seasonal property with null Occupancy is skipped for that column.
-        cols.forEach(ind => {
-            const higher = ind.higherIsBetter !== false;
-            const valid = active.filter(p => p[ind.key] !== null && p[ind.key] !== undefined);
-            const order = [...valid].sort((a, b) => higher ? (b[ind.key] - a[ind.key]) : (a[ind.key] - b[ind.key]));
+        // Tie-aware 0..1 grade (0 = best): properties with IDENTICAL values share
+        // the same grade (the average of their positions), so a dead heat neither
+        // rewards nor penalises either side, and a metric where everyone is equal
+        // (e.g. all at 100% Occupancy) washes out to a neutral 0.5 for all instead
+        // of being split by row order. Null values (seasonal Occupancy) are skipped.
+        const gradeColumn = (list, key, higher) => {
+            const valid = list.filter(p => p[key] !== null && p[key] !== undefined);
+            const order = [...valid].sort((a, b) => higher ? (b[key] - a[key]) : (a[key] - b[key]));
+            const denom = valid.length - 1;
             const map = {};
-            order.forEach((p, idx) => { map[p.id] = valid.length > 1 ? idx / (valid.length - 1) : 0; });
-            this._grade[ind.key] = map;
+            let i = 0;
+            while (i < order.length) {
+                let j = i;
+                while (j + 1 < order.length && order[j + 1][key] === order[i][key]) j++;
+                const avg = (i + j) / 2;   // shared position for the tie group
+                for (let k = i; k <= j; k++) map[order[k].id] = denom > 0 ? avg / denom : 0;
+                i = j + 1;
+            }
+            return map;
+        };
+        cols.forEach(ind => {
+            this._grade[ind.key] = gradeColumn(active, ind.key, ind.higherIsBetter !== false);
         });
         // Composite = mean of (1 − grade) over the composite metrics that APPLY
         // to the property (a metric with no grade for it — e.g. Occupancy on a
@@ -1626,13 +1707,24 @@ class PropertyFinancialDashboard {
             });
             p._score = cnt ? Math.round(sum / cnt * 100) : 0;
         });
+        // Rank = competition ranking: equal scores share a rank (1, 2, 2, 4) and
+        // the same Rank/Score colour tint, so a tie no longer picks an arbitrary
+        // winner by row order.
         const byScore = [...active].sort((a, b) => b._score - a._score);
         const sMap = {}, rMap = {};
-        byScore.forEach((p, idx) => {
-            p._rank = idx + 1;
-            const t = n > 1 ? idx / (n - 1) : 0;
-            sMap[p.id] = t; rMap[p.id] = t;
-        });
+        const denom = n - 1;
+        let i = 0;
+        while (i < byScore.length) {
+            let j = i;
+            while (j + 1 < byScore.length && byScore[j + 1]._score === byScore[i]._score) j++;
+            const rankNum = i + 1;          // shared rank for the tie group
+            const t = denom > 0 ? ((i + j) / 2) / denom : 0;
+            for (let k = i; k <= j; k++) {
+                byScore[k]._rank = rankNum;
+                sMap[byScore[k].id] = t; rMap[byScore[k].id] = t;
+            }
+            i = j + 1;
+        }
         this._grade['_score'] = sMap;
         this._grade['_rank'] = rMap;
         // Inactive properties (not held in the selected year): no rank, no score.
@@ -1729,6 +1821,22 @@ class PropertyFinancialDashboard {
                 }
             });
         });
+
+        // Expand all / Collapse all — covers the three dashboard sections plus the
+        // static Trends section (#fiTrendSection lives outside this container).
+        const setAllSections = (collapsed) => {
+            Object.keys(this.sectionCollapsed).forEach(k => { this.sectionCollapsed[k] = collapsed; });
+            document.querySelectorAll('.fi-section.fi-collapsible').forEach(panel => {
+                panel.classList.toggle('collapsed', collapsed);
+            });
+            const trend = document.getElementById('fiTrendSection');
+            if (trend) trend.classList.toggle('collapsed', collapsed);
+            if (!collapsed) window.dispatchEvent(new Event('resize'));
+        };
+        const expandAll = document.getElementById('fiExpandAll');
+        const collapseAll = document.getElementById('fiCollapseAll');
+        if (expandAll) expandAll.addEventListener('click', () => setAllSections(false));
+        if (collapseAll) collapseAll.addEventListener('click', () => setAllSections(true));
 
         document.querySelectorAll('.sortable-header').forEach(header => {
             header.addEventListener('click', () => {
@@ -2258,6 +2366,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (d.error) { console.error('trend:', d.error); return; }
                 DATA = d;
                 var ys = d.years || [];
+                var sumEl = document.getElementById('fiTrendSummary');
+                if (sumEl && ys.length) {
+                    sumEl.innerHTML = '<b>' + ys[0] + '–' + ys[ys.length - 1] + '</b> · ' + ys.length + ' years';
+                }
                 fillYearSelect(document.getElementById('fiFromYear'), ys, ys[0]);
                 fillYearSelect(document.getElementById('fiToYear'), ys, ys[ys.length - 1]);
                 buildList();

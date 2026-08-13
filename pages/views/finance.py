@@ -1735,16 +1735,38 @@ def financial_indicators_view(request):
                 # mean over held, leased properties.
                 if _has_leases:
                     _covered = 0
+                    _prev_covered = 0
                     for _m in range(1, 13):
                         if _lease_month(_leases, selected_year, _m, today)[0] in ('lease', 'assumed'):
                             _covered += 1
+                        if _lease_month(_leases, selected_year - 1, _m, today)[0] in ('lease', 'assumed'):
+                            _prev_covered += 1
                     occupancy_val = round(_covered / 12.0 * 100.0, 1)
                     if _active:
                         portfolio_totals['occupancy_sum'] += occupancy_val
                         portfolio_totals['leased_count'] += 1
                 else:
                     occupancy_val = None
-                rent_growth = ((revenue_total - prev_revenue) / prev_revenue * 100) if prev_revenue and prev_revenue > 0 else 0
+                    _covered = 0
+                    _prev_covered = 0
+
+                # Rent Growth compares AVERAGE MONTHLY rent year-over-year
+                # (revenue / months actually held), NOT total revenue. So a first
+                # full year after a partial start reads as the real change in the
+                # monthly rent rate, not a phantom jump (12 months vs 1 month is no
+                # longer +1100%). Leased properties normalise by lease/assumed month
+                # coverage; seasonal / no-lease properties compare full-season totals.
+                # No prior baseline (property not held the year before) => N/A (None),
+                # which is skipped from the score, same as seasonal Occupancy.
+                if _has_leases:
+                    if _covered > 0 and _prev_covered > 0 and prev_revenue and prev_revenue > 0:
+                        _cur_monthly = revenue_total / Decimal(_covered)
+                        _prev_monthly = prev_revenue / Decimal(_prev_covered)
+                        rent_growth = ((_cur_monthly - _prev_monthly) / _prev_monthly * 100) if _prev_monthly > 0 else None
+                    else:
+                        rent_growth = None
+                else:
+                    rent_growth = ((revenue_total - prev_revenue) / prev_revenue * 100) if prev_revenue and prev_revenue > 0 else None
 
                 # Store individual property data
                 properties_data.append({
@@ -1757,7 +1779,7 @@ def financial_indicators_view(request):
                     'rentPerSqm': round(float(rent_per_sqm), 2),
                     'valueIncrease': round(float(value_increase), 2),
                     'occupancy': occupancy_val,
-                    'rentGrowth': round(float(rent_growth), 1),
+                    'rentGrowth': round(float(rent_growth), 1) if rent_growth is not None else None,
                     'active': _active,
                     'revenue': float(revenue_total),
                     'expenses': float(budgeted_expense_total),
