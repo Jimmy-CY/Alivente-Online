@@ -1676,6 +1676,7 @@ def financial_indicators_view(request):
                 'total_floor_area': 0,
                 'total_revenue_prev': Decimal('0.00'),
                 'occupancy_sum': 0.0,
+                'leased_count': 0,
                 'property_count': 0
             }
 
@@ -1694,39 +1695,56 @@ def financial_indicators_view(request):
                 purchase_price = property_values.prop_values_purchase_price if property_values else 0
                 current_value = property_values.prop_values_current_value if property_values else 0
 
-                # Add to portfolio totals
-                portfolio_totals['total_revenue'] += revenue_total
-                portfolio_totals['total_budgeted_expenses'] += budgeted_expense_total
-                portfolio_totals['total_expense_basis'] += expense_basis_total
-                portfolio_totals['total_purchase_price'] += purchase_price or 0
-                portfolio_totals['total_current_value'] += current_value or 0
-                portfolio_totals['total_floor_area'] += prop.prop_floor_area or 0
-                portfolio_totals['property_count'] += 1
+                # Active = held in the selected year. Leased props become active
+                # in their first-ever lease year; seasonal / no-lease props (e.g.
+                # Ionion) are active in any year they earned revenue. Not-held-yet
+                # years are excluded from BOTH the ranking and the portfolio totals.
+                _leases = list(prop.tenant_set.all())
+                _has_leases = len(_leases) > 0
+                if _has_leases:
+                    _starts = [l.tenant_lease_start_date for l in _leases if l.tenant_lease_start_date]
+                    _active = bool(_starts) and selected_year >= min(_starts).year
+                else:
+                    _active = bool(revenue_total and revenue_total > 0)
+                prev_revenue = property_annual_lease_revenue(prop, selected_year - 1)
+
+                # Portfolio totals — held properties only, so the aggregate is
+                # genuinely "as of the selected year".
+                if _active:
+                    portfolio_totals['total_revenue'] += revenue_total
+                    portfolio_totals['total_budgeted_expenses'] += budgeted_expense_total
+                    portfolio_totals['total_expense_basis'] += expense_basis_total
+                    portfolio_totals['total_purchase_price'] += purchase_price or 0
+                    portfolio_totals['total_current_value'] += current_value or 0
+                    portfolio_totals['total_floor_area'] += prop.prop_floor_area or 0
+                    portfolio_totals['total_revenue_prev'] += prev_revenue or Decimal('0.00')
+                    portfolio_totals['property_count'] += 1
 
                 # Calculate individual property indicators for display purposes
                 gross_roi = (revenue_total / purchase_price * 100) if purchase_price > 0 else 0
                 net_roi = ((revenue_total - expense_basis_total) / purchase_price * 100) if purchase_price > 0 else 0
-                expense_ratio = (expense_basis_total / revenue_total * 100) if revenue_total > 0 else 0
+                # Zero-revenue held year = spending with no income = the WORST cost
+                # efficiency. Sentinel (front-end shows ∞ and grades it worst)
+                # instead of 0%, which would wrongly reward a vacant year.
+                expense_ratio = (expense_basis_total / revenue_total * 100) if revenue_total > 0 else Decimal('99999999')
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
                 value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
 
-                # Occupancy: share of the selected year a signed lease covers
-                # (month basis); Rent growth: this year's lease revenue vs last
-                # year's. Prefetched leases avoid extra queries.
-                _leases = list(prop.tenant_set.all())
-                _covered = 0
-                for _m in range(1, 13):
-                    # Occupied if a signed lease covers the month OR it's an
-                    # 'assumed' continuation month — same basis as revenue / the
-                    # P&L / Forecasted Cashflows, so a steady renewer whose next
-                    # renewal isn't captured yet is not penalised (Option 1).
-                    if _lease_month(_leases, selected_year, _m, today)[0] in ('lease', 'assumed'):
-                        _covered += 1
-                occupancy_pct = _covered / 12.0 * 100.0
-                prev_revenue = property_annual_lease_revenue(prop, selected_year - 1)
+                # Occupancy (Option 1: signed-lease OR assumed-continuation);
+                # N/A for seasonal / no-lease props. Portfolio occupancy = simple
+                # mean over held, leased properties.
+                if _has_leases:
+                    _covered = 0
+                    for _m in range(1, 13):
+                        if _lease_month(_leases, selected_year, _m, today)[0] in ('lease', 'assumed'):
+                            _covered += 1
+                    occupancy_val = round(_covered / 12.0 * 100.0, 1)
+                    if _active:
+                        portfolio_totals['occupancy_sum'] += occupancy_val
+                        portfolio_totals['leased_count'] += 1
+                else:
+                    occupancy_val = None
                 rent_growth = ((revenue_total - prev_revenue) / prev_revenue * 100) if prev_revenue and prev_revenue > 0 else 0
-                portfolio_totals['total_revenue_prev'] += prev_revenue or Decimal('0.00')
-                portfolio_totals['occupancy_sum'] += occupancy_pct
 
                 # Store individual property data
                 properties_data.append({
@@ -1738,8 +1756,9 @@ def financial_indicators_view(request):
                     'expensesToRevenue': round(float(expense_ratio), 2),
                     'rentPerSqm': round(float(rent_per_sqm), 2),
                     'valueIncrease': round(float(value_increase), 2),
-                    'occupancy': round(occupancy_pct, 1),
+                    'occupancy': occupancy_val,
                     'rentGrowth': round(float(rent_growth), 1),
+                    'active': _active,
                     'revenue': float(revenue_total),
                     'expenses': float(budgeted_expense_total),
                     'profit': float(revenue_total - budgeted_expense_total)
@@ -1770,8 +1789,8 @@ def financial_indicators_view(request):
                     if portfolio_totals['total_purchase_price'] > 0 and portfolio_totals['total_current_value'] > 0 else 0
                 ), 2),
                 'occupancy': round(
-                    portfolio_totals['occupancy_sum'] / portfolio_totals['property_count'], 1
-                ) if portfolio_totals['property_count'] else 0,
+                    portfolio_totals['occupancy_sum'] / portfolio_totals['leased_count'], 1
+                ) if portfolio_totals['leased_count'] else 0,
                 'rentGrowth': round(float(
                     (portfolio_totals['total_revenue'] - portfolio_totals['total_revenue_prev'])
                     / portfolio_totals['total_revenue_prev'] * 100

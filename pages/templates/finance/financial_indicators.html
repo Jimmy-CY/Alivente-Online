@@ -96,9 +96,13 @@
     </div>
 
     <!-- Trends over the years (Phase B) -->
-    <div id="fiTrendSection" style="margin-top:30px;">
-        <div class="fi-trend-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
+    <div id="fiTrendSection" class="fi-collapsible collapsed" style="margin-top:30px;">
+        <div class="table-header fi-collapse-header" id="fiTrendToggle" style="background:#f8f9fa; padding:12px 18px; border:1px solid #dee2e6; border-radius:8px;">
             <h5 style="margin:0; color:#17a2b8;"><i class="fas fa-chart-line"></i> Trends Over the Years</h5>
+            <i class="fas fa-chevron-down fi-collapse-icon" style="color:#17a2b8;"></i>
+        </div>
+        <div class="fi-collapse-content" style="padding-top:16px;">
+        <div class="fi-trend-header" style="display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
             <div class="fi-trend-controls" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <label for="fiTrendIndicator" style="font-weight:600; margin:0;">Indicator</label>
                 <select id="fiTrendIndicator" class="form-control" style="width:auto;">
@@ -132,6 +136,7 @@
         </p>
         <div style="position:relative; height:340px;">
             <canvas id="fiTrendChart"></canvas>
+        </div>
         </div>
     </div>
 </div>
@@ -372,6 +377,26 @@
 #propSelectionPanel.collapsed .prop-selection-content { display: none; }
 #propSelectionPanel.collapsed .selection-toggle-icon { transform: rotate(-90deg); }
 
+/* Generic collapsible sections (Consolidated / Graphs / Detailed / Trends). */
+.fi-collapse-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.fi-collapse-header:hover { filter: brightness(0.97); }
+.fi-collapse-icon { font-size: 16px; transition: transform 0.3s ease; flex: 0 0 auto; }
+.fi-collapsible.collapsed .fi-collapse-content { display: none; }
+.fi-collapsible.collapsed .fi-collapse-icon { transform: rotate(-90deg); }
+.fi-collapsible.collapsed .indicator-header { margin-bottom: 0; }
+.fi-collapsible.collapsed .table-header { border-bottom: none; }
+/* Keep the consolidated (teal) header text visually centred despite the flex chevron. */
+.indicator-header.fi-collapse-header .mb-0 { margin: 0 auto; }
+.indicator-header.fi-collapse-header .fi-collapse-icon { color: #ffffff; }
+.table-header.fi-collapse-header .fi-collapse-icon { color: #17a2b8; }
+
 .selection-title {
     font-size: 18px;
     font-weight: 600;
@@ -582,6 +607,33 @@
     font-weight: 600;
     border-left: 3px solid #17a2b8;
     border-right: 3px solid #17a2b8;
+}
+
+/* Properties not held in the selected year: excluded from rank/score/totals. */
+.data-table tbody tr.fi-inactive {
+    color: #9aa0a6;
+    background: #f5f6f7;
+    font-style: italic;
+}
+.data-table tbody tr.fi-inactive td {
+    color: #9aa0a6;
+}
+.data-table tbody tr.fi-inactive .highlighted-column {
+    background: #eceded !important;
+    border-left-color: #cfd2d4;
+    border-right-color: #cfd2d4;
+}
+.fi-inactive-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 600;
+    color: #6c757d;
+    background: #e2e4e6;
+    border-radius: 10px;
+    vertical-align: middle;
 }
 
 .selection-counter {
@@ -1249,6 +1301,8 @@ class PropertyFinancialDashboard {
         this.portfolioTotals = portfolioTotals || {};
         this.selectedProperties = {};
         this.propSelectionCollapsed = true;
+        // The four report sections all load collapsed; the user expands what they need.
+        this.sectionCollapsed = { consolidated: true, graphs: true, detailed: true };
         this.selectedIndicator = null;
         this.charts = {};
         
@@ -1281,11 +1335,11 @@ class PropertyFinancialDashboard {
                 sortable: true
             },
             { 
-                key: 'expensesToRevenue', 
-                label: 'Expenses to Revenue (%)', 
-                icon: 'fas fa-chart-pie', 
-                color: '#dc3545', 
-                format: (val) => `${val.toFixed(2)}%`,
+                key: 'expensesToRevenue',
+                label: 'Expenses to Revenue (%)',
+                icon: 'fas fa-chart-pie',
+                color: '#dc3545',
+                format: (val) => val >= 1000000 ? '∞' : `${val.toFixed(2)}%`,
                 description: 'Operating expenses as a percentage of revenue. Lower values indicate better efficiency.',
                 sortable: true
             },
@@ -1313,12 +1367,16 @@ class PropertyFinancialDashboard {
         // Net ROI and Rent €/m² are shown+graded but EXCLUDED from the score to
         // avoid double-counting (Gross ROI + Expenses-to-Revenue already capture
         // net performance; Rent €/m² is a characteristic, not performance).
+        // Value Increase is EXCLUDED for now: valuations aren't effective-dated,
+        // so a one-off value bump inflates every later year equally. Re-add once
+        // effective-dated valuations land. Composite = Gross ROI, Expenses-to-
+        // Revenue, Occupancy, Rent Growth (equal weight).
         const _cfg = {
             grossROI:          { higherIsBetter: true,  inComposite: true  },
             netROI:            { higherIsBetter: true,  inComposite: false },
             expensesToRevenue: { higherIsBetter: false, inComposite: true  },
             rentPerSqm:        { higherIsBetter: true,  inComposite: false },
-            valueIncrease:     { higherIsBetter: true,  inComposite: true  },
+            valueIncrease:     { higherIsBetter: true,  inComposite: false },
         };
         this.indicators.forEach(i => Object.assign(i, _cfg[i.key] || {}));
 
@@ -1345,27 +1403,30 @@ class PropertyFinancialDashboard {
     getHTML() {
         return `
             <!-- Consolidated Financial Indicators -->
-            <div class="indicator-panel">
-                <div class="indicator-header">
+            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.consolidated ? ' collapsed' : ''}" data-section="consolidated">
+                <div class="indicator-header fi-collapse-header">
                     <h5 class="mb-0">CONSOLIDATED FINANCIAL INDICATORS</h5>
+                    <i class="fas fa-chevron-down fi-collapse-icon"></i>
                 </div>
-                
-                <div class="indicator-cards">
-                    ${this.indicators.map(indicator => {
-                        const portfolioValue = this.portfolioIndicators[indicator.key] || 0;
-                        return `
-                            <div class="indicator-card ${this.selectedIndicator === indicator.key ? 'active' : ''}" 
-                                 data-indicator="${indicator.key}">
-                                <div class="indicator-icon">
-                                    <i class="${indicator.icon}"></i>
+
+                <div class="fi-collapse-content">
+                    <div class="indicator-cards">
+                        ${this.indicators.map(indicator => {
+                            const portfolioValue = this.portfolioIndicators[indicator.key] || 0;
+                            return `
+                                <div class="indicator-card ${this.selectedIndicator === indicator.key ? 'active' : ''}"
+                                     data-indicator="${indicator.key}">
+                                    <div class="indicator-icon">
+                                        <i class="${indicator.icon}"></i>
+                                    </div>
+                                    <div class="indicator-label">${indicator.label}</div>
+                                    <div class="indicator-value" style="color: ${indicator.color}">
+                                        ${indicator.format(portfolioValue)}
+                                    </div>
                                 </div>
-                                <div class="indicator-label">${indicator.label}</div>
-                                <div class="indicator-value" style="color: ${indicator.color}">
-                                    ${indicator.format(portfolioValue)}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
+                            `;
+                        }).join('')}
+                    </div>
                 </div>
             </div>
 
@@ -1403,6 +1464,13 @@ class PropertyFinancialDashboard {
                 </div>
             </div>
 
+            <!-- Financial Indicator Graphs -->
+            <div class="indicator-panel fi-collapsible${this.sectionCollapsed.graphs ? ' collapsed' : ''}" data-section="graphs">
+                <div class="indicator-header fi-collapse-header">
+                    <h5 class="mb-0">FINANCIAL INDICATOR GRAPHS</h5>
+                    <i class="fas fa-chevron-down fi-collapse-icon"></i>
+                </div>
+                <div class="fi-collapse-content">
             <!-- Charts Grid - All Indicators -->
             <div class="charts-grid">
                 ${this.indicators.map(indicator => `
@@ -1435,15 +1503,19 @@ class PropertyFinancialDashboard {
                     </div>
                 `).join('')}
             </div>
+                </div>
+            </div>
 
             <!-- Data Table -->
-            <div class="table-panel">
-                <div class="table-header">
+            <div class="table-panel fi-collapsible${this.sectionCollapsed.detailed ? ' collapsed' : ''}" data-section="detailed">
+                <div class="table-header fi-collapse-header">
                     <h5 class="table-title">
                         <i class="fas fa-table"></i> Detailed Property Data
                     </h5>
+                    <i class="fas fa-chevron-down fi-collapse-icon"></i>
                 </div>
-                
+                <div class="fi-collapse-content">
+
                 ${this.getSelectedProperties().length > 0 ? `
                     <div class="table-container">
                         <table class="data-table">
@@ -1462,16 +1534,24 @@ class PropertyFinancialDashboard {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${this.getSortedProperties().map(property => `
-                                    <tr>
-                                        <td>${property.name}</td>
-                                        <td data-label="Rank" style="${this.cellColour(this._grade['_rank'][property.id])} font-weight:600;">#${property._rank}</td>
-                                        <td data-label="Score" style="${this.cellColour(this._grade['_score'][property.id])} font-weight:700;">${property._score}</td>
-                                        ${this.tableColumns.map(indicator =>
-                                            `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" style="${this.cellColour(this._grade[indicator.key][property.id])}">${indicator.format(property[indicator.key])}</td>`
-                                        ).join('')}
-                                    </tr>
-                                `).join('')}
+                                ${this.getSortedProperties().map(property => {
+                                    const inactive = !property.active;
+                                    const rankCell = inactive ? '—' : ('#' + property._rank);
+                                    const scoreCell = inactive ? '—' : property._score;
+                                    return `
+                                    <tr class="${inactive ? 'fi-inactive' : ''}">
+                                        <td>${property.name}${inactive ? ' <span class="fi-inactive-tag">not held this year</span>' : ''}</td>
+                                        <td data-label="Rank" style="${inactive ? '' : this.cellColour(this._grade['_rank'][property.id])} font-weight:600;">${rankCell}</td>
+                                        <td data-label="Score" style="${inactive ? '' : this.cellColour(this._grade['_score'][property.id])} font-weight:700;">${scoreCell}</td>
+                                        ${this.tableColumns.map(indicator => {
+                                            const v = property[indicator.key];
+                                            const na = (v === null || v === undefined);
+                                            const show = inactive ? '—' : (na ? 'N/A' : indicator.format(v));
+                                            const style = (inactive || na) ? '' : this.cellColour(this._grade[indicator.key][property.id]);
+                                            return `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" style="${style}">${show}</td>`;
+                                        }).join('')}
+                                    </tr>`;
+                                }).join('')}
                                 
                                 <!-- Portfolio totals row -->
                                 <tr class="average-row">
@@ -1491,29 +1571,26 @@ class PropertyFinancialDashboard {
                         <p>No active properties selected for detailed view.</p>
                     </div>
                 `}
+                </div>
             </div>
         `;
     }
 
     getSortedProperties() {
         const selectedProps = this.getSelectedProperties();
-        
-        if (!this.sortConfig.column) {
-            return selectedProps;
-        }
-        
+        const col = this.sortConfig.column;
+        const dir = this.sortConfig.direction;
         return [...selectedProps].sort((a, b) => {
-            const aValue = a[this.sortConfig.column];
-            const bValue = b[this.sortConfig.column];
-            
+            // Inactive (excluded) properties always sink to the bottom.
+            if (!a.active && b.active) return 1;
+            if (a.active && !b.active) return -1;
+            if (!a.active && !b.active) return 0;
+            if (!col) return 0;
+            const aValue = a[col], bValue = b[col];
             let comparison = 0;
-            if (aValue < bValue) {
-                comparison = -1;
-            } else if (aValue > bValue) {
-                comparison = 1;
-            }
-            
-            return this.sortConfig.direction === 'desc' ? comparison * -1 : comparison;
+            if (aValue < bValue) comparison = -1;
+            else if (aValue > bValue) comparison = 1;
+            return dir === 'desc' ? comparison * -1 : comparison;
         });
     }
 
@@ -1521,24 +1598,34 @@ class PropertyFinancialDashboard {
     // a 0..1 grade (0 = best). Composite = equal-weighted mean of (1 - grade) over
     // the inComposite metrics, x100. Overall rank = order of that score.
     prepareScores() {
-        const props = this.getSelectedProperties();
-        const n = props.length;
         const cols = this.tableColumns || this.indicators;
         this._grade = {};
+        // Only ACTIVE properties (held in the selected year) are ranked/scored.
+        const active = this.getSelectedProperties().filter(p => p.active);
+        const n = active.length;
+        // Grade each column over active properties that have a numeric value —
+        // a seasonal property with null Occupancy is skipped for that column.
         cols.forEach(ind => {
             const higher = ind.higherIsBetter !== false;
-            const order = [...props].sort((a, b) => higher ? (b[ind.key] - a[ind.key]) : (a[ind.key] - b[ind.key]));
+            const valid = active.filter(p => p[ind.key] !== null && p[ind.key] !== undefined);
+            const order = [...valid].sort((a, b) => higher ? (b[ind.key] - a[ind.key]) : (a[ind.key] - b[ind.key]));
             const map = {};
-            order.forEach((p, idx) => { map[p.id] = n > 1 ? idx / (n - 1) : 0; });
+            order.forEach((p, idx) => { map[p.id] = valid.length > 1 ? idx / (valid.length - 1) : 0; });
             this._grade[ind.key] = map;
         });
-        const compKeys = cols.filter(i => i.inComposite).map(i => i.key);
-        props.forEach(p => {
-            let sum = 0;
-            compKeys.forEach(k => { sum += (1 - this._grade[k][p.id]); });
-            p._score = compKeys.length ? Math.round(sum / compKeys.length * 100) : 0;
+        // Composite = mean of (1 − grade) over the composite metrics that APPLY
+        // to the property (a metric with no grade for it — e.g. Occupancy on a
+        // seasonal property — is skipped, not counted as zero).
+        const compCols = cols.filter(i => i.inComposite);
+        active.forEach(p => {
+            let sum = 0, cnt = 0;
+            compCols.forEach(ind => {
+                const g = this._grade[ind.key][p.id];
+                if (g !== undefined) { sum += (1 - g); cnt++; }
+            });
+            p._score = cnt ? Math.round(sum / cnt * 100) : 0;
         });
-        const byScore = [...props].sort((a, b) => b._score - a._score);
+        const byScore = [...active].sort((a, b) => b._score - a._score);
         const sMap = {}, rMap = {};
         byScore.forEach((p, idx) => {
             p._rank = idx + 1;
@@ -1547,6 +1634,8 @@ class PropertyFinancialDashboard {
         });
         this._grade['_score'] = sMap;
         this._grade['_rank'] = rMap;
+        // Inactive properties (not held in the selected year): no rank, no score.
+        this.getSelectedProperties().filter(p => !p.active).forEach(p => { p._rank = null; p._score = null; });
     }
 
     cellColour(t) {
@@ -1623,6 +1712,22 @@ class PropertyFinancialDashboard {
                 if (panel) panel.classList.toggle('collapsed', this.propSelectionCollapsed);
             });
         }
+
+        // Collapsible report sections (Consolidated / Graphs / Detailed).
+        // Toggle in place — no re-render — so chart state survives; on expand we
+        // fire a resize so any chart drawn while hidden (0px) lays out correctly.
+        document.querySelectorAll('.fi-collapsible[data-section] > .fi-collapse-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const panel = header.closest('.fi-collapsible');
+                if (!panel) return;
+                const key = panel.dataset.section;
+                this.sectionCollapsed[key] = !this.sectionCollapsed[key];
+                panel.classList.toggle('collapsed', this.sectionCollapsed[key]);
+                if (!this.sectionCollapsed[key]) {
+                    window.dispatchEvent(new Event('resize'));
+                }
+            });
+        });
 
         document.querySelectorAll('.sortable-header').forEach(header => {
             header.addEventListener('click', () => {
@@ -2180,6 +2285,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('click', function (e) {
             if (panel && wrap && !wrap.contains(e.target)) panel.style.display = 'none';
         });
+        // Collapsible "Trends Over the Years" — loads collapsed; expanding fires a
+        // resize so the chart (drawn at 0px while hidden) lays out correctly.
+        var trendSection = document.getElementById('fiTrendSection');
+        var trendToggle = document.getElementById('fiTrendToggle');
+        if (trendToggle && trendSection) {
+            trendToggle.addEventListener('click', function () {
+                var nowCollapsed = trendSection.classList.toggle('collapsed');
+                if (!nowCollapsed) { window.dispatchEvent(new Event('resize')); }
+            });
+        }
         if (typeof Chart !== 'undefined') { load(); }
     });
 })();
