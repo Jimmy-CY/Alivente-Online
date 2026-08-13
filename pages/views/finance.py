@@ -58,7 +58,7 @@ from pages.models import (
     FinancialFigureHistory, record_expense_history, record_revenue_history,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
-    property_annual_actual_expenses,
+    property_annual_actual_expenses, _lease_month,
 )
 
 # Helpers split across two modules after the dashboard / properties splits.
@@ -1716,11 +1716,11 @@ def financial_indicators_view(request):
                 _leases = list(prop.tenant_set.all())
                 _covered = 0
                 for _m in range(1, 13):
-                    _ms = date(selected_year, _m, 1)
-                    _me = date(selected_year, _m, monthrange(selected_year, _m)[1])
-                    if any(l.tenant_lease_start_date and l.tenant_lease_end_date
-                           and l.tenant_lease_start_date <= _me and l.tenant_lease_end_date >= _ms
-                           for l in _leases):
+                    # Occupied if a signed lease covers the month OR it's an
+                    # 'assumed' continuation month — same basis as revenue / the
+                    # P&L / Forecasted Cashflows, so a steady renewer whose next
+                    # renewal isn't captured yet is not penalised (Option 1).
+                    if _lease_month(_leases, selected_year, _m, today)[0] in ('lease', 'assumed'):
                         _covered += 1
                 occupancy_pct = _covered / 12.0 * 100.0
                 prev_revenue = property_annual_lease_revenue(prop, selected_year - 1)
