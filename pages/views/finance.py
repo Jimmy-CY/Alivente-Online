@@ -1680,6 +1680,8 @@ def financial_indicators_view(request):
                 'total_purchase_for_value': Decimal('0.00'),
                 'total_floor_area': 0,
                 'total_revenue_prev': Decimal('0.00'),
+                'rent_rate_cur': Decimal('0.00'),
+                'rent_rate_prev': Decimal('0.00'),
                 'occupancy_sum': 0.0,
                 'leased_count': 0,
                 'property_count': 0
@@ -1772,15 +1774,34 @@ def financial_indicators_view(request):
                 # coverage; seasonal / no-lease properties compare full-season totals.
                 # No prior baseline (property not held the year before) => N/A (None),
                 # which is skipped from the score, same as seasonal Occupancy.
+                # _cur_rate / _prev_rate = the property's average MONTHLY rent this
+                # year / last year, on the same basis as the per-property Rent
+                # Growth. They also feed the PORTFOLIO Rent Growth so the portfolio
+                # row is monthly-normalised too (a property that joined mid-prior-
+                # year contributes its monthly rate, not a stub annual total).
+                _cur_rate = _prev_rate = None
                 if _has_leases:
                     if _covered > 0 and _prev_covered > 0 and prev_revenue and prev_revenue > 0:
-                        _cur_monthly = revenue_total / Decimal(_covered)
-                        _prev_monthly = prev_revenue / Decimal(_prev_covered)
-                        rent_growth = ((_cur_monthly - _prev_monthly) / _prev_monthly * 100) if _prev_monthly > 0 else None
+                        _cur_rate = revenue_total / Decimal(_covered)
+                        _prev_rate = prev_revenue / Decimal(_prev_covered)
+                        rent_growth = ((_cur_rate - _prev_rate) / _prev_rate * 100) if _prev_rate > 0 else None
                     else:
                         rent_growth = None
                 else:
-                    rent_growth = ((revenue_total - prev_revenue) / prev_revenue * 100) if prev_revenue and prev_revenue > 0 else None
+                    if prev_revenue and prev_revenue > 0:
+                        # Seasonal / no-lease: full-season totals spread to a monthly
+                        # scale (÷12) so they combine with leased rates in the
+                        # portfolio sum; the per-property ratio is unchanged.
+                        _cur_rate = revenue_total / Decimal(12)
+                        _prev_rate = prev_revenue / Decimal(12)
+                        rent_growth = ((revenue_total - prev_revenue) / prev_revenue * 100)
+                    else:
+                        rent_growth = None
+                # Portfolio monthly rent run-rate — only held props with a valid
+                # year-over-year basis (matches which props get a per-property number).
+                if _active and _cur_rate is not None and _prev_rate is not None and _prev_rate > 0:
+                    portfolio_totals['rent_rate_cur'] += _cur_rate
+                    portfolio_totals['rent_rate_prev'] += _prev_rate
 
                 # Store individual property data
                 properties_data.append({
@@ -1828,9 +1849,9 @@ def financial_indicators_view(request):
                     portfolio_totals['occupancy_sum'] / portfolio_totals['leased_count'], 1
                 ) if portfolio_totals['leased_count'] else 0,
                 'rentGrowth': round(float(
-                    (portfolio_totals['total_revenue'] - portfolio_totals['total_revenue_prev'])
-                    / portfolio_totals['total_revenue_prev'] * 100
-                ), 1) if portfolio_totals['total_revenue_prev'] > 0 else 0
+                    (portfolio_totals['rent_rate_cur'] - portfolio_totals['rent_rate_prev'])
+                    / portfolio_totals['rent_rate_prev'] * 100
+                ), 1) if portfolio_totals['rent_rate_prev'] > 0 else 0
             }
 
             return JsonResponse({

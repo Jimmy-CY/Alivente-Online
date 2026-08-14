@@ -27,8 +27,8 @@ Add Property Valuation
 <form action="{% url 'finance_valuations_commit' %}" method="post" id="valuationAddForm">
   {% csrf_token %}
 
-  <div class="form-row">
-    <div class="form-group col-md-4 col-sm-12">
+  <div class="form-row align-items-start">
+    <div class="form-group col-md-3 col-sm-12">
       <label for="prop"><strong>Property</strong></label>
       <select id="prop" class="form-control" name="prop" required>
         <option value="" disabled selected>Select Property</option>
@@ -66,11 +66,11 @@ Add Property Valuation
       </div>
     </div>
 
-    <div class="form-group col-md-2 col-sm-6">
+    <div class="form-group col-md-3 col-sm-6">
       <label for="effective_date"><strong>Effective From</strong></label>
       <input type="date" class="form-control" id="effective_date"
              name="effective_date" value="{% now 'Y-m-d' %}">
-      <small class="form-text text-muted">Date this value applies from.</small>
+      <small class="form-text text-muted">Applies from this date.</small>
     </div>
   </div>
 

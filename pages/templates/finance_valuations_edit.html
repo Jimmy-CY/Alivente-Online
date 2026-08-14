@@ -31,8 +31,8 @@
       data-recalc-url="{% url 'finance_valuations_edit_and_recalc_commit' vresults.prop_values_id %}">
     {% csrf_token %}
 
-    <div class="form-row align-items-center">
-        <div class="form-group col-md-4 col-sm-12">
+    <div class="form-row align-items-start">
+        <div class="form-group col-md-3 col-sm-12">
             <label for="property"><strong>Property</strong></label>
             <select name="prop_id" id="property" class="form-control" disabled>
                 {% for property in props %}
@@ -69,11 +69,11 @@
             </div>
         </div>
 
-        <div class="form-group col-md-2 col-sm-6">
+        <div class="form-group col-md-3 col-sm-6">
             <label for="effective_date"><strong>Effective From</strong></label>
             <input type="date" id="effective_date" name="effective_date"
                    class="form-control" value="{% now 'Y-m-d' %}">
-            <small class="form-text text-muted">Date this value applies from. Earlier years keep the previous value.</small>
+            <small class="form-text text-muted">Applies from this date; earlier years keep the previous value.</small>
         </div>
     </div>
 

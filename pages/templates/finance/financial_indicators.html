@@ -439,6 +439,42 @@
 }
 .fi-bulk-btn:hover { background: #f8f9fa; }
 
+/* Scoring-weights control (Detailed section) */
+.fi-weights { margin-bottom: 14px; }
+.fi-weights-toggle {
+    border: 1px solid #dee2e6; background: #fff; color: #2c3e50;
+    border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    transition: background-color 0.2s ease;
+}
+.fi-weights-toggle:hover { background: #f8f9fa; }
+.fi-weights-badge {
+    background: #7c3aed; color: #fff; font-size: 10px; font-weight: 700;
+    padding: 1px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: .03em;
+}
+.fi-weights-caret { font-size: 11px; color: #6c757d; }
+.fi-weights-panel {
+    margin-top: 10px; padding: 14px 16px; border: 1px solid #e5e7eb;
+    border-radius: 10px; background: #fbfbfc;
+}
+.fi-weights-hint { font-size: 12.5px; color: #6c757d; margin: 0 0 12px; }
+.fi-weights-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px 16px; margin-bottom: 12px;
+}
+.fi-weight-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; font-weight: 500; }
+.fi-weight-name { font-size: 13px; color: #2c3e50; }
+.fi-weight-input {
+    width: 64px; text-align: center; border: 1px solid #ced4da; border-radius: 6px;
+    padding: 5px 6px; font-size: 14px;
+}
+.fi-weight-input:focus { border-color: #17a2b8; outline: none; box-shadow: 0 0 0 2px rgba(23,162,184,.18); }
+.fi-weights-reset {
+    border: 1px solid #dee2e6; background: #fff; color: #2c3e50;
+    border-radius: 8px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.fi-weights-reset:hover { background: #f1f3f5; }
+
 .selection-title {
     font-size: 18px;
     font-weight: 600;
@@ -1345,6 +1381,10 @@ class PropertyFinancialDashboard {
         this.propSelectionCollapsed = true;
         // The four report sections all load collapsed; the user expands what they need.
         this.sectionCollapsed = { consolidated: true, graphs: true, detailed: true };
+        // Per-metric scoring weights (equal by default). Persisted in localStorage
+        // so a chosen weighting sticks across visits. Only composite metrics apply.
+        this.metricWeights = this.loadWeights();
+        this.weightsOpen = false;
         this.selectedIndicator = null;
         this.charts = {};
         
@@ -1585,6 +1625,26 @@ class PropertyFinancialDashboard {
                 <div class="fi-collapse-content">
 
                 ${this.getSelectedProperties().length > 0 ? `
+                    <div class="fi-weights">
+                        <button type="button" class="fi-weights-toggle" id="fiWeightsToggle">
+                            <i class="fas fa-sliders-h"></i> Scoring weights${this.weightsAreEqual() ? '' : ' <span class="fi-weights-badge">custom</span>'}
+                            <i class="fas fa-chevron-${this.weightsOpen ? 'up' : 'down'} fi-weights-caret"></i>
+                        </button>
+                        <div class="fi-weights-panel" id="fiWeightsPanel" style="display:${this.weightsOpen ? 'block' : 'none'};">
+                            <p class="fi-weights-hint">How much each metric counts toward the Score — 0 ignores it, 1 is normal. Re-ranks live and is remembered on this device.</p>
+                            <div class="fi-weights-grid">
+                                ${this.weightKeys().map(k => {
+                                    const col = this.tableColumns.find(c => c.key === k);
+                                    const w = (this.metricWeights[k] === undefined ? 1 : this.metricWeights[k]);
+                                    return `<label class="fi-weight-item">
+                                        <span class="fi-weight-name">${col ? col.label : k}</span>
+                                        <input type="number" class="fi-weight-input" data-weight-key="${k}" min="0" max="5" step="0.5" value="${w}">
+                                    </label>`;
+                                }).join('')}
+                            </div>
+                            <button type="button" class="fi-weights-reset" id="fiWeightsReset">Reset to equal</button>
+                        </div>
+                    </div>
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
@@ -1695,17 +1755,22 @@ class PropertyFinancialDashboard {
         cols.forEach(ind => {
             this._grade[ind.key] = gradeColumn(active, ind.key, ind.higherIsBetter !== false);
         });
-        // Composite = mean of (1 − grade) over the composite metrics that APPLY
-        // to the property (a metric with no grade for it — e.g. Occupancy on a
-        // seasonal property — is skipped, not counted as zero).
+        // Composite = WEIGHTED mean of (1 − grade) over the composite metrics that
+        // APPLY to the property (a metric with no grade — e.g. Occupancy on a
+        // seasonal property — is skipped, not counted as zero). Weights default to
+        // 1 (equal); a weight of 0 drops that metric entirely.
         const compCols = cols.filter(i => i.inComposite);
+        const wOf = (key) => {
+            const w = this.metricWeights ? this.metricWeights[key] : 1;
+            return (w === undefined || w === null || isNaN(w)) ? 1 : w;
+        };
         active.forEach(p => {
-            let sum = 0, cnt = 0;
+            let sum = 0, wsum = 0;
             compCols.forEach(ind => {
                 const g = this._grade[ind.key][p.id];
-                if (g !== undefined) { sum += (1 - g); cnt++; }
+                if (g !== undefined) { const w = wOf(ind.key); sum += w * (1 - g); wsum += w; }
             });
-            p._score = cnt ? Math.round(sum / cnt * 100) : 0;
+            p._score = wsum ? Math.round(sum / wsum * 100) : 0;
         });
         // Rank = competition ranking: equal scores share a rank (1, 2, 2, 4) and
         // the same Rank/Score colour tint, so a tie no longer picks an arbitrary
@@ -1735,6 +1800,50 @@ class PropertyFinancialDashboard {
         if (t === undefined || t === null) return '';
         const hue = (1 - t) * 120;   // 0 = red (worst) .. 120 = green (best)
         return `background-color: hsl(${hue}, 62%, 90%);`;
+    }
+
+    // --- Scoring weights (persisted) -------------------------------------------
+    weightKeys() {
+        // Only composite metrics are weightable.
+        return (this.tableColumns || this.indicators).filter(i => i.inComposite).map(i => i.key);
+    }
+    loadWeights() {
+        // Order-independent: load whatever was saved, keyed by metric. Missing
+        // keys default to weight 1 at scoring time (wOf) and in the UI.
+        try {
+            const raw = window.localStorage.getItem('fiMetricWeights');
+            const saved = raw ? JSON.parse(raw) : {};
+            const out = {};
+            Object.keys(saved || {}).forEach(k => {
+                const v = saved[k];
+                if (v !== undefined && v !== null && !isNaN(v)) out[k] = Number(v);
+            });
+            return out;
+        } catch (e) { return {}; }   // private mode / bad JSON -> equal weights
+    }
+    saveWeights() {
+        try { window.localStorage.setItem('fiMetricWeights', JSON.stringify(this.metricWeights || {})); }
+        catch (e) { /* ignore */ }
+    }
+    setWeight(key, value) {
+        let v = Number(value);
+        if (isNaN(v) || v < 0) v = 0;
+        if (v > 5) v = 5;
+        this.metricWeights = this.metricWeights || {};
+        this.metricWeights[key] = v;
+        this.saveWeights();
+        this.render();
+    }
+    resetWeights() {
+        const w = {};
+        this.weightKeys().forEach(k => { w[k] = 1; });
+        this.metricWeights = w;
+        this.saveWeights();
+        this.render();
+    }
+    weightsAreEqual() {
+        const ks = this.weightKeys();
+        return ks.every(k => (this.metricWeights[k] === undefined ? 1 : this.metricWeights[k]) === 1);
     }
 
     getSortIconClass(column) {
@@ -1844,8 +1953,26 @@ class PropertyFinancialDashboard {
                 this.handleColumnSort(column);
             });
         });
+
+        // Scoring-weights control. Toggle shows/hides in place (no re-render);
+        // editing a weight or resetting recomputes scores and re-ranks live.
+        const wToggle = document.getElementById('fiWeightsToggle');
+        if (wToggle) {
+            wToggle.addEventListener('click', () => {
+                this.weightsOpen = !this.weightsOpen;
+                const panel = document.getElementById('fiWeightsPanel');
+                if (panel) panel.style.display = this.weightsOpen ? 'block' : 'none';
+                const caret = wToggle.querySelector('.fi-weights-caret');
+                if (caret) caret.className = 'fas fa-chevron-' + (this.weightsOpen ? 'up' : 'down') + ' fi-weights-caret';
+            });
+        }
+        const wReset = document.getElementById('fiWeightsReset');
+        if (wReset) wReset.addEventListener('click', () => this.resetWeights());
+        document.querySelectorAll('.fi-weight-input').forEach(inp => {
+            inp.addEventListener('change', () => this.setWeight(inp.dataset.weightKey, inp.value));
+        });
     }
-    
+
     openIndicatorModal(indicatorKey) {
         const indicator = this.indicators.find(ind => ind.key === indicatorKey);
         if (!indicator) return;
