@@ -198,6 +198,13 @@ def act_expense_manage_document(request):
         except Exception as e:
             messages.error(request, f'Error processing request: {str(e)}')
 
+    # Come back to the expense we were working on rather than the bare list.
+    # An upload now produces a verdict, and the verdict is the thing the user
+    # wants to see; being bounced to the list hides it behind two more clicks.
+    expense_id = request.POST.get('expense_id')
+    if expense_id:
+        from django.urls import reverse
+        return redirect('%s?manage=%s' % (reverse('act_expense_all'), expense_id))
     return redirect('act_expense_all')
 
 

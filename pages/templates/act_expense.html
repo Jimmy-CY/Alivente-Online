@@ -825,6 +825,7 @@
             <td data-label="Manage" class="cell-action">
                 {% if perms.auth.can_access_expenses %}
                 <button type="button" class="status-btn"
+                        id="manage-btn-{{ expense.act_expense_id }}"
                         onclick="openManageModal({{ expense.act_expense_id }}, '{{ expense.act_expense_date|date:"Y-m-d" }}', '{{ expense.prop.prop_name }}', '{{ expense.act_expense_description }}', '{{ expense.act_expense_amount }}', '{{ expense.act_expense_approved }}', '{{ expense.act_expense_paid }}', {% if expense.act_expense_document %}'{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}'{% else %}null, null{% endif %}, {{ user.is_superuser|yesno:"true,false" }}, {{ perms.auth.can_edit_expenses|yesno:"true,false" }})">
                     <span style="color: #007bff;">Manage</span>
                 </button>
@@ -1764,6 +1765,31 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
         `;
     }
 }
+
+
+// ---------------------------------------------------------------------
+// Reopen the expense after a document action. act_expense_manage_document
+// redirects with ?manage=<id>; land back on the Invoice Document tab so the
+// verdict is visible immediately instead of two clicks away.
+// ---------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', function () {
+    var wanted = new URLSearchParams(window.location.search).get('manage');
+    if (!wanted) { return; }
+
+    var btn = document.getElementById('manage-btn-' + wanted);
+    if (!btn) { return; }          // filtered out of the current view - fine
+
+    btn.click();
+    var tab = document.getElementById('invoice-tab');
+    if (tab) { tab.click(); }
+
+    // Drop the parameter so a refresh does not reopen the modal again.
+    if (window.history && window.history.replaceState) {
+        var url = new URL(window.location.href);
+        url.searchParams.delete('manage');
+        window.history.replaceState({}, '', url.toString());
+    }
+});
 
 function showAddToExisting() {
     document.getElementById('addToExistingForm').style.display = 'block';
