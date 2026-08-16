@@ -9,26 +9,6 @@
 {% block content %}
 
 <style>
-/* ---- Invoice verification ---------------------------------------- */
-.verify-icon.verify-success   { color: #28a745; }
-.verify-icon.verify-danger    { color: #dc3545; }
-.verify-icon.verify-secondary { color: #6c757d; }
-.verify-icon.verify-info      { color: #17a2b8; }
-.verify-banner { text-align: left; font-size: 0.9rem; margin-bottom: 12px; }
-.verify-banner-head { margin-bottom: 6px; }
-.verify-note { margin-top: 2px; }
-.verify-meta { margin-top: 8px; font-size: 0.82rem; opacity: 0.9; }
-.verify-action { margin-top: 8px; font-style: italic; font-size: 0.82rem; }
-.capture-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
-.capture-name { width: 100%; word-break: break-all; }
-/* On touch devices the two buttons replace the native picker. */
-@media (pointer: coarse) {
-    .form-group input[type="file"][name="act_expense_document"] {
-        position: absolute; width: 1px; height: 1px;
-        opacity: 0; overflow: hidden; z-index: -1;
-    }
-}
-
 .page-title-h2 {
     margin-top: 0.5rem;
     margin-bottom: 1rem;
@@ -811,12 +791,10 @@
         <td data-label="Property" class="cell-property" style="text-align: left">
             {{ expense.prop.prop_name }}
             {% if expense.act_expense_document %}
-                {% with badge=expense.verify_badge %}
-                <i class="fas {{ badge.1 }} verify-icon verify-{{ badge.0 }}"
-                   style="cursor: pointer; margin-left: 8px;"
+                <i class="fas fa-file-alt"
+                   style="cursor: pointer; color: #28a745; margin-left: 8px;"
                    onclick="viewInvoiceQuick('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
-                   title="{{ badge.2 }} - click to view invoice"></i>
-                {% endwith %}
+                   title="Click to view invoice"></i>
             {% endif %}
         </td>
         <td data-label="Description" style="text-align: left">{{ expense.act_expense_description }}</td>
@@ -1327,151 +1305,6 @@ setTimeout(function() {
 // ==================== MANAGE MODAL ====================
 let currentExpenseId = null;
 
-// ---------------------------------------------------------------------
-// Invoice verification: verdict per expense, rendered once by Django so the
-// modal needs no extra round-trip and openManageModal keeps its signature.
-// ---------------------------------------------------------------------
-window.EXPENSE_VERIFY = {
-{% for expense in expenses %}{% if expense.act_expense_document %}  "{{ expense.act_expense_id }}": {
-    "status": "{{ expense.act_expense_verify_status|default_if_none:''|escapejs }}",
-    "notes": "{{ expense.act_expense_verify_notes|default_if_none:''|escapejs }}",
-    "total": "{{ expense.act_expense_verify_total|default_if_none:''|escapejs }}",
-    "supplier": "{{ expense.act_expense_verify_supplier|default_if_none:''|escapejs }}",
-    "number": "{{ expense.act_expense_verify_number|default_if_none:''|escapejs }}",
-    "invoiceDate": "{{ expense.act_expense_verify_date|date:'Y-m-d'|default_if_none:''|escapejs }}"
-  },
-{% endif %}{% endfor %}};
-
-// Verdict banner shown above the document card in the Invoice tab.
-function verifyBanner(expenseId) {
-    const v = (window.EXPENSE_VERIFY || {})[String(expenseId)];
-    if (!v || !v.status) { return ''; }
-
-    const styles = {
-        verified:    ['success', 'fa-check-circle',         'Invoice verified'],
-        mismatch:    ['danger',  'fa-exclamation-triangle', 'Invoice does not match the approved amount'],
-        unverified:  ['secondary', 'fa-question-circle',    'Not checked automatically'],
-        not_invoice: ['secondary', 'fa-file',               'Not an invoice'],
-        split:       ['info',      'fa-object-group',       'One invoice covering several expenses']
-    };
-    const s = styles[v.status];
-    if (!s) { return ''; }
-
-    const detail = [];
-    if (v.total)       { detail.push('<strong>Invoice total:</strong> \u20ac' + v.total); }
-    if (v.supplier)    { detail.push('<strong>Supplier:</strong> ' + v.supplier); }
-    if (v.number)      { detail.push('<strong>Invoice no:</strong> ' + v.number); }
-    if (v.invoiceDate) { detail.push('<strong>Invoice date:</strong> ' + v.invoiceDate); }
-
-    const notes = (v.notes || '').split('\n').filter(Boolean)
-        .map(n => '<div class="verify-note">' + n + '</div>').join('');
-
-    return `
-        <div class="alert alert-${s[0]} verify-banner">
-            <div class="verify-banner-head"><i class="fas ${s[1]}"></i> <strong>${s[2]}</strong></div>
-            ${notes}
-            ${detail.length ? '<div class="verify-meta">' + detail.join(' &nbsp;|&nbsp; ') + '</div>' : ''}
-            ${v.status === 'mismatch' ? '<div class="verify-action">The amount can only be changed after the expense is un-approved.</div>' : ''}
-        </div>
-    `;
-}
-
-// ---------------------------------------------------------------------
-// Mobile capture. Two buttons rather than one input with `capture`: a bare
-// capture attribute FORCES the camera on mobile and removes access to the
-// photo library and files, which would break attaching an emailed PDF.
-// One input, swapped attribute - so no duplicate field names.
-// ---------------------------------------------------------------------
-function isTouchDevice() {
-    return window.matchMedia && window.matchMedia('(pointer: coarse)').matches
-           && ('capture' in document.createElement('input'));
-}
-
-function captureButtons() {
-    if (!isTouchDevice()) { return ''; }
-    return `
-        <div class="capture-row">
-            <button type="button" class="btn btn-primary btn-sm" onclick="pickWith(this, true)">
-                <i class="fas fa-camera"></i> Take Photo
-            </button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickWith(this, false)">
-                <i class="fas fa-paperclip"></i> Choose File
-            </button>
-            <div class="capture-name text-muted small"></div>
-        </div>
-    `;
-}
-
-function pickWith(btn, useCamera) {
-    const form = btn.closest('form');
-    const input = form.querySelector('input[type=file]');
-    if (!input) { return; }
-    if (useCamera) { input.setAttribute('capture', 'environment'); }
-    else { input.removeAttribute('capture'); }
-    input.click();
-}
-
-// Show the chosen filename, since the native input is hidden on touch devices.
-document.addEventListener('change', function (e) {
-    if (!e.target || e.target.type !== 'file') { return; }
-    const row = e.target.closest('form') && e.target.closest('form').querySelector('.capture-name');
-    if (row) { row.textContent = e.target.files.length ? e.target.files[0].name : ''; }
-});
-
-// Phone photos are routinely 3-12MB and the server rejects anything over 5MB.
-// Downscale in the browser before submitting: long edge 1600px, JPEG q0.8,
-// which lands around 300KB and stays comfortably legible for extraction.
-const MAX_EDGE = 1600, JPEG_QUALITY = 0.8, RESIZE_ABOVE = 1.5 * 1024 * 1024;
-
-function maybeDownscale(input) {
-    return new Promise(function (resolve) {
-        const file = input.files && input.files[0];
-        if (!file || !file.type.startsWith('image/') || file.size <= RESIZE_ABOVE) {
-            return resolve(false);
-        }
-        const reader = new FileReader();
-        reader.onload = function () {
-            const img = new Image();
-            img.onload = function () {
-                const scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
-                const canvas = document.createElement('canvas');
-                canvas.width = Math.round(img.width * scale);
-                canvas.height = Math.round(img.height * scale);
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob(function (blob) {
-                    if (!blob) { return resolve(false); }
-                    try {
-                        const name = (file.name.replace(/\.[^.]+$/, '') || 'photo') + '.jpg';
-                        const dt = new DataTransfer();
-                        dt.items.add(new File([blob], name, { type: 'image/jpeg' }));
-                        input.files = dt.files;
-                        resolve(true);
-                    } catch (err) { resolve(false); }
-                }, 'image/jpeg', JPEG_QUALITY);
-            };
-            img.onerror = function () { resolve(false); };
-            img.src = reader.result;
-        };
-        reader.onerror = function () { resolve(false); };
-        reader.readAsDataURL(file);
-    });
-}
-
-// Intercept submit once per form, downscale, then let it through.
-document.addEventListener('submit', function (e) {
-    const form = e.target;
-    if (!form || !form.enctype || form.enctype.indexOf('multipart') === -1) { return; }
-    if (form.dataset.resized === '1') { form.dataset.resized = ''; return; }
-    const input = form.querySelector('input[type=file]');
-    if (!input || !input.files || !input.files.length) { return; }
-    e.preventDefault();
-    maybeDownscale(input).then(function () {
-        form.dataset.resized = '1';
-        if (typeof form.requestSubmit === 'function') { form.requestSubmit(); }
-        else { form.submit(); }
-    });
-}, true);
-
 function openManageModal(expenseId, date, property, description, amount, approved, paid, documentUrl, documentName, isSuperuser, canEditExpenses) {
     currentExpenseId = expenseId;
 
@@ -1667,7 +1500,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                 <div class="alert alert-info">
                     <i class="fas fa-eye"></i> <strong>Read Only:</strong> You can view this document but cannot modify it.
                 </div>
-                ${verifyBanner(expenseId)}${launcherCard(documentName)}
+                ${launcherCard(documentName)}
             `;
         } else {
             invoiceContent.innerHTML = `
@@ -1694,7 +1527,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
         ` : '';
 
         invoiceContent.innerHTML = `
-            ${verifyBanner(expenseId)}${launcherCard(documentName)}
+            ${launcherCard(documentName)}
 
             <div class="doc-action-row">
                 <a href="${documentUrl}" download="${cleanName}" class="btn btn-info btn-sm">
@@ -1718,8 +1551,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                     <input type="hidden" name="document_action" value="add_to_existing">
                     <div class="form-group">
                         <label>Select Document to Merge:</label>
-                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.xlsx,.xls,.doc,.docx" required>
-                        ${captureButtons()}
+                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" required>
                         <small class="form-text text-success"><i class="fas fa-info-circle"></i> All file types will be converted to PDF and merged. Max file size: 5MB</small>
                     </div>
                     <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Merge Documents</button>
@@ -1734,8 +1566,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                     <input type="hidden" name="action" value="upload">
                     <div class="form-group">
                         <label>Select New Document:</label>
-                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.xlsx,.xls,.doc,.docx" required>
-                        ${captureButtons()}
+                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" required>
                         <small class="form-text text-muted">Max file size: 5MB</small>
                     </div>
                     <button type="submit" class="btn btn-success btn-sm">Upload</button>
@@ -1753,8 +1584,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                 <input type="hidden" name="action" value="upload">
                 <div class="form-group">
                     <label>Select Document (PDF, JPG, PNG, Excel, Word):</label>
-                    <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.xlsx,.xls,.doc,.docx" required>
-                        ${captureButtons()}
+                    <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" required>
                     <small class="form-text text-muted">Max file size: 5MB</small>
                 </div>
                 <button type="submit" class="btn btn-info">

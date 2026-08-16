@@ -2,17 +2,7 @@ from pypdf import PdfReader, PdfWriter
 from django.core.files.base import ContentFile
 from docx import Document
 from openpyxl import load_workbook
-from PIL import Image, ImageOps
-
-# iPhones capture HEIC. Registering the opener lets Pillow read it exactly like
-# a JPEG, so the existing image -> PDF path needs no other change. Optional: if
-# the package is missing the app still runs, HEIC uploads simply fail as before.
-try:
-    import pillow_heif
-    pillow_heif.register_heif_opener()
-    HEIC_SUPPORTED = True
-except Exception:  # pragma: no cover - depends on deployment
-    HEIC_SUPPORTED = False
+from PIL import Image
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage

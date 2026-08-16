@@ -681,7 +681,7 @@
          data-module-name="Financial Indicators"
          data-module-icon="fa-tachometer-alt"
          data-module-category="Reports"
-         data-module-subtitle="Per-property benchmarking dashboard &mdash; compare every property against the portfolio average across five key KPIs">
+         data-module-subtitle="Per-property performance scoreboard &mdash; rank every property against the rest of your portfolio and see who needs attention">
 
   <article data-tab-slug="fi-overview"
            data-tab-name="Overview"
@@ -689,26 +689,32 @@
     <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
     <p>The Financial Indicators dashboard is the <strong>benchmarking counterpart</strong> to the Profit &amp; Loss Statement. Where the P&amp;L tells you <em>"how is the portfolio doing?"</em>, this report tells you <em>"how is each property doing compared to the rest of the portfolio?"</em></p>
 
-    <p>It uses the same five KPIs as the P&amp;L's Consolidated Financial Indicators block, but here they're calculated <strong>for every property individually</strong> and displayed side-by-side so you can see outliers, identify strong performers, and spot properties that need attention.</p>
+    <p>At its heart is a <strong>performance scoreboard</strong>: every property gets an overall <strong>Score (0&ndash;100)</strong> and a <strong>Rank</strong>, computed from the metrics that matter, so you can see at a glance which properties are carrying the portfolio and which need attention.</p>
 
-    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Four layers of visualisation</h6>
-    <p>The dashboard presents the same data in four increasingly-detailed views:</p>
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sliders-h"></i> Year and basis</h6>
+    <p>Two controls at the top set what you're looking at:</p>
+    <ul>
+      <li><strong>Year</strong> &mdash; pick any year. Completed years, the current year, and the future <em>"outlook"</em> year are all available.</li>
+      <li><strong>Budget / Actuals</strong> &mdash; <em>Budget</em> uses budgeted expenses; <em>Actuals</em> folds in that year's actual (ad-hoc) spend. This only affects the two expense-based numbers (Net ROI and Expenses to Revenue); revenue, occupancy and value are the same either way.</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Four sections</h6>
+    <p>The page is organised into four sections that <strong>load collapsed</strong> &mdash; click a header to open the one you want, or use the <strong>Expand all / Collapse all</strong> buttons. Each collapsed header shows a one-line summary so the page is useful even closed.</p>
 
     <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
       <ol class="mb-0">
-        <li><strong>Consolidated Indicators cards</strong> &mdash; the portfolio-level totals, clickable for drill-down</li>
-        <li><strong>Property Selection panel</strong> &mdash; checkboxes to filter which properties are included</li>
-        <li><strong>Five mini bar charts</strong> &mdash; one per KPI, visually sorted best-to-worst with colour-coded performance</li>
-        <li><strong>Detailed Property Data table</strong> &mdash; every property with every KPI value, with sortable columns and a pinned Portfolio Totals row</li>
+        <li><strong>Consolidated Financial Indicators</strong> &mdash; the portfolio-level KPI cards. The header summarises portfolio Gross ROI, Net ROI and Occupancy.</li>
+        <li><strong>Financial Indicator Graphs</strong> &mdash; the <em>Property Selection</em> filter plus one mini bar chart per KPI. Tick / untick properties here to change the scope of the whole page.</li>
+        <li><strong>Detailed Property Data</strong> &mdash; the ranked scoreboard table. This is the main event &mdash; see the <em>Scoring &amp; Rank</em> tab.</li>
+        <li><strong>Trends Over the Years</strong> &mdash; a multi-year line chart for any indicator, with property comparison.</li>
       </ol>
     </div>
 
-    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-compass"></i> When to use this report vs the P&amp;L</h6>
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-compass"></i> When to use this vs the P&amp;L</h6>
     <ul>
-      <li>Use the <strong>P&amp;L</strong> when you want to see <em>numbers</em> &mdash; how much came in, how much went out, the month-by-month pattern</li>
-      <li>Use <strong>Financial Indicators</strong> when you want to see <em>performance</em> &mdash; how each property compares, which ones are outperforming or underperforming, where to focus attention</li>
+      <li>Use the <strong>P&amp;L</strong> for the <em>numbers</em> &mdash; how much came in, how much went out, the month-by-month pattern.</li>
+      <li>Use <strong>Financial Indicators</strong> for <em>performance</em> &mdash; how each property ranks, who's outperforming or underperforming, where to focus.</li>
     </ul>
-    <p>The two are complementary. The P&amp;L gives you the quantitative picture; Financial Indicators gives you the comparative picture.</p>
 
     <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
       <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
@@ -716,218 +722,168 @@
   </article>
 
   <article data-tab-slug="fi-indicators"
-           data-tab-name="Indicators Explained"
+           data-tab-name="The Columns"
            data-tab-icon="fa-book">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-book"></i> The Five Indicators</h5>
-    <p>Each indicator measures a different dimension of property performance. All calculations are based on <strong>the selected year's data</strong> divided by <strong>purchase price</strong> (or another stable baseline).</p>
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-book"></i> The scoreboard columns</h5>
+    <p>The Detailed Property Data table has a <strong>Rank</strong> and <strong>Score</strong> up front, then seven metric columns. All figures are for the <strong>selected year</strong>.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line" style="color:#17a2b8;"></i> 1. Gross ROI (%)</h6>
-    <p><strong>Formula:</strong> Property Revenue &divide; Property Purchase Price &times; 100</p>
-    <p><strong>What it tells you:</strong> How much revenue this property generates relative to what you paid for it, before expenses. A property generating &euro;10,000/year in rent on a &euro;200,000 purchase price has a Gross ROI of 5%. Useful for top-line efficiency and cross-property comparison.</p>
-    <p><strong>Higher is better.</strong></p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-bullseye" style="color:#28a745;"></i> 2. Net ROI (%)</h6>
-    <p><strong>Formula:</strong> (Revenue &minus; Expenses) &divide; Property Purchase Price &times; 100</p>
-    <p><strong>What it tells you:</strong> The <em>real</em> return &mdash; what's left as profit after all expenses, as a percentage of what you paid. This is the single most important number on the page. A property with high Gross ROI but much lower Net ROI has an expenses problem.</p>
-    <p><strong>Higher is better.</strong></p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-pie" style="color:#dc3545;"></i> 3. Expenses to Revenue (%)</h6>
-    <p><strong>Formula:</strong> Expenses &divide; Revenue &times; 100</p>
-    <p><strong>What it tells you:</strong> What percentage of each property's revenue gets consumed by expenses. A value of 30% means 30 cents of every euro earned go to costs. <strong>Lower is better.</strong> A property with Expenses-to-Revenue much higher than the portfolio average is a candidate for cost review &mdash; either its expenses are high or its revenue is low, and the drill-down helps you identify which.</p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-euro-sign" style="color:#ffc107;"></i> 4. Rent (&euro;/m<sup>2</sup>)</h6>
-    <p><strong>Formula:</strong> (Property Revenue &divide; 12) &divide; Property Floor Area (m&sup2;)</p>
-    <p><strong>What it tells you:</strong> Average monthly rent per square metre &mdash; the key normaliser. A 70m&sup2; property getting &euro;700/month is doing the same &euro;/m&sup2; as a 200m&sup2; property getting &euro;2,000/month. Useful for spotting underpriced properties (compared to market rates in the same area) and for understanding whether a high-absolute-revenue property is actually performing well for its size.</p>
-    <p><strong>Higher is better.</strong></p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar" style="color:#6f42c1;"></i> 5. Value Increase (%)</h6>
-    <p><strong>Formula:</strong> (Current Value &minus; Purchase Price) &divide; Purchase Price &times; 100</p>
-    <p><strong>What it tells you:</strong> Capital appreciation &mdash; how much the property has grown in value since purchase. Drawn from the Property Valuations page. A property with low income ROI but strong capital appreciation might still be a great investment; one with both low income and low appreciation is the one to worry about.</p>
-    <p><strong>Higher is better.</strong></p>
-
-    <h6 style="margin-top:22px; color:#2c3e50; font-weight:700;"><i class="fas fa-traffic-light"></i> How the performance tiers work</h6>
-    <p>For each indicator, every property is classified into one of three tiers <strong>relative to the portfolio average</strong>:</p>
-
-    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
-      <strong style="color:#155724;"><i class="fas fa-check-circle"></i> Excellent</strong>
-      <p class="mb-0 mt-2">
-        <strong>Higher-is-better metrics</strong> (Gross ROI, Net ROI, Rent/m&sup2;, Value Increase): value is <strong>120% or more</strong> of the portfolio average.<br>
-        <strong>Lower-is-better metrics</strong> (Expenses to Revenue): value is <strong>80% or less</strong> of the portfolio average.
-      </p>
+    <div class="alert" style="background:#f3e8ff; border-left:4px solid #7c3aed;">
+      <strong style="color:#5b21b6;"><i class="fas fa-trophy"></i> Rank &amp; Score</strong>
+      <p class="mb-0 mt-2">The overall standing of each property within your current selection. <strong>How they're worked out is explained in the <em>Scoring &amp; Rank</em> tab.</strong> In short: Score is a 0&ndash;100 blend of the property's rank on the scoring metrics; Rank orders those scores (best = #1).</p>
     </div>
 
-    <div class="alert" style="background:#fff3cd; border-left:4px solid #ffc107;">
-      <strong style="color:#856404;"><i class="fas fa-minus-circle"></i> Good</strong>
-      <p class="mb-0 mt-2">
-        <strong>Higher-is-better:</strong> value is between 80% and 120% of portfolio average &mdash; roughly in line with the rest of the portfolio.<br>
-        <strong>Lower-is-better:</strong> value is between 80% and 100% of portfolio average.
-      </p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line" style="color:#17a2b8;"></i> Gross ROI (%)</h6>
+    <p>Revenue &divide; Purchase Price &times; 100. Top-line yield before costs. <strong>Higher is better.</strong></p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-bullseye" style="color:#28a745;"></i> Net ROI (%)</h6>
+    <p>(Revenue &minus; Expenses) &divide; Purchase Price &times; 100. The real return after expenses. <strong>Higher is better.</strong> <em>Shown and colour-graded, but NOT part of the Score</em> (Gross ROI + Expenses-to-Revenue already capture it &mdash; see Scoring &amp; Rank).</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-pie" style="color:#dc3545;"></i> Expenses to Revenue (%)</h6>
+    <p>Expenses &divide; Revenue &times; 100. What share of income goes to costs. <strong>Lower is better.</strong></p>
+    <div class="alert alert-secondary" style="border-left:4px solid #6c757d; margin:6px 0 0;">
+      <i class="fas fa-infinity"></i> A held property that earned <strong>&euro;0 revenue</strong> that year shows <strong>&infin;</strong> here (you can't divide by zero income) and is graded worst on this column &mdash; so an empty year is never rewarded for having "no cost ratio".
     </div>
 
-    <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
-      <strong style="color:#721c24;"><i class="fas fa-exclamation-circle"></i> Needs Improvement</strong>
-      <p class="mb-0 mt-2">
-        <strong>Higher-is-better:</strong> value is <strong>less than 80%</strong> of portfolio average.<br>
-        <strong>Lower-is-better:</strong> value is <strong>more than 100%</strong> of portfolio average.
-      </p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-euro-sign" style="color:#ffc107;"></i> Rent (&euro;/m<sup>2</sup>)</h6>
+    <p>(Revenue &divide; 12) &divide; floor area. Monthly rent per square metre &mdash; the size normaliser. <strong>Higher is better.</strong> <em>Shown and graded, but NOT part of the Score</em> (it's a characteristic of the property, not a performance result).</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar" style="color:#6f42c1;"></i> Value Increase (%)</h6>
+    <p>(Value at year-end &minus; Purchase Price) &divide; Purchase Price &times; 100. Capital appreciation. <strong>Higher is better.</strong></p>
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin:6px 0 0;">
+      <i class="fas fa-calendar-check"></i> <strong>Now effective-dated.</strong> Value Increase uses the property value <em>in force at the end of the selected year</em>, not just today's value. Record dated valuations on the <em>Property Valuations</em> page (each save has an <strong>Effective From</strong> date) and each year picks up the right one. A year before a property's first recorded valuation shows <strong>N/A</strong> and is left out of that year's Score.
     </div>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
-      <i class="fas fa-info-circle"></i> <strong>Tiers are relative, not absolute.</strong> A property marked "Needs Improvement" isn't necessarily unprofitable &mdash; it just means it's trailing <em>your own portfolio's average</em>. If your whole portfolio has a 7% Gross ROI, a property with 5% is "Needs Improvement" here even though 5% is perfectly respectable in absolute terms. The tiers are there to help you <em>rank</em> within your portfolio, not to judge absolute performance.
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-door-open" style="color:#20c997;"></i> Occupancy (%)</h6>
+    <p>Share of the year the property was let, counting a month if a signed lease <em>or</em> an assumed continuation covers it &mdash; the same basis revenue uses, so a steady renewer isn't penalised for a not-yet-captured renewal. Seasonal / no-lease properties show <strong>"Seasonal"</strong> (occupancy isn't meaningful for them) and are left out of that property's Score. <strong>Higher is better.</strong></p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-up" style="color:#0f766e;"></i> Rent Growth (%)</h6>
+    <p>Change in <strong>average monthly rent</strong> vs last year &mdash; revenue &divide; months actually held, this year against last year. Using the monthly <em>rate</em> (not total revenue) means a first full year after a part-year start reads as the true change, not a phantom jump. A property with no full prior year shows <strong>N/A</strong> and is left out of that year's Score. <strong>Higher is better.</strong></p>
+
+    <div class="alert" style="background:#f1f3f5; border-left:4px solid #adb5bd; margin-top:18px;">
+      <strong><i class="fas fa-ban"></i> "not held this year"</strong>
+      <p class="mb-0 mt-2">A property that wasn't held in the selected year (before its first lease) is shown greyed with a <em>"not held this year"</em> tag and a dash in every column. It's excluded from the ranking <strong>and</strong> from the Portfolio Totals, so historical years aren't distorted by properties you didn't own yet.</p>
     </div>
   </article>
 
   <article data-tab-slug="fi-dashboard"
            data-tab-name="The Dashboard"
            data-tab-icon="fa-th-large">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
-    <p>The dashboard flows top-to-bottom in a natural reading order: portfolio summary &rarr; property filter &rarr; visual charts &rarr; detailed table.</p>
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the dashboard</h5>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tachometer-alt"></i> Consolidated Indicators cards</h6>
-    <p>The top strip shows the <strong>five portfolio-level KPIs</strong> as clickable cards. Each card shows the KPI's icon, label, and overall portfolio value (e.g. Gross ROI: 5.37%). The figures are the same numbers shown in the P&amp;L's Consolidated Financial Indicators block.</p>
-    <p><strong>Hover a card</strong> &mdash; it lifts slightly and shows "Click for details" as a tooltip. <strong>Click a card</strong> &mdash; it opens the Property Performance Details modal, explained fully in the next tab.</p>
+    <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-tachometer-alt"></i> Consolidated Indicators cards</h6>
+    <p>The portfolio-level KPI cards. <strong>Click a card</strong> to open the Property Performance Details modal for that indicator (see the <em>Performance Modal</em> tab).</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-building"></i> Property Selection panel</h6>
-    <p>Identical to the Profit &amp; Loss property selector. Every property in the portfolio as a checkbox, with Select All / Select None shortcuts. Ticking or un-ticking reloads the entire dashboard live.</p>
-    <p>The counter shows e.g. <em>"10 of 10 active properties selected."</em> All downstream calculations &mdash; the bar charts, the detailed table, the Portfolio Totals row, and the indicator drill-downs &mdash; recompute on the reduced scope.</p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-building"></i> Property Selection</h6>
+    <p>Inside the <em>Financial Indicator Graphs</em> section. Every property as a checkbox, with Select All / Select None. Ticking or un-ticking recomputes the whole page &mdash; charts, scoreboard, Portfolio Totals and the drill-downs &mdash; on the reduced scope. Because Rank and Score are <em>relative to the current selection</em>, narrowing the set re-ranks what's left.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The five mini bar charts</h6>
-    <p>One chart per indicator, displayed in a responsive grid. Each chart has:</p>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The mini bar charts</h6>
+    <p>One chart per KPI, bars sorted best-to-worst, with the portfolio average marked. A quick visual read of the spread and the outliers for each metric.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-table"></i> The scoreboard table</h6>
     <ul>
-      <li><strong>Chart title</strong> with icon and KPI label</li>
-      <li><strong>Portfolio Average</strong> shown in the header in the indicator's accent colour</li>
-      <li><strong>Bars sorted best-to-worst</strong> from left to right &mdash; no need to scan for extremes, they're always visually anchored at the edges</li>
-      <li><strong>Colour-coded bars:</strong>
-        <ul>
-          <li><span style="color:#28a745;"><strong>Green</strong></span> &mdash; Excellent tier</li>
-          <li><span style="color:#ffc107;"><strong>Yellow</strong></span> &mdash; Good tier</li>
-          <li><span style="color:#dc3545;"><strong>Red</strong></span> &mdash; Needs Improvement tier</li>
-        </ul>
-      </li>
-      <li><strong>Orange dashed line</strong> horizontally across the chart &mdash; the Portfolio Average benchmark</li>
-      <li><strong>Rotated property labels</strong> on the X-axis (so they fit at any chart width)</li>
-    </ul>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-table"></i> Detailed Property Data table</h6>
-    <p>The table at the bottom shows every selected property as a row, with a column for each KPI. Features:</p>
-    <ul>
-      <li><strong>Sortable columns</strong> &mdash; click any column header to sort by that KPI. Click again to reverse the order. The active column is highlighted teal and the header shows a directional arrow icon.</li>
-      <li><strong>Striped rows</strong> &mdash; alternating shading for readability</li>
-      <li><strong>Portfolio Totals row</strong> &mdash; pinned at the bottom in teal, showing portfolio-level values for comparison</li>
-      <li><strong>Hover highlights</strong> &mdash; the row under your cursor is highlighted</li>
+      <li><strong>Colour grading</strong> &mdash; every metric cell (and Rank / Score) is tinted on a <span style="color:#28a745;">green</span>&rarr;<span style="color:#dc3545;">red</span> gradient by the property's <em>rank position on that column</em> among the selected, held properties (direction-aware &mdash; for Expenses-to-Revenue, lower is greener). Green = top of the field, red = bottom.</li>
+      <li><strong>Sortable columns</strong> &mdash; click any header to sort by it; click again to reverse. Defaults to sorting by Rank (best first).</li>
+      <li><strong>Portfolio Totals row</strong> &mdash; pinned at the bottom for comparison.</li>
+      <li><strong>Not-held properties</strong> sink to the bottom, greyed.</li>
     </ul>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-      <i class="fas fa-lightbulb"></i> <strong>The table's sort and the charts' sort are independent.</strong> The mini charts always auto-sort best-to-worst. The table starts unsorted and only sorts when you click a column. This means you can have the table sorted by one KPI while the charts show their own natural ordering.
+      <i class="fas fa-palette"></i> <strong>Two different colour systems, by design.</strong> The scoreboard table grades each property by its <em>rank within your current selection</em> (a relative gradient). The card drill-down modal instead grades against <em>fixed thresholds vs the portfolio average</em> (the Excellent / Good / Needs-Improvement tiers). They answer slightly different questions &mdash; see the Performance Modal tab.
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-area"></i> Trends Over the Years</h6>
+    <p>A multi-year line chart. Pick an indicator and a year range, and compare the portfolio against any set of individual properties. Diamond markers flag the current / projected years (actual-so-far plus budget for the current year, budget only for the outlook year).</p>
+  </article>
+
+  <article data-tab-slug="fi-scoring"
+           data-tab-name="Scoring &amp; Rank"
+           data-tab-icon="fa-trophy">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-trophy"></i> How the Score and Rank are worked out</h5>
+
+    <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-list-ol"></i> Rank-based, within your selection</h6>
+    <p>For each scoring metric, the held properties in your current selection are placed <strong>best&rarr;worst</strong> and given a position grade from 0 (best) to 1 (worst). This "rank-based" approach is robust to outliers &mdash; one enormous number can't dominate the way it would with raw values. Everything is <strong>relative to the currently-selected, held properties</strong>, so the numbers move as you change the selection or the year.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calculator"></i> The five scoring metrics</h6>
+    <p>The <strong>Score</strong> blends five metrics, equal weight by default:</p>
+    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
+      <strong style="color:#155724;">In the Score:</strong> Gross ROI &middot; Expenses to Revenue &middot; Occupancy &middot; Rent Growth &middot; Value Increase
+    </div>
+    <div class="alert" style="background:#f1f3f5; border-left:4px solid #adb5bd;">
+      <strong>Shown &amp; graded, but NOT scored:</strong> <em>Net ROI</em> and <em>Rent (&euro;/m&sup2;)</em>. Net ROI is excluded to avoid double-counting (Gross ROI and Expenses-to-Revenue already capture it); Rent/m&sup2; is a property characteristic, not a performance result.
+    </div>
+    <p><strong>Score</strong> = the (weighted) average of <em>(1 &minus; grade)</em> across those five metrics, &times; 100. A metric that doesn't apply to a property (Seasonal occupancy, N/A rent growth, no dated valuation) is simply skipped for that property &mdash; not counted as zero. <strong>Rank</strong> then orders the scores, best first; properties with the same score share a rank (1, 2, 2, 4).</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-balance-scale-right"></i> Ties don't swing the ranking</h6>
+    <p>When several properties share the same value on a metric (e.g. everyone at 100% occupancy, or two both at 0% rent growth), they all get the <strong>same grade</strong> rather than being split into a winner and a loser by row order. A metric on which everyone is equal simply washes out and doesn't affect the ranking.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sliders-h"></i> Scoring weights</h6>
+    <p>Open <strong>"Scoring weights"</strong> at the top of the Detailed Property Data section to change how much each metric counts. Set a weight from <strong>0 to 5</strong> (0 ignores the metric entirely, 1 is normal) and the Score and Rank <strong>recompute live</strong>. A <span class="badge" style="background:#7c3aed; color:#fff;">custom</span> badge appears when weights aren't equal; <em>Reset to equal</em> puts them back. Your choice is remembered on this device.</p>
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> If one metric feels like it's dominating &mdash; say a single negative Rent Growth is dragging an otherwise strong property down &mdash; dial that metric's weight down and watch the ranking settle. Weighting is the honest way to encode <em>your</em> view of what matters.
     </div>
   </article>
 
   <article data-tab-slug="fi-performance"
            data-tab-name="Performance Modal"
-           data-tab-icon="fa-trophy">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-trophy"></i> The Property Performance Modal</h5>
-    <p>Clicking any of the five Consolidated Indicator cards at the top of the dashboard opens the <strong>Property Performance Details</strong> modal &mdash; the detailed drill-down for that one indicator.</p>
+           data-tab-icon="fa-medal">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-medal"></i> The Property Performance modal</h5>
+    <p>Clicking any Consolidated Indicator card opens the <strong>Property Performance Details</strong> modal &mdash; a focused drill-down for that one KPI.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> What the modal shows</h6>
+    <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> What it shows</h6>
     <ul>
-      <li><strong>Header block</strong> &mdash; KPI name, formula explanation, and Portfolio Average for this indicator</li>
-      <li><strong>Performance legend</strong> &mdash; the three colour-coded tiers explained inline</li>
-      <li><strong>Ranked property table</strong> with five columns:
-        <ul>
-          <li><strong>#</strong> &mdash; rank position</li>
-          <li><strong>Property Name</strong></li>
-          <li><strong>Performance</strong> &mdash; the KPI value for this property</li>
-          <li><strong>vs Portfolio Avg</strong> &mdash; percentage difference from the portfolio average (e.g. +55.7% or &minus;23.5%)</li>
-          <li><strong>Performance Level</strong> &mdash; a coloured badge: <span class="badge badge-success" style="background:#28a745; color:white;">EXCELLENT</span> / <span class="badge badge-warning" style="background:#ffc107; color:#212529;">GOOD</span> / <span class="badge badge-danger" style="background:#dc3545; color:white;">NEEDS IMPROVEMENT</span></li>
-        </ul>
-      </li>
-      <li><strong>Summary cards</strong> at the bottom &mdash; count of properties in each performance tier</li>
+      <li><strong>Header</strong> &mdash; the KPI name, a plain-English explanation, and the Portfolio Average.</li>
+      <li><strong>Ranked table</strong> &mdash; # / Property Name / value / <em>vs Portfolio Avg</em> (e.g. +55.7% or &minus;23.5%) / a coloured <strong>Performance Level</strong> badge.</li>
+      <li><strong>Summary cards</strong> &mdash; how many properties fall in each tier.</li>
     </ul>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sort"></i> How the ranking works</h6>
-    <p>The table is <strong>automatically sorted best-to-worst</strong> &mdash; but "best" depends on the metric:</p>
-
-    <div class="alert alert-success" style="border-left:4px solid #28a745;">
-      <strong>Higher-is-better metrics</strong> (Gross ROI, Net ROI, Rent/m&sup2;, Value Increase): properties with the highest values are ranked first.
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-traffic-light"></i> The three tiers</h6>
+    <p>Unlike the scoreboard's relative gradient, the modal grades each property against <strong>fixed thresholds vs the portfolio average</strong>:</p>
+    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
+      <strong style="color:#155724;"><i class="fas fa-check-circle"></i> Excellent</strong> &mdash; higher-is-better metrics at <strong>&ge;120%</strong> of the portfolio average (lower-is-better at &le;80%).
     </div>
-
-    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-      <strong>Lower-is-better metrics</strong> (Expenses to Revenue): properties with the lowest values are ranked first. This is because a lower expense ratio is better performance.
+    <div class="alert" style="background:#fff3cd; border-left:4px solid #ffc107;">
+      <strong style="color:#856404;"><i class="fas fa-minus-circle"></i> Good</strong> &mdash; roughly in line with the average (80&ndash;120%).
     </div>
-
-    <p>So the property at rank #1 is always your "best performer" for this KPI, and the property at the bottom is always the one that most needs attention. No need to mentally reverse the ordering for different metrics.</p>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-palette"></i> Row colour shading</h6>
-    <p>Each row is subtly tinted based on its performance tier:</p>
-    <ul>
-      <li>Light green background &mdash; Excellent</li>
-      <li>Light yellow background &mdash; Good</li>
-      <li>Light red background &mdash; Needs Improvement</li>
-    </ul>
-    <p>This makes it easy to visually cluster properties by performance band and spot where the tier boundaries fall in your portfolio.</p>
+    <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
+      <strong style="color:#721c24;"><i class="fas fa-exclamation-circle"></i> Needs Improvement</strong> &mdash; higher-is-better metrics below <strong>80%</strong> of the average (lower-is-better above 100%).
+    </div>
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Tiers are relative, not absolute.</strong> "Needs Improvement" means a property trails <em>your own portfolio's average</em> &mdash; a 5% Gross ROI is "Needs Improvement" in a 7%-average portfolio even though it's respectable on its own.
+    </div>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-file-excel"></i> Export to Excel</h6>
-    <p>The <strong>Export to Excel</strong> button in the modal footer downloads the ranked list as a properly-formatted <em>.xlsx</em> file. The export includes:</p>
-    <ul>
-      <li>A header line with the indicator name</li>
-      <li>Generation date</li>
-      <li>Portfolio Average</li>
-      <li>The full ranked table: Rank / Property Name / Value / vs Portfolio Avg / Performance Level</li>
-    </ul>
-    <p>The filename is automatic and descriptive, e.g. <code>PropertyPerformance_grossROI_2026-04-19.xlsx</code>. Useful for sharing with accountants, pulling into other reports, or archiving.</p>
+    <p>The <strong>Export to Excel</strong> button downloads the ranked list as a formatted <em>.xlsx</em> (indicator name, date, portfolio average, and the full Rank / Property / Value / vs-Avg / Level table). Handy for accountants or year-end archiving.</p>
   </article>
 
   <article data-tab-slug="fi-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical tips</h5>
 
-    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Using the dashboard for portfolio analysis</h6>
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Reading the scoreboard</h6>
     <ul style="line-height:1.8;">
-      <li><strong>Start with Net ROI as the primary signal.</strong> Of the five indicators, Net ROI is the most meaningful. The property at the top of that ranking is earning you the most relative to what you paid; the one at the bottom is earning the least. Everything else is context for <em>why</em>.</li>
-
-      <li><strong>Cross-reference Net ROI with Expenses to Revenue.</strong> A property with low Net ROI <em>and</em> high Expenses to Revenue has a cost problem. A property with low Net ROI but normal Expenses to Revenue has a revenue problem. The combination tells you which lever to pull.</li>
-
-      <li><strong>Rent (&euro;/m&sup2;) reveals pricing issues.</strong> If a property has a healthy Gross ROI but a below-average Rent/m&sup2;, it's technically performing well but probably underpriced for its size &mdash; review the rental agreement.</li>
-
-      <li><strong>Value Increase is the "long game" indicator.</strong> A property with low short-term ROI but strong Value Increase is still a solid investment &mdash; the return is coming from appreciation, not income. Don't judge a property on income ROI alone.</li>
-
-      <li><strong>Click the indicator cards for a focused view.</strong> Rather than scanning the bar charts and the detailed table together, click into the Performance Modal for one KPI at a time. The ranked list + tier breakdown gives a clearer picture than the dashboard overview.</li>
+      <li><strong>Start at the Score / Rank.</strong> #1 is your best all-round performer for the year; the bottom is the one that most needs attention. Then read across its row to see <em>why</em> &mdash; which columns are red.</li>
+      <li><strong>A single red cell can outweigh several narrow wins.</strong> Because the five metrics are equal-weight by default, being worst on one (e.g. a negative Rent Growth) can pull a property below one that wins narrowly elsewhere. If that doesn't match your priorities, adjust the Scoring weights.</li>
+      <li><strong>Net ROI and Rent/m&sup2; are context, not score.</strong> They're shown and colour-graded so you can see them, but they don't move the Rank &mdash; use them to interpret, not to rank.</li>
     </ul>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Working with the performance tiers</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Using year, basis and selection</h6>
     <ul style="line-height:1.8;">
-      <li><strong>Tiers are relative, not absolute.</strong> A property can be "Excellent" in a portfolio of under-performers, or "Needs Improvement" in a portfolio of exceptional performers. The tiers help you rank within your own portfolio, not benchmark against the market. Use with this context in mind.</li>
-
-      <li><strong>Healthy portfolios have mostly Good, some Excellent, and few or no Needs-Improvement.</strong> If most properties are in the Needs Improvement tier for the same KPI, the portfolio itself might have a systematic issue, not individual properties.</li>
-
-      <li><strong>Tier classifications can flip as you change the property filter.</strong> Removing strong performers from the selection shifts the portfolio average down &mdash; so the remaining properties may move up a tier. This is by design and can reveal interesting dynamics (e.g. "if I excluded my top 3 properties, everyone else would look a lot more average").</li>
-
-      <li><strong>Use the Summary cards to assess portfolio shape.</strong> The count of Excellent / Good / Needs Improvement properties at the bottom of the modal gives you a quick health check for each KPI. Lots of Excellent = uneven performance (a few carrying the rest). Lots of Good = a balanced portfolio.</li>
+      <li><strong>Compare years</strong> to see momentum &mdash; a property climbing the ranking year on year is trending well. Use the Trends section for the visual.</li>
+      <li><strong>Budget vs Actuals</strong> only changes Net ROI and Expenses-to-Revenue. If those two swing a lot between the two, that property's actual spend is diverging from budget &mdash; worth a look on the P&amp;L.</li>
+      <li><strong>Filter to one country</strong> in Property Selection to compare like with like; the ranking re-computes on just that set.</li>
     </ul>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Actionable workflows</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Keeping the numbers honest</h6>
     <ul style="line-height:1.8;">
-      <li><strong>Monthly review:</strong> open the Net ROI modal. Check the top and bottom 2-3 properties. Ask: has anything changed from last month? Any property moved up or down the ranking? Investigate significant movements.</li>
-
-      <li><strong>Annual planning:</strong> export all five indicators to Excel and pull them into your own planning workbook. Look for trends year-over-year.</li>
-
-      <li><strong>Country comparison:</strong> use the Property Selection panel to filter down to just one country's properties at a time. Compare Net ROI and Expenses to Revenue across jurisdictions &mdash; differences often reveal tax structure or cost-base variations between markets.</li>
-
-      <li><strong>Property-by-property investigation:</strong> select just one property, and you'll see that one property's values alongside the Portfolio Totals row. Useful for a focused deep-dive into a specific property's numbers.</li>
-    </ul>
-
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Connecting back to the source</h6>
-    <ul style="line-height:1.8;">
-      <li><strong>If a Net ROI looks wrong, go to the P&amp;L.</strong> Filter the P&amp;L to that one property and drill into the expense and revenue details. The P&amp;L tells you <em>why</em>.</li>
-
-      <li><strong>If a Value Increase looks wrong, go to Property Valuations.</strong> The indicator is driven by Purchase Price and Current Value &mdash; a stale Current Value distorts the number. Updating it also cascades through to the Pro-Rata distribution via the preview modal (see the Property Valuations help modal).</li>
-
-      <li><strong>If a Rent/m&sup2; looks wrong, check the Property record.</strong> Floor area (m&sup2;) is stored on the Property, not here. A missing floor area means no Rent/m&sup2; can be calculated. Fix via the Properties module.</li>
+      <li><strong>Value Increase looks flat across years?</strong> That's expected until you enter dated valuations. Add an updated value on <em>Property Valuations</em> with the right <strong>Effective From</strong> date, and only that year onward changes &mdash; earlier years keep the previous value.</li>
+      <li><strong>A property shows "not held this year"?</strong> It has no lease starting on or before that year. If that's wrong, check its leases under <em>Tenants</em>.</li>
+      <li><strong>Occupancy says "Seasonal"?</strong> The property has no leases (seasonal / short-let). That's expected &mdash; occupancy isn't scored for it.</li>
+      <li><strong>A number looks wrong, full stop?</strong> Jump to the source: the P&amp;L for revenue/expenses, Property Valuations for value, the Properties module for floor area (drives Rent/m&sup2;).</li>
     </ul>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
-      <i class="fas fa-arrow-right"></i> <strong>This dashboard answers the question "which property should I focus on?"</strong> The P&amp;L answers "how did we do?"; the Financial Indicators answers "and which properties need my attention to do better next year?" Together, they give you both the number and the signal.
+      <i class="fas fa-arrow-right"></i> <strong>This dashboard answers "which property should I focus on?"</strong> The P&amp;L answers "how did we do?"; the scoreboard answers "and who needs my attention to do better next year?"
     </div>
   </article>
 

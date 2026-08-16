@@ -1295,42 +1295,10 @@ class act_expense(models.Model):
     act_expense_date = models.DateField(blank=True, null=True)
     prop = models.ForeignKey(props, on_delete=models.CASCADE)
     act_expense_description = models.CharField(max_length=55, blank=True, null=True)
-    # max_digits widened 6 -> 10 (Aug 2026). At 6 the ceiling was EUR 9,999.99,
-    # which silently blocked any larger invoice (a renovation, a boiler).
-    act_expense_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    act_expense_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
     act_expense_approved = models.CharField(max_length=3, blank=True, null=True)
     act_expense_paid = models.CharField(max_length=3, blank=True, null=True)
     act_expense_document = models.FileField(upload_to=expense_document_upload_path, blank=True, null=True)
-
-    # ---- Invoice verification (two-way match) -----------------------------
-    # Written by pages.services.invoice_verification when a document is
-    # uploaded. Advisory only: nothing here ever alters a financial figure.
-    act_expense_verify_status = models.CharField(
-        max_length=20, blank=True, null=True,
-        help_text='verified | mismatch | unverified | not_invoice | pending')
-    act_expense_verify_checked_at = models.DateTimeField(blank=True, null=True)
-    act_expense_verify_total = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True,
-        help_text='Payable total as read from the invoice.')
-    act_expense_verify_date = models.DateField(blank=True, null=True)
-    act_expense_verify_number = models.CharField(max_length=60, blank=True, null=True)
-    act_expense_verify_supplier = models.CharField(max_length=120, blank=True, null=True)
-    act_expense_verify_notes = models.TextField(blank=True, null=True)
-    act_expense_verify_raw = models.TextField(
-        blank=True, null=True, help_text='Full extraction payload - the audit record.')
-    act_expense_verify_model = models.CharField(
-        max_length=60, blank=True, null=True,
-        help_text='Model + prompt version, so old verdicts stay interpretable.')
-
-    def verify_badge(self):
-        """(css_class, icon, label) for the list icon and the modal banner."""
-        return {
-            'verified':    ('success', 'fa-check-circle',        'Invoice verified'),
-            'mismatch':    ('danger',  'fa-exclamation-triangle', 'Invoice does not match'),
-            'unverified':  ('secondary', 'fa-question-circle',   'Not checked - review by eye'),
-            'not_invoice': ('secondary', 'fa-file',              'Not an invoice'),
-            'split':       ('info',    'fa-object-group',        'One invoice covering several expenses'),
-        }.get(self.act_expense_verify_status, ('secondary', 'fa-file-invoice', 'Document attached'))
 
     def __str__(self):
         return self.act_expense_description
@@ -3367,42 +3335,6 @@ def resolve_year_months_bulk(prop_ids, kind, year):
 # No new table / schema migration: kind is stored as the raw string 'valuation'.
 # =============================================================================
 KIND_VALUATION = 'valuation'
-
-
-def _fh_today():
-    from datetime import date as _d
-    return _d.today()
-
-
-KIND_ACTUAL_EXPENSE = 'expense_actual'   # ad-hoc act_expense amount amendments
-
-
-def record_actual_expense_history(exp, effective_date=None, *, source='actual', user=None):
-    """Append-only log of an `act_expense` amount.
-
-    Why this exists: the amount captured at creation is an ESTIMATE (the work
-    has not been done). When the invoice arrives higher, the superuser
-    un-approves, the amount is edited and it is re-approved - and the original
-    approved figure is overwritten and lost. Logging each value makes
-    "which suppliers routinely exceed their estimate" answerable.
-
-    Stored as a raw kind string (like KIND_VALUATION) so no migration to
-    KIND_CHOICES is needed. Fail-safe: never raises, so a history problem
-    cannot break the user's save.
-    """
-    try:
-        if exp is None or exp.act_expense_amount is None:
-            return None
-        return FinancialFigureHistory.objects.create(
-            prop=exp.prop, kind=KIND_ACTUAL_EXPENSE,
-            source_pk=exp.act_expense_id, line_type='Actual expense',
-            effective_date=effective_date or exp.act_expense_date or _fh_today(),
-            amount=exp.act_expense_amount,
-            source=source, changed_by=user,
-        )
-    except Exception:
-        _fh_log.exception('record_actual_expense_history failed (save itself was not affected)')
-        return None
 
 
 def record_valuation_history(pv, effective_date, *, source='valuation', user=None):
