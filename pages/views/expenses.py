@@ -1118,30 +1118,42 @@ def _amount_changed(before, after):
 
 
 def _run_invoice_verification(request, expense, pdf_content):
-    """Check an uploaded invoice against the approved amount.
+    """Check an uploaded invoice, then notify the approver.
 
-    Wrapped so that NOTHING here can cost the user their upload: the document
-    is already saved by the time we are called, and every failure path ends in
-    an 'unverified' verdict plus an informational message.
+    Two separable jobs, deliberately not entangled:
+
+      1. Run the check (needs ANTHROPIC_API_KEY, may fail).
+      2. Tell the approver an invoice has arrived and is ready for payment.
+
+    (2) happens EVEN IF (1) could not run. The notification is "an invoice
+    arrived"; the analysis is a bonus, and a missing key or a network blip must
+    not silently cost the approver their notice.
+
+    Nothing here can cost the user their upload: the document is already saved
+    by the time we are called.
     """
-    if not iv.is_enabled():
-        return
-    try:
-        pdf_content.seek(0)
-        file_bytes = pdf_content.read()
-        pdf_content.seek(0)
-    except Exception:
-        return
+    verdict = None
 
-    try:
-        verdict = iv.verify_expense_document(expense, file_bytes, 'application/pdf')
-        expense.save()
-    except Exception:
-        logger.exception('Invoice verification failed for expense %s (document was saved)',
-                         expense.act_expense_id)
-        return
+    if iv.is_enabled():
+        file_bytes = None
+        try:
+            pdf_content.seek(0)
+            file_bytes = pdf_content.read()
+            pdf_content.seek(0)
+        except Exception:
+            logger.exception('Could not re-read the uploaded file for expense %s',
+                             expense.act_expense_id)
 
-    status = verdict.get('status')
+        if file_bytes:
+            try:
+                verdict = iv.verify_expense_document(expense, file_bytes, 'application/pdf')
+                expense.save()
+            except Exception:
+                verdict = None
+                logger.exception('Invoice verification failed for expense %s '
+                                 '(document was saved)', expense.act_expense_id)
+
+    status = (verdict or {}).get('status')
     if status == iv.STATUS_VERIFIED:
         messages.success(request, 'Invoice checked: the total matches the approved amount.')
     elif status == iv.STATUS_MISMATCH:
@@ -1150,25 +1162,151 @@ def _run_invoice_verification(request, expense, pdf_content):
             'Invoice total does not match the approved amount. %s The approver has been '
             'notified and must un-approve the expense before the amount can be changed.'
             % (verdict.get('notes') or ''))
-        send_expense_mismatch_email(expense, verdict)
+    elif status == iv.STATUS_SPLIT:
+        messages.info(request, 'Invoice checked: %s' % (verdict.get('notes') or ''))
     elif status == iv.STATUS_NOT_INVOICE:
         messages.info(request, 'This file does not look like an invoice, so it was not checked.')
     else:
         messages.info(request, 'The invoice could not be checked automatically; '
                                'please review it by eye.')
 
+    send_invoice_verification_email(expense, verdict)
 
-def send_expense_mismatch_email(expense, verdict):
-    """Tell the approver an invoice disagrees with the approved amount.
 
-    Mirrors send_expense_approved_email / send_expense_paid_email exactly - the
-    same recipient registry and the same smtplib path. Django's send_mail is NOT
-    used: this project authenticates with EMAIL_PASSWORD via smtplib, so a
-    send_mail call would silently fail and the alert would never arrive.
+# --- email ----------------------------------------------------------------
 
-    'expense_mismatch' is not a registered notification type, so the registry
-    falls back to its default (the portfolio owner) - the right audience, since
-    this alert is for the approver, not the user who uploaded.
+def _verify_extra(expense):
+    """net / VAT / confidence / summary out of the stored extraction payload.
+
+    Read from act_expense_verify_raw rather than threaded through the verdict,
+    so the service keeps its narrow return contract. Never raises.
+    """
+    import json
+    try:
+        return json.loads(expense.act_expense_verify_raw or '{}') or {}
+    except Exception:
+        return {}
+
+
+def _subject_for(expense, verdict):
+    """Verdict first, so the inbox is scannable without opening anything."""
+    prop = expense.prop.prop_name
+    amount = expense.act_expense_amount
+    status = (verdict or {}).get('status')
+    total = (verdict or {}).get('invoice_total')
+
+    if status == iv.STATUS_MISMATCH:
+        return ('** INVOICE MISMATCH ** %s - invoice EUR %s vs approved EUR %s'
+                % (prop, total if total is not None else '?', amount))
+    if status == iv.STATUS_VERIFIED:
+        return 'Invoice ready to pay - %s EUR %s [VERIFIED]' % (prop, amount)
+    if status == iv.STATUS_SPLIT:
+        return 'Invoice ready to pay - %s EUR %s [COVERS SEVERAL EXPENSES]' % (prop, amount)
+    if status == iv.STATUS_NOT_INVOICE:
+        return 'Document uploaded - %s EUR %s [NOT AN INVOICE]' % (prop, amount)
+    return 'Invoice ready to pay - %s EUR %s [CHECK BY EYE]' % (prop, amount)
+
+
+HEADLINE = {
+    'verified': 'VERIFIED - the invoice total matches the approved amount.',
+    'mismatch': 'MISMATCH - the invoice total does NOT match the approved amount.',
+    'split': 'COVERS SEVERAL EXPENSES - one invoice booked against more than one expense.',
+    'unverified': 'NOT CHECKED - the document could not be read with enough confidence.',
+    'not_invoice': 'NOT AN INVOICE - this file is a receipt, quote or similar.',
+}
+
+
+def _body_for(expense, verdict):
+    extra = _verify_extra(expense)
+    status = (verdict or {}).get('status')
+    site = os.environ.get('SITE_URL', 'https://alivente.online').rstrip('/')
+
+    def money(v):
+        return 'EUR %s' % v if v is not None else '(not read)'
+
+    lines = [
+        'An invoice has been uploaded and is ready for your review.',
+        '',
+        '  Property:         %s' % expense.prop.prop_name,
+        '  Expense date:     %s' % expense.act_expense_date,
+        '  Description:      %s' % expense.act_expense_description,
+        '  Approved amount:  EUR %s' % expense.act_expense_amount,
+        '  Status:           Approved=%s, Paid=%s' % (expense.act_expense_approved,
+                                                      expense.act_expense_paid),
+        '',
+        '-' * 66,
+    ]
+
+    if verdict is None:
+        lines += [
+            'AUTOMATIC CHECK: DID NOT RUN',
+            '',
+            'The invoice could not be checked automatically this time, so please',
+            'review it by eye as usual. The document itself uploaded correctly.',
+        ]
+    else:
+        lines += [
+            'AUTOMATIC CHECK: %s' % HEADLINE.get(status, status or 'unknown'),
+            '',
+            '  %s' % (verdict.get('notes') or ''),
+            '',
+            '  Invoice total:    %s' % money(verdict.get('invoice_total')),
+        ]
+        net, vat = extra.get('net_amount'), extra.get('vat_amount')
+        if net is not None or vat is not None:
+            lines.append('  Net + VAT:        %s + %s' % (money(net), money(vat)))
+        lines += [
+            '  Supplier:         %s' % (verdict.get('supplier') or '(not read)'),
+            '  Invoice number:   %s' % (verdict.get('invoice_number') or '(not read)'),
+            '  Invoice date:     %s' % (verdict.get('invoice_date') or '(not read)'),
+        ]
+        if extra.get('description_summary'):
+            lines.append('  Invoice is for:   %s' % extra['description_summary'])
+        if extra.get('property_hint'):
+            lines.append('  Address on it:    %s' % extra['property_hint'])
+        if extra.get('confidence') is not None:
+            lines.append('  Confidence:       %s   (%s)'
+                         % (extra['confidence'], expense.act_expense_verify_model or ''))
+
+        advisories = verdict.get('advisories') or []
+        if advisories:
+            lines += ['', '  Worth a glance:']
+            lines += ['    - %s' % a for a in advisories]
+
+        if status == iv.STATUS_MISMATCH:
+            lines += [
+                '',
+                'To correct this: un-approve the expense, ask the user to amend the',
+                'amount, then re-approve. The check runs again on re-approval and',
+                'clears if it then matches.',
+            ]
+
+    lines += [
+        '',
+        '-' * 66,
+        'Open this expense:',
+        '%s/act_expense_all/?manage=%s' % (site, expense.act_expense_id),
+        '',
+        'This check is advisory. Nothing has been changed in the system.',
+        '',
+        'Thanks,',
+        '',
+        'Alivente Property Management System',
+    ]
+    return '\n'.join(lines)
+
+
+def send_invoice_verification_email(expense, verdict):
+    """Notify the approver that an invoice has been uploaded.
+
+    Sent on EVERY upload, with the verdict in the subject line. Uses the
+    'expense_mismatch' recipient row so recipients already configured in
+    Administration -> Notification Settings continue to apply.
+
+    Mirrors send_expense_approved_email exactly - the same recipient registry
+    and the same smtplib path. Django's send_mail is NOT used: this project
+    authenticates with EMAIL_PASSWORD via smtplib, so send_mail would fail
+    silently and the notice would never arrive.
 
     Fail-safe: a mail problem must never break the upload.
     """
@@ -1178,47 +1316,13 @@ def send_expense_mismatch_email(expense, verdict):
     try:
         recipients = get_email_recipients('expense_mismatch')
 
-        total = verdict.get('invoice_total')
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
         msg['To'] = format_email_recipients_for_header(recipients['to'])
         if recipients['cc']:
             msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
-        msg['Subject'] = ("Invoice does not match approved amount - %s (EUR %s)"
-                          % (expense.prop.prop_name, expense.act_expense_amount))
-
-        body = """An uploaded invoice does not match the amount that was approved.
-
-Property:         %s
-Expense date:     %s
-Description:      %s
-Approved amount:  EUR %s
-Invoice total:    EUR %s
-Supplier:         %s
-Invoice number:   %s
-Invoice date:     %s
-
-%s
-
-To correct this: un-approve the expense, ask the user to amend the amount, then
-re-approve. The check runs again on re-approval and clears if it then matches.
-
-This check is advisory. Nothing has been changed in the system.
-
-Thanks,
-
-Alivente Property Management System""" % (
-            expense.prop.prop_name,
-            expense.act_expense_date,
-            expense.act_expense_description,
-            expense.act_expense_amount,
-            total if total is not None else '(not read)',
-            verdict.get('supplier') or '(not read)',
-            verdict.get('invoice_number') or '(not read)',
-            verdict.get('invoice_date') or '(not read)',
-            '\n'.join([verdict.get('notes') or ''] + (verdict.get('advisories') or [])).strip(),
-        )
-        msg.attach(MIMEText(body, 'plain'))
+        msg['Subject'] = _subject_for(expense, verdict)
+        msg.attach(MIMEText(_body_for(expense, verdict), 'plain', 'utf-8'))
 
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
@@ -1227,7 +1331,7 @@ Alivente Property Management System""" % (
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
 
         if not email_password:
-            logger.error('EMAIL_PASSWORD not set - mismatch alert not sent')
+            logger.error('EMAIL_PASSWORD not set - invoice upload notice not sent')
             return False
 
         if email_use_ssl:
@@ -1244,7 +1348,8 @@ Alivente Property Management System""" % (
         return True
 
     except Exception:
-        logger.exception('send_expense_mismatch_email failed (upload was not affected)')
+        logger.exception('send_invoice_verification_email failed '
+                         '(upload was not affected)')
         return False
     finally:
         if smtp_object is not None:

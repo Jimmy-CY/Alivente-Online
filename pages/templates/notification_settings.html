@@ -545,8 +545,8 @@
 
 <!-- Expense Invoice Mismatch -->
 <div class="notification-card">
-    <h5><i class="fas fa-exclamation-triangle"></i> Expense Invoice Mismatch</h5>
-    <p class="text-muted">Alert when an uploaded invoice total does not match the approved expense amount. Sent only on a confirmed mismatch, never on a routine upload.</p>
+    <h5><i class="fas fa-file-invoice-dollar"></i> Expense Invoice Uploaded</h5>
+    <p class="text-muted">Sent every time an invoice is uploaded against an expense, so you know it is ready for payment. The subject line carries the automatic check result and the body contains the full analysis.</p>
 
     <form method="post">
         {% csrf_token %}

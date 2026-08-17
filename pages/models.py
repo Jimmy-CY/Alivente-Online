@@ -2773,7 +2773,7 @@ class NotificationRecipient(models.Model):
         ('expense_needs_approval', 'Expense Needs Approval'),
         ('expense_approved', 'Expense Approved'),
         ('expense_paid', 'Expense Paid'),
-        ('expense_mismatch', 'Expense Invoice Mismatch'),
+        ('expense_mismatch', 'Expense Invoice Uploaded'),
         ('friday_status_report_supervisor', 'Friday Status Report (Submitted by Supervisor)'),
         ('friday_status_report_staff', 'Friday Status Report (Submitted by Staff)'),
         ('invoice_paid', 'Invoice Marked as Paid'),
