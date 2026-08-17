@@ -1170,10 +1170,31 @@ def _run_invoice_verification(request, expense, pdf_content):
         messages.info(request, 'The invoice could not be checked automatically; '
                                'please review it by eye.')
 
-    send_invoice_verification_email(expense, verdict)
+    if _should_email_upload(expense, verdict):
+        send_invoice_verification_email(expense, verdict)
 
 
 # --- email ----------------------------------------------------------------
+
+def _is_paid(expense):
+    return (expense.act_expense_paid or '').strip().lower() == 'yes'
+
+
+def _should_email_upload(expense, verdict):
+    """Whether an upload is worth emailing about.
+
+    The routine notice says "ready to pay", so it is pointless once the expense
+    IS paid - and re-uploading historic documents would otherwise send a burst
+    of them.
+
+    But a MISMATCH on a paid expense still sends: the money is already gone
+    against a figure the invoice does not support, which is a bigger problem
+    than the same mismatch caught beforehand. Silence there would hide it.
+    """
+    if not _is_paid(expense):
+        return True
+    return (verdict or {}).get('status') == iv.STATUS_MISMATCH
+
 
 def _verify_extra(expense):
     """net / VAT / confidence / summary out of the stored extraction payload.
@@ -1196,6 +1217,11 @@ def _subject_for(expense, verdict):
     total = (verdict or {}).get('invoice_total')
 
     if status == iv.STATUS_MISMATCH:
+        # An expense already marked Paid deserves louder wording: the money has
+        # gone, so this is a recovery question rather than an approval one.
+        if _is_paid(expense):
+            return ('** MISMATCH ON A PAID EXPENSE ** %s - invoice EUR %s vs paid EUR %s'
+                    % (prop, total if total is not None else '?', amount))
         return ('** INVOICE MISMATCH ** %s - invoice EUR %s vs approved EUR %s'
                 % (prop, total if total is not None else '?', amount))
     if status == iv.STATUS_VERIFIED:
@@ -1273,7 +1299,15 @@ def _body_for(expense, verdict):
             lines += ['', '  Worth a glance:']
             lines += ['    - %s' % a for a in advisories]
 
-        if status == iv.STATUS_MISMATCH:
+        if status == iv.STATUS_MISMATCH and _is_paid(expense):
+            lines += [
+                '',
+                'NOTE: this expense is already marked PAID, so the payment has',
+                'already been made against the approved figure above. Check the',
+                'invoice and, if the supplier has over-billed, recover or offset',
+                'the difference before amending the record.',
+            ]
+        elif status == iv.STATUS_MISMATCH:
             lines += [
                 '',
                 'To correct this: un-approve the expense, ask the user to amend the',
