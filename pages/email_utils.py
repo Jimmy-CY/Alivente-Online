@@ -126,6 +126,10 @@ def get_email_recipients(notification_type, workspace=None):
         'expense_needs_approval': {'to': ['demetrimanias@gmail.com'], 'cc': ['stella.simitopoulos@alivente.com']},
         'expense_approved': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['demetrimanias@gmail.com']},
         'expense_paid': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['demetrimanias@gmail.com']},
+        # Invoice-mismatch alerts go to the APPROVER only. Approved/paid
+        # notices are for the person doing the work; a mismatch is the
+        # approver's decision, so Stella is deliberately not copied.
+        'expense_mismatch': {'to': ['demetrimanias@gmail.com'], 'cc': []},
         'friday_status_report_supervisor': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['angmaniasbakers@gmail.com']},
         'friday_status_report_staff': {'to': ['demetrimanias@gmail.com'], 'cc': ['angmaniasbakers@gmail.com']},
         'issue_comments_daily': {'to': ['demetrimanias@gmail.com'], 'cc': []},

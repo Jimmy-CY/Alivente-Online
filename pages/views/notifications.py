@@ -66,6 +66,7 @@ def notification_settings(request):
         'expense_needs_approval',
         'expense_approved',
         'expense_paid',
+        'expense_mismatch',
         'friday_status_report_supervisor',
         'friday_status_report_staff',
         'issue_comments_daily',
