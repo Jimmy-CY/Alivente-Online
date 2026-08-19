@@ -46,17 +46,37 @@ Tenants
       <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#tenantHelpModal">
         <i class="fas fa-question-circle"></i> Help
       </button>
-      <a href="{% url 'lease_timeline' %}" class="btn btn-info action-secondary">📅 Lease Timeline</a>
-      <a href="{% url 'open_invoices_report' %}" class="btn btn-info action-secondary">Open Invoices</a>
-      <a href="{% url 'lease_renewal_report' %}" class="btn btn-info action-secondary">Lease Renewals</a>
-      <a href="{% url 'tenant_payment_days' %}" class="btn btn-info action-secondary">Payment Behaviour</a>
+      <!-- Desktop: four reports behind one menu. `action-secondary` is the
+           house marker that hides an item under 768px, where the "More"
+           dropdown below takes over. -->
+      <div class="ui-menu action-secondary" data-menu>
+        <button type="button" class="btn btn-info ui-menu-toggle"
+                data-menu-toggle aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-chart-bar"></i> Reports
+          <i class="fas fa-chevron-down ui-menu-caret"></i>
+        </button>
+        <div class="ui-menu-panel" data-menu-panel role="menu" hidden>
+          <a href="{% url 'lease_timeline' %}" class="ui-menu-item" role="menuitem">
+            <i class="fas fa-calendar-alt"></i> Lease Timeline
+          </a>
+          <a href="{% url 'open_invoices_report' %}" class="ui-menu-item" role="menuitem">
+            <i class="fas fa-file-invoice-dollar"></i> Open Invoices
+          </a>
+          <a href="{% url 'lease_renewal_report' %}" class="ui-menu-item" role="menuitem">
+            <i class="fas fa-sync-alt"></i> Lease Renewals
+          </a>
+          <a href="{% url 'tenant_payment_days' %}" class="ui-menu-item" role="menuitem">
+            <i class="fas fa-stopwatch"></i> Payment Behaviour
+          </a>
+        </div>
+      </div>
 
       <!-- Mobile-only "More" dropdown -->
-      <div class="action-more-wrapper">
-        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+      <div class="action-more-wrapper" data-menu>
+        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true">
           <i class="fas fa-ellipsis-v"></i>
         </button>
-        <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+        <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
           <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#tenantHelpModal">
             <i class="fas fa-question-circle"></i> Help
           </button>
@@ -750,55 +770,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize the mobile "More" dropdown menu
-    initializeMoreMenu();
+    // The "More" dropdown is driven by the shared component in base.html.
 });
-
-// Mobile-only "More" actions dropdown
-function initializeMoreMenu() {
-    const moreBtn = document.getElementById('actionMoreBtn');
-    const moreMenu = document.getElementById('actionMoreMenu');
-    if (!moreBtn || !moreMenu) return;
-
-    function closeMenu() {
-        moreMenu.setAttribute('hidden', '');
-        moreBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    function openMenu() {
-        moreMenu.removeAttribute('hidden');
-        moreBtn.setAttribute('aria-expanded', 'true');
-    }
-
-    moreBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const isOpen = !moreMenu.hasAttribute('hidden');
-        if (isOpen) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    });
-
-    document.addEventListener('click', function(e) {
-        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
-            closeMenu();
-        }
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
-            closeMenu();
-            moreBtn.focus();
-        }
-    });
-
-    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
-        item.addEventListener('click', function() {
-            closeMenu();
-        });
-    });
-}
 
 function forceExpandPanel() {
     const filterPanel = document.getElementById('filterPanel');

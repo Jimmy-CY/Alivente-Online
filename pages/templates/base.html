@@ -475,6 +475,178 @@
   });
   </script>
 
+<!-- ==================== SHARED ACTION DROPDOWN ==================== -->
+<!-- Drives any element marked `data-menu`, with `data-menu-toggle` on the
+     button and `data-menu-panel` on the panel. Deliberately NOT bound to
+     `.action-more-wrapper`: several templates still carry their own copy of
+     initializeMoreMenu(), and a class-wide binder would double-bind there -
+     the menu would open and immediately close. Pages opt in by adding the
+     three attributes; everything else is untouched.
+
+     Also deliberately not Bootstrap's .dropdown, which is bound to open on
+     HOVER further down this file for the nav bar. An action menu should need
+     a click. -->
+  <style>
+  .ui-menu { position: relative; display: inline-block; }
+
+  .ui-menu-toggle { white-space: nowrap; }
+  .ui-menu-caret {
+      margin-left: 6px;
+      font-size: 11px;
+      transition: transform 0.2s ease;
+  }
+  .ui-menu[data-open="true"] .ui-menu-caret { transform: rotate(180deg); }
+
+  .ui-menu-panel {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 232px;
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      padding: 6px 0;
+      z-index: 1050;
+      text-align: left;
+  }
+
+  .ui-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 9px 16px;
+      background: none;
+      border: 0;
+      text-align: left;
+      font-size: 14px;
+      color: #2c3e50;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+  }
+  .ui-menu-item:hover,
+  .ui-menu-item:focus {
+      background: #f1f6f9;
+      color: #17a2b8;
+      text-decoration: none;
+      outline: none;
+  }
+  .ui-menu-item i { width: 16px; text-align: center; color: #17a2b8; }
+
+  /* Belt and braces. The pages that use it also tag the wrapper with the
+     house `.action-secondary` class, but the component should not depend on
+     the page remembering to do that. */
+  @media (max-width: 768px) {
+      .ui-menu { display: none; }
+  }
+  </style>
+
+  <script>
+  (function () {
+      "use strict";
+
+      function initActionMenus(root) {
+          var scope = root || document;
+          Array.prototype.forEach.call(
+              scope.querySelectorAll('[data-menu]'), function (menu) {
+
+              // Idempotent: safe to call again after injecting markup.
+              if (menu.getAttribute('data-menu-bound') === '1') { return; }
+
+              var toggle = menu.querySelector('[data-menu-toggle]');
+              var panel = menu.querySelector('[data-menu-panel]');
+              if (!toggle || !panel) { return; }
+              menu.setAttribute('data-menu-bound', '1');
+
+              function items() {
+                  return Array.prototype.slice.call(
+                      panel.querySelectorAll('a, button'));
+              }
+
+              function close() {
+                  panel.setAttribute('hidden', '');
+                  toggle.setAttribute('aria-expanded', 'false');
+                  menu.setAttribute('data-open', 'false');
+              }
+
+              function open() {
+                  // One at a time - two open panels overlap and confuse.
+                  Array.prototype.forEach.call(
+                      document.querySelectorAll('[data-menu][data-open="true"]'),
+                      function (other) {
+                          if (other !== menu) {
+                              var p = other.querySelector('[data-menu-panel]');
+                              var t = other.querySelector('[data-menu-toggle]');
+                              if (p) { p.setAttribute('hidden', ''); }
+                              if (t) { t.setAttribute('aria-expanded', 'false'); }
+                              other.setAttribute('data-open', 'false');
+                          }
+                      });
+                  panel.removeAttribute('hidden');
+                  toggle.setAttribute('aria-expanded', 'true');
+                  menu.setAttribute('data-open', 'true');
+              }
+
+              function isOpen() { return !panel.hasAttribute('hidden'); }
+
+              toggle.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (isOpen()) { close(); } else { open(); }
+              });
+
+              document.addEventListener('click', function (e) {
+                  if (isOpen() && !menu.contains(e.target)) { close(); }
+              });
+
+              document.addEventListener('keydown', function (e) {
+                  if (e.key === 'Escape' && isOpen()) {
+                      close();
+                      toggle.focus();
+                  }
+              });
+
+              // Arrow keys, so the menu is usable without a mouse.
+              menu.addEventListener('keydown', function (e) {
+                  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') { return; }
+                  e.preventDefault();
+                  if (!isOpen()) { open(); }
+                  var list = items();
+                  if (!list.length) { return; }
+                  var at = list.indexOf(document.activeElement);
+                  var next;
+                  if (e.key === 'ArrowDown') {
+                      next = at < 0 ? 0 : (at + 1) % list.length;
+                  } else {
+                      next = at <= 0 ? list.length - 1 : at - 1;
+                  }
+                  list[next].focus();
+              });
+
+              // A click on an item either navigates or opens a modal; either
+              // way the panel should not be left hanging open behind it.
+              panel.addEventListener('click', function (e) {
+                  if (e.target.closest('a, button')) { close(); }
+              });
+
+              close();
+          });
+      }
+
+      window.initActionMenus = initActionMenus;
+
+      if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () {
+              initActionMenus();
+          });
+      } else {
+          initActionMenus();
+      }
+  })();
+  </script>
+
 {% block extra_scripts %}{% endblock %}
 
   </body>

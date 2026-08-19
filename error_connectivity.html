@@ -1,0 +1,81 @@
+
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Database Unavailable</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body { 
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+                        text-align: center; 
+                        padding: 20px;
+                        margin: 0;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .error-container {
+                        background: white;
+                        padding: 40px;
+                        border-radius: 12px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                        max-width: 500px;
+                        width: 90%;
+                    }
+                    h1 { 
+                        color: #e74c3c; 
+                        margin-top: 0;
+                        font-size: 2em;
+                    }
+                    p { 
+                        color: #555; 
+                        line-height: 1.6;
+                        margin: 20px 0;
+                    }
+                    .btn {
+                        background: linear-gradient(45deg, #667eea, #764ba2);
+                        color: white;
+                        padding: 12px 24px;
+                        border: none;
+                        border-radius: 6px;
+                        text-decoration: none;
+                        display: inline-block;
+                        margin: 10px;
+                        transition: transform 0.2s;
+                        font-weight: 500;
+                    }
+                    .btn:hover {
+                        transform: translateY(-2px);
+                    }
+                    .error-code {
+                        color: #999;
+                        font-size: 0.9em;
+                        margin-top: 20px;
+                    }
+                    .detail {
+                        text-align: left;
+                        background: #f6f7f8;
+                        border: 1px solid #e1e5e9;
+                        border-radius: 6px;
+                        padding: 10px 12px;
+                        margin-top: 16px;
+                        font-size: 0.8em;
+                        color: #c0392b;
+                        white-space: pre-wrap;
+                        word-break: break-word;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="error-container">
+                    <h1>Connection Issue</h1>
+                    <p>We're experiencing temporary connectivity issues. This usually resolves quickly.</p><p>Please try refreshing the page or check back in a few moments.</p>
+                    <a href="javascript:location.reload()" class="btn">Refresh Page</a><a href="/" class="btn">Go Home</a>
+                    <div class="error-code">Error Code: DB_CONNECTION_503</div>
+                    
+                </div>
+            </body>
+            </html>
+            
