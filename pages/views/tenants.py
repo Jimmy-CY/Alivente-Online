@@ -475,6 +475,20 @@ def delete_tenant_view(request, tenant_id):
 # days past terms is genuinely behaving differently from one averaging 2.
 PAYMENT_GRACE_DAYS = 7
 
+# Nothing dated before this is in scope. The paid date only began being recorded
+# when the feature went live, so every earlier invoice can say exactly one thing
+# - unknown - and a list of unknowns made a tenant with a clean record look like
+# a tenant with a problem.
+#
+# The one thing that is NOT thrown away is money: an unpaid invoice from before
+# the cutoff is still a debt, so it is counted and totalled beneath the unpaid
+# list rather than listed. Hidden because it illustrates nothing, not because it
+# does not matter.
+#
+# Applies with ?all=1 too - a lease that ended before this date contributes
+# nothing either way.
+PAYMENT_DATA_STARTS = date(2026, 8, 1)
+
 
 @login_required
 @permission_required('auth.can_access_tenants', raise_exception=True)
@@ -485,15 +499,19 @@ def tenant_payment_days_view(request):
     per tenant against the terms agreed on the lease
     (`tenant.tenant_payment_terms`).
 
-    Two things to know about the numbers.
+    Three things to know about the numbers.
 
-    First, the history is short. `invoice_paid_date` was only added on
-    3 Aug 2026 (migration 0088); anything marked paid before then has no date
-    and is not recoverable. Rent is monthly, so each tenant contributes roughly
-    one measurement a month - about six before an average means much. `n` is on
-    every row so a thin average is never mistaken for a settled one.
+    First, the history is short and starts hard at PAYMENT_DATA_STARTS. Rent is
+    monthly, so each tenant contributes roughly one measurement a month - about
+    six before an average means much. The payment count sits under every tenant
+    name so a thin average is never mistaken for a settled one.
 
-    Second, terms of 0 days is a real answer - due on the invoice date - so
+    Second, a tenant with no measurement yet is simply absent from the table,
+    counted in `summary.no_measurement_yet`. There is deliberately no section
+    listing them with reasons: before the cutoff the only available reason was
+    "unknown".
+
+    Third, terms of 0 days is a real answer - due on the invoice date - so
     every test here is `is not None`, never truthiness. Reading 0 as "not set"
     would quietly drop exactly the tenants who pay on presentation.
 
@@ -508,14 +526,22 @@ def tenant_payment_days_view(request):
     if not show_all:
         tenants = tenants.filter(tenant_current__iexact='Yes')
 
-    rows, no_data, outstanding = [], [], []
+    rows, outstanding = [], []
+    no_measurement_yet = 0
+    old_unpaid_count, old_unpaid_total = 0, 0.0
 
     for t in tenants:
         invs = list(invoices.objects.filter(tenant=t).order_by('invoice_date'))
 
-        measured = []
+        measured, unpaid = [], []
         for inv in invs:
-            if inv.invoice_paid_date and inv.invoice_date:
+            if inv.invoice_date is None:
+                continue
+
+            in_scope = inv.invoice_date >= PAYMENT_DATA_STARTS
+            is_paid = (inv.invoice_paid or '').strip().lower() == 'yes'
+
+            if in_scope and inv.invoice_paid_date:
                 measured.append({
                     'invoice_date': inv.invoice_date,
                     'paid_date': inv.invoice_paid_date,
@@ -523,29 +549,28 @@ def tenant_payment_days_view(request):
                     'amount': inv.effective_amount,
                 })
 
-        for inv in invs:
-            if (inv.invoice_paid or '').strip().lower() != 'yes' and inv.invoice_date:
-                outstanding.append({
-                    'tenant': t,
-                    'invoice': inv,
-                    'age': (today - inv.invoice_date).days,
-                })
+            if not is_paid:
+                if in_scope:
+                    unpaid.append({
+                        'tenant': t,
+                        'invoice': inv,
+                        'age': (today - inv.invoice_date).days,
+                    })
+                else:
+                    # Still a real debt, so it is counted and totalled rather
+                    # than dropped - just not listed, because a row from before
+                    # the cutoff has no payment behaviour to illustrate.
+                    old_unpaid_count += 1
+                    old_unpaid_total += float(inv.effective_amount or 0)
+
+        outstanding.extend(unpaid)
 
         if not measured:
-            # Say WHY rather than leaving a blank row - the usual reason is a
-            # payment made before the paid date was ever recorded, which is a
-            # gap in history, not a gap in the tenant's behaviour.
-            recent = []
-            for inv in sorted(invs, key=lambda i: (i.invoice_date is None,
-                                                   i.invoice_date), reverse=True)[:6]:
-                if inv.invoice_paid_date:
-                    why = 'measurable'
-                elif (inv.invoice_paid or '').strip().lower() == 'yes':
-                    why = 'marked paid, but no paid date recorded'
-                else:
-                    why = 'not paid yet'
-                recent.append({'invoice': inv, 'why': why})
-            no_data.append({'tenant': t, 'recent': recent})
+            # No section explaining why. Before the cutoff the paid date was not
+            # recorded, so the only available explanation was "unknown", and a
+            # list of unknowns made a clean tenant look like a problem one. The
+            # tenant simply is not in the table yet; the count below says so.
+            no_measurement_yet += 1
             continue
 
         days = [m['days'] for m in measured]
@@ -593,19 +618,20 @@ def tenant_payment_days_view(request):
         'portfolio_avg': (sum(all_days) / float(len(all_days))) if all_days else None,
         'flagged': len([r for r in rows if r['band'] in ('slight', 'late')]),
         'missing_terms': len([r for r in rows if r['terms'] is None]),
-        'not_measurable': len(no_data),
+        'no_measurement_yet': no_measurement_yet,
+        'old_unpaid_count': old_unpaid_count,
+        'old_unpaid_total': old_unpaid_total,
         'outstanding_total': sum(float(o['invoice'].effective_amount or 0)
                                  for o in outstanding),
     }
 
     context = {
         'rows': rows,
-        'no_data': no_data,
         'outstanding': outstanding,
         'summary': summary,
         'show_all': show_all,
         'today': today,
         'grace': PAYMENT_GRACE_DAYS,
-        'data_starts': date(2026, 8, 3),
+        'data_starts': PAYMENT_DATA_STARTS,
     }
     return render(request, 'tenant_payment_days.html', context)

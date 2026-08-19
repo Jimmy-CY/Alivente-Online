@@ -48,6 +48,14 @@
           <i class="fas fa-users"></i> Include past tenants
         </a>
       {% endif %}
+      {% if summary.no_measurement_yet %}
+        <!-- The section that used to list these, with a reason each, is gone.
+             The count remains so they are not silently dropped. -->
+        <span class="pd-note">
+          {{ summary.no_measurement_yet }} tenant{{ summary.no_measurement_yet|pluralize }}
+          not shown &mdash; no payment recorded yet since {{ data_starts }}.
+        </span>
+      {% endif %}
       {% if summary.missing_terms %}
         <span class="pd-terms-warning">
           <i class="fas fa-exclamation-triangle"></i>
@@ -153,35 +161,6 @@
     </div>
     {% endif %}
 
-    {% if no_data %}
-    <div class="pd-section">
-      <h4 class="pd-section-title">
-        Not yet measurable ({{ no_data|length }})
-        <span class="pd-section-note">&mdash; and why</span>
-      </h4>
-      {% for nd in no_data %}
-      <div class="pd-nodata-card">
-        <div class="pd-nodata-head">
-          {{ nd.tenant.tenant_name }}
-          <span class="pd-muted">&middot; {{ nd.tenant.prop.prop_name }}</span>
-        </div>
-        {% if nd.recent %}
-        <ul class="pd-nodata-list">
-          {% for item in nd.recent %}
-          <li>
-            <span class="pd-mono">{{ item.invoice.invoice_date|default:"no date" }}</span>
-            <span class="pd-muted">{{ item.why }}</span>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <div class="pd-muted">No invoices on record at all.</div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
     {% if outstanding %}
     <div class="pd-section">
       <h4 class="pd-section-title">
@@ -209,6 +188,17 @@
           </tbody>
         </table>
       </div>
+      {% if summary.old_unpaid_count %}
+      <!-- Counted, not listed. An old unpaid invoice illustrates no payment
+           behaviour - there is no paid date to measure - but it is still money
+           owed, so the figure stays visible. -->
+      <p class="pd-note pd-note-block">
+        Plus {{ summary.old_unpaid_count }} unpaid invoice{{ summary.old_unpaid_count|pluralize }}
+        dated before {{ data_starts }}, totalling
+        <strong>&euro;{{ summary.old_unpaid_total|floatformat:2 }}</strong> &mdash; not listed
+        here because they predate the payment tracking, but still outstanding.
+      </p>
+      {% endif %}
     </div>
     {% endif %}
 
@@ -422,17 +412,20 @@ tr.pd-band-late td   { background: #fef8f7; }
 }
 .pd-section-note { font-weight: 400; color: #7f8c8d; font-size: 0.9rem; }
 
-.pd-nodata-card {
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    background: #fdfdfe;
+/* Counts for things deliberately not listed. Quiet, but never absent - a
+   suppressed row that leaves no trace reads as "there was nothing". */
+.pd-note {
+    font-size: 0.85rem;
+    color: #7f8c8d;
 }
-.pd-nodata-head { font-weight: 600; color: #2c3e50; margin-bottom: 6px; }
-.pd-nodata-list { list-style: none; margin: 0; padding: 0; font-size: 0.86rem; }
-.pd-nodata-list li { padding: 2px 0; }
-.pd-nodata-list .pd-mono { margin-right: 10px; }
+.pd-note-block {
+    margin: 12px 0 0 0;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-left: 3px solid #dfe4e8;
+    border-radius: 0 5px 5px 0;
+}
+.pd-note-block strong { color: #2c3e50; }
 
 .pd-empty {
     text-align: center;
