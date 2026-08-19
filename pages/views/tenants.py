@@ -15,6 +15,8 @@ Functions
 - tenant_edit_commit     : Edit save (TenantForm).
 - tenant_lease_agreement : Upload / delete the lease-agreement document.
 - lease_timeline_view    : Per-property tenant lease timeline UI.
+- tenant_payment_days_view : How many days each tenant actually
+                           takes to pay, against agreed terms.
 - duplicate_tenant_view  : Duplicate a tenant for renewal / new lease.
 - delete_tenant_view     : Delete a tenant (signals handle vacancy
                            cleanup).
@@ -31,13 +33,14 @@ Auth tiers
 ----------
 read tier -> auth.can_access_tenants  (tenant_page,
                                        tenant_lease_agreement,
-                                       lease_timeline_view)
+                                       lease_timeline_view,
+                                       tenant_payment_days_view)
 edit tier -> auth.can_edit_tenants    (add, edit, commit, edit_commit,
                                        duplicate, delete)
 """
 
 import os
-from datetime import datetime
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -46,7 +49,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..forms import TenantForm
-from ..models import PhysicalInvoiceProfile, props, tenant
+from ..models import PhysicalInvoiceProfile, invoices, props, tenant
 
 
 def _apply_physical_invoice_fields(request, tenant_obj):
@@ -460,3 +463,149 @@ def delete_tenant_view(request, tenant_id):
     except Exception as e:
         messages.error(request, f'Error deleting tenant: {str(e)}')
         return redirect('tenant')
+
+
+# Days past the agreed terms before a tenant is flagged as slow.
+#
+# Not zero, deliberately. Terms across this portfolio are 0 - rent is due on
+# the invoice date - so a knife-edge at zero would flag every tenant who pays
+# on the 2nd rather than the 1st, and the colour would stop carrying any
+# information. A week absorbs weekends, bank value dating and the ordinary
+# rhythm of a standing order without hiding real drift: a tenant averaging 10+
+# days past terms is genuinely behaving differently from one averaging 2.
+PAYMENT_GRACE_DAYS = 7
+
+
+@login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
+def tenant_payment_days_view(request):
+    """How many days does each tenant actually take to pay?
+
+    Measures `invoice_paid_date - invoice_date` per invoice and summarises it
+    per tenant against the terms agreed on the lease
+    (`tenant.tenant_payment_terms`).
+
+    Two things to know about the numbers.
+
+    First, the history is short. `invoice_paid_date` was only added on
+    3 Aug 2026 (migration 0088); anything marked paid before then has no date
+    and is not recoverable. Rent is monthly, so each tenant contributes roughly
+    one measurement a month - about six before an average means much. `n` is on
+    every row so a thin average is never mistaken for a settled one.
+
+    Second, terms of 0 days is a real answer - due on the invoice date - so
+    every test here is `is not None`, never truthiness. Reading 0 as "not set"
+    would quietly drop exactly the tenants who pay on presentation.
+
+    The paid date is stamped when the invoice is marked Paid. Here the bank is
+    checked and invoices marked daily, so it is a faithful proxy for the day
+    the money arrived.
+    """
+    show_all = request.GET.get('all') == '1'
+    today = date.today()
+
+    tenants = tenant.objects.select_related('prop').order_by('tenant_name')
+    if not show_all:
+        tenants = tenants.filter(tenant_current__iexact='Yes')
+
+    rows, no_data, outstanding = [], [], []
+
+    for t in tenants:
+        invs = list(invoices.objects.filter(tenant=t).order_by('invoice_date'))
+
+        measured = []
+        for inv in invs:
+            if inv.invoice_paid_date and inv.invoice_date:
+                measured.append({
+                    'invoice_date': inv.invoice_date,
+                    'paid_date': inv.invoice_paid_date,
+                    'days': (inv.invoice_paid_date - inv.invoice_date).days,
+                    'amount': inv.effective_amount,
+                })
+
+        for inv in invs:
+            if (inv.invoice_paid or '').strip().lower() != 'yes' and inv.invoice_date:
+                outstanding.append({
+                    'tenant': t,
+                    'invoice': inv,
+                    'age': (today - inv.invoice_date).days,
+                })
+
+        if not measured:
+            # Say WHY rather than leaving a blank row - the usual reason is a
+            # payment made before the paid date was ever recorded, which is a
+            # gap in history, not a gap in the tenant's behaviour.
+            recent = []
+            for inv in sorted(invs, key=lambda i: (i.invoice_date is None,
+                                                   i.invoice_date), reverse=True)[:6]:
+                if inv.invoice_paid_date:
+                    why = 'measurable'
+                elif (inv.invoice_paid or '').strip().lower() == 'yes':
+                    why = 'marked paid, but no paid date recorded'
+                else:
+                    why = 'not paid yet'
+                recent.append({'invoice': inv, 'why': why})
+            no_data.append({'tenant': t, 'recent': recent})
+            continue
+
+        days = [m['days'] for m in measured]
+        ordered = sorted(days)
+        mid = len(ordered) // 2
+        median = (float(ordered[mid]) if len(ordered) % 2
+                  else (ordered[mid - 1] + ordered[mid]) / 2.0)
+
+        avg = sum(days) / float(len(days))
+        terms = t.tenant_payment_terms
+        vs_terms = (avg - terms) if terms is not None else None
+
+        if vs_terms is None:
+            band = 'unknown'
+        elif vs_terms <= PAYMENT_GRACE_DAYS:
+            band = 'ontime'
+        elif vs_terms <= PAYMENT_GRACE_DAYS * 2:
+            band = 'slight'
+        else:
+            band = 'late'
+
+        rows.append({
+            'tenant': t,
+            'n': len(days),
+            'provisional': len(days) < 6,
+            'avg': avg,
+            'median': median,
+            'best': min(days),
+            'worst': max(days),
+            'last': days[-1],
+            'terms': terms,
+            'vs_terms': vs_terms,
+            'band': band,
+            'measured': list(reversed(measured)),
+        })
+
+    # Slowest first: that is the order worth reading.
+    rows.sort(key=lambda r: r['avg'], reverse=True)
+    outstanding.sort(key=lambda o: o['age'], reverse=True)
+
+    all_days = [m['days'] for r in rows for m in r['measured']]
+    summary = {
+        'tenants_measured': len(rows),
+        'payments_measured': len(all_days),
+        'portfolio_avg': (sum(all_days) / float(len(all_days))) if all_days else None,
+        'flagged': len([r for r in rows if r['band'] in ('slight', 'late')]),
+        'missing_terms': len([r for r in rows if r['terms'] is None]),
+        'not_measurable': len(no_data),
+        'outstanding_total': sum(float(o['invoice'].effective_amount or 0)
+                                 for o in outstanding),
+    }
+
+    context = {
+        'rows': rows,
+        'no_data': no_data,
+        'outstanding': outstanding,
+        'summary': summary,
+        'show_all': show_all,
+        'today': today,
+        'grace': PAYMENT_GRACE_DAYS,
+        'data_starts': date(2026, 8, 3),
+    }
+    return render(request, 'tenant_payment_days.html', context)

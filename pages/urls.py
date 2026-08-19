@@ -200,6 +200,8 @@ urlpatterns = [
     path('tenant_commit/', views.tenant_commit, name='tenant_commit'),
     path('tenant_lease_agreement/', views.tenant_lease_agreement, name='tenant_lease_agreement'),
     path('lease-timeline/', views.lease_timeline_view, name='lease_timeline'),
+    path('tenant-payment-days/', views.tenant_payment_days_view,
+         name='tenant_payment_days'),
     path('tenant/duplicate/<int:tenant_id>/', views.duplicate_tenant_view, name='duplicate_tenant'),
     path('tenant/delete/<int:tenant_id>/', views.delete_tenant_view, name='delete_tenant'),
 

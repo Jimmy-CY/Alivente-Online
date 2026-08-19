@@ -1,0 +1,543 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tenant Payment Behaviour{% endblock %}
+
+{% block content %}
+<div class="report-container">
+  <div class="report-content">
+
+    <div class="header-container">
+      <div class="report-title-container">
+        <h2 class="report-title-main">Tenant Payment Behaviour</h2>
+        <h3 class="report-title-sub">Days from invoice to payment &middot; {{ today }}</h3>
+      </div>
+      <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+
+    <!-- How much weight the numbers can carry. Stated up front rather than
+         in a footnote, because a three-point average looks identical to a
+         thirty-point one unless somebody says so. -->
+    <div class="pd-caveat">
+      <i class="fas fa-info-circle"></i>
+      Paid dates have only been recorded since <strong>{{ data_starts }}</strong>, and rent is
+      monthly &mdash; so each tenant contributes about one measurement a month. Read the
+      <strong>ranking</strong> rather than the absolute numbers until <code>n</code> reaches
+      about six. Rows still building are marked <span class="pd-prov">provisional</span>.
+    </div>
+
+    {% if summary.payments_measured %}
+    <div class="pd-summary">
+      <div class="pd-stat">
+        <div class="pd-stat-value">{{ summary.payments_measured }}</div>
+        <div class="pd-stat-label">payments measured</div>
+      </div>
+      <div class="pd-stat">
+        <div class="pd-stat-value">{{ summary.tenants_measured }}</div>
+        <div class="pd-stat-label">tenants with data</div>
+      </div>
+      <div class="pd-stat">
+        <div class="pd-stat-value">{{ summary.portfolio_avg|floatformat:1 }}</div>
+        <div class="pd-stat-label">average days to pay</div>
+      </div>
+      <div class="pd-stat {% if summary.flagged %}pd-stat-warn{% endif %}">
+        <div class="pd-stat-value">{{ summary.flagged }}</div>
+        <div class="pd-stat-label">flagged slow</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="pd-toolbar">
+      {% if show_all %}
+        <a href="{% url 'tenant_payment_days' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-user-check"></i> Current tenants only
+        </a>
+      {% else %}
+        <a href="{% url 'tenant_payment_days' %}?all=1" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-users"></i> Include past tenants
+        </a>
+      {% endif %}
+      {% if summary.missing_terms %}
+        <span class="pd-terms-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          {{ summary.missing_terms }} tenant{{ summary.missing_terms|pluralize }} without payment
+          terms on the lease &mdash; their VS TERMS cannot be calculated.
+        </span>
+      {% endif %}
+    </div>
+
+    {% if rows %}
+    <div class="pd-table-wrap">
+      <table class="pd-table">
+        <thead>
+          <tr>
+            <th class="pd-col-name">Tenant</th>
+            <th class="pd-col-prop">Property</th>
+            <th class="pd-num">Terms</th>
+            <th class="pd-num">n</th>
+            <th class="pd-num">Avg</th>
+            <th class="pd-num">Median</th>
+            <th class="pd-num">Best</th>
+            <th class="pd-num">Worst</th>
+            <th class="pd-num">Last</th>
+            <th class="pd-num">vs Terms</th>
+            <th class="pd-col-toggle"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr class="pd-row pd-band-{{ r.band }}">
+            <td class="pd-col-name" data-label="Tenant">
+              <span class="pd-name">{{ r.tenant.tenant_name }}</span>
+              {% if r.provisional %}<span class="pd-prov">provisional</span>{% endif %}
+            </td>
+            <td class="pd-col-prop" data-label="Property">{{ r.tenant.prop.prop_name }}</td>
+            <td class="pd-num" data-label="Terms">
+              {% if r.terms is None %}<span class="pd-muted">not set</span>
+              {% else %}{{ r.terms }}d{% endif %}
+            </td>
+            <td class="pd-num" data-label="n">{{ r.n }}</td>
+            <td class="pd-num pd-strong" data-label="Avg">{{ r.avg|floatformat:1 }}</td>
+            <td class="pd-num" data-label="Median">{{ r.median|floatformat:1 }}</td>
+            <td class="pd-num" data-label="Best">{{ r.best }}</td>
+            <td class="pd-num" data-label="Worst">{{ r.worst }}</td>
+            <td class="pd-num" data-label="Last">{{ r.last }}</td>
+            <td class="pd-num" data-label="vs Terms">
+              {% if r.vs_terms is None %}<span class="pd-muted">n/a</span>
+              {% else %}
+                <span class="pd-badge pd-badge-{{ r.band }}">
+                  {% if r.vs_terms > 0 %}+{% endif %}{{ r.vs_terms|floatformat:1 }}
+                </span>
+              {% endif %}
+            </td>
+            <td class="pd-col-toggle">
+              <button type="button" class="pd-toggle" data-target="pd-detail-{{ r.tenant.tenant_id }}"
+                      aria-expanded="false" aria-label="Show every measured payment">
+                <i class="fas fa-chevron-down"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="pd-detail" id="pd-detail-{{ r.tenant.tenant_id }}" hidden>
+            <td colspan="11">
+              <div class="pd-detail-inner">
+                <div class="pd-detail-title">Every measured payment &mdash; most recent first</div>
+                <table class="pd-detail-table">
+                  <tr>
+                    <th>Invoiced</th><th>Paid</th><th class="pd-num">Days</th><th class="pd-num">Amount</th>
+                  </tr>
+                  {% for m in r.measured %}
+                  <tr>
+                    <td>{{ m.invoice_date }}</td>
+                    <td>{{ m.paid_date }}</td>
+                    <td class="pd-num">{{ m.days }}</td>
+                    <td class="pd-num">&euro;{{ m.amount|floatformat:2 }}</td>
+                  </tr>
+                  {% endfor %}
+                </table>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="pd-legend">
+      <strong>vs Terms</strong> is the average minus the days agreed on the lease
+      &mdash; positive means slower than agreed. Rent here is due on the invoice date,
+      so a tenant is only <em>flagged</em> once that gap exceeds
+      <strong>{{ grace }} days</strong>: green within grace, amber to
+      {{ grace|add:grace }} days, red beyond. Sorted slowest first.
+    </p>
+    {% else %}
+    <div class="pd-empty">
+      <i class="fas fa-hourglass-half"></i>
+      <p><strong>Nothing measurable yet.</strong></p>
+      <p>A payment can only be measured when its invoice has both a date and a paid date,
+         and paid dates only began being recorded on {{ data_starts }}.</p>
+    </div>
+    {% endif %}
+
+    {% if no_data %}
+    <div class="pd-section">
+      <h4 class="pd-section-title">
+        Not yet measurable ({{ no_data|length }})
+        <span class="pd-section-note">&mdash; and why</span>
+      </h4>
+      {% for nd in no_data %}
+      <div class="pd-nodata-card">
+        <div class="pd-nodata-head">
+          {{ nd.tenant.tenant_name }}
+          <span class="pd-muted">&middot; {{ nd.tenant.prop.prop_name }}</span>
+        </div>
+        {% if nd.recent %}
+        <ul class="pd-nodata-list">
+          {% for item in nd.recent %}
+          <li>
+            <span class="pd-mono">{{ item.invoice.invoice_date|default:"no date" }}</span>
+            <span class="pd-muted">{{ item.why }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="pd-muted">No invoices on record at all.</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if outstanding %}
+    <div class="pd-section">
+      <h4 class="pd-section-title">
+        Currently unpaid ({{ outstanding|length }})
+        <span class="pd-section-note">&mdash; oldest first, &euro;{{ summary.outstanding_total|floatformat:2 }} in total</span>
+      </h4>
+      <div class="pd-table-wrap">
+        <table class="pd-table pd-table-compact">
+          <thead>
+            <tr>
+              <th>Tenant</th><th>Property</th><th>Invoiced</th>
+              <th class="pd-num">Age</th><th class="pd-num">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for o in outstanding %}
+            <tr class="{% if o.age > 30 %}pd-band-late{% elif o.age > grace %}pd-band-slight{% endif %}">
+              <td data-label="Tenant">{{ o.tenant.tenant_name }}</td>
+              <td data-label="Property">{{ o.tenant.prop.prop_name }}</td>
+              <td data-label="Invoiced">{{ o.invoice.invoice_date }}</td>
+              <td class="pd-num" data-label="Age">{{ o.age }}d</td>
+              <td class="pd-num" data-label="Amount">&euro;{{ o.invoice.effective_amount|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+/* ==================== DESKTOP ==================== */
+
+.report-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    min-height: 80vh;
+}
+
+.report-content {
+    width: 95%;
+    max-width: 1400px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+}
+
+.report-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+
+.report-title-main {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.report-title-sub {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin: 5px 0 0 0;
+    font-weight: normal;
+}
+
+.back-button { flex-shrink: 0; }
+
+/* ---- caveat ---- */
+.pd-caveat {
+    background: #eef6fb;
+    border-left: 4px solid #17a2b8;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    color: #34495e;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+.pd-caveat i { color: #17a2b8; margin-right: 6px; }
+.pd-caveat code {
+    background: #dceef5;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #0c5460;
+}
+
+/* ---- summary strip ---- */
+.pd-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.pd-stat {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+}
+.pd-stat-value { font-size: 1.7rem; font-weight: 700; color: #2c3e50; line-height: 1.1; }
+.pd-stat-label {
+    font-size: 0.78rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 4px;
+}
+.pd-stat-warn { background: #fff8e6; border-color: #ffe0a3; }
+.pd-stat-warn .pd-stat-value { color: #b8860b; }
+
+/* ---- toolbar ---- */
+.pd-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.pd-terms-warning {
+    font-size: 0.85rem;
+    color: #8a6d3b;
+    background: #fcf8e3;
+    border: 1px solid #faebcc;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+/* ---- main table ---- */
+.pd-table-wrap { overflow-x: auto; }
+.pd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+.pd-table thead th {
+    background: #2c3e50;
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+}
+.pd-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eef0f2;
+    vertical-align: middle;
+}
+.pd-table tbody tr.pd-row:hover { background: #f6fafc; }
+.pd-num { text-align: right; white-space: nowrap; }
+.pd-table thead th.pd-num { text-align: right; }
+.pd-strong { font-weight: 700; color: #2c3e50; }
+.pd-name { font-weight: 600; color: #2c3e50; }
+.pd-muted { color: #95a5a6; }
+.pd-mono { font-family: 'Courier New', monospace; }
+
+.pd-prov {
+    display: inline-block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: #ecf0f1;
+    color: #7f8c8d;
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* Colour carries the same message as the sign, for anyone scanning fast. */
+.pd-row.pd-band-ontime { border-left: 4px solid #27ae60; }
+.pd-row.pd-band-slight { border-left: 4px solid #f39c12; }
+.pd-row.pd-band-late   { border-left: 4px solid #e74c3c; }
+.pd-row.pd-band-unknown{ border-left: 4px solid #bdc3c7; }
+
+.pd-badge {
+    display: inline-block;
+    min-width: 52px;
+    text-align: center;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+.pd-badge-ontime { background: #e8f8f0; color: #1e8449; }
+.pd-badge-slight { background: #fdf3e3; color: #b9770e; }
+.pd-badge-late   { background: #fdecea; color: #c0392b; }
+.pd-badge-unknown{ background: #f2f3f4; color: #7f8c8d; }
+
+tr.pd-band-slight td { background: #fffdf7; }
+tr.pd-band-late td   { background: #fef8f7; }
+
+/* ---- expandable detail ---- */
+.pd-col-toggle { width: 40px; text-align: center; }
+.pd-toggle {
+    background: transparent;
+    border: 1px solid #dfe4e8;
+    border-radius: 5px;
+    color: #7f8c8d;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.pd-toggle:hover { background: #ecf0f1; color: #2c3e50; }
+.pd-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
+.pd-toggle i { transition: transform 0.2s ease; font-size: 12px; }
+
+.pd-detail td { background: #fafbfc; padding: 0 !important; }
+.pd-detail-inner { padding: 14px 18px 18px 18px; }
+.pd-detail-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+}
+.pd-detail-table { width: 100%; max-width: 620px; border-collapse: collapse; font-size: 0.86rem; }
+.pd-detail-table th {
+    text-align: left;
+    color: #7f8c8d;
+    font-weight: 600;
+    border-bottom: 1px solid #e1e5e9;
+    padding: 5px 10px;
+}
+.pd-detail-table td { padding: 5px 10px; border-bottom: 1px solid #eef0f2; }
+
+.pd-legend { font-size: 0.85rem; color: #7f8c8d; margin-top: 12px; }
+
+/* ---- sections ---- */
+.pd-section { margin-top: 34px; }
+.pd-section-title {
+    font-size: 1.05rem;
+    color: #2c3e50;
+    font-weight: 700;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+}
+.pd-section-note { font-weight: 400; color: #7f8c8d; font-size: 0.9rem; }
+
+.pd-nodata-card {
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background: #fdfdfe;
+}
+.pd-nodata-head { font-weight: 600; color: #2c3e50; margin-bottom: 6px; }
+.pd-nodata-list { list-style: none; margin: 0; padding: 0; font-size: 0.86rem; }
+.pd-nodata-list li { padding: 2px 0; }
+.pd-nodata-list .pd-mono { margin-right: 10px; }
+
+.pd-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #7f8c8d;
+}
+.pd-empty i { font-size: 2.4rem; color: #bdc3c7; margin-bottom: 12px; }
+.pd-empty p { margin: 4px 0; }
+
+.pd-table-compact tbody td { padding: 8px 12px; }
+
+/* ==================== MOBILE ==================== */
+@media (max-width: 768px) {
+    .report-container { padding: 10px; }
+    .report-content { width: 100%; padding: 16px; }
+    .report-title-main { font-size: 1.25rem; }
+    .report-title-sub { font-size: 0.9rem; }
+    .pd-summary { grid-template-columns: repeat(2, 1fr); }
+
+    /* Cards, not a squeezed table: nine numeric columns are unreadable at
+       phone width, and horizontal scrolling hides exactly the column that
+       matters. */
+    .pd-table thead { display: none; }
+    .pd-table, .pd-table tbody, .pd-table tr, .pd-table td { display: block; width: 100%; }
+    .pd-table tbody tr.pd-row {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 6px 4px;
+        background: white;
+    }
+    .pd-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f4f6f7;
+        padding: 7px 12px;
+        text-align: right;
+    }
+    .pd-table tbody td:last-child { border-bottom: none; }
+    .pd-table tbody td::before {
+        content: attr(data-label);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #95a5a6;
+        font-weight: 600;
+        text-align: left;
+        margin-right: 12px;
+    }
+    .pd-table tbody td.pd-col-name {
+        background: #f8f9fa;
+        border-radius: 6px 6px 0 0;
+        font-size: 1rem;
+    }
+    .pd-col-toggle { width: 100%; }
+    .pd-col-toggle::before { content: "Detail"; }
+    .pd-detail td { display: block; }
+    .pd-detail-table { font-size: 0.8rem; }
+    .pd-detail-table th, .pd-detail-table td { padding: 4px 6px; }
+}
+</style>
+
+<script>
+(function () {
+  // Progressive enhancement: the detail rows are plain hidden table rows, so
+  // the page is still complete and readable if this never runs.
+  document.querySelectorAll('.pd-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var row = document.getElementById(btn.getAttribute('data-target'));
+      if (!row) { return; }
+      var open = row.hasAttribute('hidden');
+      if (open) { row.removeAttribute('hidden'); } else { row.setAttribute('hidden', ''); }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+})();
+</script>
+{% endblock %}

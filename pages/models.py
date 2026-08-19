@@ -762,9 +762,11 @@ class invoices(models.Model):
     invoice_date = models.DateField(blank=True, null=True)
     invoice_paid = models.CharField(max_length=255, blank=True, null=True)
     invoice_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    # Date the invoice was marked paid. Captured automatically in save() below
-    # for FUTURE use (e.g. a "traditionally pays late" signal in analytics); no
-    # current report reads it. Null while the invoice is unpaid.
+    # Date the invoice was marked paid, stamped automatically in save() below.
+    # Read by the tenant payment-behaviour report (tenant_payment_days_view)
+    # and by the tenant_payment_days management command. Null while unpaid.
+    # History starts 3 Aug 2026, when this field was added: anything marked
+    # paid before then has no date and cannot be reconstructed.
     invoice_paid_date = models.DateField(blank=True, null=True)
 
     def save(self, *args, **kwargs):

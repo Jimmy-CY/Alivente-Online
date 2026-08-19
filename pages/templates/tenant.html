@@ -49,6 +49,7 @@ Tenants
       <a href="{% url 'lease_timeline' %}" class="btn btn-info action-secondary">📅 Lease Timeline</a>
       <a href="{% url 'open_invoices_report' %}" class="btn btn-info action-secondary">Open Invoices</a>
       <a href="{% url 'lease_renewal_report' %}" class="btn btn-info action-secondary">Lease Renewals</a>
+      <a href="{% url 'tenant_payment_days' %}" class="btn btn-info action-secondary">Payment Behaviour</a>
 
       <!-- Mobile-only "More" dropdown -->
       <div class="action-more-wrapper">
@@ -67,6 +68,9 @@ Tenants
           </a>
           <a href="{% url 'lease_renewal_report' %}" class="action-more-item" role="menuitem">
             <i class="fas fa-sync-alt"></i> Lease Renewals
+          </a>
+          <a href="{% url 'tenant_payment_days' %}" class="action-more-item" role="menuitem">
+            <i class="fas fa-stopwatch"></i> Payment Behaviour
           </a>
         </div>
       </div>
