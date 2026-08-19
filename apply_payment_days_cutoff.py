@@ -3,12 +3,16 @@
 apply_payment_days_cutoff.py
 ============================
 
-Upgrades an ALREADY-INSTALLED tenant payment-behaviour screen to the agreed
-scope rules. Run this only if you have already run apply_tenant_payment_days.py;
-on a fresh install that script now produces this version directly.
+Re-syncs an ALREADY-INSTALLED tenant payment-behaviour screen with whatever
+apply_tenant_payment_days.py currently says. Run it after any change to that
+file; on a fresh install, apply_tenant_payment_days.py alone is enough.
 
-What changes
-------------
+It is deliberately a SYNC, not a one-shot upgrade: "already applied" means the
+installed code matches the master, not that the script has been run before. A
+sentinel would have made every later tweak need its own throwaway patcher.
+
+What it first delivered
+-----------------------
 1. **A hard 1 Aug 2026 cutoff.** Nothing dated earlier is in scope. The paid
    date only began being recorded when the feature went live, so every earlier
    invoice can say exactly one thing - unknown - and a list of unknowns made a
@@ -56,7 +60,9 @@ MASTER = os.path.join(ROOT, 'apply_tenant_payment_days.py')
 VIEWS = os.path.join(ROOT, 'pages', 'views', 'tenants.py')
 TEMPLATE_PATH = os.path.join(ROOT, 'pages', 'templates', 'tenant_payment_days.html')
 
-SENTINEL = 'PAYMENT_DATA_STARTS'
+# Guards against being pointed at a stale apply_tenant_payment_days.py. Not an
+# idempotence marker - that is a straight comparison against the master.
+MASTER_MARKER = 'PAYMENT_DATA_STARTS'
 
 # The view block was appended to tenants.py by the original patcher and starts
 # with this comment. Everything from here to end-of-file is ours to replace.
@@ -79,9 +85,9 @@ def load_master():
     if not view or not template:
         print('! could not read VIEW/TEMPLATE out of apply_tenant_payment_days.py')
         return None, None
-    if SENTINEL not in view:
+    if MASTER_MARKER not in view:
         print('! apply_tenant_payment_days.py is the OLD version - it has no %s.'
-              % SENTINEL)
+              % MASTER_MARKER)
         print('  Replace it with the updated one first; this script only carries')
         print('  the splice logic, not the code.')
         return None, None
@@ -105,60 +111,69 @@ def main():
     nl = '\r\n' if b'\r\n' in raw else '\n'
     src = raw.decode(enc).replace('\r\n', '\n')
 
-    if SENTINEL in src:
-        print('= tenants.py already carries the cutoff')
-        already_view = True
-    else:
-        already_view = False
+    n = src.count(BLOCK_START)
+    if n != 1:
+        print('! block-start marker matched %d times, expected 1 - aborting.' % n)
+        print('  Expected the view appended by apply_tenant_payment_days.py.')
+        return 1
 
-    if not already_view:
-        n = src.count(BLOCK_START)
-        if n != 1:
-            print('! block-start marker matched %d times, expected 1 - aborting.' % n)
-            print('  Expected the view appended by apply_tenant_payment_days.py.')
-            return 1
+    head, _, tail = src.partition(BLOCK_START)
 
-        head, _, tail = src.partition(BLOCK_START)
+    # Refuse to swallow anything that was added after our block. The splice
+    # runs to end-of-file, so a stray function below would be destroyed.
+    strays = [m for m in re.findall(r'^def (\w+)', tail, re.M)
+              if m != 'tenant_payment_days_view']
+    if strays:
+        print('! found other top-level function(s) after the payment-days block: %s'
+              % ', '.join(strays))
+        print('  Refusing to replace to end-of-file - move them above the block,')
+        print('  or apply the change by hand.')
+        return 1
 
-        # Refuse to swallow anything that was added after our block. The splice
-        # runs to end-of-file, so a stray function below would be destroyed.
-        strays = [m for m in re.findall(r'^def (\w+)', tail, re.M)
-                  if m != 'tenant_payment_days_view']
-        if strays:
-            print('! found other top-level function(s) after the payment-days block: %s'
-                  % ', '.join(strays))
-            print('  Refusing to replace to end-of-file - move them above the block,')
-            print('  or apply the change by hand.')
-            return 1
+    # Two blank lines before the block, per PEP 8 - rstrip removes the
+    # existing ones, so they have to be put back deliberately.
+    new_src = head.rstrip('\n') + '\n\n\n' + view.strip('\n') + '\n'
 
-        # Two blank lines before the block, per PEP 8 - rstrip removes the
-        # existing ones, so they have to be put back deliberately.
-        src = head.rstrip('\n') + '\n\n\n' + view.strip('\n') + '\n'
+    with open(TEMPLATE_PATH, encoding='utf-8') as fh:
+        current_template = fh.read()
+
+    # Idempotence is "matches the master", not "has been run once". A sentinel
+    # would make this a one-shot tool, and every later tweak to the view would
+    # then need its own throwaway patcher.
+    view_changed = new_src != src
+    template_changed = (current_template.replace('\r\n', '\n')
+                        != template.replace('\r\n', '\n'))
+
+    if not view_changed and not template_changed:
+        print('= already in sync with apply_tenant_payment_days.py - nothing to do')
+        return 0
 
     if CHECK:
         print('= check only, nothing written')
-        print('    tenants.py  %s' % ('already current' if already_view else 'would be spliced'))
-        print('    template    would be rewritten')
+        print('    tenants.py  %s' % ('would be re-spliced' if view_changed else 'in sync'))
+        print('    template    %s' % ('would be rewritten' if template_changed else 'in sync'))
         return 0
 
-    if not already_view:
+    if view_changed:
         bak = VIEWS + '.bak_cutoff'
         if not os.path.exists(bak):
             shutil.copy2(VIEWS, bak)
         with open(VIEWS, 'w', encoding=enc, newline='') as fh:
-            fh.write(src.replace('\n', nl) if nl == '\r\n' else src)
-        print('+ pages/views/tenants.py - view replaced (backup: .bak_cutoff)')
+            fh.write(new_src.replace('\n', nl) if nl == '\r\n' else new_src)
+        print('+ pages/views/tenants.py - view block re-synced (backup: .bak_cutoff)')
+    else:
+        print('= pages/views/tenants.py already in sync')
 
-    with open(TEMPLATE_PATH, 'w', encoding='utf-8', newline='\r\n') as fh:
-        fh.write(template)
-    print('+ pages/templates/tenant_payment_days.html rewritten')
+    if template_changed:
+        with open(TEMPLATE_PATH, 'w', encoding='utf-8', newline='\r\n') as fh:
+            fh.write(template)
+        print('+ pages/templates/tenant_payment_days.html rewritten')
+    else:
+        print('= template already in sync')
 
-    print('')
-    print('  - nothing dated before 1 Aug 2026 is in scope')
-    print('  - "Not yet measurable" section removed, replaced by a count')
-    print('  - pre-cutoff unpaid invoices counted and totalled, not listed')
     print('')
     print('Verify:  python -m py_compile pages/views/tenants.py')
+    print('         python test_tenant_payment_days.py')
     print('         python manage.py check')
     return 0
 

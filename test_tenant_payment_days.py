@@ -157,7 +157,13 @@ checks = [
          for r in rows for m in r['measured'])),
 
     ('tenant with only old history is absent', 'Only Old History' not in names),
-    ('...but counted, not silently dropped', s['no_measurement_yet'] == 2),
+
+    # The "not shown" counter means "awaiting a payment", not "absent". A tenant
+    # whose invoices all predate the cutoff is not waiting for anything - their
+    # lease ended before the report's era. Counting them made the figure read 19
+    # when exactly one tenant was actually pending.
+    ('only tenants with an in-scope invoice are counted as pending',
+     s['no_measurement_yet'] == 1),
 
     ('pre-cutoff unpaid is NOT listed', date(2026, 6, 1) not in unpaid_dates),
     ('...but its count is kept', s['old_unpaid_count'] == 1),

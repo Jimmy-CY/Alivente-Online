@@ -163,11 +163,14 @@ def tenant_payment_days_view(request):
         invs = list(invoices.objects.filter(tenant=t).order_by('invoice_date'))
 
         measured, unpaid = [], []
+        in_scope_invoices = 0
         for inv in invs:
             if inv.invoice_date is None:
                 continue
 
             in_scope = inv.invoice_date >= PAYMENT_DATA_STARTS
+            if in_scope:
+                in_scope_invoices += 1
             is_paid = (inv.invoice_paid or '').strip().lower() == 'yes'
 
             if in_scope and inv.invoice_paid_date:
@@ -197,9 +200,14 @@ def tenant_payment_days_view(request):
         if not measured:
             # No section explaining why. Before the cutoff the paid date was not
             # recorded, so the only available explanation was "unknown", and a
-            # list of unknowns made a clean tenant look like a problem one. The
-            # tenant simply is not in the table yet; the count below says so.
-            no_measurement_yet += 1
+            # list of unknowns made a clean tenant look like a problem one.
+            #
+            # Only tenants with an in-scope invoice are counted as "not shown".
+            # A tenant with none is not awaiting anything - their lease simply
+            # ended before the report's era, and counting them made the figure
+            # read 19 when exactly one tenant was actually pending.
+            if in_scope_invoices:
+                no_measurement_yet += 1
             continue
 
         days = [m['days'] for m in measured]
@@ -823,6 +831,9 @@ tr.pd-band-late td   { background: #fef8f7; }
     border-bottom: 1px solid #e1e5e9;
     padding: 5px 10px;
 }
+/* Needs to be more specific than the rule above, or "Days" and "Amount" sit
+   left while their figures sit right. */
+.pd-detail-table th.pd-num { text-align: right; }
 .pd-detail-table td { padding: 5px 10px; border-bottom: 1px solid #eef0f2; }
 
 .pd-legend { font-size: 0.85rem; color: #7f8c8d; margin-top: 12px; }
