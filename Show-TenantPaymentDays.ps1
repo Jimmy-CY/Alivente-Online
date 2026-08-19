@@ -56,6 +56,11 @@ DETAIL   = __DETAIL__
 BAR = '=' * 100
 today = date.today()
 
+# Nothing before this is in scope: the paid date was not being recorded, so an
+# earlier invoice can only say "unknown". The exception is money - an unpaid
+# invoice from before the cutoff is counted and totalled, just not listed.
+DATA_STARTS = date(2026, 8, 1)
+
 # Days past the agreed terms before a tenant is called slow. Not zero: terms
 # across this portfolio are 0 (rent due on the invoice date), so a knife-edge
 # at zero would flag everyone who pays on the 2nd rather than the 1st.
@@ -75,18 +80,29 @@ if not SHOW_ALL:
 
 print(BAR)
 print('TENANT PAYMENT BEHAVIOUR - days from invoice date to payment')
-print('Data starts 2026-08-03 (when the paid date began being recorded).')
+print('In scope from %s onwards. Earlier invoices had no paid date recorded.'
+      % DATA_STARTS)
 print(BAR)
 
 rows, nodata, outstanding = [], [], []
+old_unpaid_count, old_unpaid_total = 0, 0.0
 for t in ts:
-    qs = invoices.objects.filter(tenant=t).order_by('invoice_date')
-    measured = [(i.invoice_date, i.invoice_paid_date,
-                 (i.invoice_paid_date - i.invoice_date).days, i.effective_amount)
-                for i in qs if i.invoice_paid_date and i.invoice_date]
-    for i in qs:
-        if (i.invoice_paid or '').strip().lower() != 'yes' and i.invoice_date:
-            outstanding.append((t, i, (today - i.invoice_date).days))
+    measured = []
+    for i in invoices.objects.filter(tenant=t).order_by('invoice_date'):
+        if i.invoice_date is None:
+            continue
+        in_scope = i.invoice_date >= DATA_STARTS
+        is_paid = (i.invoice_paid or '').strip().lower() == 'yes'
+        if in_scope and i.invoice_paid_date:
+            measured.append((i.invoice_date, i.invoice_paid_date,
+                             (i.invoice_paid_date - i.invoice_date).days,
+                             i.effective_amount))
+        if not is_paid:
+            if in_scope:
+                outstanding.append((t, i, (today - i.invoice_date).days))
+            else:
+                old_unpaid_count += 1
+                old_unpaid_total += float(i.effective_amount or 0)
     if not measured:
         nodata.append(t); continue
     d = [m[2] for m in measured]
@@ -99,8 +115,8 @@ for t in ts:
 
 if not rows:
     print('')
-    print('No measurable payments yet. Each one needs BOTH an invoice date and a')
-    print('paid date, and paid dates only began on 2026-08-03.')
+    print('No measurable payments yet. Each one needs an invoice dated %s or' % DATA_STARTS)
+    print('later with a paid date against it.')
 else:
     rows.sort(key=lambda r: r['avg'], reverse=True)
     print('')
@@ -139,29 +155,14 @@ else:
                 print('    invoiced %s  paid %s  = %3d days   EUR %s' % (idate, pdate, days, amt))
 
 if nodata:
+    # Counted, never silently dropped - but no per-invoice "why" list any more.
+    # Before the cutoff the only available reason was "unknown", and a list of
+    # unknowns made a tenant with a clean record look like one with a problem.
     print('')
-    print(BAR)
-    print('NO MEASURABLE PAYMENTS YET (%d) - and why' % len(nodata))
-    print('A payment is measurable only when the invoice has BOTH a date and a')
-    print('paid date. Paid dates began on 2026-08-03; anything marked paid before')
-    print('that has no date and cannot be recovered.')
+    print('%d tenant(s) not shown - no payment recorded yet since %s:'
+          % (len(nodata), DATA_STARTS))
     for t in nodata:
-        print('')
-        print('  %s  (%s)' % (t.tenant_name, t.prop.prop_name))
-        inv_rows = list(invoices.objects.filter(tenant=t).order_by('-invoice_date')[:6])
-        if not inv_rows:
-            print('      no invoices on record at all')
-            continue
-        for i in inv_rows:
-            paid = (i.invoice_paid or '(blank)')
-            if i.invoice_paid_date:
-                why = 'measurable'
-            elif (i.invoice_paid or '').strip().lower() == 'yes':
-                why = '<-- marked paid, but NO paid date (paid before 2026-08-03)'
-            else:
-                why = 'not paid yet'
-            print('      invoiced %-12s paid=%-8s paid_date=%-12s %s'
-                  % (i.invoice_date, paid, i.invoice_paid_date or '(none)', why))
+        print('    %-28s %s' % ((t.tenant_name or '')[:28], t.prop.prop_name or ''))
 
 if outstanding:
     outstanding.sort(key=lambda x: x[2], reverse=True)
@@ -172,6 +173,14 @@ if outstanding:
         print('    %-28s %-20s invoiced %s  %4d days ago  EUR %s'
               % ((t.tenant_name or '')[:28], (t.prop.prop_name or '')[:20],
                  i.invoice_date, age, i.effective_amount))
+
+if old_unpaid_count:
+    # Hidden because it illustrates no payment behaviour, not because it does
+    # not matter. The money stays visible.
+    print('')
+    print('    Plus %d unpaid invoice(s) dated before %s, totalling EUR %.2f -'
+          % (old_unpaid_count, DATA_STARTS, old_unpaid_total))
+    print('    not listed, but still outstanding.')
 
 print('')
 print(BAR)

@@ -104,6 +104,20 @@ VIEW = '''
 # days past terms is genuinely behaving differently from one averaging 2.
 PAYMENT_GRACE_DAYS = 7
 
+# Nothing dated before this is in scope. The paid date only began being recorded
+# when the feature went live, so every earlier invoice can say exactly one thing
+# - unknown - and a list of unknowns made a tenant with a clean record look like
+# a tenant with a problem.
+#
+# The one thing that is NOT thrown away is money: an unpaid invoice from before
+# the cutoff is still a debt, so it is counted and totalled beneath the unpaid
+# list rather than listed. Hidden because it illustrates nothing, not because it
+# does not matter.
+#
+# Applies with ?all=1 too - a lease that ended before this date contributes
+# nothing either way.
+PAYMENT_DATA_STARTS = date(2026, 8, 1)
+
 
 @login_required
 @permission_required('auth.can_access_tenants', raise_exception=True)
@@ -114,15 +128,19 @@ def tenant_payment_days_view(request):
     per tenant against the terms agreed on the lease
     (`tenant.tenant_payment_terms`).
 
-    Two things to know about the numbers.
+    Three things to know about the numbers.
 
-    First, the history is short. `invoice_paid_date` was only added on
-    3 Aug 2026 (migration 0088); anything marked paid before then has no date
-    and is not recoverable. Rent is monthly, so each tenant contributes roughly
-    one measurement a month - about six before an average means much. `n` is on
-    every row so a thin average is never mistaken for a settled one.
+    First, the history is short and starts hard at PAYMENT_DATA_STARTS. Rent is
+    monthly, so each tenant contributes roughly one measurement a month - about
+    six before an average means much. The payment count sits under every tenant
+    name so a thin average is never mistaken for a settled one.
 
-    Second, terms of 0 days is a real answer - due on the invoice date - so
+    Second, a tenant with no measurement yet is simply absent from the table,
+    counted in `summary.no_measurement_yet`. There is deliberately no section
+    listing them with reasons: before the cutoff the only available reason was
+    "unknown".
+
+    Third, terms of 0 days is a real answer - due on the invoice date - so
     every test here is `is not None`, never truthiness. Reading 0 as "not set"
     would quietly drop exactly the tenants who pay on presentation.
 
@@ -137,14 +155,22 @@ def tenant_payment_days_view(request):
     if not show_all:
         tenants = tenants.filter(tenant_current__iexact='Yes')
 
-    rows, no_data, outstanding = [], [], []
+    rows, outstanding = [], []
+    no_measurement_yet = 0
+    old_unpaid_count, old_unpaid_total = 0, 0.0
 
     for t in tenants:
         invs = list(invoices.objects.filter(tenant=t).order_by('invoice_date'))
 
-        measured = []
+        measured, unpaid = [], []
         for inv in invs:
-            if inv.invoice_paid_date and inv.invoice_date:
+            if inv.invoice_date is None:
+                continue
+
+            in_scope = inv.invoice_date >= PAYMENT_DATA_STARTS
+            is_paid = (inv.invoice_paid or '').strip().lower() == 'yes'
+
+            if in_scope and inv.invoice_paid_date:
                 measured.append({
                     'invoice_date': inv.invoice_date,
                     'paid_date': inv.invoice_paid_date,
@@ -152,29 +178,28 @@ def tenant_payment_days_view(request):
                     'amount': inv.effective_amount,
                 })
 
-        for inv in invs:
-            if (inv.invoice_paid or '').strip().lower() != 'yes' and inv.invoice_date:
-                outstanding.append({
-                    'tenant': t,
-                    'invoice': inv,
-                    'age': (today - inv.invoice_date).days,
-                })
+            if not is_paid:
+                if in_scope:
+                    unpaid.append({
+                        'tenant': t,
+                        'invoice': inv,
+                        'age': (today - inv.invoice_date).days,
+                    })
+                else:
+                    # Still a real debt, so it is counted and totalled rather
+                    # than dropped - just not listed, because a row from before
+                    # the cutoff has no payment behaviour to illustrate.
+                    old_unpaid_count += 1
+                    old_unpaid_total += float(inv.effective_amount or 0)
+
+        outstanding.extend(unpaid)
 
         if not measured:
-            # Say WHY rather than leaving a blank row - the usual reason is a
-            # payment made before the paid date was ever recorded, which is a
-            # gap in history, not a gap in the tenant's behaviour.
-            recent = []
-            for inv in sorted(invs, key=lambda i: (i.invoice_date is None,
-                                                   i.invoice_date), reverse=True)[:6]:
-                if inv.invoice_paid_date:
-                    why = 'measurable'
-                elif (inv.invoice_paid or '').strip().lower() == 'yes':
-                    why = 'marked paid, but no paid date recorded'
-                else:
-                    why = 'not paid yet'
-                recent.append({'invoice': inv, 'why': why})
-            no_data.append({'tenant': t, 'recent': recent})
+            # No section explaining why. Before the cutoff the paid date was not
+            # recorded, so the only available explanation was "unknown", and a
+            # list of unknowns made a clean tenant look like a problem one. The
+            # tenant simply is not in the table yet; the count below says so.
+            no_measurement_yet += 1
             continue
 
         days = [m['days'] for m in measured]
@@ -222,20 +247,21 @@ def tenant_payment_days_view(request):
         'portfolio_avg': (sum(all_days) / float(len(all_days))) if all_days else None,
         'flagged': len([r for r in rows if r['band'] in ('slight', 'late')]),
         'missing_terms': len([r for r in rows if r['terms'] is None]),
-        'not_measurable': len(no_data),
+        'no_measurement_yet': no_measurement_yet,
+        'old_unpaid_count': old_unpaid_count,
+        'old_unpaid_total': old_unpaid_total,
         'outstanding_total': sum(float(o['invoice'].effective_amount or 0)
                                  for o in outstanding),
     }
 
     context = {
         'rows': rows,
-        'no_data': no_data,
         'outstanding': outstanding,
         'summary': summary,
         'show_all': show_all,
         'today': today,
         'grace': PAYMENT_GRACE_DAYS,
-        'data_starts': date(2026, 8, 3),
+        'data_starts': PAYMENT_DATA_STARTS,
     }
     return render(request, 'tenant_payment_days.html', context)
 '''
@@ -418,17 +444,6 @@ TEMPLATE = '''{% extends 'base.html' %}
       </a>
     </div>
 
-    <!-- How much weight the numbers can carry. Stated up front rather than
-         in a footnote, because a three-point average looks identical to a
-         thirty-point one unless somebody says so. -->
-    <div class="pd-caveat">
-      <i class="fas fa-info-circle"></i>
-      Paid dates have only been recorded since <strong>{{ data_starts }}</strong>, and rent is
-      monthly &mdash; so each tenant contributes about one measurement a month. Read the
-      <strong>ranking</strong> rather than the absolute numbers until <code>n</code> reaches
-      about six. Rows still building are marked <span class="pd-prov">provisional</span>.
-    </div>
-
     {% if summary.payments_measured %}
     <div class="pd-summary">
       <div class="pd-stat">
@@ -460,6 +475,14 @@ TEMPLATE = '''{% extends 'base.html' %}
           <i class="fas fa-users"></i> Include past tenants
         </a>
       {% endif %}
+      {% if summary.no_measurement_yet %}
+        <!-- The section that used to list these, with a reason each, is gone.
+             The count remains so they are not silently dropped. -->
+        <span class="pd-note">
+          {{ summary.no_measurement_yet }} tenant{{ summary.no_measurement_yet|pluralize }}
+          not shown &mdash; no payment recorded yet since {{ data_starts }}.
+        </span>
+      {% endif %}
       {% if summary.missing_terms %}
         <span class="pd-terms-warning">
           <i class="fas fa-exclamation-triangle"></i>
@@ -477,7 +500,6 @@ TEMPLATE = '''{% extends 'base.html' %}
             <th class="pd-col-name">Tenant</th>
             <th class="pd-col-prop">Property</th>
             <th class="pd-num">Terms</th>
-            <th class="pd-num">n</th>
             <th class="pd-num">Avg</th>
             <th class="pd-num">Median</th>
             <th class="pd-num">Best</th>
@@ -492,14 +514,17 @@ TEMPLATE = '''{% extends 'base.html' %}
           <tr class="pd-row pd-band-{{ r.band }}">
             <td class="pd-col-name" data-label="Tenant">
               <span class="pd-name">{{ r.tenant.tenant_name }}</span>
-              {% if r.provisional %}<span class="pd-prov">provisional</span>{% endif %}
+              <!-- Replaces both the old n column and the "provisional" chip.
+                   How much an average rests on is the single most important
+                   thing about it here, and "1 payment" says that outright
+                   where a label like "provisional" made you go and look. -->
+              <span class="pd-count">{{ r.n }} payment{{ r.n|pluralize }}</span>
             </td>
             <td class="pd-col-prop" data-label="Property">{{ r.tenant.prop.prop_name }}</td>
             <td class="pd-num" data-label="Terms">
               {% if r.terms is None %}<span class="pd-muted">not set</span>
               {% else %}{{ r.terms }}d{% endif %}
             </td>
-            <td class="pd-num" data-label="n">{{ r.n }}</td>
             <td class="pd-num pd-strong" data-label="Avg">{{ r.avg|floatformat:1 }}</td>
             <td class="pd-num" data-label="Median">{{ r.median|floatformat:1 }}</td>
             <td class="pd-num" data-label="Best">{{ r.best }}</td>
@@ -521,7 +546,7 @@ TEMPLATE = '''{% extends 'base.html' %}
             </td>
           </tr>
           <tr class="pd-detail" id="pd-detail-{{ r.tenant.tenant_id }}" hidden>
-            <td colspan="11">
+            <td colspan="10">
               <div class="pd-detail-inner">
                 <div class="pd-detail-title">Every measured payment &mdash; most recent first</div>
                 <table class="pd-detail-table">
@@ -550,6 +575,9 @@ TEMPLATE = '''{% extends 'base.html' %}
       so a tenant is only <em>flagged</em> once that gap exceeds
       <strong>{{ grace }} days</strong>: green within grace, amber to
       {{ grace|add:grace }} days, red beyond. Sorted slowest first.
+      Paid dates have only been recorded since {{ data_starts }} and rent is monthly, so
+      each tenant gains about one payment a month &mdash; read the ranking rather than the
+      absolute numbers until the counts under each name reach about six.
     </p>
     {% else %}
     <div class="pd-empty">
@@ -557,35 +585,6 @@ TEMPLATE = '''{% extends 'base.html' %}
       <p><strong>Nothing measurable yet.</strong></p>
       <p>A payment can only be measured when its invoice has both a date and a paid date,
          and paid dates only began being recorded on {{ data_starts }}.</p>
-    </div>
-    {% endif %}
-
-    {% if no_data %}
-    <div class="pd-section">
-      <h4 class="pd-section-title">
-        Not yet measurable ({{ no_data|length }})
-        <span class="pd-section-note">&mdash; and why</span>
-      </h4>
-      {% for nd in no_data %}
-      <div class="pd-nodata-card">
-        <div class="pd-nodata-head">
-          {{ nd.tenant.tenant_name }}
-          <span class="pd-muted">&middot; {{ nd.tenant.prop.prop_name }}</span>
-        </div>
-        {% if nd.recent %}
-        <ul class="pd-nodata-list">
-          {% for item in nd.recent %}
-          <li>
-            <span class="pd-mono">{{ item.invoice.invoice_date|default:"no date" }}</span>
-            <span class="pd-muted">{{ item.why }}</span>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <div class="pd-muted">No invoices on record at all.</div>
-        {% endif %}
-      </div>
-      {% endfor %}
     </div>
     {% endif %}
 
@@ -616,6 +615,17 @@ TEMPLATE = '''{% extends 'base.html' %}
           </tbody>
         </table>
       </div>
+      {% if summary.old_unpaid_count %}
+      <!-- Counted, not listed. An old unpaid invoice illustrates no payment
+           behaviour - there is no paid date to measure - but it is still money
+           owed, so the figure stays visible. -->
+      <p class="pd-note pd-note-block">
+        Plus {{ summary.old_unpaid_count }} unpaid invoice{{ summary.old_unpaid_count|pluralize }}
+        dated before {{ data_starts }}, totalling
+        <strong>&euro;{{ summary.old_unpaid_total|floatformat:2 }}</strong> &mdash; not listed
+        here because they predate the payment tracking, but still outstanding.
+      </p>
+      {% endif %}
     </div>
     {% endif %}
 
@@ -674,25 +684,6 @@ TEMPLATE = '''{% extends 'base.html' %}
 }
 
 .back-button { flex-shrink: 0; }
-
-/* ---- caveat ---- */
-.pd-caveat {
-    background: #eef6fb;
-    border-left: 4px solid #17a2b8;
-    border-radius: 6px;
-    padding: 12px 16px;
-    font-size: 0.9rem;
-    color: #34495e;
-    line-height: 1.5;
-    margin-bottom: 20px;
-}
-.pd-caveat i { color: #17a2b8; margin-right: 6px; }
-.pd-caveat code {
-    background: #dceef5;
-    padding: 1px 5px;
-    border-radius: 3px;
-    color: #0c5460;
-}
 
 /* ---- summary strip ---- */
 .pd-summary {
@@ -767,17 +758,13 @@ TEMPLATE = '''{% extends 'base.html' %}
 .pd-muted { color: #95a5a6; }
 .pd-mono { font-family: 'Courier New', monospace; }
 
-.pd-prov {
-    display: inline-block;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    background: #ecf0f1;
-    color: #7f8c8d;
-    border-radius: 3px;
-    padding: 1px 6px;
-    margin-left: 6px;
-    vertical-align: middle;
+/* Sits under the name, quiet enough to ignore when it says "14 payments" and
+   noticeable enough to catch when it says "1 payment". */
+.pd-count {
+    display: block;
+    font-size: 0.75rem;
+    color: #95a5a6;
+    margin-top: 2px;
 }
 
 /* Colour carries the same message as the sign, for anyone scanning fast. */
@@ -852,17 +839,20 @@ tr.pd-band-late td   { background: #fef8f7; }
 }
 .pd-section-note { font-weight: 400; color: #7f8c8d; font-size: 0.9rem; }
 
-.pd-nodata-card {
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    background: #fdfdfe;
+/* Counts for things deliberately not listed. Quiet, but never absent - a
+   suppressed row that leaves no trace reads as "there was nothing". */
+.pd-note {
+    font-size: 0.85rem;
+    color: #7f8c8d;
 }
-.pd-nodata-head { font-weight: 600; color: #2c3e50; margin-bottom: 6px; }
-.pd-nodata-list { list-style: none; margin: 0; padding: 0; font-size: 0.86rem; }
-.pd-nodata-list li { padding: 2px 0; }
-.pd-nodata-list .pd-mono { margin-right: 10px; }
+.pd-note-block {
+    margin: 12px 0 0 0;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-left: 3px solid #dfe4e8;
+    border-radius: 0 5px 5px 0;
+}
+.pd-note-block strong { color: #2c3e50; }
 
 .pd-empty {
     text-align: center;
@@ -917,7 +907,11 @@ tr.pd-band-late td   { background: #fef8f7; }
         background: #f8f9fa;
         border-radius: 6px 6px 0 0;
         font-size: 1rem;
+        flex-wrap: wrap;
     }
+    /* The name cell is a flex row on mobile, so the count needs its own line
+       explicitly - display:block alone does nothing to a flex item. */
+    .pd-col-name .pd-count { flex-basis: 100%; text-align: right; }
     .pd-col-toggle { width: 100%; }
     .pd-col-toggle::before { content: "Detail"; }
     .pd-detail td { display: block; }

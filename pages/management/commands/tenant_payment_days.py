@@ -12,17 +12,31 @@ Measures `invoice_paid_date - invoice_date` per invoice and summarises it per
 tenant, against the payment terms agreed in their lease
 (`tenant.tenant_payment_terms`).
 
-IMPORTANT - the data only starts on 3 Aug 2026, when `invoice_paid_date` was
-added (migration 0088). Invoices paid before then have no paid date and are
-invisible here; that history was never recorded and cannot be recovered. Rent
-is monthly, so each tenant yields roughly one data point a month: expect this
-to become meaningful around six months in, and genuinely interesting after a
-year. `n` is printed on every row so a thin average is never mistaken for a
+Scope starts hard at DATA_STARTS
+--------------------------------
+Nothing dated earlier is in scope. The paid date only began being recorded when
+the feature went live, so every earlier invoice can say exactly one thing -
+unknown - and a list of unknowns is not information.
+
+The single exception is money. An unpaid invoice from before the cutoff is
+still a debt, so it is counted and totalled rather than dropped; it just is not
+listed, because it illustrates no payment behaviour.
+
+Reading the numbers
+-------------------
+Rent is monthly, so each tenant yields roughly one data point a month: expect
+this to become meaningful around six months in, and genuinely interesting after
+a year. `n` is printed on every row so a thin average is never mistaken for a
 solid one.
 
-The paid date is stamped when the invoice is marked Paid on the system. At
-Alivente the bank is checked and invoices marked daily, so that is a faithful
-proxy for the date the money arrived.
+Terms of 0 days is a real answer - due on the invoice date - so every test here
+is `is not None`, never truthiness. Across this portfolio every tenant is on
+0-day terms, which is exactly why a truthiness test would have emptied the
+whole VS TERMS column.
+
+The paid date is stamped when the invoice is marked Paid. At Alivente the bank
+is checked and invoices marked daily, so that is a faithful proxy for the date
+the money arrived.
 """
 
 from datetime import date
@@ -32,7 +46,9 @@ from django.core.management.base import BaseCommand
 from pages.models import invoices, tenant
 
 BAR = '=' * 100
-DATA_STARTS = date(2026, 8, 3)   # migration 0088
+
+# Nothing before this date is in scope. See the module docstring.
+DATA_STARTS = date(2026, 8, 1)
 
 # Days past the agreed terms before a tenant is called slow. Not zero: terms
 # across this portfolio are 0 (rent due on the invoice date), so a knife-edge
@@ -64,7 +80,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         today = date.today()
-        cutoff = None
+
+        # --months narrows the window; it can never widen it past DATA_STARTS.
+        floor = DATA_STARTS
         if opts['months']:
             months = opts['months']
             year = today.year - ((12 - today.month + months) // 12)
@@ -72,7 +90,7 @@ class Command(BaseCommand):
             if month <= 0:
                 month += 12
                 year -= 1
-            cutoff = date(year, month, 1)
+            floor = max(floor, date(year, month, 1))
 
         tenants = tenant.objects.select_related('prop').order_by('tenant_name')
         if not opts['all']:
@@ -80,34 +98,37 @@ class Command(BaseCommand):
 
         self.stdout.write(BAR)
         self.stdout.write('TENANT PAYMENT BEHAVIOUR - days from invoice date to payment')
-        self.stdout.write('Data starts %s (when the paid date began being recorded). '
-                          'Earlier payments are not measurable.' % DATA_STARTS.isoformat())
-        if cutoff:
-            self.stdout.write('Restricted to invoices dated on or after %s.' % cutoff.isoformat())
+        self.stdout.write('In scope from %s onwards. Earlier invoices had no paid date '
+                          'recorded and are excluded.' % floor.isoformat())
         self.stdout.write(BAR)
 
-        rows, no_data, outstanding_rows = [], [], []
+        rows, outstanding_rows = [], []
+        no_measurement_yet = []
+        old_unpaid_count, old_unpaid_total = 0, 0.0
 
         for t in tenants:
-            qs = invoices.objects.filter(tenant=t)
-            if cutoff:
-                qs = qs.filter(invoice_date__gte=cutoff)
-
             measured = []
-            for inv in qs.order_by('invoice_date'):
-                if inv.invoice_paid_date and inv.invoice_date:
+            for inv in invoices.objects.filter(tenant=t).order_by('invoice_date'):
+                if inv.invoice_date is None:
+                    continue
+
+                in_scope = inv.invoice_date >= floor
+                is_paid = (inv.invoice_paid or '').strip().lower() == 'yes'
+
+                if in_scope and inv.invoice_paid_date:
                     measured.append((inv.invoice_date, inv.invoice_paid_date,
                                      (inv.invoice_paid_date - inv.invoice_date).days,
                                      inv.effective_amount))
 
-            # Anything still unpaid, and how long it has been sitting there.
-            unpaid = [inv for inv in qs
-                      if (inv.invoice_paid or '').strip().lower() != 'yes' and inv.invoice_date]
-            for inv in unpaid:
-                outstanding_rows.append((t, inv, (today - inv.invoice_date).days))
+                if not is_paid:
+                    if in_scope:
+                        outstanding_rows.append((t, inv, (today - inv.invoice_date).days))
+                    else:
+                        old_unpaid_count += 1
+                        old_unpaid_total += float(inv.effective_amount or 0)
 
             if not measured:
-                no_data.append(t)
+                no_measurement_yet.append(t)
                 continue
 
             days = [m[2] for m in measured]
@@ -130,9 +151,9 @@ class Command(BaseCommand):
 
         if not rows:
             self.stdout.write('')
-            self.stdout.write('No measurable payments yet. Every paid invoice needs BOTH an')
-            self.stdout.write('invoice date and a paid date, and paid dates only began on %s.'
-                              % DATA_STARTS.isoformat())
+            self.stdout.write('No measurable payments yet. Every measured payment needs an')
+            self.stdout.write('invoice dated %s or later with a paid date against it.'
+                              % floor.isoformat())
         else:
             # Slowest first - that is the order worth reading.
             rows.sort(key=lambda r: r['avg'], reverse=True)
@@ -179,33 +200,15 @@ class Command(BaseCommand):
                         self.stdout.write('    invoiced %s  paid %s  = %3d days   EUR %s'
                                           % (inv_date, paid_date, days, amount))
 
-        if no_data:
+        # Counted, never silently dropped: a suppressed row that leaves no
+        # trace reads as "there was nothing".
+        if no_measurement_yet:
             self.stdout.write('')
-            self.stdout.write(BAR)
-            self.stdout.write('NO MEASURABLE PAYMENTS YET (%d) - and why' % len(no_data))
-            self.stdout.write('A payment is measurable only when the invoice has BOTH a date '
-                              'and a paid date.')
-            self.stdout.write('Paid dates began on %s; anything marked paid before that has no '
-                              'date and cannot be recovered.' % DATA_STARTS.isoformat())
-            for t in no_data:
-                self.stdout.write('')
-                self.stdout.write('  %s  (%s)' % (t.tenant_name, t.prop.prop_name))
-                rows_for = list(invoices.objects.filter(tenant=t)
-                                .order_by('-invoice_date')[:6])
-                if not rows_for:
-                    self.stdout.write('      no invoices on record at all')
-                    continue
-                for inv in rows_for:
-                    if inv.invoice_paid_date:
-                        why = 'measurable'
-                    elif (inv.invoice_paid or '').strip().lower() == 'yes':
-                        why = '<-- marked paid, but NO paid date (paid before %s)' % (
-                            DATA_STARTS.isoformat())
-                    else:
-                        why = 'not paid yet'
-                    self.stdout.write('      invoiced %-12s paid=%-8s paid_date=%-12s %s'
-                                      % (inv.invoice_date, inv.invoice_paid or '(blank)',
-                                         inv.invoice_paid_date or '(none)', why))
+            self.stdout.write('%d tenant(s) not shown - no payment recorded yet since %s:'
+                              % (len(no_measurement_yet), floor.isoformat()))
+            for t in no_measurement_yet:
+                self.stdout.write('    %-28s %s' % ((t.tenant_name or '')[:28],
+                                                    t.prop.prop_name or ''))
 
         if outstanding_rows:
             outstanding_rows.sort(key=lambda x: x[2], reverse=True)
@@ -214,11 +217,19 @@ class Command(BaseCommand):
             self.stdout.write('CURRENTLY UNPAID - oldest first')
             for t, inv, age in outstanding_rows:
                 style = self.style.ERROR if age > 30 else (
-                    self.style.WARNING if age > 5 else lambda s: s)
+                    self.style.WARNING if age > GRACE_DAYS else lambda s: s)
                 self.stdout.write(style('    %-28s %-20s invoiced %s  %4d days ago  EUR %s'
                                         % ((t.tenant_name or '')[:28],
                                            (t.prop.prop_name or '')[:20],
                                            inv.invoice_date, age, inv.effective_amount)))
+
+        if old_unpaid_count:
+            self.stdout.write('')
+            self.stdout.write('    Plus %d unpaid invoice(s) dated before %s, totalling '
+                              'EUR %.2f -' % (old_unpaid_count, floor.isoformat(),
+                                              old_unpaid_total))
+            self.stdout.write('    not listed (they predate the payment tracking), but '
+                              'still outstanding.')
 
         self.stdout.write('')
         self.stdout.write(BAR)
