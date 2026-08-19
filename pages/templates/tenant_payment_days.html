@@ -123,17 +123,24 @@
               <div class="pd-detail-inner">
                 <div class="pd-detail-title">Every measured payment &mdash; most recent first</div>
                 <table class="pd-detail-table">
-                  <tr>
-                    <th>Invoiced</th><th>Paid</th><th class="pd-num">Days</th><th class="pd-num">Amount</th>
-                  </tr>
-                  {% for m in r.measured %}
-                  <tr>
-                    <td>{{ m.invoice_date }}</td>
-                    <td>{{ m.paid_date }}</td>
-                    <td class="pd-num">{{ m.days }}</td>
-                    <td class="pd-num">&euro;{{ m.amount|floatformat:2 }}</td>
-                  </tr>
-                  {% endfor %}
+                  <thead>
+                    <tr>
+                      <th>Invoiced</th><th>Paid</th>
+                      <th class="pd-num">Days</th><th class="pd-num">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for m in r.measured %}
+                    <tr>
+                      <!-- "1 Aug 2026" rather than the default "Aug. 1, 2026":
+                           four columns of dates have to fit a phone. -->
+                      <td>{{ m.invoice_date|date:"j M Y" }}</td>
+                      <td>{{ m.paid_date|date:"j M Y" }}</td>
+                      <td class="pd-num">{{ m.days }}</td>
+                      <td class="pd-num">&euro;{{ m.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
                 </table>
               </div>
             </td>
@@ -207,6 +214,15 @@
 
 <style>
 /* ==================== DESKTOP ==================== */
+
+/* Bootstrap sets this globally in base.html, so the page looks right without
+   it - but then the screen's correctness depends on a stylesheet loaded
+   elsewhere. Padding here adds to width without it, and the page scrolls
+   sideways on a phone. Stated locally so this block stands on its own. */
+.report-container,
+.report-container *,
+.report-container *::before,
+.report-container *::after { box-sizing: border-box; }
 
 .report-container {
     display: flex;
@@ -388,18 +404,34 @@ tr.pd-band-late td   { background: #fef8f7; }
     color: #7f8c8d;
     margin-bottom: 8px;
 }
+/* This table is nested INSIDE a .pd-table cell, so every `.pd-table tbody td`
+   rule reaches it by descendant selector and outweighs a bare
+   `.pd-detail-table td`. Hence the `.pd-detail` prefix throughout: two classes
+   beats one, and the inner table keeps its own geometry. */
 .pd-detail-table { width: 100%; max-width: 620px; border-collapse: collapse; font-size: 0.86rem; }
-.pd-detail-table th {
+.pd-detail .pd-detail-table th {
+    /* Explicitly undo the dark header skin from `.pd-table thead th`, which
+       matches this nested thead too. These are a quiet sub-heading, not a
+       second navy banner inside an expanded row. */
+    background: transparent;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.8rem;
+    white-space: nowrap;
     text-align: left;
     color: #7f8c8d;
     font-weight: 600;
     border-bottom: 1px solid #e1e5e9;
     padding: 5px 10px;
 }
-/* Needs to be more specific than the rule above, or "Days" and "Amount" sit
-   left while their figures sit right. */
-.pd-detail-table th.pd-num { text-align: right; }
-.pd-detail-table td { padding: 5px 10px; border-bottom: 1px solid #eef0f2; }
+/* Or "Days" and "Amount" sit left while their figures sit right. */
+.pd-detail .pd-detail-table th.pd-num { text-align: right; }
+.pd-detail .pd-detail-table td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #eef0f2;
+    text-align: left;
+}
+.pd-detail .pd-detail-table td.pd-num { text-align: right; }
 
 .pd-legend { font-size: 0.85rem; color: #7f8c8d; margin-top: 12px; }
 
@@ -489,10 +521,35 @@ tr.pd-band-late td   { background: #fef8f7; }
        explicitly - display:block alone does nothing to a flex item. */
     .pd-col-name .pd-count { flex-basis: 100%; text-align: right; }
     .pd-col-toggle { width: 100%; }
-    .pd-col-toggle::before { content: "Detail"; }
-    .pd-detail td { display: block; }
-    .pd-detail-table { font-size: 0.8rem; }
-    .pd-detail-table th, .pd-detail-table td { padding: 4px 6px; }
+    /* Must out-specify `.pd-table tbody td::before`, which otherwise fills this
+       cell with an empty data-label and leaves a bare chevron with no caption. */
+    .pd-table tbody td.pd-col-toggle::before { content: "Every payment"; }
+
+    /* Undo the card treatment for the nested detail table. Everything above
+       is written as `.pd-table tbody td ...`, which reaches these cells too -
+       so without this the four columns stack into four right-aligned lines
+       with the headers orphaned above them. It stays a real table: four short
+       columns fit a phone, and one row per payment is the point of it. */
+    .pd-detail td { display: block; padding: 0 !important; }
+    .pd-detail .pd-detail-table { display: table; width: 100%; font-size: 0.78rem; }
+    .pd-detail .pd-detail-table thead { display: table-header-group; }
+    .pd-detail .pd-detail-table tbody { display: table-row-group; }
+    .pd-detail .pd-detail-table tr { display: table-row; }
+    .pd-detail .pd-detail-table th,
+    .pd-detail .pd-detail-table td {
+        display: table-cell;
+        width: auto;
+        padding: 4px 5px;
+        text-align: left;
+    }
+    .pd-detail .pd-detail-table th.pd-num,
+    .pd-detail .pd-detail-table td.pd-num { text-align: right; }
+    /* The card layout injects a label before every cell; not here. */
+    .pd-detail .pd-detail-table td::before,
+    .pd-detail .pd-detail-table th::before { content: none; }
+    /* The card layout right-aligns cell contents; the detail block is prose
+       plus a table and reads left, like everywhere else. */
+    .pd-detail-inner { padding: 12px 10px 14px 10px; text-align: left; }
 }
 </style>
 
