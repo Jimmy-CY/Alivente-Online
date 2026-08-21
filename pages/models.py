@@ -3314,6 +3314,63 @@ def record_revenue_history(rev, effective_date, *, source='direct', user=None):
         return None
 
 
+# How far back a baseline snapshot is dated.
+#
+# Deliberately remote. A baseline is not a claim about a particular year - it
+# says "this is what the figure was until something changed it". Date it too
+# recently and any earlier year falls outside the resolver's range, the source
+# drops out of the result, and the caller falls back to the LIVE row - which
+# always holds TODAY's value. The symptom is a past year quietly showing the
+# current figure, which looks plausible and is wrong.
+FH_BASELINE_DATE = _fh_date(2000, 1, 1)
+
+
+def _ensure_baseline(prop, kind, source_pk, line_type,
+                     before_months, before_amount, user):
+    """Preserve what a figure held BEFORE its first-ever recorded change.
+
+    The resolver handles "no history at all" gracefully: the source is absent
+    from the result and the caller keeps the live cells. It does NOT handle
+    "history that starts too late" - every month before the earliest snapshot
+    resolves to None, the year totals zero, and the P&L drops the row entirely.
+
+    So the first edit of a long-standing line would erase its own past. This
+    closes that window by writing the previous values at FH_BASELINE_DATE, once,
+    the first time a line is touched.
+
+    Fail-safe: never raises, so a history problem cannot break the user's save.
+    """
+    try:
+        if FinancialFigureHistory.objects.filter(kind=kind,
+                                                 source_pk=source_pk).exists():
+            return None                      # not the first change; nothing to do
+        if not any(v for v in before_months.values() if v):
+            return None                      # nothing was budgeted before
+        return FinancialFigureHistory.objects.create(
+            prop=prop, kind=kind, source_pk=source_pk, line_type=line_type,
+            effective_date=FH_BASELINE_DATE, amount=before_amount,
+            source='baseline', changed_by=user, **before_months,
+        )
+    except Exception:
+        _fh_log.exception('_ensure_baseline failed (save itself was not affected)')
+        return None
+
+
+def ensure_expense_baseline(exp, before_months, before_amount, *, user=None):
+    """Baseline for a budgeted expense. `before_months` is {month: value} using
+    the bare month names, as the history columns are named."""
+    return _ensure_baseline(
+        exp.prop, FinancialFigureHistory.KIND_BUDGET, exp.expense_id,
+        str(exp.expense_line_types), before_months, before_amount, user)
+
+
+def ensure_revenue_baseline(rev, before_months, before_amount, *, user=None):
+    """Baseline for a direct/seasonal revenue row."""
+    return _ensure_baseline(
+        rev.prop, FinancialFigureHistory.KIND_REVENUE, rev.revenue_id,
+        str(rev.revenue_line_types), before_months, before_amount, user)
+
+
 # ---- Phase-2 resolver (unused until the P&L rework; safe to ship now). --------
 def figure_monthly_value_as_of(prop, kind, source_pk, year, month_idx):
     """The monthly figure in force for `month_idx` (1-12) of `year`: the latest

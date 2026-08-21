@@ -56,6 +56,7 @@ from pages.models import (
     expense, expense_types, expense_line_types,
     tenant, act_expense, VacancyPeriod,
     FinancialFigureHistory, record_expense_history, record_revenue_history,
+    ensure_expense_baseline, ensure_revenue_baseline,
     record_valuation_history, property_value_as_of,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
@@ -101,6 +102,24 @@ def _fh_eff_date(request):
 def _fh_user(request):
     u = getattr(request, 'user', None)
     return u if (u is not None and getattr(u, 'is_authenticated', False)) else None
+
+
+def _fh_save_expense(exp, before_months, before_amount, eff, user):
+    """Baseline first, then the new version.
+
+    The order is load-bearing. ensure_expense_baseline asks whether ANY history
+    exists for the source; write the new snapshot first and it would find one,
+    conclude a baseline is already there, and skip - leaving exactly the gap it
+    is meant to close.
+    """
+    ensure_expense_baseline(exp, before_months, before_amount, user=user)
+    record_expense_history(exp, eff, source='budget', user=user)
+
+
+def _fh_save_revenue(rev, before_months, before_amount, eff, user):
+    """Baseline first, then the new version - see _fh_save_expense."""
+    ensure_revenue_baseline(rev, before_months, before_amount, user=user)
+    record_revenue_history(rev, eff, source='direct', user=user)
 
 
 # ============================================================================
@@ -275,10 +294,19 @@ def finance_revenue_edit_commit(request, revenue_id):
                 else:
                     monthly_data[f'revenue_{month}'] = None
 
+            # See the expense edit: the pre-edit values are the line's only
+            # record of its own past until a baseline exists.
+            _fh_before = {m: getattr(rev, 'revenue_' + m) for m in MONTHS}
+            _fh_before_amount = rev.revenue_amount
+
             for key, value in monthly_data.items():
                 setattr(rev, key, value)
             rev.save()
-            transaction.on_commit(lambda o=rev: record_revenue_history(o, _fh_eff_date(request), source='direct', user=_fh_user(request)))
+            _fh_eff = _fh_eff_date(request)
+            _fh_who = _fh_user(request)
+            transaction.on_commit(
+                lambda o=rev, b=_fh_before, a=_fh_before_amount,
+                       e=_fh_eff, u=_fh_who: _fh_save_revenue(o, b, a, e, u))
 
             messages.success(request, "Revenue updated successfully.")
             return redirect('finance_revenue')
@@ -689,10 +717,23 @@ def finance_expense_edit_commit(request, expense_id):
                 if getattr(expense_type, f'expense_types_{month}') == "Yes":
                     monthly_data[f'expense_{month}'] = expense_amount
 
+            # Capture what the row held BEFORE the edit. If this is the
+            # line's first ever change, that value exists in no snapshot
+            # anywhere, and without one every earlier month resolves to
+            # nothing - which is how a whole year of Company Tax vanished.
+            _fh_before = {m: getattr(existing_expense, 'expense_' + m) for m in MONTHS}
+            _fh_before_amount = existing_expense.expense_amount
+
             for field, value in monthly_data.items():
                 setattr(existing_expense, field, value)
             existing_expense.save()
-            transaction.on_commit(lambda o=existing_expense: record_expense_history(o, _fh_eff_date(request), source='budget', user=_fh_user(request)))
+            # Resolve the date and user NOW, not at commit time - request state
+            # should not be read from inside an on_commit callback.
+            _fh_eff = _fh_eff_date(request)
+            _fh_who = _fh_user(request)
+            transaction.on_commit(
+                lambda o=existing_expense, b=_fh_before, a=_fh_before_amount,
+                       e=_fh_eff, u=_fh_who: _fh_save_expense(o, b, a, e, u))
 
             messages.success(request, "Expense updated successfully.")
             return redirect('finance_expense')

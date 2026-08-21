@@ -520,6 +520,28 @@
         </div>
         
         <!-- Action Bar -->
+        <div style="background:#f8f9fa; border:1px solid #e9ecef; border-left:4px solid #17a2b8;
+                    border-radius:8px; padding:14px 18px; margin-bottom:18px;">
+          <label for="effective_date"
+                 style="display:block; font-weight:600; color:#2c3e50; margin-bottom:6px;">
+            <i class="fas fa-calendar-day" style="color:#17a2b8;"></i> Applies from
+          </label>
+          <input type="date" id="effective_date" name="effective_date"
+                 value="{% now 'Y-m-d' %}"
+                 style="border:2px solid #e9ecef; border-radius:8px; padding:8px 12px;
+                        font-size:14px; background:#fff;">
+          <p style="margin:8px 0 0 0; font-size:13px; color:#6c757d; line-height:1.5;">
+            The month this figure takes effect from. It applies from then until another
+            change supersedes it &mdash; so a figure entered here carries forward
+            indefinitely, and earlier months keep whatever applied before.
+            <br>
+            <strong>Changing a figure?</strong> Date it when the new figure takes effect
+            &mdash; which may be in the past or the future.
+            <strong>Correcting a mistake?</strong> Use the same date as the entry you are
+            correcting, not today, or the wrong figure stays in the months before it.
+          </p>
+        </div>
+
         <div class="action-bar">
             <button type="submit" id="save-button" class="btn btn-success action-primary">
                 <i class="fas fa-save"></i> Save
