@@ -527,13 +527,18 @@
             <i class="fas fa-calendar-day" style="color:#17a2b8;"></i> Applies from
           </label>
           <input type="date" id="effective_date" name="effective_date"
-                 value="{% now 'Y-m-d' %}"
+                 value="{% now 'Y' %}-01-01"
                  style="border:2px solid #e9ecef; border-radius:8px; padding:8px 12px;
                         font-size:14px; background:#fff;">
           <p style="margin:8px 0 0 0; font-size:13px; color:#6c757d; line-height:1.5;">
             The month this figure takes effect from. It applies from then until another
             change supersedes it &mdash; so a figure entered here carries forward
             indefinitely, and earlier months keep whatever applied before.
+            <br>
+            <strong>Starting something new?</strong> Date it from when it starts.
+            1 January is prefilled, so a line entered mid-year still counts for the
+            whole of that year &mdash; backdate it if it has been running longer,
+            or move it forward for next year's budget.
             <br>
             <strong>Changing a figure?</strong> Date it when the new figure takes effect
             &mdash; which may be in the past or the future.

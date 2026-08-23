@@ -44,7 +44,7 @@ param(
     [switch]$Apply,
     [switch]$Push,
     [switch]$Force,
-    [string]$Message = 'Effective-dated budget baseline, tenant payment behaviour report, reports dropdown, db error page'
+    [string]$Message = 'Pro-rata edits keep their history; opening and closing snapshots'
 )
 
 # Deliberately NOT 'Stop'.  Under 'Stop', anything a native command writes to
@@ -82,7 +82,7 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 # ------------------------------------------------------- 1. is it applied?
 # Each change leaves a distinctive string behind.  If one is missing the tree
 # is only half-patched and must not be committed.
-Head 'Are all six changes actually in the tree?'
+Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
     @{ File = 'pages\models.py';                          Text = 'FH_BASELINE_DATE = _fh_date(';  What = 'baseline constant' },
@@ -100,7 +100,21 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = 'data-menu-toggle';              What = 'shared dropdown JS' },
     @{ File = 'pages\middleware.py';                      Text = '_CONNECTIVITY_ERRNOS';          What = 'errno classification' },
     @{ File = 'pages\middleware.py';                      Text = 'charset=utf-8';                 What = 'error page charset' },
-    @{ File = 'pages\help_content\operational.html';      Text = 'Payment Behaviour';             What = 'Tenants help section' }
+    @{ File = 'pages\help_content\operational.html';      Text = 'Payment Behaviour';             What = 'Tenants help section' },
+    @{ File = 'pages\models.py';                          Text = 'def ensure_expense_opening';    What = 'opening zero snapshot' },
+    @{ File = 'pages\views\finance.py';                   Text = 'def _fh_close_expense';         What = 'closing snapshot on un-tick' },
+    @{ File = 'pages\views\finance.py';                   Text = '_fh_old_group';                 What = 'pro-rata edit updates in place' },
+    @{ File = 'pages\templates\finance_expense_add.html';  Text = "{% now 'Y' %}-01-01";          What = 'add form defaults to 1 January' },
+    @{ File = 'pages\templates\finance_revenue_add.html';  Text = "{% now 'Y' %}-01-01";          What = 'add form defaults to 1 January' },
+    @{ File = 'pages\templates\finance_expense_line_types_edit.html'; Text = 'fh-applies-from';  What = 'line-type change is datable' },
+    @{ File = 'pages\models.py';                          Text = 'def purge_figure_history';     What = 'purge on a complete removal' },
+    @{ File = 'pages\views\finance.py';                   Text = "request.POST.get('delete_mode')"; What = 'delete asks what it means' },
+    @{ File = 'pages\templates\finance_expense.html';     Text = 'id="expenseDeleteModal"';      What = 'delete dialog replaces confirm()' },
+    @{ File = 'pages\templates\finance_expense_line_types.html'; Text = 'id="ltd-choice"';       What = 'line-type delete offers both' },
+    @{ File = 'pages\templates\finance_expense_line_types.html'; Text = 'delete-dialog fits the viewport'; What = 'dialog stays on screen' },
+    @{ File = 'pages\views\finance.py';                   Text = 'That is a pro-rata expense';    What = 'pro-rata rows refuse deletion' },
+    @{ File = 'pages\templates\finance_expense.html';     Text = 'title="Pro-rata expense';       What = 'pro-rata Delete greyed out' },
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'take up its share';            What = 'un-ticking is explained' }
 )
 
 foreach ($s in $sentinels) {
@@ -151,6 +165,8 @@ if ($LASTEXITCODE -ne 0) {
 Head 'Test suites'
 $suites = @(
     'test_effective_date_baseline.py',
+    'test_prorata_history.py',
+    'test_delete_choice.py',
     'test_tenant_payment_days.py',
     'test_db_error_page.py'
 )
@@ -228,10 +244,13 @@ Head 'Commit'
 if ($LASTEXITCODE -ne 0) { Bad 'git add failed'; exit 1 }
 
 & git commit -m $Message `
-    -m 'Budget and revenue edits now write a 2000-01-01 baseline snapshot before the new one, so a first-ever edit can no longer blank out every prior year. The four finance forms gained an effective_date field, which is why the date was wrong in the first place.' `
-    -m 'Tenants: new Payment Behaviour report (7-day grace, 1-Aug-2026 data cutoff), linked from the Tenants page and documented in Tenants Help.' `
-    -m 'Desktop: multiple report buttons consolidated under one Reports dropdown on Tenants, Issues and Expenses.' `
-    -m 'Database error page: correct charset, and connectivity wording no longer claims a network fault for schema errors.' `
+    -m 'The pro-rata expense edit deleted every row in a (line type, expense type) group and recreated it, so every expense_id changed and every snapshot keyed on it was orphaned. That is what destroyed the Company Tax trail: the audit found ten dead expense_ids holding thirty unreachable snapshots. The branch now matches rows on the natural key the add screen already uses and updates them in place.' `
+    -m 'Un-ticking a property zeroes its row and snapshots that, instead of deleting it. Deleting took the row past with it, because the P&L only re-colours rows that still exist, so prior years silently lost that property share.' `
+    -m 'Creating a row writes a zero opening snapshot at FH_BASELINE_DATE. Without one a new row had no history covering earlier years, so the caller fell back to its live cells - a budget line added in August 2026 showed a full year of spend in 2024 while January to July of 2026 vanished.' `
+    -m 'The two add forms now default Applies from to 1 January of the current year; the edit forms still default to today. A budget entered mid-year counts for the whole year, and the date field genuinely controls which years a figure reaches.' `
+    -m 'Edit Expense Line Type gained an Applies from field, shown only when the pro-rata amount actually changes. It was the last screen that could change a figure without dating it, and for a pro-rata line it is the ONLY place the figure can change - the amount is read-only on the expense itself.' `
+    -m 'Deleting an expense now asks what delete means: stop it from a date, keeping every earlier year intact, or remove it and its history completely. Same choice when deleting a line type, where stopping keeps the line type because its expenses carry the history. Removing completely now also deletes the snapshots, which is what stops them becoming orphans.' `
+    -m 'A pro-rata expense row can no longer be deleted on its own - it is a share of the amount on the line type, and removing one row leaves the others holding shares of a larger split, so the line stops adding up to the charge owed. Delete is greyed out on those rows and refused server-side; un-ticking the property on the edit screen re-divides the amount and closes the row with the same zero snapshot.' `
     -m 'Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>'
 if ($LASTEXITCODE -ne 0) { Bad 'git commit failed'; exit 1 }
 Good 'committed'
@@ -255,7 +274,8 @@ Write-Host 'Railway will build and deploy from this push.' -ForegroundColor Cyan
 Write-Host 'Migrations run automatically on deploy; this batch adds none.' -ForegroundColor Cyan
 Write-Host ''
 Write-Host 'Worth checking on Live once the deploy is green:' -ForegroundColor Cyan
-Write-Host '  1. Finance > edit an expense - the effective-date field is there and prefilled'
-Write-Host '  2. Tenants > Reports > Payment Behaviour - nothing before 1 Aug 2026'
-Write-Host '  3. Tenants / Issues / Expenses - the Reports dropdown opens and closes'
+Write-Host '  1. Finance > add an expense - Applies from is prefilled 1 January'
+Write-Host '  2. Finance > edit an expense - Applies from is prefilled today'
+Write-Host '  3. Edit a pro-rata line, change nothing, save - then re-run'
+Write-Host '     .\Show-HistoryOrphans.ps1 and confirm the orphan count has NOT moved'
 Write-Host '  4. Company Tax still reads 3,500 + 3,500 before Jul-2026 and 3,300 + 3,300 after'

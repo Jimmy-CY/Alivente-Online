@@ -208,6 +208,26 @@
     border-top: 1px solid #e9ecef;
     padding: 14px 22px;
 }
+
+/* Keep the line-type delete dialog inside the viewport so the buttons stay
+   reachable. The body is the only part that scrolls; min-height:0 is what
+   lets a flex child actually shrink instead of overflowing its parent.
+   (delete-dialog fits the viewport) */
+#deleteModal .modal-content {
+    max-height: calc(100vh - 3.5rem);
+    display: flex;
+    flex-direction: column;
+}
+#deleteModal .modal-header,
+#deleteModal .modal-footer {
+    flex: 0 0 auto;
+}
+#deleteModal .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 .expense-detail-card {
     background: #fff5f5;
     border-left: 3px solid #dc3545;
@@ -227,7 +247,9 @@
     margin-bottom: 0;
 }
 .expense-detail-list {
-    max-height: 50vh;
+    /* Was 50vh. With the delete choice underneath, half the screen of expense
+       cards pushed everything else out of sight. It scrolls on its own. */
+    max-height: 26vh;
     overflow-y: auto;
     background: #f8f9fa;
     border-radius: 6px;
@@ -564,10 +586,40 @@
                     <div class="expense-detail-list" id="expensesListContainer">
                         <div id="expensesListItems"></div>
                     </div>
-                    <div class="delete-warning">
+                    <div class="delete-warning" id="ltd-purge-warning" style="display:none;">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Warning:</strong> All these expenses will be permanently deleted!
+                        <strong>Warning:</strong> These expenses and their history will
+                        be permanently deleted, so past years will stop showing them.
                     </div>
+                </div>
+
+                <div id="ltd-choice" style="display:none; margin-top:16px; font-size:14px;">
+                  <label style="display:block; border:1px solid #e9ecef; border-left:4px solid #17a2b8;
+                                border-radius:8px; padding:12px 14px; margin-bottom:10px; cursor:pointer;">
+                    <input type="radio" name="ltd_mode" value="close" checked>
+                    <strong>Stop these expenses from a date</strong>
+                    <span style="display:block; margin:6px 0 0 22px; font-size:13px; color:#6c757d;">
+                      Every earlier year keeps the figures it really had. The expenses
+                      stay in the list showing 0, and the line type is kept &mdash; it
+                      has to be, because the rows carrying that history point at it.
+                    </span>
+                    <span id="ltd-date-wrap" style="display:block; margin:10px 0 0 22px;">
+                      <span style="font-size:13px; color:#495057;">Applies from</span>
+                      <input type="date" id="ltd-date" value="{% now 'Y-m-d' %}"
+                             style="border:2px solid #e9ecef; border-radius:8px;
+                                    padding:6px 10px; font-size:14px; margin-left:6px;">
+                    </span>
+                  </label>
+
+                  <label style="display:block; border:1px solid #f5c6cb; border-left:4px solid #dc3545;
+                                border-radius:8px; padding:12px 14px; cursor:pointer;">
+                    <input type="radio" name="ltd_mode" value="purge">
+                    <strong style="color:#a71d2a;">Remove the line type and everything on it</strong>
+                    <span style="display:block; margin:6px 0 0 22px; font-size:13px; color:#6c757d;">
+                      The line type, its expenses and their history are all deleted.
+                      Past years stop showing them. This cannot be undone.
+                    </span>
+                  </label>
                 </div>
             </div>
             <div class="modal-footer">
@@ -589,6 +641,45 @@
 <script>
 let currentDeleteId = null;
 let currentDeleteName = null;
+
+// ---- Delete choice: stop from a date, or remove the past as well ----------
+// Only offered when the line type actually has linked expenses. With none,
+// there is no history to preserve and nothing to decide.
+function ltdMode() {
+    var choice = document.getElementById('ltd-choice');
+    if (!choice || choice.style.display === 'none') { return 'purge'; }
+    var picked = choice.querySelector('input[name="ltd_mode"]:checked');
+    return picked ? picked.value : 'close';
+}
+
+function ltdSyncMode() {
+    var wrap = document.getElementById('ltd-date-wrap');
+    var warn = document.getElementById('ltd-purge-warning');
+    var isClose = ltdMode() === 'close';
+    if (wrap) { wrap.style.display = isClose ? '' : 'none'; }
+    if (warn) { warn.style.display = isClose ? 'none' : ''; }
+}
+
+function ltdSetChoice(hasExpenses) {
+    var choice = document.getElementById('ltd-choice');
+    if (!choice) { return; }
+    choice.style.display = hasExpenses ? 'block' : 'none';
+    if (hasExpenses) {
+        // Always reopen on the safe option, whatever was picked last time.
+        var safe = choice.querySelector('input[name="ltd_mode"][value="close"]');
+        if (safe) { safe.checked = true; }
+    }
+    ltdSyncMode();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    var choice = document.getElementById('ltd-choice');
+    if (!choice) { return; }
+    Array.prototype.forEach.call(
+        choice.querySelectorAll('input[name="ltd_mode"]'), function (radio) {
+        radio.addEventListener('change', ltdSyncMode);
+    });
+});
 
 function checkAndDelete(expenseLineTypeId, expenseLineTypeName) {
     currentDeleteId = expenseLineTypeId;
@@ -633,9 +724,11 @@ function checkAndDelete(expenseLineTypeId, expenseLineTypeName) {
             });
             
             expensesList.style.display = 'block';
+            ltdSetChoice(true);
         } else {
             deleteMessage.innerHTML = `Are you sure you want to delete the expense line type "<strong>${expenseLineTypeName}</strong>"?`;
             expensesList.style.display = 'none';
+            ltdSetChoice(false);
         }
         
         showModal();
@@ -684,6 +777,12 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                 'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+                mode: ltdMode(),
+                effective_date: ltdMode() === 'close'
+                    ? ((document.getElementById('ltd-date') || {}).value || '')
+                    : '',
+            }),
         })
         .then(response => response.json())
         .then(data => {

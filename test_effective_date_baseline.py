@@ -226,7 +226,8 @@ for f in FORMS:
         continue
     s = open(p, encoding='utf-8').read()
     check('%s has the effective-date field' % f, 'name="effective_date"' in s)
-    check('  %s prefills a date' % f, "{% now 'Y-m-d' %}" in s)
+    # Add forms prefill 1 January; edit forms prefill today. Either counts.
+    check('  %s prefills a date' % f, "{% now 'Y" in s)
     check('  %s explains change vs correction' % f,
           'Correcting a mistake' in s and 'Changing a figure' in s)
 

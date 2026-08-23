@@ -442,6 +442,34 @@
             </div>
         </div>
         
+        <!-- Hidden until the pro-rata amount actually changes; the reveal
+             script lives at the end of this template. The cascade cannot run
+             without an amount change, so a date box at any other time would be
+             inviting someone to date a change that is not one. -->
+        <div id="fh-applies-from"
+             style="display:none; background:#f8f9fa; border:1px solid #e9ecef;
+                    border-left:4px solid #17a2b8; border-radius:8px;
+                    padding:14px 18px; margin-bottom:18px;">
+          <label for="effective_date"
+                 style="display:block; font-weight:600; color:#2c3e50; margin-bottom:6px;">
+            <i class="fas fa-calendar-day" style="color:#17a2b8;"></i> Applies from
+          </label>
+          <input type="date" id="effective_date" name="effective_date"
+                 value="{% now 'Y-m-d' %}"
+                 style="border:2px solid #e9ecef; border-radius:8px; padding:8px 12px;
+                        font-size:14px; background:#fff;">
+          <p style="margin:8px 0 0 0; font-size:13px; color:#6c757d; line-height:1.5;">
+            The new amount applies to every payment month on or after this date.
+            Earlier months keep the figure that applied before.
+            <br>
+            <strong>Already invoiced this year at the old amount?</strong> Leave the
+            date as today &mdash; a charge whose month has passed stays as it was
+            billed, and the new amount takes over next year.
+            <strong>This year is at the new amount?</strong> Date it 1 January of
+            this year, so the charge month picks it up.
+          </p>
+        </div>
+
         <div class="action-bar">
             <button type="submit" class="btn btn-success action-primary">
                 <i class="fas fa-save"></i> Save
@@ -869,6 +897,36 @@ document.addEventListener('DOMContentLoaded', function() {
             prAmountInput.removeAttribute('required');
         }
     });
+
+    // ---- "Applies from" reveal ----
+    // Same condition the submit handler uses to decide whether to show the
+    // recalculation preview: an amount that actually changed, on a pro-rata
+    // line that has linked expenses. Anything else is not a figure change and
+    // has no effective date to set.
+    (function () {
+        var form = document.getElementById('line-type-form');
+        var block = document.getElementById('fh-applies-from');
+        if (!form || !block) { return; }
+
+        var amountInput = form.querySelector('[name="expense_line_types_pr_amount"]');
+        var prorataSelect = form.querySelector('[name="expense_line_types_prorata"]');
+        if (!amountInput || !prorataSelect) { return; }
+
+        var originalAmount = parseFloat(form.dataset.originalPrAmount) || 0;
+        var linkedCount = parseInt(form.dataset.linkedExpenseCount, 10) || 0;
+
+        function syncAppliesFrom() {
+            var changed = (parseFloat(amountInput.value) || 0) !== originalAmount;
+            block.style.display =
+                (changed && linkedCount > 0 && prorataSelect.value === 'Yes')
+                    ? '' : 'none';
+        }
+
+        amountInput.addEventListener('input', syncAppliesFrom);
+        amountInput.addEventListener('change', syncAppliesFrom);
+        prorataSelect.addEventListener('change', syncAppliesFrom);
+        syncAppliesFrom();
+    })();
 });
 </script>
 

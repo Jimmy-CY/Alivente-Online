@@ -41,7 +41,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import Min, OuterRef, Prefetch, Subquery, Sum
+from django.db.models import (Count, Min, OuterRef, Prefetch, Subquery, Sum)
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -57,6 +57,8 @@ from pages.models import (
     tenant, act_expense, VacancyPeriod,
     FinancialFigureHistory, record_expense_history, record_revenue_history,
     ensure_expense_baseline, ensure_revenue_baseline,
+    ensure_expense_opening, ensure_revenue_opening,
+    purge_figure_history,
     record_valuation_history, property_value_as_of,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
@@ -87,10 +89,13 @@ logger = logging.getLogger(__name__)
 
 
 # ---- Financial history (Phase 1) : effective date + user, both fail-safe ----
-def _fh_eff_date(request):
-    """Effective date for a budgeted/revenue change: the form's 'effective_date'
-    (YYYY-MM-DD) if supplied, otherwise today. Never raises."""
-    raw = (request.POST.get('effective_date') or '').strip()
+def _fh_date_or_today(raw):
+    """Parse a YYYY-MM-DD string, falling back to today. Never raises.
+
+    Split out of _fh_eff_date because the line-type delete arrives as a JSON
+    body rather than a form-encoded POST, so there is no request.POST to read.
+    """
+    raw = (raw or '').strip()
     if raw:
         try:
             return datetime.strptime(raw, '%Y-%m-%d').date()
@@ -99,12 +104,19 @@ def _fh_eff_date(request):
     return date.today()
 
 
+def _fh_eff_date(request):
+    """Effective date for a budgeted/revenue change: the form's 'effective_date'
+    (YYYY-MM-DD) if supplied, otherwise today. Never raises."""
+    return _fh_date_or_today(request.POST.get('effective_date'))
+
+
 def _fh_user(request):
     u = getattr(request, 'user', None)
     return u if (u is not None and getattr(u, 'is_authenticated', False)) else None
 
 
-def _fh_save_expense(exp, before_months, before_amount, eff, user):
+def _fh_save_expense(exp, before_months, before_amount, eff, user,
+                     source='budget'):
     """Baseline first, then the new version.
 
     The order is load-bearing. ensure_expense_baseline asks whether ANY history
@@ -113,13 +125,86 @@ def _fh_save_expense(exp, before_months, before_amount, eff, user):
     is meant to close.
     """
     ensure_expense_baseline(exp, before_months, before_amount, user=user)
-    record_expense_history(exp, eff, source='budget', user=user)
+    record_expense_history(exp, eff, source=source, user=user)
 
 
 def _fh_save_revenue(rev, before_months, before_amount, eff, user):
     """Baseline first, then the new version - see _fh_save_expense."""
     ensure_revenue_baseline(rev, before_months, before_amount, user=user)
     record_revenue_history(rev, eff, source='direct', user=user)
+
+
+def _fh_new_expense(exp, eff, user, source, created):
+    """History for a row that has just been through update_or_create.
+
+    Only a genuinely NEW row gets an opening snapshot. If update_or_create
+    matched an existing row then that row already carries history - every row
+    on Live has its seed, and every row created from here on gets its opening
+    snapshot at birth - so there is nothing left to open.
+    """
+    if created:
+        ensure_expense_opening(exp, user=user)
+    record_expense_history(exp, eff, source=source, user=user)
+
+
+def _fh_new_revenue(rev, eff, user, source, created):
+    """See _fh_new_expense."""
+    if created:
+        ensure_revenue_opening(rev, user=user)
+    record_revenue_history(rev, eff, source=source, user=user)
+
+
+def _fh_attach_expense_history(properties):
+    """Hang a snapshot count and earliest date on each prefetched expense row.
+
+    The delete dialog offers to remove a row's past, so it should be able to
+    say how much past there is. One extra query for the whole page, and the
+    rows come from the prefetch cache, so attributes set here are the ones the
+    template sees.
+
+    Fail-safe: a history problem must not stop the Expenses list rendering.
+    """
+    try:
+        summary = {
+            r['source_pk']: (r['n'], r['first'])
+            for r in (FinancialFigureHistory.objects
+                      .filter(kind=FinancialFigureHistory.KIND_BUDGET)
+                      .values('source_pk')
+                      .annotate(n=Count('financial_figure_history_id'),
+                                first=Min('effective_date')))
+        }
+    except Exception:
+        logger.exception('_fh_attach_expense_history failed (list still renders)')
+        summary = {}
+
+    for _prop_row in properties:
+        for _exp_row in _prop_row.expense_set.all():
+            _n, _first = summary.get(_exp_row.expense_id, (0, None))
+            _exp_row.fh_count = _n
+            _exp_row.fh_from = _first
+    return properties
+
+
+def _fh_close_expense(exp):
+    """Zero a budgeted expense row, returning what it held beforehand.
+
+    Used when a property is un-ticked from a pro-rata group. Deleting the row
+    instead would take its PAST with it - the P&L only re-colours rows that
+    still exist, so every prior year would silently lose that property's share.
+    Zeroing keeps the row and its history, and stops it contributing from the
+    effective date forward.
+
+    The caller snapshots the result through _fh_save_expense, which writes a
+    baseline first if the row never had one, so even a row closed on its very
+    first edit keeps its past.
+    """
+    before = {m: getattr(exp, 'expense_' + m) for m in MONTHS}
+    before_amount = exp.expense_amount
+    exp.expense_amount = 0
+    for month in MONTHS:
+        setattr(exp, 'expense_' + month, 0)
+    exp.save()
+    return before, before_amount
 
 
 # ============================================================================
@@ -226,13 +311,17 @@ def finance_revenue_commit(request):
                 if getattr(revenue_type, f'revenue_types_{month}') == "Yes":
                     monthly_data[f'revenue_{month}'] = revenue_amount
 
-            _fh_rev, _ = revenue.objects.update_or_create(
+            _fh_rev, _fh_created = revenue.objects.update_or_create(
                 prop_id=prop_id,
                 revenue_line_types_id=rlt_id,
                 revenue_types_id=rt_id,
                 defaults=monthly_data,
             )
-            transaction.on_commit(lambda o=_fh_rev: record_revenue_history(o, _fh_eff_date(request), source='direct', user=_fh_user(request)))
+            _fh_eff = _fh_eff_date(request)
+            _fh_who = _fh_user(request)
+            transaction.on_commit(
+                lambda o=_fh_rev, c=_fh_created, e=_fh_eff, u=_fh_who:
+                    _fh_new_revenue(o, e, u, 'direct', c))
             messages.success(request, "Revenue added successfully.")
             return redirect('finance_revenue')
 
@@ -508,6 +597,7 @@ def finance_expense(request):
                 queryset=expense.objects.select_related('expense_line_types', 'expense_types'),
             )
         ).all().order_by('prop_country', 'prop_name').filter(prop_name=prop_output)
+    props_data = _fh_attach_expense_history(list(props_data))
     return render(request, "finance_expense.html", {"props_data": props_data})
 
 
@@ -569,13 +659,17 @@ def finance_expense_commit(request):
                     for month in MONTHS:
                         if getattr(expense_type, f'expense_types_{month}') == "Yes":
                             monthly_data[f'expense_{month}'] = property_data['calculated_amount']
-                    _fh_exp, _ = expense.objects.update_or_create(
+                    _fh_exp, _fh_created = expense.objects.update_or_create(
                         prop_id=property_data['prop_id'],
                         expense_line_types_id=elt_id,
                         expense_types_id=et_id,
                         defaults=monthly_data,
                     )
-                    transaction.on_commit(lambda o=_fh_exp: record_expense_history(o, _fh_eff_date(request), source='prorata', user=_fh_user(request)))
+                    _fh_eff = _fh_eff_date(request)
+                    _fh_who = _fh_user(request)
+                    transaction.on_commit(
+                        lambda o=_fh_exp, c=_fh_created, e=_fh_eff, u=_fh_who:
+                            _fh_new_expense(o, e, u, 'prorata', c))
 
                 messages.success(request, f"{len(selected_properties)} pro-rata expenses created successfully.")
                 return redirect('finance_expense')
@@ -590,13 +684,17 @@ def finance_expense_commit(request):
                 if getattr(expense_type, f'expense_types_{month}') == "Yes":
                     monthly_data[f'expense_{month}'] = expense_amount
 
-            _fh_exp, _ = expense.objects.update_or_create(
+            _fh_exp, _fh_created = expense.objects.update_or_create(
                 prop_id=prop_id,
                 expense_line_types_id=elt_id,
                 expense_types_id=et_id,
                 defaults=monthly_data,
             )
-            transaction.on_commit(lambda o=_fh_exp: record_expense_history(o, _fh_eff_date(request), source='budget', user=_fh_user(request)))
+            _fh_eff = _fh_eff_date(request)
+            _fh_who = _fh_user(request)
+            transaction.on_commit(
+                lambda o=_fh_exp, c=_fh_created, e=_fh_eff, u=_fh_who:
+                    _fh_new_expense(o, e, u, 'budget', c))
             messages.success(request, "Expense added successfully.")
             return redirect('finance_expense')
 
@@ -682,10 +780,19 @@ def finance_expense_edit_commit(request, expense_id):
                     messages.error(request, "No properties selected for pro-rata distribution.")
                     return redirect('finance_expense_edit', expense_id=expense_id)
 
-                expense.objects.filter(
+                # Resolve the date and user NOW - request state should not be
+                # read from inside an on_commit callback.
+                _fh_eff = _fh_eff_date(request)
+                _fh_who = _fh_user(request)
+
+                # Every row currently in the group, under its ORIGINAL key,
+                # captured before anything moves - so a change of line type or
+                # expense type leaves nothing stranded.
+                _fh_old_group = list(expense.objects.filter(
                     expense_line_types_id=existing_expense.expense_line_types_id,
                     expense_types_id=existing_expense.expense_types_id,
-                ).delete()
+                ).order_by('expense_id'))
+                _fh_kept = set()
 
                 for property_data in selected_properties:
                     monthly_data = {
@@ -694,11 +801,65 @@ def finance_expense_edit_commit(request, expense_id):
                         'expense_types_id': et_id,
                         'expense_amount': property_data['calculated_amount'],
                     }
+                    # All twelve, not just the "Yes" ones - otherwise a month
+                    # left over from a previous expense type survives the edit.
                     for month in MONTHS:
-                        if getattr(expense_type, f'expense_types_{month}') == "Yes":
-                            monthly_data[f'expense_{month}'] = property_data['calculated_amount']
-                    _fh_exp = expense.objects.create(**monthly_data)
-                    transaction.on_commit(lambda o=_fh_exp: record_expense_history(o, _fh_eff_date(request), source='prorata', user=_fh_user(request)))
+                        monthly_data[f'expense_{month}'] = (
+                            property_data['calculated_amount']
+                            if getattr(expense_type, f'expense_types_{month}') == "Yes"
+                            else None)
+
+                    # Match on the natural key the add screen already treats as
+                    # unique. Updating in place is the entire point: history is
+                    # keyed on expense_id, so recreating the row orphans it.
+                    _fh_matches = list(expense.objects.filter(
+                        prop_id=property_data['prop_id'],
+                        expense_line_types_id=elt_id,
+                        expense_types_id=et_id,
+                    ).order_by('expense_id'))
+
+                    if _fh_matches:
+                        _fh_exp = _fh_matches[0]
+                        _fh_before = {m: getattr(_fh_exp, 'expense_' + m) for m in MONTHS}
+                        _fh_before_amount = _fh_exp.expense_amount
+                        for field, value in monthly_data.items():
+                            setattr(_fh_exp, field, value)
+                        _fh_exp.save()
+                        _fh_kept.add(_fh_exp.expense_id)
+                        transaction.on_commit(
+                            lambda o=_fh_exp, b=_fh_before, a=_fh_before_amount,
+                                   e=_fh_eff, u=_fh_who:
+                                _fh_save_expense(o, b, a, e, u, 'prorata'))
+
+                        # A duplicate under the same natural key should not
+                        # exist - the add screen's update_or_create assumes it
+                        # cannot - but if one ever does, close it rather than
+                        # leave a second live row contributing silently.
+                        for _fh_dup in _fh_matches[1:]:
+                            _fh_kept.add(_fh_dup.expense_id)
+                            _fh_b, _fh_a = _fh_close_expense(_fh_dup)
+                            transaction.on_commit(
+                                lambda o=_fh_dup, b=_fh_b, a=_fh_a,
+                                       e=_fh_eff, u=_fh_who:
+                                    _fh_save_expense(o, b, a, e, u, 'prorata'))
+                    else:
+                        _fh_exp = expense.objects.create(**monthly_data)
+                        _fh_kept.add(_fh_exp.expense_id)
+                        transaction.on_commit(
+                            lambda o=_fh_exp, e=_fh_eff, u=_fh_who:
+                                _fh_new_expense(o, e, u, 'prorata', True))
+
+                # Un-ticked, or left behind by a change of line/expense type.
+                # Zeroed rather than deleted, so earlier years keep the share
+                # this property genuinely carried.
+                for _fh_old in _fh_old_group:
+                    if _fh_old.expense_id in _fh_kept:
+                        continue
+                    _fh_b, _fh_a = _fh_close_expense(_fh_old)
+                    transaction.on_commit(
+                        lambda o=_fh_old, b=_fh_b, a=_fh_a,
+                               e=_fh_eff, u=_fh_who:
+                            _fh_save_expense(o, b, a, e, u, 'prorata'))
 
                 messages.success(request, f"{len(selected_properties)} pro-rata expenses updated successfully.")
                 return redirect('finance_expense')
@@ -767,14 +928,62 @@ def finance_expense_delete(request, expense_id):
     if request.method != "POST":
         return redirect('finance_expense')
 
+    # Two very different meanings of "delete", and only the person clicking
+    # knows which one they mean:
+    #   close  it stops from a date; every earlier year keeps its figures
+    #   purge  it never happened; the row AND its history go
+    # Defaults to close, so a stray POST cannot destroy an audit trail.
+    mode = (request.POST.get('delete_mode') or 'close').strip().lower()
+
     try:
         exp = get_object_or_404(expense, expense_id=expense_id)
+
+        # A pro-rata row is a SHARE of the amount held on the line type, not a
+        # figure in its own right. Remove one row and the rest still hold
+        # shares computed for a larger split, so the line quietly stops adding
+        # up to the charge actually owed - and nothing flags it.
+        #
+        # Un-ticking the property on the edit screen re-divides the amount
+        # across the others and closes this row with the same zero snapshot.
+        # That is the correct operation, so it is the only one offered.
+        #
+        # Blocked for BOTH modes. One slice of a distribution is never
+        # independently a mistake: either the whole distribution is wrong (in
+        # which case the line type is deleted) or one property does not belong
+        # (in which case it is un-ticked).
+        if ((getattr(exp.expense_line_types, 'expense_line_types_prorata', '')
+                or '').strip().lower() == 'yes'):
+            messages.error(
+                request,
+                "That is a pro-rata expense, so it cannot be deleted on its "
+                "own \u2014 the other properties would be left holding shares of a "
+                "larger split and the line would no longer add up. Edit the "
+                "line and un-tick the property instead: the rest take up its "
+                "share, and this one stops from the date you choose.")
+            return redirect('finance_expense')
+
         with transaction.atomic():
             prop_name = exp.prop.prop_name if exp.prop else f"#{exp.expense_id}"
             type_name = exp.expense_types.expense_types_name if exp.expense_types else ""
-            exp.delete()
-        label = f"{prop_name}" + (f" — {type_name}" if type_name else "")
-        messages.success(request, f"Expense '{label}' deleted successfully.")
+            label = f"{prop_name}" + (f" — {type_name}" if type_name else "")
+
+            if mode == 'purge':
+                purge_figure_history(FinancialFigureHistory.KIND_BUDGET,
+                                     exp.expense_id)
+                exp.delete()
+                note = "removed completely, history included"
+            else:
+                _fh_eff = _fh_eff_date(request)
+                _fh_who = _fh_user(request)
+                _fh_before, _fh_before_amount = _fh_close_expense(exp)
+                transaction.on_commit(
+                    lambda o=exp, b=_fh_before, a=_fh_before_amount,
+                           e=_fh_eff, u=_fh_who:
+                        _fh_save_expense(o, b, a, e, u, 'closed'))
+                note = (f"stopped from {_fh_eff:%d %b %Y}; "
+                        f"earlier years keep their figures")
+
+        messages.success(request, f"Expense '{label}' {note}.")
     except Exception as e:
         logger.exception("finance_expense_delete failed")
         messages.error(request, f"Couldn't delete the expense: {e}")
@@ -1002,20 +1211,54 @@ def delete_expense_line_type(request, expense_line_type_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+    # The choice arrives as a JSON body from the delete modal. Same two
+    # meanings as a single expense - see finance_expense_delete - except that
+    # "close" cannot remove the line type: its expenses have to survive to
+    # carry their history, and they point at it. So the line type stays,
+    # holding nothing.
+    payload = {}
+    if request.body:
+        try:
+            payload = json.loads(request.body.decode('utf-8') or '{}') or {}
+        except (ValueError, UnicodeDecodeError):
+            payload = {}
+    mode = str(payload.get('mode') or 'close').strip().lower()
+
     try:
         with transaction.atomic():
             elt = get_object_or_404(expense_line_types, expense_line_types_id=expense_line_type_id)
-            linked = expense.objects.filter(expense_line_types=elt)
-            expense_count = linked.count()
-            linked.delete()
-
+            linked = list(expense.objects.filter(expense_line_types=elt))
+            expense_count = len(linked)
             name = elt.expense_line_types_name
-            elt.delete()
 
-            if expense_count > 0:
-                message = f'Expense line type "{name}" and {expense_count} linked expense(s) have been deleted successfully.'
-            else:
+            if mode == 'purge':
+                for _fh_exp in linked:
+                    purge_figure_history(FinancialFigureHistory.KIND_BUDGET,
+                                         _fh_exp.expense_id)
+                expense.objects.filter(expense_line_types=elt).delete()
+                elt.delete()
+                if expense_count > 0:
+                    message = (f'Expense line type "{name}" and {expense_count} '
+                               f'linked expense(s) removed completely, '
+                               f'history included.')
+                else:
+                    message = f'Expense line type "{name}" has been deleted successfully.'
+            elif expense_count == 0:
+                # Nothing carries history, so there is nothing to preserve.
+                elt.delete()
                 message = f'Expense line type "{name}" has been deleted successfully.'
+            else:
+                _fh_eff = _fh_date_or_today(payload.get('effective_date'))
+                _fh_who = _fh_user(request)
+                for _fh_exp in linked:
+                    _fh_b, _fh_a = _fh_close_expense(_fh_exp)
+                    transaction.on_commit(
+                        lambda o=_fh_exp, b=_fh_b, a=_fh_a,
+                               e=_fh_eff, u=_fh_who:
+                            _fh_save_expense(o, b, a, e, u, 'closed'))
+                message = (f'{expense_count} expense(s) on "{name}" stopped from '
+                           f'{_fh_eff:%d %b %Y}. The line type was kept so that '
+                           f'earlier years keep their figures.')
 
             messages.success(request, message)
             return JsonResponse({
@@ -1141,6 +1384,12 @@ def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_type
             )
             line_type.save()
 
+            # Resolve once, before the loop - request state should not be read
+            # from inside an on_commit callback, which runs after the response
+            # is on its way.
+            _fh_eff = _fh_eff_date(request)
+            _fh_who = _fh_user(request)
+
             for prop_data in preview_data['properties']:
                 pid = prop_data['prop_id']
                 new_amount = prop_data['new_amount']
@@ -1163,7 +1412,10 @@ def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_type
                         else:
                             setattr(exp, f'expense_{month}', None)
                     exp.save()
-                    transaction.on_commit(lambda o=exp: record_expense_history(o, _fh_eff_date(request), source='prorata_line', user=_fh_user(request)))
+                    transaction.on_commit(
+                        lambda o=exp, e=_fh_eff, u=_fh_who:
+                            record_expense_history(o, e, source='prorata_line',
+                                                   user=u))
 
         messages.success(
             request,
@@ -1231,8 +1483,14 @@ def finance_valuations_commit(request):
         with transaction.atomic():
             form = ValuesForm(request.POST)
             if form.is_valid():
+                # Resolved here rather than inside the callback, which runs
+                # after commit - request state has no business being read then.
+                _fh_eff = _fh_eff_date(request)
+                _fh_who = _fh_user(request)
                 _pv = form.save()
-                transaction.on_commit(lambda o=_pv: record_valuation_history(o, _fh_eff_date(request), user=_fh_user(request)))
+                transaction.on_commit(
+                    lambda o=_pv, e=_fh_eff, u=_fh_who:
+                        record_valuation_history(o, e, user=u))
                 messages.success(request, "Valuation added successfully.")
                 return redirect('finance_valuations')
             else:
@@ -1266,8 +1524,14 @@ def finance_valuations_edit_commit(request, prop_values_id):
         with transaction.atomic():
             form = ValuesForm(request.POST, instance=vresult)
             if form.is_valid():
+                # Resolved here rather than inside the callback, which runs
+                # after commit - request state has no business being read then.
+                _fh_eff = _fh_eff_date(request)
+                _fh_who = _fh_user(request)
                 _pv = form.save()
-                transaction.on_commit(lambda o=_pv: record_valuation_history(o, _fh_eff_date(request), user=_fh_user(request)))
+                transaction.on_commit(
+                    lambda o=_pv, e=_fh_eff, u=_fh_who:
+                        record_valuation_history(o, e, user=u))
                 messages.success(request, "Valuation updated successfully.")
                 return redirect('finance_valuations')
             else:
@@ -1442,8 +1706,15 @@ def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
             if not form.is_valid():
                 messages.error(request, f"Form errors: {form.errors}")
                 return redirect('finance_valuations_edit', prop_values_id=prop_values_id)
+            # Resolve once - request state should not be read from inside an
+            # on_commit callback.
+            _fh_eff = _fh_eff_date(request)
+            _fh_who = _fh_user(request)
+
             _pv = form.save()
-            transaction.on_commit(lambda o=_pv: record_valuation_history(o, _fh_eff_date(request), user=_fh_user(request)))
+            transaction.on_commit(
+                lambda o=_pv, e=_fh_eff, u=_fh_who:
+                    record_valuation_history(o, e, user=u))
 
             for lt_payload in preview_data['line_types']:
                 lt_id = lt_payload['line_type_id']
@@ -1469,7 +1740,11 @@ def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
                             else:
                                 setattr(exp, f'expense_{month}', None)
                         exp.save()
-                        transaction.on_commit(lambda o=exp: record_expense_history(o, _fh_eff_date(request), source='prorata_valuation', user=_fh_user(request)))
+                        transaction.on_commit(
+                            lambda o=exp, e=_fh_eff, u=_fh_who:
+                                record_expense_history(o, e,
+                                                       source='prorata_valuation',
+                                                       user=u))
 
         lt_count = preview_data.get('affected_line_types_count', 0)
         exp_count = preview_data.get('affected_expense_count', 0)

@@ -3371,6 +3371,76 @@ def ensure_revenue_baseline(rev, before_months, before_amount, *, user=None):
         str(rev.revenue_line_types), before_months, before_amount, user)
 
 
+def _open_baseline(prop, kind, source_pk, line_type, user):
+    """Record that a figure was ZERO before its row existed.
+
+    The mirror image of _ensure_baseline. That one preserves what a
+    long-standing figure held before its first change; this one states that a
+    brand-new row held nothing at all beforehand.
+
+    Without it a new row has no history covering earlier years, so the resolver
+    leaves it out of the result entirely and the caller falls back to the LIVE
+    cells - which always hold today's figure. A monthly expense created in
+    August 2026 then reads as a full year of spend in 2024 and 2025, while
+    January to July of 2026 resolve to None and are dropped from the P&L.
+
+    With it, the effective date the user types is the only thing that decides
+    which years the figure reaches - including backdating a line that has been
+    running for years, and forward-dating next year's budget.
+
+    Fail-safe: logs and returns None rather than raising, so a history problem
+    can never break the save that triggered it.
+    """
+    try:
+        if FinancialFigureHistory.objects.filter(kind=kind,
+                                                 source_pk=source_pk).exists():
+            return None
+        zero = Decimal('0')
+        return FinancialFigureHistory.objects.create(
+            prop=prop, kind=kind, source_pk=source_pk, line_type=line_type,
+            effective_date=FH_BASELINE_DATE, amount=zero,
+            source='opening', changed_by=user,
+            **{m: zero for m in _FH_MONTHS},
+        )
+    except Exception:
+        _fh_log.exception('_open_baseline failed (save itself was not affected)')
+        return None
+
+
+def ensure_expense_opening(exp, *, user=None):
+    """Opening zero snapshot for a newly created budgeted expense row."""
+    return _open_baseline(
+        exp.prop, FinancialFigureHistory.KIND_BUDGET, exp.expense_id,
+        str(exp.expense_line_types), user)
+
+
+def ensure_revenue_opening(rev, *, user=None):
+    """Opening zero snapshot for a newly created revenue row."""
+    return _open_baseline(
+        rev.prop, FinancialFigureHistory.KIND_REVENUE, rev.revenue_id,
+        str(rev.revenue_line_types), user)
+
+
+def purge_figure_history(kind, source_pk):
+    """Delete every snapshot for a source row being removed outright.
+
+    The counterpart to a closing snapshot. "Stop it from a date" keeps the row
+    and its past; "remove it completely" means the figure never happened, so
+    its history goes too.
+
+    Deleting the snapshots is the whole point rather than a tidy-up: leaving
+    them behind is what creates orphans - rows pointing at an id nothing owns,
+    unreachable by the resolver and waiting to attach themselves to whatever
+    is unlucky enough to be given that id later.
+
+    Deliberately NOT fail-safe. It runs inside the same transaction as the
+    delete, and quietly leaving history behind is the failure being fixed.
+    """
+    deleted, _ = FinancialFigureHistory.objects.filter(
+        kind=kind, source_pk=source_pk).delete()
+    return deleted
+
+
 # ---- Phase-2 resolver (unused until the P&L rework; safe to ship now). --------
 def figure_monthly_value_as_of(prop, kind, source_pk, year, month_idx):
     """The monthly figure in force for `month_idx` (1-12) of `year`: the latest
