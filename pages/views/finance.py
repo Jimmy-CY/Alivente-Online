@@ -58,7 +58,7 @@ from pages.models import (
     FinancialFigureHistory, record_expense_history, record_revenue_history,
     ensure_expense_baseline, ensure_revenue_baseline,
     ensure_expense_opening, ensure_revenue_opening,
-    purge_figure_history,
+    purge_figure_history, prorata_reconcile,
     record_valuation_history, property_value_as_of,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
@@ -649,6 +649,17 @@ def finance_expense_commit(request):
                     messages.error(request, "No properties selected for pro-rata distribution.")
                     return redirect('finance_expense_add')
 
+                # The shares must add up to the charge. Whatever the browser
+                # sent, reconcile against the posted total before saving - see
+                # prorata_reconcile. This is why Company Tax read 6,599.98.
+                _pr_total = parsed.get('pro_rata_amount')
+                if _pr_total is not None and selected_properties:
+                    _pr_fixed = prorata_reconcile(
+                        _pr_total,
+                        [p.get('calculated_amount') for p in selected_properties])
+                    for _pr_row, _pr_amt in zip(selected_properties, _pr_fixed):
+                        _pr_row['calculated_amount'] = _pr_amt
+
                 for property_data in selected_properties:
                     monthly_data = {
                         'prop_id': property_data['prop_id'],
@@ -779,6 +790,17 @@ def finance_expense_edit_commit(request, expense_id):
                 if not selected_properties:
                     messages.error(request, "No properties selected for pro-rata distribution.")
                     return redirect('finance_expense_edit', expense_id=expense_id)
+
+                # The shares must add up to the charge. Whatever the browser
+                # sent, reconcile against the posted total before saving - see
+                # prorata_reconcile. This is why Company Tax read 6,599.98.
+                _pr_total = parsed.get('pro_rata_amount')
+                if _pr_total is not None and selected_properties:
+                    _pr_fixed = prorata_reconcile(
+                        _pr_total,
+                        [p.get('calculated_amount') for p in selected_properties])
+                    for _pr_row, _pr_amt in zip(selected_properties, _pr_fixed):
+                        _pr_row['calculated_amount'] = _pr_amt
 
                 # Resolve the date and user NOW - request state should not be
                 # read from inside an on_commit callback.
@@ -1320,9 +1342,14 @@ def preview_prorata_amount_change(request, expense_line_types_id):
                 'error': 'Total current value of linked properties is zero. Cannot recalculate.',
             }, status=400)
 
-        for p in affected:
+        # Reconciled, so the preview totals the charge rather than two cents
+        # short of it - and so it shows exactly what the save will store.
+        _raw = [(new_pr_amount * p['current_value']) / total_current_value
+                for p in affected]
+        _fixed = prorata_reconcile(new_pr_amount, _raw)
+        for p, _amt in zip(affected, _fixed):
             p['share_percentage'] = round((p['current_value'] / total_current_value) * 100, 2)
-            p['new_amount'] = round((new_pr_amount * p['current_value']) / total_current_value, 2)
+            p['new_amount'] = float(_amt)
             p['delta'] = round(p['new_amount'] - p['old_amount'], 2)
 
         affected.sort(key=lambda p: p['prop_name'].lower())

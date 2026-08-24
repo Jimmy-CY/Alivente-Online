@@ -8,6 +8,7 @@ from .models import (
     RecipeCourse, RecipeCategory, Recipe, CustomProtein,
     RecipeIngredient, RecipeInstruction,
     PhysicalInvoiceProfile, PhysicalInvoice, PhysicalInvoiceLine, PhysicalInvoiceNumbering,
+    FinancialFigureHistory,
 )
 
 # Register your existing models
@@ -280,3 +281,71 @@ class PhysicalInvoiceNumberingAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+
+# ---------------------------------------------------------------------------
+# Financial figure history
+#
+# READ-ONLY on purpose. This is an append-only record of what a budgeted figure
+# was worth and from when; the finance screens write it as a side effect of
+# saving. Editing a snapshot by hand produces a history that no longer matches
+# the money, which is the one failure this table exists to prevent.
+# ---------------------------------------------------------------------------
+
+@admin.register(FinancialFigureHistory)
+class FinancialFigureHistoryAdmin(admin.ModelAdmin):
+    list_display = ('effective_date', 'prop', 'line_type', 'kind', 'amount',
+                    'source', 'is_orphan', 'changed_by', 'changed_at')
+    list_filter = ('kind', 'source', 'effective_date', 'prop')
+    search_fields = ('line_type', 'prop__prop_name', 'source_pk')
+    date_hierarchy = 'effective_date'
+    ordering = ('-effective_date', '-changed_at')
+    list_per_page = 50
+
+    @admin.display(boolean=True, description='Live?')
+    def is_orphan(self, obj):
+        """False when the row this snapshot describes no longer exists.
+
+        source_pk is a plain integer, not a foreign key, so nothing cascades
+        when the source is deleted and an orphan looks exactly like live
+        history. Ten dead Company Tax ids hold 30 of them; without this column
+        the first person to open this screen would read them as current.
+
+        Shown as a tick for live, a cross for orphaned - the wording is
+        "Live?", so a cross means the source is gone.
+        """
+        return obj.source_pk in self._live_pks(obj.kind)
+
+    def get_queryset(self, request):
+        # A ModelAdmin is instantiated ONCE, at registration, and lives for the
+        # life of the process - so anything cached on `self` never expires. The
+        # live-pk cache is therefore emptied here, which Django calls once per
+        # changelist request, rather than being allowed to go stale until the
+        # next restart.
+        self._pk_cache = {}
+        return super().get_queryset(request).select_related('prop', 'changed_by')
+
+    def _live_pks(self, kind):
+        # Refilled per request by get_queryset above; one query per kind.
+        cache = getattr(self, '_pk_cache', None)
+        if cache is None:
+            cache = self._pk_cache = {}
+        if kind not in cache:
+            from pages.models import expense, revenue, prop_values, act_expense
+            model_pk = {
+                'budget_expense': (expense, 'expense_id'),
+                'revenue': (revenue, 'revenue_id'),
+                'valuation': (prop_values, 'prop_values_id'),
+                'expense_actual': (act_expense, 'act_expense_id'),
+            }.get(kind)
+            cache[kind] = (set(model_pk[0].objects.values_list(model_pk[1], flat=True))
+                           if model_pk else set())
+        return cache[kind]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

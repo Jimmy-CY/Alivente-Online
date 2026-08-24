@@ -919,6 +919,28 @@ $(document).ready(function() {
             });
         });
 
+        // Round to 2dp and put the residual on the largest share, so the
+        // preview shows exactly what will be stored and the shares add up to
+        // the charge. The server reconciles again regardless - this is so the
+        // two agree, not so the server can trust the browser.
+        (function () {
+            var rows = calculationResults.selected_properties;
+            if (!rows.length) { return; }
+            var sum = 0, biggest = 0;
+            rows.forEach(function (r, i) {
+                r.calculated_amount = Math.round(r.calculated_amount * 100) / 100;
+                sum += r.calculated_amount;
+                if (r.calculated_amount > rows[biggest].calculated_amount) {
+                    biggest = i;
+                }
+            });
+            var residual = Math.round((totalAmount - sum) * 100) / 100;
+            if (residual) {
+                rows[biggest].calculated_amount = Math.round(
+                    (rows[biggest].calculated_amount + residual) * 100) / 100;
+            }
+        })();
+
         prorataCalculationData.val(JSON.stringify(calculationResults));
         showProrataPreview(calculationResults);
     });

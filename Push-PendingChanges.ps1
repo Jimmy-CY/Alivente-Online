@@ -29,7 +29,12 @@
     string is simply out of date - never to push a half-applied tree.
 
 .PARAMETER Message
-    Override the commit subject line.
+    The commit subject. REQUIRED to commit - there is deliberately no default,
+    because a default is a message that describes the last change rather than
+    this one, and that is exactly what went wrong on the 24 Aug push.
+
+.PARAMETER Body
+    Optional paragraphs for the commit body, one string each.
 
 .EXAMPLE
     .\Push-PendingChanges.ps1
@@ -44,7 +49,8 @@ param(
     [switch]$Apply,
     [switch]$Push,
     [switch]$Force,
-    [string]$Message = 'Pro-rata edits keep their history; opening and closing snapshots'
+    [string]$Message,
+    [string[]]$Body = @()
 )
 
 # Deliberately NOT 'Stop'.  Under 'Stop', anything a native command writes to
@@ -123,7 +129,11 @@ $sentinels = @(
     @{ File = 'pages\templates\finance_pl_act.html';     Text = 'pl-inactive-pill';             What = 'picker flags inactive' },
     @{ File = 'pages\views\properties.py';                Text = 'show_blocker_modal';           What = 'refusal shown on the edit page' },
     @{ File = 'pages\templates\properties_edit.html';     Text = 'statusBlockModal';             What = 'deactivation dialog' },
-    @{ File = 'pages\templates\properties_edit.html';     Text = 'checkStatusBlockers';          What = 'Save refuses before submitting' }
+    @{ File = 'pages\templates\properties_edit.html';     Text = 'checkStatusBlockers';          What = 'Save refuses before submitting' },
+    @{ File = 'pages\models.py';                          Text = 'def prorata_reconcile';        What = 'the split adds up to the charge' },
+    @{ File = 'pages\views\finance.py';                  Text = '_pr_fixed';                    What = 'reconciled before saving' },
+    @{ File = 'pages\admin.py';                           Text = 'FinancialFigureHistoryAdmin';  What = 'read-only history in the admin' },
+    @{ File = 'pages\templates\finance_expense_add.html'; Text = 'residual on the largest share'; What = 'preview matches the save' }
 )
 
 foreach ($s in $sentinels) {
@@ -177,6 +187,7 @@ $suites = @(
     'test_prorata_history.py',
     'test_delete_choice.py',
     'test_pl_historical.py',
+    'test_prorata_rounding.py',
     'test_tenant_payment_days.py',
     'test_db_error_page.py'
 )
@@ -250,21 +261,24 @@ if (-not $Apply) {
 }
 
 Head 'Commit'
+
+if (-not $Message) {
+    Bad 'No commit subject.'
+    Say '  There is no default on purpose - a default describes the previous'
+    Say '  change, not this one. Pass one:'
+    Say ''
+    Say '     .\Push-PendingChanges.ps1 -Push -Message "what changed" `'
+    Say '        -Body "why", "and any detail worth keeping"'
+    exit 1
+}
+
 & git add -A
 if ($LASTEXITCODE -ne 0) { Bad 'git add failed'; exit 1 }
 
-& git commit -m $Message `
-    -m 'The pro-rata expense edit deleted every row in a (line type, expense type) group and recreated it, so every expense_id changed and every snapshot keyed on it was orphaned. That is what destroyed the Company Tax trail: the audit found ten dead expense_ids holding thirty unreachable snapshots. The branch now matches rows on the natural key the add screen already uses and updates them in place.' `
-    -m 'Un-ticking a property zeroes its row and snapshots that, instead of deleting it. Deleting took the row past with it, because the P&L only re-colours rows that still exist, so prior years silently lost that property share.' `
-    -m 'Creating a row writes a zero opening snapshot at FH_BASELINE_DATE. Without one a new row had no history covering earlier years, so the caller fell back to its live cells - a budget line added in August 2026 showed a full year of spend in 2024 while January to July of 2026 vanished.' `
-    -m 'The two add forms now default Applies from to 1 January of the current year; the edit forms still default to today. A budget entered mid-year counts for the whole year, and the date field genuinely controls which years a figure reaches.' `
-    -m 'Edit Expense Line Type gained an Applies from field, shown only when the pro-rata amount actually changes. It was the last screen that could change a figure without dating it, and for a pro-rata line it is the ONLY place the figure can change - the amount is read-only on the expense itself.' `
-    -m 'Deleting an expense now asks what delete means: stop it from a date, keeping every earlier year intact, or remove it and its history completely. Same choice when deleting a line type, where stopping keeps the line type because its expenses carry the history. Removing completely now also deletes the snapshots, which is what stops them becoming orphans.' `
-    -m 'A pro-rata expense row can no longer be deleted on its own - it is a share of the amount on the line type, and removing one row leaves the others holding shares of a larger split, so the line stops adding up to the charge owed. Delete is greyed out on those rows and refused server-side; un-ticking the property on the edit screen re-divides the amount and closes the row with the same zero snapshot.' `
-    -m 'A property can no longer be set Inactive while it still holds a share of a pro-rata distribution: the others would keep shares of a split that still counted it, and the sold property would keep being charged forward. The pro-rata selector greys out inactive properties, and flags one already in a distribution so it can be removed deliberately rather than dropped silently.' `
-    -m 'The P&L stops filtering on prop_status. It reports a YEAR, and a property status TODAY says nothing about whether it earned or cost money in 2024 - filtering made a sold property vanish from every closed year at once. The effective-dated figures decide instead, and assumed rent is no longer projected forward for an inactive property, so nothing is invented either. The other Active filters, all on forward-looking screens, are untouched.' `
-    -m 'The deactivation refusal is shown on the Edit Property page in a dialog, listing each distribution and its share, instead of storing a message. properties_edit.html has no messages block, so messages.error there was never displayed on that page - it sat in the session and surfaced on the Properties list, on the wrong page and after the fact. The server guard still runs and now renders the same dialog rather than a message.' `
-    -m 'Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>'
+$commitArgs = @('commit', '-m', $Message)
+foreach ($p in $Body) { $commitArgs += @('-m', $p) }
+$commitArgs += @('-m', 'Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>')
+& git @commitArgs
 if ($LASTEXITCODE -ne 0) { Bad 'git commit failed'; exit 1 }
 Good 'committed'
 Say ''

@@ -1,6 +1,6 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -3419,6 +3419,39 @@ def ensure_revenue_opening(rev, *, user=None):
     return _open_baseline(
         rev.prop, FinancialFigureHistory.KIND_REVENUE, rev.revenue_id,
         str(rev.revenue_line_types), user)
+
+
+def prorata_reconcile(total, amounts):
+    """Round a pro-rata split to 2dp so the shares sum EXACTLY to `total`.
+
+    Rounding each share on its own leaves a residual: ten shares of a 6,600
+    charge came to 6,599.98, and nothing ever placed the missing two cents.
+    Small, but it recurs on every recalculation of every pro-rata line, and the
+    P&L then reports a charge that does not match the bill.
+
+    The remainder goes to the LARGEST share, where it is proportionally least
+    visible - two cents on 1,448.90 rather than on 195.76.
+
+    Returns a list of Decimals in the order given. Never raises: bad input
+    comes back rounded but unreconciled rather than blowing up a save.
+    """
+    q = Decimal('0.01')
+    try:
+        target = Decimal(str(total)).quantize(q, rounding=ROUND_HALF_UP)
+        out = [Decimal(str(a if a is not None else 0)).quantize(
+            q, rounding=ROUND_HALF_UP) for a in amounts]
+    except (InvalidOperation, TypeError, ValueError):
+        _fh_log.exception('prorata_reconcile could not parse its input')
+        return [a for a in amounts]
+
+    if not out:
+        return out
+
+    residual = target - sum(out)
+    if residual:
+        biggest = max(range(len(out)), key=lambda i: out[i])
+        out[biggest] = out[biggest] + residual
+    return out
 
 
 def purge_figure_history(kind, source_pk):

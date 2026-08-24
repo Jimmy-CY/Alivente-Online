@@ -13,11 +13,12 @@
          history they hold is unreachable - the P&L only ever re-colours rows
          that are still live.
 
-      B. PRO-RATA EXPOSURE
-         The pro-rata edit screen deletes every row in a (line type, expense
-         type) group and recreates it, so every expense_id in the group
-         changes. This lists the groups and how many snapshots each one would
-         orphan the next time somebody uses that screen.
+      B. PRO-RATA GROUPS
+         The pro-rata edit screen used to delete every row in a (line type,
+         expense type) group and recreate it, changing every expense_id and
+         orphaning every snapshot keyed on it. Fixed on 24 Aug 2026 - it now
+         updates in place. This lists the groups and the history they carry,
+         which is what that fix protects.
 
       C. BASELINE COVERAGE
          A row whose earliest snapshot is dated after the start of a year
@@ -138,11 +139,17 @@ else:
 # ------------------------------------------------------------------ SECTION B
 print('')
 print(BAR)
-print('B. PRO-RATA EXPOSURE  (what the next pro-rata edit would orphan)')
+print('B. PRO-RATA GROUPS AND THE HISTORY THEY NOW KEEP')
 print(BAR)
-print('finance_expense_edit_commit deletes every expense row sharing a')
-print('(line type, expense type) pair, then recreates it. Every expense_id in')
-print('the group changes, so every snapshot below would be cut adrift.')
+print('Until 24 Aug 2026 finance_expense_edit_commit deleted every expense row')
+print('sharing a (line type, expense type) pair and recreated it, so every')
+print('expense_id changed and every snapshot below was cut adrift. That is what')
+print('destroyed the Company Tax trail - the ten dead ids in section A.')
+print('')
+print('The edit now matches rows on the natural key and updates them in place,')
+print('so this is the history being PROTECTED, not the history at risk. Section')
+print('A is the regression test: edit any of these groups and the orphan count')
+print('must not move.')
 
 exp_rows = list(expense.objects.select_related('prop', 'expense_line_types',
                                                'expense_types').all())
@@ -162,7 +169,7 @@ for e in exp_rows:
     groups.setdefault(key, []).append(e)
 
 print('')
-print('  %d pro-rata line type(s), %d group(s) that the delete-and-recreate would hit.'
+print('  %d pro-rata line type(s), %d group(s) carrying history.'
       % (len(prorata_lt), len(groups)))
 
 at_risk_groups, at_risk_snaps = 0, 0
@@ -186,12 +193,11 @@ if groups:
 
 print('')
 if at_risk_snaps:
-    print('  >> %d snapshot(s) across %d group(s) would be orphaned by the next'
+    print('  >> %d snapshot(s) across %d group(s) that the old delete-and-recreate'
           % (at_risk_snaps, at_risk_groups))
-    print('     pro-rata edit through that screen.')
+    print('     would have destroyed. They survive an edit now.')
 else:
-    print('  >> No pro-rata group currently carries history, so nothing would be')
-    print('     lost today - but the first edit after one is recorded would be.')
+    print('  >> No pro-rata group currently carries history.')
 
 # ------------------------------------------------------------------ SECTION C
 print('')
