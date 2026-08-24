@@ -182,7 +182,12 @@
         </h6>
         <div class="selection-header-right">
             <div class="selection-buttons">
-                <button class="btn btn-info btn-sm" id="selectAllBtn" onclick="event.stopPropagation();">Select All</button>
+                <span class="pl-select-all-group">
+                    <button class="btn btn-info btn-sm" id="selectAllBtn" onclick="event.stopPropagation();"
+                            title="Selects the active properties. Inactive ones stay off - tick them individually, or use + Inactive.">Select All</button>
+                    {% if has_inactive %}<button class="btn btn-secondary btn-sm" id="selectAllIncBtn" onclick="event.stopPropagation();"
+                            title="Selects every property, inactive ones included. Their earlier years still report in full; a year they contributed nothing to leaves them out of the indicators.">+ Inactive</button>{% endif %}
+                </span>
                 <button class="btn btn-secondary btn-sm" id="selectNoneBtn" onclick="event.stopPropagation();">Select None</button>
             </div>
             <i class="fas fa-chevron-down selection-toggle-icon" id="propSelectionToggleIcon"></i>
@@ -431,16 +436,16 @@
         <div class="roi-cards">
             <div class="roi-card">
                 <span class="font-weight-bold">Gross ROI:
-                    {% with total_revenue=revenue_totals.year %}{% with total_purchase=properties|sum_purchase_prices %}
-                    {% if total_purchase > 0 %}{{ total_revenue|divide:total_purchase|multiply:100|floatformat:"2" }}%{% else %}N/A{% endif %}
-                    {% endwith %}{% endwith %}
+                    {% with total_revenue=revenue_totals.year %}
+                    {% if ind_purchase_total > 0 %}{{ total_revenue|divide:ind_purchase_total|multiply:100|floatformat:"2" }}%{% else %}N/A{% endif %}
+                    {% endwith %}
                 </span>
             </div>
             <div class="roi-card">
                 <span class="font-weight-bold">Net ROI:
-                    {% with total_revenue=revenue_totals.year %}{% with total_expense=expense_totals.year %}{% with total_actual_expense=actual_expense_totals.year %}{% with total_purchase=properties|sum_purchase_prices %}
-                    {% if total_purchase > 0 %}{% if view_mode == 'actuals' %}{{ total_revenue|subtract:total_expense|subtract:total_actual_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%{% else %}{{ total_revenue|subtract:total_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%{% endif %}{% else %}N/A{% endif %}
-                    {% endwith %}{% endwith %}{% endwith %}{% endwith %}
+                    {% with total_revenue=revenue_totals.year %}{% with total_expense=expense_totals.year %}{% with total_actual_expense=actual_expense_totals.year %}
+                    {% if ind_purchase_total > 0 %}{% if view_mode == 'actuals' %}{{ total_revenue|subtract:total_expense|subtract:total_actual_expense|divide:ind_purchase_total|multiply:100|floatformat:"2" }}%{% else %}{{ total_revenue|subtract:total_expense|divide:ind_purchase_total|multiply:100|floatformat:"2" }}%{% endif %}{% else %}N/A{% endif %}
+                    {% endwith %}{% endwith %}{% endwith %}
                 </span>
             </div>
             <div class="roi-card">
@@ -452,19 +457,28 @@
             </div>
             <div class="roi-card">
                 <span class="font-weight-bold">Rent (€/m<sup>2</sup>):
-                    {% with total_revenue=revenue_totals.year %}{% with total_area=properties|sum_attr:'prop_floor_area' %}
-                    {% if total_revenue and total_area %}{{ total_revenue|divide:12|divide:total_area|floatformat:"2" }}{% else %}N/A{% endif %}
-                    {% endwith %}{% endwith %}
+                    {% with total_revenue=revenue_totals.year %}
+                    {% if total_revenue and ind_area_total %}{{ total_revenue|divide:12|divide:ind_area_total|floatformat:"2" }}{% else %}N/A{% endif %}
+                    {% endwith %}
                 </span>
             </div>
             <div class="roi-card">
                 <span class="font-weight-bold">% Value Increase:
-                    {% with total_purchase=properties|sum_purchase_prices %}
-                    {% if total_purchase > 0 and total_current_value > 0 %}{{ total_current_value|subtract:total_purchase|divide:total_purchase|multiply:100|floatformat:"2" }}%{% elif total_purchase > 0 %}(Current values not set){% else %}N/A{% endif %}
-                    {% endwith %}
+                    {% if ind_value_purchase > 0 %}{{ ind_value_total|subtract:ind_value_purchase|divide:ind_value_purchase|multiply:100|floatformat:"2" }}%{% elif ind_count %}(No valuation dated {{ selected_year }} or earlier){% else %}N/A{% endif %}
                 </span>
             </div>
         </div>
+        {% if ind_skipped or ind_value_count < ind_count %}
+        {# One line, deliberately: a Django comment cannot span lines - it renders as text. #}
+        <div class="roi-basis" id="roiBasis">
+            {% if ind_skipped %}Based on <strong>{{ ind_count }} of {{ ind_total_count }}</strong> selected properties.
+            Left out of {{ selected_year }} because nothing was earned or spent on
+            {% if ind_skipped|length == 1 %}it{% else %}them{% endif %}:
+            <span class="roi-basis-names">{% for name in ind_skipped %}{{ name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>.
+            Expenses to Revenue is unaffected - it divides this year&rsquo;s money by this year&rsquo;s money.{% endif %}
+            {% if ind_value_count < ind_count %}<span class="roi-basis-val">% Value Increase covers <strong>{{ ind_value_count }} of {{ ind_count }}</strong>: the rest have no valuation dated {{ selected_year }} or earlier, so they leave both sides of that ratio rather than half of it.</span>{% endif %}
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -607,6 +621,26 @@
 .selection-header-right { display: flex; align-items: center; gap: 14px; }
 .selection-count-inline { font-size: 0.8em; font-weight: 500; color: #6c757d; margin-left: 4px; }
 .selection-toggle-icon { color: #17a2b8; font-size: 15px; transition: transform 0.3s ease; }
+.roi-basis {
+    margin-top: 8px;
+    padding: 7px 11px;
+    background: #f4f9fb;
+    border-left: 3px solid #17a2b8;
+    border-radius: 3px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #4a5560;
+    max-width: 100%;
+}
+.roi-basis-names { color: #17677a; font-weight: 600; }
+.roi-basis-val { display: block; margin-top: 4px; color: #6b5b12; }
+.pl-select-all-group { display: inline-flex; }
+.pl-select-all-group .btn:first-child {
+    border-top-right-radius: 0; border-bottom-right-radius: 0;
+}
+.pl-select-all-group .btn:last-child {
+    border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: -1px;
+}
 #propSelectionPanel.collapsed .selection-header { margin-bottom: 0; border-bottom: none; }
 #propSelectionPanel.collapsed .prop-selection-content { display: none; }
 #propSelectionPanel.collapsed .selection-toggle-icon { transform: rotate(-90deg); }
@@ -1182,6 +1216,48 @@ function togglePropSelection() {
     if (panel) panel.classList.toggle('collapsed');
 }
 
+/* The panel was never collapsing on its own. Ticking a property NAVIGATES -
+   updateProfitLossTable sets window.location.href - and the markup renders
+   `collapsed` on every load, so a fresh page looked like a collapse.
+
+   markPanelState() is called immediately before each navigation we start on
+   purpose. restorePanelState() consumes the flag ONCE on load, so a real
+   reload (F5, a typed URL, a link) finds nothing and starts collapsed - which
+   is the behaviour asked for. Scroll position rides along, because the same
+   navigation is what threw you back to the top of the page. */
+var PL_PANEL_KEY = 'plPanelOpen';
+
+function markPanelState() {
+    try {
+        var panel = document.getElementById('propSelectionPanel');
+        if (panel && !panel.classList.contains('collapsed')) {
+            sessionStorage.setItem(PL_PANEL_KEY, String(window.scrollY || 0));
+        } else {
+            sessionStorage.removeItem(PL_PANEL_KEY);
+        }
+    } catch (e) {
+        /* Private mode, or storage disabled. The panel simply starts collapsed;
+           nothing else on the page depends on this. */
+    }
+}
+
+function restorePanelState() {
+    var raw = null;
+    try {
+        raw = sessionStorage.getItem(PL_PANEL_KEY);
+        sessionStorage.removeItem(PL_PANEL_KEY);
+    } catch (e) {
+        return;
+    }
+    if (raw === null) return;
+    var panel = document.getElementById('propSelectionPanel');
+    if (panel) panel.classList.remove('collapsed');
+    var y = parseInt(raw, 10);
+    if (y > 0) {
+        window.requestAnimationFrame(function () { window.scrollTo(0, y); });
+    }
+}
+
 function updateYearAndReload(year) {
     const url = new URL(window.location.href);
     url.searchParams.set('year', year);
@@ -1190,11 +1266,18 @@ function updateYearAndReload(year) {
     selectedProperties.forEach(id => {
         url.searchParams.append('properties', id);
     });
+    markPanelState();
     window.location.href = url.toString();
 }
 
 $(document).ready(function() {
     let allPropertyIds = [{% for prop in all_properties %}'{{ prop.prop_id }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+    /* Select All means the working portfolio. Inactive properties stay off
+       until asked for, but the PAGE DEFAULT is still everything - a selection
+       is one state across every year, while the indicator gate is per year, so
+       defaulting them off would silently drop their real history out of past
+       years. */
+    let activePropertyIds = [{% for prop in all_properties %}{% if prop.prop_status == 'Active' %}'{{ prop.prop_id }}', {% endif %}{% endfor %}];
     let isUpdating = false;
     let firstModalScrollTop = 0;
 
@@ -1205,6 +1288,15 @@ $(document).ready(function() {
     });
 
     $('#selectAllBtn').on('click', function() {
+        if (isUpdating) return;
+        allPropertyIds.forEach(id => {
+            $(`#prop-${id}`)[0].checked = activePropertyIds.includes(id);
+        });
+        updateSelectionCounter();
+        debouncedUpdate();
+    });
+
+    $('#selectAllIncBtn').on('click', function() {
         if (isUpdating) return;
         allPropertyIds.forEach(id => { $(`#prop-${id}`)[0].checked = true; });
         updateSelectionCounter();
@@ -1237,6 +1329,7 @@ $(document).ready(function() {
         } else {
             selectedProperties.forEach(id => { urlParams.append('properties', id); });
         }
+        markPanelState();
         window.location.href = window.location.pathname + '?' + urlParams.toString();
     }
 
@@ -1266,6 +1359,8 @@ $(document).ready(function() {
         }
         updateSelectionCounter();
     }
+
+    restorePanelState();
 
     // Year-dropdown manual handler — bypass BS4/BS5 conflict
     $('#yearDropdown').on('click', function(e) {

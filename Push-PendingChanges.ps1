@@ -133,7 +133,15 @@ $sentinels = @(
     @{ File = 'pages\models.py';                          Text = 'def prorata_reconcile';        What = 'the split adds up to the charge' },
     @{ File = 'pages\views\finance.py';                  Text = '_pr_fixed';                    What = 'reconciled before saving' },
     @{ File = 'pages\admin.py';                           Text = 'FinancialFigureHistoryAdmin';  What = 'read-only history in the admin' },
-    @{ File = 'pages\templates\finance_expense_add.html'; Text = 'residual on the largest share'; What = 'preview matches the save' }
+    @{ File = 'pages\templates\finance_expense_add.html'; Text = 'residual on the largest share'; What = 'preview matches the save' },
+    @{ File = 'pages\views\finance.py';                   Text = 'ind_props, ind_skipped';        What = 'indicators gate on the year' },
+    @{ File = 'pages\views\finance.py';                   Text = 'ind_value_purchase';            What = 'value increase matched to purchase' },
+    @{ File = 'pages\templates\finance_pl_act.html';      Text = 'divide:ind_purchase_total';     What = 'ROI divides by contributors' },
+    @{ File = 'pages\templates\finance_pl_act.html';      Text = 'roi-basis';                     What = 'the exclusion is visible' },
+    @{ File = 'pages\templates\finance_pl_act.html';      Text = 'selectAllIncBtn';               What = 'Select All is split' },
+    @{ File = 'pages\templates\finance_pl_act.html';      Text = 'function markPanelState';       What = 'picker survives a selection' },
+    @{ File = 'pages\views\finance.py';                   Text = 'ind_value_count';               What = 'value increase reports its coverage' },
+    @{ File = 'pages\templates\finance_pl_act.html';      Text = 'roi-basis-val';                  What = 'the second denominator is visible' }
 )
 
 foreach ($s in $sentinels) {
@@ -189,7 +197,8 @@ $suites = @(
     'test_pl_historical.py',
     'test_prorata_rounding.py',
     'test_tenant_payment_days.py',
-    'test_db_error_page.py'
+    'test_db_error_page.py',
+    'test_pl_indicators.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }

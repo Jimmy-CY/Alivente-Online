@@ -3098,6 +3098,58 @@ def finance_pl_act(request):
         else:
             prop_values_map[prop.prop_id] = None
 
+    # ------------------------------------------------- CONSOLIDATED INDICATORS
+    # These divide a YEAR's money by a stock figure - purchase price, floor
+    # area, valuation - so who belongs in the denominator is a question about
+    # that year, not about today.
+    #
+    # A property that earned nothing and cost nothing in the selected year was
+    # not part of the portfolio then. An ACTIVE property always carries
+    # expenses, so a property with nothing at all against it is either inactive
+    # or not held yet; both are out. Testing the money rather than prop_status
+    # means a property bought later is handled by the same rule, with no extra
+    # code and no reliance on a status field being right.
+    #
+    # Expenses-to-Revenue is NOT gated, deliberately: both its sides come from
+    # these same totals, so a silent property contributes zero to each and
+    # already cancels out.
+    ind_props, ind_skipped = [], []
+    for prop in properties:
+        _rev = (revenue_prop_totals.get(prop.prop_id) or {}).get('year') or 0
+        _exp = (expense_prop_totals.get(prop.prop_id) or {}).get('year') or 0
+        _act = (actual_expense_prop_totals.get(prop.prop_id) or {}).get('year') or 0
+        if _rev or _exp or _act:
+            ind_props.append(prop)
+        else:
+            ind_skipped.append(prop.prop_name)
+
+    ind_purchase_total = 0
+    ind_area_total = 0
+    # Value Increase is read AS AT the selected year now. It used to sum
+    # prop_values_current_value regardless of the year on screen, so 2022 showed
+    # today's uplift. Purchase and valuation are accumulated together and only
+    # for properties that actually have a dated valuation for the year, so the
+    # two sides of the ratio always describe the same set of properties - the
+    # same apples-to-apples rule the Detailed Property Data portfolio row uses.
+    ind_value_total = 0
+    ind_value_purchase = 0
+    # Counted, because this is a SECOND denominator and it must not be silent
+    # either. A property with no valuation dated this year or earlier leaves
+    # BOTH sides of Value Increase, so that one chip can cover fewer properties
+    # than the other four - and the note under the chips has to say so. Older
+    # years are where this bites: valuation history has to start somewhere.
+    ind_value_count = 0
+    for prop in ind_props:
+        _pv = prop_values_map.get(prop.prop_id)
+        _purchase = (_pv.prop_values_purchase_price if _pv else 0) or 0
+        ind_purchase_total += _purchase
+        ind_area_total += (prop.prop_floor_area or 0)
+        _as_of = property_value_as_of(prop, selected_year)
+        if _as_of is not None and _purchase > 0:
+            ind_value_total += _as_of
+            ind_value_purchase += _purchase
+            ind_value_count += 1
+
     # Handle AJAX requests
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
@@ -3124,6 +3176,23 @@ def finance_pl_act(request):
         'profit_totals': profit_totals,
         'prop_values_map': prop_values_map,
         'total_current_value': total_current_value,
+        # Indicator denominators, pre-summed over the properties that actually
+        # contributed to this year. Deliberately computed here rather than in
+        # the template: the chips used to do five-deep {% with %} arithmetic on
+        # a filtered queryset, which is neither testable nor readable.
+        'ind_purchase_total': ind_purchase_total,
+        'ind_area_total': ind_area_total,
+        'ind_value_total': ind_value_total,
+        'ind_value_purchase': ind_value_purchase,
+        'ind_value_count': ind_value_count,
+        'ind_count': len(ind_props),
+        'ind_total_count': len(properties),
+        'ind_skipped': ind_skipped,
+        # The split Select All only needs to exist when there is something
+        # inactive to split off.
+        'has_inactive': any(
+            (getattr(p, 'prop_status', 'Active') or 'Active') != 'Active'
+            for p in all_properties),
         'actual_expense_totals': actual_expense_totals,
         'actual_expense_prop_totals': actual_expense_prop_totals,
         'selected_year': selected_year,
