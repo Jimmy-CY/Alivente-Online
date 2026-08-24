@@ -114,7 +114,16 @@ $sentinels = @(
     @{ File = 'pages\templates\finance_expense_line_types.html'; Text = 'delete-dialog fits the viewport'; What = 'dialog stays on screen' },
     @{ File = 'pages\views\finance.py';                   Text = 'That is a pro-rata expense';    What = 'pro-rata rows refuse deletion' },
     @{ File = 'pages\templates\finance_expense.html';     Text = 'title="Pro-rata expense';       What = 'pro-rata Delete greyed out' },
-    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'take up its share';            What = 'un-ticking is explained' }
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'take up its share';            What = 'un-ticking is explained' },
+    @{ File = 'pages\views\properties.py';                Text = 'def _prorata_blockers';         What = 'deactivation blocked while shares remain' },
+    @{ File = 'pages\templates\finance_expense_add.html';  Text = 'is-inactive';                  What = 'inactive cannot be ticked' },
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'is-inactive-linked';           What = 'inactive-but-linked stays removable' },
+    @{ File = 'pages\models.py';                          Text = '_projectable';                 What = 'no assumed rent for inactive' },
+    @{ File = 'pages\views\finance.py';                  Text = 'No prop_status filter';        What = 'P&L reports a year, not today' },
+    @{ File = 'pages\templates\finance_pl_act.html';     Text = 'pl-inactive-pill';             What = 'picker flags inactive' },
+    @{ File = 'pages\views\properties.py';                Text = 'show_blocker_modal';           What = 'refusal shown on the edit page' },
+    @{ File = 'pages\templates\properties_edit.html';     Text = 'statusBlockModal';             What = 'deactivation dialog' },
+    @{ File = 'pages\templates\properties_edit.html';     Text = 'checkStatusBlockers';          What = 'Save refuses before submitting' }
 )
 
 foreach ($s in $sentinels) {
@@ -167,6 +176,7 @@ $suites = @(
     'test_effective_date_baseline.py',
     'test_prorata_history.py',
     'test_delete_choice.py',
+    'test_pl_historical.py',
     'test_tenant_payment_days.py',
     'test_db_error_page.py'
 )
@@ -251,6 +261,9 @@ if ($LASTEXITCODE -ne 0) { Bad 'git add failed'; exit 1 }
     -m 'Edit Expense Line Type gained an Applies from field, shown only when the pro-rata amount actually changes. It was the last screen that could change a figure without dating it, and for a pro-rata line it is the ONLY place the figure can change - the amount is read-only on the expense itself.' `
     -m 'Deleting an expense now asks what delete means: stop it from a date, keeping every earlier year intact, or remove it and its history completely. Same choice when deleting a line type, where stopping keeps the line type because its expenses carry the history. Removing completely now also deletes the snapshots, which is what stops them becoming orphans.' `
     -m 'A pro-rata expense row can no longer be deleted on its own - it is a share of the amount on the line type, and removing one row leaves the others holding shares of a larger split, so the line stops adding up to the charge owed. Delete is greyed out on those rows and refused server-side; un-ticking the property on the edit screen re-divides the amount and closes the row with the same zero snapshot.' `
+    -m 'A property can no longer be set Inactive while it still holds a share of a pro-rata distribution: the others would keep shares of a split that still counted it, and the sold property would keep being charged forward. The pro-rata selector greys out inactive properties, and flags one already in a distribution so it can be removed deliberately rather than dropped silently.' `
+    -m 'The P&L stops filtering on prop_status. It reports a YEAR, and a property status TODAY says nothing about whether it earned or cost money in 2024 - filtering made a sold property vanish from every closed year at once. The effective-dated figures decide instead, and assumed rent is no longer projected forward for an inactive property, so nothing is invented either. The other Active filters, all on forward-looking screens, are untouched.' `
+    -m 'The deactivation refusal is shown on the Edit Property page in a dialog, listing each distribution and its share, instead of storing a message. properties_edit.html has no messages block, so messages.error there was never displayed on that page - it sat in the session and surfaced on the Properties list, on the wrong page and after the fact. The server guard still runs and now renders the same dialog rather than a message.' `
     -m 'Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>'
 if ($LASTEXITCODE -ne 0) { Bad 'git commit failed'; exit 1 }
 Good 'committed'

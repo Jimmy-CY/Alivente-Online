@@ -196,7 +196,7 @@
                 <input type="checkbox" id="prop-{{ prop.prop_id }}"
                        data-prop-id="{{ prop.prop_id }}"
                        {% if prop.prop_id|stringformat:'s' in selected_properties %}checked{% endif %}>
-                <label for="prop-{{ prop.prop_id }}">{{ prop.prop_name }}</label>
+                <label for="prop-{{ prop.prop_id }}">{{ prop.prop_name }}{% if prop.prop_status != 'Active' %}<span class="pl-inactive-pill" title="No longer active - its earlier years still report in full">Inactive</span>{% endif %}</label>
             </div>
             {% endfor %}
         </div>
@@ -626,6 +626,19 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
     margin-bottom: 10px;
+}
+/* Inactive properties are listed now - they still hold the years they were
+   active for. The badge says why one may show nothing in the current year. */
+.pl-inactive-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 6px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #e9ecef;
+    color: #6c757d;
+    vertical-align: middle;
 }
 
 .property-checkbox {

@@ -2731,7 +2731,17 @@ def finance_pl_act(request):
         projection_note = ''
 
     # Single query with comprehensive prefetching
-    all_properties = props.objects.filter(prop_status="Active").select_related().prefetch_related(
+    # No prop_status filter here, deliberately. The P&L reports a YEAR, and a
+    # property's status TODAY says nothing about whether it earned or cost money
+    # in 2024. Filtering made a sold property vanish from every closed year at
+    # once - the same failure as deleting a row, one level up.
+    #
+    # The effective-dated figures decide instead: close a sold property's
+    # expenses from the sale date and its later years resolve to zero, and the
+    # template already drops an all-zero line. lease_monthly_rent_levies stops
+    # projecting assumed rent for an inactive property, so nothing is invented
+    # forward either.
+    all_properties = props.objects.all().select_related().prefetch_related(
         'prop_values_set',
         Prefetch('revenue_set', queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')),
         Prefetch('expense_set', queryset=expense.objects.select_related('expense_line_types', 'expense_types'))

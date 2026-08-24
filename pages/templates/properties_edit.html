@@ -13,7 +13,7 @@
 {% if perms.auth.can_edit_properties %}
 
 {% for results in props %}
-<form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" onsubmit="return validatePropertyName()">
+<form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" id="property-edit-form" data-original-status="{{ results.prop_status }}" onsubmit="return validatePropertyName() &amp;&amp; checkStatusBlockers()">
   {% csrf_token %}
 
   <!-- Action Buttons (Assets + Save + Back) -->
@@ -280,6 +280,64 @@
 </form>
 {% endfor %}
 
+<!-- Raised by Save when the status is moving away from Active while pro-rata
+     shares remain, and opened on load if the server refused the POST. Both
+     paths land here, so the explanation is always on this page. -->
+<div class="modal fade" id="statusBlockModal" tabindex="-1" role="dialog"
+     aria-hidden="true" style="display:none;">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content" style="border-radius:12px; border:none;">
+      <div class="modal-header" style="background:linear-gradient(135deg,#dc3545 0%,#c82333 100%); color:#fff; border-bottom:none;">
+        <h5 class="modal-title" style="color:#fff; font-weight:600;">
+          <i class="fas fa-exclamation-triangle"></i> This property is still in a pro-rata distribution
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                style="color:#fff; opacity:.9; text-shadow:none;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="font-size:14px;">
+        <p>It cannot be made inactive yet. It still holds a share of:</p>
+        <table class="table table-sm table-bordered" style="font-size:0.9rem;">
+          <thead style="background:#f8f9fa;">
+            <tr><th>Expense Line Type</th><th class="text-right">Its share, a year</th></tr>
+          </thead>
+          <tbody>
+            {% for b in prorata_blockers %}
+            <tr><td>{{ b.name }}</td><td class="text-right">&euro;{{ b.amount|floatformat:2 }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p>
+          Those shares would carry on being charged to it in every future year,
+          while the other properties kept shares of a split that still counted
+          it &mdash; so each line would stop adding up to the charge actually owed.
+        </p>
+        <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+          <strong>To remove it properly</strong>
+          <ol class="mb-0 mt-2">
+            <li>Open <strong>Financial Management &rarr; Expenses</strong></li>
+            <li>Edit each line above and set <strong>Applies from</strong> to the date this property leaves</li>
+            <li><strong>Un-tick</strong> this property and recalculate &mdash; the others take up its share</li>
+          </ol>
+          <p class="mb-0 mt-2" style="font-size:13px;">
+            Its earlier years keep the figures it really carried. Only from that
+            date forward does it stop.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Back to the property
+        </button>
+        <a href="{% url 'finance_expense' %}" class="btn btn-info">
+          <i class="fas fa-arrow-right"></i> Go to Expenses
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endif %}
 
 <style>
@@ -520,6 +578,46 @@
 <script>
 // Convert Django template variable to JavaScript array
 const existingNames = {{ existing_names|safe }};
+
+// ---- Status change: refuse here, not two pages later --------------------
+// The blockers are known when this page loads, so Save can stop and explain
+// without a round trip. The server checks again regardless - this is a
+// courtesy, not a control.
+var PRORATA_BLOCKERS = {{ prorata_blockers|length|default:0 }};
+
+function showStatusBlockModal() {
+    var m = document.getElementById('statusBlockModal');
+    if (!m) { return; }
+    if (window.jQuery && jQuery.fn.modal) { jQuery(m).modal('show'); }
+    else { m.style.display = 'block'; m.classList.add('show'); }
+}
+
+function checkStatusBlockers() {
+    if (!PRORATA_BLOCKERS) { return true; }
+    var form = document.getElementById('property-edit-form');
+    var sel = document.getElementById('prop_status');
+    if (!form || !sel) { return true; }
+    var was = (form.getAttribute('data-original-status') || '').trim();
+    if (was === 'Active' && sel.value !== 'Active') {
+        showStatusBlockModal();
+        return false;
+    }
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // The server refused a POST that got past the check above.
+    {% if show_blocker_modal %}showStatusBlockModal();{% endif %}
+    var m = document.getElementById('statusBlockModal');
+    if (!m) { return; }
+    Array.prototype.forEach.call(
+        m.querySelectorAll('[data-dismiss="modal"]'), function (b) {
+        b.addEventListener('click', function () {
+            if (window.jQuery && jQuery.fn.modal) { jQuery(m).modal('hide'); }
+            else { m.style.display = 'none'; m.classList.remove('show'); }
+        });
+    });
+});
 
 function validatePropertyName() {
     const propName = document.getElementById('prop_name').value.trim();

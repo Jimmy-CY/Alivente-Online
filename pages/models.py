@@ -3613,8 +3613,21 @@ def lease_monthly_rent_levies(prop, year, today=None):
     lev = [0.0] * 12
     if not leases:
         return rent, lev, False
+    # A property that is no longer Active gets no PROJECTION.
+    #
+    # _lease_month's 'assumed' tag carries the most recent lease forward at
+    # today's rent for months nothing covers. That is right for a live property
+    # between tenants; for one that has been sold it would invent rent for every
+    # year after the sale - which matters now that the P&L no longer filters
+    # inactive properties out.
+    #
+    # Only the projection is suppressed. Real, dated leases still resolve
+    # normally, so the years the property actually earned are untouched.
+    _projectable = (getattr(prop, 'prop_status', 'Active') or 'Active') == 'Active'
     for m in range(1, 13):
         _t, _l, r, v = _lease_month(leases, year, m, today)
+        if _t == 'assumed' and not _projectable:
+            r, v = 0, 0
         rent[m - 1] = float(r or 0)
         lev[m - 1] = float(v or 0)
     return rent, lev, True

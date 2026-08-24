@@ -149,6 +149,36 @@
     margin: 0;
 }
 
+
+/* Inactive properties in a pro-rata list. The P&L draws Active properties
+   only, so a share allocated to an inactive one is money the report never
+   shows. Two states, deliberately different:
+     .is-inactive         not in the distribution - cannot be added
+     .is-inactive-linked  already in it - must stay tickable, so it can be
+                          removed, and stays TICKED so nothing is dropped
+                          silently during an unrelated edit */
+.property-item.inactive-row { background: #fbfbfc; }
+.property-item.inactive-row label > span:first-child { color: #868e96; }
+.inactive-pill {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #e9ecef;
+    color: #6c757d;
+}
+.inactive-pill.needs-removal { background: #f8d7da; color: #a71d2a; }
+.prorata-inactive-warning {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #6c5400;
+}
 .checkbox-list {
     background: white;
     border: 1px solid #dee2e6;
@@ -637,18 +667,28 @@
                     </select>
                 </div>
                 
+                <div class="prorata-inactive-warning" id="prorata-inactive-warning" style="display:none;">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <strong>An inactive property is still in this distribution.</strong>
+                  The P&amp;L only reports Active properties, so its share is money the
+                  report never shows &mdash; and the others are holding shares of a split
+                  that still counts it. Set <em>Applies from</em> above, un-tick it, and
+                  recalculate: the remaining properties will take up its share.
+                </div>
                 <div class="checkbox-list">
                     {% for prop in props_data %}
-                    <div class="property-item {% if prop.prop_id == existing_expense.prop_id %}is-anchor{% endif %}" data-country="{{ prop.prop_country }}" data-prop-name="{{ prop.prop_name }}">
-                        <input class="property-checkbox" 
-                               type="checkbox" 
-                               id="prop_{{ prop.prop_id }}" 
+                    <div class="property-item {% if prop.prop_id == existing_expense.prop_id %}is-anchor{% endif %}{% if prop.prop_status != 'Active' %} inactive-row{% endif %}" data-country="{{ prop.prop_country }}" data-prop-name="{{ prop.prop_name }}">
+                        <input class="property-checkbox{% if prop.prop_status != 'Active' and prop.prop_id not in linked_property_ids %} is-inactive{% endif %}{% if prop.prop_status != 'Active' and prop.prop_id in linked_property_ids %} is-inactive-linked{% endif %}"
+                               type="checkbox"
+                               id="prop_{{ prop.prop_id }}"
                                value="{{ prop.prop_id }}"
                                data-current-value="{{ prop.current_value|default:0 }}"
                                {% if prop.prop_id in linked_property_ids %}checked{% endif %}
-                               {% if prop.prop_id == existing_expense.prop_id %}disabled{% endif %}>
+                               {% if prop.prop_id == existing_expense.prop_id %}disabled{% endif %}
+                               {% if prop.prop_status != 'Active' and prop.prop_id not in linked_property_ids %}disabled title="Inactive - the P&amp;L does not report this property, so it cannot take a share"{% endif %}
+                               {% if prop.prop_status != 'Active' and prop.prop_id in linked_property_ids %}title="Inactive, but still in this distribution - un-tick it so the others take up its share"{% endif %}>
                         <label for="prop_{{ prop.prop_id }}">
-                            <span>{{ prop.prop_name }}{% if prop.prop_id == existing_expense.prop_id %}<span class="anchor-pill">Anchor</span>{% else %}<span class="anchor-pill" style="display:none;">Anchor</span>{% endif %}</span>
+                            <span>{{ prop.prop_name }}{% if prop.prop_id == existing_expense.prop_id %}<span class="anchor-pill">Anchor</span>{% else %}<span class="anchor-pill" style="display:none;">Anchor</span>{% endif %}{% if prop.prop_status != 'Active' %}<span class="inactive-pill{% if prop.prop_id in linked_property_ids %} needs-removal{% endif %}">{% if prop.prop_id in linked_property_ids %}Inactive &mdash; remove{% else %}Inactive{% endif %}</span>{% endif %}</span>
                             <span class="prop-value">€{{ prop.current_value|default:0|intcomma }}</span>
                         </label>
                     </div>
@@ -768,7 +808,8 @@ $(document).ready(function() {
         
         if (selectedCountry === 'all') {
             propertyItems.show();
-            $('.property-checkbox').prop('checked', true);
+            // .is-inactive can never be ticked, not even by 'all'.
+            $('.property-checkbox').not('.is-inactive').prop('checked', true);
         } else {
             propertyItems.each(function() {
                 const itemCountry = $(this).data('country');
@@ -777,7 +818,9 @@ $(document).ready(function() {
                 
                 if (itemCountry === selectedCountry || isMainProperty) {
                     $(this).show();
-                    checkbox.prop('checked', true);
+                    if (!checkbox.hasClass('is-inactive')) {
+                        checkbox.prop('checked', true);
+                    }
                 } else {
                     $(this).hide();
                     checkbox.prop('checked', false);
@@ -810,13 +853,28 @@ $(document).ready(function() {
     });
 
     $(document).on('change', '.property-checkbox', function() {
-        if ($(this).prop('disabled')) {
+        // Re-assert the ANCHOR only. An inactive row is disabled for the
+        // opposite reason - it must never end up ticked.
+        if ($(this).prop('disabled') && !$(this).hasClass('is-inactive')) {
             $(this).prop('checked', true);
         }
     });
 
+    // Show the banner only when an inactive property is actually still in
+    // this distribution, and hide it again the moment it is un-ticked.
+    function syncInactiveWarning() {
+        var banner = document.getElementById('prorata-inactive-warning');
+        if (!banner) { return; }
+        var still = $('.property-checkbox.is-inactive-linked:checked').length;
+        banner.style.display = still ? '' : 'none';
+    }
+    $(document).on('change', '.property-checkbox', syncInactiveWarning);
+    syncInactiveWarning();
+
     calculateProrataBtn.on('click', function() {
-        const selectedCheckboxes = $('.property-checkbox:checked');
+        // :checked matches a disabled box perfectly happily, so the
+        // inactive ones have to be excluded explicitly.
+        const selectedCheckboxes = $('.property-checkbox:checked').not('.is-inactive');
         const totalAmount = parseFloat(expenseAmountInput.val());
         
         if (!mainPropertyCheckbox) {

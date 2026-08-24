@@ -610,10 +610,49 @@ def properties_edit(request, prop_id):
     # Get all other property names (excluding the current one)
     existing_names = props.objects.exclude(prop_id=prop_id).values_list('prop_name', flat=True)
 
+    # Worked out on load, so Save can refuse in a dialog on this page rather
+    # than storing a message that surfaces on whatever renders next.
     return render(request, "properties_edit.html", {
         "props": [current_property],  # Maintain your existing structure
-        "existing_names": list(existing_names)  # Add this for client-side validation
+        "existing_names": list(existing_names),  # Add this for client-side validation
+        "prorata_blockers": [{'name': n, 'amount': a}
+                             for n, a in _prorata_blockers(prop_id)],
+        "show_blocker_modal": False,
     })
+
+
+def _prorata_blockers(prop_id):
+    """Pro-rata expense rows on this property, as (line type, yearly amount).
+
+    A pro-rata row is a SHARE of the amount held on its line type. Deactivate
+    the property and the P&L stops drawing it - the other properties keep
+    shares computed for a split that included this one, so the line quietly
+    stops adding up to the charge actually owed.
+
+    Ordinary expenses are deliberately NOT counted. One on a sold property
+    just stops being reported, which is correct. Only a distribution breaks.
+    """
+    from pages.models import expense
+
+    _months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+               'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
+    out = []
+    rows = (expense.objects.select_related('expense_line_types')
+            .filter(prop_id=prop_id))
+    for row in rows:
+        lt = row.expense_line_types
+        flag = (getattr(lt, 'expense_line_types_prorata', '') or '').strip().lower()
+        if flag != 'yes':
+            continue
+        total = 0
+        for m in _months:
+            v = getattr(row, 'expense_' + m, None)
+            if v:
+                total += float(v)
+        if total:
+            out.append((str(lt), total))
+    out.sort(key=lambda t: -t[1])
+    return out
 
 
 @login_required
@@ -622,10 +661,35 @@ def properties_edit_commit(request, prop_id):
     prop = get_object_or_404(props, pk=prop_id)
     existing_names = props.objects.exclude(prop_id=prop_id).values_list('prop_name', flat=True)
 
+    # Read the CURRENT status straight from the database, before the form
+    # touches anything. PropForm(request.POST, instance=prop) mutates `prop`
+    # during is_valid(), so afterwards prop.prop_status is already the new
+    # value and comparing the two would always say "unchanged".
+    _old_status = (props.objects.filter(pk=prop_id)
+                   .values_list('prop_status', flat=True).first())
+
     if request.method == "POST":
         form = PropForm(request.POST, instance=prop)
 
         if form.is_valid():
+            _new_status = form.cleaned_data.get('prop_status')
+            if _old_status == 'Active' and _new_status != 'Active':
+                _blockers = _prorata_blockers(prop_id)
+                if _blockers:
+                    # No messages.error here, deliberately. This template has no
+                    # messages block, so a stored message would not appear on
+                    # this page at all - it would sit in the session and surface
+                    # on the next page that does render messages, which is the
+                    # Properties list. The modal says it here instead, and the
+                    # client-side check normally means we never get this far.
+                    return render(request, "properties_edit.html", {
+                        'props': [props.objects.get(pk=prop_id)],
+                        'existing_names': list(existing_names),
+                        'prorata_blockers': [{'name': n, 'amount': a}
+                                             for n, a in _blockers],
+                        'show_blocker_modal': True,
+                    })
+
             new_name = form.cleaned_data.get('prop_name')
             current_name = prop.prop_name
 
