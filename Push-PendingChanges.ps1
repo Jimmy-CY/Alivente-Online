@@ -148,7 +148,8 @@ $sentinels = @(
     @{ File = 'pages\help_content\operational.html';      Text = 'tenant-name order';              What = 'invoice help explains numbering' },
     @{ File = 'pages\views\issues.py';                    Text = 'Reports (7):';                   What = 'legacy lease_renewal view gone' },
     @{ File = 'pages\views\issues.py';                    Text = 'could never be written on Live'; What = 'and the reason is recorded' },
-    @{ File = 'pages\views\administration.py';            Text = 'can_access_administration -> admin_apms'; What = 'legacy admin views gone' }
+    @{ File = 'pages\views\administration.py';            Text = 'can_access_administration -> admin_apms'; What = 'legacy admin views gone' },
+    @{ File = 'pages\help_content\administration.html';   Text = 'nothing to press';               What = 'admin help matches the page' }
 )
 
 foreach ($s in $sentinels) {

@@ -150,6 +150,55 @@ check('no template reverses a deleted URL name%s'
       % (' (%s)' % ', '.join(offenders[:3]) if offenders else ''),
       not offenders)
 
+# ======================================== THE HELP DESCRIBES THE PAGE THAT IS
+# Help that sends the reader to a button which is not there is worse than no
+# help - they conclude the page is broken. Parsed with the app's own renderer,
+# because a tab that fails to parse vanishes silently rather than erroring.
+ADMIN_HELP = os.path.join(ROOT, 'pages', 'help_content', 'administration.html')
+if os.path.exists(ADMIN_HELP):
+    AH_SRC = read(ADMIN_HELP)
+    check('the Administration help no longer documents a Generate Invoices card',
+          'Generate Invoices</strong></h6>' not in AH_SRC)
+    check('  and no longer tells you to click it',
+          'click <strong>Generate Invoices</strong>' not in AH_SRC)
+    check('  the Functional tab says three cards, not four',
+          'Three cards covering lease and title-deed' in AH_SRC
+          and 'Four cards covering lease, deed and invoice' not in AH_SRC)
+    check('  the Overview drops invoice generation from Functional',
+          'lease agreements, title deeds and invoice generation' not in AH_SRC)
+    check('  it explains the job runs every five minutes instead',
+          'every five minutes' in AH_SRC and 'self-healing' in AH_SRC)
+    check('  and points at the real places to look',
+          'Financial Management &rarr; Invoices' in AH_SRC
+          and 'Physical Invoices' in AH_SRC)
+    check('  the missing-invoice advice no longer sends you to a button',
+          'there is no button to press' in AH_SRC)
+
+    try:
+        import importlib.util
+        _sp = importlib.util.spec_from_file_location(
+            '_hr_admin',
+            os.path.join(ROOT, 'pages', 'services', 'help_renderer.py'))
+        _hr = importlib.util.module_from_spec(_sp)
+        _sp.loader.exec_module(_hr)
+        _hr.clear_cache()
+        _mod = _hr.get_help_module('admin_apms')
+        _tabs = [t.get('slug') for t in (_mod.get('tabs') or [])] if _mod else []
+        check('  the modal still parses with all four tabs (%s)'
+              % ', '.join(_tabs),
+              _tabs == ['ad-overview', 'ad-functional', 'ad-system', 'ad-tips'])
+        for t in (_mod.get('tabs') or []):
+            b = t.get('content_html') or ''
+            o = len(re.findall(r'<div\b', b))
+            c = len(re.findall(r'</div>', b))
+            if o != c:
+                check('    %s: <div> unbalanced (%d/%d)' % (t.get('slug'), o, c),
+                      False)
+    except Exception as exc:                               # pragma: no cover
+        check('  parsing the admin help raised %s' % type(exc).__name__, False)
+else:
+    check('administration.html help exists', False)
+
 # ===================================== THE MIDDLEWARE MATCHER, RUN FOR REAL
 # Lifted by LINE, then dedented as a block. A regex that starts mid-line loses
 # the first line's indentation while the rest keeps it, which will not compile.
