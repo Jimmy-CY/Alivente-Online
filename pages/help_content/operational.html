@@ -1887,7 +1887,7 @@
     <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-code-branch"></i> Two kinds of invoice, one list</h6>
     <p>Every row on the list is one of two types, shown by a badge in the <strong>Type</strong> column:</p>
     <ul>
-      <li><span style="background:#e2e3f3; color:#3b3f8f; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600;">Tenant</span> &mdash; a rent invoice for one of your tenants. These are <strong>created automatically each month</strong> and sent on a schedule.</li>
+      <li><span style="background:#e2e3f3; color:#3b3f8f; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600;">Tenant</span> &mdash; a rent invoice for one of your tenants. Drafted for you in the <strong>last five days of each month</strong>, for the month ahead, then e-mailed once you have approved them. See <em>Tenant Invoices</em> for the dates.</li>
       <li><span style="background:#d1ecf1; color:#0c5460; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600;">Customer</span> &mdash; an <strong>ad-hoc invoice</strong> to anyone who isn't a tenant (a one-off client, a supplier you're charging, a service you've provided). You create and send these <strong>by hand</strong>, whenever you need to.</li>
     </ul>
 
@@ -1895,7 +1895,7 @@
     <div class="card mb-2" style="border-left:4px solid #17a2b8;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><strong>Tenant invoices &mdash; automatic</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A nightly job prepares a <em>draft</em> invoice for each active tenant for the upcoming month, then a separate job e-mails the approved ones. You review and approve; the system handles drafting and sending.</p>
+        <p class="mb-0" style="font-size:13px;">A background job runs <strong>every five minutes</strong>. It does nothing for most of the month, then in the <strong>last five days</strong> it drafts an invoice for each flagged tenant for the <em>month ahead</em>. You review and approve; a second job numbers, e-mails and files them. Your only job is approving.</p>
       </div>
     </div>
     <div class="card mb-3" style="border-left:4px solid #17a2b8;">
@@ -1914,7 +1914,7 @@
            data-tab-name="The List"
            data-tab-icon="fa-table">
     <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the list</h6>
-    <p>One row per invoice, across both types. Columns: <strong>Number</strong>, <strong>Name</strong> (tenant or customer), <strong>Type</strong>, <strong>Property</strong> (a dash for customer invoices, which have no property), <strong>Total</strong>, <strong>Status</strong>, and <strong>Actions</strong>. Click the <strong>Number</strong> to open the invoice for editing.</p>
+    <p>One row per invoice, across both types. Columns: <strong>Number</strong>, <strong>Date</strong>, <strong>Name</strong> (tenant or customer), <strong>Type</strong>, <strong>Property</strong> (a dash for customer invoices, which have no property), <strong>Total</strong>, <strong>Status</strong>, and <strong>Actions</strong>. Click the <strong>Number</strong> to open the invoice for editing.</p>
 
     <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-sort-amount-down"></i> How the list is ordered</h6>
     <p>Rows are grouped by status, so the things that still need your attention sit at the top:</p>
@@ -1933,7 +1933,7 @@
     <div class="card mb-2" style="border-left:4px solid #17a2b8;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><i class="fas fa-calendar-alt"></i> <strong>From / To</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A month range. Both default to the upcoming month, so you see that month on arrival. Widen the range to look back across several months &mdash; the count pills and rows update to cover the whole span.</p>
+        <p class="mb-0" style="font-size:13px;">A month range, and it starts <strong>empty</strong> &mdash; so on arrival you see <em>every invoice ever issued</em>, and the heading reads <em>&ldquo;All invoices&rdquo;</em>. Set one month to narrow to it; set both for a span. The count pills follow whatever range is showing, so <em>0 draft</em> on the unfiltered list means nothing anywhere is awaiting approval, not that this month is empty.</p>
       </div>
     </div>
     <div class="card mb-2" style="border-left:4px solid #17a2b8;">
@@ -1950,7 +1950,7 @@
     </div>
 
     <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-layer-group"></i> The count pills</h6>
-    <p>Next to the filter title, three pills summarise the current range: <span style="background:#fff3cd; color:#856404; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">N draft</span> <span style="background:#cce5ff; color:#004085; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">N approved</span> <span style="background:#d4edda; color:#155724; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">N sent</span> &mdash; an at-a-glance picture of where the month stands.</p>
+    <p>Next to the filter title, three pills summarise the current range: <span style="background:#fff3cd; color:#856404; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">N draft</span> <span style="background:#cce5ff; color:#004085; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">N approved</span> <span style="background:#d4edda; color:#155724; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600;">N sent</span> &mdash; an at-a-glance picture of where the selected range stands. With no From / To set, that is your whole history.</p>
 
     <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-eye"></i> Viewing the PDF</h6>
     <p>The teal <i class="fas fa-file-pdf"></i> <strong>PDF</strong> button on any row opens the invoice in the document viewer &mdash; the same preview used across the system, with a Download option.</p>
@@ -1960,25 +1960,45 @@
            data-tab-name="Tenant Invoices"
            data-tab-icon="fa-users">
     <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-users"></i> The automatic monthly cycle</h6>
-    <p>Tenant rent invoices are handled on a schedule so you never have to draft them by hand. The flow each month:</p>
+    <p>Tenant rent invoices are handled on a schedule, so you never draft them by hand. A background job runs <strong>every five minutes</strong>, all month; for most of the month it has nothing to do. The cycle:</p>
 
     <div class="card mb-2" style="border-left:4px solid #17a2b8;">
       <div class="card-body" style="padding:12px 15px;">
-        <h6 style="margin:0 0 5px 0;"><strong>1. Drafts are prepared</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A nightly job seeds a <em>draft</em> invoice for each active tenant for the upcoming month, with the rent (and communal fees, where the tenant is billed for them) as line items. They appear on the list in <span style="background:#fff3cd; color:#856404; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600;">Draft</span> status.</p>
+        <h6 style="margin:0 0 5px 0;"><strong>1. Drafts appear &mdash; five days before month-end</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Once there are <strong>five or fewer days left in the month</strong>, the job seeds a <em>draft</em> for the <strong>month ahead</strong> &mdash; the <strong>26th</strong> of a 31-day month, the <strong>24th</strong> of a 29-day February. Each draft carries the rent, plus communal fees where that tenant is billed for them. They land in <span style="background:#fff3cd; color:#856404; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600;">Draft</span>. Before that date there is nothing to see, and an empty list is not a fault.</p>
       </div>
     </div>
     <div class="card mb-2" style="border-left:4px solid #17a2b8;">
       <div class="card-body" style="padding:12px 15px;">
-        <h6 style="margin:0 0 5px 0;"><strong>2. You review and approve</strong></h6>
-        <p class="mb-0" style="font-size:13px;">Open a draft (click its row), check the line items, and edit if needed. When it's right, approve it &mdash; either from the edit screen or the green <i class="fas fa-check"></i> tick on the list row. It moves to <span style="background:#cce5ff; color:#004085; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600;">Approved</span>.</p>
+        <h6 style="margin:0 0 5px 0;"><strong>2. You review and approve &mdash; the last few days of the month</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Open a draft (click its row), check the lines, edit if needed. When it's right, approve it &mdash; from the edit screen, or the green <i class="fas fa-check"></i> tick on the list row. It moves to <span style="background:#cce5ff; color:#004085; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600;">Approved</span>. While anything is still in draft you get a <strong>daily reminder e-mail</strong> listing it; once nothing is left in draft, the reminders stop.</p>
       </div>
     </div>
     <div class="card mb-3" style="border-left:4px solid #17a2b8;">
       <div class="card-body" style="padding:12px 15px;">
-        <h6 style="margin:0 0 5px 0;"><strong>3. Approved invoices are sent automatically</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A separate nightly job e-mails the approved tenant invoices to the tenants, numbers them, and moves them to <span style="background:#d4edda; color:#155724; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600;">Sent</span>. You don't press send for tenant invoices &mdash; approving is the signal to go.</p>
+        <h6 style="margin:0 0 5px 0;"><strong>3. They go out on the 1st &mdash; not when you approve</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The sending job only handles the month <em>currently</em> running, so September's invoices are not touched until <strong>1 September</strong>. Then it numbers the approved ones, renders each PDF, e-mails it to the tenant, and marks it <span style="background:#d4edda; color:#155724; padding:1px 8px; border-radius:8px; font-size:11px; font-weight:600;">Sent</span> &mdash; and <em>only</em> if the e-mail actually left. You never press send: approving is the signal, and the 1st is the moment.</p>
       </div>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <i class="fas fa-calendar-day"></i> <strong>A worked month.</strong>
+      <strong>26 Aug</strong> &mdash; September drafts appear, first reminder e-mail arrives.
+      <strong>26&ndash;31 Aug</strong> &mdash; you check and approve them.
+      <strong>1 Sept</strong> &mdash; the approved ones are numbered, e-mailed and marked sent, without you being there.
+      Approving early does not send early; it means the 1st happens unattended.
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-user-check"></i> Which tenants get a draft</h6>
+    <p>Two conditions, both required:</p>
+    <ul>
+      <li>The tenant is flagged as <strong>needing a physical invoice</strong> &mdash; a per-tenant setting on the Tenants module. A tenant who simply pays rent does <em>not</em> get a VAT invoice unless flagged.</li>
+      <li>The tenant is <strong>current</strong>. That flag is refreshed from the lease dates immediately before drafting, so a lease that has ended stops being invoiced without you having to remember.</li>
+    </ul>
+    <p>So a missing draft is nearly always the flag rather than a fault. Check the tenant first.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-redo"></i> <strong>Running every five minutes creates nothing twice.</strong> A draft is keyed on the tenant and the month, so the job finds the existing one and leaves it alone &mdash; including any edits you have made to it.
     </div>
 
     <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-edit"></i> Editing the lines</h6>
@@ -1992,7 +2012,7 @@
     </div>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-      <i class="fas fa-trash"></i> <strong>Deleting a tenant draft:</strong> you can delete a draft if it shouldn't go out, but bear in mind the monthly prepare job may re-create that tenant's draft for the same month while its window is active. Deletion is most useful for one-off corrections; the cleaner control is simply to leave it unapproved so it isn't sent.
+      <i class="fas fa-trash"></i> <strong>Deleting a tenant draft:</strong> a deleted draft comes straight back &mdash; the job runs again within five minutes and re-creates it, and will keep doing so until the month turns. Deleting is therefore not how you stop an invoice. <strong>Leave it unapproved instead:</strong> nothing unapproved is ever sent, and on the 1st it is simply passed over.
     </div>
   </article>
 
@@ -2053,7 +2073,15 @@
       <i class="fas fa-info-circle"></i> <strong>A number is assigned only when an invoice is sent.</strong> Up to that point the invoice shows <strong>"(on send)"</strong> instead of a number. This guarantees numbers are issued in send order with no gaps &mdash; a draft that's never sent never consumes a number.
     </div>
 
-    <p>Because the counter is shared, tenant and customer invoices draw their numbers from the same sequence in the order they are actually sent. That's why an unsent draft never shows a provisional number: the next number isn't promised to anyone until send.</p>
+    <p>Because the counter is shared, tenant and customer invoices draw from the same sequence. A dropped draft therefore leaves no gap &mdash; nothing was ever promised to it.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-sort-alpha-down"></i> How a month's tenant batch is numbered</h6>
+    <p>The month's approved tenant invoices are numbered <strong>in one pass on the 1st</strong>, in <strong>tenant-name order A&rarr;Z</strong> &mdash; not in the order they were approved, and not one at a time as each e-mail goes. They come out contiguous, and the counter then advances past the whole batch.</p>
+    <p>An invoice that was numbered on an earlier run &mdash; a send that failed on the e-mail and is being retried &mdash; <strong>keeps the number it already has</strong>. It is not renumbered.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-envelope-open-text"></i> <strong>The approval reminder e-mail is the exception.</strong> It shows each draft a <em>provisional</em> number so the list is easy to talk about. That number is a preview, not a reservation: approve a different set, or add a tenant, and the batch re-sorts A&rarr;Z and the provisional numbers move. Only the numbers assigned on the 1st are real.
+    </div>
 
     <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-sliders-h"></i> The "Next invoice number to issue" control</h6>
     <p>The dispenser panel shows the number the <em>next</em> sent invoice will receive. You normally never touch it &mdash; it advances by itself as invoices go out.</p>
@@ -2074,7 +2102,9 @@
            data-tab-icon="fa-lightbulb">
     <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
     <ul>
-      <li><strong>Approve the month's tenant drafts on time</strong> &mdash; the send job only e-mails <em>approved</em> invoices. A draft left unapproved simply won't go out, which is the safe default but means nothing is sent until you act.</li>
+      <li><strong>Approve between the 26th and month-end</strong> &mdash; that is the whole window. Drafts appear five days before month-end and are sent on the 1st; anything still in draft that morning is passed over and simply does not go out. Unapproved is the safe default, but it is not a delay &mdash; it is a miss.</li>
+
+      <li><strong>An empty list before the 26th is normal</strong> &mdash; the drafting job deliberately does nothing until five days before month-end. If the list is still empty <em>after</em> that date, then it is worth looking: usually a tenant who isn't flagged for physical invoices, or whose lease has ended.</li>
       <li><strong>Un-approve to fix, don't delete</strong> &mdash; if an approved tenant invoice is wrong, move it back to draft, correct it, and approve again. Deleting is for genuine one-offs.</li>
       <li><strong>"(on send)" is not a problem</strong> &mdash; it just means the invoice hasn't been sent yet. The real PR number appears the moment it goes out.</li>
       <li><strong>Save customers you bill more than once</strong> &mdash; the customer book fills the whole panel (including e-mail recipients and message) with one pick, so repeat invoicing is fast and consistent.</li>
@@ -2082,7 +2112,7 @@
       <li><strong>Check the To / CC before sending a customer invoice</strong> &mdash; the send uses the addresses frozen on the invoice. A customer with no "Email To" can't be sent until one is added.</li>
       <li><strong>Set the customer invoice date deliberately</strong> &mdash; it drives the period the invoice belongs to, which is what the list groups and filters on.</li>
       <li><strong>Leave the numbering dispenser alone unless reconciling external numbers</strong> &mdash; it manages itself. Only bump it forward to skip numbers used outside Alivente, and never below an already-issued number.</li>
-      <li><strong>Widen the From / To range to review history</strong> &mdash; the list defaults to the upcoming month; stretch the range to audit what was issued over a quarter or a year.</li>
+      <li><strong>Use From / To to narrow, not to widen</strong> &mdash; the list opens on <em>every</em> invoice ever issued. Set a month to focus on it, and clear the filter to get the whole history back.</li>
     </ul>
 
     <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
