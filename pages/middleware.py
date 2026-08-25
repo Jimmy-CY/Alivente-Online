@@ -804,9 +804,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # ---------- ADMINISTRATION ----------
             ('admin_apms', 'auth.can_access_administration'),
             ('admin_clear', 'auth.can_access_administration'),
-            ('admin_unpaid', 'auth.can_access_administration'),
-            ('admin_renewals', 'auth.can_access_administration'),
-            ('admin_invoices', 'auth.can_access_administration'),
             ('user-administration', 'auth.can_access_administration'),
             ('setup-permissions', 'auth.can_access_administration'),
 
@@ -887,7 +884,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             ('tenant_report', 'auth.can_access_tenants'),
             ('lease', 'auth.can_access_tenants'),
             ('lease-timeline', 'auth.can_access_tenants'),
-            ('lease_renewal', 'auth.can_access_tenants'),
             ('lease_renewal_report', 'auth.can_access_tenants'),
             ('lease_agreements', 'auth.can_access_tenants'),
             ('upload_lease_agreement', 'auth.can_access_tenants'),
@@ -949,7 +945,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # ---------- INVOICES ----------
             ('invoices', 'auth.can_access_invoices'),
             ('invoices_commit', 'auth.can_access_invoices'),
-            ('open_invoices', 'auth.can_access_invoices'),
             # Physical Invoices + Invoice Customers (re-homed from Tenants).
             # All routes live under these two prefixes (see urls.py).
             ('physical-invoices', 'auth.can_access_invoices'),

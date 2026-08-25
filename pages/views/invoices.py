@@ -18,13 +18,11 @@ Functions
 - invoices_commit          : Mark an invoice paid; send notification.
 - send_invoices_paid_email : SMTP helper (lazy-imported deps; returns
                              bool success).
-- open_invoices            : Generate the open-invoices report via the
-                             project-root open_invoices.py helper.
 - open_invoices_report     : Render the on-screen Debtors Age Analysis.
 
 Auth tiers
 ----------
-read tier -> auth.can_access_invoices  (invoices_page, open_invoices,
+read tier -> auth.can_access_invoices  (invoices_page,
                                         open_invoices_report)
 edit tier -> auth.can_edit_invoices    (invoices_commit)
 """
@@ -238,22 +236,6 @@ Automated Invoice Tracking"""
                 pass
         # Close database connection
         connection.close()
-
-
-@login_required
-@permission_required('auth.can_access_invoices', raise_exception=True)
-def open_invoices(request):
-    # NB: imports the project-root ``open_invoices.py`` reporting helper,
-    # not anything in this views file. Absolute imports resolve via sys.path.
-    import open_invoices
-    rep_output = request.POST.get('d_e')
-    check = 'No'
-    # @login_required guarantees request.user is authenticated here.
-    email = request.user.email
-    fname = request.user.first_name
-    open_invoices.open_invoices(rep_output, check, email, fname)
-    messages.success(request, "Report Created Successfully")
-    return redirect('home')
 
 
 @login_required

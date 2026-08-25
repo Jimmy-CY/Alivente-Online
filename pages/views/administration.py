@@ -24,19 +24,12 @@ Functions
                            STATIC_ROOT/title_deeds.
 - admin_clear            : Delete generated report PDFs from
                            STATIC_ROOT/reports.
-- admin_unpaid           : Email the open-invoices report (project-root
-                           open_invoices helper).
-- admin_renewals         : Email the lease-renewal report (project-root
-                           lease_renewal helper).
-- admin_invoices         : Generate the current month's invoices
-                           (project-root open_invoices helper).
 
 Auth tiers
 ----------
 superuser only            -> admin_clear (@user_passes_test is_superuser)
 login only                -> my_profile
-can_access_administration -> admin_apms, admin_unpaid, admin_renewals,
-                             admin_invoices (also needs can_edit_invoices)
+can_access_administration -> admin_apms
 login only                -> personal_page (tile-level gating in template)
 can_access_tenants        -> serve_lease
 can_edit_tenants          -> upload_lease_agreement
@@ -46,8 +39,6 @@ can_edit_properties       -> upload_title_deed
 
 import glob
 import os
-from datetime import date
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import (
@@ -343,50 +334,4 @@ def admin_clear(request):
     files = glob.glob(file_path)
     for f in files:
         os.remove(f)
-    return redirect("admin_apms")
-
-
-@login_required
-@permission_required('auth.can_access_administration', raise_exception=True)
-def admin_unpaid(request):
-    # Project-root helper module (resolved via sys.path), not a views import.
-    import open_invoices
-    rep_output = "Email"
-    check = "Yes"
-    email = "demetrimanias@gmail.com"
-    fname = "Demetri"
-    open_invoices.open_invoices(rep_output, check, email, fname)
-#   email = "stella.simitopoulos@alivente.com"
-#   fname = "Stella"
-#   open_invoices.open_invoices(rep_output, check, email, fname)
-    return redirect("admin_apms")
-
-
-@login_required
-@permission_required('auth.can_access_administration', raise_exception=True)
-def admin_renewals(request):
-    # Project-root helper module (resolved via sys.path), not a views import.
-    import lease_renewal
-    rep_output = "Email"
-    check = "Yes"
-    email = "demetrimanias@gmail.com"
-    fname = "Demetri"
-    lease_renewal.lease_renewal(rep_output, check, email, fname)
-#   email = "stella.simitopoulos@alivente.com"
-#   fname = "Stella"
-#   lease_renewal.lease_renewal(rep_output,check, email, fname)
-    return redirect("admin_apms")
-
-
-@login_required
-@permission_required('auth.can_access_administration', raise_exception=True)
-@permission_required('auth.can_edit_invoices', raise_exception=True)
-def admin_invoices(request):
-    # Stacked decorators are intentional: requires BOTH
-    # can_access_administration AND can_edit_invoices.
-    # Project-root helper module (resolved via sys.path), not a views import.
-    import open_invoices
-    today = date.today()
-    months = ('Month', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
-    open_invoices.create_invoices(months[today.month], today.year, request)
     return redirect("admin_apms")

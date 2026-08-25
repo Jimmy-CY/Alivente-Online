@@ -483,19 +483,6 @@
         </div>
       {% endif %}
 
-      <!-- Generate Invoices (requires Invoices edit) -->
-      {% if perms.auth.can_edit_invoices %}
-        <a href="{% url 'admin_invoices' %}" class="admin-btn btn-alivente">
-          <i class="fas fa-file-invoice"></i>
-          <h6>Generate Invoices</h6>
-        </a>
-      {% else %}
-        <div class="admin-btn btn-perm-disabled" title="You do not have permission to edit Invoices">
-          <i class="fas fa-file-invoice"></i>
-          <h6>Generate Invoices</h6>
-        </div>
-      {% endif %}
-
     </div>
   </div>
   

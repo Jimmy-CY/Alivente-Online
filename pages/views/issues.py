@@ -12,18 +12,20 @@ Contains 26 functions in three loose groups:
   Pure Issues (7): delete_issue, comments_report, delete_comment,
                    get_issue_details, resolved_issues_report, issues_rep,
                    notify_comment_urgent
-  Reports (8): lease_agreements, title_deeds, prop_rep,
+  Reports (7): lease_agreements, title_deeds, prop_rep,
                lease_agreement_report, tenant_report, tenant_rep,
-               lease_renewal_report, lease_renewal
+               lease_renewal_report
                - property/lease/tenant report views that historically
                lived in this section. Candidate for a future split into
                a dedicated reports module.
 
 Note: several of the inline imports here are deliberate and must NOT be
 hoisted - the root-level report modules (print_lease, print_title,
-print_prop, print_tenant, fsr, issues, lease_renewal) share names with
-this module's `issues` model import, the `fsr` view, and the
-`lease_renewal` view, so they are imported locally to avoid shadowing.
+print_prop, print_tenant, fsr, issues) share names with this module's
+`issues` model import and the `fsr` view, so they are imported locally to
+avoid shadowing. The lease_renewal pair is gone: both the root module and
+the view that called it were removed on 25 Aug 2026 - the report they
+produced could never be written on Live.
 The pages.email_utils imports are kept inline to avoid a circular import.
 """
 
@@ -1532,23 +1534,6 @@ def lease_renewal_report(request):
         'today': today.strftime('%Y-%m-%d')
     }
     return render(request, 'lease_renewal_report.html', context)
-
-
-@login_required
-@permission_required('auth.can_access_tenants', raise_exception=True)
-def lease_renewal(request):
-    # Local import: 'lease_renewal' is a root-level report module (distinct
-    # from this view of the same name) - hence the deliberate local scope.
-    import lease_renewal
-    rep_output = request.POST.get('d_e')
-    check = 'No'
-    if request.user.is_authenticated:
-        email = request.user.email
-        fname = request.user.first_name
-    lease_renewal.lease_renewal(rep_output, check, email, fname)
-    messages.success(request, "Report Created Successfully")
-    return redirect('home')
-
 
 # ============================================================================
 # Urgent issue-comment notification

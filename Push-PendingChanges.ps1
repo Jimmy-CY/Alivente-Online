@@ -145,7 +145,10 @@ $sentinels = @(
     @{ File = 'pages\help_content\reports.html';          Text = 'Which properties count';         What = 'P&L help explains the gate' },
     @{ File = 'pages\help_content\reports.html';          Text = 'Always a year, then Budget';     What = 'P&L help matches the toggle' },
     @{ File = 'pages\help_content\operational.html';      Text = 'A worked month';                 What = 'invoice help gives the dates' },
-    @{ File = 'pages\help_content\operational.html';      Text = 'tenant-name order';              What = 'invoice help explains numbering' }
+    @{ File = 'pages\help_content\operational.html';      Text = 'tenant-name order';              What = 'invoice help explains numbering' },
+    @{ File = 'pages\views\issues.py';                    Text = 'Reports (7):';                   What = 'legacy lease_renewal view gone' },
+    @{ File = 'pages\views\issues.py';                    Text = 'could never be written on Live'; What = 'and the reason is recorded' },
+    @{ File = 'pages\views\administration.py';            Text = 'can_access_administration -> admin_apms'; What = 'legacy admin views gone' }
 )
 
 foreach ($s in $sentinels) {
@@ -204,7 +207,8 @@ $suites = @(
     'test_db_error_page.py',
     'test_pl_indicators.py',
     'test_help_pl.py',
-    'test_help_physical_invoices.py'
+    'test_help_physical_invoices.py',
+    'test_remove_legacy_reports.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }
