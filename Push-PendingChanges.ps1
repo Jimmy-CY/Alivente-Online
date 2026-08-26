@@ -149,7 +149,9 @@ $sentinels = @(
     @{ File = 'pages\views\issues.py';                    Text = 'Reports (7):';                   What = 'legacy lease_renewal view gone' },
     @{ File = 'pages\views\issues.py';                    Text = 'could never be written on Live'; What = 'and the reason is recorded' },
     @{ File = 'pages\views\administration.py';            Text = 'can_access_administration -> admin_apms'; What = 'legacy admin views gone' },
-    @{ File = 'pages\help_content\administration.html';   Text = 'nothing to press';               What = 'admin help matches the page' }
+    @{ File = 'pages\help_content\administration.html';   Text = 'nothing to press';               What = 'admin help matches the page' },
+    @{ File = 'pages\templates\base.html';                Text = '--alv-accent:';                  What = 'one accent, defined once' },
+    @{ File = 'pages\templates\base.html';                Text = '.btn-info,';                     What = 'Bootstrap info overridden' }
 )
 
 foreach ($s in $sentinels) {
@@ -209,7 +211,8 @@ $suites = @(
     'test_pl_indicators.py',
     'test_help_pl.py',
     'test_help_physical_invoices.py',
-    'test_remove_legacy_reports.py'
+    'test_remove_legacy_reports.py',
+    'test_deeper_teal.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }

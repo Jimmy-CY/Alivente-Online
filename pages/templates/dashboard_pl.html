@@ -81,7 +81,7 @@
 
 /* Section Headers */
 .profit-loss-table .section-header td {
-    background-color: #17a2b8 !important;
+    background-color: #0e7c8b !important;
     color: white !important;
     font-weight: bold;
     text-align: center;
@@ -111,11 +111,11 @@
 
 .year-selector .dropdown-item:hover {
     background-color: #f8f9fa;
-    color: #17a2b8;
+    color: #0e7c8b;
 }
 
 .year-selector .dropdown-item.active {
-    background-color: #17a2b8 !important;
+    background-color: #0e7c8b !important;
     color: white !important;
 }
 
@@ -224,7 +224,7 @@ body .rotate-prompt .rotate-prompt-message,
 
 body .rotate-prompt .rotate-prompt-message strong,
 .main-content .rotate-prompt-message strong {
-    color: #17a2b8 !important;
+    color: #0e7c8b !important;
 }
 
 body .rotate-prompt .rotate-prompt-instruction,
@@ -240,7 +240,7 @@ body .rotate-prompt .rotate-prompt-back,
     display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
-    background: #17a2b8 !important;
+    background: #0e7c8b !important;
     color: white !important;
     padding: 10px 24px !important;
     border-radius: 6px !important;
@@ -522,9 +522,9 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
 /* Year selector dropdown styling */
 .year-selector select.form-control.year-dropdown {
-    background-color: #17a2b8 !important;
+    background-color: #0e7c8b !important;
     color: white !important;
-    border: 1px solid #17a2b8 !important;
+    border: 1px solid #0e7c8b !important;
     border-radius: 6px !important;
     padding: 8px 16px !important;
     font-weight: 500 !important;
@@ -553,7 +553,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
     background-color: #138496 !important;
     border-color: #117a8b !important;
     outline: none !important;
-    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25) !important;
+    box-shadow: 0 0 0 0.2rem rgba(14, 124, 139, 0.25) !important;
 }
 </style>
 {% endblock %}
@@ -570,20 +570,20 @@ body .rotate-prompt .rotate-prompt-back:hover,
     <div class="rotate-prompt-inner" style="text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 40px 24px; max-width: 360px; width: 100%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); box-sizing: border-box;">
         <div class="rotate-prompt-icon" aria-hidden="true"
              style="margin-bottom: 20px !important; line-height: 1 !important; display: inline-block !important; animation: plRotateHint 2.5s ease-in-out infinite !important; transform-origin: center center !important; will-change: transform;">
-            <i class="fas fa-mobile-alt" style="font-size: 4rem !important; color: #17a2b8 !important;"></i>
+            <i class="fas fa-mobile-alt" style="font-size: 4rem !important; color: #0e7c8b !important;"></i>
         </div>
         <div class="rotate-prompt-title" style="color: #2c3e50; font-size: 1.4rem; margin: 0 0 16px 0; font-weight: 600; line-height: 1.3;">
             Please Rotate Your Phone
         </div>
         <div class="rotate-prompt-message" style="color: #495057; font-size: 1rem; line-height: 1.5; margin: 0 0 12px 0;">
-            The Profit &amp; Loss report is best viewed in <strong style="color: #17a2b8;">landscape mode</strong>.
+            The Profit &amp; Loss report is best viewed in <strong style="color: #0e7c8b;">landscape mode</strong>.
         </div>
         <div class="rotate-prompt-instruction" style="font-size: 0.95rem; color: #6c757d; font-style: italic; margin: 0 0 24px 0;">
             Turn your phone sideways to see all 12 months of data.
         </div>
         <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}"
            class="rotate-prompt-back"
-           style="display: inline-flex; align-items: center; gap: 8px; background: #17a2b8; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; border: none; cursor: pointer; margin-top: 12px;">
+           style="display: inline-flex; align-items: center; gap: 8px; background: #0e7c8b; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; border: none; cursor: pointer; margin-top: 12px;">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
     </div>
@@ -622,9 +622,9 @@ body .rotate-prompt .rotate-prompt-back:hover,
                             <!-- Year Selector -->
                             <div class="year-selector">
                                 <select onchange="window.location.href='?year=' + this.value"
-                                        style="background-color: #17a2b8 !important;
+                                        style="background-color: #0e7c8b !important;
                                                color: white !important;
-                                               border: 1px solid #17a2b8 !important;
+                                               border: 1px solid #0e7c8b !important;
                                                border-radius: 6px !important;
                                                padding: 8px 16px !important;
                                                font-weight: 500 !important;
@@ -673,8 +673,8 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                     <tbody>
                                         <!-- REVENUE SECTION -->
                                         <tr class="section-header">
-                                            <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
-                                            <td colspan="14" style="background-color: #17a2b8;"></td>
+                                            <td class="font-weight-bold" style="background-color: #0e7c8b; color: white;">REVENUE</td>
+                                            <td colspan="14" style="background-color: #0e7c8b;"></td>
                                         </tr>
                                         {% for line_type in revenue_line_types %}
                                         {% with line_totals=property_revenue_totals|get_item:line_type.revenue_line_types_id %}
@@ -719,8 +719,8 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
                                         <!-- EXPENSES SECTION -->
                                         <tr class="section-header">
-                                            <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
-                                            <td colspan="14" style="background-color: #17a2b8;"></td>
+                                            <td class="font-weight-bold" style="background-color: #0e7c8b; color: white;">EXPENSES</td>
+                                            <td colspan="14" style="background-color: #0e7c8b;"></td>
                                         </tr>
 
                                         <!-- ACTUAL EXPENSES ROW (only if not Budget view) -->
@@ -807,8 +807,8 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
                                         <!-- PROFIT SECTION -->
                                         <tr class="section-header">
-                                            <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
-                                            <td colspan="14" style="background-color: #17a2b8;"></td>
+                                            <td class="font-weight-bold" style="background-color: #0e7c8b; color: white;">PROFIT</td>
+                                            <td colspan="14" style="background-color: #0e7c8b;"></td>
                                         </tr>
                                         <tr class="font-weight-bold" style="background-color: #f8f9fa">
                                             <td>NET PROFIT:</td>
@@ -851,7 +851,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
                         <!-- FINANCIAL INDICATORS -->
                         <div class="roi-section mt-3">
-                            <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
+                            <h6 class="section-title" style="background-color: #0e7c8b; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
 
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <!-- GROSS ROI -->

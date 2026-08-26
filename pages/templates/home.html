@@ -345,14 +345,14 @@ Home
         letter-spacing: 0.8px; color: #6c757d; margin: 0 0 10px 4px;
         display: flex; align-items: center; gap: 8px;
     }
-    .section-heading i { color: #17a2b8; font-size: 0.9rem; }
+    .section-heading i { color: #0e7c8b; font-size: 0.9rem; }
     .brief-heading { margin-top: 4px; }
 
     /* ==================== EXECUTIVE BRIEF ==================== */
     .brief {
-        background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+        background: linear-gradient(135deg, #0e7c8b 0%, #117a8b 100%);
         color: #eafcff; border-radius: 12px; padding: 16px 18px;
-        box-shadow: 0 2px 8px rgba(23,162,184,0.25);
+        box-shadow: 0 2px 8px rgba(14, 124, 139,0.25);
     }
     .brief--muted { background: #f8f9fa; color: #495057; border: 1px solid #e9ecef; box-shadow: none; }
     .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
@@ -382,7 +382,7 @@ Home
     .ins-card__title { margin: 0 0 2px; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #2c3e50; }
     .ins-card__sub { color: #6c757d; font-size: 12.5px; margin: 0 0 10px; }
     .ins-ic { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; font-size: 12px; flex: none; }
-    .ins-ic--rent  { background: #e6f6f8; color: #17a2b8; }
+    .ins-ic--rent  { background: #e6f6f8; color: #0e7c8b; }
     .ins-ic--exp   { background: #fff8e1; color: #d39e00; }
     .ins-ic--arr   { background: #fdecea; color: #dc3545; }
     .ins-ic--churn { background: #f3eefb; color: #6f42c1; }
@@ -398,15 +398,15 @@ Home
     /* bar chart */
     .ins-chart { display: flex; align-items: flex-end; gap: 5px; margin: 4px 0; }
     .ins-bar { flex: 1; text-align: center; min-width: 0; cursor: pointer; }
-    .ins-bar:focus { outline: 2px solid rgba(23,162,184,0.4); outline-offset: 2px; border-radius: 4px; }
+    .ins-bar:focus { outline: 2px solid rgba(14, 124, 139,0.4); outline-offset: 2px; border-radius: 4px; }
     .ins-bar__stack { height: 104px; display: flex; flex-direction: column; justify-content: flex-end; }
     .ins-seg { width: 100%; border-radius: 3px 3px 0 0; }
-    .ins-seg--contracted { background: #17a2b8; }
+    .ins-seg--contracted { background: #0e7c8b; }
     .ins-seg--atrisk { background: repeating-linear-gradient(45deg, #f5a623, #f5a623 4px, #fcdca0 4px, #fcdca0 8px); }
     .ins-bar__lbl { font-size: 9px; color: #6c757d; margin-top: 4px; }
     .ins-legend { display: flex; gap: 14px; font-size: 11px; color: #6c757d; margin-top: 6px; flex-wrap: wrap; }
     .ins-legend__sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-    .ins-legend__sw--c { background: #17a2b8; }
+    .ins-legend__sw--c { background: #0e7c8b; }
     .ins-legend__sw--a { background: repeating-linear-gradient(45deg, #f5a623, #f5a623 4px, #fcdca0 4px, #fcdca0 8px); }
 
     /* rent-roll hover tooltip (desktop) */
@@ -422,7 +422,7 @@ Home
     #chartTip .tip-sub { display: block; font-weight: 400; color: #9aa0a6; font-size: 10px; }
     #chartTip .tip-r { text-align: right; white-space: nowrap; }
     #chartTip .tip-tag { text-align: right; font-weight: 700; font-size: 10px; }
-    #chartTip .tip-co { color: #17a2b8; } #chartTip .tip-ar { color: #c2410c; }
+    #chartTip .tip-co { color: #0e7c8b; } #chartTip .tip-ar { color: #c2410c; }
     #chartTip .tip-tot { margin-top: 6px; font-size: 11px; color: #6c757d;
         border-top: 1px solid #f1f3f5; padding-top: 5px; }
     #chartTip .tip-empty { color: #6c757d; }
@@ -474,7 +474,7 @@ Home
         transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
     .ins-drill { margin-top: 10px; }
-    .today-row:focus, .today-row:active { text-decoration: none; color: #2c3e50; outline: 2px solid rgba(23,162,184,0.3); outline-offset: 2px; }
+    .today-row:focus, .today-row:active { text-decoration: none; color: #2c3e50; outline: 2px solid rgba(14, 124, 139,0.3); outline-offset: 2px; }
     @media (hover: hover) and (pointer: fine) {
         .today-row:hover { transform: translateX(2px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-decoration: none; color: #2c3e50; }
     }
@@ -482,7 +482,7 @@ Home
     .today-row--urgent  .today-row__icon { color: #dc3545; }
     .today-row--warning { background: #fff8e1; border-left-color: #ffc107; }
     .today-row--warning .today-row__icon { color: #d39e00; }
-    .today-row--info    { background: #e6f6f8; border-left-color: #17a2b8; }
+    .today-row--info    { background: #e6f6f8; border-left-color: #0e7c8b; }
     .today-row--info    .today-row__icon { color: #138496; }
     .today-row__icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
     .today-row__count { font-size: 1.25rem; font-weight: 700; min-width: 32px; text-align: right; flex-shrink: 0; }
@@ -510,7 +510,7 @@ Home
        and behaves identically across both pages. */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-overlay .modal-content { background: white; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-    .modal-overlay .modal-header { background: #17a2b8; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-overlay .modal-header { background: #0e7c8b; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
     .modal-overlay .modal-title { margin: 0; font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
     .modal-overlay .modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
     .modal-overlay .modal-close:hover { background: rgba(255,255,255,0.2); }
@@ -525,7 +525,7 @@ Home
     .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
     .status-urgent { background: #dc3545; color: white; }
     .status-warning { background: #ffc107; color: #212529; }
-    .status-info { background: #17a2b8; color: white; }
+    .status-info { background: #0e7c8b; color: white; }
 
     /* Mobile: full-screen modal + table-as-cards (matches notifications.html) */
     @media (max-width: 768px) {

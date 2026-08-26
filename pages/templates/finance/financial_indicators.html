@@ -275,7 +275,7 @@
 }
 
 .indicator-header {
-    background-color: #17a2b8;
+    background-color: #0e7c8b;
     color: white;
     padding: 12px 20px;
     border-radius: 8px;
@@ -305,16 +305,16 @@
 
 @media (hover: hover) and (pointer: fine) {
     .indicator-card:hover {
-        border-color: #17a2b8;
+        border-color: #0e7c8b;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
     }
 }
 
 .indicator-card.active {
-    border-color: #17a2b8;
+    border-color: #0e7c8b;
     background-color: #e3f2fd;
-    box-shadow: 0 4px 8px rgba(23, 162, 184, 0.2);
+    box-shadow: 0 4px 8px rgba(14, 124, 139, 0.2);
 }
 
 .indicator-card::after {
@@ -337,7 +337,7 @@
 
 .indicator-icon {
     font-size: 24px;
-    color: #17a2b8;
+    color: #0e7c8b;
     margin-bottom: 8px;
 }
 
@@ -373,10 +373,10 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-.selection-header:hover { background-color: rgba(23, 162, 184, 0.05); border-radius: 8px; }
+.selection-header:hover { background-color: rgba(14, 124, 139, 0.05); border-radius: 8px; }
 .selection-header-right { display: flex; align-items: center; gap: 16px; }
 .selection-count-inline { font-size: 0.7em; font-weight: 500; color: #6c757d; margin-left: 6px; }
-.selection-toggle-icon { color: #17a2b8; font-size: 16px; transition: transform 0.3s ease; }
+.selection-toggle-icon { color: #0e7c8b; font-size: 16px; transition: transform 0.3s ease; }
 #propSelectionPanel.collapsed .selection-header { margin-bottom: 0; border-bottom: none; }
 #propSelectionPanel.collapsed .prop-selection-content { display: none; }
 #propSelectionPanel.collapsed .selection-toggle-icon { transform: rotate(-90deg); }
@@ -386,7 +386,7 @@
 .fi-section {
     background: #ffffff;
     border: 1px solid #dee2e6;
-    border-left: 5px solid #17a2b8;
+    border-left: 5px solid #0e7c8b;
     border-radius: 12px;
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -407,8 +407,8 @@
     width: 38px; height: 38px;
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(23, 162, 184, 0.12);
-    color: #17a2b8;
+    background: rgba(14, 124, 139, 0.12);
+    color: #0e7c8b;
     flex: 0 0 auto;
     font-size: 16px;
 }
@@ -421,7 +421,7 @@
 .fi-collapsible.collapsed .fi-collapse-content { display: none; }
 .fi-collapsible.collapsed .fi-collapse-icon { transform: rotate(-90deg); }
 /* Per-section accent colours */
-.fi-section.s1 { border-left-color: #17a2b8; } .fi-section.s1 .fi-ibadge { background: rgba(23, 162, 184, 0.12); color: #17a2b8; }
+.fi-section.s1 { border-left-color: #0e7c8b; } .fi-section.s1 .fi-ibadge { background: rgba(14, 124, 139, 0.12); color: #0e7c8b; }
 .fi-section.s2 { border-left-color: #0f766e; } .fi-section.s2 .fi-ibadge { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
 .fi-section.s3 { border-left-color: #7c3aed; } .fi-section.s3 .fi-ibadge { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
 .fi-section.s4 { border-left-color: #d97706; } .fi-section.s4 .fi-ibadge { background: rgba(217, 119, 6, 0.12); color: #d97706; }
@@ -468,7 +468,7 @@
     width: 64px; text-align: center; border: 1px solid #ced4da; border-radius: 6px;
     padding: 5px 6px; font-size: 14px;
 }
-.fi-weight-input:focus { border-color: #17a2b8; outline: none; box-shadow: 0 0 0 2px rgba(23,162,184,.18); }
+.fi-weight-input:focus { border-color: #0e7c8b; outline: none; box-shadow: 0 0 0 2px rgba(14, 124, 139,.18); }
 .fi-weights-reset {
     border: 1px solid #dee2e6; background: #fff; color: #2c3e50;
     border-radius: 8px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer;
@@ -506,14 +506,14 @@
 @media (hover: hover) and (pointer: fine) {
     .property-checkbox:hover {
         background: #e9ecef;
-        border-color: #17a2b8;
+        border-color: #0e7c8b;
     }
 }
 
 .property-checkbox input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #17a2b8;
+    accent-color: #0e7c8b;
 }
 
 .property-checkbox label {
@@ -669,7 +669,7 @@
 }
 
 .average-row {
-    background: #17a2b8 !important;
+    background: #0e7c8b !important;
     color: white !important;
     font-weight: bold;
 }
@@ -683,8 +683,8 @@
 .highlighted-column {
     background: #e3f2fd !important;
     font-weight: 600;
-    border-left: 3px solid #17a2b8;
-    border-right: 3px solid #17a2b8;
+    border-left: 3px solid #0e7c8b;
+    border-right: 3px solid #0e7c8b;
 }
 
 /* Properties not held in the selected year: excluded from rank/score/totals. */
@@ -732,14 +732,14 @@
 @media (hover: hover) and (pointer: fine) {
     .sortable-header:hover {
         background-color: #e9ecef !important;
-        color: #17a2b8;
+        color: #0e7c8b;
     }
 }
 
 .sortable-header.sorted-asc,
 .sortable-header.sorted-desc {
     background-color: #e3f2fd !important;
-    color: #17a2b8;
+    color: #0e7c8b;
     font-weight: 700;
 }
 
@@ -762,7 +762,7 @@
 .sortable-header.sorted-asc .sort-icon,
 .sortable-header.sorted-desc .sort-icon {
     opacity: 1;
-    color: #17a2b8;
+    color: #0e7c8b;
 }
 
 .sort-icon.fa-sort-up::before {
@@ -921,9 +921,9 @@
 
 /* Button Styles */
 .btn-info {
-    background-color: #17a2b8;
+    background-color: #0e7c8b;
     color: white;
-    border: 1px solid #17a2b8;
+    border: 1px solid #0e7c8b;
     transition: all 0.3s ease;
     border-radius: 6px;
     font-weight: 500;
@@ -1146,7 +1146,7 @@
     }
     /* PORTFOLIO TOTALS row keeps teal background */
     .data-table tbody tr.average-row {
-        background: #17a2b8 !important;
+        background: #0e7c8b !important;
         color: white !important;
     }
     .data-table tbody tr.average-row td:first-child {
@@ -1402,7 +1402,7 @@ class PropertyFinancialDashboard {
                 key: 'grossROI', 
                 label: 'Gross ROI (%)', 
                 icon: 'fas fa-chart-line', 
-                color: '#17a2b8', 
+                color: '#0e7c8b', 
                 format: (val) => `${val.toFixed(2)}%`,
                 description: 'Total revenue as a percentage of purchase price. Higher values indicate better return on investment.',
                 sortable: true
@@ -2390,7 +2390,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Financial Indicators — multi-year trend (checkbox compare + year range). Chart.js v3.
 (function () {
     var CHART = null, DATA = null;
-    var PORT = '#17a2b8';
+    var PORT = '#0e7c8b';
     var PALETTE = ['#e67e22', '#2c82c9', '#27ae60', '#8e44ad', '#c0392b', '#16a085',
                    '#d35400', '#2980b9', '#f39c12', '#7f8c8d', '#c2185b', '#00838f'];
     function unit(key) { return key === 'rentPerSqm' ? ' \u20ac/m\u00b2' : '%'; }

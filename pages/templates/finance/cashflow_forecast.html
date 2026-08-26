@@ -212,8 +212,8 @@
 }
 
 .action-primary {
-    background: #17a2b8;
-    border: 1px solid #17a2b8;
+    background: #0e7c8b;
+    border: 1px solid #0e7c8b;
     color: #ffffff;
     padding: 8px 16px;
     border-radius: 6px;
@@ -238,8 +238,8 @@
 
 .action-back {
     background: transparent;
-    border: 1px solid #17a2b8;
-    color: #17a2b8;
+    border: 1px solid #0e7c8b;
+    color: #0e7c8b;
     padding: 8px 14px;
     border-radius: 6px;
     text-decoration: none;
@@ -251,7 +251,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .action-back:hover { background: #17a2b8; color: white; text-decoration: none; }
+    .action-back:hover { background: #0e7c8b; color: white; text-decoration: none; }
 }
 
 /* ============================================================
@@ -431,7 +431,7 @@
 .rotate-prompt {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    background: linear-gradient(135deg, #0e7c8b 0%, #138496 100%);
     z-index: 9999;
     display: none;
     align-items: center;
@@ -476,7 +476,7 @@
     font-weight: 600;
 }
 
-.rotate-prompt__back:hover { background: white; color: #17a2b8; text-decoration: none; }
+.rotate-prompt__back:hover { background: white; color: #0e7c8b; text-decoration: none; }
 
 /* ============================================================
    MODAL STYLING
@@ -501,7 +501,7 @@
 }
 
 .modal-property-breakdown {
-    border-left: 3px solid #17a2b8;
+    border-left: 3px solid #0e7c8b;
     padding: 15px;
     margin: 12px 0;
     background: #f8f9fa;
@@ -539,14 +539,14 @@
 @media (hover: hover) and (pointer: fine) {
     .clickable-row:hover {
         background-color: #e3f2fd !important;
-        border-left-color: #17a2b8;
+        border-left-color: #0e7c8b;
     }
 }
 
 .btn-info {
-    background-color: #17a2b8;
+    background-color: #0e7c8b;
     color: white;
-    border: 1px solid #17a2b8;
+    border: 1px solid #0e7c8b;
     transition: all 0.3s ease;
     border-radius: 6px;
     font-weight: 500;
@@ -578,7 +578,7 @@
 }
 
 .spinner-border.text-info {
-    color: #17a2b8 !important;
+    color: #0e7c8b !important;
     width: 3rem;
     height: 3rem;
 }
@@ -1132,7 +1132,7 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
         monthExpenses.sort((a, b) => a.lineType.localeCompare(b.lineType));
         let html = `
             <div class="mb-3" style="text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
-                <h5 style="color: #17a2b8; margin: 0;">Total Month: €${totalMonth.toFixed(2)}</h5>
+                <h5 style="color: #0e7c8b; margin: 0;">Total Month: €${totalMonth.toFixed(2)}</h5>
             </div>
             <table class="table table-hover" style="table-layout: fixed; width: 100%;">
                 <thead style="background: #f8f9fa;">
@@ -1147,12 +1147,12 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
             html += `
                 <tr class="clickable-row expense-line-row" data-index="${index}" style="cursor: pointer;">
                     <td style="white-space: normal; word-wrap: break-word; padding-right: 10px;">
-                        <i class="fas fa-receipt" style="color: #17a2b8; margin-right: 8px;"></i>
+                        <i class="fas fa-receipt" style="color: #0e7c8b; margin-right: 8px;"></i>
                         <strong>${expense.lineType}</strong>
                         <small style="display: block; color: #6c757d; margin-top: 4px;">Tap for property breakdown</small>
                     </td>
                     <td style="text-align: right; vertical-align: top; padding-top: 12px;">
-                        <strong style="color: #17a2b8;">€${expense.amount.toFixed(2)}</strong>
+                        <strong style="color: #0e7c8b;">€${expense.amount.toFixed(2)}</strong>
                         <i class="fas fa-chevron-right" style="color: #6c757d; margin-left: 8px; font-size: 12px;"></i>
                     </td>
                 </tr>
@@ -1190,7 +1190,7 @@ function showExpenseBreakdown(lineType, data) {
 
     let html = `
         <div class="mb-4" style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
-            <h4 class="mb-1" style="color: #2c3e50;">Total: <span style="color: #17a2b8;">€${data.amount.toFixed(2)}</span></h4>
+            <h4 class="mb-1" style="color: #2c3e50;">Total: <span style="color: #0e7c8b;">€${data.amount.toFixed(2)}</span></h4>
             <p class="text-muted mb-0">${window.currentModalState.monthName} &middot; ${lineType}</p>
         </div>
         <h6 style="color: #2c3e50; margin-bottom: 16px;"><i class="fas fa-building"></i> Property Breakdown</h6>
@@ -1207,7 +1207,7 @@ function showExpenseBreakdown(lineType, data) {
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap: wrap;">
                         <h6 style="margin:0;"><i class="fas fa-building"></i> ${property}</h6>
                         <div style="text-align:right;">
-                            <strong style="color: #17a2b8;">€${amount.toFixed(2)}</strong>
+                            <strong style="color: #0e7c8b;">€${amount.toFixed(2)}</strong>
                             <small class="text-muted" style="display:block;">${percentage}% of total</small>
                         </div>
                     </div>

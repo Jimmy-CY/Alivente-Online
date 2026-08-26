@@ -55,10 +55,10 @@
   <article data-tab-slug="val-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Valuations page?</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Valuations page?</h5>
     <p>The Valuations page is the <strong>single source of truth</strong> for what each property was bought for and what it's worth today. One row per property, tracked on two axes:</p>
 
-    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <ul class="mb-0">
         <li><strong>Purchase Price</strong> &mdash; the amount originally paid. This is a <em>historical anchor</em> &mdash; it rarely changes after the initial capture.</li>
         <li><strong>Current Value</strong> &mdash; today's estimated market value. This should be kept up to date as valuations evolve (typically reviewed annually or when you get a fresh professional appraisal).</li>
@@ -96,7 +96,7 @@
   <article data-tab-slug="val-table"
            data-tab-name="The Table"
            data-tab-icon="fa-table">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
     <p>Each row represents one property. Some columns come straight from a stored value, others are <strong>computed on the fly</strong> from other fields. Here's the breakdown.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-database"></i> Stored fields</h6>
@@ -130,7 +130,7 @@
     </ul>
     <p>Note that the portfolio Gain % is <em>not</em> an average of the individual Gain percentages &mdash; it's weighted by value. A &euro;2M property that gained 50% contributes more to the portfolio number than a &euro;200k property that gained 100%.</p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-eye-slash"></i> <strong>Properties without a valuation don't appear.</strong> A property only shows up once you've captured at least Purchase Price and Current Value via <strong>Add New</strong>. If a property from your portfolio is missing here, it's never been valued.
     </div>
   </article>
@@ -138,7 +138,7 @@
   <article data-tab-slug="val-edit"
            data-tab-name="Add / Edit"
            data-tab-icon="fa-edit">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Valuation</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Valuation</h5>
     <p>Click <strong>Add New</strong> in the top-right. The form has three fields:</p>
     <ol>
       <li><strong>Property</strong> &mdash; dropdown of properties from the Properties module. Pick the one you're valuing. A property can only have <strong>one</strong> valuation record &mdash; if this property is already in the list, use Edit instead.</li>
@@ -147,11 +147,11 @@
     </ol>
     <p>Click <strong>Save</strong>. The property now appears in the listing.</p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-info-circle"></i> <strong>m&sup2; comes from the Property record.</strong> This form doesn't ask for floor area because it's already stored on the Property itself. The m&sup2; (and therefore Price/m&sup2; and Value/m&sup2;) will populate automatically in the listing if the Property has <code>prop_floor_area</code> set.
     </div>
 
-    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing a Valuation</h5>
+    <h5 style="margin-top:25px; color:#0e7c8b; font-weight:700;"><i class="fas fa-edit"></i> Editing a Valuation</h5>
     <p>Click the <strong>Edit</strong> button on any row. The form opens with three fields:</p>
     <ul>
       <li><strong>Property</strong> &mdash; locked (can't be changed on edit &mdash; a valuation belongs to one property for its entire life)</li>
@@ -194,7 +194,7 @@
       <i class="fas fa-history"></i> <strong>A note on historical P&amp;L figures.</strong> Expense records aren't dated &mdash; they describe an ongoing pattern. Changing Current Value today will shift historical P&amp;L numbers too. This is normal for <strong>budgeted expenses</strong> (which is what the Pro-Rata system captures). If you've exported a P&amp;L report externally in the past, that export remains accurate as a point-in-time snapshot, but the live system will now reflect the updated distribution.
     </div>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:10px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:10px;">
       <i class="fas fa-info-circle"></i> <strong>A small rounding note.</strong> The modal's column totals may occasionally show a cent or two drift (e.g. &euro;3,000.01 instead of &euro;3,000.00) because each property's new amount is rounded to two decimal places individually. This is cosmetic and reflects the actual amounts that get written to the database.
     </div>
   </article>
@@ -202,7 +202,7 @@
   <article data-tab-slug="val-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Keeping valuations current</h6>
     <ul style="line-height:1.8;">
@@ -240,7 +240,7 @@
       <li><strong>For the reverse scenario &mdash; changing a bill amount &mdash; use the Line Type page instead.</strong> If the total amount of a shared bill has changed (say an audit fee went from &euro;3,000 to &euro;3,500), don't touch Current Values &mdash; edit the <strong>Pro-Rata Amount</strong> on the Line Type via Configuration &rarr; Expense Line Types. That triggers its own preview-and-cascade flow, designed for that specific case.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:20px;">
       <i class="fas fa-arrow-right"></i> <strong>Valuations keep everything else honest.</strong> This page feels like a simple report, but it's the <em>foundation</em> of your Pro-Rata expense system. Accurate, current valuations mean accurate expense distribution, which means an accurate P&amp;L. It's worth the annual maintenance effort.
     </div>
   </article>
@@ -262,7 +262,7 @@
   <article data-tab-slug="pl-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Profit &amp; Loss Statement?</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Profit &amp; Loss Statement?</h5>
     <p>The P&amp;L is the <strong>central financial report</strong> of Alivente Online &mdash; it pulls together every revenue stream and expense line across the portfolio to answer the core questions: <em>How much money came in? How much went out? How much is left?</em></p>
 
     <p>Everything you've set up in Configuration feeds into this one page:</p>
@@ -276,7 +276,7 @@
     <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-bookmark"></i> Always a year, then Budget or Actuals</h6>
     <p>The report is <strong>always for a specific year</strong> &mdash; the teal dropdown in the top-right picks which one, from your earliest lease year through to next year. Beside it, a two-button toggle picks what that year shows:</p>
 
-    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <strong><i class="fas fa-calendar-alt"></i> Budget</strong> (selected by default)
       <p class="mb-0 mt-2">Shows <strong>only the budgeted numbers</strong> for the chosen year &mdash; the predictable, recurring pattern you've set up. This is the "what we <em>expect</em> to happen" view, and it is the only view that makes sense for a future year.</p>
     </div>
@@ -302,7 +302,7 @@
   <article data-tab-slug="pl-filters"
            data-tab-name="Filters"
            data-tab-icon="fa-filter">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-filter"></i> Filtering the P&amp;L</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-filter"></i> Filtering the P&amp;L</h5>
     <p>Two filter controls sit at the top of the page and let you slice the data in different ways.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calendar"></i> The Year dropdown and the Budget / Actuals toggle</h6>
@@ -331,7 +331,7 @@
 
     <p>One thing to know: the indicators do not simply divide by everything you ticked. A property that earned nothing <em>and</em> cost nothing in the selected year is left out of that year's denominators, and a line under the tiles says so by name. The <strong>Indicators</strong> tab explains why.</p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-lightbulb"></i> <strong>A practical workflow:</strong> start on Budget with everything selected to see the plan, then tick a single property for its individual Gross ROI and Net ROI, then just the Greek ones for the country-level picture. The report reshapes each time.
     </div>
   </article>
@@ -339,7 +339,7 @@
   <article data-tab-slug="pl-grid"
            data-tab-name="The Grid"
            data-tab-icon="fa-table">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Grid</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-table"></i> Reading the Grid</h5>
     <p>The grid is organised into <strong>four vertical sections</strong>, top to bottom:</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-up"></i> 1. REVENUE section</h6>
@@ -366,7 +366,7 @@
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-coins"></i> 3. PROFIT section</h6>
     <p>Teal header bar, then a single bold <strong>NET PROFIT</strong> row calculated as:</p>
-    <div class="alert" style="background:#f8f9fa; border-left:4px solid #17a2b8;">
+    <div class="alert" style="background:#f8f9fa; border-left:4px solid #0e7c8b;">
       <strong>Net Profit = Total Revenue &minus; Total Expenses</strong>
       <p class="mb-0 mt-2">So in Year mode, Net Profit naturally subtracts the Actual Expenses too, giving a true picture of what's left after both budgeted and real-world spending.</p>
     </div>
@@ -387,10 +387,10 @@
   <article data-tab-slug="pl-drilling"
            data-tab-name="Drilling In"
            data-tab-icon="fa-search-plus">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> Drilling into any Number</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-search-plus"></i> Drilling into any Number</h5>
     <p><strong>Every blue number on the grid is clickable.</strong> Clicking opens a detail modal specific to the type of number you clicked.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-up" style="color:#17a2b8;"></i> Revenue Details modal</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-up" style="color:#0e7c8b;"></i> Revenue Details modal</h6>
     <p>Click any blue number in the <strong>Revenue section</strong>. The modal shows:</p>
     <ul>
       <li>The Line Type and month in the header</li>
@@ -399,7 +399,7 @@
     </ul>
     <p>Useful for answering <em>"which property generated this revenue?"</em> at a glance.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-down" style="color:#17a2b8;"></i> Budget Expense Details modal</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-down" style="color:#0e7c8b;"></i> Budget Expense Details modal</h6>
     <p>Click any blue number in a <strong>budgeted Expense Line Type row</strong>. Structure mirrors the Revenue modal:</p>
     <ul>
       <li>The Line Type and month in the header</li>
@@ -408,7 +408,7 @@
     </ul>
     <p>For <strong>Pro-Rata</strong> Line Types (like <em>Financials (Cyprus)</em>), you'll see each property with its distributed share &mdash; matching the distribution you set up in Configuration.</p>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-receipt" style="color:#17a2b8;"></i> Actual Expense Details modal</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-receipt" style="color:#0e7c8b;"></i> Actual Expense Details modal</h6>
     <p>Click any blue number in the <strong>Actual Expenses row</strong> (year mode only). The modal shows a fuller table:</p>
     <ul>
       <li><strong>Date</strong> &mdash; the actual date the expense was incurred</li>
@@ -436,13 +436,13 @@
   <article data-tab-slug="pl-kpis"
            data-tab-name="Indicators"
            data-tab-icon="fa-tachometer-alt">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-tachometer-alt"></i> The Five Financial Indicators</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-tachometer-alt"></i> The Five Financial Indicators</h5>
     <p>Below the grid, five tiles summarise the financial health of the selected scope. They recalculate whenever you change the year or the property selection.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calendar-day"></i> Which properties count &mdash; read this first</h6>
     <p>Each of these indicators divides <strong>a year's money</strong> by <strong>a fixed figure</strong> &mdash; what you paid for the property, how big it is, what it is worth. So the question "which properties belong in the divisor?" is a question about <em>that year</em>, not about today.</p>
 
-    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <strong><i class="fas fa-filter"></i> The rule:</strong> a property that earned <strong>nothing</strong> and cost <strong>nothing</strong> in the selected year is left out of that year's denominators.
     </div>
 
@@ -492,7 +492,7 @@
       <i class="fas fa-percentage"></i> <strong>So this tile can cover fewer properties than the other four</strong>, and when it does the note underneath says so: <em>"% Value Increase covers 6 of 8"</em>. It shows up most on older years, because valuation history has to start somewhere. Add an earlier-dated valuation on the Property Valuations page and the year fills in.
     </div>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:18px;">
       <i class="fas fa-balance-scale"></i> <strong>Reading them together:</strong> Net ROI + % Value Increase give you the <em>total return</em> picture &mdash; income plus capital growth. A property returning 4% Net ROI with 15% Value Increase has effectively returned 19% over the relevant period.
     </div>
   </article>
@@ -500,7 +500,7 @@
   <article data-tab-slug="pl-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Getting insight from the report</h6>
     <ul style="line-height:1.8;">
@@ -541,7 +541,7 @@
       <li><strong>% Value Increase says it covers fewer properties than the rest?</strong> Those properties have no valuation dated that year or earlier &mdash; usually on an older year, before your valuation history begins. Add a valuation with an earlier <em>Effective From</em> date on <em>Property Valuations</em> and the year fills in. This is not a fault; it is the report declining to guess.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:20px;">
       <i class="fas fa-arrow-right"></i> <strong>This is your financial dashboard.</strong> The P&amp;L is where everything else you've set up &mdash; Configuration, Valuations, even the sidebar Expenses &mdash; finally converges into a single story. Keep the upstream data tidy, and this page is reliable.
     </div>
   </article>
@@ -563,7 +563,7 @@
   <article data-tab-slug="fc-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
     <p>The <strong>Forecasted Cashflows</strong> dashboard shows your portfolio's expected <strong>money in against money out</strong> over the next 12 months, month by month. It pairs projected <strong>revenue</strong> (from your leases and seasonal income) against projected <strong>outflows</strong> (your budgeted expenses) to give you a rolling <strong>net</strong> position &mdash; and, crucially, to show you the months where money out is set to exceed money in <em>before they arrive</em>.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-toggle-on"></i> Revenue is on by default &mdash; but optional</h6>
@@ -583,7 +583,7 @@
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-clock"></i> Rolling 12-month horizon</h6>
     <p>The forecast always starts with <strong>today's current month</strong> and projects 12 months forward, rolling automatically each month. You never set dates yourself.</p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-info-circle"></i> <strong>&ldquo;Net&rdquo; here means movement, not a bank balance.</strong> Net is simply income &minus; outflows for each month. It does not track a running account balance or an opening figure &mdash; it shows whether each month is self-funding on its own.
     </div>
 
@@ -595,7 +595,7 @@
   <article data-tab-slug="fc-dashboard"
            data-tab-name="The Dashboard"
            data-tab-icon="fa-th-large">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;"><i class="fas fa-id-card"></i> The three summary cards</h6>
     <p>The cards are <strong>cumulative planning horizons</strong>, each starting from now, and each shows <strong>Revenue</strong>, <strong>Expenses</strong> and <strong>Net</strong> (net turns red when negative). The exact month range each card covers is printed in its header.</p>
@@ -604,7 +604,7 @@
       <li><strong style="color:#fd7e14;">Next 3 Months</strong> &mdash; months 1&ndash;3 combined (e.g. <em>Aug &ndash; Oct 2026</em>).</li>
       <li><strong style="color:#28a745;">Next 12 Months</strong> &mdash; the whole window (e.g. <em>Aug 2026 &ndash; Jul 2027</em>).</li>
     </ul>
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-info-circle"></i> Because the horizons are cumulative they <strong>overlap</strong> &mdash; the Next-12 card is not the sum of the other two, it is the full 12 months (and it matches the net summary line below the cards).
     </div>
 
@@ -622,7 +622,7 @@
   <article data-tab-slug="fc-slider"
            data-tab-name="Revenue &amp; the Slider"
            data-tab-icon="fa-sliders-h">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-sliders-h"></i> Contracted vs assumed income</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-sliders-h"></i> Contracted vs assumed income</h5>
     <p>The income side is deliberately conservative by default: it counts only the rent from <strong>signed leases</strong>, plus seasonal / direct income. Income from a lease that <strong>expires with no successor</strong> captured is treated as <em>at risk</em> and is <strong>left out</strong> &mdash; which is what makes the cliffs visible.</p>
 
     <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrows-alt-h"></i> The Renewal assumption slider</h6>
@@ -633,7 +633,7 @@
       <li><strong>In between</strong> &mdash; that percentage of the at-risk income is counted. Everything on the page (bars, cards, net, first-cash-negative month) updates live as you drag.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-calculator"></i> <strong>What a value literally means.</strong> For each month, income = contracted + seasonal + (slider % &times; the expiring-lease income). So 75% means &ldquo;count three-quarters of the rent that's riding on expiring leases.&rdquo; It is an <em>aggregate haircut</em> on that income, not a per-lease prediction &mdash; a sensitivity dial, not a forecast of which specific tenants renew.
     </div>
 
@@ -649,7 +649,7 @@
   <article data-tab-slug="fc-drilling"
            data-tab-name="Breakdowns"
            data-tab-icon="fa-search-plus">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> Hover for a peek, click for the detail</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-search-plus"></i> Hover for a peek, click for the detail</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Hover (desktop)</h6>
     <p>Hovering any bar pops a small floating table for that month:</p>
@@ -677,7 +677,7 @@
   <article data-tab-slug="fc-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Planning with the net view</h6>
     <ul style="line-height:1.8;">
@@ -706,7 +706,7 @@
       <li><strong>Income reconciles with the P&amp;L and Rent-Roll.</strong> The same lease engine feeds all three, so a contracted figure here should match what you see there.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:20px;">
       <i class="fas fa-arrow-right"></i> <strong>This is your 12-month cash radar.</strong> Keep leases and Configuration tidy and it becomes a reliable early warning &mdash; both for big bills and for income cliffs &mdash; so neither arrives as a surprise.
     </div>
   </article>
@@ -728,7 +728,7 @@
   <article data-tab-slug="fi-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
     <p>The Financial Indicators dashboard is the <strong>benchmarking counterpart</strong> to the Profit &amp; Loss Statement. Where the P&amp;L tells you <em>"how is the portfolio doing?"</em>, this report tells you <em>"how is each property doing compared to the rest of the portfolio?"</em></p>
 
     <p>At its heart is a <strong>performance scoreboard</strong>: every property gets an overall <strong>Score (0&ndash;100)</strong> and a <strong>Rank</strong>, computed from the metrics that matter, so you can see at a glance which properties are carrying the portfolio and which need attention.</p>
@@ -743,7 +743,7 @@
     <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Four sections</h6>
     <p>The page is organised into four sections that <strong>load collapsed</strong> &mdash; click a header to open the one you want, or use the <strong>Expand all / Collapse all</strong> buttons. Each collapsed header shows a one-line summary so the page is useful even closed.</p>
 
-    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <ol class="mb-0">
         <li><strong>Consolidated Financial Indicators</strong> &mdash; the portfolio-level KPI cards. The header summarises portfolio Gross ROI, Net ROI and Occupancy.</li>
         <li><strong>Financial Indicator Graphs</strong> &mdash; the <em>Property Selection</em> filter plus one mini bar chart per KPI. Tick / untick properties here to change the scope of the whole page.</li>
@@ -766,7 +766,7 @@
   <article data-tab-slug="fi-indicators"
            data-tab-name="The Columns"
            data-tab-icon="fa-book">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-book"></i> The scoreboard columns</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-book"></i> The scoreboard columns</h5>
     <p>The Detailed Property Data table has a <strong>Rank</strong> and <strong>Score</strong> up front, then seven metric columns. All figures are for the <strong>selected year</strong>.</p>
 
     <div class="alert" style="background:#f3e8ff; border-left:4px solid #7c3aed;">
@@ -774,7 +774,7 @@
       <p class="mb-0 mt-2">The overall standing of each property within your current selection. <strong>How they're worked out is explained in the <em>Scoring &amp; Rank</em> tab.</strong> In short: Score is a 0&ndash;100 blend of the property's rank on the scoring metrics; Rank orders those scores (best = #1).</p>
     </div>
 
-    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line" style="color:#17a2b8;"></i> Gross ROI (%)</h6>
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line" style="color:#0e7c8b;"></i> Gross ROI (%)</h6>
     <p>Revenue &divide; Purchase Price &times; 100. Top-line yield before costs. <strong>Higher is better.</strong></p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-bullseye" style="color:#28a745;"></i> Net ROI (%)</h6>
@@ -791,7 +791,7 @@
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar" style="color:#6f42c1;"></i> Value Increase (%)</h6>
     <p>(Value at year-end &minus; Purchase Price) &divide; Purchase Price &times; 100. Capital appreciation. <strong>Higher is better.</strong></p>
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin:6px 0 0;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin:6px 0 0;">
       <i class="fas fa-calendar-check"></i> <strong>Now effective-dated.</strong> Value Increase uses the property value <em>in force at the end of the selected year</em>, not just today's value. Record dated valuations on the <em>Property Valuations</em> page (each save has an <strong>Effective From</strong> date) and each year picks up the right one. A year before a property's first recorded valuation shows <strong>N/A</strong> and is left out of that year's Score.
     </div>
 
@@ -810,7 +810,7 @@
   <article data-tab-slug="fi-dashboard"
            data-tab-name="The Dashboard"
            data-tab-icon="fa-th-large">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the dashboard</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-th-large"></i> Reading the dashboard</h5>
 
     <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-tachometer-alt"></i> Consolidated Indicators cards</h6>
     <p>The portfolio-level KPI cards. <strong>Click a card</strong> to open the Property Performance Details modal for that indicator (see the <em>Performance Modal</em> tab).</p>
@@ -829,7 +829,7 @@
       <li><strong>Not-held properties</strong> sink to the bottom, greyed.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-palette"></i> <strong>Two different colour systems, by design.</strong> The scoreboard table grades each property by its <em>rank within your current selection</em> (a relative gradient). The card drill-down modal instead grades against <em>fixed thresholds vs the portfolio average</em> (the Excellent / Good / Needs-Improvement tiers). They answer slightly different questions &mdash; see the Performance Modal tab.
     </div>
 
@@ -840,7 +840,7 @@
   <article data-tab-slug="fi-scoring"
            data-tab-name="Scoring &amp; Rank"
            data-tab-icon="fa-trophy">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-trophy"></i> How the Score and Rank are worked out</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-trophy"></i> How the Score and Rank are worked out</h5>
 
     <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-list-ol"></i> Rank-based, within your selection</h6>
     <p>For each scoring metric, the held properties in your current selection are placed <strong>best&rarr;worst</strong> and given a position grade from 0 (best) to 1 (worst). This "rank-based" approach is robust to outliers &mdash; one enormous number can't dominate the way it would with raw values. Everything is <strong>relative to the currently-selected, held properties</strong>, so the numbers move as you change the selection or the year.</p>
@@ -860,7 +860,7 @@
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sliders-h"></i> Scoring weights</h6>
     <p>Open <strong>"Scoring weights"</strong> at the top of the Detailed Property Data section to change how much each metric counts. Set a weight from <strong>0 to 5</strong> (0 ignores the metric entirely, 1 is normal) and the Score and Rank <strong>recompute live</strong>. A <span class="badge" style="background:#7c3aed; color:#fff;">custom</span> badge appears when weights aren't equal; <em>Reset to equal</em> puts them back. Your choice is remembered on this device.</p>
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-lightbulb"></i> If one metric feels like it's dominating &mdash; say a single negative Rent Growth is dragging an otherwise strong property down &mdash; dial that metric's weight down and watch the ranking settle. Weighting is the honest way to encode <em>your</em> view of what matters.
     </div>
   </article>
@@ -868,7 +868,7 @@
   <article data-tab-slug="fi-performance"
            data-tab-name="Performance Modal"
            data-tab-icon="fa-medal">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-medal"></i> The Property Performance modal</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-medal"></i> The Property Performance modal</h5>
     <p>Clicking any Consolidated Indicator card opens the <strong>Property Performance Details</strong> modal &mdash; a focused drill-down for that one KPI.</p>
 
     <h6 style="margin-top:14px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> What it shows</h6>
@@ -889,7 +889,7 @@
     <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
       <strong style="color:#721c24;"><i class="fas fa-exclamation-circle"></i> Needs Improvement</strong> &mdash; higher-is-better metrics below <strong>80%</strong> of the average (lower-is-better above 100%).
     </div>
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-info-circle"></i> <strong>Tiers are relative, not absolute.</strong> "Needs Improvement" means a property trails <em>your own portfolio's average</em> &mdash; a 5% Gross ROI is "Needs Improvement" in a 7%-average portfolio even though it's respectable on its own.
     </div>
 
@@ -900,7 +900,7 @@
   <article data-tab-slug="fi-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical tips</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical tips</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Reading the scoreboard</h6>
     <ul style="line-height:1.8;">
@@ -924,7 +924,7 @@
       <li><strong>A number looks wrong, full stop?</strong> Jump to the source: the P&amp;L for revenue/expenses, Property Valuations for value, the Properties module for floor area (drives Rent/m&sup2;).</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:20px;">
       <i class="fas fa-arrow-right"></i> <strong>This dashboard answers "which property should I focus on?"</strong> The P&amp;L answers "how did we do?"; the scoreboard answers "and who needs my attention to do better next year?"
     </div>
   </article>
@@ -946,7 +946,7 @@
   <article data-tab-slug="vm-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
     <p>The Vacancy Management dashboard tracks <strong>how well your properties stay rented</strong> over time. Where the Financial Indicators dashboard shows you income performance, this one shows you the <em>occupancy</em> side of the story &mdash; which complements rather than duplicates income analysis.</p>
 
     <p>Three occupancy KPIs are calculated for each property and benchmarked against the portfolio average:</p>
@@ -995,7 +995,7 @@
   <article data-tab-slug="vm-indicators"
            data-tab-name="Indicators Explained"
            data-tab-icon="fa-book">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-book"></i> The Three Occupancy Indicators</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-book"></i> The Three Occupancy Indicators</h5>
     <p>Each indicator captures a different dimension of occupancy performance. Read all three together for a complete picture.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-home" style="color:#28a745;"></i> 1. Occupancy Rate (%)</h6>
@@ -1008,7 +1008,7 @@
     <p><strong>What it tells you:</strong> How quickly a property re-lets when it becomes vacant. A property with an Avg Days to Fill of 15 days is turning around quickly; one with 60+ days is taking a long time (and costing you revenue).</p>
     <p><strong>Lower is better.</strong></p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-info-circle"></i> <strong>Why some properties show "0 days".</strong> A zero value doesn't mean a property filled instantly &mdash; it means there were <strong>no vacancy gaps to measure</strong> in the selected period. This can happen for three reasons:
       <ul class="mb-0 mt-2">
         <li>The tenant <strong>renewed their lease</strong> &mdash; no gap, no measurement needed</li>
@@ -1064,7 +1064,7 @@
   <article data-tab-slug="vm-dashboard"
            data-tab-name="The Dashboard"
            data-tab-icon="fa-th-large">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calendar-alt"></i> Time Period selector</h6>
     <p>Three buttons at the top scope the entire analysis to a different time window:</p>
@@ -1106,7 +1106,7 @@
   <article data-tab-slug="vm-performance"
            data-tab-name="Performance Modal"
            data-tab-icon="fa-trophy">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-trophy"></i> The Property Performance Modal</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-trophy"></i> The Property Performance Modal</h5>
     <p>Clicking any of the three Consolidated Occupancy Indicator cards opens the <strong>Property Performance Details</strong> modal &mdash; the detailed drill-down for that one indicator. The structure matches the Financial Indicators page's modal for consistency.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> What the modal shows</h6>
@@ -1147,7 +1147,7 @@
   <article data-tab-slug="vm-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Using the time period correctly</h6>
     <ul style="line-height:1.8;">
@@ -1196,7 +1196,7 @@
       <li><strong>Export Excel for stakeholder reviews.</strong> The Excel export from the Performance Modal is useful for periodic property portfolio reviews with accountants, investment partners, or co-owners.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:20px;">
       <i class="fas fa-arrow-right"></i> <strong>This dashboard is about lost opportunity.</strong> Every day a property is vacant is a day you're not earning. The goal isn't just to spot underperformers &mdash; it's to translate the numbers into specific actions: adjust pricing, switch letting agent, address property condition, renew earlier, or consider repositioning the asset.
     </div>
   </article>
@@ -1218,7 +1218,7 @@
   <article data-tab-slug="pt-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
     <p>The Performance Trends page is the <strong>multi-year drill-down</strong> from Vacancy Management. Where Vacancy Management shows you a <em>snapshot</em> for a selected time period, this page shows you the same three occupancy KPIs plotted <strong>across every year</strong> your portfolio has been active &mdash; from the very first tenancy through to today.</p>
 
     <p>The Back button takes you back to Vacancy Management, not to the main Financials page &mdash; reinforcing that this page is a deeper view of the Vacancy Management data, not an independent report.</p>
@@ -1232,7 +1232,7 @@
     <p>Like Vacancy Management, only properties flagged with <strong>"Include in Occupancy"</strong> feed into these trends. Owner-occupied, short-term, and excluded properties don't appear.</p>
 
     <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-globe"></i> No property filter &mdash; this is portfolio-level only</h6>
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-info-circle"></i> <strong>Unlike Vacancy Management, there's no Property Selection panel here.</strong> The three KPIs are always calculated across your entire tracked portfolio. If you want to see how a specific property compares to the portfolio over time, the year-detail drill-down modal shows per-property breakdowns for any year you click into.
     </div>
 
@@ -1260,7 +1260,7 @@
   <article data-tab-slug="pt-charts"
            data-tab-name="The Charts"
            data-tab-icon="fa-chart-area">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-area"></i> Reading the Three Line Charts</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-chart-area"></i> Reading the Three Line Charts</h5>
     <p>The top of the page shows three line charts, one per KPI, each covering the full year range. They all share the same layout:</p>
 
     <ul>
@@ -1295,7 +1295,7 @@
       <strong style="color:#721c24;"><i class="fas fa-arrow-down"></i> Downward trend on Occupancy, upward trend on Days to Fill &amp; Cost</strong>
       <p class="mb-0 mt-2">The portfolio is deteriorating. Investigate. Is it one problem property dragging the average, or a systemic issue? Click into recent years to diagnose.</p>
     </div>
-    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <strong style="color:#0c5460;"><i class="fas fa-minus"></i> Flat trend near or above/below the average</strong>
       <p class="mb-0 mt-2">Stable performance. This is actually a good outcome &mdash; consistent, predictable occupancy.</p>
     </div>
@@ -1308,7 +1308,7 @@
   <article data-tab-slug="pt-table"
            data-tab-name="The Yearly Table"
            data-tab-icon="fa-table">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The Yearly Data Summary table</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-table"></i> The Yearly Data Summary table</h5>
     <p>Below the charts, the same data appears in a row-by-row format with <strong>additional raw data not shown on the charts</strong>. Every row is clickable and opens that year's detail modal.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The 8 columns</h6>
@@ -1329,7 +1329,7 @@
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Click any row for detail</h6>
     <p>Clicking anywhere on a year's row opens the Year Detail modal &mdash; the same behaviour as clicking a point on a chart. Hovering a row shows a subtle highlight so you know it's clickable.</p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:18px;">
       <i class="fas fa-lightbulb"></i> <strong>The table and the charts show the same KPI values in different formats.</strong> The charts are best for spotting trends at a glance; the table is best for looking up exact numbers or investigating the underlying data (property count, vacancy count, raw days).
     </div>
   </article>
@@ -1337,7 +1337,7 @@
   <article data-tab-slug="pt-detail"
            data-tab-name="Year Detail Modal"
            data-tab-icon="fa-search-plus">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> The Year Detail Modal</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-search-plus"></i> The Year Detail Modal</h5>
     <p>Click any year (in the table or on any chart) and a large modal opens with the full breakdown for that year. This is where you investigate <em>why</em> a year looked the way it did.</p>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-info-circle"></i> Period summary</h6>
@@ -1386,7 +1386,7 @@
 
     <p>If the year had no vacancies at all, this section shows a green banner: <em>"No vacancies recorded for this period!"</em> &mdash; a perfect year.</p>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-lightbulb"></i> <strong>The Vacancy Periods table is the most actionable information on this page.</strong> It lets you pinpoint <em>exactly when</em> a property was vacant, <em>for how long</em>, between <em>which tenants</em>, and at <em>what cost</em>. When investigating a bad year, this is where you go.
     </div>
   </article>
@@ -1394,7 +1394,7 @@
   <article data-tab-slug="pt-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
-    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+    <h5 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
 
     <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Reading trends properly</h6>
     <ul style="line-height:1.8;">
@@ -1438,7 +1438,7 @@
       <li><strong>The property count can reveal portfolio growth.</strong> If 2023 shows 1 property and 2026 shows 9 properties, that's the rate at which you've been adding properties to occupancy tracking. Growth itself can distort averages &mdash; a new addition with an opening-year vacancy can drag the whole portfolio's numbers down.</li>
     </ul>
 
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b; margin-top:20px;">
       <i class="fas fa-arrow-right"></i> <strong>This page is about pattern recognition.</strong> Individual year metrics are on Vacancy Management; the <em>story</em> those numbers tell &mdash; the improvement, the decline, the turning points, the chronic problems &mdash; lives here.
     </div>
   </article>
