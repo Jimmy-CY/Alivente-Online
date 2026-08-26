@@ -154,7 +154,9 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '.btn-info,';                     What = 'Bootstrap info overridden' },
     @{ File = 'pages\templates\base.html';                Text = '--alv-table-std';                 What = 'table standard hoisted into base' },
     @{ File = 'pages\templates\base.html';                Text = '.icon-action-btn {';              What = 'the house icon button has one home' },
-    @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar {';            What = 'and so does the mobile action bar' }
+    @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar {';            What = 'and so does the mobile action bar' },
+    @{ File = 'pages\templates\base.html';                Text = '.sidebar-toggle:hover { background: #0a5e6a;'; What = 'sidebar hover uses the new ink' },
+    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: #0a5e6a';         What = 'and so does a page-local btn-info hover' }
 )
 
 foreach ($s in $sentinels) {
@@ -216,7 +218,8 @@ $suites = @(
     'test_help_physical_invoices.py',
     'test_remove_legacy_reports.py',
     'test_deeper_teal.py',
-    'test_table_standard.py'
+    'test_table_standard.py',
+    'test_accent_shades.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }

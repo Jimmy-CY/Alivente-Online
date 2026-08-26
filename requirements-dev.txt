@@ -1,0 +1,52 @@
+# Development and test dependencies for Alivente-Online.
+#
+# NOT installed by Railway. The deploy runs, per railway.json:
+#
+#     python -m pip install -r mysite/cron-requirements.txt
+#
+# so nothing here ever reaches production. That is deliberate: the app renders
+# HTML and never drives a browser, so shipping a browser automation library to
+# the server would cost build time and image size for no runtime benefit.
+#
+# ---------------------------------------------------------------------------
+# SETUP ON A NEW MACHINE
+#
+#     python -m pip install -r requirements-dev.txt
+#     python -m playwright install chromium
+#
+# The second line is NOT optional and cannot live in this file. Chromium is a
+# ~190MB binary, not a Python package; pip has no way to fetch it. It lands in
+# %USERPROFILE%\AppData\Local\ms-playwright on Windows.
+#
+# Use `python -m pip` rather than bare `pip`: it guarantees the install lands in
+# the interpreter that actually runs the tests, which is the usual way this goes
+# wrong when several Pythons are on PATH.
+#
+# ---------------------------------------------------------------------------
+# WHY IT MATTERS
+#
+# Without Playwright, the suites still run and still pass - browser checks are
+# skipped rather than failed, so a machine without it never blocks a push. But
+# the skipped checks are the ones that distinguish "the CSS parsed" from "the
+# CSS applies", and for styling work that is most of the value:
+#
+#     test_table_standard.py     48 checks without it, 84 with
+#     test_accent_shades.py       9 checks without it, 15 with
+#     test_pl_indicators.py      69 checks without it, 70 with
+#
+# The hover regression fixed on 26 Aug 2026 is the case in point. Every static
+# check passed - "no #17a2b8 left anywhere" was perfectly true - while every
+# teal button in the system reverted to the old colour under the cursor. Only
+# hovering a real button in a real engine found it.
+#
+# ---------------------------------------------------------------------------
+# NOTE ON test_fixture_bootstrap413.css
+#
+# That file in the repo root is a pinned copy of the exact stylesheet base.html
+# loads from the CDN. It is a test fixture, not a dependency: the suites render
+# against it so they give the same verdict on a laptop with no network as they
+# do anywhere else, and so the control tables have a real framework to be
+# measured against. Do not delete it and do not upgrade it casually - changing
+# it changes what "who wins the cascade" means.
+
+playwright==1.62.0

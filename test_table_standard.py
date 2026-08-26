@@ -146,18 +146,40 @@ except ImportError:
           else 'All %d checks passed. (browser checks skipped)' % len(results))
     sys.exit(1 if bad else 0)
 
-# Bootstrap has to be the real thing - the whole question is who wins.
+# Bootstrap has to be the real thing - the whole question is who wins the
+# cascade, and a stand-in with different specificity would answer a different
+# question. The fixture is vendored and pinned rather than fetched, so this
+# suite gives the same verdict on a laptop with no network as it does in CI.
+#
+# It is also what makes the CONTROL table meaningful: the control is asserted
+# to be striped and grid-lined, and both of those come FROM Bootstrap. With no
+# Bootstrap there is nothing for .alv-table to be better than.
 BOOT = None
-for cand in ('/tmp/bootstrap.min.css',
+BOOT_SRC = None
+for cand in (os.path.join(ROOT, 'test_fixture_bootstrap413.css'),
+             '/tmp/bootstrap.min.css',
              os.path.join(ROOT, 'node_modules', 'bootstrap', 'dist', 'css',
                           'bootstrap.min.css')):
     if os.path.exists(cand):
         BOOT = open(cand, encoding='utf-8').read()
+        BOOT_SRC = os.path.basename(cand)
         break
+
 if BOOT is None:
     BOOT = ''
-    check('  (Bootstrap CSS not found locally - cascade checks are weaker)',
-          True)
+    print('')
+    print('  !! test_fixture_bootstrap413.css is missing.')
+    print('     The control-table checks need real Bootstrap to be a control,')
+    print('     so they are skipped rather than reported as passes.')
+    print('')
+else:
+    # Pinned: if someone swaps in a different Bootstrap, the cascade question
+    # changes and we should be told rather than quietly tested against v5.
+    check('Bootstrap fixture present (%s)' % BOOT_SRC, True)
+    check('  it is 4.1.3 - it still defines info as #17a2b8',
+          '#17a2b8' in BOOT)
+    check('  and it really provides .table-striped / .table-bordered',
+          'table-striped' in BOOT and 'table-bordered' in BOOT)
 
 CSS = (_accent[0] if _accent else '') + '\n' + BLOCK
 
@@ -188,16 +210,24 @@ HEAD = ('<thead><tr><th>Name</th><th>Phone</th><th>Company</th>'
 BASE_CLS = 'table table-bordered table-striped text-center suppliers-table'
 
 
-def table(extra, tid):
+def table(extra, tid, cls=None):
     return ('<div class="table-container"><table class="%s%s" id="%s">%s'
             '<tbody>%s</tbody></table></div>'
-            % (BASE_CLS, extra, tid, HEAD, ROW * 3))
+            % (BASE_CLS if cls is None else cls, extra, tid, HEAD, ROW * 3))
+
+
+# The state each page ends up in AFTER the per-page patcher tidies the class
+# list. A negative control caught this: with table-striped still present, the
+# zebra-override section supplies its own :hover, so the plain hover rule can
+# be deleted and nothing appears to break - until a migrated page, which no
+# longer carries table-striped, quietly loses its hover tint.
+TIDY_CLS = 'table suppliers-table'
 
 
 PAGE = ('<!doctype html><html><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<style>%s</style><style>%s</style></head><body>'
-        '%s%s'
+        '%s%s%s'
         '<p><span class="alv-pill alv-pill-good" id="pgood">Paid</span>'
         '<span class="alv-pill alv-pill-neutral" id="pneutral">Inactive</span>'
         '<button class="status-btn" id="sbtn">Manage</button>'
@@ -205,7 +235,8 @@ PAGE = ('<!doctype html><html><head><meta charset="utf-8">'
         '<div class="alv-empty" id="empty"><div class="alv-empty-title">'
         'No suppliers found</div></div>'
         '</body></html>'
-        % (BOOT, CSS, table(' alv-table', 'std'), table('', 'ctl')))
+        % (BOOT, CSS, table(' alv-table', 'std'), table('', 'ctl'),
+           table(' alv-table', 'tidy', TIDY_CLS)))
 
 tmp = os.path.join(ROOT, '_table_probe.html')
 open(tmp, 'w', encoding='utf-8').write(PAGE)
@@ -238,14 +269,18 @@ try:
               tok['--alv-accent'] == '#0e7c8b')
 
         # --- THE CONTROL MUST BE UGLY, or these assertions prove nothing.
-        c_odd = styles(pg, '#ctl tbody tr:nth-child(1)', ['background-color'])
-        c_td = styles(pg, '#ctl tbody td:nth-child(2)',
-                      ['border-left-width', 'text-align'])
-        check('CONTROL (no .alv-table) still has zebra striping',
-              c_odd['background-color'] not in ('rgba(0, 0, 0, 0)',
-                                                'transparent'))
-        check('CONTROL still has vertical grid lines',
-              c_td['border-left-width'] != '0px')
+        # Skipped rather than faked when the Bootstrap fixture is absent: a
+        # control with nothing to control for would pass and mean nothing.
+        if BOOT:
+            c_odd = styles(pg, '#ctl tbody tr:nth-child(1)',
+                           ['background-color'])
+            c_td = styles(pg, '#ctl tbody td:nth-child(2)',
+                          ['border-left-width', 'text-align'])
+            check('CONTROL (no .alv-table) still has zebra striping',
+                  c_odd['background-color'] not in ('rgba(0, 0, 0, 0)',
+                                                    'transparent'))
+            check('CONTROL still has vertical grid lines',
+                  c_td['border-left-width'] != '0px')
 
         s_odd = styles(pg, '#std tbody tr:nth-child(1)', ['background-color'])
         s_even = styles(pg, '#std tbody tr:nth-child(2)', ['background-color'])
@@ -266,6 +301,25 @@ try:
         hov = styles(pg, '#std tbody tr:nth-child(1)', ['background-color'])
         check('hovering a row tints it with the accent',
               hov['background-color'] == 'rgb(228, 243, 245)')
+
+        # ---- THE TIDIED TABLE: what a page looks like AFTER migrating.
+        # Its class list is `table alv-table <page>-table` - no table-striped,
+        # no table-bordered, no text-center. Everything asserted above must
+        # hold here too, or the standard only works on un-migrated pages.
+        t_td = styles(pg, '#tidy tbody td:nth-child(2)',
+                      ['border-left-width', 'border-top-width', 'text-align'])
+        check('TIDIED (no table-striped/bordered/text-center): no verticals',
+              t_td['border-left-width'] == '0px')
+        check('  keeps its horizontal rule', t_td['border-top-width'] == '1px')
+        check('  and left-aligns text instead of centring it',
+              t_td['text-align'] == 'left')
+        pg.hover('#tidy tbody tr:nth-child(1) td:nth-child(2)')
+        t_hov = styles(pg, '#tidy tbody tr:nth-child(1)', ['background-color'])
+        check('  and still tints on hover - the plain rule, not the striped one',
+              t_hov['background-color'] == 'rgb(228, 243, 245)')
+        check('  header still reads as a header',
+              styles(pg, '#tidy thead th', ['background-color'])
+              ['background-color'] == 'rgb(248, 249, 250)')
 
         e = styles(pg, '#std .icon-edit', ['color', 'width', 'height'])
         v = styles(pg, '#std .icon-view', ['color'])
@@ -337,16 +391,23 @@ try:
         # this same page is deliberately unconverted and therefore too wide,
         # so document.scrollWidth is expected to overflow. That it does is
         # the proof the conversion is doing real work - asserted below.
-        w_std = pg.evaluate(
-            "()=>document.querySelector('#std').scrollWidth")
-        w_ctl = pg.evaluate(
-            "()=>document.querySelector('#ctl').scrollWidth")
-        check('mobile: the converted table fits the viewport (%dpx)' % w_std,
-              w_std <= 375)
-        check('CONTROL: the unconverted one does NOT fit (%dpx)' % w_ctl,
-              w_ctl > 375)
-        check('  so the conversion is measurably responsible',
-              w_ctl > w_std)
+        #
+        # These three need the Bootstrap fixture, and not only for the control.
+        # Bootstrap's reboot sets `box-sizing: border-box` on everything; with
+        # it absent, cell padding adds to width and even the CONVERTED table
+        # measures 385px at a 375px viewport. Measuring without it would be
+        # testing a page that does not exist.
+        if BOOT:
+            w_std = pg.evaluate(
+                "()=>document.querySelector('#std').scrollWidth")
+            w_ctl = pg.evaluate(
+                "()=>document.querySelector('#ctl').scrollWidth")
+            check('mobile: the converted table fits the viewport (%dpx)'
+                  % w_std, w_std <= 375)
+            check('CONTROL: the unconverted one does NOT fit (%dpx)' % w_ctl,
+                  w_ctl > 375)
+            check('  so the conversion is measurably responsible',
+                  w_ctl > w_std)
 
         # And the control, again - it should NOT have converted.
         check('CONTROL: without .alv-table it keeps its header row',

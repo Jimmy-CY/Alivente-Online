@@ -314,6 +314,89 @@ def everything_else():
     print('  all today - it renders a table too wide for the screen.')
 
 
+# ========================================================= 4. WHO INHERITS?
+# Once a component class lives in base.html, every template using that class in
+# markup gets the styling - including templates that never styled it and were
+# not part of the migration. Those pages change appearance without anyone
+# deciding they should.
+#
+# This is the check that "nothing changes on screen" is actually true. It was
+# not: finance_valuations.html uses .table-container in markup but styles a
+# differently-named .valuations-table-container, so it silently picked up the
+# new card, radius and shadow.
+HOISTED = ['table-container', 'icon-action-btn', 'icon-edit', 'icon-view',
+           'icon-delete', 'icon-disabled', 'icon-approve', 'icon-unapprove',
+           'icon-send', 'mobile-action-bar', 'mobile-action-btn',
+           'mobile-action-icon', 'mobile-action-label', 'desktop-action-cell',
+           'status-btn']
+
+
+def inheritors():
+    print('')
+    print('')
+    print('=' * 74)
+    print(' 4. Who now INHERITS a class that base.html defines?')
+    print('=' * 74)
+    print('  Uses the class in markup, but never styled it locally, so the')
+    print('  base.html rule reaches it. These pages changed without being')
+    print('  migrated - worth eyeballing on Live.')
+    print('')
+
+    base_path = find_file('base.html')
+    base_css = ''
+    if base_path:
+        src = read(base_path)
+        src = re.sub(r'<!--.*?-->', '', src, flags=re.S)
+        base_css = '\n'.join(
+            re.findall(r'<style[^>]*>(.*?)</style>', src, re.S | re.I))
+
+    defined = [c for c in HOISTED
+               if re.search(r'\.' + re.escape(c) + r'(?![\w-])', base_css)]
+    print('  base.html defines %d of the %d hoisted classes.'
+          % (len(defined), len(HOISTED)))
+    if not defined:
+        print('  (Nothing hoisted yet - run apply_table_standard.py first.)')
+        return
+    print('')
+
+    rows = []
+    for dirpath, dirnames, filenames in os.walk(TPL):
+        dirnames[:] = [d for d in dirnames if d != 'staticfiles']
+        for f in sorted(filenames):
+            if not f.endswith('.html') or '.bak_' in f or f == 'base.html':
+                continue
+            p = os.path.join(dirpath, f)
+            src = read(p)
+            css = '\n'.join(
+                re.findall(r'<style[^>]*>(.*?)</style>', src, re.S | re.I))
+            markup = re.sub(r'<style[^>]*>.*?</style>', '', src,
+                            flags=re.S | re.I)
+            inherited = []
+            for c in defined:
+                in_markup = re.search(
+                    r'class\s*=\s*["\'][^"\']*(?<![\w-])'
+                    + re.escape(c) + r'(?![\w-])', markup)
+                if not in_markup:
+                    continue
+                in_css = re.search(r'\.' + re.escape(c) + r'(?![\w-])', css)
+                if not in_css:
+                    inherited.append(c)
+            if inherited:
+                rows.append((rel(p), inherited))
+
+    if not rows:
+        print('  None. Every template that uses a hoisted class also styles')
+        print('  it locally, so nothing changed appearance unasked.')
+        return
+
+    for path, classes in sorted(rows, key=lambda r: -len(r[1])):
+        print('  %s' % path)
+        for c in classes:
+            print('        .%s' % c)
+    print('')
+    print('  %d template(s) inherit at least one hoisted class.' % len(rows))
+
+
 # ================================================================ --full mode
 def full_dump(name):
     path = find_file(name)
@@ -374,6 +457,7 @@ else:
     base_anatomy()
     pilot_pages()
     everything_else()
+    inheritors()
     print('')
     print('=' * 74)
     print('  Read-only. Nothing was written.')
