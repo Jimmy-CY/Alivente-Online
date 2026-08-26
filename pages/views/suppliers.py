@@ -54,9 +54,30 @@ def suppliers(request):
     if sup_count and sup_count != "All":
         sresults = sresults.filter(supplier_country=sup_count)
 
+    # The Country dropdown in suppliers.html loops over distinct_countries.
+    # Nothing ever supplied it, so the loop ran zero times and the filter
+    # offered "All Countries" and nothing else - it has never filtered. Django
+    # renders an undefined template variable as empty rather than raising,
+    # which is why it went unnoticed from May 2026 until 26 Aug.
+    #
+    # Built from the data, not hardcoded: a supplier in a new country appears
+    # in the filter the moment they are saved. order_by BEFORE values_list is
+    # deliberate - DISTINCT applies to the selected columns, and Django adds
+    # ORDER BY columns to the SELECT, so ordering afterwards can smuggle a
+    # second column in and make every row distinct.
+    distinct_countries = (
+        supplier.objects
+        .exclude(supplier_country__isnull=True)
+        .exclude(supplier_country__exact="")
+        .order_by("supplier_country")
+        .values_list("supplier_country", flat=True)
+        .distinct()
+    )
+
     # Pass the search values back to template for form preservation
     context = {
         "supplier": sresults,
+        "distinct_countries": distinct_countries,
         "selected_supplier": sup_output if sup_output and sup_output != "All" else "",
         "selected_country": sup_count if sup_count and sup_count != "All" else "All",
     }

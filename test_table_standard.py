@@ -127,8 +127,22 @@ check('  semantic colours are NOT aliases of the accent',
 
 check('  the mobile card conversion breaks at 768px',
       re.search(r'@media[^{]*max-width:\s*768px', BLOCK) is not None)
+# This check used to read `'re.' not in BLOCK and 'td:first-child' in BLOCK`.
+# The first half was leftover junk that asserted nothing; it passed for two
+# rounds by luck, then flipped to FAIL when a comment ended a sentence with
+# the word "here." - which contains "re.". A check that cannot fail for the
+# reason its label states is worse than no check, because it reads as cover.
+#
+# What it should assert is the MECHANISM: the first cell is promoted to card
+# title, AND its data-label prefix is suppressed. One generic rule replacing
+# the eight per-page `td[data-label="Contact Person"]` rules the pages carried.
 check('  :first-child is the card title (replacing 8 per-page rules)',
-      're.' not in BLOCK and 'td:first-child' in BLOCK)
+      re.search(r'tbody td:first-child\s*\{', BLOCK) is not None)
+check('    and its data-label prefix is suppressed',
+      re.search(r'td:first-child::before\s*\{[^}]*content:\s*none', BLOCK)
+      is not None)
+check('    so no per-page card-title rule is needed in base.html',
+      'data-label="Contact Person"' not in BLOCK)
 
 # ================================================================ 3. IN A BROWSER
 try:

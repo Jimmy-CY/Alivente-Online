@@ -161,7 +161,11 @@ $sentinels = @(
     @{ File = 'pages\templates\suppliers.html';           Text = 'No suppliers to show';            What = 'and finally has an empty state' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-table .desktop-action-cell';  What = 'action columns stay centred' },
     @{ File = 'pages\templates\base.html';                Text = '.row-actions {';               What = 'and one actions cell holds them' },
-    @{ File = 'pages\templates\suppliers.html';           Text = '<span class="row-actions">';     What = 'Suppliers has ONE actions column' }
+    @{ File = 'pages\templates\suppliers.html';           Text = '<span class="row-actions">';     What = 'Suppliers has ONE actions column' },
+    @{ File = 'pages\templates\base.html';                Text = 'position: sticky;';            What = 'headings stick when you scroll' },
+    @{ File = 'pages\templates\base.html';                Text = 'overflow: clip;';             What = 'and the container lets them' },
+    @{ File = 'pages\templates\base.html';                Text = '--alv-ink-strong:';           What = 'headings have their own ink' },
+    @{ File = 'pages\views\suppliers.py';                 Text = '"distinct_countries": distinct_countries,'; What = 'the Country filter finally has options' }
 )
 
 foreach ($s in $sentinels) {
@@ -225,7 +229,9 @@ $suites = @(
     'test_deeper_teal.py',
     'test_table_standard.py',
     'test_accent_shades.py',
-    'test_table_suppliers.py'
+    'test_table_suppliers.py',
+    'test_table_polish.py',
+    'test_supplier_countries.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }

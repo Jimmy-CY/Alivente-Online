@@ -266,8 +266,19 @@ else:
             act = cs(pg, 'tbody td.cell-actions', ['text-align'])
             check('desktop: the actions column is right-aligned',
                   act['text-align'] == 'right')
+            # The HEADING centres and the CELLS stay right - changed
+            # deliberately in the polish round, after seeing it on Live. The
+            # buttons are a fixed-width cluster that stops short of the right
+            # edge, so a right-aligned label floated past them.
+            #
+            # This assertion said 'right' until the gate caught it. Worth
+            # noting the failure was correct: the suite was pinning behaviour
+            # that had been deliberately changed, which is exactly what a
+            # sentinel is for. The fix is to move the expectation, in the same
+            # commit as the change - not to loosen it.
             hdr = cs(pg, 'thead th.cell-actions', ['text-align'])
-            check('  and so is its header', hdr['text-align'] == 'right')
+            check('  while its header centres over them',
+                  hdr['text-align'] == 'center')
             ra = cs(pg, '.row-actions', ['display', 'gap'])
             check('  the three buttons sit inline with a gap',
                   ra['display'] == 'inline-flex' and ra['gap'] == '6px')

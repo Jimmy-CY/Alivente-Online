@@ -253,6 +253,7 @@
         --alv-ink:        #21343c;
         --alv-ink-soft:   #5b6b73;
         --alv-ink-faint:  #8a979d;
+        --alv-ink-strong: #41535c;   /* column headings                  */
         --alv-line:       #e3e8ea;
         --alv-line-soft:  #f1f3f5;
 
@@ -289,7 +290,13 @@
       .table-container {
         background: var(--alv-paper);
         border-radius: var(--alv-radius);
-        overflow: hidden;
+        /* clip, NOT hidden. Both clip the rounded corners, but overflow:hidden
+           makes this element the scroll container for any sticky descendant -
+           and since it never scrolls, the header never sticks. Measured: at a
+           650px scroll the header sat 615px above the viewport with hidden,
+           and at top:0 with clip. overflow:clip needs Safari 16+; older Safari
+           loses the corner rounding and nothing else. */
+        overflow: clip;
         box-shadow: 0 1px 2px rgba(16, 34, 40, .05),
                     0 1px 3px rgba(16, 34, 40, .04);
       }
@@ -302,15 +309,29 @@
       }
       .alv-table thead th {
         background: var(--alv-surface);
-        color: var(--alv-ink-soft);
+        /* Was #5b6b73 at 12.5px with .02em tracking. Uppercase, tracking,
+           small size and light ink are each a way of making a label quiet;
+           all four at once made it faint. Two of them relax here. */
+        color: var(--alv-ink-strong);
         font-weight: 600;
-        font-size: 12.5px;
-        letter-spacing: .02em;
+        font-size: 13.5px;
+        letter-spacing: .01em;
         text-transform: uppercase;
-        border-bottom: 1px solid var(--alv-line);
-        border-top: none;
         vertical-align: middle;
         padding: 11px 12px;
+
+        /* Sticky. This does nothing on its own - see .table-container below,
+           whose overflow decides whether it can work at all. */
+        position: sticky;
+        top: 0;
+        z-index: 2;
+
+        /* NOT border-bottom. A border on a sticky cell detaches from it
+           while scrolling; an inset shadow is painted with the background
+           and stays put. */
+        border-bottom: 0;
+        border-top: none;
+        box-shadow: inset 0 -1px 0 var(--alv-line);
       }
       .alv-table tbody td {
         border-top: 1px solid var(--alv-line-soft);
@@ -362,9 +383,15 @@
          Right, not centre: the actions are the end of the row, and a ragged
          centre line down a narrow column reads as an accident. Against the
          right edge they form a clean column of their own. */
-      .alv-table .cell-actions,
-      .alv-table th.cell-actions {
+      .alv-table .cell-actions {
         text-align: right;
+        white-space: nowrap;
+      }
+      /* The heading centres, the cells stay right. Right-aligning the label
+         was meant to match the buttons, but they are a fixed-width cluster
+         that stops short of the right edge, so the word floated past them. */
+      .alv-table th.cell-actions {
+        text-align: center;
         white-space: nowrap;
       }
       .row-actions {
