@@ -156,7 +156,12 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '.icon-action-btn {';              What = 'the house icon button has one home' },
     @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar {';            What = 'and so does the mobile action bar' },
     @{ File = 'pages\templates\base.html';                Text = '.sidebar-toggle:hover { background: #0a5e6a;'; What = 'sidebar hover uses the new ink' },
-    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: #0a5e6a';         What = 'and so does a page-local btn-info hover' }
+    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: #0a5e6a';         What = 'and so does a page-local btn-info hover' },
+    @{ File = 'pages\templates\suppliers.html';           Text = 'class="table alv-table suppliers-table"'; What = 'Suppliers is on the standard' },
+    @{ File = 'pages\templates\suppliers.html';           Text = 'No suppliers to show';            What = 'and finally has an empty state' },
+    @{ File = 'pages\templates\base.html';                Text = '.alv-table .desktop-action-cell';  What = 'action columns stay centred' },
+    @{ File = 'pages\templates\base.html';                Text = '.row-actions {';               What = 'and one actions cell holds them' },
+    @{ File = 'pages\templates\suppliers.html';           Text = '<span class="row-actions">';     What = 'Suppliers has ONE actions column' }
 )
 
 foreach ($s in $sentinels) {
@@ -219,7 +224,8 @@ $suites = @(
     'test_remove_legacy_reports.py',
     'test_deeper_teal.py',
     'test_table_standard.py',
-    'test_accent_shades.py'
+    'test_accent_shades.py',
+    'test_table_suppliers.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }

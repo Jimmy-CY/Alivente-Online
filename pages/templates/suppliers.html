@@ -123,17 +123,15 @@ Suppliers
 
   <!-- Suppliers Table (desktop) / Card list (mobile) -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center suppliers-table">
+    <table class="table alv-table suppliers-table">
       <thead>
         <tr>
-          <th style="text-align: left; width: 22%">Contact Person</th>
-          <th style="width: 14%">Contact Number</th>
-          <th style="width: 16%">Company Name</th>
-          <th style="width: 14%">Role</th>
-          <th style="width: 10%">Country</th>
-          <th style="width: 8%">Edit</th>
-          <th style="width: 8%">Report</th>
-          <th style="width: 8%">Delete</th>
+          <th style="text-align: left; width: 24%">Contact Person</th>
+          <th style="width: 16%">Contact Number</th>
+          <th style="width: 18%">Company Name</th>
+          <th style="width: 16%">Role</th>
+          <th style="width: 12%">Country</th>
+          <th class="desktop-action-cell cell-actions" style="width: 14%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -145,38 +143,38 @@ Suppliers
             <td data-label="Role">{{sresults.supplier_role}}</td>
             <td data-label="Country">{{sresults.supplier_country}}</td>
 
-            <!-- Desktop action cells -->
-            <td data-label="Edit" class="desktop-action-cell">
-              {% if perms.auth.can_edit_suppliers %}
-                <a href="{% url 'suppliers_edit' sresults.supplier_id %}" class="icon-action-btn icon-edit" title="Edit Supplier">
-                  <i class="fas fa-pencil-alt"></i>
+            <!-- Desktop actions: one cell, three buttons -->
+            <td class="desktop-action-cell cell-actions">
+              <span class="row-actions">
+                {% if perms.auth.can_edit_suppliers %}
+                  <a href="{% url 'suppliers_edit' sresults.supplier_id %}" class="icon-action-btn icon-edit" title="Edit Supplier">
+                    <i class="fas fa-pencil-alt"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No edit permission">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                {% endif %}
+
+                <a href="{% url 'supplier_report' sresults.supplier_id %}" class="icon-action-btn icon-view" title="View Supplier Report">
+                  <i class="fas fa-eye"></i>
                 </a>
-              {% else %}
-                <span class="icon-action-btn icon-disabled" title="No edit permission">
-                  <i class="fas fa-pencil-alt"></i>
-                </span>
-              {% endif %}
-            </td>
-            <td data-label="Report" class="desktop-action-cell">
-              <a href="{% url 'supplier_report' sresults.supplier_id %}" class="icon-action-btn icon-view" title="View Supplier Report">
-                <i class="fas fa-eye"></i>
-              </a>
-            </td>
-            <td data-label="Delete" class="desktop-action-cell">
-              {% if perms.auth.can_edit_suppliers %}
-                <button type="button" class="icon-action-btn icon-delete delete-btn"
-                        data-supplier-id="{{sresults.supplier_id}}"
-                        data-contact-person="{{sresults.supplier_contact_person}}"
-                        data-company-name="{{sresults.supplier_company_name}}"
-                        data-role="{{sresults.supplier_role}}"
-                        title="Delete Supplier">
-                  <i class="fas fa-trash"></i>
-                </button>
-              {% else %}
-                <span class="icon-action-btn icon-disabled" title="No delete permission">
-                  <i class="fas fa-trash"></i>
-                </span>
-              {% endif %}
+
+                {% if perms.auth.can_edit_suppliers %}
+                  <button type="button" class="icon-action-btn icon-delete delete-btn"
+                          data-supplier-id="{{sresults.supplier_id}}"
+                          data-contact-person="{{sresults.supplier_contact_person}}"
+                          data-company-name="{{sresults.supplier_company_name}}"
+                          data-role="{{sresults.supplier_role}}"
+                          title="Delete Supplier">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No delete permission">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                {% endif %}
+              </span>
             </td>
 
             <!-- Mobile-only action bar (hidden on desktop) -->
@@ -218,6 +216,17 @@ Suppliers
         {% endfor %}
       </tbody>
     </table>
+
+    {% if not supplier %}
+      {# An empty tbody looks exactly like a failed load. #}
+      <div class="alv-empty">
+        <i class="fas fa-address-book"></i>
+        <div class="alv-empty-title">No suppliers to show</div>
+        <div class="alv-empty-hint">
+          Try clearing the filters, or add your first supplier.
+        </div>
+      </div>
+    {% endif %}
   </div>
 
   <!-- Delete Confirmation Modal -->
@@ -333,7 +342,6 @@ Suppliers
 .filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-tag { background: #0e7c8b; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 .filter-tag .remove-tag { background: rgba(255, 255, 255, 0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; }
-.table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
@@ -350,68 +358,8 @@ Suppliers
     margin-top: 8px;
 }
 
-/* Icon action buttons (Edit / Delete / View) */
-.icon-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    border: 2px solid;
-    background: white;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 0;
-}
-.icon-action-btn i { font-size: 14px; }
-.icon-action-btn:hover {
-    transform: translateY(-1px);
-    text-decoration: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-.icon-edit {
-    color: #007bff;
-    border-color: #007bff;
-}
-.icon-edit:hover {
-    background-color: #007bff;
-    color: white;
-}
-.icon-view {
-    color: #0e7c8b;
-    border-color: #0e7c8b;
-}
-.icon-view:hover {
-    background-color: #0e7c8b;
-    color: white;
-}
-.icon-delete {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-.icon-delete:hover {
-    background-color: #dc3545;
-    color: white;
-}
-.icon-disabled {
-    color: #adb5bd;
-    border-color: #dee2e6;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-.icon-disabled:hover {
-    transform: none;
-    box-shadow: none;
-}
-
 /* Hide mobile-only label variants on desktop */
 .filter-title-text-mobile, .clear-all-text-mobile { display: none; }
-
-/* Mobile action bar — hidden on desktop */
-.mobile-action-bar { display: none !important; }
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
@@ -590,141 +538,6 @@ Suppliers
     gap: 8px;
     margin-top: 12px;
     padding-top: 12px;
-  }
-
-  /* Table → Card layout */
-  .table-container {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-  }
-  .suppliers-table {
-    border: none;
-    background: transparent;
-  }
-  .suppliers-table thead {
-    display: none;
-  }
-  .suppliers-table,
-  .suppliers-table tbody,
-  .suppliers-table tr,
-  .suppliers-table td {
-    display: block;
-    width: 100%;
-  }
-  .suppliers-table tbody tr {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-  }
-  .suppliers-table tbody tr:nth-of-type(even) {
-    background: white;
-  }
-  .suppliers-table td {
-    border: none !important;
-    padding: 6px 0 !important;
-    text-align: left !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    min-height: 28px;
-  }
-  .suppliers-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #495057;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  /* The Contact Person (first cell) gets prominence — no label, larger text */
-  .suppliers-table td[data-label="Contact Person"] {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 8px !important;
-    margin-bottom: 4px;
-    border-bottom: 1px solid #f1f3f5 !important;
-    display: block;
-  }
-  .suppliers-table td[data-label="Contact Person"]::before {
-    display: none;
-  }
-
-  /* === Hide the three desktop action cells on mobile === */
-  .desktop-action-cell {
-    display: none !important;
-  }
-
-  /* === Show and style the mobile action bar — 3-column grid === */
-  .mobile-action-bar {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 10px;
-    padding: 10px 0 0 0 !important;
-    border-top: 1px solid #f1f3f5;
-    align-items: stretch !important;
-    min-height: auto !important;
-    justify-content: stretch !important;
-  }
-  .mobile-action-bar::before {
-    display: none !important;
-  }
-  .mobile-action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 6px;
-    padding: 8px 4px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #495057;
-    font-size: 11px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    transition: background-color 0.15s ease;
-    min-height: 56px;
-    cursor: pointer;
-  }
-  .mobile-action-btn:hover,
-  .mobile-action-btn:active {
-    background: #e9ecef;
-    text-decoration: none;
-    color: #495057;
-  }
-  .mobile-action-icon {
-    font-size: 18px;
-    line-height: 1;
-  }
-  .mobile-action-label {
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.2;
-    text-align: center;
-  }
-  /* Icon colours match desktop semantic colours */
-  .icon-color-edit { color: #007bff; }
-  .icon-color-view { color: #0e7c8b; }
-  .icon-color-delete { color: #dc3545; }
-
-  /* Disabled state */
-  .mobile-action-disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    color: #adb5bd;
-  }
-  .mobile-action-disabled .mobile-action-icon {
-    color: #adb5bd;
-  }
-  .mobile-action-disabled:hover,
-  .mobile-action-disabled:active {
-    background: #f8f9fa;
-    color: #adb5bd;
   }
 
   /* Delete modal — full-screen on mobile */

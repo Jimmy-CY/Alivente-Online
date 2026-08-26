@@ -348,6 +348,31 @@
         background-color: var(--alv-accent-soft);
       }
 
+      /* Action columns stay centred. Everything else went left when the
+         page dropped Bootstrap's text-center, which is right for names and
+         companies and wrong for a column holding one 34px button. */
+      .alv-table .desktop-action-cell,
+      .alv-table th.desktop-action-cell { text-align: center; }
+
+      /* ONE actions column, right-aligned, rather than one column per verb.
+         Three headers reading EDIT / REPORT / DELETE say what the icons
+         beneath them already say, and cost about a tenth of the table's
+         width - which Role and Company Name would rather have.
+
+         Right, not centre: the actions are the end of the row, and a ragged
+         centre line down a narrow column reads as an accident. Against the
+         right edge they form a clean column of their own. */
+      .alv-table .cell-actions,
+      .alv-table th.cell-actions {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
       /* Numbers line up on the decimal, names do not. */
       .alv-table .num, .alv-table td.num, .alv-table th.num {
         text-align: right;
