@@ -712,7 +712,12 @@
         border: 1px solid var(--alv-line);
         border-radius: 6px;
         margin-bottom: 20px;
-        overflow: hidden;
+        /* clip, NOT hidden. An ancestor with overflow:hidden becomes the
+           scroll container, so a sticky heading inside a card has nothing
+           to stick to - measured 542px above the viewport after a 600px
+           scroll. clip rounds the corners without that side effect. The
+           same fault, and the same fix, as .table-container. */
+        overflow: clip;
       }
       .alv-card > .alv-card-head {
         display: flex;
@@ -787,7 +792,11 @@
         border: 1px solid var(--alv-line);
         white-space: nowrap;
       }
-      .alv-tag::before {
+      .alv-tag-sky::before,
+      .alv-tag-moss::before,
+      .alv-tag-clay::before,
+      .alv-tag-slate::before,
+      .alv-tag-plum::before {
         content: "";
         width: 6px;
         height: 6px;
@@ -800,6 +809,7 @@
       .alv-tag-moss  { color: #4a6b3c; background: #eef4e9; border-color: #dde8d6; }
       .alv-tag-clay  { color: #8a5a34; background: #f7efe7; border-color: #ecdfd2; }
       .alv-tag-slate { color: #55606b; background: #eef1f3; border-color: #e0e5e9; }
+      .alv-tag-plum  { color: #6b4a72; background: #f3edf5; border-color: #e5dae8; }
 
       /* ================================================================
          Print                                              --alv-print-std
@@ -847,6 +857,216 @@
           background: transparent !important;
         }
         .alv-tag::before { opacity: 1; }
+      }
+    
+      /* ================================================================
+         The page-header action bar                     --alv-actions-std
+
+         Nineteen templates carried a copy of this, 115 rules between
+         them, and base.html carried none of it. The names below are the
+         ones those pages already use, so a page joins by DELETING its
+         copy rather than by being rewritten.
+
+         Colour is by WEIGHT, not by verb. A page has one main thing you
+         came to do; that is the solid one. Everything else is outlined.
+         Measured before deciding: btn-info 60, btn-secondary 26,
+         btn-success 13, btn-danger 9, btn-warning 6 - which is to say
+         the colours meant nothing.
+         ================================================================ */
+      .page-action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+      /* Back is navigation, not an action on the data, so it sits apart
+         from the verbs. Actions left, Back right - unchanged, so no
+         page's layout moves when it joins. */
+      .page-action-buttons .action-back { margin-left: auto; }
+
+      .page-action-buttons .btn,
+      .page-action-buttons .action-primary,
+      .page-action-buttons .action-secondary,
+      .page-action-buttons .action-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: var(--alv-radius);
+        font-family: var(--alv-font-ui);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+
+      .page-action-buttons .action-primary {
+        background: var(--alv-accent);
+        border-color: var(--alv-accent);
+        color: var(--alv-on-accent);
+      }
+      .page-action-buttons .action-primary:hover,
+      .page-action-buttons .action-primary:focus {
+        background: var(--alv-accent-ink);
+        border-color: var(--alv-accent-ink);
+        color: var(--alv-on-accent);
+        text-decoration: none;
+      }
+
+      .page-action-buttons .action-secondary {
+        background: var(--alv-paper);
+        border-color: var(--alv-line);
+        color: var(--alv-ink);
+      }
+      .page-action-buttons .action-secondary:hover,
+      .page-action-buttons .action-secondary:focus {
+        background: var(--alv-surface);
+        color: var(--alv-ink);
+        text-decoration: none;
+      }
+
+      /* A TONE, not a position - worn alongside -primary or -secondary,
+         so a destructive button keeps whatever layout behaviour its
+         position class gives it. Outlined at rest and red only on hover:
+         the same bargain .icon-action-btn.icon-delete already strikes in
+         every table row, one level up. */
+      .page-action-buttons .action-danger {
+        background: var(--alv-paper);
+        border-color: #f2cecb;
+        color: var(--alv-danger);
+      }
+      .page-action-buttons .action-danger:hover,
+      .page-action-buttons .action-danger:focus {
+        background: var(--alv-danger);
+        border-color: var(--alv-danger);
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .page-action-buttons .action-back {
+        background: transparent;
+        border-color: transparent;
+        color: var(--alv-ink-soft);
+      }
+      .page-action-buttons .action-back:hover,
+      .page-action-buttons .action-back:focus {
+        background: var(--alv-surface);
+        color: var(--alv-ink);
+        text-decoration: none;
+      }
+
+      .page-action-buttons .btn:focus-visible,
+      .page-action-buttons .action-back:focus-visible {
+        outline: 2px solid var(--alv-accent);
+        outline-offset: 2px;
+      }
+
+      /* Copied onto sixteen pages, defined in none of them twice the
+         same. pointer-events matters: without it a "disabled" anchor is
+         still a working link. */
+      .disabled-btn {
+        opacity: .6;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      .action-more-wrapper { display: none; }
+
+      @media (max-width: 768px) {
+        /* The half worth hoisting. One row, always: the primary takes the
+           space, the secondaries move into the More menu, and Back keeps
+           a 44px target. */
+        .page-action-buttons {
+          flex-direction: row;
+          flex-wrap: nowrap;
+          gap: 8px;
+          width: 100%;
+        }
+        .page-action-buttons .action-primary {
+          flex: 1 1 auto;
+          min-width: 0;
+          height: 38px;
+        }
+        .page-action-buttons .action-secondary { display: none; }
+        .page-action-buttons .action-back {
+          margin-left: 0;
+          flex: 0 0 auto;
+          width: 44px;
+          height: 38px;
+          padding: 0;
+        }
+        .page-action-buttons .action-back .action-back-label { display: none; }
+
+        .action-more-wrapper {
+          display: block;
+          position: relative;
+          flex: 0 0 auto;
+        }
+        /* Scoped to the bar, or the generic
+           `.page-action-buttons .btn { border-color: transparent }` above
+           wins on specificity (0,2,0 beats 0,1,0) and the More button
+           becomes a white box on white. Measured, not guessed. */
+        .page-action-buttons .action-more-btn {
+          width: 44px;
+          height: 38px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--alv-paper);
+          border: 1px solid var(--alv-line);
+          border-radius: var(--alv-radius);
+          color: var(--alv-ink);
+        }
+        .page-action-buttons .action-more-btn:hover,
+        .page-action-buttons .action-more-btn:focus {
+          background: var(--alv-surface);
+          color: var(--alv-ink);
+        }
+        .action-more-menu {
+          position: absolute;
+          top: calc(100% + 6px);
+          right: 0;
+          z-index: 1030;
+          min-width: 200px;
+          background: var(--alv-paper);
+          border: 1px solid var(--alv-line);
+          border-radius: var(--alv-radius);
+          box-shadow: 0 8px 20px -8px rgba(16, 34, 40, .28);
+          padding: 6px;
+        }
+        .action-more-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
+          padding: 10px 12px;
+          border: 0;
+          background: transparent;
+          border-radius: var(--alv-radius);
+          font-size: 14px;
+          color: var(--alv-ink);
+          text-align: left;
+          text-decoration: none;
+        }
+        .action-more-item i {
+          color: var(--alv-accent);
+          width: 18px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+        .action-more-item:hover,
+        .action-more-item:focus {
+          background: var(--alv-surface);
+          color: var(--alv-ink);
+          text-decoration: none;
+        }
+        .action-more-item-danger { color: var(--alv-danger); }
+        .action-more-item-danger i { color: var(--alv-danger); }
       }
     </style>
   </head>

@@ -194,7 +194,23 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '--alv-card-std';                 What = 'cards have a home' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-card-lead';                 What = 'and the first one may be louder' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-tag-slate';                 What = 'categories are off the semantic scale' },
-    @{ File = 'pages\templates\base.html';                Text = '--alv-print-std';                What = 'and reports survive a printer' }
+    @{ File = 'pages\templates\base.html';                Text = '--alv-print-std';                What = 'and reports survive a printer' },
+    @{ File = 'pages\templates\base.html';                Text = 'overflow: clip;';                What = 'a card cannot trap a sticky heading' },
+    @{ File = 'pages\templates\base.html';                Text = '.alv-tag-plum';                   What = 'a fifth tone for the fifth type' },
+    @{ File = 'pages\templates\base.html';                Text = '.alv-tag-sky::before';            What = 'and the dot belongs to the tone' },
+    @{ File = 'pages\templates\property_report.html';     Text = 'alv-table assets-table';          What = 'the report tables are on the standard' },
+    @{ File = 'pages\templates\property_report.html';     Text = 'alv-pill alv-pill-attn';          What = 'and an expired warranty is amber' },
+    @{ File = 'pages\templates\property_assets.html';     Text = 'alv-table asset-table';           What = 'Property Assets is on the standard' },
+    @{ File = 'pages\templates\property_assets.html';     Text = 'alv-card-aside alv-tag';          What = 'and each group is a card' },
+    @{ File = 'pages\templates\asset_detail.html';        Text = 'alv-card alv-card-lead';          What = 'Asset Details leads with the asset' },
+    @{ File = 'pages\templates\asset_detail.html';        Text = 'alv-table maintenance-table';     What = 'its maintenance table is on the standard' },
+    @{ File = 'pages\templates\asset_detail.html';        Text = 'desktop-action-cell cell-actions'; What = 'with ONE actions column' },
+    @{ File = 'pages\templates\base.html';                Text = '--alv-actions-std';               What = 'the page-header bar has a home' },
+    @{ File = 'pages\templates\base.html';                Text = '.page-action-buttons .action-danger'; What = 'destructive is a tone, not a verb' },
+    @{ File = 'pages\templates\base.html';                Text = '.page-action-buttons .action-more-btn'; What = 'and the More button keeps its edge' },
+    @{ File = 'pages\templates\base.html';                Text = 'pointer-events: none';            What = 'a disabled button is not a live link' },
+    @{ File = 'pages\templates\asset_detail.html';        Text = 'btn action-primary';              What = 'Edit is the primary, not yellow' },
+    @{ File = 'pages\templates\asset_detail.html';        Text = 'action-secondary action-danger';  What = 'and Delete is outlined, not solid red' }
 )
 
 foreach ($s in $sentinels) {
@@ -263,7 +279,9 @@ $suites = @(
     'test_supplier_countries.py',
     'test_table_properties.py',
     'test_sticky_cue.py',
-    'test_card_standard.py'
+    'test_card_standard.py',
+    'test_detail_property.py',
+    'test_action_standard.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }

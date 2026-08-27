@@ -51,9 +51,12 @@
 </div>
 
 <!-- Assets Summary Card -->
-<div class="card mb-4 summary-card">
-    <div class="card-body">
-        <h5 class="card-title"><i class="fas fa-info-circle"></i> Asset Summary</h5>
+<div class="alv-card">
+    <div class="alv-card-head">
+        <i class="fas fa-info-circle"></i>
+        <span class="alv-card-title">Asset Summary</span>
+    </div>
+    <div class="alv-card-body">
         <div class="summary-grid">
             <div class="summary-row">
                 <span class="summary-label">Total Assets:</span>
@@ -88,13 +91,15 @@
     </div>
 
     {% for group_name, asset_list in grouped_assets.items %}
-    <div class="category-section mb-4">
-        <h4 class="category-header">
-            <i class="fas {% if group_by == 'room' %}fa-door-open{% else %}fa-tag{% endif %}"></i> <span class="category-name">{{ group_name }}</span>
-            <span class="badge badge-secondary category-count">{{ asset_list|length }}</span>
-        </h4>
+    <div class="alv-card">
+        <div class="alv-card-head">
+            <i class="fas {% if group_by == 'room' %}fa-door-open{% else %}fa-tag{% endif %}"></i>
+            <span class="alv-card-title category-name">{{ group_name }}</span>
+            <span class="alv-card-aside alv-tag">{{ asset_list|length }}</span>
+        </div>
 
-        <table class="asset-table">
+        <div class="table-container">
+        <table class="table alv-table asset-table">
             <thead>
                 <tr>
                     <th>Asset Name</th>
@@ -102,7 +107,7 @@
                     <th>Location/Room</th>
                     <th>Purchase Date</th>
                     <th>Supplier</th>
-                    <th class="text-center">Warranty Expiry</th>
+                    <th>Warranty Expiry</th>
                 </tr>
             </thead>
             <tbody>
@@ -125,18 +130,18 @@
                             </div>
                         </div>
                     </td>
-                    <td data-label="Subcategory">{{ asset.subcategory.name }}</td>
+                    <td data-label="Subcategory"><span class="alv-tag alv-tag-slate">{{ asset.subcategory.name }}</span></td>
                     <td data-label="Location">{{ asset.location_room }}</td>
                     <td data-label="Purchase Date">{{ asset.purchase_date|date:"Y-m-d" }}</td>
                     <td data-label="Supplier">{{ asset.supplier.name }}</td>
-                    <td data-label="Warranty Expiry" class="text-center">
+                    <td data-label="Warranty Expiry">
                         {% if asset.warranty_expiry_date %}
                             {% if asset.is_warranty_active %}
-                                <span class="warranty-active">✓ Active</span><br>
-                                <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
+                                <span class="alv-pill alv-pill-good">Active</span><br>
+                                <small class="text-muted">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
                             {% else %}
-                                <span class="warranty-expired">✗ Expired</span><br>
-                                <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
+                                <span class="alv-pill alv-pill-attn">Expired</span><br>
+                                <small class="text-muted">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
                             {% endif %}
                         {% else %}
                             <span class="text-muted">N/A</span>
@@ -146,6 +151,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
     {% endfor %}
 {% else %}
@@ -387,16 +393,6 @@
     cursor: not-allowed;
     pointer-events: none;
 }
-
-/* Summary card */
-.summary-card .card-title {
-    color: #2c3e50;
-    margin-bottom: 12px;
-}
-.summary-card .card-title i {
-    color: #0e7c8b;
-    margin-right: 6px;
-}
 .summary-grid {
     display: flex;
     flex-direction: column;
@@ -439,65 +435,6 @@
     margin-right: 4px;
 }
 
-/* Category section */
-.category-section {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.category-header {
-    color: #2c3e50;
-    border-bottom: 2px solid #0e7c8b;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.category-header .category-count {
-    margin-left: auto;
-}
-
-/* Asset table — desktop */
-.asset-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-.asset-table thead tr {
-    background-color: #2c3e50;
-    color: white;
-}
-.asset-table th {
-    padding: 12px 8px;
-    text-align: left;
-    border: 1px solid #34495e;
-    font-weight: 600;
-}
-.asset-table th.text-center {
-    text-align: center;
-}
-.asset-table td {
-    padding: 10px 8px;
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
-}
-.asset-table td.text-center {
-    text-align: center;
-}
-.asset-table tbody tr {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-.asset-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-.asset-table tbody tr:hover {
-    background-color: #e9ecef;
-}
-
 /* Asset name cell: thumbnail + name stacked side-by-side */
 .asset-name-cell {
     display: flex;
@@ -523,19 +460,6 @@
 .asset-name-text {
     flex: 1;
     min-width: 0;
-}
-
-.warranty-active {
-    color: #28a745;
-    font-weight: bold;
-}
-.warranty-expired {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.badge {
-    font-size: 0.85em;
 }
 
 /* Empty state */
@@ -635,11 +559,6 @@
     .action-back-label {
         display: none;
     }
-
-    /* Summary card — stack each row */
-    .summary-card .card-body {
-        padding: 14px;
-    }
     .summary-row {
         flex-direction: column;
         gap: 2px;
@@ -674,81 +593,6 @@
     }
     .view-toggle-group .btn {
         flex: 1;
-    }
-
-    /* Category section — tighter padding */
-    .category-section {
-        padding: 14px;
-    }
-    .category-header {
-        font-size: 1rem;
-    }
-
-    /* Asset table → cards */
-    .asset-table {
-        border: none;
-        background: transparent;
-    }
-    .asset-table thead {
-        display: none;
-    }
-    .asset-table,
-    .asset-table tbody,
-    .asset-table tr,
-    .asset-table td {
-        display: block;
-        width: 100%;
-    }
-    .asset-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .asset-table tbody tr:nth-child(even) {
-        background: white;
-    }
-    .asset-table tbody tr:hover {
-        background-color: white;
-    }
-    .asset-table td {
-        border: none !important;
-        padding: 6px 0 !important;
-        text-align: left !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 8px;
-        min-height: 24px;
-    }
-    .asset-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #495057;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        flex-shrink: 0;
-        padding-top: 2px;
-    }
-    /* Asset Name (first cell) gets prominence */
-    .asset-table td[data-label="Asset Name"] {
-        font-size: 15px;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid #f1f3f5 !important;
-        display: block;
-    }
-    .asset-table td[data-label="Asset Name"]::before {
-        display: none;
-    }
-    /* Warranty cell — multi-line content right-aligned */
-    .asset-table td[data-label="Warranty Expiry"] {
-        text-align: right !important;
     }
 
     /* Empty state — less vertical waste */

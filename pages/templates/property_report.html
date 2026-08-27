@@ -91,13 +91,13 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Status:</span>
-                        <span class="badge {% if property.prop_status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                        <span class="alv-pill {% if property.prop_status == 'Active' %}alv-pill-good{% else %}alv-pill-neutral{% endif %}">
                             {{ property.prop_status }}
                         </span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Available for Rent:</span>
-                        <span class="badge {% if property.prop_available_for_rent == 'Yes' %}badge-available{% else %}badge-not-available{% endif %}">
+                        <span class="alv-pill {% if property.prop_available_for_rent == 'Yes' %}alv-pill-good{% else %}alv-pill-neutral{% endif %}">
                             {{ property.prop_available_for_rent }}
                         </span>
                     </div>
@@ -124,11 +124,11 @@
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Active Warranties:</span>
-                            <span class="badge badge-success">{{ active_warranties }}</span>
+                            <span class="alv-pill alv-pill-good">{{ active_warranties }}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Expired Warranties:</span>
-                            <span class="badge" style="background-color: #dc3545; color: white;">{{ expired_warranties }}</span>
+                            <span class="alv-pill alv-pill-attn">{{ expired_warranties }}</span>
                         </div>
                     </div>
 
@@ -149,18 +149,18 @@
                 <!-- Assets by Category -->
                 <div class="categories-section">
                     <h4 class="section-title">Assets by Category</h4>
-                    <table class="categories-table">
+                    <table class="table alv-table categories-table">
                         <thead>
                             <tr>
                                 <th>Category</th>
-                                <th class="count-col">Count</th>
+                                <th class="count-col num">Count</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for cat in assets_by_category %}
                             <tr>
                                 <td data-label="Category">{{ cat.category__name }}</td>
-                                <td data-label="Count" class="count-col"><strong>{{ cat.count }}</strong></td>
+                                <td data-label="Count" class="count-col num"><strong>{{ cat.count }}</strong></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -170,15 +170,15 @@
                 <!-- Asset Details Table -->
                 <div>
                     <h4 class="section-title">Asset Details</h4>
-                    <table class="assets-table">
+                    <table class="table alv-table assets-table">
                         <thead>
                             <tr>
                                 <th>Asset Name</th>
                                 <th>Category</th>
                                 <th>Location</th>
-                                <th class="text-center">Purchase Date</th>
+                                <th>Purchase Date</th>
                                 <th>Supplier</th>
-                                <th class="text-center">Warranty</th>
+                                <th>Warranty</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -190,18 +190,18 @@
                                         <br><small class="muted-small">{{ asset.brand_manufacturer }}</small>
                                     {% endif %}
                                 </td>
-                                <td data-label="Category">{{ asset.subcategory.name }}</td>
+                                <td data-label="Category"><span class="alv-tag alv-tag-slate">{{ asset.subcategory.name }}</span></td>
                                 <td data-label="Location">{{ asset.location_room }}</td>
-                                <td data-label="Purchase Date" class="text-center">{{ asset.purchase_date|date:"Y-m-d" }}</td>
+                                <td data-label="Purchase Date">{{ asset.purchase_date|date:"Y-m-d" }}</td>
                                 <td data-label="Supplier">{{ asset.supplier.name }}</td>
-                                <td data-label="Warranty" class="text-center">
+                                <td data-label="Warranty">
                                     {% if asset.warranty_expiry_date %}
                                         {% if asset.is_warranty_active %}
-                                            <span class="warranty-active">✓ Active</span><br>
-                                            <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
+                                            <span class="alv-pill alv-pill-good">Active</span><br>
+                                            <small class="muted-small">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
                                         {% else %}
-                                            <span class="warranty-expired">✗ Expired</span><br>
-                                            <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
+                                            <span class="alv-pill alv-pill-attn">Expired</span><br>
+                                            <small class="muted-small">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
                                         {% endif %}
                                     {% else %}
                                         <span class="muted">N/A</span>
@@ -329,34 +329,6 @@
         font-family: 'Courier New', monospace;
     }
 
-    .badge {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
-    .badge-success {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .badge-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    .badge-info {
-        background-color: #0e7c8b;
-        color: white;
-    }
-
-    .badge-light {
-        background-color: #f8f9fa;
-        color: #212529;
-    }
-
     .back-button {
         background-color: #0e7c8b;
         color: white;
@@ -364,16 +336,6 @@
         text-decoration: none;
         border-radius: 4px;
         font-weight: 500;
-    }
-
-    .badge-available {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .badge-not-available {
-        background-color: #dc3545;
-        color: white;
     }
 
     /* Stats cards */
@@ -398,52 +360,6 @@
     /* Tables (categories + assets) */
     .categories-section {
         margin-bottom: 25px;
-    }
-    .categories-table,
-    .assets-table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-    }
-    .assets-table {
-        font-size: 0.9rem;
-    }
-    .categories-table thead tr,
-    .assets-table thead tr {
-        background-color: #2c3e50;
-        color: white;
-    }
-    .categories-table th,
-    .assets-table th {
-        padding: 12px;
-        text-align: left;
-        border: 1px solid #34495e;
-    }
-    .categories-table th.count-col,
-    .assets-table th.text-center {
-        text-align: center;
-    }
-    .categories-table th.count-col {
-        width: 150px;
-    }
-    .categories-table td,
-    .assets-table td {
-        padding: 10px;
-        border: 1px solid #dee2e6;
-    }
-    .assets-table td {
-        padding: 8px;
-    }
-    .categories-table td.count-col,
-    .assets-table td.text-center {
-        text-align: center;
-    }
-    .warranty-active {
-        color: #28a745;
-        font-weight: bold;
-    }
-    .warranty-expired {
-        color: #dc3545;
     }
     .muted {
         color: #6c757d;
@@ -536,79 +452,6 @@
         }
         .stats-card {
             padding: 14px;
-        }
-
-        /* Categories table — keep as table but tighten + allow horizontal scroll if needed */
-        .categories-table {
-            font-size: 14px;
-        }
-        .categories-table th,
-        .categories-table td {
-            padding: 8px;
-        }
-        .categories-table th.count-col {
-            width: auto;
-        }
-
-        /* Assets table → card layout */
-        .assets-table {
-            border: none;
-            background: transparent;
-        }
-        .assets-table thead {
-            display: none;
-        }
-        .assets-table,
-        .assets-table tbody,
-        .assets-table tr,
-        .assets-table td {
-            display: block;
-            width: 100%;
-        }
-        .assets-table tbody tr {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            padding: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-        }
-        .assets-table td {
-            border: none !important;
-            padding: 6px 0 !important;
-            text-align: left !important;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 8px;
-            min-height: 24px;
-        }
-        .assets-table td::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #495057;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            flex-shrink: 0;
-            padding-top: 2px;
-        }
-        /* The Asset Name (first cell) gets prominence */
-        .assets-table td[data-label="Asset Name"] {
-            font-size: 15px;
-            font-weight: 600;
-            color: #2c3e50;
-            padding-bottom: 8px !important;
-            margin-bottom: 4px;
-            border-bottom: 1px solid #f1f3f5 !important;
-            display: block;
-        }
-        .assets-table td[data-label="Asset Name"]::before {
-            display: none;
-        }
-        /* Warranty cell — keep multi-line content right-aligned */
-        .assets-table td[data-label="Warranty"] {
-            text-align: right !important;
         }
     }
 

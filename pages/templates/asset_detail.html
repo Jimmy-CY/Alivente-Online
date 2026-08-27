@@ -29,24 +29,24 @@
 <!-- Action Buttons -->
 <div class="page-action-buttons">
     {% if perms.auth.can_edit_properties %}
-        <a href="{% url 'edit_asset' asset.id %}" class="btn btn-warning action-primary">
+        <a href="{% url 'edit_asset' asset.id %}" class="btn action-primary">
             <i class="fas fa-edit"></i> Edit Asset
         </a>
-        <button type="button" class="btn btn-danger action-secondary" onclick="confirmDelete()">
+        <button type="button" class="btn action-secondary action-danger" onclick="confirmDelete()">
             <i class="fas fa-trash"></i> Delete Asset
         </button>
     {% else %}
-        <span class="btn btn-warning action-primary disabled-btn">
+        <span class="btn action-primary disabled-btn">
             <i class="fas fa-edit"></i> Edit Asset
         </span>
-        <span class="btn btn-danger action-secondary disabled-btn">
+        <span class="btn action-secondary action-danger disabled-btn">
             <i class="fas fa-trash"></i> Delete Asset
         </span>
     {% endif %}
 
     <!-- Mobile-only "More" dropdown -->
     <div class="action-more-wrapper">
-        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+        <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
             <i class="fas fa-ellipsis-v"></i>
         </button>
         <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
@@ -62,15 +62,15 @@
         </div>
     </div>
 
-    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn btn-info action-back" role="button" aria-label="Back">
+    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn action-back" role="button" aria-label="Back">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
 
 <!-- Asset Information Card -->
-<div class="card mb-4 detail-card">
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">
+<div class="alv-card alv-card-lead">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0">
             {% if first_photo %}
                 <img src="{{ first_photo.image.url }}" alt="" class="asset-header-thumb" onclick="viewPhoto('{{ first_photo.image.url }}')">
             {% else %}
@@ -79,7 +79,7 @@
             {{ asset.name }}
         </h4>
     </div>
-    <div class="card-body">
+    <div class="alv-card-body">
         <div class="detail-groups">
             <!-- Left column on desktop -->
             <div class="detail-group">
@@ -140,14 +140,13 @@
 
 {% if photos %}
 <!-- Photos Card -->
-<div class="card mb-4 detail-card">
-    <div class="card-header bg-info text-white">
-        <h5 class="mb-0">
-            <i class="fas fa-camera"></i> Photos
-            <span class="badge badge-light text-info">{{ photos|length }}</span>
-        </h5>
+<div class="alv-card">
+    <div class="alv-card-head">
+        <i class="fas fa-camera"></i>
+        <span class="alv-card-title">Photos</span>
+        <span class="alv-card-aside alv-tag">{{ photos|length }}</span>
     </div>
-    <div class="card-body">
+    <div class="alv-card-body">
         <div class="photo-grid">
             {% for photo in photos %}
                 <div class="photo-tile" onclick="viewPhoto('{{ photo.image.url }}')">
@@ -160,18 +159,17 @@
 {% endif %}
 
 <!-- Warranty Information Card -->
-<div class="card mb-4 detail-card">
-    <div class="card-header {% if asset.is_warranty_active %}bg-success{% else %}bg-secondary{% endif %} text-white">
-        <h5 class="mb-0">
-            <i class="fas fa-shield-alt"></i> Warranty Information
-            {% if asset.is_warranty_active %}
-                <span class="badge badge-light text-success">ACTIVE</span>
-            {% else %}
-                <span class="badge badge-light text-danger">EXPIRED / N/A</span>
-            {% endif %}
-        </h5>
+<div class="alv-card">
+    <div class="alv-card-head">
+        <i class="fas fa-shield-alt"></i>
+        <span class="alv-card-title">Warranty Information</span>
+        {% if asset.is_warranty_active %}
+            <span class="alv-card-aside alv-pill alv-pill-good">Active</span>
+        {% else %}
+            <span class="alv-card-aside alv-pill alv-pill-attn">Expired / N/A</span>
+        {% endif %}
     </div>
-    <div class="card-body">
+    <div class="alv-card-body">
         <div class="warranty-grid">
             <div class="warranty-item">
                 <div class="warranty-label">Duration</div>
@@ -197,7 +195,7 @@
                 <div class="warranty-label">Days Remaining</div>
                 <div class="warranty-value">
                     {% if asset.is_warranty_active %}
-                        <span class="text-success">{{ asset.warranty_days_remaining }} days</span>
+                        <span style="color: var(--alv-good)">{{ asset.warranty_days_remaining }} days</span>
                     {% else %}
                         <span class="text-muted">&mdash;</span>
                     {% endif %}
@@ -208,39 +206,38 @@
 </div>
 
 <!-- Maintenance History Card -->
-<div class="card mb-4 detail-card">
-    <div class="card-header bg-info text-white">
-        <div class="card-header-row">
-            <h5 class="mb-0">
-                <i class="fas fa-wrench"></i> Maintenance History
-            </h5>
+<div class="alv-card">
+    <div class="alv-card-head">
+        <i class="fas fa-wrench"></i>
+        <span class="alv-card-title">Maintenance History</span>
+        <span class="alv-card-aside">
             {% if perms.auth.can_edit_properties %}
-                <button type="button" class="btn btn-sm btn-light" data-toggle="modal" data-target="#addMaintenanceModal">
+                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#addMaintenanceModal">
                     <i class="fas fa-plus"></i> Add Record
                 </button>
             {% else %}
-                <span class="btn btn-sm btn-light disabled-btn">
+                <span class="btn btn-sm btn-info disabled-btn">
                     <i class="fas fa-plus"></i> Add Record
                 </span>
             {% endif %}
-        </div>
+        </span>
     </div>
-    <div class="card-body">
+    <div class="alv-card-body">
         {% if maintenance_records %}
             <div class="alert alert-secondary maintenance-total">
                 <strong>Total Maintenance Cost:</strong> &euro;{{ total_maintenance_cost|default:"0.00" }}
             </div>
 
-            <table class="maintenance-table">
+            <div class="table-container">
+            <table class="table alv-table maintenance-table">
                 <thead>
                     <tr>
                         <th>Date</th>
                         <th>Type</th>
                         <th>Description</th>
                         <th>Service Provider</th>
-                        <th class="text-right">Cost (&euro;)</th>
-                        <th class="text-center">Invoice</th>
-                        <th class="text-center">Action</th>
+                        <th class="num">Cost (&euro;)</th>
+                        <th class="cell-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -248,27 +245,28 @@
                     <tr>
                         <td data-label="Date">{{ record.date|date:"Y-m-d" }}</td>
                         <td data-label="Type">
-                            <span class="badge badge-{% if record.maintenance_type == 'scheduled' %}info{% elif record.maintenance_type == 'repair' %}warning{% elif record.maintenance_type == 'inspection' %}primary{% elif record.maintenance_type == 'cleaning' %}success{% elif record.maintenance_type == 'service' %}dark{% else %}secondary{% endif %}">
+                            <span class="alv-tag {% if record.maintenance_type == 'scheduled' %}alv-tag-sky{% elif record.maintenance_type == 'repair' %}alv-tag-clay{% elif record.maintenance_type == 'inspection' %}alv-tag-slate{% elif record.maintenance_type == 'cleaning' %}alv-tag-moss{% elif record.maintenance_type == 'service' %}alv-tag-plum{% endif %}">
                                 {{ record.get_maintenance_type_display }}
                             </span>
                         </td>
                         <td data-label="Description">{{ record.description }}</td>
                         <td data-label="Service Provider">{{ record.service_provider|default:"&mdash;" }}</td>
-                        <td data-label="Cost" class="text-right cost-cell">
+                        <td data-label="Cost" class="num cost-cell">
                             {% if record.cost %}&euro;{{ record.cost }}{% else %}&mdash;{% endif %}
                         </td>
-                        <td data-label="Invoice" class="text-center">
+                        <td data-label="Actions" class="desktop-action-cell cell-actions">
+                          <span class="row-actions">
                             {% if record.invoice %}
-                                <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ record.invoice.url }}', '{{ record.invoice.name }}')">
+                                <button type="button" class="icon-action-btn icon-view" title="View invoice" onclick="viewInvoice('{{ record.invoice.url }}', '{{ record.invoice.name }}')">
                                     <i class="fas fa-file-invoice"></i>
                                 </button>
                             {% else %}
-                                <span class="text-muted">&mdash;</span>
+                                <span class="icon-action-btn icon-disabled" title="No invoice attached">
+                                    <i class="fas fa-file-invoice"></i>
+                                </span>
                             {% endif %}
-                        </td>
-                        <td data-label="Action" class="text-center action-cell">
                             {% if perms.auth.can_edit_properties %}
-                                <button type="button" class="btn btn-sm btn-warning"
+                                <button type="button" class="icon-action-btn icon-edit" title="Edit record"
                                     onclick="openEditMaintenance(
                                         {{ record.id }},
                                         '{{ record.date|date:'Y-m-d' }}',
@@ -279,14 +277,14 @@
                                     )">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteMaintenance({{ record.id }})">
+                                <button type="button" class="icon-action-btn icon-delete" title="Delete record" onclick="confirmDeleteMaintenance({{ record.id }})">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             {% else %}
-                                <button type="button" class="btn btn-sm btn-warning disabled-btn">
+                                <span class="icon-action-btn icon-disabled" title="No permission">
                                     <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-danger disabled-btn">
+                                </span>
+                                <span class="icon-action-btn icon-disabled" title="No permission">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             {% endif %}
@@ -488,41 +486,15 @@
     margin-bottom: 1rem;
 }
 
-/* Top action buttons — Edit + Delete grouped left, Back pushed right via margin-left:auto */
-.page-action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 1.5rem;
-}
-.page-action-buttons .action-back {
-    margin-left: auto;
-}
-.disabled-btn {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* Desktop: hide the More dropdown (mobile-only) */
-.action-more-wrapper { display: none; }
-
-/* Detail card */
-.detail-card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.detail-card .card-header h4,
-.detail-card .card-header h5 {
-    color: white;
-}
-
 /* Asset header thumbnail — replaces briefcase icon when a photo exists */
+/* The border was white, for a blue bar that no longer exists. On the
+   card surface a white border is invisible. */
 .asset-header-thumb {
     width: 60px;
     height: 60px;
     border-radius: 8px;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid var(--alv-line);
     margin-right: 10px;
     vertical-align: middle;
     cursor: pointer;
@@ -530,7 +502,7 @@
 }
 .asset-header-thumb:hover {
     transform: scale(1.05);
-    border-color: rgba(255, 255, 255, 0.8);
+    border-color: var(--alv-ink-faint);
 }
 
 /* Photos card — grid of thumbnails, click to enlarge in modal */
@@ -566,14 +538,6 @@
     max-height: 70vh;
     height: auto;
     border-radius: 4px;
-}
-
-/* Card-header row (heading + button) */
-.card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
 }
 
 /* Detail groups grid (Asset Information card) */
@@ -632,52 +596,6 @@
     margin-bottom: 16px;
 }
 
-/* Maintenance table — desktop */
-.maintenance-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-.maintenance-table thead tr {
-    background-color: #2c3e50;
-    color: white;
-}
-.maintenance-table th {
-    padding: 10px 8px;
-    text-align: left;
-    border: 1px solid #34495e;
-    font-weight: 600;
-}
-.maintenance-table th.text-right {
-    text-align: right;
-}
-.maintenance-table th.text-center {
-    text-align: center;
-}
-.maintenance-table td {
-    padding: 8px;
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
-}
-.maintenance-table td.text-right {
-    text-align: right;
-}
-.maintenance-table td.text-center {
-    text-align: center;
-}
-.maintenance-table .cost-cell {
-    font-family: 'Courier New', monospace;
-}
-.maintenance-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-.maintenance-table .action-cell .btn {
-    margin-right: 4px;
-}
-.maintenance-table .action-cell .btn:last-child {
-    margin-right: 0;
-}
-
 .maintenance-empty {
     margin-bottom: 0;
 }
@@ -687,95 +605,6 @@
 
     .page-title-h2 {
         font-size: 1.25rem;
-    }
-
-    /* Action buttons — Edit (wide) + More (icon, contains Delete) + Back (icon) */
-    .page-action-buttons {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        width: 100%;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        margin-bottom: 1rem;
-    }
-    .page-action-buttons .action-back {
-        margin-left: 0; /* reset desktop trick */
-    }
-    .page-action-buttons .action-secondary {
-        display: none;
-    }
-    .page-action-buttons .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-    }
-
-    /* More dropdown wrapper — visible on mobile only */
-    .action-more-wrapper {
-        display: block;
-        position: relative;
-        flex: 0 0 auto;
-    }
-    .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .action-more-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 200;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        min-width: 220px;
-        padding: 6px 0;
-    }
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        transition: background 0.15s ease;
-        text-decoration: none;
-    }
-    .action-more-item i {
-        color: #0e7c8b;
-        width: 18px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-    .action-more-item:hover,
-    .action-more-item:active,
-    .action-more-item:focus {
-        background: #f0f8ff;
-        outline: none;
-        color: #2c3e50;
-        text-decoration: none;
     }
 
     /* Danger variant for destructive menu items (Delete Asset) */
@@ -791,39 +620,8 @@
         background: #fdf2f3;
         color: #dc3545;
     }
-
-    /* Back button — icon-only on mobile */
-    .page-action-buttons .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
     .action-back-label {
         display: none;
-    }
-
-    /* Card heading row — wrap, "Add Record" button slides below */
-    .card-header-row {
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .card-header-row .btn {
-        margin-left: 0;
-    }
-
-    .detail-card .card-body {
-        padding: 14px;
-    }
-    .detail-card .card-header {
-        padding: 10px 14px;
-    }
-    .detail-card .card-header h4,
-    .detail-card .card-header h5 {
-        font-size: 1.05rem;
     }
 
     /* Asset header thumbnail — smaller on mobile */
@@ -895,88 +693,6 @@
     }
     .warranty-value {
         font-size: 14px;
-    }
-
-    /* Maintenance table → cards */
-    .maintenance-table {
-        border: none;
-        background: transparent;
-    }
-    .maintenance-table thead {
-        display: none;
-    }
-    .maintenance-table,
-    .maintenance-table tbody,
-    .maintenance-table tr,
-    .maintenance-table td {
-        display: block;
-        width: 100%;
-    }
-    .maintenance-table tbody tr {
-        background: white !important;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .maintenance-table tbody tr:nth-child(even) {
-        background: white !important;
-    }
-    .maintenance-table td {
-        border: none !important;
-        padding: 6px 0 !important;
-        text-align: left !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 8px;
-        min-height: 24px;
-    }
-    .maintenance-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #495057;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        flex-shrink: 0;
-        padding-top: 2px;
-    }
-    /* Description cell — full-width body text on mobile */
-    .maintenance-table td[data-label="Description"] {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .maintenance-table td[data-label="Description"]::before {
-        margin-bottom: 4px;
-    }
-    /* Date cell prominent at top */
-    .maintenance-table td[data-label="Date"] {
-        font-size: 14px;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid #f1f3f5 !important;
-    }
-    /* Action cell — buttons in a row at the bottom */
-    .maintenance-table td[data-label="Action"] {
-        margin-top: 6px;
-        padding-top: 8px !important;
-        border-top: 1px solid #f1f3f5 !important;
-        justify-content: flex-end;
-    }
-    .maintenance-table td[data-label="Action"]::before {
-        margin-right: auto;
-    }
-    .maintenance-table td[data-label="Action"] .btn {
-        padding: 6px 12px;
-        margin-left: 4px;
-    }
-    /* Invoice cell — button right-aligned */
-    .maintenance-table td[data-label="Invoice"] {
-        justify-content: space-between;
     }
 
     /* ============= MODAL — full-screen on mobile ============= */
