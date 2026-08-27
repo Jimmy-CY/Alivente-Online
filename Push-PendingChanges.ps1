@@ -36,6 +36,18 @@
 .PARAMETER Body
     Optional paragraphs for the commit body, one string each.
 
+.PARAMETER Checks
+    What to verify on Live once this deploy is green, one string each.
+
+    There is deliberately no default. The footer used to be four hardcoded
+    lines about the effective-date round, and it kept printing them for three
+    weeks after that work shipped - describing the LAST change rather than
+    this one. That is exactly the failure -Message exists to prevent for the
+    commit subject, and it had the same cause.
+
+    Omit it and the footer says plainly that nothing was specified, rather
+    than inventing something to check.
+
 .EXAMPLE
     .\Push-PendingChanges.ps1
     Verify and report.  Changes nothing.
@@ -43,6 +55,12 @@
 .EXAMPLE
     .\Push-PendingChanges.ps1 -Push
     Verify, tidy, commit and push.
+
+.EXAMPLE
+    .\Push-PendingChanges.ps1 -Push -Message "..." -Checks `
+        "Suppliers: the Country filter returns one row for Greece", `
+        "Properties: an Inactive property reads grey, not red"
+    The -Checks lines are printed after the push, numbered, and nowhere else.
 #>
 [CmdletBinding()]
 param(
@@ -50,7 +68,8 @@ param(
     [switch]$Push,
     [switch]$Force,
     [string]$Message,
-    [string[]]$Body = @()
+    [string[]]$Body = @(),
+    [string[]]$Checks = @()
 )
 
 # Deliberately NOT 'Stop'.  Under 'Stop', anything a native command writes to
@@ -165,7 +184,17 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = 'position: sticky;';            What = 'headings stick when you scroll' },
     @{ File = 'pages\templates\base.html';                Text = 'overflow: clip;';             What = 'and the container lets them' },
     @{ File = 'pages\templates\base.html';                Text = '--alv-ink-strong:';           What = 'headings have their own ink' },
-    @{ File = 'pages\views\suppliers.py';                 Text = '"distinct_countries": distinct_countries,'; What = 'the Country filter finally has options' }
+    @{ File = 'pages\views\suppliers.py';                 Text = '"distinct_countries": distinct_countries,'; What = 'the Country filter finally has options' },
+    @{ File = 'pages\templates\properties.html';          Text = 'class="table alv-table properties-table"'; What = 'Properties is on the standard' },
+    @{ File = 'pages\templates\properties.html';          Text = 'alv-pill-neutral{% endif %}';          What = 'and Inactive is grey, not red' },
+    @{ File = 'pages\templates\properties.html';          Text = 'mobile-action-bar cols-4';            What = 'its mobile bar declares four columns' },
+    @{ File = 'pages\templates\base.html';                Text = '.table-container.is-stuck';            What = 'a stuck heading says so' },
+    @{ File = 'pages\templates\base.html';                Text = 'alv-sticky-cue';                What = 'and the observer that sets it' },
+    @{ File = 'pages\templates\base.html';                Text = '.alv-table .cell-actions,';       What = 'ONE rule aligns the Actions column' },
+    @{ File = 'pages\templates\base.html';                Text = '--alv-card-std';                 What = 'cards have a home' },
+    @{ File = 'pages\templates\base.html';                Text = '.alv-card-lead';                 What = 'and the first one may be louder' },
+    @{ File = 'pages\templates\base.html';                Text = '.alv-tag-slate';                 What = 'categories are off the semantic scale' },
+    @{ File = 'pages\templates\base.html';                Text = '--alv-print-std';                What = 'and reports survive a printer' }
 )
 
 foreach ($s in $sentinels) {
@@ -231,7 +260,10 @@ $suites = @(
     'test_accent_shades.py',
     'test_table_suppliers.py',
     'test_table_polish.py',
-    'test_supplier_countries.py'
+    'test_supplier_countries.py',
+    'test_table_properties.py',
+    'test_sticky_cue.py',
+    'test_card_standard.py'
 )
 foreach ($t in $suites) {
     if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }
@@ -342,9 +374,12 @@ Write-Host ''
 Write-Host 'Railway will build and deploy from this push.' -ForegroundColor Cyan
 Write-Host 'Migrations run automatically on deploy; this batch adds none.' -ForegroundColor Cyan
 Write-Host ''
-Write-Host 'Worth checking on Live once the deploy is green:' -ForegroundColor Cyan
-Write-Host '  1. Finance > add an expense - Applies from is prefilled 1 January'
-Write-Host '  2. Finance > edit an expense - Applies from is prefilled today'
-Write-Host '  3. Edit a pro-rata line, change nothing, save - then re-run'
-Write-Host '     .\Show-HistoryOrphans.ps1 and confirm the orphan count has NOT moved'
-Write-Host '  4. Company Tax still reads 3,500 + 3,500 before Jul-2026 and 3,300 + 3,300 after'
+if ($Checks.Count -gt 0) {
+    Write-Host 'Worth checking on Live once the deploy is green:' -ForegroundColor Cyan
+    for ($i = 0; $i -lt $Checks.Count; $i++) {
+        Write-Host ('  {0}. {1}' -f ($i + 1), $Checks[$i])
+    }
+} else {
+    Write-Host 'No post-deploy checks were given for this batch.' -ForegroundColor DarkYellow
+    Write-Host 'Pass -Checks "..." , "..." next time if there is something to look at.'
+}

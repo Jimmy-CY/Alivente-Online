@@ -1,4 +1,4 @@
-"""test_table_suppliers - Suppliers is on the standard, and nothing else moved.
+"""test_table_properties - Properties is on the standard, and Inactive is grey.
 
     python test_table_suppliers.py
 
@@ -22,11 +22,11 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-PAGE = os.path.join(ROOT, 'pages', 'templates', 'suppliers.html')
+PAGE = os.path.join(ROOT, 'pages', 'templates', 'properties.html')
 BASE = os.path.join(ROOT, 'pages', 'templates', 'base.html')
 
 if not os.path.exists(PAGE):
-    sys.exit('! pages/templates/suppliers.html not found - run from the root')
+    sys.exit('! pages/templates/properties.html not found - run from the root')
 
 results = []
 
@@ -49,7 +49,7 @@ m = re.search(r'<table[^>]*class="([^"]*)"', SRC)
 cls = m.group(1).split() if m else []
 check('the table joins the standard', 'alv-table' in cls)
 check('  and keeps its own name for anything page-specific',
-      'suppliers-table' in cls)
+      'properties-table' in cls)
 for gone in ('table-bordered', 'table-striped', 'text-center'):
     check('  %s is gone from the class list' % gone, gone not in cls)
 check('  Bootstrap .table survives (padding, base metrics)', 'table' in cls)
@@ -65,7 +65,7 @@ check('no {# comment spans a newline%s'
 
 check('the empty state exists at all', 'alv-empty' in SRC)
 check('  and is conditional, not always drawn',
-      re.search(r'\{%\s*if\s+not\s+supplier\s*%\}', SRC) is not None)
+      re.search(r'\{%\s*if\s+not\s+props\s*%\}', SRC) is not None)
 check('  it closes its if', SRC.count('{% endif %}') >= SRC.count('{% if '))
 check('  and sits outside the table, not inside tbody',
       SRC.find('alv-empty') > SRC.find('</table>'))
@@ -85,11 +85,19 @@ check('  column widths were redistributed to sum to 100',
           SRC[SRC.find('<thead'):SRC.find('</thead>')])) == 100)
 
 # The risk in a cell merge is losing a permission branch with the cell.
-check('  every action keeps its disabled twin (%d)'
-      % SRC.count('icon-disabled'), SRC.count('icon-disabled') == 2)
-check('  and the delete button keeps its five data- attributes',
-      SRC.count('data-supplier-id') >= 2
-      and 'data-contact-person' in SRC and 'data-company-name' in SRC)
+check('  three of the four actions keep a disabled twin (%d)'
+      % SRC.count('icon-disabled'), SRC.count('icon-disabled') == 3)
+check('  and the title-deed viewer keeps its three arguments',
+      SRC.count('viewTitleDeed(') >= 2
+      and 'prop_title_deed.url' in SRC and 'prop_title_deed.name' in SRC)
+
+# ------------------------------------------- decision 3, finally applied
+check('Inactive uses the neutral pill, not the danger one',
+      'alv-pill-neutral' in SRC and 'status-inactive' not in SRC)
+check('  Active uses the good pill', 'alv-pill-good' in SRC)
+check('  and the old badge classes are gone from the CSS too',
+      '.status-badge' not in CSS and '.status-inactive' not in CSS)
+check('  the mobile bar declares four columns', 'cols-4' in SRC)
 
 check('base.html centres action cells',
       '.alv-table .desktop-action-cell' in BASE_SRC)
@@ -107,10 +115,10 @@ for sel in ('.icon-action-btn', '.icon-edit', '.icon-view', '.icon-delete',
             '.icon-color-edit', '.table-container'):
     check('  local %s is gone (base.html owns it)' % sel,
           not re.search(re.escape(sel) + r'\s*[,{:]', CSS))
-check('  and so are the .suppliers-table layout rules',
-      not re.search(r'\.suppliers-table\s*[,{]', CSS))
+check('  and so are the .properties-table layout rules',
+      not re.search(r'\.properties-table\s*[,{]', CSS))
 check('  including the per-page card-title rule :first-child replaced',
-      'data-label="Contact Person"' not in CSS)
+      'data-label="Property"' not in CSS)
 
 # ============================== WHAT MUST NOT HAVE GONE  (the real safety net)
 # A patcher that deleted too much would pass every check above.
@@ -118,8 +126,6 @@ for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.filter-grid', 'its layout'),
                  ('.search-btn', 'the search button'),
                  ('.filter-tag', 'the active-filter chips'),
-                 ('.modal-header', 'the delete modal'),
-                 ('.delete-modal-grid', 'its grid'),
                  ('.action-add-new', 'Add New'),
                  ('.action-more-btn', 'the mobile More menu'),
                  ('.action-back', 'Back'),
@@ -143,22 +149,22 @@ def group(prefix):
 # margin lets a rule go missing quietly, which is the failure this exists to
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
-for prefix, floor, why in (('.filter', 38, 'filter panel + chips'),
+for prefix, floor, why in (('.filter', 37, 'filter panel + chips'),
                            ('.action-', 11, 'page-header buttons'),
-                           ('.modal', 10, 'delete modal'),
-                           ('.search', 8, 'search box')):
+                           ('.search', 6, 'search box'),
+                           ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
 
 for prefix in ('.icon-', '.mobile-action', '.table-container',
-               '.suppliers-table'):
+               '.properties-table', '.status'):
     check('  %-16s has 0 rules left - base.html owns it now' % prefix,
           group(prefix) == 0)
 
 check('  the mobile @media block still exists for the page-specific half',
       re.search(r'@media[^{]*max-width:\s*768px', CSS) is not None)
 check('  and the page still has substantial CSS of its own (%d lines)'
-      % CSS.count('\n'), CSS.count('\n') > 150)
+      % CSS.count('\n'), CSS.count('\n') > 120)
 
 # The permission-aware markup must be untouched: this round is CSS.
 check('permission conditionals survive (%d)' % SRC.count('{% if perms.'),
@@ -212,9 +218,18 @@ else:
                r'\1', f, flags=re.S)
     f = re.sub(r'\{%\s*if[^%]*%\}(.*?)\{%\s*endif\s*%\}', r'\1', f, flags=re.S)
     fm = re.search(r'\{%\s*for[^%]*%\}(.*?)\{%\s*endfor\s*%\}', f, re.S)
+    # The harness resolves every {% if %} to its first branch, so every
+    # rendered row comes out Active. That left .alv-pill-neutral absent from
+    # the page and the colour check measuring nothing - it "passed" by being
+    # skipped. One row is switched to the else-branch class deliberately, so
+    # the grey pill is actually on the page to be measured. The template's
+    # own emission of that class is asserted statically above.
     rows = ''
-    for name in ('Andreas Papadopoulos', 'Maria Georgiou', 'Nikos C'):
-        r = fm.group(1).replace('{{sresults.supplier_contact_person}}', name)
+    for i, name in enumerate(('Agia Thekla 12', 'Ionion Court',
+                              'Palikaridi 4')):
+        r = fm.group(1).replace('{{results.prop_name}}', name)
+        if i == 2:
+            r = r.replace('alv-pill-good', 'alv-pill-neutral')
         rows += re.sub(r'\{[{%][^}%]*[%}]\}', 'x', r)
     f = f[:fm.start()] + rows + f[fm.end():]
     f = re.sub(r'\{#.*?#\}', '', f, flags=re.S)
@@ -296,17 +311,27 @@ else:
             ra = cs(pg, '.row-actions', ['display', 'gap'])
             check('  the three buttons sit inline with a gap',
                   ra['display'] == 'inline-flex' and ra['gap'] == '6px')
-            check('  and there are exactly three of them in the row',
+            check('  and there are exactly FOUR of them in the row',
                   pg.evaluate("()=>document.querySelectorAll("
                               "'tbody tr:first-child .row-actions "
-                              ".icon-action-btn').length") == 3)
-            check('  one actions cell per row, not three',
+                              ".icon-action-btn').length") == 4)
+            check('  one actions cell per row, not four',
                   pg.evaluate("()=>document.querySelectorAll("
                               "'tbody tr:first-child td').length")
-                  == 6 + 1)   # 5 data columns + actions + the mobile bar cell
+                  == 3 + 1 + 1)   # 3 data columns + actions + the mobile bar cell
 
             r1 = cs(pg, 'tbody tr:nth-child(1)', ['background-color'])
             r2 = cs(pg, 'tbody tr:nth-child(2)', ['background-color'])
+            # Red is for overdue rent, expired leases and failed sends.
+            # Measured, because "grey" is the whole point of the change.
+            pill = cs(pg, 'tbody .alv-pill-neutral',
+                      ['background-color', 'color'])
+            check('desktop: the Inactive pill is grey (%s)'
+                  % pill['background-color'],
+                  pill['background-color'] == 'rgb(238, 241, 242)')
+            check('  and specifically NOT the danger tint it used to be',
+                  pill['background-color'] != 'rgb(248, 215, 218)')
+
             check('desktop: no zebra - both rows the same',
                   r1['background-color'] == r2['background-color'])
 
@@ -331,10 +356,14 @@ else:
             check('mobile: EVERY card is the same colour',
                   c1['background-color'] == c2['background-color']
                   == 'rgb(255, 255, 255)')
-            check('mobile: the action bar is a 3-up grid',
+            # FOUR, not three. Properties carries an extra action, and the
+            # markup declares cols-4 so base.html's default three-column grid
+            # does not wrap the last button onto a second row - a break that
+            # would only ever appear on a phone.
+            check('mobile: the action bar is a 4-up grid (cols-4)',
                   len(cs(pg, '.mobile-action-bar',
                          ['grid-template-columns'])
-                      ['grid-template-columns'].split()) == 3)
+                      ['grid-template-columns'].split()) == 4)
             check('mobile: the per-action cells step aside',
                   cs(pg, '.desktop-action-cell', ['display'])['display']
                   == 'none')

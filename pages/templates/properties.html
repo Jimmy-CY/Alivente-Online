@@ -141,16 +141,13 @@ Properties
 
   <!-- Properties Table (desktop) / Card list (mobile) -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center properties-table">
+    <table class="table alv-table properties-table">
       <thead>
         <tr>
-            <th style="text-align: left; width: 40%">Property</th>
+            <th style="text-align: left; width: 48%">Property</th>
             <th style="width: 16%">Country</th>
-            <th style="width: 12%">Status</th>
-            <th style="width: 8%">Edit</th>
-            <th style="width: 8%">Report</th>
-            <th style="width: 8%">Title Deed</th>
-            <th style="width: 8%">Assets</th>
+            <th style="width: 16%">Status</th>
+            <th class="desktop-action-cell cell-actions" style="width: 20%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -159,51 +156,51 @@ Properties
             <td data-label="Property" style="text-align: left">{{results.prop_name}}</td>
             <td data-label="Country">{{results.prop_country}}</td>
             <td data-label="Status">
-              <span class="status-badge {% if results.prop_status == 'Active' %}status-active{% else %}status-inactive{% endif %}">
+              <span class="alv-pill {% if results.prop_status == 'Active' %}alv-pill-good{% else %}alv-pill-neutral{% endif %}">
                 {{results.prop_status}}
               </span>
             </td>
-            <td data-label="Edit" class="desktop-action-cell">
-            {% if perms.auth.can_edit_properties %}
-              <a href="{% url 'properties_edit' results.prop_id %}" class="icon-action-btn icon-edit" title="Edit Property">
-                <i class="fas fa-pencil-alt"></i>
-              </a>
-            {% else %}
-              <span class="icon-action-btn icon-disabled" title="No edit permission">
-                <i class="fas fa-pencil-alt"></i>
+            <!-- Desktop actions: one cell, four buttons -->
+            <td class="desktop-action-cell cell-actions">
+              <span class="row-actions">
+                {% if perms.auth.can_edit_properties %}
+                  <a href="{% url 'properties_edit' results.prop_id %}" class="icon-action-btn icon-edit" title="Edit Property">
+                    <i class="fas fa-pencil-alt"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No edit permission">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                {% endif %}
+
+                <a href="{% url 'property_report' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Report">
+                  <i class="fas fa-eye"></i>
+                </a>
+
+                {% if results.prop_title_deed %}
+                  <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="icon-action-btn icon-view" title="View Title Deed">
+                    <i class="fas fa-file-contract"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No title deed uploaded">
+                    <i class="fas fa-file-contract"></i>
+                  </span>
+                {% endif %}
+
+                {% if results.assets.count > 0 %}
+                  <a href="{% url 'property_assets' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Assets">
+                    <i class="fas fa-box"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No assets recorded">
+                    <i class="fas fa-box"></i>
+                  </span>
+                {% endif %}
               </span>
-            {% endif %}
-            </td>
-            <td data-label="Report" class="desktop-action-cell">
-              <a href="{% url 'property_report' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Report">
-                <i class="fas fa-eye"></i>
-              </a>
-            </td>
-            <td data-label="Title Deed" class="desktop-action-cell">
-              {% if results.prop_title_deed %}
-                <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="icon-action-btn icon-view" title="View Title Deed">
-                  <i class="fas fa-eye"></i>
-                </a>
-              {% else %}
-                <span class="icon-action-btn icon-disabled" title="No title deed uploaded">
-                  <i class="fas fa-eye-slash"></i>
-                </span>
-              {% endif %}
-            </td>
-            <td data-label="Assets" class="desktop-action-cell">
-              {% if results.assets.count > 0 %}
-                <a href="{% url 'property_assets' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Assets">
-                  <i class="fas fa-eye"></i>
-                </a>
-              {% else %}
-                <span class="icon-action-btn icon-disabled" title="No assets recorded">
-                  <i class="fas fa-eye-slash"></i>
-                </span>
-              {% endif %}
             </td>
 
             <!-- Mobile-only action bar (hidden on desktop) -->
-            <td class="mobile-action-bar">
+            <td class="mobile-action-bar cols-4">
               {% if perms.auth.can_edit_properties %}
                 <a href="{% url 'properties_edit' results.prop_id %}" class="mobile-action-btn">
                   <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
@@ -249,6 +246,17 @@ Properties
         {% endfor %}
       </tbody>
     </table>
+
+    {% if not props %}
+      {# An empty tbody looks exactly like a failed load. #}
+      <div class="alv-empty">
+        <i class="fas fa-home"></i>
+        <div class="alv-empty-title">No properties to show</div>
+        <div class="alv-empty-hint">
+          Try clearing the filters, or add your first property.
+        </div>
+      </div>
+    {% endif %}
   </div>
 
 <!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
@@ -316,46 +324,11 @@ Properties
 .filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-tag { background: #0e7c8b; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 .filter-tag .remove-tag { background: rgba(255, 255, 255, 0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; }
-.table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-.status-active { background: #d4edda; color: #155724; }
-.status-inactive { background: #f8d7da; color: #721c24; }
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-/* Icon action buttons (Edit / View) */
-.icon-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    border: 2px solid;
-    background: white;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    cursor: pointer;
-}
-.icon-action-btn i { font-size: 14px; }
-.icon-action-btn:hover {
-    transform: translateY(-1px);
-    text-decoration: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-.icon-edit { color: #007bff; border-color: #007bff; }
-.icon-edit:hover { background-color: #007bff; color: white; }
-.icon-view { color: #0e7c8b; border-color: #0e7c8b; }
-.icon-view:hover { background-color: #0e7c8b; color: white; }
-.icon-disabled { color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; opacity: 0.6; }
-.icon-disabled:hover { transform: none; box-shadow: none; }
-
 /* Hide mobile-only label variants on desktop */
 .filter-title-text-mobile, .clear-all-text-mobile { display: none; }
-
-/* Mobile action bar — hidden on desktop */
-.mobile-action-bar { display: none !important; }
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
@@ -529,139 +502,6 @@ Properties
     gap: 8px;
     margin-top: 12px;
     padding-top: 12px;
-  }
-
-  /* Table → Card layout */
-  .table-container {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-  }
-  .properties-table {
-    border: none;
-    background: transparent;
-  }
-  .properties-table thead {
-    display: none;
-  }
-  .properties-table,
-  .properties-table tbody,
-  .properties-table tr,
-  .properties-table td {
-    display: block;
-    width: 100%;
-  }
-  .properties-table tbody tr {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-  }
-  .properties-table tbody tr:nth-of-type(even) {
-    background: white;
-  }
-  .properties-table td {
-    border: none !important;
-    padding: 6px 0 !important;
-    text-align: left !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    min-height: 28px;
-  }
-  .properties-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #495057;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  /* The Property Name (first cell) gets prominence — no label, larger text */
-  .properties-table td[data-label="Property"] {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 8px !important;
-    margin-bottom: 4px;
-    border-bottom: 1px solid #f1f3f5 !important;
-    display: block;
-  }
-  .properties-table td[data-label="Property"]::before {
-    display: none;
-  }
-
-  /* === Hide the four desktop action cells on mobile === */
-  .desktop-action-cell {
-    display: none !important;
-  }
-
-  /* === Show and style the mobile action bar === */
-  .mobile-action-bar {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-top: 10px;
-    padding: 10px 0 0 0 !important;
-    border-top: 1px solid #f1f3f5;
-    align-items: stretch !important;
-    min-height: auto !important;
-    justify-content: stretch !important;
-  }
-  .mobile-action-bar::before {
-    display: none !important;
-  }
-  .mobile-action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 6px;
-    padding: 8px 4px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #495057;
-    font-size: 11px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    transition: background-color 0.15s ease;
-    min-height: 56px;
-  }
-  .mobile-action-btn:hover,
-  .mobile-action-btn:active {
-    background: #e9ecef;
-    text-decoration: none;
-    color: #495057;
-  }
-  .mobile-action-icon {
-    font-size: 18px;
-    line-height: 1;
-  }
-  .mobile-action-label {
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.2;
-    text-align: center;
-  }
-  /* Icon colours match desktop semantic colours */
-  .icon-color-edit { color: #007bff; }
-  .icon-color-view { color: #0e7c8b; }
-
-  /* Disabled state */
-  .mobile-action-disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    color: #adb5bd;
-  }
-  .mobile-action-disabled .mobile-action-icon {
-    color: #adb5bd;
-  }
-  .mobile-action-disabled:hover,
-  .mobile-action-disabled:active {
-    background: #f8f9fa;
-    color: #adb5bd;
   }
 }
 </style>

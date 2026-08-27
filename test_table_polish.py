@@ -57,12 +57,15 @@ check('.table-container uses overflow: clip',
 check('  and not hidden, which would capture the sticky header',
       tc is not None and 'overflow: hidden' not in tc.group(1))
 
-ca = re.search(r'\.alv-table th\.cell-actions \{([^}]*)\}', SRC)
-check('the Actions HEADING centres',
+# Superseded by the card round: ONE rule now owns both, because centring
+# the heading alone centres it on the column rather than on the buttons.
+ca = re.search(r'\.alv-table \.cell-actions,\s*\.alv-table th\.cell-actions'
+               r'\s*\{([^}]*)\}', SRC, re.S)
+check('the Actions column centres, heading and cells in ONE rule',
       ca is not None and 'text-align: center' in ca.group(1))
-cc = re.search(r'\.alv-table \.cell-actions \{([^}]*)\}', SRC)
-check('  while the action CELLS stay right',
-      cc is not None and 'text-align: right' in cc.group(1))
+check('  and no surviving rule right-aligns them again',
+      not re.search(r'\.cell-actions[^{]*\{[^}]*text-align:\s*right',
+                    SRC, re.S))
 
 _std = SRC[SRC.find('--alv-table-std'):]
 _std = _std[:_std.find('</style>')]
@@ -168,9 +171,9 @@ else:
             check('Actions heading is centred',
                   cs('.std th.cell-actions', ['text-align'])['text-align']
                   == 'center')
-            check('  action cells stay right',
+            check('  and the cells are centred with it',
                   cs('.std td.cell-actions', ['text-align'])['text-align']
-                  == 'right')
+                  == 'center')
 
             pg.evaluate('window.scrollTo(0, 700)')
             pg.wait_for_timeout(300)
