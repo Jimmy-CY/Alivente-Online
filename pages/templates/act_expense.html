@@ -34,16 +34,8 @@
     margin-bottom: 1rem;
 }
 
-/* ==================== ACTION BUTTONS (DESKTOP) ==================== */
-.expense-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
 /* Desktop: hide the mobile-only More dropdown wrapper */
-.expense-action-buttons .action-more-wrapper { display: none; }
+.page-action-buttons .action-more-wrapper { display: none; }
 
 /* ==================== FILTER PANEL ==================== */
 .filter-panel {
@@ -255,49 +247,10 @@
         font-size: 1.25rem;
         margin-bottom: 0.75rem;
     }
-
-    /* === ACTION BAR — Back+1 standard:
-         [Add New (wide)] [⋮ Help] [← Back]
-         When Add New isn't shown (read-only or finance-pl context),
-         degrades to [Help (wide)] [← Back] === */
-    .expense-action-buttons {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .expense-action-buttons .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0 !important;
-        gap: 6px;
-    }
-    .expense-action-buttons .action-secondary {
-        display: none;  /* Help — hidden, accessed via More menu */
-    }
-    .expense-action-buttons .action-more-wrapper {
+    .page-action-buttons .action-more-wrapper {
         display: block;
         position: relative;
         flex: 0 0 auto;
-    }
-    .expense-action-buttons .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
     }
     .action-more-menu {
         position: absolute;
@@ -311,41 +264,11 @@
         min-width: 200px;
         padding: 6px 0;
     }
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        text-decoration: none;
-    }
-    .action-more-item i {
-        color: #0e7c8b;
-        width: 18px;
-        flex-shrink: 0;
-        text-align: center;
-    }
     .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
         background: #f0f8ff;
         outline: none;
         color: #2c3e50;
         text-decoration: none;
-    }
-    .expense-action-buttons .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 !important;
     }
     .action-back-label {
         display: none;
@@ -620,40 +543,40 @@
 {% endfor %}
 
 <!-- Action Buttons -->
-<div class="expense-action-buttons">
+<div class="page-action-buttons">
     {% if not from_finance_pl_act and perms.auth.can_edit_expenses %}
-        <a href="{% url 'act_expense_add' %}" class="btn btn-info action-primary" type="button">
+        <a href="{% url 'act_expense_add' %}" class="btn action-primary" type="button">
             <i class="fas fa-plus"></i> Add New
         </a>
     {% elif not from_finance_pl_act %}
-        <span class="btn btn-secondary action-primary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <span class="btn action-primary disabled-btn">
             <i class="fas fa-plus"></i> Add New
         </span>
     {% else %}
         <!-- finance_pl_act mode: no Add New, Help becomes the primary -->
-        <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#expensesHelpModal">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#expensesHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
     {% endif %}
 
     {% if not from_finance_pl_act %}
         <!-- Desktop Report (hidden on mobile, accessed via More menu) -->
-        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#expenseReportModal">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#expenseReportModal">
             <i class="fas fa-chart-bar"></i> Report
         </button>
         <!-- Desktop Analysis (hidden on mobile, in the More menu) -->
-        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#expenseAnalysisModal">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#expenseAnalysisModal">
             <i class="fas fa-chart-line"></i> Analysis
         </button>
 
         <!-- Desktop Help (hidden on mobile, accessed via More menu) -->
-        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#expensesHelpModal">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#expensesHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
 
         <!-- Mobile-only More dropdown -->
         <div class="action-more-wrapper">
-            <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn"
                     aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
@@ -676,15 +599,15 @@
 
     {% if from_finance_pl_act %}
         <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}"
-           class="btn btn-info action-back" role="button" aria-label="Back">
+           class="btn action-back" role="button" aria-label="Back">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% elif came_from == 'finance' %}
-        <a href="{% url 'finance' %}" class="btn btn-info action-back" role="button" aria-label="Back">
+        <a href="{% url 'finance' %}" class="btn action-back" role="button" aria-label="Back">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% else %}
-        <a href="{% url 'home' %}" class="btn btn-info action-back" role="button" aria-label="Back to home">
+        <a href="{% url 'home' %}" class="btn action-back" role="button" aria-label="Back to home">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% endif %}
@@ -938,7 +861,7 @@
                 {% csrf_token %}
                 <input type="hidden" id="delete_expense_id" name="expense_id">
                 <input type="hidden" name="action" value="delete_expense">
-                <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                <button type="submit" class="btn action-secondary action-danger" id="confirmDeleteBtn" disabled>
                   <i class="fas fa-trash"></i> Delete Expense Permanently
                 </button>
               </form>
@@ -1077,7 +1000,7 @@
         </div>
 
         <div id="reportDrill" style="display:none;">
-          <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="reportDrillBack">
+          <button type="button" class="btn action-back btn-sm mb-3" id="reportDrillBack">
             <i class="fas fa-arrow-left"></i> Back to overview
           </button>
           <h6 id="reportDrillTitle" class="report-drill-title"></h6>

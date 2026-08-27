@@ -17,10 +17,10 @@
 
   <!-- Action Buttons (Save + Back) -->
   <div class="page-action-buttons page-action-buttons-form">
-      <button class="btn btn-info action-primary" type="submit" id="submitBtn">
+      <button class="btn action-primary" type="submit" id="submitBtn">
           <i class="fas fa-save"></i> Save
       </button>
-      <a href="{% url 'properties' %}" class="btn btn-info action-back" role="button" aria-label="Back">
+      <a href="{% url 'properties' %}" class="btn action-back" role="button" aria-label="Back">
           <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
   </div>
@@ -105,7 +105,7 @@
         <div class="map-container">
           <div id="propertyMap" class="property-location-map"></div>
           <div class="map-controls">
-            <button type="button" id="findOnMapBtn" class="btn btn-primary btn-sm map-find-btn">
+            <button type="button" id="findOnMapBtn" class="btn action-secondary btn-sm map-find-btn">
               <i class="fas fa-map-marker-alt"></i> Find Address on Map
             </button>
             <div class="coordinates-display">
@@ -233,13 +233,6 @@
 .page-subtitle-h4 {
     margin-top: 0.25rem;
     margin-bottom: 1rem;
-}
-
-/* Top action buttons (Save + Back) — right-aligned on desktop */
-.page-action-buttons {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 1.5rem;
 }
 .page-action-buttons-form {
     justify-content: flex-end;

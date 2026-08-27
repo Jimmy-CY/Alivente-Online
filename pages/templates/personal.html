@@ -28,10 +28,10 @@
 
 <!-- Action Buttons (Notifications + Back, Back+1 standard on mobile) -->
 <div class="page-action-buttons">
-  <a href="{% url 'household_member_management' %}" class="btn btn-success action-primary" role="button">
+  <a href="{% url 'household_member_management' %}" class="btn action-primary" role="button">
     <i class="fas fa-users"></i> Household Members
   </a>
-  <a href="{% url 'home' %}" class="btn btn-success action-back" role="button" aria-label="Back to home">
+  <a href="{% url 'home' %}" class="btn action-back" role="button" aria-label="Back to home">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
@@ -104,14 +104,6 @@
   .page-title-h2 {
     margin-top: 0.5rem;
     margin-bottom: 1rem;
-  }
-
-  /* ==================== ACTION BUTTONS (DESKTOP) ==================== */
-  .page-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
   }
 
   /* ==================== TAB NAVIGATION ==================== */
@@ -276,43 +268,6 @@
     .page-title-h2 {
       font-size: 1.25rem;
       margin-bottom: 0.75rem;
-    }
-
-    /* Action buttons — Back+1 standard:
-       [Notifications (wide)] [← Back small icon] */
-    .page-action-buttons {
-      display: flex;
-      flex-direction: row;
-      gap: 8px;
-      flex-wrap: nowrap;
-      align-items: stretch;
-      margin-bottom: 14px;
-    }
-    .page-action-buttons .action-primary {
-      flex: 1 1 auto;
-      min-width: 0;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0 12px;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin: 0;
-      gap: 6px;
-    }
-    .page-action-buttons .action-back {
-      flex: 0 0 auto;
-      width: 50px;
-      height: 38px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
     }
     .action-back-label {
       display: none;

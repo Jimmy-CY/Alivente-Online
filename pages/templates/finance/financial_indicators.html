@@ -29,11 +29,11 @@
     {% endfor %}
 
     <!-- Action Buttons -->
-    <div class="action-row">
-        <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#financial_indicatorsHelpModal">
+    <div class="page-action-buttons">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#financial_indicatorsHelpModal">
           <i class="fas fa-question-circle"></i> <span>Help</span>
         </button>
-        <a href="{% url 'finance' %}" class="btn btn-info action-back">
+        <a href="{% url 'finance' %}" class="btn action-back">
             <i class="fas fa-arrow-left"></i><span class="action-back-label">Back</span>
         </a>
     </div>
@@ -92,7 +92,7 @@
     <div id="errorContainer" class="alert alert-danger" style="display: none;">
         <h4>Error Loading Dashboard</h4>
         <p id="errorMessage"></p>
-        <button class="btn btn-info" onclick="loadDashboard()">Retry</button>
+        <button class="btn action-secondary" onclick="loadDashboard()">Retry</button>
     </div>
 
     <!-- Trends over the years (Phase B) -->
@@ -228,8 +228,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-info" id="exportModalBtn">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-primary" id="exportModalBtn">
                     <i class="fas fa-download"></i> Export to Excel
                 </button>
             </div>
@@ -247,22 +247,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* === STANDARD ACTION ROW === */
-.action-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-.action-primary {
-    flex: 0 0 auto;
-}
-.action-back {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
 
 /* Main Styles matching your app's design */
 .indicator-panel {
@@ -975,11 +959,6 @@
     /* Inputs need 16px to prevent iOS zoom */
     input, select, textarea, .form-control {
         font-size: 16px !important;
-    }
-    
-    /* Action row: primary fills, back is icon-only square */
-    .action-row {
-        gap: 8px;
     }
     .action-primary {
         flex: 1 1 auto;

@@ -62,11 +62,11 @@ Gantt Chart - {{ project.project_name }}
      ============================================================ -->
 <div class="gantt-content">
   <!-- Action Buttons: Back+1 (Print primary, Back) -->
-  <div class="action-buttons-wrap">
-    <button id="printBtn" class="action-primary" type="button">
+  <div class="page-action-buttons">
+    <button id="printBtn" class="btn action-primary" type="button">
       <i class="fas fa-print"></i> Print
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="Back to Project">
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn action-back" title="Back to Project">
       <i class="fas fa-arrow-left"></i>
       <span class="action-back-label">Back</span>
     </a>
@@ -203,33 +203,6 @@ Gantt Chart - {{ project.project_name }}
     100% { transform: rotate(0deg); }
 }
 
-/* ============================================================
-   ACTION BUTTONS — Back+1
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
         background: #0a5e6a;
@@ -239,20 +212,6 @@ Gantt Chart - {{ project.project_name }}
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -551,7 +510,7 @@ Gantt Chart - {{ project.project_name }}
    PRINT
    ============================================================ */
 @media print {
-    .btn, .gantt-controls, .action-buttons-wrap, .rotate-prompt {
+    .btn, .gantt-controls, .page-action-buttons, .rotate-prompt {
         display: none !important;
     }
     .gantt-content {

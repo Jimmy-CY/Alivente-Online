@@ -150,11 +150,46 @@ def group(prefix):
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
 for prefix, floor, why in (('.filter', 37, 'filter panel + chips'),
-                           ('.action-', 11, 'page-header buttons'),
+                           # 11 UNTIL THE MODULE-WIDE BUTTON SWEEP. That round
+                           # deleted three page-local rules base.html had come
+                           # to own - `.page-action-buttons .action-secondary`,
+                           # `.action-more-item` and `.action-more-item i` - so
+                           # 8 is the correct count now, and this page carries
+                           # exactly the same eight as Properties and Tenants.
+                           #
+                           # The number MOVED with the decision. It was not
+                           # deleted, and it was not passed with -Force: a
+                           # floor that is quietly lowered every time it fails
+                           # stops being a floor. The check below names what
+                           # went, so the next person does not have to work out
+                           # why the number changed.
+                           ('.action-', 8, 'page-header buttons'),
                            ('.search', 6, 'search box'),
                            ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
+
+# WHY EIGHT AND NOT ELEVEN. A floor alone records a number, not a reason - and
+# this one has now moved once, which is exactly when a check earns an
+# explanation. The three rules the button sweep removed are named here, and
+# each is asserted to be defined in base.html: a rule is only safe to delete
+# locally BECAUSE something replaced it.
+_SWEPT = ('.page-action-buttons .action-secondary',
+          '.action-more-item',
+          '.action-more-item i')
+# EXACT selectors, not substrings. `.action-more-item` is gone as a rule of
+# its own, but `.action-more-item:hover, .action-more-item:active, ...`
+# survives - and a substring test cannot tell those apart, so the first
+# version of this check reported the deletion as having failed. Compare
+# against the parsed selector list instead.
+_flat = [x.strip() for sel in _sels for x in sel.split(',') if x.strip()]
+for _s in _SWEPT:
+    check('  the sweep removed %-40s because base.html owns it' % _s,
+          _s not in _flat
+          and re.search(re.escape(_s.split()[-1]) + r'\s*[,{:]', BASE_SRC)
+          is not None)
+check('  CONTROL: the eight that remain are page-specific, not base\'s',
+      group('.action-') == 8)
 
 for prefix in ('.icon-', '.mobile-action', '.table-container',
                '.properties-table', '.status'):

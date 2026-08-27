@@ -12,7 +12,7 @@
                 <h2 class="report-title-main">PROPERTY DETAILS REPORT</h2>
                 <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
             </div>
-            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'properties' %}" class="btn back-button" role="button">Back</a>
         </div>
 
         <div class="property-card">
@@ -329,15 +329,6 @@
         font-family: 'Courier New', monospace;
     }
 
-    .back-button {
-        background-color: #0e7c8b;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-    }
-
     /* Stats cards */
     .stats-cards-grid {
         display: grid;
@@ -466,10 +457,6 @@
             max-width: 100%;
             padding: 0;
             box-shadow: none;
-        }
-
-        .back-button {
-            display: none;
         }
 
         .property-card {

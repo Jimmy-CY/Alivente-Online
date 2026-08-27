@@ -26,18 +26,18 @@
 
   <!-- Action Buttons (Save + Duplicate + Back) -->
   <div class="page-action-buttons page-action-buttons-edit">
-      <button class="btn btn-success action-primary" type="submit">
+      <button class="btn action-primary" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
       <a href="{% url 'duplicate_tenant' tresults.tenant_id %}"
-         class="btn btn-warning action-secondary"
+         class="btn action-secondary"
          onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
           <i class="fas fa-copy"></i> Duplicate for Renewal
       </a>
 
       <!-- Mobile-only "More" dropdown -->
       <div class="action-more-wrapper">
-          <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+          <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
               <i class="fas fa-ellipsis-v"></i>
           </button>
           <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
@@ -50,7 +50,7 @@
           </div>
       </div>
 
-      <a href="{% url 'tenant' %}" class="btn btn-secondary action-back" role="button" aria-label="Back">
+      <a href="{% url 'tenant' %}" class="btn action-back" role="button" aria-label="Back">
           <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
   </div>
@@ -379,14 +379,6 @@
     margin-top: 0.25rem;
     margin-bottom: 1rem;
 }
-
-/* Top action buttons (Save + Duplicate + Back) — Save+Duplicate left, Back pushed right */
-.page-action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 1.5rem;
-}
 .page-action-buttons-edit .action-back {
     margin-left: auto;
 }
@@ -463,27 +455,6 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         min-width: 220px;
         padding: 6px 0;
-    }
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        transition: background 0.15s ease;
-        text-decoration: none;
-    }
-    .action-more-item i {
-        color: #0e7c8b;
-        width: 18px;
-        text-align: center;
-        flex-shrink: 0;
     }
     .action-more-item:hover,
     .action-more-item:active,

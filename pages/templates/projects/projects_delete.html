@@ -136,14 +136,14 @@ Delete Project - {{ project.project_name }}
 
                     <!-- Action Buttons -->
                     <div class="text-center">
-                        <a href="{% url 'projects' %}" class="btn btn-secondary btn-lg mr-3">
+                        <a href="{% url 'projects' %}" class="btn action-secondary btn-lg mr-3">
                             <i class="fas fa-times"></i> Cancel
                         </a>
                         
                         <form method="post" style="display: inline-block;" id="deleteForm">
                             {% csrf_token %}
                             <button type="submit" 
-                                    class="btn btn-danger btn-lg" 
+                                    class="btn action-secondary action-danger btn-lg" 
                                     id="confirmDeleteBtn" 
                                     disabled>
                                 <i class="fas fa-trash"></i> Delete Project Permanently

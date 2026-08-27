@@ -32,15 +32,15 @@ Invoice Customers
     <!-- Action Buttons -->
     <div class="page-action-buttons">
       {% if perms.auth.can_edit_invoices %}
-        <a href="{% url 'customer_add' %}" class="btn btn-info action-add-new">
+        <a href="{% url 'customer_add' %}" class="btn action-primary action-add-new">
           <i class="fas fa-plus"></i> Add New
         </a>
       {% else %}
-        <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <span class="btn action-primary disabled-btn action-add-new">
           <i class="fas fa-plus"></i> Add New
         </span>
       {% endif %}
-      <a href="{% url 'physical_invoice_list' %}" class="btn btn-info action-back" aria-label="Back to physical invoices">
+      <a href="{% url 'physical_invoice_list' %}" class="btn action-back" aria-label="Back to physical invoices">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
     </div>
@@ -134,8 +134,6 @@ Invoice Customers
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ==================== DESKTOP STYLES ==================== */
-.page-action-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
@@ -163,7 +161,6 @@ Invoice Customers
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-  .page-action-buttons { display: flex; flex-direction: row; gap: 8px; width: 100%; flex-wrap: nowrap; align-items: stretch; margin-bottom: 14px; }
   .action-add-new {
     flex: 1 1 auto; min-width: 0; height: 38px; display: flex; align-items: center; justify-content: center;
     text-align: center; padding: 0 12px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;

@@ -47,17 +47,8 @@
     margin: 0;
 }
 
-.action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
 /* Desktop default: hide the mobile "More" dropdown wrapper */
-.action-bar .action-more-wrapper { display: none; }
+.page-action-buttons .action-more-wrapper { display: none; }
 
 /* === Revenue table === */
 .revenue-card {
@@ -195,33 +186,8 @@
         font-size: 20px;
     }
 
-    /* Action bar — Add New (wide) + More + Back */
-    .action-bar {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    /* Hide the desktop secondary buttons on mobile — accessible via More menu */
-    .action-bar .action-secondary {
-        display: none;
-    }
-    .action-bar .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        margin: 0;
-    }
-
     /* More dropdown wrapper — visible on mobile only */
-    .action-bar .action-more-wrapper {
+    .page-action-buttons .action-more-wrapper {
         display: block;
         position: relative;
         flex: 0 0 auto;
@@ -247,27 +213,6 @@
         min-width: 220px;
         padding: 6px 0;
     }
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        transition: background 0.15s ease;
-        text-decoration: none;
-    }
-    .action-more-item i {
-        color: #28a745;
-        width: 18px;
-        text-align: center;
-        flex-shrink: 0;
-    }
     .action-more-item:hover,
     .action-more-item:active,
     .action-more-item:focus {
@@ -275,17 +220,6 @@
         outline: none;
         color: #2c3e50;
         text-decoration: none;
-    }
-
-    .action-bar .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
     }
     .action-back-label {
         display: none;
@@ -404,25 +338,25 @@
 
     <!-- Action Bar — Desktop: [Add New] [Help] [Back]
                      Mobile:  [Add New (wide)] [⋮ More] [← Back] -->
-    <div class="action-bar">
+    <div class="page-action-buttons">
         {% if perms.auth.can_edit_financials %}
-            <a href="{% url 'finance_revenue_add' %}" class="btn btn-info action-primary">
+            <a href="{% url 'finance_revenue_add' %}" class="btn action-primary">
                 <i class="fas fa-plus"></i> Add New
             </a>
         {% else %}
-            <span class="btn btn-secondary action-primary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+            <span class="btn action-primary disabled-btn">
                 <i class="fas fa-plus"></i> Add New
             </span>
         {% endif %}
 
         <!-- Desktop-visible Help button (hidden on mobile, accessed via More menu) -->
-        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#finance_revenueHelpModal">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#finance_revenueHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
 
         <!-- Mobile-only More dropdown -->
         <div class="action-more-wrapper">
-            <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn"
                     aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
@@ -433,7 +367,7 @@
             </div>
         </div>
 
-        <a href="{% url 'finance' %}" class="btn btn-secondary action-back" aria-label="Back">
+        <a href="{% url 'finance' %}" class="btn action-back" aria-label="Back">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>

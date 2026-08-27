@@ -14,7 +14,7 @@ Title Deed - {{ property.prop_name }}
                 <h3 class="report-subtitle">{{ property.prop_address }}</h3>
                 {% endif %}
             </div>
-            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">
+            <a href="{% url 'properties' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
@@ -38,11 +38,11 @@ Title Deed - {{ property.prop_name }}
                 </div>
                 <div class="title-deed-actions">
                     {% if property.prop_title_deed %}
-                        <button type="button" class="btn btn-info btn-lg title-deed-view-btn" id="viewTitleDeedBtn">
+                        <button type="button" class="btn action-primary btn-lg title-deed-view-btn" id="viewTitleDeedBtn">
                             <i class="fas fa-eye"></i> View Title Deed
                         </button>
                     {% else %}
-                        <button type="button" class="btn btn-secondary btn-lg title-deed-view-btn" disabled>
+                        <button type="button" class="btn action-secondary disabled-btn btn-lg title-deed-view-btn" disabled>
                             <i class="fas fa-times-circle"></i> Document Not Available
                         </button>
                     {% endif %}
@@ -55,7 +55,7 @@ Title Deed - {{ property.prop_name }}
                 <h5><i class="fas fa-exclamation-triangle"></i> Title deed not found</h5>
                 <p>The title deed file has not been uploaded for this property yet.</p>
                 {% if perms.auth.can_edit_properties %}
-                <a href="{% url 'title_deeds_management' %}" class="btn btn-sm btn-info">
+                <a href="{% url 'title_deeds_management' %}" class="btn action-secondary btn-sm">
                     <i class="fas fa-upload"></i> Manage Title Deeds
                 </a>
                 {% endif %}
@@ -115,12 +115,6 @@ Title Deed - {{ property.prop_name }}
         margin: 5px 0 0 0;
         font-weight: normal;
         word-wrap: break-word;
-    }
-
-    .back-button {
-        white-space: nowrap;
-        height: fit-content;
-        flex-shrink: 0;
     }
 
     .property-section {

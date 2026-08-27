@@ -19,7 +19,7 @@
                     </h3>
                 {% endif %}
             </div>
-            <a href="{% url 'fsr' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'fsr' %}" class="btn back-button" role="button"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
         </div>
 
         <div class="report-body">
@@ -183,16 +183,6 @@
         white-space: nowrap;
     }
 
-    .back-button {
-        background-color: #0e7c8b;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-        height: fit-content;
-    }
-
     .resolution-time {
         font-weight: bold;
         color: #0e7c8b;
@@ -210,10 +200,6 @@
             max-width: 100%;
             padding: 0;
             box-shadow: none;
-        }
-
-        .back-button {
-            display: none;
         }
 
         .status-card, .property-card {

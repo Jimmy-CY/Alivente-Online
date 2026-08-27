@@ -118,7 +118,7 @@
                     <span class="detail-label">Invoice:</span>
                     <span class="detail-value">
                         {% if asset.purchase_invoice %}
-                            <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ asset.purchase_invoice.url }}', '{{ asset.purchase_invoice.name }}')">
+                            <button type="button" class="btn action-secondary btn-sm" onclick="viewInvoice('{{ asset.purchase_invoice.url }}', '{{ asset.purchase_invoice.name }}')">
                                 <i class="fas fa-file-pdf"></i> View Invoice
                             </button>
                         {% else %}
@@ -212,11 +212,11 @@
         <span class="alv-card-title">Maintenance History</span>
         <span class="alv-card-aside">
             {% if perms.auth.can_edit_properties %}
-                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#addMaintenanceModal">
+                <button type="button" class="btn action-secondary btn-sm" data-toggle="modal" data-target="#addMaintenanceModal">
                     <i class="fas fa-plus"></i> Add Record
                 </button>
             {% else %}
-                <span class="btn btn-sm btn-info disabled-btn">
+                <span class="btn action-secondary disabled-btn btn-sm">
                     <i class="fas fa-plus"></i> Add Record
                 </span>
             {% endif %}
@@ -359,8 +359,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Add Record</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">Add Record</button>
                 </div>
             </form>
         </div>
@@ -419,8 +419,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Save Changes</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -440,10 +440,10 @@
             <div class="modal-body" id="invoiceViewerContent">
             </div>
             <div class="modal-footer">
-                <a id="invoiceDownloadLink" href="#" class="btn btn-info" target="_blank">
+                <a id="invoiceDownloadLink" href="#" class="btn action-primary" target="_blank">
                     <i class="fas fa-download"></i> Download
                 </a>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -462,7 +462,7 @@
             <div class="modal-body text-center" id="photoViewerContent">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -605,14 +605,6 @@
 
     .page-title-h2 {
         font-size: 1.25rem;
-    }
-
-    /* Danger variant for destructive menu items (Delete Asset) */
-    .action-more-item-danger {
-        color: #dc3545;
-    }
-    .action-more-item-danger i {
-        color: #dc3545;
     }
     .action-more-item-danger:hover,
     .action-more-item-danger:active,

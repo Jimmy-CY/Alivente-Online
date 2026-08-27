@@ -20,7 +20,7 @@
                     </h2>
                 </div>
                 <div class="page-header-actions">
-                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn btn-info">
+                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn action-secondary">
                         <i class="fas fa-home"></i> Property Dashboard
                     </a>
                 </div>
@@ -47,7 +47,7 @@
                                         <div class="document-launcher-subtitle">{{ property.prop_name }}</div>
                                     </div>
                                     <button type="button"
-                                            class="btn btn-info document-launcher-btn"
+                                            class="btn action-secondary document-launcher-btn"
                                             data-doc-url="{{ property.prop_title_deed.url }}"
                                             data-doc-title="Title Deed ({{ property.prop_name }})"
                                             data-doc-filename="{{ property.prop_name }} - Title Deed{{ property.prop_title_deed.name|slice:'-4:' }}"
@@ -536,7 +536,7 @@
                                         <div class="document-launcher-subtitle">{{ active_tenant.tenant_name }}</div>
                                     </div>
                                     <button type="button"
-                                            class="btn btn-info document-launcher-btn"
+                                            class="btn action-secondary document-launcher-btn"
                                             data-doc-url="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf"
                                             data-doc-title="Lease Agreement ({{ active_tenant.tenant_name }})"
                                             data-doc-filename="{{ property.prop_name }} - Lease Agreement.pdf"
@@ -891,7 +891,7 @@
                                     <p>No budgeted expense information has been recorded for this property.</p>
                                     {% if perms.auth.can_edit_financials %}
                                         <div class="expenses-actions mt-3">
-                                            <a href="{% url 'finance_expense_add' %}" class="btn btn-info">
+                                            <a href="{% url 'finance_expense_add' %}" class="btn action-secondary">
                                                 <i class="fas fa-plus"></i> Add Expense
                                             </a>
                                         </div>
@@ -957,7 +957,7 @@
                                     <p>No revenue information has been recorded for this property.</p>
                                     {% if perms.auth.can_edit_financials %}
                                         <div class="revenue-actions mt-3">
-                                            <a href="{% url 'finance_revenue_add' %}" class="btn btn-info">
+                                            <a href="{% url 'finance_revenue_add' %}" class="btn action-secondary">
                                                 <i class="fas fa-plus"></i> Add Revenue
                                             </a>
                                         </div>

@@ -45,11 +45,11 @@
   <!-- Action Buttons -->
   <div class="page-action-buttons page-action-buttons-form">
     {% if mode != 'edit' or is_editable %}
-      <button class="btn btn-info action-primary" type="submit">
+      <button class="btn action-primary" type="submit">
         <i class="fas fa-save"></i> {% if mode == 'edit' %}Save{% else %}Save as Draft{% endif %}
       </button>
     {% endif %}
-    <a href="{% url 'physical_invoice_list' %}" class="btn btn-info action-back" role="button" aria-label="Back to list">
+    <a href="{% url 'physical_invoice_list' %}" class="btn action-back" role="button" aria-label="Back to list">
       <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
   </div>
@@ -229,7 +229,7 @@
 
   {% if editable %}
     <div class="add-line-wrap">
-      <button type="button" class="btn btn-outline-secondary" onclick="addLineRow()">
+      <button type="button" class="btn action-secondary" onclick="addLineRow()">
         <i class="fas fa-plus"></i> Add Line
       </button>
     </div>
@@ -337,8 +337,6 @@
 .btn-duplicate:hover { background-color: #5e37a6; border-color: #563098; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-delete { background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-.page-action-buttons { display: flex; gap: 12px; margin-bottom: 1.5rem; }
 .page-action-buttons-form { justify-content: flex-end; }
 .status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .status-action-form { margin: 0; }

@@ -18,7 +18,7 @@ Title Deed - {{ property.prop_name }}
                 <h3 class="report-subtitle">{{ property.prop_address }}</h3>
                 {% endif %}
             </div>
-            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">
+            <a href="{% url 'properties' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
@@ -44,10 +44,10 @@ Title Deed - {{ property.prop_name }}
                     {% endif %}
 
                     <div class="title-deed-toolbar">
-                        <a href="{{ file_url }}" target="_blank" class="btn btn-sm btn-info">
+                        <a href="{{ file_url }}" target="_blank" class="btn action-secondary btn-sm">
                             <i class="fas fa-external-link-alt"></i> Open in New Tab
                         </a>
-                        <a href="{{ file_url }}" download class="btn btn-sm btn-secondary">
+                        <a href="{{ file_url }}" download class="btn action-primary btn-sm">
                             <i class="fas fa-download"></i> Download
                         </a>
                     </div>
@@ -58,7 +58,7 @@ Title Deed - {{ property.prop_name }}
                     <h5><i class="fas fa-exclamation-triangle"></i> Title deed not available</h5>
                     <p>The title deed file has not been uploaded for this property yet.</p>
                     {% if perms.auth.can_edit_properties %}
-                    <a href="{% url 'title_deeds_management' %}" class="btn btn-sm btn-info">
+                    <a href="{% url 'title_deeds_management' %}" class="btn action-secondary btn-sm">
                         <i class="fas fa-upload"></i> Manage Title Deeds
                     </a>
                     {% endif %}
@@ -115,23 +115,6 @@ Title Deed - {{ property.prop_name }}
         margin: 5px 0 0 0;
         font-weight: normal;
         word-wrap: break-word;
-    }
-
-    .back-button {
-        background-color: #0e7c8b;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-        white-space: nowrap;
-        height: fit-content;
-        flex-shrink: 0;
-    }
-
-    .back-button:hover {
-        background-color: #0a5e6a;
-        color: white;
     }
 
     .property-section {

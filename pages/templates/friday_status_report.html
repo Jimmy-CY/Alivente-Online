@@ -26,9 +26,9 @@
                 </div>
                 {% endif %}
             </div>
-            <div class="header-actions">
-                <a href="{% url 'fsr_notification' %}" class="btn btn-info action-primary" role="button">Submit FSR</a>
-                <a href="{% url 'fsr' %}" class="btn btn-info action-back" role="button" aria-label="Back to Issues">
+            <div class="page-action-buttons header-actions">
+                <a href="{% url 'fsr_notification' %}" class="btn action-primary" role="button">Submit FSR</a>
+                <a href="{% url 'fsr' %}" class="btn action-back" role="button" aria-label="Back to Issues">
                     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
                 </a>
             </div>
@@ -347,15 +347,6 @@
     .view-all-link:hover {
         color: #0a5e6a;
         text-decoration: underline;
-    }
-
-    .back-button {
-        background-color: #0e7c8b;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
     }
 
     .days-open {

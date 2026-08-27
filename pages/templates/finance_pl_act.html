@@ -47,7 +47,7 @@
             </div>
             <div class="modal-body" id="expenseDetailsContent"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -65,8 +65,8 @@
             </div>
             <div class="modal-body" id="invoiceViewerContent" style="height: 75vh; overflow: hidden; padding: 10px;"></div>
             <div class="modal-footer">
-                <a id="downloadInvoiceBtn" href="#" target="_blank" class="btn btn-info">Download</a>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a id="downloadInvoiceBtn" href="#" target="_blank" class="btn action-primary">Download</a>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -87,7 +87,7 @@
             </div>
             <div class="modal-body" id="revenueDetailsContent" style="max-height: 75vh; overflow-y: auto;"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -108,7 +108,7 @@
             </div>
             <div class="modal-body" id="budgetExpenseDetailsContent" style="max-height: 75vh; overflow-y: auto;"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -119,10 +119,10 @@
 {% render_help_modal "finance_pl_act" %}
 
 <!-- Action Bar: Year selector + Help + Back -->
-<div class="pl-action-bar">
+<div class="page-action-buttons">
     <!-- Year Dropdown (always visible) -->
     <div class="dropdown pl-year-dropdown">
-        <button class="btn btn-info dropdown-toggle" type="button" id="yearDropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn action-secondary dropdown-toggle" type="button" id="yearDropdown" aria-haspopup="true" aria-expanded="false">
             {{ selected_year }}
         </button>
         <div class="dropdown-menu" aria-labelledby="yearDropdown">
@@ -148,13 +148,13 @@
     </div>
 
     <!-- Help button -->
-    <button type="button" class="btn btn-info pl-help-btn" data-toggle="modal" data-target="#finance_pl_actHelpModal">
+    <button type="button" class="btn action-secondary pl-help-btn" data-toggle="modal" data-target="#finance_pl_actHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
 
     <!-- More menu (mobile only) -->
     <div class="action-more-wrapper">
-        <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More" aria-expanded="false">
+        <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More" aria-expanded="false">
             <i class="fas fa-ellipsis-v"></i>
         </button>
         <div class="action-more-menu" id="actionMoreMenu" role="menu">
@@ -165,7 +165,7 @@
     </div>
 
     <!-- Back -->
-    <a href="{% if single_mode and single_property %}{% url 'property_management_dashboard' %}?property={{ single_property.prop_id }}{% else %}{% url 'finance' %}{% endif %}" class="action-back" title="Back">
+    <a href="{% if single_mode and single_property %}{% url 'property_management_dashboard' %}?property={{ single_property.prop_id }}{% else %}{% url 'finance' %}{% endif %}" class="btn action-back" title="Back">
         <i class="fas fa-arrow-left"></i>
         <span class="action-back-label">Back</span>
     </a>
@@ -485,17 +485,6 @@
 {% endif %}
 
 <style>
-/* ============================================================
-   ACTION BAR
-   ============================================================ */
-.pl-action-bar {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 16px;
-    align-items: center;
-    flex-wrap: wrap;
-}
 
 .btn-info {
     background-color: #0e7c8b;
@@ -533,20 +522,6 @@
 }
 
 .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 4px; }
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover { background: #0e7c8b; color: white; text-decoration: none; }
@@ -955,10 +930,6 @@ body { overflow-x: hidden; }
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-    .pl-action-bar {
-        gap: 8px;
-        align-items: stretch;
-    }
     .pl-year-dropdown { flex: 1 1 auto; min-width: 0; }
     .pl-year-dropdown .btn { width: 100%; padding: 12px 14px; font-size: 15px; }
     .pl-help-btn { display: none; }
@@ -1053,7 +1024,7 @@ body { overflow-x: hidden; }
 @media (orientation: landscape) and (max-height: 500px) {
     h2, h5 { font-size: 16px !important; }
     h2 { margin-bottom: 4px; }
-    .pl-action-bar { margin-bottom: 8px; }
+    .page-action-buttons { margin-bottom: 8px; }
     .property-selection-panel { padding: 8px; margin-bottom: 8px; }
     .selection-header { margin-bottom: 6px; padding-bottom: 4px; }
     .selection-title { font-size: 13px; }
@@ -1093,7 +1064,7 @@ body { overflow-x: hidden; }
         const prompt = document.querySelector('.rotate-prompt');
         const container = document.getElementById('profitLossContainer');
         const propPanel = document.querySelector('.property-selection-panel');
-        const actionBar = document.querySelector('.pl-action-bar');
+        const actionBar = document.querySelector('.page-action-buttons');
         const roiSection = document.querySelector('.roi-section');
 
         if (isPhonePortrait()) {

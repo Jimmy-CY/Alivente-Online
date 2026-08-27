@@ -13,11 +13,11 @@
 {% if perms.auth.can_access_financials %}
 
 <!-- Action Buttons: Back+1 -->
-<div class="action-buttons-wrap">
-  <button class="action-primary" form="valuationForm" type="submit">
+<div class="page-action-buttons">
+  <button class="btn action-primary" form="valuationForm" type="submit">
     <i class="fas fa-save"></i> Save
   </button>
-  <a href="{% url 'finance_valuations' %}" class="action-back" title="Back to Valuations">
+  <a href="{% url 'finance_valuations' %}" class="btn action-back" title="Back to Valuations">
     <i class="fas fa-arrow-left"></i>
     <span class="action-back-label">Back</span>
   </a>
@@ -78,15 +78,7 @@
     </div>
 
     <!-- Form Footer -->
-    <div class="form-footer-actions">
-      <button type="submit" class="btn btn-info form-footer-primary">
-        <i class="fas fa-save"></i> Save Valuation
-      </button>
-      <a href="{% url 'finance_valuations' %}" class="btn btn-secondary form-footer-cancel">
-        <i class="fas fa-times"></i> Cancel
-      </a>
-    </div>
-</form>
+    </form>
 
 <!-- ==================== CURRENT VALUE CHANGE PREVIEW MODAL ==================== -->
 <div class="modal fade" id="valuationChangePreviewModal" tabindex="-1" role="dialog"
@@ -164,10 +156,10 @@
       </div>
 
       <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <button type="button" class="btn btn-secondary modal-btn-cancel" data-dismiss="modal" id="val-preview-cancel-btn">
+        <button type="button" class="btn action-secondary" data-dismiss="modal" id="val-preview-cancel-btn">
           <i class="fas fa-times"></i> Cancel
         </button>
-        <button type="button" class="btn btn-primary modal-btn-confirm" id="val-preview-confirm-btn"
+        <button type="button" class="btn action-primary" id="val-preview-confirm-btn"
                 style="background:linear-gradient(135deg,#0e7c8b,#0a5e6a); border:none; font-weight:600;" disabled>
           <i class="fas fa-check"></i> Save &amp; Recalculate All
         </button>
@@ -181,32 +173,6 @@
 {% endif %}
 
 <style>
-/* ============================================================
-   ACTION BUTTONS — Back+1
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
@@ -216,20 +182,6 @@
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -279,16 +231,6 @@
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.form-footer-actions {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
 }
 
 /* ============================================================
@@ -386,11 +328,6 @@
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;
@@ -406,11 +343,7 @@
         justify-content: center;
     }
     .action-back-label { display: none; }
-
-    .form-footer-actions {
-        flex-direction: column-reverse;
-    }
-    .form-footer-actions .btn {
+    .page-action-buttons .btn {
         width: 100%;
         padding: 14px;
         font-size: 15px;

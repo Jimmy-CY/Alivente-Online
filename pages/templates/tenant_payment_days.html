@@ -12,7 +12,7 @@
         <h2 class="report-title-main">Tenant Payment Behaviour</h2>
         <h3 class="report-title-sub">Days from invoice to payment &middot; {{ today }}</h3>
       </div>
-      <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+      <a href="{% url 'tenant' %}" class="btn back-button" role="button">
         <i class="fas fa-arrow-left"></i> Back
       </a>
     </div>
@@ -271,8 +271,6 @@
     margin: 5px 0 0 0;
     font-weight: normal;
 }
-
-.back-button { flex-shrink: 0; }
 
 /* ---- summary strip ---- */
 .pd-summary {

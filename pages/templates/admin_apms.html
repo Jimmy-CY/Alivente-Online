@@ -28,19 +28,19 @@
 {% endfor %}
 
 <!-- Action Buttons (Notifications + Help + Back) -->
-<div class="admin-action-buttons">
-  <a href="{% url 'notification_settings' %}" class="btn btn-info action-primary" role="button">
+<div class="page-action-buttons">
+  <a href="{% url 'notification_settings' %}" class="btn action-primary" role="button">
     <i class="fas fa-envelope"></i> Notifications
   </a>
 
   <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via "More" menu) -->
-  <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#admin_apmsHelpModal">
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#admin_apmsHelpModal">
     <i class="fas fa-question-circle"></i> Help
   </button>
 
   <!-- Mobile-only "More" dropdown -->
   <div class="action-more-wrapper">
-    <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+    <button type="button" class="btn action-more-btn" id="actionMoreBtn"
             aria-label="More actions" aria-expanded="false" aria-haspopup="true">
       <i class="fas fa-ellipsis-v"></i>
     </button>
@@ -52,7 +52,7 @@
     </div>
   </div>
 
-  <a href="{% url 'home' %}" class="btn btn-info action-back" role="button" aria-label="Back to home">
+  <a href="{% url 'home' %}" class="btn action-back" role="button" aria-label="Back to home">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
@@ -67,14 +67,6 @@
     --alivente-light: #d1ecf1;
     --future-dark: #6c757d;
     --future-light: #e9ecef;
-  }
-
-  /* ==================== Action Buttons (Desktop) ==================== */
-  .admin-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 0;
   }
 
   /* Desktop: hide the mobile "More" dropdown wrapper */
@@ -277,40 +269,6 @@
       margin-top: 4px;
     }
 
-    /* Action button row — compact: Notifications (flex) + More (icon) + Back (icon) */
-    .admin-action-buttons {
-      display: flex;
-      flex-direction: row;
-      gap: 8px;
-      width: 100%;
-      flex-wrap: nowrap;
-      align-items: stretch;
-      margin-bottom: 4px;
-    }
-
-    /* Hide secondary actions on mobile — they're now in the More menu */
-    .admin-action-buttons .action-secondary {
-      display: none;
-    }
-
-    /* Notifications takes the leftover space (primary action) */
-    .admin-action-buttons .action-primary {
-      flex: 1 1 auto;
-      min-width: 0;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0 12px;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin: 0;
-      gap: 6px;
-    }
-
     /* More dropdown wrapper — visible on mobile only */
     .action-more-wrapper {
       display: block;
@@ -338,27 +296,6 @@
       min-width: 220px;
       padding: 6px 0;
     }
-    .action-more-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      background: none;
-      border: none;
-      text-align: left;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: #2c3e50;
-      cursor: pointer;
-      transition: background 0.15s ease;
-      text-decoration: none;
-    }
-    .action-more-item i {
-      color: #0e7c8b;
-      width: 18px;
-      text-align: center;
-      flex-shrink: 0;
-    }
     .action-more-item:hover,
     .action-more-item:active,
     .action-more-item:focus {
@@ -366,18 +303,6 @@
       outline: none;
       color: #2c3e50;
       text-decoration: none;
-    }
-
-    /* Back button — icon-only on mobile */
-    .admin-action-buttons .action-back {
-      flex: 0 0 auto;
-      width: 44px;
-      height: 38px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
     }
     .action-back-label {
       display: none;

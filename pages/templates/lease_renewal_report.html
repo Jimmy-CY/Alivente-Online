@@ -12,7 +12,7 @@
                 <h2 class="report-title-main">LEASE RENEWAL REPORT</h2>
                 <h3 class="report-title-sub">{{ today }}</h3>
             </div>
-            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+            <a href="{% url 'tenant' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
@@ -174,10 +174,6 @@
     color: #2c3e50;
     margin: 5px 0 0 0;
     font-weight: normal;
-}
-
-.back-button {
-    flex-shrink: 0;
 }
 
 .lease-renewal-section {
@@ -419,9 +415,6 @@
         max-width: 100%;
         padding: 0;
         box-shadow: none;
-    }
-    .back-button {
-        display: none;
     }
     .renewal-card {
         page-break-inside: avoid;

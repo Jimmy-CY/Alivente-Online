@@ -192,12 +192,6 @@ select.form-control {
     gap: 8px;
 }
 
-.form-action-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
 /* ============================================================
    MOBILE RESPONSIVE — max-width: 768px
    ============================================================ */
@@ -272,14 +266,8 @@ select.form-control {
     .role-option i {
         font-size: 20px;
     }
-
-    /* Bottom action buttons — column-reverse so primary on top */
-    .form-action-row {
-        flex-direction: column-reverse;
-        gap: 8px;
-    }
-    .form-action-row .btn,
-    .form-action-row a.btn {
+    .page-action-buttons .btn,
+    .page-action-buttons a.btn {
         width: 100%;
         justify-content: center;
         display: inline-flex;
@@ -302,7 +290,7 @@ select.form-control {
     <!-- Page Header -->
     <div class="page-header">
         <h1><i class="fas fa-user-edit"></i> Edit User — {{ target_user.username }}</h1>
-        <a href="{% url 'user_administration' %}" class="btn btn-light btn-sm">
+        <a href="{% url 'user_administration' %}" class="btn action-back btn-sm">
             <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
@@ -456,11 +444,11 @@ select.form-control {
         </div>
 
         <!-- Action Buttons -->
-        <div class="form-action-row">
-            <a href="{% url 'user_administration' %}" class="btn btn-secondary">
+        <div class="page-action-buttons">
+            <a href="{% url 'user_administration' %}" class="btn action-secondary">
                 <i class="fas fa-times"></i> Cancel
             </a>
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save Changes
             </button>
         </div>

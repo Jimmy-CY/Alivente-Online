@@ -460,6 +460,16 @@
       .icon-view:hover   { background: var(--alv-view);   border-color: var(--alv-view);   color: var(--alv-on-accent); }
       .icon-delete:hover { background: var(--alv-danger); border-color: var(--alv-danger); color: #fff; }
 
+      /* Upload - a new name on an existing colour, not a seventh colour.
+         Aliased to --alv-edit because uploading a document writes to the
+         record in the same way editing it does, and the palette is already
+         six tones deep. It gets its OWN class rather than borrowing
+         .icon-edit so the markup does not claim a button edits when it
+         uploads - and so that pointing it somewhere else later is one line
+         here rather than a search across every page. */
+      .icon-upload   { color: var(--alv-edit); border-color: #c9d8f7; }
+      .icon-upload:hover { background: var(--alv-edit); border-color: var(--alv-edit); color: #fff; }
+
       /* Approve / unapprove / send, used by Physical Invoices. */
       .icon-approve   { color: var(--alv-good); border-color: #bfe0cd; }
       .icon-approve:hover { background: var(--alv-good); border-color: var(--alv-good); color: #fff; }
@@ -682,6 +692,7 @@
         .icon-color-edit   { color: var(--alv-edit); }
         .icon-color-view   { color: var(--alv-view); }
         .icon-color-delete { color: var(--alv-danger); }
+        .icon-color-upload { color: var(--alv-edit); }
 
         .mobile-action-disabled {
           opacity: .5;
@@ -823,6 +834,27 @@
          rule below that paints anything therefore forces colour on.
          ================================================================ */
       @media print {
+        /* Interactive furniture does not belong on paper. Property Assets
+           printed its Add Asset button, its Back arrow and its Group-by
+           toggle before this rule existed.
+
+           Naming a few page-specific classes here is deliberate: a page
+           cannot add itself to a base.html print rule, and these are the
+           only kinds of furniture the system has. .no-print is the escape
+           hatch for anything this list does not know about. */
+        .page-action-buttons,
+        .action-more-wrapper,
+        .action-more-menu,
+        .back-button,
+        .view-toggle-row,
+        .filter-panel,
+        .search-row,
+        .modal,
+        .modal-backdrop,
+        .alert-dismissible .close,
+        .mobile-action-bar,
+        .no-print { display: none !important; }
+
         .alv-table { font-size: 10.5pt; }
         .alv-table th,
         .alv-table td {
@@ -872,7 +904,43 @@
          Measured before deciding: btn-info 60, btn-secondary 26,
          btn-success 13, btn-danger 9, btn-warning 6 - which is to say
          the colours meant nothing.
-         ================================================================ */
+         ================================================================ */      /* a Back link outside a bar is still a button.
+         Splitting layout from tone left a gap. TONE is unscoped, so a Back
+         anywhere gets the house colour; LAYOUT is scoped to
+         .page-action-buttons, so a Back with no bar to live in falls back to
+         Bootstrap's shape. Measured: 8px/16px, weight 600, radius 8px inside
+         a bar; 6px/12px, weight 400, radius 4px outside one. That is why
+         Back reads as bare text on FSR Details and Resolved Issues.
+
+         POSITION IS LOAD-BEARING. This sits BEFORE .page-action-buttons so
+         the bar's own rules still win inside a bar - on a phone the bar
+         shrinks Back to a 44px icon with no padding, and a later rule of
+         equal specificity (0,2,0) would silently undo that. */
+      .btn.action-back,
+      .btn.back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: var(--alv-radius);
+        font-family: var(--alv-font-ui);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      /* .disabled-btn dims; it does not grey. On a primary that is now
+         handled above. A secondary needs it too - properties_title_deed.html
+         has a "Document Not Available" twin that would otherwise render as a
+         live outlined button at 60% opacity. */
+      .btn.action-secondary.disabled-btn,
+      .btn.action-secondary:disabled,
+      .btn.action-secondary[disabled] {
+        background: var(--alv-disabled-bg, #e8eaec);
+        border-color: var(--alv-disabled-bg, #e8eaec);
+        color: var(--alv-disabled-ink, #8a939b);
+      }
+
+
       .page-action-buttons {
         display: flex;
         align-items: center;
@@ -904,26 +972,38 @@
         text-decoration: none;
       }
 
-      .page-action-buttons .action-primary {
+      /* UNSCOPED, and colour only. A tone is not bar behaviour: the same
+         four names have to work in a modal footer, a report header and a
+         card. Sizing stays with whoever owns the layout - the bar rule
+         above, or Bootstrap's .btn / .btn-sm everywhere else. Setting
+         padding here would have inflated the small "quick add" buttons
+         inside the Add Asset modal. */
+      .action-primary,
+      .btn.action-primary {
         background: var(--alv-accent);
-        border-color: var(--alv-accent);
+        border: 1px solid var(--alv-accent);
         color: var(--alv-on-accent);
       }
-      .page-action-buttons .action-primary:hover,
-      .page-action-buttons .action-primary:focus {
+      .action-primary:hover,
+      .action-primary:focus,
+      .btn.action-primary:hover,
+      .btn.action-primary:focus {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
         color: var(--alv-on-accent);
         text-decoration: none;
       }
 
-      .page-action-buttons .action-secondary {
+      .action-secondary,
+      .btn.action-secondary {
         background: var(--alv-paper);
-        border-color: var(--alv-line);
+        border: 1px solid var(--alv-line);
         color: var(--alv-ink);
       }
-      .page-action-buttons .action-secondary:hover,
-      .page-action-buttons .action-secondary:focus {
+      .action-secondary:hover,
+      .action-secondary:focus,
+      .btn.action-secondary:hover,
+      .btn.action-secondary:focus {
         background: var(--alv-surface);
         color: var(--alv-ink);
         text-decoration: none;
@@ -934,26 +1014,39 @@
          position class gives it. Outlined at rest and red only on hover:
          the same bargain .icon-action-btn.icon-delete already strikes in
          every table row, one level up. */
-      .page-action-buttons .action-danger {
+      .action-danger,
+      .btn.action-danger {
         background: var(--alv-paper);
-        border-color: #f2cecb;
+        border: 1px solid #f2cecb;
         color: var(--alv-danger);
       }
-      .page-action-buttons .action-danger:hover,
-      .page-action-buttons .action-danger:focus {
+      .action-danger:hover,
+      .action-danger:focus,
+      .btn.action-danger:hover,
+      .btn.action-danger:focus {
         background: var(--alv-danger);
         border-color: var(--alv-danger);
         color: #fff;
         text-decoration: none;
       }
 
-      .page-action-buttons .action-back {
+      /* .back-button is what four report pages call theirs. Same thing,
+         different name, so it gets the same treatment rather than a
+         rewrite of four templates' markup. */
+      .action-back,
+      .back-button,
+      .btn.action-back,
+      .btn.back-button {
         background: transparent;
-        border-color: transparent;
+        border: 1px solid transparent;
         color: var(--alv-ink-soft);
       }
-      .page-action-buttons .action-back:hover,
-      .page-action-buttons .action-back:focus {
+      .action-back:hover,
+      .action-back:focus,
+      .back-button:hover,
+      .back-button:focus,
+      .btn.action-back:hover,
+      .btn.back-button:hover {
         background: var(--alv-surface);
         color: var(--alv-ink);
         text-decoration: none;
@@ -972,6 +1065,27 @@
         opacity: .6;
         cursor: not-allowed;
         pointer-events: none;
+      }
+
+      /* a switched-off primary is grey, not pale teal.
+         .disabled-btn used to set only opacity/cursor/pointer-events, so a
+         button's grey came entirely from Bootstrap's .btn-secondary. Once
+         that class is swept off, `.action-primary.disabled-btn` alone would
+         render solid teal at 60% - a washed-out button that still reads as
+         clickable. The colour is half of "disabled"; it has to live here.
+
+         Three shapes of switched-off button exist in this codebase and all
+         three are covered: the class, the `disabled` attribute, and
+         aria-disabled. Counted, not assumed. */
+      .action-primary.disabled-btn,
+      .btn.action-primary.disabled-btn,
+      .btn.action-primary:disabled,
+      .btn.action-primary[disabled],
+      .btn.action-primary[aria-disabled="true"] {
+        background: var(--alv-disabled-bg, #e8eaec);
+        border-color: var(--alv-disabled-bg, #e8eaec);
+        color: var(--alv-disabled-ink, #8a939b);
+        box-shadow: none;
       }
 
       .action-more-wrapper { display: none; }

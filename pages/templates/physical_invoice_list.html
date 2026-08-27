@@ -33,23 +33,23 @@ Physical Invoices
     <!-- Action Buttons - Desktop: [Help] [New Customer Invoice] [Manage Customers] [Back]
                           Mobile:  [New Customer Invoice (wide)] [More] [Back] -->
     <div class="page-action-buttons">
-      <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#physical_invoicesHelpModal">
+      <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#physical_invoicesHelpModal">
         <i class="fas fa-question-circle"></i> Help
       </button>
       {% if perms.auth.can_edit_invoices %}
-        <a href="{% url 'customer_invoice_create' %}" class="btn btn-info action-primary">
+        <a href="{% url 'customer_invoice_create' %}" class="btn action-primary">
           <i class="fas fa-file-invoice-dollar"></i> New Customer Invoice
         </a>
       {% endif %}
       {% if perms.auth.can_access_invoices %}
-        <a href="{% url 'customer_list' %}" class="btn btn-info action-secondary">
+        <a href="{% url 'customer_list' %}" class="btn action-secondary">
           <i class="fas fa-address-book"></i> Manage Customers
         </a>
       {% endif %}
 
       <!-- Mobile-only More dropdown (holds the secondary actions) -->
       <div class="action-more-wrapper">
-        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+        <button type="button" class="btn action-more-btn" id="actionMoreBtn"
                 aria-label="More actions" aria-expanded="false" aria-haspopup="true">
           <i class="fas fa-ellipsis-v"></i>
         </button>
@@ -65,7 +65,7 @@ Physical Invoices
         </div>
       </div>
 
-      <a href="{% url 'invoices' %}" class="btn btn-info action-back" aria-label="Back to invoices">
+      <a href="{% url 'invoices' %}" class="btn action-back" aria-label="Back to invoices">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
     </div>
@@ -138,7 +138,7 @@ Physical Invoices
           <span class="numbering-prefix">PR-</span>
           <input type="number" name="next_number" id="nextNumberInput" min="1"
                  value="{{ next_number_value }}" class="form-control numbering-input">
-          <button type="submit" class="btn btn-info"><i class="fas fa-save"></i> Set</button>
+          <button type="submit" class="btn action-secondary"><i class="fas fa-save"></i> Set</button>
         </div>
       </div>
       <div class="numbering-hint">
@@ -324,13 +324,6 @@ Physical Invoices
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ==================== DESKTOP STYLES ==================== */
-.page-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-}
 /* The More dropdown is a mobile-only component; hidden on desktop. */
 .action-more-wrapper { display: none; }
 
@@ -422,22 +415,6 @@ Physical Invoices
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-
-  /* Back+1 standard: [New Customer Invoice (wide)] [More] [Back] */
-  .page-action-buttons {
-    display: flex; flex-direction: row; gap: 8px; width: 100%;
-    flex-wrap: nowrap; align-items: stretch; margin-bottom: 14px;
-    justify-content: flex-end;
-  }
-  /* Secondary actions are reached via the More menu on mobile */
-  .page-action-buttons .action-secondary { display: none; }
-  /* Primary action takes the leftover width */
-  .page-action-buttons .action-primary {
-    flex: 1 1 auto; min-width: 0; height: 38px;
-    display: flex; align-items: center; justify-content: center;
-    padding: 0 12px; font-size: 13px; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis; margin: 0; gap: 6px;
-  }
   /* More dropdown — shown on mobile only */
   .action-more-wrapper { display: block; position: relative; flex: 0 0 auto; }
   .action-more-btn {
@@ -450,14 +427,6 @@ Physical Invoices
     box-shadow: 0 4px 16px rgba(0,0,0,0.14); padding: 6px; min-width: 210px;
   }
   .action-more-menu[hidden] { display: none; }
-  .action-more-item {
-    display: flex; align-items: center; gap: 10px; width: 100%;
-    background: none; border: none; text-align: left; cursor: pointer;
-    padding: 10px 12px; border-radius: 6px; font-size: 14px; color: #2c3e50;
-    text-decoration: none;
-  }
-  .action-more-item i { color: #0e7c8b; width: 18px; text-align: center; }
-  .action-more-item:hover { background: #f1f3f5; color: #2c3e50; text-decoration: none; }
   .action-back {
     flex: 0 0 auto; width: 44px; height: 38px; padding: 0;
     display: flex; align-items: center; justify-content: center; margin: 0;

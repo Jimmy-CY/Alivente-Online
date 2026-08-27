@@ -206,11 +206,30 @@ $sentinels = @(
     @{ File = 'pages\templates\asset_detail.html';        Text = 'alv-table maintenance-table';     What = 'its maintenance table is on the standard' },
     @{ File = 'pages\templates\asset_detail.html';        Text = 'desktop-action-cell cell-actions'; What = 'with ONE actions column' },
     @{ File = 'pages\templates\base.html';                Text = '--alv-actions-std';               What = 'the page-header bar has a home' },
-    @{ File = 'pages\templates\base.html';                Text = '.page-action-buttons .action-danger'; What = 'destructive is a tone, not a verb' },
+    # WAS: '.page-action-buttons .action-danger', pinning the SCOPED form.
+    # The module-wide sweep deliberately unscoped the tones - a tone is not
+    # bar behaviour, and the same four names have to work in a modal footer
+    # and on a report. So the expectation MOVED with the decision; deleting
+    # the check would have been the wrong fix, and -Force would have been
+    # worse. What it pins now is the .btn PAIRING, which is what makes a
+    # tone beat a page's own .btn-danger on document order.
+    #
+    # A substring cannot express "unscoped" - that half is covered by
+    # test_button_sweep.py section 1, which asserts the LAYOUT is still
+    # scoped to .page-action-buttons while the tones are not.
+    @{ File = 'pages\templates\base.html';                Text = '.btn.action-danger'; What = 'destructive is a tone, and it outranks a page btn-danger' },
     @{ File = 'pages\templates\base.html';                Text = '.page-action-buttons .action-more-btn'; What = 'and the More button keeps its edge' },
     @{ File = 'pages\templates\base.html';                Text = 'pointer-events: none';            What = 'a disabled button is not a live link' },
     @{ File = 'pages\templates\asset_detail.html';        Text = 'btn action-primary';              What = 'Edit is the primary, not yellow' },
-    @{ File = 'pages\templates\asset_detail.html';        Text = 'action-secondary action-danger';  What = 'and Delete is outlined, not solid red' }
+    @{ File = 'pages\templates\asset_detail.html';        Text = 'action-secondary action-danger';  What = 'and Delete is outlined, not solid red' },
+    @{ File = 'pages\templates\base.html';                Text = 'display: none !important';        What = 'paper stops printing the furniture' },
+    @{ File = 'pages\templates\base.html';                Text = '.back-button {';                  What = 'and a report Back is quiet too' },
+    @{ File = 'pages\templates\property_report.html';     Text = 'class="btn back-button"';          What = 'the Report Back joined' },
+    @{ File = 'pages\templates\suppliers_edit.html';      Text = 'class="btn action-primary"';       What = 'Save is the primary on a form' },
+    @{ File = 'pages\templates\property_assets.html';     Text = 'action-primary btn-sm';            What = 'and a small confirm stays small' },
+    @{ File = 'pages\templates\base.html';                Text = '.btn.action-secondary';            What = 'a tone outranks a page btn-info' },
+    @{ File = 'pages\templates\edit_asset.html';          Text = 'alv-card alv-card-lead form-card'; What = 'Edit Asset lost its yellow bar' },
+    @{ File = 'pages\templates\edit_asset.html';          Text = 'class="btn action-back"';          What = 'and its Back joined the standard' }
 )
 
 foreach ($s in $sentinels) {
@@ -281,10 +300,27 @@ $suites = @(
     'test_sticky_cue.py',
     'test_card_standard.py',
     'test_detail_property.py',
-    'test_action_standard.py'
+    'test_action_standard.py',
+    'test_button_reach.py',
+    'test_button_sweep.py',
+    # The Tenants module. A gate that does not run the newest suites is
+    # theatre - these are the three most recently written and therefore the
+    # three most likely to be the ones that catch something.
+    'test_table_tenants.py',
+    'test_table_lease_agreement.py',
+    'test_table_tenant_report.py'
 )
+# A suite listed here but not on disk currently prints an amber line and
+# carries on. That is the right behaviour for a repo where a suite may not
+# have been written yet - but the COUNT of skips is the thing worth seeing,
+# because "23 passed" reads identically whether 23 ran or 23 were skipped.
+$skipped = @()
 foreach ($t in $suites) {
-    if (-not (Test-Path (Join-Path $root $t))) { Warn ($t + ' not present - skipped'); continue }
+    if (-not (Test-Path (Join-Path $root $t))) {
+        Warn ($t + ' not present - skipped')
+        $skipped += $t
+        continue
+    }
     Say ''
     Say ('  == ' + $t)
     & python $t 2>&1 | ForEach-Object { Say ('     ' + $_) }
@@ -292,6 +328,35 @@ foreach ($t in $suites) {
         Bad ($t + ' FAILED')
         if (-not $Force) { Say ''; Say '  Stopping.  Nothing has been staged.'; exit 1 }
     }
+}
+
+Say ''
+if ($skipped.Count -gt 0) {
+    Warn ('' + $skipped.Count + ' of ' + $suites.Count + ' suite(s) were not on disk and did not run:')
+    foreach ($t in $skipped) { Warn ('     ' + $t) }
+} else {
+    Good ('all ' + $suites.Count + ' suite(s) ran')
+}
+
+# A suite proves the pages it was written about.  Show-ButtonDrift --strict
+# proves the ones nobody thought to write a check for: it walks every
+# template and exits non-zero while ANY button still carries a Bootstrap
+# colour class in a place base.html owns.  Cheap, and it is the thing that
+# catches the next page somebody adds by copying an old one.
+$guard = Join-Path $root 'Show-ButtonDrift.py'
+if (Test-Path $guard) {
+    Say ''
+    Say '  == Show-ButtonDrift.py --strict'
+    & python $guard --strict 2>&1 | ForEach-Object { Say ('     ' + $_) }
+    if ($LASTEXITCODE -ne 0) {
+        Bad ('button drift, an undecided button, or a page rendering its ' +
+             'actions twice - see the output above')
+        if (-not $Force) { Say ''; Say '  Stopping.  Nothing has been staged.'; exit 1 }
+    } else {
+        Good 'no button drift'
+    }
+} else {
+    Warn 'Show-ButtonDrift.py not present - drift guard skipped'
 }
 
 # ---------------------------------------------------------------- 4. tidy up

@@ -44,15 +44,6 @@
     opacity: 0.9;
 }
 
-.action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 18px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
 .form-card {
     background: white;
     border-radius: 12px;
@@ -387,36 +378,6 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-
-    .action-bar {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .action-bar .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        margin: 0;
-    }
-    .action-bar .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
     .action-back-label { display: none; }
 
     .form-card { padding: 16px; border-radius: 10px; }
@@ -557,11 +518,11 @@
           </p>
         </div>
 
-        <div class="action-bar">
-            <button type="submit" id="save-button" class="btn btn-success action-primary">
+        <div class="page-action-buttons">
+            <button type="submit" id="save-button" class="btn action-primary">
                 <i class="fas fa-save"></i> Save
             </button>
-            <a href="{% url 'finance_expense' %}" class="btn btn-secondary action-back" aria-label="Back">
+            <a href="{% url 'finance_expense' %}" class="btn action-back" aria-label="Back">
                 <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
         </div>
@@ -749,10 +710,10 @@
                 <div class="preview-cards" id="preview-property-cards"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelButton">
+                <button type="button" class="btn action-secondary" data-dismiss="modal" id="cancelButton">
                     Cancel
                 </button>
-                <button type="button" class="btn btn-success" id="confirm-prorata-expense">
+                <button type="button" class="btn action-primary" id="confirm-prorata-expense">
                     <i class="fas fa-check"></i> Confirm &amp; Update
                 </button>
             </div>

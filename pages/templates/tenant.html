@@ -33,24 +33,24 @@ Tenants
     <!-- Action Buttons -->
     <div class="page-action-buttons">
       {% if perms.auth.can_edit_tenants %}
-        <a href="{% url 'tenant_add' %}" class="btn btn-info action-add-new">
+        <a href="{% url 'tenant_add' %}" class="btn action-primary action-add-new">
           <i class="fas fa-plus"></i> Add New
         </a>
       {% else %}
-        <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <span class="btn action-primary disabled-btn action-add-new">
           <i class="fas fa-plus"></i> Add New
         </span>
       {% endif %}
 
       <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via "More" menu) -->
-      <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#tenantHelpModal">
+      <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#tenantHelpModal">
         <i class="fas fa-question-circle"></i> Help
       </button>
       <!-- Desktop: four reports behind one menu. `action-secondary` is the
            house marker that hides an item under 768px, where the "More"
            dropdown below takes over. -->
-      <div class="ui-menu action-secondary" data-menu>
-        <button type="button" class="btn btn-info ui-menu-toggle"
+      <div class="ui-menu" data-menu>
+        <button type="button" class="btn action-secondary ui-menu-toggle"
                 data-menu-toggle aria-haspopup="true" aria-expanded="false">
           <i class="fas fa-chart-bar"></i> Reports
           <i class="fas fa-chevron-down ui-menu-caret"></i>
@@ -73,7 +73,7 @@ Tenants
 
       <!-- Mobile-only "More" dropdown -->
       <div class="action-more-wrapper" data-menu>
-        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+        <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true">
           <i class="fas fa-ellipsis-v"></i>
         </button>
         <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
@@ -95,7 +95,7 @@ Tenants
         </div>
       </div>
 
-      <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+      <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
     </div>
@@ -168,17 +168,14 @@ Tenants
 
   <!-- Tenants Table (desktop) / Card list (mobile) -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center tenants-table">
+    <table class="table alv-table tenants-table">
       <thead>
         <tr>
-          <th style="text-align: left; width: 26%">Tenant</th>
+          <th style="text-align: left; width: 34%">Tenant</th>
           <th style="width: 20%">Property</th>
-          <th style="width: 10%">Active</th>
-          <th style="width: 14%">Lease End Date</th>
-          <th style="width: 7.5%">Edit</th>
-          <th style="width: 7.5%">Delete</th>
-          <th style="width: 7.5%">Report</th>
-          <th style="width: 7.5%">Agreement</th>
+          <th style="width: 12%">Active</th>
+          <th style="width: 16%">Lease End Date</th>
+          <th class="desktop-action-cell cell-actions" style="width: 18%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -189,60 +186,60 @@ Tenants
                 <td data-label="Tenant" style="text-align: left">{{tresults.tenant_name}}</td>
                 <td data-label="Property">{{results.prop_name}}</td>
                 <td data-label="Status">
-                  <span class="status-badge {% if tresults.tenant_current == 'Yes' %}status-active{% else %}status-inactive{% endif %}">
+                  <span class="alv-pill {% if tresults.tenant_current == 'Yes' %}alv-pill-good{% else %}alv-pill-neutral{% endif %}">
                     {% if tresults.tenant_current == 'Yes' %}Active{% else %}Inactive{% endif %}
                   </span>
                 </td>
                 <td data-label="Lease End Date" class="lease-end-cell {{ tresults.lease_class }}">
                   {% if tresults.tenant_lease_end_date %}{{ tresults.tenant_lease_end_date|date:"d M Y" }}{% else %}&mdash;{% endif %}
                 </td>
-                <td data-label="Edit" class="desktop-action-cell">
-                  {% if perms.auth.can_edit_tenants %}
-                    <a href="{% url 'tenant_edit' tresults.tenant_id %}" class="icon-action-btn icon-edit" title="Edit Tenant">
-                      <i class="fas fa-pencil-alt"></i>
-                    </a>
-                  {% else %}
-                    <span class="icon-action-btn icon-disabled" title="No edit permission">
-                      <i class="fas fa-pencil-alt"></i>
-                    </span>
-                  {% endif %}
-                </td>
-                <td data-label="Delete" class="desktop-action-cell">
-                  {% if perms.auth.can_edit_tenants %}
-                    <a href="{% url 'delete_tenant' tresults.tenant_id %}"
-                       class="icon-action-btn icon-delete"
-                       title="Delete Tenant"
-                       onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
-                      <i class="fas fa-trash"></i>
-                    </a>
-                  {% else %}
-                    <span class="icon-action-btn icon-disabled" title="No delete permission">
-                      <i class="fas fa-trash"></i>
-                    </span>
-                  {% endif %}
-                </td>
-                <td data-label="Report" class="desktop-action-cell">
-                  <a href="{% url 'tenant_report' tresults.tenant_id %}" class="icon-action-btn icon-view" title="View Tenant Report">
-                    <i class="fas fa-eye"></i>
-                  </a>
-                </td>
-                <td data-label="Agreement" class="desktop-action-cell">
-                  {% if tresults.tenant_lease_agreement %}
-                    <a href="#"
-                       onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}'); return false;"
-                       class="icon-action-btn icon-view"
-                       title="View Lease Agreement">
+                <!-- Desktop actions: one cell, four buttons -->
+                <td class="desktop-action-cell cell-actions">
+                  <span class="row-actions">
+                    {% if perms.auth.can_edit_tenants %}
+                      <a href="{% url 'tenant_edit' tresults.tenant_id %}" class="icon-action-btn icon-edit" title="Edit Tenant">
+                        <i class="fas fa-pencil-alt"></i>
+                      </a>
+                    {% else %}
+                      <span class="icon-action-btn icon-disabled" title="No edit permission">
+                        <i class="fas fa-pencil-alt"></i>
+                      </span>
+                    {% endif %}
+
+                    {% if perms.auth.can_edit_tenants %}
+                      <a href="{% url 'delete_tenant' tresults.tenant_id %}"
+                         class="icon-action-btn icon-delete"
+                         title="Delete Tenant"
+                         onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    {% else %}
+                      <span class="icon-action-btn icon-disabled" title="No delete permission">
+                        <i class="fas fa-trash"></i>
+                      </span>
+                    {% endif %}
+
+                    <a href="{% url 'tenant_report' tresults.tenant_id %}" class="icon-action-btn icon-view" title="View Tenant Report">
                       <i class="fas fa-eye"></i>
                     </a>
-                  {% else %}
-                    <span class="icon-action-btn icon-disabled" title="No lease agreement uploaded">
-                      <i class="fas fa-eye-slash"></i>
-                    </span>
-                  {% endif %}
+
+                    {% if tresults.tenant_lease_agreement %}
+                      <a href="#"
+                         onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}'); return false;"
+                         class="icon-action-btn icon-view"
+                         title="View Lease Agreement">
+                        <i class="fas fa-file-contract"></i>
+                      </a>
+                    {% else %}
+                      <span class="icon-action-btn icon-disabled" title="No lease agreement uploaded">
+                        <i class="fas fa-file-contract"></i>
+                      </span>
+                    {% endif %}
+                  </span>
                 </td>
 
                 <!-- Mobile-only action bar (hidden on desktop) -->
-                <td class="mobile-action-bar">
+                <td class="mobile-action-bar cols-4">
                   {% if perms.auth.can_edit_tenants %}
                     <a href="{% url 'tenant_edit' tresults.tenant_id %}" class="mobile-action-btn">
                       <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
@@ -293,6 +290,17 @@ Tenants
         {% endfor %}
       </tbody>
     </table>
+
+    {% if not tenant_rows %}
+      {# An empty tbody looks exactly like a failed load. #}
+      <div class="alv-empty">
+        <i class="fas fa-user"></i>
+        <div class="alv-empty-title">No tenants to show</div>
+        <div class="alv-empty-hint">
+          Try clearing the filters, or add your first tenant.
+        </div>
+      </div>
+    {% endif %}
   </div>
 
 <!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
@@ -306,13 +314,6 @@ Tenants
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ==================== DESKTOP STYLES ==================== */
-.page-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-}
 
 /* Desktop default: hide the mobile "More" dropdown wrapper */
 .action-more-wrapper { display: none; }
@@ -355,70 +356,16 @@ Tenants
 .filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
 .filter-tag { background: #0e7c8b; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 .filter-tag .remove-tag { background: rgba(255, 255, 255, 0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; }
-.table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-.status-active { background: #d4edda; color: #155724; }
-.status-inactive { background: #f8d7da; color: #721c24; }
 .lease-end-cell { font-weight: 600; }
-.lease-end-red { color: #dc3545; }
-.lease-end-green { color: #1e7e34; }
+.lease-end-red { color: var(--alv-bad); }
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-/* Icon action buttons (Edit / Delete / View) */
-.icon-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    border: 2px solid;
-    background: white;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    cursor: pointer;
-}
-.icon-action-btn i { font-size: 14px; }
-.icon-action-btn:hover {
-    transform: translateY(-1px);
-    text-decoration: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-.icon-edit { color: #007bff; border-color: #007bff; }
-.icon-edit:hover { background-color: #007bff; color: white; }
-.icon-view { color: #0e7c8b; border-color: #0e7c8b; }
-.icon-view:hover { background-color: #0e7c8b; color: white; }
-.icon-delete { color: #dc3545; border-color: #dc3545; }
-.icon-delete:hover { background-color: #dc3545; color: white; }
-.icon-disabled { color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; opacity: 0.6; }
-.icon-disabled:hover { transform: none; box-shadow: none; }
 
 /* Hide mobile-only label variants on desktop */
 .filter-title-text-mobile, .clear-all-text-mobile { display: none; }
 
-/* Mobile action bar — hidden on desktop */
-.mobile-action-bar { display: none !important; }
-
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-
-  /* Action button row — compact: Add New (flex) + More (icon) + Back (icon) */
-  .page-action-buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    width: 100%;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    margin-bottom: 14px;
-  }
-
-  /* Hide secondary actions on mobile — they're now in the More menu */
-  .page-action-buttons .action-secondary {
-    display: none;
-  }
 
   /* Add New takes the leftover space (primary CTA) */
   .action-add-new {
@@ -465,29 +412,6 @@ Tenants
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     min-width: 240px;
     padding: 6px 0;
-  }
-
-  .action-more-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 12px 16px;
-    font-size: 14px;
-    color: #2c3e50;
-    cursor: pointer;
-    transition: background 0.15s ease;
-    text-decoration: none;
-  }
-
-  .action-more-item i {
-    color: #0e7c8b;
-    width: 18px;
-    text-align: center;
-    flex-shrink: 0;
   }
 
   .action-more-item:hover,
@@ -572,140 +496,6 @@ Tenants
     gap: 8px;
     margin-top: 12px;
     padding-top: 12px;
-  }
-
-  /* Table → Card layout */
-  .table-container {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-  }
-  .tenants-table {
-    border: none;
-    background: transparent;
-  }
-  .tenants-table thead {
-    display: none;
-  }
-  .tenants-table,
-  .tenants-table tbody,
-  .tenants-table tr,
-  .tenants-table td {
-    display: block;
-    width: 100%;
-  }
-  .tenants-table tbody tr {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-  }
-  .tenants-table tbody tr:nth-of-type(even) {
-    background: white;
-  }
-  .tenants-table td {
-    border: none !important;
-    padding: 6px 0 !important;
-    text-align: left !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    min-height: 28px;
-  }
-  .tenants-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #495057;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  /* The Tenant Name (first cell) gets prominence — no label, larger text */
-  .tenants-table td[data-label="Tenant"] {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 8px !important;
-    margin-bottom: 4px;
-    border-bottom: 1px solid #f1f3f5 !important;
-    display: block;
-  }
-  .tenants-table td[data-label="Tenant"]::before {
-    display: none;
-  }
-
-  /* === Hide the four desktop action cells on mobile === */
-  .desktop-action-cell {
-    display: none !important;
-  }
-
-  /* === Show and style the mobile action bar === */
-  .mobile-action-bar {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-top: 10px;
-    padding: 10px 0 0 0 !important;
-    border-top: 1px solid #f1f3f5;
-    align-items: stretch !important;
-    min-height: auto !important;
-    justify-content: stretch !important;
-  }
-  .mobile-action-bar::before {
-    display: none !important;
-  }
-  .mobile-action-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 6px;
-    padding: 8px 4px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #495057;
-    font-size: 11px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    transition: background-color 0.15s ease;
-    min-height: 56px;
-  }
-  .mobile-action-btn:hover,
-  .mobile-action-btn:active {
-    background: #e9ecef;
-    text-decoration: none;
-    color: #495057;
-  }
-  .mobile-action-icon {
-    font-size: 18px;
-    line-height: 1;
-  }
-  .mobile-action-label {
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1.2;
-    text-align: center;
-  }
-  /* Icon colours match desktop semantic colours */
-  .icon-color-edit { color: #007bff; }
-  .icon-color-view { color: #0e7c8b; }
-  .icon-color-delete { color: #dc3545; }
-
-  /* Disabled state */
-  .mobile-action-disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    color: #adb5bd;
-  }
-  .mobile-action-disabled .mobile-action-icon {
-    color: #adb5bd;
-  }
-  .mobile-action-disabled:hover,
-  .mobile-action-disabled:active {
-    background: #f8f9fa;
-    color: #adb5bd;
   }
 }
 </style>

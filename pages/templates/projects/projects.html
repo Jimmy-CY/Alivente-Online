@@ -31,25 +31,25 @@ Projects
 
 <body>
   <!-- Action Buttons: Back+2+ pattern -->
-  <div class="action-buttons-wrap">
+  <div class="page-action-buttons">
     {% if perms.auth.can_edit_projects %}
-      <a href="{% url 'projects_add' %}" class="action-primary">
+      <a href="{% url 'projects_add' %}" class="btn action-primary">
         <i class="fas fa-plus"></i> Add New Project
       </a>
     {% else %}
-      <span class="action-primary action-primary--disabled" title="You do not have permission">
+      <span class="btn action-primary action-primary--disabled" title="You do not have permission">
         <i class="fas fa-plus"></i> Add New Project
       </span>
     {% endif %}
 
     <!-- Desktop: Help button visible. Mobile: hidden, accessed via More menu. -->
-    <button type="button" class="action-secondary" data-toggle="modal" data-target="#projectsHelpModal">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#projectsHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
 
     <!-- Mobile: More menu (hidden on desktop) -->
     <div class="action-more-wrapper">
-      <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
+      <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
         <i class="fas fa-ellipsis-v"></i>
       </button>
       <div class="action-more-menu" id="actionMoreMenu" role="menu">
@@ -59,7 +59,7 @@ Projects
       </div>
     </div>
 
-    <a href="{% url 'home' %}" class="action-back" title="Back">
+    <a href="{% url 'home' %}" class="btn action-back" title="Back">
       <i class="fas fa-arrow-left"></i>
       <span class="action-back-label">Back</span>
     </a>
@@ -308,32 +308,6 @@ Projects
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ============================================================
-   ACTION BUTTONS — Back+2+ standard
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 .action-primary--disabled {
     opacity: 0.6;
@@ -354,41 +328,12 @@ Projects
     }
 }
 
-.action-secondary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
 @media (hover: hover) and (pointer: fine) {
     .action-secondary:hover {
         background: #0a5e6a;
         border-color: #0a5e6a;
         color: white;
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -843,11 +788,6 @@ Projects
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;

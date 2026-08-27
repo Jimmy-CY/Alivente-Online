@@ -215,7 +215,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                 <h2 class="report-title-main">OUTSTANDING INVOICES REPORT</h2>
                 <h3 class="report-title-sub">{{ today }}</h3>
             </div>
-            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+            <a href="{% url 'tenant' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
@@ -401,7 +401,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal()">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal" onclick="closeModal()">Close</button>
             </div>
         </div>
     </div>
@@ -453,10 +453,6 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     color: #6c757d;
     margin: 5px 0 0 0;
     font-weight: normal;
-}
-
-.back-button {
-    flex-shrink: 0;
 }
 
 /* Age Analysis */
@@ -986,10 +982,6 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         max-width: 100%;
         padding: 0;
         box-shadow: none;
-    }
-
-    .back-button {
-        display: none;
     }
 
     .age-analysis-section {

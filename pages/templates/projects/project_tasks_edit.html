@@ -29,17 +29,17 @@ Edit Task - {{ task.task_name }}
 {% endfor %}
 
 <!-- Action Buttons: Back+1 (Gantt-aware) -->
-<div class="action-buttons-wrap">
-  <button type="submit" form="taskForm" class="action-primary">
+<div class="page-action-buttons">
+  <button type="submit" form="taskForm" class="btn action-primary">
     <i class="fas fa-save"></i> Update Task
   </button>
   {% if from_gantt %}
-    <a href="{% url 'project_gantt' project.project_id %}" class="action-back" title="Back to Gantt Chart">
+    <a href="{% url 'project_gantt' project.project_id %}" class="btn action-back" title="Back to Gantt Chart">
       <i class="fas fa-arrow-left"></i>
       <span class="action-back-label">Back</span>
     </a>
   {% else %}
-    <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="Back to Project">
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn action-back" title="Back to Project">
       <i class="fas fa-arrow-left"></i>
       <span class="action-back-label">Back</span>
     </a>
@@ -200,10 +200,10 @@ Edit Task - {{ task.task_name }}
           <div class="form-group">
             <label>Quick Actions:</label>
             <div class="translation-buttons">
-              <button type="button" class="btn btn-sm btn-outline-info translation-btn" id="translateNameToGreek">
+              <button type="button" class="btn action-secondary btn-sm translation-btn" id="translateNameToGreek">
                 <i class="fas fa-language"></i> Translate Name to Greek
               </button>
-              <button type="button" class="btn btn-sm btn-outline-info translation-btn" id="translateDescToGreek">
+              <button type="button" class="btn action-secondary btn-sm translation-btn" id="translateDescToGreek">
                 <i class="fas fa-language"></i> Translate Description to Greek
               </button>
             </div>
@@ -402,50 +402,13 @@ Edit Task - {{ task.task_name }}
   {% endif %}
 
   <!-- Form Footer -->
-  <div class="form-footer-actions">
-    <button type="submit" class="btn btn-info form-footer-primary">
-      <i class="fas fa-save"></i> Update Task
-    </button>
-    {% if from_gantt %}
-      <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-secondary form-footer-cancel">
-        <i class="fas fa-times"></i> Cancel
-      </a>
-    {% else %}
-      <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary form-footer-cancel">
-        <i class="fas fa-times"></i> Cancel
-      </a>
-    {% endif %}
-  </div>
-</form>
+  </form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
@@ -456,20 +419,6 @@ Edit Task - {{ task.task_name }}
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -619,21 +568,7 @@ label i { color: #6c757d; margin-right: 4px; }
 .alert-success { border-color: #28a745; }
 .alert-warning { border-color: #ffc107; }
 
-.form-footer-actions {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
 @media (max-width: 768px) {
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;
@@ -669,11 +604,7 @@ label i { color: #6c757d; margin-right: 4px; }
         width: 100%;
         justify-content: center;
     }
-
-    .form-footer-actions {
-        flex-direction: column-reverse;
-    }
-    .form-footer-actions .btn {
+    .page-action-buttons .btn {
         width: 100%;
         padding: 14px;
         font-size: 15px;

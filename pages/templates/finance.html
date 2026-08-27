@@ -30,11 +30,11 @@ ALIVENTE ONLINE - FINANCE
 {% endfor %}
 
 <!-- Action Buttons: Back+1 (Help primary, Back) -->
-<div class="action-buttons-wrap">
-  <button type="button" class="action-primary" data-toggle="modal" data-target="#financeHelpModal">
+<div class="page-action-buttons">
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#financeHelpModal">
     <i class="fas fa-question-circle"></i> Help
   </button>
-  <a href="{% url 'home' %}" class="action-back" title="Back to Home">
+  <a href="{% url 'home' %}" class="btn action-back" title="Back to Home">
     <i class="fas fa-arrow-left"></i>
     <span class="action-back-label">Back</span>
   </a>
@@ -121,32 +121,6 @@ ALIVENTE ONLINE - FINANCE
 {% endif %}
 
 <style>
-/* ============================================================
-   ACTION BUTTONS — Back+1
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
@@ -157,20 +131,6 @@ ALIVENTE ONLINE - FINANCE
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -273,10 +233,6 @@ ALIVENTE ONLINE - FINANCE
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;

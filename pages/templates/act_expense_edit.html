@@ -14,11 +14,11 @@
   {% csrf_token %}
 
   <!-- Action Buttons (Save + Back, Back+1 standard on mobile) -->
-  <div class="form-action-buttons">
-      <button class="btn btn-info action-primary" type="submit">
+  <div class="page-action-buttons">
+      <button class="btn action-primary" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
-      <a href="{% url 'act_expense_all' %}" class="btn btn-info action-back" role="button" aria-label="Cancel and go back">
+      <a href="{% url 'act_expense_all' %}" class="btn action-back" role="button" aria-label="Cancel and go back">
           <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
   </div>
@@ -109,17 +109,6 @@
     color: #6c757d;
 }
 
-/* ==================== ACTION BUTTONS (DESKTOP) ==================== */
-.form-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 8px;
-}
-.form-action-buttons .btn {
-    margin: 0;
-}
-
 /* ==================== BUTTONS ==================== */
 .btn-info {
     background-color: #0e7c8b;
@@ -147,38 +136,6 @@
     }
     .page-subtitle-h4 {
         font-size: 1rem;
-    }
-
-    /* Action buttons — Back+1 standard */
-    .form-action-buttons {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .form-action-buttons .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        gap: 6px;
-    }
-    .form-action-buttons .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     .action-back-label {
         display: none;

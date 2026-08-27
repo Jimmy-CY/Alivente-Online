@@ -28,7 +28,7 @@
 
 <!-- Action Buttons -->
 <div class="page-action-buttons page-action-buttons-single">
-    <a href="{% url 'admin_apms' %}" class="btn btn-info action-btn-back" role="button">
+    <a href="{% url 'admin_apms' %}" class="btn action-back" role="button">
         <i class="fas fa-arrow-left"></i> Back
     </a>
 </div>
@@ -37,15 +37,14 @@
 
 <!-- Lease Agreements Table (desktop) / Card list (mobile) -->
 <div class="table-container">
-<table class="table table-bordered table-striped text-center lease-agreements-table">
+<table class="table alv-table lease-agreements-table">
 <thead>
     <tr>
-        <th style="text-align: left; width: 25%">Tenant Name</th>
-        <th style="text-align: left; width: 20%">Property</th>
+        <th style="text-align: left; width: 30%">Tenant Name</th>
+        <th style="text-align: left; width: 25%">Property</th>
         <th style="width: 15%">Start Date</th>
         <th style="width: 15%">End Date</th>
-        <th style="width: 15%">Lease Agreement</th>
-        <th style="width: 10%">Actions</th>
+        <th class="desktop-action-cell cell-actions" style="width: 15%">Actions</th>
     </tr>
 </thead>
 <tbody>
@@ -66,33 +65,41 @@
                 -
             {% endif %}
         </td>
-        <td data-label="Agreement" class="desktop-action-cell">
-            {% if tenant.tenant_lease_agreement %}
-                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
-                    <i class="fas fa-file-contract"></i> View
-                </button>
-            {% else %}
-                <span class="text-muted">-</span>
-            {% endif %}
-        </td>
-        <td data-label="Action" class="desktop-action-cell">
-            {% if perms.auth.can_edit_tenants %}
+        <!-- Desktop actions: one cell. View is always drawn - as a
+             disabled twin when there is nothing attached - so the column
+             does not change width from row to row. -->
+        <td class="desktop-action-cell cell-actions">
+            <span class="row-actions">
                 {% if tenant.tenant_lease_agreement %}
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
-                        <i class="fas fa-trash"></i> Delete
+                    <button type="button" class="icon-action-btn icon-view" title="View Lease Agreement" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
+                        <i class="fas fa-file-contract"></i>
                     </button>
                 {% else %}
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ tenant.tenant_id }})">
-                        <i class="fas fa-upload"></i> Upload
-                    </button>
+                    <span class="icon-action-btn icon-disabled" title="No lease agreement uploaded">
+                        <i class="fas fa-file-contract"></i>
+                    </span>
                 {% endif %}
-            {% else %}
-                <span class="text-muted">-</span>
-            {% endif %}
+
+                {% if perms.auth.can_edit_tenants %}
+                    {% if tenant.tenant_lease_agreement %}
+                        <button type="button" class="icon-action-btn icon-delete" title="Delete Lease Agreement" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    {% else %}
+                        <button type="button" class="icon-action-btn icon-upload" title="Upload Lease Agreement" onclick="uploadDocument({{ tenant.tenant_id }})">
+                            <i class="fas fa-upload"></i>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <span class="icon-action-btn icon-disabled" title="No edit permission">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                {% endif %}
+            </span>
         </td>
 
         <!-- Mobile-only action bar (hidden on desktop) -->
-        <td class="mobile-action-bar">
+        <td class="mobile-action-bar cols-2">
             {% if tenant.tenant_lease_agreement %}
                 <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
                     <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
@@ -128,6 +135,17 @@
     {% endfor %}
 </tbody>
 </table>
+
+{% if not tenants %}
+  {# An empty tbody looks exactly like a failed load. #}
+  <div class="alv-empty">
+    <i class="fas fa-file-contract"></i>
+    <div class="alv-empty-title">No lease agreements to show</div>
+    <div class="alv-empty-hint">
+      Tenants appear here once they have a lease on file.
+    </div>
+  </div>
+{% endif %}
 </div>
 
 {% if perms.auth.can_edit_tenants %}
@@ -158,10 +176,10 @@
           </div>
         </div>
         <div class="modal-footer modal-footer-stack-mobile">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
+          <button type="button" class="btn action-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button type="submit" class="btn btn-info">
+          <button type="submit" class="btn action-primary">
             <i class="fas fa-upload"></i> Upload Lease Agreement
           </button>
         </div>
@@ -194,10 +212,10 @@
           </div>
         </div>
         <div class="modal-footer modal-footer-stack-mobile">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
+          <button type="button" class="btn action-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button type="submit" class="btn btn-danger">
+          <button type="submit" class="btn action-secondary action-danger">
             <i class="fas fa-trash"></i> Delete Lease Agreement
           </button>
         </div>
@@ -223,27 +241,13 @@
     margin-top: 0.25rem;
     margin-bottom: 1rem;
 }
-
-/* Top action buttons */
-.page-action-buttons {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-}
 .page-action-buttons-single {
     justify-content: flex-end;
 }
 
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
 /* End date red when expired */
 .end-date-expired {
-    color: #dc3545;
+    color: var(--alv-bad);
     font-weight: bold;
 }
 
@@ -256,9 +260,6 @@
     margin-bottom: 16px;
     font-size: 14px;
 }
-
-/* Mobile action bar — hidden on desktop */
-.mobile-action-bar { display: none !important; }
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
@@ -279,136 +280,6 @@
         width: 100%;
         text-align: center;
         padding: 10px 12px;
-    }
-
-    /* Table → Card layout */
-    .table-container {
-        background: transparent;
-        box-shadow: none;
-        border-radius: 0;
-    }
-    .lease-agreements-table {
-        border: none;
-        background: transparent;
-    }
-    .lease-agreements-table thead {
-        display: none;
-    }
-    .lease-agreements-table,
-    .lease-agreements-table tbody,
-    .lease-agreements-table tr,
-    .lease-agreements-table td {
-        display: block;
-        width: 100%;
-    }
-    .lease-agreements-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .lease-agreements-table tbody tr:nth-of-type(even) {
-        background: white;
-    }
-    .lease-agreements-table td {
-        border: none !important;
-        padding: 6px 0 !important;
-        text-align: left !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        min-height: 28px;
-    }
-    .lease-agreements-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #495057;
-        font-size: 13px;
-        flex-shrink: 0;
-    }
-    /* The Tenant Name (first cell) gets prominence */
-    .lease-agreements-table td[data-label="Tenant"] {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid #f1f3f5 !important;
-        display: block;
-    }
-    .lease-agreements-table td[data-label="Tenant"]::before {
-        display: none;
-    }
-
-    /* Hide desktop action cells on mobile */
-    .desktop-action-cell {
-        display: none !important;
-    }
-
-    /* Show and style mobile action bar — 2-column grid */
-    .mobile-action-bar {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-top: 10px;
-        padding: 10px 0 0 0 !important;
-        border-top: 1px solid #f1f3f5;
-        align-items: stretch !important;
-        min-height: auto !important;
-        justify-content: stretch !important;
-    }
-    .mobile-action-bar::before {
-        display: none !important;
-    }
-    .mobile-action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 6px;
-        padding: 10px 4px;
-        border-radius: 6px;
-        text-decoration: none;
-        color: #495057;
-        font-size: 11px;
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        transition: background-color 0.15s ease;
-        min-height: 56px;
-        cursor: pointer;
-    }
-    .mobile-action-btn:hover,
-    .mobile-action-btn:active {
-        background: #e9ecef;
-        text-decoration: none;
-        color: #495057;
-    }
-    .mobile-action-icon {
-        font-size: 18px;
-        line-height: 1;
-    }
-    .mobile-action-label {
-        font-size: 11px;
-        font-weight: 500;
-        line-height: 1.2;
-        text-align: center;
-    }
-    /* Icon colours */
-    .icon-color-view { color: #0e7c8b; }
-    .icon-color-delete { color: #dc3545; }
-    .icon-color-upload { color: #007bff; }
-
-    /* Disabled state */
-    .mobile-action-disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-        color: #adb5bd;
-    }
-    .mobile-action-disabled .mobile-action-icon {
-        color: #adb5bd;
     }
 
     /* Modal full-screen on mobile */

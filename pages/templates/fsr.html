@@ -70,10 +70,10 @@
                 </div>
             </div>
             <div class="modal-footer modal-footer-stack-mobile">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
-                <button type="button" class="btn btn-info" id="generateCommentsReportBtn" disabled onclick="generateCommentsReport()">
+                <button type="button" class="btn action-primary" id="generateCommentsReportBtn" disabled onclick="generateCommentsReport()">
                     <i class="fas fa-file-alt"></i> Generate Report
                 </button>
             </div>
@@ -103,8 +103,8 @@
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">Generate Report</button>
                 </div>
             </form>
         </div>
@@ -171,10 +171,10 @@
                 </div>
             </div>
             <div class="modal-footer modal-footer-stack-mobile">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
-                <button type="button" class="btn btn-primary" id="generateReportBtn" disabled>
+                <button type="button" class="btn action-primary" id="generateReportBtn" disabled>
                     <i class="fas fa-file-download"></i> Generate Report
                 </button>
             </div>
@@ -235,10 +235,10 @@
                 </div>
             </div>
             <div class="modal-footer modal-footer-stack-mobile">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <button type="button" class="btn action-secondary action-danger" id="confirmDeleteBtn">
                     <i class="fas fa-trash"></i> Delete Permanently
                 </button>
             </div>
@@ -249,28 +249,28 @@
 {% render_help_modal "fsr" %}
 
 <!-- Action Buttons -->
-<div class="page-action-bar">
-    <div class="page-action-bar-inner">
+
+    <div class="page-action-buttons">
         {% if perms.auth.can_edit_issues %}
-          <a href="{% url 'fsr_add' %}" class="btn btn-info action-add-new">
+          <a href="{% url 'fsr_add' %}" class="btn action-primary action-add-new">
               <i class="fas fa-plus"></i> Add New
           </a>
         {% else %}
-          <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+          <span class="btn action-primary disabled-btn action-add-new">
               <i class="fas fa-plus"></i> Add New
           </span>
         {% endif %}
 
         <!-- Desktop-visible action buttons (hidden on mobile, accessed via "More" menu) -->
-        <button class="btn btn-info action-secondary" data-toggle="modal" data-target="#fsrHelpModal">
+        <button class="btn action-secondary" data-toggle="modal" data-target="#fsrHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
         <!-- Desktop: four reports behind one menu. `action-secondary` is the
              house marker that hides an item under 768px, where the "More"
              dropdown below takes over. Every item here opens a modal rather
              than navigating, so the page stays put. -->
-        <div class="ui-menu action-secondary" data-menu>
-            <button type="button" class="btn btn-info ui-menu-toggle"
+        <div class="ui-menu" data-menu>
+            <button type="button" class="btn action-secondary ui-menu-toggle"
                     data-menu-toggle aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-chart-bar"></i> Reports
                 <i class="fas fa-chevron-down ui-menu-caret"></i>
@@ -297,7 +297,7 @@
 
         <!-- Mobile-only "More" dropdown -->
         <div class="action-more-wrapper" data-menu>
-            <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
             <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
@@ -319,11 +319,11 @@
             </div>
         </div>
 
-        <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+        <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
-</div>
+
 
 <!-- Enhanced Filter Panel -->
 <div class="filter-panel" id="filterPanel">
@@ -507,18 +507,6 @@
 /* Page title (centered) */
 .page-title-center {
     text-align: center;
-}
-
-/* Action button row (replaces inline styles) */
-.page-action-bar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 20px;
-}
-
-.page-action-bar-inner {
-    display: flex;
-    gap: 16px;
 }
 
 /* Desktop default: hide the mobile "More" dropdown wrapper */
@@ -1216,24 +1204,6 @@
         padding: 0 8px;
     }
 
-    /* Action button row — compact layout: Add New (flex) + More (icon) + Back (icon) */
-    .page-action-bar {
-        margin-bottom: 14px;
-    }
-
-    .page-action-bar-inner {
-        flex-direction: row;
-        gap: 8px;
-        width: 100%;
-        flex-wrap: nowrap;
-        align-items: stretch;
-    }
-
-    /* Hide secondary actions on mobile — they're now in the More menu */
-    .page-action-bar-inner .action-secondary {
-        display: none;
-    }
-
     /* Add New takes the leftover space (primary CTA) */
     .action-add-new {
         flex: 1 1 auto;
@@ -1272,28 +1242,6 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         min-width: 240px;
         padding: 6px 0;
-    }
-
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-
-    .action-more-item i {
-        color: #0e7c8b;
-        width: 18px;
-        text-align: center;
-        flex-shrink: 0;
     }
 
     .action-more-item:hover,

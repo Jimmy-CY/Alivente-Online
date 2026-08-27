@@ -30,18 +30,18 @@ Task List - {{ project.project_name }}
 
 <body>
   <!-- Action Buttons: Back+2+ pattern -->
-  <div class="action-buttons-wrap">
-    <button id="printBtn" class="action-primary" type="button">
+  <div class="page-action-buttons">
+    <button id="printBtn" class="btn action-primary" type="button">
       <i class="fas fa-print"></i> {% if language == 'greek' %}Εκτύπωση{% else %}Print{% endif %}
     </button>
 
-    <button id="exportBtn" class="action-secondary" type="button">
+    <button id="exportBtn" class="btn action-secondary" type="button">
       <i class="fas fa-file-excel"></i> {% if language == 'greek' %}Εξαγωγή Excel{% else %}Export Excel{% endif %}
     </button>
 
     <!-- Mobile: More menu (hidden on desktop) -->
     <div class="action-more-wrapper">
-      <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
+      <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
         <i class="fas fa-ellipsis-v"></i>
       </button>
       <div class="action-more-menu" id="actionMoreMenu" role="menu">
@@ -51,7 +51,7 @@ Task List - {{ project.project_name }}
       </div>
     </div>
 
-    <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="{% if language == 'greek' %}Επιστροφή στο Έργο{% else %}Back to Project{% endif %}">
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn action-back" title="{% if language == 'greek' %}Επιστροφή στο Έργο{% else %}Back to Project{% endif %}">
       <i class="fas fa-arrow-left"></i>
       <span class="action-back-label">{% if language == 'greek' %}Πίσω{% else %}Back{% endif %}</span>
     </a>
@@ -251,32 +251,6 @@ Task List - {{ project.project_name }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ============================================================
-   ACTION BUTTONS — Back+2+
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary, .action-secondary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover, .action-secondary:hover {
@@ -287,20 +261,6 @@ Task List - {{ project.project_name }}
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -593,10 +553,6 @@ Task List - {{ project.project_name }}
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;
@@ -746,7 +702,6 @@ Task List - {{ project.project_name }}
    PRINT
    ============================================================ */
 @media print {
-    .action-buttons-wrap { display: none !important; }
     .task-list-container, .task-list-header, .task-list-footer {
         box-shadow: none;
         border: 1px solid #000;

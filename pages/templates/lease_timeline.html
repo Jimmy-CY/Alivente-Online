@@ -15,7 +15,7 @@
         <h3>Please Rotate Your Phone</h3>
         <p>The Lease Timeline is best viewed in <strong>landscape mode</strong>.</p>
         <p class="rotate-instruction">Turn your phone sideways to see the calendar.</p>
-        <a href="{% url 'tenant' %}" class="btn btn-info rotate-back-btn">
+        <a href="{% url 'tenant' %}" class="btn action-back rotate-back-btn">
             <i class="fas fa-arrow-left"></i> Back to Tenants
         </a>
     </div>
@@ -26,20 +26,20 @@
     <!-- Controls Row -->
     <div class="timeline-controls">
         <div class="timeline-controls-group">
-            <button id="navLeft" class="btn btn-info btn-sm timeline-nav-btn">
+            <button id="navLeft" class="btn action-secondary btn-sm timeline-nav-btn">
                 <i class="fas fa-chevron-left"></i> <span class="btn-label-full">Previous Month</span><span class="btn-label-short">Prev</span>
             </button>
-            <button id="navRight" class="btn btn-info btn-sm timeline-nav-btn">
+            <button id="navRight" class="btn action-secondary btn-sm timeline-nav-btn">
                 <span class="btn-label-full">Next Month</span><span class="btn-label-short">Next</span> <i class="fas fa-chevron-right"></i>
             </button>
             <span class="timeline-control-divider"></span>
-            <button id="zoomIn" class="btn btn-info btn-sm timeline-nav-btn">
+            <button id="zoomIn" class="btn action-secondary btn-sm timeline-nav-btn">
                 <i class="fas fa-search-plus"></i> <span class="btn-label-full">Zoom In</span>
             </button>
-            <button id="zoomOut" class="btn btn-info btn-sm timeline-nav-btn">
+            <button id="zoomOut" class="btn action-secondary btn-sm timeline-nav-btn">
                 <i class="fas fa-search-minus"></i> <span class="btn-label-full">Zoom Out</span>
             </button>
-            <button id="fitAll" class="btn btn-info btn-sm timeline-nav-btn">
+            <button id="fitAll" class="btn action-secondary btn-sm timeline-nav-btn">
                 <i class="fas fa-expand"></i> <span class="btn-label-full">Fit All</span><span class="btn-label-short">Fit</span>
             </button>
         </div>
@@ -47,7 +47,7 @@
             <label class="timeline-checkbox-label">
                 <input type="checkbox" id="showInactive" checked> <span>Show Inactive Leases</span>
             </label>
-            <a href="{% url 'tenant' %}" class="btn btn-info btn-sm timeline-back-btn">
+            <a href="{% url 'tenant' %}" class="btn action-back btn-sm timeline-back-btn">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>

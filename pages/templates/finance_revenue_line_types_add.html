@@ -31,15 +31,6 @@
     opacity: 0.95;
 }
 
-.action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 18px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
 .form-card {
     background: white;
     border-radius: 12px;
@@ -95,36 +86,6 @@
     .page-header p {
         font-size: 13px;
     }
-
-    .action-bar {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .action-bar .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        margin: 0;
-    }
-    .action-bar .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
     .action-back-label {
         display: none;
     }
@@ -157,11 +118,11 @@
         </div>
         
         <!-- Action Bar -->
-        <div class="action-bar">
-            <button type="submit" class="btn btn-success action-primary">
+        <div class="page-action-buttons">
+            <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save
             </button>
-            <a href="{% url 'finance_revenue_line_types' %}" class="btn btn-secondary action-back" aria-label="Back">
+            <a href="{% url 'finance_revenue_line_types' %}" class="btn action-back" aria-label="Back">
                 <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
         </div>

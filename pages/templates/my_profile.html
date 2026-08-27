@@ -209,12 +209,6 @@
     gap: 6px;
 }
 
-.form-action-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
 /* ============================================================
    MOBILE RESPONSIVE — max-width: 768px
    ============================================================ */
@@ -335,14 +329,8 @@
     .menu-option-icon {
         font-size: 24px;
     }
-
-    /* Bottom action buttons — column-reverse */
-    .form-action-row {
-        flex-direction: column-reverse;
-        gap: 8px;
-    }
-    .form-action-row .btn,
-    .form-action-row a.btn {
+    .page-action-buttons .btn,
+    .page-action-buttons a.btn {
         width: 100%;
         justify-content: center;
         display: inline-flex;
@@ -366,10 +354,10 @@
     <div class="page-header">
         <h1><i class="fas fa-user-circle"></i> My Profile</h1>
         <div class="header-actions">
-            <button type="button" class="btn btn-light btn-sm action-primary" data-toggle="modal" data-target="#my_profileHelpModal">
+            <button type="button" class="btn action-secondary btn-sm" data-toggle="modal" data-target="#my_profileHelpModal">
                 <i class="fas fa-question-circle"></i> Help
             </button>
-            <a href="{% url 'home' %}" class="btn btn-light btn-sm action-back" aria-label="Back to home">
+            <a href="{% url 'home' %}" class="btn action-secondary btn-sm" aria-label="Back to home">
                 <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
         </div>
@@ -481,11 +469,11 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="form-action-row">
-            <a href="{% url 'home' %}" class="btn btn-secondary">
+        <div class="page-action-buttons">
+            <a href="{% url 'home' %}" class="btn action-secondary">
                 <i class="fas fa-times"></i> Cancel
             </a>
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save Profile
             </button>
         </div>

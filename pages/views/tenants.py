@@ -134,10 +134,19 @@ def tenant_page(request):
     # Build the table rows: secondary sort by lease end date (newest first,
     # oldest last) WITHIN each property group, and attach a colour class for
     # the new Lease End Date column.
-    #   - Inactive tenant       -> red  (regardless of the date)
-    #   - Active, end < today   -> red  (lease has passed)
-    #   - Active, end >= today  -> green (today still counts as valid)
-    #   - No end date           -> no colour
+    #   - end < today   -> red  (the lease has passed)
+    #   - anything else -> no colour
+    #
+    # "Inactive tenant -> red, regardless of the date" used to be the first
+    # branch here. It was invisible while the status pill beside it was also
+    # red; now that the pill is grey - Inactive is a state, not a fault - the
+    # same row would have said both things at once about the same fact.
+    # An inactive tenant whose lease ran its term gets an ordinary date: the
+    # tenancy ended, the lease did not expire.
+    #
+    # The green is gone too, but in CSS rather than here: the rule is deleted
+    # so the class matches nothing. Green on every healthy row made the red
+    # harder to find, which is the only reason the column is coloured.
     # The property grouping itself is driven by the template's outer props
     # loop, so this ordering only sequences tenants inside each group.
     today = datetime.now().date()
@@ -146,12 +155,8 @@ def tenant_page(request):
     )
     for _t in tenant_rows:
         _end = _t.tenant_lease_end_date
-        if _t.tenant_current != 'Yes':
+        if _end and _end < today:
             _t.lease_class = 'lease-end-red'
-        elif _end and _end < today:
-            _t.lease_class = 'lease-end-red'
-        elif _end:
-            _t.lease_class = 'lease-end-green'
         else:
             _t.lease_class = ''
 

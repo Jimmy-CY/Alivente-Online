@@ -31,17 +31,17 @@ Invoices
 
   <!-- Action Buttons - Desktop: [Physical Invoices] [Help] [Back]
                          Mobile:  [Physical Invoices (wide)] [More] [Back] -->
-  <div class="invoices-action-buttons">
-    <a href="{% url 'physical_invoice_list' %}" class="btn btn-info action-primary">
+  <div class="page-action-buttons">
+    <a href="{% url 'physical_invoice_list' %}" class="btn action-primary">
       <i class="fas fa-file-invoice"></i> Physical Invoices
     </a>
-    <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#invoicesHelpModal">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#invoicesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
 
     <!-- Mobile-only More dropdown (holds the secondary actions) -->
     <div class="action-more-wrapper">
-      <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+      <button type="button" class="btn action-more-btn" id="actionMoreBtn"
               aria-label="More actions" aria-expanded="false" aria-haspopup="true">
         <i class="fas fa-ellipsis-v"></i>
       </button>
@@ -52,7 +52,7 @@ Invoices
       </div>
     </div>
 
-    <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+    <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
       <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
   </div>
@@ -173,14 +173,6 @@ Invoices
 .page-title-h2 {
     margin-top: 0.5rem;
     margin-bottom: 1rem;
-}
-
-/* ==================== ACTION BUTTONS (DESKTOP) ==================== */
-.invoices-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
 }
 /* The More dropdown is a mobile-only component; hidden on desktop. */
 .action-more-wrapper { display: none; }
@@ -444,47 +436,9 @@ td.overdue-cell.is-overdue {
         font-size: 1.25rem;
         margin-bottom: 0.75rem;
     }
-
-    /* Action buttons — Back+1 standard:
-       [Help (wide)] [← Back small icon] */
-    .invoices-action-buttons {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 14px;
-    }
-    .invoices-action-buttons .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-        gap: 6px;
-    }
-    .invoices-action-buttons .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
     .action-back-label {
         display: none;
     }
-
-    /* Secondary actions live in the More menu on mobile */
-    .invoices-action-buttons .action-secondary { display: none; }
     .action-more-wrapper { display: block; position: relative; flex: 0 0 auto; }
     .action-more-btn {
         width: 44px; height: 38px; padding: 0; margin: 0;
@@ -496,12 +450,6 @@ td.overdue-cell.is-overdue {
         box-shadow: 0 6px 20px rgba(0,0,0,0.15); min-width: 220px; padding: 6px 0;
     }
     .action-more-menu[hidden] { display: none; }
-    .action-more-item {
-        display: flex; align-items: center; gap: 12px; width: 100%;
-        background: none; border: none; text-align: left; cursor: pointer;
-        padding: 12px 16px; font-size: 14px; color: #2c3e50; text-decoration: none;
-    }
-    .action-more-item i { color: #0e7c8b; width: 18px; text-align: center; flex-shrink: 0; }
     .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
         background: #f0f8ff; outline: none; color: #2c3e50; text-decoration: none;
     }

@@ -32,28 +32,28 @@ Project Details - {{ project.project_name }}
      Primary: Task List
      Desktop also shows: Gantt Chart, Duplicate Project
      Mobile collapses Gantt + Duplicate into the More menu. -->
-<div class="action-buttons-wrap">
-  <a href="#" class="action-primary" onclick="showTaskListModal(); return false;">
+<div class="page-action-buttons">
+  <a href="#" class="btn action-primary" onclick="showTaskListModal(); return false;">
     <i class="fas fa-list-check"></i> Task List
   </a>
 
-  <a href="{% url 'project_gantt' project.project_id %}" class="action-secondary">
+  <a href="{% url 'project_gantt' project.project_id %}" class="btn action-secondary">
     <i class="fas fa-chart-gantt"></i> Gantt Chart
   </a>
 
   {% if perms.auth.can_edit_projects %}
-    <button type="button" class="action-secondary" onclick="showDuplicateModal()">
+    <button type="button" class="btn action-secondary" onclick="showDuplicateModal()">
       <i class="fas fa-copy"></i> Duplicate Project
     </button>
   {% else %}
-    <span class="action-secondary action-secondary--disabled" title="You do not have permission">
+    <span class="btn action-secondary action-secondary--disabled" title="You do not have permission">
       <i class="fas fa-copy"></i> Duplicate Project
     </span>
   {% endif %}
 
   <!-- Mobile More menu -->
   <div class="action-more-wrapper">
-    <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
+    <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
       <i class="fas fa-ellipsis-v"></i>
     </button>
     <div class="action-more-menu" id="actionMoreMenu" role="menu">
@@ -68,7 +68,7 @@ Project Details - {{ project.project_name }}
     </div>
   </div>
 
-  <a href="{% url 'projects' %}" class="action-back" title="Back to Projects">
+  <a href="{% url 'projects' %}" class="btn action-back" title="Back to Projects">
     <i class="fas fa-arrow-left"></i>
     <span class="action-back-label">Back</span>
   </a>
@@ -181,7 +181,7 @@ Project Details - {{ project.project_name }}
       <i class="fas fa-tasks"></i> Project Tasks
     </h4>
     {% if perms.auth.can_edit_projects %}
-      <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-sm btn-info add-task-btn">
+      <a href="{% url 'project_tasks_add' project.project_id %}" class="btn action-secondary btn-sm add-task-btn">
         <i class="fas fa-plus"></i> Add Task
       </a>
     {% endif %}
@@ -199,7 +199,7 @@ Project Details - {{ project.project_name }}
                 </span>
                 <span class="task-name-text">{{ task.task_name }}</span>
                 {% if perms.auth.can_edit_projects %}
-                  <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn btn-sm btn-info ml-2 add-subtask-btn">
+                  <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn action-secondary btn-sm ml-2 add-subtask-btn">
                     <i class="fas fa-plus"></i> Add Subtask
                   </a>
                 {% endif %}
@@ -371,7 +371,7 @@ Project Details - {{ project.project_name }}
         <h5>No tasks yet</h5>
         <p class="text-muted">Get started by adding your first task to this project.</p>
         {% if perms.auth.can_edit_projects %}
-          <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-info">
+          <a href="{% url 'project_tasks_add' project.project_id %}" class="btn action-secondary">
             <i class="fas fa-plus"></i> Add First Task
           </a>
         {% endif %}
@@ -405,8 +405,8 @@ Project Details - {{ project.project_name }}
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary modal-btn-cancel" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-info modal-btn-primary" id="updateStatusBtn">Update Status</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn action-primary modal-btn-primary" id="updateStatusBtn">Update Status</button>
             </div>
         </div>
     </div>
@@ -426,8 +426,8 @@ Project Details - {{ project.project_name }}
                 <p id="deleteModalMessage"></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary modal-btn-cancel" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger modal-btn-primary" id="confirmDeleteBtn">Delete</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn action-secondary action-danger modal-btn-primary" id="confirmDeleteBtn">Delete</button>
             </div>
         </div>
     </div>
@@ -581,8 +581,8 @@ Project Details - {{ project.project_name }}
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary modal-btn-cancel" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-warning modal-btn-primary" id="duplicateProjectBtn">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn action-primary modal-btn-primary" id="duplicateProjectBtn">
                     <i class="fas fa-copy"></i> Duplicate Project
                 </button>
             </div>
@@ -631,8 +631,8 @@ Project Details - {{ project.project_name }}
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary modal-btn-cancel" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-info modal-btn-primary" id="generateTaskListBtn">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn action-primary modal-btn-primary" id="generateTaskListBtn">
                     <i class="fas fa-list-check"></i> Generate Task List
                 </button>
             </div>
@@ -645,32 +645,6 @@ Project Details - {{ project.project_name }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ============================================================
-   ACTION BUTTONS — Back+2+
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
@@ -681,21 +655,6 @@ Project Details - {{ project.project_name }}
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-secondary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .action-secondary--disabled {
@@ -712,20 +671,6 @@ Project Details - {{ project.project_name }}
         border-color: #0a5e6a;
         color: white;
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1243,12 +1188,6 @@ Project Details - {{ project.project_name }}
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-
-    /* Action buttons collapse — only Task List + More + Back show */
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;

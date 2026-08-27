@@ -11,7 +11,7 @@
                 <h2 class="report-title-main">SUPPLIER DETAILS REPORT</h2>
                 <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
             </div>
-            <a href="{% url 'suppliers' %}" class="btn btn-info back-button" role="button">
+            <a href="{% url 'suppliers' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
@@ -163,12 +163,6 @@
         flex: 1;
     }
 
-    .back-button {
-        white-space: nowrap;
-        height: fit-content;
-        flex-shrink: 0;
-    }
-
     /* ==================== MOBILE STYLES (≤768px) ==================== */
     @media (max-width: 768px) {
         .report-container {
@@ -258,10 +252,6 @@
             max-width: 100%;
             padding: 0;
             box-shadow: none;
-        }
-
-        .back-button {
-            display: none;
         }
 
         .property-card {

@@ -43,11 +43,11 @@
 </div>
 
 <!-- Action Buttons: Back+1 (Help primary, Back) -->
-<div class="action-buttons-wrap">
-    <button type="button" class="action-primary" data-toggle="modal" data-target="#cashflow_forecastHelpModal">
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#cashflow_forecastHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'finance' %}" class="action-back" title="Back to Finance">
+    <a href="{% url 'finance' %}" class="btn action-back" title="Back to Finance">
         <i class="fas fa-arrow-left"></i>
         <span class="action-back-label">Back</span>
     </a>
@@ -169,7 +169,7 @@
 <div id="errorContainer" class="alert alert-danger" style="display: none;">
     <h4>Error Loading Cash Flow Forecast</h4>
     <p id="errorMessage"></p>
-    <button class="btn btn-info" onclick="loadForecast()">Retry</button>
+    <button class="btn action-secondary" onclick="loadForecast()">Retry</button>
 </div>
 
 <!-- Modal for Monthly Expense Breakdown -->
@@ -186,7 +186,7 @@
             </div>
             <div class="modal-body" id="monthlyExpenseModalBody"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -199,32 +199,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* ============================================================
-   ACTION BUTTONS — Back+1
-   ============================================================ */
-.action-buttons-wrap {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-primary {
-    background: #0e7c8b;
-    border: 1px solid #0e7c8b;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
@@ -234,20 +208,6 @@
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-.action-back {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -600,10 +560,6 @@
    MOBILE (≤768px)
    ============================================================ */
 @media (max-width: 768px) {
-    .action-buttons-wrap {
-        gap: 8px;
-        align-items: stretch;
-    }
     .action-primary {
         flex: 1 1 auto;
         min-width: 0;
@@ -748,7 +704,7 @@ const cfCanHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and
         const prompt = document.querySelector('.rotate-prompt');
         const dashboard = document.getElementById('dashboardContainer');
         const loading = document.getElementById('loadingIndicator');
-        const actions = document.querySelector('.action-buttons-wrap');
+        const actions = document.querySelector('.page-action-buttons');
 
         if (isPhonePortrait()) {
             if (prompt) prompt.style.setProperty('display', 'flex', 'important');

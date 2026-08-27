@@ -65,7 +65,7 @@ BOTTOM BUTTON LAYOUT:
                         <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                         <h5>Unable to display this document</h5>
                         <p id="pdfViewerErrorMessage" class="text-muted"></p>
-                        <a id="pdfViewerErrorDownload" href="#" download class="btn btn-info">
+                        <a id="pdfViewerErrorDownload" href="#" download class="btn action-primary">
                             <i class="fas fa-download"></i> Download Instead
                         </a>
                     </div>
@@ -103,15 +103,15 @@ BOTTOM BUTTON LAYOUT:
 
             <div class="modal-footer pdf-viewer-footer">
                 <!-- Share — mobile only when Web Share API supports files -->
-                <button type="button" id="pdfViewerShareBtn" class="btn btn-info pdf-action-share">
+                <button type="button" id="pdfViewerShareBtn" class="btn action-secondary pdf-action-share">
                     <i class="fas fa-share-alt"></i> <span class="pdf-share-label-default">Share</span><span class="pdf-share-label-busy" hidden><i class="fas fa-spinner fa-spin"></i> Preparing…</span>
                 </button>
                 <!-- Download — always present; full button on desktop, icon-only on mobile -->
-                <a id="pdfViewerDownloadBtn" href="#" download class="btn btn-info pdf-action-download" aria-label="Download">
+                <a id="pdfViewerDownloadBtn" href="#" download class="btn action-primary pdf-action-download" aria-label="Download">
                     <i class="fas fa-download"></i><span class="pdf-action-label"> Download</span>
                 </a>
                 <!-- Close — text on desktop, X icon on mobile -->
-                <button type="button" class="btn btn-secondary pdf-action-close" data-dismiss="modal" onclick="closePdfViewer()" aria-label="Close">
+                <button type="button" class="btn action-secondary pdf-action-close" data-dismiss="modal" onclick="closePdfViewer()" aria-label="Close">
                     <i class="fas fa-times pdf-action-mobile-icon"></i><span class="pdf-action-label">Close</span>
                 </button>
             </div>

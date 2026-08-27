@@ -94,9 +94,26 @@ check('  the danger tone is OUTLINED at rest',
 check('  and fills red only on hover',
       re.search(r'\.action-danger:hover[^{]*\{[^}]*background:\s*'
                 r'var\(--alv-danger\)', BLOCK, re.S) is not None)
+# NOT `\.action-back\s*\{`. That assumed .action-back would be the only
+# selector on its rule. The module-wide sweep gave it a partner - four report
+# pages call theirs `.back-button`, and base now styles both in one rule - so
+# the selector became `.action-back,\n.back-button {` and the regex stopped
+# matching a rule that was still there and still correct. The BROWSER half of
+# this suite went on measuring Back as transparent throughout, which is the
+# clue that the fault was in the check.
+def _rules(block):
+    for _m in re.finditer(r'([^{}]+)\{([^}]*)\}', block):
+        yield ([x.strip() for x in
+                re.sub(r'/\*.*?\*/', '', _m.group(1), flags=re.S).split(',')],
+               _m.group(2))
+
+
 check('  Back is quiet - no fill, no border',
-      re.search(r'\.action-back\s*\{[^}]*background:\s*transparent', BLOCK)
-      is not None)
+      any('.action-back' in _s and re.search(r'background:\s*transparent', _b)
+          for _s, _b in _rules(BLOCK)))
+check('  .. and .back-button is styled with it, not separately',
+      any('.action-back' in _s and '.back-button' in _s
+          for _s, _b in _rules(BLOCK)))
 check('  a disabled button is not still a working link',
       re.search(r'\.disabled-btn\s*\{[^}]*pointer-events:\s*none', BLOCK)
       is not None)
@@ -126,12 +143,39 @@ check('%s: no Bootstrap colour survives on a bar button' % D,
                     r'[^"]*action-', SRC)
       and not re.search(r'class="[^"]*action-[^"]*btn-'
                         r'(?:warning|success|light)', SRC))
-check('  Edit is the primary, live and disabled (%d)'
-      % SRC.count('action-primary'), SRC.count('action-primary') == 2)
+# COUNTED IN THE BAR, not across the file.
+#
+# asset_detail.html has three more `action-primary` buttons in its maintenance
+# modal - Add Record, Save Changes and an invoice download. Verified against
+# the pre-sweep backup: the count was FIVE before this round and five after,
+# so the button sweep changed nothing here. The check had been counting the
+# wrong thing since the detail round added that modal, and only tripped now.
+#
+# Widening it to 5 would re-break the day another modal gains a primary. The
+# intent was always "the BAR has one Edit, live and disabled", so that is what
+# it measures now.
+_i = SRC.find('<div class="page-action-buttons">')
+check('  the action bar could be located in %s' % D, _i >= 0)
+_d, _j = 0, max(_i, 0)
+while _i >= 0 and _j < len(SRC):
+    if SRC.startswith('<div', _j):
+        _d += 1
+    elif SRC.startswith('</div>', _j):
+        _d -= 1
+        if _d == 0:
+            _j += 6
+            break
+    _j += 1
+BAR = SRC[_i:_j] if _i >= 0 else ''
+check('  CONTROL: the bar is a real slice, not the whole file (%d of %d chars)'
+      % (len(BAR), len(SRC)), 0 < len(BAR) < len(SRC) / 2)
+check('  Edit is the primary, live and disabled (%d in the bar, %d in the '
+      'file)' % (BAR.count('action-primary'), SRC.count('action-primary')),
+      BAR.count('action-primary') == 2)
 check('  Delete carries the danger TONE, both branches (%d)'
-      % SRC.count('action-danger'), SRC.count('action-danger') == 2)
+      % BAR.count('action-danger'), BAR.count('action-danger') == 2)
 check('  and keeps its position class, so mobile still hides it',
-      SRC.count('action-secondary action-danger') == 2)
+      BAR.count('action-secondary action-danger') == 2)
 check('  Back and More lost their fill',
       'btn action-back' in SRC and 'btn action-more-btn' in SRC
       and 'btn-info action-back' not in SRC)

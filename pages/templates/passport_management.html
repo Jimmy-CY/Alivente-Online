@@ -30,10 +30,10 @@
 
 <!-- Action Buttons (Help + Back) — Back+1 standard -->
 <div class="page-action-buttons">
-    <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#passport_managementHelpModal">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#passport_managementHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'personal_page' %}" class="btn btn-info action-back" role="button" aria-label="Back to personal page">
+    <a href="{% url 'personal_page' %}" class="btn action-back" role="button" aria-label="Back to personal page">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
@@ -118,13 +118,13 @@
 <!-- Add New Button (top, before table) -->
 {% if perms.auth.can_edit_personal %}
 <div class="add-new-button-row">
-    <button type="button" class="btn btn-info action-btn-add" onclick="addNewDocument()">
+    <button type="button" class="btn action-primary action-btn-add" onclick="addNewDocument()">
         <i class="fas fa-plus"></i> Add New Passport/ID
     </button>
 </div>
 {% else %}
 <div class="add-new-button-row">
-    <span class="btn btn-secondary action-btn-add" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+    <span class="btn action-primary action-btn-add">
         <i class="fas fa-plus"></i> Add New Passport/ID
     </span>
 </div>
@@ -331,10 +331,10 @@
           </div>
         </div>
         <div class="modal-footer modal-footer-stack-mobile">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');">
+          <button type="button" class="btn action-secondary" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button type="submit" class="btn btn-info" id="submitBtn">
+          <button type="submit" class="btn action-primary" id="submitBtn">
             <i class="fas fa-save"></i> <span id="submitBtnText">Save</span>
           </button>
         </div>
@@ -368,10 +368,10 @@
           </div>
         </div>
         <div class="modal-footer modal-footer-stack-mobile">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
+          <button type="button" class="btn action-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button type="submit" class="btn btn-info">
+          <button type="submit" class="btn action-primary">
             <i class="fas fa-upload"></i> Upload Document
           </button>
         </div>
@@ -401,10 +401,10 @@
           </div>
         </div>
         <div class="modal-footer modal-footer-stack-mobile">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
+          <button type="button" class="btn action-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button type="submit" class="btn btn-danger">
+          <button type="submit" class="btn action-secondary action-danger">
             <i class="fas fa-trash"></i> Delete Document
           </button>
         </div>
@@ -429,14 +429,6 @@
 .page-subtitle-h4 {
     margin-top: 0.25rem;
     margin-bottom: 1rem;
-}
-
-/* Top action buttons */
-.page-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
 }
 
 /* Filter panel */
@@ -605,41 +597,6 @@
     .page-subtitle-h4 {
         font-size: 1rem;
         margin-bottom: 0.75rem;
-    }
-
-    /* Action buttons — Back+1 standard: Help (wide) + Back (icon-only) */
-    .page-action-buttons {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        justify-content: stretch;
-    }
-    .page-action-buttons .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        padding: 0 12px;
-        margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        gap: 6px;
-    }
-    .page-action-buttons .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
     }
     .action-back-label {
         display: none;

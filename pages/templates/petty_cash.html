@@ -29,23 +29,23 @@
 <!-- Action Buttons -->
 <div class="page-action-buttons">
   {% if perms.auth.can_edit_petty_cash %}
-    <a href="{% url 'petty_cash_add' %}" class="btn btn-info action-add-new">
+    <a href="{% url 'petty_cash_add' %}" class="btn action-primary action-add-new">
       <i class="fas fa-plus"></i> Add New
     </a>
   {% else %}
-    <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+    <span class="btn action-primary disabled-btn action-add-new">
       <i class="fas fa-plus"></i> Add New
     </span>
   {% endif %}
 
   <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via "More" menu) -->
-  <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#petty_cashHelpModal">
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#petty_cashHelpModal">
     <i class="fas fa-question-circle"></i> Help
   </button>
 
   <!-- Mobile-only "More" dropdown -->
   <div class="action-more-wrapper">
-    <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+    <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
       <i class="fas fa-ellipsis-v"></i>
     </button>
     <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
@@ -55,7 +55,7 @@
     </div>
   </div>
 
-  <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+  <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
@@ -119,14 +119,6 @@
 .page-title-h2 {
     margin-top: 0.5rem;
     margin-bottom: 1rem;
-}
-
-/* Action buttons row */
-.page-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-bottom: 20px;
 }
 
 /* Desktop default: hide the mobile "More" dropdown wrapper */
@@ -217,22 +209,6 @@
         margin-bottom: 0.75rem;
     }
 
-    /* Action button row — compact: Add New (flex) + More (icon) + Back (icon) */
-    .page-action-buttons {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        width: 100%;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        margin-bottom: 14px;
-    }
-
-    /* Hide secondary actions on mobile — they're now in the More menu */
-    .page-action-buttons .action-secondary {
-        display: none;
-    }
-
     /* Add New takes the leftover space (primary CTA) */
     .action-add-new {
         flex: 1 1 auto;
@@ -276,27 +252,6 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         min-width: 220px;
         padding: 6px 0;
-    }
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        transition: background 0.15s ease;
-        text-decoration: none;
-    }
-    .action-more-item i {
-        color: #0e7c8b;
-        width: 18px;
-        text-align: center;
-        flex-shrink: 0;
     }
     .action-more-item:hover,
     .action-more-item:active,
