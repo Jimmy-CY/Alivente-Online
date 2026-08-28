@@ -542,15 +542,6 @@
     justify-content: flex-start;
     margin-bottom: 20px;
 }
-
-/* Table */
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    margin-bottom: 20px;
-}
 .sortable-header {
     cursor: pointer;
     user-select: none;
@@ -660,14 +651,6 @@
         width: 100%;
         text-align: center;
         padding: 10px 12px;
-    }
-
-    /* Table → Card layout */
-    .table-container {
-        background: transparent;
-        box-shadow: none;
-        border-radius: 0;
-        overflow: visible;
     }
     .passport-table {
         border: none;
@@ -839,6 +822,12 @@
         padding: 10px 12px;
     }
 }
+
+/* .table-container is base's. The page used to restate it - the same white
+   card, and `overflow: hidden` where base says `clip`. Same specificity,
+   later in the document, so the page won: the element became a scroll
+   container and the sticky heading pinned to a box that never scrolls. */
+.table-container { margin-bottom: 20px; }
 </style>
 
 <script>

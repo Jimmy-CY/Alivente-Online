@@ -318,15 +318,34 @@ $sentinels = @(
     @{ File = 'pages\templates\act_expense.html';        Text = 'table alv-table expense-table'; What = 'Actual Expenses is on the table standard' },
     @{ File = 'pages\templates\act_expense.html';        Text = 'alv-pill-neutral'; What = 'and a status you cannot change is a pill, not a disabled button' },
     @{ File = 'pages\templates\act_expense.html';        Text = 'report-basis'; What = 'the report states the population it counts' },
-    @{ File = 'pages\views\expenses.py';                 Text = 'Counts only expenses that are BOTH approved and paid'; What = 'and the docstring finally agrees with the query beneath it' }
+    @{ File = 'pages\views\expenses.py';                 Text = 'Counts only expenses that are BOTH approved and paid'; What = 'and the docstring finally agrees with the query beneath it' },
+    # The sticky sweep. Six pages carried a page-local .table-container rule
+    # with overflow:hidden - same specificity as base's, later in the document,
+    # so the page won and the element became a scroll container. Only
+    # physical_invoice_list is on .alv-table today, so it is the only one where
+    # a heading actually starts sticking; the other five are pre-emptive.
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = '.table-container'; What = 'Physical Invoices stopped redefining base shell - its heading sticks at last'; Absent = $true },
+    @{ File = 'pages\templates\fsr.html';                   Text = '.table-container'; What = 'and neither does Issues'; Absent = $true },
+    @{ File = 'pages\templates\comments_report.html';       Text = '.table-container'; What = 'nor the Comments report'; Absent = $true }
 )
 
+# A sentinel normally asserts a string is PRESENT.  With Absent = $true it
+# asserts the opposite: that something which used to be there has gone and has
+# not crept back.  The sticky sweep needs this - what it changed is the ABSENCE
+# of a page-local .table-container rule, and there is no string it adds that
+# could stand in for that.
 foreach ($s in $sentinels) {
     $p = Join-Path $root $s.File
+    $want = -not $s.Absent
     $label = '{0}  ({1})' -f $s.File, $s.What
     if (-not (Test-Path $p)) { Bad ($label + '  - FILE MISSING'); $problems++; continue }
-    $hit = Select-String -LiteralPath $p -Pattern $s.Text -SimpleMatch -Quiet
-    if ($hit) { Good $label } else { Bad ($label + '  - not found'); $problems++ }
+    $hit = [bool](Select-String -LiteralPath $p -Pattern $s.Text -SimpleMatch -Quiet)
+    if ($hit -eq $want) { Good $label }
+    else {
+        if ($want) { $why = '  - not found' }
+        else        { $why = '  - "' + $s.Text + '" is back' }
+        Bad ($label + $why); $problems++
+    }
 }
 
 if ($problems -and -not $Force) {
@@ -441,7 +460,13 @@ $suites = @(
     # else can see them. Section 5 reads the parse tree and fails if the
     # report's FILTER moved, because this round changed the words and must not
     # have changed a figure. Newest, so most likely to break.
-    'test_act_expenses.py'
+    'test_act_expenses.py',
+    # The sticky sweep. Its only real check is a MEASUREMENT: each page's own
+    # table markup is rendered against base plus the page's stylesheet,
+    # scrolled, and the heading's position read back. overflow:hidden and
+    # overflow:clip look identical and behave oppositely - nothing static can
+    # tell them apart. Newest, so most likely to break.
+    'test_sticky_sweep.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

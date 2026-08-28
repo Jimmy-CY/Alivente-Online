@@ -286,7 +286,63 @@ async def main():
     _would = sum(1 for _, fn in _probes if not fn(old))
     check('  and %d of the static checks above fail on it' % _would, _would >= 3)
 
+async def sticky():
+    """The check this suite did NOT have, and should have.
+
+    Physical Invoices passed every check here from the day it was migrated, and
+    its heading never stuck: the page carried its own `.table-container` rule
+    with `overflow: hidden`, which makes the element a scroll container so a
+    sticky child pins to a box that never scrolls. Same specificity as base's,
+    later in the document, so the page won.
+
+    Nothing static could have caught it - the class name was right and the
+    markup was right. Only a measurement can, so here is the measurement,
+    added when the sweep that fixed six pages was written.
+    """
+    from playwright.async_api import async_playwright
+    head('7. the heading actually sticks - the check this suite was missing')
+    frag = ("<div class='table-container'><table class='table alv-table'>"
+            "<thead><tr><th>Number</th><th>Tenant</th></tr></thead><tbody>"
+            + "<tr><td>x</td><td>y</td></tr>" * 40 + "</tbody></table></div>")
+    probe = """async () => {
+      const box = document.querySelector('.table-container');
+      const th = document.querySelector('thead th');
+      window.scrollTo(0, 800);
+      await new Promise(r => setTimeout(r, 120));
+      return {overflow: getComputedStyle(box).overflowY,
+              top: th.getBoundingClientRect().top}; }"""
+    async with async_playwright() as pw:
+        br = await pw.chromium.launch()
+        for label, path in (('physical_invoice_list.html', PI),
+                            ('customer_list.html', CL)):
+            for tag, src in (('now', read(path)),
+                             ('was', read(path + '.bak_sticky')
+                              if os.path.exists(path + '.bak_sticky') else None)):
+                if src is None:
+                    continue
+                pg = await br.new_page(viewport={'width': 1100, 'height': 420})
+                await pg.set_content(
+                    "<style>%s</style><style>%s</style><style>%s</style>"
+                    "<body style='padding:16px'>%s</body>"
+                    % (BOOTSTRAP, css_of(BASE), css_of(src), frag))
+                await pg.wait_for_timeout(60)
+                r = await pg.evaluate(probe)
+                await pg.close()
+                if tag == 'now':
+                    check('%-28s clips rather than hides' % label,
+                          r['overflow'] == 'clip', r['overflow'])
+                    check('  %-26s and the heading is still at the top after '
+                          'an 800px scroll' % '', -1 <= r['top'] <= 40,
+                          'top=%.0f' % r['top'])
+                else:
+                    check('  CONTROL %-18s it did NOT, before the sweep' % label,
+                          r['overflow'] == 'hidden' and r['top'] < -100,
+                          '%s / top=%.0f' % (r['overflow'], r['top']))
+        await br.close()
+
+
 asyncio.run(main())
+asyncio.run(sticky())
 
 print('\n' + '=' * 72)
 print(' %d passed, %d failed' % (_p, _f))
