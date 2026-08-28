@@ -275,14 +275,14 @@
                                         '{{ record.service_provider|default:''|escapejs }}',
                                         '{{ record.cost|default:'' }}'
                                     )">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-pencil-alt"></i>
                                 </button>
                                 <button type="button" class="icon-action-btn icon-delete" title="Delete record" onclick="confirmDeleteMaintenance({{ record.id }})">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             {% else %}
                                 <span class="icon-action-btn icon-disabled" title="No permission">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-pencil-alt"></i>
                                 </span>
                                 <span class="icon-action-btn icon-disabled" title="No permission">
                                     <i class="fas fa-trash"></i>

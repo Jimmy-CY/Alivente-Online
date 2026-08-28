@@ -293,7 +293,13 @@ $sentinels = @(
     @{ File = 'pages\views\finance.py';                   Text = "sum(r['purchase'] for r in rows"; What = 'and the total is the sum of the rows on screen' },
     # The way back from a receipt changed directly in the database: the row
     # moves, the stored PDF does not, and nothing on screen says so.
-    @{ File = 'pages\management\commands\regenerate_receipt_pdf.py'; Text = 'None marked as edited'; What = 'a receipt edited in MySQL can be re-rendered WITHOUT being stamped' }
+    @{ File = 'pages\management\commands\regenerate_receipt_pdf.py'; Text = 'None marked as edited'; What = 'a receipt edited in MySQL can be re-rendered WITHOUT being stamped' },
+    # One verb, one glyph. base owns an icon button's colour but not its
+    # picture, so the picture drifted: four pages drew Edit as a pencil and
+    # two as a pencil-on-paper. test_icon_buttons.py section 1b scans every
+    # template, so the next page to disagree fails here.
+    @{ File = 'pages\templates\finance_valuations.html'; Text = 'fa-pencil-alt'; What = 'the Valuations Edit icon matches every other list page' },
+    @{ File = 'pages\templates\asset_detail.html';       Text = 'fa-pencil-alt'; What = 'and so does Asset Details' }
 )
 
 foreach ($s in $sentinels) {

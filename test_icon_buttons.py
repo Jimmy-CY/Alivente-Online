@@ -92,6 +92,43 @@ check('div tags balance',
 check('if/endif balance',
       len(re.findall(r'\{%\s*if\b', CT)) == len(re.findall(r'\{%\s*endif\s*%\}', CT)))
 
+head('1b. one verb, one glyph - across EVERY template')
+# base owns an icon button's COLOUR but not its picture: the glyph is an <i>
+# in each page's markup, so it drifted unwatched. Four pages drew Edit as
+# fa-pencil-alt and two as fa-edit - two different pictures for the same verb
+# on screens a user moves between, which is how it was spotted.
+#
+# This scans every template, not the two that were fixed, because the point is
+# that those were the LAST two rather than merely two fewer.
+import glob as _glob
+# NOT `_f` as the loop variable: that is this file's FAILURE COUNTER, and
+# shadowing it made check() raise instead of reporting. A crash is the least
+# useful thing a check can do.
+_gl = {}
+for _path in sorted(_glob.glob(os.path.join(TPL, '*.html'))):
+    _src = read(_path)
+    for _mm in re.finditer(r'icon-edit[^>]*>\s*(?:\n\s*)?<i class="[^"]*?(fa-[a-z0-9-]+)', _src):
+        _gl.setdefault(os.path.basename(_path), set()).add(_mm.group(1))
+_all = set()
+for _glyphs in _gl.values():
+    _all |= _glyphs
+check('every icon-only Edit button on %d page(s) uses one glyph' % len(_gl),
+      _all == {'fa-pencil-alt'},
+      '; '.join('%s: %s' % (k, ', '.join(sorted(v)))
+                for k, v in sorted(_gl.items()) if v != {'fa-pencil-alt'})
+      or ', '.join(sorted(_all)))
+check('  and there are pages to check, so this is not passing on an empty set',
+      len(_gl) >= 5, '%d page(s)' % len(_gl))
+# CONTROL: the scan must be able to see a disagreement.
+check('  CONTROL: a second glyph WOULD be caught',
+      (_all | {'fa-edit'}) != {'fa-pencil-alt'})
+# A LABELLED button is a different case and is deliberately not in scope: an
+# icon alone is the only signal a reader gets, while an icon beside the word
+# "Edit" is decoration.
+check('a labelled Edit button keeps its own glyph, by design',
+      'fa-edit"></i> Edit Asset' in read(os.path.join(TPL, 'asset_detail.html'))
+      if os.path.exists(os.path.join(TPL, 'asset_detail.html')) else True)
+
 head('2. Open Invoices: the disabled tick wears a class that exists')
 check('it is icon-disabled', 'icon-action-btn icon-approve icon-disabled' in IT)
 check('  not is-disabled, which base does not define for icons',
