@@ -217,6 +217,12 @@ $sentinels = @(
     # A substring cannot express "unscoped" - that half is covered by
     # test_button_sweep.py section 1, which asserts the LAYOUT is still
     # scoped to .page-action-buttons while the tones are not.
+    @{ File = 'pages\templates\base.html';                Text = '.icon-color-send'; What = 'base owns all seven icon colours, not four' },
+    @{ File = 'pages\templates\base.html';                Text = '.icon-duplicate'; What = 'and Duplicate is a NAME on --alv-edit' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'table alv-table pi-table'; What = 'Physical Invoices is on the table standard' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = '{{ row.status_pill }}'; What = 'and its status class is decided in the view' },
+    @{ File = 'pages\templates\customer_list.html';       Text = 'table alv-table customers-table'; What = 'Customers too, with ONE actions column' },
+    @{ File = 'pages\views\physical_invoices.py';         Text = '_filter_chips'; What = 'the last filter holdout has chips, so it can have a Filter button' },
     @{ File = 'pages\templates\base.html';                Text = 'WIDENED from `.alv-filter`'; What = 'a form control is as tall as the value it shows' },
     @{ File = 'pages\templates\base.html';                Text = 'select.form-control:not([size]):not([multiple])'; What = 'and it matches Bootstrap own shape, or it loses on specificity' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-filter.is-open'; What = 'ONE class says whether the filter panel is open' },
@@ -320,7 +326,9 @@ $suites = @(
     'test_filter_toggle.py',
     # Form controls tall enough to show their own value. Newest, so most
     # likely to be what breaks.
-    'test_control_height.py'
+    'test_control_height.py',
+    # Physical Invoices and Customers. Newest, so most likely to be what breaks.
+    'test_table_invoices.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

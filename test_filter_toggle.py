@@ -18,11 +18,11 @@ TPL  = os.path.join(ROOT, 'pages', 'templates')
 
 PAGES = ['suppliers.html', 'properties.html', 'tenant.html', 'fsr.html',
          'act_expense.html', 'invoices.html', 'projects/projects.html',
-         'passport_management.html']
-
-# Deliberately excluded, and the reason is a safety one rather than a
-# scheduling one - see the note in apply_filter_toggle.py.
-EXCLUDED = 'physical_invoice_list.html'
+         'passport_management.html',
+         # Joined in the Physical Invoices round, once it had chips to fall
+         # back on. It was excluded for a SAFETY reason, not a scheduling one,
+         # and the fix was to remove the reason rather than the exclusion.
+         'physical_invoice_list.html']
 
 _n_pass = _n_fail = 0
 _fails = []
@@ -175,12 +175,18 @@ for p in PAGES:
     check('%-26s   its div tags balance' % short,
           len(re.findall(r'<div\b', t)) == len(re.findall(r'</div\s*>', t)))
 
-head('4. the page that is deliberately NOT in this round')
-ex = read(os.path.join(TPL, EXCLUDED))
-check('%s has no Filter button' % EXCLUDED, 'action-filter' not in ex)
-check('  BECAUSE it has no chips row to fall back on',
-      'active-filters' not in ex and 'filter-tag' not in ex)
-check('  so its panel is still always visible', 'filter-panel expanded' in ex)
+head('4. the page that used to be excluded')
+# It was left out because hiding a panel with nothing behind it makes a
+# filtered list indistinguishable from an unfiltered one. That is fixed at the
+# root - the chips exist now - so the exclusion is gone. This checks the
+# REASON was addressed, not merely that a button appeared.
+_pi = read(os.path.join(TPL, 'physical_invoice_list.html'))
+check('physical_invoice_list has chips to fall back on',
+      'alv-filter-active' in _pi and 'filter-tag' in _pi)
+check('  built in the view, not four nested ifs per chip',
+      '{% for c in filter_chips %}' in _pi)
+check('  and each chip removes ONLY itself', 'c.remove' in _pi)
+check('  its panel is no longer forced open', 'filter-panel expanded' not in _pi)
 
 
 head('5. the negative control - would ANY of this fail on the old page?')

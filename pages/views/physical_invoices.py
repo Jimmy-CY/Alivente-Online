@@ -97,6 +97,57 @@ BANK = {
 }
 
 
+
+# Which house pill each invoice status wears. In the template the class used
+# to be built by interpolation - `status-{{ row.status }}` - which means the
+# markup can never say what it means, and the CSS has to keep a rule named
+# after every value the database might hold. Deciding it HERE is one line, and
+# it puts the mapping somewhere a person can read it:
+#
+#   draft     -> attn : it is waiting for somebody to approve it
+#   approved  -> info : a state, not an outcome - nothing is owed
+#   sent      -> good : the only settled one
+#
+# Anything unrecognised falls to neutral rather than to no class at all, so a
+# new status renders as a plain pill instead of an unstyled word.
+_STATUS_PILL = {
+    "draft": "alv-pill-attn",
+    "approved": "alv-pill-info",
+    "sent": "alv-pill-good",
+}
+
+
+# The active filters, as chips, each with a link that removes ONLY itself.
+#
+# Built here rather than in the template because the remove link has to
+# rebuild the query string from every OTHER parameter. Expressed in template
+# tags that is four nested {% if %} blocks per chip, sixteen in all, and it
+# silently stops being right the day a fifth filter is added -
+# projects/projects.html is written that way and is the argument against it.
+#
+# request.GET is a QueryDict and is IMMUTABLE - .copy() is not defensive
+# style here, it is the only thing that works.
+_CHIP_LABELS = (("from", "From"), ("to", "To"),
+                ("status", "Status"), ("type", "Type"))
+
+
+def _filter_chips(request):
+    out = []
+    for key, label in _CHIP_LABELS:
+        val = (request.GET.get(key) or "").strip()
+        if not val:
+            continue
+        rest = request.GET.copy()
+        rest.pop(key, None)
+        rest.pop("page", None)          # dropping a filter returns to page one
+        qs = rest.urlencode()
+        out.append({
+            "label": label,
+            "value": val.replace("-", "/") if key in ("from", "to") else val.title(),
+            "remove": ("?" + qs) if qs else request.path,
+        })
+    return out
+
 def _money(value):
     return f"{float(value):,.2f}"
 
@@ -483,12 +534,14 @@ def physical_invoice_list(request):
             "currency": pi.currency or "EUR",
             "status": pi.status,
             "status_display": pi.get_status_display(),
+            "status_pill": _STATUS_PILL.get(pi.status, "alv-pill-neutral"),
             "is_editable": pi.is_editable,
         })
 
     cfg = PhysicalInvoiceNumbering.get_solo()
     context = {
         "rows": rows,
+        "filter_chips": _filter_chips(request),
         "counts": counts,
         "from_value": "" if show_all else f"{from_first.year:04d}-{from_first.month:02d}",
         "to_value": "" if show_all else f"{to_first.year:04d}-{to_first.month:02d}",

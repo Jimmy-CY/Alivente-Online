@@ -47,15 +47,14 @@ Invoice Customers
 
   <!-- Customers Table (desktop) / Card list (mobile) -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center customers-table">
+    <table class="table alv-table customers-table">
       <thead>
         <tr>
-          <th style="text-align: left; width: 32%">Customer</th>
+          <th style="text-align: left; width: 34%">Customer</th>
           <th style="width: 22%">Customer ID</th>
-          <th style="width: 26%">Email To</th>
+          <th style="width: 22%">Email To</th>
           <th style="width: 8%">Invoices</th>
-          <th style="width: 6%">Edit</th>
-          <th style="width: 6%">Delete</th>
+          <th class="cell-actions" style="width: 14%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -65,7 +64,8 @@ Invoice Customers
             <td data-label="Customer ID">{{ row.customer_id_label }}</td>
             <td data-label="Email To">{{ row.email_to }}</td>
             <td data-label="Invoices">{{ row.invoice_count }}</td>
-            <td data-label="Edit" class="desktop-action-cell">
+            <td data-label="Actions" class="desktop-action-cell cell-actions">
+              <div class="row-actions">
               {% if perms.auth.can_edit_invoices %}
                 <a href="{% url 'customer_edit' row.pk %}" class="icon-action-btn icon-edit" title="Edit Customer">
                   <i class="fas fa-pencil-alt"></i>
@@ -75,8 +75,6 @@ Invoice Customers
                   <i class="fas fa-pencil-alt"></i>
                 </span>
               {% endif %}
-            </td>
-            <td data-label="Delete" class="desktop-action-cell">
               {% if perms.auth.can_edit_invoices %}
                 <form method="post" action="{% url 'customer_delete' row.pk %}" class="cust-inline-form"
                       onsubmit="return confirm('Delete customer: {{ row.name|escapejs }}?\n\nThis is only possible if the customer has no invoices.');">
@@ -90,6 +88,7 @@ Invoice Customers
                   <i class="fas fa-trash"></i>
                 </span>
               {% endif %}
+              </div>
             </td>
 
             <!-- Mobile-only action bar -->

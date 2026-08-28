@@ -1674,6 +1674,26 @@ textarea.form-control { height: auto; }
   .alv-filter-active.has-filters { display: flex !important; }
 }
 
+
+
+/* ===== ALV-ICON-COLOURS v1 ===== */
+/* The MOBILE bar's colour variants. base had four of the seven actions; the
+   three below were left to each page, which is why the one page that needed
+   them kept its own literals - Bootstrap green, orange and blue - long after
+   base had moved to the house tones. A standard with holes in it is a
+   standard that gets copied around. */
+.icon-color-approve   { color: var(--alv-good); }
+.icon-color-unapprove { color: var(--alv-warn); }
+.icon-color-send      { color: var(--alv-accent); }
+
+/* Duplicate: a NAME on an existing colour, not a seventh tone. Duplicating
+   creates a new draft, which is a write, exactly as Edit is - so it points at
+   --alv-edit and gets its own name so the markup does not claim a button
+   edits when it duplicates. This is the .icon-upload precedent, and it is now
+   the rule for any new action: alias first, add a colour only with a reason. */
+.icon-duplicate       { color: var(--alv-edit); border-color: var(--alv-edit); }
+.icon-duplicate:hover { background-color: var(--alv-edit); color: #fff; }
+.icon-color-duplicate { color: var(--alv-edit); }
 </style>
 
   <script>
