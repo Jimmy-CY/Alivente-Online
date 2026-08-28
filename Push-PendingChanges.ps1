@@ -258,7 +258,13 @@ $sentinels = @(
     @{ File = 'pages\templates\invoices.html';            Text = 'class="table alv-table invoices-table"'; What = 'Open Invoices is on the table standard' },
     @{ File = 'pages\templates\invoices.html';            Text = '{% if not rows %}'; What = 'an empty result says so instead of looking like a failed load' },
     @{ File = 'pages\templates\invoices.html';            Text = '{% for prop in all_props %}'; What = 'the filter dropdown lists every property, not just the chosen one' },
-    @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar.cols-1'; What = 'a single mobile action gets the whole card width' }
+    @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar.cols-1'; What = 'a single mobile action gets the whole card width' },
+    # Icon buttons. The SECOND of these is a fault this session shipped: the
+    # no-permission Paid tick wore `is-disabled`, which base defines only for
+    # .status-btn, so it rendered exactly like the live one.
+    @{ File = 'pages\templates\customer_list.html';       Text = 'alv-empty-title'; What = 'Invoice Customers uses base empty state, not its own' },
+    @{ File = 'pages\templates\customer_list.html';       Text = 'mobile-action-bar cols-2'; What = 'and its two mobile actions say so' },
+    @{ File = 'pages\templates\invoices.html';            Text = 'icon-approve icon-disabled'; What = 'a disabled Paid tick wears a class base actually defines' }
 )
 
 foreach ($s in $sentinels) {
@@ -355,7 +361,12 @@ $suites = @(
     # OLD triple loop and the NEW view function side by side over generated
     # portfolios and compares the row sequences, so a change to either that
     # alters which invoices appear fails here. Newest, so most likely to break.
-    'test_open_invoices.py'
+    'test_open_invoices.py',
+    # Icon buttons on Invoice Customers, and the disabled Paid tick. Its
+    # section 4 renders `is-disabled` next to the live tick and asserts they
+    # are IDENTICAL - a control for the exact fault, kept so the next person
+    # can see why the class name mattered.
+    'test_icon_buttons.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -28,7 +28,6 @@ Invoice Customers
   </script>
 {% endfor %}
 
-<body>
     <!-- Action Buttons -->
     <div class="page-action-buttons">
       {% if perms.auth.can_edit_invoices %}
@@ -92,7 +91,7 @@ Invoice Customers
             </td>
 
             <!-- Mobile-only action bar -->
-            <td class="mobile-action-bar">
+            <td class="mobile-action-bar cols-2">
               {% if perms.auth.can_edit_invoices %}
                 <a href="{% url 'customer_edit' row.pk %}" class="mobile-action-btn">
                   <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
@@ -114,49 +113,28 @@ Invoice Customers
               {% endif %}
             </td>
           </tr>
-        {% empty %}
-          <tr>
-            <td colspan="6" class="cust-empty">
-              <i class="fas fa-address-book"></i>
-              <div>No customers saved yet.</div>
-              <div class="cust-empty-sub">Add a customer to bill someone who isn't a tenant.</div>
-            </td>
-          </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    {% if not rows %}
+      {# An empty tbody looks exactly like a failed load. #}
+      <div class="alv-empty">
+        <i class="fas fa-address-book"></i>
+        <div class="alv-empty-title">No customers saved yet</div>
+        <div class="alv-empty-hint">
+          Add a customer to bill someone who isn't a tenant.
+        </div>
+      </div>
+    {% endif %}
   </div>
 
-</body>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-.btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
-.btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-
-.icon-action-btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 6px; border: 2px solid;
-    background: white; text-decoration: none; transition: all 0.2s ease;
-    font-size: 14px; cursor: pointer;
-}
-.icon-action-btn i { font-size: 14px; }
-.icon-action-btn:hover { transform: translateY(-1px); text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-.icon-edit { color: #007bff; border-color: #007bff; }
-.icon-edit:hover { background-color: #007bff; color: white; }
-.icon-delete { color: #dc3545; border-color: #dc3545; }
-.icon-delete:hover { background-color: #dc3545; color: white; }
-.icon-disabled { color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; opacity: 0.6; }
 .cust-inline-form { display: inline; margin: 0; }
-
-.cust-empty { padding: 48px 16px !important; color: #6c757d; text-align: center !important; }
-.cust-empty i { font-size: 2.5rem; color: #adb5bd; margin-bottom: 12px; display: block; }
-.cust-empty-sub { font-size: 13px; color: #adb5bd; margin-top: 4px; }
-
-.mobile-action-bar { display: none !important; }
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
@@ -164,32 +142,8 @@ Invoice Customers
     flex: 1 1 auto; min-width: 0; height: 38px; display: flex; align-items: center; justify-content: center;
     text-align: center; padding: 0 12px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;
   }
-  .action-back { flex: 0 0 auto; width: 44px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0; }
-  .action-back-label { display: none; }
-
-  .table-container { background: transparent; box-shadow: none; border-radius: 0; }
-  .customers-table { border: none; background: transparent; }
-  .customers-table thead { display: none; }
-  .customers-table, .customers-table tbody, .customers-table tr, .customers-table td { display: block; width: 100%; }
-  .customers-table tbody tr { background: white; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 12px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-  .customers-table tbody tr:nth-of-type(even) { background: white; }
-  .customers-table td { border: none !important; padding: 6px 0 !important; text-align: left !important; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 28px; }
-  .customers-table td::before { content: attr(data-label); font-weight: 600; color: #495057; font-size: 13px; flex-shrink: 0; }
-  .customers-table td[data-label="Customer"] { font-size: 16px; font-weight: 600; color: #2c3e50; padding-bottom: 8px !important; margin-bottom: 4px; border-bottom: 1px solid #f1f3f5 !important; display: block; }
-  .customers-table td[data-label="Customer"]::before { display: none; }
-
-  .desktop-action-cell { display: none !important; }
-  .mobile-action-bar { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin-top: 10px; padding: 10px 0 0 0 !important; border-top: 1px solid #f1f3f5; min-height: auto !important; }
-  .mobile-action-bar::before { display: none !important; }
   .cust-inline-form-mobile { display: flex; margin: 0; }
   .cust-inline-form-mobile .mobile-action-btn { width: 100%; }
-  .mobile-action-btn { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; padding: 10px 4px; border-radius: 6px; text-decoration: none; color: #495057; font-size: 13px; background: #f8f9fa; border: 1px solid #e9ecef; transition: background-color 0.15s ease; cursor: pointer; }
-  .mobile-action-btn:hover, .mobile-action-btn:active { background: #e9ecef; text-decoration: none; color: #495057; }
-  .mobile-action-icon { font-size: 16px; line-height: 1; }
-  .icon-color-edit { color: #007bff; }
-  .icon-color-delete { color: #dc3545; }
-  .mobile-action-disabled { opacity: 0.4; cursor: not-allowed; color: #adb5bd; }
-  .cust-empty { display: block; }
 }
 </style>
 
