@@ -3784,3 +3784,168 @@ def property_annual_actual_expenses(prop, year=None):
         act_expense_paid="Yes",
     ).aggregate(_t=Sum('act_expense_amount'))
     return agg['_t'] or _fh_Decimal('0')
+
+
+# ============================================================================
+# CASH RECEIPTS
+# ============================================================================
+def cash_receipt_pdf_upload_path(instance, filename):
+    """Storage path for a rendered cash-receipt PDF.
+
+    Named by the receipt NUMBER first, because that is what somebody looking
+    for a file will know. The payer's name follows it for readability only.
+    """
+    ext = (filename.rsplit('.', 1)[-1] or 'pdf').lower()
+    number = slugify(instance.receipt_number or 'unnumbered')
+    who = slugify(instance.payer_name or 'receipt')
+    return os.path.join('cash_receipts', f"{number}-{who}.{ext}")
+
+
+class CashReceiptNumbering(models.Model):
+    """Singleton: the running counter for cash-receipt (CR) numbers.
+
+    Deliberately a separate counter from PhysicalInvoiceNumbering. Receipts and
+    invoices are different documents with different sequences; sharing one
+    counter would interleave them and make either sequence unexplainable.
+
+    Seeded at 372 so the first receipt the system issues is CR-00372, carrying
+    on from the book that was in use before it.
+    """
+    prefix = models.CharField(max_length=10, default="CR-")
+    pad_width = models.PositiveSmallIntegerField(default=5,
+        help_text="Zero-padding width (5 -> CR-00372).")
+    next_number = models.PositiveIntegerField(default=372,
+        help_text="The next CR number the system will issue.")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "cash_receipt_numbering"
+        verbose_name = "Cash Receipt Numbering"
+        verbose_name_plural = "Cash Receipt Numbering"
+
+    def __str__(self):
+        return f"Receipt numbering — next {self.format(self.next_number)}"
+
+    def format(self, n):
+        return f"{self.prefix}{int(n):0{self.pad_width}d}"
+
+    @classmethod
+    def get_solo(cls):
+        obj = cls.objects.first()
+        return obj or cls.objects.create()
+
+
+class CashReceipt(models.Model):
+    """A numbered receipt acknowledging that a payment was received.
+
+    A DOCUMENT, NOT A POSTING. Issuing a receipt changes no balances and marks
+    no invoice paid; it records that money arrived. `reference` may name the
+    invoice it settles, as free text, without binding the two together.
+
+    The payer's name and contact are SNAPSHOTTED at issue - `payer_name`,
+    `payer_address`, `payer_tel` - exactly as PhysicalInvoice freezes its
+    bill_* fields. Editing a tenant next year must not rewrite a receipt that
+    was handed over last year. The FKs are kept alongside so the receipt can
+    still be listed under that tenant, but they are never read back onto the
+    document.
+
+    Void, never delete. A voided receipt keeps its number and stays in the
+    list, so the sequence has no gap that nobody can account for.
+    """
+
+    FORMAT_ELECTRONIC = 'electronic'
+    FORMAT_PRINTED = 'printed'
+    FORMAT_CHOICES = [
+        (FORMAT_ELECTRONIC, 'Electronic'),
+        (FORMAT_PRINTED, 'Printed'),
+    ]
+
+    METHOD_CASH = 'cash'
+    METHOD_TRANSFER = 'transfer'
+    METHOD_CHEQUE = 'cheque'
+    METHOD_CARD = 'card'
+    METHOD_OTHER = 'other'
+    METHOD_CHOICES = [
+        (METHOD_CASH, 'Cash'),
+        (METHOD_TRANSFER, 'Bank Transfer'),
+        (METHOD_CHEQUE, 'Cheque'),
+        (METHOD_CARD, 'Card'),
+        (METHOD_OTHER, 'Other'),
+    ]
+
+    cash_receipt_id = models.AutoField(primary_key=True)
+
+    # unique=True is the last line of defence on the number. The counter and
+    # the reconciliation in services/cash_receipt_numbering.py should make a
+    # duplicate impossible; this makes the database refuse one anyway.
+    receipt_number = models.CharField(max_length=32, unique=True,
+        help_text='CR-##### — assigned when the receipt is issued.')
+    receipt_date = models.DateField(help_text='The date the money was received.')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, default='EUR')
+    description = models.TextField(help_text='What the payment was for.')
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES,
+                              default=METHOD_TRANSFER)
+    reference = models.CharField(max_length=64, blank=True,
+        help_text='Optional — e.g. the invoice this settles. May be left blank.')
+    doc_format = models.CharField(max_length=20, choices=FORMAT_CHOICES,
+        default=FORMAT_ELECTRONIC,
+        help_text='Electronic omits the signature block and states the '
+                  'receipt is valid without one. Printed carries the ruled '
+                  'lines instead. Chosen once, at issue.')
+
+    # Who paid, as links (for finding receipts later) ...
+    tenant = models.ForeignKey(tenant, on_delete=models.PROTECT, null=True,
+                               blank=True, related_name='cash_receipts')
+    customer = models.ForeignKey('InvoiceCustomer', on_delete=models.PROTECT,
+                                 null=True, blank=True,
+                                 related_name='cash_receipts')
+    prop = models.ForeignKey(props, on_delete=models.PROTECT, null=True,
+                             blank=True, related_name='cash_receipts')
+
+    # ... and as a frozen snapshot (what the document says).
+    payer_name = models.CharField(max_length=255)
+    payer_address = models.TextField(blank=True,
+        help_text='One line per row. Optional — a receipt is valid without it.')
+    payer_tel = models.CharField(max_length=64, blank=True)
+    payer_email = models.TextField(blank=True,
+        help_text='Comma-separated addresses used when the receipt is emailed.')
+
+    pdf_file = models.FileField(upload_to=cash_receipt_pdf_upload_path,
+                                blank=True, null=True)
+
+    is_void = models.BooleanField(default=False)
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                  blank=True, related_name='voided_cash_receipts')
+    void_reason = models.CharField(max_length=255, blank=True)
+
+    # An edit changes what the record says AFTER a copy may already have been
+    # handed over. The system cannot recall that copy; stamping the change is
+    # the least it can do, and the list shows it.
+    edited_at = models.DateTimeField(null=True, blank=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                  blank=True, related_name='edited_cash_receipts')
+
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                   blank=True, related_name='issued_cash_receipts')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "cash_receipts"
+        verbose_name = "Cash Receipt"
+        verbose_name_plural = "Cash Receipts"
+        # Newest on top, which is how the list is asked to read. The id is the
+        # tie-break so two receipts dated the same day keep a stable order
+        # rather than swapping places between page loads.
+        ordering = ['-receipt_date', '-cash_receipt_id']
+
+    def __str__(self):
+        return f"{self.receipt_number} — {self.payer_name}"
+
+    @property
+    def address_lines(self):
+        return [l.strip() for l in (self.payer_address or '').splitlines()
+                if l.strip()]

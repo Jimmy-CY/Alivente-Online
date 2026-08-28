@@ -261,6 +261,18 @@ urlpatterns = [
     path("physical-invoices/<int:physical_invoice_id>/delete/", views.physical_invoice_delete, name="physical_invoice_delete"),
 
     # ============================================================================
+    # CASH RECEIPTS
+    # ============================================================================
+    path("receipts/", views.cash_receipt_list, name="cash_receipt_list"),
+    path("receipts/new/", views.cash_receipt_add, name="cash_receipt_add"),
+    path("receipts/issue/", views.cash_receipt_commit, name="cash_receipt_commit"),
+    path("receipts/<int:cash_receipt_id>/void/", views.cash_receipt_void, name="cash_receipt_void"),
+    path("receipts/<int:cash_receipt_id>/unvoid/", views.cash_receipt_unvoid, name="cash_receipt_unvoid"),
+    path("receipts/<int:cash_receipt_id>/edit/", views.cash_receipt_edit, name="cash_receipt_edit"),
+    path("receipts/<int:cash_receipt_id>/update/", views.cash_receipt_update, name="cash_receipt_update"),
+    path("receipts/<int:cash_receipt_id>/pdf/", views.cash_receipt_pdf, name="cash_receipt_pdf"),
+
+    # ============================================================================
     # SUPPLIERS
     # ============================================================================
     path('suppliers/', views.suppliers, name='suppliers'),

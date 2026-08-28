@@ -30,6 +30,7 @@ from .finance import *  # noqa: F401, F403
 from .petty_cash import *  # noqa: F401, F403
 from .suppliers import *  # noqa: F401, F403
 from .invoices import *  # noqa: F401, F403
+from .receipts import *  # noqa: F401, F403
 from .passports import *  # noqa: F401, F403
 from .celebrations import *  # noqa: F401, F403
 from .users import *  # noqa: F401, F403

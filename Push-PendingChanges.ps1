@@ -264,7 +264,25 @@ $sentinels = @(
     # .status-btn, so it rendered exactly like the live one.
     @{ File = 'pages\templates\customer_list.html';       Text = 'alv-empty-title'; What = 'Invoice Customers uses base empty state, not its own' },
     @{ File = 'pages\templates\customer_list.html';       Text = 'mobile-action-bar cols-2'; What = 'and its two mobile actions say so' },
-    @{ File = 'pages\templates\invoices.html';            Text = 'icon-approve icon-disabled'; What = 'a disabled Paid tick wears a class base actually defines' }
+    @{ File = 'pages\templates\invoices.html';            Text = 'icon-approve icon-disabled'; What = 'a disabled Paid tick wears a class base actually defines' },
+    # Cash Receipts - a new module. The MIGRATION is not sentinelled here
+    # because its filename is whatever makemigrations chose; test_cash_receipts.py
+    # section 0b checks a migration creating CashReceipt exists, which is the
+    # one thing that would otherwise deploy cleanly and then 500 on first use.
+    @{ File = 'pages\models.py';                          Text = 'class CashReceipt(';        What = 'the receipt record' },
+    @{ File = 'pages\models.py';                          Text = 'class CashReceiptNumbering('; What = 'and its own running counter, starting at CR-00372' },
+    @{ File = 'pages\permissions.py';                     Text = 'can_access_receipts';       What = 'Receipts is its own grantable module' },
+    @{ File = 'pages\views\users.py';                     Text = 'all_permissions = MODULE_PERMISSIONS'; What = 'and User Administration reads the shared list' },
+    @{ File = 'pages\views_setup.py';                     Text = 'permissions_data = all_codenames()'; What = 'so does the seeder - one list, both tiers' },
+    @{ File = 'pages\views\receipts.py';                  Text = 'def cash_receipt_commit';   What = 'issuing takes the number, saves and stores the PDF in one transaction' },
+    @{ File = 'pages\urls.py';                            Text = 'name="cash_receipt_list"';  What = 'the receipts list is routed' },
+    @{ File = 'pages\templates\base.html';                Text = "url 'cash_receipt_list'";   What = 'and reachable from the menu' },
+    # Receipts, round 2: editable, unvoidable, shown in the house PDF modal.
+    @{ File = 'pages\views\receipts.py';                  Text = 'def cash_receipt_unvoid';   What = 'a void can be lifted - a receipt is not an invoice' },
+    @{ File = 'pages\views\receipts.py';                  Text = 'def store_pdf';             What = 'and one place re-renders the stored PDF, deleting the old file' },
+    @{ File = 'pages\urls.py';                            Text = 'name="cash_receipt_update"'; What = 'a receipt can be edited - everything but the number' },
+    @{ File = 'pages\models.py';                          Text = 'edited_at = models.DateTimeField'; What = 'and the edit is stamped, because the sent copy cannot be recalled' },
+    @{ File = 'pages\templates\cash_receipts.html';       Text = "include 'components/pdf_viewer.html'"; What = 'the PDF opens in the house modal, with share and download' }
 )
 
 foreach ($s in $sentinels) {
@@ -366,7 +384,11 @@ $suites = @(
     # section 4 renders `is-disabled` next to the live tick and asserts they
     # are IDENTICAL - a control for the exact fault, kept so the next person
     # can see why the class name mattered.
-    'test_icon_buttons.py'
+    'test_icon_buttons.py',
+    # Cash Receipts. Section 0b refuses the push if `makemigrations` has not
+    # been run - the one failure in this round that would deploy cleanly and
+    # then 500 on the first query. Newest, so most likely to be what breaks.
+    'test_cash_receipts.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

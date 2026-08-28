@@ -3,6 +3,7 @@ from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
+from pages.permissions import all_codenames
 
 @user_passes_test(lambda u: u.is_superuser)
 def setup_permissions(request):
@@ -15,19 +16,12 @@ def setup_permissions(request):
         content_type = ContentType.objects.get_for_model(User)
         
         # Create permissions
-        permissions_data = [
-            ('can_access_properties', 'Can access Properties module'),
-            ('can_access_tenants', 'Can access Tenants module'),
-            ('can_access_suppliers', 'Can access Suppliers module'),
-            ('can_access_expenses', 'Can access Expenses module'),
-            ('can_access_petty_cash', 'Can access Petty Cash module'),
-            ('can_access_financials', 'Can access Financials module'),
-            ('can_access_invoices', 'Can access Invoices module'),
-            ('can_access_projects', 'Can access Projects module'),
-            ('can_access_issues', 'Can access Issues module'),
-            ('can_access_dashboard', 'Can access Dashboard module'),
-            ('can_access_fsr', 'Can access FSR module'),
-        ]
+        # ONE definition, in pages/permissions.py. This list used to be
+        # maintained separately from the User Administration screen's and had
+        # fallen five modules behind it - and it carried no can_edit_* at all,
+        # so a rebuilt environment came up missing half the permissions the
+        # system checks.
+        permissions_data = all_codenames()
         
         for codename, name in permissions_data:
             permission, created = Permission.objects.get_or_create(

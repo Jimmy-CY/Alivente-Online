@@ -1255,6 +1255,11 @@
               <i class="fas fa-file-invoice"></i><span class="link-text">Invoices</span>
           </a>
           {% endif %}
+          {% if user.is_superuser or perms.auth.can_access_receipts %}
+          <a href="{% url 'cash_receipt_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'cash_receipt_list' %}active{% endif %}" data-tooltip="Receipts">
+              <i class="fas fa-receipt"></i><span class="link-text">Receipts</span>
+          </a>
+          {% endif %}
           {% if user.is_superuser or perms.auth.can_access_expenses %}
           <a href="{% url 'act_expense_all' %}?from=home" class="sidebar-link {% if request.resolver_match.url_name == 'act_expense_all' %}active{% endif %}" data-tooltip="Expenses">
               <i class="fas fa-coins"></i><span class="link-text">Expenses</span>
@@ -1355,6 +1360,7 @@
               <a class="nav-link dropdown-toggle" href="#" id="financialDropdown" role="button" data-toggle="dropdown">Financial Management</a>
               <div class="dropdown-menu">
                 {% if user.is_superuser or perms.auth.can_access_invoices %}<a class="dropdown-item" href="{% url 'invoices' %}">Invoices</a>{% endif %}
+                {% if user.is_superuser or perms.auth.can_access_receipts %}<a class="dropdown-item" href="{% url 'cash_receipt_list' %}">Receipts</a>{% endif %}
                 {% if user.is_superuser or perms.auth.can_access_expenses %}<a class="dropdown-item" href="{% url 'act_expense_all' %}?from=home">Expenses</a>{% endif %}
                 {% if user.is_superuser or perms.auth.can_access_petty_cash %}<a class="dropdown-item" href="{% url 'petty_cash' %}">Petty Cash</a>{% endif %}
                 {% if user.is_superuser or perms.auth.can_access_financials %}<div class="dropdown-divider"></div><a class="dropdown-item" href="{% url 'finance' %}">Financials</a>{% endif %}

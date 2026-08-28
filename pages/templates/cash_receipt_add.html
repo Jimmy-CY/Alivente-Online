@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if editing %}Edit Receipt{% else %}Issue Receipt{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - RECEIPTS</center></h2>
+<h4 class="page-subtitle-h4"><center>{% if editing %}EDIT RECEIPT {{ next_number }}{% else %}ISSUE RECEIPT{% endif %}</center></h4>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+{% endfor %}
+
+<div class="page-action-buttons">
+  <button type="submit" form="receiptForm" class="btn action-primary">
+    <i class="fas fa-check"></i> {% if editing %}Save Changes{% else %}Issue Receipt{% endif %}
+  </button>
+  <a href="{% url 'cash_receipt_list' %}" class="btn action-back" title="Back to receipts">
+    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+  </a>
+</div>
+
+{% if editing %}
+  <div class="rec-note rec-note-warn">
+    <i class="fas fa-pen"></i>
+    Editing <strong>{{ next_number }}</strong>. Saving re-makes the stored PDF, and
+    the receipt is marked as edited. <strong>Any copy already emailed or handed
+    over still shows the previous details</strong> &mdash; the system cannot recall it.
+  </div>
+{% endif %}
+
+{% if duplicated_from %}
+  <div class="rec-note">
+    <i class="fas fa-copy"></i>
+    Copied from <strong>{{ duplicated_from }}</strong>, dated today. It becomes a
+    new receipt with its own number when you issue it — nothing has been saved yet.
+  </div>
+{% endif %}
+
+<form action="{% if editing %}{% url 'cash_receipt_update' receipt.pk %}{% else %}{% url 'cash_receipt_commit' %}{% endif %}" method="post" id="receiptForm">
+  {% csrf_token %}
+
+  <div class="alv-card">
+    <div class="alv-card-head">
+      <span class="alv-card-title">The payment</span>
+      <span class="alv-card-aside rec-number">{% if editing %}Receipt {{ next_number }} &mdash; the number cannot change{% else %}Will be issued as {{ next_number }}{% endif %}</span>
+    </div>
+    <div class="alv-card-body">
+      <div class="form-row">
+        <div class="form-group col-md-3 col-sm-6">
+          <label for="receipt_date"><strong>Date received</strong></label>
+          <input type="date" class="form-control" id="receipt_date" name="receipt_date"
+                 value="{{ prefill.receipt_date }}" required>
+        </div>
+        <div class="form-group col-md-3 col-sm-6">
+          <label for="amount"><strong>Amount</strong></label>
+          <div class="input-group">
+            <div class="input-group-prepend"><span class="input-group-text">&euro;</span></div>
+            <input type="number" class="form-control text-right" id="amount" name="amount"
+                   step="0.01" min="0.01" placeholder="0.00"
+                   value="{{ prefill.amount|default_if_none:'' }}" required>
+          </div>
+        </div>
+        <div class="form-group col-md-3 col-sm-6">
+          <label for="method"><strong>Method of payment</strong></label>
+          <select class="form-control" id="method" name="method">
+            <option value="transfer" {% if prefill.method == 'transfer' %}selected{% endif %}>Bank Transfer</option>
+            <option value="cash"     {% if prefill.method == 'cash' %}selected{% endif %}>Cash</option>
+            <option value="cheque"   {% if prefill.method == 'cheque' %}selected{% endif %}>Cheque</option>
+            <option value="card"     {% if prefill.method == 'card' %}selected{% endif %}>Card</option>
+            <option value="other"    {% if prefill.method == 'other' %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+        <div class="form-group col-md-3 col-sm-6">
+          <label for="reference"><strong>Reference</strong> <span class="rec-optional">optional</span></label>
+          <input type="text" class="form-control" id="reference" name="reference"
+                 placeholder="e.g. PR-0169" value="{{ prefill.reference|default_if_none:'' }}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-12">
+          <label for="description"><strong>Being payment for</strong></label>
+          <input type="text" class="form-control" id="description" name="description"
+                 placeholder="e.g. Rent for August 2026 — Eleftheroupoleos 6, Flat 16"
+                 value="{{ prefill.description|default_if_none:'' }}" required>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alv-card">
+    <div class="alv-card-head">
+      <span class="alv-card-title">Received from</span>
+    </div>
+    <div class="alv-card-body">
+      <div class="form-row">
+        <div class="form-group col-md-6 col-sm-12">
+          <label for="payerPicker"><strong>Pick a tenant or customer</strong>
+            <span class="rec-optional">or just type a name below</span></label>
+          <select class="form-control" id="payerPicker">
+            <option value="">— someone else —</option>
+            <optgroup label="Tenants">
+              {% for t in tenants %}
+                <option value="tenant:{{ t.tenant_id }}"
+                        data-name="{{ t.tenant_name }}"
+                        data-tel="{{ t.tenant_contact_number|default_if_none:'' }}"
+                        data-email="{{ t.tenant_email|default_if_none:'' }}"
+                        {% if prefill.tenant_id == t.tenant_id %}selected{% endif %}>{{ t.tenant_name }}</option>
+              {% endfor %}
+            </optgroup>
+            <optgroup label="Invoice customers">
+              {% for c in customers %}
+                <option value="customer:{{ c.pk }}"
+                        data-name="{{ c.name }}"
+                        data-address="{{ c.billing_address }}"
+                        data-tel="{{ c.billing_tel }}"
+                        data-email="{{ c.email_to }}"
+                        {% if prefill.customer_id == c.pk %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </optgroup>
+          </select>
+          <input type="hidden" name="tenant_id" id="tenantId" value="{{ prefill.tenant_id|default_if_none:'' }}">
+          <input type="hidden" name="customer_id" id="customerId" value="{{ prefill.customer_id|default_if_none:'' }}">
+        </div>
+        <div class="form-group col-md-6 col-sm-12">
+          <label for="payer_name"><strong>Name on the receipt</strong></label>
+          <input type="text" class="form-control" id="payer_name" name="payer_name"
+                 value="{{ prefill.payer_name|default_if_none:'' }}" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6 col-sm-12">
+          <label for="payer_address"><strong>Address</strong> <span class="rec-optional">optional, one line per row</span></label>
+          <textarea class="form-control" id="payer_address" name="payer_address"
+                    rows="3">{{ prefill.payer_address|default_if_none:'' }}</textarea>
+        </div>
+        <div class="form-group col-md-3 col-sm-6">
+          <label for="payer_tel"><strong>Telephone</strong> <span class="rec-optional">optional</span></label>
+          <input type="text" class="form-control" id="payer_tel" name="payer_tel"
+                 value="{{ prefill.payer_tel|default_if_none:'' }}">
+        </div>
+        <div class="form-group col-md-3 col-sm-6">
+          <label for="payer_email"><strong>Email</strong> <span class="rec-optional">optional</span></label>
+          <input type="text" class="form-control" id="payer_email" name="payer_email"
+                 value="{{ prefill.payer_email|default_if_none:'' }}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6 col-sm-12">
+          <label for="prop_id"><strong>Property</strong> <span class="rec-optional">optional</span></label>
+          <select class="form-control" id="prop_id" name="prop_id">
+            <option value="">— none —</option>
+            {% for p in properties %}
+              <option value="{{ p.prop_id }}" {% if prefill.prop_id == p.prop_id %}selected{% endif %}>{{ p.prop_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group col-md-6 col-sm-12">
+          <label><strong>Receipt format</strong></label>
+          <div class="rec-format">
+            <label class="rec-radio">
+              <input type="radio" name="doc_format" value="electronic"
+                     {% if prefill.doc_format != 'printed' %}checked{% endif %}>
+              <span><strong>Electronic</strong> — no signature block; states it is
+                    valid without one. For emailing or sharing.</span>
+            </label>
+            <label class="rec-radio">
+              <input type="radio" name="doc_format" value="printed"
+                     {% if prefill.doc_format == 'printed' %}checked{% endif %}>
+              <span><strong>Printed</strong> — carries ruled signature and date
+                    lines instead. For handing over on paper.</span>
+            </label>
+          </div>
+          <div class="rec-hint">
+            Chosen once. The PDF is stored on the receipt as it is issued, so this
+            decides what the stored document looks like.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<style>
+.page-subtitle-h4 { margin-bottom: 0; }
+
+.rec-note {
+    background: var(--alv-accent-soft);
+    border: 1px solid var(--alv-accent-line);
+    border-radius: var(--alv-radius);
+    color: var(--alv-accent-ink);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+}
+.rec-number { color: var(--alv-ink-soft); font-weight: 600; font-size: 12.5px; }
+.rec-note-warn {
+    background: var(--alv-warn-soft);
+    border-color: #ecd9a8;
+    color: var(--alv-warn);
+}
+.rec-optional {
+    color: var(--alv-ink-faint);
+    font-weight: 400;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.rec-hint { color: var(--alv-ink-soft); font-size: 12.5px; margin-top: 6px; }
+
+.rec-format { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.rec-radio {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-weight: 400;
+    font-size: 13px;
+    margin: 0;
+    cursor: pointer;
+}
+.rec-radio input { margin-top: 3px; flex: 0 0 auto; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Picking a tenant or customer FILLS the fields; it does not lock them.
+    // The name on the receipt is whatever is in the box when Issue is
+    // pressed, which is what lets a receipt be made out to somebody the
+    // system has never heard of.
+    var picker = document.getElementById('payerPicker');
+    if (!picker) return;
+    var name = document.getElementById('payer_name');
+    var addr = document.getElementById('payer_address');
+    var tel = document.getElementById('payer_tel');
+    var email = document.getElementById('payer_email');
+    var tenantId = document.getElementById('tenantId');
+    var customerId = document.getElementById('customerId');
+
+    picker.addEventListener('change', function () {
+        var opt = picker.options[picker.selectedIndex];
+        var value = picker.value || '';
+        tenantId.value = '';
+        customerId.value = '';
+        if (value.indexOf('tenant:') === 0) {
+            tenantId.value = value.split(':')[1];
+        } else if (value.indexOf('customer:') === 0) {
+            customerId.value = value.split(':')[1];
+        }
+        if (!value) { return; }
+        name.value = opt.getAttribute('data-name') || '';
+        addr.value = opt.getAttribute('data-address') || '';
+        tel.value = opt.getAttribute('data-tel') || '';
+        email.value = opt.getAttribute('data-email') || '';
+    });
+});
+</script>
+
+{% endblock %}

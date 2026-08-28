@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    /* Deliberately the same visual language as invoices/physical_invoice.html:
+       A4, Helvetica 9pt, the #2f5496 band, the raised centred logo, the
+       bordered meta box top-right. A receipt and an invoice are a matched
+       pair and should look like they came from the same desk. What differs is
+       what a receipt IS: one amount, already paid, no line items, no VAT. */
+    @page {
+        size: a4 portrait;
+        margin: 1.3cm 1.3cm 1.1cm 1.3cm;
+    }
+    body {
+        font-family: Helvetica;
+        font-size: 9pt;
+        color: #1a1a1a;
+        line-height: 1.3;
+    }
+    .company-name { font-size: 16pt; color: #2f5496; font-weight: bold; }
+    .doc-title { font-size: 18pt; color: #2f5496; font-weight: bold; text-align: right; }
+    .muted { color: #555555; }
+    .link  { color: #2f5496; }
+
+    table.layout { width: 100%; }
+    table.layout td { vertical-align: top; }
+
+    .band {
+        background-color: #2f5496;
+        color: #ffffff;
+        font-weight: bold;
+        padding: 4pt 7pt;
+        font-size: 10pt;
+    }
+
+    table.meta { border-collapse: collapse; }
+    table.meta td { border: 0.75pt solid #2f5496; padding: 2pt 5pt; font-size: 8.5pt; }
+    table.meta td.k { font-weight: bold; }
+
+    table.detail { width: 100%; border-collapse: collapse; margin-top: 3pt; }
+    table.detail td {
+        font-size: 9pt;
+        padding: 6pt 7pt;
+        border: 0.5pt solid #c9c9c9;
+    }
+    table.detail td.k { font-weight: bold; width: 26%; background-color: #f4f6fb; }
+
+    /* The amount is the whole point of the document, so it is the only thing
+       on the page allowed to be large. */
+    .amount-box {
+        background-color: #eaeef7;
+        border: 0.75pt solid #2f5496;
+        padding: 9pt 12pt;
+    }
+    .amount-label { font-size: 9pt; font-weight: bold; color: #2f5496; }
+    .amount-value { font-size: 20pt; font-weight: bold; color: #2f5496; text-align: right; }
+    .amount-words { font-size: 8.5pt; color: #555555; }
+
+    table.sign { width: 100%; margin-top: 30pt; }
+    table.sign td { font-size: 8.5pt; vertical-align: bottom; }
+    .sign-rule { border-bottom: 0.5pt solid #1a1a1a; height: 30pt; }
+
+    .footer-bar { background-color: #2f5496; height: 9pt; }
+
+    /* A voided receipt keeps its number and stays in the list, so its PDF has
+       to say so on its face - otherwise the copy in somebody's inbox goes on
+       looking valid forever. */
+    .void-stamp {
+        color: #b3261e;
+        border: 2pt solid #b3261e;
+        font-size: 30pt;
+        font-weight: bold;
+        text-align: center;
+        padding: 6pt;
+        letter-spacing: 6pt;
+    }
+</style>
+</head>
+<body>
+
+    <!-- ===================== LOGO (raised, centred) ===================== -->
+    {% if company.logo_path %}
+    <div style="position: absolute; top: -22pt; left: 0; width: 100%; text-align: center;">
+        <img src="{{ company.logo_path }}" style="width: 118pt;">
+    </div>
+    {% endif %}
+
+    <!-- ===================== HEADER ===================== -->
+    <table class="layout">
+        <tr>
+            <td width="34%">
+                <div class="company-name">{{ company.name }}</div>
+                <div class="muted">VAT Number: {{ company.vat_number }}</div>
+                <div style="height: 7pt;"></div>
+                <div>{% for line in company.address_lines %}{{ line }}<br>{% endfor %}Phone: {{ company.phone }}<br><span class="link">{{ company.website }}</span></div>
+            </td>
+            <td width="32%">&nbsp;</td>
+            <td width="34%">
+                <div class="doc-title">RECEIPT</div>
+                <table class="meta" width="100%" style="margin-top: 8pt;">
+                    <tr><td class="k" width="46%">Date</td><td>{{ receipt.date_display }}</td></tr>
+                    <tr><td class="k">Receipt #</td><td>{{ receipt.number }}</td></tr>
+                    {% if receipt.reference %}<tr><td class="k">Reference</td><td>{{ receipt.reference }}</td></tr>{% endif %}
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    {% if receipt.is_void %}
+    <div style="height: 10pt;"></div>
+    <div class="void-stamp">VOID</div>
+    {% endif %}
+
+    <!-- ===================== RECEIVED FROM ===================== -->
+    <div style="height: 9pt;"></div>
+    <div class="band">RECEIVED FROM</div>
+    <div style="padding: 6pt 2pt 2pt 2pt;">
+        <div style="font-weight: bold;">{{ payer.name }}</div>
+        {% if payer.has_contact %}<div style="padding-top: 3pt;">{% for line in payer.address_lines %}{{ line }}<br>{% endfor %}{% if payer.tel %}Tel: {{ payer.tel }}{% endif %}</div>{% endif %}
+    </div>
+
+    <!-- ===================== THE AMOUNT ===================== -->
+    <div style="height: 9pt;"></div>
+    <table class="layout amount-box">
+        <tr>
+            <td width="52%">
+                <div class="amount-label">AMOUNT RECEIVED</div>
+                <div class="amount-words">{{ receipt.amount_words }}</div>
+            </td>
+            <td width="48%">
+                <div class="amount-value">{{ currency_symbol }} {{ receipt.amount_display }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ===================== DETAIL ===================== -->
+    <div style="height: 9pt;"></div>
+    <div class="band">DETAILS</div>
+    <table class="detail">
+        <tr>
+            <td class="k">Being payment for</td>
+            <td>{{ receipt.description }}</td>
+        </tr>
+        <tr>
+            <td class="k">Method of payment</td>
+            <td>{{ receipt.method_display }}</td>
+        </tr>
+        {% if receipt.property_name %}
+        <tr>
+            <td class="k">Property</td>
+            <td>{{ receipt.property_name }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <!-- ===================== ACKNOWLEDGEMENT ===================== -->
+    <div style="font-size: 9.5pt; padding-top: 16pt;">
+        Received with thanks from <strong>{{ payer.name }}</strong> the sum of
+        <strong>{{ currency_symbol }} {{ receipt.amount_display }}</strong>
+        on {{ receipt.date_display }}.
+    </div>
+
+    {% if receipt.is_printed %}
+    <table class="sign">
+        <tr>
+            <td width="46%">
+                <div class="sign-rule">&nbsp;</div>
+                <div class="muted">For and on behalf of {{ company.name }}</div>
+            </td>
+            <td width="8%">&nbsp;</td>
+            <td width="46%">
+                <div class="sign-rule">&nbsp;</div>
+                <div class="muted">Date</div>
+            </td>
+        </tr>
+    </table>
+    <div class="muted" style="font-size: 8pt; padding-top: 22pt;">
+        Receipt number {{ receipt.number }}.
+    </div>
+    {% endif %}
+    {% if receipt.is_electronic %}
+    <div class="muted" style="font-size: 8pt; padding-top: 26pt;">
+        This receipt is issued electronically by {{ company.name }} and is valid without signature.
+        Receipt number {{ receipt.number }}.
+    </div>
+    {% endif %}
+
+    <div class="footer-bar" style="margin-top: 10pt;">&nbsp;</div>
+
+</body>
+</html>

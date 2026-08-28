@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load help_modal_tags %}
+
+{% block title %}
+Receipts
+{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - RECEIPTS</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2500);
+  </script>
+{% endfor %}
+
+  <div class="page-action-buttons">
+    {% if perms.auth.can_edit_receipts %}
+      <a href="{% url 'cash_receipt_add' %}" class="btn action-primary action-add-new">
+        <i class="fas fa-plus"></i> Issue Receipt
+      </a>
+    {% else %}
+      <span class="btn action-primary disabled-btn action-add-new"
+            title="You do not have permission to issue receipts">
+        <i class="fas fa-plus"></i> Issue Receipt
+      </span>
+    {% endif %}
+    <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+  </div>
+
+  <div class="rec-next">Next receipt number: <strong>{{ next_number }}</strong></div>
+
+  <div class="table-container">
+    <table class="table alv-table receipts-table">
+      <thead>
+        <tr>
+          <th style="width: 12%">Receipt #</th>
+          <th style="width: 11%">Date</th>
+          <th style="text-align: left; width: 22%">Received From</th>
+          <th style="text-align: left; width: 21%">Being Payment For</th>
+          <th class="num" style="width: 12%">Amount</th>
+          <th style="width: 9%">Status</th>
+          <!-- 13%, not 9%. .cell-actions is nowrap, so four 34px buttons and
+               their gaps need 178px whatever the declaration says - and the
+               browser takes the difference from whichever column is next to
+               it. Declaring the real width means the layout is what the file
+               says it is. -->
+          <th class="desktop-action-cell cell-actions" style="width: 13%">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr{% if row.is_void %} class="rec-void"{% endif %}>
+            <td data-label="Receipt #" class="ref">{{ row.number }}{% if row.is_edited %}
+              <span class="rec-edited" title="Edited on {{ row.edited_display }} — any copy already sent shows the previous details">edited</span>{% endif %}</td>
+            <td data-label="Date">{{ row.date|date:"Y-m-d" }}</td>
+            <td data-label="Received From" style="text-align: left">{{ row.payer }}</td>
+            <td data-label="Being Payment For" style="text-align: left">{{ row.description }}</td>
+            <td data-label="Amount" class="num">&euro; {{ row.amount|floatformat:2|intcomma }}</td>
+            <td data-label="Status">
+              <span class="alv-pill {{ row.status_pill }}">{{ row.status_display }}</span>
+            </td>
+            <td data-label="Actions" class="desktop-action-cell cell-actions">
+              <div class="row-actions">
+                <a href="{% url 'cash_receipt_pdf' row.pk %}"
+                   onclick="openPdfViewer('{% url 'cash_receipt_pdf' row.pk %}', 'Receipt {{ row.number|escapejs }} &mdash; {{ row.payer|escapejs }}', '{{ row.number|escapejs }}.pdf'); return false;"
+                   class="icon-action-btn icon-view" title="View receipt">
+                  <i class="fas fa-file-pdf"></i>
+                </a>
+                {% if perms.auth.can_edit_receipts %}
+                  <a href="{% url 'cash_receipt_edit' row.pk %}"
+                     class="icon-action-btn icon-edit" title="Edit this receipt">
+                    <i class="fas fa-pencil-alt"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No permission to edit receipts">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                {% endif %}
+                {% if perms.auth.can_edit_receipts %}
+                  <a href="{% url 'cash_receipt_add' %}?duplicate={{ row.pk }}"
+                     class="icon-action-btn icon-duplicate"
+                     title="Issue a new receipt with these details">
+                    <i class="fas fa-copy"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No permission to issue receipts">
+                    <i class="fas fa-copy"></i>
+                  </span>
+                {% endif %}
+                {% if row.is_void and perms.auth.can_edit_receipts %}
+                  <form method="post" action="{% url 'cash_receipt_unvoid' row.pk %}"
+                        class="rec-inline-form"
+                        onsubmit="return confirm('Bring receipt {{ row.number }} back into use?\n\nThe VOID stamp comes off its PDF.');">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-action-btn icon-approve" title="Unvoid — bring back into use">
+                      <i class="fas fa-rotate-left"></i>
+                    </button>
+                  </form>
+                {% elif perms.auth.can_edit_receipts %}
+                  <form method="post" action="{% url 'cash_receipt_void' row.pk %}"
+                        class="rec-inline-form"
+                        onsubmit="return confirm('Void receipt {{ row.number }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-action-btn icon-delete" title="Void this receipt">
+                      <i class="fas fa-ban"></i>
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No permission to void">
+                    <i class="fas fa-ban"></i>
+                  </span>
+                {% endif %}
+              </div>
+            </td>
+
+            <!-- Mobile-only action bar -->
+            <td class="mobile-action-bar cols-4">
+              <a href="{% url 'cash_receipt_pdf' row.pk %}"
+                 onclick="openPdfViewer('{% url 'cash_receipt_pdf' row.pk %}', 'Receipt {{ row.number|escapejs }} &mdash; {{ row.payer|escapejs }}', '{{ row.number|escapejs }}.pdf'); return false;"
+                 class="mobile-action-btn">
+                <i class="fas fa-file-pdf mobile-action-icon icon-color-view"></i>
+                <span class="mobile-action-label">View</span>
+              </a>
+              {% if perms.auth.can_edit_receipts %}
+                <a href="{% url 'cash_receipt_edit' row.pk %}" class="mobile-action-btn">
+                  <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </span>
+              {% endif %}
+              {% if perms.auth.can_edit_receipts %}
+                <a href="{% url 'cash_receipt_add' %}?duplicate={{ row.pk }}" class="mobile-action-btn">
+                  <i class="fas fa-copy mobile-action-icon icon-color-edit"></i>
+                  <span class="mobile-action-label">Duplicate</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-copy mobile-action-icon"></i>
+                  <span class="mobile-action-label">Duplicate</span>
+                </span>
+              {% endif %}
+              {% if perms.auth.can_edit_receipts %}
+                {% if row.is_void %}
+                  <form method="post" action="{% url 'cash_receipt_unvoid' row.pk %}"
+                        class="rec-inline-form-mobile"
+                        onsubmit="return confirm('Bring receipt {{ row.number }} back into use?\n\nThe VOID stamp comes off its PDF.');">
+                    {% csrf_token %}
+                    <button type="submit" class="mobile-action-btn">
+                      <i class="fas fa-rotate-left mobile-action-icon icon-color-approve"></i>
+                      <span class="mobile-action-label">Unvoid</span>
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'cash_receipt_void' row.pk %}"
+                        class="rec-inline-form-mobile"
+                        onsubmit="return confirm('Void receipt {{ row.number }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
+                    {% csrf_token %}
+                    <button type="submit" class="mobile-action-btn">
+                      <i class="fas fa-ban mobile-action-icon icon-color-delete"></i>
+                      <span class="mobile-action-label">Void</span>
+                    </button>
+                  </form>
+                {% endif %}
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-ban mobile-action-icon"></i>
+                  <span class="mobile-action-label">Void</span>
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      {% if rows %}
+      <tfoot>
+        <tr>
+          <td class="cell-totals-label" colspan="4">TOTAL ISSUED</td>
+          <td class="num" data-label="Total issued">&euro; {{ receipt_total|floatformat:2|intcomma }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+
+    {% if not rows %}
+      {# An empty tbody looks exactly like a failed load. #}
+      <div class="alv-empty">
+        <i class="fas fa-receipt"></i>
+        <div class="alv-empty-title">No receipts issued yet</div>
+        <div class="alv-empty-hint">
+          The first one will be {{ next_number }}.
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+{% render_help_modal "cash_receipts" %}
+
+<!-- The house PDF viewer: a modal with page navigation, zoom, download, and -
+     on a phone - the native share sheet, which is how a receipt reaches
+     WhatsApp. Same component Physical Invoices, Passports and Title Deeds use.
+
+     This note is an HTML comment on purpose. Django's own template comments
+     are SINGLE-LINE ONLY - its lexer matches them without a DOTALL flag - so
+     one spanning several lines is not a comment at all and renders as visible
+     text on the page. This note was written that way first, and
+     test_delete_choice.py caught it before it reached Live. -->
+{% include 'components/pdf_viewer.html' %}
+
+<style>
+.rec-next {
+    color: var(--alv-ink-soft);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+/* An inline <form> is how a POST icon button is written on every page that
+   has one. It must not become a layout box of its own. */
+.rec-inline-form { display: inline; margin: 0; }
+
+/* A receipt that has been changed since it was issued. Quiet - it is not an
+   error - but present, because the copy the payer holds may say something
+   else and the system cannot recall it. */
+.rec-edited {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--alv-ink-faint);
+}
+
+/* A voided receipt stays in the list on purpose - the number must not vanish.
+   It reads as past tense rather than as an error: the row is quiet, not red.
+   Only the strike on the number says what happened, because a whole grey row
+   is easy to mistake for a disabled control. */
+.receipts-table tbody tr.rec-void td { color: var(--alv-ink-faint); }
+.receipts-table tbody tr.rec-void td.ref { text-decoration: line-through; }
+
+/* The total is not a record, so it is not in the tbody. base styles rows;
+   this styles the summary of them. */
+.receipts-table tfoot td {
+    background: var(--alv-surface);
+    border-top: 2px solid var(--alv-line);
+    font-weight: 700;
+    padding: 11px 12px;
+    vertical-align: middle;
+}
+.receipts-table tfoot .cell-totals-label {
+    text-align: right;
+    color: var(--alv-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: 12.5px;
+}
+
+@media (max-width: 768px) {
+    .rec-inline-form-mobile { display: flex; margin: 0; }
+    .rec-inline-form-mobile .mobile-action-btn { width: 100%; }
+
+    /* base turns tbody rows into cards; a tfoot is not a tbody, so the totals
+       card is built here. */
+    .receipts-table tfoot,
+    .receipts-table tfoot tr,
+    .receipts-table tfoot td { display: block; width: 100%; }
+    .receipts-table tfoot tr {
+        background: var(--alv-surface);
+        border: 1px solid var(--alv-accent-line);
+        border-radius: var(--alv-radius);
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    .receipts-table tfoot td {
+        border: 0;
+        padding: 6px 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .receipts-table tfoot td:empty { display: none; }
+    .receipts-table tfoot td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--alv-ink-soft);
+        font-size: 12.5px;
+    }
+    .receipts-table tfoot .cell-totals-label {
+        display: block;
+        text-align: left;
+        color: var(--alv-accent-ink);
+    }
+    .receipts-table tfoot .cell-totals-label::before { content: none; }
+}
+</style>
+
+{% endblock %}

@@ -40,6 +40,7 @@ from django.contrib.auth.decorators import (
 from django.contrib.auth.models import Permission, User
 from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
+from pages.permissions import MODULE_PERMISSIONS
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..models import UserProfile, Workspace
@@ -273,24 +274,9 @@ def user_permissions(request, user_id):
     # Define all available module permissions.
     # edit_codename: set this to enable add/edit/delete control for the module.
     # Leave as None for modules that don't yet have edit-level control.
-    all_permissions = [
-        {'codename': 'can_access_properties',     'edit_codename': 'can_edit_properties', 'label': 'Properties',       'icon': 'fa-building'},
-        {'codename': 'can_access_tenants',        'edit_codename': 'can_edit_tenants',    'label': 'Tenants',          'icon': 'fa-users'},
-        {'codename': 'can_access_suppliers',      'edit_codename': 'can_edit_suppliers',  'label': 'Suppliers',        'icon': 'fa-truck'},
-        {'codename': 'can_access_expenses',       'edit_codename': 'can_edit_expenses',   'label': 'Expenses',         'icon': 'fa-receipt'},
-        {'codename': 'can_access_petty_cash',     'edit_codename': 'can_edit_petty_cash', 'label': 'Petty Cash',       'icon': 'fa-coins'},
-        {'codename': 'can_access_financials',     'edit_codename': 'can_edit_financials', 'label': 'Financials',       'icon': 'fa-chart-line'},
-        {'codename': 'can_access_invoices',       'edit_codename': 'can_edit_invoices',   'label': 'Invoices',         'icon': 'fa-file-invoice'},
-        {'codename': 'can_access_projects',       'edit_codename': 'can_edit_projects',   'label': 'Projects',         'icon': 'fa-project-diagram'},
-        {'codename': 'can_access_issues',         'edit_codename': 'can_edit_issues',     'label': 'Issues',           'icon': 'fa-exclamation-circle'},
-        {'codename': 'can_access_dashboard',      'edit_codename': None,                  'label': 'Dashboard',        'icon': 'fa-tachometer-alt'},
-        {'codename': 'can_access_administration', 'edit_codename': None,                  'label': 'Administration',   'icon': 'fa-cogs'},
-        {'codename': 'can_access_passports',      'edit_codename': 'can_edit_passports',      'label': 'Passports / Documents', 'icon': 'fa-passport'},
-        {'codename': 'can_access_recipes',        'edit_codename': 'can_edit_recipes',        'label': 'Recipes',               'icon': 'fa-utensils'},
-        {'codename': 'can_access_celebrations',   'edit_codename': 'can_edit_celebrations',   'label': 'Celebrations',          'icon': 'fa-birthday-cake'},
-        {'codename': 'can_access_crs',            'edit_codename': 'can_edit_crs',            'label': 'CRS Reporting',         'icon': 'fa-landmark'},
-
-        ]
+    # ONE definition, in pages/permissions.py. This list and the seeder's copy
+    # in views_setup.py had drifted five modules and an entire tier apart.
+    all_permissions = MODULE_PERMISSIONS
 
     # Ensure all permissions exist in the database
     content_type = ContentType.objects.get_for_model(User)
