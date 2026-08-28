@@ -324,9 +324,9 @@ $sentinels = @(
     # so the page won and the element became a scroll container. Only
     # physical_invoice_list is on .alv-table today, so it is the only one where
     # a heading actually starts sticking; the other five are pre-emptive.
-    @{ File = 'pages\templates\physical_invoice_list.html'; Text = '.table-container'; What = 'Physical Invoices stopped redefining base shell - its heading sticks at last'; Absent = $true },
-    @{ File = 'pages\templates\fsr.html';                   Text = '.table-container'; What = 'and neither does Issues'; Absent = $true },
-    @{ File = 'pages\templates\comments_report.html';       Text = '.table-container'; What = 'nor the Comments report'; Absent = $true },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = '.table-container'; What = 'Physical Invoices stopped redefining base shell - its heading sticks at last'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\fsr.html';                   Text = '.table-container'; What = 'and neither does Issues'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\comments_report.html';       Text = '.table-container'; What = 'nor the Comments report'; Absent = $true; Code = $true },
     # Fifteen commit endpoints refuse a GET. @login_required says WHO may call
     # a view; nothing said HOW, so every one of them did its work on a GET -
     # including deleting a tenant, which was a plain link a prefetcher could
@@ -337,7 +337,20 @@ $sentinels = @(
     @{ File = 'pages\views\finance.py';    Text = 'from django.views.decorators.http import require_POST'; What = 'and the eight finance commit/delete views' },
     @{ File = 'pages\views\invoices.py';   Text = 'from django.views.decorators.http import require_POST'; What = 'and marking an invoice paid' },
     @{ File = 'pages\templates\tenant.html';      Text = 'tenant-inline-form'; What = 'Delete is a POST form, not a link a prefetcher can follow' },
-    @{ File = 'pages\templates\tenant_edit.html'; Text = 'form="duplicateTenantForm"'; What = 'and Duplicate posts from a form outside the edit form' }
+    @{ File = 'pages\templates\tenant_edit.html'; Text = 'form="duplicateTenantForm"'; What = 'and Duplicate posts from a form outside the edit form' },
+    # The Manage Expense modal - twelve controls built inside <script>, which
+    # every markup scan in this project was blind to. The bucket
+    # Show-ButtonDrift has listed for weeks as "decided by hand".
+    @{ File = 'pages\templates\act_expense.html'; Text = 'exp-note-success'; What = 'the verify banner is on house tokens, not Bootstrap alerts' },
+    @{ File = 'pages\templates\act_expense.html'; Text = 'action-danger btn-sm'; What = 'and Delete Document reads destructive by TONE, not a red fill' },
+    # The P&L drill-down could not open an invoice: the handler bound a glyph
+    # verify_badge never emits, then decided whether an icon WAS an invoice by
+    # comparing its colour to Bootstrap green.
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = 'window.viewInvoiceQuick'; What = 'the P&L drill-down opens an invoice by reading the document, not the colour' },
+    # Code = $true: the comment above the new handler quotes the dead line it
+    # replaced, "isGreen" and all. That is the record of the fault, not the
+    # fault. See NoComments below.
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = 'isGreen'; What = 'and the colour test is gone'; Absent = $true; Code = $true }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -345,18 +358,103 @@ $sentinels = @(
 # not crept back.  The sticky sweep needs this - what it changed is the ABSENCE
 # of a page-local .table-container rule, and there is no string it adds that
 # could stand in for that.
+#
+# WITH Code = $true THE COMMENTS COME OUT FIRST.  A CHECK THAT READS TEXT
+# CATCHES PROSE - this is the EIGHTH time in three weeks, and the first where
+# it was this script doing the reading.  The P&L round removed a handler that
+# decided whether an icon was an invoice by comparing its colour to Bootstrap
+# green, and left a comment saying so, quoting the dead line:
+#
+#     //       var isGreen = color === 'rgb(40, 167, 69)' || ... '#28a745' ...
+#
+# The patcher's own self-check strips comments before it searches, so it was
+# satisfied.  This script did a raw string search of the whole file, found
+# "isGreen" in that comment, and reported the colour test was back.  It was
+# not: it was being explained.
+#
+# The comment stays - it is the record of what was wrong, and deleting it to
+# please a checker is how a codebase forgets.  The CHECKER learns to read code
+# as code.  Opt-in rather than default, and HTML/CSS/JS only: stripping "#"
+# comments from Python cannot be done with a regex without eating the "#" in
+# a string literal, which is where half these colour hexes live.
+function NoComments {
+    param([string]$Text)
+    $sl = [Text.RegularExpressions.RegexOptions]::Singleline
+    $t = [regex]::Replace($Text, '<!--.*?-->', '', $sl)
+    # Django's {# #} is single-line by design - its lexer regex has no DOTALL.
+    $t = [regex]::Replace($t, '\{#[^\r\n]*?#\}', '')
+    $t = [regex]::Replace($t, '/\*.*?\*/', '', $sl)
+    # Only a line that BEGINS with // - anything else eats the // in https://.
+    $keep = foreach ($l in ($t -split "`n")) {
+        if ($l.TrimStart().StartsWith('//')) { '' } else { $l }
+    }
+    return ($keep -join "`n")
+}
+
+# $BodyWas: see the collision check below the loop. Taken BEFORE the loop so
+# it measures what the caller passed, not what the loop left behind.
+$BodyWas = @($Body).Count
+
 foreach ($s in $sentinels) {
     $p = Join-Path $root $s.File
     $want = -not $s.Absent
     $label = '{0}  ({1})' -f $s.File, $s.What
     if (-not (Test-Path $p)) { Bad ($label + '  - FILE MISSING'); $problems++; continue }
-    $hit = [bool](Select-String -LiteralPath $p -Pattern $s.Text -SimpleMatch -Quiet)
+    if ($s.Code) {
+        # NOT $body.  PowerShell variable names are case-INSENSITIVE, so $body
+        # is this script's own -Body parameter - the commit message. The first
+        # version of this block assigned the stripped file into it. Because
+        # -Body is typed [string[]], the string was silently coerced to a
+        # one-element ARRAY, so .IndexOf became Array.IndexOf and threw
+        # "cannot find an overload ... argument count 2" on every Code
+        # sentinel. That exception was the lucky part: had String.IndexOf's
+        # 2-argument overload been reachable on an array, this would have
+        # committed the contents of a template as the commit message.
+        $fileText = [string](NoComments ([string](Get-Content -LiteralPath $p -Raw)))
+        # IndexOf with OrdinalIgnoreCase, not .Contains: Select-String
+        # -SimpleMatch is case-INSENSITIVE, and a checker that quietly became
+        # case-sensitive would turn passing sentinels into failures that look
+        # like real faults.
+        $hit = $fileText.IndexOf($s.Text, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    } else {
+        $hit = [bool](Select-String -LiteralPath $p -Pattern $s.Text -SimpleMatch -Quiet)
+    }
     if ($hit -eq $want) { Good $label }
     else {
         if ($want) { $why = '  - not found' }
         else        { $why = '  - "' + $s.Text + '" is back' }
+        if ($s.Code) { $why = $why + ' (comments stripped)' }
         Bad ($label + $why); $problems++
     }
+}
+
+# CONTROL.  Stripping comments can only ever make an Absent sentinel MORE
+# likely to pass, so the flag needs its own proof that it has not simply
+# switched the check off.  Two constructed cases through the same function:
+# the string in a comment must vanish, the string in live code must survive.
+$probeText = "// var isGreen = 1;`nvar isGreen = 2;`n<!-- isGreen -->"
+$probeLeft  = NoComments $probeText
+if ($probeLeft -match 'isGreen') {
+    Good 'sentinel comment-stripping keeps live code (control)'
+} else {
+    Bad  'sentinel comment-stripping ate live code - the Code flag is unsafe'
+    $problems++
+}
+if (([regex]::Matches($probeLeft, 'isGreen')).Count -ne 1) {
+    Bad  'sentinel comment-stripping left a commented occurrence behind'
+    $problems++
+}
+
+# AND THE COLLISION CONTROL. The loop above reads files into a variable; if
+# that variable ever shares a name with a PARAMETER of this script - which is
+# exactly what happened with $body on the 28 Aug run - the caller's commit
+# message is destroyed before it is ever used. -Message is checked where it is
+# used; -Body is not read until the commit is written, which is far too late
+# for anything here to notice. So notice here.
+if (@($Body).Count -ne $BodyWas) {
+    Bad ('the sentinel loop changed -Body ({0} paragraph(s) in, {1} out)' -f $BodyWas, @($Body).Count)
+    Say '        a variable in that loop is colliding with a script parameter.'
+    $problems++
 }
 
 if ($problems -and -not $Force) {
@@ -483,7 +581,16 @@ $suites = @(
     # is the part we chose and could have got wrong. Section 4 scans every
     # template for a surviving link to any of the fifteen. Newest, so most
     # likely to break.
-    'test_require_post.py'
+    'test_require_post.py',
+    # The Manage Expense modal. Its controls are markup inside JavaScript
+    # string literals, so the statics read the SCRIPT text and section 2
+    # lifts the document panel out of its template literal and draws it.
+    # Newest, so most likely to break.
+    'test_manage_modal.py',
+    # The P&L invoice icons. The fault was "the click does nothing", so the
+    # check is a CLICK: the page's own functions, the real icon markup, and
+    # the viewer read back afterwards. Newest, so most likely to break.
+    'test_pl_invoice.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
@@ -607,12 +714,70 @@ if (-not $Message) {
 & git add -A
 if ($LASTEXITCODE -ne 0) { Bad 'git add failed'; exit 1 }
 
-$commitArgs = @('commit', '-m', $Message)
-foreach ($p in $Body) { $commitArgs += @('-m', $p) }
-$commitArgs += @('-m', 'Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>')
-& git @commitArgs
-if ($LASTEXITCODE -ne 0) { Bad 'git commit failed'; exit 1 }
+# THE MESSAGE GOES THROUGH A FILE, NOT THROUGH -m.
+#
+# This used to be `git commit -m $Message -m $p ...`, and it broke the first
+# time a -Body paragraph QUOTED something:
+#
+#     'Show-ButtonDrift has reported these as "NOT rewritten ... decided by
+#      hand"; this is that hand.'
+#
+# PowerShell 5.1 does not escape an embedded " when it hands an argument to a
+# NATIVE executable - it passes the string through verbatim, so the quote
+# closed git's argument and git read the remainder as pathspecs:
+#
+#     error: pathspec 'rewritten' did not match any file(s) known to git
+#
+# Note where that lands: AFTER `git add -A`, so the tree was staged and the
+# commit was not. Nothing was lost, but the next run had to be re-driven.
+#
+# There is no amount of doubling or backticking that makes this reliable
+# across quoting styles - the fix is to stop passing prose on a command line
+# at all. -F takes the whole message as a file, byte for byte, and quotes,
+# backticks, semicolons and newlines in it stop meaning anything.
+$msgFile = Join-Path ([IO.Path]::GetTempPath()) ('alv-commit-' + [guid]::NewGuid().ToString('N') + '.txt')
+try {
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add($Message)
+    foreach ($p in $Body) { $lines.Add(''); $lines.Add($p) }
+    $lines.Add('')
+    $lines.Add('Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>')
+    # UTF8 without a BOM: git would otherwise carry the BOM into the subject
+    # line, where it shows up as a stray character in every log.
+    [IO.File]::WriteAllText($msgFile, ($lines -join "`n"),
+                            (New-Object Text.UTF8Encoding $false))
+    & git commit -F $msgFile
+    $commitCode = $LASTEXITCODE
+} finally {
+    if (Test-Path $msgFile) { Remove-Item $msgFile -Force }
+}
+if ($commitCode -ne 0) { Bad 'git commit failed'; exit 1 }
 Good 'committed'
+
+# CONTROL: the message that landed is the message that was asked for.
+#
+# The -m version failed loudly THIS time because git happened to read the
+# fragments as pathspecs. A quoting fault that merely TRUNCATED a paragraph
+# would have committed quietly with half the reasoning missing, and nobody
+# would find out until they read the log months later. So read it back.
+# .Contains, NOT -like: -like reads [ ] * ? as wildcards, and a commit body
+# is prose that may contain any of them. An ordinal substring test is what is
+# meant here.
+$committed = [string]((& git --no-pager log -1 --pretty=%B) -join "`n")
+$lost = New-Object System.Collections.Generic.List[string]
+if (-not $committed.Contains($Message)) { $lost.Add('the subject') }
+foreach ($p in @($Body)) {
+    if (-not $committed.Contains($p)) {
+        $lost.Add('"' + $p.Substring(0, [Math]::Min(48, $p.Length)) + '..."')
+    }
+}
+if ($lost.Count) {
+    Bad ('the commit message lost ' + $lost.Count + ' piece(s) between here and git:')
+    foreach ($l in $lost) { Say ('        ' + $l) }
+    Say  '        Amend it before pushing:  git commit --amend'
+    exit 1
+}
+Good ('the commit message is intact (' + (1 + @($Body).Count) + ' part(s) read back)')
 Say ''
 & git --no-pager log -1 --stat | ForEach-Object { Say ('  ' + $_) }
 

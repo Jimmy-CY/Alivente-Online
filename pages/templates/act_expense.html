@@ -10,10 +10,10 @@
 
 <style>
 /* ---- Invoice verification ---------------------------------------- */
-.verify-icon.verify-success   { color: #28a745; }
-.verify-icon.verify-danger    { color: #dc3545; }
-.verify-icon.verify-secondary { color: #6c757d; }
-.verify-icon.verify-info      { color: #0e7c8b; }
+.verify-icon.verify-success   { color: var(--alv-good); }
+.verify-icon.verify-danger    { color: var(--alv-bad); }
+.verify-icon.verify-secondary { color: var(--alv-neutral); }
+.verify-icon.verify-info      { color: var(--alv-accent); }
 .verify-banner { text-align: left; font-size: 0.9rem; margin-bottom: 12px; }
 .verify-banner-head { margin-bottom: 6px; }
 .verify-note { margin-top: 2px; }
@@ -409,6 +409,32 @@
 /* The report modal's own title icon carried `style="color:#0e7c8b"` - the
    accent as a literal, in the one place a token cannot reach. */
 .expense-report-dialog .modal-title i { color: var(--alv-accent); }
+
+/* ------------------------------------------------------------------
+   A quiet explanatory strip. base has no alert or note component, so
+   this stays page-local - but on the house tokens, not Bootstrap's
+   alert palette. Five tones, matching the five verification states.
+   ------------------------------------------------------------------ */
+.exp-note {
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    color: var(--alv-ink);
+}
+/* Tint only. base's pill variants pair each tint with a hand-picked border
+   literal; there is no token for those, and three more hexes to keep in step
+   is a worse trade than one neutral hairline under every tone. */
+.exp-note-success   { background: var(--alv-good-soft); }
+.exp-note-danger    { background: var(--alv-bad-soft); }
+.exp-note-warning   { background: var(--alv-warn-soft); }
+.exp-note-secondary { background: var(--alv-neutral-soft); }
+.exp-note-info      { background: var(--alv-info-soft); border-color: var(--alv-accent-line); }
+.exp-note-success .verify-banner-head   { color: var(--alv-good); }
+.exp-note-danger .verify-banner-head    { color: var(--alv-bad); }
+.exp-note-warning .verify-banner-head   { color: var(--alv-warn); }
+.exp-note-secondary .verify-banner-head { color: var(--alv-neutral); }
+.exp-note-info .verify-banner-head      { color: var(--alv-accent-ink); }
 </style>
 
 <h2 class="page-title-h2"><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
@@ -1157,7 +1183,7 @@ function verifyBanner(expenseId) {
         .map(n => '<div class="verify-note">' + n + '</div>').join('');
 
     return `
-        <div class="alert alert-${s[0]} verify-banner">
+        <div class="exp-note exp-note-${s[0]} verify-banner">
             <div class="verify-banner-head"><i class="fas ${s[1]}"></i> <strong>${s[2]}</strong></div>
             ${notes}
             ${detail.length ? '<div class="verify-meta">' + detail.join(' &nbsp;|&nbsp; ') + '</div>' : ''}
@@ -1181,10 +1207,10 @@ function captureButtons() {
     if (!isTouchDevice()) { return ''; }
     return `
         <div class="capture-row">
-            <button type="button" class="btn btn-primary btn-sm" onclick="pickWith(this, true)">
+            <button type="button" class="btn action-secondary btn-sm" onclick="pickWith(this, true)">
                 <i class="fas fa-camera"></i> Take Photo
             </button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickWith(this, false)">
+            <button type="button" class="btn action-secondary btn-sm" onclick="pickWith(this, false)">
                 <i class="fas fa-paperclip"></i> Choose File
             </button>
             <div class="capture-name text-muted small"></div>
@@ -1347,7 +1373,7 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
                 </div>` : ''}
               </div>
               <div class="text-right">
-                <button type="submit" class="btn btn-success">Save Changes</button>
+                <button type="submit" class="btn action-primary">Save Changes</button>
               </div>
             </form>
         `;
@@ -1393,7 +1419,7 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
         }
     } else {
         expenseDetailsContent.innerHTML = `
-            <div class="alert alert-warning">
+            <div class="exp-note exp-note-warning">
                 <i class="fas fa-lock"></i> <strong>Read Only:</strong> This expense cannot be modified.
             </div>
             <div class="form-row">
@@ -1454,14 +1480,14 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
     if (!canManageDocuments) {
         if (documentUrl && documentName) {
             invoiceContent.innerHTML = `
-                <div class="alert alert-info">
+                <div class="exp-note exp-note-info">
                     <i class="fas fa-eye"></i> <strong>Read Only:</strong> You can view this document but cannot modify it.
                 </div>
                 ${verifyBanner(expenseId)}${launcherCard(documentName)}
             `;
         } else {
             invoiceContent.innerHTML = `
-                <div class="alert alert-info">
+                <div class="exp-note exp-note-info">
                     <i class="fas fa-eye"></i> <strong>Read Only:</strong> You do not have permission to manage documents.
                 </div>
                 <p class="text-muted">No invoice document is attached to this expense.</p>
@@ -1478,7 +1504,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
 
         // "Add to Existing" merge button only makes sense for PDFs
         const addToExistingBtn = isPdf ? `
-            <button type="button" class="btn btn-success btn-sm" onclick="showAddToExisting()">
+            <button type="button" class="btn action-secondary btn-sm" onclick="showAddToExisting()">
                 <i class="fas fa-plus"></i> Add to Existing
             </button>
         ` : '';
@@ -1487,14 +1513,14 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
             ${verifyBanner(expenseId)}${launcherCard(documentName)}
 
             <div class="doc-action-row">
-                <a href="${documentUrl}" download="${cleanName}" class="btn btn-info btn-sm">
+                <a href="${documentUrl}" download="${cleanName}" class="btn action-secondary btn-sm">
                     <i class="fas fa-download"></i> Download
                 </a>
                 ${addToExistingBtn}
-                <button type="button" class="btn btn-warning btn-sm" onclick="showReplaceUpload()">
+                <button type="button" class="btn action-secondary btn-sm" onclick="showReplaceUpload()">
                     <i class="fas fa-sync"></i> Replace
                 </button>
-                <button type="button" class="btn btn-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
+                <button type="button" class="btn action-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
                     <i class="fas fa-trash"></i> Delete Document
                 </button>
             </div>
@@ -1512,8 +1538,8 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                         ${captureButtons()}
                         <small class="form-text text-success"><i class="fas fa-info-circle"></i> All file types will be converted to PDF and merged. Max file size: 5MB</small>
                     </div>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Merge Documents</button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddToExisting()">Cancel</button>
+                    <button type="submit" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Merge Documents</button>
+                    <button type="button" class="btn action-secondary btn-sm" onclick="hideAddToExisting()">Cancel</button>
                 </form>
             </div>
 
@@ -1528,8 +1554,8 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                         ${captureButtons()}
                         <small class="form-text text-muted">Max file size: 5MB</small>
                     </div>
-                    <button type="submit" class="btn btn-success btn-sm">Upload</button>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="hideReplaceUpload()">Cancel</button>
+                    <button type="submit" class="btn action-primary btn-sm">Upload</button>
+                    <button type="button" class="btn action-secondary btn-sm" onclick="hideReplaceUpload()">Cancel</button>
                 </form>
             </div>
         `;
@@ -1547,7 +1573,7 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                         ${captureButtons()}
                     <small class="form-text text-muted">Max file size: 5MB</small>
                 </div>
-                <button type="submit" class="btn btn-info">
+                <button type="submit" class="btn action-primary">
                     <i class="fas fa-upload"></i> Upload Document
                 </button>
             </form>

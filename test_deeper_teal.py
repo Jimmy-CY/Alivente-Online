@@ -134,17 +134,35 @@ check('%d file(s) have a backup still holding the old teal' % moved,
       moved >= 5)
 
 # ============================================ THE ONE THAT MOTIVATED MOVE 2
-act = os.path.join(ROOT, 'pages', 'templates', 'act_expense.html')
-if os.path.exists(act):
-    a = read(act)
-    uses = len(re.findall(r'btn-info', a))
-    own = len(re.findall(r'\.btn-info\s*[{,]', a))
-    check('act_expense.html still uses btn-info (%d) with no local rule (%d)'
-          % (uses, own), uses > 0 and own == 0)
-    check('  so its buttons depend entirely on the base.html override',
-          '--alv-accent:' in BASE_SRC)
-else:
-    check('act_expense.html exists', False)
+# This used to name act_expense.html as its witness: a page that uses btn-info
+# and defines no .btn-info rule of its own, so its buttons can only be getting
+# their colour from base. That is a good thing to assert and a bad way to
+# assert it - the Manage Expense round (28 Aug) moved that page's last two
+# btn-info controls onto the house tones, and this check failed reporting a
+# fault in work that had done exactly what it should.
+#
+# A witness that is one named page goes stale the moment that page is
+# migrated. Ask the question of the whole tree instead: SOMEBODY must still be
+# relying on the override, and the check names who, so the day the answer is
+# nobody it fails honestly - because on that day the override could be deleted.
+import glob as _glob
+_relying = []
+for _p in sorted(_glob.glob(os.path.join(ROOT, 'pages', 'templates', '**', '*.html'),
+                            recursive=True)):
+    _s = read(_p)
+    if re.search(r'btn-info', _s) and not re.search(r'\.btn-info\s*[{,]', _s):
+        _relying.append(os.path.relpath(_p, os.path.join(ROOT, 'pages', 'templates')))
+check('%d page(s) still use btn-info with no local rule, so the base override '
+      'is doing real work (%s%s)'
+      % (len(_relying), ', '.join(_relying[:4]),
+         ' ...' if len(_relying) > 4 else ''), len(_relying) >= 1)
+check('  and base really does define the accent they are leaning on',
+      '--alv-accent:' in BASE_SRC)
+# CONTROL: the scan must be able to tell the two cases apart.
+check('  CONTROL: a page that defines its OWN .btn-info is not counted',
+      not [n for n in _relying
+           if re.search(r'\.btn-info\s*[{,]',
+                        read(os.path.join(ROOT, 'pages', 'templates', *n.split('/'))))])
 
 # ====================================================================== out
 print('')

@@ -1473,33 +1473,43 @@ $(document).ready(function() {
         });
     });
 
+    // The rows injected into this modal come from the Expenses page and carry
+    // inline onclick="viewInvoiceQuick(url, name)" - a function that lives on
+    // THAT page and not on this one, so the click threw and nothing opened.
+    //
+    // Give the name a meaning here rather than intercepting the click and
+    // re-parsing the attribute out of the DOM, which is what this used to do:
+    //
+    //   $(document).on('click', '.fa-file-alt', ...)
+    //       var isGreen = color === 'rgb(40, 167, 69)' || ... '#28a745' ...
+    //       if (isGreen) { open it }
+    //
+    // wrong twice. The selector named a glyph verify_badge never emits - it
+    // renders fa-check-circle, fa-exclamation-triangle, fa-question-circle,
+    // fa-file or fa-file-invoice - so no click was ever caught. And it decided
+    // whether an icon was an invoice by COMPARING ITS COLOUR to Bootstrap
+    // green, which is reading a rendering of data instead of the data.
+    window.viewInvoiceQuick = function (documentUrl, documentName) {
+        if (!documentUrl) { return; }
+        firstModalScrollTop = $('#expenseDetailsModal .modal-body').scrollTop();
+        // The stored value is a PATH; the viewer wants a file name to offer as
+        // the download.
+        var name = String(documentName || '').split('/').pop() || 'invoice.pdf';
+        showInvoiceModalLikeExisting(documentUrl, name);
+    };
+
     function setupInvoiceIconHandlers() {
-        $(document).off('click', '.fa-file-alt').on('click', '.fa-file-alt', function(e) {
+        // For any invoice icon that carries its document in data attributes
+        // rather than an onclick. Guarded on the onclick so an icon with both
+        // does not open the viewer twice.
+        $(document).off('click', '.verify-icon').on('click', '.verify-icon', function(e) {
             var $icon = $(this);
-            var color = $icon.css('color');
-            var isGreen = color === 'rgb(40, 167, 69)' || color === 'rgb(0, 128, 0)' || color === 'green' ||
-                         $icon.hasClass('text-success') ||
-                         ($icon.attr('style') && $icon.attr('style').includes('color: #28a745'));
-            if (isGreen) {
-                e.preventDefault();
-                e.stopPropagation();
-                firstModalScrollTop = $('#expenseDetailsModal .modal-body').scrollTop();
-                var onclickAttr = $icon.attr('onclick');
-                if (onclickAttr) {
-                    var matches = onclickAttr.match(/viewInvoiceQuick\('([^']+)',\s*'([^']+)'\)/);
-                    if (matches && matches.length >= 2) {
-                        showInvoiceModalLikeExisting(matches[1], matches[2] || 'invoice.pdf');
-                        return;
-                    }
-                }
-                var documentUrl = $icon.data('invoice-url') || $icon.data('url');
-                var documentName = $icon.data('filename') || 'invoice.pdf';
-                if (documentUrl) {
-                    showInvoiceModalLikeExisting(documentUrl, documentName);
-                } else {
-                    alert('Invoice file not found.');
-                }
-            }
+            if ($icon.attr('onclick')) { return; }
+            var documentUrl = $icon.data('invoice-url') || $icon.data('url');
+            if (!documentUrl) { return; }
+            e.preventDefault();
+            e.stopPropagation();
+            window.viewInvoiceQuick(documentUrl, $icon.data('filename') || 'invoice.pdf');
         });
     }
 

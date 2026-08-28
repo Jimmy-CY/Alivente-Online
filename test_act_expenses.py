@@ -204,8 +204,30 @@ check('there is an empty state, outside the table so it needs no colspan',
       'alv-empty-title' in MK and 'colspan' not in MK)
 
 _left = sels_of(in_scope(PG))
-check('the in-scope half is down to %d rules from 118' % len(_left),
-      len(_left) <= 90, '')
+# SUPERSEDED 28 Aug 2026. Sixth instance of the pattern in section 4b of
+# claude/outstanding_items.md, and the first where the cause was a LATER
+# ROUND ON THIS SAME PAGE rather than a hoist into base.
+#
+# The Manage Expense round added `.exp-note` in five tones - eleven rules -
+# because base.html has no alert or note component at all, so there was
+# nothing to hoist the verify banner to. Those rules are the page owning
+# something of its own, which is the opposite of the fault this ceiling
+# exists to catch.
+#
+# So the ceiling is NOT raised from 90 to 101. Raising it would make a page
+# that grew a legitimate component indistinguishable from one that started
+# redefining base again - and a floor that is lowered whenever it fails has
+# stopped being a floor. The eleven are excluded BY NAME, and the exclusion
+# is itself checked below, so nothing can be parked behind that prefix.
+_added = [s for s in _left if s.startswith('.exp-note')]
+_own = [s for s in _left if not s.startswith('.exp-note')]
+check('the in-scope half is down to %d rules from 118' % len(_own),
+      len(_own) <= 90, '')
+check('  .. and the %d excluded are the Manage Expense notes, nothing else'
+      % len(_added),
+      len(_added) == 11 and all(s.startswith('.exp-note') for s in _added))
+check('  .. base still has no note component, which is WHY they stay local',
+      '.alv-note' not in _bcss)
 for gone in ('.expense-table-wrapper', '.expense-table td.cell-action',
              '.expense-table .status-btn', '.action-more-menu',
              '.report-drill-table td', '.report-table tbody tr:hover'):

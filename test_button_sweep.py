@@ -79,6 +79,14 @@ _spec = importlib.util.spec_from_file_location(
 sb = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(sb)
 
+# The patcher itself, imported rather than shelled out to, so section 10 can
+# ask sweep_template() what it does to a <script> instead of inferring it
+# from whether a live page happens to still hold a Bootstrap class.
+_aspec = importlib.util.spec_from_file_location(
+    'applybuttonsweep', os.path.join(ROOT, 'apply_button_sweep.py'))
+_asw = importlib.util.module_from_spec(_aspec)
+_aspec.loader.exec_module(_asw)
+
 BASE = load(os.path.join(TPL, 'base.html'))
 FILES = sb.templates(False)
 
@@ -1076,7 +1084,27 @@ head('10. the fourth blind spot - buttons built inside <script>')
 # necessarily a button. But this codebase builds whole modals in template
 # literals, and every one of those buttons was invisible to a guard that
 # reported zero. The green Save Changes on the Manage Expense modal is the
-# one that was found by clicking; it is one of twenty.
+# one that was found by clicking; it was one of twenty.
+#
+# SUPERSEDED 28 Aug 2026 - and this is the FIFTH time a later round has
+# invalidated an earlier suite's hardcoded expectation, so it is worth
+# naming the shape once more. This section used to assert that the count is
+# twenty, that act_expense.html's `btn btn-success` Save Changes is among
+# them, and that act_expense's script block is UNTOUCHED. All three were
+# true because the finding's whole point was "NOT rewritten ... these are
+# decided by hand". apply_manage_modal.py IS that hand: it decided twelve of
+# act_expense.html's controls on 28 Aug, so they no longer carry a Bootstrap
+# tone and js_buttons - which only reports class lists base.html would own -
+# correctly stops seeing them.
+#
+# What this section is FOR has not changed, and none of it is relaxed here:
+#   * the scan can see into <script> at all (the blind spot it was written
+#     to close),
+#   * it REPORTS rather than silently rewriting - the patcher must still
+#     leave every script byte alone,
+#   * a decision already taken in markup carries across to a script.
+# What changes is only the arithmetic: eight remain, in two pages, and
+# act_expense's twelve are now asserted DECIDED rather than untouched.
 
 _js = {}
 for f in FILES:
@@ -1085,11 +1113,28 @@ for f in FILES:
         _js[f] = hits
 _all = [h for v in _js.values() for h in v]
 _open = [h for h in _all if not h[5]]
-check('the scan finds the script-built buttons at all (%d)' % len(_all),
-      len(_all) >= 20)
-check('act_expense.html Manage Expense "Save Changes" is among them',
-      any(h[0] == 'Save Changes' and 'btn-success' in h[1]
-          for h in _js.get('act_expense.html', [])))
+check('the scan still sees into <script> at all (%d in %d page(s))'
+      % (len(_all), len(_js)),
+      len(_all) >= 8 and len(_js) >= 4)
+# The two pages nobody has decided yet. Naming them keeps the finding
+# specific: when these are done the number is 4, all of them LEAVE, and
+# this check is the one that says so out loud.
+check('the undecided ones are still reported (cashflow_forecast, asset_detail)',
+      len(_js.get('finance/cashflow_forecast.html', [])) == 3
+      and len(_js.get('asset_detail.html', [])) == 1)
+
+# act_expense.html: the twelve were DECIDED, not swept and not forgotten.
+_ae_raw = load(os.path.join(TPL, 'act_expense.html'))
+_ae_js = '\n'.join(m.group(1) for m in
+                   re.finditer(r'<script[^>]*>(.*?)</script>', _ae_raw, re.S))
+check('act_expense.html has no Bootstrap-toned script button left',
+      not _js.get('act_expense.html'))
+check('.. because its twelve now carry house tones INSIDE the script',
+      _ae_js.count('action-primary') + _ae_js.count('action-secondary')
+      + _ae_js.count('action-danger') >= 12)
+check('.. and Save Changes is still there, still built in JavaScript',
+      'Save Changes' in _ae_js)
+
 check('a wrapper already on the LEAVE list carries its reason across',
       len(_all) - len(_open) == 4
       and all(h[5] == 'segmented toggle - colour is state'
@@ -1099,7 +1144,12 @@ check('a wrapper already on the LEAVE list carries its reason across',
 # blanking <script>, this pass would be double-counting and the patcher
 # would start rewriting JavaScript at offsets taken from a blanked copy.
 _ae = sb.markup_of(load(os.path.join(TPL, 'act_expense.html')))
-check('CONTROL: the ordinary markup scan still cannot see them',
+# Both halves, or this is a control that cannot fail: the label has to be
+# IN the file and OUT of the markup view. Asserting only the second passes
+# just as happily on the day somebody deletes the button.
+check('CONTROL: "Save Changes" is in act_expense.html at all',
+      'Save Changes' in _ae_raw)
+check('CONTROL: .. but the ordinary markup scan still cannot see it',
       'Save Changes' not in _ae)
 
 # CONTROL 2: an interpolated class list must be refused, not guessed at.
@@ -1120,12 +1170,34 @@ check('a real .innerHTML target IS reported (cashflow_forecast modalFooter)',
       any(h[3] == 'modalFooter'
           for h in _js.get('finance/cashflow_forecast.html', [])))
 
-# CONTROL 4: nothing in a <script> was rewritten. The whole point of a
-# separate kind is that a person decides these.
-for _f, _n in (('act_expense.html', 'btn btn-success'),
-               ('finance/cashflow_forecast.html', 'btn btn-info')):
-    check('%s script block is untouched (%s still there)' % (_f, _n),
-          _n in load(os.path.join(TPL, _f)))
+# CONTROL 4: the PATCHER does not rewrite inside a <script>. The whole
+# point of a separate kind is that a person decides these.
+#
+# This used to be asserted by naming two live pages and checking a Bootstrap
+# class was still in them - which stopped meaning anything the moment one of
+# those pages was decided by hand, and would have gone on passing for the
+# other page whether the patcher touched scripts or not. Ask the patcher
+# directly instead: one fragment, the SAME button twice, once in a real
+# action bar and once inside a template literal. The first must be retoned;
+# the second must come out byte-identical.
+_probe = ('{% extends "base.html" %}{% block content %}'
+          '<div class="page-action-bar">'
+          '<button class="btn btn-success">Save Changes</button></div>'
+          '<script>var h = `<div class="page-action-bar">'
+          '<button class="btn btn-success">Save Changes</button></div>`;'
+          '</script>{% endblock %}')
+_probe_out = _asw.sweep_template('probe.html', _probe)[0]
+_probe_js = re.search(r'<script[^>]*>(.*?)</script>', _probe_out, re.S)
+check('CONTROL: the patcher DOES retone the same button in markup',
+      'btn action-primary' in sb.markup_of(_probe_out))
+check('CONTROL: .. and leaves the one inside <script> byte-identical',
+      _probe_js is not None
+      and 'btn btn-success' in _probe_js.group(1)
+      and 'action-primary' not in _probe_js.group(1))
+# And the live page nobody has decided yet is still as it was found.
+check('finance/cashflow_forecast.html script block is untouched '
+      '(btn btn-info still there)',
+      'btn btn-info' in load(os.path.join(TPL, 'finance/cashflow_forecast.html')))
 
 # The report has to say so on the CLEAN path too, or the finding disappears
 # on exactly the day the markup is finished.
