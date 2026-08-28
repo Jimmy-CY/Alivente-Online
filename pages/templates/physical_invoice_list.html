@@ -178,7 +178,7 @@ Physical Invoices
           <th style="width: 14%">Property</th>
           <th style="width: 12%">Total</th>
           <th style="width: 8%">Status</th>
-          <th style="width: 14%">Actions</th>
+          <th class="desktop-action-cell cell-actions" style="width: 14%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -201,7 +201,7 @@ Physical Invoices
             <td data-label="Status">
               <span class="alv-pill {{ row.status_pill }}">{{ row.status_display }}</span>
             </td>
-            <td data-label="Actions" class="desktop-action-cell pi-actions-cell">
+            <td data-label="Actions" class="desktop-action-cell cell-actions pi-actions-cell">
               {% if perms.auth.can_edit_invoices %}
                 {% if row.status == 'draft' %}
                   <form method="post" action="{% url 'physical_invoice_approve' row.pk %}" class="pi-inline-form">

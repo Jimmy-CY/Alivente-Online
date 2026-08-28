@@ -189,6 +189,49 @@ async def render(base_txt, page_txt):
         return out
 
 
+async def align(page_txt, page_name):
+    """Does the Actions HEADING sit over the buttons it labels?
+
+    Measured on the heading's TEXT, not on its cell. The cell's centre never
+    moves - it is the column - so comparing cell centres reports "off by 1"
+    whether the heading is centred or hard left. The first version of this
+    check did exactly that and called a 105px miss a pass. A range around the
+    text node is what the eye actually sees.
+    """
+    from playwright.async_api import async_playwright
+    m = re.search(r'<table', page_txt)
+    frag = page_txt[m.start():page_txt.find('</table>', m.start()) + 8]
+    prev = None
+    while prev != frag:
+        prev = frag
+        frag = re.sub(r'\{%\s*if[^%]*%\}((?:(?!\{%\s*(?:if|else|endif)).)*?)\{%\s*else\s*%\}'
+                      r'((?:(?!\{%\s*(?:if|else|endif)).)*?)\{%\s*endif\s*%\}', r'\1', frag, flags=re.S)
+        frag = re.sub(r'\{%\s*if[^%]*%\}((?:(?!\{%\s*(?:if|else|endif)).)*?)\{%\s*endif\s*%\}',
+                      r'\1', frag, flags=re.S)
+    frag = re.sub(r'\{\{[^}]*\}\}', 'x', re.sub(r'\{%[^%]*%\}', '', frag))
+    async with async_playwright() as pw:
+        br = await pw.chromium.launch()
+        pg = await br.new_page(viewport={'width': 1500, 'height': 600})
+        await pg.set_content("<style>%s</style><style>%s</style><style>%s</style>"
+                             "<body style='padding:20px'><div class='table-container'>%s</div></body>"
+                             % (BOOTSTRAP, css_of(BASE), css_of(page_txt), frag))
+        await pg.wait_for_timeout(50)
+        g = await pg.evaluate("""()=>{
+          const ths=[...document.querySelectorAll('th')];
+          const th=ths.find(e=>/Actions/.test(e.textContent));
+          const td=document.querySelector('td.cell-actions, td[data-label="Actions"]');
+          if(!th||!td) return null;
+          const r=document.createRange(); r.selectNodeContents(th);
+          const tr=r.getBoundingClientRect();
+          const btns=[...td.querySelectorAll('.icon-action-btn')];
+          if(!btns.length) return null;
+          const bl=Math.min(...btns.map(b=>b.getBoundingClientRect().left));
+          const brr=Math.max(...btns.map(b=>b.getBoundingClientRect().right));
+          return {off:Math.abs((tr.left+tr.width/2)-((bl+brr)/2)), n:btns.length};}""")
+        await br.close()
+    return g
+
+
 async def main():
     now = await render(BASE, PIT)
     for k, want in WANT.items():
@@ -198,6 +241,21 @@ async def main():
     for k in ('approve', 'unapprove', 'send', 'duplicate'):
         check('  the mobile %-10s variant resolves too' % k,
               now.get('m-' + k) == WANT[k], str(now.get('m-' + k)))
+
+    head('5b. the Actions heading sits over its buttons')
+    for name, txt in (('physical_invoice_list', PIT), ('customer_list', CLT)):
+        g = await align(txt, name)
+        if not check('%-22s the heading was measurable' % name, g is not None):
+            continue
+        check('%-22s   heading text is over its %d buttons (%.0fpx off)'
+              % (name, g['n'], g['off']), g['off'] <= 2)
+    # CONTROL: the pre-round page had no class on that heading at all, so it
+    # sat hard left of the buttons. 105px, not a rounding error.
+    _bak = PI + '.bak_actionsalign'
+    if os.path.exists(_bak):
+        g0 = await align(read(_bak), 'before')
+        check('  CONTROL: before the fix it was %.0fpx off' % (g0['off'] if g0 else 0),
+              g0 is not None and g0['off'] > 20)
 
     head('6. the negative control')
     bp = os.path.join(TPL, 'base.html') + '.bak_tableinv'

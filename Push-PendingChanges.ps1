@@ -241,7 +241,15 @@ $sentinels = @(
     @{ File = 'pages\templates\property_assets.html';     Text = 'action-primary btn-sm';            What = 'and a small confirm stays small' },
     @{ File = 'pages\templates\base.html';                Text = '.btn.action-secondary';            What = 'a tone outranks a page btn-info' },
     @{ File = 'pages\templates\edit_asset.html';          Text = 'alv-card alv-card-lead form-card'; What = 'Edit Asset lost its yellow bar' },
-    @{ File = 'pages\templates\edit_asset.html';          Text = 'class="btn action-back"';          What = 'and its Back joined the standard' }
+    @{ File = 'pages\templates\edit_asset.html';          Text = 'class="btn action-back"';          What = 'and its Back joined the standard' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'desktop-action-cell cell-actions'; What = 'the Actions heading sits over the buttons it labels' },
+    @{ File = 'pages\templates\customer_list.html';       Text = 'desktop-action-cell cell-actions'; What = 'and Customers matches it' },
+    # Lease Renewals. The sentinel to care about is the SECOND one: it is the
+    # contradiction this round existed to end. tenant_report paints a declined
+    # renewal amber; this page painted it red, and WE made them disagree.
+    @{ File = 'pages\templates\lease_renewal_report.html'; Text = 'alv-card renewal-card'; What = 'the renewal cards are base cards' },
+    @{ File = 'pages\templates\lease_renewal_report.html'; Text = 'alv-pill alv-pill-attn"><i class="fas fa-times-circle"></i> Renewal declined'; What = 'and a declined renewal is amber HERE too, as it is on Tenants' },
+    @{ File = 'pages\templates\lease_renewal_report.html'; Text = '.alv-pill i.fas { color: inherit; }'; What = 'the pill icon keeps the pill colour, not the head grey' }
 )
 
 foreach ($s in $sentinels) {
@@ -328,7 +336,12 @@ $suites = @(
     # likely to be what breaks.
     'test_control_height.py',
     # Physical Invoices and Customers. Newest, so most likely to be what breaks.
-    'test_table_invoices.py'
+    'test_table_invoices.py',
+    # Lease Renewals. This one reads BOTH lease_renewal_report.html and
+    # tenant_report.html and asserts they name the same pill for a declined
+    # renewal - so changing one and not the other fails here rather than in
+    # front of somebody triaging renewals. Newest, so most likely to break.
+    'test_lease_renewal.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

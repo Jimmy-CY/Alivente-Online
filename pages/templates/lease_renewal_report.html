@@ -21,13 +21,13 @@
             <!-- Tenants needing renewal (Pending status) -->
             {% for tenant in tenants %}
                 {% if tenant.needs_renewal %}
-                <div class="renewal-card tenant-card">
-                    <div class="card-status-bar status-bar-pending">
-                        <i class="fas fa-clock"></i> RENEWAL PENDING
+                <div class="alv-card renewal-card tenant-card">
+                    <div class="alv-card-head">
+                        <h3 class="property-name">{{ tenant.prop_name }}</h3>
+                        <span class="alv-pill alv-pill-attn"><i class="fas fa-clock"></i> Renewal pending</span>
                     </div>
-                    <h3 class="property-name">{{ tenant.prop_name }}</h3>
 
-                    <div class="tenant-details">
+                    <div class="alv-card-body tenant-details">
                         <!-- Type, Name, Rental Type -->
                         <div class="detail-row">
                             <span class="detail-label">Type:</span>
@@ -86,13 +86,13 @@
 
             <!-- Tenants who declined renewal -->
             {% for declined in declined_renewals %}
-                <div class="renewal-card declined-renewal-card">
-                    <div class="card-status-bar status-bar-declined">
-                        <i class="fas fa-times-circle"></i> RENEWAL DECLINED
+                <div class="alv-card renewal-card declined-renewal-card">
+                    <div class="alv-card-head">
+                        <h3 class="property-name">{{ declined.prop_name }}</h3>
+                        <span class="alv-pill alv-pill-attn"><i class="fas fa-times-circle"></i> Renewal declined</span>
                     </div>
-                    <h3 class="property-name">{{ declined.prop_name }}</h3>
-                    <p class="card-message">{{ declined.message }}</p>
-                    <div class="tenant-details">
+                    <div class="alv-card-body tenant-details">
+                        <p class="card-message">{{ declined.message }}</p>
                         <div class="detail-row">
                             <span class="detail-label">Current Tenant:</span>
                             <span class="detail-value">{{ declined.tenant_name }}</span>
@@ -107,11 +107,11 @@
 
             <!-- Vacant properties -->
             {% for property in vacant_properties %}
-                <div class="renewal-card vacant-property-card">
-                    <div class="card-status-bar status-bar-vacant">
-                        <i class="fas fa-home"></i> VACANT - NEEDS NEW TENANT
+                <div class="alv-card renewal-card vacant-property-card">
+                    <div class="alv-card-head">
+                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                        <span class="alv-pill alv-pill-neutral"><i class="fas fa-home"></i> Vacant - needs new tenant</span>
                     </div>
-                    <h3 class="property-name">{{ property.prop_name }}</h3>
                 </div>
             {% endfor %}
 
@@ -183,60 +183,18 @@
 /* Cards: shared layout */
 .renewal-card {
     margin-bottom: 24px;
-    padding: 0;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    background-color: white;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-}
-
-/* Status bar at top of each card */
-.card-status-bar {
-    padding: 10px 20px;
-    color: white;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.status-bar-pending {
-    background: #ffc107;
-    color: #212529;
-}
-.status-bar-declined {
-    background: #dc3545;
-    color: white;
-}
-.status-bar-vacant {
-    background: #6c757d;
-    color: white;
-}
-
-/* Card content (below status bar) */
-.renewal-card .property-name,
-.renewal-card .card-message,
-.renewal-card .tenant-details {
-    padding-left: 20px;
-    padding-right: 20px;
 }
 
 .property-name {
     font-size: 1.4rem;
-    color: #2c3e50;
-    margin: 16px 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dee2e6;
+    color: var(--alv-ink);
     word-break: break-word;
 }
 
 .card-message {
     font-size: 1rem;
     font-weight: 600;
-    color: #dc3545;
+    color: var(--alv-ink);
     margin: 0 0 12px 0;
 }
 
@@ -266,7 +224,7 @@
 }
 
 .highlight-red {
-    color: #dc3545;
+    color: var(--alv-bad);
     font-weight: bold;
 }
 
@@ -343,23 +301,8 @@
         margin-bottom: 16px;
     }
 
-    .card-status-bar {
-        padding: 8px 14px;
-        font-size: 0.8rem;
-        letter-spacing: 0.4px;
-    }
-
-    .renewal-card .property-name,
-    .renewal-card .card-message,
-    .renewal-card .tenant-details {
-        padding-left: 14px;
-        padding-right: 14px;
-    }
-
     .property-name {
         font-size: 1.1rem;
-        margin: 12px 0 10px 0;
-        padding-bottom: 6px;
     }
 
     .card-message {
@@ -418,27 +361,10 @@
     }
     .renewal-card {
         page-break-inside: avoid;
-        border: 1px solid #ccc;
         margin-bottom: 16px;
     }
-    .card-status-bar {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    .status-bar-pending {
-        background-color: #ffc107 !important;
-        color: #212529 !important;
-    }
-    .status-bar-declined {
-        background-color: #dc3545 !important;
-        color: white !important;
-    }
-    .status-bar-vacant {
-        background-color: #6c757d !important;
-        color: white !important;
-    }
     .highlight-red {
-        color: #dc3545 !important;
+        color: var(--alv-bad) !important;
     }
     /* Restore desktop horizontal detail layout for paper */
     .detail-row {
@@ -458,5 +384,24 @@
         font-weight: normal;
     }
 }
+
+    /* base's .alv-card-head is `display:flex; gap:10px` - it does not space
+       its children apart, because most heads are a title and nothing else.
+       This page's head is a title AND a status, so the status is pushed to
+       the far end here. Page-specific layout on a shared component: exactly
+       what a page-local rule is for. */
+    .renewal-card > .alv-card-head { justify-content: space-between; }
+    .renewal-card > .alv-card-head .alv-pill { flex: 0 0 auto; }
+
+    /* base greys every icon in a card head - `color: var(--alv-ink-faint)` -
+       because an icon in a head is ornament. An icon INSIDE a pill is not
+       ornament: it is part of the pill, and the pill's colour is the entire
+       point of this round. Without this the clock renders grey inside an
+       amber pill - which the browser check below caught and the file
+       inspection did not, because nothing in the markup is wrong.
+       This wins on SPECIFICITY - (0,4,1) against base's (0,3,1) - not on
+       document order, so re-ordering the <style> blocks cannot grey it
+       again. */
+    .renewal-card > .alv-card-head > .alv-pill i.fas { color: inherit; }
 </style>
 {% endblock %}
