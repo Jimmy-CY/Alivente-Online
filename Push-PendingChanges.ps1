@@ -217,6 +217,8 @@ $sentinels = @(
     # A substring cannot express "unscoped" - that half is covered by
     # test_button_sweep.py section 1, which asserts the LAYOUT is still
     # scoped to .page-action-buttons while the tones are not.
+    @{ File = 'pages\templates\base.html';                Text = 'WIDENED from `.alv-filter`'; What = 'a form control is as tall as the value it shows' },
+    @{ File = 'pages\templates\base.html';                Text = 'select.form-control:not([size]):not([multiple])'; What = 'and it matches Bootstrap own shape, or it loses on specificity' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-filter.is-open'; What = 'ONE class says whether the filter panel is open' },
     @{ File = 'pages\templates\base.html';                Text = 'alv-filter script v1'; What = 'and one script reads it' },
     @{ File = 'pages\templates\suppliers.html';           Text = 'class="btn action-filter"'; What = 'the Filter button lives in the action bar' },
@@ -315,7 +317,10 @@ $suites = @(
     'test_table_tenant_report.py',
     # The filter round. It touches base.html and eight list pages, so it is
     # the newest thing here and therefore the most likely to be what breaks.
-    'test_filter_toggle.py'
+    'test_filter_toggle.py',
+    # Form controls tall enough to show their own value. Newest, so most
+    # likely to be what breaks.
+    'test_control_height.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

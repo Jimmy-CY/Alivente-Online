@@ -1629,9 +1629,17 @@
    why this is fixed by removing the constraint rather than by tuning a number.
    The :not() pair is not decoration; Bootstrap's own selector carries it, and
    without matching that shape this rule loses on specificity, silently. */
-.alv-filter select.form-control:not([size]):not([multiple]),
-.alv-filter input.form-control,
-.alv-filter textarea.form-control { height: auto; }
+/* WIDENED from `.alv-filter` to everywhere, 27 Aug 2026. The rule below was
+   added by the filter round for filter panels; the same defect is on every
+   add/edit form in the system. Measured: 47 of 184 controls across 20 form
+   templates were rendering shorter than their own content.
+
+   The `:not()` pair is not decoration - Bootstrap's own selector carries it,
+   so without matching that shape this rule is (0,1,1) against its (0,2,1)
+   and loses, silently. That happened on the first attempt. */
+select.form-control:not([size]):not([multiple]),
+input.form-control,
+textarea.form-control { height: auto; }
 
 /* The chips move OUT of the panel. This is the whole safety argument:
    a closed panel must never mean invisible filtering. */
