@@ -1701,6 +1701,20 @@ textarea.form-control { height: auto; }
 .icon-duplicate       { color: var(--alv-edit); border-color: var(--alv-edit); }
 .icon-duplicate:hover { background-color: var(--alv-edit); color: #fff; }
 .icon-color-duplicate { color: var(--alv-edit); }
+
+/* Manage: the third NAME on an existing colour, and for the same reason as
+   Duplicate and Upload. Opening an expense's record - its details, its invoice
+   document, its delete tab - is a VIEW, so it points at --alv-view, the same
+   colour the eye already wears.
+
+   It gets its own name rather than reusing .icon-view because a class carries
+   ONE picture. `test_icon_buttons.py` §1b exists because .icon-edit had drifted
+   to two glyphs across the system; hanging fa-folder-open on .icon-view beside
+   the fa-eye it already carries would be that same fault, one class along.
+   Alias the colour, never the name. */
+.icon-manage       { color: var(--alv-view); border-color: var(--alv-accent-line); }
+.icon-manage:hover { background-color: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
+.icon-color-manage { color: var(--alv-view); }
 </style>
 
   <script>

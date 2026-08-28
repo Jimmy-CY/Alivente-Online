@@ -308,7 +308,17 @@ $sentinels = @(
     @{ File = 'pages\views\petty_cash.py';               Text = '_EPOCH = date.min'; What = 'and an undated row no longer empties the whole ledger' },
     @{ File = 'pages\templates\petty_cash.html';         Text = 'table alv-table petty-cash-table'; What = 'Petty Cash is on the table standard' },
     @{ File = 'pages\templates\petty_cash.html';         Text = 'alv-tag {{ row.tag }}'; What = 'Income/Expense is a category tone, not a verdict' },
-    @{ File = 'pages\templates\petty_cash.html';         Text = 'pc-balance-figure'; What = 'and the closing balance is ink until it goes below zero' }
+    @{ File = 'pages\templates\petty_cash.html';         Text = 'pc-balance-figure'; What = 'and the closing balance is ink until it goes below zero' },
+    # Actual Expenses. The first three are styling; the fourth is not - the
+    # Expenses-by-Property report has always counted approved-and-paid only
+    # while its docstring claimed the opposite, so it quietly under-reported.
+    # No figure moved: the words were corrected and the report now says its
+    # population on its own face.
+    @{ File = 'pages\templates\base.html';               Text = '.icon-manage'; What = 'Manage is a NAME on --alv-view, not a seventh colour' },
+    @{ File = 'pages\templates\act_expense.html';        Text = 'table alv-table expense-table'; What = 'Actual Expenses is on the table standard' },
+    @{ File = 'pages\templates\act_expense.html';        Text = 'alv-pill-neutral'; What = 'and a status you cannot change is a pill, not a disabled button' },
+    @{ File = 'pages\templates\act_expense.html';        Text = 'report-basis'; What = 'the report states the population it counts' },
+    @{ File = 'pages\views\expenses.py';                 Text = 'Counts only expenses that are BOTH approved and paid'; What = 'and the docstring finally agrees with the query beneath it' }
 )
 
 foreach ($s in $sentinels) {
@@ -425,7 +435,13 @@ $suites = @(
     # the rendered HTML and adds the amounts up to check they equal the
     # figure drawn above them. A change to either that moves a number fails
     # here. Newest, so most likely to break.
-    'test_petty_cash.py'
+    'test_petty_cash.py',
+    # Actual Expenses. Section 4 LIFTS the report modal's row builders out of
+    # the page and RUNS them - those two tables have no markup, so nothing
+    # else can see them. Section 5 reads the parse tree and fails if the
+    # report's FILTER moved, because this round changed the words and must not
+    # have changed a figure. Newest, so most likely to break.
+    'test_act_expenses.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -841,8 +841,14 @@ def act_expense_report_data(request):
     """
     JSON for the Expenses Report modal: per-property total of
     act_expense_amount for the selected year(s), descending by total.
-    Aggregates ALL expense rows (same population as act_expense_all),
-    regardless of approved/paid status.
+    Counts only expenses that are BOTH approved and paid. This docstring
+    used to claim the opposite - "ALL expense rows ... regardless of
+    approved/paid status" - while the line below it filtered on both
+    fields, so the report quietly under-reported any property carrying
+    approved-but-unpaid expenses and nothing on screen said why.
+
+    Decided 28 Aug 2026: the behaviour is right and the words were wrong.
+    No figure moved. The report states this population on its own face.
 
     Query params:
       years : 'all' (default) or comma-separated years, e.g. '2025,2026'.
@@ -901,6 +907,10 @@ def act_expense_report_property(request):
     JSON for the report drill-down: individual expenses for one property
     across the selected year(s), most recent first, with the attached
     document URL/name so the front-end can open it in the shared viewer.
+
+    Approved AND paid only, matching act_expense_report_data. Which is why
+    the drill table no longer draws Approved and Paid columns: filtered on
+    exactly those two fields, both could only ever read "Yes".
 
     Query params:
       prop  : prop_id to drill into (required).
