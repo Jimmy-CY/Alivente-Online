@@ -36,6 +36,77 @@ from django.shortcuts import redirect, render
 from ..models import invoices, props, tenant
 
 
+def _open_invoice_rows(open_invoices, shown_props, shown_tenants):
+    """One row per open invoice, in the order the template's loops produced.
+
+    The template used to do this itself:
+
+        for p in props: for t in tenant: for i in invoices:
+            if i.tenant_id == t.tenant_id and t.prop_id == p.prop_id
+
+    which is O(props x tenants x invoices) comparisons to print a few dozen
+    rows, and - because the decision is taken inside the loop - leaves the
+    template unable to say whether it printed any.
+
+    ORDER IS REPRODUCED BY POSITION, NOT BY SORT KEY. `shown_props` may be
+    `props.objects.filter(prop_name=...)`, which carries no `order_by`, so
+    its order is whatever the database returned and cannot be rebuilt from
+    prop_country and prop_name. The loops walked these lists in order, so the
+    index in each list is the sort key, with the invoice's own position last.
+
+    A row is skipped on exactly the two conditions the `{% if %}` skipped on:
+    the invoice's tenant is not in `shown_tenants`, or that tenant's property
+    is not in `shown_props`.
+    """
+    tenant_at, tenant_by_id = {}, {}
+    for i, t in enumerate(shown_tenants):
+        if t.tenant_id not in tenant_by_id:      # first wins, as the loop did
+            tenant_at[t.tenant_id] = i
+            tenant_by_id[t.tenant_id] = t
+    prop_at, prop_by_id = {}, {}
+    for i, p in enumerate(shown_props):
+        if p.prop_id not in prop_by_id:
+            prop_at[p.prop_id] = i
+            prop_by_id[p.prop_id] = p
+
+    today = date.today()
+    ordered = []
+    for pos, inv in enumerate(open_invoices):
+        t = tenant_by_id.get(inv.tenant_id)
+        if t is None:
+            continue
+        p = prop_by_id.get(t.prop_id)
+        if p is None:
+            continue
+        # Same arithmetic as calculate_due_date / calculate_days_overdue, and
+        # the same as open_invoices_report. It is written here once now.
+        #
+        # The None guard is not defensive habit - it is fidelity. The old tag
+        # returned the invoice date unchanged when it had nothing to add to,
+        # and 0 days overdue from there, so an invoice with no date rendered
+        # a blank-dated row rather than raising. Dropping the guard would turn
+        # that row into a 500.
+        terms = t.tenant_payment_terms or 0
+        if inv.invoice_date:
+            due = inv.invoice_date + timedelta(days=int(terms))
+            overdue = (today - due).days if today > due else 0
+        else:
+            due, overdue = None, 0
+        ordered.append(((prop_at[p.prop_id], tenant_at[t.tenant_id], pos), {
+            'invoice_id':   inv.invoice_id,
+            'prop_name':    p.prop_name,
+            'prop_country': p.prop_country,
+            'tenant_name':  t.tenant_name,
+            'amount':       inv.effective_amount,
+            'invoice_date': inv.invoice_date,
+            'due_date':     due,
+            'days_overdue': overdue,
+            'is_overdue':   overdue > 0,
+        }))
+    ordered.sort(key=lambda pair: pair[0])
+    return [row for _, row in ordered]
+
+
 @login_required
 @permission_required('auth.can_access_invoices', raise_exception=True)
 def invoices_page(request):
@@ -65,11 +136,16 @@ def invoices_page(request):
         filtered_tenants = all_tenants
 
     context = {
-        "invoices": iresults,
-        "tenant": filtered_tenants,  # Filtered tenants for display
-        "props": filtered_props,     # Filtered props for display
-        "all_props": all_props,      # All props for dropdown
-        "all_tenants": all_tenants,  # All tenants for dropdown
+        # The rows the table draws, decided here rather than by three nested
+        # loops in the template. `filtered_*` still say WHICH rows; they are
+        # no longer what the dropdowns are built from.
+        "rows": _open_invoice_rows(iresults, filtered_props, filtered_tenants),
+        # The dropdowns list EVERY property and tenant. They used to be built
+        # from the filtered lists, so choosing property X left the property
+        # dropdown holding only X - you could not move to Y without clearing
+        # first. Both of these were already in this context and unused.
+        "all_props": all_props,
+        "all_tenants": all_tenants,
         "selected_property": prop_output if prop_output != "All" else "",
         "selected_tenant": tenant_output if tenant_output != "All" else "",
     }

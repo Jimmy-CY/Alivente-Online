@@ -249,7 +249,16 @@ $sentinels = @(
     # renewal amber; this page painted it red, and WE made them disagree.
     @{ File = 'pages\templates\lease_renewal_report.html'; Text = 'alv-card renewal-card'; What = 'the renewal cards are base cards' },
     @{ File = 'pages\templates\lease_renewal_report.html'; Text = 'alv-pill alv-pill-attn"><i class="fas fa-times-circle"></i> Renewal declined'; What = 'and a declined renewal is amber HERE too, as it is on Tenants' },
-    @{ File = 'pages\templates\lease_renewal_report.html'; Text = '.alv-pill i.fas { color: inherit; }'; What = 'the pill icon keeps the pill colour, not the head grey' }
+    @{ File = 'pages\templates\lease_renewal_report.html'; Text = '.alv-pill i.fas { color: inherit; }'; What = 'the pill icon keeps the pill colour, not the head grey' },
+    # Open Invoices. The FIRST of these is the one that matters - the table's
+    # rows are decided in Python now rather than by three nested loops in the
+    # template, which is what lets the page have an empty state at all.
+    @{ File = 'pages\views\invoices.py';                  Text = 'def _open_invoice_rows'; What = 'the rows are built in the view, not by three nested loops' },
+    @{ File = 'pages\views\invoices.py';                  Text = '"rows": _open_invoice_rows(iresults, filtered_props, filtered_tenants)'; What = 'and still from the FILTERED lists, so filtering still filters' },
+    @{ File = 'pages\templates\invoices.html';            Text = 'class="table alv-table invoices-table"'; What = 'Open Invoices is on the table standard' },
+    @{ File = 'pages\templates\invoices.html';            Text = '{% if not rows %}'; What = 'an empty result says so instead of looking like a failed load' },
+    @{ File = 'pages\templates\invoices.html';            Text = '{% for prop in all_props %}'; What = 'the filter dropdown lists every property, not just the chosen one' },
+    @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar.cols-1'; What = 'a single mobile action gets the whole card width' }
 )
 
 foreach ($s in $sentinels) {
@@ -341,7 +350,12 @@ $suites = @(
     # tenant_report.html and asserts they name the same pill for a declined
     # renewal - so changing one and not the other fails here rather than in
     # front of somebody triaging renewals. Newest, so most likely to break.
-    'test_lease_renewal.py'
+    'test_lease_renewal.py',
+    # Open Invoices. This one is not only a styling suite: section 1 runs the
+    # OLD triple loop and the NEW view function side by side over generated
+    # portfolios and compares the row sequences, so a change to either that
+    # alters which invoices appear fails here. Newest, so most likely to break.
+    'test_open_invoices.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

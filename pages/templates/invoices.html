@@ -90,7 +90,7 @@ Invoices
             </label>
             <select name="propname" class="form-control filter-select" id="propertySelect">
               <option value="">All Properties</option>
-              {% for prop in props %}
+              {% for prop in all_props %}
                 <option value="{{ prop.prop_name }}" {% if selected_property == prop.prop_name %}selected{% endif %}>
                   {{ prop.prop_name }}
                 </option>
@@ -105,7 +105,7 @@ Invoices
             </label>
             <select name="tenantname" class="form-control filter-select" id="tenantSelect">
               <option value="">All Tenants</option>
-              {% for tenant_item in tenant %}
+              {% for tenant_item in all_tenants %}
                 <option value="{{ tenant_item.tenant_name }}" {% if selected_tenant == tenant_item.tenant_name %}selected{% endif %}>
                   {{ tenant_item.tenant_name }}
                 </option>
@@ -122,53 +122,74 @@ Invoices
 
   <!-- Invoices Table -->
   <div class="table-container">
-    <table class="table table-bordered table-striped invoices-table">
+    <table class="table alv-table invoices-table">
       <thead>
         <tr>
-          <th style="text-align: left; width: 20%">Property</th>
-          <th style="text-align: center; width: 10%">Country</th>
-          <th style="text-align: left; width: 20%">Tenant</th>
-          <th style="text-align: right; width: 10%">Amount</th>
-          <th style="text-align: center; width: 12%">Invoice Date</th>
-          <th style="text-align: center; width: 12%">Due Date</th>
-          <th style="text-align: center; width: 8%">Days Overdue</th>
-          <th style="text-align: center; width: 8%">Mark as Paid</th>
+          <th style="width: 22%">Property</th>
+          <th style="width: 10%">Country</th>
+          <th style="width: 20%">Tenant</th>
+          <th class="num" style="width: 11%">Amount</th>
+          <th style="width: 12%">Invoice Date</th>
+          <th style="width: 12%">Due Date</th>
+          <th class="num" style="width: 8%">Days Overdue</th>
+          <th class="desktop-action-cell cell-actions" style="width: 5%">Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for results in props %}
-          {% for tresults in tenant %}
-            {% for iresults in invoices %}
-              {% if iresults.tenant_id == tresults.tenant_id and tresults.prop_id == results.prop_id %}
-                {% load invoice_tags %}
-                {% calculate_due_date iresults.invoice_date tresults.tenant_payment_terms as due_date %}
-                {% calculate_days_overdue due_date as days_overdue %}
-                <tr>
-                  <td data-label="Property" style="text-align: left">{{ results.prop_name }}</td>
-                  <td data-label="Country" style="text-align: center">{{ results.prop_country }}</td>
-                  <td data-label="Tenant" style="text-align: left">{{ tresults.tenant_name }}</td>
-                  <td data-label="Amount" style="text-align: right; font-family: 'Courier New', monospace;" class="amount-cell">€{{ iresults.effective_amount|floatformat:0 }}</td>
-                  <td data-label="Invoice Date" style="text-align: center">{{ iresults.invoice_date|date:"Y-m-d" }}</td>
-                  <td data-label="Due Date" style="text-align: center">{{ due_date|date:"Y-m-d" }}</td>
-                  <td data-label="Days Overdue" style="text-align: center;" class="overdue-cell {% if days_overdue > 0 %}is-overdue{% endif %}">{{ days_overdue }}</td>
-                  <td data-label="Mark as Paid" style="text-align: center" class="action-cell">
-                    {% if perms.auth.can_edit_invoices %}
-                      <a href="{% url 'invoices_commit' iresults.invoice_id %}" class="btn btn-paid">
-                        <i class="fas fa-check"></i> Paid
-                      </a>
-                    {% else %}
-                      <span class="btn btn-paid" style="opacity:0.5; cursor:not-allowed; pointer-events:none;">
-                        <i class="fas fa-check"></i> Paid
-                      </span>
-                    {% endif %}
-                  </td>
-                </tr>
+        {% for row in rows %}
+          <tr>
+            <td data-label="Property">{{ row.prop_name }}</td>
+            <td data-label="Country">{{ row.prop_country }}</td>
+            <td data-label="Tenant">{{ row.tenant_name }}</td>
+            <td data-label="Amount" class="num amount-cell">&euro;{{ row.amount|floatformat:0 }}</td>
+            <td data-label="Invoice Date">{{ row.invoice_date|date:"Y-m-d" }}</td>
+            <td data-label="Due Date">{{ row.due_date|date:"Y-m-d" }}</td>
+            <td data-label="Days Overdue" class="num overdue-cell{% if row.is_overdue %} is-overdue{% endif %}">{{ row.days_overdue }}</td>
+            <td data-label="Actions" class="desktop-action-cell cell-actions">
+              {% if perms.auth.can_edit_invoices %}
+                <form method="post" action="{% url 'invoices_commit' row.invoice_id %}" class="inv-inline-form">
+                  {% csrf_token %}
+                  <button type="submit" class="icon-action-btn icon-approve" title="Mark as paid" aria-label="Mark as paid">
+                    <i class="fas fa-check"></i>
+                  </button>
+                </form>
+              {% else %}
+                <span class="icon-action-btn icon-approve is-disabled" title="You do not have permission to mark invoices paid" aria-disabled="true">
+                  <i class="fas fa-check"></i>
+                </span>
               {% endif %}
-            {% endfor %}
-          {% endfor %}
+            </td>
+            <td class="mobile-action-bar cols-1">
+              {% if perms.auth.can_edit_invoices %}
+                <form method="post" action="{% url 'invoices_commit' row.invoice_id %}" class="inv-inline-form-mobile">
+                  {% csrf_token %}
+                  <button type="submit" class="mobile-action-btn">
+                    <i class="fas fa-check mobile-action-icon icon-color-approve"></i>
+                    <span class="mobile-action-label">Mark as Paid</span>
+                  </button>
+                </form>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-check mobile-action-icon"></i>
+                  <span class="mobile-action-label">Mark as Paid</span>
+                </span>
+              {% endif %}
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    {% if not rows %}
+      {# An empty tbody looks exactly like a failed load. #}
+      <div class="alv-empty">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <div class="alv-empty-title">No open invoices</div>
+        <div class="alv-empty-hint">
+          Either everything is paid, or the filters above are hiding it.
+        </div>
+      </div>
+    {% endif %}
   </div>
 
   {% render_help_modal "invoices" %}
@@ -286,17 +307,6 @@ Invoices
     color: white;
 }
 
-/* Active Filters */
-.active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
 .active-filters-label {
     font-weight: 500;
     color: #495057;
@@ -335,35 +345,6 @@ Invoices
     font-size: 10px;
 }
 
-/* ==================== TABLE ==================== */
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.table-container table {
-    margin-bottom: 0;
-}
-
-.table-container table thead th {
-    background-color: #2c3e50;
-    color: white;
-    font-weight: 600;
-    border: 1px solid #34495e;
-    padding: 12px 8px;
-}
-
-.table-container table tbody td {
-    padding: 10px 8px;
-    vertical-align: middle;
-}
-
-.table-container table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
 /* Amount column */
 td.amount-cell {
     font-weight: 500;
@@ -371,56 +352,14 @@ td.amount-cell {
 
 /* Days Overdue red highlight */
 td.overdue-cell.is-overdue {
-    color: #dc3545;
+    color: var(--alv-bad);
     font-weight: bold;
 }
 
-/* Mark as Paid button */
-.btn-paid {
-    background-color: #28a745;
-    color: white;
-    border: 1px solid #28a745;
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
+@media (hover: hover) and (pointer: fine) {
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .btn-paid:hover {
-        background-color: #218838;
-        border-color: #1e7e34;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-}
-
-/* ==================== BUTTON STYLES ==================== */
-.btn-info {
-    background-color: #0e7c8b;
-    color: white;
-    border: 1px solid #0e7c8b;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .btn-info:hover {
-        background-color: #0a5e6a;
-        border-color: #0a5e6a;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
 }
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
@@ -475,70 +414,6 @@ td.overdue-cell.is-overdue {
     .filter-select {
         font-size: 16px;  /* iOS zoom guard */
     }
-
-    /* Table → cards on mobile */
-    .table-container {
-        background: transparent;
-        box-shadow: none;
-        border-radius: 0;
-        overflow: visible;
-    }
-    .invoices-table {
-        border: none !important;
-        background: transparent;
-    }
-    .invoices-table thead {
-        display: none;
-    }
-    .invoices-table,
-    .invoices-table tbody,
-    .invoices-table tr {
-        display: block;
-        width: 100%;
-    }
-    .invoices-table tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        padding: 14px;
-        margin-bottom: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .invoices-table tr:hover {
-        background: white;
-    }
-    .invoices-table td {
-        display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 0 !important;
-        border: none !important;
-        text-align: right !important;
-        font-size: 14px;
-        word-break: break-word;
-    }
-    /* Property name = card title */
-    .invoices-table td:first-child {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px !important;
-        margin-bottom: 6px;
-        border-bottom: 1px solid #f0f0f0 !important;
-        text-align: left !important;
-        display: block !important;
-    }
-    .invoices-table td:not(:first-child)::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #6c757d;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        text-align: left;
-        flex-shrink: 0;
-    }
     .invoices-table td.amount-cell {
         font-size: 1.05rem;
         font-weight: 700;
@@ -546,24 +421,12 @@ td.overdue-cell.is-overdue {
     .invoices-table td.overdue-cell.is-overdue {
         font-weight: 700;
     }
-    /* Mark-as-Paid action — full-width button at the bottom of each card */
-    .invoices-table td.action-cell {
-        margin-top: 8px;
-        padding-top: 10px !important;
-        border-top: 1px solid #f0f0f0 !important;
-        display: block !important;
-        text-align: center !important;
-    }
-    .invoices-table td.action-cell::before {
-        display: none;
-    }
-    .invoices-table td.action-cell .btn-paid {
-        width: 100%;
-        justify-content: center;
-        padding: 10px 12px;
-        font-size: 14px;
-    }
 }
+
+    /* An inline form is how a state-changing icon button is written on every
+       migrated page. It must not become a layout box of its own. */
+    .inv-inline-form { display: inline; }
+    .inv-inline-form button { background: none; border: 0; padding: 0; }
 </style>
 
 <script>
@@ -610,17 +473,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-expand filter panel on mobile if there are active filters
-    if (false) {
-        const filterContent = document.getElementById('filterContent');
-        const toggleIcon = document.getElementById('filterToggleIcon');
-        const filterPanel = document.getElementById('filterPanel');
-        if (filterContent && !filterContent.classList.contains('show')) {
-            filterContent.classList.add('show');
-            toggleIcon.classList.add('rotated');
-            filterPanel.classList.add('expanded');
-        }
-    }
 });
 
 
@@ -628,24 +480,20 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateActiveFilters() {
     const propertySelect = document.getElementById('propertySelect');
     const tenantSelect = document.getElementById('tenantSelect');
-    const activeFiltersDiv = document.getElementById('activeFilters');
     const filterTagsDiv = document.getElementById('filterTags');
 
-    if (!propertySelect || !tenantSelect || !activeFiltersDiv || !filterTagsDiv) return;
+    if (!propertySelect || !tenantSelect || !filterTagsDiv) return;
 
     const property = propertySelect.value;
     const tenant = tenantSelect.value;
 
     filterTagsDiv.innerHTML = '';
-    let hasFilters = false;
 
     if (property) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${property} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
-        hasFilters = true;
     }
     if (tenant) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Tenant: ${tenant} <button class="remove-tag" onclick="clearFilter('tenant')">×</button></span>`;
-        hasFilters = true;
     }
 
 }
