@@ -29,11 +29,11 @@
       <button class="btn action-primary" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
-      <a href="{% url 'duplicate_tenant' tresults.tenant_id %}"
-         class="btn action-secondary"
-         onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
+      <button type="submit" form="duplicateTenantForm"
+              class="btn action-secondary"
+              onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
           <i class="fas fa-copy"></i> Duplicate for Renewal
-      </a>
+      </button>
 
       <!-- Mobile-only "More" dropdown -->
       <div class="action-more-wrapper">
@@ -41,12 +41,12 @@
               <i class="fas fa-ellipsis-v"></i>
           </button>
           <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
-              <a href="{% url 'duplicate_tenant' tresults.tenant_id %}"
+              <button type="submit" form="duplicateTenantForm"
                  class="action-more-item"
                  role="menuitem"
                  onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
                   <i class="fas fa-copy"></i> Duplicate for Renewal
-              </a>
+              </button>
           </div>
       </div>
 
@@ -364,6 +364,15 @@
   </style>
 
 </form>
+
+<!-- Duplicating CREATES a tenant, so it is a POST - and a POST is the only
+     thing Django checks a CSRF token on, so this action has never had one.
+     The form lives out here because both of its buttons sit inside the edit
+     form above, and a nested form element is invalid HTML that browsers
+     silently drop. The buttons reach it by id, with the form= attribute. -->
+<form method="post" action="{% url 'duplicate_tenant' tresults.tenant_id %}"
+      id="duplicateTenantForm">{% csrf_token %}</form>
+
 {% endfor %}
 
 {% endif %}

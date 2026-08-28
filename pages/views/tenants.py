@@ -47,6 +47,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from ..forms import TenantForm
 from ..models import PhysicalInvoiceProfile, invoices, props, tenant
@@ -359,6 +360,7 @@ def lease_timeline_view(request):
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
+@require_POST
 def duplicate_tenant_view(request, tenant_id):
     """
     Duplicate an existing tenant to create a renewal or new lease.
@@ -442,6 +444,7 @@ def duplicate_tenant_view(request, tenant_id):
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
+@require_POST
 def delete_tenant_view(request, tenant_id):
     """
     Delete a tenant and automatically recalculate vacancy periods.

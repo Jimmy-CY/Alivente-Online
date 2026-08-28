@@ -45,6 +45,7 @@ from django.db.models import (Count, Min, OuterRef, Prefetch, Subquery, Sum)
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from pages.forms import (
     RevenueForm, RevenueTypesForm, RevenueLineForm,
@@ -352,6 +353,7 @@ def finance_revenue_edit(request, revenue_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_revenue_edit_commit(request, revenue_id):
     rev = get_object_or_404(revenue, pk=revenue_id)
 
@@ -759,6 +761,7 @@ def finance_expense_edit(request, expense_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_expense_edit_commit(request, expense_id):
     try:
         existing_expense = expense.objects.get(expense_id=expense_id)
@@ -935,6 +938,7 @@ def finance_expense_edit_commit(request, expense_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_expense_delete(request, expense_id):
     """
     Delete a budgeted expense row.
@@ -1228,6 +1232,7 @@ def check_expenses_for_line_type(request, expense_line_type_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def delete_expense_line_type(request, expense_line_type_id):
     """Delete an Expense Line Type and all its linked expenses."""
     if request.method != 'POST':
@@ -1370,6 +1375,7 @@ def preview_prorata_amount_change(request, expense_line_types_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_types_id):
     """Save the Line Type AND cascade new amounts to all linked Expenses."""
     if request.method != "POST":
@@ -1577,6 +1583,7 @@ def finance_valuations_add(request):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_valuations_commit(request):
     if request.method != "POST":
         return redirect('finance_valuations')
@@ -1622,6 +1629,7 @@ def finance_valuations_edit(request, prop_values_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_valuations_edit_commit(request, prop_values_id):
     vresult = get_object_or_404(prop_values, pk=prop_values_id)
 
@@ -1785,6 +1793,7 @@ def preview_valuation_change(request, prop_values_id):
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
+@require_POST
 def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
     """Save the valuation AND cascade new amounts to all linked Pro-Rata Expenses."""
     if request.method != "POST":

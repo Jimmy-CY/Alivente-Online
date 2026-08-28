@@ -214,12 +214,14 @@ Tenants
                     {% endif %}
 
                     {% if perms.auth.can_edit_tenants %}
-                      <a href="{% url 'delete_tenant' tresults.tenant_id %}"
-                         class="icon-action-btn icon-delete"
-                         title="Delete Tenant"
-                         onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
-                        <i class="fas fa-trash"></i>
-                      </a>
+                      <form method="post" action="{% url 'delete_tenant' tresults.tenant_id %}"
+                            class="tenant-inline-form"
+                            onsubmit="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-action-btn icon-delete" title="Delete Tenant">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
                     {% else %}
                       <span class="icon-action-btn icon-disabled" title="No delete permission">
                         <i class="fas fa-trash"></i>
@@ -260,11 +262,15 @@ Tenants
                   {% endif %}
 
                   {% if perms.auth.can_edit_tenants %}
-                    <a href="{% url 'delete_tenant' tresults.tenant_id %}" class="mobile-action-btn"
-                       onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
-                      <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
-                      <span class="mobile-action-label">Delete</span>
-                    </a>
+                    <form method="post" action="{% url 'delete_tenant' tresults.tenant_id %}"
+                          class="tenant-inline-form"
+                          onsubmit="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                      {% csrf_token %}
+                      <button type="submit" class="mobile-action-btn">
+                        <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                        <span class="mobile-action-label">Delete</span>
+                      </button>
+                    </form>
                   {% else %}
                     <span class="mobile-action-btn mobile-action-disabled">
                       <i class="fas fa-trash mobile-action-icon"></i>
@@ -488,6 +494,11 @@ Tenants
     padding-top: 12px;
   }
 }
+
+/* A destructive row action is a POST now, not a link - a link is followed by
+   prefetchers, "open all in tabs" and mail scanners, none of which see the
+   confirm(). The form is only a wrapper; base still draws the button. */
+.tenant-inline-form { display: inline; }
 </style>
 
 <script>

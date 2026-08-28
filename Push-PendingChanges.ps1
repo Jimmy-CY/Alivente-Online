@@ -326,7 +326,18 @@ $sentinels = @(
     # a heading actually starts sticking; the other five are pre-emptive.
     @{ File = 'pages\templates\physical_invoice_list.html'; Text = '.table-container'; What = 'Physical Invoices stopped redefining base shell - its heading sticks at last'; Absent = $true },
     @{ File = 'pages\templates\fsr.html';                   Text = '.table-container'; What = 'and neither does Issues'; Absent = $true },
-    @{ File = 'pages\templates\comments_report.html';       Text = '.table-container'; What = 'nor the Comments report'; Absent = $true }
+    @{ File = 'pages\templates\comments_report.html';       Text = '.table-container'; What = 'nor the Comments report'; Absent = $true },
+    # Fifteen commit endpoints refuse a GET. @login_required says WHO may call
+    # a view; nothing said HOW, so every one of them did its work on a GET -
+    # including deleting a tenant, which was a plain link a prefetcher could
+    # follow. Two of the fifteen were half-fixed by our own Actual Expenses
+    # round: POST in the template, GET still accepted by the view.
+    @{ File = 'pages\views\tenants.py';    Text = 'from django.views.decorators.http import require_POST'; What = 'deleting or duplicating a tenant needs a POST' },
+    @{ File = 'pages\views\expenses.py';   Text = 'from django.views.decorators.http import require_POST'; What = 'and so do approve, pay and delete' },
+    @{ File = 'pages\views\finance.py';    Text = 'from django.views.decorators.http import require_POST'; What = 'and the eight finance commit/delete views' },
+    @{ File = 'pages\views\invoices.py';   Text = 'from django.views.decorators.http import require_POST'; What = 'and marking an invoice paid' },
+    @{ File = 'pages\templates\tenant.html';      Text = 'tenant-inline-form'; What = 'Delete is a POST form, not a link a prefetcher can follow' },
+    @{ File = 'pages\templates\tenant_edit.html'; Text = 'form="duplicateTenantForm"'; What = 'and Duplicate posts from a form outside the edit form' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -466,7 +477,13 @@ $suites = @(
     # scrolled, and the heading's position read back. overflow:hidden and
     # overflow:clip look identical and behave oppositely - nothing static can
     # tell them apart. Newest, so most likely to break.
-    'test_sticky_sweep.py'
+    'test_sticky_sweep.py',
+    # require_POST. Section 3 composes the decorators exactly as the source
+    # does and DRIVES all three cases through a RequestFactory - the ordering
+    # is the part we chose and could have got wrong. Section 4 scans every
+    # template for a surviving link to any of the fifteen. Newest, so most
+    # likely to break.
+    'test_require_post.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -1545,6 +1545,7 @@ def lease_renewal_report(request):
 
 @login_required
 @permission_required('auth.can_access_issues', raise_exception=True)
+@require_POST
 def notify_comment_urgent(request, comment_id):
     """
     Fire an immediate "URGENT" email for a single issue comment.

@@ -73,6 +73,7 @@ from django.db.models import Count, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_POST
 
 from ..models import act_expense, props, tenant, revenue
 from ..utils import convert_to_pdf, is_pdf, merge_pdfs
@@ -431,6 +432,7 @@ def act_expense_edit_commit(request, expense_id):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
+@require_POST
 def mark_approved(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
     if expense.act_expense_approved != 'Yes':  # Only update if not already approved
@@ -452,6 +454,7 @@ def mark_approved(request, expense_id):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
+@require_POST
 def mark_paid(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
     if expense.act_expense_paid != 'Yes':  # Only update if not already paid
@@ -473,6 +476,7 @@ def mark_paid(request, expense_id):
 
 @login_required
 @permission_required('auth.can_edit_expenses', raise_exception=True)
+@require_POST
 def mark_deleted(request, expense_id):
     try:
         expense = get_object_or_404(act_expense, pk=expense_id)

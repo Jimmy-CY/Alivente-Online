@@ -32,6 +32,7 @@ from datetime import date, timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from ..models import invoices, props, tenant
 
@@ -155,6 +156,7 @@ def invoices_page(request):
 
 @login_required
 @permission_required('auth.can_edit_invoices', raise_exception=True)
+@require_POST
 def invoices_commit(request, invoice_id):
     # Mark paid AND stamp the paid date. .update() is a direct SQL UPDATE that
     # bypasses the model's save() (which also stamps the date), so the date must
