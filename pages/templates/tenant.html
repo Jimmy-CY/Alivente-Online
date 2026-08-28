@@ -95,17 +95,27 @@ Tenants
         </div>
       </div>
 
+      <button type="button" class="btn action-filter" id="filterBtn"
+              aria-pressed="false" aria-controls="filterPanel"
+              aria-label="Show filters">
+        <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+      </button>
+
       <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
     </div>
 
+    <div class="alv-filter-active" id="activeFilters">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="filter-tags" id="filterTags"></div>
+        </div>
+
   <!-- Collapsible Filter Panel -->
-  <div class="filter-panel" id="filterPanel">
-    <div class="filter-header" onclick="toggleFilters()">
+  <div class="alv-filter filter-panel" id="filterPanel">
+    <div class="filter-header">
       <h5 class="filter-title">
         <i class="fas fa-filter"></i> <span class="filter-title-text">Tenant Filters</span><span class="filter-title-text-mobile">Filters</span>
-        <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
       </h5>
       <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
         <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
@@ -158,10 +168,7 @@ Tenants
         </div>
 
         <!-- Active Filters Display -->
-        <div class="active-filters" id="activeFilters" style="display: none;">
-          <span class="active-filters-label">Active filters:</span>
-          <div class="filter-tags" id="filterTags"></div>
-        </div>
+        
       </form>
     </div>
   </div>
@@ -327,21 +334,12 @@ Tenants
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: padding 0.3s ease;
 }
-.filter-panel.expanded { padding: 24px; }
-.filter-panel:not(.expanded) .filter-content { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important; }
-.filter-panel.expanded .filter-content, .filter-panel.force-expanded .filter-content { display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow: visible !important; padding-top: 20px; }
-.filter-panel.force-expanded { padding: 24px !important; }
-.filter-panel.force-expanded .filter-content { display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow: visible !important; padding-top: 20px !important; }
+.filter-panel { padding: 24px; }
 .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; padding-bottom: 8px; border-bottom: 1px solid #dee2e6; cursor: pointer; transition: all 0.3s ease; }
-.filter-header.expanded { padding-bottom: 12px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
-.filter-header:hover { background-color: rgba(14, 124, 139, 0.05); border-radius: 8px; margin: -8px; padding: 16px 8px; }
-.filter-header.expanded:hover { padding: 20px 8px; }
+.filter-header { padding-bottom: 12px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
 .filter-title { margin: 0; color: #2c3e50; font-weight: 600; display: flex; align-items: center; gap: 8px; user-select: none; }
 .filter-title i { color: #0e7c8b; }
-.filter-toggle-icon { transition: transform 0.3s ease; margin-left: 8px; }
-.filter-toggle-icon.rotated { transform: rotate(180deg); }
 .filter-content { overflow: visible; transition: all 0.3s ease; }
-.filter-content.show { display: block !important; padding-top: 20px; }
 .filter-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end; }
 .filter-group { display: flex; flex-direction: column; position: relative; overflow: visible; }
 .filter-label { font-weight: 500; color: #495057; margin-bottom: 6px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
@@ -443,7 +441,7 @@ Tenants
   .filter-panel {
     padding: 8px 12px;
   }
-  .filter-panel.expanded {
+  .filter-panel {
     padding: 12px;
   }
   .filter-header {
@@ -454,18 +452,10 @@ Tenants
     border-bottom: none;
     min-height: 38px;
   }
-  .filter-header.expanded {
+  .filter-header {
     padding-bottom: 8px;
     border-bottom: 1px solid #dee2e6;
     margin-bottom: 12px;
-  }
-  .filter-header:hover {
-    margin: 0;
-    padding: 0;
-    background: transparent;
-  }
-  .filter-header.expanded:hover {
-    padding: 0 0 8px 0;
   }
   .filter-title {
     font-size: 14px;
@@ -501,43 +491,26 @@ Tenants
 </style>
 
 <script>
-let PANEL_IS_MANUALLY_EXPANDED = false;
 let EXTERNAL_INTERFERENCE_DETECTED = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const wasForceExpanded = sessionStorage.getItem('FORCE_TENANT_PANEL_EXPANDED') === 'true';
-    const wasClearAllProtected = sessionStorage.getItem('TENANT_CLEAR_ALL_PROTECTION') === 'true';
-    const windowFlag = window.TENANT_PANEL_MUST_STAY_EXPANDED;
-    const clearAllFlag = window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE;
+    const wasForceExpanded = false;
+    const wasClearAllProtected = false;
+    const windowFlag = false;
+    const clearAllFlag = false;
     const filterPanel = document.getElementById('filterPanel');
     if (filterPanel) {
         if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
-            filterPanel.classList.add('expanded', 'force-expanded');
-            filterPanel.setAttribute('data-force-expanded', 'true');
             const toggleIcon = document.getElementById('filterToggleIcon');
             if (toggleIcon) toggleIcon.classList.add('rotated');
-            PANEL_IS_MANUALLY_EXPANDED = true;
-            sessionStorage.removeItem('FORCE_TENANT_PANEL_EXPANDED');
-            sessionStorage.removeItem('TENANT_CLEAR_ALL_PROTECTION');
-            window.TENANT_PANEL_MUST_STAY_EXPANDED = false;
-            window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE = false;
         } else {
-            filterPanel.classList.remove('expanded', 'force-expanded');
-            filterPanel.removeAttribute('data-force-expanded');
         }
     }
-    setupInterferenceProtection();
     updateActiveFilters();
     ['propertySelect', 'tenantSelect', 'statusSelect'].forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', function() {
-                if (PANEL_IS_MANUALLY_EXPANDED) {
-                    const fp = document.getElementById('filterPanel');
-                    if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important;'; }
-                    sessionStorage.setItem('FORCE_TENANT_PANEL_EXPANDED', 'true');
-                    window.TENANT_PANEL_MUST_STAY_EXPANDED = true;
-                }
                 document.getElementById('filterForm').submit();
             });
         }
@@ -545,14 +518,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) {
         clearAllBtn.addEventListener('click', function() {
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                const fp = document.getElementById('filterPanel');
-                if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important; visibility: visible !important;'; fp.setAttribute('data-force-expanded', 'true'); }
-                sessionStorage.setItem('FORCE_TENANT_PANEL_EXPANDED', 'true');
-                sessionStorage.setItem('TENANT_CLEAR_ALL_PROTECTION', 'true');
-                window.TENANT_PANEL_MUST_STAY_EXPANDED = true;
-                window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE = true;
-            }
             document.getElementById('propertySelect').value = '';
             document.getElementById('tenantSelect').value = '';
             document.getElementById('statusSelect').value = '';
@@ -563,69 +528,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // The "More" dropdown is driven by the shared component in base.html.
 });
 
-function forceExpandPanel() {
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-    if (filterPanel && !filterPanel.classList.contains('expanded')) {
-        filterPanel.classList.add('expanded');
-        if (toggleIcon) toggleIcon.classList.add('rotated');
-        EXTERNAL_INTERFERENCE_DETECTED = true;
-    }
-}
 
-function setupInterferenceProtection() {
-    const filterPanel = document.getElementById('filterPanel');
-    if (!filterPanel) return;
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const hasExpanded = filterPanel.classList.contains('expanded');
-                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
-                    filterPanel.classList.add('expanded');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    if (toggleIcon) toggleIcon.classList.add('rotated');
-                    EXTERNAL_INTERFERENCE_DETECTED = true;
-                }
-            }
-        });
-    });
-    observer.observe(filterPanel, { attributes: true, attributeFilter: ['class'] });
-}
 
-function toggleFilters() {
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-    if (!filterPanel || !toggleIcon) return;
-    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-    if (isExpanded) {
-        PANEL_IS_MANUALLY_EXPANDED = false;
-        sessionStorage.removeItem('FORCE_TENANT_PANEL_EXPANDED');
-        sessionStorage.removeItem('TENANT_CLEAR_ALL_PROTECTION');
-        window.TENANT_PANEL_MUST_STAY_EXPANDED = false;
-        window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE = false;
-        filterPanel.classList.remove('expanded', 'force-expanded');
-        filterPanel.removeAttribute('data-force-expanded');
-        filterPanel.style.cssText = '';
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'none';
-            filterContent.style.visibility = 'hidden';
-            filterContent.classList.remove('show');
-        }
-        toggleIcon.classList.remove('rotated');
-    } else {
-        filterPanel.classList.add('expanded');
-        filterPanel.classList.remove('force-expanded');
-        toggleIcon.classList.add('rotated');
-        PANEL_IS_MANUALLY_EXPANDED = true;
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'block';
-            filterContent.style.visibility = 'visible';
-            filterContent.classList.add('show');
-        }
-    }
-}
 
 function updateActiveFilters() {
     const propertySelect = document.getElementById('propertySelect');
@@ -646,16 +550,9 @@ function updateActiveFilters() {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${statusText} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
         hasFilters = true;
     }
-    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
 }
 
 function clearFilter(filterType) {
-    if (PANEL_IS_MANUALLY_EXPANDED) {
-        const fp = document.getElementById('filterPanel');
-        if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important;'; fp.setAttribute('data-force-expanded', 'true'); }
-        sessionStorage.setItem('FORCE_TENANT_PANEL_EXPANDED', 'true');
-        window.TENANT_PANEL_MUST_STAY_EXPANDED = true;
-    }
     switch(filterType) {
         case 'property': document.getElementById('propertySelect').value = ''; break;
         case 'tenant': document.getElementById('tenantSelect').value = ''; break;

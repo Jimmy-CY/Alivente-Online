@@ -836,6 +836,16 @@ for f in FILES:
                 if 'action-back' not in b.group(2)
                 and 'back-button' not in b.group(2)
                 and 'action-more' not in b.group(2)
+                # The filter round (27 Aug) added .action-filter, which is a
+                # POSITION class like Back and More, not a tone: base.html
+                # styles it directly and it must never be promoted to the
+                # page's primary. Without this line, passport_management.html
+                # - whose bar is Help, Filter, Back - reads as a bar with
+                # exactly ONE real verb, and the check demands that Filter be
+                # made the primary action of the page. Expect this after any
+                # round that adds a new KIND of button: a check that counts
+                # verbs has to be told what is not one.
+                and 'action-filter' not in b.group(2)
                 and 'disabled-btn' not in b.group(2)
                 and not sb.is_cancel(sb.label_of(b.group(3)))
                 and not sb.label_of(b.group(3)).lower().startswith('help')]

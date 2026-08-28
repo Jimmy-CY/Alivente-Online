@@ -78,7 +78,15 @@ TONES = ('action-primary', 'action-secondary', 'action-danger',
 # Position/layout classes base.html owns. Not tones; they must survive the
 # swap. .action-more-btn is styled by base directly and takes no tone.
 POSITION = ('action-add-new', 'action-more-btn', 'action-more-item',
-            'ui-menu-toggle', 'disabled-btn')
+            'ui-menu-toggle', 'disabled-btn',
+            # The Filter toggle, added by the filter round (27 Aug). It sits
+            # in POSITION rather than TONES for the same reason
+            # .action-more-btn does: base.html styles it directly and it takes
+            # no tone. It is deliberately NOT .action-secondary - base hides
+            # those at 768px, and filtering matters more on a phone, not
+            # less - so it needs its own name here or --strict reports eight
+            # perfectly correct buttons as drift. It did, before this line.
+            'action-filter')
 
 # Names that MEAN a house class but are spelt wrong. Two pages copied
 # `action-btn-back` from somewhere; nothing defines it in base.
@@ -348,6 +356,13 @@ def skip_reason(cls):
         return 'colour is template logic (a segmented toggle)'
     if 'action-more-item' in cls.split():
         return 'dropdown menu row - base styles .action-more-item directly'
+    if 'action-filter' in cls.split():
+        # Same case, one round later: base.html styles .action-filter
+        # directly, including its pressed state and its 44px mobile form.
+        # Without this the button sits INSIDE a confirmed bar, so plan_bar
+        # hands it a tone and rebuild() adds one - and eight correct buttons
+        # get reported as drift. They were.
+        return 'the filter toggle - base styles .action-filter directly'
     return None
 
 
@@ -975,7 +990,15 @@ def main():
         if h:
             rows.append((f, h))
         for x in found:
-            if x[0] == 'skipped':
+            # COUNT BY THE REASON, NOT BY WHERE IT WAS FOUND. This used to
+            # test `x[0] == 'skipped'`, which is the kind given to buttons
+            # OUTSIDE a bar. A button inside a confirmed bar that has a
+            # skip_reason keeps the bar's name as its kind - so the eight
+            # Filter buttons stopped being drift and became invisible instead,
+            # counted in neither bucket. A guard that silently drops what it
+            # decided not to touch is how the next round inherits a blind
+            # spot. x[7] is the reason; if there is one, it is on record.
+            if x[7]:
                 skipped_n[x[7]] += 1
             elif x[0] == 'UNCLASSIFIED':
                 unclassified.append((f, x[1], x[3]))

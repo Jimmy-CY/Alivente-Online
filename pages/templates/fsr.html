@@ -319,18 +319,27 @@
             </div>
         </div>
 
+        <button type="button" class="btn action-filter" id="filterBtn"
+                aria-pressed="false" aria-controls="filterPanel"
+                aria-label="Show filters">
+          <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+        </button>
+
         <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
 
+    <div class="alv-filter-active" id="activeFilters">
+                <span class="active-filters-label">Active filters:</span>
+                <div class="filter-tags" id="filterTags"></div>
+            </div>
 
 <!-- Enhanced Filter Panel -->
-<div class="filter-panel" id="filterPanel">
-    <div class="filter-header" onclick="toggleFilters()">
+<div class="alv-filter filter-panel" id="filterPanel">
+    <div class="filter-header">
         <h5 class="filter-title">
             <i class="fas fa-filter"></i> Issue Filters
-            <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
         </h5>
         <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
             <i class="fas fa-times-circle"></i> Clear All
@@ -402,10 +411,7 @@
             </div>
 
             <!-- Active Filters Display -->
-            <div class="active-filters" id="activeFilters" style="display: none;">
-                <span class="active-filters-label">Active filters:</span>
-                <div class="filter-tags" id="filterTags"></div>
-            </div>
+            
         </form>
     </div>
 </div>
@@ -525,39 +531,8 @@
     transition: padding 0.3s ease;
 }
 
-.filter-panel.expanded {
+.filter-panel {
     padding: 24px;
-}
-
-.filter-panel:not(.expanded) .filter-content {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-.filter-panel.expanded .filter-content,
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px;
-}
-
-.filter-panel.force-expanded {
-    padding: 24px !important;
-}
-
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px !important;
 }
 
 .filter-header {
@@ -571,21 +546,10 @@
     transition: all 0.3s ease;
 }
 
-.filter-header.expanded {
+.filter-header {
     padding-bottom: 12px;
     border-bottom: 2px solid #dee2e6;
     margin-bottom: 20px;
-}
-
-.filter-header:hover {
-    background-color: rgba(14, 124, 139, 0.05);
-    border-radius: 8px;
-    margin: -8px;
-    padding: 16px 8px;
-}
-
-.filter-header.expanded:hover {
-    padding: 20px 8px;
 }
 
 .filter-title {
@@ -602,23 +566,9 @@
     color: #0e7c8b;
 }
 
-.filter-toggle-icon {
-    transition: transform 0.3s ease;
-    margin-left: 8px;
-}
-
-.filter-toggle-icon.rotated {
-    transform: rotate(180deg);
-}
-
 .filter-content {
     overflow: visible;
     transition: all 0.3s ease;
-}
-
-.filter-content.show {
-    display: block !important;
-    padding-top: 20px;
 }
 
 .filter-grid {
@@ -1271,8 +1221,7 @@
         padding: 12px 14px;
     }
 
-    .filter-panel.expanded,
-    .filter-panel.force-expanded {
+    .filter-panel {
         padding: 14px !important;
     }
 
@@ -1520,7 +1469,6 @@
 <script>
 console.log('=== FSR FILTER PANEL SCRIPT LOADED ===');
 
-let PANEL_IS_MANUALLY_EXPANDED = false;
 let EXTERNAL_INTERFERENCE_DETECTED = false;
 let selectedReportType = null;
 
@@ -1577,10 +1525,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Check if panel was forcibly expanded
-    const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
-    const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
-    const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
-    const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
+    const wasForceExpanded = false;
+    const wasClearAllProtected = false;
+    const windowFlag = false;
+    const clearAllFlag = false;
 
     console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
 
@@ -1589,28 +1537,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterPanel) {
         if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
             console.log('🔓 RESTORING FORCE-EXPANDED PANEL');
-            filterPanel.classList.add('expanded', 'force-expanded');
-            filterPanel.setAttribute('data-force-expanded', 'true');
             const toggleIcon = document.getElementById('filterToggleIcon');
             if (toggleIcon) {
                 toggleIcon.classList.add('rotated');
             }
-            PANEL_IS_MANUALLY_EXPANDED = true;
 
             // Clear the force flags
-            sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
-            sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
-            window.PANEL_MUST_STAY_EXPANDED = false;
-            window.CLEAR_ALL_PROTECTION_ACTIVE = false;
         } else {
-            filterPanel.classList.remove('expanded', 'force-expanded');
-            filterPanel.removeAttribute('data-force-expanded');
             console.log('Panel initialized as collapsed');
         }
     }
 
     // Set up continuous monitoring
-    setupInterferenceProtection();
     updateActiveFilters();
 
     // Store current filter values for preservation when navigating to details
@@ -1623,10 +1561,6 @@ document.addEventListener('DOMContentLoaded', function() {
             element.addEventListener('change', function() {
                 console.log(`🔄 Filter changed: ${id} = ${this.value}`);
 
-                if (PANEL_IS_MANUALLY_EXPANDED) {
-                    console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
-                    lockPanelState();
-                }
 
                 // Store current filter values before submitting
                 storeCurrentFilterValues();
@@ -1641,9 +1575,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchBtn) {
         searchBtn.addEventListener('click', function() {
             console.log('🔍 Search button clicked');
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                lockPanelState();
-            }
             document.getElementById('filterForm').submit();
         });
     }
@@ -1654,9 +1585,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 console.log('⌨️ Search enter key pressed');
-                if (PANEL_IS_MANUALLY_EXPANDED) {
-                    lockPanelState();
-                }
                 document.getElementById('filterForm').submit();
             }
         });
@@ -1668,21 +1596,6 @@ document.addEventListener('DOMContentLoaded', function() {
         clearAllBtn.addEventListener('click', function() {
             console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE 🧹🚨');
 
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒🔒 LOCKING PANEL STATE FOR CLEAR ALL 🔒🔒');
-
-                const filterPanel = document.getElementById('filterPanel');
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
-                    filterPanel.setAttribute('data-force-expanded', 'true');
-                }
-
-                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
-                window.PANEL_MUST_STAY_EXPANDED = true;
-                window.CLEAR_ALL_PROTECTION_ACTIVE = true;
-            }
 
             document.getElementById('searchInput').value = '';
             document.getElementById('countrySelect').value = '';
@@ -1939,157 +1852,9 @@ function resetReportModal() {
     console.log('✅ Modal reset complete');
 }
 
-function lockPanelState() {
-    const filterPanel = document.getElementById('filterPanel');
 
-    if (filterPanel) {
-        filterPanel.classList.add('force-expanded');
-        filterPanel.style.cssText += 'display: block !important;';
-    }
 
-    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-    window.PANEL_MUST_STAY_EXPANDED = true;
 
-    const originalHide = window.hideFilters;
-    window.hideFilters = function() {
-        console.log('🚫 BLOCKED: hideFilters() call during form submission');
-        return false;
-    };
-
-    setTimeout(() => {
-        window.hideFilters = originalHide;
-    }, 100);
-}
-
-function forceExpandPanel() {
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-
-    if (filterPanel && !filterPanel.classList.contains('expanded')) {
-        console.log('🔥 FORCING PANEL TO EXPAND');
-        filterPanel.classList.add('expanded');
-        if (toggleIcon) {
-            toggleIcon.classList.add('rotated');
-        }
-        EXTERNAL_INTERFERENCE_DETECTED = true;
-    }
-}
-
-function setupInterferenceProtection() {
-    const filterPanel = document.getElementById('filterPanel');
-    if (!filterPanel) return;
-
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const hasExpanded = filterPanel.classList.contains('expanded');
-
-                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
-                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED!');
-                    filterPanel.classList.add('expanded');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    if (toggleIcon) {
-                        toggleIcon.classList.add('rotated');
-                    }
-                    EXTERNAL_INTERFERENCE_DETECTED = true;
-                }
-            }
-        });
-    });
-
-    observer.observe(filterPanel, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
-
-    console.log('🛡️ FSR Interference protection activated');
-}
-
-function toggleFilters() {
-    console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-
-    if (!filterPanel || !toggleIcon) {
-        console.log('❌ Panel or icon not found');
-        return;
-    }
-
-    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
-
-    if (isExpanded) {
-        // MANUAL COLLAPSE
-        console.log('📉📉 MANUAL COLLAPSE 📉📉');
-
-        PANEL_IS_MANUALLY_EXPANDED = false;
-        sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
-        sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
-        window.PANEL_MUST_STAY_EXPANDED = false;
-        window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-
-        // FORCE removal of all classes
-        filterPanel.classList.remove('expanded', 'force-expanded');
-        filterPanel.removeAttribute('data-force-expanded');
-
-        // NUCLEAR CSS override
-        filterPanel.style.cssText = '';
-        filterPanel.style.display = '';
-        filterPanel.style.visibility = '';
-        filterPanel.style.opacity = '';
-        filterPanel.style.height = '';
-        filterPanel.style.overflow = '';
-        filterPanel.style.padding = '';
-
-        // Force hide the content directly
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'none';
-            filterContent.style.visibility = 'hidden';
-            filterContent.style.opacity = '0';
-            filterContent.style.height = '0';
-            filterContent.style.overflow = 'hidden';
-            filterContent.classList.remove('show');
-        }
-
-        toggleIcon.classList.remove('rotated');
-
-        console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
-
-        // Verify the collapse worked
-        setTimeout(() => {
-            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
-            if (isStillExpanded) {
-                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
-                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
-                filterPanel.style.cssText = 'padding: 12px 24px !important;';
-                if (filterContent) {
-                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
-                }
-            }
-        }, 50);
-
-    } else {
-        // MANUAL EXPANSION
-        console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
-        filterPanel.classList.add('expanded');
-        filterPanel.classList.remove('force-expanded');
-        toggleIcon.classList.add('rotated');
-        PANEL_IS_MANUALLY_EXPANDED = true;
-
-        // Ensure content is visible
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'block';
-            filterContent.style.visibility = 'visible';
-            filterContent.style.opacity = '1';
-            filterContent.style.height = 'auto';
-            filterContent.style.overflow = 'visible';
-            filterContent.classList.add('show');
-        }
-    }
-}
 
 function updateActiveFilters() {
     console.log('🔄 updateActiveFilters called');
@@ -2135,7 +1900,6 @@ function updateActiveFilters() {
         hasFilters = true;
     }
 
-    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
     console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
 
     console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
@@ -2144,10 +1908,6 @@ function updateActiveFilters() {
 function clearFilter(filterType) {
     console.log(`🧹 clearFilter called for: ${filterType}`);
 
-    if (PANEL_IS_MANUALLY_EXPANDED) {
-        console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
-        lockPanelState();
-    }
 
     switch(filterType) {
         case 'search':

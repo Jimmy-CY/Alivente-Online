@@ -33,17 +33,27 @@
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#passport_managementHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
+    <button type="button" class="btn action-filter" id="filterBtn"
+            aria-pressed="false" aria-controls="passportFilterPanel"
+            aria-label="Show filters">
+      <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+    </button>
+
     <a href="{% url 'personal_page' %}" class="btn action-back" role="button" aria-label="Back to personal page">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
 
+    <div class="alv-filter-active" id="passportActiveFilters">
+                <span>Active filters:</span>
+                <div class="passport-filter-tags" id="passportFilterTags"></div>
+            </div>
+
 <!-- Filter Panel -->
-<div class="passport-filter-panel" id="passportFilterPanel">
-    <div class="passport-filter-header" onclick="togglePassportFilterPanel()">
+<div class="alv-filter passport-filter-panel" id="passportFilterPanel">
+    <div class="passport-filter-header">
         <h5 class="passport-filter-title">
             <i class="fas fa-filter"></i> <span class="filter-title-text">Document Filters</span><span class="filter-title-text-mobile">Filters</span>
-            <i class="fas fa-chevron-down passport-filter-toggle-icon" id="passportFilterToggleIcon"></i>
         </h5>
         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllPassportFilters(event)">
             <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
@@ -93,10 +103,7 @@
                     </select>
                 </div>
             </div>
-            <div class="passport-active-filters" id="passportActiveFilters" style="display: none;">
-                <span>Active filters:</span>
-                <div class="passport-filter-tags" id="passportFilterTags"></div>
-            </div>
+            
         </form>
     </div>
 </div>
@@ -459,9 +466,6 @@
     font-size: 18px;
 }
 .passport-filter-title i.fas { color: #0e7c8b; font-size: 16px; }
-.passport-filter-toggle-icon { transition: transform 0.3s ease; margin-left: 8px; font-size: 14px; }
-.passport-filter-content { display: none; }
-.passport-filter-content.expanded { display: block; }
 .passport-filter-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -505,7 +509,7 @@
     flex-wrap: wrap;
 }
 .passport-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.passport-filter-tag {
+.filter-tag {
     background: #0e7c8b;
     color: white;
     padding: 4px 12px;
@@ -618,12 +622,6 @@
     .filter-title-text-mobile { display: inline; }
     .clear-all-text { display: none; }
     .clear-all-text-mobile { display: inline; }
-
-    .passport-filter-content.expanded {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #dee2e6;
-    }
     .passport-filter-grid {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -860,7 +858,6 @@ document.addEventListener('DOMContentLoaded', function() {
             element.addEventListener('change', function() {
                 sessionStorage.setItem('passportUserInteracted', 'true');
                 sessionStorage.setItem('passportJustUsedDropdown', 'true');
-                expandPassportFilterPanel();
                 document.getElementById('passportFilterForm').submit();
             });
         }
@@ -871,7 +868,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const justClearedFilters = sessionStorage.getItem('passportJustClearedFilters') === 'true';
     const justUsedDropdown = sessionStorage.getItem('passportJustUsedDropdown') === 'true';
     if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justUsedDropdown) {
-        setTimeout(() => { expandPassportFilterPanel(); }, 100);
+        setTimeout(() => { false; }, 100);
     }
     if (justClearedFilters) setTimeout(() => { sessionStorage.removeItem('passportJustClearedFilters'); }, 200);
     if (justUsedDropdown) setTimeout(() => { sessionStorage.removeItem('passportJustUsedDropdown'); }, 200);
@@ -893,34 +890,12 @@ function checkForPassportActiveFilters() {
            (document.getElementById('statusSelect') && document.getElementById('statusSelect').value);
 }
 
-function expandPassportFilterPanel() {
-    const filterContent = document.getElementById('passportFilterContent');
-    const toggleIcon = document.getElementById('passportFilterToggleIcon');
-    if (filterContent && toggleIcon) {
-        filterContent.classList.add('expanded');
-        toggleIcon.style.transform = 'rotate(180deg)';
-    }
-}
 
-function togglePassportFilterPanel() {
-    const filterContent = document.getElementById('passportFilterContent');
-    const toggleIcon = document.getElementById('passportFilterToggleIcon');
-    if (filterContent.classList.contains('expanded')) {
-        filterContent.classList.remove('expanded');
-        toggleIcon.style.transform = 'rotate(0deg)';
-        sessionStorage.setItem('passportUserInteracted', 'false');
-    } else {
-        filterContent.classList.add('expanded');
-        toggleIcon.style.transform = 'rotate(180deg)';
-        sessionStorage.setItem('passportUserInteracted', 'true');
-    }
-}
 
 function clearAllPassportFilters(event) {
     event.stopPropagation();
     sessionStorage.setItem('passportUserInteracted', 'true');
     sessionStorage.setItem('passportJustClearedFilters', 'true');
-    expandPassportFilterPanel();
     document.getElementById('holderSelect').value = '';
     document.getElementById('docTypeSelect').value = '';
     document.getElementById('countrySelect').value = '';
@@ -931,7 +906,6 @@ function clearAllPassportFilters(event) {
 function clearPassportFilter(filterType) {
     sessionStorage.setItem('passportUserInteracted', 'true');
     sessionStorage.setItem('passportJustClearedFilters', 'true');
-    expandPassportFilterPanel();
     switch(filterType) {
         case 'holder': document.getElementById('holderSelect').value = ''; break;
         case 'doc_type': document.getElementById('docTypeSelect').value = ''; break;
@@ -951,11 +925,10 @@ function updatePassportActiveFilters() {
     if (!filterTagsDiv) return;
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    if (holderSelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Holder: ${holderSelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button></span>`; hasFilters = true; }
-    if (docTypeSelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Type: ${docTypeSelect.options[docTypeSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button></span>`; hasFilters = true; }
-    if (countrySelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Country: ${countrySelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('country')" type="button">×</button></span>`; hasFilters = true; }
-    if (statusSelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Status: ${statusSelect.options[statusSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('status')" type="button">×</button></span>`; hasFilters = true; }
-    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+    if (holderSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Holder: ${holderSelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button></span>`; hasFilters = true; }
+    if (docTypeSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Type: ${docTypeSelect.options[docTypeSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button></span>`; hasFilters = true; }
+    if (countrySelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${countrySelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('country')" type="button">×</button></span>`; hasFilters = true; }
+    if (statusSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${statusSelect.options[statusSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('status')" type="button">×</button></span>`; hasFilters = true; }
 }
 
 function addNewDocument() {

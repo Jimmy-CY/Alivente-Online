@@ -47,6 +47,12 @@ Projects
       <i class="fas fa-question-circle"></i> Help
     </button>
 
+    <button type="button" class="btn action-filter" id="filterBtn"
+            aria-pressed="false" aria-controls="filterPanel"
+            aria-label="Show filters">
+      <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+    </button>
+
     <!-- Mobile: More menu (hidden on desktop) -->
     <div class="action-more-wrapper">
       <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
@@ -65,12 +71,35 @@ Projects
     </a>
   </div>
 
+    <div class="alv-filter-active" id="activeFilters">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="filter-tags" id="filterTags">
+            {% if request.GET.search %}
+              <span class="filter-tag">
+                Search: "{{ request.GET.search }}"
+                <a href="?{% if request.GET.property %}property={{ request.GET.property }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
+              </span>
+            {% endif %}
+            {% if request.GET.property %}
+              <span class="filter-tag">
+                Property: {% for prop in properties %}{% if prop.prop_id|stringformat:"s" == request.GET.property %}{{ prop.prop_name }}{% endif %}{% endfor %}
+                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
+              </span>
+            {% endif %}
+            {% if request.GET.status %}
+              <span class="filter-tag">
+                Status: {{ request.GET.status }}
+                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.property %}property={{ request.GET.property }}{% endif %}" class="remove-tag">×</a>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
   <!-- Simplified Filter Panel -->
-  <div class="filter-panel" id="filterPanel">
-    <div class="filter-header" onclick="toggleFilters()">
+  <div class="alv-filter filter-panel" id="filterPanel">
+    <div class="filter-header">
       <h5 class="filter-title">
         <i class="fas fa-filter"></i> Project Filters
-        <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
       </h5>
       <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="clearAllFilters(event);">
         <i class="fas fa-times-circle"></i> Clear All
@@ -128,29 +157,7 @@ Projects
         </div>
 
         <!-- Active Filters Display -->
-        <div class="active-filters" id="activeFilters" style="{% if not request.GET.search and not request.GET.property and not request.GET.status %}display: none;{% endif %}">
-          <span class="active-filters-label">Active filters:</span>
-          <div class="filter-tags" id="filterTags">
-            {% if request.GET.search %}
-              <span class="filter-tag">
-                Search: "{{ request.GET.search }}"
-                <a href="?{% if request.GET.property %}property={{ request.GET.property }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
-              </span>
-            {% endif %}
-            {% if request.GET.property %}
-              <span class="filter-tag">
-                Property: {% for prop in properties %}{% if prop.prop_id|stringformat:"s" == request.GET.property %}{{ prop.prop_name }}{% endif %}{% endfor %}
-                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
-              </span>
-            {% endif %}
-            {% if request.GET.status %}
-              <span class="filter-tag">
-                Status: {{ request.GET.status }}
-                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.property %}property={{ request.GET.property }}{% endif %}" class="remove-tag">×</a>
-              </span>
-            {% endif %}
-          </div>
-        </div>
+        
       </form>
     </div>
   </div>
@@ -449,21 +456,11 @@ Projects
 
 .filter-title i.fa-filter { color: #0e7c8b; }
 
-.filter-toggle-icon {
-    transition: transform 0.3s ease;
-    margin-left: 8px;
-}
-
-.filter-toggle-icon.rotated { transform: rotate(180deg); }
-
 .filter-content {
     padding-top: 20px;
     border-top: 1px solid #dee2e6;
     margin-top: 15px;
-    display: none;
 }
-
-.filter-content.show { display: block; }
 
 .filter-grid {
     display: grid;
@@ -966,18 +963,6 @@ Projects
 console.log('=== PROJECTS FILTERS LOADING ===');
 
 // Simple toggle functionality
-function toggleFilters() {
-    const filterContent = document.getElementById('filterContent');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-
-    if (filterContent.classList.contains('show')) {
-        filterContent.classList.remove('show');
-        toggleIcon.classList.remove('rotated');
-    } else {
-        filterContent.classList.add('show');
-        toggleIcon.classList.add('rotated');
-    }
-}
 
 // Clear all filters
 function clearAllFilters(event) {

@@ -191,7 +191,15 @@ def group(prefix):
 # margin lets a rule go missing quietly, which is the failure this exists to
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
-for prefix, floor, why in (('.filter', 37, 'filter panel + chips'),
+_flat = [x.strip() for sel in _sels for x in sel.split(',') if x.strip()]
+
+# (selector, declarations) pairs, needed to assert a rule still CARRIES a
+# declaration rather than merely existing.
+_rule_pairs = [(re.sub(r'/\*.*?\*/', '', m.group(1), flags=re.S).strip(),
+                m.group(2))
+               for m in re.finditer(r'([^{}]+)\{([^{}]*)\}', CSS)]
+
+for prefix, floor, why in (('.filter', 26, 'filter panel + chips'),
                            ('.action-', 8, 'page-header buttons'),
                            ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
@@ -206,6 +214,51 @@ check('  the mobile @media block still exists for the page-specific half',
       re.search(r'@media[^{]*max-width:\s*768px', CSS) is not None)
 check('  and the page still has substantial CSS of its own (%d lines)'
       % CSS.count('\n'), CSS.count('\n') > 150)
+
+# ---------------------------------------------------------------------------
+# WHY THE .filter FLOOR MOVED  (27 Aug, the filter round)
+# ---------------------------------------------------------------------------
+# Same shape as the .action- move above, and the same rule applied: the number
+# moved WITH the decision, in the same commit, and what went is named here so
+# nobody has to reverse-engineer the arithmetic later.
+#
+# The filter panel now has one owner. base.html decides whether it is open -
+# `.alv-filter` hidden by default, `.is-open` to show it - and the page keeps
+# only its appearance. Before that, four pages recorded "is the panel open" in
+# TEN separate places. These eleven selectors were the CSS half of that.
+_FILTER_GONE = (
+    '.filter-panel:not(.expanded) .filter-content',
+    '.filter-panel.expanded .filter-content',
+    '.filter-panel.force-expanded',
+    '.filter-panel.force-expanded .filter-content',
+    '.filter-panel.expanded',
+    '.filter-header.expanded',
+    '.filter-header.expanded:hover',
+    '.filter-header:hover',
+    '.filter-toggle-icon',
+    '.filter-toggle-icon.rotated',
+    '.filter-content.show',
+)
+for _s in _FILTER_GONE:
+    check('  the filter round removed %-44s' % _s, _s not in _flat)
+
+# TWO WERE REWRITTEN, NOT DROPPED - and this is the half that matters.
+# `.filter-panel.expanded` is where the panel's PADDING lived. Delete it as
+# "expanded machinery" and the panel opens with its fields flush against the
+# border: no count changes, no tag unbalances, nothing throws. So the rule was
+# renamed in place, exactly as `.lease-end-red` was in the Tenants round -
+# base.html does not own these selectors, and a rule nothing replaces must
+# never simply be dropped.
+check('  .filter-panel survived the round', '.filter-panel' in _flat)
+check('    and still declares its padding',
+      any(' '.join(s.split()) == '.filter-panel' and 'padding' in b
+          for s, b in _rule_pairs))
+check('  .filter-header survived too', '.filter-header' in _flat)
+check('  base.html is what hides the panel now',
+      '.alv-filter' in BASE_SRC and 'alv-filter script v1' in BASE_SRC)
+check('    and the page defers to it', 'alv-filter' in SRC)
+check('  CONTROL: the page did NOT keep a second way to hide it',
+      'force-expanded' not in SRC and 'filter-toggle-icon' not in SRC)
 
 # The permission-aware markup must be untouched: this round is CSS.
 check('permission conditionals survive (%d)' % SRC.count('{% if perms.'),

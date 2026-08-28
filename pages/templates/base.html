@@ -1571,7 +1571,102 @@
   @media (max-width: 768px) {
       .ui-menu { display: none; }
   }
-  </style>
+  
+/* ===== ALV-FILTER v1 ===== */
+/* ====================================================================
+   FILTER  -  one class, one owner.
+   Replaces .filter-panel / .expanded / .force-expanded / the inline
+   display:block !important escalation / four per-page toggle functions.
+   ==================================================================== */
+
+/* The panel. Hidden is the DEFAULT STATE, not a class you add - so a page
+   that fails to run any JS shows a clean list rather than a sprung-open
+   panel. `hidden` beats nothing: it is one class, no !important. */
+.alv-filter            { display: none; }
+.alv-filter.is-open    { display: block; }
+
+/* The button. NOT .action-secondary: base hides those on a phone
+   (`.page-action-buttons .action-secondary { display:none }`) and
+   filtering matters MORE on a small screen, not less. Own position
+   class, secondary TONE. */
+.btn.action-filter {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: var(--alv-radius);
+  font-family: var(--alv-font-ui); font-weight: 600; font-size: 14px;
+  background: var(--alv-paper);
+  border: 1px solid var(--alv-line);
+  color: var(--alv-ink);
+}
+/* Pressed. A toggle with no visible state gets pressed twice. */
+.btn.action-filter[aria-pressed="true"] {
+  background: var(--alv-accent-soft);
+  border-color: var(--alv-accent-line);
+  color: var(--alv-accent-ink);
+}
+/* The count rides the button, so "something is filtering this list" is
+   legible from the bar without scrolling to the chips. */
+.action-filter-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; font-size: 11.5px; font-weight: 700; line-height: 1;
+  background: var(--alv-accent); color: var(--alv-on-accent);
+}
+.btn.action-filter[aria-pressed="true"] .action-filter-count {
+  background: var(--alv-accent-ink);
+}
+.action-filter-count:empty,
+.action-filter-count[data-count="0"] { display: none; }
+
+
+/* A FILTER MUST SHOW ITS OWN VALUE.
+   Bootstrap 4.1.3 pins every control to a FIXED height -
+   `.form-control { height: calc(2.25rem + 2px) }`, 38px - while these panels
+   set `padding: 10px 14px` on top of it. With border-box that leaves ~14px of
+   content box for a 14px font, so the chosen option is shaved off at the
+   bottom and "All Properties" loses its descenders.
+   Whether it actually clips depends on the font: it does on Segoe UI, it does
+   not on the Linux faces this was first rendered against - which is precisely
+   why this is fixed by removing the constraint rather than by tuning a number.
+   The :not() pair is not decoration; Bootstrap's own selector carries it, and
+   without matching that shape this rule loses on specificity, silently. */
+.alv-filter select.form-control:not([size]):not([multiple]),
+.alv-filter input.form-control,
+.alv-filter textarea.form-control { height: auto; }
+
+/* The chips move OUT of the panel. This is the whole safety argument:
+   a closed panel must never mean invisible filtering. */
+/* Default HIDDEN, shown by a class - not the reverse. Starting visible and
+   hiding it in script means a flash of "Active filters:" with nothing after
+   it on every page load. */
+.alv-filter-active { display: none; }
+.alv-filter-active.has-filters {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: -8px 0 16px;
+  font-family: var(--alv-font-ui); font-size: 13px;
+}
+.alv-filter-active-label { color: var(--alv-ink-soft); font-weight: 600; }
+
+@media (max-width: 768px) {
+  /* Same treatment Back gets: keep the target, drop the label. */
+  .page-action-buttons .action-filter {
+    flex: 0 0 auto; width: 44px; height: 38px;
+    padding: 0; justify-content: center; gap: 0;
+  }
+  .page-action-buttons .action-filter .action-filter-label { display: none; }
+  /* The count still has to show, or the phone loses the only cue. */
+  .page-action-buttons .action-filter .action-filter-count {
+    position: absolute; transform: translate(14px, -12px);
+  }
+  .page-action-buttons .action-filter { position: relative; }
+}
+
+@media print {
+  .alv-filter, .btn.action-filter { display: none !important; }
+  /* The chips DO print - they say what the page you are holding shows. */
+  .alv-filter-active.has-filters { display: flex !important; }
+}
+
+</style>
 
   <script>
   (function () {
@@ -1705,5 +1800,83 @@
 
 {% block extra_scripts %}{% endblock %}
 
-  </body>
+  <script>
+/* ===== alv-filter script v1 ===== */
+/* ====================================================================
+   FILTER  -  one mechanism, replacing seven.
+   Before this, four pages each carried: a class, a SECOND class, an
+   inline style.cssText, a data- attribute, a sessionStorage key, a
+   window global and a module global - all recording one boolean.
+   Here the open state is ONE class on the panel. Everything else reads
+   it; nothing else writes it.
+   ==================================================================== */
+(function () {
+  var KEY = 'alvFilterOpen';   // one-shot, consumed on read
+
+  function setOpen(btn, panel, open) {
+    panel.classList.toggle('is-open', open);
+    btn.setAttribute('aria-pressed', open ? 'true' : 'false');
+  }
+
+  /* The count is NOT a second source of truth - it is derived from the
+     chips, which are what the page already computes. A MutationObserver
+     keeps it honest, so no page has to remember to update it. */
+  function wireCount(btn) {
+    var box = btn.querySelector('.action-filter-count');
+    var chips = document.querySelector('.alv-filter-active');
+    if (!box || !chips) return;
+    function sync() {
+      var n = chips.querySelectorAll('.filter-tag').length;
+      box.textContent = n ? String(n) : '';
+      box.setAttribute('data-count', String(n));
+      /* ONE writer for the row's visibility. The pages used to set
+         activeFiltersDiv.style.display themselves; that line is removed, or
+         we would be back to two things recording one fact. */
+      chips.classList.toggle('has-filters', n > 0);
+    }
+    sync();
+    try { new MutationObserver(sync).observe(chips, {childList: true, subtree: true}); }
+    catch (e) { /* no observer: the count is stale, the chips are not */ }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.querySelector('.action-filter');
+    if (!btn) return;
+    var panel = document.getElementById(btn.getAttribute('aria-controls'));
+    if (!panel) return;
+
+    /* WHY A FLAG AT ALL. The filter form SUBMITS - changing a dropdown or
+       clearing a chip reloads the page. Without this the panel shuts under
+       you every time you adjust one field, which is the problem the seven
+       mechanisms above were all failing to solve. It is one-shot: consumed
+       on read, so a genuine fresh visit starts closed. */
+    var reopen = false;
+    try {
+      reopen = sessionStorage.getItem(KEY) === '1';
+      sessionStorage.removeItem(KEY);
+    } catch (e) { /* private mode: the panel starts closed, which is the default anyway */ }
+    setOpen(btn, panel, reopen);
+    wireCount(btn);
+
+    btn.addEventListener('click', function () {
+      setOpen(btn, panel, !panel.classList.contains('is-open'));
+    });
+
+    function remember() {
+      try { if (panel.classList.contains('is-open')) sessionStorage.setItem(KEY, '1'); }
+      catch (e) {}
+    }
+    /* Exactly two things reload the page as part of filtering. Not
+       beforeunload - that would make the panel follow you around the app,
+       which is persistence we deliberately did not want. */
+    var form = panel.querySelector('form');
+    if (form) form.addEventListener('submit', remember);
+    var chips = document.querySelector('.alv-filter-active');
+    if (chips) chips.addEventListener('click', function (e) {
+      if (e.target.closest('.remove-tag')) remember();
+    });
+  });
+})();
+</script>
+</body>
 </html>

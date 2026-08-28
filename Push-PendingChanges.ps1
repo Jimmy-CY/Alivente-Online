@@ -217,6 +217,10 @@ $sentinels = @(
     # A substring cannot express "unscoped" - that half is covered by
     # test_button_sweep.py section 1, which asserts the LAYOUT is still
     # scoped to .page-action-buttons while the tones are not.
+    @{ File = 'pages\templates\base.html';                Text = '.alv-filter.is-open'; What = 'ONE class says whether the filter panel is open' },
+    @{ File = 'pages\templates\base.html';                Text = 'alv-filter script v1'; What = 'and one script reads it' },
+    @{ File = 'pages\templates\suppliers.html';           Text = 'class="btn action-filter"'; What = 'the Filter button lives in the action bar' },
+    @{ File = 'pages\templates\fsr.html';                 Text = 'class="alv-filter-active"'; What = 'the chips sit OUTSIDE the panel, so hiding it stays safe' },
     @{ File = 'pages\templates\base.html';                Text = '.btn.action-danger'; What = 'destructive is a tone, and it outranks a page btn-danger' },
     @{ File = 'pages\templates\base.html';                Text = '.page-action-buttons .action-more-btn'; What = 'and the More button keeps its edge' },
     @{ File = 'pages\templates\base.html';                Text = 'pointer-events: none';            What = 'a disabled button is not a live link' },
@@ -308,7 +312,10 @@ $suites = @(
     # three most likely to be the ones that catch something.
     'test_table_tenants.py',
     'test_table_lease_agreement.py',
-    'test_table_tenant_report.py'
+    'test_table_tenant_report.py',
+    # The filter round. It touches base.html and eight list pages, so it is
+    # the newest thing here and therefore the most likely to be what breaks.
+    'test_filter_toggle.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -39,6 +39,12 @@ Invoices
       <i class="fas fa-question-circle"></i> Help
     </button>
 
+    <button type="button" class="btn action-filter" id="filterBtn"
+            aria-pressed="false" aria-controls="filterPanel"
+            aria-label="Show filters">
+      <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+    </button>
+
     <!-- Mobile-only More dropdown (holds the secondary actions) -->
     <div class="action-more-wrapper">
       <button type="button" class="btn action-more-btn" id="actionMoreBtn"
@@ -57,12 +63,16 @@ Invoices
     </a>
   </div>
 
+    <div class="alv-filter-active" id="activeFilters">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="filter-tags" id="filterTags"></div>
+        </div>
+
   <!-- Collapsible Filter Panel -->
-  <div class="filter-panel" id="filterPanel">
-    <div class="filter-header" onclick="toggleFilters()">
+  <div class="alv-filter filter-panel" id="filterPanel">
+    <div class="filter-header">
       <h5 class="filter-title">
         <i class="fas fa-filter"></i> Invoice Filters
-        <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
       </h5>
       <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
         <i class="fas fa-times-circle"></i> Clear All
@@ -105,10 +115,7 @@ Invoices
         </div>
 
         <!-- Active Filters Display -->
-        <div class="active-filters" id="activeFilters" style="display: none;">
-          <span class="active-filters-label">Active filters:</span>
-          <div class="filter-tags" id="filterTags"></div>
-        </div>
+        
       </form>
     </div>
   </div>
@@ -187,7 +194,7 @@ Invoices
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.filter-panel.expanded {
+.filter-panel {
     padding: 24px;
 }
 
@@ -218,22 +225,8 @@ Invoices
     color: #0e7c8b;
 }
 
-.filter-toggle-icon {
-    transition: transform 0.3s ease;
-    margin-left: 8px;
-}
-
-.filter-toggle-icon.rotated {
-    transform: rotate(180deg);
-}
-
 .filter-content {
-    display: none;
     padding-top: 20px;
-}
-
-.filter-content.show {
-    display: block;
 }
 
 .filter-grid {
@@ -460,7 +453,7 @@ td.overdue-cell.is-overdue {
         margin-bottom: 18px;
         border-radius: 10px;
     }
-    .filter-panel.expanded {
+    .filter-panel {
         padding: 16px;
     }
     .filter-header {
@@ -618,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Auto-expand filter panel on mobile if there are active filters
-    if (checkForActiveFilters()) {
+    if (false) {
         const filterContent = document.getElementById('filterContent');
         const toggleIcon = document.getElementById('filterToggleIcon');
         const filterPanel = document.getElementById('filterPanel');
@@ -630,27 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function checkForActiveFilters() {
-    const propertySelect = document.getElementById('propertySelect');
-    const tenantSelect = document.getElementById('tenantSelect');
-    return (propertySelect && propertySelect.value) || (tenantSelect && tenantSelect.value);
-}
 
-function toggleFilters() {
-    const filterContent = document.getElementById('filterContent');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-    const filterPanel = document.getElementById('filterPanel');
-
-    if (filterContent.classList.contains('show')) {
-        filterContent.classList.remove('show');
-        toggleIcon.classList.remove('rotated');
-        filterPanel.classList.remove('expanded');
-    } else {
-        filterContent.classList.add('show');
-        toggleIcon.classList.add('rotated');
-        filterPanel.classList.add('expanded');
-    }
-}
 
 function updateActiveFilters() {
     const propertySelect = document.getElementById('propertySelect');
@@ -675,7 +648,6 @@ function updateActiveFilters() {
         hasFilters = true;
     }
 
-    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
 }
 
 function clearFilter(filterType) {
