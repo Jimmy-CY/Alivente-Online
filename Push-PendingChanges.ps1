@@ -282,7 +282,18 @@ $sentinels = @(
     @{ File = 'pages\views\receipts.py';                  Text = 'def store_pdf';             What = 'and one place re-renders the stored PDF, deleting the old file' },
     @{ File = 'pages\urls.py';                            Text = 'name="cash_receipt_update"'; What = 'a receipt can be edited - everything but the number' },
     @{ File = 'pages\models.py';                          Text = 'edited_at = models.DateTimeField'; What = 'and the edit is stamped, because the sent copy cannot be recalled' },
-    @{ File = 'pages\templates\cash_receipts.html';       Text = "include 'components/pdf_viewer.html'"; What = 'the PDF opens in the house modal, with share and download' }
+    @{ File = 'pages\templates\cash_receipts.html';       Text = "include 'components/pdf_viewer.html'"; What = 'the PDF opens in the house modal, with share and download' },
+    # Valuations. The FIRST is the one that mattered: the page named its own
+    # shell, so base's sticky observer - which looks for .table-container -
+    # had never seen it.
+    @{ File = 'pages\templates\finance_valuations.html';  Text = 'class="table-container"'; What = 'Valuations uses the shell base actually looks for' },
+    @{ File = 'pages\templates\finance_valuations.html';  Text = 'table alv-table valuations-table'; What = 'and is on the table standard' },
+    @{ File = 'pages\templates\finance_valuations.html';  Text = '<tfoot>';                 What = 'its TOTAL row is a footer, not a record' },
+    @{ File = 'pages\views\finance.py';                   Text = 'def _valuation_rows';     What = 'the rows and the three filter chains moved into the view' },
+    @{ File = 'pages\views\finance.py';                   Text = "sum(r['purchase'] for r in rows"; What = 'and the total is the sum of the rows on screen' },
+    # The way back from a receipt changed directly in the database: the row
+    # moves, the stored PDF does not, and nothing on screen says so.
+    @{ File = 'pages\management\commands\regenerate_receipt_pdf.py'; Text = 'None marked as edited'; What = 'a receipt edited in MySQL can be re-rendered WITHOUT being stamped' }
 )
 
 foreach ($s in $sentinels) {
@@ -388,7 +399,12 @@ $suites = @(
     # Cash Receipts. Section 0b refuses the push if `makemigrations` has not
     # been run - the one failure in this round that would deploy cleanly and
     # then 500 on the first query. Newest, so most likely to be what breaks.
-    'test_cash_receipts.py'
+    'test_cash_receipts.py',
+    # Valuations. Section 1 runs the OLD template loop - including get_item,
+    # divide_by, subtract and multiply exactly as custom_filters defines them,
+    # quirks and all - beside the new view function, so a change to either
+    # that alters a figure fails here. Newest, so most likely to break.
+    'test_valuations.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

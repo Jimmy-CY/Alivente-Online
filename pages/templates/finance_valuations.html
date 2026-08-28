@@ -31,7 +31,6 @@ ALIVENTE ONLINE - PROPERTY VALUATIONS
   </script>
 {% endfor %}
 
-<body>
 {% if perms.auth.can_access_financials %}
 
 <!-- Action Buttons: Back+2+ pattern -->
@@ -41,7 +40,7 @@ ALIVENTE ONLINE - PROPERTY VALUATIONS
       <i class="fas fa-plus"></i> Add New
     </a>
   {% else %}
-    <span class="btn action-primary action-primary--disabled" title="You do not have permission">
+    <span class="btn action-primary disabled-btn" title="You do not have permission">
       <i class="fas fa-plus"></i> Add New
     </span>
   {% endif %}
@@ -68,395 +67,222 @@ ALIVENTE ONLINE - PROPERTY VALUATIONS
   </a>
 </div>
 
-<div class="valuations-table-container">
-  <table class="table table-bordered table-striped text-center valuations-table">
+<div class="table-container">
+  <table class="table alv-table valuations-table">
     <thead>
       <tr>
-        <th style="text-align: left; width: 25%">Property</th>
-        <th style="text-align: center; width: 8%">m²</th>
-        <th style="text-align: right; width: 13%">Purchase Price</th>
-        <th style="text-align: right; width: 11%">Price/m²</th>
-        <th style="text-align: right; width: 13%">Current Value</th>
-        <th style="text-align: right; width: 11%">Value/m²</th>
-        <th style="text-align: right; width: 11%">Gain %</th>
-        <th style="text-align: center; width: 8%">Edit</th>
+        <th style="text-align: left; width: 24%">Property</th>
+        <th class="num" style="width: 7%">m&sup2;</th>
+        <th class="num" style="width: 13%">Purchase Price</th>
+        <th class="num" style="width: 11%">Price/m&sup2;</th>
+        <th class="num" style="width: 13%">Current Value</th>
+        <th class="num" style="width: 11%">Value/m&sup2;</th>
+        <th class="num" style="width: 11%">Gain %</th>
+        <!-- 10%, not 8%: .cell-actions is nowrap, so the button needs what it
+             needs whatever the declaration says, and the browser takes the
+             difference from whichever column is beside it. -->
+        <th class="desktop-action-cell cell-actions" style="width: 10%">Actions</th>
       </tr>
     </thead>
     <tbody>
-      {% for property in props %}
-        {% with valuation=prop_values|get_item:property.prop_id %}
-          {% if valuation %}
-            <tr>
-              <td data-label="Property" class="cell-property" style="text-align: left">{{ property.prop_name }}</td>
-              <td data-label="Floor Area" class="cell-area" style="text-align: center">
-                {% if property.prop_floor_area %}
-                  {{ property.prop_floor_area|floatformat:0 }}
-                {% else %}
-                  <span style="color: #999;">—</span>
-                {% endif %}
-              </td>
-              <td data-label="Purchase Price" class="cell-purchase" style="text-align: right">€ {{ valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
-              <td data-label="Price/m²" class="cell-price-sqm" style="text-align: right">
-                {% if property.prop_floor_area and valuation.prop_values_purchase_price %}
-                  €{{ valuation.prop_values_purchase_price|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
-                {% else %}
-                  <span style="color: #999;">—</span>
-                {% endif %}
-              </td>
-              <td data-label="Current Value" class="cell-current" style="text-align: right">€ {{ valuation.prop_values_current_value|floatformat:"0"|intcomma }}</td>
-              <td data-label="Value/m²" class="cell-value-sqm" style="text-align: right">
-                {% if property.prop_floor_area and valuation.prop_values_current_value %}
-                  €{{ valuation.prop_values_current_value|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
-                {% else %}
-                  <span style="color: #999;">—</span>
-                {% endif %}
-              </td>
-              <td data-label="Gain %" class="cell-gain" style="text-align: right">
-                {% if valuation.prop_values_purchase_price and valuation.prop_values_current_value %}
-                  {% with gain=valuation.prop_values_current_value|subtract:valuation.prop_values_purchase_price %}
-                    {% with percentage=gain|multiply:100|divide_by:valuation.prop_values_purchase_price %}
-                      <span style="color: {% if percentage >= 0 %}#28a745{% else %}#dc3545{% endif %}; font-weight: 500;">
-                        {% if percentage >= 0 %}+{% endif %}{{ percentage|floatformat:1 }}%
-                      </span>
-                    {% endwith %}
-                  {% endwith %}
-                {% else %}
-                  <span style="color: #999;">—</span>
-                {% endif %}
-              </td>
-              <td data-label="Edit" class="cell-action">
-                {% if perms.auth.can_edit_financials %}
-                  <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}" class="btn btn-light val-edit-btn">
-                    <i class="fas fa-edit"></i><span class="btn-label-text"> Edit</span>
-                  </a>
-                {% else %}
-                  <button type="button" class="btn btn-light val-edit-btn" disabled>
-                    <i class="fas fa-edit"></i><span class="btn-label-text"> Edit</span>
-                  </button>
-                {% endif %}
-              </td>
-            </tr>
-          {% endif %}
-        {% endwith %}
-      {% endfor %}
-
-      <!-- Totals row -->
-      <tr class="totals-row">
-        <td data-label="" class="cell-totals-label" style="font-weight:bold" align="right" colspan="2">TOTAL: </td>
-        <td data-label="Total Purchase" class="cell-totals-purchase" style="font-weight:bold" align="right">€ {{ pur_balance|default:0|floatformat:"0"|intcomma }}</td>
-        <td data-label="" class="cell-totals-spacer-1"></td>
-        <td data-label="Total Current" class="cell-totals-current" style="font-weight:bold" align="right">€ {{ cur_balance|default:0|floatformat:"0"|intcomma }}</td>
-        <td data-label="" class="cell-totals-spacer-2"></td>
-        <td data-label="Total Gain %" class="cell-totals-gain" style="font-weight:bold" align="right">
-          {% if pur_balance and cur_balance %}
-            {% with total_gain=cur_balance|subtract:pur_balance %}
-              {% with total_percentage=total_gain|multiply:100|divide_by:pur_balance %}
-                <span style="color: {% if total_percentage >= 0 %}#28a745{% else %}#dc3545{% endif %};">
-                  {% if total_percentage >= 0 %}+{% endif %}{{ total_percentage|floatformat:1 }}%
+      {% for row in rows %}
+        <tr>
+          <td data-label="Property" class="cell-property">{{ row.prop_name }}</td>
+          <td data-label="Floor Area" class="num cell-area">
+            {% if row.floor_area %}{{ row.floor_area|floatformat:0 }}{% else %}<span class="val-none">&mdash;</span>{% endif %}
+          </td>
+          <td data-label="Purchase Price" class="num cell-purchase">&euro; {{ row.purchase|floatformat:"0"|intcomma }}</td>
+          <td data-label="Price/m&sup2;" class="num cell-price-sqm">
+            {% if row.price_sqm_known %}&euro;{{ row.price_sqm|floatformat:0|intcomma }}{% else %}<span class="val-none">&mdash;</span>{% endif %}
+          </td>
+          <td data-label="Current Value" class="num cell-current">&euro; {{ row.current|floatformat:"0"|intcomma }}</td>
+          <td data-label="Value/m&sup2;" class="num cell-value-sqm">
+            {% if row.value_sqm_known %}&euro;{{ row.value_sqm|floatformat:0|intcomma }}{% else %}<span class="val-none">&mdash;</span>{% endif %}
+          </td>
+          <td data-label="Gain %" class="num cell-gain">
+            {% if row.gain_known %}<span class="{{ row.gain_class }}">{% if row.gain_pct >= 0 %}+{% endif %}{{ row.gain_pct|floatformat:1 }}%</span>{% else %}<span class="val-none">&mdash;</span>{% endif %}
+          </td>
+          <td data-label="Actions" class="desktop-action-cell cell-actions">
+            <div class="row-actions">
+              {% if perms.auth.can_edit_financials %}
+                <a href="{% url 'finance_valuations_edit' row.prop_values_id %}"
+                   class="icon-action-btn icon-edit" title="Edit this valuation">
+                  <i class="fas fa-edit"></i>
+                </a>
+              {% else %}
+                <span class="icon-action-btn icon-disabled" title="You do not have permission to edit valuations">
+                  <i class="fas fa-edit"></i>
                 </span>
-              {% endwith %}
-            {% endwith %}
-          {% endif %}
-        </td>
-        <td data-label="" class="cell-totals-spacer-3"></td>
-      </tr>
+              {% endif %}
+            </div>
+          </td>
+
+          <!-- Mobile-only action bar. One action, so one column - base ships
+               cols-1 beside cols-2 and cols-4. -->
+          <td class="mobile-action-bar cols-1">
+            {% if perms.auth.can_edit_financials %}
+              <a href="{% url 'finance_valuations_edit' row.prop_values_id %}" class="mobile-action-btn">
+                <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
+                <span class="mobile-action-label">Edit</span>
+              </a>
+            {% else %}
+              <span class="mobile-action-btn mobile-action-disabled">
+                <i class="fas fa-edit mobile-action-icon"></i>
+                <span class="mobile-action-label">Edit</span>
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
     </tbody>
+    {% if rows %}
+    <tfoot>
+      <tr>
+        <td class="cell-totals-label" colspan="2">TOTAL</td>
+        <td class="num" data-label="Total purchase">&euro; {{ pur_balance|default:0|floatformat:"0"|intcomma }}</td>
+        <td></td>
+        <td class="num" data-label="Total current">&euro; {{ cur_balance|default:0|floatformat:"0"|intcomma }}</td>
+        <td></td>
+        <td class="num" data-label="Total gain">
+          {% if total_gain_known %}<span class="{{ total_gain_class }}">{% if total_gain_pct >= 0 %}+{% endif %}{{ total_gain_pct|floatformat:1 }}%</span>{% endif %}
+        </td>
+        <td></td>
+      </tr>
+    </tfoot>
+    {% endif %}
   </table>
+
+  {% if not rows %}
+    {# An empty tbody looks exactly like a failed load. #}
+    <div class="alv-empty">
+      <i class="fas fa-chart-line"></i>
+      <div class="alv-empty-title">No valuations recorded</div>
+      <div class="alv-empty-hint">
+        Add a valuation to start tracking what the portfolio is worth.
+      </div>
+    </div>
+  {% endif %}
 </div>
 
 {% render_help_modal "finance_valuations" %}
 
 {% endif %}
-</body>
 
 <style>
 
-.action-primary--disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-    background: #6c757d;
-    border-color: #6c757d;
+@media (hover: hover) and (pointer: fine) {
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .action-primary:hover, .action-secondary:hover {
-        background: #0a5e6a;
-        border-color: #0a5e6a;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .action-back:hover {
-        background: #0e7c8b;
-        color: white;
-        text-decoration: none;
-    }
-}
-
-.action-more-wrapper { position: relative; display: none; }
-
-.action-more-btn {
-    background: transparent;
-    border: 1px solid #0e7c8b;
-    color: #0e7c8b;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.action-more-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 180px;
-    z-index: 100;
-    display: none;
-    padding: 6px 0;
-}
-.action-more-menu.show { display: block; }
-
-.action-more-item {
-    width: 100%;
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 10px 16px;
-    color: #495057;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.action-more-item:hover {
-    background: #f8f9fa;
-    color: #0e7c8b;
-}
-
-/* ============================================================
-   TABLE — DESKTOP
-   ============================================================ */
-.valuations-table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.val-edit-btn {
-    border: 1px solid #dee2e6;
-    color: #495057;
-    text-decoration: none;
-    padding: 6px 12px;
-    width: 100%;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-.val-edit-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.val-edit-btn:disabled i,
-.val-edit-btn:disabled .btn-label-text {
-    color: #6c757d;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .val-edit-btn:hover:not(:disabled) {
-        background: #0e7c8b;
-        color: white;
-        border-color: #0e7c8b;
-        text-decoration: none;
-        transform: translateY(-1px);
-    }
-}
-
-.btn-label-text { display: none; } /* default — desktop shows just icon plus inline space */
+} /* default — desktop shows just icon plus inline space */
 
 @media (min-width: 769px) {
-    .val-edit-btn .btn-label-text { display: inline; }
 }
 
 /* ============================================================
    MOBILE (≤768px) — table → cards
    ============================================================ */
 @media (max-width: 768px) {
-    .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        justify-content: center;
-        padding: 12px 14px;
-        font-size: 15px;
-    }
-    .action-secondary { display: none; }
-    .action-more-wrapper { display: inline-block; flex-shrink: 0; }
-    .action-more-btn {
-        padding: 12px 14px;
-        min-width: 44px;
-        min-height: 44px;
-    }
-    .action-back {
-        flex-shrink: 0;
-        padding: 12px 14px;
-        min-width: 44px;
-        min-height: 44px;
-        justify-content: center;
-    }
-    .action-back-label { display: none; }
+}
 
-    /* Table → cards */
-    .valuations-table-container {
-        background: transparent;
-        box-shadow: none;
-        overflow: visible;
+/* ============================================================
+   VALUATIONS - what is left after base took the rest
+   ============================================================ */
+
+/* A figure that could not be worked out - no floor area, no purchase price -
+   reads as a dash rather than a zero, because zero is a value and this is the
+   absence of one. */
+.val-none { color: var(--alv-ink-faint); }
+
+/* Gain and loss. These used to be an inline `#28a745` / `#dc3545` written into
+   a style attribute by the template, where no stylesheet could reach them. */
+.val-gain-up   { color: var(--alv-good); font-weight: 600; }
+.val-gain-down { color: var(--alv-bad);  font-weight: 600; }
+
+/* The portfolio total is not a record, so it is not in the tbody: base styles
+   ROWS, and a summary of them is a different thing. <tfoot> is what the
+   element is for, and it also keeps base's tbody card rules off it on mobile. */
+.valuations-table tfoot td {
+    background: var(--alv-surface);
+    border-top: 2px solid var(--alv-line);
+    font-weight: 700;
+    padding: 11px 12px;
+    vertical-align: middle;
+}
+.valuations-table tfoot .cell-totals-label {
+    text-align: right;
+    color: var(--alv-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: 12.5px;
+}
+
+@media (max-width: 768px) {
+    /* Six numeric cells, three across, twice. A valuation card is a block of
+       figures, and base's one-line-per-field card would make it six screens
+       tall. Page-specific layout on a shared component - which is exactly
+       what a page-local rule is for. */
+    .valuations-table tbody td.cell-area,
+    .valuations-table tbody td.cell-purchase,
+    .valuations-table tbody td.cell-price-sqm,
+    .valuations-table tbody td.cell-current,
+    .valuations-table tbody td.cell-value-sqm,
+    .valuations-table tbody td.cell-gain {
+        display: inline-block;
+        width: calc(33.33% - 4px);
+        vertical-align: top;
+        text-align: left;
     }
-    .valuations-table,
-    .valuations-table thead,
-    .valuations-table tbody,
-    .valuations-table tr,
-    .valuations-table td {
+    .valuations-table tbody td.cell-area::before,
+    .valuations-table tbody td.cell-purchase::before,
+    .valuations-table tbody td.cell-price-sqm::before,
+    .valuations-table tbody td.cell-current::before,
+    .valuations-table tbody td.cell-value-sqm::before,
+    .valuations-table tbody td.cell-gain::before {
         display: block;
-        width: 100%;
-    }
-    .valuations-table thead {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-    }
-    .valuations-table { background: transparent; }
-    .valuations-table tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        margin-bottom: 14px;
-        padding: 14px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    }
-    .valuations-table td {
-        text-align: left !important;
-        border: none;
-        padding: 6px 0;
-        font-size: 14px;
-        position: relative;
-    }
-    .valuations-table td[data-label]::before {
-        content: attr(data-label);
-        display: block;
-        font-weight: 600;
-        color: #6c757d;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
         margin-bottom: 2px;
     }
-    /* Empty data-label cells get no prefix at all */
-    .valuations-table td[data-label=""]::before {
-        display: none;
-    }
 
-    /* Property is the card title (large, no label) */
-    .valuations-table td.cell-property {
-        padding-bottom: 10px;
-        margin-bottom: 6px;
-        border-bottom: 1px solid #f1f3f5;
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
+    /* base turns tbody rows into cards; a tfoot is not a tbody, so the totals
+       card is built here. */
+    .valuations-table tfoot,
+    .valuations-table tfoot tr,
+    .valuations-table tfoot td { display: block; width: 100%; }
+    .valuations-table tfoot tr {
+        background: var(--alv-surface);
+        border: 1px solid var(--alv-accent-line);
+        border-radius: var(--alv-radius);
+        padding: 12px;
+        margin-bottom: 12px;
     }
-    .valuations-table td.cell-property::before {
-        display: none;
-    }
-
-    /* Group: Floor area + Purchase + Price/m² in 3 columns */
-    .valuations-table td.cell-area,
-    .valuations-table td.cell-purchase,
-    .valuations-table td.cell-price-sqm {
-        display: inline-block !important;
-        width: calc(33.33% - 4px) !important;
-        vertical-align: top;
-        text-align: left !important;
-    }
-    .valuations-table td.cell-purchase   { padding-left: 4px; padding-right: 4px; }
-    .valuations-table td.cell-price-sqm  { padding-left: 4px; }
-
-    /* Group: Current Value + Value/m² + Gain % in 3 columns */
-    .valuations-table td.cell-current,
-    .valuations-table td.cell-value-sqm,
-    .valuations-table td.cell-gain {
-        display: inline-block !important;
-        width: calc(33.33% - 4px) !important;
-        vertical-align: top;
-        text-align: left !important;
-    }
-    .valuations-table td.cell-value-sqm  { padding-left: 4px; padding-right: 4px; }
-    .valuations-table td.cell-gain       { padding-left: 4px; }
-
-    /* Action cell: full-width Edit button */
-    .valuations-table td.cell-action {
-        padding: 10px 0 0 0;
-        margin-top: 8px;
-        border-top: 1px solid #f1f3f5;
-    }
-    .valuations-table td.cell-action::before { display: none; }
-    .val-edit-btn {
+    .valuations-table tfoot td {
+        border: 0;
+        padding: 6px 0;
         display: flex;
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-        gap: 6px;
-        padding: 11px;
-        font-size: 14px;
+        justify-content: space-between;
+        gap: 8px;
     }
-    .valuations-table td.cell-action .btn-label-text { display: inline; }
-
-    /* Totals row card — different layout */
-    .valuations-table tr.totals-row {
-        background: #f8f9fa;
-        border: 1px solid #0e7c8b;
+    /* The three spacer cells exist to keep the columns lined up on a wide
+       screen. On a card they are nothing at all. */
+    .valuations-table tfoot td:empty { display: none; }
+    .valuations-table tfoot td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--alv-ink-soft);
+        font-size: 12.5px;
     }
-    .valuations-table tr.totals-row td.cell-totals-label,
-    .valuations-table tr.totals-row td.cell-totals-spacer-1,
-    .valuations-table tr.totals-row td.cell-totals-spacer-2,
-    .valuations-table tr.totals-row td.cell-totals-spacer-3 {
-        display: none !important;
-    }
-    .valuations-table tr.totals-row td.cell-totals-purchase,
-    .valuations-table tr.totals-row td.cell-totals-current,
-    .valuations-table tr.totals-row td.cell-totals-gain {
-        display: block !important;
-        width: 100% !important;
-    }
-    .valuations-table tr.totals-row td::before {
-        display: block !important;
-        font-weight: 700 !important;
-        color: #0e7c8b !important;
-    }
-    .valuations-table tr.totals-row::before {
-        content: 'PORTFOLIO TOTAL';
+    .valuations-table tfoot .cell-totals-label {
         display: block;
-        font-weight: 700;
-        color: #0e7c8b;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
+        text-align: left;
         padding-bottom: 8px;
-        border-bottom: 1px solid #d1ecf1;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--alv-line-soft);
+        color: var(--alv-accent-ink);
     }
+    .valuations-table tfoot .cell-totals-label::before { content: none; }
 }
 </style>
 

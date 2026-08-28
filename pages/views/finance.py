@@ -1461,27 +1461,108 @@ def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_type
 # Valuations
 # ============================================================================
 
+def _val_div(value, arg):
+    """`divide_by` from custom_filters, reproduced exactly.
+
+    Not "close enough": the template used that filter, so the view has to
+    produce the same number to the last bit. Note the quirks that are copied
+    deliberately - a falsy `value` becomes 0, a falsy `arg` becomes 1 (so
+    dividing by zero returns the value rather than None), and the arithmetic
+    goes through Decimal before returning a float.
+    """
+    try:
+        value = Decimal(str(value)) if value else Decimal('0')
+        arg = Decimal(str(arg)) if arg else Decimal('1')
+        if arg == 0:
+            return None
+        return float(value / arg)
+    except (ValueError, TypeError, InvalidOperation):
+        return None
+
+
+def _val_gain(purchase, current):
+    """Percentage gain, and the class that colours it.
+
+    The template computed this through `subtract`, then `multiply:100`, then
+    `divide_by` - four `{% with %}` deep - and coloured the result with an
+    inline `#28a745` / `#dc3545`. The arithmetic is the same here; the colour
+    becomes a CLASS, so the page stops carrying Bootstrap hexes in a style
+    attribute where no stylesheet can reach them.
+    """
+    if not purchase or not current:
+        return None, ''
+    gain = float(current or 0) - float(purchase or 0)          # `subtract`
+    pct = _val_div(float(gain or 0) * 100.0, purchase)         # `multiply`, `divide_by`
+    if pct is None:
+        return None, ''
+    return pct, 'val-gain-up' if pct >= 0 else 'val-gain-down'
+
+
+def _valuation_rows(props_list, valuations_dict):
+    """One row per property that has a valuation, in the order props came in.
+
+    The template did this itself, with `{% with valuation=prop_values|get_item:
+    property.prop_id %}{% if valuation %}` - so it could never tell whether it
+    had drawn any rows, and the page could not have an empty state.
+
+    `get_item` returns 0 (not None) for a missing key, and 0 is falsy, so the
+    `{% if %}` skipped it. `.get(pk)` returning None skips it here for the same
+    reason; the behaviour is identical and the reason is worth writing down
+    because the two defaults are not the same value.
+    """
+    rows = []
+    for p in props_list:
+        v = valuations_dict.get(p.prop_id)
+        if not v:
+            continue
+        area = p.prop_floor_area
+        purchase = v.prop_values_purchase_price
+        current = v.prop_values_current_value
+        pct, gain_class = _val_gain(purchase, current)
+        rows.append({
+            'prop_values_id': v.prop_values_id,
+            'prop_name': p.prop_name,
+            'floor_area': area,
+            'purchase': purchase,
+            'current': current,
+            # The template guarded on the INPUTS, not the result, so a
+            # quotient of zero would still have printed. It cannot arise -
+            # a zero purchase price is falsy and fails the guard - but the
+            # guard is copied as it was rather than as it might have been.
+            'price_sqm': _val_div(purchase, area) if (area and purchase) else None,
+            'price_sqm_known': bool(area and purchase),
+            'value_sqm': _val_div(current, area) if (area and current) else None,
+            'value_sqm_known': bool(area and current),
+            'gain_pct': pct if pct is not None else 0,
+            'gain_known': pct is not None,
+            'gain_class': gain_class,
+        })
+    return rows
+
+
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
 def finance_valuations(request):
     props_list = props.objects.all().order_by('prop_country', 'prop_name')
-    valuations = prop_values.objects.all()
-    valuations_dict = {v.prop_id: v for v in valuations}
+    valuations_dict = {v.prop_id: v for v in prop_values.objects.all()}
 
-    pur_balance = sum(
-        v.prop_values_purchase_price for v in valuations
-        if v.prop_values_purchase_price is not None
-    )
-    cur_balance = sum(
-        v.prop_values_current_value for v in valuations
-        if v.prop_values_current_value is not None
-    )
+    rows = _valuation_rows(props_list, valuations_dict)
+
+    # THE TOTALS ARE THE SUM OF THE ROWS ON SCREEN. They used to sum every
+    # prop_values record, so a valuation whose property was gone was counted
+    # in the total and drawn nowhere - a portfolio total that did not equal
+    # its own column.
+    pur_balance = sum(r['purchase'] for r in rows if r['purchase'] is not None)
+    cur_balance = sum(r['current'] for r in rows if r['current'] is not None)
+    total_pct, total_class = _val_gain(pur_balance, cur_balance)
 
     return render(request, "finance_valuations.html", {
-        "props": props_list,
-        "prop_values": valuations_dict,
+        "rows": rows,
         "pur_balance": pur_balance,
         "cur_balance": cur_balance,
+        "total_gain_pct": total_pct if total_pct is not None else 0,
+        "total_gain_known": total_pct is not None,
+        "total_gain_class": total_class,
     })
 
 
