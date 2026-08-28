@@ -299,7 +299,16 @@ $sentinels = @(
     # two as a pencil-on-paper. test_icon_buttons.py section 1b scans every
     # template, so the next page to disagree fails here.
     @{ File = 'pages\templates\finance_valuations.html'; Text = 'fa-pencil-alt'; What = 'the Valuations Edit icon matches every other list page' },
-    @{ File = 'pages\templates\asset_detail.html';       Text = 'fa-pencil-alt'; What = 'and so does Asset Details' }
+    @{ File = 'pages\templates\asset_detail.html';       Text = 'fa-pencil-alt'; What = 'and so does Asset Details' },
+    # Petty Cash. The page said Income-or-Expense THREE times - the amount in
+    # keyword green/red inside a style attribute, a Bootstrap alert badge, and
+    # a coloured card border on mobile - and the view ran two queries for one
+    # page, duplicated in petty_cash_commit.
+    @{ File = 'pages\views\petty_cash.py';               Text = 'def _petty_ledger'; What = 'one helper returns the rows AND the balance they add up to' },
+    @{ File = 'pages\views\petty_cash.py';               Text = '_EPOCH = date.min'; What = 'and an undated row no longer empties the whole ledger' },
+    @{ File = 'pages\templates\petty_cash.html';         Text = 'table alv-table petty-cash-table'; What = 'Petty Cash is on the table standard' },
+    @{ File = 'pages\templates\petty_cash.html';         Text = 'alv-tag {{ row.tag }}'; What = 'Income/Expense is a category tone, not a verdict' },
+    @{ File = 'pages\templates\petty_cash.html';         Text = 'pc-balance-figure'; What = 'and the closing balance is ink until it goes below zero' }
 )
 
 foreach ($s in $sentinels) {
@@ -410,7 +419,13 @@ $suites = @(
     # divide_by, subtract and multiply exactly as custom_filters defines them,
     # quirks and all - beside the new view function, so a change to either
     # that alters a figure fails here. Newest, so most likely to break.
-    'test_valuations.py'
+    'test_valuations.py',
+    # Petty Cash. Section 2 LIFTS the old balance loop out of the backup and
+    # runs it beside the new helper on the same rows, and section 5 scrapes
+    # the rendered HTML and adds the amounts up to check they equal the
+    # figure drawn above them. A change to either that moves a number fails
+    # here. Newest, so most likely to break.
+    'test_petty_cash.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

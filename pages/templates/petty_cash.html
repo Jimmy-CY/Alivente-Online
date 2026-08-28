@@ -60,55 +60,58 @@
   </a>
 </div>
 
-<!-- Closing Balance Banner -->
-<div class="closing-balance-banner {% if balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}">
-  <div class="closing-balance-label">
-    <i class="fas fa-wallet"></i> Closing Balance
+<div class="alv-card pc-balance">
+  <div class="alv-card-head">
+    <span class="alv-card-title">Closing Balance</span>
   </div>
-  <div class="closing-balance-value">
-    {% if balance >= 0 %}
-      €{{ balance }}
-    {% else %}
-      -€{{ balance|stringformat:"s"|slice:"1:" }}
-    {% endif %}
+  <div class="alv-card-body">
+    <div class="pc-balance-figure{% if is_overdrawn %} is-overdrawn{% endif %}">
+      {% if is_overdrawn %}-{% endif %}&euro;{{ balance_display }}
+    </div>
+    <div class="pc-balance-note">
+      {% if is_overdrawn %}
+        Overdrawn &mdash; more has gone out than came in.
+      {% else %}
+        {{ rows|length }} transaction{{ rows|length|pluralize }}
+      {% endif %}
+    </div>
   </div>
 </div>
 
-<!-- Petty Cash Table (desktop) / Card list (mobile) -->
 <div class="table-container">
-  <table class="table table-bordered table-striped text-center petty-cash-table">
+  <table class="table alv-table petty-cash-table">
     <thead>
       <tr>
-        <th style="text-align: center; width: 15%;">Date</th>
-        <th style="text-align: left; width: 50%;">Description</th>
-        <th style="text-align: right; width: 17%;">Amount</th>
-        <th style="text-align: center; width: 18%;">Income / Expense</th>
+        <th style="width: 15%">Date</th>
+        <th style="text-align: left; width: 52%">Description</th>
+        <th class="num" style="width: 16%">Amount</th>
+        <th style="width: 17%">Income / Expense</th>
       </tr>
     </thead>
     <tbody>
-      {% for presults in petty|dictsortreversed:"petty_cash_id"|dictsortreversed:"petty_cash_date" %}
-        {% if presults.petty_cash_dr_cr == "DR" %}
-          <tr class="petty-row-income">
-            <td data-label="Date" style="text-align: center;">{{ presults.petty_cash_date }}</td>
-            <td data-label="Description" style="text-align: left;">{{ presults.petty_cash_description }}</td>
-            <td data-label="Amount" style="text-align: right; color: green; font-weight: bold;">€{{ presults.petty_cash_amount }}</td>
-            <td data-label="Type" style="text-align: center;">
-              <span class="petty-type-badge type-income">Income</span>
-            </td>
-          </tr>
-        {% else %}
-          <tr class="petty-row-expense">
-            <td data-label="Date" style="text-align: center;">{{ presults.petty_cash_date }}</td>
-            <td data-label="Description" style="text-align: left;">{{ presults.petty_cash_description }}</td>
-            <td data-label="Amount" style="text-align: right; color: red; font-weight: bold;">- €{{ presults.petty_cash_amount }}</td>
-            <td data-label="Type" style="text-align: center;">
-              <span class="petty-type-badge type-expense">Expense</span>
-            </td>
-          </tr>
-        {% endif %}
+      {% for row in rows %}
+        <tr>
+          <td data-label="Date">{{ row.date }}</td>
+          <td data-label="Description" style="text-align: left">{{ row.description }}</td>
+          <td data-label="Amount" class="num pc-amount">{% if not row.is_income %}- {% endif %}&euro;{{ row.amount }}</td>
+          <td data-label="Income / Expense">
+            <span class="alv-tag {{ row.tag }}">{{ row.label }}</span>
+          </td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  {% if not rows %}
+    {# An empty tbody looks exactly like a failed load. #}
+    <div class="alv-empty">
+      <i class="fas fa-wallet"></i>
+      <div class="alv-empty-title">No petty cash transactions yet</div>
+      <div class="alv-empty-hint">
+        Add one to start the ledger; the closing balance follows from it.
+      </div>
+    </div>
+  {% endif %}
 </div>
 
 {% render_help_modal "petty_cash" %}
@@ -121,86 +124,6 @@
     margin-bottom: 1rem;
 }
 
-/* Desktop default: hide the mobile "More" dropdown wrapper */
-.action-more-wrapper { display: none; }
-
-/* Closing Balance Banner */
-.closing-balance-banner {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 2px solid #0e7c8b;
-    border-left-width: 6px;
-    border-radius: 12px;
-    padding: 20px 28px;
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-.closing-balance-banner.balance-positive {
-    border-color: #28a745;
-}
-.closing-balance-banner.balance-negative {
-    border-color: #dc3545;
-}
-.closing-balance-label {
-    font-size: 1.1rem;
-    color: #495057;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.closing-balance-label i {
-    color: #0e7c8b;
-    font-size: 1.3rem;
-}
-.balance-positive .closing-balance-label i {
-    color: #28a745;
-}
-.balance-negative .closing-balance-label i {
-    color: #dc3545;
-}
-.closing-balance-value {
-    font-size: 2rem;
-    font-weight: 700;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.5px;
-}
-.balance-positive .closing-balance-value {
-    color: #28a745;
-}
-.balance-negative .closing-balance-value {
-    color: #dc3545;
-}
-
-/* Table */
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* Type badges (replaces plain Income/Expense text) */
-.petty-type-badge {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-.type-income {
-    background: #d4edda;
-    color: #155724;
-}
-.type-expense {
-    background: #f8d7da;
-    color: #721c24;
-}
-
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
@@ -208,181 +131,39 @@
         font-size: 1.25rem;
         margin-bottom: 0.75rem;
     }
+}
 
-    /* Add New takes the leftover space (primary CTA) */
-    .action-add-new {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-    }
+/* ============================================================
+   PETTY CASH - what is left after base took the rest
+   ============================================================ */
 
-    /* More dropdown wrapper — visible on mobile only */
-    .action-more-wrapper {
-        display: block;
-        position: relative;
-        flex: 0 0 auto;
-    }
-    .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .action-more-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 200;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        min-width: 220px;
-        padding: 6px 0;
-    }
-    .action-more-item:hover,
-    .action-more-item:active,
-    .action-more-item:focus {
-        background: #f0f8ff;
-        outline: none;
-        color: #2c3e50;
-        text-decoration: none;
-    }
+/* Figures line up on the decimal down a column. The amounts used to be
+   `color: green` and `color: red` in a style attribute - CSS keyword colours,
+   #008000 and #FF0000, harsher than anything else in the system and out of
+   reach of any stylesheet. They are ordinary ink now: the minus sign says
+   which direction the money went, and a column in one colour scans down far
+   better than a column in two. */
+.pc-amount { font-variant-numeric: tabular-nums; }
 
-    /* Back button — icon-only on mobile */
-    .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .action-back-label {
-        display: none;
-    }
-
-    /* Closing Balance Banner — stacks vertically, centred */
-    .closing-balance-banner {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 4px;
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-    .closing-balance-label {
-        font-size: 0.95rem;
-    }
-    .closing-balance-value {
-        font-size: 1.8rem;
-    }
-
-    /* Table → Card layout */
-    .table-container {
-        background: transparent;
-        box-shadow: none;
-        border-radius: 0;
-    }
-    .petty-cash-table {
-        border: none;
-        background: transparent;
-    }
-    .petty-cash-table thead {
-        display: none;
-    }
-    .petty-cash-table,
-    .petty-cash-table tbody,
-    .petty-cash-table tr,
-    .petty-cash-table td {
-        display: block;
-        width: 100%;
-    }
-    .petty-cash-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-left-width: 4px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    /* Income rows get green left border, Expense rows get red */
-    .petty-cash-table tbody tr.petty-row-income {
-        border-left-color: #28a745;
-    }
-    .petty-cash-table tbody tr.petty-row-expense {
-        border-left-color: #dc3545;
-    }
-    .petty-cash-table tbody tr:nth-of-type(even) {
-        background: white;
-    }
-    .petty-cash-table td {
-        border: none !important;
-        padding: 6px 0 !important;
-        text-align: left !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        min-height: 28px;
-    }
-    .petty-cash-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #495057;
-        font-size: 13px;
-        flex-shrink: 0;
-    }
-    /* Date cell prominent at top */
-    .petty-cash-table td[data-label="Date"] {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid #f1f3f5 !important;
-        display: block;
-    }
-    .petty-cash-table td[data-label="Date"]::before {
-        display: none;
-    }
-    /* Description — full-width below date */
-    .petty-cash-table td[data-label="Description"] {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 6px 0 !important;
-    }
-    .petty-cash-table td[data-label="Description"]::before {
-        font-size: 11px;
-        color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        margin-bottom: 2px;
-    }
-    /* Amount cell — keep number right-aligned but the row layout still flex-spaces label/value */
-    .petty-cash-table td[data-label="Amount"] {
-        font-size: 16px;
-    }
-    /* Type badge stays right-aligned */
-    .petty-cash-table td[data-label="Type"] {
-        margin-top: 4px;
-    }
+/* The closing balance is the headline of this screen, so it is the one figure
+   allowed to be large. It is INK, not green: a healthy balance is the normal
+   case and colouring the normal case makes the colour meaningless. */
+.pc-balance { max-width: 420px; }
+.pc-balance-figure {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--alv-ink);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+}
+/* Red only when the balance has gone below zero - which is genuinely wrong,
+   because you cannot hold less than no cash. Same rule as an overdue date and
+   an expired lease: red means one thing. */
+.pc-balance-figure.is-overdrawn { color: var(--alv-bad); }
+.pc-balance-note {
+    color: var(--alv-ink-soft);
+    font-size: 13px;
+    margin-top: 2px;
 }
 </style>
 
