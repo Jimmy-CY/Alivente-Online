@@ -635,6 +635,12 @@
                   report never shows &mdash; and the others are holding shares of a split
                   that still counts it. Set <em>Applies from</em> above, un-tick it, and
                   recalculate: the remaining properties will take up its share.
+                  <span id="prorata-anchor-note" style="display:none;">
+                    <br><strong>This is the record you have open.</strong>
+                    Un-ticking it sets this property&rsquo;s share to zero and hands
+                    it to the others. The row is kept, not deleted, so earlier
+                    years still show the share it genuinely carried.
+                  </span>
                 </div>
                 <div class="checkbox-list">
                     {% for prop in props_data %}
@@ -645,7 +651,10 @@
                                value="{{ prop.prop_id }}"
                                data-current-value="{{ prop.current_value|default:0 }}"
                                {% if prop.prop_id in linked_property_ids %}checked{% endif %}
-                               {% if prop.prop_id == existing_expense.prop_id %}disabled{% endif %}
+                               {# The ANCHOR is locked in - you cannot edit a row out of its own #}
+                               {# distribution - EXCEPT when it is inactive. See the banner note above: #}
+                               {# an inactive property leaving is the case that rule should allow. #}
+                               {% if prop.prop_id == existing_expense.prop_id and prop.prop_status == 'Active' %}disabled{% endif %}
                                {% if prop.prop_status != 'Active' and prop.prop_id not in linked_property_ids %}disabled title="Inactive - the P&amp;L does not report this property, so it cannot take a share"{% endif %}
                                {% if prop.prop_status != 'Active' and prop.prop_id in linked_property_ids %}title="Inactive, but still in this distribution - un-tick it so the others take up its share"{% endif %}>
                         <label for="prop_{{ prop.prop_id }}">
@@ -736,6 +745,19 @@ $(document).ready(function() {
     const countryFilter = $('#country-filter');
     let mainPropertyCheckbox = null;
 
+    // May the anchor be un-ticked? Only when its property is INACTIVE, which
+    // is the one case the anchor rule should give way for - see item 8.2.
+    //
+    // Asked of the ROW rather than the checkbox's own classes. The checkbox
+    // carries .is-inactive-linked, which is computed from linked_property_ids
+    // for the line type the page was RENDERED with; change the line type and
+    // that is stale. `.inactive-row` says only "this property is inactive",
+    // which is true whatever the distribution looks like.
+    function anchorIsReleasable($cb) {
+        return $cb && $cb.length
+            && $cb.closest('.property-item').hasClass('inactive-row');
+    }
+
     // Wipe-and-reset (used when user CHANGES line type or property)
     function initializeMainProperty() {
         const selectedPropId = propSelect.val();
@@ -745,7 +767,12 @@ $(document).ready(function() {
         if (selectedPropId) {
             mainPropertyCheckbox = $(`.property-checkbox[value="${selectedPropId}"]`);
             if (mainPropertyCheckbox.length) {
-                mainPropertyCheckbox.prop({ checked: true, disabled: true });
+                // Ticked either way - nothing is dropped silently. Locked only
+                // if it is Active.
+                mainPropertyCheckbox.prop({
+                    checked: true,
+                    disabled: !anchorIsReleasable(mainPropertyCheckbox)
+                });
                 mainPropertyCheckbox.closest('.property-item').addClass('is-anchor').find('.anchor-pill').show();
             }
         }
@@ -769,8 +796,13 @@ $(document).ready(function() {
         
         if (selectedCountry === 'all') {
             propertyItems.show();
-            // .is-inactive can never be ticked, not even by 'all'.
-            $('.property-checkbox').not('.is-inactive').prop('checked', true);
+            // .is-inactive can never be ticked, not even by 'all' - and
+            // neither can .is-inactive-linked, which is the row the banner
+            // has just asked you to release. Bulk-selecting a country used
+            // to put it straight back.
+            $('.property-checkbox')
+                .not('.is-inactive, .is-inactive-linked')
+                .prop('checked', true);
         } else {
             propertyItems.each(function() {
                 const itemCountry = $(this).data('country');
@@ -779,7 +811,10 @@ $(document).ready(function() {
                 
                 if (itemCountry === selectedCountry || isMainProperty) {
                     $(this).show();
-                    if (!checkbox.hasClass('is-inactive')) {
+                    // Same on the per-country branch: select a country, do not
+                    // resurrect an inactive property somebody has released.
+                    if (!checkbox.hasClass('is-inactive')
+                        && !checkbox.hasClass('is-inactive-linked')) {
                         checkbox.prop('checked', true);
                     }
                 } else {
@@ -790,7 +825,13 @@ $(document).ready(function() {
         }
         
         if (mainPropertyCheckbox) {
-            mainPropertyCheckbox.prop({ checked: true, disabled: true });
+            if (anchorIsReleasable(mainPropertyCheckbox)) {
+                // Leave its ticked state alone - the user may have released
+                // it deliberately - but make sure it stays releasable.
+                mainPropertyCheckbox.prop('disabled', false);
+            } else {
+                mainPropertyCheckbox.prop({ checked: true, disabled: true });
+            }
         }
     });
 
@@ -815,8 +856,14 @@ $(document).ready(function() {
 
     $(document).on('change', '.property-checkbox', function() {
         // Re-assert the ANCHOR only. An inactive row is disabled for the
-        // opposite reason - it must never end up ticked.
-        if ($(this).prop('disabled') && !$(this).hasClass('is-inactive')) {
+        // opposite reason - it must never end up ticked. And an INACTIVE
+        // anchor is not re-asserted at all: releasing it is the whole point
+        // of item 8.2. It is no longer rendered disabled, so this branch
+        // should not see it - the class test says so out loud rather than
+        // relying on that.
+        if ($(this).prop('disabled')
+            && !$(this).hasClass('is-inactive')
+            && !$(this).hasClass('is-inactive-linked')) {
             $(this).prop('checked', true);
         }
     });
@@ -828,6 +875,22 @@ $(document).ready(function() {
         if (!banner) { return; }
         var still = $('.property-checkbox.is-inactive-linked:checked').length;
         banner.style.display = still ? '' : 'none';
+        // The extra sentence only when the row in question is the one whose
+        // record is open - otherwise it is describing somebody else's share.
+        //
+        // The anchor is found by its ROW CLASS, not by mainPropertyCheckbox.
+        // That variable is bound in initializeForm(), which runs at the very
+        // bottom of this script - after the first call to this function - so
+        // asking it here got null and the sentence never appeared on load.
+        // `.is-anchor` is set by the template and moved by
+        // initializeMainProperty(), so it is correct at every point.
+        var note = document.getElementById('prorata-anchor-note');
+        if (note) {
+            var $anchor = $('.property-item.is-anchor .property-checkbox');
+            note.style.display =
+                (still && anchorIsReleasable($anchor)
+                 && $anchor.is(':checked')) ? '' : 'none';
+        }
     }
     $(document).on('change', '.property-checkbox', syncInactiveWarning);
     syncInactiveWarning();

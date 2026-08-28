@@ -350,7 +350,17 @@ $sentinels = @(
     # Code = $true: the comment above the new handler quotes the dead line it
     # replaced, "isGreen" and all. That is the record of the fault, not the
     # fault. See NoComments below.
-    @{ File = 'pages\templates\finance_pl_act.html'; Text = 'isGreen'; What = 'and the colour test is gone'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = 'isGreen'; What = 'and the colour test is gone'; Absent = $true; Code = $true },
+    # The pro-rata anchor deadlock (item 8.2). The screen said "un-tick it"
+    # and the anchor's blanket `disabled` would not let you. Two rules
+    # collided - the anchor is always in, an inactive property must come out -
+    # and the anchor rule gives way, because an inactive property leaving is
+    # exactly the case it should allow.
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'function anchorIsReleasable'; What = 'one predicate decides whether the anchor may be released' },
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'prorata-anchor-note'; What = 'and the banner says what releasing it does to THIS record' },
+    # Code = $true because the patcher leaves a {# #} comment above the tag
+    # explaining what the old unconditional form was.
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'existing_expense.prop_id %}disabled'; What = 'the anchor is no longer disabled unconditionally'; Absent = $true; Code = $true }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -590,7 +600,15 @@ $suites = @(
     # The P&L invoice icons. The fault was "the click does nothing", so the
     # check is a CLICK: the page's own functions, the real icon markup, and
     # the viewer read back afterwards. Newest, so most likely to break.
-    'test_pl_invoice.py'
+    'test_pl_invoice.py',
+    # The pro-rata anchor deadlock. Section 2 renders the real template
+    # through Django with an inactive anchor and reads the `disabled`
+    # attribute the browser actually receives; section 3 loads the page's own
+    # script with REAL jQuery and CLICKS, because the fault was a refused
+    # click. Section 4 checks the half that did NOT change - the commit still
+    # closes an un-ticked anchor like any other row. Newest, so most likely
+    # to be what breaks.
+    'test_prorata_anchor.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
