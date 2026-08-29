@@ -400,6 +400,18 @@
       .alv-table .desktop-action-cell,
       .alv-table th.desktop-action-cell { text-align: center; }
 
+      /* A NUMERIC HEADING IS RIGHT-ALIGNED BY DEFAULT - see .num above - and
+         that is right when the label is short enough to sit on one line,
+         because it then hangs over the last digit of its own column.
+
+         A stack of three-line labels over narrow columns reads differently:
+         right-aligned they all crowd one edge and the column looks lopsided,
+         with the label's shortest line stranded. .col-center is the opt-out,
+         and it applies to the HEADING only - the figures underneath stay on
+         .num, because numbers line up on the decimal or they line up on
+         nothing. */
+      .alv-table thead th.col-center { text-align: center; }
+
       /* ONE actions column, right-aligned, rather than one column per verb.
          Three headers reading EDIT / REPORT / DELETE say what the icons
          beneath them already say, and cost about a tenth of the table's
@@ -441,6 +453,29 @@
       .alv-table .num, .alv-table td.num, .alv-table th.num {
         text-align: right;
         font-variant-numeric: tabular-nums;
+      }
+
+      /* A TOTALS ROW BELONGS IN A tfoot, and until now the standard had no
+         rule for one - so every table that wanted a summary line put it in
+         the tbody as an ordinary <tr> and styled it by hand. Outstanding
+         Invoices did exactly that, with a background literal and a navy
+         border.
+
+         It is not only tidiness. A tfoot is announced as a summary rather
+         than as another record, and a browser repeats it at the foot of each
+         printed page, which a tbody row cannot do.
+
+         Deliberately NOT sticky. .alv-matrix pins its footer because it
+         scrolls sideways under a frozen column; an ordinary table does not,
+         and a footer that follows the viewport in a page that scrolls
+         normally is furniture, not information. */
+      .alv-table tfoot td,
+      .alv-table tfoot th {
+        background: var(--alv-surface);
+        border-top: 2px solid var(--alv-line);
+        color: var(--alv-ink-strong);
+        font-weight: 600;
+        padding: 11px 12px;
       }
       .alv-table .ref {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -612,6 +647,7 @@
         .alv-table thead { display: none; }
         .alv-table,
         .alv-table tbody,
+        .alv-table tfoot,
         .alv-table tr,
         .alv-table td { display: block; width: 100%; }
 

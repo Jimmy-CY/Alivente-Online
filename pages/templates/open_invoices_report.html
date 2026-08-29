@@ -102,6 +102,18 @@ function findTenantData(tenantName, tenantId) {
     return null;
 }
 
+function ageStep(days) {
+    // THE SAME FIVE BANDS THE VIEW BUCKETS ON, and the index matches
+    // AGE_BUCKETS in pages/views/invoices.py: 0 is not yet due, 4 is 91+.
+    // If these two ever part company an invoice gets two verdicts again,
+    // which is the fault part A closed.
+    if (days > 90) { return 'alv-age-4'; }
+    if (days > 60) { return 'alv-age-3'; }
+    if (days > 30) { return 'alv-age-2'; }
+    if (days > 0)  { return 'alv-age-1'; }
+    return 'alv-age-0';
+}
+
 function formatAmount(value) {
     var n = parseFloat(value) || 0;
     return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -135,19 +147,22 @@ function generateTenantHTML(tenant, showTenantLine) {
         html += '<p class="no-invoices-inline">No individual invoices recorded for this tenant.</p>';
     } else {
         // Desktop: traditional table
-        html += '<div class="invoice-table-wrap desktop-only-invoices">';
-        html += '<table class="invoice-table">';
-        html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th>Days Overdue</th><th>Amount</th></tr></thead>';
+        html += '<div class="table-container desktop-only-invoices">';
+        html += '<table class="alv-table">';
+        html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th class="num">Days Overdue</th><th class="num">Amount</th></tr></thead>';
         html += '<tbody>';
 
         for (var i = 0; i < invoices.length; i++) {
             var invoice = invoices[i];
             if (!invoice) continue;
-            html += '<tr class="' + (invoice.overdue ? 'overdue' : '') + '">';
+            var d = invoice.days_overdue !== undefined ? invoice.days_overdue : 0;
+            html += '<tr>';
             html += '<td data-label="Invoice Date">' + (invoice.invoice_date || '-') + '</td>';
             html += '<td data-label="Due Date">' + (invoice.due_date || '-') + '</td>';
-            html += '<td data-label="Days Overdue">' + (invoice.days_overdue !== undefined ? invoice.days_overdue : '-') + '</td>';
-            html += '<td data-label="Amount">€' + formatAmount(invoice.amount != null ? invoice.amount : (tenant.tenant_rent || 0)) + '</td>';
+            html += '<td class="num" data-label="Days Overdue">'
+                 + '<span class="alv-age-pill ' + ageStep(d) + '">'
+                 + (d > 0 ? d : 'Not yet due') + '</span></td>';
+            html += '<td class="num" data-label="Amount">€' + formatAmount(invoice.amount != null ? invoice.amount : (tenant.tenant_rent || 0)) + '</td>';
             html += '</tr>';
         }
 
@@ -164,10 +179,7 @@ function generateTenantHTML(tenant, showTenantLine) {
             // open_invoices_report's five branches are one decision; if they
             // ever part company an invoice gets two verdicts again, which is
             // the bug this round closed.
-            var daysClass = daysOverdue > 90 ? 'alv-age-4' :
-                            daysOverdue > 60 ? 'alv-age-3' :
-                            daysOverdue > 30 ? 'alv-age-2' :
-                            daysOverdue > 0 ? 'alv-age-1' : 'alv-age-0';
+            var daysClass = ageStep(daysOverdue);
 
             html += '<div class="invoice-row ' + (inv.overdue ? 'invoice-row-overdue' : '') + '">';
             html += '<div class="invoice-row-main">';
@@ -229,17 +241,20 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         <div class="age-analysis-section">
             <h3 class="analysis-title">Debtors Age Analysis</h3>
 
-            <!-- Desktop: traditional table -->
-            <table class="age-analysis-table desktop-only-table">
+            <!-- Desktop: the house table. The container is what carries
+                 desktop-only, so nothing is left drawing an empty shell on a
+                 phone; the cards below replace the whole thing there. -->
+            <div class="table-container desktop-only-table">
+            <table class="alv-table">
                 <thead>
                     <tr>
                         <th>Tenant Name</th>
-                        <th>Total Outstanding</th>
-                        <th>Not Yet Due</th>
-                        <th>Past Due<br>(1 to 30 Days)</th>
-                        <th>Past Due<br>(31 to 60 Days)</th>
-                        <th>Past Due<br>(61 to 90 Days)</th>
-                        <th>Past Due<br>(91+ Days)</th>
+                        <th class="col-center">Total Outstanding</th>
+                        <th class="col-center">Not Yet Due</th>
+                        <th class="col-center">Past Due<br>(1 to 30 Days)</th>
+                        <th class="col-center">Past Due<br>(31 to 60 Days)</th>
+                        <th class="col-center">Past Due<br>(61 to 90 Days)</th>
+                        <th class="col-center">Past Due<br>(91+ Days)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -247,38 +262,40 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                     <tr>
                         <td class="tenant-name-cell">{{ debtor.tenant_name }}</td>
                         {% if debtor.total_outstanding > 0 %}
-                        <td class="amount-cell total-amount clickable-amount"
+                        <td class="num total-amount clickable-amount"
                             data-tenant-name="{{ debtor.tenant_name }}"
                             data-tenant-id="{{ debtor.tenant_id }}"
                             onclick="handleTenantClick(this)">
                             €{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}
                         </td>
                         {% else %}
-                        <td class="amount-cell total-amount">
+                        <td class="num total-amount">
                             €{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}
                         </td>
                         {% endif %}
-                        <td class="amount-cell alv-age-cell alv-age-0">€{{ debtor.not_yet_due|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell alv-age-cell alv-age-1">€{{ debtor.past_due_1_30|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell alv-age-cell alv-age-2">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell alv-age-cell alv-age-3">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell alv-age-cell alv-age-4">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</td>
+                        <td class="num alv-age-cell alv-age-0">€{{ debtor.not_yet_due|floatformat:0|add_thousand_separator }}</td>
+                        <td class="num alv-age-cell alv-age-1">€{{ debtor.past_due_1_30|floatformat:0|add_thousand_separator }}</td>
+                        <td class="num alv-age-cell alv-age-2">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</td>
+                        <td class="num alv-age-cell alv-age-3">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</td>
+                        <td class="num alv-age-cell alv-age-4">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</td>
                     </tr>
                     {% endfor %}
-                    <!-- Totals Row -->
-                    <tr class="totals-row">
+                </tbody>
+                <tfoot>
+                    <tr>
                         <td class="tenant-name-cell"><strong>TOTALS</strong></td>
-                        <td class="amount-cell total-amount clickable-amount" onclick="handleTotalClick()">
+                        <td class="num total-amount clickable-amount" onclick="handleTotalClick()">
                             <strong>€{{ totals.total_outstanding|floatformat:0|add_thousand_separator }}</strong>
                         </td>
-                        <td class="amount-cell alv-age-cell alv-age-0"><strong>€{{ totals.not_yet_due|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell alv-age-cell alv-age-1"><strong>€{{ totals.past_due_1_30|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell alv-age-cell alv-age-2"><strong>€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell alv-age-cell alv-age-3"><strong>€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell alv-age-cell alv-age-4"><strong>€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="num alv-age-cell alv-age-0"><strong>€{{ totals.not_yet_due|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="num alv-age-cell alv-age-1"><strong>€{{ totals.past_due_1_30|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="num alv-age-cell alv-age-2"><strong>€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="num alv-age-cell alv-age-3"><strong>€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="num alv-age-cell alv-age-4"><strong>€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</strong></td>
                     </tr>
-                </tbody>
+                </tfoot>
             </table>
+            </div>
 
             <!-- Mobile: card list with sparkline-style age breakdown -->
             <div class="mobile-only-cards">
@@ -480,50 +497,29 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 
 .analysis-title {
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--alv-ink-strong);
     margin-bottom: 20px;
     font-weight: bold;
 }
 
-/* Desktop table */
-.age-analysis-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-}
-
-.age-analysis-table th {
-    background-color: #2c3e50;
-    color: white;
-    padding: 12px 8px;
-    text-align: center;
-    font-weight: 600;
-    border: 1px solid #34495e;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    min-width: 120px;
-}
-
-.age-analysis-table td {
-    padding: 10px 8px;
-    border: 1px solid #dee2e6;
-    text-align: center;
-}
+/* The table's own appearance is base's now - the shell, the header
+   treatment, the borders, the hover, the print behaviour. What was here was a
+   navy band with white text at #2c3e50, which nothing in base could reach and
+   which no other table in the system wears. */
 
 .tenant-name-cell {
     text-align: left !important;
     font-weight: 500;
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
 }
 
-.amount-cell {
-    text-align: right !important;
-    font-family: 'Courier New', monospace;
-}
+/* .amount-cell was `text-align: right !important` plus 'Courier New' - which
+   is base's .num spelled by hand, and less well: .num also sets
+   tabular-nums, so the digits line up in a column. fsr.html and
+   property_report.html were already using it. */
 
 .total-amount {
-    background-color: #e3f2fd;
+    background-color: var(--alv-accent-soft);
     font-weight: 600;
 }
 
@@ -531,28 +527,21 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     cursor: pointer;
     transition: background-color 0.2s ease;
     text-decoration: underline;
-    color: #007bff;
+    color: var(--alv-edit);
 }
 
 .clickable-amount:hover {
-    background-color: #d1ecf1 !important;
-    color: #0056b3;
+    background-color: var(--alv-accent-soft) !important;
+    color: var(--alv-accent);
 }
 
 .current { background-color: #eceff1; }
 
-.totals-row {
-    background-color: #f1f3f4;
-    border-top: 2px solid #2c3e50;
-}
-
-.totals-row .amount-cell {
-    font-weight: bold;
-}
+/* The totals row is a <tfoot> now, and base styles it. */
 
 /* Hide mobile cards on desktop, show table */
 .mobile-only-cards { display: none; }
-.desktop-only-table { display: table; }
+.desktop-only-table { display: block; }
 
 /* Hide mobile invoice rows on desktop, show desktop invoice table */
 .mobile-only-invoices { display: none; }
@@ -594,31 +583,14 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     margin-top: 20px;
 }
 
-.invoice-table-wrap {
-    overflow-x: auto;
-}
+/* The modal table is base's too. Its wrapper set overflow-x: auto, which is
+   precisely the declaration .table-container must not carry - an element that
+   scrolls becomes the scroll container for any sticky descendant, and the
+   header then pins to the wrapper rather than to the viewport. */
 
-.invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.invoice-table th, .invoice-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.invoice-table th {
-    background-color: #e9ecef;
-    font-weight: 600;
-}
-
-.overdue {
-    color: var(--alv-bad);
-    font-weight: bold;
-}
+/* .overdue coloured a whole row - date, due date, days and amount - so an
+   invoice 89 days late and one 485 days late looked the same. The severity
+   is on the Days Overdue pill now, which can tell them apart. */
 
 .property-divider {
     border: 0;
@@ -787,7 +759,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         border-radius: 4px;
         overflow: hidden;
         margin-bottom: 12px;
-        background-color: #e9ecef;
+        background-color: var(--alv-line-soft);
         display: flex;
     }
     .sparkline-bar {
@@ -976,17 +948,13 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         page-break-inside: avoid;
     }
 
-    .age-analysis-table {
-        font-size: 0.8rem;
-    }
-
     .clickable-amount {
         text-decoration: none;
         color: inherit;
     }
 
     /* On print, always show desktop table even if printing from mobile */
-    .desktop-only-table { display: table !important; }
+    .desktop-only-table { display: block !important; }
     .mobile-only-cards { display: none !important; }
 
     /* Same for invoice details inside modal — desktop layout for paper */
