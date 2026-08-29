@@ -360,7 +360,21 @@ $sentinels = @(
     @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'prorata-anchor-note'; What = 'and the banner says what releasing it does to THIS record' },
     # Code = $true because the patcher leaves a {# #} comment above the tag
     # explaining what the old unconditional form was.
-    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'existing_expense.prop_id %}disabled'; What = 'the anchor is no longer disabled unconditionally'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'existing_expense.prop_id %}disabled'; What = 'the anchor is no longer disabled unconditionally'; Absent = $true; Code = $true },
+    # Item 8.1, the half that needs no money decision: the valuation preview
+    # says when it is about to fund a property the P&L does not report. No
+    # figure moves - the participant set is untouched by that round.
+    @{ File = 'pages\views\finance.py'; Text = 'inactive_property_names'; What = 'the preview reports what it would fund on an inactive property' },
+    @{ File = 'pages\templates\finance_valuations_edit.html'; Text = 'val-preview-inactive-warning'; What = 'and the modal says so, naming them and the money' },
+    # Code = $true: the CSS comment above the new pill explains that the old
+    # inline #ffc107 was removed, and quotes it.
+    @{ File = 'pages\templates\finance_valuations_edit.html'; Text = 'background:#ffc107'; What = 'the edited pill lost its literal'; Absent = $true; Code = $true },
+    # A share of zero is not a share. Membership stopped meaning "a row
+    # exists" - a released pro-rata row is CLOSED, not deleted, and three
+    # screens were still counting it. This one DOES move figures on the
+    # valuation preview, deliberately.
+    @{ File = 'pages\views\finance.py'; Text = 'def carries_a_share'; What = 'one helper decides whether a row carries a share' },
+    @{ File = 'pages\views\finance.py'; Text = 'carries_a_share(expense.objects.filter('; What = 'and the screens that decide membership go through it' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -608,7 +622,17 @@ $suites = @(
     # click. Section 4 checks the half that did NOT change - the commit still
     # closes an un-ticked anchor like any other row. Newest, so most likely
     # to be what breaks.
-    'test_prorata_anchor.py'
+    'test_prorata_anchor.py',
+    # The valuation preview's inactive warning. Section 1 runs the OLD view
+    # and the NEW one over the SAME database and compares every figure the
+    # old payload carried - that round adds keys and must not move a number.
+    'test_valuation_inactive.py',
+    # A share of zero. This one DOES move figures, so the suite separates the
+    # two halves: the pre-ticks provably cannot move a number, and the
+    # valuation preview's are diffed old-against-new and asserted line by
+    # line - who leaves the denominator, that every remaining share rises,
+    # and that the pot is unchanged. Newest, so most likely to break.
+    'test_share_of_zero.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

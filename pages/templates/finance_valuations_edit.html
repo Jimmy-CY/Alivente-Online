@@ -141,6 +141,34 @@
             </div>
           </div>
 
+          <!-- Shown only when a distribution would put money on a property
+               the P&L does not report. Filled by JS from the payload, so the
+               names and the figure come from the same rows as the table. -->
+          <div id="val-preview-inactive-warning" class="val-inactive-warning"
+               style="display:none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>This change funds <span id="val-inactive-count">0</span>
+            inactive propert<span id="val-inactive-plural">y</span>.</strong>
+            <div class="val-inactive-detail">
+              <span id="val-inactive-names"></span>
+              <span id="val-inactive-verb">is</span> in
+              <span id="val-inactive-where">this distribution</span> but
+              <span id="val-inactive-verb2">is</span> Inactive, so the P&amp;L
+              never reports the
+              <strong>&euro;<span id="val-inactive-amount">0.00</span></strong>
+              this would move onto
+              <span id="val-inactive-them">it</span> &mdash; and every other
+              property is holding a share of a split that still counts
+              <span id="val-inactive-them2">it</span>.
+            </div>
+            <div class="val-inactive-detail">
+              Saving is not blocked. To take
+              <span id="val-inactive-them3">it</span> out first, open the
+              expense on that property, set <em>Applies from</em>, un-tick it
+              and recalculate.
+            </div>
+          </div>
+
           <div id="val-preview-groups" class="val-preview-groups-container">
             <!-- Populated by JS -->
           </div>
@@ -249,7 +277,40 @@
     margin-bottom: 8px;
 }
 .val-preview-summary__cv { text-align: right; }
-.val-preview-summary__hint { font-size: 13px; }
+/* ------------------------------------------------------------------
+   The inactive warning, and the row pills that agree with it.
+
+   base.html has no note component at all, so this stays page-local - the
+   same decision the Manage Expense round took for .exp-note. It is on the
+   house tokens rather than a hand-picked amber, and it deliberately reads
+   the same as .prorata-inactive-warning on finance_expense_edit.html: the
+   two screens are describing one situation and should not look like two.
+   ------------------------------------------------------------------ */
+.val-inactive-warning {
+    background: var(--alv-warn-soft);
+    border-left: 4px solid var(--alv-warn);
+    border-radius: var(--alv-radius-sm);
+    padding: 12px 16px;
+    margin: 16px 20px 0 20px;
+    font-size: 13px;
+    color: var(--alv-ink);
+}
+.val-inactive-warning > i { color: var(--alv-warn); margin-right: 6px; }
+.val-inactive-detail { margin-top: 6px; }
+
+.val-row-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+/* The edited pill kept its meaning and lost its literal - it used to carry
+   background:#ffc107 in a style attribute, out of reach of every stylesheet. */
+.val-row-pill-edited   { background: var(--alv-warn-soft); color: var(--alv-warn); }
+.val-row-pill-inactive { background: var(--alv-neutral-soft); color: var(--alv-neutral); }
 
 .val-preview-groups-container {
     max-height: 55vh;
@@ -519,6 +580,33 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('val-preview-lt-count').textContent = data.affected_line_types_count;
             document.getElementById('val-preview-exp-count').textContent = data.affected_expense_count;
 
+            // The inactive warning. Everything it says comes off the payload -
+            // no counting done here, so it cannot disagree with the tables.
+            (function () {
+                var warn = document.getElementById('val-preview-inactive-warning');
+                if (!warn) { return; }
+                var names = data.inactive_property_names || [];
+                warn.style.display = names.length ? '' : 'none';
+                if (!names.length) { return; }
+                var many = names.length > 1;
+                var set = function (id, text) {
+                    var el = document.getElementById(id);
+                    if (el) { el.textContent = text; }
+                };
+                set('val-inactive-count', names.length);
+                set('val-inactive-plural', many ? 'ies' : 'y');
+                set('val-inactive-names', names.join(', '));
+                set('val-inactive-verb', many ? 'are' : 'is');
+                set('val-inactive-verb2', many ? 'are' : 'is');
+                set('val-inactive-them', many ? 'them' : 'it');
+                set('val-inactive-them2', many ? 'them' : 'it');
+                set('val-inactive-them3', many ? 'them' : 'it');
+                set('val-inactive-where', data.affected_line_types_count > 1
+                    ? 'these distributions' : 'this distribution');
+                set('val-inactive-amount',
+                    formatMoney(data.inactive_new_amount || 0, 2));
+            })();
+
             const groupsContainer = document.getElementById('val-preview-groups');
             groupsContainer.innerHTML = '';
 
@@ -589,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ? `<strong style="color:#0e7c8b;">&euro;${formatMoney(p.current_value_new, 0)}</strong>`
                         : `&euro;${formatMoney(p.current_value_new, 0)}`;
                     row.innerHTML = `
-                        <td>${escapeHtml(p.prop_name)}${p.is_edited_property ? ' <span class="badge badge-warning" style="background:#ffc107; color:#212529;">edited</span>' : ''}</td>
+                        <td>${escapeHtml(p.prop_name)}${p.is_edited_property ? ' <span class="val-row-pill val-row-pill-edited">edited</span>' : ''}${p.is_inactive ? ' <span class="val-row-pill val-row-pill-inactive">Inactive</span>' : ''}</td>
                         <td class="text-right">&euro;${formatMoney(p.current_value_old, 0)}</td>
                         <td class="text-right">${cvNewDisplay}</td>
                         <td class="text-right">${p.share_percentage_new.toFixed(2)}%</td>

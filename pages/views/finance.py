@@ -186,6 +186,24 @@ def _fh_attach_expense_history(properties):
     return properties
 
 
+def carries_a_share(qs):
+    """The rows in `qs` that actually hold money.
+
+    An un-ticked pro-rata row is CLOSED, not deleted - _fh_close_expense
+    zeroes the amount and all twelve months and keeps the row, so the P&L can
+    still colour earlier years. That is deliberate. What is not deliberate is
+    that three screens then read "a row exists" as "this property is in the
+    distribution", so a released property came back ticked, the inactive
+    banner kept firing, and the next recalculation handed its share back.
+
+    One helper for all three, so they cannot drift apart again.
+
+    A NULL amount counts as no share too: it is a row that has never carried
+    anything. Both are excluded by the same test.
+    """
+    return qs.exclude(expense_amount=0).exclude(expense_amount__isnull=True)
+
+
 def _fh_close_expense(exp):
     """Zero a budgeted expense row, returning what it held beforehand.
 
@@ -742,11 +760,15 @@ def finance_expense_edit(request, expense_id):
         )
     )
 
+    # Which boxes are pre-ticked. A row closed by a previous un-tick is
+    # still here - kept on purpose, so earlier years keep their share - but
+    # it is no longer in the distribution, and ticking it again is how the
+    # share got handed back.
     linked_property_ids = list(
-        expense.objects.filter(
+        carries_a_share(expense.objects.filter(
             expense_line_types_id=existing_expense.expense_line_types_id,
             expense_types_id=existing_expense.expense_types_id,
-        ).values_list('prop_id', flat=True)
+        )).values_list('prop_id', flat=True)
     )
 
     return render(request, "finance_expense_edit.html", {
@@ -1682,10 +1704,13 @@ def preview_valuation_change(request, prop_values_id):
 
         old_cv = float(pv.prop_values_current_value or 0)
 
-        affected_expenses = expense.objects.filter(
+        # Which distributions this valuation actually reaches. A closed row
+        # is not one of them - showing its line type would draw a group in
+        # which nothing moves.
+        affected_expenses = carries_a_share(expense.objects.filter(
             prop_id=pv.prop_id,
             expense_line_types__expense_line_types_prorata='Yes',
-        ).select_related('expense_line_types')
+        )).select_related('expense_line_types')
 
         line_type_ids = set(e.expense_line_types_id for e in affected_expenses)
 
@@ -1699,6 +1724,9 @@ def preview_valuation_change(request, prop_values_id):
                 'affected_line_types_count': 0,
                 'affected_expense_count': 0,
                 'line_types': [],
+                'has_inactive': False,
+                'inactive_property_names': [],
+                'inactive_new_amount': 0,
             })
 
         line_types_payload = []
@@ -1711,7 +1739,12 @@ def preview_valuation_change(request, prop_values_id):
                 continue
 
             pr_amount = float(lt.expense_line_types_pr_amount or 0)
-            lt_expenses = expense.objects.filter(expense_line_types_id=lt_id).select_related('prop')
+            # THE DENOMINATOR. Everything below divides by the total current
+            # value of THIS set, so a property that carries nothing must not
+            # be in it - every other property was funding its share.
+            lt_expenses = carries_a_share(
+                expense.objects.filter(expense_line_types_id=lt_id)
+            ).select_related('prop')
             unique_prop_ids = set(e.prop_id for e in lt_expenses)
             total_affected_expense_records += lt_expenses.count()
 
@@ -1726,8 +1759,15 @@ def preview_valuation_change(request, prop_values_id):
                 try:
                     p_obj = props.objects.get(prop_id=pid)
                     p_name = p_obj.prop_name
+                    # The property object is already in hand; its status costs
+                    # nothing more to read. A property that does not exist is a
+                    # different fault and is NOT reported as inactive here -
+                    # inventing a status for a missing row would be worse than
+                    # saying nothing.
+                    p_inactive = (p_obj.prop_status != 'Active')
                 except props.DoesNotExist:
                     p_name = 'Unknown'
+                    p_inactive = False
 
                 cv_new = new_cv if pid == pv.prop_id else cv_old
                 existing = next((e for e in lt_expenses if e.prop_id == pid), None)
@@ -1743,6 +1783,7 @@ def preview_valuation_change(request, prop_values_id):
                     'current_value_new': cv_new,
                     'old_amount': old_amount,
                     'is_edited_property': (pid == pv.prop_id),
+                    'is_inactive': p_inactive,
                 })
 
             if total_cv_new <= 0:
@@ -1764,6 +1805,10 @@ def preview_valuation_change(request, prop_values_id):
 
             prop_rows.sort(key=lambda r: (not r['is_edited_property'], r['prop_name'].lower()))
 
+            # What this distribution would put on properties the P&L does
+            # not report. Summed HERE, from the same rows the table draws, so
+            # the warning and the figures beneath it cannot disagree.
+            _inactive = [r for r in prop_rows if r['is_inactive']]
             line_types_payload.append({
                 'line_type_id': lt_id,
                 'line_type_name': lt.expense_line_types_name,
@@ -1772,10 +1817,20 @@ def preview_valuation_change(request, prop_values_id):
                 'total_current_value_new': total_cv_new,
                 'property_count': len(prop_rows),
                 'properties': prop_rows,
+                'inactive_count': len(_inactive),
+                'inactive_names': [r['prop_name'] for r in _inactive],
+                'inactive_new_amount': round(
+                    sum(r['new_amount'] for r in _inactive), 2),
+                'inactive_share': round(
+                    sum(r['share_percentage_new'] for r in _inactive), 2),
             })
 
         line_types_payload.sort(key=lambda lt: lt['line_type_name'].lower())
 
+        # Rolled up across every distribution, so the preview can say the
+        # whole of it once rather than making the reader open each group.
+        _inactive_names = sorted({n for _lt in line_types_payload
+                                  for n in _lt['inactive_names']})
         return JsonResponse({
             'success': True,
             'prop_id': pv.prop_id,
@@ -1785,6 +1840,10 @@ def preview_valuation_change(request, prop_values_id):
             'affected_line_types_count': len(line_types_payload),
             'affected_expense_count': total_affected_expense_records,
             'line_types': line_types_payload,
+            'has_inactive': bool(_inactive_names),
+            'inactive_property_names': _inactive_names,
+            'inactive_new_amount': round(
+                sum(_lt['inactive_new_amount'] for _lt in line_types_payload), 2),
         })
     except Exception as e:
         logger.exception("preview_valuation_change failed")
