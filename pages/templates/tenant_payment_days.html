@@ -19,19 +19,19 @@
 
     {% if summary.payments_measured %}
     <div class="pd-summary">
-      <div class="pd-stat">
+      <div class="alv-card pd-stat">
         <div class="pd-stat-value">{{ summary.payments_measured }}</div>
         <div class="pd-stat-label">payments measured</div>
       </div>
-      <div class="pd-stat">
+      <div class="alv-card pd-stat">
         <div class="pd-stat-value">{{ summary.tenants_measured }}</div>
         <div class="pd-stat-label">tenants with data</div>
       </div>
-      <div class="pd-stat">
+      <div class="alv-card pd-stat">
         <div class="pd-stat-value">{{ summary.portfolio_avg|floatformat:1 }}</div>
         <div class="pd-stat-label">average days to pay</div>
       </div>
-      <div class="pd-stat {% if summary.flagged %}pd-stat-warn{% endif %}">
+      <div class="alv-card pd-stat {% if summary.flagged %}pd-stat-warn{% endif %}">
         <div class="pd-stat-value">{{ summary.flagged }}</div>
         <div class="pd-stat-label">flagged slow</div>
       </div>
@@ -66,8 +66,8 @@
     </div>
 
     {% if rows %}
-    <div class="pd-table-wrap">
-      <table class="pd-table">
+    <div class="table-container">
+      <table class="alv-table">
         <thead>
           <tr>
             <th class="pd-col-name">Tenant</th>
@@ -106,7 +106,7 @@
             <td class="pd-num" data-label="vs Terms">
               {% if r.vs_terms is None %}<span class="pd-muted">n/a</span>
               {% else %}
-                <span class="pd-badge pd-badge-{{ r.band }}">
+                <span class="alv-pill {{ r.band_pill }}">
                   {% if r.vs_terms > 0 %}+{% endif %}{{ r.vs_terms|floatformat:1 }}
                 </span>
               {% endif %}
@@ -174,8 +174,8 @@
         Currently unpaid ({{ outstanding|length }})
         <span class="pd-section-note">&mdash; oldest first, &euro;{{ summary.outstanding_total|floatformat:2 }} in total</span>
       </h4>
-      <div class="pd-table-wrap">
-        <table class="pd-table pd-table-compact">
+      <div class="table-container">
+        <table class="alv-table pd-table-compact">
           <thead>
             <tr>
               <th>Tenant</th><th>Property</th><th>Invoiced</th>
@@ -184,7 +184,7 @@
           </thead>
           <tbody>
             {% for o in outstanding %}
-            <tr class="{% if o.age > 30 %}pd-band-late{% elif o.age > grace %}pd-band-slight{% endif %}">
+            <tr class="pd-row {% if o.age > 30 %}pd-band-late{% elif o.age > grace %}pd-band-slight{% else %}pd-band-ontime{% endif %}">
               <td data-label="Tenant">{{ o.tenant.tenant_name }}</td>
               <td data-label="Property">{{ o.tenant.prop.prop_name }}</td>
               <td data-label="Invoiced">{{ o.invoice.invoice_date }}</td>
@@ -279,23 +279,26 @@
     gap: 14px;
     margin-bottom: 20px;
 }
+/* The surface, border and radius come from .alv-card. What stays here is what
+   makes a STAT TILE rather than a card - the centring, and the big figure over
+   a small label below. base has no stat-tile component, and one page is not
+   enough to invent one; that is the restraint that kept the ageing scale
+   waiting until a screen genuinely needed it. */
 .pd-stat {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
     padding: 14px 16px;
     text-align: center;
+    display: block;
 }
-.pd-stat-value { font-size: 1.7rem; font-weight: 700; color: #2c3e50; line-height: 1.1; }
+.pd-stat-value { font-size: 1.7rem; font-weight: 700; color: var(--alv-ink-strong); line-height: 1.1; }
 .pd-stat-label {
     font-size: 0.78rem;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     text-transform: uppercase;
     letter-spacing: 0.4px;
     margin-top: 4px;
 }
-.pd-stat-warn { background: #fff8e6; border-color: #ffe0a3; }
-.pd-stat-warn .pd-stat-value { color: #b8860b; }
+.pd-stat-warn { background: var(--alv-warn-soft); border-color: var(--alv-warn); }
+.pd-stat-warn .pd-stat-value { color: var(--alv-warn); }
 
 /* ---- toolbar ---- */
 .pd-toolbar {
@@ -315,31 +318,18 @@
 }
 
 /* ---- main table ---- */
-.pd-table-wrap { overflow-x: auto; }
-.pd-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-.pd-table thead th {
-    background: #2c3e50;
-    color: white;
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-}
-.pd-table tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #eef0f2;
-    vertical-align: middle;
-}
-.pd-table tbody tr.pd-row:hover { background: #f6fafc; }
+/* .pd-table-wrap set overflow-x: auto, which is the one declaration
+   .table-container must not carry - an element that scrolls becomes the
+   scroll container for any sticky descendant, and the header then pins to
+   the wrapper rather than to the viewport. */
+/* The table's appearance is base's now: the shell, the header treatment, the
+   borders, the hover, the mobile cards and the print behaviour. What was here
+   was a navy #2c3e50 band with white text that nothing in base could reach. */
+
+
+
 .pd-num { text-align: right; white-space: nowrap; }
-.pd-table thead th.pd-num { text-align: right; }
+.alv-table thead th.pd-num { text-align: right; }
 .pd-strong { font-weight: 700; color: #2c3e50; }
 .pd-name { font-weight: 600; color: #2c3e50; }
 .pd-muted { color: #95a5a6; }
@@ -355,27 +345,23 @@
 }
 
 /* Colour carries the same message as the sign, for anyone scanning fast. */
-.pd-row.pd-band-ontime { border-left: 4px solid #27ae60; }
-.pd-row.pd-band-slight { border-left: 4px solid #f39c12; }
-.pd-row.pd-band-late   { border-left: 4px solid #e74c3c; }
-.pd-row.pd-band-unknown{ border-left: 4px solid #bdc3c7; }
+/* THE EDGE MARKER STAYS, the wash does not. This page said one thing three
+   times - a badge, this 4px border, and a tint across every cell of the row.
+   The tint competed with the badge for the same message and existed for only
+   two of the four bands. The border covers all four, never collides with
+   text, and is what lets a problem row be spotted from the far side of a wide
+   table. */
+.pd-row.pd-band-ontime  { border-left: 4px solid var(--alv-good); }
+.pd-row.pd-band-slight  { border-left: 4px solid var(--alv-warn); }
+.pd-row.pd-band-late    { border-left: 4px solid var(--alv-bad); }
+.pd-row.pd-band-unknown { border-left: 4px solid var(--alv-neutral); }
 
-.pd-badge {
-    display: inline-block;
-    min-width: 52px;
-    text-align: center;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.82rem;
-}
-.pd-badge-ontime { background: #e8f8f0; color: #1e8449; }
-.pd-badge-slight { background: #fdf3e3; color: #b9770e; }
-.pd-badge-late   { background: #fdecea; color: #c0392b; }
-.pd-badge-unknown{ background: #f2f3f4; color: #7f8c8d; }
+/* .pd-badge and its four variants are base's .alv-pill family now. They were
+   four verdicts all along - good, attn, bad, neutral - not four degrees, so
+   they take the pill family rather than the .alv-age-* scale. */
 
-tr.pd-band-slight td { background: #fffdf7; }
-tr.pd-band-late td   { background: #fef8f7; }
+
+
 
 /* ---- expandable detail ---- */
 .pd-col-toggle { width: 40px; text-align: center; }
@@ -480,73 +466,50 @@ tr.pd-band-late td   { background: #fef8f7; }
 
     /* Cards, not a squeezed table: nine numeric columns are unreadable at
        phone width, and horizontal scrolling hides exactly the column that
-       matters. */
-    .pd-table thead { display: none; }
-    .pd-table, .pd-table tbody, .pd-table tr, .pd-table td { display: block; width: 100%; }
-    .pd-table tbody tr.pd-row {
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 6px 4px;
-        background: white;
-    }
-    .pd-table tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #f4f6f7;
-        padding: 7px 12px;
-        text-align: right;
-    }
-    .pd-table tbody td:last-child { border-bottom: none; }
-    .pd-table tbody td::before {
-        content: attr(data-label);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        color: #95a5a6;
-        font-weight: 600;
-        text-align: left;
-        margin-right: 12px;
-    }
-    .pd-table tbody td.pd-col-name {
-        background: #f8f9fa;
-        border-radius: 6px 6px 0 0;
-        font-size: 1rem;
-        flex-wrap: wrap;
-    }
-    /* The name cell is a flex row on mobile, so the count needs its own line
-       explicitly - display:block alone does nothing to a flex item. */
-    .pd-col-name .pd-count { flex-basis: 100%; text-align: right; }
-    .pd-col-toggle { width: 100%; }
-    /* Must out-specify `.pd-table tbody td::before`, which otherwise fills this
-       cell with an empty data-label and leaves a bare chevron with no caption. */
-    .pd-table tbody td.pd-col-toggle::before { content: "Every payment"; }
+       matters. base does the whole card treatment for .alv-table - the hidden
+       head, the block cells, the per-row card, the data-label before each
+       figure, and the first cell as a heading strip. Ten rules that used to
+       live here said the same thing about .pd-table. */
 
-    /* Undo the card treatment for the nested detail table. Everything above
-       is written as `.pd-table tbody td ...`, which reaches these cells too -
-       so without this the four columns stack into four right-aligned lines
-       with the headers orphaned above them. It stays a real table: four short
-       columns fit a phone, and one row per payment is the point of it. */
-    .pd-detail td { display: block; padding: 0 !important; }
+    /* The count sits under the tenant name. base makes the first cell a
+       block, so the old flex-basis:100% no longer applies to anything. */
+    .alv-table tbody td.pd-col-name .pd-count { display: block; }
+
+    /* This cell has no data-label to borrow, so it needs its caption named.
+       Must out-specify base's own td::before. */
+    .alv-table tbody td.pd-col-toggle::before { content: "Every payment"; }
+
+    /* UNDO THE CARD TREATMENT FOR THE NESTED DETAIL GRID. Everything base
+       writes for .alv-table td reaches these cells too - so without this the
+       four columns stack into four right-aligned lines with their headers
+       orphaned above them. It stays a real table: four short columns fit a
+       phone, and one row per payment is the point of it.
+
+       !important throughout, because base uses it on border, padding and
+       text-align, and specificity alone does not beat that. */
+    .alv-table tbody tr.pd-detail td {
+        display: block;
+        padding: 0 !important;
+        font-size: inherit;
+        font-weight: normal;
+    }
+    .alv-table tbody tr.pd-detail td::before { content: none; }
     .pd-detail .pd-detail-table { display: table; width: 100%; font-size: 0.78rem; }
     .pd-detail .pd-detail-table thead { display: table-header-group; }
     .pd-detail .pd-detail-table tbody { display: table-row-group; }
     .pd-detail .pd-detail-table tr { display: table-row; }
     .pd-detail .pd-detail-table th,
     .pd-detail .pd-detail-table td {
-        display: table-cell;
+        display: table-cell !important;
         width: auto;
-        padding: 4px 5px;
-        text-align: left;
+        padding: 4px 5px !important;
+        text-align: left !important;
+        border-bottom: 1px solid var(--alv-line-soft) !important;
     }
     .pd-detail .pd-detail-table th.pd-num,
-    .pd-detail .pd-detail-table td.pd-num { text-align: right; }
-    /* The card layout injects a label before every cell; not here. */
+    .pd-detail .pd-detail-table td.pd-num { text-align: right !important; }
     .pd-detail .pd-detail-table td::before,
     .pd-detail .pd-detail-table th::before { content: none; }
-    /* The card layout right-aligns cell contents; the detail block is prose
-       plus a table and reads left, like everywhere else. */
     .pd-detail-inner { padding: 12px 10px 14px 10px; text-align: left; }
 }
 </style>

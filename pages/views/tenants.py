@@ -599,6 +599,22 @@ def tenant_payment_days_view(request):
         terms = t.tenant_payment_terms
         vs_terms = (avg - terms) if terms is not None else None
 
+        # WHICH HOUSE PILL A BAND WEARS, decided here rather than interpolated
+        # into a class name in the template. `pd-badge-{{ r.band }}` built four
+        # class names that could not be found by searching for them - invisible
+        # to anything that reads the stylesheet, including the patcher that
+        # replaced them. Same move physical_invoice_list made with status_pill.
+        #
+        # These are VERDICTS, not degrees, which is why they take the pill
+        # family and not the .alv-age-* scale: a tenant is on time or not, and
+        # 'slight' is a different answer rather than a milder one.
+        BAND_PILL = {
+            'ontime': 'alv-pill-good',
+            'slight': 'alv-pill-attn',
+            'late': 'alv-pill-bad',
+            'unknown': 'alv-pill-neutral',
+        }
+
         if vs_terms is None:
             band = 'unknown'
         elif vs_terms <= PAYMENT_GRACE_DAYS:
@@ -620,6 +636,7 @@ def tenant_payment_days_view(request):
             'terms': terms,
             'vs_terms': vs_terms,
             'band': band,
+            'band_pill': BAND_PILL[band],
             'measured': list(reversed(measured)),
         })
 
