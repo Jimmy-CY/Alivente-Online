@@ -41,7 +41,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import (Count, Min, OuterRef, Prefetch, Subquery, Sum)
+from django.db.models import (Count, Min, OuterRef, Prefetch, Q, Subquery, Sum)
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -52,11 +52,13 @@ from pages.forms import (
     ExpenseTypesForm, ExpenseLineForm, ValuesForm,
 )
 from pages.models import (
+    _FH_MONTHS,
     props, prop_values,
     revenue, revenue_types, revenue_line_types,
     expense, expense_types, expense_line_types,
     tenant, act_expense, VacancyPeriod,
-    FinancialFigureHistory, record_expense_history, record_revenue_history,
+    FinancialFigureHistory, FH_BASELINE_DATE,
+    record_expense_history, record_revenue_history,
     ensure_expense_baseline, ensure_revenue_baseline,
     ensure_expense_opening, ensure_revenue_opening,
     purge_figure_history, prorata_reconcile,
@@ -155,6 +157,30 @@ def _fh_new_revenue(rev, eff, user, source, created):
     record_revenue_history(rev, eff, source=source, user=user)
 
 
+def _expense_has_past(expense_id):
+    """Does this row's history carry anything at all?
+
+    One row, asked directly - the list page answers the same question for
+    every row at once in _fh_attach_expense_history. Both go through the same
+    definition: a snapshot carries something when any of the twelve months or
+    the amount is set and not zero.
+
+    Fails CLOSED: if the history cannot be read, the answer is "yes, it has a
+    past", which keeps a row rather than removing one on a guess.
+    """
+    try:
+        _q = Q()
+        for _f in ('amount',) + tuple(_FH_MONTHS):
+            _q |= Q(**{_f + '__isnull': False}) & ~Q(**{_f: 0})
+        return (FinancialFigureHistory.objects
+                .filter(kind=FinancialFigureHistory.KIND_BUDGET,
+                        source_pk=expense_id)
+                .filter(_q).exists())
+    except Exception:
+        logger.exception('_expense_has_past failed - assuming it has one')
+        return True
+
+
 def _fh_attach_expense_history(properties):
     """Hang a snapshot count and earliest date on each prefetched expense row.
 
@@ -178,11 +204,44 @@ def _fh_attach_expense_history(properties):
         logger.exception('_fh_attach_expense_history failed (list still renders)')
         summary = {}
 
+    # WHICH ROWS HAVE A PAST WORTH KEEPING.
+    #
+    # A closed pro-rata row is kept so the P&L can still colour the years it
+    # carried a share in. That reasoning needs there to BE such a year. A row
+    # whose every snapshot is zero or empty anchors nothing, and the Expenses
+    # list was drawing it as an ordinary expense of zero with Delete greyed
+    # out - a record the system could neither justify nor release.
+    #
+    # One more query for the whole page: the source_pks that have at least one
+    # snapshot carrying something. A Q across the thirteen columns rather than
+    # thirteen queries or a Python pass over every snapshot ever written.
+    try:
+        _q = Q()
+        for _f in ('amount',) + tuple(_FH_MONTHS):
+            _q |= Q(**{_f + '__isnull': False}) & ~Q(**{_f: 0})
+        carried = set(FinancialFigureHistory.objects
+                      .filter(kind=FinancialFigureHistory.KIND_BUDGET)
+                      .filter(_q)
+                      .values_list('source_pk', flat=True))
+    except Exception:
+        # Fail-safe in the same direction as the count above: if this cannot
+        # be worked out, every row is treated as HAVING a past, which is the
+        # conservative answer - it keeps Delete greyed out rather than
+        # offering to remove something whose history we could not read.
+        logger.exception('_fh_attach_expense_history: past scan failed')
+        carried = None
+
     for _prop_row in properties:
         for _exp_row in _prop_row.expense_set.all():
             _n, _first = summary.get(_exp_row.expense_id, (0, None))
             _exp_row.fh_count = _n
             _exp_row.fh_from = _first
+            _exp_row.is_closed = not (_exp_row.expense_amount or 0)
+            _exp_row.fh_has_past = (True if carried is None
+                                    else _exp_row.expense_id in carried)
+            # SPENT: it holds nothing and never did. Only these may be
+            # removed, and only these are offered a Delete.
+            _exp_row.is_spent = _exp_row.is_closed and not _exp_row.fh_has_past
     return properties
 
 
@@ -599,6 +658,123 @@ def finance_revenue_line_types_edit_commit(request, revenue_line_types_id):
 # Expense
 # ============================================================================
 
+def expense_matrix(line_type_id, today_year=None):
+    """One line type, resolved year by year, property by property.
+
+    Returns {line_type, years, rows, totals, grand_total, first_year} where a
+    row is {prop_id, prop_name, cells, total} and a cell is either a Decimal
+    or None. NONE MEANS "not in the distribution that year" - a figure of
+    zero is reported as None, deliberately, so the screen can draw a dash and
+    the reader can tell a property that left from one that cost nothing.
+
+    THE FIGURES COME FROM THE SAME RESOLVER THE P&L USES,
+    resolve_year_months_bulk, rather than a second implementation of
+    effective dating. Two answers to "what did this row carry in 2024" is one
+    more than this system can afford.
+
+    IT DOES NOT PRO-RATE. property_annual_budgeted_expenses counts a
+    property's budget only from the month it came into service, which is
+    right for the P&L - it is answering "what did this cost me". This screen
+    answers "how is this charge split", and the charge is distributed by
+    value whether or not the property was owned all year. Pro-rating here
+    would leave a column summing to less than the charge under a footer
+    claiming to be the charge. The template says so under the table.
+
+    Carries no decorators: it is a helper, not a view.
+    """
+    from django.db.models import Min as _Min
+
+    rows_qs = (expense.objects
+               .filter(expense_line_types_id=line_type_id)
+               .select_related('prop'))
+    by_prop = {}
+    for e in rows_qs:
+        by_prop.setdefault(e.prop_id, {'prop_name': (e.prop.prop_name
+                                                     if e.prop else 'Unknown'),
+                                       'sources': []})
+        by_prop[e.prop_id]['sources'].append(e)
+    if not by_prop:
+        return {'line_type': None, 'years': [], 'rows': [], 'totals': [],
+                'grand_total': Decimal('0'), 'first_year': None}
+
+    try:
+        lt = expense_line_types.objects.get(expense_line_types_id=line_type_id)
+    except expense_line_types.DoesNotExist:
+        lt = None
+
+    # The earliest year this line type actually CHANGED in.
+    #
+    # NOT the earliest history row. FH_BASELINE_DATE is 2000-01-01 and it is a
+    # SENTINEL, not a date: _ensure_baseline writes one row at it the first
+    # time a long-standing figure is edited, meaning "and it held this before
+    # anybody recorded a change". Reading it as data made this table open on
+    # the year 2000 and draw twenty-eight identical columns - the same figure
+    # restated once a year for a quarter of a century, which is the baseline
+    # being resolved forward, not a history.
+    #
+    # A baseline says the figure reaches back indefinitely, so it gives no
+    # earliest year at all. With nothing but baselines, nothing has ever
+    # changed and there is no past worth a column: start at the current year.
+    _now = today_year or date.today().year
+    _src_ids = [e.expense_id for v in by_prop.values() for e in v['sources']]
+    _first = (FinancialFigureHistory.objects
+              .filter(kind=FinancialFigureHistory.KIND_BUDGET,
+                      source_pk__in=_src_ids)
+              .exclude(effective_date=FH_BASELINE_DATE)
+              .aggregate(_m=_Min('effective_date'))['_m'])
+    first_year = _first.year if _first else _now
+    if first_year > _now:
+        first_year = _now
+    years = list(range(first_year, _now + 2))          # through NEXT year
+
+    prop_ids = list(by_prop.keys())
+    cells = {pid: [] for pid in prop_ids}
+    for y in years:
+        vals_map = resolve_year_months_bulk(
+            prop_ids, FinancialFigureHistory.KIND_BUDGET, y)
+        for pid in prop_ids:
+            total = Decimal('0')
+            for e in by_prop[pid]['sources']:
+                vals = vals_map.get(e.expense_id)
+                if vals is not None:
+                    for v in vals:
+                        total += (v or 0)
+                else:
+                    # No history for this row: its live cells apply, which is
+                    # the same fallback the P&L takes.
+                    for m in MONTHS:
+                        total += (getattr(e, 'expense_' + m, 0) or 0)
+            cells[pid].append(total if total else None)
+
+    rows = []
+    for pid in prop_ids:
+        _c = cells[pid]
+        rows.append({
+            'prop_id': pid,
+            'prop_name': by_prop[pid]['prop_name'],
+            'cells': _c,
+            'total': sum((v for v in _c if v is not None), Decimal('0')),
+        })
+    # A property that carried nothing in ANY year is not a contributor to
+    # this distribution and would draw a row of dashes.
+    rows = [r for r in rows if r['total']]
+    rows.sort(key=lambda r: (r['prop_name'] or '').lower())
+
+    # Summed from the rows the table draws, not from a second query - the
+    # lesson the Valuations round left, where a TOTAL counted a valuation the
+    # table never showed.
+    totals = [sum((r['cells'][i] for r in rows if r['cells'][i] is not None),
+                  Decimal('0')) for i in range(len(years))]
+    return {
+        'line_type': lt,
+        'years': years,
+        'rows': rows,
+        'totals': totals,
+        'grand_total': sum(totals, Decimal('0')),
+        'first_year': first_year,
+    }
+
+
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
 def finance_expense(request):
@@ -618,7 +794,34 @@ def finance_expense(request):
             )
         ).all().order_by('prop_country', 'prop_name').filter(prop_name=prop_output)
     props_data = _fh_attach_expense_history(list(props_data))
-    return render(request, "finance_expense.html", {"props_data": props_data})
+
+    # The second view. Chosen by a GET parameter rather than by JavaScript so
+    # the state is in the URL - it can be linked, bookmarked and reloaded, and
+    # the matrix is not built at all when nobody is looking at it.
+    view_mode = 'matrix' if request.GET.get('view') == 'matrix' else 'property'
+    matrix = None
+    matrix_line_types = list(
+        expense_line_types.objects
+        .filter(expense_line_types_id__in=expense.objects.values(
+            'expense_line_types_id'))
+        .order_by('expense_line_types_name'))
+    selected_lt = None
+    if view_mode == 'matrix' and matrix_line_types:
+        try:
+            selected_lt = int(request.GET.get('lt') or 0)
+        except (TypeError, ValueError):
+            selected_lt = 0
+        if selected_lt not in [l.expense_line_types_id for l in matrix_line_types]:
+            selected_lt = matrix_line_types[0].expense_line_types_id
+        matrix = expense_matrix(selected_lt)
+
+    return render(request, "finance_expense.html", {
+        "props_data": props_data,
+        "view_mode": view_mode,
+        "matrix": matrix,
+        "matrix_line_types": matrix_line_types,
+        "selected_lt": selected_lt,
+    })
 
 
 @login_required
@@ -999,16 +1202,42 @@ def finance_expense_delete(request, expense_id):
         # independently a mistake: either the whole distribution is wrong (in
         # which case the line type is deleted) or one property does not belong
         # (in which case it is un-ticked).
-        if ((getattr(exp.expense_line_types, 'expense_line_types_prorata', '')
-                or '').strip().lower() == 'yes'):
-            messages.error(
-                request,
-                "That is a pro-rata expense, so it cannot be deleted on its "
-                "own \u2014 the other properties would be left holding shares of a "
-                "larger split and the line would no longer add up. Edit the "
-                "line and un-tick the property instead: the rest take up its "
-                "share, and this one stops from the date you choose.")
+        # ... EXCEPT when the row holds nothing and never did.
+        #
+        # The paragraph above is exactly right about a LIVE row. A CLOSED one
+        # holds no share - the others were re-divided when it was un-ticked -
+        # so removing it changes no figure anywhere. And if its history is
+        # empty too, there is no past for the row to anchor. The guard was
+        # testing what the row IS rather than what it HOLDS.
+        _is_prorata = ((getattr(exp.expense_line_types,
+                                'expense_line_types_prorata', '')
+                        or '').strip().lower() == 'yes')
+        _closed = not (exp.expense_amount or 0)
+        _has_past = _expense_has_past(exp.expense_id)
+
+        if _is_prorata and not (_closed and not _has_past):
+            # Two different situations, and they need different advice.
+            if _closed and _has_past:
+                messages.error(
+                    request,
+                    "That row is already closed, and it is kept on purpose: "
+                    "earlier years still report the share it carried. "
+                    "Removing it would take that past with it.")
+            else:
+                messages.error(
+                    request,
+                    "That is a pro-rata expense, so it cannot be deleted on "
+                    "its own \u2014 the other properties would be left holding "
+                    "shares of a larger split and the line would no longer "
+                    "add up. Edit the line and un-tick the property instead: "
+                    "the rest take up its share, and this one stops from the "
+                    "date you choose.")
             return redirect('finance_expense')
+
+        if _is_prorata:
+            # Spent: closed, and with nothing behind it. Closing it again
+            # would do nothing, so the only meaningful operation is removal.
+            mode = 'purge'
 
         with transaction.atomic():
             prop_name = exp.prop.prop_name if exp.prop else f"#{exp.expense_id}"

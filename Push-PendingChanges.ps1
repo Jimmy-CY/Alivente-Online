@@ -138,7 +138,14 @@ $sentinels = @(
     @{ File = 'pages\templates\finance_expense_line_types.html'; Text = 'id="ltd-choice"';       What = 'line-type delete offers both' },
     @{ File = 'pages\templates\finance_expense_line_types.html'; Text = 'delete-dialog fits the viewport'; What = 'dialog stays on screen' },
     @{ File = 'pages\views\finance.py';                   Text = 'That is a pro-rata expense';    What = 'pro-rata rows refuse deletion' },
-    @{ File = 'pages\templates\finance_expense.html';     Text = 'title="Pro-rata expense';       What = 'pro-rata Delete greyed out' },
+    # SUPERSEDED 29 Aug 2026, seventh instance of the section-4b pattern. This
+    # pinned `title="Pro-rata expense` - the attribute and its first words. The
+    # spent-row round made that title conditional, so the row now reads
+    # `title="{% if exp.is_closed %}...{% else %}Pro-rata expense ...`, and the
+    # string with the quote attached stopped existing while the CLAIM was
+    # untouched. Pin the ADVICE, which is the thing worth keeping, rather than
+    # the punctuation around it.
+    @{ File = 'pages\templates\finance_expense.html';     Text = 'Pro-rata expense &mdash; remove this property by editing'; What = 'pro-rata Delete greyed out' },
     @{ File = 'pages\templates\finance_expense_edit.html'; Text = 'take up its share';            What = 'un-ticking is explained' },
     @{ File = 'pages\views\properties.py';                Text = 'def _prorata_blockers';         What = 'deactivation blocked while shares remain' },
     @{ File = 'pages\templates\finance_expense_add.html';  Text = 'is-inactive';                  What = 'inactive cannot be ticked' },
@@ -374,7 +381,21 @@ $sentinels = @(
     # screens were still counting it. This one DOES move figures on the
     # valuation preview, deliberately.
     @{ File = 'pages\views\finance.py'; Text = 'def carries_a_share'; What = 'one helper decides whether a row carries a share' },
-    @{ File = 'pages\views\finance.py'; Text = 'carries_a_share(expense.objects.filter('; What = 'and the screens that decide membership go through it' }
+    @{ File = 'pages\views\finance.py'; Text = 'carries_a_share(expense.objects.filter('; What = 'and the screens that decide membership go through it' },
+    # The year-on-year matrix, and the two components base was missing for it.
+    # .alv-matrix could NOT be .table-container: that one sets overflow: clip
+    # so a sticky heading can pin, and a matrix needs overflow-x: auto.
+    @{ File = 'pages\templates\base.html'; Text = '.alv-seg {'; What = 'base owns the segmented control at last - third asker' },
+    @{ File = 'pages\templates\base.html'; Text = '.alv-matrix-scroll {'; What = 'and a matrix that scrolls sideways with frozen edges' },
+    @{ File = 'pages\views\finance.py'; Text = 'def expense_matrix'; What = 'one expense, resolved year by year on the P&L resolver' },
+    @{ File = 'pages\templates\finance_expense.html'; Text = 'alv-matrix-row-head'; What = 'and the Expenses screen has a second view' },
+    # A closed row with no past. The delete guard refused every pro-rata row -
+    # right about a LIVE one, whose removal would leave the others holding
+    # shares of a larger split, and wrong about a CLOSED one, which holds no
+    # share at all. It tested what the row IS, not what it HOLDS.
+    @{ File = 'pages\views\finance.py'; Text = 'def _expense_has_past'; What = 'one definition of whether a row has a past worth keeping' },
+    @{ File = 'pages\views\finance.py'; Text = '_exp_row.is_spent'; What = 'and the list knows which rows hold nothing and never did' },
+    @{ File = 'pages\templates\finance_expense.html'; Text = 'exp-closed-pill'; What = 'a closed row reads CLOSED, not a bare zero' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -632,7 +653,19 @@ $suites = @(
     # valuation preview's are diffed old-against-new and asserted line by
     # line - who leaves the denominator, that every remaining share rises,
     # and that the pot is unchanged. Newest, so most likely to break.
-    'test_share_of_zero.py'
+    'test_share_of_zero.py',
+    # The year-on-year matrix. Section 4 SCROLLS the table in Chromium and
+    # reads the frozen column's position back - position:sticky inside
+    # overflow-x:auto is the most confident-looking thing in CSS that
+    # silently does nothing, and it is the same family of fault as the
+    # sticky headings. Newest, so most likely to be what breaks.
+    'test_expense_matrix.py',
+    # Spent rows. This one relaxes a guard on a DESTRUCTIVE path, so its
+    # section 3 deletes a spent row from a real database and re-resolves
+    # every year to prove nothing moved - then does the same to a row that
+    # DOES have a past and shows the figure collapse, which is why the guard
+    # still refuses that one. Newest, so most likely to be what breaks.
+    'test_spent_row.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -301,6 +301,8 @@ for name in ('_ensure_baseline', 'ensure_expense_baseline',
 
 resolve = NS['resolve_year_months_bulk']
 
+from django.db.models import Q as _Q          # noqa: E402
+
 VIEW_NS = {
     'expense': ExpModel,
     'expense_line_types': LTModel,
@@ -320,9 +322,20 @@ VIEW_NS = {
     'record_expense_history': NS['record_expense_history'],
     'purge_figure_history': NS['purge_figure_history'],
     '_fh_user': lambda request: None,
+    # Q and the month names are here because a LATER round put them in the
+    # view. The spent-row round gave finance_expense_delete a helper,
+    # _expense_has_past, which asks whether a row's history carries anything -
+    # and this namespace was built when the view called nothing of the kind.
+    # The lifted function then died with a NameError on every case, which is
+    # why fourteen unrelated checks failed at once. Section 4b of
+    # outstanding_items.md, in its stale-HARNESS shape rather than its stale-
+    # expectation one.
+    'Q': _Q,
+    '_FH_MONTHS': MONTHS,
 }
 for name in ('_fh_date_or_today', '_fh_eff_date', '_fh_save_expense',
-             '_fh_close_expense', 'finance_expense_delete',
+             '_fh_close_expense', '_expense_has_past',
+             'finance_expense_delete',
              'delete_expense_line_type'):
     exec(compile(grab(FIN_SRC, name, 'finance.py'), name, 'exec'), VIEW_NS)
 
@@ -523,9 +536,19 @@ else:
           'name="delete_mode"' in s and 'name="effective_date"' in s)
     check('expenses list: the dialog reports how much history there is',
           'data-history=' in s)
+    # SUPERSEDED by the spent-row round. This pinned the disabled span with
+    # its title attribute ATTACHED - `btn-row-delete-disabled" title="Pro-rata`
+    # - and that title is now conditional, so the two are no longer adjacent
+    # while the claim is untouched. Pin the ADVICE and the narrowing, which
+    # are the things worth guarding.
     check('expenses list: Delete is greyed out on a pro-rata row',
           "expense_line_types.expense_line_types_prorata == 'Yes'" in s
-          and 'btn-row-delete-disabled" title="Pro-rata' in s)
+          and 'btn-row-delete-disabled' in s
+          and 'Pro-rata expense &mdash; remove this property by editing' in s)
+    check('  .. unless it is SPENT - closed, and carrying nothing behind it',
+          'not exp.is_spent' in s)
+    check('  and a closed row says which kind of closed it is',
+          'exp-closed-pill' in s)
 
 p = os.path.join(TPL, 'finance_expense_edit.html')
 if not os.path.exists(p):
