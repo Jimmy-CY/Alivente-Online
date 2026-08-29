@@ -717,21 +717,79 @@ def expense_matrix(line_type_id, today_year=None):
     # changed and there is no past worth a column: start at the current year.
     _now = today_year or date.today().year
     _src_ids = [e.expense_id for v in by_prop.values() for e in v['sources']]
+
+    # WHEN THE VALUE CHANGES, not when snapshots exist.
+    #
+    # Two dates, doing two different jobs.
+    #
+    # _first is the earliest DATED change. FH_BASELINE_DATE is excluded from
+    # it because the baseline is a SENTINEL, not a date - it means "and it
+    # held this before anybody recorded a change", so it names no year.
+    # Reading it as data once made this table open on 2000 and draw twenty-
+    # eight identical columns.
+    #
+    # _earliest is the earliest snapshot of ANY kind, baseline included, and
+    # it is the FLOOR. Before it there is no snapshot at all: the resolver
+    # returns nothing, the caller falls back to the row's live cells, and this
+    # table would draw today's figure under a past year's heading. Excluding
+    # the baseline from the floor as well is what truncated Company Tax to
+    # two columns while 2024 and 2025 resolved perfectly well from it.
+    #
+    # One year before the first change, so the reader can see what it was.
     _first = (FinancialFigureHistory.objects
               .filter(kind=FinancialFigureHistory.KIND_BUDGET,
                       source_pk__in=_src_ids)
               .exclude(effective_date=FH_BASELINE_DATE)
               .aggregate(_m=_Min('effective_date'))['_m'])
-    first_year = _first.year if _first else _now
+    _earliest = (FinancialFigureHistory.objects
+                 .filter(kind=FinancialFigureHistory.KIND_BUDGET,
+                         source_pk__in=_src_ids)
+                 .aggregate(_m=_Min('effective_date'))['_m'])
+    if _first is None:
+        first_year = _now
+    else:
+        first_year = max(_earliest.year if _earliest else _now,
+                         _first.year - 1)
     if first_year > _now:
         first_year = _now
     years = list(range(first_year, _now + 2))          # through NEXT year
 
     prop_ids = list(by_prop.keys())
     cells = {pid: [] for pid in prop_ids}
+    blended = []
     for y in years:
-        vals_map = resolve_year_months_bulk(
-            prop_ids, FinancialFigureHistory.KIND_BUDGET, y)
+        vals_map, prov_map = resolve_year_months_bulk(
+            prop_ids, FinancialFigureHistory.KIND_BUDGET, y, with_sources=True)
+        # DOES THIS YEAR STRADDLE A CHANGE?
+        #
+        # Company Tax is charged in January and July; the rate changed on
+        # 1 July 2026. So 2026 is January at the old rate plus July at the
+        # new one - correct, and indistinguishable from a third charge unless
+        # the table says so. Somebody reading the code took it for a stale
+        # figure and built a round to "correct" it.
+        #
+        # The test is provenance, not arithmetic: the months that carry money
+        # answered from more than ONE snapshot. Comparing the figures instead
+        # would call a line blended whenever its months legitimately differ.
+        # PER ROW, not per line. Every property has its own snapshots, so
+        # pooling their ids across the line makes any multi-property line look
+        # blended in every year. The year is blended when ONE row's money
+        # months answered from more than one snapshot.
+        _blend = False
+        for pid in prop_ids:
+            for e in by_prop[pid]['sources']:
+                _v = vals_map.get(e.expense_id)
+                _p = prov_map.get(e.expense_id)
+                if _v is None or _p is None:
+                    continue
+                if len({_p[_i] for _i in range(12) if _v[_i]}) > 1:
+                    _blend = True
+                    break
+            if _blend:
+                break
+        if _blend:
+            blended.append(y)
+
         for pid in prop_ids:
             total = Decimal('0')
             for e in by_prop[pid]['sources']:
@@ -772,6 +830,7 @@ def expense_matrix(line_type_id, today_year=None):
         'totals': totals,
         'grand_total': sum(totals, Decimal('0')),
         'first_year': first_year,
+        'blended': blended,
     }
 
 

@@ -522,7 +522,7 @@
                 <thead>
                     <tr>
                         <th class="alv-matrix-row-head" scope="col">Property</th>
-                        {% for y in matrix.years %}<th scope="col">{{ y }}</th>{% endfor %}
+                        {% for y in matrix.years %}{% if y in matrix.blended %}<th scope="col" class="alv-matrix-blend" title="This year straddles a change: the months before it carry the previous figure, the months after it the current one. The column is the two added together.">{{ y }} <span aria-hidden="true">&#8225;</span><span class="alv-visually-hidden">(straddles a change)</span></th>{% else %}<th scope="col">{{ y }}</th>{% endif %}{% endfor %}
                         <th class="alv-matrix-total" scope="col">Total</th>
                     </tr>
                 </thead>
@@ -553,6 +553,13 @@
             <strong>not pro-rated</strong> to the months a property was owned, so
             each column is the whole charge for that year. The P&amp;L pro-rates a
             property&rsquo;s first year and will show less for it.
+            {% if matrix.blended %}
+            A year marked &#8225; <strong>straddles a change</strong>: the charge
+            moved part-way through it, so the months before the change carry the
+            previous figure and the months after it the current one. The column
+            is the two added together, and will match neither the charge before
+            nor the charge after.
+            {% endif %}
         </div>
         {% else %}
         <div class="alv-empty">

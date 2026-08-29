@@ -240,6 +240,11 @@ for _m in MONTHS:
 
 class FinancialFigureHistory(models.Model):
     KIND_BUDGET = 'budget_expense'
+    # The real model's primary key, named. A stub that lifts the real resolver
+    # has to carry the fields that resolver names - and provenance names this
+    # one. Django would otherwise supply an implicit `id`, and the lift would
+    # die on an attribute the stub never declared.
+    financial_figure_history_id = models.AutoField(primary_key=True)
     prop = models.ForeignKey(props, on_delete=models.CASCADE)
     kind = models.CharField(max_length=32)
     source_pk = models.IntegerField()
@@ -263,34 +268,17 @@ with connection.schema_editor() as se:
 _FH_MONTHS = ['fh_' + m for m in MONTHS]
 
 
-def resolve_year_months_bulk(prop_ids, kind, year):
-    """The project's own resolver, mirrored field-for-field.
-
-    Lifting it out of models.py would drag half the app in; it is fifteen
-    lines and the shape that matters is which version wins for a month.
-    """
-    from collections import defaultdict
-    rows = (FinancialFigureHistory.objects
-            .filter(prop_id__in=list(prop_ids), kind=kind,
-                    effective_date__lte=date(year, 12, 31))
-            .order_by('source_pk', 'effective_date', 'changed_at'))
-    by_src = defaultdict(list)
-    for r in rows:
-        by_src[r.source_pk].append(r)
-    out = {}
-    for src, versions in by_src.items():
-        vals = []
-        for m in range(1, 13):
-            chosen = None
-            for v in versions:
-                if (v.effective_date.year, v.effective_date.month) <= (year, m):
-                    chosen = v
-                else:
-                    break
-            vals.append(getattr(chosen, _FH_MONTHS[m - 1])
-                        if chosen is not None else None)
-        out[src] = vals
-    return out
+# THE RESOLVER IS LIFTED, NOT MIRRORED.
+#
+# This was a hand-copy of the project's resolver, added with the words "the
+# project's own resolver, mirrored field-for-field". It diverged the moment
+# the real one gained an optional with_sources argument, and took fourteen
+# unrelated checks down with a TypeError. A copy of a thing is not a test of
+# the thing.
+#
+# The real function reads _FH_MONTHS, _fh_date and FinancialFigureHistory out
+# of its globals, all of which this module defines, so lifting it is a
+# drop-in. It is exec'd just below `lift`, where that helper exists.
 
 
 def lift(src, name):
@@ -305,6 +293,17 @@ def lift(src, name):
 # row at it the first time a long-standing figure is edited, meaning "and it
 # held this before anybody recorded a change".
 FH_BASELINE_DATE = date(2000, 1, 1)
+
+_MODELS_SRC = os.path.join(ROOT, 'pages', 'models.py')
+if not os.path.exists(_MODELS_SRC):
+    sys.exit('! pages/models.py not found - run from the project root')
+with open(_MODELS_SRC, encoding='utf-8', errors='replace') as _f:
+    _MD_SRC = _f.read().replace(chr(13) + chr(10), chr(10))
+_res_ns = {'FinancialFigureHistory': FinancialFigureHistory,
+           '_FH_MONTHS': _FH_MONTHS, '_fh_date': date}
+exec(compile(lift(_MD_SRC, 'resolve_year_months_bulk'), 'resolver', 'exec'),
+     _res_ns)
+resolve_year_months_bulk = _res_ns['resolve_year_months_bulk']
 
 _ns = {'expense': expense, 'expense_line_types': expense_line_types,
        'props': props, 'FinancialFigureHistory': FinancialFigureHistory,
@@ -386,10 +385,19 @@ FinancialFigureHistory.objects.create(
     source_pk=_e0.expense_id, effective_date=FH_BASELINE_DATE,
     **{('fh_' + m): Decimal('100') for m in MONTHS})
 _withbase = expense_matrix(LT.expense_line_types_id, today_year=NOW)
-check('A BASELINE DOES NOT OPEN THE TABLE ON 2000',
-      _withbase['years'][0] == 2023, str(_withbase['years'][:3]))
-check('  the range is unchanged by it',
-      _withbase['years'] == M['years'])
+check('A BASELINE STILL DOES NOT OPEN THE TABLE ON 2000',
+      _withbase['years'][0] > 2000, str(_withbase['years'][:3]))
+# SUPERSEDED, deliberately. It used to assert the range was UNCHANGED by a
+# baseline. It is not, any more: the floor is now the earliest snapshot of any
+# kind, and a baseline is one - so the table can finally show the year BEFORE
+# the first dated change, which is the year the reader needs in order to see
+# what the figure changed FROM. Without a baseline that year cannot be
+# answered at all and is still excluded.
+check('  it opens exactly ONE year earlier, showing what came before',
+      _withbase['years'][0] == M['years'][0] - 1,
+      '%s vs %s' % (_withbase['years'][0], M['years'][0]))
+check('  and gains exactly one column, not a reach back to the sentinel',
+      len(_withbase['years']) == len(M['years']) + 1)
 check('  CONTROL: the baseline row really is in the database',
       FinancialFigureHistory.objects.filter(
           effective_date=FH_BASELINE_DATE).count() == 1)
@@ -399,24 +407,34 @@ check('  CONTROL: the baseline row really is in the database',
 # the first real change - which are precisely the years this table no longer
 # draws. The first version of this check expected the totals to MOVE, which
 # would have meant the baseline was overriding a later figure.
-check('  and it changes no figure in range - a later row wins every month',
-      _withbase['totals'] == M['totals'],
+# Every year the table ALREADY drew reports exactly what it did before: the
+# resolver takes the latest row at or before each month, and those years all
+# have a later one. The baseline speaks only for the new leading column.
+check('  and it changes no figure in any year the table already drew',
+      _withbase['totals'][1:] == M['totals'],
       str(_withbase['totals'][:2]))
+check('  the new leading column is the one the baseline answers',
+      _withbase['totals'][0] is not None)
 FinancialFigureHistory.objects.filter(
     effective_date=FH_BASELINE_DATE).delete()
 
 # With nothing but baselines, nothing has ever changed: no past worth a column.
-_only = MADE['Ionion - Villa 24']
-FinancialFigureHistory.objects.filter(prop=_only).delete()
-FinancialFigureHistory.objects.create(
-    prop=_only, kind=FinancialFigureHistory.KIND_BUDGET,
-    source_pk=expense.objects.get(prop=_only,
-                                  expense_line_types=LT).expense_id,
-    effective_date=FH_BASELINE_DATE,
-    **{('fh_' + m): Decimal('100') for m in MONTHS})
+# THE FIXTURE WAS WRONG, and the check passed anyway. It cleared history for
+# ONE property, so the line type still had a dated change on a sibling row -
+# so "only baselines" was never the case being tested, and `>= 2023` was
+# satisfied by the ordinary range. Every dated row on the line has to go.
+FinancialFigureHistory.objects.all().delete()
+for _e in expense.objects.filter(expense_line_types=LT):
+    FinancialFigureHistory.objects.create(
+        prop=_e.prop, kind=FinancialFigureHistory.KIND_BUDGET,
+        source_pk=_e.expense_id, effective_date=FH_BASELINE_DATE,
+        **{('fh_' + m): Decimal('100') for m in MONTHS})
 _baseonly = expense_matrix(LT.expense_line_types_id, today_year=NOW)
 check('a line type whose only history is baselines starts at the CURRENT year',
-      _baseonly['years'][0] >= 2023, str(_baseonly['years']))
+      _baseonly['years'][0] == NOW, str(_baseonly['years']))
+check('  CONTROL: and there really is no dated change left to open on',
+      not FinancialFigureHistory.objects.exclude(
+          effective_date=FH_BASELINE_DATE).exists())
 MADE, LT, OTHER = seed()
 M = expense_matrix(LT.expense_line_types_id, today_year=NOW)
 

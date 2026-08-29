@@ -3489,7 +3489,7 @@ def figure_monthly_value_as_of(prop, kind, source_pk, year, month_idx):
         return None
     return getattr(row, _FH_MONTHS[month_idx - 1])
 # ---- Phase 2: bulk year resolver (one query) for the P&L -----------------------
-def resolve_year_months_bulk(prop_ids, kind, year):
+def resolve_year_months_bulk(prop_ids, kind, year, with_sources=False):
     """Bulk form of figure_monthly_value_as_of for a whole year.
 
     Returns {source_pk: [v_jan, ..., v_dec]} — for each source row belonging to
@@ -3507,8 +3507,10 @@ def resolve_year_months_bulk(prop_ids, kind, year):
     for r in rows:
         by_src[r.source_pk].append(r)
     out = {}
+    prov = {}
     for src, versions in by_src.items():
         vals = []
+        srcs = []
         for m in range(1, 13):
             chosen = None
             for v in versions:              # ascending by effective_date
@@ -3517,8 +3519,25 @@ def resolve_year_months_bulk(prop_ids, kind, year):
                 else:
                     break
             vals.append(getattr(chosen, _FH_MONTHS[m - 1]) if chosen is not None else None)
+            # WHICH SNAPSHOT ANSWERED THIS MONTH.
+            #
+            # Recorded in the same loop that chooses it, so provenance cannot
+            # drift from the figure. A caller asking "does this year straddle
+            # a change" would otherwise have to re-implement the choice, and
+            # two answers to one question is how this system gets hurt.
+            #
+            # ONLY WHEN ASKED. Reading the primary key unconditionally made
+            # this touch an attribute the caller never needed, and a suite
+            # whose stub row legitimately has no pk died on it. A default
+            # caller must be able to hand this function anything with the
+            # thirteen fields it actually reads.
+            if with_sources:
+                srcs.append(chosen.financial_figure_history_id
+                            if chosen is not None else None)
         out[src] = vals
-    return out
+        if with_sources:
+            prov[src] = srcs
+    return (out, prov) if with_sources else out
 
 
 # =============================================================================

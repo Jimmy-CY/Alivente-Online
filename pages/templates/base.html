@@ -1799,6 +1799,26 @@ table.alv-matrix {
 .alv-matrix thead th.alv-matrix-row-head,
 .alv-matrix thead th.alv-matrix-total { z-index: 4; }
 .alv-matrix td { text-align: right; }
+/* A year that straddles a change: the months before it carry the previous
+   figure and the months after it the current one, so the column matches
+   neither charge. Marked rather than explained away - an unmarked blend reads
+   as a third charge, and did. */
+.alv-matrix thead th.alv-matrix-blend { color: var(--alv-warn); }
+.alv-matrix thead th.alv-matrix-blend span[aria-hidden] {
+    font-size: .9em;
+    opacity: .85;
+}
+.alv-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
 @media (hover: hover) and (pointer: fine) {
     .alv-matrix tbody tr:hover td { background: var(--alv-accent-soft); }
 }
