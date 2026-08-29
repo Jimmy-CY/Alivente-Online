@@ -273,6 +273,31 @@
         --alv-neutral:    #6b7780;
         --alv-neutral-soft: #eef1f2;
 
+        /* A sequential scale, for AGEING. Four steps, mild to severe.
+           Named for ageing rather than a general-purpose sequence: one use
+           case does not justify a general scale, and the same restraint
+           deferred the segmented toggle and the compact table until a second
+           page asked.
+
+           The ENDS ARE THE SEMANTIC TOKENS - step 2 is the warn colour and
+           step 4 is the bad one - so this scale cannot drift away from the
+           meaning of the statuses beside it. The two middle steps walk the
+           hue between them. The soft variants also lighten monotonically, so
+           a row of tinted cells reads left to right even for a reader who
+           cannot separate the hues.
+
+           There is deliberately no step for NOT YET DUE. That is the absence
+           of ageing, not the first degree of it, and it takes the good token
+           like any other healthy state. */
+        --alv-age-1:      #8a7a12;
+        --alv-age-1-soft: #fdf8e6;
+        --alv-age-2:      #9a6a08;
+        --alv-age-2-soft: #fbeec9;
+        --alv-age-3:      #a8481a;
+        --alv-age-3-soft: #f8e0cd;
+        --alv-age-4:      #b3261e;
+        --alv-age-4-soft: #f6d5d2;
+
         /* Action colours for the icon buttons. */
         --alv-edit:       #2563eb;
         --alv-view:       var(--alv-accent);
@@ -1799,6 +1824,42 @@ table.alv-matrix {
 .alv-matrix thead th.alv-matrix-row-head,
 .alv-matrix thead th.alv-matrix-total { z-index: 4; }
 .alv-matrix td { text-align: right; }
+
+/* THE AGEING SCALE.
+   One severity class carries the step; one application class decides what to
+   do with it. So four steps drive a dot, a bar segment, a column tint and a
+   pill without four parallel families of class - which is exactly what the
+   Outstanding Invoices report had, three of them, disagreeing.
+   Severity: .alv-age-0 (not ageing) .. .alv-age-4 (severe). */
+.alv-age-0 { --age: var(--alv-good);   --age-soft: var(--alv-good-soft); }
+.alv-age-1 { --age: var(--alv-age-1);  --age-soft: var(--alv-age-1-soft); }
+.alv-age-2 { --age: var(--alv-age-2);  --age-soft: var(--alv-age-2-soft); }
+.alv-age-3 { --age: var(--alv-age-3);  --age-soft: var(--alv-age-3-soft); }
+.alv-age-4 { --age: var(--alv-age-4);  --age-soft: var(--alv-age-4-soft); }
+
+.alv-age-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+    background: var(--age, var(--alv-neutral));
+}
+.alv-age-fill {
+    height: 100%;
+    background: var(--age, var(--alv-neutral));
+}
+.alv-age-cell { background: var(--age-soft, transparent); }
+.alv-age-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--age-soft, var(--alv-neutral-soft));
+    color: var(--age, var(--alv-ink));
+}
 /* A year that straddles a change: the months before it carry the previous
    figure and the months after it the current one, so the column matches
    neither charge. Marked rather than explained away - an unmarked blend reads

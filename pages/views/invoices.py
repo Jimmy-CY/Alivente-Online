@@ -316,6 +316,48 @@ Automated Invoice Tracking"""
         connection.close()
 
 
+# THE AGEING BUCKETS, IN ONE PLACE.
+#
+# Ordered mild to severe, and the index IS the step on base's `.alv-age-N`
+# scale: not_yet_due is 0, past_due_91_plus is 4. The report's pill classes are
+# assigned from the same index, so a bucket and its colour cannot part company.
+AGE_BUCKETS = (
+    'not_yet_due',        # 0 - not ageing at all
+    'past_due_1_30',      # 1
+    'past_due_31_60',     # 2
+    'past_due_61_90',     # 3
+    'past_due_91_plus',   # 4
+)
+
+
+def age_bucket(days_overdue):
+    """Which bucket a number of days overdue falls in.
+
+    NOT YET DUE is not step zero of ageing, it is the absence of it - which is
+    why it is a bucket of its own rather than the bottom of the scale.
+
+    This replaced `if days_overdue <= 30: current_0_30`, whose own comment
+    admitted the problem: "includes not yet due and up to 30 days overdue". The
+    report's pill split at 0 and this column split at 30, so an invoice fifteen
+    days late showed an amber "15 days late" chip while the column counted it
+    as Current. One invoice, one screen, two verdicts.
+
+    A FUNCTION rather than an inline chain, so the rule has one name and can be
+    asked directly. The page's JavaScript mirrors these thresholds; the suite
+    asserts the two agree at every boundary, because a mirror that nobody
+    compares is how they drifted in the first place.
+    """
+    if days_overdue <= 0:
+        return AGE_BUCKETS[0]
+    if days_overdue <= 30:
+        return AGE_BUCKETS[1]
+    if days_overdue <= 60:
+        return AGE_BUCKETS[2]
+    if days_overdue <= 90:
+        return AGE_BUCKETS[3]
+    return AGE_BUCKETS[4]
+
+
 @login_required
 @permission_required('auth.can_access_invoices', raise_exception=True)
 def open_invoices_report(request):
@@ -373,24 +415,16 @@ def open_invoices_report(request):
 
     # Calculate Debtors Age Analysis
     debtors_age_analysis = []
-    totals = {
-        'total_outstanding': 0,
-        'current_0_30': 0,
-        'past_due_31_60': 0,
-        'past_due_61_90': 0,
-        'past_due_91_plus': 0
-    }
+    totals = {'total_outstanding': 0}
+    totals.update({_b: 0 for _b in AGE_BUCKETS})
 
     for tenant_obj in current_tenants:
         tenant_analysis = {
             'tenant_name': tenant_obj.tenant_name,
             'tenant_id': tenant_obj.tenant_id,  # Add tenant_id here too
             'total_outstanding': 0,
-            'current_0_30': 0,
-            'past_due_31_60': 0,
-            'past_due_61_90': 0,
-            'past_due_91_plus': 0
         }
+        tenant_analysis.update({_b: 0 for _b in AGE_BUCKETS})
 
         # Get unpaid invoices for this tenant
         tenant_unpaid_invoices = [inv for inv in unpaid_invoices if inv.tenant.tenant_id == tenant_obj.tenant_id]
@@ -404,18 +438,7 @@ def open_invoices_report(request):
 
             tenant_analysis['total_outstanding'] += amount
 
-            if days_overdue <= 30:
-                # Current (0-30 days - includes not yet due and up to 30 days overdue)
-                tenant_analysis['current_0_30'] += amount
-            elif 31 <= days_overdue <= 60:
-                # Past due 31-60 days
-                tenant_analysis['past_due_31_60'] += amount
-            elif 61 <= days_overdue <= 90:
-                # Past due 61-90 days
-                tenant_analysis['past_due_61_90'] += amount
-            else:
-                # Past due 91+ days
-                tenant_analysis['past_due_91_plus'] += amount
+            tenant_analysis[age_bucket(days_overdue)] += amount
 
         # Only include tenants with outstanding invoices
         if tenant_analysis['total_outstanding'] > 0:
@@ -423,10 +446,11 @@ def open_invoices_report(request):
 
             # Add to totals
             totals['total_outstanding'] += tenant_analysis['total_outstanding']
-            totals['current_0_30'] += tenant_analysis['current_0_30']
-            totals['past_due_31_60'] += tenant_analysis['past_due_31_60']
-            totals['past_due_61_90'] += tenant_analysis['past_due_61_90']
-            totals['past_due_91_plus'] += tenant_analysis['past_due_91_plus']
+            # Over the tuple, not four written-out lines: adding a bucket
+            # and forgetting to total it is exactly the class of fault this
+            # round is here to fix.
+            for _b in AGE_BUCKETS:
+                totals[_b] += tenant_analysis[_b]
 
     # Sort debtors by total outstanding (highest first)
     debtors_age_analysis.sort(key=lambda x: x['total_outstanding'], reverse=True)

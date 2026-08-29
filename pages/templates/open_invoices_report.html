@@ -160,10 +160,14 @@ function generateTenantHTML(tenant, showTenantLine) {
             if (!inv) continue;
             var amount = formatAmount(inv.amount != null ? inv.amount : (tenant.tenant_rent || 0));
             var daysOverdue = inv.days_overdue !== undefined ? inv.days_overdue : 0;
-            var daysClass = daysOverdue > 90 ? 'days-pill-severe' :
-                            daysOverdue > 60 ? 'days-pill-high' :
-                            daysOverdue > 30 ? 'days-pill-medium' :
-                            daysOverdue > 0 ? 'days-pill-low' : 'days-pill-current';
+            // THE SAME FIVE BANDS THE VIEW BUCKETS ON. These thresholds and
+            // open_invoices_report's five branches are one decision; if they
+            // ever part company an invoice gets two verdicts again, which is
+            // the bug this round closed.
+            var daysClass = daysOverdue > 90 ? 'alv-age-4' :
+                            daysOverdue > 60 ? 'alv-age-3' :
+                            daysOverdue > 30 ? 'alv-age-2' :
+                            daysOverdue > 0 ? 'alv-age-1' : 'alv-age-0';
 
             html += '<div class="invoice-row ' + (inv.overdue ? 'invoice-row-overdue' : '') + '">';
             html += '<div class="invoice-row-main">';
@@ -173,9 +177,9 @@ function generateTenantHTML(tenant, showTenantLine) {
             html += '<div class="invoice-row-meta">';
             html += '<span class="invoice-row-due">Due: ' + (inv.due_date || '-') + '</span>';
             if (daysOverdue > 0) {
-                html += '<span class="days-pill ' + daysClass + '">' + daysOverdue + ' days late</span>';
+                html += '<span class="alv-age-pill ' + daysClass + '">' + daysOverdue + ' days late</span>';
             } else {
-                html += '<span class="days-pill days-pill-current">Current</span>';
+                html += '<span class="alv-age-pill alv-age-0">Not yet due</span>';
             }
             html += '</div>';
             html += '</div>';
@@ -231,7 +235,8 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                     <tr>
                         <th>Tenant Name</th>
                         <th>Total Outstanding</th>
-                        <th>Current<br>(0 to 30 Days)</th>
+                        <th>Not Yet Due</th>
+                        <th>Past Due<br>(1 to 30 Days)</th>
                         <th>Past Due<br>(31 to 60 Days)</th>
                         <th>Past Due<br>(61 to 90 Days)</th>
                         <th>Past Due<br>(91+ Days)</th>
@@ -253,10 +258,11 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                             €{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}
                         </td>
                         {% endif %}
-                        <td class="amount-cell current">€{{ debtor.current_0_30|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell past-due-31-60">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell past-due-61-90">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</td>
-                        <td class="amount-cell past-due-91-plus">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell alv-age-cell alv-age-0">€{{ debtor.not_yet_due|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell alv-age-cell alv-age-1">€{{ debtor.past_due_1_30|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell alv-age-cell alv-age-2">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell alv-age-cell alv-age-3">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell alv-age-cell alv-age-4">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</td>
                     </tr>
                     {% endfor %}
                     <!-- Totals Row -->
@@ -265,10 +271,11 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                         <td class="amount-cell total-amount clickable-amount" onclick="handleTotalClick()">
                             <strong>€{{ totals.total_outstanding|floatformat:0|add_thousand_separator }}</strong>
                         </td>
-                        <td class="amount-cell current"><strong>€{{ totals.current_0_30|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell past-due-31-60"><strong>€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell past-due-61-90"><strong>€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</strong></td>
-                        <td class="amount-cell past-due-91-plus"><strong>€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell alv-age-cell alv-age-0"><strong>€{{ totals.not_yet_due|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell alv-age-cell alv-age-1"><strong>€{{ totals.past_due_1_30|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell alv-age-cell alv-age-2"><strong>€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell alv-age-cell alv-age-3"><strong>€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell alv-age-cell alv-age-4"><strong>€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -292,7 +299,8 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                     {% if debtor.total_outstanding > 0 %}
                     <!-- Sparkline: 4 proportional segments showing age distribution -->
                     <div class="age-sparkline" aria-label="Age distribution"
-                         data-current="{{ debtor.current_0_30 }}"
+                         data-not-yet-due="{{ debtor.not_yet_due }}"
+                         data-due-1-30="{{ debtor.past_due_1_30 }}"
                          data-due-31-60="{{ debtor.past_due_31_60 }}"
                          data-due-61-90="{{ debtor.past_due_61_90 }}"
                          data-due-91-plus="{{ debtor.past_due_91_plus }}"
@@ -303,22 +311,27 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                     <!-- Age breakdown legend (small text under the bar) -->
                     <div class="age-breakdown">
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-current"></span>
-                            <span class="age-label">0-30 days:</span>
-                            <span class="age-value">€{{ debtor.current_0_30|floatformat:0|add_thousand_separator }}</span>
+                            <span class="alv-age-dot alv-age-0"></span>
+                            <span class="age-label">Not yet due:</span>
+                            <span class="age-value">€{{ debtor.not_yet_due|floatformat:0|add_thousand_separator }}</span>
                         </div>
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-31-60"></span>
+                            <span class="alv-age-dot alv-age-1"></span>
+                            <span class="age-label">1-30 days:</span>
+                            <span class="age-value">€{{ debtor.past_due_1_30|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="alv-age-dot alv-age-2"></span>
                             <span class="age-label">31-60 days:</span>
                             <span class="age-value">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</span>
                         </div>
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-61-90"></span>
+                            <span class="alv-age-dot alv-age-3"></span>
                             <span class="age-label">61-90 days:</span>
                             <span class="age-value">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</span>
                         </div>
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-91-plus"></span>
+                            <span class="alv-age-dot alv-age-4"></span>
                             <span class="age-label">91+ days:</span>
                             <span class="age-value">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</span>
                         </div>
@@ -343,22 +356,27 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                     </div>
                     <div class="age-breakdown">
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-current"></span>
-                            <span class="age-label">0-30 days:</span>
-                            <span class="age-value">€{{ totals.current_0_30|floatformat:0|add_thousand_separator }}</span>
+                            <span class="alv-age-dot alv-age-0"></span>
+                            <span class="age-label">Not yet due:</span>
+                            <span class="age-value">€{{ totals.not_yet_due|floatformat:0|add_thousand_separator }}</span>
                         </div>
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-31-60"></span>
+                            <span class="alv-age-dot alv-age-1"></span>
+                            <span class="age-label">1-30 days:</span>
+                            <span class="age-value">€{{ totals.past_due_1_30|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="alv-age-dot alv-age-2"></span>
                             <span class="age-label">31-60 days:</span>
                             <span class="age-value">€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</span>
                         </div>
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-61-90"></span>
+                            <span class="alv-age-dot alv-age-3"></span>
                             <span class="age-label">61-90 days:</span>
                             <span class="age-value">€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</span>
                         </div>
                         <div class="age-segment-row">
-                            <span class="age-dot age-dot-91-plus"></span>
+                            <span class="alv-age-dot alv-age-4"></span>
                             <span class="age-label">91+ days:</span>
                             <span class="age-value">€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</span>
                         </div>
@@ -522,9 +540,6 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 }
 
 .current { background-color: #eceff1; }
-.past-due-31-60 { background-color: #e1f5fe; }
-.past-due-61-90 { background-color: #e0e4e7; }
-.past-due-91-plus { background-color: #e3f2fd; }
 
 .totals-row {
     background-color: #f1f3f4;
@@ -601,7 +616,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 }
 
 .overdue {
-    color: #dc3545;
+    color: var(--alv-bad);
     font-weight: bold;
 }
 
@@ -645,7 +660,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 
 .no-balances-icon {
     font-size: 4rem;
-    color: #28a745;
+    color: var(--alv-good);
     margin-bottom: 20px;
 }
 
@@ -663,7 +678,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 }
 
 .sub-message {
-    color: #28a745;
+    color: var(--alv-good);
     font-weight: 500;
     font-size: 1rem !important;
 }
@@ -780,13 +795,10 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         width: 100%;
         height: 100%;
     }
-    .sparkline-segment {
-        height: 100%;
-    }
-    .sparkline-segment-current { background-color: #28a745; }
-    .sparkline-segment-31-60 { background-color: #ffc107; }
-    .sparkline-segment-61-90 { background-color: #fd7e14; }
-    .sparkline-segment-91-plus { background-color: #dc3545; }
+    /* The segments, the dots, the column tints and the pills all take their
+       colour from base's ageing scale now. Four families of literal became
+       one: .alv-age-N for the step, .alv-age-fill / -dot / -cell / -pill for
+       what to do with it. */
 
     /* Age breakdown legend */
     .age-breakdown {
@@ -808,10 +820,6 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         border-radius: 50%;
         flex-shrink: 0;
     }
-    .age-dot-current { background-color: #28a745; }
-    .age-dot-31-60 { background-color: #ffc107; }
-    .age-dot-61-90 { background-color: #fd7e14; }
-    .age-dot-91-plus { background-color: #dc3545; }
 
     .age-label {
         color: #495057;
@@ -843,7 +851,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         margin-top: 8px;
         text-align: center;
         font-size: 13px;
-        color: #28a745;
+        color: var(--alv-good);
         font-weight: 500;
     }
 
@@ -896,7 +904,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     }
 
     .invoice-row-overdue {
-        border-left: 3px solid #dc3545;
+        border-left: 3px solid var(--alv-bad);
     }
 
     .invoice-row-main {
@@ -942,26 +950,6 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
         font-size: 11px;
         font-weight: 600;
         white-space: nowrap;
-    }
-    .days-pill-current {
-        background: #d4edda;
-        color: #155724;
-    }
-    .days-pill-low {
-        background: #fff3cd;
-        color: #856404;
-    }
-    .days-pill-medium {
-        background: #ffe5d0;
-        color: #b54708;
-    }
-    .days-pill-high {
-        background: #f8d7da;
-        color: #721c24;
-    }
-    .days-pill-severe {
-        background: #dc3545;
-        color: white;
     }
 
     /* Modal footer — full-width close button */
@@ -1015,7 +1003,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const total = parseFloat(spark.dataset.total) || 0;
         if (total <= 0) return;
 
-        const current = parseFloat(spark.dataset.current) || 0;
+        const notYetDue = parseFloat(spark.dataset['not-yet-due']) || 0;
+        const due130 = parseFloat(spark.dataset['due-1-30']) || 0;
         const due3160 = parseFloat(spark.dataset['due-31-60']) || 0;
         const due6190 = parseFloat(spark.dataset['due-61-90']) || 0;
         const due91 = parseFloat(spark.dataset['due-91-plus']) || 0;
@@ -1024,17 +1013,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!bar) return;
 
         const segments = [
-            { value: current, className: 'sparkline-segment-current' },
-            { value: due3160, className: 'sparkline-segment-31-60' },
-            { value: due6190, className: 'sparkline-segment-61-90' },
-            { value: due91, className: 'sparkline-segment-91-plus' }
+            { value: notYetDue, className: 'alv-age-0' },
+            { value: due130, className: 'alv-age-1' },
+            { value: due3160, className: 'alv-age-2' },
+            { value: due6190, className: 'alv-age-3' },
+            { value: due91, className: 'alv-age-4' }
         ];
 
         let html = '';
         segments.forEach(function(seg) {
             if (seg.value > 0) {
                 const pct = (seg.value / total) * 100;
-                html += `<div class="sparkline-segment ${seg.className}" style="width: ${pct}%"></div>`;
+                html += `<div class="alv-age-fill ${seg.className}" style="width: ${pct}%"></div>`;
             }
         });
         bar.innerHTML = html;
