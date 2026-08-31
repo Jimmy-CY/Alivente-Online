@@ -106,6 +106,9 @@ if 'BAND_PILL' not in VS:
 
 PC, BC = nocomment_html(PG), nocomment_html(BS)
 P = rules(PG)
+# base's rules too, since 30 Aug: the tile is base's component now, so the
+# checks that used to read the page's copy have to read the real one.
+B = rules(BS)
 TREE = ast.parse(VS)
 FNS = {n.name: n for n in ast.walk(TREE) if isinstance(n, ast.FunctionDef)}
 VIEWFN = next(n for n in FNS if 'payment' in n)
@@ -153,12 +156,35 @@ for _dead in ('.pd-table', '.pd-table thead th', '.pd-table tbody td',
 check('the nested detail grid KEEPS its rules - it is deliberately not '
       'migrated', '.pd-detail-table' in P)
 
-check('the four tiles are cards', PC.count('alv-card pd-stat') == 4)
-check('  and .pd-stat no longer paints its own surface',
-      'background' not in ' '.join(P.get('.pd-stat', [])))
-for _sel in ('.pd-stat', '.pd-stat-value', '.pd-stat-label', '.pd-stat-warn'):
-    check('%s carries no literal colour' % _sel,
-          not re.search(r'#[0-9a-fA-F]{3,8}\b', ' '.join(P.get(_sel, []))))
+# SUPERSEDED 30 Aug by the .alv-stat round, and the polarity is REVERSED.
+# These four checks asserted the tile borrowed .alv-card for a surface and
+# painted none of its own. base owns the whole tile now, so the expectation
+# MOVES to base rather than being deleted. Note that reading P.get() for a
+# selector the page no longer defines returns [] and passes for free, which is
+# a control that cannot fail - hence bool(B.get(...)) below.
+#
+# The regex counts TILES. `class="alv-stat` alone also matches the .alv-stats
+# wrapper, which is how a four-tile page reports five.
+_tiles = len(re.findall(r'class="alv-stat[" ]', PC))
+check('the four tiles are .alv-stat', _tiles == 4, '%d' % _tiles)
+check('  and none of them borrows .alv-card for a surface',
+      'alv-card' not in PC)
+check('  the page defines no tile CSS of its own',
+      not [s for s in P if 'pd-stat' in s or 'pd-summary' in s])
+check('  base paints the tile instead',
+      'background' in ' '.join(B.get('.alv-stat', [])))
+# The ONE literal that is house style: #9aa5ab is the grey every .alv-card
+# prints with, and the tile joins it now that it no longer borrows the card.
+# rules() flattens media queries, so the print rule arrives in this dict -
+# name the exception rather than widen the pattern and catch nothing.
+_PRINT_GREY = '#9aa5ab'
+check('the tile prints in the same grey as a card',
+      _PRINT_GREY in ' '.join(B.get('.alv-stat', [])))
+for _sel in ('.alv-stats', '.alv-stat', '.alv-stat-value', '.alv-stat-label'):
+    _decl = ' '.join(B.get(_sel, [])).replace(_PRINT_GREY, '')
+    check('base defines %s, on tokens only' % _sel,
+          bool(B.get(_sel))
+          and not re.search(r'#[0-9a-fA-F]{3,8}\b', _decl), _decl[:60])
 
 for _b in ('ontime', 'slight', 'late', 'unknown'):
     _r = ' '.join(P.get('.pd-row.pd-band-%s' % _b, []))
@@ -189,11 +215,11 @@ if sync_playwright is not None:
     FIX = """<!doctype html><meta name=viewport content="width=device-width">
 <style>%s</style><style>%s</style>
 <div class="report-container"><div class="report-content">
-<div class="pd-summary">
-  <div class="alv-card pd-stat"><div class="pd-stat-value">9</div>
-    <div class="pd-stat-label">payments measured</div></div>
-  <div class="alv-card pd-stat pd-stat-warn"><div class="pd-stat-value">2</div>
-    <div class="pd-stat-label">flagged slow</div></div>
+<div class="alv-stats">
+  <div class="alv-stat"><div class="alv-stat-value">9</div>
+    <div class="alv-stat-label">payments measured</div></div>
+  <div class="alv-stat alv-stat-attn"><div class="alv-stat-value">2</div>
+    <div class="alv-stat-label">flagged slow</div></div>
 </div>
 <div class="table-container"><table class="alv-table">
 <thead><tr><th class="pd-col-name">Tenant</th><th class="pd-num">Avg</th>
@@ -234,8 +260,12 @@ if sync_playwright is not None:
         cellBg: getComputedStyle(q('tr.pd-row td.pd-num')).backgroundColor,
         labelBefore: getComputedStyle(q('tr.pd-row td.pd-num'), '::before').content,
         toggleBefore: getComputedStyle(q('td.pd-col-toggle'), '::before').content,
-        statBorder: getComputedStyle(q('.pd-stat')).borderTopWidth,
-        summaryCols: getComputedStyle(q('.pd-summary')).gridTemplateColumns.split(' ').length,
+        statBorder: getComputedStyle(q('.alv-stat')).borderTopWidth,
+        summaryCols: getComputedStyle(q('.alv-stats')).gridTemplateColumns.split(' ').length,
+        plainBg:    getComputedStyle(q('.alv-stat')).backgroundColor,
+        attnBg:     getComputedStyle(q('.alv-stat-attn')).backgroundColor,
+        plainValue: getComputedStyle(q('.alv-stat .alv-stat-value')).color,
+        attnValue:  getComputedStyle(q('.alv-stat-attn .alv-stat-value')).color,
       };
     }"""
 
@@ -287,8 +317,17 @@ if sync_playwright is not None:
     check('the pill is painted by base, not by the page',
           M['pillBg'] == D['pillBg'] and M['pillBg'] != 'rgba(0, 0, 0, 0)',
           M['pillBg'])
-    check('the tile has a card border', D['statBorder'] == '1px',
+    check('the tile brings its own border', D['statBorder'] == '1px',
           D['statBorder'])
+    # THE DECISION OF 30 AUG, PUT TO THE BROWSER RATHER THAN TO MEMORY. Two of
+    # the four implementations .alv-stat replaces washed the whole tile by
+    # verdict. If that wash ever comes back, these two part company.
+    check('a verdict does NOT wash the tile',
+          D['attnBg'] == D['plainBg'],
+          '%s vs %s' % (D['attnBg'], D['plainBg']))
+    check('  it colours the figure instead',
+          D['attnValue'] != D['plainValue'],
+          '%s vs %s' % (D['attnValue'], D['plainValue']))
 
 print('\n' + '=' * 72)
 print('  %d passed, %d failed' % (PASS, FAIL))

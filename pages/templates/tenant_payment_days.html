@@ -18,22 +18,22 @@
     </div>
 
     {% if summary.payments_measured %}
-    <div class="pd-summary">
-      <div class="alv-card pd-stat">
-        <div class="pd-stat-value">{{ summary.payments_measured }}</div>
-        <div class="pd-stat-label">payments measured</div>
+    <div class="alv-stats">
+      <div class="alv-stat">
+        <div class="alv-stat-value">{{ summary.payments_measured }}</div>
+        <div class="alv-stat-label">payments measured</div>
       </div>
-      <div class="alv-card pd-stat">
-        <div class="pd-stat-value">{{ summary.tenants_measured }}</div>
-        <div class="pd-stat-label">tenants with data</div>
+      <div class="alv-stat">
+        <div class="alv-stat-value">{{ summary.tenants_measured }}</div>
+        <div class="alv-stat-label">tenants with data</div>
       </div>
-      <div class="alv-card pd-stat">
-        <div class="pd-stat-value">{{ summary.portfolio_avg|floatformat:1 }}</div>
-        <div class="pd-stat-label">average days to pay</div>
+      <div class="alv-stat">
+        <div class="alv-stat-value">{{ summary.portfolio_avg|floatformat:1 }}</div>
+        <div class="alv-stat-label">average days to pay</div>
       </div>
-      <div class="alv-card pd-stat {% if summary.flagged %}pd-stat-warn{% endif %}">
-        <div class="pd-stat-value">{{ summary.flagged }}</div>
-        <div class="pd-stat-label">flagged slow</div>
+      <div class="alv-stat {% if summary.flagged %}alv-stat-attn{% endif %}">
+        <div class="alv-stat-value">{{ summary.flagged }}</div>
+        <div class="alv-stat-label">flagged slow</div>
       </div>
     </div>
     {% endif %}
@@ -272,33 +272,11 @@
     font-weight: normal;
 }
 
-/* ---- summary strip ---- */
-.pd-summary {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
-}
-/* The surface, border and radius come from .alv-card. What stays here is what
-   makes a STAT TILE rather than a card - the centring, and the big figure over
-   a small label below. base has no stat-tile component, and one page is not
-   enough to invent one; that is the restraint that kept the ageing scale
-   waiting until a screen genuinely needed it. */
-.pd-stat {
-    padding: 14px 16px;
-    text-align: center;
-    display: block;
-}
-.pd-stat-value { font-size: 1.7rem; font-weight: 700; color: var(--alv-ink-strong); line-height: 1.1; }
-.pd-stat-label {
-    font-size: 0.78rem;
-    color: var(--alv-ink-soft);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    margin-top: 4px;
-}
-.pd-stat-warn { background: var(--alv-warn-soft); border-color: var(--alv-warn); }
-.pd-stat-warn .pd-stat-value { color: var(--alv-warn); }
+/* The summary strip is base's .alv-stats and .alv-stat now, phone grid and
+   all. What used to live here was the fourth copy of a tile four screens had
+   each built for themselves. The amber WASH on the flagged tile went with it:
+   the figure goes amber, the box does not, because the label directly under
+   the figure already says which tile is the alarm. */
 
 /* ---- toolbar ---- */
 .pd-toolbar {
@@ -462,7 +440,6 @@
     .report-content { width: 100%; padding: 16px; }
     .report-title-main { font-size: 1.25rem; }
     .report-title-sub { font-size: 0.9rem; }
-    .pd-summary { grid-template-columns: repeat(2, 1fr); }
 
     /* Cards, not a squeezed table: nine numeric columns are unreadable at
        phone width, and horizontal scrolling hides exactly the column that

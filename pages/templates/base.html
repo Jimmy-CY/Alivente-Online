@@ -838,6 +838,73 @@
       .alv-card > .table-container { border: 0; border-radius: 0; }
 
       /* ================================================================
+         .alv-stat - a figure and the words for it        --alv-stat-std
+
+         Four screens built this four times before base got it: .pd-stat
+         on Tenant Payment Behaviour, .ia-kpi in the Issues Analysis
+         modal, and .summary-stat twice over in Financial Indicators and
+         Vacancy Management, near enough the same bytes in two files.
+
+         A VERDICT COLOURS THE FIGURE, NOT THE TILE. Two of those four
+         washed the whole box green, amber or red - which repeats, in
+         the loudest way available, what the label under the figure has
+         already said in words. The figure is the part a reader looks
+         at, so the figure is where the colour goes, and it comes from
+         the same tokens as .alv-pill so that a tile and the pill in the
+         table below it cannot part company.
+
+         The tile brings its OWN surface. Stacking .alv-card underneath
+         one to borrow a border is what made .pd-stat need a paragraph
+         explaining what it was subtracting back out.
+         ================================================================ */
+      .alv-stats {
+        display: grid;
+        /* Three tiles, four, or the five in the Issues Analysis strip -
+           one grid, set per page, rather than a second class each time.
+           Deliberately a DEFAULTED custom property: no page has to
+           define it, and nothing in base defines it either. */
+        grid-template-columns: repeat(var(--alv-stats-cols, 4), 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .alv-stat {
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
+        border-radius: 6px;
+        padding: 14px 16px;
+        text-align: center;
+        /* A long label must not widen its own column and starve the rest. */
+        min-width: 0;
+      }
+      .alv-stat-value {
+        font-family: var(--alv-font-ui);
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1.1;
+        color: var(--alv-ink-strong);
+        /* Figures side by side line up only if the digits are one width. */
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .alv-stat-label {
+        font-size: 0.78rem;
+        color: var(--alv-ink-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-top: 4px;
+      }
+      .alv-stat-good .alv-stat-value { color: var(--alv-good); }
+      .alv-stat-attn .alv-stat-value { color: var(--alv-warn); }
+      .alv-stat-bad  .alv-stat-value { color: var(--alv-bad); }
+
+      @media (max-width: 768px) {
+        /* Four figures across a phone is four figures nobody can read. */
+        .alv-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .alv-stat { padding: 12px 10px; }
+        .alv-stat-value { font-size: 1.4rem; }
+      }
+
+      /* ================================================================
          .alv-tag - a CATEGORY, not a status
 
          Semantics live on .alv-pill and mean something: good, warn, bad.
@@ -934,7 +1001,10 @@
         .alv-table tbody tr { break-inside: avoid; }
         .table-container { overflow: visible !important; }
 
-        .alv-card { border-color: #9aa5ab !important; break-inside: avoid; }
+        /* The tile stopped borrowing .alv-card for a surface, so it
+           stopped borrowing its paper treatment with it. */
+        .alv-card,
+        .alv-stat { border-color: #9aa5ab !important; break-inside: avoid; }
         .alv-card > .alv-card-head {
           border-bottom: 1px solid #9aa5ab !important;
           color: #000 !important;

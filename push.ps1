@@ -1,48 +1,56 @@
 .\Push-PendingChanges.ps1 -Push `
-  -Message "Matrix: open on the year the value changed, and mark a year that straddles one" `
+  -Message "One stat tile in base, and a verdict that colours the figure rather than the box" `
   -Body @'
-The year-on-year matrix derived its first year from the earliest NON-baseline
-snapshot. On Live that truncated Company Tax to 2026-2027, hiding 2024 and 2025
-which resolve perfectly well to 7,000.00 from the baseline. The day before, the
-same function read the sentinel AS DATA and drew twenty-eight columns back to
-2000. Both come from asking when snapshots exist instead of when the value
-changes.
+Four screens had each built the same tile: .pd-stat on Tenant Payment
+Behaviour (borrowing .alv-card for a surface), .ia-kpi in the Issues Analysis
+modal, and .summary-stat twice over in Financial Indicators and Vacancy
+Management - near enough the same bytes in two files. Fifteen tiles, four
+implementations. When Payment Behaviour shipped on 29 Aug its own CSS said why
+it stopped short: "one page is not enough to invent one". Four is.
 
-The rule is now arithmetic: floor = max(earliest snapshot INCLUDING the
-baseline, earliest DATED change - 1); with no dated change at all it opens on
-the current year. The first term is the floor that stops the table reaching
-into years it cannot answer - before its earliest snapshot a row resolves to
-nothing and the caller falls back to LIVE cells, so the table would print
-today's figure under a past heading. An earlier attempt walked backwards while
-the total kept changing and did exactly that, opening three line types on 2022.
-The second term is what makes a change readable: one column showing what the
-charge was before it moved.
+base gains .alv-stats (the grid) and .alv-stat / -value / -label, plus the
+three verdicts .alv-stat-good / -attn / -bad, the two-up phone grid, and the
+print treatment the tile used to borrow from .alv-card.
 
-Measured on Live before writing, with Show-MatrixRange.ps1: 20 of 21 line types
-unaffected. Only Company Tax has a baseline, because _ensure_baseline fires the
-first time a long-standing figure is edited. The fault reaches every line as
-each acquires one.
+THE DECISION THIS ROUND MAKES: a verdict colours the FIGURE, not the tile.
+Financial Indicators and Vacancy Management wash the whole box green, amber or
+red; Payment Behaviour washed it amber. A tile reading "3 / NEEDS IMPROVEMENT"
+already says which verdict it is, in words, directly under the figure - so the
+wash spends the loudest signal on the page repeating it. The same objection the
+tables spent nine rounds settling. The verdict colours come from base's own
+--alv-good / --alv-warn / --alv-bad, so a tile and the pill in the table below
+it cannot drift apart.
 
-Also marks a BLENDED year. Company Tax is charged in January and July and the
-rate changed on 1 July 2026, so 2026 is 3,500.00 at the old rate plus 3,299.99
-at the new = 6,799.99 - correct, and indistinguishable from a third charge.
-That misreading cost a day and nearly shipped a round that would have restated
-an instalment already paid.
+The tile also brings its OWN surface. Stacking .alv-card underneath one to get
+a border is what made .pd-stat need a paragraph of comment explaining what it
+was subtracting back out.
 
-Blendedness is decided by PROVENANCE, not by comparing figures: a line whose
-months legitimately differ is not a blend. resolve_year_months_bulk gains an
-optional with_sources flag returning which snapshot answered each month, so
-there is one implementation rather than a second rule beside it. Decided per
-ROW, not per line - pooling snapshot ids across properties blends every year of
-any multi-property line. The snapshot pk is read ONLY inside the flag: a
-default three-argument call must be able to take rows that have no primary key,
-which is what test_effective_date_baseline.py legitimately hands it.
+SCOPE: ONE screen migrates - Tenant Payment Behaviour, the smallest and the one
+already known good. The Issues Analysis strip and the two Financials modals are
+the next two rounds, which open those files for their tables anyway; migrating
+their tiles now would mean opening them twice. No modal density (.alv-stats-sm)
+ships either: nothing this round renders is in a dialog, and CSS nothing uses
+is CSS nobody has looked at.
 
-50 checks in test_matrix_range.py, including: the resolver still returns a bare
-dict to its six existing three-argument callers; a year before the earliest
-snapshot is never drawn; the pk is read in exactly one place and that place is
-guarded; and both new CSS classes are DEFINED in base.html rather than merely
-referenced - the first draft used visually-hidden, which exists nowhere in this
-system and would have rendered as visible text in the column heading.
+SECTION 4b. test_payment_days.py hardcoded .pd-summary, .pd-stat and
+.pd-stat-warn in its Playwright fixture and asserted the tile IS a card. That
+expectation is superseded, not wrong, so it MOVES - polarity reversed - and now
+reads base's rules rather than the page's. Two of its checks would otherwise
+have gone on passing while reading a selector that exists nowhere, which is a
+control that cannot fail. That suite goes 48 -> 53 checks and gains the
+rendered assertion that a verdict does not wash the tile.
+
+67 checks in test_alv_stat.py, of which the ones that matter are rendered in a
+real browser: all three verdicts leave the tile's background identical to a
+plain tile, and each figure resolves to EXACTLY the token colour rather than a
+lookalike. Section 3 carries its own control - a tile with an inline red
+background is rendered beside the real ones and the probe must see it, because
+every other check in that section asserts an ABSENCE of colour and an absence
+is what a blind probe reports for free. Also asserted: the three verdicts are
+three genuinely different colours (Outstanding Invoices once shipped a "scale"
+of two near-identical pale blues with a grey between them), the fallback
+property --alv-stats-cols really drives a five-up strip, four tiles hold equal
+width so a long label cannot starve its neighbours, and every token the
+component references is DEFINED in base rather than merely named.
 '@ `
-  -Checks "python test_matrix_range.py","python test_effective_date_baseline.py","python test_expense_matrix.py","python test_spent_row.py","python test_delete_choice.py","python test_prorata_anchor.py","python test_act_expenses.py","python test_button_sweep.py"
+  -Checks "python test_alv_stat.py","python test_payment_days.py","python test_card_standard.py","python test_detail_property.py","python test_table_standard.py","python test_ageing_scale.py","python test_oi_migration.py","python test_button_sweep.py"
