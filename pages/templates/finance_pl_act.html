@@ -795,28 +795,45 @@ body { overflow-x: hidden; }
     max-width: 600px;
 }
 
-#revenueDetailsModal .table-responsive,
-#budgetExpenseDetailsModal .table-responsive {
-    width: 100%;
-    overflow-x: visible;
+/* THE DRILL-DOWN WRAPPER.
+
+   Deliberately NOT .table-container - that is `overflow: clip` by design,
+   and this one HAS to scroll: a month of revenue is longer than a modal.
+   It keeps the 60vh the page already had, under a name of its own rather
+   than leaning on Bootstrap's .table-responsive.
+
+   And because it scrolls, base's sticky .alv-table heading finally has a
+   scroll container to stick TO - Property / Amount now stays put through a
+   sixty-row list. The sticky sweep spent a round on containers that scroll
+   when they should not; this is the same mechanism the right way round.
+
+   Built HERE and not in the fragment because the scraper appends the fetched
+   table element and discards every wrapper around it. */
+.pl-drill {
     max-height: 60vh;
-    overflow-y: auto;
+    overflow: auto;
+    background: var(--alv-paper);
+    border-radius: var(--alv-radius);
 }
 
-#revenueDetailsModal .table th:nth-child(1),
-#revenueDetailsModal .table td:nth-child(1),
-#budgetExpenseDetailsModal .table th:nth-child(1),
-#budgetExpenseDetailsModal .table td:nth-child(1) {
+/* Two columns, and the second is money. WIDTH ONLY. The right-alignment
+   comes from .num on the cells - one rule in base instead of four here, and
+   a heading that cannot end up aligned differently from the figures under
+   it, which is how the old :nth-child(2) rule and the two `text-right`
+   classes managed to say the same thing three times. */
+#revenueDetailsModal .alv-table th:first-child,
+#revenueDetailsModal .alv-table td:first-child,
+#budgetExpenseDetailsModal .alv-table th:first-child,
+#budgetExpenseDetailsModal .alv-table td:first-child {
     width: 70%;
     min-width: 200px;
 }
-#revenueDetailsModal .table th:nth-child(2),
-#revenueDetailsModal .table td:nth-child(2),
-#budgetExpenseDetailsModal .table th:nth-child(2),
-#budgetExpenseDetailsModal .table td:nth-child(2) {
+#revenueDetailsModal .alv-table th.num,
+#revenueDetailsModal .alv-table td.num,
+#budgetExpenseDetailsModal .alv-table th.num,
+#budgetExpenseDetailsModal .alv-table td.num {
     width: 30%;
     min-width: 100px;
-    text-align: right;
 }
 
 #expenseDetailsModal .modal-body {
@@ -1379,7 +1396,7 @@ $(document).ready(function() {
                     var $table = $temp.find('table.table').first();
                     if (!$table.length) $table = $temp.find('table').first();
                     if ($table.length) {
-                        $('#expenseDetailsContent').html($('<div class="table-responsive">').append($table));
+                        $('#expenseDetailsContent').html($('<div class="pl-drill">').append($table));
                         setupInvoiceIconHandlers();
                     } else {
                         $('#expenseDetailsContent').html('<div class="alert alert-warning">Could not find table.</div>');
@@ -1419,7 +1436,7 @@ $(document).ready(function() {
                     var $temp = $('<div>').html(data);
                     var $table = $temp.find('table').first();
                     if ($table.length) {
-                        $('#revenueDetailsContent').html($('<div class="table-responsive">').append($table.clone()));
+                        $('#revenueDetailsContent').html($('<div class="pl-drill">').append($table.clone()));
                     } else {
                         $('#revenueDetailsContent').html('<div class="alert alert-info">' + data + '</div>');
                     }
@@ -1459,7 +1476,7 @@ $(document).ready(function() {
                     var $table = $temp.find('table.table').first();
                     if (!$table.length) $table = $temp.find('table').first();
                     if ($table.length) {
-                        $('#budgetExpenseDetailsContent').html($('<div class="table-responsive">').append($table));
+                        $('#budgetExpenseDetailsContent').html($('<div class="pl-drill">').append($table));
                     } else {
                         $('#budgetExpenseDetailsContent').html('<div class="alert alert-warning">Could not find table.</div>');
                     }

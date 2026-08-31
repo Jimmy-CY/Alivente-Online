@@ -2,41 +2,52 @@
 {% load custom_filters %}
 
 <!-- revenue_details.html template -->
-<div class="container-fluid">
-    <div class="table-responsive">
-        <table class="table table-sm table-bordered">
-            <thead class="thead-light">
-                <tr>
-                    <th>Property</th>
-                    <th class="text-right">Amount (€)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in revenue_items %}
-                <tr>
-                    <td>{{ item.property.prop_name }}</td>
-                    <td class="text-right">{{ item.amount|floatformat:"2"|intcomma }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="2" class="text-center">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            No revenue data found for the selected criteria.
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                
-                {% if revenue_items %}
-                <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                    <td>Total:</td>
-                    <td class="text-right">
-                        {{ total_amount|floatformat:"2"|intcomma }}
-                    </td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
+<!-- FETCHED, NOT RENDERED. finance_pl_act.html requests this over
+     AJAX and keeps the TABLE ELEMENT ONLY - every wrapper, heading and alert
+     outside it is discarded by the scraper. So anything the modal must show
+     goes INSIDE the table, and the scrolling wrapper is built by the page
+     doing the scraping. The old container-fluid and table-responsive wrappers
+     were thrown away every time and are gone.
+
+     An HTML comment and NOT {# #}: a Django comment does not span lines, and
+     this one would have rendered five lines of prose above the table. That is
+     the fault this round's own self-check caught in its first draft.
+
+     No <style> here on purpose - the classes are base's, and base is loaded
+     by the page this table lands in. -->
+<div class="table-container">
+    <table class="table alv-table">
+        <thead>
+            <tr>
+                <th>Property</th>
+                <th class="num">Amount (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in revenue_items %}
+            <tr>
+                <td data-label="Property">{{ item.property.prop_name }}</td>
+                <td class="num" data-label="Amount (€)">{{ item.amount|floatformat:"2"|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">
+                    <div class="alv-empty">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="alv-empty-title">Nothing to show</div>
+                        <div class="alv-empty-hint">No revenue was recorded for the properties and period selected.</div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        {% if revenue_items %}
+        <tfoot>
+            <tr>
+                <td>Total</td>
+                <td class="num">{{ total_amount|floatformat:"2"|intcomma }}</td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
 </div>
