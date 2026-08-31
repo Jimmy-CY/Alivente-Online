@@ -1,96 +1,96 @@
 .\Push-PendingChanges.ps1 -Push `
-  -Message "A grading scale with names, the two detail tables on the standard, and group D closed" `
+  -Message "The phone card view was printing: screen and, five times, plus the actions it was hiding by accident" `
   -Body @'
-THE HEAT MAP HAD NO TOKENS BEHIND IT. Every cell of the Financial Indicators
-detail table took an inline background from
+REPORTED FROM A PRINT PREVIEW, AND NOT A FAULT OF THE ROUND THAT REVEALED IT.
 
-    const hue = (1 - t) * 120;
-    return `background-color: hsl(${hue}, 62%, 90%);`;
+base turns .alv-table into cards on a phone from a block written
 
-Unlike the row tints deleted on 31 Aug, this colour carries REAL information -
-where a property sits in the distribution for that metric - so it does not go.
-But a continuous rainbow computed in JavaScript is outside the token system,
-cannot be printed, cannot be checked, and puts red next to green.
+    @media (max-width: 768px)
 
-base gains .alv-grade-1..5: five steps, best to worst, on the same mechanism as
-.alv-age-* (a step class sets two custom properties, an application class
-consumes them). Deliberately NOT the same family - ageing runs "not ageing" to
-"severe" and begins at good, while a grade runs across a distribution and has a
-MIDDLE. Ends anchored on tokens that already exist: step 1 IS --alv-good, step
-5 IS --alv-bad, step 3 is neutral, exactly as .alv-age-4 IS --alv-bad. A scale
-whose ends float free of the semantics around it drifts, and this one had
-drifted all the way to hsl().
+with no `screen`. On paper the viewport is the PAGE BOX: A4 portrait is 210mm,
+about 190mm of content after default margins, which is ~718 CSS px at 96dpi.
+Under 768. So the phone block fired on every printed page and every table came
+out as a stack of cards, with data-label prefixes and no heading. Letter
+portrait is the same story.
 
-Colour is REDUNDANT here rather than load-bearing: every graded cell also
-prints its figure, so a reader who cannot separate the two ends still has the
-number. The suite asserts that, because it is the condition under which a
-green-to-red scale is defensible at all.
+Measured, at 718px with print media emulated:
 
-THE BUG THIS ROUND NEARLY SHIPPED, AND WHAT CAUGHT IT. The first draft read the
-comment above the old ramp - "0 = red (worst) .. 120 = green (best)" - as
-describing t, and mapped Math.floor((1 - t) * 5). That comment describes the
-HUE, not t. gradeColumn sorts BEST FIRST and stores position / (n - 1), so t=0
-is the best property in its column. The draft therefore inverted the entire
-table: every figure still looked plausible, and the suite confirmed it, because
-a suite proves the code does what you specified.
+                        screen 1200          print 718
+    thead               table-header-group   none
+    tbody tr            table-row            block
+    tbody td            table-cell           block
+    td::before          none                 "Amount"
 
-What caught it was rendering the BEFORE panel of the comparison image and
-seeing the best-ranked row come out pink. Reading the code would not have done
-it; asking what the code PRODUCES did. Both halves are now asserted - that
-gradeColumn still sorts best-first, and that the step function reads t that way
-round - so the direction cannot silently flip.
+THIS IS SYSTEM-WIDE. It reaches every .alv-table - the nine list pages and
+everything migrated since - and has been true since the table standard shipped.
+It went unnoticed because the pages printed most often carry their own @media
+print block, and because a page of cards is legible enough to look like a
+choice rather than a bug. It surfaced now because the two Financials detail
+tables are ones you would actually print.
 
-FOUND BY RENDERING, SECOND ONE. `.highlighted-column` painted the sorted column
-`background: #e3f2fd !important`, and !important in a stylesheet beats an
-inline style - so sorting a column ERASED the grading in the very column the
-reader had just asked to look at. That was true before this round too. The mark
-moves to the column's edges and its weight, where it cannot compete with the
-scale, and the suite renders a sorted and an unsorted cell of the same step and
-requires them to match.
+THE FIX IS ONE WORD, FIVE TIMES: `screen and` on the five blocks in base that
+are screen affordances - rows to cards, the two-up stat strip, the mobile
+action bar, the jQuery-UI menu, and the filter button that drops its label.
+None of them has any business on paper.
 
-GROUP D IS CLOSED. Both pages redefined .table-container as a horizontal
-scroller while base uses that name for a CLIPPING panel. base's own comment
-says these two pages "belong on this, in a round of their own". This is that
-round, and the answer is not a rename: the redefinition is DELETED and the
-sideways scroll gets its own name, .ind-wide.
+DELIBERATELY NOT TOUCHED: the <=991px block that swaps the sidebar for the top
+nav. It fires on paper today and hides the sidebar, which is what a printed
+page wants. Qualifying it would put the desktop sidebar layout on paper and
+move every margin on every page - a change nobody asked for, to fix nothing.
+The suite asserts it is still there, so a later tidy-up cannot take it out
+without saying why.
 
-NOT base's .alv-matrix-scroll, which was the obvious home - it carries
-display:none inside @media print, because the expense matrix deliberately does
-not print. These tables do print, and did. Moving them onto that name would
-have stopped it silently.
+THE CONSEQUENCE THAT SHIPS WITH IT. Until now the Actions column did not print
+BY ACCIDENT: the phone block hid .desktop-action-cell, and base's print block
+hid .mobile-action-bar, so neither survived. Qualify the media query and the
+icon buttons start appearing on paper. So the print block gains
+.desktop-action-cell, .alv-table .cell-actions and .row-actions by name.
+Fixing the query alone would have traded one wrong output for a subtler one -
+a row of small grey icons on paper reads as a printing artefact rather than as
+a decision, and would have sat there for months.
 
-THE TABLES. .data-table becomes .alv-table; the PORTFOLIO row moves out of the
-tbody into a real <tfoot>, so it repeats on every printed page; every cell
-gains a data-label. Vacancy's hand-rolled .table-panel / .table-header /
-.table-title becomes .alv-card / .alv-card-head / .alv-card-title - the same
-three CSS rules were DEAD in financial_indicators.html, whose markup uses
-.fi-section. And two more hand-rolled phone views go: a hundred lines of card
-CSS in Financial Indicators, and Vacancy's "Please rotate your device" prompt.
-base's card view does both, and needs no instructions.
+20 checks in test_print_media.py, rendered at four combinations of width and
+media. The two that matter:
 
-TWO SECTION 4b EDITS, both scope guards that had to invert.
-  * test_sticky_sweep.py has now moved this expectation three times: first
-    because neither page used .alv-table, then because the .alv-table they
-    gained sat outside the redefined name, and now because the redefinition
-    itself is gone. It asserts the strongest form: the pages must NOT redefine
-    .table-container, and nothing on them claims the name.
-  * test_ind_modal.py asserted that the rotate prompt, .data-table and the
-    collision were still ahead of it - a deliberate guard on the previous
-    round's scope. The work it guarded is done, so it inverts.
+  * THE FIX: at 718px with print media the table is a TABLE, the heading is a
+    table-header-group so it repeats on every page, the totals band is a
+    table-footer-group so it does too, no data-label prefixes print, and
+    neither action bar appears.
+  * THE CONTROL: the SAME 718px width must give CARDS on screen and a TABLE on
+    paper. A 718px window is a narrow window and cards are right there; what
+    was wrong was that PAPER counted as one. If both came out as tables the
+    breakpoint would merely have moved, and every other check would still
+    pass. A second control renders 390px on screen and requires the card view
+    to still work, because a fix that killed it everywhere would also satisfy
+    every "it is a table now" assertion.
 
-73 checks in test_grade_tables.py. The rendered ones: the five steps are five
-DIFFERENT colours with enough separation between neighbours to read as an
-order - with a control that fails on a deliberately flat scale, because
-Outstanding Invoices once shipped two near-identical pale blues with a grey
-between them and it encoded no ordering at all - the graded cell still prints
-its figure, the sorted column is marked without a background, the tfoot is
-base's, and at 390px the cards carry the tint and the labels.
+SECTION 4b, FOUND BY THE PUSH GATE. test_action_standard.py locates the phone
+half of the action bar by searching base for the literal
+`@media (max-width: 768px)`, and six checks read that slice. After this round
+the string is `screen and`, find() returns -1, and the slice is empty.
 
-financial_indicators.html 92,953 -> 91,003 bytes.
-vacancy_management.html    53,100 -> 52,092 bytes.
+Note WHICH six failed: the text ones. Every RENDERED mobile check in that suite
+passed - the primary still flexes, the More button still appears, Back still
+keeps its 44px target - because those render at 375px on SCREEN, where the
+block still applies. Behaviour untouched, expectation stale.
 
-STILL TO COME on these two pages: the last hand-rolled segmented control (the
-Budget / Actuals .btn-group plus this page's other btn-outline-info buttons),
-and the banding logic that has drifted between the two files.
+That suite already carried this lesson in its own comment: an earlier version
+anchored on a marker that lived only inside a comment, found nothing, and ran
+every mobile check against an empty string. The bool(MOBILE) guard added then
+is what fired first here, exactly as intended.
+
+The locator moves to the EXACT new spelling rather than tolerating both, since
+the bare form must not come back - and the suite gains a check that the block
+is screen-only, so it becomes a second place guarding this fix. 74 -> 75.
+
+The patcher now guards PER FILE rather than per round: base was already patched
+when the gate found this, and a single early return would have left the round
+unable to finish itself.
+
+Left behind: Show-PrintLeak.py, read-only. A page-local `@media (max-width: N)`
+block leaks the same way, and the scanner reports which templates carry one,
+how many are already guarded, and whether the template has ever been thought
+about for paper at all. That round should be sized from its output rather than
+from a guess.
 '@ `
-  -Checks "python test_grade_tables.py","python test_sticky_sweep.py","python test_ind_modal.py","python test_pl_drill.py","python test_alv_stat.py","python test_payment_days.py","python test_pl_indicators.py","python test_card_standard.py","python test_table_standard.py","python test_button_sweep.py"
+  -Checks "python test_print_media.py","python test_action_standard.py","python test_grade_tables.py","python test_ind_modal.py","python test_pl_drill.py","python test_alv_stat.py","python test_payment_days.py","python test_table_standard.py","python test_card_standard.py","python test_sticky_sweep.py","python test_button_sweep.py"

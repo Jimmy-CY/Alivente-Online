@@ -654,7 +654,7 @@
       /* Hidden on desktop; the page markup carries both and CSS chooses. */
       .mobile-action-bar { display: none !important; }
 
-      @media (max-width: 768px) {
+      @media screen and (max-width: 768px) {
         .table-container {
           background: transparent;
           box-shadow: none;
@@ -916,7 +916,7 @@
       .alv-stat-attn .alv-stat-value { color: var(--alv-warn); }
       .alv-stat-bad  .alv-stat-value { color: var(--alv-bad); }
 
-      @media (max-width: 768px) {
+      @media screen and (max-width: 768px) {
         /* Four figures across a phone is four figures nobody can read. */
         .alv-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .alv-stat { padding: 12px 10px; }
@@ -1001,6 +1001,18 @@
         .modal-backdrop,
         .alert-dismissible .close,
         .mobile-action-bar,
+        /* AND THE DESKTOP ACTIONS TOO, since 1 Sep. The phone block used
+           to read `@media (max-width: 768px)` with no `screen`, and A4
+           portrait is about 718 CSS px of content - so it fired on paper
+           and hid .desktop-action-cell for us, while the mobile bar above
+           was hidden here.
+           So the Actions column did not print BY ACCIDENT, and fixing the
+           media query would have started printing a row of icon buttons on
+           every page. A button on paper is furniture whichever breakpoint
+           put it there. */
+        .desktop-action-cell,
+        .alv-table .cell-actions,
+        .row-actions,
         .no-print { display: none !important; }
 
         .alv-table { font-size: 10.5pt; }
@@ -1241,7 +1253,7 @@
 
       .action-more-wrapper { display: none; }
 
-      @media (max-width: 768px) {
+      @media screen and (max-width: 768px) {
         /* The half worth hoisting. One row, always: the primary takes the
            space, the secondaries move into the More menu, and Back keeps
            a 44px target. */
@@ -1725,7 +1737,7 @@
   /* Belt and braces. The pages that use it also tag the wrapper with the
      house `.action-secondary` class, but the component should not depend on
      the page remembering to do that. */
-  @media (max-width: 768px) {
+  @media screen and (max-width: 768px) {
       .ui-menu { display: none; }
   }
   
@@ -1811,7 +1823,7 @@ textarea.form-control { height: auto; }
 }
 .alv-filter-active-label { color: var(--alv-ink-soft); font-weight: 600; }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   /* Same treatment Back gets: keep the target, drop the label. */
   .page-action-buttons .action-filter {
     flex: 0 0 auto; width: 44px; height: 38px;

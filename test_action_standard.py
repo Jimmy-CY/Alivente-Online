@@ -62,7 +62,15 @@ BLOCK = strip_comments(BASE[_i:BASE.find('</style>', _i)]) if _i >= 0 else ''
 # ran against an empty string. Prose is not a mechanism; the marker is fine
 # for "is the round applied?" on the RAW file and useless here.
 _a = BLOCK.find('.page-action-buttons {')
-_m = BLOCK.find('@media (max-width: 768px)', _a) if _a >= 0 else -1
+# SUPERSEDED 1 Sep by the print round, and MOVED. The phone block used to
+# read `@media (max-width: 768px)`; on paper the viewport is the PAGE BOX -
+# about 718 CSS px of content for A4 portrait - so a bare query fired when
+# printing and every table came out as a stack of cards. It is screen-only
+# now, and this locator follows it.
+#
+# To the EXACT new spelling, not to something tolerating both: the bare form
+# must not come back, and a locator that accepted either would let it.
+_m = BLOCK.find('@media screen and (max-width: 768px)', _a) if _a >= 0 else -1
 MOBILE = BLOCK[_m:] if _m >= 0 else ''
 
 
@@ -121,6 +129,11 @@ check('  a disabled button is not still a working link',
 check('  the More button is SCOPED, or the generic border wins',
       '.page-action-buttons .action-more-btn' in BLOCK)
 check('the mobile collapse came with it', bool(MOBILE))
+# And it must be SCREEN-only. BLOCK has its comments stripped, so base's own
+# explanation of the query it removed is not read here as if it were live CSS.
+check('  and the phone block is screen-only, so it cannot print',
+      '@media screen and (max-width: 768px)' in MOBILE
+      and '@media (max-width: 768px)' not in BLOCK)
 check('  secondaries step aside',
       re.search(r'\.action-secondary\s*\{\s*display:\s*none', MOBILE)
       is not None)
