@@ -116,59 +116,33 @@
                     </div>
                 </div>
                 
-                <div class="modal-legend mb-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="legend-item">
-                            <span class="legend-color excellent"></span> Excellent
-                        </span>
-                        <span class="legend-item">
-                            <span class="legend-color good"></span> Good
-                        </span>
-                        <span class="legend-item">
-                            <span class="legend-color poor"></span> Needs Improvement
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Desktop: table -->
-                <div class="table-responsive modal-desktop-table">
-                    <table class="table table-hover" id="modalPropertyTable">
+                <div class="ind-drill">
+                    <table class="table alv-table" id="modalPropertyTable">
                         <thead>
                             <tr>
-                                <th style="width: 5%;">#</th>
-                                <th style="width: 45%;">Property Name</th>
-                                <th style="width: 20%;">Performance</th>
-                                <th style="width: 15%;">vs Portfolio Avg</th>
-                                <th style="width: 15%;">Performance Level</th>
+                                <th class="cell-rank">#</th>
+                                <th class="cell-prop-name">Property Name</th>
+                                <th class="cell-perf-value num">Performance</th>
+                                <th class="cell-vs-avg num">vs Portfolio Avg</th>
+                                <th class="cell-perf-level">Performance Level</th>
                             </tr>
                         </thead>
                         <tbody id="modalPropertyTableBody"></tbody>
                     </table>
                 </div>
                 
-                <!-- Mobile: cards -->
-                <div class="modal-mobile-cards" id="modalPropertyCards"></div>
-                
-                <div class="modal-summary mt-4">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="summary-stat excellent">
-                                <div class="stat-value" id="excellentCount">0</div>
-                                <div class="stat-label">Excellent</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="summary-stat good">
-                                <div class="stat-value" id="goodCount">0</div>
-                                <div class="stat-label">Good</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="summary-stat poor">
-                                <div class="stat-value" id="poorCount">0</div>
-                                <div class="stat-label">Needs Improvement</div>
-                            </div>
-                        </div>
+                <div class="alv-stats ind-stats">
+                    <div class="alv-stat alv-stat-good">
+                        <div class="alv-stat-value" id="excellentCount">0</div>
+                        <div class="alv-stat-label">Excellent</div>
+                    </div>
+                    <div class="alv-stat alv-stat-attn">
+                        <div class="alv-stat-value" id="goodCount">0</div>
+                        <div class="alv-stat-label">Good</div>
+                    </div>
+                    <div class="alv-stat alv-stat-bad">
+                        <div class="alv-stat-value" id="poorCount">0</div>
+                        <div class="alv-stat-label">Needs Improvement</div>
                     </div>
                 </div>
             </div>
@@ -654,68 +628,35 @@
     border-radius: 8px;
     border: 1px solid #dee2e6;
 }
-.modal-legend { display: flex; justify-content: center; }
-.legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-    color: #495057;
-}
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    display: inline-block;
-}
-.legend-color.excellent { background-color: #28a745; }
-.legend-color.good { background-color: #ffc107; }
-.legend-color.poor { background-color: #dc3545; }
+/* THE INDICATOR DRILL-DOWN.
 
-.performance-excellent { background-color: rgba(40, 167, 69, 0.1) !important; }
-.performance-good { background-color: rgba(255, 193, 7, 0.1) !important; }
-.performance-poor { background-color: rgba(220, 53, 69, 0.1) !important; }
+   Not .table-container: THIS PAGE redefines that name as a horizontal
+   scroller, which is the collision the sticky sweep logged as group D and
+   the next round settles. And it has to scroll anyway - a portfolio is
+   longer than a modal - so it gets its own name, and base's sticky heading
+   gets a container to stick to.
 
-.performance-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
+   What used to live here: .modal-legend with three swatches, the row tints
+   .performance-excellent / -good / -poor with !important, three
+   .performance-badge colours in Bootstrap green/amber/red, and .summary-stat
+   washed to match. Five ways of saying one thing. .alv-pill and .alv-stat
+   say it now, from base, on the house tokens. */
+.ind-drill {
+    max-height: 55vh;
+    overflow: auto;
+    background: var(--alv-paper);
+    border-radius: var(--alv-radius);
 }
-.performance-badge.excellent { background-color: #28a745; color: white; }
-.performance-badge.good { background-color: #ffc107; color: #212529; }
-.performance-badge.poor { background-color: #dc3545; color: white; }
-
-.modal-summary {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #dee2e6;
+.ind-stats {
+    --alv-stats-cols: 3;
+    margin-top: 20px;
 }
-.summary-stat {
-    text-align: center;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-.summary-stat.excellent { background: rgba(40, 167, 69, 0.1); border-color: #28a745; }
-.summary-stat.good { background: rgba(255, 193, 7, 0.1); border-color: #ffc107; }
-.summary-stat.poor { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; }
-.summary-stat .stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-.summary-stat .stat-label {
-    color: #6c757d;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-/* Modal mobile cards (hidden on desktop) */
-.modal-mobile-cards { display: none; }
+#modalPropertyTable th.cell-rank,
+#modalPropertyTable td.cell-rank { width: 6%; }
+#modalPropertyTable th.cell-prop-name,
+#modalPropertyTable td.cell-prop-name { width: 42%; }
+#modalPropertyTable th.cell-perf-level,
+#modalPropertyTable td.cell-perf-level { width: 18%; }
 
 /* Rotate prompt (portrait phones for the data table) */
 .rotate-prompt {
@@ -880,71 +821,25 @@
         min-height: 44px;
     }
     /* Modal table → cards on mobile */
-    #propertyDetailsModal .modal-desktop-table { display: none; }
-    #propertyDetailsModal .modal-mobile-cards { display: block; }
-    .modal-property-card {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    .modal-property-card.performance-excellent {
-        background: rgba(40, 167, 69, 0.05);
-        border-color: rgba(40, 167, 69, 0.4);
-    }
-    .modal-property-card.performance-good {
-        background: rgba(255, 193, 7, 0.05);
-        border-color: rgba(255, 193, 7, 0.4);
-    }
-    .modal-property-card.performance-poor {
-        background: rgba(220, 53, 69, 0.05);
-        border-color: rgba(220, 53, 69, 0.4);
-    }
-    .modal-property-card .mpc-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-        gap: 10px;
-    }
-    .modal-property-card .mpc-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #2c3e50;
-        flex: 1;
-    }
-    .modal-property-card .mpc-rank {
-        font-size: 11px;
-        color: #6c757d;
-        font-weight: 700;
-        background: white;
-        padding: 2px 8px;
-        border-radius: 10px;
-        border: 1px solid #dee2e6;
-    }
-    .modal-property-card .mpc-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        padding: 2px 0;
-    }
-    .modal-property-card .mpc-label {
-        color: #6c757d;
-        font-weight: 500;
-    }
-    .modal-property-card .mpc-value {
-        color: #2c3e50;
-        font-weight: 600;
-    }
-    .modal-property-card .mpc-badge-row {
-        margin-top: 8px;
-        display: flex;
-        justify-content: flex-end;
-    }
+    /* The modal table becomes cards through base, not through ninety lines
+       here and a second DOM in the sibling file. Two rules survive, and
+       both earn it.
 
-    .modal-summary .row { display: flex; flex-direction: column; gap: 8px; }
-    .modal-summary .col-md-4 { width: 100%; padding: 0; }
+       The rank is desktop-only, as it already was - "low value, takes a
+       row" was this page's own verdict on it. But base promotes the FIRST
+       cell of a card to its title, and the first cell here is the rank,
+       which is now hidden - so the name has to be told to be the title. */
+    #modalPropertyTable tbody td.cell-rank { display: none !important; }
+    #modalPropertyTable tbody td.cell-prop-name {
+        display: block !important;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--alv-ink);
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--alv-line-soft) !important;
+    }
+    #modalPropertyTable tbody td.cell-prop-name::before { content: none; }
 }
 
 /* Tablet sizing */
@@ -1285,11 +1180,17 @@ class VacancyDashboard {
         });
         
         const tableBody = document.getElementById('modalPropertyTableBody');
-        const cardsContainer = document.getElementById('modalPropertyCards');
         let excellentCount = 0, goodCount = 0, poorCount = 0;
-        
+
         const tableRows = [];
-        const cards = [];
+        // ONE map from band to pill, named rather than interpolated - so it
+        // can be searched for, and so a band cannot acquire a colour base
+        // does not define. Same shape as BAND_PILL in the tenants view.
+        const PERF_PILL = {
+            excellent: 'alv-pill-good',
+            good: 'alv-pill-attn',
+            poor: 'alv-pill-bad'
+        };
         
         sortedProperties.forEach((property, index) => {
             const value = property[indicatorKey];
@@ -1330,41 +1231,21 @@ class VacancyDashboard {
                 }
             }
             
-            // Desktop table row
+            // ONE row template. The mobile card that used to be built beside
+            // it is base's job now - same markup, one source of truth, and it
+            // stops disagreeing with the sibling file that did it in CSS.
             tableRows.push(`
-                <tr class="performance-${performanceClass}">
-                    <td><strong>${index + 1}</strong></td>
-                    <td>${property.name}</td>
-                    <td><strong style="color: ${indicator.color};">${formattedValue}</strong></td>
-                    <td>${difference}</td>
-                    <td><span class="performance-badge ${performanceClass}">${performanceLevel}</span></td>
+                <tr>
+                    <td class="cell-rank">${index + 1}</td>
+                    <td class="cell-prop-name" data-label="Property">${property.name}</td>
+                    <td class="cell-perf-value num" data-label="Performance"><strong>${formattedValue}</strong></td>
+                    <td class="cell-vs-avg num" data-label="vs Portfolio Avg">${difference}</td>
+                    <td class="cell-perf-level" data-label="Level"><span class="alv-pill ${PERF_PILL[performanceClass]}">${performanceLevel}</span></td>
                 </tr>
-            `);
-            
-            // Mobile card
-            cards.push(`
-                <div class="modal-property-card performance-${performanceClass}">
-                    <div class="mpc-header">
-                        <div class="mpc-name">${property.name}</div>
-                        <div class="mpc-rank">#${index + 1}</div>
-                    </div>
-                    <div class="mpc-row">
-                        <span class="mpc-label">Performance</span>
-                        <span class="mpc-value" style="color: ${indicator.color};">${formattedValue}</span>
-                    </div>
-                    <div class="mpc-row">
-                        <span class="mpc-label">vs Portfolio</span>
-                        <span class="mpc-value">${difference}</span>
-                    </div>
-                    <div class="mpc-badge-row">
-                        <span class="performance-badge ${performanceClass}">${performanceLevel}</span>
-                    </div>
-                </div>
             `);
         });
         
         tableBody.innerHTML = tableRows.join('');
-        cardsContainer.innerHTML = cards.join('');
         
         document.getElementById('excellentCount').textContent = excellentCount;
         document.getElementById('goodCount').textContent = goodCount;

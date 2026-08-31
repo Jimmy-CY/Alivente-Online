@@ -147,8 +147,19 @@ for rel in COLLISIONS:
         continue
     src = read(path)
     check('%-38s still has its own rule' % rel, bool(container_rules(src)))
-    check('  because it is not on .alv-table at all - the name is coincidental',
-          'alv-table' not in src)
+    # SUPERSEDED 31 Aug by the indicator-modal round, and MOVED rather than
+    # deleted. The old check read `'alv-table' not in src`: the collision was
+    # harmless because neither page used the standard at all. The drill-down
+    # modal table is .alv-table now, so what keeps the collision harmless is
+    # narrower and worth stating exactly - that .alv-table never sits inside
+    # the .table-container these pages redefine.
+    check('  it carries .alv-table now, in the modal', 'alv-table' in src)
+    check('  but NOT inside the .table-container this page redefines',
+          not re.search(r'class="table-container"\s*>\s*<table[^>]*alv-table',
+                        src))
+    check('  the modal table has a wrapper of its own',
+          bool(re.search(r'class="ind-drill">\s*<table class="table alv-table"',
+                         src)))
 
 # =========================================================================
 # A tall table, rendered against base plus each page's own stylesheet.

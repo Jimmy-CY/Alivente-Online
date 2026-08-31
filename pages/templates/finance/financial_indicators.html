@@ -173,57 +173,33 @@
                     </div>
                 </div>
                 
-                <div class="modal-legend mb-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="legend-item">
-                            <span class="legend-color excellent"></span> Excellent Performance
-                        </span>
-                        <span class="legend-item">
-                            <span class="legend-color good"></span> Good Performance
-                        </span>
-                        <span class="legend-item">
-                            <span class="legend-color poor"></span> Needs Improvement
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover" id="modalPropertyTable">
+                <div class="ind-drill">
+                    <table class="table alv-table" id="modalPropertyTable">
                         <thead>
                             <tr>
-                                <th style="width: 5%;">#</th>
-                                <th style="width: 45%;">Property Name</th>
-                                <th style="width: 20%;">Performance</th>
-                                <th style="width: 15%;">vs Portfolio Avg</th>
-                                <th style="width: 15%;">Performance Level</th>
+                                <th class="cell-rank">#</th>
+                                <th class="cell-prop-name">Property Name</th>
+                                <th class="cell-perf-value num">Performance</th>
+                                <th class="cell-vs-avg num">vs Portfolio Avg</th>
+                                <th class="cell-perf-level">Performance Level</th>
                             </tr>
                         </thead>
-                        <tbody id="modalPropertyTableBody">
-                            <!-- Table rows will be populated by JavaScript -->
-                        </tbody>
+                        <tbody id="modalPropertyTableBody"></tbody>
                     </table>
                 </div>
                 
-                <div class="modal-summary mt-4">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="summary-stat excellent">
-                                <div class="stat-value" id="excellentCount">0</div>
-                                <div class="stat-label">Excellent</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="summary-stat good">
-                                <div class="stat-value" id="goodCount">0</div>
-                                <div class="stat-label">Good</div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="summary-stat poor">
-                                <div class="stat-value" id="poorCount">0</div>
-                                <div class="stat-label">Needs Improvement</div>
-                            </div>
-                        </div>
+                <div class="alv-stats ind-stats">
+                    <div class="alv-stat alv-stat-good">
+                        <div class="alv-stat-value" id="excellentCount">0</div>
+                        <div class="alv-stat-label">Excellent</div>
+                    </div>
+                    <div class="alv-stat alv-stat-attn">
+                        <div class="alv-stat-value" id="goodCount">0</div>
+                        <div class="alv-stat-label">Good</div>
+                    </div>
+                    <div class="alv-stat alv-stat-bad">
+                        <div class="alv-stat-value" id="poorCount">0</div>
+                        <div class="alv-stat-label">Needs Improvement</div>
                     </div>
                 </div>
             </div>
@@ -793,115 +769,35 @@
     border: 1px solid #dee2e6;
 }
 
-.modal-legend {
-    display: flex;
-    justify-content: center;
-}
+/* THE INDICATOR DRILL-DOWN.
 
-.legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-    color: #495057;
-}
+   Not .table-container: THIS PAGE redefines that name as a horizontal
+   scroller, which is the collision the sticky sweep logged as group D and
+   the next round settles. And it has to scroll anyway - a portfolio is
+   longer than a modal - so it gets its own name, and base's sticky heading
+   gets a container to stick to.
 
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    display: inline-block;
+   What used to live here: .modal-legend with three swatches, the row tints
+   .performance-excellent / -good / -poor with !important, three
+   .performance-badge colours in Bootstrap green/amber/red, and .summary-stat
+   washed to match. Five ways of saying one thing. .alv-pill and .alv-stat
+   say it now, from base, on the house tokens. */
+.ind-drill {
+    max-height: 55vh;
+    overflow: auto;
+    background: var(--alv-paper);
+    border-radius: var(--alv-radius);
 }
-
-.legend-color.excellent {
-    background-color: #28a745;
+.ind-stats {
+    --alv-stats-cols: 3;
+    margin-top: 20px;
 }
-
-.legend-color.good {
-    background-color: #ffc107;
-}
-
-.legend-color.poor {
-    background-color: #dc3545;
-}
-
-/* Performance row colors */
-.performance-excellent {
-    background-color: rgba(40, 167, 69, 0.1) !important;
-}
-
-.performance-good {
-    background-color: rgba(255, 193, 7, 0.1) !important;
-}
-
-.performance-poor {
-    background-color: rgba(220, 53, 69, 0.1) !important;
-}
-
-.performance-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-}
-
-.performance-badge.excellent {
-    background-color: #28a745;
-    color: white;
-}
-
-.performance-badge.good {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.performance-badge.poor {
-    background-color: #dc3545;
-    color: white;
-}
-
-.modal-summary {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #dee2e6;
-}
-
-.summary-stat {
-    text-align: center;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.summary-stat.excellent {
-    background: rgba(40, 167, 69, 0.1);
-    border-color: #28a745;
-}
-
-.summary-stat.good {
-    background: rgba(255, 193, 7, 0.1);
-    border-color: #ffc107;
-}
-
-.summary-stat.poor {
-    background: rgba(220, 53, 69, 0.1);
-    border-color: #dc3545;
-}
-
-.summary-stat .stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 5px;
-}
-
-.summary-stat .stat-label {
-    color: #6c757d;
-    font-size: 14px;
-    font-weight: 500;
-}
+#modalPropertyTable th.cell-rank,
+#modalPropertyTable td.cell-rank { width: 6%; }
+#modalPropertyTable th.cell-prop-name,
+#modalPropertyTable td.cell-prop-name { width: 42%; }
+#modalPropertyTable th.cell-perf-level,
+#modalPropertyTable td.cell-perf-level { width: 18%; }
 
 /* Button Styles */
 .btn-info {
@@ -1213,108 +1109,25 @@
         text-align: left;
     }
     
-    /* Modal legend: stack vertically with line breaks */
-    .modal-legend .d-flex {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 6px !important;
-    }
-    
-    /* === MODAL PROPERTY TABLE → CARDS === */
-    #modalPropertyTable {
-        font-size: 13px;
-    }
-    #modalPropertyTable thead {
-        display: none;
-    }
-    #modalPropertyTable tbody {
-        display: block;
-    }
-    #modalPropertyTable tbody tr {
-        display: block;
-        background: white !important;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        position: relative;
-    }
-    /* Performance row tints */
-    #modalPropertyTable tbody tr.performance-excellent {
-        background: rgba(40, 167, 69, 0.08) !important;
-        border-left: 4px solid #28a745;
-    }
-    #modalPropertyTable tbody tr.performance-good {
-        background: rgba(255, 193, 7, 0.08) !important;
-        border-left: 4px solid #ffc107;
-    }
-    #modalPropertyTable tbody tr.performance-poor {
-        background: rgba(220, 53, 69, 0.08) !important;
-        border-left: 4px solid #dc3545;
-    }
-    #modalPropertyTable tbody td {
-        display: block;
-        padding: 5px 0;
-        border: none;
-        text-align: left !important;
-        font-size: 13px;
-    }
-    /* Hide rank cell on mobile (low value, takes a row) */
-    #modalPropertyTable tbody td.cell-rank {
-        display: none;
-    }
-    /* Property name cell: card title */
+    /* The modal table becomes cards through base, not through ninety lines
+       here and a second DOM in the sibling file. Two rules survive, and
+       both earn it.
+
+       The rank is desktop-only, as it already was - "low value, takes a
+       row" was this page's own verdict on it. But base promotes the FIRST
+       cell of a card to its title, and the first cell here is the rank,
+       which is now hidden - so the name has to be told to be the title. */
+    #modalPropertyTable tbody td.cell-rank { display: none !important; }
     #modalPropertyTable tbody td.cell-prop-name {
-        font-size: 15px;
-        font-weight: 700;
-        color: #2c3e50;
-        padding: 0 0 8px 0;
-        border-bottom: 1px solid #f1f3f5;
-        margin-bottom: 8px;
-    }
-    /* Performance level cell: top-right badge */
-    #modalPropertyTable tbody td.cell-perf-level {
-        position: absolute;
-        top: 12px;
-        right: 14px;
-        padding: 0;
-    }
-    /* Other cells: data-label key, value right-aligned */
-    #modalPropertyTable tbody td.cell-perf-value::before,
-    #modalPropertyTable tbody td.cell-vs-avg::before {
-        content: attr(data-label);
-        display: inline-block;
-        width: 60%;
-        font-size: 11px;
+        display: block !important;
+        font-size: 16px;
         font-weight: 600;
-        color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
+        color: var(--alv-ink);
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--alv-line-soft) !important;
     }
-    #modalPropertyTable tbody td.cell-perf-value,
-    #modalPropertyTable tbody td.cell-vs-avg {
-        display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    /* Modal summary stats: stack with smaller padding */
-    .modal-summary {
-        padding: 14px;
-    }
-    .modal-summary .row > [class*="col-"] {
-        margin-bottom: 8px;
-    }
-    .summary-stat {
-        padding: 10px;
-    }
-    .summary-stat .stat-value {
-        font-size: 20px;
-    }
-    .summary-stat .stat-label {
-        font-size: 12px;
-    }
+    #modalPropertyTable tbody td.cell-prop-name::before { content: none; }
     
     .sortable-header {
         padding: 8px 20px 8px 6px;
@@ -1983,6 +1796,14 @@ class PropertyFinancialDashboard {
         
         const tableBody = document.getElementById('modalPropertyTableBody');
         let excellentCount = 0, goodCount = 0, poorCount = 0;
+        // ONE map from band to pill, named rather than interpolated - so it
+        // can be searched for, and so a band cannot acquire a colour base
+        // does not define. Same shape as BAND_PILL in the tenants view.
+        const PERF_PILL = {
+            excellent: 'alv-pill-good',
+            good: 'alv-pill-attn',
+            poor: 'alv-pill-bad'
+        };
         
         tableBody.innerHTML = sortedProperties.map((property, index) => {
             const value = property[indicatorKey];
@@ -2060,14 +1881,12 @@ class PropertyFinancialDashboard {
             
             // ====== MOBILE-AWARE TABLE ROW: classes + data-label for cards mode ======
             return `
-                <tr class="performance-${performanceClass}">
-                    <td class="cell-rank"><strong>${index + 1}</strong></td>
-                    <td class="cell-prop-name">${property.name}</td>
-                    <td class="cell-perf-value" data-label="Performance"><strong style="color: ${indicator.color};">${formattedValue}</strong></td>
-                    <td class="cell-vs-avg" data-label="vs Avg">${difference}</td>
-                    <td class="cell-perf-level">
-                        <span class="performance-badge ${performanceClass}">${performanceLevel}</span>
-                    </td>
+                <tr>
+                    <td class="cell-rank">${index + 1}</td>
+                    <td class="cell-prop-name" data-label="Property">${property.name}</td>
+                    <td class="cell-perf-value num" data-label="Performance"><strong>${formattedValue}</strong></td>
+                    <td class="cell-vs-avg num" data-label="vs Portfolio Avg">${difference}</td>
+                    <td class="cell-perf-level" data-label="Level"><span class="alv-pill ${PERF_PILL[performanceClass]}">${performanceLevel}</span></td>
                 </tr>
             `;
         }).join('');
