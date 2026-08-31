@@ -552,115 +552,48 @@
     opacity: 0.5;
 }
 
-.table-panel {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
+/* THE DETAIL TABLE.
 
-.table-header {
-    background: #f8f9fa;
-    padding: 15px 20px;
-    border-bottom: 1px solid #dee2e6;
-}
+   .table-panel / .table-header / .table-title were .alv-card,
+   .alv-card-head and .alv-card-title spelled differently, and in
+   financial_indicators.html they were dead CSS besides - that page's markup
+   uses .fi-section. .data-table was .alv-table with different spelling; the PORTFOLIO row sat
+   in the TBODY where a <tfoot> belongs, painted solid teal with !important.
+   Both are base's now, and the totals band repeats on every printed page,
+   which a tbody row cannot.
 
-.table-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+   GROUP D IS CLOSED HERE. This page redefined .table-container as a
+   horizontal scroller while base uses that name for a CLIPPING panel - the
+   collision the sticky sweep logged and deliberately left alone. The
+   redefinition is gone. The sideways scroll this table genuinely needs has a
+   name of its own, and base's .alv-matrix-scroll was NOT the home for it: it
+   carries display:none in @media print because the expense matrix does not
+   print. This table does. */
+.ind-wide { overflow-x: auto; }
+@media print { .ind-wide { overflow: visible !important; } }
 
-.table-container {
-    overflow-x: auto;
-}
+/* The sorted column keeps its emphasis - but NOT with a background.
 
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0;
-}
-
-.data-table th {
-    background: #f8f9fa;
-    padding: 12px 15px;
-    text-align: center;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-    color: #495057;
-    font-size: 14px;
-}
-
-.data-table th:first-child {
-    text-align: left;
-}
-
-.data-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #dee2e6;
-    text-align: center;
-    font-size: 14px;
-}
-
-.data-table td:first-child {
-    text-align: left;
-    font-weight: 500;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .data-table tbody tr:hover {
-        background: #f8f9fa;
-    }
-}
-
-.data-table tbody tr:nth-child(even) {
-    background: #fdfdfd;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .data-table tbody tr:nth-child(even):hover {
-        background: #f0f0f0;
-    }
-}
-
-.average-row {
-    background: #0e7c8b !important;
-    color: white !important;
-    font-weight: bold;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .average-row:hover {
-        background: #0a5e6a !important;
-    }
-}
-
+   The old rule was `background: #e3f2fd !important`, and !important in a
+   stylesheet beats an inline style, so sorting a column ERASED the grading
+   tint in exactly the column the reader had just asked to look at. The
+   emphasis moves to the edges and the weight, where it cannot compete with
+   the scale. Found by rendering the two together; no amount of reading the
+   CSS would have shown it. */
 .highlighted-column {
-    background: #e3f2fd !important;
     font-weight: 600;
-    border-left: 3px solid #0e7c8b;
-    border-right: 3px solid #0e7c8b;
+    box-shadow: inset 3px 0 0 var(--alv-accent), inset -3px 0 0 var(--alv-accent);
 }
 
-/* Properties not held in the selected year: excluded from rank/score/totals. */
-.data-table tbody tr.fi-inactive {
-    color: #9aa0a6;
-    background: #f5f6f7;
-    font-style: italic;
-}
-.data-table tbody tr.fi-inactive td {
-    color: #9aa0a6;
-}
-.data-table tbody tr.fi-inactive .highlighted-column {
-    background: #eceded !important;
-    border-left-color: #cfd2d4;
-    border-right-color: #cfd2d4;
-}
+/* Properties not held in the selected year: excluded from rank, score and
+   totals, and said so in ink rather than in a grey of its own. They are not
+   graded either, so their cells carry no tint to be confused with one. */
+.data-grid tbody tr.fi-inactive td { color: var(--alv-ink-faint); font-style: italic; }
+.data-grid tbody tr.fi-inactive .highlighted-column { box-shadow: none; }
+.data-grid tbody tr.fi-inactive .alv-grade-cell { background: transparent; }
+/* The two graded columns keep their weight; the tint says where they sit. */
+.data-grid td.fi-rank { font-weight: 600; }
+.data-grid td.fi-score { font-weight: 700; }
 .fi-inactive-tag {
     display: inline-block;
     margin-left: 6px;
@@ -735,18 +668,6 @@
 
 .sort-icon.fa-sort::before {
     content: "\f0dc";
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .data-table tbody tr:hover .highlighted-column {
-        background-color: #bbdefb !important;
-    }
-}
-
-.average-row .highlighted-column {
-    background-color: #0a5e6a !important;
-    border-left: 3px solid #ffffff;
-    border-right: 3px solid #ffffff;
 }
 
 /* Modal Styles */
@@ -947,107 +868,9 @@
     }
     
     /* === MAIN DATA TABLE → CARDS === */
-    .table-panel {
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-    .table-header {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px 15px;
-    }
-    .table-title {
-        font-size: 15px;
-        justify-content: center;
-    }
-    .table-container {
-        overflow-x: visible;
-    }
-    .data-table {
-        background: transparent;
-    }
-    .data-table thead {
-        display: none;
-    }
-    .data-table tbody {
-        display: block;
-    }
-    .data-table tbody tr {
-        display: block;
-        background: white !important;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .data-table tbody tr:nth-child(even) {
-        background: white !important;
-    }
-    .data-table tbody td {
-        display: block;
-        padding: 6px 0;
-        border: none;
-        text-align: left !important;
-        font-size: 13px;
-    }
-    /* First TD = property name (card title) */
-    .data-table tbody td:first-child {
-        font-size: 15px;
-        font-weight: 700;
-        color: #2c3e50;
-        padding: 0 0 8px 0;
-        border-bottom: 1px solid #f1f3f5;
-        margin-bottom: 6px;
-    }
-    /* Remaining TDs use data-label::before for the field name */
-    .data-table tbody td:not(:first-child)::before {
-        content: attr(data-label);
-        display: inline-block;
-        width: 60%;
-        font-size: 11px;
-        font-weight: 600;
-        color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-    }
-    .data-table tbody td:not(:first-child) {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    /* PORTFOLIO TOTALS row keeps teal background */
-    .data-table tbody tr.average-row {
-        background: #0e7c8b !important;
-        color: white !important;
-    }
-    .data-table tbody tr.average-row td:first-child {
-        color: white;
-        border-bottom-color: rgba(255,255,255,0.3);
-    }
-    .data-table tbody tr.average-row td:not(:first-child)::before {
-        color: rgba(255,255,255,0.85);
-    }
-    .data-table tbody tr.average-row .highlighted-column {
-        background: transparent !important;
-        border: none;
-    }
-    /* Highlighted column on mobile cards: just emphasise the value */
-    .data-table tbody td.highlighted-column {
-        background: #e3f2fd !important;
-        border-left: none;
-        border-right: none;
-        border-radius: 4px;
-        padding: 8px 10px;
-    }
-    .data-table tbody tr.average-row td.highlighted-column {
-        background: rgba(255,255,255,0.15) !important;
-        border-radius: 4px;
-        padding: 8px 10px;
-    }
+    /* The detail table becomes cards through base now - a hundred
+       lines of it used to live here, and a second hand-rolled copy
+       lived in the sibling file. */
     
     /* === MODAL (modal-xl) → FULL-SCREEN ON MOBILE === */
     .modal-dialog.modal-xl {
@@ -1150,10 +973,6 @@
     }
     .indicator-value {
         font-size: 14px;
-    }
-    .data-table tbody tr,
-    #modalPropertyTable tbody tr {
-        padding: 10px 12px;
     }
 }
 </style>
@@ -1437,8 +1256,8 @@ class PropertyFinancialDashboard {
                             <button type="button" class="fi-weights-reset" id="fiWeightsReset">Reset to equal</button>
                         </div>
                     </div>
-                    <div class="table-container">
-                        <table class="data-table">
+                    <div class="ind-wide">
+                        <table class="table alv-table data-grid">
                             <thead>
                                 <tr>
                                     <th>Active Property</th>
@@ -1460,30 +1279,31 @@ class PropertyFinancialDashboard {
                                     const scoreCell = inactive ? '—' : property._score;
                                     return `
                                     <tr class="${inactive ? 'fi-inactive' : ''}">
-                                        <td>${property.name}${inactive ? ' <span class="fi-inactive-tag">not held this year</span>' : ''}</td>
-                                        <td data-label="Rank" style="${inactive ? '' : this.cellColour(this._grade['_rank'][property.id])} font-weight:600;">${rankCell}</td>
-                                        <td data-label="Score" style="${inactive ? '' : this.cellColour(this._grade['_score'][property.id])} font-weight:700;">${scoreCell}</td>
+                                        <td data-label="Property">${property.name}${inactive ? ' <span class="fi-inactive-tag">not held this year</span>' : ''}</td>
+                                        <td class="num fi-rank ${inactive ? '' : this.gradeClass(this._grade['_rank'][property.id])}" data-label="Rank">${rankCell}</td>
+                                        <td class="num fi-score ${inactive ? '' : this.gradeClass(this._grade['_score'][property.id])}" data-label="Score">${scoreCell}</td>
                                         ${this.tableColumns.map(indicator => {
                                             const v = property[indicator.key];
                                             const na = (v === null || v === undefined);
                                             const naLabel = (indicator.key === 'occupancy') ? 'Seasonal' : 'N/A';
                                             const show = inactive ? '—' : (na ? naLabel : indicator.format(v));
-                                            const style = (inactive || na) ? '' : this.cellColour(this._grade[indicator.key][property.id]);
-                                            return `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" style="${style}">${show}</td>`;
+                                            const grade = (inactive || na) ? '' : this.gradeClass(this._grade[indicator.key][property.id]);
+                                            return `<td data-label="${indicator.label}" class="num ${grade} ${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${show}</td>`;
                                         }).join('')}
                                     </tr>`;
                                 }).join('')}
                                 
-                                <!-- Portfolio totals row -->
-                                <tr class="average-row">
-                                    <td>PORTFOLIO TOTALS</td>
-                                    <td data-label="Rank">—</td>
-                                    <td data-label="Score">—</td>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td data-label="Portfolio">PORTFOLIO TOTALS</td>
+                                    <td class="num" data-label="Rank">&mdash;</td>
+                                    <td class="num" data-label="Score">&mdash;</td>
                                     ${this.tableColumns.map(indicator =>
-                                        `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
+                                        `<td class="num ${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" data-label="${indicator.label}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
                                     ).join('')}
                                 </tr>
-                            </tbody>
+                            </tfoot>
                         </table>
                     </div>
                 ` : `
@@ -1588,10 +1408,25 @@ class PropertyFinancialDashboard {
         this.getSelectedProperties().filter(p => !p.active).forEach(p => { p._rank = null; p._score = null; });
     }
 
-    cellColour(t) {
+    // FIVE NAMED STEPS, not a computed ramp.
+    //
+    // This returned `background-color: hsl((1-t)*120, 62%, 90%)` - a
+    // continuous red-through-yellow-to-green rainbow, built in JavaScript,
+    // outside the token system, unprintable and uncheckable. The grade it
+    // encodes is real information, so it stays; the way it was expressed
+    // does not.
+    //
+    // WHICH END OF t IS GOOD. Read it off gradeColumn, not off the comment
+    // above the old ramp - that comment describes the HUE value, not t, and
+    // reads exactly backwards if you take it as describing t. gradeColumn
+    // sorts BEST FIRST and stores position / (n - 1), so t = 0 is the best
+    // property in the column and t = 1 is the worst. Hence t * 5, and step 1
+    // is best. Getting this backwards inverts the whole table and every
+    // figure still looks plausible.
+    gradeClass(t) {
         if (t === undefined || t === null) return '';
-        const hue = (1 - t) * 120;   // 0 = red (worst) .. 120 = green (best)
-        return `background-color: hsl(${hue}, 62%, 90%);`;
+        const step = Math.min(4, Math.max(0, Math.floor(t * 5)));
+        return 'alv-grade-cell alv-grade-' + (step + 1);
     }
 
     // --- Scoring weights (persisted) -------------------------------------------

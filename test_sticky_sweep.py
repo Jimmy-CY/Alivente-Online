@@ -146,20 +146,21 @@ for rel in COLLISIONS:
     if not os.path.exists(path):
         continue
     src = read(path)
-    check('%-38s still has its own rule' % rel, bool(container_rules(src)))
-    # SUPERSEDED 31 Aug by the indicator-modal round, and MOVED rather than
-    # deleted. The old check read `'alv-table' not in src`: the collision was
-    # harmless because neither page used the standard at all. The drill-down
-    # modal table is .alv-table now, so what keeps the collision harmless is
-    # narrower and worth stating exactly - that .alv-table never sits inside
-    # the .table-container these pages redefine.
-    check('  it carries .alv-table now, in the modal', 'alv-table' in src)
-    check('  but NOT inside the .table-container this page redefines',
-          not re.search(r'class="table-container"\s*>\s*<table[^>]*alv-table',
-                        src))
-    check('  the modal table has a wrapper of its own',
-          bool(re.search(r'class="ind-drill">\s*<table class="table alv-table"',
-                         src)))
+    # GROUP D IS CLOSED - 1 Sep. Twice this block has been moved rather than
+    # deleted: first because these pages did not use .alv-table at all, then
+    # because the .alv-table they gained sat outside the redefined name. Now
+    # the redefinition itself is gone, so the expectation inverts one last
+    # time and becomes the strongest form of itself: this page must NOT
+    # redefine .table-container, and base's meaning of the name is the only
+    # one left.
+    check('%-38s no longer redefines .table-container' % rel,
+          not container_rules(src),
+          '%d rule(s)' % len(container_rules(src)))
+    check('  it is on the standard', 'alv-table' in src)
+    check('  and the sideways scroll it needs has its own name',
+          '.ind-wide' in src)
+    check('  so nothing on the page claims the name any more',
+          'class="table-container"' not in src)
 
 # =========================================================================
 # A tall table, rendered against base plus each page's own stylesheet.

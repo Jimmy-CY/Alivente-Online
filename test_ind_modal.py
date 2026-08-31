@@ -155,12 +155,18 @@ for _dead in ('modalPropertyCards', 'modal-mobile-cards', 'modal-desktop-table',
               'cardsContainer'):
     check('vacancy: the hand-built card\'s %s is gone' % _dead, _dead not in VC)
 
-# ... and the NEXT round's work is untouched
-for _keep in ('rotate-prompt', 'rotate-on-portrait', 'data-table',
-              'Detailed Property Data'):
-    check('vacancy: %s survives - that is the next round' % _keep, _keep in V)
-check('vacancy: group D is untouched',
-      '.table-container { overflow-x: auto; }' in V)
+# SUPERSEDED 1 Sep: the next round landed. These four asserted that the detail
+# table, its rotate-to-landscape prompt and the group D name collision were
+# still ahead - a scope guard, and one that has to invert the moment the work
+# it was guarding is done. The screen it names is still there; what carried it
+# is not.
+check('vacancy: the detail table is still on the page',
+      'Detailed Property Data' in V)
+for _gone in ('rotate-prompt', 'rotate-on-portrait', 'data-table'):
+    check('vacancy: %s went with the detail-table round' % _gone,
+          _gone not in VC)
+check('vacancy: group D is closed - the page no longer redefines the name',
+      '.table-container { overflow-x: auto; }' not in V)
 
 # ===========================================================================
 head('2. every band the code can produce has a pill')

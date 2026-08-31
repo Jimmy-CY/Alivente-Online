@@ -473,72 +473,37 @@
 }
 
 /* Data Table */
-.table-panel {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    margin-bottom: 22px;
-}
-.table-header {
-    background: #f8f9fa;
-    padding: 15px 20px;
-    border-bottom: 1px solid #dee2e6;
-}
-.table-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.table-container { overflow-x: auto; }
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0;
-}
-.data-table th {
-    background: #f8f9fa;
-    padding: 12px 15px;
-    text-align: center;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-    color: #495057;
-    font-size: 14px;
-}
-.data-table th:first-child { text-align: left; }
-.data-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #dee2e6;
-    text-align: center;
-    font-size: 14px;
-}
-.data-table td:first-child { text-align: left; font-weight: 500; }
-.data-table tbody tr:hover { background: #f8f9fa; }
-.data-table tbody tr:nth-child(even) { background: #fdfdfd; }
-.data-table tbody tr:nth-child(even):hover { background: #f0f0f0; }
+/* THE DETAIL TABLE.
 
-.average-row {
-    background: #0e7c8b !important;
-    color: white !important;
-    font-weight: bold;
-}
-.average-row:hover { background: #0a5e6a !important; }
+   .table-panel / .table-header / .table-title were .alv-card,
+   .alv-card-head and .alv-card-title spelled differently, and in
+   financial_indicators.html they were dead CSS besides - that page's markup
+   uses .fi-section. .data-table was .alv-table with different spelling; the PORTFOLIO row sat
+   in the TBODY where a <tfoot> belongs, painted solid teal with !important.
+   Both are base's now, and the totals band repeats on every printed page,
+   which a tbody row cannot.
 
+   GROUP D IS CLOSED HERE. This page redefined .table-container as a
+   horizontal scroller while base uses that name for a CLIPPING panel - the
+   collision the sticky sweep logged and deliberately left alone. The
+   redefinition is gone. The sideways scroll this table genuinely needs has a
+   name of its own, and base's .alv-matrix-scroll was NOT the home for it: it
+   carries display:none in @media print because the expense matrix does not
+   print. This table does. */
+.ind-wide { overflow-x: auto; }
+@media print { .ind-wide { overflow: visible !important; } }
+
+/* The sorted column keeps its emphasis - but NOT with a background.
+
+   The old rule was `background: #e3f2fd !important`, and !important in a
+   stylesheet beats an inline style, so sorting a column ERASED the grading
+   tint in exactly the column the reader had just asked to look at. The
+   emphasis moves to the edges and the weight, where it cannot compete with
+   the scale. Found by rendering the two together; no amount of reading the
+   CSS would have shown it. */
 .highlighted-column {
-    background: #e3f2fd !important;
     font-weight: 600;
-    border-left: 3px solid #0e7c8b;
-    border-right: 3px solid #0e7c8b;
-}
-.average-row .highlighted-column {
-    background-color: #0a5e6a !important;
-    border-left: 3px solid #ffffff;
-    border-right: 3px solid #ffffff;
+    box-shadow: inset 3px 0 0 var(--alv-accent), inset -3px 0 0 var(--alv-accent);
 }
 
 .sortable-header {
@@ -658,40 +623,10 @@
 #modalPropertyTable th.cell-perf-level,
 #modalPropertyTable td.cell-perf-level { width: 18%; }
 
-/* Rotate prompt (portrait phones for the data table) */
-.rotate-prompt {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px 20px;
-    color: #495057;
-}
-.rotate-prompt .rotate-icon {
-    font-size: 64px;
-    color: #0e7c8b;
-    margin-bottom: 18px;
-    animation: rotate-hint 2.4s ease-in-out infinite;
-}
-.rotate-prompt h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0 0 8px 0;
-}
-.rotate-prompt p {
-    font-size: 14px;
-    color: #6c757d;
-    margin: 0;
-    max-width: 280px;
-    line-height: 1.5;
-}
-@keyframes rotate-hint {
-    0%, 30%   { transform: rotate(0deg); }
-    50%, 70%  { transform: rotate(-90deg); }
-    100%      { transform: rotate(0deg); }
-}
+/* The rotate-to-landscape prompt is gone. base turns .alv-table into
+   cards on a phone, which is what every other list in this system does and
+   needs no instructions - and the prompt was telling a reader to hold the
+   device differently rather than showing them the data. */
 
 /* ============================================================
    MOBILE — max-width: 768px
@@ -772,14 +707,7 @@
     .chart-panel { padding: 14px; }
     .mini-chart-container { height: 220px; }
 
-    /* Data table → rotate prompt on portrait */
-    .table-panel.rotate-on-portrait .table-container,
-    .table-panel.rotate-on-portrait .data-table {
-        display: none;
-    }
-    .table-panel.rotate-on-portrait .rotate-prompt {
-        display: flex;
-    }
+    /* The table becomes cards through base now. */
 
     /* Trends button */
     .trends-button-panel { padding: 20px; }
@@ -999,28 +927,19 @@ class VacancyDashboard {
                 `).join('')}
             </div>
 
-            <div class="table-panel rotate-on-portrait">
-                <div class="table-header">
-                    <h5 class="table-title">
-                        <i class="fas fa-table"></i> Detailed Property Data
-                    </h5>
+            <div class="alv-card">
+                <div class="alv-card-head">
+                    <i class="fas fa-table"></i>
+                    <span class="alv-card-title">Detailed Property Data</span>
                 </div>
-                
-                <!-- Portrait phones see this rotate prompt instead of the table -->
-                <div class="rotate-prompt">
-                    <div class="rotate-icon"><i class="fas fa-mobile-alt"></i></div>
-                    <h3>Please rotate your device</h3>
-                    <p>This table fits best in landscape view. Tap an indicator card above for a detailed mobile-friendly breakdown.</p>
-                </div>
-                
                 ${this.getSelectedProperties().length > 0 ? `
-                    <div class="table-container">
-                        <table class="data-table">
+                    <div class="ind-wide">
+                        <table class="table alv-table data-grid">
                             <thead>
                                 <tr>
                                     <th>Property</th>
                                     ${this.indicators.map(indicator => 
-                                        `<th class="sortable-header ${this.sortConfig.column === indicator.key ? 'sorted-' + this.sortConfig.direction : ''}" 
+                                        `<th class="sortable-header num ${this.sortConfig.column === indicator.key ? 'sorted-' + this.sortConfig.direction : ''}" 
                                             data-column="${indicator.key}">
                                             ${indicator.label}
                                             <i class="fas fa-sort sort-icon ${this.getSortIconClass(indicator.key)}"></i>
@@ -1031,19 +950,21 @@ class VacancyDashboard {
                             <tbody>
                                 ${this.getSortedProperties().map(property => `
                                     <tr>
-                                        <td>${property.name}</td>
+                                        <td data-label="Property">${property.name}</td>
                                         ${this.indicators.map(indicator => 
-                                            `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(property[indicator.key])}</td>`
+                                            `<td class="num ${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" data-label="${indicator.label}">${indicator.format(property[indicator.key])}</td>`
                                         ).join('')}
                                     </tr>
                                 `).join('')}
-                                <tr class="average-row">
-                                    <td>PORTFOLIO AVERAGE</td>
-                                    ${this.indicators.map(indicator => 
-                                        `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td data-label="Portfolio">PORTFOLIO AVERAGE</td>
+                                    ${this.indicators.map(indicator =>
+                                        `<td class="num ${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}" data-label="${indicator.label}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
                                     ).join('')}
                                 </tr>
-                            </tbody>
+                            </tfoot>
                         </table>
                     </div>
                 ` : `

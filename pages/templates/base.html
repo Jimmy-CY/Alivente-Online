@@ -298,6 +298,25 @@
         --alv-age-4:      #b3261e;
         --alv-age-4-soft: #f6d5d2;
 
+        /* THE GRADING SCALE - five steps, best to worst.
+           A sibling of the ageing scale, NOT a member of it: ageing runs
+           "not ageing" to "severe" and begins at good, while a grade runs
+           across a distribution and has a MIDDLE. Ends anchored on the
+           semantics already in this block - step 1 is the good tint, step 5
+           is the bad tint, step 3 is neutral - so the scale cannot drift
+           away from the meanings around it, which is exactly what the
+           computed hsl() ramp it replaces had done. */
+        --alv-grade-1:      #1e7d4f;
+        --alv-grade-1-soft: #cfe9da;
+        --alv-grade-2:      #4a7b46;
+        --alv-grade-2-soft: #e2f0e0;
+        --alv-grade-3:      #5b6b73;
+        --alv-grade-3-soft: #f2f1ee;
+        --alv-grade-4:      #a8481a;
+        --alv-grade-4-soft: #fae3da;
+        --alv-grade-5:      #b3261e;
+        --alv-grade-5-soft: #f7d3ce;
+
         /* Action colours for the icon buttons. */
         --alv-edit:       #2563eb;
         --alv-view:       var(--alv-accent);
@@ -1966,6 +1985,41 @@ table.alv-matrix {
     background: var(--age-soft, var(--alv-neutral-soft));
     color: var(--age, var(--alv-ink));
 }
+/* THE GRADING SCALE.
+   Same machinery as the ageing scale above - the step class carries the
+   colour, the application class decides what to do with it - so a grade can
+   drive a cell tint today and a pill or a bar tomorrow without a second
+   family of classes.
+
+   COLOUR IS REDUNDANT HERE, NOT LOAD-BEARING. Every graded cell prints its
+   own figure, so a reader who cannot separate the two ends of a red-green
+   scale still has the number. That is the condition under which a scale like
+   this is defensible, and it is written down so the next screen that wants
+   one has to meet it too. */
+.alv-grade-1 { --grade: var(--alv-grade-1); --grade-soft: var(--alv-grade-1-soft); }
+.alv-grade-2 { --grade: var(--alv-grade-2); --grade-soft: var(--alv-grade-2-soft); }
+.alv-grade-3 { --grade: var(--alv-grade-3); --grade-soft: var(--alv-grade-3-soft); }
+.alv-grade-4 { --grade: var(--alv-grade-4); --grade-soft: var(--alv-grade-4-soft); }
+.alv-grade-5 { --grade: var(--alv-grade-5); --grade-soft: var(--alv-grade-5-soft); }
+
+.alv-grade-cell { background: var(--grade-soft, transparent); }
+.alv-grade-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+    background: var(--grade, var(--alv-neutral));
+}
+@media print {
+    /* A tint that carried meaning has to survive a printer, the way the
+       ageing columns do. */
+    .alv-grade-cell {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
 /* A year that straddles a change: the months before it carry the previous
    figure and the months after it the current one, so the column matches
    neither charge. Marked rather than explained away - an unmarked blend reads
