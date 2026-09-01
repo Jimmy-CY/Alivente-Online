@@ -61,10 +61,10 @@
                                 </a>
                                 <div class="issue-details">
                                     {% for detail in issue.details %}
-                                    <div class="detail-row {% if detail.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
+                                    <div class="detail-row">
                                         <span class="detail-comment">
                                             <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
-                                            <span class="comment-user">({{ detail.issues_details_user }})</span>:
+                                            <span class="alv-tag comment-author">{{ detail.issues_details_user }}</span>
                                             <span class="comment-text">{{ detail.issues_details_comment }}</span>
                                         </span>
                                     </div>
@@ -299,29 +299,19 @@
         border-left: 3px solid transparent;
     }
 
-    .detail-row.ss-comment {
-        background-color: #fff3e0;
-        border-left-color: #ff8c00;
-    }
+    /* THE COMMENT WASH IS GONE - 1 Sep.
 
-    .detail-row.ss-comment .comment-date,
-    .detail-row.ss-comment .comment-user,
-    .detail-row.ss-comment .comment-text {
-        color: #ff8c00;
-        font-weight: 600;
-    }
+       .ss-comment and .regular-comment painted the row AND the text - date,
+       author and body all set to #ff8c00 or #0e7c8b at weight 600 - so a
+       comment's words were coloured by who typed them. #0e7c8b is the system
+       accent, which means "this is a control" everywhere else.
 
-    .detail-row.regular-comment {
-        background-color: #e3f2fd;
-        border-left-color: #0e7c8b;
-    }
+       And the class was chosen by comparing a username to the literal 'SS'. A
+       person's initials, in a template. The author is a quiet .alv-tag chip now,
+       and there is no name to keep up to date. */
 
-    .detail-row.regular-comment .comment-date,
-    .detail-row.regular-comment .comment-user,
-    .detail-row.regular-comment .comment-text {
-        color: #0e7c8b;
-        font-weight: 600;
-    }
+
+
 
     .detail-comment {
         display: block;
@@ -413,15 +403,7 @@
             color: #333;
         }
 
-        .detail-row.ss-comment {
-            background-color: #f5f5f5 !important;
-            border-left-color: #333 !important;
-        }
 
-        .detail-row.regular-comment {
-            background-color: #fafafa !important;
-            border-left-color: #666 !important;
-        }
     }
 
     /* ==================== MOBILE (≤768px) ==================== */

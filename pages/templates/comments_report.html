@@ -85,22 +85,18 @@
     border-bottom: none;
 }
 
-/* Comment highlighting based on user type */
-.report-table tbody tr.admin-comment {
-    background-color: #e3f2fd;
-}
+/* THE COMMENT WASH IS GONE - 1 Sep.
 
-.report-table tbody tr.admin-comment:hover {
-    background-color: #bbdefb;
-}
+   tr.admin-comment painted the row #e3f2fd and tr.user-comment painted it
+   #fff3e0, each with a hover, a print and a phone-card variant; the author's
+   NAME was coloured to match by .user-cell.admin-user / .regular-user; the
+   history cards repeated the pair as .admin-comment-item /
+   .user-comment-item; and .color-legend explained the arrangement. Amber means
+   "attention" in five other places in this system; author identity is a
+   CATEGORY, not a verdict, and it is now a quiet .alv-tag chip carrying the
+   initials that were being printed anyway.
 
-.report-table tbody tr.user-comment {
-    background-color: #fff3e0;
-}
-
-.report-table tbody tr.user-comment:hover {
-    background-color: #ffe0b2;
-}
+   ONE tone for every author. Two would rebuild the same split in miniature. */
 
 .comment-cell {
     max-width: 500px;
@@ -127,14 +123,6 @@
 .user-cell {
     color: #495057;
     font-weight: 500;
-}
-
-.user-cell.admin-user {
-    color: #1565c0;
-}
-
-.user-cell.regular-user {
-    color: #e65100;
 }
 
 .issue-link {
@@ -246,38 +234,6 @@
 
 .btn-print:hover {
     background-color: #218838;
-}
-
-/* Legend */
-.color-legend {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 15px;
-    font-size: 13px;
-    flex-wrap: wrap;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.legend-color {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-.legend-color.admin {
-    background-color: #e3f2fd;
-    border: 1px solid #90caf9;
-}
-
-.legend-color.user {
-    background-color: #fff3e0;
-    border: 1px solid #ffcc80;
 }
 
 /* Modal Styles (custom modal — not Bootstrap) */
@@ -419,16 +375,6 @@
     border-left: 4px solid #0e7c8b;
 }
 
-.comment-item.admin-comment-item {
-    background-color: #e3f2fd;
-    border-left-color: #1565c0;
-}
-
-.comment-item.user-comment-item {
-    background-color: #fff3e0;
-    border-left-color: #e65100;
-}
-
 .comment-meta {
     display: flex;
     justify-content: space-between;
@@ -449,24 +395,12 @@
 }
 
 @media print {
-    .page-action-buttons, .color-legend, .btn-delete-icon, .modal {
+    .page-action-buttons, .btn-delete-icon, .modal {
         display: none !important;
     }
 
     .report-header {
         background: #0e7c8b !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .report-table tbody tr.admin-comment {
-        background-color: #e3f2fd !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    .report-table tbody tr.user-comment {
-        background-color: #fff3e0 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -515,13 +449,6 @@
         display: none;
     }
 
-    /* Legend wraps */
-    .color-legend {
-        gap: 12px;
-        font-size: 12px;
-        margin-bottom: 12px;
-        padding: 0 4px;
-    }
 
     .report-table {
         border: none;
@@ -544,16 +471,6 @@
         padding: 14px;
         border-left: 4px solid #0e7c8b;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    .report-table tbody tr.admin-comment {
-        background-color: #e3f2fd;
-        border-left-color: #1565c0;
-    }
-
-    .report-table tbody tr.user-comment {
-        background-color: #fff3e0;
-        border-left-color: #e65100;
     }
 
     .report-table tbody tr:hover {
@@ -758,18 +675,6 @@
         </div>
     </div>
 
-    <!-- Color Legend -->
-    <div class="color-legend">
-        <div class="legend-item">
-            <div class="legend-color admin"></div>
-            <span>Admin Comments</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color user"></div>
-            <span>User Comments</span>
-        </div>
-    </div>
-
     <div class="table-container">
         {% if report_data %}
         <table class="report-table">
@@ -787,7 +692,7 @@
             </thead>
             <tbody>
                 {% for item in report_data %}
-                <tr class="{% if item.is_admin %}admin-comment{% else %}user-comment{% endif %}">
+                <tr>
                     <td class="comment-cell" onclick="showIssueDetails({{ item.issue_id }})">
                         {{ item.comment }}
                         {% if item.issue_id %}
@@ -814,8 +719,8 @@
                             <span style="color: #999;">—</span>
                         {% endif %}
                     </td>
-                    <td class="user-cell {% if item.is_admin %}admin-user{% else %}regular-user{% endif %}">
-                        {{ item.user }}
+                    <td class="user-cell">
+                        <span class="alv-tag comment-author">{{ item.user }}</span>
                     </td>
                     {% if request.user.is_superuser %}
                     <td class="delete-cell" style="text-align: center;">
@@ -890,11 +795,10 @@ function displayIssueDetails(data) {
     let commentsHtml = '';
     if (data.comments && data.comments.length > 0) {
         data.comments.forEach(comment => {
-            const commentClass = comment.is_admin ? 'admin-comment-item' : 'user-comment-item';
             commentsHtml += `
-                <div class="comment-item ${commentClass}">
+                <div class="comment-item">
                     <div class="comment-meta">
-                        <span class="comment-user">${comment.user}</span>
+                        <span class="alv-tag comment-author">${comment.user}</span>
                         <span class="comment-date">${comment.date}</span>
                     </div>
                     <div class="comment-text">${comment.comment}</div>

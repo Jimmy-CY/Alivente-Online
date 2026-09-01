@@ -133,10 +133,10 @@ Issues (Comments)
                             <div class="issue-details">
                                 {% for idresults in issues_details %}
                                     {% if idresults.issues_id == isresults.issues_id %}
-                                    <div class="detail-row {% if idresults.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                                         <span class="detail-comment" style="flex: 1;">
                                             <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
-                                            <span class="comment-user">({{ idresults.issues_details_user }})</span>:
+                                            <span class="alv-tag comment-author">{{ idresults.issues_details_user }}</span>
                                             <span class="comment-text">{{ idresults.issues_details_comment }}</span>
                                             {% if idresults.issues_details_id in edited_comment_ids %}<span class="comment-edited-tag">(edited)</span>{% endif %}
                                         </span>
@@ -650,31 +650,19 @@ document.addEventListener('DOMContentLoaded', function() {
     border-left: 3px solid transparent;
 }
 
-/* SS User Comments - Orange Highlighting */
-.detail-row.ss-comment {
-    background-color: #fff3e0;
-    border-left-color: #ff8c00;
-}
+/* THE COMMENT WASH IS GONE - 1 Sep.
 
-.detail-row.ss-comment .comment-date,
-.detail-row.ss-comment .comment-user,
-.detail-row.ss-comment .comment-text {
-    color: #ff8c00;
-    font-weight: 600;
-}
+   .ss-comment and .regular-comment painted the row AND the text - date,
+   author and body all set to #ff8c00 or #0e7c8b at weight 600 - so a
+   comment's words were coloured by who typed them. #0e7c8b is the system
+   accent, which means "this is a control" everywhere else.
 
-/* Regular User Comments - System Blue */
-.detail-row.regular-comment {
-    background-color: #e3f2fd;
-    border-left-color: #0e7c8b;
-}
+   And the class was chosen by comparing a username to the literal 'SS'. A
+   person's initials, in a template. The author is a quiet .alv-tag chip now,
+   and there is no name to keep up to date. */
 
-.detail-row.regular-comment .comment-date,
-.detail-row.regular-comment .comment-user,
-.detail-row.regular-comment .comment-text {
-    color: #0e7c8b;
-    font-weight: 600;
-}
+
+
 
 .detail-comment {
     display: block;

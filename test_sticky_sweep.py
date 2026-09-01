@@ -314,14 +314,34 @@ async def main():
     head('5. what did NOT change')
     # The round drops cosmetics that base already provides. Two things really
     # do move, and they are named here so neither is a surprise on Live.
+    # SUPERSEDED 1 Sep by the comment-tint round, and MOVED - this is the
+    # SCOPE GUARD kind. The claim is that the sticky sweep changed no MARKUP,
+    # and it was measured live-vs-.bak_sticky. Correct, and with an expiry
+    # date built in: it holds only until a later round legitimately edits one
+    # of these pages. The comment-tint round edits comments_report.html.
+    #
+    # The claim is still provable, just not against the LIVE file.
+    # .bak_cmttint is the page AS THE SWEEP LEFT IT, because that round was
+    # the first to touch its markup afterwards. So for a page a later round
+    # owns, the comparison is between the TWO SNAPSHOTS - which is true for
+    # good, rather than decaying the next time anyone edits anything.
+    LATER = {'comments_report.html': '.bak_cmttint'}
     for rel in PAGES:
         path = os.path.join(TPL, *rel.split('/'))
-        src, bak = read(path), read(path + SUFFIX)
+        _later = LATER.get(rel)
+        _as_left = (path + _later) if _later else path
+        if _later and not os.path.exists(_as_left):
+            check('%-30s a later round left a snapshot to measure' % rel,
+                  False, _later)
+            continue
+        src, bak = read(_as_left), read(path + SUFFIX)
 
         def markup(t):
             t = re.sub(r'<style[^>]*>.*?</style>', '', t, flags=re.S)
             return re.sub(r'<!--.*?-->', '', t, flags=re.S)
-        check('%-30s markup is byte-for-byte unchanged' % rel,
+        check('%-30s markup is byte-for-byte unchanged%s'
+              % (rel, ' (%s vs %s - a later round owns the live file)'
+                 % (_later, SUFFIX) if _later else ''),
               markup(src) == markup(bak))
     now = await measure(css_of(read(os.path.join(TPL, 'fsr.html'))))
     check('the container still looks like a card - base provides it',
