@@ -8,6 +8,12 @@ WHAT THIS SUITE IS FOR
 ----------------------
   * SECTION 2 RENDERS all three comment surfaces and asks the browser the only
     question that matters: do two comments by DIFFERENT authors look the same?
+    THE FIXTURE MUST RENDER WHAT THE PAGE RENDERS. Its report rows were
+    <table class="report-table"> until 2 Sep, when the Comments Report round
+    deleted that class - after which the table was styled by NOTHING and this
+    section passed 80 of 80 on two unstyled rows, because every check here
+    asserts an ABSENCE of difference. A stale harness that fails tells you it
+    is stale; one that passes just stops testing. It is .alv-table now.
     Same row background, same text colour, same weight. A control renders a
     deliberately washed row beside them, so "they match" cannot pass on a
     probe that is blind.
@@ -153,11 +159,11 @@ if sync_playwright is not None:
  #washed .comment-text { color: rgb(255, 140, 0) !important; }
 </style>
 
-<table class="report-table"><tbody>
+<table class="alv-table"><tbody>
   <tr id="rowA"><td class="comment-cell"><span class="comment-text">first</span></td>
-      <td class="user-cell">%s</td></tr>
+      <td class="user-cell" data-label="User">%s</td></tr>
   <tr id="rowB"><td class="comment-cell"><span class="comment-text">second</span></td>
-      <td class="user-cell">%s</td></tr>
+      <td class="user-cell" data-label="User">%s</td></tr>
 </tbody></table>
 
 <div class="comment-item" id="cardA"><div class="comment-meta">%s</div>

@@ -248,21 +248,47 @@ async def main():
     print('  base\'s sticky rule selects .alv-table. A page that never joined')
     print('  the standard has nothing to stick, whatever its wrapper says.')
     print('')
-    live, preemptive = [], []
+    # TWO CLAIMS, and until 2 Sep they shared one variable.
+    #
+    #   was_live  HISTORICAL: what the sweep FOUND, measured on .bak_sticky.
+    #             A fact about 30 Aug. It cannot change, so a check on it
+    #             cannot go stale.
+    #   live      TODAY: what is on the standard now, measured on the live
+    #             file. This set GROWS as pages migrate, and a round that
+    #             grows it has succeeded.
+    #
+    # Reading both off the live file made the second police the first:
+    # comments_report.html joined the standard on 2 Sep and the split check
+    # below failed, reporting a successful migration as a defect. Third scope
+    # guard moved in this suite; like the other two it comes out stronger,
+    # because section 4 now measures EVERY migrated page instead of the one
+    # the sweep happened to find.
+    live, preemptive, was_live = [], [], []
     for rel in PAGES:
         path = os.path.join(TPL, *rel.split('/'))
         if not os.path.exists(path):
             continue
         (live if on_standard(read(path)) else preemptive).append(rel)
+        bak = path + SUFFIX
+        if os.path.exists(bak) and on_standard(read(bak)):
+            was_live.append(rel)
     for rel in live:
         print('    %-32s ON the standard - measured below' % rel)
     for rel in preemptive:
         print('    %-32s not on it yet - the drop is pre-emptive' % rel)
     check('at least one page is on the standard, or there is nothing to measure',
           bool(live), '%d of %d' % (len(live), len(PAGES)))
-    check('  and the split is what the round claimed',
-          len(live) == 1 and live == ['physical_invoice_list.html'],
-          '%s' % live)
+    check('  and the split is what the SWEEP found - measured on %s, '
+          'not on the live files' % SUFFIX,
+          was_live == ['physical_invoice_list.html'], '%s' % was_live)
+    check('  .. and every page it found has STAYED on the standard',
+          set(was_live) <= set(live),
+          'was %s, now %s' % (was_live, live))
+    check('  .. and any page that JOINED since is measured below, not '
+          'reported as a defect',
+          True, '%d joined: %s'
+          % (len(set(live) - set(was_live)),
+             sorted(set(live) - set(was_live)) or 'none yet'))
 
     head('4. THE MEASUREMENT - the page\'s OWN table, scrolled')
     print('  A heading that sticks sits at the top of the viewport after a')
@@ -306,8 +332,12 @@ async def main():
         was = container_rules(read(bak))
         check('  %-28s CONTROL: it DID, before the sweep' % '',
               any(re.search(r'overflow\s*:\s*hidden', d) for d in was))
-        check('  %-28s and it is honestly NOT on .alv-table, so nothing on '
-              'screen moved' % '', not on_standard(read(path)))
+        # Also historical, and also on the backup. This loop only walks
+        # `preemptive`, so the live file cannot be on the standard here
+        # today - but reading the backup is what makes the sentence TRUE
+        # rather than merely currently-true.
+        check('  %-28s and it was honestly NOT on .alv-table, so nothing on '
+              'screen moved' % '', not on_standard(read(bak)))
     if missing:
         return
 
