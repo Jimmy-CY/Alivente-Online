@@ -937,6 +937,23 @@
       .alv-stat-attn .alv-stat-value { color: var(--alv-warn); }
       .alv-stat-bad  .alv-stat-value { color: var(--alv-bad); }
 
+      /* AND FROM THE AGEING SCALE, for a figure that is a DURATION rather
+         than a verdict. .alv-age-0..4 set --age; this is the application
+         class that puts it on a figure, the same way .alv-age-pill and
+         .alv-age-dot put it on a chip and a dot.
+
+         The Issues Analysis strip asked. Its "Oldest open" tile carried a
+         verdict class in the MARKUP - the script only ever wrote the number
+         - so it read 12d in red exactly as loudly as it read 300d. A
+         verdict that cannot change is decoration.
+
+         NO COMPACT DENSITY CAME WITH IT, though a draft of that round tried.
+         The argument was that a .78rem uppercase label does not fit a 180px
+         tile; measured, the longest of the five is 137px in a 142px box and
+         all five sit on one line. The variant saved 23px of strip height and
+         cost a 9.9px label. The restraint above this block stands. */
+      .alv-stat-age .alv-stat-value { color: var(--age, var(--alv-ink-strong)); }
+
       @media screen and (max-width: 768px) {
         /* Four figures across a phone is four figures nobody can read. */
         .alv-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }

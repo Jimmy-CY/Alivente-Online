@@ -329,11 +329,34 @@ elif sync_playwright is not None:
 # ===========================================================================
 head('5. scope: what this round deliberately left alone')
 # ===========================================================================
-check('.ia-kpi is untouched - the tiles are C2',
-      '.ia-kpi{background:' in FC and '.ia-kpi .v{font-size:18px' in FC)
-check('.ia-badge keeps its own tints - it becomes .alv-pill in C2',
-      '.ia-badge.open{background:#fff3d6' in FC
-      and '.ia-badge.res{background:#d8f5da' in FC)
+# MOVED 2 Sep by C2, and it is the SCOPE GUARD kind of 4b - the fourth
+# variant, and the fifth time this project has moved one.
+#
+# These two said "C1 did not touch the tiles or the badges, they are C2's".
+# True when written. C2 then migrated both, and a claim about what C1 left
+# alone cannot be measured on a file a later round owns.
+#
+# So it is measured on the SNAPSHOT: fsr.html.bak_iatile is this page as C1
+# left it, because C2 was the first round to touch these components since.
+# Two fixed points, true for good, rather than a claim with an expiry date.
+_C1 = os.path.join(T, 'fsr.html.bak_iatile')
+AS_C1_LEFT_IT = nocomment(read(_C1)) if os.path.exists(_C1) else None
+if AS_C1_LEFT_IT is None:
+    check('C1 left a snapshot to measure its own scope against', False,
+          'fsr.html.bak_iatile')
+else:
+    check('C1 did not touch the tiles - measured on fsr.html.bak_iatile, '
+          'the page as C1 left it',
+          '.ia-kpi{background:' in AS_C1_LEFT_IT
+          and '.ia-kpi .v{font-size:18px' in AS_C1_LEFT_IT)
+    check('  nor the badges',
+          '.ia-badge.open{background:#fff3d6' in AS_C1_LEFT_IT
+          and '.ia-badge.res{background:#d8f5da' in AS_C1_LEFT_IT)
+    # AND THE FORWARD HALF. A guard that only ever loosens ends up
+    # asserting nothing, so the live file has to show the work landed.
+    check('  and C2 has since migrated both onto base',
+          'class="alv-stats"' in FC and 'alv-pill alv-pill-good' in FC
+          and '.ia-kpi{background:' not in FC)
 check('.ia-tab is still a hand-rolled tab - the segmented control is its '
       'own round, with the Budget/Actuals .btn-group',
       '.ia-tab{border:none;background:transparent' in FC)

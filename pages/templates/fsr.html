@@ -2181,12 +2181,14 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
           <div class="ia-ctl"><span>To:</span><select class="ia-pill" id="iaTo"></select></div>
         </div>
 
-        <div class="ia-kpis">
-          <div class="ia-kpi"><div class="v" id="iaKTotal">&ndash;</div><div class="l">Total issues</div></div>
-          <div class="ia-kpi"><div class="v open" id="iaKOpen">&ndash;</div><div class="l">Still open</div></div>
-          <div class="ia-kpi"><div class="v done" id="iaKRes">&ndash;</div><div class="l">Resolved</div></div>
-          <div class="ia-kpi"><div class="v" id="iaKMed">&ndash;</div><div class="l">Median to resolve</div></div>
-          <div class="ia-kpi"><div class="v crit" id="iaKOld">&ndash;</div><div class="l">Oldest open</div></div>
+        <div class="alv-stats">
+          <div class="alv-stat"><div class="alv-stat-value" id="iaKTotal">&ndash;</div><div class="alv-stat-label">Total issues</div></div>
+          <div class="alv-stat alv-stat-attn"><div class="alv-stat-value" id="iaKOpen">&ndash;</div><div class="alv-stat-label">Still open</div></div>
+          <div class="alv-stat alv-stat-good"><div class="alv-stat-value" id="iaKRes">&ndash;</div><div class="alv-stat-label">Resolved</div></div>
+          <div class="alv-stat"><div class="alv-stat-value" id="iaKMed">&ndash;</div><div class="alv-stat-label">Median to resolve</div></div>
+          <!-- The one tile whose class the script sets: a duration takes the
+               ageing scale, not a fixed red. See setKpis() below. -->
+          <div class="alv-stat alv-stat-age" id="iaKOldTile"><div class="alv-stat-value" id="iaKOld">&ndash;</div><div class="alv-stat-label">Oldest open</div></div>
         </div>
 
         <div class="ia-tabs">
@@ -2265,11 +2267,16 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   #issuesAnalysisModal .ia-dd-menu label{display:flex;align-items:center;gap:8px;padding:5px 6px;font-size:13px;color:var(--alv-ink);cursor:pointer;border-radius:6px;font-weight:400;margin:0;}
   #issuesAnalysisModal .ia-dd-menu label:hover{background:var(--alv-line-soft);}
   #issuesAnalysisModal .ia-dd-menu .ia-selall{border-bottom:1px solid var(--alv-line);margin-bottom:4px;padding-bottom:6px;font-weight:600;}
-  #issuesAnalysisModal .ia-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
-  #issuesAnalysisModal .ia-kpi{background:var(--alv-paper);border:1px solid var(--alv-line);border-radius:9px;padding:9px 10px;min-width:0;}
-  #issuesAnalysisModal .ia-kpi .v{font-size:18px;font-weight:700;line-height:1;white-space:nowrap;}
-  #issuesAnalysisModal .ia-kpi .l{font-size:9.5px;color:var(--alv-ink-faint);text-transform:uppercase;letter-spacing:.02em;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  #issuesAnalysisModal .ia-kpi .v.open{color:var(--alv-warn);} #issuesAnalysisModal .ia-kpi .v.done{color:var(--alv-good);} #issuesAnalysisModal .ia-kpi .v.crit{color:var(--alv-bad);}
+  /* THE STRIP IS base's NOW. Deleted from here: .ia-kpis, .ia-kpi, its
+     .v and .l, and the three verdict rules. base's own .alv-stat comment
+     names .ia-kpi as one of the four screens that made the primitive
+     necessary, and --alv-stats-cols is a DEFAULTED custom property
+     because of "the five in the Issues Analysis strip" - this strip. It
+     was built for this modal and never applied to it.
+
+     One rule stays, and it is the one base cannot know: how many across. */
+  #issuesAnalysisModal .alv-stats { --alv-stats-cols: 5; }
+
   #issuesAnalysisModal .ia-tabs{display:flex;gap:4px;border-bottom:1px solid var(--alv-line);margin-bottom:6px;overflow-x:auto;}
   #issuesAnalysisModal .ia-tab{border:none;background:transparent;padding:10px 12px;font-size:13px;color:var(--alv-ink-soft);cursor:pointer;border-bottom:3px solid transparent;font-weight:600;white-space:nowrap;flex:1 1 0;}
   #issuesAnalysisModal .ia-tab.active{color:var(--alv-accent-ink);border-bottom-color:var(--alv-accent);}
@@ -2299,16 +2306,17 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   table.ia-tbl td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
   table.ia-tbl a.ia-link{color:var(--alv-accent-ink);text-decoration:none;font-weight:700;}
   table.ia-tbl a.ia-link:hover{text-decoration:underline;}
-  .ia-badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11px;font-weight:600;}
-  .ia-badge.open{background:#fff3d6;color:#8a6100;} .ia-badge.res{background:#d8f5da;color:#0a6b1e;}
-  .ia-age{font-weight:700;}
   .ia-empty-row{padding:20px 16px;color:var(--alv-ink-faint);font-size:12.5px;}
   /* drillRows() wrote this colour inline, which no token can reach. */
   .ia-desc{color:var(--alv-ink-faint);}
 
   @media (max-width:768px){
-    #issuesAnalysisModal .ia-kpis{grid-template-columns:repeat(5,1fr);gap:5px;}
-    #issuesAnalysisModal .ia-kpi{padding:8px 5px;} #issuesAnalysisModal .ia-kpi .v{font-size:14px;} #issuesAnalysisModal .ia-kpi .l{font-size:8px;}
+    /* FIVE ACROSS ON A PHONE WAS HERE, at 14px figures and 8px
+       labels. base drops .alv-stats to two columns and says why:
+       "Four figures across a phone is four figures nobody can
+       read." Five at 8px is not one glance, it is five numbers
+       you squint at. base's rule wins, and its own phone sizes
+       come with it - two across means there is room for them. */
     #issuesAnalysisModal .ia-tab{flex:0 0 auto;font-size:12.5px;padding:9px 10px;}
     #issuesAnalysisModal .ia-chart,#issuesAnalysisModal .ia-chart.tall{height:330px;}
     .ia-drill-overlay{padding:0;align-items:flex-end;}
@@ -2358,10 +2366,13 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   // "There is deliberately no step for NOT YET DUE. That is the absence of
   // ageing, not the first degree of it, and it takes the good token." So
   // --alv-age-1 goes unused in this modal - not an oversight, the point.
-  var AGE_BANDS=[{label:'0–30 days',min:0,max:30,c:GOOD},
-    {label:'31–90 days',min:31,max:90,c:WARN},
-    {label:'91–180 days',min:91,max:180,c:SERIOUS},
-    {label:'180+ days',min:181,max:1e9,c:CRIT}];
+  // `cls` is base's severity step. --alv-age-1 is absent on purpose: this
+  // modal's first band is the ABSENCE of ageing, which base's scale spells
+  // .alv-age-0 and colours with the good token.
+  var AGE_BANDS=[{label:'0–30 days',min:0,max:30,c:GOOD,cls:'alv-age-0'},
+    {label:'31–90 days',min:31,max:90,c:WARN,cls:'alv-age-2'},
+    {label:'91–180 days',min:91,max:180,c:SERIOUS,cls:'alv-age-3'},
+    {label:'180+ days',min:181,max:1e9,c:CRIT,cls:'alv-age-4'}];
   var BUCKETS=AGE_BANDS;
   var DATA=null, selected=null, charts={}, loaded=false, dlReady=false;
   var lastDrill=null, pendingReturn=null;   // for restoring the drill-down after visiting an issue
@@ -2429,7 +2440,15 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     var dtr=resW.filter(function(i){return i.days_to_resolve!=null;}).map(function(i){return i.days_to_resolve;});
     $('iaKMed').textContent=dtr.length?median(dtr)+'d':'–';
     var ages=openW.filter(function(i){return i.age_days!=null;}).map(function(i){return i.age_days;});
-    $('iaKOld').textContent=ages.length?Math.max.apply(null,ages)+'d':'–';
+    var oldest=ages.length?Math.max.apply(null,ages):null;
+    $('iaKOld').textContent=oldest!=null?oldest+'d':'–';
+    // A DURATION IS NOT A VERDICT. This tile carried a fixed red in the
+    // markup and the script only ever wrote the number, so 12d shouted
+    // exactly as loudly as 300d. The step comes from the same bands the
+    // chart and the drill chips read; with nothing open there is no band
+    // and the figure stays plain.
+    $('iaKOldTile').className='alv-stat alv-stat-age'+
+      (oldest!=null?' '+ageBand(oldest).cls:'');
 
     ensureChartLib(function(){ drawProp(w); drawAge(openW); drawFlow(propFiltered()); });
   }
@@ -2499,12 +2518,18 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
           tooltip:{mode:'index',intersect:false},datalabels:{display:false}}})});
   }
 
-  function ageChip(a){
-    var c=AGE_BANDS[0].c;
+  // ONE LOOKUP, THREE CONSUMERS: the chart bars, the drill-list chips and
+  // the "Oldest open" tile. Each band now carries its severity CLASS as
+  // well as its colour, so a chip and the bar beside it cannot part
+  // company - the class and the value come out of the same row.
+  function ageBand(a){
     for(var i=0;i<AGE_BANDS.length;i++){
-      if(a>=AGE_BANDS[i].min&&a<=AGE_BANDS[i].max){c=AGE_BANDS[i].c;break;}
+      if(a>=AGE_BANDS[i].min&&a<=AGE_BANDS[i].max) return AGE_BANDS[i];
     }
-    return '<span class="ia-age" style="color:'+c+'">'+a+'d</span>';}
+    return AGE_BANDS[0];
+  }
+  function ageChip(a){
+    return '<span class="alv-age-pill '+ageBand(a).cls+'">'+a+'d</span>';}
   function drillRows(list){
     if(!list.length) return '<div class="ia-empty-row">No issues.</div>';
     var open=!list[0].is_resolved;
@@ -2512,7 +2537,7 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
       '<td data-label="Property">'+esc(i.prop)+'</td>'+
       '<td data-label="Issue"><a class="ia-link" href="'+esc(i.url)+'">'+esc(i.head)+'</a>'+(i.desc?'<br><span class="ia-desc">'+esc(i.desc)+'</span>':'')+'</td>'+
       '<td class="num" data-label="Logged">'+fmtDate(i.logged)+'</td>'+
-      '<td class="num" data-label="Status">'+(i.is_resolved?'<span class="ia-badge res">Resolved</span>':'<span class="ia-badge open">'+esc(i.status)+'</span>')+'</td>'+
+      '<td class="num" data-label="Status">'+(i.is_resolved?'<span class="alv-pill alv-pill-good">Resolved</span>':'<span class="alv-pill alv-pill-attn">'+esc(i.status)+'</span>')+'</td>'+
       '<td class="num" data-label="'+(open?'Age':'Days')+'">'+(i.is_resolved?(i.days_to_resolve!=null?i.days_to_resolve+'d':'–'):(i.age_days!=null?ageChip(i.age_days):'–'))+'</td>'+
       '</tr>';}).join('');
     return '<table class="ia-tbl"><thead><tr><th>Property</th><th>Issue</th><th class="num">Logged</th><th class="num">Status</th><th class="num">'+(open?'Age':'Days')+'</th></tr></thead><tbody>'+body+'</tbody></table>';
