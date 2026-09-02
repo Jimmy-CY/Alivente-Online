@@ -273,6 +273,27 @@
         --alv-neutral:    #6b7780;
         --alv-neutral-soft: #eef1f2;
 
+        /* THE CATEGORY FAMILY'S INKS, lifted out of the .alv-tag-* rules so
+           that something which is not a chip can use one.
+
+           The Issues Analysis modal's "Logged vs resolved" chart asked
+           first. Logged is a CATEGORY - how many arrived - not a verdict,
+           so it wanted a categorical tone; but the five tag inks were
+           literals inside class definitions, and a canvas element cannot
+           read a class. It had #2a78d6, a blue nothing else in the system
+           used.
+
+           Lifting all five rather than the one that was asked for: a family
+           with one member promoted reads as an accident, and the next
+           asker wants a different colour of the same set. No chip changes
+           appearance - the classes below now name these instead of
+           repeating them. */
+        --alv-tag-sky-ink:   #2b6a86;
+        --alv-tag-moss-ink:  #4a6b3c;
+        --alv-tag-clay-ink:  #8a5a34;
+        --alv-tag-slate-ink: #55606b;
+        --alv-tag-plum-ink:  #6b4a72;
+
         /* A sequential scale, for AGEING. Four steps, mild to severe.
            Named for ageing rather than a general-purpose sequence: one use
            case does not justify a general scale, and the same restraint
@@ -964,11 +985,11 @@
         opacity: .55;
         flex: none;
       }
-      .alv-tag-sky   { color: #2b6a86; background: #e8f1f5; border-color: #d3e4ec; }
-      .alv-tag-moss  { color: #4a6b3c; background: #eef4e9; border-color: #dde8d6; }
-      .alv-tag-clay  { color: #8a5a34; background: #f7efe7; border-color: #ecdfd2; }
-      .alv-tag-slate { color: #55606b; background: #eef1f3; border-color: #e0e5e9; }
-      .alv-tag-plum  { color: #6b4a72; background: #f3edf5; border-color: #e5dae8; }
+      .alv-tag-sky   { color: var(--alv-tag-sky-ink);   background: #e8f1f5; border-color: #d3e4ec; }
+      .alv-tag-moss  { color: var(--alv-tag-moss-ink);  background: #eef4e9; border-color: #dde8d6; }
+      .alv-tag-clay  { color: var(--alv-tag-clay-ink);  background: #f7efe7; border-color: #ecdfd2; }
+      .alv-tag-slate { color: var(--alv-tag-slate-ink); background: #eef1f3; border-color: #e0e5e9; }
+      .alv-tag-plum  { color: var(--alv-tag-plum-ink);  background: #f3edf5; border-color: #e5dae8; }
 
       /* ================================================================
          Print                                              --alv-print-std

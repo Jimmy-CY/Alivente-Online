@@ -355,7 +355,11 @@ async def main():
     # the first to touch its markup afterwards. So for a page a later round
     # owns, the comparison is between the TWO SNAPSHOTS - which is true for
     # good, rather than decaying the next time anyone edits anything.
-    LATER = {'comments_report.html': '.bak_cmttint'}
+    # FOURTH page-owner entry, 2 Sep. The Issues Analysis
+    # palette round edits fsr.html's drill-down script, so
+    # its historical claim moves to two snapshots too.
+    LATER = {'comments_report.html': '.bak_cmttint',
+             'fsr.html': '.bak_iapal'}
     for rel in PAGES:
         path = os.path.join(TPL, *rel.split('/'))
         _later = LATER.get(rel)
