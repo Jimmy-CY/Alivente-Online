@@ -40,7 +40,7 @@
 
     <style>
     /* Mobile: stack the Financial Indicators controls full-width (matches app standard) */
-    @media (max-width: 768px) {
+    @media screen and (max-width: 768px) {
         .fi-controls { flex-direction: column !important; align-items: stretch !important; }
         .fi-controls > div { width: 100%; }
         .fi-controls select { width: 100% !important; }
@@ -757,7 +757,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
     .indicator-cards {
         grid-template-columns: repeat(3, 1fr);
         gap: 10px;
@@ -772,7 +772,7 @@
 /* ============================================================
    MOBILE (≤768px) — phone treatment
    ============================================================ */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     /* Inputs need 16px to prevent iOS zoom */
     input, select, textarea, .form-control {
         font-size: 16px !important;

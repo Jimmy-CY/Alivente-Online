@@ -490,7 +490,7 @@ Home
     .today-row__chevron { font-size: 0.85rem; color: #adb5bd; flex-shrink: 0; }
 
     /* ==================== TABLET (≤767px) ==================== */
-    @media (max-width: 767px) {
+    @media screen and (max-width: 767px) {
         .brief-grid { grid-template-columns: 1fr; }
         .ins-card, .ins-card--wide, .ins-card--half, .ins-card--full { grid-column: auto; }
         .ins-actions .today-row { min-width: 0; }
@@ -528,7 +528,7 @@ Home
     .status-info { background: #0e7c8b; color: white; }
 
     /* Mobile: full-screen modal + table-as-cards (matches notifications.html) */
-    @media (max-width: 768px) {
+    @media screen and (max-width: 768px) {
         .modal-overlay { height: 100dvh; }
         .modal-overlay .modal-content {
             max-width: 100vw; max-height: 100dvh; width: 100vw; height: 100dvh;

@@ -360,9 +360,24 @@ else:
 check('.ia-tab is still a hand-rolled tab - the segmented control is its '
       'own round, with the Budget/Actuals .btn-group',
       '.ia-tab{border:none;background:transparent' in FC)
-check('the page-local @media is still unqualified - the print-leak round '
-      'is sized from Show-PrintLeak.py, not from this page',
-      '@media (max-width:768px){' in F)
+# MOVED by the print-leak round - the SCOPE GUARD kind of 4b, and the sixth
+# time this project has moved one. This said "the page-local @media is still
+# unqualified, that round owns it". True when written; that round has landed.
+#
+# Measured on the SNAPSHOT now: fsr.html.bak_leak is the page as the
+# print-leak round found it, so the historical claim is true for good rather
+# than expiring the moment the work it was waiting for arrives.
+_PL = os.path.join(T, 'fsr.html.bak_leak')
+if not os.path.exists(_PL):
+    check('the print-leak round left a snapshot to measure against', False,
+          'fsr.html.bak_leak')
+else:
+    check('the page-local @media WAS still unqualified when this round ran '
+          '- measured on fsr.html.bak_leak',
+          '@media (max-width:768px){' in read(_PL))
+    check('  and the print-leak round has since guarded it',
+          '@media screen and (max-width:768px){' in F
+          and '@media (max-width:768px){' not in F)
 
 for blk in re.findall(r'<style[^>]*>(.*?)</style>', F, re.S):
     check('braces balance in a style block',

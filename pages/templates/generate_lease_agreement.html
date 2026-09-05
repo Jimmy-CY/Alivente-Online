@@ -120,7 +120,7 @@
     display: none;
   }
   
-  @media (max-width: 768px) {
+  @media screen and (max-width: 768px) {
     .furniture-row {
       grid-template-columns: 1fr 1fr;
     }
@@ -134,7 +134,7 @@
 
   /* ==================== MOBILE DESKTOP-ONLY GUARD ==================== */
   /* On mobile (≤768px), hide the entire wizard and show a message instead */
-  @media (max-width: 768px) {
+  @media screen and (max-width: 768px) {
 
     /* Hide the wizard container on mobile */
     .desktop-wizard-container {
