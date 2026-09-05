@@ -141,7 +141,7 @@ Issues (Comments)
                                             {% if idresults.issues_details_id in edited_comment_ids %}<span class="comment-edited-tag">(edited)</span>{% endif %}
                                         </span>
                                         {% if idresults.issues_details_user == user_initials and not idresults.issues_details_last_notified_at %}
-                                        <button type="button" class="comment-edit-btn"
+                                        <button type="button" class="comment-edit-btn status-btn"
                                                 data-comment-id="{{ idresults.issues_details_id }}"
                                                 data-comment-text="{{ idresults.issues_details_comment|default:'' }}"
                                                 onclick="openEditCommentModal(this)"
@@ -151,9 +151,9 @@ Issues (Comments)
                                         {% endif %}
                                         <span class="notify-urgent-cell" data-comment-id="{{ idresults.issues_details_id }}">
                                             {% if idresults.is_in_urgent_cooldown %}
-                                                <span class="notified-badge" style="background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 3px; font-size: 12px; white-space: nowrap;">Notified {{ idresults.urgent_cooldown_minutes_ago }} min ago</span>
+                                                <span class="notified-badge alv-pill alv-pill-neutral">Notified {{ idresults.urgent_cooldown_minutes_ago }} min ago</span>
                                             {% else %}
-                                                <button type="button" class="notify-urgent-btn" data-comment-id="{{ idresults.issues_details_id }}" style="background-color: #ffc107; border: 1px solid #ffc107; color: #212529; padding: 4px 10px; border-radius: 3px; font-size: 12px; cursor: pointer; white-space: nowrap;">🔔 Notify Now</button>
+                                                <button type="button" class="notify-urgent-btn status-btn" data-comment-id="{{ idresults.issues_details_id }}"><i class="fas fa-bell"></i> Notify Now</button>
                                             {% endif %}
                                         </span>
                                     </div>
@@ -843,8 +843,35 @@ document.addEventListener('DOMContentLoaded', function() {
     .ei-modal-content { min-height: 100vh; border-radius: 0; }
 }
 /* ===== Comment edit (added) ===== */
-.comment-edit-btn { background: #e9ecef; border: 1px solid #ced4da; color: #495057; padding: 4px 9px; border-radius: 3px; font-size: 12px; cursor: pointer; white-space: nowrap; }
-.comment-edit-btn:hover { background: #dde2e6; }
+/* .comment-edit-btn, .notify-urgent-btn and .notified-badge carry NO
+   appearance any more - they are JS hooks and nothing else. The script
+   binds clicks on .notify-urgent-btn, replaces .notify-urgent-cell, and
+   finds .comment-edit-btn by data-comment-id to remove the Edit button
+   once a comment has been sent. Base's .status-btn and .alv-pill do the
+   looking; these names do the finding.
+
+   ONE RULE STAYS, and it is a TONE rather than a component. Notify Now
+   sends a notification, so it should not look identical to a button that
+   opens a text box - but it was a SOLID slab of #ffc107, written inline on
+   the element, and amber means "needs attention" in five other places
+   here: --alv-warn, .alv-pill-attn, .alv-age-2, .alv-grade-4 and the
+   flagged stat tile. #ffc107 is not even base's warn, which is #9a6a08.
+   Amber INK on a quiet outlined button says "this one has consequences"
+   while leaving the colour's meaning intact.
+
+   PAGE-LOCAL BECAUSE THERE IS ONE ASKER. base has twice declined to build
+   on one, most recently two days ago when a compact stat density was
+   proposed, approved, built and then dropped after measuring. If a second
+   page wants a cautioning inline button, that is when this becomes
+   .status-btn-warn in base. Written in base's tokens either way. */
+.notify-urgent-btn.status-btn {
+    color: var(--alv-warn);
+    border-color: #ecd9a8;
+}
+.notify-urgent-btn.status-btn:hover {
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn);
+}
 .comment-edited-tag { color: #6c757d; font-style: italic; font-size: 12px; margin-left: 6px; }
 .ec-note { color: #6c757d; font-size: 12px; margin: 10px 0 0; }
 .report-container { padding-top: 8px; min-height: auto; }
@@ -896,13 +923,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(function(r) { return r.json().then(function(j) { return { status: r.status, body: j }; }); })
         .then(function(res) {
-            var badgeStyle = 'background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 3px; font-size: 12px; white-space: nowrap;';
             if (res.body.ok) {
-                cell.innerHTML = '<span class="notified-badge" style="' + badgeStyle + '">Notified just now</span>';
+                cell.innerHTML = '<span class="notified-badge alv-pill alv-pill-neutral">Notified just now</span>';
                 var _eb1 = document.querySelector('.comment-edit-btn[data-comment-id="' + commentId + '"]');
                 if (_eb1) _eb1.remove();
             } else if (res.body.reason === 'cooldown') {
-                cell.innerHTML = '<span class="notified-badge" style="' + badgeStyle + '">Notified ' + res.body.minutes_ago + ' min ago</span>';
+                cell.innerHTML = '<span class="notified-badge alv-pill alv-pill-neutral">Notified ' + res.body.minutes_ago + ' min ago</span>';
                 var _eb2 = document.querySelector('.comment-edit-btn[data-comment-id="' + commentId + '"]');
                 if (_eb2) _eb2.remove();
             } else if (res.body.reason === 'no_recipients') {
