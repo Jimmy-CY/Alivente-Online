@@ -186,11 +186,33 @@ def normalise(t):
     return re.sub(r'\bscreen\s+and\s+(?=\()', '', t, flags=re.I)
 
 
+# MOVED 2 Sep - the SCOPE GUARD kind of 4b, seventh time in this project.
+# "ONLY the guard changed" is a claim about what the PRINT round did. It was
+# measured live-vs-.bak_leak, which holds exactly until some later round
+# legitimately edits one of these files. The Financials segmented-control
+# round edits financial_indicators.html.
+#
+# So for a page a later round owns, the comparison is between TWO SNAPSHOTS -
+# .bak_fiseg is that page as the print round left it - which is true for good
+# rather than expiring the next time anyone touches it. Every other check in
+# this suite stays on the LIVE file: "no clause reaches paper" is a claim
+# about today.
+LATER = {'finance/financial_indicators.html': '.bak_fiseg'}
 for rel in TARGETS:
     if BAK[rel] is None:
         continue
-    check('%-44s ONLY the guard changed' % rel,
-          normalise(SRC[rel]) == normalise(BAK[rel]))
+    _later = LATER.get(rel)
+    _as_left = SRC[rel]
+    if _later:
+        _p = os.path.join(T, *rel.split('/')) + _later
+        if not os.path.exists(_p):
+            check('%-44s a later round left a snapshot' % rel, False, _later)
+            continue
+        _as_left = read(_p)
+    check('%-44s ONLY the guard changed%s'
+          % (rel, ' (%s vs .bak_leak - a later round owns the live file)'
+             % _later if _later else ''),
+          normalise(_as_left) == normalise(BAK[rel]))
 
 # A bare query BELOW the page box is correct and must be left alone.
 _narrow = 0

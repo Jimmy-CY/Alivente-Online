@@ -1886,8 +1886,25 @@ textarea.form-control { height: auto; }
 /* ===== ALV-SEG v1 ===== */
 /* A segmented control: two or three views of the same screen, one of them
    current. Deferred twice as "one use does not justify a component" -
-   tenant_payment_days and financial_indicators each hand-roll one, and this
-   is the third asker.
+   financial_indicators hand-rolls one out of Bootstrap's .btn-group, and
+   finance_expense was the third asker that finally justified building it.
+
+   AMENDED 2 Sep. This note used to name tenant_payment_days as a second
+   hand-roller. It is not one: its only toggle is .pd-toggle, a per-row
+   expand chevron on aria-expanded with a rotating icon - a disclosure, not
+   a choice of view. The file has no aria-pressed and no aria-current. A
+   component's note listing an asker that never existed sends the next
+   reader looking for it, so the count is corrected rather than left to
+   flatter the decision. financial_indicators joined on 2 Sep.
+
+   NOT A TAB BAR, and the difference was measured before it was asserted.
+   The Issues Analysis modal has three panel-level tabs - full width, with
+   an underline under the current one, sitting directly above the chart they
+   control. Rendered as segments they shrink to a third of the row and read
+   as a second filter beside the date pickers rather than as part of the
+   panel below. A segment here is a PAGE-level choice, worn in an action
+   bar; those tabs stay as they are. If a second page ever wants a panel
+   tab bar, that is when base gets one - not before.
 
    It is NOT the pill scale and NOT the button tones. A segment is not a verb
    you press to make something happen; it is which view you are looking at,

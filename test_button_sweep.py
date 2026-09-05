@@ -1113,9 +1113,74 @@ for f in FILES:
         _js[f] = hits
 _all = [h for v in _js.values() for h in v]
 _open = [h for h in _all if not h[5]]
-check('the scan still sees into <script> at all (%d in %d page(s))'
-      % (len(_all), len(_js)),
-      len(_all) >= 8 and len(_js) >= 4)
+# MOVED 2 Sep - SECTION 4b, the SCOPE GUARD, eighth time in this project and
+# the first where moving the claim was the wrong fix. This used to read
+# `len(_all) >= 8 and len(_js) >= 4`: a count of live pages, true on 28 Aug.
+# The Financials segmented-control round then DECIDED this page's Select All
+# / Select None - `btn btn-info btn-sm` inside a template literal, `btn
+# action-secondary` now - so it drops out of a scan that reports only tones
+# base.html would own. Six in three. Nothing went blind; a page got finished,
+# which is the outcome the next check below says it is waiting for.
+#
+# What this check is FOR is that js_buttons() can see into a <script> at all.
+# That is a property of the scanner, not of how many pages are undone this
+# week, so ASK THE SCANNER - the lesson CONTROL 4 further down already
+# learned about the patcher. The corpus count stays as a report with a floor,
+# and the historical eight is measured where it is still true: .bak_fiseg is
+# this page as the sweep left it. (The print-leak round edited it in between,
+# but only to write `screen and ` in front of three media queries - it moved
+# no class list, so the snapshot is faithful for every purpose here.)
+#
+# _LATER IS THE EXTENSION POINT, one line per page, and that is deliberate.
+# The day a round decides vacancy_management's identical pair this control
+# will read seven, and the fix is to name that round's snapshot here - NOT to
+# lower the number. When the last page is decided there is no state in which
+# eight existed, and the control retires with the finding it guards. That is
+# the section's own stated goal: "when these are done the number is 4".
+_LATER = {'finance/financial_indicators.html': '.bak_fiseg'}
+
+
+def _as_swept(f):
+    """The file as the BUTTON SWEEP left it: the live file, unless a later
+       round owns it, in which case that round's snapshot."""
+    s = _LATER.get(f)
+    if s:
+        p = os.path.join(TPL, *f.split('/')) + s
+        if os.path.exists(p):
+            return load(p)
+    return load(os.path.join(TPL, f))
+
+
+_was = {}
+for f in FILES:
+    _h = sb.js_buttons(_as_swept(f))
+    if _h:
+        _was[f] = _h
+_was_all = [h for v in _was.values() for h in v]
+check('HISTORICAL: eight in four pages, as the sweep left them (%d in %d)'
+      % (len(_was_all), len(_was)),
+      len(_was_all) == 8 and len(_was) == 4)
+check('and the scan still sees into <script> on live pages (%d in %d, %d '
+      'still undecided)' % (len(_all), len(_js), len(_open)),
+      len(_all) >= 6 and len(_js) >= 3)
+# THE INVARIANT, asked of the scanner rather than counted off the corpus, so
+# that finishing the last page is a pass and not a failure.
+check('CONTROL: .. and would still see one on the day no page has any',
+      [h[0] for h in sb.js_buttons(
+          '<script>var h = `<div class="page-action-bar">'
+          '<button class="btn btn-info">Go</button></div>`;</script>')]
+      == ['Go'])
+# THE FORWARD HALF. A guard that only ever loosens asserts nothing: say what
+# the later round DID, so this cannot be satisfied by the scan going blind.
+check('FI dropped out because it was DECIDED, not because the scan lost it',
+      'finance/financial_indicators.html' in _was
+      and 'finance/financial_indicators.html' not in _js)
+_fi_js = '\n'.join(m.group(1) for m in re.finditer(
+    r'<script[^>]*>(.*?)</script>',
+    load(os.path.join(TPL, 'finance', 'financial_indicators.html')), re.S))
+check('.. its All/None pair carries a house tone INSIDE the script',
+      _fi_js.count('class="btn action-secondary"') >= 2
+      and 'btn btn-info btn-sm' not in _fi_js)
 # The two pages nobody has decided yet. Naming them keeps the finding
 # specific: when these are done the number is 4, all of them LEAVE, and
 # this check is the one that says so out loud.
@@ -1135,10 +1200,39 @@ check('.. because its twelve now carry house tones INSIDE the script',
 check('.. and Save Changes is still there, still built in JavaScript',
       'Save Changes' in _ae_js)
 
-check('a wrapper already on the LEAVE list carries its reason across',
-      len(_all) - len(_open) == 4
-      and all(h[5] == 'segmented toggle - colour is state'
-              for h in _all if h[5]))
+# MOVED 2 Sep, same round and same reason as the count above. This used to
+# read `len(_all) - len(_open) == 4`. Two of those four were this page's
+# Select All / Select None, and they are decided; two remain, on
+# vacancy_management. The claim worth keeping is that a LEAVE reason CARRIES
+# ACROSS into a button built inside a script, and that is asked of the
+# scanner below rather than counted off whatever is left undone.
+_LEAVE_REASON = 'segmented toggle - colour is state'
+_was_open = [h for h in _was_all if not h[5]]
+check('HISTORICAL: four of the eight carried a LEAVE reason (%d)'
+      % (len(_was_all) - len(_was_open)),
+      len(_was_all) - len(_was_open) == 4
+      and all(h[5] == _LEAVE_REASON for h in _was_all if h[5]))
+check('every reason still reported is the one its wrapper gives',
+      all(h[5] == _LEAVE_REASON for h in _all if h[5]))
+check('CONTROL: a LEAVE wrapper carries its reason into a script-built '
+      'button, whether or not a live page still has one',
+      [h[5] for h in sb.js_buttons(
+          '<script>var h = `<div class="selection-buttons">'
+          '<button class="btn btn-info btn-sm">Select All</button>'
+          '</div>`;</script>')] == [_LEAVE_REASON])
+# THE DIVERGENCE THIS ROUND OPENED. .selection-buttons is built identically
+# on two pages; Financials' pair is now two quiet house buttons and
+# vacancy_management's is still a filled teal block beside a grey one - the
+# same complaint this round made about the two pairs inside Financials.
+# Written as an assertion that holds in BOTH futures, so that doing the work
+# is not a test failure. What it forbids is the third: decided differently.
+_vac = load(os.path.join(TPL, 'finance', 'vacancy_management.html'))
+_vp = re.search(r'<div class="selection-buttons"[^>]*>(.*?)</div>', _vac, re.S)
+check("vacancy_management's identical pair is either still undecided or "
+      'decided the SAME way as Financials - not a third way',
+      _vp is not None
+      and (('btn-info' in _vp.group(1) and 'btn-secondary' in _vp.group(1))
+           or _vp.group(1).count('btn action-secondary') == 2))
 
 # CONTROL 1: the ordinary scan must NOT see these. If markup_of stopped
 # blanking <script>, this pass would be double-counting and the patcher

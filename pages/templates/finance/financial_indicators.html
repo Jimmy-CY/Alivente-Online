@@ -64,11 +64,11 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="btn-group" role="group" aria-label="Basis">
+        <div class="alv-seg" role="group" aria-label="Basis">
             <a href="?year={{ selected_year }}&basis=budget"
-               class="btn {% if basis == 'budget' %}btn-info{% else %}btn-outline-info{% endif %}">Budget</a>
+               {% if basis == 'budget' %}aria-current="page"{% endif %}>Budget</a>
             <a href="?year={{ selected_year }}&basis=actuals"
-               class="btn {% if basis == 'actuals' %}btn-info{% else %}btn-outline-info{% endif %}">Actuals</a>
+               {% if basis == 'actuals' %}aria-current="page"{% endif %}>Actuals</a>
         </div>
         {% if basis == 'actuals' %}
         <span style="font-size:0.85rem; color:#6c757d;"><i class="fas fa-info-circle"></i> Actuals: Net ROI &amp; Expenses-to-Revenue include {{ selected_year }} actual spend.</span>
@@ -121,14 +121,14 @@
                 <select id="fiToYear" class="form-control" style="width:auto;"></select>
                 <label style="font-weight:600; margin:0;">Compare</label>
                 <div id="fiCompareWrap" style="position:relative; display:inline-block;">
-                    <button type="button" id="fiCompareBtn" class="btn btn-outline-info" style="min-width:200px; text-align:left;">
+                    <button type="button" id="fiCompareBtn" class="btn action-secondary" style="min-width:200px; text-align:left;">
                         <span id="fiCompareLabel">Portfolio only</span>
                         <i class="fas fa-caret-down" style="float:right; margin-top:4px;"></i>
                     </button>
                     <div id="fiComparePanel" style="display:none; position:absolute; z-index:1000; top:calc(100% + 4px); left:0; min-width:240px; max-height:280px; overflow-y:auto; background:#fff; border:1px solid #ced4da; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.15); padding:8px;">
                         <div style="display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid #eee; margin-bottom:6px;">
-                            <button type="button" id="fiTrendAll" class="btn btn-sm btn-outline-info" style="flex:1;">All</button>
-                            <button type="button" id="fiTrendNone" class="btn btn-sm btn-outline-secondary" style="flex:1;">None</button>
+                            <button type="button" id="fiTrendAll" class="btn action-secondary" style="flex:1;">All</button>
+                            <button type="button" id="fiTrendNone" class="btn action-secondary" style="flex:1;">None</button>
                         </div>
                         <div id="fiCompareList"></div>
                     </div>
@@ -489,12 +489,6 @@
     gap: 10px;
 }
 
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 6px;
-}
-
 .chart-panel {
     background: white;
     border: 1px solid #dee2e6;
@@ -720,42 +714,23 @@
 #modalPropertyTable th.cell-perf-level,
 #modalPropertyTable td.cell-perf-level { width: 18%; }
 
-/* Button Styles */
-.btn-info {
-    background-color: #0e7c8b;
-    color: white;
-    border: 1px solid #0e7c8b;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
+/* BUTTON STYLES WERE HERE - .btn-info, .btn-secondary and .btn-sm, three
+   rules serving five sites, all of them now on the house classes. base's
+   .alv-seg carries Budget / Actuals; .action-secondary carries the Compare
+   trigger and both All/None pairs.
 
-@media (hover: hover) and (pointer: fine) {
-    .btn-info:hover {
-        background-color: #0a5e6a;
-        border-color: #0a5e6a;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-}
+   Those pairs are why this is worth a note. The SAME control was built twice
+   on this page - outline-info / outline-secondary in the Compare panel, and
+   filled btn-info / btn-secondary in Property Selection - so in one place
+   "All" was a teal outline and in the other a solid teal block. They are two
+   equal choices and neither is what anyone opened the panel to do, so both
+   pairs are quiet now, and matching.
 
-.btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #545b62;
-        color: white;
-        transform: translateY(-1px);
-    }
-}
-
+   Deleting the three rules removed two #0e7c8b, both #0a5e6a, and the two
+   grey hovers. It did NOT clear the accent from this page: sixteen more
+   #0e7c8b sit in section borders, badges, icons and left rules - the page's
+   own palette, spelled by hand exactly as the Issues Analysis modal's was
+   before its palette round. That is this page's next round. */
 /* Responsive Design */
 @media screen and (max-width: 1200px) {
     .indicator-cards {
@@ -1163,8 +1138,8 @@ class PropertyFinancialDashboard {
                     </h5>
                     <div class="selection-header-right">
                         <div class="selection-buttons">
-                            <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
-                            <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
+                            <button class="btn action-secondary" id="selectAllBtn">Select All</button>
+                            <button class="btn action-secondary" id="selectNoneBtn">Select None</button>
                         </div>
                         <i class="fas fa-chevron-down selection-toggle-icon"></i>
                     </div>
