@@ -418,7 +418,7 @@
 
 <!-- Issues Table -->
 <div class="table-container">
-    <table class="table table-bordered table-striped" id="issuesTable">
+    <table class="table alv-table" id="issuesTable">
         <thead class="thead-light">
             <tr>
                 <th class="text-left sortable" data-sort="property" style="width: {% if request.user.is_superuser %}16%{% else %}18%{% endif %}; cursor: pointer;">
@@ -432,10 +432,7 @@
                 <th class="text-center sortable" data-sort="status" style="width: 8%; cursor: pointer;">
                     Status <i class="fas fa-sort sort-icon"></i>
                 </th>
-                <th class="text-center" style="width: 10%">Comments</th>
-                {% if request.user.is_superuser %}
-                <th class="text-center" style="width: 8%">Delete</th>
-                {% endif %}
+                <th class="desktop-action-cell cell-actions" style="width: {% if request.user.is_superuser %}18%{% else %}10%{% endif %}">Actions</th>
             </tr>
         </thead>
         <tbody id="issuesTableBody">
@@ -461,24 +458,41 @@
                                     {% endif %}
                                 </td>
                                 <td data-label="Status" class="text-center">
-                                    <span class="status-badge
-                                        {% if isresults.issues_status == 'Resolved' %}status-success
-                                        {% elif isresults.issues_status == 'Unresolved' %}status-warning
-                                        {% else %}status-danger{% endif %}">
+                                    <span class="alv-pill
+                                        {% if isresults.issues_status == 'Resolved' %}alv-pill-good
+                                        {% elif isresults.issues_status == 'Unresolved' %}alv-pill-attn
+                                        {% else %}alv-pill-neutral{% endif %}">
                                         {{ isresults.issues_status }}
                                     </span>
                                 </td>
-                                <td data-label="Comments" class="text-center action-cell action-cell-comments">
-                                    <button type="button" class="btn btn-light action-btn">
-                                        <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="issue-heading-link">
-                                            Comments
+                                <td data-label="Actions" class="desktop-action-cell cell-actions">
+                                    <div class="row-actions">
+                                        <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="status-btn issue-comments-btn">
+                                            <i class="fas fa-comments"></i> Comments
                                         </a>
-                                    </button>
+                                        {% if request.user.is_superuser %}
+                                        <button type="button"
+                                                class="icon-action-btn icon-delete delete-issue-btn"
+                                                data-issue-id="{{ isresults.issues_id }}"
+                                                data-issue-heading="{{ isresults.issues_heading }}"
+                                                data-issue-description="{{ isresults.issues_description }}"
+                                                data-property-name="{{ results.prop_name }}"
+                                                data-date-logged="{{ isresults.issues_date_logged|date:'d/m/Y' }}"
+                                                data-status="{{ isresults.issues_status }}"
+                                                title="Delete Issue">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </td>
-                                {% if request.user.is_superuser %}
-                                <td data-label="Delete" class="text-center action-cell action-cell-delete">
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm delete-issue-btn"
+
+                                <td class="mobile-action-bar {% if request.user.is_superuser %}cols-2{% else %}cols-1{% endif %}">
+                                    <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="mobile-action-btn">
+                                        <i class="fas fa-comments mobile-action-icon icon-color-view"></i>
+                                        <span class="mobile-action-label">Comments</span>
+                                    </a>
+                                    {% if request.user.is_superuser %}
+                                    <button type="button" class="mobile-action-btn delete-issue-btn"
                                             data-issue-id="{{ isresults.issues_id }}"
                                             data-issue-heading="{{ isresults.issues_heading }}"
                                             data-issue-description="{{ isresults.issues_description }}"
@@ -486,8 +500,10 @@
                                             data-date-logged="{{ isresults.issues_date_logged|date:'d/m/Y' }}"
                                             data-status="{{ isresults.issues_status }}"
                                             title="Delete Issue">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                                        <span class="mobile-action-label">Delete</span>
                                     </button>
+                                    {% endif %}
                                 </td>
                                 {% endif %}
                             </tr>
@@ -499,7 +515,14 @@
                 {% endfor %}
             {% else %}
                 <tr class="no-issues-row">
-                    <td colspan="{% if request.user.is_superuser %}7{% else %}6{% endif %}" class="text-center">No issues found</td>
+                    <td colspan="6">
+                        <div class="alv-empty">
+                            <i class="fas fa-clipboard-list"></i>
+                            <div class="alv-empty-title">No issues found</div>
+                            <div class="alv-empty-hint">Nothing matches the
+                                current filter. Clear it, or add an issue.</div>
+                        </div>
+                    </td>
                 </tr>
             {% endif %}
         </tbody>
@@ -754,70 +777,7 @@
 }
 
 /* Status Badge Styles */
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-danger {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.action-btn {
-    border-color: #dee2e6;
-    transition: all 0.2s ease;
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
-.action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.action-btn a {
-    text-decoration: none;
-    color: #495057;
-}
-
-.action-btn:hover a {
-    color: #0e7c8b;
-}
-
 /* Delete Button Styles */
-.delete-issue-btn {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.delete-issue-btn:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
-}
-
-.delete-issue-btn:focus {
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
-
 /* Delete Modal Styles */
 .issue-details {
     background: #f8f9fa;
@@ -1056,29 +1016,46 @@
 }
 
 /* Sortable Table Headers */
+/* THE MAIN ISSUES LIST IS BASE'S TABLE NOW - 5 Sep. Thirty-two page
+   rules went: four painting a status badge in Bootstrap's alert
+       colours, four on a Comments control that nested an <a> INSIDE a
+   <button>, three on a filled red Delete, and twenty-one rebuilding
+   by hand the phone cards .alv-table already builds.
+
+   THE CLASS NAMES THE SCRIPT NEEDS ARE STILL HERE while their rules
+       are not - .issue-row, .delete-issue-btn and .no-issues-row carry no
+   appearance any more and exist so the sorter and the delete flow can
+   find their elements.
+
+   .sortable IS THE EXCEPTION, and it was nearly deleted for the wrong
+   reason. Four templates carry a sortable header, which is past the
+   bar that justified .alv-seg - but they are two class names, two
+   state vocabularies and two icon placements, and the state rules on
+   two of them are dead. One working sortable header in the system,
+   and it is this one. It stays here and takes tokens. */
 .sortable {
     user-select: none;
     transition: background-color 0.2s ease;
 }
 
 .sortable:hover {
-    background-color: #e9ecef;
+    background-color: var(--alv-neutral-soft);
 }
 
 .sortable .sort-icon {
     margin-left: 6px;
-    color: #adb5bd;
+    color: var(--alv-ink-faint);
     font-size: 12px;
     transition: color 0.2s ease;
 }
 
 .sortable:hover .sort-icon {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 
 .sortable.sort-asc .sort-icon,
 .sortable.sort-desc .sort-icon {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 .sortable.sort-asc .sort-icon::before {
@@ -1231,143 +1208,6 @@
     .active-filters {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    #issuesTable {
-        border: none;
-    }
-
-    #issuesTable thead {
-        display: none;
-    }
-
-    #issuesTable,
-    #issuesTable tbody,
-    #issuesTable tr {
-        display: block;
-        width: 100%;
-    }
-
-    #issuesTable tr.issue-row {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        margin-bottom: 14px;
-        padding: 12px 14px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    #issuesTable tr.issue-row td {
-        display: block;
-        width: auto;
-        text-align: left !important;
-        padding: 6px 0;
-        border: none;
-        font-size: 14px;
-        line-height: 1.4;
-    }
-
-    #issuesTable tr.issue-row td::before {
-        content: attr(data-label) ": ";
-        font-weight: 600;
-        color: #495057;
-        margin-right: 6px;
-        display: inline;
-    }
-
-    /* Property name as the card title — bigger, no inline label needed */
-    #issuesTable tr.issue-row td[data-label="Property"] {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #f0f0f0;
-        margin-bottom: 6px;
-    }
-
-    #issuesTable tr.issue-row td[data-label="Property"]::before {
-        display: none;
-    }
-
-    /* Status: keep the badge inline next to the label */
-    #issuesTable tr.issue-row td[data-label="Status"] .status-badge {
-        display: inline-block;
-        margin-left: 4px;
-    }
-
-    /* Action cells — 2-col grid at the bottom of the card */
-    #issuesTable tr.issue-row td.action-cell {
-        display: inline-block;
-        vertical-align: top;
-        box-sizing: border-box;
-        width: calc(50% - 4px);
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid #f0f0f0;
-    }
-
-    #issuesTable tr.issue-row td.action-cell-comments {
-        padding-right: 4px;
-    }
-
-    #issuesTable tr.issue-row td.action-cell-delete {
-        padding-left: 4px;
-    }
-
-    /* When Delete is hidden (no edit perms), Comments takes full width */
-    #issuesTable tr.issue-row td.action-cell-comments:last-child {
-        width: 100%;
-        padding-right: 0;
-    }
-
-    #issuesTable tr.issue-row td.action-cell::before {
-        display: none;
-    }
-
-    /* Action buttons fill the cell */
-    #issuesTable tr.issue-row td.action-cell .action-btn {
-        width: 100%;
-        padding: 9px 8px;
-        font-size: 13px;
-        margin: 0;
-    }
-
-    #issuesTable tr.issue-row td.action-cell .action-btn a {
-        display: block;
-        width: 100%;
-    }
-
-    #issuesTable tr.issue-row td.action-cell .delete-issue-btn {
-        width: 100%;
-        padding: 9px 8px;
-        font-size: 13px;
-        margin: 0;
-    }
-
-    /* Add "Delete" text after the trash icon on mobile */
-    #issuesTable tr.issue-row td.action-cell .delete-issue-btn::after {
-        content: " Delete";
-        font-weight: 500;
-    }
-
-    /* No-issues row */
-    #issuesTable tr.no-issues-row {
-        display: block;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        padding: 18px;
-        text-align: center;
-    }
-
-    #issuesTable tr.no-issues-row td {
-        display: block;
-        border: none;
-        padding: 0;
-    }
-
-    #issuesTable tr.no-issues-row td::before {
-        display: none;
     }
 
     /* ==================== MODALS — full-screen on mobile ==================== */
