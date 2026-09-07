@@ -233,11 +233,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the map
     var map = L.map('map').setView([35.1264, 33.4299], 6);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
+    // OpenStreetMap tiles - keyless, and the same ones properties_add,
+    // properties_edit and map_test already use.
+    //
+    // THIS USED TO ASK CARTO FOR VOYAGER TILES, and CARTO now gates those
+    // behind an API key. It does not fail: it returns tiles with "API KEY
+    // REQUIRED" printed into the image, so the map drew, the pins landed
+    // correctly, the console stayed clean, and every tile carried a
+    // watermark. The comment above this call already said OpenStreetMap -
+    // the comment was right and the code had drifted.
+    //
+    // NO `subdomains` OPTION, DELIBERATELY. CARTO serves a-d; OSM serves
+    // a-c, and Leaflet's default is 'abc'. Carrying `subdomains: 'abcd'`
+    // across would send a quarter of every screen's requests to
+    // d.tile.openstreetmap.org, which does not exist - a map that comes up
+    // mostly right with a scatter of blank squares that moves as you pan.
+    // The three working pages set no subdomains option, and neither does
+    // this one now.
+    //
+    // maxZoom matches those three at 18 rather than the 19 OSM will serve,
+    // because a round that changes two things cannot say which one fixed it.
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18
     }).addTo(map);
 
     // Store all markers for centering
