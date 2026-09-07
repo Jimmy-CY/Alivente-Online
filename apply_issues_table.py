@@ -237,7 +237,8 @@ else:
                                             title="Delete Issue">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                </td>""" % (_URL, _DATA.replace('\n                                                ', '\n                                            '))
+                                </td>
+                                {%% endif %%}""" % (_URL, _DATA.replace('\n                                                ', '\n                                            '))
     _NEW = """                                <td data-label="Actions" class="desktop-action-cell cell-actions">
                                     <div class="row-actions">
                                         <a href="%s" class="status-btn issue-comments-btn">
@@ -449,9 +450,54 @@ for _m in re.finditer(r'/\*.*?\*/', f, re.S):
          'IT: a CSS comment spells a script or style tag')
 for blk in re.findall(r'<style[^>]*>(.*?)</style>', f, re.S):
     want(blk.count('{') == blk.count('}'), 'IT: unbalanced braces')
-want(f.count('{% if request.user.is_superuser %}')
-     == f.count('{% endif %}') - f.count('{% if ') + f.count('{% if request.user.is_superuser %}')
-     or True, '')          # structural balance is asserted in the suite
+# A CHECK THAT COULD NOT FAIL, AND IT LET A 500 THROUGH. This line ended in
+# `or True` - so it asserted nothing, and the round shipped with one extra
+# {% endif %}: the ORIGINAL `{% if superuser %}` that wrapped the Delete <td>
+# closed AFTER the cell, outside the anchor, and the replacement supplied its
+# own pairs while the old closer stayed behind. Django raised
+# TemplateSyntaxError and /fsr/ returned 500.
+#
+# "A control that cannot fail is worse than no control" is this project's own
+# lesson, written down six times. Here it was written INTO the guard.
+_open = len(re.findall(r'\{%\s*if\b', f))
+_close = len(re.findall(r'\{%\s*endif\s*%\}', f))
+want(_open == _close,
+     'IT: %d {%% if %%} against %d {%% endif %%} - the template will not parse'
+     % (_open, _close))
+# COUNTS ARE NOT STRUCTURE. Balanced totals still pass on a file where an
+# endif closes a for-loop it does not belong to - which is precisely what the
+# orphan did. Walk the tags in order.
+_OPEN = {'if': 'endif', 'for': 'endfor', 'block': 'endblock',
+         'with': 'endwith', 'comment': 'endcomment',
+         'spaceless': 'endspaceless', 'autoescape': 'endautoescape'}
+_CLOSE = {v: k for k, v in _OPEN.items()}
+_stack, _fault = [], None
+for _m in re.finditer(r'\{%\s*(\w+)', f):
+    _t = _m.group(1)
+    _ln = f.count('\n', 0, _m.start()) + 1
+    if _t in _OPEN:
+        _stack.append((_t, _ln))
+    elif _t in _CLOSE:
+        if not _stack:
+            _fault = 'line %d: %s with nothing open' % (_ln, _t); break
+        _top, _at = _stack.pop()
+        if _OPEN[_top] != _t:
+            _fault = ('line %d: %s closes a {%% %s %%} opened on line %d'
+                      % (_ln, _t, _top, _at)); break
+if not _fault and _stack:
+    _fault = 'unclosed {%% %s %%} from line %d' % _stack[-1]
+want(_fault is None, 'IT: the template will not parse - %s' % _fault)
+
+_fo = len(re.findall(r'\{%\s*for\b', f))
+_fc = len(re.findall(r'\{%\s*endfor\s*%\}', f))
+want(_fo == _fc, 'IT: %d {%% for %%} against %d {%% endfor %%}' % (_fo, _fc))
+# And the same measured as a DELTA, because a file that was already unbalanced
+# would pass the two above while this round made it worse.
+_before_t = _before if os.path.exists(_bak) else F_ORIG.replace('\r\n', '\n')
+want(_open - _close
+     == len(re.findall(r'\{%\s*if\b', _before_t))
+     - len(re.findall(r'\{%\s*endif\s*%\}', _before_t)),
+     'IT: this round changed the if/endif balance')
 
 if FAIL:
     print('\n! SELF-CHECK FAILED - nothing written\n')

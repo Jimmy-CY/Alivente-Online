@@ -442,10 +442,97 @@ check('the print round\'s guard on this page is still there',
 check('  and no bare one crept back in',
       not re.search(r'@media\s*\(\s*max-width', F))
 
+# ===========================================================================
+head('7. the template still parses - the check that was missing')
+# ===========================================================================
+# THIS ROUND SHIPPED A 500. The original `{% if superuser %}` that wrapped the
+# Delete <td> closed AFTER the cell, outside the patcher's anchor, so the
+# replacement supplied its own if/endif pairs and the old closer stayed
+# behind. Django raised TemplateSyntaxError and /fsr/ returned Server Error.
+#
+# The patcher HAD a balance check. It ended in `or True`, so it asserted
+# nothing - "a control that cannot fail is worse than no control", written
+# into the guard itself. These are the checks that were missing.
+
+
+def tag_walk(src):
+    """Walk the block tags in order and return the first structural fault,
+       or None. Counting opens and closes is not enough: it passes on a file
+       where an endif sits inside a for-loop it does not belong to."""
+    OPEN = {'if': 'endif', 'for': 'endfor', 'block': 'endblock',
+            'with': 'endwith', 'comment': 'endcomment',
+            'spaceless': 'endspaceless', 'autoescape': 'endautoescape'}
+    CLOSE = {v: k for k, v in OPEN.items()}
+    stack = []
+    for m in re.finditer(r'\{%\s*(\w+)', src):
+        t = m.group(1)
+        line = src.count('\n', 0, m.start()) + 1
+        if t in OPEN:
+            stack.append((t, line))
+        elif t in CLOSE:
+            if not stack:
+                return 'line %d: %s with nothing open' % (line, t)
+            top, at = stack.pop()
+            if OPEN[top] != t:
+                return ('line %d: %s closes a {%% %s %%} opened on line %d'
+                        % (line, t, top, at))
+        elif t in ('elif', 'else', 'empty'):
+            if not stack or stack[-1][0] not in ('if', 'for'):
+                return 'line %d: %s outside an if/for' % (line, t)
+    if stack:
+        return 'unclosed {%% %s %%} from line %d' % stack[-1]
+    return None
+
+
+_fault = tag_walk(F)
+check('every block tag opens and closes in order', _fault is None,
+      _fault or '')
+# THE CONTROL, and it is the actual defect rather than an invented one: put
+# the orphaned {% endif %} back exactly where the round left it.
+_ORPHAN = ('                                </td>\n'
+           '\n                                <td class="mobile-action-bar')
+_broken = F.replace(_ORPHAN,
+                    '                                </td>\n'
+                    '                                {% endif %}\n'
+                    '\n                                <td class="mobile-action-bar', 1)
+check('CONTROL: the walker CAN fail - it catches the orphan that caused the '
+      '500', _broken != F and tag_walk(_broken) is not None,
+      tag_walk(_broken) or 'the control could not be built')
+
+# And ask Django itself, when it is importable - the walker is a model of the
+# parser and the parser is the authority.
+try:
+    import django
+    from django.conf import settings as _dj
+    from django.template import Engine, TemplateSyntaxError
+    if not _dj.configured:
+        _dj.configure(DEBUG=True, INSTALLED_APPS=['django.contrib.staticfiles'],
+                      STATIC_URL='/static/', USE_TZ=False)
+        django.setup()
+
+    def _compiles(src):
+        src = re.sub(r'\{%\s*extends[^%]*%\}', '', src)
+        src = re.sub(r'\{%\s*(block|endblock)[^%]*%\}', '', src)
+        src = re.sub(r'\{%\s*load[^%]*%\}', '', src)
+        # unknown project tags are not this suite's business
+        src = re.sub(r'\{%\s*(render_help_modal|help_modal|help_button)'
+                     r'[^%]*%\}', '', src)
+        try:
+            Engine(libraries={'static': 'django.templatetags.static'}
+                   ).from_string(src)
+            return None
+        except TemplateSyntaxError as e:
+            return str(e)[:70]
+
+    check('Django itself compiles the template', _compiles(F) is None,
+          _compiles(F) or '')
+    check('  CONTROL: and refuses the orphaned version',
+          _compiles(_broken) is not None, '')
+except Exception as _e:
+    print('  SKIP  Django not importable here (%s)' % type(_e).__name__)
+
 for blk in re.findall(r'<style[^>]*>(.*?)</style>', F, re.S):
     check('braces balance in a style block', blk.count('{') == blk.count('}'))
-check('Django if/endif balance',
-      F.count('{% if') + F.count('{% elif') >= F.count('{% endif %}'))
 _bad = [m.group(0)[:40] for m in re.finditer(r'/\*.*?\*/', F, re.S)
         if re.search(r'</?(?:script|style)\b', m.group(0))]
 check('no CSS comment spells a script or style tag', not _bad, str(_bad))
