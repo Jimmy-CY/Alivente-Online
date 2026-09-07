@@ -12,14 +12,14 @@
                 <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
                 {% if is_summarized_report %}
                 <div class="report-type-indicator">
-                    <span class="badge badge-info">
+                    <span class="alv-pill alv-pill-neutral report-type-pill">
                         <i class="fas fa-compress-alt"></i>
                         Summarized Report (Max {{ max_comments }} comment{{ max_comments|pluralize }} per issue)
                     </span>
                 </div>
                 {% else %}
                 <div class="report-type-indicator">
-                    <span class="badge badge-success">
+                    <span class="alv-pill alv-pill-neutral report-type-pill">
                         <i class="fas fa-list-ul"></i>
                         Detailed Report (All comments)
                     </span>
@@ -51,11 +51,11 @@
                                         {{ issue.issues_heading }}
                                         <span class="issue-description">({{ issue.issues_description }})</span>
                                         {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
-                                            <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
+                                            <span class="alv-pill alv-pill-neutral issue-age">Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
                                         {% elif issue.days_open and status_group.status != 'Resolved' %}
-                                            <span class="days-open">- {{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
+                                            <span class="alv-age-pill issue-age {% if issue.days_open <= 30 %}alv-age-0{% elif issue.days_open <= 90 %}alv-age-2{% elif issue.days_open <= 180 %}alv-age-3{% else %}alv-age-4{% endif %}">{{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
                                         {% elif issue.days_open == 0 and status_group.status != 'Resolved' %}
-                                            <span class="days-open">- New Issue</span>
+                                            <span class="alv-age-pill issue-age alv-age-0">New Issue</span>
                                         {% endif %}
                                     </h5>
                                 </a>
@@ -96,16 +96,12 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="no-issues-container">
-                    <div class="no-issues-card">
-                        <div class="no-issues-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <h3 class="no-issues-title">No Issues to Display</h3>
-                        <p class="no-issues-message">
-                            There are no issues to be displayed for this period.<br>
-                            All properties are operating without any reported issues.
-                        </p>
+                <div class="alv-empty">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="alv-empty-title">No issues to display</div>
+                    <div class="alv-empty-hint">
+                        Nothing was reported for this period - every property is
+                        operating without a logged issue.
                     </div>
                 </div>
             {% endif %}
@@ -125,7 +121,7 @@
     .report-content {
         width: 90%;
         max-width: 1200px;
-        background: white;
+        background: var(--alv-paper);
         padding: 30px;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -148,14 +144,14 @@
 
     .report-title-main {
         font-size: 1.8rem;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin: 0;
         font-weight: bold;
     }
 
     .report-title-sub {
         font-size: 1.4rem;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         margin: 5px 0 0 0;
         font-weight: normal;
     }
@@ -170,93 +166,35 @@
         flex-shrink: 0;
     }
 
-    .badge {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .badge-info {
-        background-color: #0e7c8b;
-        color: white;
-    }
-
-    .badge-success {
-        background-color: #28a745;
-        color: white;
-    }
-
     /* No Issues Styling */
-    .no-issues-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 300px;
-        width: 100%;
-    }
-
-    .no-issues-card {
-        text-align: center;
-        padding: 40px;
-        background-color: #f8f9fa;
-        border-radius: 12px;
-        border: 2px dashed #28a745;
-        max-width: 500px;
-        width: 100%;
-    }
-
-    .no-issues-icon {
-        font-size: 4rem;
-        color: #28a745;
-        margin-bottom: 20px;
-    }
-
-    .no-issues-title {
-        font-size: 1.5rem;
-        color: #2c3e50;
-        margin-bottom: 15px;
-        font-weight: 600;
-    }
-
-    .no-issues-message {
-        font-size: 1.1rem;
-        color: #6c757d;
-        line-height: 1.6;
-        margin: 0;
-    }
-
     .status-card {
         margin-bottom: 30px;
         padding: 25px;
-        background-color: #f8f9fa;
+        background-color: var(--alv-surface);
         border-radius: 8px;
         page-break-inside: avoid;
     }
 
     .status-title {
         font-size: 1.5rem;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin-bottom: 20px;
         padding-bottom: 10px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--alv-line);
     }
 
     .property-card {
         margin-bottom: 20px;
         padding: 20px;
-        background-color: #ffffff;
+        background-color: var(--alv-paper);
         border-radius: 6px;
-        border-left: 4px solid #0e7c8b;
+        border-left: 4px solid var(--alv-accent);
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .property-name {
         font-size: 1.3rem;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin-bottom: 15px;
     }
 
@@ -272,19 +210,19 @@
 
     .issue-heading {
         font-size: 1.1rem;
-        color: #495057;
+        color: var(--alv-ink);
         margin-bottom: 10px;
         padding-bottom: 5px;
-        border-bottom: 1px dashed #ced4da;
+        border-bottom: 1px dashed var(--alv-line);
     }
 
     .issue-heading:hover {
-        color: #0e7c8b;
+        color: var(--alv-accent);
     }
 
     .issue-description {
         font-weight: normal;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
     }
 
     .issue-details {
@@ -323,32 +261,50 @@
     .more-comments-indicator {
         margin-top: 12px;
         padding: 8px 12px;
-        background-color: #f8f9fa;
+        background-color: var(--alv-surface);
         border-radius: 4px;
-        border-left: 3px solid #0e7c8b;
+        border-left: 3px solid var(--alv-accent);
+    }
+
+    /* THE RED WAS NOT A SCALE - 5 Sep.
+
+       .days-open and .resolution-time were both #FF0000, flat, from the
+       markup. So "New Issue" (the days_open == 0 branch) was exactly as red
+       as "257 days open", and the turnaround on a CLOSED issue - good news -
+       was red as well. A verdict that cannot change is decoration, which is
+       what round C2 said about the Analysis modal's oldest-open tile.
+
+       The figure is an .alv-age-pill on the SAME bands fsr.html computes, and
+       the suite reads those bands out of fsr.html rather than trusting this
+       file. A resolved issue's turnaround is a neutral pill: a fact about the
+       past, not something ageing.
+
+       WHY A CHIP AND NOT COLOURED TEXT. Rendered both ways first. The figure
+       sits inside the issue heading, and at the weight a scale needs it ends
+       up louder than the issue title. The chip also survives paper: printed
+       in mono the colour goes but "257 days open" is still there, which is
+       base's own condition for a defensible scale. #FF0000 printed grey and
+       said nothing. */
+    .issue-heading .issue-age {
+        margin-left: 8px;
+        vertical-align: 2px;
+    }
+
+    .report-type-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .view-all-link {
-        color: #0e7c8b;
+        color: var(--alv-accent);
         text-decoration: none;
         font-weight: 500;
     }
 
     .view-all-link:hover {
-        color: #0a5e6a;
+        color: var(--alv-accent-ink);
         text-decoration: underline;
-    }
-
-    .days-open {
-        color: #FF0000;
-        font-weight: normal;
-        margin-left: 8px;
-    }
-
-    .resolution-time {
-        color: #FF0000;
-        font-weight: normal;
-        margin-left: 8px;
     }
 
     /* ==================== PRINT ==================== */
@@ -364,7 +320,6 @@
             box-shadow: none;
         }
 
-        .back-button,
         .header-actions {
             display: none;
         }
@@ -387,22 +342,12 @@
 
         .more-comments-indicator {
             background-color: transparent;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--alv-line);
         }
 
         .view-all-link {
             display: none;
         }
-
-        .no-issues-card {
-            border: 1px solid #28a745;
-            background-color: transparent;
-        }
-
-        .no-issues-icon {
-            color: #333;
-        }
-
 
     }
 
@@ -436,11 +381,6 @@
 
         .report-title-sub {
             font-size: 1rem;
-        }
-
-        .badge {
-            font-size: 12px;
-            padding: 6px 12px;
         }
 
         /* Action buttons — primary wide + back icon */
@@ -515,11 +455,6 @@
             display: inline-block;
         }
 
-        .days-open,
-        .resolution-time {
-            margin-left: 4px;
-        }
-
         /* Issue details — less indent */
         .issue-details {
             margin-left: 6px;
@@ -532,21 +467,6 @@
         }
 
         /* No-issues card */
-        .no-issues-card {
-            padding: 30px 20px;
-        }
-
-        .no-issues-icon {
-            font-size: 3rem;
-        }
-
-        .no-issues-title {
-            font-size: 1.3rem;
-        }
-
-        .no-issues-message {
-            font-size: 1rem;
-        }
     }
 </style>
 
