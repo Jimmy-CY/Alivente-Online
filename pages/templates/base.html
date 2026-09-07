@@ -652,6 +652,28 @@
       /* Seven of the eight list pages render nothing at all when there is
          nothing to show, which reads as a broken page rather than an empty
          one. */
+      /* THE REQUIRED MARKER - 7 Sep. base's first.
+
+         An asterisk in a label is how this system says a field is required.
+         It did it 115 times across 34 templates in SEVEN shapes, and those
+         seven rendered as THREE things: #dc3545 on 102 of them (Bootstrap's
+         red, reached by four spellings, three of which hardcoded the value
+         in eighteen separate page rules), a louder #FF0000 on nine inline
+         ones, and NOTHING on four bare asterisks, where the signal was a
+         character rather than a colour.
+
+         --alv-bad appeared nowhere among them. The system said "required" in
+         a colour it did not own, and if Bootstrap ever left, 102 asterisks
+         would have turned black.
+
+         font-weight is here because the asterisk is small and the ink is
+         dark; at 400 it reads as punctuation. */
+      .alv-req {
+        color: var(--alv-bad);
+        margin-left: 2px;
+        font-weight: 600;
+      }
+
       .alv-empty {
         padding: 44px 20px;
         text-align: center;

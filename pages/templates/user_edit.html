@@ -60,11 +60,6 @@
     display: block;
 }
 
-.form-group label span.required {
-    color: #dc3545;
-    margin-left: 2px;
-}
-
 .form-control {
     border: 2px solid #e9ecef;
     border-radius: 8px;
@@ -387,7 +382,7 @@ select.form-control {
             {% endif %}
 
             <div class="form-group mb-4">
-                <label>Role <span class="required">*</span></label>
+                <label>Role <span class="alv-req">*</span></label>
                 <div class="role-selector" style="grid-template-columns: 1fr 1fr;">
                     <label class="role-option {% if not target_user.is_superuser %}selected{% endif %}"
                            onclick="selectRole(this, 'user')">

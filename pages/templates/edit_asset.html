@@ -46,7 +46,7 @@
                 <!-- Category -->
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>Category <span class="text-danger">*</span></label>
+                        <label>Category <span class="alv-req">*</span></label>
                         <select name="category" id="category" class="form-control" required onchange="loadSubcategories()">
                             <option value="">Select Category</option>
                             {% for cat in categories %}
@@ -61,7 +61,7 @@
                 <!-- Subcategory -->
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>Subcategory <span class="text-danger">*</span></label>
+                        <label>Subcategory <span class="alv-req">*</span></label>
                         <select name="subcategory" id="subcategory" class="form-control" required>
                             <option value="">Select Category First</option>
                             {% for sub in subcategories %}
@@ -78,7 +78,7 @@
                 <!-- Asset Name -->
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>Asset Name <span class="text-danger">*</span></label>
+                        <label>Asset Name <span class="alv-req">*</span></label>
                         <input type="text" name="name" class="form-control" required value="{{ asset.name }}">
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                 <!-- Location/Room -->
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>Location/Room <span class="text-danger">*</span></label>
+                        <label>Location/Room <span class="alv-req">*</span></label>
                         <input type="text" name="location_room" class="form-control" required value="{{ asset.location_room }}" placeholder="e.g., Kitchen, Living Room">
                     </div>
                 </div>

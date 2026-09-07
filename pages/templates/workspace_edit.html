@@ -54,11 +54,6 @@
     display: block;
 }
 
-.form-group label span.required {
-    color: #dc3545;
-    margin-left: 2px;
-}
-
 .form-control {
     border: 2px solid #e9ecef;
     border-radius: 8px;
@@ -198,14 +193,14 @@ select.form-control {
             <h2><i class="fas fa-info-circle" style="color:#667eea;"></i> Workspace Details</h2>
 
             <div class="form-group mb-4">
-                <label>Workspace Name <span class="required">*</span></label>
+                <label>Workspace Name <span class="alv-req">*</span></label>
                 <input type="text" name="name" class="form-control"
                        value="{{ workspace.name }}"
                        placeholder="e.g. Helen's Household" required>
             </div>
 
             <div class="form-group">
-                <label>Owner <span class="required">*</span></label>
+                <label>Owner <span class="alv-req">*</span></label>
                 <select name="owner_id" class="form-control" required>
                     {% for u in users %}
                     <option value="{{ u.id }}" {% if workspace.owner_id == u.id %}selected{% endif %}>

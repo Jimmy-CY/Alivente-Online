@@ -358,8 +358,12 @@ async def main():
     # FOURTH page-owner entry, 2 Sep. The Issues Analysis
     # palette round edits fsr.html's drill-down script, so
     # its historical claim moves to two snapshots too.
+    # FIFTH page-owner entry, 7 Sep. The required-marker round rewrites
+    # passport_management.html's six asterisk spans, and it is the only
+    # one of these six pages it touches.
     LATER = {'comments_report.html': '.bak_cmttint',
-             'fsr.html': '.bak_iapal'}
+             'fsr.html': '.bak_iapal',
+             'passport_management.html': '.bak_alvreq'}
     for rel in PAGES:
         path = os.path.join(TPL, *rel.split('/'))
         _later = LATER.get(rel)

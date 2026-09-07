@@ -93,6 +93,9 @@ JS = """() => [...document.querySelectorAll(
   }).filter(Boolean)"""
 
 
+blocked = []
+
+
 async def sweep(free_height):
     """Render every template and count controls shorter than their content."""
     from playwright.async_api import async_playwright
@@ -107,6 +110,24 @@ async def sweep(free_height):
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page(viewport={'width': 1900, 'height': 900})
+
+        # OFFLINE. Fourteen of these templates carry a remote <link> inside
+        # their content block - font-awesome, leaflet, and on property_detail
+        # a whole second Bootstrap. Left alone, set_content()'s default
+        # wait_until="load" does not return until a CDN answers, so the push
+        # gate was one outage away from a 30s hang and a traceback; it took
+        # one on 7 Sep. It was also the wrong measurement: this suite pins a
+        # Bootstrap fixture on purpose, and a CDN serving 4.5.2 on top of it
+        # measures whatever cdnjs felt like sending that afternoon. Nothing
+        # leaves the machine now, and every request that tries is counted so
+        # the control below can prove the refusal is doing work.
+        blocked.clear()
+
+        async def _offline(route, request):
+            blocked.append(request.url)
+            await route.abort()
+
+        await pg.route(re.compile(r'^https?://'), _offline)
         for p in sorted(glob.glob(os.path.join(TPL, '*.html'))
                         + glob.glob(os.path.join(TPL, '*', '*.html'))):
             rel = os.path.relpath(p, TPL).replace(os.sep, '/')
@@ -121,7 +142,8 @@ async def sweep(free_height):
             await pg.set_content(
                 "<!doctype html><html><head><meta charset='utf-8'>"
                 "<style>%s</style><style>%s</style><style>%s</style></head>"
-                "<body>%s</body></html>" % (BOOTSTRAP, base_css, css_of(t), html))
+                "<body>%s</body></html>" % (BOOTSTRAP, base_css, css_of(t), html),
+                wait_until='domcontentloaded')
             await pg.wait_for_timeout(30)
             try:
                 bad = await pg.evaluate(JS)
@@ -141,6 +163,19 @@ async def main():
     for rel, bad in sorted(clipped.items())[:12]:
         print('        %-34s %s' % (rel, ', '.join(
             '%s %d<%d' % (b['tag'], b['h'], b['n']) for b in bad[:4])))
+
+    # base.html is excluded because the sweep above skips it, and a control
+    # that counts a page the sweep never rendered is counting the wrong set.
+    _remote = sorted(
+        os.path.basename(p) for p in glob.glob(os.path.join(TPL, '*.html'))
+        if os.path.basename(p) != 'base.html' and 'form-control' in read(p)
+        and re.search(r'<link[^>]+https?://', re.sub(
+            r'<script[^>]*>.*?</script>', '', read(p), flags=re.S)))
+    check('CONTROL: %d page(s) still carry a remote <link>, and the browser '
+          'refused all %d request(s) - the gate does not need a CDN'
+          % (len(_remote), len(blocked)),
+          len(_remote) >= 10 and len(blocked) >= len(_remote),
+          ', '.join(_remote[:4]))
 
     print('\n' + '-' * 72 + '\n 3. the negative control\n' + '-' * 72)
     # A suite that cannot fail is worth nothing. Put Bootstrap's fixed height

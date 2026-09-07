@@ -280,7 +280,7 @@
           <input type="hidden" id="passport_id" name="passport_id">
           <input type="hidden" id="form_action" name="action" value="add">
           <div class="form-group">
-            <label for="holder_name">Passport/ID Holder Name: <span class="text-danger">*</span></label>
+            <label for="holder_name">Passport/ID Holder Name: <span class="alv-req">*</span></label>
             <select class="form-control" id="holder_name" name="holder_name" required>
               <option value="">-- Select Holder --</option>
               <option value="Demetri Manias">Demetri Manias</option>
@@ -290,7 +290,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="document_type">Document Type: <span class="text-danger">*</span></label>
+            <label for="document_type">Document Type: <span class="alv-req">*</span></label>
             <select class="form-control" id="document_type" name="document_type" required>
               <option value="">-- Select Type --</option>
               <option value="passport">Passport</option>
@@ -301,11 +301,11 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="document_number">Document Number: <span class="text-danger">*</span></label>
+            <label for="document_number">Document Number: <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="document_number" name="document_number" required>
           </div>
           <div class="form-group">
-            <label for="country_of_issue">Country of Issue: <span class="text-danger">*</span></label>
+            <label for="country_of_issue">Country of Issue: <span class="alv-req">*</span></label>
             <select class="form-control" id="country_of_issue" name="country_of_issue" required>
               <option value="">-- Select Country --</option>
               <option value="Cyprus">Cyprus</option>
@@ -323,7 +323,7 @@
             <input type="date" class="form-control" id="expiry_date" name="expiry_date">
           </div>
           <div class="form-group">
-            <label for="status">Status: <span class="text-danger">*</span></label>
+            <label for="status">Status: <span class="alv-req">*</span></label>
             <select class="form-control" id="status" name="status" required>
               <option value="">-- Select Status --</option>
               <option value="active">Active</option>
@@ -332,7 +332,7 @@
             </select>
           </div>
           <div class="form-group" id="file_upload_group">
-            <label for="document_file">Upload Document <span class="text-danger required-marker">*</span></label>
+            <label for="document_file">Upload Document <span class="alv-req">*</span></label>
             <input type="file" class="form-control-file file-upload-input" id="document_file" name="document_file" accept="image/*,application/pdf" capture="environment">
             <small class="form-text text-muted">PDF, JPG or PNG. Max file size: 10MB. On mobile, you can take a photo or pick from your files.</small>
           </div>

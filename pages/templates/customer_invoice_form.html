@@ -96,7 +96,7 @@
     <div class="form-row">
       <div class="col-6">
         <div class="form-group">
-          <label for="bill_name"><strong>Customer Name</strong> <span class="req">*</span></label>
+          <label for="bill_name"><strong>Customer Name</strong> <span class="alv-req">*</span></label>
           <input type="text" id="bill_name" name="bill_name" class="form-control"
                  value="{% if form_data %}{{ form_data.bill_name }}{% else %}{{ pi.bill_name }}{% endif %}"
                  maxlength="255" {% if not editable %}readonly{% endif %}>
@@ -358,7 +358,6 @@
 .col-12 { flex: 0 0 100%; }
 .form-group { display: flex; flex-direction: column; margin-bottom: 16px; }
 .form-group label { font-weight: 500; color: #2c3e50; margin-bottom: 6px; font-size: 14px; }
-.req { color: #dc3545; }
 .form-control { border: 2px solid #e9ecef; border-radius: 8px; padding: 9px 12px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; }
 .form-control:focus { border-color: #0e7c8b; box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; }
 textarea.form-control { resize: vertical; }

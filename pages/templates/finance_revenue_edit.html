@@ -82,11 +82,6 @@
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
 }
 
-.required-mark {
-    color: #dc3545;
-    margin-left: 2px;
-}
-
 /* ============================================================
    MOBILE — max-width: 768px
    ============================================================ */
@@ -191,7 +186,7 @@
                 
                 <!-- Property -->
                 <div class="form-field">
-                    <label for="prop">Property<span class="required-mark">*</span></label>
+                    <label for="prop">Property<span class="alv-req">*</span></label>
                     <select id="prop" class="form-control" name="prop" required>
                         <option value="">Select Property</option>
                         {% for prop in props_data %}
@@ -205,7 +200,7 @@
                 
                 <!-- Revenue Line Type -->
                 <div class="form-field">
-                    <label for="revenue_line_types">Revenue Line Type<span class="required-mark">*</span></label>
+                    <label for="revenue_line_types">Revenue Line Type<span class="alv-req">*</span></label>
                     <select id="revenue_line_types" class="form-control" name="revenue_line_types" required>
                         <option value="">Select Revenue Line Type</option>
                         {% for rlt in revenue_line_types %}
@@ -219,7 +214,7 @@
                 
                 <!-- Revenue Type -->
                 <div class="form-field">
-                    <label for="revenue_types">Revenue Type<span class="required-mark">*</span></label>
+                    <label for="revenue_types">Revenue Type<span class="alv-req">*</span></label>
                     <select id="revenue_types" class="form-control" name="revenue_types" required>
                         <option value="">Select Revenue Type</option>
                         {% for rt in revenue_types %}
@@ -233,7 +228,7 @@
                 
                 <!-- Revenue Amount -->
                 <div class="form-field">
-                    <label for="revenue_amount">Revenue Amount (€)<span class="required-mark">*</span></label>
+                    <label for="revenue_amount">Revenue Amount (€)<span class="alv-req">*</span></label>
                     <input type="number" 
                            class="form-control" 
                            id="revenue_amount" 
