@@ -197,7 +197,9 @@ def normalise(t):
 # rather than expiring the next time anyone touches it. Every other check in
 # this suite stays on the LIVE file: "no clause reaches paper" is a claim
 # about today.
-LATER = {'finance/financial_indicators.html': '.bak_fiseg'}
+LATER = {'finance/financial_indicators.html': '.bak_fiseg',
+         # C3 moved the drill table onto base, 5 Sep.
+         'fsr.html': '.bak_iadrill'}
 for rel in TARGETS:
     if BAK[rel] is None:
         continue

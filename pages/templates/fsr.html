@@ -2254,7 +2254,13 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
      charts never did - they read copy 2.
 
      All four are gone. base's :root tokens are the one source, and the
-     script below reads those same tokens rather than restating them. */
+     script below reads those same tokens rather than restating them.
+
+     AMENDED 5 Sep. "table.ia-tbl rules further down" no longer exist -
+     round C3 moved that table onto base's .alv-table and deleted all
+     twelve of them. The account above is left as written because it is the
+     record of what copy 3 WAS; this line is here so the pointer does not
+     send the next reader looking for rules that have gone. */
   #issuesAnalysisModal .ia-body{max-height:80vh;overflow-y:auto;background:var(--alv-paper);}
   #issuesAnalysisModal .modal-xl{max-width:960px;}
   #issuesAnalysisModal .ia-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:12px;}
@@ -2299,14 +2305,37 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   .ia-drill-head .ia-dc{font-size:12px;color:var(--alv-ink-faint);}
   .ia-drill-head .ia-dx{margin-left:auto;border:none;background:transparent;color:var(--alv-ink-faint);cursor:pointer;font-size:22px;line-height:1;}
   .ia-drill-body{overflow-y:auto;}
-  table.ia-tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
-  table.ia-tbl th{text-align:left;color:var(--alv-ink-faint);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:9px 16px;border-bottom:1px solid var(--alv-line);position:sticky;top:0;background:var(--alv-paper);}
-  table.ia-tbl td{padding:10px 16px;border-bottom:1px solid var(--alv-line-soft);color:var(--alv-ink-soft);vertical-align:top;}
-  table.ia-tbl tr:last-child td{border-bottom:none;}
-  table.ia-tbl td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
-  table.ia-tbl a.ia-link{color:var(--alv-accent-ink);text-decoration:none;font-weight:700;}
-  table.ia-tbl a.ia-link:hover{text-decoration:underline;}
-  .ia-empty-row{padding:20px 16px;color:var(--alv-ink-faint);font-size:12.5px;}
+  /* THE DRILL TABLE IS BASE'S NOW - 5 Sep. Thirteen rules went: eight
+     here and five more in the phone block that rebuilt the same cards
+     base already builds. drillRows() was ALREADY writing data-label and
+     class="num", which are base's conventions, so this was a rename and
+     eight deletions rather than a rebuild.
+
+     THE HEADING STILL STICKS. That was the open question, because base
+     drives its heading shadow from an observer that runs once at page
+     load with the VIEWPORT as its root - and this table is built long
+     after load and scrolls inside the dialog. But the stickiness is
+     plain CSS on .alv-table thead th and pins against the nearest
+     scrolling ancestor, which is .ia-drill-body. Measured, not assumed.
+
+     WHAT IS MISSING IS ONLY THE SHADOW under the pinned heading, and it
+     was rendered on and off before being given up: the dialog already
+     has a hard edge, a title bar and a shadow of its own, so the hint
+     has nothing left to say here. Absent BY DECISION - not a sign that
+     base's table misbehaves in a dialog.
+
+     NO .table-container EITHER. It exists to give a page card its
+     background, radius and shadow and to be the hook .is-stuck toggles;
+     the dialog supplies the first and clips the second, and we have just
+     declined the third. Rendered both ways: identical, sticky in both.
+
+     THIS RULE IS RESCOPED, NOT NEW. It read `table.ia-tbl a.ia-link`,
+     anchored to the class that just changed - so renaming the table
+     dropped every issue link back to Bootstrap blue. The first render
+     showed exactly that. A rename is not a rename while another selector
+     is anchored to the old name. */
+  .ia-drill-body .alv-table a.ia-link{color:var(--alv-accent-ink);text-decoration:none;font-weight:700;}
+  .ia-drill-body .alv-table a.ia-link:hover{text-decoration:underline;}
   /* drillRows() wrote this colour inline, which no token can reach. */
   .ia-desc{color:var(--alv-ink-faint);}
 
@@ -2321,11 +2350,11 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     #issuesAnalysisModal .ia-chart,#issuesAnalysisModal .ia-chart.tall{height:330px;}
     .ia-drill-overlay{padding:0;align-items:flex-end;}
     .ia-drill{max-width:100%;max-height:88vh;border-radius:14px 14px 0 0;}
-    table.ia-tbl thead{display:none;}
-    table.ia-tbl,table.ia-tbl tbody,table.ia-tbl tr,table.ia-tbl td{display:block;width:100%;}
-    table.ia-tbl tr{border-bottom:1px solid var(--alv-line);padding:6px 0;}
-    table.ia-tbl td{border:none;padding:4px 16px;text-align:left !important;}
-    table.ia-tbl td::before{content:attr(data-label);display:inline-block;min-width:74px;color:var(--alv-ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.03em;}
+    /* THE PHONE CARDS ARE BASE'S TOO. These five rebuilt, selector for
+       selector, what .alv-table's own phone block already does - hide the
+       thead, block out the cells, prefix each with its data-label. base
+       goes one better and promotes the FIRST cell to a card title at
+       16px/600, which is the property name here. */
   }
 </style>
 
@@ -2531,7 +2560,11 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   function ageChip(a){
     return '<span class="alv-age-pill '+ageBand(a).cls+'">'+a+'d</span>';}
   function drillRows(list){
-    if(!list.length) return '<div class="ia-empty-row">No issues.</div>';
+    if(!list.length) return '<div class="alv-empty">'+
+      '<i class="fas fa-clipboard-check"></i>'+
+      '<div class="alv-empty-title">No issues</div>'+
+      '<div class="alv-empty-hint">Nothing in this band for the period '+
+      'selected.</div></div>';
     var open=!list[0].is_resolved;
     var body=list.map(function(i){return '<tr>'+
       '<td data-label="Property">'+esc(i.prop)+'</td>'+
@@ -2540,7 +2573,7 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
       '<td class="num" data-label="Status">'+(i.is_resolved?'<span class="alv-pill alv-pill-good">Resolved</span>':'<span class="alv-pill alv-pill-attn">'+esc(i.status)+'</span>')+'</td>'+
       '<td class="num" data-label="'+(open?'Age':'Days')+'">'+(i.is_resolved?(i.days_to_resolve!=null?i.days_to_resolve+'d':'–'):(i.age_days!=null?ageChip(i.age_days):'–'))+'</td>'+
       '</tr>';}).join('');
-    return '<table class="ia-tbl"><thead><tr><th>Property</th><th>Issue</th><th class="num">Logged</th><th class="num">Status</th><th class="num">'+(open?'Age':'Days')+'</th></tr></thead><tbody>'+body+'</tbody></table>';
+    return '<table class="table alv-table"><thead><tr><th>Property</th><th>Issue</th><th class="num">Logged</th><th class="num">Status</th><th class="num">'+(open?'Age':'Days')+'</th></tr></thead><tbody>'+body+'</tbody></table>';
   }
   function showDrill(title,list,tag){
     lastDrill={title:title,list:list,tag:tag||MUTED};

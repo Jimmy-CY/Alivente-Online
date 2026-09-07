@@ -415,8 +415,30 @@ head('5. scope, and the lesson from C1')
 # ===========================================================================
 check('.ia-tab is untouched - the segmented control is its own round',
       '.ia-tab{border:none;background:transparent' in FC)
-check('the .ia-drill overlay and its table are untouched - C3',
-      'table.ia-tbl{' in FC and '.ia-drill{' in FC)
+# MOVED 5 Sep - the SCOPE GUARD, ninth time in this project, and the fourth
+# guard written NAMING the round that would invalidate it. This read
+# `'table.ia-tbl{' in FC and '.ia-drill{' in FC`: C2 asserting it stayed in
+# its lane and left the drill-down to C3. C3 has landed, and moved that table
+# onto base's .alv-table.
+#
+# Split by what each half is a claim ABOUT, which is the refinement the eighth
+# occurrence forced. The OVERLAY is still hand-rolled and still local - a
+# claim about today, so it stays on the live file. The TABLE is history, so it
+# moves onto the snapshot C3 leaves, and gains a forward half: a guard that
+# only ever loosens asserts nothing.
+check('the .ia-drill overlay is STILL hand-rolled and still local - base has '
+      'no modal component, and this is a dialog inside one',
+      '.ia-drill{' in FC and '.ia-drill-overlay{' in FC)
+_C3 = os.path.join(T, 'fsr.html.bak_iadrill')
+if not os.path.exists(_C3):
+    check('C3 left a snapshot to measure the old claim against', False,
+          'fsr.html.bak_iadrill')
+else:
+    check('C2 did not touch the drill TABLE - measured on fsr.html.bak_iadrill',
+          'table.ia-tbl{' in nocomment(read(_C3)))
+    check('  and C3 has since moved it onto base',
+          'table.ia-tbl' not in FC
+          and 'class="table alv-table"' in FC)
 # MOVED by the print-leak round - the SCOPE GUARD kind of 4b, and the sixth
 # time this project has moved one. This said "the page-local @media is still
 # unqualified, that round owns it". True when written; that round has landed.
