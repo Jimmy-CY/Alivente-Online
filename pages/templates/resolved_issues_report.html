@@ -32,8 +32,8 @@
                     <div class="issue-header">
                         <strong class="issue-heading">{{ issue.heading }}</strong>
                         <span class="issue-description">
-                            ({{ issue.description }}) -
-                            <span style="color: red;">Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
+                            ({{ issue.description }})
+                            <span class="alv-pill alv-pill-neutral issue-age">Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
                         </span>
                     </div>
                     <div class="comments-container">
@@ -64,7 +64,7 @@
     .report-content {
         width: 90%;
         max-width: 1200px;
-        background: white;
+        background: var(--alv-paper);
         padding: 30px;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -76,7 +76,7 @@
         align-items: center;
         margin-bottom: 30px;
         padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--alv-line);
     }
 
     .report-title-container {
@@ -86,14 +86,14 @@
 
     .report-title-main {
         font-size: 1.8rem;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin: 0;
         font-weight: bold;
     }
 
     .report-title-sub {
         font-size: 1.2rem;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         margin: 5px 0 0 0;
         font-weight: normal;
     }
@@ -106,18 +106,18 @@
     .property-card {
         margin-bottom: 25px;
         padding: 20px;
-        background-color: #ffffff;
+        background-color: var(--alv-paper);
         border-radius: 6px;
-        border-left: 4px solid #0e7c8b;
+        border-left: 4px solid var(--alv-accent);
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .property-name {
         font-size: 1.4rem;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin-bottom: 15px;
         padding-bottom: 8px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--alv-line);
     }
 
     .issue-header {
@@ -130,14 +130,38 @@
 
     .issue-heading {
         font-size: 1.2rem;
-        color: #2c3e50;
+        color: var(--alv-ink);
         font-weight: 600;
         white-space: nowrap;
     }
 
+    /* THE TURNAROUND STOPPED BEING AN ALARM - 7 Sep.
+
+       Every issue on this report is RESOLVED - that is what the page is -
+       and the turnaround beside each one was painted `red` from an INLINE
+       style. "Resolution: 0 days", a same-day fix, in the loudest colour
+       the system has. Third screen with this defect: C2 found it on the
+       Analysis modal, round D on the Friday report, this is the last.
+
+       Being inline, no stylesheet could reach it. Being a KEYWORD rather
+       than a hex, no colour audit this week could see it either - this file
+       reports eight hex literals and the red was not among them.
+
+       AND THE PAGE ALREADY HAD A RULE FOR THIS FIGURE. `.resolution-time`
+       was declared teal and worn by nothing, because the markup carried the
+       inline style instead. Both are gone: the figure is now the same
+       neutral pill the Friday report shows, because the same figure on two
+       screens should look the same. The `-` that used to separate the
+       description from the figure went with it: it separated two runs of
+       text, and there are no longer two runs of text to separate. */
+    .issue-description .issue-age {
+        margin-left: 8px;
+        vertical-align: 2px;
+    }
+
     .issue-description {
         font-size: 1rem;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         line-height: 1.4;
         word-wrap: break-word;
         word-break: break-word;
@@ -158,13 +182,13 @@
 
     .comment-date {
         font-size: 1.0rem;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         font-weight: 500;
         display: inline;
     }
 
     .comment-text {
-        color: #495057;
+        color: var(--alv-ink);
         font-size: 0.95rem;
         display: inline;
         margin-left: 5px;
@@ -172,21 +196,6 @@
         word-break: break-word;
         overflow-wrap: break-word;
         white-space: normal;
-    }
-
-    .comment-user {
-        font-size: 0.85rem;
-        background-color: #f0f0f0;
-        padding: 1px 5px;
-        border-radius: 3px;
-        font-family: monospace;
-        white-space: nowrap;
-    }
-
-    .resolution-time {
-        font-weight: bold;
-        color: #0e7c8b;
-        margin-left: 5px;
     }
 
     /* ==================== PRINT ==================== */
@@ -213,10 +222,6 @@
         .property-card {
             border-left: none;
             margin-bottom: 15px;
-        }
-
-        .comment-user {
-            background-color: transparent;
         }
 
         .comment-row {
