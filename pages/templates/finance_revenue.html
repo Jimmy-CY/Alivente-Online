@@ -29,22 +29,27 @@
 {% if perms.auth.can_access_financials %}
 
 <style>
+        /* THE COLOURED BANNER WENT - 8 Sep.
+
+           This page headed itself with a filled green gradient band and a
+           white white title. Twenty templates across Financials did, in two
+           colours - green for revenue, red for expenses - and the same
+           component exists in five hues system-wide.
+
+           It is now the heading 65 of the 125 templates already use, and
+           that finance/cashflow_forecast.html in this very folder already
+           used: a centred <h2>, an optional centred <h5> beneath it, and no
+           icon. Not one of those 65 carries an icon, which is why this
+           one's went with the band.
+
+           The colour coding went deliberately. Green and red already mean
+           --alv-good and --alv-bad - on time and overdue - everywhere else
+           in this system, and a heading cannot be green for one reason
+           while a figure beside it is green for another. */
+
 .revenue-container {
     max-width: 1400px;
     margin: 0 auto;
-}
-
-.page-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 30px 40px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-}
-.page-header h1 {
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0;
 }
 
 /* Desktop default: hide the mobile "More" dropdown wrapper */
@@ -175,15 +180,6 @@
 @media screen and (max-width: 768px) {
     .revenue-container {
         padding: 0 8px;
-    }
-
-    .page-header {
-        padding: 20px 16px;
-        border-radius: 10px;
-        margin-bottom: 16px;
-    }
-    .page-header h1 {
-        font-size: 20px;
     }
 
     /* More dropdown wrapper — visible on mobile only */
@@ -332,9 +328,10 @@
 <div class="revenue-container">
 
     <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-coins"></i> Revenue</h1>
-    </div>
+    <h2><center>Revenue</center></h2>
+        
+    
+        <br/>
 
     <!-- Action Bar — Desktop: [Add New] [Help] [Back]
                      Mobile:  [Add New (wide)] [⋮ More] [← Back] -->

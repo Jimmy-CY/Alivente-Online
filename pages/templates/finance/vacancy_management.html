@@ -11,10 +11,11 @@
 <div class="vacancy-container">
 
     <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-chart-line"></i> Vacancy Management</h1>
-        <p>Property performance dashboard</p>
-    </div>
+    <h2><center>Vacancy Management</center></h2>
+        
+        <h5><center>Property performance dashboard</center></h5>
+    
+        <br/>
 
     <!-- Action Bar — Help (wide on mobile) + Back (icon on mobile) -->
     <div class="page-action-buttons">
@@ -168,27 +169,27 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
+        /* THE COLOURED BANNER WENT - 8 Sep.
+
+           This page headed itself with a filled teal gradient band and a
+           white white title. Twenty templates across Financials did, in two
+           colours - green for revenue, red for expenses - and the same
+           component exists in five hues system-wide.
+
+           It is now the heading 65 of the 125 templates already use, and
+           that finance/cashflow_forecast.html in this very folder already
+           used: a centred <h2>, an optional centred <h5> beneath it, and no
+           icon. Not one of those 65 carries an icon, which is why this
+           one's went with the band.
+
+           The colour coding went deliberately. Green and red already mean
+           --alv-good and --alv-bad - on time and overdue - everywhere else
+           in this system, and a heading cannot be green for one reason
+           while a figure beside it is green for another. */
+
 .vacancy-container {
     max-width: 1400px;
     margin: 0 auto;
-}
-
-.page-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%);
-    color: white;
-    padding: 26px 32px;
-    border-radius: 12px;
-    margin-bottom: 22px;
-}
-.page-header h1 {
-    font-size: 26px;
-    font-weight: bold;
-    margin: 0 0 4px 0;
-}
-.page-header p {
-    margin: 0;
-    font-size: 14px;
-    opacity: 0.95;
 }
 
 /* Period Selection Panel */
@@ -634,13 +635,6 @@
 @media screen and (max-width: 768px) {
     .vacancy-container { padding: 0 8px; }
 
-    .page-header {
-        padding: 20px 16px;
-        margin-bottom: 14px;
-        border-radius: 10px;
-    }
-    .page-header h1 { font-size: 20px; }
-    .page-header p { font-size: 13px; }
     .action-back-label { display: none; }
 
     /* Period buttons stack */

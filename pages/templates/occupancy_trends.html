@@ -8,6 +8,24 @@
 {% block content %}
 
 <style>
+        /* THE COLOURED BANNER WENT - 8 Sep.
+
+           This page headed itself with a filled teal gradient band and a
+           white white title. Twenty templates across Financials did, in two
+           colours - green for revenue, red for expenses - and the same
+           component exists in five hues system-wide.
+
+           It is now the heading 65 of the 125 templates already use, and
+           that finance/cashflow_forecast.html in this very folder already
+           used: a centred <h2>, an optional centred <h5> beneath it, and no
+           icon. Not one of those 65 carries an icon, which is why this
+           one's went with the band.
+
+           The colour coding went deliberately. Green and red already mean
+           --alv-good and --alv-bad - on time and overdue - everywhere else
+           in this system, and a heading cannot be green for one reason
+           while a figure beside it is green for another. */
+
 .trends-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -26,21 +44,6 @@
    The band was the minority, so it goes rather than becoming a
    component. Modal headers keep their teal; that is its own round.
  */
-.page-header {
-    color: var(--alv-ink);
-    margin-bottom: 22px;
-}
-.page-header h1 {
-    font-size: 26px;
-    font-weight: bold;
-    margin: 0 0 4px 0;
-}
-.page-header p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--alv-ink-soft);
-}
-
 /* Charts grid */
 .trends-charts-grid {
     display: grid;
@@ -370,13 +373,6 @@
 @media (max-width: 768px) {
     .trends-container { padding: 0 8px; }
 
-    .page-header {
-        padding: 20px 16px;
-        margin-bottom: 14px;
-        border-radius: 10px;
-    }
-    .page-header h1 { font-size: 20px; }
-    .page-header p { font-size: 13px; }
     .action-back-label { display: none; }
 
     .trends-charts-grid {
@@ -452,14 +448,15 @@
 
 <div class="trends-container">
 
-    <div class="page-header">
-        <h1><i class="fas fa-chart-line"></i> Performance Trends</h1>
+    <h2><center>Performance Trends</center></h2>
+        
         {% if first_year %}
-            <p>Historical performance metrics from {{ first_year }} to {{ current_year }}</p>
+            <h5><center>Historical performance metrics from {{ first_year }} to {{ current_year }}</center></h5>
         {% else %}
-            <p>Multi-year occupancy and vacancy analysis</p>
+            <h5><center>Multi-year occupancy and vacancy analysis</center></h5>
         {% endif %}
-    </div>
+    
+        <br/>
 
     <div class="page-action-buttons">
         <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#occupancy_trendsHelpModal">
