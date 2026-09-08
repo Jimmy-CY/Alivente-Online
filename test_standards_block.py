@@ -180,8 +180,14 @@ if WAS is not None:
         return re.sub(r'\n{3,}', '\n\n', t)
     check('everything outside the block is byte-identical to before',
           strip(B) == strip(WAS))
-    check('  CONTROL: the block really did add something',
-          len(B) > len(WAS) + 5000, '+%d bytes on disk' % (len(B) - len(WAS)))
+    # THE BLOCK'S OWN SIZE, not the file's growth. On a re-run the backup
+    # already holds the PREVIOUS block, so the delta is only whatever the
+    # revision added - 1,949 bytes on one edit - and a check on the delta
+    # fails a correct second application.
+    check('  CONTROL: the block is substantial, not a stub',
+          len(BODY) > 8000, '%d bytes of document' % len(BODY))
+    print('        (file grew %+d bytes this time; the backup may already '
+          'hold a block)' % (len(B) - len(WAS)))
 else:
     print('  SKIP  no base.html.bak_std to compare against')
 

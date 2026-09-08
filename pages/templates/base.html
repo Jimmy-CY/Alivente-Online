@@ -164,31 +164,66 @@
       `white`) - those are invisible to a hex-based audit and hid a defect
       for weeks. NEVER: a semantic token used for decoration.
 
-  3.2 PAGE HEADINGS                             [CONVENTION - see the gap below]
+  3.2 PAGE HEADINGS                          [test_heading_standard.py]
 
-      Every page heads itself the same way:
+      A page heads itself with up to three lines. THE KIND OF CONTENT IS THE
+      RULE; the tag follows it, and two kinds share a tag.
 
           h2 > center      ALIVENTE ONLINE - PAGE NAME
-          h5 > center      A sentence describing the page      (optional)
+          h4 > center      ADD NEW PROPERTY                    (mode label)
+          h4 > center      INV-042 - Apolloneon                (record name)
+          h5 > center      A sentence describing the page      (descriptive)
           br
 
-      TITLE:     CAPITALS, prefixed `ALIVENTE ONLINE - `. It is a label -
-                 short, scanned, not read.
-      SUBTITLE:  Sentence case. It is a sentence - often eight words or more,
-                 and ALL-CAPS measurably slows reading by removing the word
-                 shapes that let you recognise a word without spelling it
-                 out. Settled 8 Sep 2026.
+      h2  THE TITLE. Capitals, prefixed `ALIVENTE ONLINE - `. Every page has
+          one. It is a LABEL: two to four words, scanned rather than read.
+
+      h4  TWO THINGS, WHICH IS WHY THE TAG IS NOT THE RULE.
+
+          A MODE LABEL, on a screen that is one mode of something else:
+          ADD NEW PROPERTY, EDIT EXISTING SUPPLIER, ADD VALUATION,
+          UPLOAD / VIEW / DELETE. CAPITALS, because it is a label - two or
+          three words naming which mode you are in. 15 pages, all agreeing.
+
+          Or a RECORD NAME, saying which record is on screen: an invoice
+          number and a customer, a receipt number. Its case belongs to the
+          DATA, so no rule here can set it. 3 pages.
+
+      h5  THE DESCRIPTIVE LINE. Sentence case. It is a SENTENCE - often
+          eight words or more, and ALL-CAPS measurably slows reading by
+          removing the word shapes that let you recognise a word without
+          spelling it out. 8 pages use it.
+
+      A page has an h4 or an h5, not both. Settled 8 Sep 2026.
+
+      KNOWN EXCEPTION: `customer_invoice_form` reads `New invoice` in its
+      else branch - a mode label in sentence case where every other one
+      shouts. One word, found by the suite, left for a round that agrees to
+      touch that page.
+
       NO ICON:   not one compliant heading in the system carries one.
       NO BAND:   a heading is text on paper, never a filled colour block.
 
-      The general rule this expresses, which applies beyond headings:
-      CAPITALS FOR LABELS, SENTENCE CASE FOR PROSE. base already does this -
-      `.alv-stat-label` is uppercase and letter-spaced because it is a label;
-      nothing else in base shouts.
+      THE GENERAL RULE, which applies well beyond headings:
+      CAPITALS FOR LABELS, SENTENCE CASE FOR PROSE. base already did this
+      without saying so - `.alv-stat-label` is uppercase and letter-spaced
+      because it is a label, and nothing else in base shouts.
 
-      KNOWN GAP AT THE TIME OF WRITING: 30 pages outside `projects/` do not
-      yet comply, and `projects/` (9 pages, several with record names inside
-      the title) is awaiting its own survey.
+      HOW THE h4 RULE CAME TO BE WRITTEN DOWN, because it is a warning. The
+      round that set this standard surveyed the subtitles by looking for an
+      h5 immediately after the h2, found six, and concluded the corpus was
+      too small to settle the question. There are forty-three. Eighteen are
+      h4 and were invisible to that scan. The round changed only
+      h5s and so left every mode label correctly in capitals - the right
+      outcome, reached because the scan could not see them rather than
+      because anyone had understood the rule. Had those pages used h5, it
+      would have lowercased fourteen labels that should shout.
+
+      KNOWN GAP: 10 pages carry a record name inside the title -
+      `property_assets` and the nine under `projects/`, e.g.
+      EDIT TASK - {{ task.task_name }}. Prefixing gives two dashes doing
+      different jobs, so they are excluded pending a survey of what those
+      titles look like with real data in them.
 
   3.3 TABLES                                     [test_table_standard.py,
                                                   test_card_standard.py]

@@ -98,11 +98,36 @@ def heading_of(src):
     return t, (re.sub(r'\s+', ' ', s.group(1)).strip() if s else None)
 
 
+def second_line(src):
+    """The line under the title, WHATEVER TAG IT USES: (tag, text).
+
+       The round that set this standard looked only for an h5 immediately
+       after the h2, found six, and called the sample too small to settle
+       anything. There are twenty-four - fourteen of them h4, and invisible
+       to that scan. A survey that names the tag it expects finds only that
+       tag, the same way a survey named after a colour found only teal."""
+    mk = markup_of(src)
+    m = re.search(r'<h2[^>]*>\s*<center>.*?</center>\s*</h2>', mk, re.S)
+    if not m:
+        return None, None
+    after = mk[m.end():m.end() + 460]
+    s = re.search(r'<(h[3-6])[^>]*>\s*(?:<center>)?\s*(.*?)\s*(?:</center>)?\s*'
+                  r'</\1>', after, re.S)
+    if not s:
+        return None, None
+    return s.group(1), re.sub(r'\s+', ' ', s.group(2)).strip()
+
+
 def literal(t):
-    """The text with Django tags removed - what a reader sees minus the
-       data. A title that is only `{{ name|upper }}` has no literal, and
-       must not be judged on capitalisation it does not control."""
-    return re.sub(r'\{[{%#][^}]*[}%#]\}', '', t or '').strip()
+    """The text with Django tags AND HTML entities removed - what a reader
+       sees minus the data. A title that is only `{{ name|upper }}` has no
+       literal and must not be judged on capitalisation it does not control.
+
+       Entities matter: `{{ number }} &mdash; {{ tenant }}` reduced to
+       `&mdash;`, whose entity NAME is five letters, so it read as a label
+       and failed a page that has none."""
+    t = re.sub(r'\{[{%#][^}]*[}%#]\}', '', t or '')
+    return re.sub(r'&[a-zA-Z]+;|&#\d+;', '', t).strip()
 
 
 # ===========================================================================
@@ -180,6 +205,74 @@ check('  every non-compliant page is one we deliberately deferred',
       not _unexpected, str(_unexpected[:4]))
 
 # ===========================================================================
+head('2b. the tag decides the case - h4 labels shout, h5 sentences do not')
+# ===========================================================================
+# WHICH TAG A LINE USES IS THE RULE. h4 holds a MODE LABEL - ADD NEW
+# PROPERTY, EDIT EXISTING SUPPLIER, UPLOAD / VIEW / DELETE - and is capitals
+# because a label is. h5 holds a descriptive sentence and is sentence case.
+H4, H5 = [], []
+for p in TEMPLATES:
+    rel = rel_of(p)
+    if rel == 'base.html':
+        continue
+    tag, txt = second_line(read(p))
+    if not tag or not literal(txt):
+        continue
+    (H4 if tag == 'h4' else H5 if tag == 'h5' else []).append((rel, txt))
+
+print('        %d page(s) carry a line under the title: %d are h4 mode '
+      'labels,\n        %d are h5 descriptive lines.'
+      % (len(H4) + len(H5), len(H4), len(H5)))
+check('the corpus really does use both tags', H4 and H5,
+      '%d h4, %d h5' % (len(H4), len(H5)))
+check('  CONTROL: and enough of each to be a rule rather than a coincidence',
+      len(H4) >= 8 and len(H5) >= 4)
+
+_shouty = [(r, t) for r, t in H5
+           if [c for c in literal(t) if c.isalpha()]
+           and all(c.isupper() for c in literal(t) if c.isalpha())]
+check('every h5 descriptive line is sentence case, not capitals',
+      not _shouty, str([r for r, _ in _shouty][:4]))
+
+# AN h4 IS TWO THINGS, WHICH IS WHY THE TAG IS NOT THE RULE. Most hold a
+# MODE LABEL - ADD NEW PROPERTY - which is capitals because a label shouts.
+# Three hold a RECORD NAME instead: `{{ number }} - {{ tenant_name }}`,
+# whose case belongs to the data and which no rule here can set. Judging
+# those on capitalisation they do not control would fail correct pages, so
+# they are separated by whether the line is mostly interpolation.
+_labels = [(r, t) for r, t in H4
+           if len([c for c in literal(t) if c.isalpha()]) >= 3]
+_records = [(r, t) for r, t in H4
+            if len([c for c in literal(t) if c.isalpha()]) < 3]
+print('        of the h4s, %d are mode labels and %d name a record - the '
+      'record\n        names take their case from the data.'
+      % (len(_labels), len(_records)))
+_quiet = [(r, t) for r, t in _labels if literal(t) != literal(t).upper()]
+check('almost every h4 mode label is capitals - a label shouts',
+      len(_quiet) <= 1, str([r for r, _ in _quiet][:4]))
+for r, t in _quiet:
+    print('        NOTE  %s reads %r - a mode label in sentence case, and '
+          'the only one.\n              One word, outside this round\'s '
+          'agreed scope.' % (r, literal(t)[:40]))
+check('  CONTROL: and the check can see a lowercase one - it just did'
+      if _quiet else '  CONTROL: there ARE labels to get wrong',
+      len(_labels) >= 8, '%d label(s)' % len(_labels))
+
+# A page picks one or the other. Both would be a title, a label AND a
+# sentence, which is a third pattern nobody chose.
+_both = []
+for p in TEMPLATES:
+    mk = markup_of(read(p))
+    m = re.search(r'<h2[^>]*>\s*<center>.*?</center>\s*</h2>', mk, re.S)
+    if not m:
+        continue
+    after = mk[m.end():m.end() + 460]
+    if re.search(r'<h4[^>]*>', after) and re.search(r'<h5[^>]*>', after):
+        _both.append(rel_of(p))
+check('no page carries both an h4 label and an h5 sentence', not _both,
+      str(_both[:4]))
+
+# ===========================================================================
 head('3. the pages agree with the standard base.html states')
 # ===========================================================================
 _b = read(BASE)
@@ -199,12 +292,27 @@ else:
     check('  and the subtitle is sentence case',
           'SENTENCE CASE' in DOC or 'Sentence case' in DOC)
     check('  and that no heading carries an icon', 'NO ICON' in DOC)
+    # THE h4 RULE MUST BE IN THE DOCUMENT, or this suite is enforcing
+    # something base.html does not claim - which is the same silent
+    # disagreement the standards block exists to prevent.
+    check('  it states the h4 mode label rule', 'MODE LABEL' in DOC)
+    check('    and that an h4 also carries a RECORD NAME, so the tag is not '
+          'the rule', 'RECORD NAME' in DOC)
+    check('    and it records the one exception by name',
+          'customer_invoice_form' in DOC)
+    check('    and that a page has one or the other, not both',
+          re.search(r'h4 or an h5, not both', DOC) is not None)
     # The document must not claim compliance it does not have.
+    # QUANTIFIED, in digits or in words. The first version demanded a
+    # numeral and failed on "ten pages" - correct prose, arbitrary check.
     _claims = re.search(r'KNOWN GAP[^\n]*\n(?:[^\n]*\n){0,4}', DOC)
+    _words = r'(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|' \
+             r'eleven|twelve|twenty|thirty)'
     check('  and it records the gap honestly rather than claiming none',
-          _claims is not None and re.search(r'\d+ pages?', _claims.group(0))
+          _claims is not None
+          and re.search(_words + r'\s+pages?', _claims.group(0), re.I)
           is not None,
-          ' '.join(_claims.group(0).split())[:60] if _claims else 'no gap noted')
+          ' '.join(_claims.group(0).split())[:60] if _claims else 'no gap')
 
 # ===========================================================================
 head('4. what the round left alone')
