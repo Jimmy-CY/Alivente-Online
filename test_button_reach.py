@@ -90,8 +90,31 @@ check('  and it sets no padding either',
 check('the bar still owns sizing',
       re.search(r'\.page-action-buttons \.btn,[^{]*\{[^}]*padding:', BLOCK,
                 re.S) is not None)
+# THE COLLAPSE IS A RULE, NOT A STRING - scope guard #13, 8 Sep.
+#
+# This read:
+#
+#     '.page-action-buttons .action-secondary { display: none; }' in BLOCK
+#
+# the exact literal of a rule the secondary-visibility round narrowed to
+# `.page-action-buttons:has(.action-more-btn) .action-secondary`, so that a
+# secondary hides only where a More menu actually carries it. The collapse
+# still happens; the string does not. test_action_standard.py asks the same
+# question with a regex scoped to the mobile block and passed unchanged,
+# which is the difference between checking a rule and checking its spelling.
+#
+# So the claim is asked properly instead of re-pointed at the new text: the
+# mobile block must hide a secondary, and the hide must be conditional on a
+# More menu. That is a stronger check than the one it replaces.
+_MOB = BLOCK[BLOCK.find('@media screen and (max-width: 768px)'):]
 check('  and the whole mobile collapse',
-      '.page-action-buttons .action-secondary { display: none; }' in BLOCK)
+      re.search(r'\.action-secondary\s*\{\s*display:\s*none', _MOB)
+      is not None)
+check('    and a secondary hides only where a More menu carries it',
+      re.search(r'\.page-action-buttons:has\(\.action-more-btn\)\s*'
+                r'\.action-secondary', _MOB) is not None)
+check('    CONTROL: the mobile block really was located',
+      '.action-more-btn' in _MOB and len(_MOB) < len(BLOCK))
 
 _p = BLOCK[BLOCK.find('@media print'):]
 check('paper hides the furniture', 'display: none !important' in _p)

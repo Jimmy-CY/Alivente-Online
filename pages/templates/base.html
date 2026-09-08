@@ -1328,7 +1328,30 @@
           min-width: 0;
           height: 38px;
         }
-        .page-action-buttons .action-secondary { display: none; }
+        /* A SECONDARY HIDES ONLY WHERE SOMETHING CARRIES IT - 7 Sep.
+           This rule used to read `.page-action-buttons .action-secondary`,
+           unconditionally, on the assumption stated three lines above: that
+           the secondaries move into the More menu. Across the 63 action
+           bars in this project that assumption holds 22 times and fails 11,
+           and on those eleven the button simply disappeared below 768px
+           with nothing carrying it - Cancel on six Add/Edit forms that have
+           no Back button either, Help on three pages, and two under
+           finance/.
+
+           `:has()` rather than a marker class, because every bar that has a
+           menu spells it `action-more-btn` (22 of 22), and because
+           recipe_management builds its menu inside a <script>, where a
+           class somebody has to remember would eventually be forgotten. */
+        .page-action-buttons:has(.action-more-btn) .action-secondary {
+          display: none;
+        }
+        /* And it has to be SIZED, which it never needed while it was always
+           hidden here: its neighbours are all 38px and it came out 35. */
+        .page-action-buttons .action-secondary {
+          flex: 0 1 auto;
+          min-width: 0;
+          height: 38px;
+        }
         .page-action-buttons .action-back {
           margin-left: 0;
           flex: 0 0 auto;

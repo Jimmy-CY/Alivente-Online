@@ -482,14 +482,52 @@ async def drive():
             s = await st()
             check('%-26s   375px: Filter survives the collapse' % short, s['w'] > 20,
                   '%.0fpx' % s['w'])
+            # THE COLLAPSE IS PROVED EITHER WAY - scope guard #14, 8 Sep.
+            #
+            # This asserted `sec <= 0`: a secondary always measures zero at
+            # 375px. It is here to prove the collapse is in force, so the
+            # Filter measurement above is not vacuous - a good control with
+            # a premise that stopped being true. base now hides a secondary
+            # only where an .action-more-btn carries it, and eight of these
+            # nine pages have one. passport_management does not, which is
+            # why its Help button used to vanish and now does not.
+            #
+            # So the control is two-sided instead of exception-listed: with
+            # a More menu the secondary must be hidden, without one it must
+            # be visible. Either outcome proves the collapse is running, and
+            # the new rule gets exercised on nine real pages for free.
             sec = await pg.evaluate("()=>{const e=document.querySelector("
                                     "'.page-action-buttons .action-secondary');"
                                     "return e?e.getBoundingClientRect().width:-1}")
-            check('%-26s   CONTROL: a secondary is hidden there' % short, sec <= 0,
+            more = await pg.evaluate("()=>!!document.querySelector("
+                                     "'.page-action-buttons .action-more-btn')")
+            check('%-26s   CONTROL: a secondary is %s there' %
+                  (short, 'hidden' if more else 'visible - no More menu '
+                   'carries it'),
+                  (sec <= 0) if more else (sec > 20),
                   '%.0fpx' % sec)
             await pg.close()
-            os.remove(f)
+            _unlink(f)
         await br.close()
+
+def _unlink(path, tries=20):
+    """Remove a temp fragment, or say so - never raise.
+
+       Windows keeps the file until Chromium's renderer exits, which
+       can be a moment after page.close() has returned."""
+    import time
+    for _ in range(tries):
+        try:
+            os.remove(path)
+            return True
+        except FileNotFoundError:
+            return True
+        except OSError:
+            time.sleep(0.05)
+    print('  NOTE  could not delete %s - still held open. Harmless; '
+          'delete it by hand.' % os.path.basename(path))
+    return False
+
 
 asyncio.run(drive())
 
