@@ -28,7 +28,25 @@ WHAT THIS SUITE IS FOR
 
 WHAT THIS SUITE CANNOT DO, SAID FIRST. It reads templates. It cannot tell
 you whether a title is the RIGHT words for the page, only that it is
-capitals, prefixed, and unchanged in substance from what was there before.
+capitals, unbranded, and unchanged in substance from what was there before.
+
+SCOPE GUARD #16 - 8 Sep 2026, THE SAME DAY THIS SUITE WAS WRITTEN
+-----------------------------------------------------------------
+This suite used to assert that every title STARTS with `ALIVENTE ONLINE - `.
+That is now false by agreement: the brand moved off the heading and into the
+browser tab, because it was identical on all 66 pages that carried it and so
+distinguished nothing, and because seven of the twelve real property names
+already contain a dash - making `ALIVENTE ONLINE - PROPERTY ASSETS - ATHENS
+- SECOND FLOOR` today's output rather than a worst case.
+
+The guard rule is: ASK WHAT THE CLAIM IS ABOUT. The claim here is *every
+page heads itself the same way, by agreement rather than by accident*. That
+claim survives; only the agreed shape changed. So the assertion is REPLACED
+with its opposite and dated - not exception-listed, and not re-pointed at a
+new literal with the old reasoning left standing behind it.
+
+The prefix is enforced-absent by test_heading_prefix.py, which also renders
+base's title tag through Django to prove the brand still reaches the browser.
 """
 import os
 import re
@@ -37,7 +55,11 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
 BASE = os.path.join(T, 'base.html')
+# The brand, which a heading must NOT carry. See scope guard #16 above.
 PREFIX = 'ALIVENTE ONLINE - '
+# The one page whose heading IS the brand: shown when the database is
+# unreachable, where the chrome is not guaranteed to render.
+KEEPS_THE_BRAND = 'error_pages/connectivity_error.html'
 
 # Deliberately out of scope: a record name inside the title, so prefixing
 # gives two dashes doing different jobs. Awaiting the projects/ survey.
@@ -142,14 +164,18 @@ for p in MOVED:
     now, was = read(p), read(p + '.bak_hstd')
     t_now, s_now = heading_of(now)
     t_was, s_was = heading_of(was)
-    check('%-40s title is prefixed and capitals' % rel,
-          t_now is not None and t_now.startswith(PREFIX)
+    check('%-40s title is capitals and carries no brand' % rel,
+          t_now is not None and PREFIX not in t_now
           and literal(t_now) == literal(t_now).upper(),
           (t_now or '?')[:44])
     # THE WORDS MUST SURVIVE. A prefix is added and the case changes; the
     # page must not be renamed by a round about formatting.
     if t_was:
-        _w = [w for w in re.findall(r'[A-Za-z]{3,}', literal(t_was))]
+        # ALIVENTE and ONLINE are the constant this round removed, so they
+        # are not words that have to survive - they are the words that had
+        # to go.
+        _w = [w for w in re.findall(r'[A-Za-z]{3,}', literal(t_was))
+              if w.upper() not in ('ALIVENTE', 'ONLINE')]
         _kept = [w for w in _w if w.upper() in literal(t_now).upper()]
         check('  and its words survived',
               len(_kept) >= len(_w) - 1,
@@ -175,7 +201,9 @@ for p in TEMPLATES:
     if t is None:
         continue
     lit = literal(t)
-    ok = t.startswith(PREFIX) and lit == lit.upper()
+    if rel == KEEPS_THE_BRAND:
+        continue
+    ok = PREFIX not in t and lit == lit.upper()
     if s is not None:
         _l = [c for c in literal(s) if c.isalpha()]
         ok = ok and (not _l or not all(c.isupper() for c in _l))
@@ -193,7 +221,9 @@ print('        %d page(s) use the centred heading: %d comply, %d do not, '
 for rel, t in BAD:
     print('          not yet: %-38s %s' % (rel, t))
 
-check('most of the system complies', len(GOOD) >= 40,
+# The floor rose when the prefix came off: a page no longer has to carry a
+# constant to comply, only to be capitals with a sentence-case second line.
+check('most of the system complies', len(GOOD) >= 60,
       '%d of %d' % (len(GOOD), len(GOOD) + len(BAD)))
 # A REPORT WITH A FLOOR, not an equality - the corpus grows, and a hardcoded
 # count has failed correct work twelve times on this codebase.
@@ -282,12 +312,22 @@ if not _m:
 else:
     DOC = _m.group(1)
     check('base states the heading standard', 'PAGE HEADINGS' in DOC)
-    _pfx = re.search(r'prefixed `([^`]+)`', DOC)
-    check('  and names the prefix', _pfx is not None,
-          repr(_pfx.group(1)) if _pfx else '')
-    check('  which is the one the pages actually use',
-          _pfx is not None and _pfx.group(1).strip() == PREFIX.strip(),
-          '%r vs %r' % (_pfx.group(1) if _pfx else None, PREFIX))
+    # THE DOCUMENT MUST STATE THE RULE THE PAGES FOLLOW, and after guard
+    # #16 that rule is the absence of the brand, not its presence. A
+    # document still describing the old shape is the silent disagreement
+    # the standards block exists to prevent.
+    # CASE-INSENSITIVE ON PURPOSE. The document sets its own headline rules
+    # in capitals - `NO BRAND PREFIX` - and a check that demanded one
+    # casing would have failed correct prose, which has happened here
+    # before (a check demanded a numeral and failed on "ten pages").
+    check('  and says the heading carries no brand prefix',
+          re.search(r'no brand prefix', DOC, re.I) is not None)
+    check('  and says where the brand went instead',
+          'browser tab' in DOC or 'BROWSER TAB' in DOC)
+    check('  and names the one page that keeps it',
+          'connectivity_error' in DOC)
+    check('  CONTROL: it does NOT still instruct anyone to prefix a title',
+          re.search(r'prefixed `ALIVENTE', DOC) is None)
     check('  it says the title is capitals', 'CAPITALS' in DOC)
     check('  and the subtitle is sentence case',
           'SENTENCE CASE' in DOC or 'Sentence case' in DOC)
@@ -370,7 +410,7 @@ if _unclosed:
 print('\n' + '=' * 72)
 print('  %d passed, %d failed' % (PASS, FAIL))
 print('\n  NOT PROVED HERE: that a title is the RIGHT words for its page.')
-print('  Only that it is capitals, prefixed, and unchanged in substance.')
+print('  Only that it is capitals, unbranded, and unchanged in substance.')
 if FAILED:
     print('\n  failures:')
     for x in FAILED[:20]:

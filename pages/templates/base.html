@@ -164,19 +164,54 @@
       `white`) - those are invisible to a hex-based audit and hid a defect
       for weeks. NEVER: a semantic token used for decoration.
 
-  3.2 PAGE HEADINGS                          [test_heading_standard.py]
+  3.2 PAGE HEADINGS      [test_heading_standard.py, test_heading_prefix.py]
 
       A page heads itself with up to three lines. THE KIND OF CONTENT IS THE
       RULE; the tag follows it, and two kinds share a tag.
 
-          h2 > center      ALIVENTE ONLINE - PAGE NAME
+          h2 > center      PAGE NAME
           h4 > center      ADD NEW PROPERTY                    (mode label)
           h4 > center      INV-042 - Apolloneon                (record name)
           h5 > center      A sentence describing the page      (descriptive)
           br
 
-      h2  THE TITLE. Capitals, prefixed `ALIVENTE ONLINE - `. Every page has
-          one. It is a LABEL: two to four words, scanned rather than read.
+      h2  THE TITLE. Capitals, NO BRAND PREFIX. Every page has one. It is a
+          LABEL: two to four words, scanned rather than read.
+
+          THE BRAND IS IN THE BROWSER TAB, not the heading. base.html builds
+          the tab as `{% block title %}` plus ` | Alivente Online`, so every
+          page that extends base gets it for free and no page states it
+          twice. A page sets only its own name in that block, in Title Case.
+
+          WHY IT MOVED, 8 Sep 2026. It headed 66 pages, identical on all of
+          them, so it distinguished nothing - and there are 53 distinct
+          title lines, every one already unique without it. On a phone the
+          content column is about 360px and those seventeen characters
+          filled the whole first line before the title began. The brand was
+          meanwhile already on screen three times: the sidebar logo image
+          plus the word ALIVENTE, the top-nav brand image, and the footer
+          copyright.
+
+          And on the pages that name a record it was the first of three
+          dashes. SEVEN OF THE TWELVE real property names contain a dash
+          already, so the old rule produced, on live data,
+          `ALIVENTE ONLINE - PROPERTY ASSETS - ATHENS - SECOND FLOOR`.
+
+          THE ARGUMENT AGAINST, kept because it is a real one. Reports print
+          and are emailed. base's mobile override reads
+          `@media (max-width: 991px)` with no `screen` keyword, and A4
+          portrait is about 718 CSS px, so IT FIRES ON PAPER and hides the
+          sidebar: the logo does vanish from a printed page. What survives
+          is the footer copyright, which is inside the content div and not
+          marked no-print. A brand at the TOP of a printed report belongs in
+          the report title component, not on 66 screens.
+          (Same accidental-media-query bug as the one the print block
+          records at 768px. Two instances, one cause.)
+
+          KNOWN EXCEPTION, one page: `error_pages/connectivity_error` heads
+          itself `ALIVENTE ONLINE` and nothing else. It is shown when the
+          database is unreachable, where the brand is the content and the
+          chrome is not guaranteed to render. It keeps its heading.
 
       h4  TWO THINGS, WHICH IS WHY THE TAG IS NOT THE RULE.
 
@@ -219,11 +254,14 @@
       because anyone had understood the rule. Had those pages used h5, it
       would have lowercased fourteen labels that should shout.
 
-      KNOWN GAP: 10 pages carry a record name inside the title -
-      `property_assets` and the nine under `projects/`, e.g.
-      EDIT TASK - {{ task.task_name }}. Prefixing gives two dashes doing
-      different jobs, so they are excluded pending a survey of what those
-      titles look like with real data in them.
+      KNOWN GAP: 16 pages carry a record name inside the title, e.g.
+      EDIT TASK - {{ task.task_name }}. AGREED SHAPE, not yet built: the
+      module name on the h2, and `MODE LABEL - Record Name` on the h4 with
+      an em dash - which is what `customer_invoice_form` already does. A
+      hyphen cannot be the separator, because the data contains hyphens.
+      Three of the sixteen are Administration pages and wait for that
+      module's test pass; two are an email body and a PDF, neither of which
+      has chrome to inherit from, and want their own treatment.
 
   3.3 TABLES                                     [test_table_standard.py,
                                                   test_card_standard.py]
@@ -459,7 +497,7 @@
     </style>
     <link rel="stylesheet" href="{% static 'css/my_style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <title>{% block title %}Hello, world!{% endblock %}</title>
+    <title>{% block title %}{% endblock %} | Alivente Online</title>
 
     <style>
     /* ==================== SHARED ==================== */

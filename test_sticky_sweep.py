@@ -361,9 +361,20 @@ async def main():
     # FIFTH page-owner entry, 7 Sep. The required-marker round rewrites
     # passport_management.html's six asterisk spans, and it is the only
     # one of these six pages it touches.
+    # FIFTH, SIXTH AND SEVENTH page-owner entries, 8 Sep. SCOPE GUARD #17.
+    # The heading-prefix round removes `ALIVENTE ONLINE - ` from the h2 of
+    # 66 pages, three of which are sticky-sweep pages. Same shape as the
+    # four before it, and the mechanism this block was built for: the claim
+    # is that THE STICKY SWEEP changed no markup, and it is still provable -
+    # against the snapshot the later round left, not against the live file.
+    # Not an exception, and not a re-point at a new string: the same claim,
+    # measured between the two snapshots, which is true for good.
     LATER = {'comments_report.html': '.bak_cmttint',
              'fsr.html': '.bak_iapal',
-             'passport_management.html': '.bak_alvreq'}
+             'passport_management.html': '.bak_alvreq',
+             'projects/projects.html': '.bak_pfx',
+             'title_deeds_management.html': '.bak_pfx',
+             'physical_invoice_list.html': '.bak_pfx'}
     for rel in PAGES:
         path = os.path.join(TPL, *rel.split('/'))
         _later = LATER.get(rel)

@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - {% if mode == 'edit' %}EDIT CUSTOMER{% else %}ADD CUSTOMER{% endif %}</center></h2>
+<h2><center>{% if mode == 'edit' %}EDIT CUSTOMER{% else %}ADD CUSTOMER{% endif %}</center></h2>
 <br/>
 
 {% for msg in messages %}
