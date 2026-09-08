@@ -1,6 +1,355 @@
 <!doctype html>
 {% load static %}
 
+{% comment %}
+===============================================================================
+  ALIVENTE ONLINE - THE SYSTEM STANDARD
+  Revised 8 September 2026.
+===============================================================================
+
+  WHY THIS IS HERE, AND NOT IN A README
+
+  Because this is the file you have open when you are about to break one of
+  these rules. Every standard below is owned by base.html; a page that wants
+  to look different from the rest of the system almost always does it by
+  redefining something here, locally, in its own style block. Six months of
+  that is how one component came to exist in five colours without anyone
+  deciding it should.
+
+  ONE RULE ABOUT THIS BLOCK ITSELF: IT MUST NOT CONTAIN ANYTHING SHAPED
+  LIKE AN HTML TAG. Forty-one suites parse base.html with regular
+  expressions, and several of them find a stylesheet by matching an opening
+  style tag, then anything, then a closing one. A sentence in here containing
+  a literal style tag opens such a match at the prose and closes it at base's
+  first REAL closing tag, swallowing an entire stylesheet - which is what
+  happened the first time this block was pushed, and took seven checks in
+  test_table_standard.py down with it. That suite's own notes had already
+  warned: "English prose inside a comment has impersonated markup". So this
+  document writes `style block`, `h2 > center`, `br` - never the tags
+  themselves. The suite that guards this block enforces it.
+
+  This block is a Django comment tag. It is stripped when the template
+  compiles - the browser never receives a byte of it, and the compile cost is
+  paid once per worker process, measured at under half a millisecond. It
+  costs a visitor nothing. (Contrast the CSS comments further down this file:
+  those live inside style tags and DO ship, on every page load. 38KB of them.)
+
+-------------------------------------------------------------------------------
+  HOW TO READ IT
+-------------------------------------------------------------------------------
+
+  Every standard is marked one of two ways:
+
+    [test_NAME.py]       A suite checks this. Break it and the push gate
+                         stops you. The suite is the real standard; this
+                         text is a description of it.
+
+    [CONVENTION]         Nothing checks this. It is true today because
+                         people have been careful. It will drift.
+
+  That distinction is the most important thing in this document. A written
+  standard nothing verifies is a wish. Where you see [CONVENTION], treat the
+  rule as real but assume it is already slightly wrong somewhere, and expect
+  a scan to find exceptions - because every scan run on this codebase has.
+
+  41 suites run on the push gate. `Push-PendingChanges.ps1` holds the list.
+
+-------------------------------------------------------------------------------
+  1. HOW A CHANGE IS MADE
+-------------------------------------------------------------------------------
+
+  Every change to this system goes through the same six steps. They are not
+  ceremony; each one exists because skipping it once cost something.
+
+  1. SURVEY.  Measure the actual shape before proposing anything. Never "this
+     looks like about twenty places" - count them, in every directory,
+     including subdirectories. Numbers from a survey have been wrong by a
+     factor of two in both directions: 140 required markers were 112; 19
+     banner rules were 3 pages; 11 broken action bars were 6.
+
+  2. AGREE.  Propose the round and its scope, and get a decision, before
+     writing a patcher. Decisions belong to Demetri, not to whoever is
+     holding the keyboard.
+
+  3. PATCH.  One `apply_*.py` per round. It must be:
+       - IDEMPOTENT - running it twice changes nothing the second time
+       - ANCHORED - every anchor asserted to match exactly once, and the
+         script exits rather than guessing
+       - BACKED UP - a `.bak_NAME` per file, never overwritten
+       - `--check` - a dry run that writes nothing
+       - SELF-CHECKING BEFORE WRITING - if the checks fail, no byte is
+         written. Not "written then reverted". Never written.
+
+  4. TEST.  One `test_*.py` per round, and it must contain CONTROLS: checks
+     that deliberately break the change and confirm the suite notices. A
+     suite with no control has, on this codebase, shipped a 500, silently
+     done nothing against a CRLF file, and agreed with a bug it shared.
+
+  5. PUSH.  `Push-PendingChanges.ps1` runs all 41 suites first and stages
+     nothing if any fails. The commit message says what changed and WHY,
+     including what was considered and rejected.
+
+  6. TEST ON LIVE.  A person opens the screens. This step has caught things
+     no suite could: a 500, missing map tiles, a red figure on a page of good
+     news, and three headings that disagreed with each other. It is not
+     optional, and it is why Administration and Personal - which have never
+     had it - are not "done" merely because they compile.
+
+-------------------------------------------------------------------------------
+  2. WHAT base OWNS
+-------------------------------------------------------------------------------
+
+  52 design tokens and 109 component classes. A page should reach for these
+  and define almost nothing of its own.
+
+  COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
+
+    Accent     --alv-accent  --alv-accent-ink  --alv-accent-soft
+               --alv-accent-line  --alv-on-accent
+    Ink        --alv-ink  --alv-ink-strong  --alv-ink-soft  --alv-ink-faint
+    Surface    --alv-paper  --alv-surface  --alv-neutral  --alv-neutral-soft
+    Lines      --alv-line  --alv-line-soft
+    Meaning    --alv-good  --alv-warn  --alv-bad  --alv-info  --alv-danger
+               (each with a -soft companion for backgrounds)
+    Ageing     --alv-age-1 .. --alv-age-4  (+ -soft)
+    Grading    --alv-grade-1 .. --alv-grade-5  (+ -soft)
+    Tag inks   --alv-tag-clay/moss/plum/sky/slate-ink
+    Action     --alv-edit  --alv-view
+    Shape      --alv-radius  --alv-radius-sm  --alv-font-ui
+
+  COMPONENTS
+
+    Tables       .alv-table  .table-container  .alv-matrix (+ scroll, blend,
+                 total, row-head, absent)
+    Status       .alv-pill (+ -good -attn -bad -info -neutral)
+                 .alv-tag (+ -clay -moss -plum -sky -slate)
+                 .alv-age-0..4 (+ -pill -dot -cell -fill)
+                 .alv-grade-1..5 (+ -dot -cell)
+    Figures      .alv-stats  .alv-stat  .alv-stat-value  .alv-stat-label
+                 (+ -good -attn -bad -age)
+    Cards        .alv-card (+ -head -body -title -aside -lead)
+    Actions      .page-action-buttons  .action-primary  .action-secondary
+                 .action-danger  .action-back  .action-filter
+                 .action-more-btn/-menu/-item  .disabled-btn  .back-button
+    Row actions  .row-actions  .cell-actions  .desktop-action-cell
+                 .mobile-action-bar/-btn/-icon/-label  .icon-action-btn
+                 .icon-edit/-view/-delete/-send/-upload/-approve/-manage/
+                 -duplicate/-unapprove  .icon-disabled  .status-btn
+    Menus        .ui-menu  .ui-menu-toggle  .ui-menu-panel  .ui-menu-item
+    Filters      .alv-filter  .alv-filter-active  .action-filter-count
+    Forms        .alv-req
+    Empty        .alv-empty  .alv-empty-title  .alv-empty-hint
+    Segmented    .alv-seg
+    A11y         .alv-visually-hidden
+
+-------------------------------------------------------------------------------
+  3. THE STANDARDS
+-------------------------------------------------------------------------------
+
+  3.1 COLOUR MEANS SOMETHING. IT IS NOT DECORATION.                [CONVENTION]
+
+      --alv-good   on time, healthy, active
+      --alv-warn   needs attention soon
+      --alv-bad    overdue, failed, required
+      --alv-info   informational, neutral emphasis
+      --alv-accent the system's own colour: primary actions, selection
+
+      A colour must not mean two things at once. Financials once painted its
+      Revenue headings green and its Expense headings red - a sensible idea
+      on its own, and impossible beside a figure that is green because it is
+      not late. That colour coding was retired on 8 Sep for exactly this
+      reason.
+
+      NEVER: a hex in a page's own style block. NEVER: a colour keyword (`red`,
+      `white`) - those are invisible to a hex-based audit and hid a defect
+      for weeks. NEVER: a semantic token used for decoration.
+
+  3.2 PAGE HEADINGS                             [CONVENTION - see the gap below]
+
+      Every page heads itself the same way:
+
+          h2 > center      ALIVENTE ONLINE - PAGE NAME
+          h5 > center      A sentence describing the page      (optional)
+          br
+
+      TITLE:     CAPITALS, prefixed `ALIVENTE ONLINE - `. It is a label -
+                 short, scanned, not read.
+      SUBTITLE:  Sentence case. It is a sentence - often eight words or more,
+                 and ALL-CAPS measurably slows reading by removing the word
+                 shapes that let you recognise a word without spelling it
+                 out. Settled 8 Sep 2026.
+      NO ICON:   not one compliant heading in the system carries one.
+      NO BAND:   a heading is text on paper, never a filled colour block.
+
+      The general rule this expresses, which applies beyond headings:
+      CAPITALS FOR LABELS, SENTENCE CASE FOR PROSE. base already does this -
+      `.alv-stat-label` is uppercase and letter-spaced because it is a label;
+      nothing else in base shouts.
+
+      KNOWN GAP AT THE TIME OF WRITING: 30 pages outside `projects/` do not
+      yet comply, and `projects/` (9 pages, several with record names inside
+      the title) is awaiting its own survey.
+
+  3.3 TABLES                                     [test_table_standard.py,
+                                                  test_card_standard.py]
+
+      Use `.alv-table` inside `.table-container`. Give every cell a
+      `data-label` so the phone layout can turn rows into cards. Numbers get
+      `.num`. Headings stick on scroll and stop sticking on paper. An empty
+      table shows `.alv-empty`, not a blank rectangle.
+
+  3.4 ACTION BARS                                [test_action_standard.py,
+                                                  test_button_reach.py,
+                                                  test_button_sweep.py]
+
+      One `.page-action-buttons` row per page. Exactly one `.action-primary`
+      - the page's verb. Help is never the verb. Destructive actions are
+      `.action-danger`, outlined at rest and filled only on hover. Back is
+      quiet, sits right, and keeps a 44px target on a phone.
+
+      Below 768px the primary takes the width, Back becomes a square, and
+      secondaries move into the More menu - BUT ONLY WHERE THERE IS ONE.
+      `.action-secondary` is hidden only inside a bar that actually contains
+      an `.action-more-btn`.                     [test_secondary_visible.py]
+
+      That conditional exists because the unconditional version silently
+      deleted Cancel from six Add/Edit forms that have no Back button either.
+      If you add a More menu to a bar, its secondaries start hiding on
+      phones again - that is the intent, but check the menu lists them.
+
+  3.5 ROW ACTIONS                                [test_action_standard.py,
+                                                  test_detail_property.py]
+
+      Icons in table rows, never words. One cell holds them all
+      (`.cell-actions` / `.desktop-action-cell`), and the Actions heading
+      sits over its buttons. On a phone they become `.mobile-action-bar`.
+      A disabled action is still rendered, disabled - never dropped, or the
+      row's shape changes depending on who is looking at it.
+
+  3.6 FORMS                                                 [CONVENTION]
+
+      A required field is marked with a span carrying `.alv-req` - one
+      spelling, one colour, `--alv-bad`. Controls must not be pinned to a
+      fixed height; Bootstrap 4.1.3 does this and shaves the descenders off
+      the value.                              [test_control_height.py]
+
+  3.7 PRINT                                      [test_print_leaks.py,
+                                                  test_card_standard.py]
+
+      base hides the furniture on paper: action bars, More menus, filter
+      panels, `.no-print`. Tables stop sticking, pills lose their tint and
+      gain an outline, and card edges darken enough to survive an empty
+      cartridge. A page should not need its own print block. If it does,
+      say why in a comment - and expect a later round to take it away when
+      base grows the same rule.
+
+  3.8 MOBILE                                                [CONVENTION]
+
+      768px is the breakpoint, `@media screen and (max-width: 768px)` so it
+      cannot also apply to paper. Tables become cards, action bars collapse,
+      44px is the minimum touch target. MOBILE HAS NEVER BEEN REVIEWED
+      SYSTEMATICALLY - treat any mobile claim in this file as untested unless
+      a suite is named beside it.
+
+-------------------------------------------------------------------------------
+  4. THE RULES THAT KEEP BEING RELEARNED
+-------------------------------------------------------------------------------
+
+  These are not style preferences. Each one is here because ignoring it cost
+  a defect, a broken push, or a wrong number.
+
+  * A CONTROL THAT CANNOT FAIL IS WORSE THAN NO CONTROL. A tag-balance check
+    that ended in `or True` shipped a 500. A control that searched for "\n"
+    against a CRLF file reported a clean pass on an untouched tree.
+
+  * ONE WRONG RULE IMPLEMENTED TWICE IS STILL WRONG. A patcher and its
+    scanner shared a bug, so the cross-check between them agreed and three
+    files shipped corrupted. Two implementations of one rule do not drift -
+    but checking them against each other tests agreement, not correctness.
+
+  * A WHOLE-FILE CLAIM FOR A COMPONENT-LEVEL ROUND FAILS CORRECT WORK. "No
+    gradient anywhere in this file" failed twenty correct patches, because
+    those pages legitimately keep a gradient on a modal. Scope the claim to
+    the component; report the rest with a floor.
+
+  * A MEASUREMENT NEEDS THE RIGHT REFERENT. Reading `rgba(0,0,0,0)` as black
+    and calling a 21:1 chip illegible. Counting distinct `top` values as
+    "rows" when a nowrap flex line holds buttons of different heights.
+    Measuring a block heading's BOX centre when the question was about its
+    TEXT. When a check fails, ask first whether it measures the right thing.
+
+  * RENDER IT. Twelve times a browser has caught what no text check could:
+    a colour that moved rather than left, a dangling dash, a title inset by
+    padding whose edge no longer existed, a chip orphaned left under a
+    centred heading. And its limit: the map round could not be rendered, and
+    said so, rather than implying otherwise.
+
+  * MEASURE THE SHAPE BEFORE GENERALISING, AND WALK EVERY DIRECTORY. Two
+    surveys measured only `*.html` and missed six subdirectories. One was
+    named after a colour and therefore found only that colour. EVERY SCANNER
+    MUST WALK `*/*.html`, AND NONE SHOULD BE NAMED AFTER A SYMPTOM.
+
+  * A CHECK THAT READS TEXT CATCHES PROSE. Twenty-four times, including
+    three where the prose was the patcher's own explanation of the thing it
+    was checking. Strip comments before asking a question of code.
+
+  * A GATE THAT CANNOT FINISH BLOCKS A PUSH AS HARD AS ONE THAT FAILS. A
+    suite that waited on a CDN, and one that raced Chromium for a file
+    handle on Windows, each stopped a push for a reason that had nothing to
+    do with the code. Renders are hermetic; cleanup reports instead of
+    raising.
+
+  * BEFORE REDESIGNING A RULE, CHECK ANYTHING RENDERS IT - and before adding
+    one, check it reaches something. Dead rules have been found in double
+    figures, including one that had been overridden by an inline style in
+    the same file.
+
+  * SCOPE GUARDS MOVE. Fourteen times. When a guard fails on correct work,
+    do not re-point it at the new string and do not add an exception: ask
+    what the claim is ABOUT and rewrite it to check that. Six of the
+    fourteen were guards this project wrote that named the very round that
+    would invalidate them.
+
+-------------------------------------------------------------------------------
+  5. WHERE THE PLAN LIVES
+-------------------------------------------------------------------------------
+
+  The outstanding work, the decisions still open, and the history of every
+  round are kept in the project docs, not here - `claude/running_list.md` is
+  the current one. This file describes the standard; that file describes how
+  far the system has got towards it, and neither should try to be the other.
+
+  Two things worth knowing without opening it:
+
+  * ADMINISTRATION AND PERSONAL HAVE NEVER BEEN REVIEWED OR TESTED. Not
+    styling, not behaviour, not on Live. Assume unknown defects, not untidy
+    CSS.
+
+  * THE RECIPE / MEAL-PLAN SIDE IS DELIBERATELY OUTSIDE EVERY SWEEP, by a
+    hardcoded exclusion list in `Show-ButtonDrift.py`. It is not on the push
+    gate. That list is NAME-based and has at least one hole.
+
+-------------------------------------------------------------------------------
+  6. CHANGING A STANDARD
+-------------------------------------------------------------------------------
+
+  A standard changes the same way anything else does: survey, agree, patch,
+  test, push, test on Live. Two extra obligations:
+
+  1. UPDATE THIS BLOCK IN THE SAME ROUND. A standards document that lags the
+     code is worse than none, because people trust it.
+
+  2. IF YOU ARE PROMOTING A [CONVENTION] TO ENFORCED, WRITE THE SUITE FIRST
+     AND WATCH IT FAIL. A suite written after the fix, that has never seen
+     the defect, is a suite you are guessing about.
+
+  And if you are about to add something to a page's own style block that base
+  could own instead: that is how this system acquired five colours of one
+  component, thirty local copies of one action row, and four drifting copies
+  of one report title. Put it in base, or write down why it could not go
+  there.
+{% endcomment %}
+
 <html lang="en">
   <head>
     <meta charset="utf-8">
