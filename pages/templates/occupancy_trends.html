@@ -13,11 +13,21 @@
     margin: 0 auto;
 }
 
+/* THE TEAL BANNER WENT - 7 Sep.
+
+   This page headed itself with a filled teal band:
+   `linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%)`, white text,
+   12px radius, a drop shadow. Nineteen such rules were spelled six
+   different ways across twelve files, and every one of them was a
+   local invention: base owns no banner component, and never did.
+
+   Every signed-off page - Properties, Tenants, Suppliers, Invoices -
+   heads itself with a plain title and base's `.page-action-buttons`.
+   The band was the minority, so it goes rather than becoming a
+   component. Modal headers keep their teal; that is its own round.
+ */
 .page-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%);
-    color: white;
-    padding: 26px 32px;
-    border-radius: 12px;
+    color: var(--alv-ink);
     margin-bottom: 22px;
 }
 .page-header h1 {
@@ -28,7 +38,7 @@
 .page-header p {
     margin: 0;
     font-size: 14px;
-    opacity: 0.95;
+    color: var(--alv-ink-soft);
 }
 
 /* Charts grid */

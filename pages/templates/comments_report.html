@@ -11,12 +11,30 @@
     margin: 0 auto;
 }
 
+/* THE TEAL BANNER WENT - 7 Sep.
+
+   This page headed itself with a filled teal band:
+   `linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%)`, white text,
+   12px radius, a drop shadow. Nineteen such rules were spelled six
+   different ways across twelve files, and every one of them was a
+   local invention: base owns no banner component, and never did.
+
+   Every signed-off page - Properties, Tenants, Suppliers, Invoices -
+   heads itself with a plain title and base's `.page-action-buttons`.
+   The band was the minority, so it goes rather than becoming a
+   component. Modal headers keep their teal; that is its own round.
+
+   Its `.stat-box` went with it: a white 20%%-alpha tile only reads on a
+   dark ground, and base already has the component for a headline figure
+   - `.alv-stat`, which is what tenant_payment_days shows one with.
+
+   AND SO DID ITS PRINT RULE. `background: #0e7c8b !important` with
+   `print-color-adjust: exact` was not this file overriding itself; it
+   was a deliberate flat fallback, because a gradient does not print.
+   With no band there is nothing left to force. */
 .report-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%);
-    color: white;
-    padding: 20px 30px;
-    border-radius: 12px;
-    margin-bottom: 30px;
+    color: var(--alv-ink);
+    margin-bottom: 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -31,27 +49,8 @@
 
 .report-header-left .subtitle {
     margin: 5px 0 0 0;
-    opacity: 0.9;
+    color: var(--alv-ink-soft);
     font-size: 14px;
-}
-
-.stat-box {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.stat-box .stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.stat-box .stat-label {
-    font-size: 12px;
-    opacity: 0.9;
 }
 
 /* THE TABLE STANDARD IS base's - .alv-table.
@@ -342,25 +341,6 @@
     color: #2c3e50;
 }
 
-@media print {
-    /* WHAT USED TO BE HERE AND IS NOW base's:
-         .page-action-buttons, .modal      hidden by base's print block
-         .btn-delete-icon                  gone; base hides .desktop-action-cell,
-                                           .alv-table .cell-actions, .row-actions
-                                           and .mobile-action-bar by name
-         .status-badge                     base outlines .alv-pill in black on
-                                           transparent, which is the same idea
-                                           and survives an empty cyan cartridge
-
-       The banner's fill is the one thing base cannot know about, so it is the
-       one thing left. It goes when the banner round takes the banner. */
-    .report-header {
-        background: #0e7c8b !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
-
 /* ==================== MOBILE (≤768px) ==================== */
 @media screen and (max-width: 768px) {
     .report-container {
@@ -384,14 +364,6 @@
 
     .report-header-left .subtitle {
         font-size: 13px;
-    }
-
-    .stat-box {
-        padding: 10px 16px;
-    }
-
-    .stat-box .stat-value {
-        font-size: 22px;
     }
 
     .action-back-label {
@@ -543,9 +515,9 @@
             <h1><i class="fas fa-comments"></i> Comments Report</h1>
             <p class="subtitle">{{ period_label }}</p>
         </div>
-        <div class="stat-box">
-            <div class="stat-value">{{ comment_count }}</div>
-            <div class="stat-label">Total Comments</div>
+        <div class="alv-stat">
+            <div class="alv-stat-value">{{ comment_count }}</div>
+            <div class="alv-stat-label">Total Comments</div>
         </div>
     </div>
 

@@ -6,23 +6,33 @@
 
 {% block content %}
 <style>
+/* THE TEAL BANNER WENT - 7 Sep.
+
+   This page headed itself with a filled teal band:
+   `linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%)`, white text,
+   12px radius, a drop shadow. Nineteen such rules were spelled six
+   different ways across twelve files, and every one of them was a
+   local invention: base owns no banner component, and never did.
+
+   Every signed-off page - Properties, Tenants, Suppliers, Invoices -
+   heads itself with a plain title and base's `.page-action-buttons`.
+   The band was the minority, so it goes rather than becoming a
+   component. Modal headers keep their teal; that is its own round.
+
+   The buttons kept the tones the button sweep gave them. A draft
+   promoted Help to `action-primary` here, because base hides
+   `.page-action-buttons .action-secondary` below 768px on the
+   assumption that an `.action-more-btn` surfaces it, and this page has
+   none - so Help is unreachable on a phone. True, but the wrong fix:
+   `.action-secondary` means "quieter" to the button classifier and
+   "hidden, the More menu has it" to base, and those contradict on
+   eleven bars. A base fault gets fixed in base, not by writing an
+   exception into two pages. */
 .settings-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    color: var(--alv-ink);
+    margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 15px;
-}
-
-.settings-header-text {
-    flex: 1;
-    min-width: 0;
 }
 
 .settings-header h2 {
@@ -32,25 +42,7 @@
 
 .settings-header p {
     margin: 0;
-    opacity: 0.9;
-}
-
-.settings-header .help-btn {
-    background: white;
-    color: #0e7c8b;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.settings-header .help-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    color: #0a5e6a;
+    color: var(--alv-ink-soft);
 }
 
 .notification-card > h5 {
@@ -124,23 +116,6 @@
 }
 
 /* Action group inside the teal header (Help + Back) */
-.settings-header-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-    align-items: stretch;
-}
-
-.settings-header .help-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-}
-.settings-header .help-btn:hover {
-    text-decoration: none;
-}
-
 /* ==================== MOBILE STYLES (â‰¤768px) ==================== */
 @media (max-width: 768px) {
     .settings-header {
@@ -161,32 +136,6 @@
 
     /* Action row inside header â€” Back+1 standard:
        [Help (wide)] [â† Back small icon] */
-    .settings-header-actions {
-        width: 100%;
-        flex-direction: row;
-        gap: 8px;
-        align-items: stretch;
-    }
-    .settings-header-actions .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-    }
-    .settings-header-actions .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        justify-content: center;
-        margin: 0;
-    }
     .action-back-label {
         display: none;
     }
@@ -219,18 +168,17 @@
 </style>
 
 <div class="settings-header">
-    <div class="settings-header-text">
-        <h2><i class="fas fa-envelope"></i> Administration Notification Settings</h2>
-        <p>Manage email recipients for property management and operational notifications</p>
-    </div>
-    <div class="settings-header-actions">
-        <button type="button" class="btn action-secondary help-btn" data-toggle="modal" data-target="#admin_notification_settingsHelpModal" title="Help">
-            <i class="fas fa-question-circle"></i> Help
-        </button>
-        <a href="{% url 'admin_apms' %}" class="btn action-back help-btn" aria-label="Back to Administration">
-            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-        </a>
-    </div>
+    <h2><i class="fas fa-envelope"></i> Administration Notification Settings</h2>
+    <p>Manage email recipients for property management and operational notifications</p>
+</div>
+
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#admin_notification_settingsHelpModal" title="Help">
+        <i class="fas fa-question-circle"></i> Help
+    </button>
+    <a href="{% url 'admin_apms' %}" class="btn action-back" aria-label="Back to Administration">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
 </div>
 
 {% for msg in messages %}
