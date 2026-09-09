@@ -205,13 +205,13 @@ Issues (Comments)
                             {% csrf_token %}
                             <input type="hidden" name="from" value="{{ request.GET.from|default:'fsr' }}">
                             <div class="ei-modal-body">
-                                <label class="ei-label" for="ei_heading">Issue Heading</label>
+                                <label class="ei-label" for="ei_heading">Issue Heading <span class="alv-req">*</span></label>
                                 <input type="text" id="ei_heading" name="issues_heading" class="ei-input" maxlength="255" required value="{{ isresults.issues_heading|default:'' }}">
 
                                 <label class="ei-label" for="ei_description">Description</label>
                                 <textarea id="ei_description" name="issues_description" class="ei-input" rows="3" maxlength="255">{{ isresults.issues_description|default:'' }}</textarea>
 
-                                <label class="ei-label" for="ei_prop">Property</label>
+                                <label class="ei-label" for="ei_prop">Property <span class="alv-req">*</span></label>
                                 <select id="ei_prop" name="prop" class="ei-input" required>
                                     {% for p in props %}
                                     <option value="{{ p.prop_id }}" {% if p.prop_id == isresults.prop_id %}selected{% endif %}>{{ p.prop_name }}</option>
@@ -241,7 +241,7 @@ Issues (Comments)
                             <input type="hidden" name="from" value="{{ request.GET.from|default:'fsr' }}">
                             <input type="hidden" name="comment_id" id="ec_comment_id" value="">
                             <div class="ei-modal-body">
-                                <label class="ei-label" for="ec_text">Comment</label>
+                                <label class="ei-label" for="ec_text">Comment <span class="alv-req">*</span></label>
                                 <textarea id="ec_text" name="issues_details_comment" class="ei-input" rows="4" maxlength="255" required></textarea>
                                 <p class="ec-note">You can edit only your own comments, and only until they&rsquo;ve been sent via &ldquo;Notify Now&rdquo;.</p>
                             </div>

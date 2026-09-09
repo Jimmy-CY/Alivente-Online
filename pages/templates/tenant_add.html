@@ -41,7 +41,7 @@
   <div class="form-row">
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_type"><strong>Tenant Type</strong></label>
+        <label for="tenant_type"><strong>Tenant Type</strong> <span class="alv-req">*</span></label>
         <select id="tenant_type" class="form-control" name="tenant_type" required>
           <option value="" disabled {% if not form_data.tenant_type %}selected{% endif %}>Select Tenant Type</option>
           <option value="Company" {% if form_data.tenant_type == 'Company' %}selected{% endif %}>Company</option>
@@ -51,7 +51,7 @@
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_name"><strong>Tenant</strong></label>
+        <label for="tenant_name"><strong>Tenant</strong> <span class="alv-req">*</span></label>
         <input type="text" class="form-control" id="tenant_name" name="tenant_name"
                value="{{ form_data.tenant_name }}" placeholder="Company or Tenant Name" required>
       </div>
@@ -61,14 +61,14 @@
   <div class="form-row">
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_contact_person"><strong>Contact Person</strong></label>
+        <label for="tenant_contact_person"><strong>Contact Person</strong> <span class="alv-req">*</span></label>
         <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person"
                value="{{ form_data.tenant_contact_person }}" placeholder="Name of Contact Person" required>
       </div>
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_contact_number"><strong>Contact Number</strong></label>
+        <label for="tenant_contact_number"><strong>Contact Number</strong> <span class="alv-req">*</span></label>
         <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number"
                value="{{ form_data.tenant_contact_number }}" placeholder="Contact Number" required>
       </div>
@@ -85,21 +85,21 @@
   <div class="form-row">
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_lease_start_date"><strong>Lease Start Date</strong></label>
+        <label for="tenant_lease_start_date"><strong>Lease Start Date</strong> <span class="alv-req">*</span></label>
         <input type="date" class="form-control" id="tenant_lease_start_date" name="tenant_lease_start_date"
                value="{{ form_data.tenant_lease_start_date }}" required>
       </div>
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_lease_end_date"><strong>Lease End Date</strong></label>
+        <label for="tenant_lease_end_date"><strong>Lease End Date</strong> <span class="alv-req">*</span></label>
         <input type="date" class="form-control" id="tenant_lease_end_date" name="tenant_lease_end_date"
                value="{{ form_data.tenant_lease_end_date }}" required>
       </div>
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_rental_type"><strong>Rental Type</strong></label>
+        <label for="tenant_rental_type"><strong>Rental Type</strong> <span class="alv-req">*</span></label>
         <select id="tenant_rental_type" class="form-control" name="tenant_rental_type" required>
           <option value="" disabled {% if not form_data.tenant_rental_type %}selected{% endif %}>Select Rental Type</option>
           <option value="Weekly" {% if form_data.tenant_rental_type == 'Weekly' %}selected{% endif %}>Weekly</option>
@@ -113,21 +113,21 @@
   <div class="form-row">
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_deposit"><strong>Deposit</strong></label>
+        <label for="tenant_deposit"><strong>Deposit</strong> <span class="alv-req">*</span></label>
         <input type="number" class="form-control" id="tenant_deposit" name="tenant_deposit"
                value="{{ form_data.tenant_deposit }}" placeholder="Deposit Amount" required>
       </div>
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_rent"><strong>Rental</strong></label>
+        <label for="tenant_rent"><strong>Rental</strong> <span class="alv-req">*</span></label>
         <input type="number" class="form-control" id="tenant_rent" name="tenant_rent"
                value="{{ form_data.tenant_rent }}" placeholder="Rental Amount" required>
       </div>
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_levies"><strong>Levies</strong></label>
+        <label for="tenant_levies"><strong>Levies</strong> <span class="alv-req">*</span></label>
         <input type="number" class="form-control" id="tenant_levies" name="tenant_levies"
                value="{{ form_data.tenant_levies }}" placeholder="Monthly Levy Amount" required>
       </div>
@@ -137,14 +137,14 @@
   <div class="form-row">
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_payment_terms"><strong>Rental Payment Terms (Days)</strong></label>
+        <label for="tenant_payment_terms"><strong>Rental Payment Terms (Days)</strong> <span class="alv-req">*</span></label>
         <input type="number" class="form-control" id="tenant_payment_terms" name="tenant_payment_terms"
                value="{{ form_data.tenant_payment_terms }}" placeholder="Payment Terms (Days)" required>
       </div>
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_renewal"><strong>Renewal Option</strong></label>
+        <label for="tenant_renewal"><strong>Renewal Option</strong> <span class="alv-req">*</span></label>
         <select id="tenant_renewal" class="form-control" name="tenant_renewal" required>
           <option value="" disabled {% if not form_data.tenant_renewal %}selected{% endif %}>Select if Lease is Renewable</option>
           <option value="Yes" {% if form_data.tenant_renewal == 'Yes' %}selected{% endif %}>Yes</option>
@@ -154,7 +154,7 @@
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_renewal_period"><strong>Renewal Period (Days)</strong></label>
+        <label for="tenant_renewal_period"><strong>Renewal Period (Days)</strong> <span class="alv-req">*</span></label>
         <input type="number" class="form-control" id="tenant_renewal_period" name="tenant_renewal_period"
                value="{{ form_data.tenant_renewal_period }}" placeholder="Renewal Period (Days)" required>
       </div>
@@ -174,7 +174,7 @@
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="tenant_current"><strong>Tenant Status</strong></label>
+        <label for="tenant_current"><strong>Tenant Status</strong> <span class="alv-req">*</span></label>
         <select id="tenant_current" class="form-control" name="tenant_current" required>
           <option value="" disabled {% if not form_data.tenant_current %}selected{% endif %}>Select Active or Inactive</option>
           <option value="Yes" {% if form_data.tenant_current == 'Yes' %}selected{% endif %}>Active</option>
@@ -184,7 +184,7 @@
     </div>
     <div class="col-md-4">
       <div class="form-group">
-        <label for="prop"><strong>Property</strong></label>
+        <label for="prop"><strong>Property</strong> <span class="alv-req">*</span></label>
         <select id="prop" class="form-control" name="prop" required>
           <option value="" disabled {% if not form_data.prop %}selected{% endif %}>Select Property</option>
           {% for results in props %}

@@ -320,12 +320,58 @@
       A disabled action is still rendered, disabled - never dropped, or the
       row's shape changes depending on who is looking at it.
 
-  3.6 FORMS                                                 [CONVENTION]
+  3.6 FORMS                                     [test_required_sweep.py,
+                                                 test_control_height.py]
 
-      A required field is marked with a span carrying `.alv-req` - one
-      spelling, one colour, `--alv-bad`. Controls must not be pinned to a
-      fixed height; Bootstrap 4.1.3 does this and shaves the descenders off
-      the value.                              [test_control_height.py]
+      A FIELD LOOKS LIKE THIS. Drawn from New Customer Invoice and
+      properties_add, which agreed with each other before it was written
+      down:
+
+          label > strong        the field name, bold
+          span.alv-req          the asterisk, if the field is required
+          input.form-control    the control
+
+      THE LABEL IS BOLD. Settled 9 Sep, from a 545-label count that split
+      338 plain to 207 bold - the majority was plain and the standard is
+      bold anyway, because the model page and the two biggest Add screens
+      already agreed, and because a label is a LABEL: the same reason
+      headings and `.alv-stat-label` shout. Only three screens mix the two
+      styles, so this is a per-page decision to sweep, not drift inside a
+      page. THE SWEEP HAS NOT HAPPENED - 338 labels are still plain.
+
+      EVERY REQUIRED FIELD IS MARKED, in one spelling, in a colour base
+      owns: `.alv-req { color: var(--alv-bad) }`. One round normalised the
+      112 asterisks that already existed, in seven spellings; a second found
+      81 required fields that said NOTHING AT ALL and marked them, including
+      the Properties and Tenants Add and Edit screens - 9 and 15 required
+      fields each, none of them marked, in signed-off modules.
+
+      INCLUDING ON FORMS WHERE EVERY FIELD IS REQUIRED. Four screens are
+      entirely required and an asterisk distinguishes nothing there. They
+      are marked anyway: a reader moving between screens learns ONE rule and
+      does not have to notice that this form happens to be all-required.
+      An exception that seems obviously right is how a rule stops being one.
+
+      A LABEL MAY OWN ITS CONTROL TWO WAYS. A label carrying a `for`
+      attribute naming the control's id is the explicit form. Several pages
+      instead put a label with NO `for` immediately before the control -
+      which works visually, does not work for a screen reader, and made a
+      sweep report twenty already-marked fields as unmarked until it learned
+      to read both. The `for` attribute is the one to write.
+
+      (This paragraph deliberately does not spell either element out. Prose
+      shaped like markup breaks every tool that finds markup by regex,
+      including our own harness - a sentence in this document once swallowed
+      an entire stylesheet and took seven checks down with it.)
+
+      A MARKER WITH NOTHING BEHIND IT is the mirror image, and 15 of them
+      exist: a label saying required beside a control that does not enforce
+      it. NOT SWEPT - adding `required` changes what a form ACCEPTS, which
+      is behaviour rather than styling, and wants somebody who knows the
+      business rule.
+
+      Controls must not be pinned to a fixed height; Bootstrap 4.1.3 does
+      this and shaves the descenders off the value.
 
   3.7 PRINT                                      [test_print_leaks.py,
                                                   test_card_standard.py]
@@ -379,9 +425,18 @@
     said so, rather than implying otherwise.
 
   * MEASURE THE SHAPE BEFORE GENERALISING, AND WALK EVERY DIRECTORY. Two
-    surveys measured only `*.html` and missed six subdirectories. One was
-    named after a colour and therefore found only that colour. EVERY SCANNER
-    MUST WALK `*/*.html`, AND NONE SHOULD BE NAMED AFTER A SYMPTOM.
+    surveys read only the top level of pages/templates and missed six
+    subdirectories. One was named after a colour and therefore found only
+    that colour. EVERY SCANNER MUST WALK THE SUBDIRECTORIES TOO, AND NONE
+    SHOULD BE NAMED AFTER A SYMPTOM.
+
+    (The glob for that is not written here on purpose. An earlier draft
+    spelled it out, and the two characters that end a CSS comment sat in
+    the middle of it - so two suites that hunt for a comment spelling a tag
+    matched from an earlier opener right through this line, and had been
+    failing since the day this block was written. Neither was on the push
+    gate, so nothing said so. Prose that looks like markup breaks the tools
+    that read the file, and CSS comment syntax counts as markup.)
 
   * A CHECK THAT READS TEXT CATCHES PROSE. Twenty-four times, including
     three where the prose was the patcher's own explanation of the thing it

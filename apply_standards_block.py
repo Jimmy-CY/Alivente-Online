@@ -193,6 +193,19 @@ if not CHECK:
         with open(bak, 'w', encoding='utf-8', newline='') as fh:
             fh.write(ORIG)
         print('    backup -> base.html.bak_std')
+    # A SECOND SNAPSHOT, DELIBERATELY OVERWRITTEN EVERY RUN.
+    #
+    # .bak_std is the first-ever state and is never overwritten, which is the
+    # house rule and is right for recovering the original. But it is the
+    # WRONG thing for the suite to measure "this round changed nothing but
+    # the comment" against: base legitimately changes between block
+    # revisions - the heading-prefix round edited its title tag - and after
+    # two such rounds that check fails on correct work. It did.
+    #
+    # This one is base AS IT WAS IMMEDIATELY BEFORE THIS RUN, so the claim
+    # it supports stays true however many rounds have been and gone.
+    with open(P + '.bak_stdprev', 'w', encoding='utf-8', newline='') as fh:
+        fh.write(ORIG)
     with open(P, 'w', encoding='utf-8', newline='') as fh:
         fh.write(out)
 

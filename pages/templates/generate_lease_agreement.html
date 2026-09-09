@@ -263,7 +263,7 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="country-select" class="form-label"><strong>Country:</strong></label>
+              <label for="country-select" class="form-label"><strong>Country:</strong> <span class="alv-req">*</span></label>
               <select class="form-control" id="country-select" name="country" required>
                 <option value="">Select Country</option>
                 <option value="cyprus">Cyprus</option>
@@ -272,7 +272,7 @@
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="language-select" class="form-label"><strong>Language:</strong></label>
+              <label for="language-select" class="form-label"><strong>Language:</strong> <span class="alv-req">*</span></label>
               <select class="form-control" id="language-select" name="language" required>
                 <option value="">Select Language</option>
               </select>
@@ -292,7 +292,7 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="property-select" class="form-label"><strong>Property:</strong></label>
+              <label for="property-select" class="form-label"><strong>Property:</strong> <span class="alv-req">*</span></label>
               <select class="form-control" id="property-select" name="property" required>
                 <option value="">Select Property</option>
                 {% for property in properties %}
@@ -303,7 +303,7 @@
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="tenant-select" class="form-label"><strong>Tenant:</strong></label>
+              <label for="tenant-select" class="form-label"><strong>Tenant:</strong> <span class="alv-req">*</span></label>
               <select class="form-control" id="tenant-select" name="tenant" required>
                 <option value="">Select Tenant</option>
                 <option value="new_tenant">+ New Tenant</option>

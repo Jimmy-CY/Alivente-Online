@@ -69,7 +69,25 @@ def read(p):
 if not os.path.exists(BASE):
     sys.exit('! base.html not found - run from the repo root')
 B = read(BASE)
-WAS = read(BAK) if os.path.exists(BAK) else None
+# SCOPE GUARD #19 - 9 Sep. Measure against the state before the LAST run,
+# not before the FIRST one.
+#
+# The claim is "this round adds a comment and nothing else". It used to be
+# measured against .bak_std, the first-ever snapshot, which is never
+# overwritten. That was correct until another agreed round edited base
+# outside the block - the heading-prefix round changed its title tag - and
+# then the check failed on entirely correct work. Ask what the claim is
+# ABOUT: it is about ONE application of this patcher, so the reference is
+# the file as that application found it. .bak_stdprev is refreshed every
+# run for exactly this.
+PREV = BASE + '.bak_stdprev'
+if os.path.exists(PREV):
+    WAS, WAS_IS = read(PREV), 'the state before the last run'
+elif os.path.exists(BAK):
+    WAS, WAS_IS = read(BAK), ('the FIRST-EVER state - a weaker claim, and it '
+                              'will fail once anything else edits base')
+else:
+    WAS, WAS_IS = None, ''
 
 _m = re.search(r'\{%\s*comment\s*%\}(.*?)\{%\s*endcomment\s*%\}', B, re.S)
 BODY = _m.group(1) if _m else ''
@@ -178,8 +196,14 @@ if WAS is not None:
         t = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}\n?', '', t,
                    flags=re.S)
         return re.sub(r'\n{3,}', '\n\n', t)
-    check('everything outside the block is byte-identical to before',
+    check('everything outside the block is byte-identical to %s' % WAS_IS,
           strip(B) == strip(WAS))
+    if strip(B) != strip(WAS) and 'FIRST-EVER' in WAS_IS:
+        print('        NOTE  measured against the first-ever snapshot because '
+              'base.html.bak_stdprev\n              is missing. Re-run '
+              'apply_standards_block.py once to create it; the\n'
+              '              difference is very likely another round\'s '
+              'legitimate edit to base.')
     # THE BLOCK'S OWN SIZE, not the file's growth. On a re-run the backup
     # already holds the PREVIOUS block, so the delta is only whatever the
     # revision added - 1,949 bytes on one edit - and a check on the delta
