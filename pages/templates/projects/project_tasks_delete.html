@@ -7,7 +7,9 @@ Delete Task - {{ task.task_name }}
 
 {% block content %}
 
-<h2><center>DELETE TASK - {{ task.task_name|upper }}</center></h2>
+{# SHAPE B - 9 Sep. Module name on the h2; MODE LABEL &mdash; Record Name on the h4. Em dash, because the data contains hyphens. See base.html. #}
+<h2 class="page-title-h2"><center>PROJECTS</center></h2>
+<h4 class="page-subtitle-h4"><center>DELETE TASK &mdash; {{ task.task_name }}</center></h4>
 <br/>
 
 {% for msg in messages %}
@@ -282,6 +284,17 @@ Delete Task - {{ task.task_name }}
         font-size: 15px;
         margin: 0 !important;
     }
+}
+
+/* HEADING STANDARD - shape B, 9 Sep. Same block as properties_add and its
+   neighbours, with one correction: `screen` is stated, because the
+   unqualified form fires on paper (A4 portrait is about 718 CSS px) and
+   would shrink a printed heading. */
+.page-title-h2 { margin-top: 0.5rem; margin-bottom: 0; }
+.page-subtitle-h4 { margin-top: 0.25rem; margin-bottom: 1rem; }
+@media screen and (max-width: 768px) {
+  .page-title-h2 { font-size: 1.25rem; }
+  .page-subtitle-h4 { font-size: 1rem; margin-bottom: 0.75rem; }
 }
 </style>
 

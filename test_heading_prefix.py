@@ -330,14 +330,35 @@ for p in TEMPLATES:
     t = title_of(read(p))
     if t and '{{' in t:
         _rec.append(rel_of(p))
-print('        %d page(s) still carry a record name in the heading - shape B'
-      '\n        (module on the h2, MODE LABEL - Record Name on the h4) is '
-      'agreed\n        for those and is the next round, not this one:'
+print('        %d page(s) carry a record name in the heading - shape B'
+      '\n        (module on the h2, MODE LABEL - Record Name on the h4, em '
+      'dash\n        because the data contains hyphens) is agreed for those:'
       % len(_rec))
 for rel in _rec:
     print('          %s' % rel)
-check('the record-name pages are still deferred, which is a decision',
-      len(_rec) >= 10, '%d' % len(_rec))
+
+# THE CLAIM IS THAT THIS ROUND LEFT THE RECORD NAMES ALONE, and it is
+# measured that way rather than by counting how many are left.
+#
+# The first version asserted `len(_rec) >= 10`, which was true the day it was
+# written and would have failed the moment the NEXT round did its job - a
+# check that decays into a scope guard. What this round actually promises is
+# that it removed a constant and touched nothing else, so the variables in
+# every heading are the same before and after. That stays true for good.
+_moved_names = []
+for p in TEMPLATES:
+    bak = p + '.bak_pfx'
+    if not os.path.exists(bak):
+        continue
+    a = set(re.findall(r'\{\{\s*([^}]+?)\s*\}\}', title_of(read(p)) or ''))
+    b = set(re.findall(r'\{\{\s*([^}]+?)\s*\}\}',
+                      title_of(read(bak)) or ''))
+    if a != b:
+        _moved_names.append('%s %s -> %s' % (rel_of(p), sorted(b), sorted(a)))
+check('this round changed no heading\'s record name', not _moved_names,
+      str(_moved_names[:2]))
+check('  CONTROL: and some headings really do carry one', len(_rec) >= 1,
+      '%d' % len(_rec))
 
 _mode = [rel_of(p) for p in TEMPLATES
          if (title_of(read(p)) or '') and

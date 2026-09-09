@@ -61,8 +61,10 @@ PREFIX = 'ALIVENTE ONLINE - '
 # unreachable, where the chrome is not guaranteed to render.
 KEEPS_THE_BRAND = 'error_pages/connectivity_error.html'
 
-# Deliberately out of scope: a record name inside the title, so prefixing
-# gives two dashes doing different jobs. Awaiting the projects/ survey.
+# Deferred by the heading round because a record name inside a title gives
+# two dashes doing different jobs; DONE by the shape-B round on 9 Sep. Kept
+# as a set because section 4 now checks that the deferral was resolved
+# rather than that it still stands - see scope guard #18 there.
 DEFERRED = {'property_assets.html'}
 
 PASS = FAIL = 0
@@ -357,20 +359,38 @@ else:
 # ===========================================================================
 head('4. what the round left alone')
 # ===========================================================================
+# SCOPE GUARD #18 - 9 Sep. This section used to assert that
+# property_assets and the projects/ module were UNTOUCHED and still
+# non-compliant, which was correct and carried its own expiry date: it held
+# only until a round agreed to do them. The shape-B round did, on 9 Sep.
+#
+# Ask what the claim is ABOUT. It was never "these pages must stay broken" -
+# it was "their exclusion from the heading round was a DECISION, not an
+# oversight, and something can tell you which". So the assertion is turned
+# over: they are now checked for COMPLIANCE, and the fact that they were
+# deferred and then done is recorded rather than asserted forever.
 for rel in sorted(DEFERRED):
     p = os.path.join(T, rel.replace('/', os.sep))
     if not os.path.exists(p):
         continue
-    check('%-40s untouched - a record name in its title' % rel,
-          not os.path.exists(p + '.bak_hstd'))
+    check('%-40s was deferred, and has since been done' % rel,
+          os.path.exists(p + '.bak_prj'))
     t, _ = heading_of(read(p))
-    check('  and it still carries one, which is why', t is not None
-          and '{{' in t, (t or '')[:44])
+    check('  and its title now holds no record name',
+          t is not None and '{{' not in t, (t or '')[:44])
+    check('  which moved to the line below it',
+          re.search(r'<h4[^>]*page-subtitle-h4[^>]*>[^<]*<center>[^<]*\{\{',
+                    read(p), re.S) is not None
+          or '{{' in (second_line(read(p))[1] or ''))
 
 _prj = [p for p in TEMPLATES if rel_of(p).startswith('projects/')]
-check('the projects/ module is untouched (%d template(s))' % len(_prj),
+check('the heading round itself never touched projects/ (%d template(s))'
+      % len(_prj),
       not any(os.path.exists(p + '.bak_hstd') for p in _prj))
-check('  CONTROL: it really does have headings to leave alone',
+check('  and a later round did - which is why they comply now',
+      sum(1 for p in _prj if os.path.exists(p + '.bak_prj')) >= 10,
+      '%d' % sum(1 for p in _prj if os.path.exists(p + '.bak_prj')))
+check('  CONTROL: it really does have headings to have got wrong',
       sum(1 for p in _prj if heading_of(read(p))[0]) >= 5,
       '%d' % sum(1 for p in _prj if heading_of(read(p))[0]))
 

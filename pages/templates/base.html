@@ -254,14 +254,39 @@
       because anyone had understood the rule. Had those pages used h5, it
       would have lowercased fourteen labels that should shout.
 
-      KNOWN GAP: 16 pages carry a record name inside the title, e.g.
-      EDIT TASK - {{ task.task_name }}. AGREED SHAPE, not yet built: the
-      module name on the h2, and `MODE LABEL - Record Name` on the h4 with
-      an em dash - which is what `customer_invoice_form` already does. A
-      hyphen cannot be the separator, because the data contains hyphens.
-      Three of the sixteen are Administration pages and wait for that
-      module's test pass; two are an email body and a PDF, neither of which
-      has chrome to inherit from, and want their own treatment.
+      A RECORD NAME GOES ON THE h4, NEVER THE h2. Settled 9 Sep after the
+      projects/ module was measured with real data in it.
+
+          h2 > center      PROJECTS
+          h4 > center      EDIT TASK - Replace the flat-roof membrane
+
+      The h2 answers WHERE AM I - the module, stable, scanned. The h4
+      answers WHAT AM I DOING AND TO WHAT. The separator between the mode
+      label and the record is an EM DASH, and that is not a style choice:
+      SEVEN OF THE TWELVE real property names contain a hyphen already
+      (`Athens - Second Floor`, `Apolloneon - Demetri`), so a hyphen there
+      is not a separator, it is a coin toss. `customer_invoice_form` had
+      already worked this out on its own.
+
+      THE ONE PLACE THE CONSTRUCTION DOES NOT FIT, and what was chosen. On a
+      screen that adds a child to a parent, the record is the PARENT, so
+      `ADD TASK - Apolloneon Roof Replacement` reads as though Apolloneon
+      were the task. There the preposition stays and there is NO dash:
+
+          h4 > center      ADD TASK TO Apolloneon Roof Replacement
+
+      THE CASE CHANGE IS THE SEPARATOR - `ADD TASK TO` shouts because it is
+      a label, the name does not because it is data. Which is the general
+      rule below doing the work a dash would otherwise do. Two pages:
+      `project_tasks_add` and `project_subtasks_add`.
+
+      KNOWN GAP: 10 pages still carry a record name on the h1 or h2, and
+      each belongs to a round already planned rather than to this rule -
+      three Administration pages waiting on that module's test pass; two
+      left-aligned page headers where the record IS the title and the header
+      wants restructuring; three report screens that share the report title
+      component and should be settled when it is hoisted; and an email body
+      and a PDF, neither of which has chrome to inherit a brand from.
 
   3.3 TABLES                                     [test_table_standard.py,
                                                   test_card_standard.py]
