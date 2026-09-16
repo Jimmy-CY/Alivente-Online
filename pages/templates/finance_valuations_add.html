@@ -25,6 +25,8 @@ Add Property Valuation
 </div>
 
 <form action="{% url 'finance_valuations_commit' %}" method="post" id="valuationAddForm">
+<div class="form-card">
+
   {% csrf_token %}
 
   <div class="form-row align-items-start">
@@ -75,7 +77,9 @@ Add Property Valuation
   </div>
 
   <!-- Form Footer -->
-  </form>
+  
+</div>
+</form>
 
 {% endif %}
 

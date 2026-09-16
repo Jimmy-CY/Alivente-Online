@@ -44,6 +44,8 @@ Add New Project
 
 <!-- Add Project Form -->
 <form method="post" id="projectForm">
+<div class="form-card">
+
   {% csrf_token %}
 
   <div class="row">
@@ -105,7 +107,9 @@ Add New Project
   </div>
 
   <!-- Form Actions (footer — keeps Save accessible at end of form too) -->
-  </form>
+  
+</div>
+</form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

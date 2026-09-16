@@ -74,6 +74,8 @@ Edit Project - {{ project.project_name }}
       {% else %}
         action="{% url 'projects_edit' project.project_id %}"
       {% endif %}>
+<div class="form-card">
+
   {% csrf_token %}
 
   <div class="tab-content" id="languageTabContent">
@@ -278,7 +280,9 @@ Edit Project - {{ project.project_name }}
   </div>
 
   <!-- Form Footer Actions -->
-  </form>
+  
+</div>
+</form>
 
 {% endwith %}
 

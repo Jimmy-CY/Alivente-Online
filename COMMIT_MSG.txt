@@ -1,77 +1,103 @@
-the panel takes the Customer Invoice look, which is what was asked for
+the Add and Edit screens get a panel, so the wash has something to paint
 
-The brief was one set of standards, all of it in base, and the system
-looking like the New Customer Invoice screen. The last round delivered the
-first half and inverted the second: it made every panel agree, and then
-made them agree on flat white, so the one page that was already right lost
-its wash.
+base declares .form-card and it carries the Customer Invoice wash. On
+Properties > Add and Tenants > Add nothing changed, because those pages
+HAVE NO PANEL ELEMENT. Their fields sit straight on the page. A rule
+cannot paint a box that is not there.
 
-I SURVEYED THE QUESTION AND THEN ANSWERED THE WRONG ONE
+That was the real answer to "why does it not look like Customer Invoice",
+and it was never a colour problem. Customer Invoice was one of ten screens
+that already had a panel, which is precisely why it was the screen that
+looked right.
 
-The count across 115 templates was 22 flat white panels to 1 gradient, and
-I recommended white on that basis. The count was correct. The
-recommendation was wrong, because a majority tells you what the system
-DOES and cannot tell you what it SHOULD BE - and that had already been
-decided by the person who chose the model page.
+WHAT THIS ROUND DOES, IN THREE CASES
 
-This project settled the same question the other way on 9 September: the
-label standard went against a 338-to-207 majority on purpose, because the
-model page and the two biggest Add screens agreed and because a label is a
-label. Show-FormComponents.py prints "the majority is evidence, not the
-answer" at the foot of its own output. I wrote that line and then
-recommended the majority.
+  WRAP - 14 Add and Edit screens whose fields sat loose get one panel
+  around everything in the form AFTER the action bar. That is where the
+  model screen puts its own: bar above, panel below.
 
-A COUNT IS THE RIGHT INSTRUMENT FOR "WHAT DO THESE PAGES DO" AND THE WRONG
-ONE FOR "WHICH OF THEM IS RIGHT". The control values in the last round came
-from a count and that was sound - the question there was which of two
-dialects the system already spoke, and the model screen turned out to be a
-hybrid of both. The panel was never that question.
+  RENAME - suppliers_add and suppliers_edit already had a panel and called
+  it .form-section. The class becomes .form-card and the page's own rule
+  for it goes, because base declares the same six properties. One name for
+  one thing.
 
-THE REPAIR IS SIX LINES, AND THAT IS THE ARGUMENT FOR THE LAST ROUND
+  REPORT AND LEAVE - cash_receipt_add carries the house .alv-card and
+  generate_lease_agreement carries Bootstrap's .card. Both already have a
+  box. Putting a panel around a panel is not what was asked for, and
+  choosing between two existing components is a decision rather than a
+  sweep. Both are named.
 
-    background     linear-gradient(135deg, surface -> surface-deep)
-    box-shadow     0 4px 12px rgba(0,0,0,0.06)
-    padding        20px 24px
-    margin-bottom  22px
+24 of the 26 Add and Edit screens are now on the component.
 
-Before the component round, changing the panel meant editing 23 pages and
-hoping they agreed afterwards. The panel lives in base now, so the look is
-ONE DECLARATION and every panel in the system follows it. Getting it wrong
-cost a rewrite of six lines instead of a rewrite of the system. That is the
-whole case for components, demonstrated by my own mistake.
+ONE PANEL, NOT THREE, AND THAT IS A DELIBERATE STOP
 
-A NEW TOKEN, --alv-surface-deep, carries the gradient's far stop. The model
-page wrote #e9ecef as a literal. A wash built from two tokens can be
-restated once; a wash built from a literal has to be found again. The suite
-fails if a literal appears in that rule.
+The model screen has three panels with titles - Customer, Settings, Lines.
+Splitting the other screens that way means deciding, per page, which
+fields belong together. That is design work and a tool cannot do it. One
+panel per screen is mechanical, reversible, and puts the wash on every
+Add and Edit screen today. Titled groups can follow per page, by eye, and
+the suite says in as many words that it does not check the grouping.
 
-THE COMMENT ABOVE THE RULE CHANGED WITH IT. It argued for white from the
-count. A comment that contradicts the declaration underneath it is worse
-than no comment, and in a file that is also the standards document it is
-worse still.
+THE FAILURE THAT WOULD REALLY HURT IS INVISIBLE IN THE DIFF
 
-NOTHING ELSE MOVES. The control, the field, the label and the help text
-were already the model screen's values and are untouched. The patcher
-verifies that by comparing everything after the panel rule byte for byte
-and refuses to write if a single character moved.
+A wrap is a markup change on signed-off pages. The dangerous case is not a
+crooked box: it is a panel whose opening tag sits inside an {% if %} and
+whose closing tag sits outside it. Then the panel closes only sometimes,
+and the page comes apart for one kind of user and not another - in
+production, for somebody without a permission I have.
 
-ONE BUG, AND IT IS THE SAME FAMILY AS THE OTHERS THIS WEEK. That comparison
-first searched for its end anchor from position zero, and section 3.6 names
-.form-section-title in its prose - hundreds of lines above the stylesheet.
-So the comparison swallowed the token edit this round deliberately makes
-and reported it as something that should not have moved. It searches from
-the block now. Third time in two days that a check has been pointed at the
-wrong subject.
+So no page is wrapped until its region is proved self-contained: at least
+one control in it, every HTML tag it opens closed inside it, EVERY DJANGO
+BLOCK TAG it opens closed inside it, and no nested form. Any page failing
+any of those is reported and skipped rather than guessed at. The suite
+then re-checks it from the other end, computing the block-tag depth at the
+panel's opening tag and at its closing tag and failing if they differ.
 
-VERIFIED: 31 checks, including the rendered panel measured in Chromium -
-the gradient's two stops, 20px by 24px of padding, the softer shadow - and
-the control confirmed unchanged at 2px, 8px, 9px by 12px. The patcher is
-idempotent and writes nothing if any anchor is not exactly where it
-expects.
+WHAT THE SUITE FOUND THAT THIS ROUND DID NOT CAUSE
 
-LOOK AT New Customer Invoice first. It should be back to what it was. Then
-Tenants > Add and a Financials add screen, which now carry the same wash
-from the same rule.
+Five screens that already had a panel put their action bar at the BOTTOM
+of the form - customer_form, user_add, user_edit, workspace_add,
+workspace_edit - where the model screen puts Save and Back at the top
+right. That is REPORTED, not failed. Moving a Save button is visible and
+preference-bearing: a decision somebody takes, not a fault a sweep
+corrects. It belongs to the action-bar round.
+
+And customer_form puts its panel OUTSIDE its form rather than inside. The
+first spelling of that check required the panel to be inside and reported
+the page as broken. Either nesting is legitimate; what must never happen
+is the two OVERLAPPING, which is what a wrap at the wrong offset would
+produce and what no browser recovers from predictably. That is the check
+now.
+
+ONE BUG, THE SAME FAMILY AS THE WEEK'S OTHERS
+
+The rename check asked whether the string "form-section" survived.
+form-section-title contains it, is a different class, and is one this
+round keeps - so both Suppliers pages reported a failed rename and the
+patcher refused to write anything at all. It asks for the standalone token
+now. Three times this week a check has been pointed at a substring instead
+of at the thing it names.
+
+VERIFIED: 13 checks, including the panel rendered in Chromium against
+base's real stylesheet - the wash, 20px by 24px, 12px, the softer shadow -
+with a plain div as the control. Every suite in the repo was run before and
+after with full output compared, not just summary lines: two differ, this
+round's own and test_form_components counting two more media-query rules
+because Suppliers' renamed phone rule now reads as .form-card. The other
+82 are byte-identical.
+
+NOT PROVED HERE: that the fields inside each panel are grouped well. One
+box around everything is not the same as a well-organised screen.
+
+WHAT IS STILL BETWEEN THESE SCREENS AND THE MODEL, in order of how much it
+shows:
+
+  1. the action bar - 45 of 49 screens do not use the right-aligned form
+     variant, and five put it at the bottom;
+  2. the headings - 22 screens have no page-title-h2;
+  3. the 49 compound CSS rules that still outrank base, half of them one
+     Financials rule copied twelve times;
+  4. titled sub-panels, which is per-page design.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

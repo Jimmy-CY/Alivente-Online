@@ -29,6 +29,8 @@
       data-original-current-value="{{ vresults.prop_values_current_value|floatformat:'0' }}"
       data-preview-url="{% url 'preview_valuation_change' vresults.prop_values_id %}"
       data-recalc-url="{% url 'finance_valuations_edit_and_recalc_commit' vresults.prop_values_id %}">
+<div class="form-card">
+
     {% csrf_token %}
 
     <div class="form-row align-items-start">
@@ -78,7 +80,9 @@
     </div>
 
     <!-- Form Footer -->
-    </form>
+    
+</div>
+</form>
 
 <!-- ==================== CURRENT VALUE CHANGE PREVIEW MODAL ==================== -->
 <div class="modal fade" id="valuationChangePreviewModal" tabindex="-1" role="dialog"

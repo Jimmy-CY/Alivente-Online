@@ -51,6 +51,8 @@ Edit Physical Invoice
       <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
   </div>
+<div class="form-card">
+
 
   <!-- Header summary -->
   <div class="summary-card">
@@ -122,6 +124,8 @@ Edit Physical Invoice
     <div class="totals-row totals-total"><span>Total</span><span>{{ pi.currency }} {{ total_display }}</span></div>
     {% if is_editable %}<div class="totals-note">Totals refresh when you Save.</div>{% endif %}
   </div>
+
+</div>
 </form>
 
 <!-- Approve / Un-approve (separate forms, outside the line-editing form) -->

@@ -79,6 +79,8 @@ Edit Task - {{ task.task_name }}
       {% else %}
         action="{% url 'project_tasks_edit' project.project_id task.task_id %}"
       {% endif %}>
+<div class="form-card">
+
   {% csrf_token %}
 
   <div class="tab-content" id="languageTabContent">
@@ -404,7 +406,9 @@ Edit Task - {{ task.task_name }}
   {% endif %}
 
   <!-- Form Footer -->
-  </form>
+  
+</div>
+</form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>

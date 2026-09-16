@@ -783,7 +783,14 @@ $suites = @(
     # computed style of a real control, because the whole claim of
     # the deletions is that they change nothing. Newest, so most
     # likely to be what breaks.
-    'test_form_components.py'
+    'test_form_components.py',
+    # Every Add and Edit screen has the house panel. Its section 3
+    # checks each panel OPENS AND CLOSES AT THE SAME DJANGO BLOCK
+    # DEPTH, because a panel opened inside an {% if %} and closed
+    # outside it comes apart for one kind of user and not another,
+    # and nothing reading the markup flat can see that. Newest, so
+    # most likely to be what breaks.
+    'test_entry_panel.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
