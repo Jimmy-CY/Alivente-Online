@@ -1,132 +1,191 @@
-the field label is bold, seven days after the standard said so
+base declares the field, having only named it since the standard was written
 
-base.html's standards block has stated the shape of a field since 9
-September:
+Section 3.6 has said `input.form-control` since the day it was written and
+base DECLARED NONE OF IT. So 34 of the 62 entry screens wrote the rule out
+themselves, in two dialects:
 
-    label > strong        the field name, bold
-    span.alv-req          the asterisk, if the field is required
-    input.form-control    the control
+    14 pages   border 2px solid #e9ecef   radius 8px   padding 10px 14px
+    20 pages   border 2px solid #dee2e6   radius 7px   padding 9px 12px
 
-and has said underneath it, in as many words, THE SWEEP HAS NOT HAPPENED.
-This is that sweep: 191 labels on 29 pages, and no CSS at all.
+Third time a round has found the same fault - base reaching a class NAME
+but not its RULE - after the action bars and the three heading classes,
+and much the biggest instance of it.
 
-IT WAS SETTLED AGAINST THE MAJORITY, WHICH IS WHY IT NEEDED A ROUND
+THE MODEL SCREEN IS A HYBRID OF THE TWO DIALECTS, WHICH IS WHY IT IS THE
+STANDARD
 
-The count on 9 Sep was 545 labels, 338 plain to 207 bold. The standard went
-the other way anyway - because the model page and the two biggest Add
-screens already agreed, and because a label is a LABEL, the same reason a
-heading shouts. A standard settled against the majority is a standard that
-does nothing until somebody sweeps, and for a week nobody did.
+New Customer Invoice is the screen this work was asked to look like. On my
+97-template sandbox it looked like a minority of one: nothing matched its
+control exactly, and it disagreed with the commonest padding. On the full
+115 it turns out to take its border and radius from the first dialect and
+its padding from the second. It is not one page's taste; it is where the
+two halves of the system already agree. That is a much better reason to
+adopt it than "the screen we liked".
 
-THE WEIGHT COMES FROM THE MARKUP, NOT FROM A RULE SOMEBODY HAS TO REMEMBER
+WHAT BASE NOW SAYS, AND THE COUNT BEHIND EACH VALUE
 
-    <label for="bill_name"><strong>Customer Name</strong>
-                           <span class="alv-req">*</span></label>
+  .form-card              white, 12px, 1px line, 0 2px 8px shadow.
+                          22 of 23 panels are already white and 14 of 23
+                          are already 12px. The gradient was one page.
+  .form-section-title     base ink, 600, icon in the accent token.
+  .form-group             16px below it AND NOTHING ELSE.
+  .form-group label       block, base ink, 14px, 6px below.
+  .form-control           the hybrid above, focused in the accent.
+  .form-text              12px in the soft ink.
 
-exactly as customer_invoice_form.html - the model screen - already does it.
-A strong element needs no stylesheet to be bold, so a new page gets it
-right by copying the markup rather than by remembering a class.
+NO FONT-WEIGHT ON THE LABEL. The label round put a strong element inside
+every field label this morning. A weight here would be a second way to say
+the same thing, and the one that does not show in the markup. The suite
+fails if one appears.
 
-WHAT COUNTS AS A FIELD LABEL - THE STANDARD'S DEFINITION, NOT A GUESS
+.form-group SETS ONLY ITS BOTTOM MARGIN, though the model page makes it a
+flex column. A block box stacks a label over a control identically and
+cannot disturb whatever the pages I cannot see have put inside a field.
+Where a component can be narrower without being different, it should be.
 
-A label that NAMES A CONTROL CARRYING form-control. That is section 3.6's
-own wording and it excludes tab labels, checkbox and radio labels, and
-labels that wrap their own input. The first draft of this swept help_page's
-TABS, because a radio button happened to follow one of them - a tab is not
-a field and it should not have looked like one to the tool.
+THE DELETIONS CANNOT CHANGE A PAGE, AND THAT IS THE WHOLE DESIGN
 
-SIX LABELS ARE NAMED AND LEFT ALONE, NOT COUNTED AND FORGOTTEN
+base's component stylesheet sits AFTER {% block content %} in base.html.
+On equal specificity base therefore already beats a page-local copy - so
+the moment base declares these rules, every bare page-local copy is dead
+weight being overridden rather than applied.
 
-The patcher rewrites one shape: an optional icon, the field name, an
-optional required marker. Anything else is printed with its page and its
-text and skipped, because guessing where the strong goes is how a sweep
-breaks a page it was meant to tidy.
+That is what makes this round safe at this size. The visual change comes
+entirely from base's declarations; removing the dead rules is tidying, and
+it is verified by measurement rather than by argument.
 
-  three on generate_lease_agreement, reading
-      <span id="tenant-name-label">Individual Name:</span>
-  which has an id because JavaScript rewrites the text at runtime;
+A RULE FOR WHAT MAY SURVIVE, NOT A LIST OF FILENAMES
 
-  one more there, and one on property_assets, carrying a hint -
-  (auto-calculated), (up to 5 - JPG/PNG, 5MB each) - that is not part of
-  the field's name;
+A page-local rule is removed only when EVERY selector in its list is one
+base owns and EVERY property it sets is one base sets. Anything else stays
+whole and is named:
 
-  and one on projects_delete, which is not a field name at all but a
-  sentence of instruction with a red DELETE in the middle of it.
+  A bare rule survives when it declares something base never claimed - a
+  max-width, a text-transform, a font-weight - because deleting it would
+  lose that part.
 
-A PAGE WITH NOTHING TO REWRITE CAN STILL HAVE SOMETHING TO REPORT, and the
-first draft dropped exactly that case: it returned early the moment a
-page's edit list was empty, which silently swallowed projects_delete, whose
-ONLY field label is one of the six. The suite found it, because the suite
-counts plain labels in the corpus rather than trusting the patcher's list.
-That is the whole reason the two are written separately.
+  The compound rules still OUTRANK base: .form-field
+  .form-control beats .form-control however recently it was written. They
+  are the next round. A page cannot be migrated by deleting a rule that is
+  still in charge.
 
-SCOPE GUARD #29 - AND THIS ONE I TALKED MYSELF OUT OF
+The suite tests the same rule rather than the same list, so it covers the
+pages nobody has looked at yet - including the ones that do not exist
+while this is being written. A list read off a sandbox that holds 97 of
+144 templates has been wrong five times now.
 
-The suite's section 3 began as a check: "no page makes a label bold with
-CSS instead". It reads well and it is not this round's claim.
+SECTION 3 MEASURES WHICH PAGES THE COMPONENTS ACTUALLY REACH
 
-Ask what the claim is ABOUT. This round says every field label is bold FROM
-ITS MARKUP. A page that bolds labels in CSS and omits the strong element
-already fails section 2, which asks the markup and does not care what any
-stylesheet says. So the only thing section 3 could catch that section 2
-cannot is a page doing BOTH - which is redundancy, not drift, on pages this
-round never opened. Deleting those rules is a CSS consolidation, and a
-round that changes two things cannot say which one did it.
+Reading base and finding the rules there proves nothing about any page.
+So the suite assembles each entry screen's real cascade - base's head
+stylesheets, then the page's own, then base's post-content stylesheet, in
+that document order - renders a field in Chromium and asks the browser
+what the control, panel and label actually look like.
 
-It reports now: thirteen page-local rules and one font-weight-bold utility
-class, each named with its page, counted in the summary so they are not
-forgotten, and with no ceiling - a count cannot tell a page leaving that
-set from a page joining it.
+Every entry screen but a handful renders exactly what base says; the ones
+that do not are named, and each has a compound rule that explains it. A
+page that differed WITHOUT one would be a failure, and that is the check.
 
-ITS FIRST PATTERN COULD NOT TELL A CLASS FROM AN ELEMENT. \blabel\b matches
-after a hyphen, so .detail-label and .report-year-label were reported as
-label rules and the section found 53 where there are 13. The control on
-that section is now the pattern itself, asserted against both spellings -
-the only part of section 3 that can fail, which is the honest shape for a
-section whose body is a report.
+AND THAT NUMBER IS NARROWER THAN IT LOOKS, which the suite now says out
+loud beside it. The field section 3 renders is a STANDARD field. A page
+whose override is scoped to a wrapper the fixture does not carry - .form-
+field .form-control, on twelve Financials screens - is invisible to it,
+and the page counts as reached while its real fields are not. The number
+means "base's components work in this page's cascade", not "this page's
+fields look like base".
 
-SECTION 4 IS THE ONE THAT EARNS ITS KEEP
+I nearly shipped it reading as a clean bill. It is the same fault as the
+surveyor table that could only ever print "nothing": a fixture blind to
+the thing it is measuring, whose silence reads as good news. The honest
+fix is to render each page's own markup, and that belongs to the round
+that removes those rules anyway. Section 2's count of compound rules is
+the number that says how much is left.
 
-The bold comes from an element, so it depends on no stylesheet - unless a
-stylesheet takes it away. One `strong { font-weight: normal }` in base, or
-a Bootstrap reset, would un-bold every label in the system and leave the
-markup looking perfectly correct. Nothing that reads the templates can see
-that. So section 4 renders a real field against base's real CSS in Chromium
-and reads the computed weight back: 700 on the strong, 400 on a control
-that is plain, the required marker beside the name rather than inside it,
-and its colour read back from base rather than trusted.
+I OVER-PROMISED ON THE PRINT LEAKS AND THE CORRECTION IS PART OF THE ROUND
 
-A SKIPPED CHECK IS COUNTED IN THE SUMMARY. Eleven suites on this gate print
-a SKIP line when Playwright is absent and then report zero failed - which
-is how a fresh clone goes green having proved a third less than it looks.
+I proposed folding the phone rule into base as a way of killing 35 print
+leaks for free. It is neither free nor a kill. A page's bare
+`(max-width: 768px)` query fires on PAPER; base's guarded rule does not,
+so it cannot override the page there. The leak closes only when the page's
+own copy goes - and not one of the 35 has a selector list of
+`.form-control` alone. They read `.form-control, input[type="text"],
+select`, or `.line-input, .form-control`, and half set a phone padding base
+does not claim. Removing the owned part of such a list is surgery on a rule
+still doing other work: section 2.I's job, page by page.
 
-SABOTAGED FOUR WAYS BEFORE IT WAS BELIEVED
+What base's phone rule does buy is the entry screens with NO phone rule at
+all, which zoom on tap today. The rest are listed by the patcher with their
+queries, and the suite counts them in its summary rather than implying they
+are handled.
 
-Unwrap one strong inside one label and section 2 names the page. Change
-base's stated shape and section 1 fails. Add a strong reset to base and
-section 4 reads 400. Move the asterisk inside the strong and section 4 says
-so. My first attempt at the first of those unwrapped an EMPTY <strong></strong>
-in a messages block and the suite passed - a sabotage that changes nothing
-proves nothing, and I nearly filed it as a hole in the suite.
+TWO BUGS IN THE PATCHER, ONE OF WHICH WAS A BOOMERANG
 
-VERIFIED: every suite in the repo run before and after. 81 report
-identically; the one that differs is this round's own, failing before and
-passing after. The patcher is idempotent, refuses to write if any page
-fails its per-file check - visible words unchanged, label count unchanged,
-tag balance unchanged, strong delta equal to the edit count, and everything
-outside the labels byte-identical - and writes nothing at all when anything
-fails. The round was also applied on top of the heading round and both
-suites stay green, and the gate wiring anchors on the END of the suite list
-rather than on the name of a neighbour, because the last entry differs
-between this sandbox and the development machine.
+base.html was in the list of pages to sweep. On the second run the sweep
+read base's own new block as nine bare owned rules and planned to delete
+every one of them. A tool that removes the standard it just wrote is not
+idempotent. base is excluded by identity now, and the idempotence run is
+part of the verification rather than an afterthought.
 
-NOT PROVED HERE: that bold is the right choice. That was settled on 9 Sep
-against a count that went the other way. This only holds the system to it.
-Look at Tenants > Add and any Financials add screen beside the model page,
-customer_invoice_form.
+AND THE RULE SPAN STARTED AT THE SCAN CURSOR, NOT AT THE SELECTOR. The
+cursor sits one character past the previous rule's closing brace - usually
+on the newline between them - so deleting a rule ate that newline and
+welded the two survivors together into one line. This is the heading
+round's bug exactly. I had written the guard for it in this very patcher,
+and then handed the guarded function the cursor anyway. A guard is only
+worth what its inputs are.
 
-NEXT IN THIS SEQUENCE: the field and panel components (2.L-b), then the
-entry-screen shape (2.L-c). This round changed the labels only.
+A THIRD, SMALLER ONE: the check for the new focus-halo token ran against
+the text AFTER the block had been inserted, and the block USES that token.
+So it reported the token already present and wrote a stylesheet referring
+to one that did not exist. A check whose subject is the thing it just
+wrote is not a check.
+
+MY VERIFICATION METHOD WAS TOO BLUNT, AND CHANGING IT FOUND THINGS
+
+Every round so far has compared suites before and after by their summary
+line. That is blind to everything a summary does not count. Comparing the
+FULL OUTPUT of all 83 suites, with the repo path normalised, six differ and
+every difference is an explainable count:
+
+  test_control_height   its negative control goes 29 -> 94 clipping
+                        controls, because base's padding now reaches
+                        pages that had none. Its real check is still
+                        zero pages with a problem.
+  test_deeper_teal      376 -> 365 accent literals; eleven went with the
+                        deleted rules.
+  test_filter_toggle    base braces 340 -> 351.
+  test_print_media      screen-qualified 768px blocks 7 -> 8.
+  test_standards_block  the document grew; base declares 53 components,
+                        not 52. 60 of 60 still pass, including the rule
+                        that forbids a brace anywhere in section 3.6.
+
+Under the old method all six read as identical. Nothing was wrong - but I
+would not have known.
+
+SECTION 3.6 NOW DESCRIBES THE SYSTEM AGAIN
+
+It still said THE SWEEP HAS NOT HAPPENED and 338 labels are still plain.
+Both became false this morning. It records the sweep, names its six
+deliberate exceptions, and names the components base now declares - with
+no braces anywhere, which test_standards_block enforces because a CSS
+declaration written out in prose once cost a push.
+
+VERIFIED: 30 checks, sabotaged five ways - remove base's control rule and
+section 3 reports 0 of 49 reached; put a weight back on the label; make
+base's phone query bare; re-add a dead page copy; and one deliberate
+non-sabotage that must NOT fail, adding a compound rule, because that is
+the case the round leaves in charge. The patcher is idempotent, refuses to
+write if any page fails its per-file check - surviving rules identical by
+position, visible words unchanged, nothing outside a style block touched -
+and writes nothing at all when anything fails.
+
+NOT PROVED HERE: that white, 12px and 9px by 12px are handsome. They are
+where your 115 templates already agreed. Look at New Customer Invoice
+first - it is the page that changes most, losing its gradient - then
+Tenants > Add and a Financials add screen, which should now look like it.
+
+NEXT: the 22 compound rules that still outrank base, which is what stops
+the last 15 screens matching. Then the entry-screen shape, 2.L-c.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

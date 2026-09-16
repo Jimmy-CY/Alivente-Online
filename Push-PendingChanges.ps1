@@ -777,7 +777,13 @@ $suites = @(
     # computed weight back, because a single strong{font-weight:normal}
     # anywhere would un-bold the system and leave the markup perfect.
     # Newest, so most likely to be what breaks.
-    'test_label_bold.py'
+    'test_label_bold.py',
+    # The entry-screen components. Its section 4 RENDERS each page
+    # that lost a rule with the rule and without it and compares the
+    # computed style of a real control, because the whole claim of
+    # the deletions is that they change nothing. Newest, so most
+    # likely to be what breaks.
+    'test_form_components.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

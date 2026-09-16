@@ -348,7 +348,18 @@
       already agreed, and because a label is a LABEL: the same reason
       headings and `.alv-stat-label` shout. Only three screens mix the two
       styles, so this is a per-page decision to sweep, not drift inside a
-      page. THE SWEEP HAS NOT HAPPENED - 338 labels are still plain.
+      page. THE SWEEP HAPPENED on 16 Sep: 218 labels on 40 pages. Six are
+      named and deliberately untouched - three that JavaScript
+      rewrites, two carrying a hint that is not part of the name, and
+      one that is a sentence of instruction rather than a field name.
+      test_label_bold.py holds the corpus to it.
+
+      AND base NOW DECLARES THE FIELD, not only names it. The panel is
+      .form-card and its heading .form-section-title; the field is
+      .form-group, its label and .form-text; the control is
+      .form-control, focused in the accent token. 34 pages wrote those
+      rules out in two dialects before base said them once. Rows are
+      still Bootstrap's grid and base does not touch them.
 
       EVERY REQUIRED FIELD IS MARKED, in one spelling, in a colour base
       owns - the .alv-req class, coloured from the bad token, and no brace
@@ -548,6 +559,7 @@
         --alv-accent-ink:    #0a5e6a;   /* hover / pressed                  */
         --alv-accent-soft:   #e4f3f5;   /* tint: hover rows, selected chips */
         --alv-accent-line:   #a8d8de;   /* borders on tinted surfaces       */
+    --alv-accent-ring: rgba(14, 124, 139, 0.12);  /* the focus halo */
         --alv-on-accent:     #ffffff;   /* text on a filled accent          */
       }
 
@@ -2756,6 +2768,95 @@ table.alv-matrix {
     border: 1px solid var(--alv-line);
     border-radius: 6px;
     font-size: .9rem;
+}
+
+/* ===== ALV FORM v1 ===== */
+/* The entry-screen components: the panel, the field, the control, the
+   label and the help text. Section 3.6 has named `input.form-control`
+   since the standard was written and base DECLARED NONE OF IT, so 34 of
+   the 62 entry screens wrote the rule out - in two dialects that disagree
+   on border, radius and padding. Third time a round has found base
+   reaching a class name but not its rule, and the biggest instance yet.
+
+   THE MODEL SCREEN IS A HYBRID OF THE TWO DIALECTS: its border and radius
+   come from one, its padding from the other. That is why it is the
+   standard here - not one page's taste, but where the two halves of the
+   system already agree.
+
+   THE PANEL IS WHITE. 22 of the 23 panels in the system are; the gradient
+   was one page, and a grey wash behind every form is a great deal more
+   grey than behind one. The 12px radius and the shadow are the majority
+   and the model page both.
+
+   NO FONT-WEIGHT ON THE LABEL. The label round put a strong element
+   inside every field label; a weight here would be a second way to say
+   the same thing, and the one that does not show in the markup.
+
+   .form-group SETS ONLY ITS BOTTOM MARGIN. The model page makes it a flex
+   column. A block box stacks a label over a control identically and
+   cannot disturb the pages that put something unusual inside a field. */
+.form-card {
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.form-section-title {
+    color: var(--alv-ink);
+    font-weight: 600;
+    margin: 0 0 16px;
+}
+.form-section-title i {
+    color: var(--alv-accent);
+    margin-right: 6px;
+}
+
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+    display: block;
+    color: var(--alv-ink);
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.form-control {
+    width: 100%;
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-line);
+    border-radius: var(--alv-radius);
+    padding: 9px 12px;
+    font-size: 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-control:focus {
+    border-color: var(--alv-accent);
+    box-shadow: 0 0 0 3px var(--alv-accent-ring);
+    outline: none;
+}
+.form-control[readonly],
+.form-control:disabled {
+    background-color: var(--alv-neutral-soft);
+    color: var(--alv-ink-soft);
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.form-text {
+    font-size: 12px;
+    color: var(--alv-ink-soft);
+    margin-top: 4px;
+}
+
+/* SCREEN AND, not a bare max-width. 16px stops iOS zooming the page when
+   a control is tapped; a query with no screen keyword also fires on
+   paper, where A4 portrait is about 718 CSS px. 35 pages carry exactly
+   that. */
+@media screen and (max-width: 768px) {
+    .form-control { font-size: 16px; }
 }
 
 /* ===== ALV PAGE HEADING v1 ===== */

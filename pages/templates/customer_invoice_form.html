@@ -56,8 +56,8 @@
 
   {% with editable=is_editable|default_if_none:True %}
   <!-- Customer panel -->
-  <div class="cust-panel">
-    <h5 class="panel-title"><i class="fas fa-user"></i> Customer</h5>
+  <div class="form-card">
+    <h5 class="form-section-title"><i class="fas fa-user"></i> Customer</h5>
 
     {% if editable %}
     <div class="form-row">
@@ -341,9 +341,6 @@
 .lock-banner { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-weight: 500; }
 .lock-banner i { margin-right: 6px; }
 
-.cust-panel { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 20px 24px; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-.panel-title { color: #2c3e50; font-weight: 600; margin: 0 0 16px; }
-.panel-title i { color: #0e7c8b; margin-right: 6px; }
 
 .form-row { display: flex; flex-wrap: wrap; gap: 20px; }
 .form-row > [class^="col-"] { flex: 1 1 0; min-width: 0; }
@@ -355,14 +352,11 @@
 .col-12 { flex: 0 0 100%; }
 .form-group { display: flex; flex-direction: column; margin-bottom: 16px; }
 .form-group label { font-weight: 500; color: #2c3e50; margin-bottom: 6px; font-size: 14px; }
-.form-control { border: 2px solid #e9ecef; border-radius: 8px; padding: 9px 12px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; }
-.form-control:focus { border-color: #0e7c8b; box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; }
 textarea.form-control { resize: vertical; }
 .form-control[readonly], .form-control:disabled,
 .line-input[readonly], .line-input:disabled {
   background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 1;
 }
-.form-text { font-size: 12px; color: #6c757d; margin-top: 4px; }
 .save-new-group { background: #ffffff; border: 1px dashed #ced4da; border-radius: 8px; padding: 12px; height: 100%; }
 .save-new-label { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 4px; }
 .save-new-label input { width: 16px; height: 16px; }
