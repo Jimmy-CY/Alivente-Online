@@ -14,6 +14,29 @@ size. The control adds padding back and watches btn-sm stop meaning
 anything.
 """
 
+# --- CONSOLE ENCODING ----------------------------------- 16 Sep 2026 --
+# This file prints text it read out of the templates, and some of that
+# text is not ASCII - projects/project_task_list.html carries a Greek
+# heading behind the language switch, and it will not be the last. On
+# Windows, Python writes stdout as cp1252 whenever it is not a UTF-8
+# console, and cp1252 cannot encode Greek: the print itself raises
+# UnicodeEncodeError and the run dies part-way through. A crash blocks a
+# push exactly as hard as a failure and says far less about why.
+#
+# So keep the encoding the console really has - forcing UTF-8 only moves
+# the problem to whoever decodes us - and change the ERROR HANDLER, so a
+# character the console cannot draw arrives as a question mark instead of
+# ending the run. stderr too, because a traceback is a print as well.
+# Guarded, because stdout is not always a stream that can be told.
+# See test_console_encoding.py.
+import sys as _sys
+for _stream in (_sys.stdout, _sys.stderr):
+    try:
+        _stream.reconfigure(errors='replace')
+    except Exception:
+        pass
+# ------------------------------------------------------------------------
+
 import os
 import re
 import sys

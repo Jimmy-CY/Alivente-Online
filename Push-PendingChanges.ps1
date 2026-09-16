@@ -82,6 +82,17 @@ if ($Push) { $Apply = $true }
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
 
+# Every python this script spawns prints through a pipe, and on Windows a
+# pipe is cp1252 unless told otherwise. A suite that prints a Greek heading
+# then dies of UnicodeEncodeError blocks the push exactly as hard as a
+# failing check, while saying nothing about what is wrong. The empty
+# encoding before the colon means KEEP whatever the console has and change
+# only the error handler - forcing utf-8 here would hand PowerShell bytes
+# it decodes as cp1252, which is mojibake, which reads like a data fault.
+# Each tool carries the same guard in its own preamble; this is the belt to
+# that pair of braces, and covers the next tool somebody writes without one.
+$env:PYTHONIOENCODING = ':replace'
+
 function Say    ($t) { Write-Host $t }
 function Head   ($t) { Write-Host ''; Write-Host $t -ForegroundColor Cyan
                        Write-Host ('-' * $t.Length) -ForegroundColor Cyan }
@@ -665,7 +676,53 @@ $suites = @(
     # every year to prove nothing moved - then does the same to a row that
     # DOES have a past and shows the figure collapse, which is why the guard
     # still refuses that one. Newest, so most likely to be what breaks.
-    'test_spent_row.py'
+    'test_spent_row.py',
+
+    # ------------------------------------------------------------------
+    # WIRED ON 9 Sep 2026. Every suite below already existed and NONE of
+    # them was on this list - they passed only because somebody ran them
+    # by hand, which is not the same as being enforced. Two had been
+    # failing for a day and a half without anything saying so.
+    #
+    # Four read a .bak_* snapshot, and those are gitignored: on a fresh
+    # clone they fail or, worse, quietly shrink. See apply_gate_wire.py.
+    # ------------------------------------------------------------------
+    # The comment tint on the Issues screens.
+    'test_comment_tint.py',
+    # Tenant payment behaviour: the cutoff, and the ageing scale.
+    'test_payment_days.py',
+    # Issues Analysis colours - AND that no CSS comment in base spells a
+    # script or style tag, which is how two pieces of prose broke it.
+    'test_ia_palette.py',
+    # The Issues Analysis tiles, and the drill-down they open.
+    'test_ia_tiles.py',
+    # What reaches paper. Needs .bak_leak; see the note in apply_gate_wire.
+    'test_print_leaks.py',
+    # The notification buttons. SILENTLY DROPS three checks when
+    # .bak_notify is missing - 32 becomes 29 and it still says zero
+    # failed. On the list to fix.
+    'test_notify_btns.py',
+    # A secondary button hides only where a More menu carries it.
+    'test_secondary_visible.py',
+    # One spelling for the required marker, in a colour base owns.
+    'test_required_marker.py',
+    # The standards block: it describes a base that exists, ships nothing,
+    # and contains no prose shaped like a tag or a comment.
+    'test_standards_block.py',
+    # Every page heads itself the way base says.
+    'test_heading_standard.py',
+    # The brand is in the browser tab, not on the heading.
+    'test_heading_prefix.py',
+    # Shape B: the module on the h2, MODE LABEL and record name on the h4.
+    'test_projects_heading.py',
+    # Every required field says so. Newest, so most likely to be what
+    # breaks.
+    'test_required_sweep.py',
+    # Nothing here dies because the console cannot draw a character it read
+    # out of a template. Its section 1 RUNS the preamble under a forced
+    # cp1252 stdout, and runs the same print without it to show the check
+    # can fail. Newest, so most likely to be what breaks.
+    'test_console_encoding.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

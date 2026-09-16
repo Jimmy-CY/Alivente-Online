@@ -1,0 +1,146 @@
+Repair the push gate: 13 suites wired on, three expired checks, and a
+crash that stopped a push dead
+
+THIRTEEN SUITES HAD NEVER GATED A PUSH. The suite list inside
+Push-PendingChanges.ps1 held 46 entries; the repo holds 78 test files. Every
+suite written this week was among the missing, so the standards those rounds
+established were not in fact enforced - they passed only because somebody ran
+them by hand. The gate now runs 60, counting the one round below.
+
+TWO OF THEM HAD BEEN FAILING SINCE 8 SEP AND NOTHING SAID SO.
+test_ia_palette and test_ia_tiles check that no CSS comment in base spells a
+script or style tag, because a scanner slicing script blocks with a regex
+opens one inside the comment and parses the rest as JavaScript. Both tripped,
+and neither was on the gate to say so.
+
+A THIRD KIND OF PROSE SHAPED LIKE MARKUP. The standards block spelled out a
+Django block tag while explaining the browser tab. Django's comment swallows
+it, so the template is fine - but anything that WALKS Django tags saw an
+opening block that never closes and reported base's own tags as unbalanced.
+That is now three kinds: an HTML tag, the two characters that close a CSS
+comment, and a Django block tag. test_standards_block.py checks all three
+with controls, so the fourth is caught the day it is written rather than by
+an unrelated suite a week later.
+
+SCOPE GUARD #20 - test_required_marker.py. It pinned the corpus at exactly
+112 marker sites in 33 templates and asserted, for 21 files, that nothing
+outside a label had moved since its own snapshot. The marker sweep took the
+count to 193, and the heading, prefix and shape-B rounds all edited those
+files legitimately. Twenty-six failures, not one of them a defect.
+
+The count is now reported with a floor. The historical diff is replaced with
+the property it was actually protecting, stated in the present tense: EVERY
+MARKER SITS INSIDE A LABEL AND HOLDS AN ASTERISK AND NOTHING ELSE. That needs
+no snapshot, so it cannot decay and it works on a fresh clone. Its historical
+control skips loudly when the gitignored snapshots are absent, rather than
+failing for a reason that says nothing about the system.
+
+SCOPE GUARD #21 - test_print_leaks.py. The same shape, and it showed why the
+previous fix does not scale. It carried a hand-maintained map of which later
+round owns each file - two entries - and needed eighteen more. A per-file map
+of who touched what last is a second copy of the project's history and will
+always be out of date.
+
+Replaced with a claim that survives editing: every media query that existed
+before is still there, either unchanged or now carrying the screen keyword.
+Later rounds may ADD queries - the shape-B round added one to two of these
+templates - and that is the standard working, not breaking. Deleting or
+rewriting a guarded query still fails. The map survives at THAT granularity
+only, for the two files where a later round genuinely rewrote a query: a
+query-level claim breaks when a round edits a query, which is rare, where a
+whole-file diff breaks when any round edits any text, which is not.
+
+A CRASH BLOCKS A PUSH EXACTLY AS HARD AS A FAILURE. The first run of this
+round stopped at test_projects_heading, one line after a PASS:
+
+    PASS  h4 second line is present
+    UnicodeEncodeError: charmap codec cannot encode characters in
+    position 45-49: character maps to undefined
+    FAIL  test_projects_heading.py FAILED
+      Stopping.  Nothing has been staged.
+
+The check had passed. It died printing the value it had just passed on.
+projects/project_task_list.html carries a Greek heading behind the language
+switch, Python on Windows writes stdout as cp1252 whenever it is not a UTF-8
+console, and cp1252 has no Greek in it. Nothing was wrong with the template,
+the standard, or the check - only with the printer.
+
+That is the third time this repo has learned that a crash blocks a push as
+hard as a failure and says far less about why. The CDN timeout was the first
+and the Windows file lock the second, so it is now a suite rather than a note.
+
+FIXED IN ONE PLACE, TWICE OVER. Every test file and every Show file in the
+repo root - 88 of them - now carries the same twenty-two-line preamble
+directly under its docstring: keep the encoding the console really has, and
+change the ERROR HANDLER, so a character it cannot draw arrives as a
+question mark instead of ending the run. stderr too, because a traceback is
+a print as well.
+
+The encoding is deliberately NOT forced to UTF-8. The gate pipes each suite
+through PowerShell, which decodes with the console encoding, so forcing UTF-8
+would turn a crash into mojibake - and mojibake reads like a data fault, which
+is worse than an obvious one. Push-PendingChanges.ps1 also sets PYTHONIOENCODING
+to colon-replace before it runs any python at all: the preamble makes each
+tool right wherever it is launched from, and the environment line covers the
+next tool somebody writes without one.
+
+test_console_encoding.py is on the gate, which takes it to 60. Its section 1
+RUNS the thing: two throwaway scripts under a forced cp1252 stdout, one with
+the preamble and one without, and the second MUST die - a guard whose control
+cannot fail is not a guard, and this repo has shipped three of those. Section
+3 checks the same fault in the other direction, that no tool opens a text file
+without naming an encoding, because a cp1252 READ of a UTF-8 template raises
+just as happily.
+
+Its own first draft found three faults in itself by scanning for the text
+open-bracket and matching the word inside its own error message. It reads a
+parse tree now. That is the same species as the prose that spelled a CSS
+declaration and broke the expense matrix suite: a scanner that cannot tell
+code from prose.
+
+NOT DONE HERE: apply_*.py did not get the preamble. Those are one-shot
+patchers that have already run; the standard is written down for the next one
+instead. And doc.txt does not yet carry the lesson - that is a small round on
+its own, and this one was already blocking a push.
+
+WHAT IS STILL NOT ON THE GATE: 19 more suites, including test_banner_pages,
+test_finance_headings and test_resolved_report from rounds shipped this week,
+plus test_ageing_scale, test_alv_stat, test_comments_report, test_fi_seg,
+test_grade_tables, test_ia_drill, test_ind_modal, test_invoice_verification,
+test_issues_table, test_map_tiles, test_matrix_range, test_oi_migration,
+test_pl_drill, test_print_media and test_parser. That is the next round, and
+going by today two or three of them will have decayed the same way.
+
+ALSO KNOWN, AND NOT FIXED HERE: four of the thirteen read a gitignored
+snapshot. On a fresh clone test_print_leaks and test_secondary_visible stop
+and exit 1, test_ia_palette and test_ia_tiles fail a check naming the missing
+file, and test_notify_btns PASSES having silently dropped three of its
+checks - 32 becomes 29 and it still reports zero failures. The last is the
+dangerous one. A suite that cannot find its snapshot should say so loudly and
+skip.
+
+VERIFIED: all 60 suites run. 21 fail in the sandbox and it is the identical
+set of 21 that failed before this round - every one a Python source file or
+backup that exists only on the development machine. All thirteen newly wired
+suites pass with the real snapshots present, including test_notify_btns
+showing 32 checks rather than 29, which confirms the silent-drop diagnosis.
+Six controls verified across the two rewritten suites: a marker outside a
+label, a marker holding more than an asterisk, an old page rule
+reintroduced, the marker pointed at a literal colour, the screen keyword
+removed from a guarded query, and a guarded query deleted.
+
+VERIFIED FOR THE ENCODING ROUND: the crash reproduced exactly - same file,
+same line, same positions 45-49 - by forcing cp1252 on the unpatched suite,
+and test_projects_heading then reports 152 passed 0 failed under the same
+forced cp1252 with the preamble in place. Every one of the 88 tools was run
+before and after and 86 are byte-identical; the two that differ are the two
+new files and a tooling-file count that correctly rose by two. Across all 88
+under a forced cp1252 there are now zero encode or decode crashes, where
+before there was one. test_console_encoding reports 25 passed 0 failed on
+both a UTF-8 and a cp1252 console. The patcher is idempotent - a second run
+writes nothing - and refuses to write anything at all unless the preamble is
+first proved, in a subprocess, to stop the crash and the same print without
+it to cause one.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

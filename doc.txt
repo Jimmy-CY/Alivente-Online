@@ -175,9 +175,16 @@
           LABEL: two to four words, scanned rather than read.
 
           THE BRAND IS IN THE BROWSER TAB, not the heading. base.html builds
-          the tab as `{% block title %}` plus ` | Alivente Online`, so every
-          page that extends base gets it for free and no page states it
-          twice. A page sets only its own name in that block, in Title Case.
+          the tab from the page's own title block followed by a pipe and the
+          brand, so every page that extends base gets it for free and no page
+          states it twice. A page sets only its own name in that block, in
+          Title Case.
+
+          (The block tag is not spelled out here on purpose. Django's comment
+          tag swallows it, so the template is fine - but anything that WALKS
+          Django tags sees an opening block that never closes, and reported
+          base's own tags as unbalanced. Same family as prose shaped like an
+          HTML tag or a CSS comment: the third kind, found the same way.)
 
           WHY IT MOVED, 8 Sep 2026. It headed 66 pages, identical on all of
           them, so it distinguished nothing - and there are 53 distinct
@@ -340,7 +347,9 @@
       page. THE SWEEP HAS NOT HAPPENED - 338 labels are still plain.
 
       EVERY REQUIRED FIELD IS MARKED, in one spelling, in a colour base
-      owns: `.alv-req { color: var(--alv-bad) }`. One round normalised the
+      owns - the .alv-req class, coloured from the bad token, and no brace
+      is written here on purpose: see the note below. One round normalised
+      the
       112 asterisks that already existed, in seven spellings; a second found
       81 required fields that said NOTHING AT ALL and marked them, including
       the Properties and Tenants Add and Edit screens - 9 and 15 required
@@ -362,7 +371,19 @@
       (This paragraph deliberately does not spell either element out. Prose
       shaped like markup breaks every tool that finds markup by regex,
       including our own harness - a sentence in this document once swallowed
-      an entire stylesheet and took seven checks down with it.)
+      an entire stylesheet and took seven checks down with it.
+
+      FOUR KINDS HAVE NOW DONE IT, each found by a different suite days
+      after the sentence was written: an HTML tag, the two characters that
+      close a CSS comment, a Django block tag, and A CSS DECLARATION WITH
+      BRACES. The last one cost a push. A suite looked for a component name
+      followed by an opening brace, found the name in this document's
+      inventory, ran seven thousand characters forward to the ONE pair of
+      braces in the whole document - a rule written out in a sentence - and
+      read the token inside it as that component's colour.
+
+      SO: NO BRACES IN THIS DOCUMENT AT ALL. Name a class, name a token,
+      never write the declaration. test_standards_block.py enforces it.)
 
       A MARKER WITH NOTHING BEHIND IT is the mirror image, and 15 of them
       exist: a label saying required beside a control that does not enforce

@@ -31,6 +31,30 @@ are GOOD, or whether the system obeys the ones marked [CONVENTION] - by
 definition nothing does. It checks that the document describes a base.html
 that exists, and that it costs the visitor nothing.
 """
+
+# --- CONSOLE ENCODING ----------------------------------- 16 Sep 2026 --
+# This file prints text it read out of the templates, and some of that
+# text is not ASCII - projects/project_task_list.html carries a Greek
+# heading behind the language switch, and it will not be the last. On
+# Windows, Python writes stdout as cp1252 whenever it is not a UTF-8
+# console, and cp1252 cannot encode Greek: the print itself raises
+# UnicodeEncodeError and the run dies part-way through. A crash blocks a
+# push exactly as hard as a failure and says far less about why.
+#
+# So keep the encoding the console really has - forcing UTF-8 only moves
+# the problem to whoever decodes us - and change the ERROR HANDLER, so a
+# character the console cannot draw arrives as a question mark instead of
+# ending the run. stderr too, because a traceback is a print as well.
+# Guarded, because stdout is not always a stream that can be told.
+# See test_console_encoding.py.
+import sys as _sys
+for _stream in (_sys.stdout, _sys.stderr):
+    try:
+        _stream.reconfigure(errors='replace')
+    except Exception:
+        pass
+# ------------------------------------------------------------------------
+
 import os
 import re
 import sys
@@ -278,6 +302,54 @@ head('4. the block cannot break the template')
 _taglike = sorted(set(re.findall(r'<[a-zA-Z!/][^\s>]{0,24}', BODY)))
 check('nothing in the document is shaped like an HTML tag - 41 suites parse '
       'this file with regexes', not _taglike, str(_taglike[:4]))
+
+# AND NOTHING SHAPED LIKE A DJANGO TAG, OR LIKE A CSS COMMENT.
+#
+# Three kinds of prose have now broken tools that read this file, and each
+# was found by a different suite days after it was written:
+#
+#   an HTML tag         swallowed a whole stylesheet, taking seven checks
+#                       down with it;
+#   a CSS comment       the two characters that close one sat inside a glob,
+#                       so a comment-scanner matched from an earlier opener
+#                       straight through the line - failing two suites for a
+#                       day and a half, unnoticed, because neither gates a
+#                       push;
+#   a Django block tag  written out in prose, so anything WALKING Django
+#                       tags saw an opening block that never closes and
+#                       reported base's own tags as unbalanced.
+#
+# Django's comment tag makes all three harmless to a BROWSER. None of them
+# is harmless to a REGEX, and this repo is full of regexes.
+_dj = sorted(set(re.findall(r'\{%\s*(\w+)', BODY)))
+check('  nor like a Django tag - anything walking them reads this file too',
+      not _dj, str(_dj[:4]))
+_cssc = [x for x in ('/' + '*', '*' + '/') if x in BODY]
+check('  nor like a CSS comment - a scanner matches across the whole file',
+      not _cssc, str(_cssc))
+
+# NOR A CSS DECLARATION. NO BRACES IN THE DOCUMENT AT ALL.
+#
+# THE FOURTH KIND, and the one that cost a push. test_expense_matrix.py asks
+# whether base's .alv-seg rule takes a semantic colour, by finding the class
+# name, then the next opening brace, then looking for a token before the
+# close. It found `.alv-seg` in THIS document's component inventory, ran
+# seven thousand characters forward to the only pair of braces in the whole
+# block - a CSS rule written out inside a sentence about required markers -
+# and read the token in it as .alv-seg's colour. The gate stopped, correctly,
+# on a rule that had not changed.
+#
+# One brace pair anywhere in twenty-seven thousand characters was enough.
+# The document may NAME a class and NAME a token; it may not write the
+# declaration that joins them.
+_brace = [c for c in ('{', '}') if c in BODY]
+check('  nor like a CSS declaration - no braces at all, see the note above',
+      not _brace, str(_brace))
+check('  CONTROL: the brace check can see one', '{' in ('a' + '{' + 'b'))
+check('  CONTROL: the Django check can see one',
+      bool(re.findall(r'\{%\s*(\w+)', '{%' + ' block x ' + '%}')))
+check('  CONTROL: the CSS check can see one',
+      ('/' + '*') in ('/' + '*' + ' x ' + '*' + '/'))
 check('  CONTROL: the check can see one', bool(re.findall(
     r'<[a-zA-Z!/][^\s>]{0,24}', 'a sentence with a <style> in it')))
 
