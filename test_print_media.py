@@ -112,8 +112,31 @@ check('CONTROL: base still explains the bare query it removed',
 check('CONTROL: .. and it is gone once stripped',
       '@media (max-width: 768px)' not in BC)
 
+# SCOPE GUARD #24 - 16 Sep. THIS PINNED FIVE, AND BASE NOW HAS SIX.
+#
+# The sixth is correct work: a later round added a phone block and wrote the
+# screen keyword, which is the standard doing its job. A pinned count calls
+# that a failure. Twenty-fourth time.
+#
+# Ask what the claim is ABOUT. The round removed the `screen` keyword's
+# absence from base's 768px blocks, because a bare max-width query fires on
+# PAPER - A4 portrait is about 718 CSS px - and shrinks the heading of every
+# printed report. So the claim is not "there are five of them". It is
+# EVERY 768px BLOCK IN BASE CARRIES `screen`, which is true of a sixth, and
+# of a seventh, and needs no number at all.
 _guarded = len(re.findall(r'@media screen and \(max-width: 768px\)', BC))
-check('five phone blocks are screen-only', _guarded == 5, '%d' % _guarded)
+_bare768 = re.findall(r'@media\s*\(max-width:\s*768px\)', BC)
+check('no 768px block in base fires on paper', not _bare768,
+      '%d bare: %s' % (len(_bare768), _bare768[:3]))
+# A FLOOR, as the control. Without it the check above passes on a base with
+# no phone blocks in it at all.
+check('  CONTROL: and there are 768px blocks to have got wrong', _guarded >= 5,
+      '%d screen-qualified' % _guarded)
+# NOT ASSERTED HERE: that base has no bare max-width query at ALL. It has
+# one, at 991px, and it is a known outstanding item with its own round -
+# see the running list, section 2.I. Twenty-seven PAGES carry the same
+# fault. Widening this check to cover them would fail today for work this
+# round never claimed to do.
 check('  and no bare 768px block survives',
       not re.search(r'@media \(max-width: 768px\)', BC))
 # DELIBERATELY LEFT: hiding the sidebar on paper is correct.

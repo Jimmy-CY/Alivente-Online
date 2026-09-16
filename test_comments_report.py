@@ -452,8 +452,24 @@ head('4. scope: the banner belongs to its own round')
 check('the teal gradient banner is untouched',
       'linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%)' in C
       and '.report-header {' in C)
-check('  and so is its .stat-box', '.stat-box {' in C
-      and 'rgba(255, 255, 255, 0.2)' in C)
+# SCOPE GUARD #25 - 16 Sep. THIS ASSERTED WHAT THE ROUND LEFT ALONE, AND A
+# LATER ROUND TOOK IT.
+#
+# This section is headed "the banner belongs to its own round". That round
+# came: .stat-box is gone, and the page's own comment says why - a white
+# 20%-alpha tile only reads on a dark ground, and base already owns the
+# component for a headline figure in .alv-stat. So the guard failed doing
+# exactly what it was built to do, and the answer is not to re-point it at
+# whatever is there now. It is to state the END of the story instead of the
+# middle of it.
+#
+# CC, not C. The page still EXPLAINS the removal in prose, and reading the
+# raw file finds the explanation and calls the removal a failure. That is
+# the same trap the note twenty lines above this one is about.
+check('  and its .stat-box has gone to base, as the page says it should',
+      '.stat-box {' not in CC, 'still defined' if '.stat-box {' in CC else '')
+check('    CONTROL: the page still says why, in prose the stripper removes',
+      '.stat-box' in C and '.stat-box' not in CC)
 if sync_playwright is not None:
     check('  rendered: the banner still carries a gradient',
           'gradient' in DESK['headBg'], DESK['headBg'][:48])
@@ -461,11 +477,37 @@ if sync_playwright is not None:
 # back to base - including .page-action-buttons - so reading the raw file
 # finds the round's explanation of the removal and calls it the removal
 # failing. Nineteenth instance of the same lesson.
-_PRINT = CC[CC.index('@media print'):CC.index('@media screen and')]
-check("the page's print block keeps ONLY what base cannot know",
-      '.report-header' in _PRINT
-      and 'page-action-buttons' not in _PRINT
-      and 'modal' not in _PRINT, _PRINT.strip()[:60].replace('\n', ' '))
+# THIS USED TO CRASH, NOT FAIL - 16 Sep. Not a scope guard; a printer
+# fault, and the same one that cost a push that morning.
+#
+# It read `CC.index('@media print')`, and the page no longer HAS a print
+# block: the print-leak round took it out and handed the lot to base. So a
+# suite written to check that the page kept only a little died with
+# ValueError instead of saying that it now keeps none - and a crash blocks
+# a push exactly as hard as a failure while telling you far less. That
+# lesson cost a push on 16 Sep; this is the same defect, found by the
+# patcher that was about to put this suite on the gate.
+#
+# .find, and both ends handled. A page with NO print block is not a
+# failure - it is the end state the print standard is driving at, because
+# base owning print is the whole point. Which of the two it is gets said
+# out loud either way.
+_p0 = CC.find('@media print')
+if _p0 < 0:
+    check("the page hands print to base entirely, which is the end state "
+          "the standard wants", True, 'no @media print block on the page')
+else:
+    _p1 = CC.find('@media', _p0 + 6)
+    _PRINT = CC[_p0:_p1 if _p1 > _p0 else len(CC)]
+    check("the page's print block keeps ONLY what base cannot know",
+          '.report-header' in _PRINT
+          and 'page-action-buttons' not in _PRINT
+          and 'modal' not in _PRINT, _PRINT.strip()[:60].replace('\n', ' '))
+# THE CONTROL, either way: base must be the one carrying print now, or
+# "the page keeps none of it" is not a standard being met, it is a
+# stylesheet nobody wrote.
+check('  CONTROL: and base carries a print block to have handed it to',
+      '@media print' in BC)
 
 # The tint round's work, and the modal, must both survive.
 check('the author chip survives the round',

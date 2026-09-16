@@ -729,7 +729,43 @@ $suites = @(
     # rewrites four of the characters in the tile URL and nothing that reads
     # the template source can see what reached the browser. Newest, so most
     # likely to be what breaks.
-    'test_map_provider.py'
+    'test_map_provider.py',
+
+    # ------------------------------------------------------------------
+    # WIRED ON 16 Sep 2026, by a patcher that RAN each of them first.
+    # A suite that cannot pass today cannot honestly be wired on today:
+    # listing a red one does not enforce a standard, it stops every push
+    # until somebody deletes the line.
+    # ------------------------------------------------------------------
+    # The ageing bands, on the cells and on the legend that explains them.
+    'test_ageing_scale.py',
+    # base's stat tile, and the rule that a verdict colours the FIGURE and
+    # not the box behind it.
+    'test_alv_stat.py',
+    # The Friday status report colours. Its control renders the OLD file and
+    # requires the old answer, so a green result cannot be vacuous.
+    'test_fsr_palette.py',
+    # The grade scale, and the detail tables that read it.
+    'test_grade_tables.py',
+    # The Issues Analysis drill-down: a modal inside a modal, measured.
+    'test_ia_drill.py',
+    # The indicator modal.
+    'test_ind_modal.py',
+    # Invoice verification. Pure value tests - what 95.2 against 95.20 does.
+    'test_invoice_verification.py',
+    # The Issues table, narrow and wide, against the markup it replaced.
+    'test_issues_table.py',
+    # The year-on-year matrix range. Every year in it is INJECTED as
+    # today_year, so the suite owns the clock and cannot age.
+    'test_matrix_range.py',
+    # The outstanding-invoices migration.
+    'test_oi_migration.py',
+    # The P&L drill-down.
+    'test_pl_drill.py',
+    # What the print stylesheet does, as opposed to what it says.
+    'test_print_media.py',
+    # The resolved-issues report.
+    'test_resolved_report.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

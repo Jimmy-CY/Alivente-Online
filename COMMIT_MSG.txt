@@ -1,192 +1,127 @@
-The map leaves OpenStreetMap's volunteer tile servers, and two scope
-guards stop holding snapshots they cannot keep
+Gate round two: thirteen more suites, wired by a patcher that ran them first
 
-PROPERTIES > ADD STOPPED DRAWING. The map came up with a yellow-and-black
-square over Cyprus:
+THE GATE NOW RUNS 74 SUITES, up from 61. Every suite in the repo is now
+either on it, repaired and waiting, or named as not belonging on it.
 
-    403  Access blocked
-    App is not following the tile usage policy of OpenStreetMap's
-    volunteer-run servers
+A SUITE THAT CANNOT PASS TODAY CANNOT HONESTLY BE WIRED ON TODAY. The 9 Sep
+round wired thirteen suites on and discovered two had been failing for a day
+and a half with nothing saying so; the lesson recorded then was that a suite
+off the gate enforces nothing. This is the other half of it. Listing a red
+suite does not enforce a standard - it stops every push until somebody
+deletes the line, which is how a gate earns a reputation and then gets
+bypassed with -Force.
 
-Nothing in the app had changed. tile.openstreetmap.org is a volunteer service
-under a usage policy written for OSM's own site and small, casual use, and
-blocks are applied by referring domain - which is why every page went at once
-rather than one of them. The OSM wiki lists the triggers and two of them fit
-this code exactly.
+So apply_gate_wire_two.py RUNS each candidate before listing it, wires the
+ones that exit clean, and names the ones that do not without touching the
+list for them. There is no separate survey step: a loop that reports,
+followed by a patcher that acts on what the loop said, is two chances for
+the two to disagree, and this project has already shipped a round where the
+survey and the tree disagreed because the survey ran somewhere else.
 
-FIRST, ATTRIBUTION WITHOUT A LINK. properties_add and properties_edit both
-credited OpenStreetMap as plain text. map_view was the only one of the four
-map pages that linked to the copyright page. An unlinked credit is on the
-wiki's list of reasons an application gets blocked by hand.
+WIRED, with the count each reported on the run that wired it:
 
-SECOND, THE GEOCODER. "Find Address on Map" called OpenStreetMap's Nominatim
-service straight from the browser. That service asks for an identifying
-User-Agent, which a browser will not let a page set - so the call could not
-comply however politely it was made. Separate service, same foundation, and
-blocks travel together.
+    test_ageing_scale          73     test_matrix_range           50
+    test_alv_stat              67     test_oi_migration           66
+    test_fsr_palette           71     test_pl_drill               63
+    test_grade_tables          73     test_print_media            21
+    test_ia_drill              58     test_resolved_report        50
+    test_ind_modal             87
+    test_invoice_verification  39
+    test_issues_table         116
 
-There is a third reason, quieter and more decisive: a property-management
-system is a for-profit product, and the tile policy is not written for one.
+NOT WIRED, because they do not pass today. None of them is on the gate, so
+none of them blocks a push, and the failure text is the next round's
+starting point:
 
-MOVED TO GEOAPIFY. Free plan, 3,000 credits a day, a tile costs a quarter of
-a credit, and the terms permit commercial use provided the attribution names
-them. Their osm-carto style is the classic OpenStreetMap rendering, so the
-map looks the way it looked before it stopped drawing. The same key serves
-the address lookup, so the geocoder moves in the same change rather than
-waiting to be noticed separately on some later afternoon.
+    test_banner_pages          78 passed,  8 failed
+    test_comments_report       73 passed,  1 failed
+    test_fi_seg                44 passed,  1 failed
+    test_finance_headings     400 passed, 22 failed
 
-Stadia Maps and MapTiler were both read and both rejected: their free tiers
-exclude commercial use in as many words.
+TWO REPAIRS CAME OUT OF BUILDING THE PATCHER, both found before they could
+block anything.
 
-ONE DEFINITION, FOUR CONSUMERS. The URL, the attribution and the zoom ceiling
-now live in mysite/context_processors.py and reach the templates through the
-context. They used to be spelled out four times, and map_view's own comment
-records what that cost: it had drifted to CARTO, CARTO began gating those
-tiles behind a key, and CARTO does not fail without one - it returns tiles
-with API KEY REQUIRED printed INTO the image. The map drew. The pins landed.
-The console stayed clean. Every tile carried a watermark and nobody looked.
+SCOPE GUARD #24 - test_print_media.py pinned "five phone blocks are
+screen-only" and base now has six. The sixth is correct work: a later round
+added a phone block and wrote the screen keyword, which is the standard
+doing its job. A pinned count calls that a failure.
 
-That is also why the keyless stopgap was refused when this round was agreed:
-the last keyless provider is exactly how this got here.
+The claim is not "there are five of them". The round removed the ABSENCE of
+the screen keyword from base's 768px blocks, because a bare max-width query
+fires on PAPER - A4 portrait is about 718 CSS px - and shrinks the heading
+of every printed report. So the claim is that EVERY 768px BLOCK IN BASE
+CARRIES THE SCREEN KEYWORD, which is true of a sixth and of a seventh and
+needs no number, with a floor as its control so it cannot pass on a base
+with no phone blocks at all.
 
-THE KEY IS NOT A SECRET AND IS NOT IN THE REPO. A browser map key travels to
-the browser; there is no arrangement in which it does not. It is protected by
-being restricted to one origin in the provider's dashboard, not by being
-hidden. So it comes from the environment - GEOAPIFY_KEY, set in Railway - and
-git never holds it. A check in the suite fails if a key-shaped literal ever
-appears in a template or in settings.
+It deliberately does NOT widen to "base has no bare max-width query". Base
+has one, at 991px, and twenty-seven PAGES carry the same fault. That is a
+known outstanding item with its own round, and widening the check would
+fail today for work this round never claimed to do.
 
-AND WITH NO KEY THE PAGE SAYS SO. The tile layer is not added at all, and
-base's new .alv-map-nokey covers the map box with a sentence naming the
-variable somebody has to set. A map with no basemap is an empty grey square,
-and an empty grey square reads as a fault in the page rather than as a
-setting nobody has filled in. That distinction is not theoretical - it is the
-whole reason the CARTO drift survived for months.
+test_comments_report.py CRASHED RATHER THAN FAILED. It read the index of an
+@media print block the page no longer has - the print-leak round took it out
+and handed the lot to base - so it died with ValueError instead of saying
+so. Same printer fault that cost a push this morning, found this time by the
+patcher that was about to put the suite on the gate.
 
-WHAT THE SUITE DOES. test_map_provider.py is on the gate, taking it to 61.
-Its section 2 RENDERS each page's map block through Django in BOTH key
-states and reads the JavaScript that comes out. That is not decoration:
-escapejs rewrites every one of the characters for less-than, greater-than,
-ampersand, equals, minus and semicolon into a unicode escape, and the tile
-URL contains four of them, so a check that read the template source would
-never see whether what reached the browser was still a URL. It then decodes
-those escapes the way a JavaScript engine would and compares the result to
-the URL the context processor built.
+It reads a find now, and handles both ends: a page with NO print block is
+not a failure, it is the end state the print standard is driving at, and
+which of the two it is gets said out loud.
 
-Section 4 sweeps every template in every directory - not just the top level,
-which is the shape of mistake that had me report the gate complete while the
-development machine said nineteen suites were missing.
+SCOPE GUARD #25 - underneath that crash, in a section headed "the banner
+belongs to its own round", a check asserting .stat-box still exists. That
+round came and took it, and the page's own comment says why: a white
+20%-alpha tile only reads on a dark ground, and base already owns the
+component for a headline figure. The guard failed doing exactly what it was
+built to do.
 
-MAXZOOM STAYS AT 18, though Geoapify serves 20 and 20 would be better for
-dropping a pin on one building. A round that changes two things cannot say
-which one fixed it, and map_view's own comment already says that about this
-same number.
+The answer is not to re-point it at whatever is there now. It is to assert
+the END of the story instead of the middle: .stat-box has gone to base. Read
+from the comment-stripped file, because the page still EXPLAINS the removal
+in prose and reading the raw file finds the explanation and calls the
+removal a failure - the same trap as the note twenty lines above it.
 
-map_test.html is a debug page and was migrated rather than deleted, so that
-"all four pages configure the map identically" stays a checkable claim.
-Deleting it is its own decision.
+THE REPAIR DID NOT FINISH THE JOB, AND THAT IS WHY IT IS NOT WIRED. Both
+faults above are fixed and the suite went from crashing to 48 passed 0
+failed in the sandbox - but on the development machine, which has the data
+the sandbox does not, it reports 73 passed and 1 failed. Something real
+remains, visible only where the whole system is. It stays off the gate until
+that is understood, and it is not going to be understood by guessing.
 
-SCOPE GUARD #22 - test_standards_block.py, and the last snapshot in it.
+TWO FILES ARE NOT CANDIDATES AT ALL.
 
-This round added one component to base.html and touched nothing else, and the
-gate stopped: "everything outside the block is byte-identical to the state
-before the last run". Correct work, failed check, twenty-second time.
+test_parser.py is renamed to probe_crs_parser.py. It is a smoke-test for a
+CRS Excel parser with a hardcoded path into a Downloads folder, and it
+asserts nothing - it prints what it found and exits 0 whatever that was. On
+the gate it would be a check that cannot fail, and this project has now
+shipped five of those. Out of the test_ namespace is where it belongs.
 
-Guard #19 had already moved that comparison once - from the first-ever
-snapshot to one refreshed on every run of apply_standards_block.py - and its
-own comment explained why the first had failed: another agreed round edited
-base. The second snapshot bought exactly one more round.
+test_map_tiles.py is superseded by this morning's map-provider round. It
+asserts the OpenStreetMap tile URL is a literal in map_view, that the tile
+layer's only options are attribution and maxZoom, and that the attribution
+credits OpenStreetMap - all true of the page that round replaced. Its
+map_view regression half is still worth having, so this round neither wires
+it nor deletes it. The patcher names it on every run so it cannot be quietly
+forgotten. Rewriting it down to the claims that survive is a decision, and
+decisions do not belong inside a sweep.
 
-ASK WHAT THE CLAIM IS ABOUT. "This application of the patcher changed only
-the block" is a fact about ONE RUN OF A DIFFERENT PROGRAM. A suite that runs
-on every push cannot verify it: arbitrary time and arbitrary other rounds
-pass in between, so any snapshot it holds has an expiry date - and a check
-with an expiry date is a scope guard waiting to happen. The problem was never
-which snapshot. It was that the claim did not belong in the suite.
+VERIFIED: the patcher is idempotent - a second run wires nothing and reports
+the five it already did. Its wiring self-check refuses to write unless every
+new entry lands exactly once and the last one closes the array. The renamed
+file keeps the console-encoding preamble, and test_console_encoding still
+reports 25 passed 0 failed with one fewer file in its corpus.
 
-So it moved into apply_standards_block.py, where both sides are in hand - the
-bytes as found and the bytes about to be written - and where a failure means
-the script has a bug and nothing should be written. Verified with a control:
-a stray edit to base's title tag inserted into the patcher is refused.
-
-WHAT STAYS IN THE SUITE is what that claim was protecting, in the present
-tense. The fault being guarded is the comment block SWALLOWING one of base's
-own tags, and that has two fingerprints needing no snapshot at all: a
-swallowed tag is IN the body, and the body is already asserted to contain
-nothing shaped like a tag; and a swallowed opening tag leaves its closer
-stranded outside. The style and script tags outside the block must now simply
-balance. Both claims are permanent, both work on a fresh clone, and base may
-gain or lose a stylesheet without either of them caring.
-
-The suite reports 60 passed, 0 failed, and reads no snapshot at all.
-
-SCOPE GUARD #23 - test_required_sweep.py, and the sixth whole-file diff.
-
-The gate stopped again, two files along: "and nothing else changed", for
-properties_add and properties_edit. The required-marker sweep had asserted,
-per page, that stripping the markers from the current file left it
-byte-identical to its backup. This round edited the tile block in both,
-two hundred lines from any label. Correct work, failed check.
-
-AND IT WAS A DUPLICATE. apply_required_sweep.py already makes exactly that
-comparison inside its own self-check, against the bytes it is about to
-write, where both sides are in hand and the claim is true by construction.
-The copy in the suite could only ever decay - the same diagnosis as #22, and
-this time the claim was already sitting in the right place.
-
-WHAT COVERS WHAT IS NOW WRITTEN DOWN IN THE SUITE, so the next person does
-not have to work it out from three sabotage runs:
-
-  - that the round changed nothing but markers: the patcher's self-check, at
-    the moment it wrote the bytes;
-  - that a marker was later REMOVED: section 3, which names any required
-    field left unmarked and needs no backup at all;
-  - that a marker sits where it belongs: a new per-page check in the present
-    tense - every marker on the page is inside a label - immune to edits
-    elsewhere in the file.
-
-THREE CONTROLS were run against the replacement, and the first draft failed
-two of them. Removing a marker and repointing a label both PASSED a check
-that claimed to catch them, because the set it compared was the set marked
-BEFORE the round, which is empty for a page that had none - a check that
-could not fail, for the fourth time in this project.
-
-Rewritten: removing a marker now fails section 3, and lifting one out of its
-label fails the new check. Repointing a label's for-attribute at another
-field fails NEITHER, and should not - section 3's rule accepts the nearest
-preceding label, so that is a label-association fault and a different
-standard. The
-suite says so rather than implying a coverage it does not have.
-
-ALSO NOTED, NOT FIXED HERE: test_map_tiles.py is superseded by this round.
-It asserts the OSM tile URL is a literal in map_view, that the only options
-are attribution and maxZoom, and that the attribution credits OSM - all
-true of the page this round replaced. It is not on the gate, so it blocks
-nothing, but it now describes a state that does not exist. Retiring it is
-its own decision.
-
-VERIFIED: 74 checks pass in the map suite, 60 in the standards suite, 41
-in the required-marker suite in the sandbox. Four
-sabotage controls were run against the map suite and each failed it for the
-right reason - the attribution stripped of its link, a
-key-shaped literal written into a template, the tile layer moved outside the
-no-key branch, and one page pointed back at the volunteer servers. All 89
-tools were run before and after this round: 83 are byte-identical and the six
-that differ report counts that moved by exactly the size of the change - one
-component, one brace pair, twenty-five lines of base, and two new files.
-
-One of those controls CRASHED the suite rather than failing it, because the
-check used an index lookup that raises when the substring is absent. It reads
-a find now. A crash blocks a push exactly as hard as a failure and says far
-less about why - that lesson cost a push this morning and was not allowed to
-cost a second one from inside the suite written to record it.
-
-NOT PROVED HERE: that tiles arrive. That needs a live request to a third
-party, and a green answer would be a fact about one machine on one afternoon.
-The previous map round said the same and was right to; what it could not say
-was that the tiles had already stopped arriving, because nothing it could
-check had changed. The remaining verification is a person loading Properties
-and Add - and this time the page will say which of the two answers it is.
+STILL OPEN, and worth saying plainly because it is the same disease as the
+one this round is about: eleven of the suites now on the gate skip their
+rendered sections when Playwright is absent, print a SKIP line, and then
+report "0 failed" and exit 0. On the development machine Playwright is
+installed and they run. On a fresh clone the gate would go green having
+proved considerably less. test_notify_btns does the same with a missing
+snapshot - 32 checks becoming 29 with nothing saying so. A summary line that
+says "0 failed" after skipping a third of its checks is lying by omission,
+and the fix is uniform: report skipped alongside passed and failed, and let
+the gate surface it.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg
