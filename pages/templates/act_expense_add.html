@@ -5,8 +5,8 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ACTUAL EXPENSES</center></h2>
-<h4 class="page-subtitle-h4"><center>ADD EXPENSE</center></h4>
+<h2 class="page-title-h2">ACTUAL EXPENSES</h2>
+<h4 class="page-subtitle-h4">ADD EXPENSE</h4>
 <br/>
 
 <form action="{% url 'act_expense_commit' %}" method="post" class="expense-form">
@@ -54,15 +54,6 @@
 </form>
 
 <style>
-.page-title-h2 {
-    margin-top: 0.5rem;
-    margin-bottom: 0.25rem;
-}
-.page-subtitle-h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    color: #6c757d;
-}
 
 /* ==================== BUTTONS ==================== */
 .btn-info {
@@ -86,12 +77,6 @@
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-    .page-title-h2 {
-        font-size: 1.25rem;
-    }
-    .page-subtitle-h4 {
-        font-size: 1rem;
-    }
     .action-back-label {
         display: none;
     }

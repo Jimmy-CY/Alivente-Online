@@ -371,8 +371,32 @@ if os.path.exists(_bp):
     _bare = leaking_clauses(_b)
     check('base keeps its deliberate <=991px block',
           len(_bare) == 1 and '991' in _bare[0], str(_bare))
-    check('  and its five guarded blocks', len(guarded_clauses(_b)) == 5,
-          str(len(guarded_clauses(_b))))
+    # SCOPE GUARD #27 - 16 Sep. THIS PINNED FIVE, AND base NOW HAS SIX.
+    #
+    # The sixth is the heading-components round: base took .page-title-h2 and
+    # .page-subtitle-h4 over from thirty-four pages and wrote ONE guarded
+    # phone block for them, deleting thirty-five page-local ones - twenty of
+    # which were bare and printed. A pinned count calls that a failure, when
+    # it is this very standard spreading.
+    #
+    # The claim was never "base has five". It is EVERY GUARDED BLOCK IN base
+    # IS ACTUALLY GUARDED, with a floor so it cannot pass on a base that has
+    # none. A block added correctly should not need this file edited; a block
+    # added bare shows up in the check above, which counts the bare ones and
+    # requires the 991px one to be the only one.
+    # A FLOOR, and nothing more. The first rewrite of this check asserted
+    # that every guarded clause contains the word screen - which is what
+    # guarded_clauses() SELECTS ON, so it could never fail. Sixth check
+    # that cannot fail found in this project, and the second written by me
+    # today while fixing one.
+    #
+    # The meaning lives in the check above: the only BARE clause in base is
+    # the 991px one. That is what stops a block printing. This one only says
+    # base has not quietly lost the guards it was given.
+    _g = guarded_clauses(_b)
+    check('  and it keeps the guarded blocks it was given', len(_g) >= 5,
+          '%d - a floor, not a count; a sixth arrived with the heading '
+          'components' % len(_g))
     if sync_playwright is not None:
         with sync_playwright() as pw:
             _br = pw.chromium.launch()

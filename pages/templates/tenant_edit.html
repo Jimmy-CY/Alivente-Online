@@ -5,8 +5,8 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>TENANTS</center></h2>
-<h4 class="page-subtitle-h4"><center>EDIT EXISTING TENANT</center></h4>
+<h2 class="page-title-h2">TENANTS</h2>
+<h4 class="page-subtitle-h4">EDIT EXISTING TENANT</h4>
 <br/>
 
 {% if perms.auth.can_edit_tenants %}
@@ -379,14 +379,6 @@
 <style>
 /* ==================== DESKTOP STYLES ==================== */
 
-.page-title-h2 {
-    margin-top: 0.5rem;
-    margin-bottom: 0;
-}
-.page-subtitle-h4 {
-    margin-top: 0.25rem;
-    margin-bottom: 1rem;
-}
 .page-action-buttons-edit .action-back {
     margin-left: auto;
 }
@@ -397,13 +389,6 @@
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
-    .page-title-h2 {
-        font-size: 1.25rem;
-    }
-    .page-subtitle-h4 {
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
-    }
 
     /* Action buttons row — Save (wide) + ⋮ More + Back (icon) */
     .page-action-buttons-edit {

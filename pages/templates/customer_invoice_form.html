@@ -7,10 +7,10 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>CUSTOMER INVOICE</center></h2>
-<h4 class="page-subtitle-h4"><center>
+<h2 class="page-title-h2">CUSTOMER INVOICE</h2>
+<h4 class="page-subtitle-h4">
   {% if mode == 'edit' %}{{ number }} &mdash; {{ pi.bill_name }}{% else %}New invoice{% endif %}
-</center></h4>
+</h4>
 <br/>
 
 {% for msg in messages %}
@@ -320,8 +320,6 @@
 </template>
 
 <style>
-.page-title-h2 { margin-top: 0.5rem; margin-bottom: 0; }
-.page-subtitle-h4 { margin-top: 0.25rem; margin-bottom: 1rem; color: #6c757d; }
 
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -337,7 +335,6 @@
 .btn-duplicate:hover { background-color: #5e37a6; border-color: #563098; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-delete { background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.page-action-buttons-form { justify-content: flex-end; }
 .status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .status-action-form { margin: 0; }
 
@@ -405,8 +402,6 @@ textarea.form-control { resize: vertical; }
 .status-sent { background: #d4edda; color: #155724; }
 
 @media (max-width: 768px) {
-  .page-title-h2 { font-size: 1.25rem; }
-  .page-action-buttons-form { flex-direction: row; gap: 8px; width: 100%; flex-wrap: nowrap; align-items: stretch; }
   .action-primary { flex: 1 1 auto; min-width: 0; height: 38px; display: flex; align-items: center; justify-content: center; padding: 0 12px; font-size: 13px; margin: 0; }
   .action-back { flex: 0 0 auto; width: 44px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0; }
   .action-back-label { display: none; }

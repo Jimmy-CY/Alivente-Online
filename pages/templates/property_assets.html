@@ -6,8 +6,8 @@
 {% block content %}
 
 {# SHAPE B - 9 Sep. Module name on the h2; MODE LABEL &mdash; Record Name on the h4. Em dash, because the data contains hyphens. See base.html. #}
-<h2 class="page-title-h2"><center>PROPERTIES</center></h2>
-<h4 class="page-subtitle-h4"><center>PROPERTY ASSETS &mdash; {{ property.prop_name }}</center></h4>
+<h2 class="page-title-h2">PROPERTIES</h2>
+<h4 class="page-subtitle-h4">PROPERTY ASSETS &mdash; {{ property.prop_name }}</h4>
 <br/>
 
 {% for msg in messages %}
@@ -377,10 +377,6 @@
 <style>
 /* ==================== DESKTOP STYLES ==================== */
 
-.page-title-h2 {
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-}
 .summary-grid {
     display: flex;
     flex-direction: column;
@@ -504,9 +500,6 @@
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
-    .page-title-h2 {
-        font-size: 1.25rem;
-    }
     .action-back-label {
         display: none;
     }
@@ -673,12 +666,7 @@
    neighbours, with one correction: `screen` is stated, because the
    unqualified form fires on paper (A4 portrait is about 718 CSS px) and
    would shrink a printed heading. */
-.page-title-h2 { margin-top: 0.5rem; margin-bottom: 0; }
-.page-subtitle-h4 { margin-top: 0.25rem; margin-bottom: 1rem; }
-@media screen and (max-width: 768px) {
-  .page-title-h2 { font-size: 1.25rem; }
-  .page-subtitle-h4 { font-size: 1rem; margin-bottom: 0.75rem; }
-}
+
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

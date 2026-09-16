@@ -7,8 +7,8 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>RECEIPTS</center></h2>
-<h4 class="page-subtitle-h4"><center>{% if editing %}EDIT RECEIPT {{ next_number }}{% else %}ISSUE RECEIPT{% endif %}</center></h4>
+<h2 class="page-title-h2">RECEIPTS</h2>
+<h4 class="page-subtitle-h4">{% if editing %}EDIT RECEIPT {{ next_number }}{% else %}ISSUE RECEIPT{% endif %}</h4>
 <br/>
 
 {% for msg in messages %}
@@ -194,7 +194,6 @@
 </form>
 
 <style>
-.page-subtitle-h4 { margin-bottom: 0; }
 
 .rec-note {
     background: var(--alv-accent-soft);

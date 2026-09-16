@@ -1,127 +1,220 @@
-Gate round two: thirteen more suites, wired by a patcher that ran them first
+base takes over the three classes the standard is written in
 
-THE GATE NOW RUNS 74 SUITES, up from 61. Every suite in the repo is now
-either on it, repaired and waiting, or named as not belonging on it.
+page-title-h2, page-subtitle-h4 and page-action-buttons-form are the class
+names base.html's own standards block is written in, and base DECLARED NONE
+OF THEM. Every page that wanted one wrote it out. Across 144 templates that
+is 34 hand-written copies of the heading rule, 27 of the subtitle and 12 of
+the form bar, plus 35 more inside media queries.
 
-A SUITE THAT CANNOT PASS TODAY CANNOT HONESTLY BE WIRED ON TODAY. The 9 Sep
-round wired thirteen suites on and discovered two had been failing for a day
-and a half with nothing saying so; the lesson recorded then was that a suite
-off the gate enforces nothing. This is the other half of it. Listing a red
-suite does not enforce a standard - it stops every push until somebody
-deletes the line, which is how a gate earns a reputation and then gets
-bypassed with -Force.
+That is the same fault the button sweep found in the action bars, one layer
+up: base reached the names but not the rules.
 
-So apply_gate_wire_two.py RUNS each candidate before listing it, wires the
-ones that exit clean, and names the ones that do not without touching the
-list for them. There is no separate survey step: a loop that reports,
-followed by a patcher that acts on what the loop said, is two chances for
-the two to disagree, and this project has already shipped a round where the
-survey and the tree disagreed because the survey ran somewhere else.
+IT IS NOT THIRTEEN DESIGNS. IT IS ONE RULE, DERIVED BY HAND 34 TIMES.
 
-WIRED, with the count each reported on the run that wired it:
+Read as declarations the drift looks like improvisation. Read as a rule it
+is a conditional that thirty pages worked out independently:
 
-    test_ageing_scale          73     test_matrix_range           50
-    test_alv_stat              67     test_oi_migration           66
-    test_fsr_palette           71     test_pl_drill               63
-    test_grade_tables          73     test_print_media            21
-    test_ia_drill              58     test_resolved_report        50
-    test_ind_modal             87
-    test_invoice_verification  39
-    test_issues_table         116
+    h2 margin-bottom    a subtitle follows      pages
+    0                   yes                      23
+    1rem                NO                        6
+    0                   NO                        2   <- wrong
+    0.25rem             yes                       2   <- wrong
+    1rem                yes                       1   <- wrong
 
-NOT WIRED, because they do not pass today. None of them is on the gate, so
-none of them blocks a push, and the failure text is the next round's
-starting point:
+The gap closes when a subtitle follows the heading and opens when nothing
+does. Five pages got it wrong. base says it once now, and the five become
+right rather than becoming documented exceptions - a component with five
+exceptions on the day it ships is not a component.
 
-    test_banner_pages          78 passed,  8 failed
-    test_comments_report       73 passed,  1 failed
-    test_fi_seg                44 passed,  1 failed
-    test_finance_headings     400 passed, 22 failed
+THREE DECISIONS, TAKEN BEFORE ANYTHING WAS WRITTEN
 
-TWO REPAIRS CAME OUT OF BUILDING THE PATCHER, both found before they could
-block anything.
+THE SUBTITLE IS SOFT GREY, from var(--alv-ink-soft). Seven rules painted it
+#6c757d - Bootstrap's grey-600, from no palette this project defines - and
+nineteen left it inheriting. One of those groups had to move. A mode label
+under a module name should be the quieter of the two, which is what the
+shape-B round decided in words; this makes it true in colour.
 
-SCOPE GUARD #24 - test_print_media.py pinned "five phone blocks are
-screen-only" and base now has six. The sixth is correct work: a later round
-added a phone block and wrote the screen keyword, which is the standard
-doing its job. A pinned count calls that a failure.
+THE <center> ELEMENTS GO. Thirty-five pages centred the heading with a
+<center> element inside the h2. base centres with text-align, so they were
+redundant the moment it did. This turned a CSS round into a markup round on
+signed-off pages, which is why every page is checked two ways its own
+construction cannot fake: the CSS rules that survive must be exactly what
+was there minus these three classes, and the page's visible words must be
+character-for-character unchanged.
 
-The claim is not "there are five of them". The round removed the ABSENCE of
-the screen keyword from base's 768px blocks, because a bare max-width query
-fires on PAPER - A4 portrait is about 718 CSS px - and shrinks the heading
-of every printed report. So the claim is that EVERY 768px BLOCK IN BASE
-CARRIES THE SCREEN KEYWORD, which is true of a sixth and of a seventh and
-needs no number, with a floor as its control so it cannot pass on a base
-with no phone blocks at all.
+THE FIVE OUTLIERS ARE CORRECTED, not preserved.
 
-It deliberately does NOT widen to "base has no bare max-width query". Base
-has one, at 991px, and twenty-seven PAGES carry the same fault. That is a
-known outstanding item with its own round, and widening the check would
-fail today for work this round never claimed to do.
+AND IT TAKES A LARGE BITE OUT OF THE PAPER BUG, FOR FREE
 
-test_comments_report.py CRASHED RATHER THAN FAILED. It read the index of an
-@media print block the page no longer has - the print-leak round took it out
-and handed the lot to base - so it died with ValueError instead of saying
-so. Same printer fault that cost a push this morning, found this time by the
-patcher that was about to put the suite on the gate.
+A max-width query with no screen keyword applies to PAPER as well as to
+screens - A4 portrait is about 718 CSS px, inside every 768px query - which
+is why printed reports come out with a phone-sized heading. TWENTY PAGES
+styled one of these three inside exactly such a query. This round deletes
+those rules, and base's replacement says screen. The hoist and that part of
+the sweep are the same edit; doing them separately means opening the same
+pages twice.
 
-It reads a find now, and handles both ends: a page with NO print block is
-not a failure, it is the end state the print standard is driving at, and
-which of the two it is gets said out loud.
+It does NOT sweep the other bare queries on those pages. They belong to
+section 2.I, they are about different components, and a round that changes
+two things cannot say which one fixed it.
 
-SCOPE GUARD #25 - underneath that crash, in a section headed "the banner
-belongs to its own round", a check asserting .stat-box still exists. That
-round came and took it, and the page's own comment says why: a white
-20%-alpha tile only reads on a dark ground, and base already owns the
-component for a headline figure. The guard failed doing exactly what it was
-built to do.
+WHAT THE SUITE DOES, AND THE PART THAT EARNS ITS KEEP
 
-The answer is not to re-point it at whatever is there now. It is to assert
-the END of the story instead of the middle: .stat-box has gone to base. Read
-from the comment-stripped file, because the page still EXPLAINS the removal
-in prose and reading the raw file finds the explanation and calls the
-removal a failure - the same trap as the note twenty lines above it.
+base now says
 
-THE REPAIR DID NOT FINISH THE JOB, AND THAT IS WHY IT IS NOT WIRED. Both
-faults above are fixed and the suite went from crashing to 48 passed 0
-failed in the sandbox - but on the development machine, which has the data
-the sandbox does not, it reports 73 passed and 1 failed. Something real
-remains, visible only where the whole system is. It stays off the gate until
-that is understood, and it is not going to be understood by guessing.
+    .page-title-h2:has(+ .page-subtitle-h4) { margin-bottom: 0; }
 
-TWO FILES ARE NOT CANDIDATES AT ALL.
+and :has() is the kind of rule that silently does nothing. A browser without
+it drops the line and every heading keeps the default gap - no error, no
+warning, a layout slightly wrong everywhere that looks deliberate. Reading
+the stylesheet cannot tell that apart from working. So section 3 renders
+both shapes in Chromium and MEASURES: 4px of gap with a subtitle, 16px
+without, and a control that the two differ at all. It also reads back the
+computed colour and the text alignment rather than trusting the file.
 
-test_parser.py is renamed to probe_crs_parser.py. It is a smoke-test for a
-CRS Excel parser with a hardcoded path into a Downloads folder, and it
-asserts nothing - it prints what it found and exits 0 whatever that was. On
-the gate it would be a check that cannot fail, and this project has now
-shipped five of those. Out of the test_ namespace is where it belongs.
+A SKIPPED CHECK IS COUNTED IN THE SUMMARY. Eleven suites on this gate print
+a SKIP line when Playwright is absent and then report zero failed and exit
+0, which is how a fresh clone goes green having proved a third less than it
+looks. This suite reports passed, failed AND skipped, and says in as many
+words that a skip is not a pass. That is the pattern the silent-skip round
+should follow.
 
-test_map_tiles.py is superseded by this morning's map-provider round. It
-asserts the OpenStreetMap tile URL is a literal in map_view, that the tile
-layer's only options are attribution and maxZoom, and that the attribution
-credits OpenStreetMap - all true of the page that round replaced. Its
-map_view regression half is still worth having, so this round neither wires
-it nor deletes it. The patcher names it on every run so it cannot be quietly
-forgotten. Rewriting it down to the claims that survive is a decision, and
-decisions do not belong inside a sweep.
+THREE EXISTING SUITES ASSERTED WHAT JUST BECAME base'S JOB
 
-VERIFIED: the patcher is idempotent - a second run wires nothing and reports
-the five it already did. Its wiring self-check refuses to write unless every
-new entry lands exactly once and the last one closes the array. The renamed
-file keeps the console-encoding preamble, and test_console_encoding still
-reports 25 passed 0 failed with one fewer file in its corpus.
+This is the cost of the markup decision, and it was paid here rather than
+discovered on the gate.
 
-STILL OPEN, and worth saying plainly because it is the same disease as the
-one this round is about: eleven of the suites now on the gate skip their
-rendered sections when Playwright is absent, print a SKIP line, and then
-report "0 failed" and exit 0. On the development machine Playwright is
-installed and they run. On a fresh clone the gate would go green having
-proved considerably less. test_notify_btns does the same with a missing
-snapshot - 32 checks becoming 29 with nothing saying so. A summary line that
-says "0 failed" after skipping a third of its checks is lying by omission,
-and the fix is uniform: report skipped alongside passed and failed, and let
-the gate surface it.
+test_projects_heading and test_heading_standard both required a <center>
+element inside the heading, spelled into the pattern itself.
+Seventy-four checks between them. The element is optional in those patterns
+now, so they read the same whether or not a page has been through this
+round, and both report the same result before it and after.
+
+SCOPE GUARD #26 - test_projects_heading asserted that the twelve media
+queries SHAPE B WROTE each say screen. Correct, and it held until base took
+the heading over and this round deleted those queries. The claim was never
+"these pages contain a query"; it is THE HEADING DOES NOT SHRINK ON PAPER,
+and that is now true in a better way - by there being no page-local query at
+all, with base's one covering every page at once. It asks now that whoever
+owns the rule qualifies it: a page with its own block must say screen, a
+page that handed it to base must have handed it over completely.
+
+A PINNED CEILING WENT THE SAME WAY. The same suite capped the pages still
+carrying a record name on a centred h2 at six. Making <center> optional made
+the pattern SEE a seventh page it had always been blind to - a ceiling
+calibrated to a narrower regex decays the first time the regex gets better
+at its job. The seven are named now, each against the round that owns it. A
+page leaving that set is progress; a page joining it is a new fault, and a
+count cannot tell those apart.
+
+A LIST OF PAGES IS NOT A RULE, AND I LEARNED THAT THE SLOW WAY.
+
+The first repair of the ceiling above replaced the number with seven
+filenames read off the build sandbox - which holds 97 of this repo's 144
+templates. On the development machine there were thirteen, so the named set
+was six short and the check failed again. Fifth time today that the sandbox
+being a subset produced a wrong answer, and the second time AFTER writing
+that lesson into a commit message.
+
+The answer is not six more filenames. The recipe and meal-plan side is
+identified by a RULE now - the same name fragments test_required_sweep uses
+to exclude it - so it covers the pages nobody has looked at yet, including
+the ones that do not exist while I am writing this. Only the seven
+property-management pages are named, and each has a round of its own.
+
+A list chosen by hand from a corpus you cannot see is a list. A rule that
+says which module a page belongs to is a standard.
+
+SCOPE GUARD #27 - test_print_leaks asserted base keeps "its five guarded
+blocks", and base now has six. The sixth is this round: base took the heading
+over from thirty-four pages and wrote ONE guarded phone block, deleting
+thirty-five page-local ones, twenty of which were bare and printed. A pinned
+count calls that a failure when it is the standard spreading.
+
+It is a floor now, and the meaning was always in the line above it: the only
+BARE clause in base is the deliberate 991px one, which hides the sidebar and
+is meant to fire on paper. That check has teeth - removing a screen keyword
+anywhere takes the bare count from one to two and it fails.
+
+MY FIRST REWRITE OF IT COULD NOT FAIL. It asserted that every guarded clause
+contains the word screen, which is what the function selecting them filters
+on. Sixth check-that-cannot-fail found in this project, and the second one
+written by me today while repairing another. It is a floor now and nothing
+more, with a note saying where the meaning actually lives.
+
+AND THE WHOLE-GATE COMPARISON WAS BLIND TO IT. Every suite was run before and
+after this round and test_print_leaks reported identically both times -
+because in the build sandbox it exits early for want of gitignored .bak_leak
+snapshots, so the comparison compared two identical early exits. The sandbox
+is a subset, for the fourth time today. A comparison of two trees is blind to
+anything stale in both, and it is blind to anything that does not run in
+either.
+
+SCOPE GUARD #28 - AND THIS ONE IS A FINDING, NOT JUST A REPAIR.
+
+test_heading_standard capped its non-compliant pages at twelve. Relaxing its
+<center> requirement made it SEE thirty-eight - because the old pattern
+required a center element inside the heading, and thirty-odd pages that never
+had one were never examined at all. They were not compliant. They were
+invisible.
+
+A ceiling calibrated to a narrow regex reports the system as healthier than
+it is, and then fails the day the regex gets better at its job. This one had
+been doing that for as long as the pattern existed.
+
+The thirty-eight are named now, each against the round that owns it: twenty-
+four on the recipe and meal-plan side, which section 2.K says is 29 templates
+swept by nobody and absent from the push gate; eight in Administration and
+Personal, which have NEVER been tested and are owed a full review before
+anything sweeps them; and six with rounds of their own - the comments report,
+the Help module, the portfolio dashboard, the two map pages and tenant
+payment behaviour.
+
+Most of them head themselves with an icon, which the standard forbids in as
+many words. So the corpus is 89 compliant of 127, not 89 of 101, and that
+number is now on the record rather than hidden behind a pattern that could
+not see the difference.
+
+A page leaving that set is progress. A page joining it is a new fault. A
+count cannot tell those two apart, which is why there is no longer one.
+
+test_table_lease_agreement required .page-title to keep at least 2 rules of
+its own. Its own comment said what to do: "If a later round legitimately
+removes one, the number moves with it - deliberately, in the same commit."
+This round moved them to base, so the class moves from the floors list to
+the list below it that says base owns it now.
+
+TWO BUGS IN THE PATCHER, BOTH CAUGHT BY CHECKS RATHER THAN BY READING
+
+The rule regex starts matching immediately after the PREVIOUS rule's closing
+brace, so expanding a match to whole lines reached backwards into the rule
+before it - and, for the first rule inside a media block, swallowed the
+@media line and orphaned its closing brace. The delete spans overlapped and
+the splice quietly mangled the file. It anchors on the selector now, expands
+to whole lines only when the rule has its line to itself, and merges
+overlapping spans unconditionally.
+
+And it walked the raw stylesheet, so a brace inside a CSS comment
+desynchronised the media tracking: it decided a media block was empty when
+it was not, deleted the whole block, and orphaned thirty unrelated rules.
+Comments are blanked to spaces of the same length before the walk now, which
+keeps every offset pointing at the real file.
+
+Prose shaped like code, twice, inside the tool doing the sweep. Neither was
+found by reading the diff. Both were found by a check that compared the
+surviving rules against the rules that had been there.
+
+VERIFIED: 24 checks in the new suite, including the rendered conditional.
+Every suite in the repo was run before and after: 79 report identically, and
+the two that differ are the round's own suite and the lease-agreement one,
+both failing before the round and passing after - which is what a round's
+suite should do. The patcher is idempotent, refuses to write if any page
+fails its per-file check, and nothing is written when anything fails.
+
+NOT PROVED HERE: that the spacing is the RIGHT spacing. One answer instead
+of thirty-four is what this measures; whether that answer is handsome wants
+eyes on a screen. Look at Properties > Add, any Financials add screen, and
+one printed report.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

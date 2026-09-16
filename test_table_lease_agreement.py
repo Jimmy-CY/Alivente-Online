@@ -223,14 +223,18 @@ def group(prefix):
 # margin lets a rule go missing quietly, which is the failure this exists to
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
+# .page-title LEFT THIS LIST ON 16 Sep, under the instruction written
+# directly above it. The heading-components round hoisted .page-title-h2
+# and .page-subtitle-h4 into base and deleted the page-local copies, so the
+# floor of 2 became a floor of 0 - and a class base owns belongs in the
+# list below, which says so, rather than in this one with a zero in it.
 for prefix, floor, why in (('.modal', 6, 'the upload modal'),
-                           ('.page-title', 2, 'the page heading'),
                            ('.file-upload', 1, 'the file field')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
 
 for prefix in ('.icon-', '.mobile-action', '.table-container',
-               '.lease-agreements-table', '.status'):
+               '.lease-agreements-table', '.status', '.page-title'):
     check('  %-16s has 0 rules left - base.html owns it now' % prefix,
           group(prefix) == 0)
 

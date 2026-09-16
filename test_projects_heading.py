@@ -131,17 +131,23 @@ def literal(t):
                   re.sub(r'&[a-zA-Z]+;|&#\d+;', ' ', t)).strip()
 
 
+# CENTRING IS base'S JOB NOW - 16 Sep. These patterns required a
+# <center> element inside the heading. The heading-components round
+# gave base text-align and stripped the 35 redundant <center> tags,
+# so a pattern that REQUIRES one asserts an implementation detail
+# that the standard just took away. Optional, so this reads the same
+# whether or not a page has been through that round.
 def h2_of(src):
-    m = re.search(r'<h2[^>]*>\s*<center>(.*?)</center>\s*</h2>',
+    m = re.search(r'<h2[^>]*>\s*(?:<center>)?\s*(.*?)\s*(?:</center>)?\s*</h2>',
                   markup_of(src), re.S)
     return m.group(0), m.group(1) if m else None if m is None else None
 
 
 def parts(src):
     mk = markup_of(src)
-    a = re.search(r'<h2([^>]*)>\s*<center>(.*?)</center>\s*</h2>', mk, re.S)
-    b = re.search(r'<h4([^>]*)page-subtitle-h4([^>]*)>\s*<center>(.*?)'
-                  r'</center>\s*</h4>', mk, re.S)
+    a = re.search(r'<h2([^>]*)>\s*(?:<center>)?\s*(.*?)\s*(?:</center>)?\s*</h2>', mk, re.S)
+    b = re.search(r'<h4([^>]*)page-subtitle-h4([^>]*)>\s*(?:<center>)?\s*'
+                  r'(.*?)\s*(?:</center>)?\s*</h4>', mk, re.S)
     return a, b
 
 
@@ -298,8 +304,58 @@ check('none of them is in this module', not [r for r in STILL
 # A REPORT WITH A FLOOR. The remaining ones belong to rounds already on the
 # list - the left-aligned page headers and the report title component - and
 # are named rather than silently tolerated.
-check('  and the rest are the pages other rounds own', len(STILL) <= 6,
-      '%d outstanding' % len(STILL))
+# NAMED, NOT COUNTED - 16 Sep. This was `len(STILL) <= 6`, and the ceiling
+# moved the moment the <center> element became optional in the pattern
+# above: the check started SEEING a seventh page it had always been blind
+# to. A ceiling calibrated to a narrower regex is a number that decays the
+# first time the regex gets better at its job.
+#
+# Each of these belongs to a round already on the list - the report title
+# component, the left-aligned page headers, the recipe side - so name them.
+# A page that leaves this set is progress; a page that JOINS it is a new
+# fault, and a count cannot tell those two apart.
+# A RULE FOR THE MODULE, A LIST ONLY FOR THE REST.
+#
+# The first version of this was seven filenames, and it was six short - I
+# read them off a sandbox that holds 97 of this repo's 144 templates and
+# called that the corpus. Fifth time today that the sandbox being a subset
+# has produced a wrong answer, and the second time AFTER writing the lesson
+# down.
+#
+# A list of pages chosen by hand from a corpus you cannot see is a list. A
+# rule that says which MODULE a page belongs to is a standard, and it covers
+# the pages nobody has looked at yet. The recipe and meal-plan side is 29
+# templates that no round has swept and that the push gate does not run -
+# section 2.K - and it is identified the same way test_required_sweep
+# identifies it, by the names its files actually carry.
+RECIPE_SIDE = ('recipe', 'meal_plan', 'wcim_', 'pantry_', 'ingredient_',
+               'unit_conversions', 'celebration_', 'import_recipe',
+               'map_ingredients', 'measurement_units', 'household_member',
+               'categories_management')
+
+# The property-management pages, which are few enough to name and each of
+# which has a round of its own on the running list.
+OWNED_ELSEWHERE = {
+    'dashboard_pl.html',               # Financials tail, section 2.H
+    'fsr_email.html',                  # no chrome at all, 2.A
+    'lease_agreement_report.html',     # report title component, 2.F
+    'manual_pdf.html',                 # no chrome at all, 2.A
+    'properties_title_deed.html',      # report title component, 2.F
+    'property_detail.html',            # detail screens
+    'title_deed_report.html',          # report title component, 2.F
+}
+_stray = sorted(r for r in set(STILL)
+                if r not in OWNED_ELSEWHERE
+                and not any(t in r for t in RECIPE_SIDE))
+check('  and the rest are pages another round owns, by name or by module',
+      not _stray,
+      '%d not accounted for: %s' % (len(_stray), ', '.join(_stray[:4])))
+_recipe = sorted(r for r in STILL if any(t in r for t in RECIPE_SIDE))
+if _recipe:
+    print('        %d of them are the recipe side, which no round has swept '
+          'and the\n        gate does not run - section 2.K.' % len(_recipe))
+check('    CONTROL: and the set is not empty, so it is measuring something',
+      len(STILL) >= 1, '%d page(s)' % len(STILL))
 
 # ===========================================================================
 head('7. structure, and the media query that fires on paper')
@@ -354,7 +410,25 @@ def _own_block(src):
     return src[i:j if j > 0 else len(src)]
 
 
-_want, _new, _missing = [], [], []
+# SCOPE GUARD #26 - 16 Sep. THIS ROUND'S MEDIA QUERIES ARE GONE, AND THAT
+# IS THE STANDARD ARRIVING RATHER THAN LEAVING.
+#
+# Shape B wrote twelve phone blocks into these pages and asserted each one
+# said `screen`, because a bare max-width query fires on paper - A4 portrait
+# is about 718 CSS px - and prints every report with a phone-sized heading.
+# Correct, and it held until base took the heading over: the
+# heading-components round hoisted .page-title-h2 and .page-subtitle-h4 into
+# base and DELETED the page-local copies, media query and all.
+#
+# Ask what the claim is about. It was never "these pages contain a query".
+# It is THE HEADING DOES NOT SHRINK ON PAPER, and that is now true in a
+# better way - by there being no page-local query at all, with base's one
+# saying `screen` for every page at once.
+#
+# So: whoever owns the rule must qualify it. A page that still has its own
+# block must say `screen`; a page that has handed it to base must have
+# handed it over completely, with nothing bare left behind.
+_want, _new, _missing, _hoisted = [], [], [], []
 for r in sorted(EXPECT):
     _p = os.path.join(T, r.replace('/', os.sep))
     if not os.path.exists(_p):
@@ -363,16 +437,23 @@ for r in sorted(EXPECT):
     if blk is None:
         continue
     _want.append(r)
-    if '@media screen and (max-width: 768px)' in blk:
+    if '.page-title-h2' not in blk and '.page-subtitle-h4' not in blk:
+        _hoisted.append(r)          # base owns it; nothing to qualify here
+    elif '@media screen and (max-width: 768px)' in blk:
         _new.append(r)
     else:
         _missing.append(r)
-check('every media query this round wrote states `screen`',
-      _want and not _missing, '%d of %d' % (len(_new), len(_want)))
+check('  the heading is hoisted, or its query says `screen`',
+      not _missing, '%d page(s) still style the heading behind a bare query: '
+      '%s' % (len(_missing), ', '.join(_missing[:4])))
+check('  and every page has one owner or the other',
+      len(_new) + len(_hoisted) == len(_want),
+      '%d own it, %d handed it to base, %d page(s)'
+      % (len(_new), len(_hoisted), len(_want)))
 for _r in _missing:
     print('          missing `screen`: %s - it would shrink on paper' % _r)
-check('  CONTROL: and there really are blocks to have got wrong',
-      len(_want) >= 11, '%d block(s)' % len(_want))
+check('  CONTROL: and there really are pages to have got wrong',
+      len(_want) >= 11, '%d page(s)' % len(_want))
 
 _bad = []
 for p in TEMPLATES:

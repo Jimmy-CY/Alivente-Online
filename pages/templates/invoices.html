@@ -8,7 +8,7 @@ Invoices
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>OPEN INVOICES</center></h2>
+<h2 class="page-title-h2">OPEN INVOICES</h2>
 <br/>
 
 {% for msg in messages %}
@@ -198,10 +198,6 @@ Invoices
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-.page-title-h2 {
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-}
 /* The More dropdown is a mobile-only component; hidden on desktop. */
 .action-more-wrapper { display: none; }
 
@@ -364,10 +360,6 @@ td.overdue-cell.is-overdue {
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-    .page-title-h2 {
-        font-size: 1.25rem;
-        margin-bottom: 0.75rem;
-    }
     .action-back-label {
         display: none;
     }

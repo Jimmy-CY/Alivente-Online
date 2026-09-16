@@ -132,12 +132,18 @@ for _d, _s, _fs in os.walk(T):
 TEMPLATES.sort()
 
 
+# CENTRING IS base'S JOB NOW - 16 Sep. These patterns required a
+# <center> element inside the heading. The heading-components round
+# gave base text-align and stripped the 35 redundant <center> tags,
+# so a pattern that REQUIRES one asserts an implementation detail
+# that the standard just took away. Optional, so this reads the same
+# whether or not a page has been through that round.
 def heading_of(src):
     """(title, subtitle) for a page that uses the centred heading, else
        (None, None). Django tags are blanked, not stripped, so a title that
        is entirely dynamic does not read as an empty string."""
     mk = markup_of(src)
-    m = re.search(r'<h2[^>]*>\s*<center>\s*(.*?)\s*</center>\s*</h2>', mk, re.S)
+    m = re.search(r'<h2[^>]*>\s*(?:<center>)?\s*(.*?)\s*(?:</center>)?\s*</h2>', mk, re.S)
     if not m:
         return None, None
     t = re.sub(r'\s+', ' ', m.group(1)).strip()
@@ -155,7 +161,7 @@ def second_line(src):
        to that scan. A survey that names the tag it expects finds only that
        tag, the same way a survey named after a colour found only teal."""
     mk = markup_of(src)
-    m = re.search(r'<h2[^>]*>\s*<center>.*?</center>\s*</h2>', mk, re.S)
+    m = re.search(r'<h2[^>]*>\s*(?:<center>)?.*?(?:</center>)?\s*</h2>', mk, re.S)
     if not m:
         return None, None
     after = mk[m.end():m.end() + 460]
@@ -253,12 +259,63 @@ check('most of the system complies', len(GOOD) >= 60,
       '%d of %d' % (len(GOOD), len(GOOD) + len(BAD)))
 # A REPORT WITH A FLOOR, not an equality - the corpus grows, and a hardcoded
 # count has failed correct work twelve times on this codebase.
-check('  and the shortfall is only the deferred pages', len(BAD) <= 12,
-      '%d outstanding' % len(BAD))
+# SCOPE GUARD #28 - 16 Sep. THE CEILING OF 12 WAS A FACT ABOUT THE REGEX,
+# NOT ABOUT THE SYSTEM.
+#
+# The pattern above used to REQUIRE a <center> element inside the heading.
+# The heading-components round gave base text-align and stripped those
+# elements, so the pattern was relaxed to make <center> optional - and it
+# immediately started SEEING thirty-odd pages it had always been blind to.
+#
+# They were never compliant. They were never counted. A ceiling calibrated
+# to a narrower regex reports the system as healthier than it is, and then
+# fails the day the regex gets better at its job.
+#
+# So: no ceiling. Every non-compliant page is NAMED, against the round that
+# owns it. A page leaving this set is progress; a page JOINING it is a new
+# fault, and a count cannot tell those two apart.
+OUT_OF_SCOPE = {
+    # The recipe and meal-plan side. Section 2.K: 29 templates, not on the
+    # push gate, swept by no round yet. Most of these head themselves with
+    # an icon, which the standard forbids.
+    'categories_management.html', 'celebration_calendar.html',
+    'celebration_dashboard.html', 'celebration_management.html',
+    'create_meal_plan.html', 'create_recipe (OLD DO NOT USE).html',
+    'edit_recipe (OLD DO NOT USE).html', 'household_member_management.html',
+    'ingredient_base_units_management.html', 'ingredient_families.html',
+    'map_ingredients_nutrition.html', 'meal_plan_calendar.html',
+    'meal_plan_shopping_list.html', 'measurement_units_management.html',
+    'pantry_staples.html', 'preview_imported_recipe.html', 'recipe_pdf.html',
+    'unit_conversions_management.html', 'unit_conversions_wizard.html',
+    'view_meal_plan.html', 'view_recipe.html', 'wcim_extras.html',
+    'wcim_landing.html', 'wcim_results.html',
+    # Administration and Personal. NEVER TESTED - a full review and test
+    # pass is owed on both modules before anything sweeps them.
+    'my_profile.html', 'notification_settings.html',
+    'personal_notification_settings.html', 'user_add.html', 'user_edit.html',
+    'user_permissions.html', 'workspace_add.html', 'workspace_edit.html',
+    # Owned by a named round of their own.
+    'comments_report.html',        # its own round
+    'help_page.html',              # the Help module
+    'home.html',                   # the portfolio dashboard
+    'map_test.html', 'map_view.html',        # the map pages
+    'tenant_payment_days.html',    # tenant payment behaviour
+}
+print('        %d page(s) are outside this standard, by name, each against '
+      'the round\n        that owns it. That is a debt, not a pass.'
+      % len(OUT_OF_SCOPE))
 _unexpected = [r for r, _ in BAD
-               if r not in DEFERRED and not r.startswith('projects/')]
-check('  every non-compliant page is one we deliberately deferred',
-      not _unexpected, str(_unexpected[:4]))
+               if r not in DEFERRED and r not in OUT_OF_SCOPE
+               and not r.startswith('projects/')]
+check('  every non-compliant page is named, against its owning round',
+      not _unexpected, '%d not accounted for: %s'
+      % (len(_unexpected), ', '.join(_unexpected[:4])))
+check('    CONTROL: and the set is not empty, so it measures something',
+      len(BAD) >= 1, '%d outstanding' % len(BAD))
+_gone = sorted(OUT_OF_SCOPE - set(r for r, _ in BAD))
+if _gone:
+    print('        %d named page(s) now COMPLY and can leave the set: %s'
+          % (len(_gone), ', '.join(_gone[:6])))
 
 # ===========================================================================
 head('2b. the tag decides the case - h4 labels shout, h5 sentences do not')
@@ -319,7 +376,7 @@ check('  CONTROL: and the check can see a lowercase one - it just did'
 _both = []
 for p in TEMPLATES:
     mk = markup_of(read(p))
-    m = re.search(r'<h2[^>]*>\s*<center>.*?</center>\s*</h2>', mk, re.S)
+    m = re.search(r'<h2[^>]*>\s*(?:<center>)?.*?(?:</center>)?\s*</h2>', mk, re.S)
     if not m:
         continue
     after = mk[m.end():m.end() + 460]

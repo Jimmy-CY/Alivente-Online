@@ -765,7 +765,13 @@ $suites = @(
     # What the print stylesheet does, as opposed to what it says.
     'test_print_media.py',
     # The resolved-issues report.
-    'test_resolved_report.py'
+    'test_resolved_report.py',
+
+    # base owns the three classes the standard is written in.
+    # Its section 3 RENDERS both heading shapes and measures the
+    # gap, because :has() is the kind of rule that silently does
+    # nothing. Newest, so most likely to be what breaks.
+    'test_heading_components.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

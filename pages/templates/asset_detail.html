@@ -6,7 +6,7 @@
 {% block content %}
 
         {# HEADING STANDARD - 8 Sep. Title in capitals, no brand prefix - the brand is in the browser tab. Subtitle in sentence case. See the standards block at the top of base.html. #}
-<h2 class="page-title-h2"><center>ASSET DETAILS</center></h2>
+<h2 class="page-title-h2">ASSET DETAILS</h2>
 <br/>
 
 {% for msg in messages %}
@@ -482,10 +482,6 @@
 <style>
 /* ==================== DESKTOP STYLES ==================== */
 
-.page-title-h2 {
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-}
 
 /* Asset header thumbnail — replaces briefcase icon when a photo exists */
 /* The border was white, for a blue bar that no longer exists. On the
@@ -604,9 +600,6 @@
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
-    .page-title-h2 {
-        font-size: 1.25rem;
-    }
     .action-more-item-danger:hover,
     .action-more-item-danger:active,
     .action-more-item-danger:focus {

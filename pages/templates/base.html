@@ -2757,6 +2757,83 @@ table.alv-matrix {
     border-radius: 6px;
     font-size: .9rem;
 }
+
+/* ===== ALV PAGE HEADING v1 ===== */
+/* The three classes base's own standards block is written in, which base
+   did not declare until now. Every page that wanted one wrote it out: 33
+   copies of the h2 rule, 26 of the subtitle, 12 of the form bar.
+
+   THE BOTTOM MARGIN IS CONDITIONAL, and that is the whole of the apparent
+   drift. The gap closes when a subtitle follows the heading and opens when
+   nothing does - thirty pages worked that out one at a time, and five got
+   it wrong. Said once, here, it cannot be got wrong again.
+
+   The subtitle takes --alv-ink-soft. Six pages painted it #6c757d, which
+   is Bootstrap's grey and belongs to no palette this project defines. A
+   mode label under a module name should be the quieter of the two, which
+   is what the shape-B round decided in words. */
+.page-title-h2 {
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+.page-title-h2:has(+ .page-subtitle-h4) { margin-bottom: 0; }
+
+.page-subtitle-h4 {
+    text-align: center;
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+    color: var(--alv-ink-soft);
+}
+
+/* The form action bar. base already owns .page-action-buttons; this is the
+   variant the entry screens use, and it differed only in where it pushes
+   its buttons. */
+.page-action-buttons-form { justify-content: flex-end; }
+
+/* SCREEN AND, not a bare max-width. A4 portrait is about 718 CSS px, so a
+   bare query fires on paper and prints every report with a phone-sized
+   heading. Nineteen pages carried exactly that around these three classes;
+   their copies went with this round. */
+@media screen and (max-width: 768px) {
+    .page-title-h2    { font-size: 1.25rem; }
+    .page-subtitle-h4 { font-size: 1rem; margin-bottom: 0.75rem; }
+
+    .page-action-buttons-form {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        margin-bottom: 1rem;
+    }
+    .page-action-buttons-form .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+    .page-action-buttons-form .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+}
 </style>
 
   <script>
