@@ -396,12 +396,12 @@ Project Details - {{ project.project_name }}
                 <form id="statusForm">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="statusSelect">Status:</label>
+                        <label for="statusSelect"><strong>Status:</strong></label>
                         <select class="form-control" id="statusSelect">
                         </select>
                     </div>
                     <div class="form-group" id="completionDateGroup" style="display: none;">
-                        <label for="completionDate">Actual Completion Date:</label>
+                        <label for="completionDate"><strong>Actual Completion Date:</strong></label>
                         <input type="date" class="form-control" id="completionDate">
                     </div>
                 </form>
@@ -449,7 +449,7 @@ Project Details - {{ project.project_name }}
                 <form id="duplicateForm">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="newProjectName">New Project Name: <span class="alv-req">*</span></label>
+                        <label for="newProjectName"><strong>New Project Name:</strong> <span class="alv-req">*</span></label>
                         <input type="text"
                                class="form-control"
                                id="newProjectName"
@@ -459,7 +459,7 @@ Project Details - {{ project.project_name }}
                     </div>
 
                     <div class="form-group">
-                        <label for="newProjectDescription">New Project Description: <span class="alv-req">*</span></label>
+                        <label for="newProjectDescription"><strong>New Project Description:</strong> <span class="alv-req">*</span></label>
                         <textarea class="form-control"
                                   id="newProjectDescription"
                                   name="new_project_description"
@@ -472,7 +472,7 @@ Project Details - {{ project.project_name }}
                     </div>
 
                     <div class="form-group">
-                        <label for="newProjectStartDate">New Project Start Date: <span class="alv-req">*</span></label>
+                        <label for="newProjectStartDate"><strong>New Project Start Date:</strong> <span class="alv-req">*</span></label>
                         <input type="date"
                                class="form-control"
                                id="newProjectStartDate"
@@ -607,7 +607,7 @@ Project Details - {{ project.project_name }}
             <div class="modal-body">
                 <form id="taskListForm">
                     <div class="form-group">
-                        <label><i class="fas fa-user"></i> Select Assignee:</label>
+                        <label><i class="fas fa-user"></i> <strong>Select Assignee:</strong></label>
                         <select class="form-control" id="assigneeSelect" name="assigned_to">
                             <option value="">Loading assignees...</option>
                         </select>

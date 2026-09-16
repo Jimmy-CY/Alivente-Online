@@ -771,7 +771,13 @@ $suites = @(
     # Its section 3 RENDERS both heading shapes and measures the
     # gap, because :has() is the kind of rule that silently does
     # nothing. Newest, so most likely to be what breaks.
-    'test_heading_components.py'
+    'test_heading_components.py',
+    # The field label is bold, and the bold is in the markup. Its
+    # section 4 RENDERS a field against base's real CSS and reads the
+    # computed weight back, because a single strong{font-weight:normal}
+    # anywhere would un-bold the system and leave the markup perfect.
+    # Newest, so most likely to be what breaks.
+    'test_label_bold.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

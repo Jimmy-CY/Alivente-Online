@@ -1,220 +1,132 @@
-base takes over the three classes the standard is written in
+the field label is bold, seven days after the standard said so
 
-page-title-h2, page-subtitle-h4 and page-action-buttons-form are the class
-names base.html's own standards block is written in, and base DECLARED NONE
-OF THEM. Every page that wanted one wrote it out. Across 144 templates that
-is 34 hand-written copies of the heading rule, 27 of the subtitle and 12 of
-the form bar, plus 35 more inside media queries.
+base.html's standards block has stated the shape of a field since 9
+September:
 
-That is the same fault the button sweep found in the action bars, one layer
-up: base reached the names but not the rules.
+    label > strong        the field name, bold
+    span.alv-req          the asterisk, if the field is required
+    input.form-control    the control
 
-IT IS NOT THIRTEEN DESIGNS. IT IS ONE RULE, DERIVED BY HAND 34 TIMES.
+and has said underneath it, in as many words, THE SWEEP HAS NOT HAPPENED.
+This is that sweep: 191 labels on 29 pages, and no CSS at all.
 
-Read as declarations the drift looks like improvisation. Read as a rule it
-is a conditional that thirty pages worked out independently:
+IT WAS SETTLED AGAINST THE MAJORITY, WHICH IS WHY IT NEEDED A ROUND
 
-    h2 margin-bottom    a subtitle follows      pages
-    0                   yes                      23
-    1rem                NO                        6
-    0                   NO                        2   <- wrong
-    0.25rem             yes                       2   <- wrong
-    1rem                yes                       1   <- wrong
+The count on 9 Sep was 545 labels, 338 plain to 207 bold. The standard went
+the other way anyway - because the model page and the two biggest Add
+screens already agreed, and because a label is a LABEL, the same reason a
+heading shouts. A standard settled against the majority is a standard that
+does nothing until somebody sweeps, and for a week nobody did.
 
-The gap closes when a subtitle follows the heading and opens when nothing
-does. Five pages got it wrong. base says it once now, and the five become
-right rather than becoming documented exceptions - a component with five
-exceptions on the day it ships is not a component.
+THE WEIGHT COMES FROM THE MARKUP, NOT FROM A RULE SOMEBODY HAS TO REMEMBER
 
-THREE DECISIONS, TAKEN BEFORE ANYTHING WAS WRITTEN
+    <label for="bill_name"><strong>Customer Name</strong>
+                           <span class="alv-req">*</span></label>
 
-THE SUBTITLE IS SOFT GREY, from var(--alv-ink-soft). Seven rules painted it
-#6c757d - Bootstrap's grey-600, from no palette this project defines - and
-nineteen left it inheriting. One of those groups had to move. A mode label
-under a module name should be the quieter of the two, which is what the
-shape-B round decided in words; this makes it true in colour.
+exactly as customer_invoice_form.html - the model screen - already does it.
+A strong element needs no stylesheet to be bold, so a new page gets it
+right by copying the markup rather than by remembering a class.
 
-THE <center> ELEMENTS GO. Thirty-five pages centred the heading with a
-<center> element inside the h2. base centres with text-align, so they were
-redundant the moment it did. This turned a CSS round into a markup round on
-signed-off pages, which is why every page is checked two ways its own
-construction cannot fake: the CSS rules that survive must be exactly what
-was there minus these three classes, and the page's visible words must be
-character-for-character unchanged.
+WHAT COUNTS AS A FIELD LABEL - THE STANDARD'S DEFINITION, NOT A GUESS
 
-THE FIVE OUTLIERS ARE CORRECTED, not preserved.
+A label that NAMES A CONTROL CARRYING form-control. That is section 3.6's
+own wording and it excludes tab labels, checkbox and radio labels, and
+labels that wrap their own input. The first draft of this swept help_page's
+TABS, because a radio button happened to follow one of them - a tab is not
+a field and it should not have looked like one to the tool.
 
-AND IT TAKES A LARGE BITE OUT OF THE PAPER BUG, FOR FREE
+SIX LABELS ARE NAMED AND LEFT ALONE, NOT COUNTED AND FORGOTTEN
 
-A max-width query with no screen keyword applies to PAPER as well as to
-screens - A4 portrait is about 718 CSS px, inside every 768px query - which
-is why printed reports come out with a phone-sized heading. TWENTY PAGES
-styled one of these three inside exactly such a query. This round deletes
-those rules, and base's replacement says screen. The hoist and that part of
-the sweep are the same edit; doing them separately means opening the same
-pages twice.
+The patcher rewrites one shape: an optional icon, the field name, an
+optional required marker. Anything else is printed with its page and its
+text and skipped, because guessing where the strong goes is how a sweep
+breaks a page it was meant to tidy.
 
-It does NOT sweep the other bare queries on those pages. They belong to
-section 2.I, they are about different components, and a round that changes
-two things cannot say which one fixed it.
+  three on generate_lease_agreement, reading
+      <span id="tenant-name-label">Individual Name:</span>
+  which has an id because JavaScript rewrites the text at runtime;
 
-WHAT THE SUITE DOES, AND THE PART THAT EARNS ITS KEEP
+  one more there, and one on property_assets, carrying a hint -
+  (auto-calculated), (up to 5 - JPG/PNG, 5MB each) - that is not part of
+  the field's name;
 
-base now says
+  and one on projects_delete, which is not a field name at all but a
+  sentence of instruction with a red DELETE in the middle of it.
 
-    .page-title-h2:has(+ .page-subtitle-h4) { margin-bottom: 0; }
+A PAGE WITH NOTHING TO REWRITE CAN STILL HAVE SOMETHING TO REPORT, and the
+first draft dropped exactly that case: it returned early the moment a
+page's edit list was empty, which silently swallowed projects_delete, whose
+ONLY field label is one of the six. The suite found it, because the suite
+counts plain labels in the corpus rather than trusting the patcher's list.
+That is the whole reason the two are written separately.
 
-and :has() is the kind of rule that silently does nothing. A browser without
-it drops the line and every heading keeps the default gap - no error, no
-warning, a layout slightly wrong everywhere that looks deliberate. Reading
-the stylesheet cannot tell that apart from working. So section 3 renders
-both shapes in Chromium and MEASURES: 4px of gap with a subtitle, 16px
-without, and a control that the two differ at all. It also reads back the
-computed colour and the text alignment rather than trusting the file.
+SCOPE GUARD #29 - AND THIS ONE I TALKED MYSELF OUT OF
+
+The suite's section 3 began as a check: "no page makes a label bold with
+CSS instead". It reads well and it is not this round's claim.
+
+Ask what the claim is ABOUT. This round says every field label is bold FROM
+ITS MARKUP. A page that bolds labels in CSS and omits the strong element
+already fails section 2, which asks the markup and does not care what any
+stylesheet says. So the only thing section 3 could catch that section 2
+cannot is a page doing BOTH - which is redundancy, not drift, on pages this
+round never opened. Deleting those rules is a CSS consolidation, and a
+round that changes two things cannot say which one did it.
+
+It reports now: thirteen page-local rules and one font-weight-bold utility
+class, each named with its page, counted in the summary so they are not
+forgotten, and with no ceiling - a count cannot tell a page leaving that
+set from a page joining it.
+
+ITS FIRST PATTERN COULD NOT TELL A CLASS FROM AN ELEMENT. \blabel\b matches
+after a hyphen, so .detail-label and .report-year-label were reported as
+label rules and the section found 53 where there are 13. The control on
+that section is now the pattern itself, asserted against both spellings -
+the only part of section 3 that can fail, which is the honest shape for a
+section whose body is a report.
+
+SECTION 4 IS THE ONE THAT EARNS ITS KEEP
+
+The bold comes from an element, so it depends on no stylesheet - unless a
+stylesheet takes it away. One `strong { font-weight: normal }` in base, or
+a Bootstrap reset, would un-bold every label in the system and leave the
+markup looking perfectly correct. Nothing that reads the templates can see
+that. So section 4 renders a real field against base's real CSS in Chromium
+and reads the computed weight back: 700 on the strong, 400 on a control
+that is plain, the required marker beside the name rather than inside it,
+and its colour read back from base rather than trusted.
 
 A SKIPPED CHECK IS COUNTED IN THE SUMMARY. Eleven suites on this gate print
-a SKIP line when Playwright is absent and then report zero failed and exit
-0, which is how a fresh clone goes green having proved a third less than it
-looks. This suite reports passed, failed AND skipped, and says in as many
-words that a skip is not a pass. That is the pattern the silent-skip round
-should follow.
+a SKIP line when Playwright is absent and then report zero failed - which
+is how a fresh clone goes green having proved a third less than it looks.
 
-THREE EXISTING SUITES ASSERTED WHAT JUST BECAME base'S JOB
+SABOTAGED FOUR WAYS BEFORE IT WAS BELIEVED
 
-This is the cost of the markup decision, and it was paid here rather than
-discovered on the gate.
+Unwrap one strong inside one label and section 2 names the page. Change
+base's stated shape and section 1 fails. Add a strong reset to base and
+section 4 reads 400. Move the asterisk inside the strong and section 4 says
+so. My first attempt at the first of those unwrapped an EMPTY <strong></strong>
+in a messages block and the suite passed - a sabotage that changes nothing
+proves nothing, and I nearly filed it as a hole in the suite.
 
-test_projects_heading and test_heading_standard both required a <center>
-element inside the heading, spelled into the pattern itself.
-Seventy-four checks between them. The element is optional in those patterns
-now, so they read the same whether or not a page has been through this
-round, and both report the same result before it and after.
+VERIFIED: every suite in the repo run before and after. 81 report
+identically; the one that differs is this round's own, failing before and
+passing after. The patcher is idempotent, refuses to write if any page
+fails its per-file check - visible words unchanged, label count unchanged,
+tag balance unchanged, strong delta equal to the edit count, and everything
+outside the labels byte-identical - and writes nothing at all when anything
+fails. The round was also applied on top of the heading round and both
+suites stay green, and the gate wiring anchors on the END of the suite list
+rather than on the name of a neighbour, because the last entry differs
+between this sandbox and the development machine.
 
-SCOPE GUARD #26 - test_projects_heading asserted that the twelve media
-queries SHAPE B WROTE each say screen. Correct, and it held until base took
-the heading over and this round deleted those queries. The claim was never
-"these pages contain a query"; it is THE HEADING DOES NOT SHRINK ON PAPER,
-and that is now true in a better way - by there being no page-local query at
-all, with base's one covering every page at once. It asks now that whoever
-owns the rule qualifies it: a page with its own block must say screen, a
-page that handed it to base must have handed it over completely.
+NOT PROVED HERE: that bold is the right choice. That was settled on 9 Sep
+against a count that went the other way. This only holds the system to it.
+Look at Tenants > Add and any Financials add screen beside the model page,
+customer_invoice_form.
 
-A PINNED CEILING WENT THE SAME WAY. The same suite capped the pages still
-carrying a record name on a centred h2 at six. Making <center> optional made
-the pattern SEE a seventh page it had always been blind to - a ceiling
-calibrated to a narrower regex decays the first time the regex gets better
-at its job. The seven are named now, each against the round that owns it. A
-page leaving that set is progress; a page joining it is a new fault, and a
-count cannot tell those apart.
-
-A LIST OF PAGES IS NOT A RULE, AND I LEARNED THAT THE SLOW WAY.
-
-The first repair of the ceiling above replaced the number with seven
-filenames read off the build sandbox - which holds 97 of this repo's 144
-templates. On the development machine there were thirteen, so the named set
-was six short and the check failed again. Fifth time today that the sandbox
-being a subset produced a wrong answer, and the second time AFTER writing
-that lesson into a commit message.
-
-The answer is not six more filenames. The recipe and meal-plan side is
-identified by a RULE now - the same name fragments test_required_sweep uses
-to exclude it - so it covers the pages nobody has looked at yet, including
-the ones that do not exist while I am writing this. Only the seven
-property-management pages are named, and each has a round of its own.
-
-A list chosen by hand from a corpus you cannot see is a list. A rule that
-says which module a page belongs to is a standard.
-
-SCOPE GUARD #27 - test_print_leaks asserted base keeps "its five guarded
-blocks", and base now has six. The sixth is this round: base took the heading
-over from thirty-four pages and wrote ONE guarded phone block, deleting
-thirty-five page-local ones, twenty of which were bare and printed. A pinned
-count calls that a failure when it is the standard spreading.
-
-It is a floor now, and the meaning was always in the line above it: the only
-BARE clause in base is the deliberate 991px one, which hides the sidebar and
-is meant to fire on paper. That check has teeth - removing a screen keyword
-anywhere takes the bare count from one to two and it fails.
-
-MY FIRST REWRITE OF IT COULD NOT FAIL. It asserted that every guarded clause
-contains the word screen, which is what the function selecting them filters
-on. Sixth check-that-cannot-fail found in this project, and the second one
-written by me today while repairing another. It is a floor now and nothing
-more, with a note saying where the meaning actually lives.
-
-AND THE WHOLE-GATE COMPARISON WAS BLIND TO IT. Every suite was run before and
-after this round and test_print_leaks reported identically both times -
-because in the build sandbox it exits early for want of gitignored .bak_leak
-snapshots, so the comparison compared two identical early exits. The sandbox
-is a subset, for the fourth time today. A comparison of two trees is blind to
-anything stale in both, and it is blind to anything that does not run in
-either.
-
-SCOPE GUARD #28 - AND THIS ONE IS A FINDING, NOT JUST A REPAIR.
-
-test_heading_standard capped its non-compliant pages at twelve. Relaxing its
-<center> requirement made it SEE thirty-eight - because the old pattern
-required a center element inside the heading, and thirty-odd pages that never
-had one were never examined at all. They were not compliant. They were
-invisible.
-
-A ceiling calibrated to a narrow regex reports the system as healthier than
-it is, and then fails the day the regex gets better at its job. This one had
-been doing that for as long as the pattern existed.
-
-The thirty-eight are named now, each against the round that owns it: twenty-
-four on the recipe and meal-plan side, which section 2.K says is 29 templates
-swept by nobody and absent from the push gate; eight in Administration and
-Personal, which have NEVER been tested and are owed a full review before
-anything sweeps them; and six with rounds of their own - the comments report,
-the Help module, the portfolio dashboard, the two map pages and tenant
-payment behaviour.
-
-Most of them head themselves with an icon, which the standard forbids in as
-many words. So the corpus is 89 compliant of 127, not 89 of 101, and that
-number is now on the record rather than hidden behind a pattern that could
-not see the difference.
-
-A page leaving that set is progress. A page joining it is a new fault. A
-count cannot tell those two apart, which is why there is no longer one.
-
-test_table_lease_agreement required .page-title to keep at least 2 rules of
-its own. Its own comment said what to do: "If a later round legitimately
-removes one, the number moves with it - deliberately, in the same commit."
-This round moved them to base, so the class moves from the floors list to
-the list below it that says base owns it now.
-
-TWO BUGS IN THE PATCHER, BOTH CAUGHT BY CHECKS RATHER THAN BY READING
-
-The rule regex starts matching immediately after the PREVIOUS rule's closing
-brace, so expanding a match to whole lines reached backwards into the rule
-before it - and, for the first rule inside a media block, swallowed the
-@media line and orphaned its closing brace. The delete spans overlapped and
-the splice quietly mangled the file. It anchors on the selector now, expands
-to whole lines only when the rule has its line to itself, and merges
-overlapping spans unconditionally.
-
-And it walked the raw stylesheet, so a brace inside a CSS comment
-desynchronised the media tracking: it decided a media block was empty when
-it was not, deleted the whole block, and orphaned thirty unrelated rules.
-Comments are blanked to spaces of the same length before the walk now, which
-keeps every offset pointing at the real file.
-
-Prose shaped like code, twice, inside the tool doing the sweep. Neither was
-found by reading the diff. Both were found by a check that compared the
-surviving rules against the rules that had been there.
-
-VERIFIED: 24 checks in the new suite, including the rendered conditional.
-Every suite in the repo was run before and after: 79 report identically, and
-the two that differ are the round's own suite and the lease-agreement one,
-both failing before the round and passing after - which is what a round's
-suite should do. The patcher is idempotent, refuses to write if any page
-fails its per-file check, and nothing is written when anything fails.
-
-NOT PROVED HERE: that the spacing is the RIGHT spacing. One answer instead
-of thirty-four is what this measures; whether that answer is handsome wants
-eyes on a screen. Look at Properties > Add, any Financials add screen, and
-one printed report.
+NEXT IN THIS SEQUENCE: the field and panel components (2.L-b), then the
+entry-screen shape (2.L-c). This round changed the labels only.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

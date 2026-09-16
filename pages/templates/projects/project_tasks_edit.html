@@ -89,7 +89,7 @@ Edit Task - {{ task.task_name }}
         <div class="col-md-6">
           <div class="form-group">
             <label for="task_name">
-              <i class="fas fa-tasks"></i> Task Name <span class="alv-req">*</span>
+              <i class="fas fa-tasks"></i> <strong>Task Name</strong> <span class="alv-req">*</span>
             </label>
             <input type="text"
                    class="form-control"
@@ -104,7 +104,7 @@ Edit Task - {{ task.task_name }}
         <div class="col-md-3 col-sm-6">
           <div class="form-group">
             <label for="task_priority">
-              <i class="fas fa-flag"></i> Priority
+              <i class="fas fa-flag"></i> <strong>Priority</strong>
             </label>
             <select class="form-control" id="task_priority" name="task_priority">
               {% for priority_value, priority_display in task_priority_choices %}
@@ -120,7 +120,7 @@ Edit Task - {{ task.task_name }}
           <div class="col-md-3 col-sm-6">
             <div class="form-group">
               <label for="task_status">
-                <i class="fas fa-info-circle"></i> Status (Auto-calculated)
+                <i class="fas fa-info-circle"></i> <strong>Status (Auto-calculated)</strong>
               </label>
               <select class="form-control auto-calculated-field" id="task_status" name="task_status" disabled>
                 <option value="{{ task.get_calculated_status }}">{{ task.get_calculated_status }}</option>
@@ -132,7 +132,7 @@ Edit Task - {{ task.task_name }}
           <div class="col-md-3 col-sm-6">
             <div class="form-group">
               <label for="task_status">
-                <i class="fas fa-info-circle"></i> Status
+                <i class="fas fa-info-circle"></i> <strong>Status</strong>
               </label>
               <select class="form-control" id="task_status" name="task_status">
                 {% for status_value, status_display in task_status_choices %}
@@ -150,7 +150,7 @@ Edit Task - {{ task.task_name }}
         <div class="col-md-12">
           <div class="form-group">
             <label for="task_description">
-              <i class="fas fa-align-left"></i> Task Description
+              <i class="fas fa-align-left"></i> <strong>Task Description</strong>
             </label>
             <textarea class="form-control"
                       id="task_description"
@@ -168,7 +168,7 @@ Edit Task - {{ task.task_name }}
         <div class="col-md-12">
           <div class="form-group">
             <label for="task_name_greek">
-              <i class="fas fa-tasks"></i> Όνομα Εργασίας (Task Name in Greek)
+              <i class="fas fa-tasks"></i> <strong>Όνομα Εργασίας (Task Name in Greek)</strong>
             </label>
             <input type="text"
                    class="form-control"
@@ -185,7 +185,7 @@ Edit Task - {{ task.task_name }}
         <div class="col-md-12">
           <div class="form-group">
             <label for="task_description_greek">
-              <i class="fas fa-align-left"></i> Περιγραφή Εργασίας (Task Description in Greek)
+              <i class="fas fa-align-left"></i> <strong>Περιγραφή Εργασίας (Task Description in Greek)</strong>
             </label>
             <textarea class="form-control"
                       id="task_description_greek"
@@ -222,7 +222,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_start_date">
-            <i class="fas fa-calendar-alt"></i> Start Date (Auto-calculated)
+            <i class="fas fa-calendar-alt"></i> <strong>Start Date (Auto-calculated)</strong>
           </label>
           <input type="date"
                  class="form-control auto-calculated-field"
@@ -237,7 +237,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_expected_completion_date">
-            <i class="fas fa-calendar-check"></i> Expected Completion (Auto-calculated)
+            <i class="fas fa-calendar-check"></i> <strong>Expected Completion (Auto-calculated)</strong>
           </label>
           <input type="date"
                  class="form-control auto-calculated-field"
@@ -252,7 +252,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_start_date">
-            <i class="fas fa-calendar-alt"></i> Start Date
+            <i class="fas fa-calendar-alt"></i> <strong>Start Date</strong>
           </label>
           <input type="date"
                  class="form-control"
@@ -265,7 +265,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_expected_completion_date">
-            <i class="fas fa-calendar-check"></i> Expected Completion Date
+            <i class="fas fa-calendar-check"></i> <strong>Expected Completion Date</strong>
           </label>
           <input type="date"
                  class="form-control"
@@ -283,7 +283,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_budgeted_cost">
-            <i class="fas fa-euro-sign"></i> Budgeted Cost (Auto-calculated)
+            <i class="fas fa-euro-sign"></i> <strong>Budgeted Cost (Auto-calculated)</strong>
           </label>
           <input type="number"
                  class="form-control auto-calculated-field"
@@ -299,7 +299,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_actual_cost">
-            <i class="fas fa-euro-sign"></i> Actual Cost (Auto-calculated)
+            <i class="fas fa-euro-sign"></i> <strong>Actual Cost (Auto-calculated)</strong>
           </label>
           <input type="number"
                  class="form-control auto-calculated-field"
@@ -315,7 +315,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_budgeted_cost">
-            <i class="fas fa-euro-sign"></i> Budgeted Cost
+            <i class="fas fa-euro-sign"></i> <strong>Budgeted Cost</strong>
           </label>
           <input type="number"
                  class="form-control"
@@ -330,7 +330,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_actual_cost">
-            <i class="fas fa-euro-sign"></i> Actual Cost
+            <i class="fas fa-euro-sign"></i> <strong>Actual Cost</strong>
           </label>
           <input type="number"
                  class="form-control"
@@ -351,7 +351,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-4">
         <div class="form-group">
           <label for="task_actual_completion_date">
-            <i class="fas fa-calendar-times"></i> Actual Completion Date <span class="alv-req">*</span>
+            <i class="fas fa-calendar-times"></i> <strong>Actual Completion Date</strong> <span class="alv-req">*</span>
           </label>
           <input type="date"
                  class="form-control"
@@ -366,7 +366,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-4">
         <div class="form-group">
           <label for="task_assigned_to">
-            <i class="fas fa-user"></i> Assigned To
+            <i class="fas fa-user"></i> <strong>Assigned To</strong>
           </label>
           <input type="text"
                  class="form-control"
@@ -380,7 +380,7 @@ Edit Task - {{ task.task_name }}
       <div class="col-md-4">
         <div class="form-group">
           <label for="task_progress_percentage">
-            <i class="fas fa-percentage"></i> Progress Percentage
+            <i class="fas fa-percentage"></i> <strong>Progress Percentage</strong>
           </label>
           <div class="input-group">
             <input type="number"

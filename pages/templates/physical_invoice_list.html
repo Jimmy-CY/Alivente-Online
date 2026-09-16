@@ -110,17 +110,17 @@ Physical Invoices
       <form action="{% url 'physical_invoice_list' %}" method="get" id="filterForm">
         <div class="filter-grid">
           <div class="filter-group">
-            <label class="filter-label"><i class="fas fa-calendar-alt"></i> From</label>
+            <label class="filter-label"><i class="fas fa-calendar-alt"></i> <strong>From</strong></label>
             <input type="month" name="from" value="{{ from_value }}"
                    class="form-control filter-input" id="fromInput">
           </div>
           <div class="filter-group">
-            <label class="filter-label"><i class="fas fa-calendar-alt"></i> To</label>
+            <label class="filter-label"><i class="fas fa-calendar-alt"></i> <strong>To</strong></label>
             <input type="month" name="to" value="{{ to_value }}"
                    class="form-control filter-input" id="toInput">
           </div>
           <div class="filter-group">
-            <label class="filter-label"><i class="fas fa-info-circle"></i> Status</label>
+            <label class="filter-label"><i class="fas fa-info-circle"></i> <strong>Status</strong></label>
             <select name="status" class="form-control filter-select" id="statusSelect">
               <option value="">All Statuses</option>
               <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
@@ -129,7 +129,7 @@ Physical Invoices
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label"><i class="fas fa-tags"></i> Type</label>
+            <label class="filter-label"><i class="fas fa-tags"></i> <strong>Type</strong></label>
             <select name="type" class="form-control filter-select" id="typeSelect">
               <option value="">All Types</option>
               <option value="tenant" {% if inv_type == 'tenant' %}selected{% endif %}>Tenant</option>
@@ -149,7 +149,7 @@ Physical Invoices
       <input type="hidden" name="next" value="{{ request.get_full_path }}">
       <div class="numbering-main">
         <label class="numbering-label" for="nextNumberInput">
-          <i class="fas fa-hashtag"></i> Next invoice number to issue
+          <i class="fas fa-hashtag"></i> <strong>Next invoice number to issue</strong>
         </label>
         <div class="numbering-controls">
           <span class="numbering-prefix">PR-</span>

@@ -495,7 +495,7 @@
         {% if view_mode == 'matrix' %}
         <form method="get" class="expense-view-picker">
             <input type="hidden" name="view" value="matrix">
-            <label for="matrix-lt">Expense line type</label>
+            <label for="matrix-lt"><strong>Expense line type</strong></label>
             <select name="lt" id="matrix-lt" class="form-control"
                     onchange="this.form.submit()">
                 {% for lt in matrix_line_types %}

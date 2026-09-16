@@ -434,7 +434,7 @@
             <div class="form-grid">
                 
                 <div class="form-field">
-                    <label for="expense_line_types_name">Expense Line Type Name<span class="alv-req">*</span></label>
+                    <label for="expense_line_types_name"><strong>Expense Line Type Name</strong><span class="alv-req">*</span></label>
                     <input type="text" 
                            class="form-control" 
                            id="expense_line_types_name" 
@@ -449,7 +449,7 @@
                 </div>
                 
                 <div class="form-field">
-                    <label for="expense_line_types_description">Description<span class="alv-req">*</span></label>
+                    <label for="expense_line_types_description"><strong>Description</strong><span class="alv-req">*</span></label>
                     <input type="text" 
                            class="form-control" 
                            id="expense_line_types_description" 
@@ -461,7 +461,7 @@
                 </div>
                 
                 <div class="form-field">
-                    <label for="expense_line_types_prorata">Pro-Rata<span class="alv-req">*</span></label>
+                    <label for="expense_line_types_prorata"><strong>Pro-Rata</strong><span class="alv-req">*</span></label>
                     <select class="form-control" id="expense_line_types_prorata" name="expense_line_types_prorata">
                         <option value="Yes" {% if exp.expense_line_types_prorata == 'Yes' %}selected{% endif %}>Yes</option>
                         <option value="No" {% if exp.expense_line_types_prorata == 'No' %}selected{% endif %}>No</option>
@@ -470,7 +470,7 @@
                 </div>
                 
                 <div class="form-field">
-                    <label for="expense_line_types_pr_amount_{{ exp.expense_line_types_id }}">Pro-Rata Amount (€)<span class="alv-req">*</span></label>
+                    <label for="expense_line_types_pr_amount_{{ exp.expense_line_types_id }}"><strong>Pro-Rata Amount (€)</strong><span class="alv-req">*</span></label>
                     <input type="number" 
                            class="form-control" 
                            id="expense_line_types_pr_amount_{{ exp.expense_line_types_id }}" 

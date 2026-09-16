@@ -406,15 +406,15 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-6 mb-3" id="existing-passport-field" style="display: none;">
-                  <label for="existing-tenant-passport" class="form-label">Passport/ID Number: <span class="alv-req">*</span></label>
+                  <label for="existing-tenant-passport" class="form-label"><strong>Passport/ID Number:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="existing-tenant-passport" name="existing_tenant_passport_id" required>
                 </div>
                 <div class="col-md-6 mb-3" id="existing-passport-country-field" style="display: none;">
-                  <label for="existing-tenant-passport-country" class="form-label">Passport/ID Country: <span class="alv-req">*</span></label>
+                  <label for="existing-tenant-passport-country" class="form-label"><strong>Passport/ID Country:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="existing-tenant-passport-country" name="existing_tenant_passport_country" required>
                 </div>
                 <div class="col-md-6 mb-3" id="existing-registration-field" style="display: none;">
-                  <label for="existing-tenant-registration" class="form-label">Company Registration Number: <span class="alv-req">*</span></label>
+                  <label for="existing-tenant-registration" class="form-label"><strong>Company Registration Number:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="existing-tenant-registration" name="existing_tenant_registration_number" required>
                 </div>
               </div>
@@ -431,7 +431,7 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="new-tenant-type" class="form-label">Tenant Type:</label>
+                  <label for="new-tenant-type" class="form-label"><strong>Tenant Type:</strong></label>
                   <select class="form-control" id="new-tenant-type" name="new_tenant_type" onchange="updateTenantFields()">
                     <option value="Individual">Individual</option>
                     <option value="Company">Company</option>
@@ -444,7 +444,7 @@
                   <input type="text" class="form-control" id="new-tenant-name" name="new_tenant_name" required>
                 </div>
                 <div class="col-md-6 mb-3" id="contact-person-field" style="display: none;">
-                  <label for="new-tenant-contact-person" class="form-label">Contact Person: <span class="alv-req">*</span></label>
+                  <label for="new-tenant-contact-person" class="form-label"><strong>Contact Person:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="new-tenant-contact-person" name="new_tenant_contact_person">
                 </div>
                 <div class="col-md-6 mb-3" id="passport-field" style="display: none;">
@@ -460,19 +460,19 @@
                   <input type="text" class="form-control" id="new-tenant-passport-country" name="new_tenant_passport_country">
                 </div>
                 <div class="col-md-6 mb-3" id="registration-field" style="display: none;">
-                  <label for="new-tenant-registration" class="form-label">Company Registration Number: <span class="alv-req">*</span></label>
+                  <label for="new-tenant-registration" class="form-label"><strong>Company Registration Number:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="new-tenant-registration" name="new_tenant_registration_number">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="new-tenant-email" class="form-label">Email: <span class="alv-req">*</span></label>
+                  <label for="new-tenant-email" class="form-label"><strong>Email:</strong> <span class="alv-req">*</span></label>
                   <input type="email" class="form-control" id="new-tenant-email" name="new_tenant_email" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="new-tenant-phone" class="form-label">Phone: <span class="alv-req">*</span></label>
+                  <label for="new-tenant-phone" class="form-label"><strong>Phone:</strong> <span class="alv-req">*</span></label>
                   <input type="tel" class="form-control" id="new-tenant-phone" name="new_tenant_contact_number" required>
                 </div>
                 <div class="col-12 mb-3" id="address-field">
-                  <label for="new-tenant-address" class="form-label">Tenant Address: <span class="alv-req">*</span></label>
+                  <label for="new-tenant-address" class="form-label"><strong>Tenant Address:</strong> <span class="alv-req">*</span></label>
                   <textarea class="form-control" id="new-tenant-address" name="new_tenant_address" rows="2" required></textarea>
                 </div>
               </div>
@@ -495,33 +495,33 @@
               <div class="row">
                 <!-- Row 1: Name -->
                 <div class="col-12 mb-3">
-                  <label for="second-tenant-name" class="form-label">Name: <span class="alv-req">*</span></label>
+                  <label for="second-tenant-name" class="form-label"><strong>Name:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="second-tenant-name" name="second_tenant_name">
                 </div>
                 
                 <!-- Row 2: Passport/ID Number and Country -->
                 <div class="col-md-6 mb-3">
-                  <label for="second-tenant-passport" class="form-label">Passport/ID Number: <span class="alv-req">*</span></label>
+                  <label for="second-tenant-passport" class="form-label"><strong>Passport/ID Number:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="second-tenant-passport" name="second_tenant_passport_id">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="second-tenant-passport-country" class="form-label">Passport/ID Country: <span class="alv-req">*</span></label>
+                  <label for="second-tenant-passport-country" class="form-label"><strong>Passport/ID Country:</strong> <span class="alv-req">*</span></label>
                   <input type="text" class="form-control" id="second-tenant-passport-country" name="second_tenant_passport_country">
                 </div>
                 
                 <!-- Row 3: Email and Phone -->
                 <div class="col-md-6 mb-3">
-                  <label for="second-tenant-email" class="form-label">Email: <span class="alv-req">*</span></label>
+                  <label for="second-tenant-email" class="form-label"><strong>Email:</strong> <span class="alv-req">*</span></label>
                   <input type="email" class="form-control" id="second-tenant-email" name="second_tenant_email">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="second-tenant-phone" class="form-label">Phone: <span class="alv-req">*</span></label>
+                  <label for="second-tenant-phone" class="form-label"><strong>Phone:</strong> <span class="alv-req">*</span></label>
                   <input type="tel" class="form-control" id="second-tenant-phone" name="second_tenant_contact_number">
                 </div>
                 
                 <!-- Row 4: Address -->
                 <div class="col-12 mb-3">
-                  <label for="second-tenant-address" class="form-label">Address: <span class="alv-req">*</span></label>
+                  <label for="second-tenant-address" class="form-label"><strong>Address:</strong> <span class="alv-req">*</span></label>
                   <textarea class="form-control" id="second-tenant-address" name="second_tenant_address" rows="2"></textarea>
                 </div>
               </div>
@@ -539,27 +539,27 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="modal-start-date" class="form-label">Start Date: <span class="alv-req">*</span></label>
+                  <label for="modal-start-date" class="form-label"><strong>Start Date:</strong> <span class="alv-req">*</span></label>
                   <input type="date" class="form-control" id="modal-start-date" name="start_date" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-end-date" class="form-label">End Date: <span class="alv-req">*</span></label>
+                  <label for="modal-end-date" class="form-label"><strong>End Date:</strong> <span class="alv-req">*</span></label>
                   <input type="date" class="form-control" id="modal-end-date" name="end_date" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-monthly-rent" class="form-label">Monthly Rent (€): <span class="alv-req">*</span></label>
+                  <label for="modal-monthly-rent" class="form-label"><strong>Monthly Rent (€):</strong> <span class="alv-req">*</span></label>
                   <input type="number" class="form-control" id="modal-monthly-rent" name="monthly_rent" step="0.01" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-security-deposit" class="form-label">Security Deposit (€): <span class="alv-req">*</span></label>
+                  <label for="modal-security-deposit" class="form-label"><strong>Security Deposit (€):</strong> <span class="alv-req">*</span></label>
                   <input type="number" class="form-control" id="modal-security-deposit" name="security_deposit" step="0.01" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-communal-expenses" class="form-label">Communal Expenses (€): <span class="alv-req">*</span></label>
+                  <label for="modal-communal-expenses" class="form-label"><strong>Communal Expenses (€):</strong> <span class="alv-req">*</span></label>
                   <input type="number" class="form-control" id="modal-communal-expenses" name="communal_expenses" step="0.01" value="0" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-extension-period" class="form-label">Extension Period (months): <span class="alv-req">*</span></label>
+                  <label for="modal-extension-period" class="form-label"><strong>Extension Period (months):</strong> <span class="alv-req">*</span></label>
                   <input type="number" class="form-control" id="modal-extension-period" name="extension_period" min="0" value="0" onchange="calculateExtensionDate()" required>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -567,7 +567,7 @@
                   <input type="date" class="form-control" id="modal-extension-date" name="extension_date" readonly style="background-color: #f8f9fa;">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-rental-increase" class="form-label">Rental Increase (%): <span class="alv-req">*</span></label>
+                  <label for="modal-rental-increase" class="form-label"><strong>Rental Increase (%):</strong> <span class="alv-req">*</span></label>
                   <input type="number" class="form-control" id="modal-rental-increase" name="rental_increase" step="0.1" min="0" value="0" required>
                 </div>
               </div>
@@ -582,27 +582,27 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="modal-landlord-name" class="form-label">Landlord Name:</label>
+                  <label for="modal-landlord-name" class="form-label"><strong>Landlord Name:</strong></label>
                   <input type="text" class="form-control" id="modal-landlord-name" name="landlord_name" value="Alivente Limited">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-landlord-contact" class="form-label">Contact Person:</label>
+                  <label for="modal-landlord-contact" class="form-label"><strong>Contact Person:</strong></label>
                   <input type="text" class="form-control" id="modal-landlord-contact" name="landlord_contact_person" value="Demetri Manias">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-landlord-registration" class="form-label">Company Registration Number:</label>
+                  <label for="modal-landlord-registration" class="form-label"><strong>Company Registration Number:</strong></label>
                   <input type="text" class="form-control" id="modal-landlord-registration" name="landlord_registration_number" value="HE123456">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-landlord-phone" class="form-label">Phone:</label>
+                  <label for="modal-landlord-phone" class="form-label"><strong>Phone:</strong></label>
                   <input type="text" class="form-control" id="modal-landlord-phone" name="landlord_phone" value="+357-96668557">
                 </div>
                 <div class="col-12 mb-3">
-                  <label for="modal-landlord-email" class="form-label">Email:</label>
+                  <label for="modal-landlord-email" class="form-label"><strong>Email:</strong></label>
                   <input type="email" class="form-control" id="modal-landlord-email" name="landlord_email" value="demetri.manias@alivente.com">
                 </div>
                 <div class="col-12 mb-3">
-                  <label for="modal-landlord-address" class="form-label">Address:</label>
+                  <label for="modal-landlord-address" class="form-label"><strong>Address:</strong></label>
                   <textarea class="form-control" id="modal-landlord-address" name="landlord_address" rows="2">Alivente House, Dikaiosynis 13A, Engomi, Nicosia, Cyprus, 2412</textarea>
                 </div>
               </div>

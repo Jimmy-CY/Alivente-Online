@@ -541,7 +541,7 @@
             <div class="form-grid">
                 
                 <div class="form-field">
-                    <label for="prop">Property<span class="alv-req">*</span></label>
+                    <label for="prop"><strong>Property</strong><span class="alv-req">*</span></label>
                     <select id="prop" class="form-control" name="prop" required>
                         <option value="">Select Property</option>
                         {% for prop in props_data %}
@@ -554,7 +554,7 @@
                 </div>
                 
                 <div class="form-field">
-                    <label for="expense_line_types">Expense Line Type<span class="alv-req">*</span></label>
+                    <label for="expense_line_types"><strong>Expense Line Type</strong><span class="alv-req">*</span></label>
                     <select id="expense_line_types" class="form-control" name="expense_line_types" required>
                         <option value="">Select Expense Line Type</option>
                         {% for elt in expense_line_types %}
@@ -568,7 +568,7 @@
                 </div>
                 
                 <div class="form-field">
-                    <label for="expense_types">Expense Type<span class="alv-req">*</span></label>
+                    <label for="expense_types"><strong>Expense Type</strong><span class="alv-req">*</span></label>
                     <select id="expense_types" class="form-control" name="expense_types" required>
                         <option value="">Select Expense Type</option>
                         {% for et in expense_types %}
@@ -578,7 +578,7 @@
                 </div>
                 
                 <div class="form-field">
-                    <label for="expense_amount">Expense Amount (€)<span class="alv-req">*</span></label>
+                    <label for="expense_amount"><strong>Expense Amount (€)</strong><span class="alv-req">*</span></label>
                     <input type="number" 
                            class="form-control" 
                            id="expense_amount" 
@@ -605,7 +605,7 @@
             
             <div class="prorata-controls">
                 <div class="country-filter-wrap">
-                    <label for="country-filter">Filter by Country</label>
+                    <label for="country-filter"><strong>Filter by Country</strong></label>
                     <select id="country-filter" class="form-control">
                         <option value="" selected disabled>Select Based on Country</option>
                         <option value="all">All Properties</option>

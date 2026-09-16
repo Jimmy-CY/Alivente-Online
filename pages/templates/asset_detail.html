@@ -322,12 +322,12 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Date <span class="alv-req">*</span></label>
+                        <label><strong>Date</strong> <span class="alv-req">*</span></label>
                         <input type="date" name="date" class="form-control" required value="{{ today|date:'Y-m-d' }}">
                     </div>
 
                     <div class="form-group">
-                        <label>Type <span class="alv-req">*</span></label>
+                        <label><strong>Type</strong> <span class="alv-req">*</span></label>
                         <select name="maintenance_type" class="form-control" required>
                             <option value="cleaning">Cleaning</option>
                             <option value="inspection">Inspection</option>
@@ -339,22 +339,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Description <span class="alv-req">*</span></label>
+                        <label><strong>Description</strong> <span class="alv-req">*</span></label>
                         <textarea name="description" class="form-control" rows="3" required placeholder="Describe what was done..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Service Provider</label>
+                        <label><strong>Service Provider</strong></label>
                         <input type="text" name="service_provider" class="form-control" placeholder="Technician or company name (optional)">
                     </div>
 
                     <div class="form-group">
-                        <label>Cost (&euro;)</label>
+                        <label><strong>Cost (&euro;)</strong></label>
                         <input type="number" name="cost" class="form-control" step="0.01" placeholder="Optional">
                     </div>
 
                     <div class="form-group">
-                        <label>Invoice/Receipt</label>
+                        <label><strong>Invoice/Receipt</strong></label>
                         <input type="file" name="invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                         <small class="form-text text-muted">Optional - upload invoice or receipt</small>
                     </div>
@@ -382,12 +382,12 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Date <span class="alv-req">*</span></label>
+                        <label><strong>Date</strong> <span class="alv-req">*</span></label>
                         <input type="date" name="date" id="edit_date" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label>Type <span class="alv-req">*</span></label>
+                        <label><strong>Type</strong> <span class="alv-req">*</span></label>
                         <select name="maintenance_type" id="edit_maintenance_type" class="form-control" required>
                             <option value="cleaning">Cleaning</option>
                             <option value="inspection">Inspection</option>
@@ -399,22 +399,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Description <span class="alv-req">*</span></label>
+                        <label><strong>Description</strong> <span class="alv-req">*</span></label>
                         <textarea name="description" id="edit_description" class="form-control" rows="3" required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Service Provider</label>
+                        <label><strong>Service Provider</strong></label>
                         <input type="text" name="service_provider" id="edit_service_provider" class="form-control" placeholder="Technician or company name (optional)">
                     </div>
 
                     <div class="form-group">
-                        <label>Cost (&euro;)</label>
+                        <label><strong>Cost (&euro;)</strong></label>
                         <input type="number" name="cost" id="edit_cost" class="form-control" step="0.01" placeholder="Optional">
                     </div>
 
                     <div class="form-group">
-                        <label>Invoice/Receipt</label>
+                        <label><strong>Invoice/Receipt</strong></label>
                         <input type="file" name="invoice" id="edit_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                         <small class="form-text text-muted">Upload a new file to replace the existing one</small>
                     </div>

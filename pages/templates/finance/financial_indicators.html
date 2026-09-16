@@ -57,7 +57,7 @@
     <!-- Year + Basis controls (year-aware Financial Indicators) -->
     <div class="fi-controls" style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:0 0 18px;">
         <div style="display:flex; align-items:center; gap:8px;">
-            <label for="fiYear" style="font-weight:600; margin:0;">Year</label>
+            <label for="fiYear" style="font-weight:600; margin:0;"><strong>Year</strong></label>
             <select id="fiYear" class="form-control" style="width:auto;"
                     onchange="location.href='?year=' + this.value + '&basis={{ basis }}';">
                 {% for y in available_years %}
@@ -109,14 +109,14 @@
         <div class="fi-collapse-content" style="padding-top:8px;">
         <div class="fi-trend-header" style="display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
             <div class="fi-trend-controls" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <label for="fiTrendIndicator" style="font-weight:600; margin:0;">Indicator</label>
+                <label for="fiTrendIndicator" style="font-weight:600; margin:0;"><strong>Indicator</strong></label>
                 <select id="fiTrendIndicator" class="form-control" style="width:auto;">
                     <option value="netROI">Net ROI (%)</option>
                     <option value="grossROI">Gross ROI (%)</option>
                     <option value="expensesToRevenue">Expenses to Revenue (%)</option>
                     <option value="rentPerSqm">Rent (&euro;/m&sup2;)</option>
                 </select>
-                <label style="font-weight:600; margin:0;">Years</label>
+                <label style="font-weight:600; margin:0;"><strong>Years</strong></label>
                 <select id="fiFromYear" class="form-control" style="width:auto;"></select>
                 <span style="color:#6c757d;">to</span>
                 <select id="fiToYear" class="form-control" style="width:auto;"></select>

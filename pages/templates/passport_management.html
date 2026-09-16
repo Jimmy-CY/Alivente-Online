@@ -63,7 +63,7 @@
         <form action="{% url 'passport_management' %}" method="GET" id="passportFilterForm">
             <div class="passport-filter-grid">
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-user"></i> Holder</label>
+                    <label class="passport-filter-label"><i class="fas fa-user"></i> <strong>Holder</strong></label>
                     <select name="holder" class="form-control passport-filter-select" id="holderSelect">
                         <option value="">All Holders</option>
                         <option value="Demetri Manias" {% if selected_holder == 'Demetri Manias' %}selected{% endif %}>Demetri Manias</option>
@@ -73,7 +73,7 @@
                     </select>
                 </div>
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-passport"></i> Type</label>
+                    <label class="passport-filter-label"><i class="fas fa-passport"></i> <strong>Type</strong></label>
                     <select name="doc_type" class="form-control passport-filter-select" id="docTypeSelect">
                         <option value="">All Types</option>
                         <option value="passport" {% if selected_doc_type == 'passport' %}selected{% endif %}>Passport</option>
@@ -84,7 +84,7 @@
                     </select>
                 </div>
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-globe"></i> Country</label>
+                    <label class="passport-filter-label"><i class="fas fa-globe"></i> <strong>Country</strong></label>
                     <select name="country" class="form-control passport-filter-select" id="countrySelect">
                         <option value="">All Countries</option>
                         <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
@@ -94,7 +94,7 @@
                     </select>
                 </div>
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-check-circle"></i> Status</label>
+                    <label class="passport-filter-label"><i class="fas fa-check-circle"></i> <strong>Status</strong></label>
                     <select name="status" class="form-control passport-filter-select" id="statusSelect">
                         <option value="">All Statuses</option>
                         <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
@@ -110,7 +110,7 @@
 
 <!-- Mobile-only sort control -->
 <div class="mobile-sort-control">
-    <label for="mobileSortSelect" class="mobile-sort-label"><i class="fas fa-sort"></i> Sort by:</label>
+    <label for="mobileSortSelect" class="mobile-sort-label"><i class="fas fa-sort"></i> <strong>Sort by:</strong></label>
     <select id="mobileSortSelect" class="form-control mobile-sort-select">
         <option value="expiry-asc" selected>Expiry Date (soonest first)</option>
         <option value="expiry-desc">Expiry Date (latest first)</option>
@@ -280,7 +280,7 @@
           <input type="hidden" id="passport_id" name="passport_id">
           <input type="hidden" id="form_action" name="action" value="add">
           <div class="form-group">
-            <label for="holder_name">Passport/ID Holder Name: <span class="alv-req">*</span></label>
+            <label for="holder_name"><strong>Passport/ID Holder Name:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="holder_name" name="holder_name" required>
               <option value="">-- Select Holder --</option>
               <option value="Demetri Manias">Demetri Manias</option>
@@ -290,7 +290,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="document_type">Document Type: <span class="alv-req">*</span></label>
+            <label for="document_type"><strong>Document Type:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="document_type" name="document_type" required>
               <option value="">-- Select Type --</option>
               <option value="passport">Passport</option>
@@ -301,11 +301,11 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="document_number">Document Number: <span class="alv-req">*</span></label>
+            <label for="document_number"><strong>Document Number:</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="document_number" name="document_number" required>
           </div>
           <div class="form-group">
-            <label for="country_of_issue">Country of Issue: <span class="alv-req">*</span></label>
+            <label for="country_of_issue"><strong>Country of Issue:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="country_of_issue" name="country_of_issue" required>
               <option value="">-- Select Country --</option>
               <option value="Cyprus">Cyprus</option>
@@ -315,15 +315,15 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="date_of_issue">Date of Issue:</label>
+            <label for="date_of_issue"><strong>Date of Issue:</strong></label>
             <input type="date" class="form-control" id="date_of_issue" name="date_of_issue">
           </div>
           <div class="form-group">
-            <label for="expiry_date">Expiry Date:</label>
+            <label for="expiry_date"><strong>Expiry Date:</strong></label>
             <input type="date" class="form-control" id="expiry_date" name="expiry_date">
           </div>
           <div class="form-group">
-            <label for="status">Status: <span class="alv-req">*</span></label>
+            <label for="status"><strong>Status:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="status" name="status" required>
               <option value="">-- Select Status --</option>
               <option value="active">Active</option>
@@ -332,7 +332,7 @@
             </select>
           </div>
           <div class="form-group" id="file_upload_group">
-            <label for="document_file">Upload Document <span class="alv-req">*</span></label>
+            <label for="document_file"><strong>Upload Document</strong> <span class="alv-req">*</span></label>
             <input type="file" class="form-control-file file-upload-input" id="document_file" name="document_file" accept="image/*,application/pdf" capture="environment">
             <small class="form-text text-muted">PDF, JPG or PNG. Max file size: 10MB. On mobile, you can take a photo or pick from your files.</small>
           </div>

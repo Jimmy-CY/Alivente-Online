@@ -183,7 +183,7 @@
                         <!-- Category -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Category <span class="alv-req">*</span></label>
+                                <label><strong>Category</strong> <span class="alv-req">*</span></label>
                                 <div class="input-group">
                                     <select name="category" id="category" class="form-control" required onchange="loadSubcategories()">
                                         <option value="">Select Category</option>
@@ -213,7 +213,7 @@
                         <!-- Subcategory -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Subcategory <span class="alv-req">*</span></label>
+                                <label><strong>Subcategory</strong> <span class="alv-req">*</span></label>
                                 <div class="input-group">
                                     <select name="subcategory" id="subcategory" class="form-control" required>
                                         <option value="">Select Category First</option>
@@ -243,7 +243,7 @@
                         <!-- Asset Name -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Asset Name <span class="alv-req">*</span></label>
+                                <label><strong>Asset Name</strong> <span class="alv-req">*</span></label>
                                 <input type="text" name="name" class="form-control" required>
                             </div>
                         </div>
@@ -251,7 +251,7 @@
                         <!-- Location/Room -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Location/Room <span class="alv-req">*</span></label>
+                                <label><strong>Location/Room</strong> <span class="alv-req">*</span></label>
                                 <input type="text" name="location_room" class="form-control" required placeholder="e.g., Kitchen, Living Room">
                             </div>
                         </div>
@@ -261,7 +261,7 @@
                         <!-- Purchase Date -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Purchase Date</label>
+                                <label><strong>Purchase Date</strong></label>
                                 <input type="date" name="purchase_date" id="modal_purchase_date" class="form-control">
                             </div>
                         </div>
@@ -269,7 +269,7 @@
                         <!-- Supplier -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Supplier</label>
+                                <label><strong>Supplier</strong></label>
                                 <div class="input-group">
                                     <select name="supplier" id="supplier" class="form-control">
                                         <option value="">Select Supplier</option>
@@ -301,7 +301,7 @@
                         <!-- Purchase Price -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Purchase Price (€)</label>
+                                <label><strong>Purchase Price (€)</strong></label>
                                 <input type="number" name="purchase_price" class="form-control" step="0.01" placeholder="Optional">
                             </div>
                         </div>
@@ -309,7 +309,7 @@
                         <!-- Brand/Manufacturer -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Brand/Manufacturer</label>
+                                <label><strong>Brand/Manufacturer</strong></label>
                                 <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional">
                             </div>
                         </div>
@@ -321,14 +321,14 @@
                     <div class="form-row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Warranty Duration (months)</label>
+                                <label><strong>Warranty Duration (months)</strong></label>
                                 <input type="number" name="warranty_duration_months" id="modal_warranty_months" class="form-control" placeholder="e.g., 24">
                                 <small class="form-text text-muted">System will calculate expiry date automatically</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>OR Warranty Expiry Date</label>
+                                <label><strong>OR Warranty Expiry Date</strong></label>
                                 <input type="date" name="warranty_expiry_date" id="modal_warranty_expiry" class="form-control">
                                 <small class="form-text text-muted">Manually enter expiry date</small>
                             </div>
@@ -337,7 +337,7 @@
 
                     <!-- Purchase Invoice Upload -->
                     <div class="form-group">
-                        <label>Purchase Invoice/Receipt</label>
+                        <label><strong>Purchase Invoice/Receipt</strong></label>
                         <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
 
@@ -356,7 +356,7 @@
 
                     <!-- Notes -->
                     <div class="form-group">
-                        <label>Notes</label>
+                        <label><strong>Notes</strong></label>
                         <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
                     </div>
                 </div>

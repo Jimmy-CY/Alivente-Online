@@ -260,13 +260,13 @@ select.form-control {
             <h2><i class="fas fa-user" style="color:#667eea;"></i> Personal Information</h2>
             <div class="form-row-2">
                 <div class="form-group">
-                    <label>First Name</label>
+                    <label><strong>First Name</strong></label>
                     <input type="text" name="first_name" class="form-control"
                            value="{{ form_data.first_name|default:'' }}"
                            placeholder="Enter first name">
                 </div>
                 <div class="form-group">
-                    <label>Last Name</label>
+                    <label><strong>Last Name</strong></label>
                     <input type="text" name="last_name" class="form-control"
                            value="{{ form_data.last_name|default:'' }}"
                            placeholder="Enter last name">
@@ -274,13 +274,13 @@ select.form-control {
             </div>
             <div class="form-row-2">
                 <div class="form-group">
-                    <label>Username <span class="alv-req">*</span></label>
+                    <label><strong>Username</strong> <span class="alv-req">*</span></label>
                     <input type="text" name="username" class="form-control"
                            value="{{ form_data.username|default:'' }}"
                            placeholder="Enter username" required>
                 </div>
                 <div class="form-group">
-                    <label>Email Address</label>
+                    <label><strong>Email Address</strong></label>
                     <input type="email" name="email" class="form-control"
                            value="{{ form_data.email|default:'' }}"
                            placeholder="Enter email address">
@@ -293,14 +293,14 @@ select.form-control {
             <h2><i class="fas fa-lock" style="color:#667eea;"></i> Password</h2>
             <div class="form-row-2">
                 <div class="form-group">
-                    <label>Password <span class="alv-req">*</span></label>
+                    <label><strong>Password</strong> <span class="alv-req">*</span></label>
                     <input type="password" name="password1" id="password1" class="form-control"
                            placeholder="Enter password" required onkeyup="checkPasswordStrength()">
                     <div class="password-strength" id="passwordStrength"></div>
                     <div class="strength-text" id="strengthText"></div>
                 </div>
                 <div class="form-group">
-                    <label>Confirm Password <span class="alv-req">*</span></label>
+                    <label><strong>Confirm Password</strong> <span class="alv-req">*</span></label>
                     <input type="password" name="password2" id="password2" class="form-control"
                            placeholder="Confirm password" required onkeyup="checkPasswordMatch()">
                     <div class="strength-text" id="matchText"></div>
@@ -346,7 +346,7 @@ select.form-control {
             </div>
 
             <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px solid #f0f0f0;">
-                <label>Personal-Module Workspace</label>
+                <label><strong>Personal-Module Workspace</strong></label>
                 <select name="workspace_id" class="form-control">
                     <option value="">— Unassigned (auto-create on first access) —</option>
                     {% for ws in workspaces %}
