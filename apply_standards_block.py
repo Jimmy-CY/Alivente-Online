@@ -176,6 +176,29 @@ _ghostc = sorted(c for c in _want_cls if c not in _classes)
 want(not _ghostc, 'STD: it names components base does not define: %s'
      % _ghostc[:6])
 
+# SCOPE GUARD #22 - 16 Sep. THE "NOTHING ELSE CHANGED" CLAIM LIVES HERE NOW.
+#
+# test_standards_block.py used to assert, on every push, that base outside the
+# block was byte-identical to a snapshot this script had left behind. It could
+# not honestly do that. The claim is about ONE RUN OF THIS SCRIPT, and between
+# that run and the next push any number of agreed rounds may edit base for
+# their own reasons. It failed on correct work twice: once when the
+# heading-prefix round edited base's title tag, and again - one round after
+# the snapshot was "fixed" - when the map-provider round added a component.
+#
+# Here both sides are in hand: the bytes as found, and the bytes about to be
+# written. That makes it checkable at the only moment it means anything. If
+# this fails, this script has a bug, and nothing should be written.
+def _outside(t):
+    t = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}\n?', '', t,
+               flags=re.S)
+    return re.sub(r'\n{3,}', '\n\n', t)
+
+
+want(_outside(f) == _outside(ORIG.replace('\r\n', '\n')),
+     'STD: this run would change bytes OUTSIDE the block. That is a bug in '
+     'this script, not a revision of the standard')
+
 if FAIL:
     print('\n! SELF-CHECK FAILED - nothing written\n')
     for x in FAIL:

@@ -161,3 +161,56 @@ def user_preferences(request):
         except Exception:
             return {'menu_preference': 'top'}
     return {'menu_preference': 'top'}
+
+
+# ---------------------------------------------------------------------------
+# THE MAP PROVIDER. One definition; four templates consume it.
+#
+# Before this, each of the four pages that draw a map spelled the tile URL out
+# itself, and map_view's comment records what that cost: it had drifted to
+# CARTO, CARTO began gating those tiles behind a key, and CARTO does not fail
+# without one - it returns tiles with API KEY REQUIRED printed into the image.
+# The map drew, the pins landed, the console stayed clean, and nobody saw it.
+# ---------------------------------------------------------------------------
+
+# osm-carto is Geoapify's rendering of the classic OpenStreetMap style, so the
+# map looks the way it looked before OpenStreetMap stopped serving it.
+MAP_STYLE = 'osm-carto'
+
+# 18 and not the 20 Geoapify will serve. 20 would be better for dropping a pin
+# on one building, and that is a separate change: a round that moves two things
+# cannot say which one fixed it.
+MAP_MAX_ZOOM = 18
+
+# The attribution is a LINK, not a line of text. Two of these four pages
+# credited OpenStreetMap in plain prose, and an unlinked credit is one of the
+# reasons the OSM wiki gives for blocking an application.
+MAP_ATTRIBUTION = (
+    'Powered by <a href="https://www.geoapify.com/">Geoapify</a> '
+    '| &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap'
+    '</a> contributors'
+)
+
+# format=json, not the default geojson, because it returns lat and lon on each
+# result exactly as Nominatim did - so the pages that read the answer change by
+# one word rather than by a shape.
+_TILES = 'https://maps.geoapify.com/v1/tile/%s/{z}/{x}/{y}.png?apiKey=%s'
+_GEOCODE = 'https://api.geoapify.com/v1/geocode/search?format=json&limit=1&apiKey=%s&text='
+
+
+def map_provider(request):
+    """Where the map gets its tiles, its words and its address lookup.
+
+    Every value is EMPTY when no key is configured, and the templates treat
+    empty as "say so". A missing key is a setting nobody has filled in; it
+    should not look like a broken page.
+    """
+    from django.conf import settings as _settings
+    key = (getattr(_settings, 'GEOAPIFY_KEY', '') or '').strip()
+    return {
+        'MAP_KEY_PRESENT': bool(key),
+        'MAP_TILE_URL': (_TILES % (MAP_STYLE, key)) if key else '',
+        'MAP_GEOCODE_URL': (_GEOCODE % key) if key else '',
+        'MAP_ATTRIBUTION': MAP_ATTRIBUTION,
+        'MAP_MAX_ZOOM': MAP_MAX_ZOOM,
+    }

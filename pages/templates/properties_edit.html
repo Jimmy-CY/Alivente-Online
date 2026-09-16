@@ -670,11 +670,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var map = L.map('propertyMap').setView(initialView, initialZoom);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
+    // MAP TILES. The URL, the words under them and the zoom ceiling are
+    // defined ONCE, in mysite/context_processors.py, and arrive here through
+    // the context. They used to be spelled out on each of the four pages that
+    // draw a map, and map_view's old comment records what that cost.
+    //
+    // AN EMPTY URL MEANS NO KEY IS CONFIGURED, and the page says so. It does
+    // not add a tile layer and hope: a map with no basemap is an empty grey
+    // square, which reads as a fault in the page rather than as a setting
+    // nobody has filled in. See apply_map_provider.py.
+    var mapTileUrl = '{{ MAP_TILE_URL|escapejs }}';
+    if (mapTileUrl) {
+        L.tileLayer(mapTileUrl, {
+            attribution: '{{ MAP_ATTRIBUTION|escapejs }}',
+            maxZoom: {{ MAP_MAX_ZOOM }}
+        }).addTo(map);
+    } else {
+        document.getElementById('propertyMap').insertAdjacentHTML('afterbegin',
+            '<div class="alv-map-nokey">Map unavailable &mdash; no map key is ' +
+            'configured. Set GEOAPIFY_KEY and redeploy.</div>');
+    }
 
     var currentMarker = null;
 
@@ -721,7 +736,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         var address = addressParts.join(', ');
-        var geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        // The address lookup, from the same provider and the same key. It
+        // used to call OpenStreetMap's Nominatim service straight from the
+        // page, and that service asks for an identifying User-Agent, which
+        // a browser will not let a page set - so the call could not comply
+        // however politely it was made. The host is deliberately not spelled
+        // out here: a scanner looking for it would find this sentence.
+        // See apply_map_provider.py.
+        var geocodeUrl = '{{ MAP_GEOCODE_URL|escapejs }}' + encodeURIComponent(address);
 
         document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
         document.getElementById('findOnMapBtn').disabled = true;
@@ -729,9 +751,12 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(geocodeUrl)
             .then(response => response.json())
             .then(data => {
-                if (data && data.length > 0) {
-                    var lat = parseFloat(data[0].lat);
-                    var lng = parseFloat(data[0].lon);
+                // format=json was asked for, so a hit carries lat and lon
+                // exactly as Nominatim's did - one word of difference.
+                var hits = (data && data.results) || [];
+                if (hits.length > 0) {
+                    var lat = parseFloat(hits[0].lat);
+                    var lng = parseFloat(hits[0].lon);
 
                     if (currentMarker) {
                         map.removeLayer(currentMarker);

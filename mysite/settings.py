@@ -87,6 +87,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "mysite.context_processors.notification_count",  # Add this line
                 "mysite.context_processors.user_preferences", 
+                "mysite.context_processors.map_provider",
             ],
         },
     },
@@ -333,6 +334,14 @@ if os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or os.environ.get(
 
 # Anthropic API Key (from environment variable)
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+
+# The map tile and geocoding key, for Geoapify. Set in Railway; never in the
+# repo. It is not a secret and cannot be one - a browser map key travels to
+# the browser by definition - so it is protected by being restricted to one
+# origin in the provider's dashboard. Empty is a supported state: the map
+# says it has no key rather than drawing an empty grey square. See
+# apply_map_provider.py.
+GEOAPIFY_KEY = os.getenv('GEOAPIFY_KEY', '')
 
 USDA_API_KEY = 'E6ZteWi96O46t6NNHMyGgrKDgIdMr0UP5BG2mGg4'
 

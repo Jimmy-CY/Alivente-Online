@@ -722,7 +722,14 @@ $suites = @(
     # out of a template. Its section 1 RUNS the preamble under a forced
     # cp1252 stdout, and runs the same print without it to show the check
     # can fail. Newest, so most likely to be what breaks.
-    'test_console_encoding.py'
+    'test_console_encoding.py',
+    # The map asks a provider whose terms cover a business doing it, from one
+    # definition, and says so when it has no key. Its section 2 RENDERS each
+    # page's map block through Django in BOTH key states, because escapejs
+    # rewrites four of the characters in the tile URL and nothing that reads
+    # the template source can see what reached the browser. Newest, so most
+    # likely to be what breaks.
+    'test_map_provider.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

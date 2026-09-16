@@ -2732,6 +2732,31 @@ table.alv-matrix {
 .icon-manage       { color: var(--alv-view); border-color: var(--alv-accent-line); }
 .icon-manage:hover { background-color: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
 .icon-color-manage { color: var(--alv-view); }
+
+/* ===== ALV-MAP-NOKEY v1 ===== */
+/* The map draws from a keyed provider, and the key arrives from the
+   environment. When it is absent the tile layer is not added at all and this
+   notice covers the map box instead, because a map with no basemap is an
+   empty grey square, and an empty grey square reads as a fault in the page
+   rather than as a setting nobody has filled in. That distinction is not
+   theoretical: the same four pages spent months drawing CARTO tiles with
+   API KEY REQUIRED printed into every image, and it drew, so nobody looked.
+   Absolute inside Leaflet's own container, above its tile panes. */
+.alv-map-nokey {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+    background: var(--alv-paper);
+    color: var(--alv-ink-soft);
+    border: 1px solid var(--alv-line);
+    border-radius: 6px;
+    font-size: .9rem;
+}
 </style>
 
   <script>

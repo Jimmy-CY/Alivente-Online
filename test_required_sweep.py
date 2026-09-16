@@ -120,6 +120,20 @@ for _d, _s, _fs in os.walk(T):
 TEMPLATES.sort()
 
 
+def markers_in_labels(t):
+    """(markers inside a label, markers anywhere) for one template.
+
+    PRESENT TENSE, and no snapshot. This is what scope guard #23 put in
+    place of a whole-file comparison against a backup: a marker belongs
+    inside the label that names its field, and that is true of the page as
+    it is today, however many later rounds have edited it elsewhere.
+    """
+    vis = visible(t)
+    inside = sum(m.group(0).count(MARK) for m in
+                 re.finditer(r'<label\b[^>]*>.*?</label>', vis, re.S | re.I))
+    return inside, vis.count(MARK)
+
+
 def sites(src):
     """(marked, unmarked, undecidable) for one template.
 
@@ -187,10 +201,37 @@ for p in MOVED:
     d = now.count(MARK) - was.count(MARK)
     _added += d
     check('%-36s gained %2d marker(s)' % (rel, d), d > 0)
-    # NOTHING BUT MARKERS. Strip from BOTH sides - several of these pages
-    # already had markers, so stripping one side only fails correct work.
-    check('  and nothing else changed',
-          now.replace(' ' + MARK, '') == was.replace(' ' + MARK, ''))
+    # SCOPE GUARD #23 - 16 Sep. WHAT USED TO BE HERE was a whole-file diff:
+    # strip the markers from both sides and demand the rest be byte-identical
+    # to the backup. It failed the day the map-provider round edited the tile
+    # block in properties_add and properties_edit - two hundred lines from any
+    # label, entirely correct work, sixth time a whole-file claim has done it.
+    #
+    # And it was a DUPLICATE. apply_required_sweep.py already makes exactly
+    # that comparison in its own self-check, against the bytes it is about to
+    # write, where both sides are in hand and the claim is true by
+    # construction. The copy here could only decay: a claim about one run of
+    # another program, re-asserted on every push for ever after.
+    #
+    # WHAT COVERS WHAT, NOW, stated plainly so the next person does not have
+    # to work it out from three sabotage runs:
+    #
+    #   * that this round changed nothing but markers  -> the patcher's own
+    #     self-check, at the moment it wrote the bytes;
+    #   * that a marker was later REMOVED               -> section 3, which
+    #     names any required field left unmarked and does not need a backup;
+    #   * that a marker sits where it belongs           -> the check below,
+    #     present tense, per page, immune to edits elsewhere in the file.
+    #
+    # Three sabotage controls were run against this replacement. Removing a
+    # marker fails section 3. Lifting one out of its label fails the check
+    # below. Repointing a label's `for` at another field fails NEITHER - and
+    # should not: section 3's own rule accepts the nearest preceding label,
+    # so that is a label-association fault, a different standard from this
+    # one. Saying so is better than a check that quietly does not cover it.
+    _in, _all = markers_in_labels(now)
+    check('  and every marker on the page sits inside a label',
+          _in == _all, '%d of %d' % (_in, _all))
     for tag in ('div', 'form', 'label', 'span'):
         a = (len(re.findall(r'<%s\b' % tag, visible(now)))
              - len(re.findall(r'</%s>' % tag, visible(now))))

@@ -62,6 +62,9 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
 BASE = os.path.join(T, 'base.html')
+# The first-ever snapshot. Nothing in this suite measures against it any
+# more - see scope guard #22 - but the patcher still writes it, and it is
+# how base is recovered if a block application ever goes wrong.
 BAK = BASE + '.bak_std'
 MARK = 'ALIVENTE ONLINE - THE SYSTEM STANDARD'
 
@@ -93,25 +96,29 @@ def read(p):
 if not os.path.exists(BASE):
     sys.exit('! base.html not found - run from the repo root')
 B = read(BASE)
-# SCOPE GUARD #19 - 9 Sep. Measure against the state before the LAST run,
-# not before the FIRST one.
+# SCOPE GUARD #22 - 16 Sep. THERE IS NO SNAPSHOT HERE ANY MORE.
 #
-# The claim is "this round adds a comment and nothing else". It used to be
-# measured against .bak_std, the first-ever snapshot, which is never
-# overwritten. That was correct until another agreed round edited base
-# outside the block - the heading-prefix round changed its title tag - and
-# then the check failed on entirely correct work. Ask what the claim is
-# ABOUT: it is about ONE application of this patcher, so the reference is
-# the file as that application found it. .bak_stdprev is refreshed every
-# run for exactly this.
-PREV = BASE + '.bak_stdprev'
-if os.path.exists(PREV):
-    WAS, WAS_IS = read(PREV), 'the state before the last run'
-elif os.path.exists(BAK):
-    WAS, WAS_IS = read(BAK), ('the FIRST-EVER state - a weaker claim, and it '
-                              'will fail once anything else edits base')
-else:
-    WAS, WAS_IS = None, ''
+# Guard #19 moved this suite's "nothing outside the block changed" claim
+# from .bak_std, the first-ever state, to .bak_stdprev, the state before
+# the LAST run of apply_standards_block.py - and its own comment said why
+# the first one had failed: another agreed round edited base.
+#
+# .bak_stdprev is refreshed only when that patcher runs. So the map-provider
+# round added one component to base, touched nothing else, and this check
+# failed on correct work anyway - one round later than the version it
+# replaced. A better snapshot bought exactly one round.
+#
+# ASK WHAT THE CLAIM IS ABOUT. "This application of the patcher changed only
+# the block" is a fact about ONE RUN OF A DIFFERENT PROGRAM. A suite that
+# runs on every push cannot verify it, because arbitrary time and arbitrary
+# other rounds pass in between; any snapshot it holds has an expiry date,
+# and a check with an expiry date is a scope guard waiting to happen.
+#
+# So the claim moved to where it is true by construction: the patcher now
+# self-checks it against the bytes it is about to replace, and refuses to
+# write if it is false. What stays here are the properties that claim was
+# PROTECTING, stated in the present tense - see section 4. They need no
+# snapshot, they cannot decay, and they work on a fresh clone.
 
 _m = re.search(r'\{%\s*comment\s*%\}(.*?)\{%\s*endcomment\s*%\}', B, re.S)
 BODY = _m.group(1) if _m else ''
@@ -214,30 +221,16 @@ except ImportError:
 except Exception as e:
     check('Django renders the block to nothing', False, str(e)[:70])
 
-# The bytes that DO ship are unchanged by this block.
-if WAS is not None:
-    def strip(t):
-        t = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}\n?', '', t,
-                   flags=re.S)
-        return re.sub(r'\n{3,}', '\n\n', t)
-    check('everything outside the block is byte-identical to %s' % WAS_IS,
-          strip(B) == strip(WAS))
-    if strip(B) != strip(WAS) and 'FIRST-EVER' in WAS_IS:
-        print('        NOTE  measured against the first-ever snapshot because '
-              'base.html.bak_stdprev\n              is missing. Re-run '
-              'apply_standards_block.py once to create it; the\n'
-              '              difference is very likely another round\'s '
-              'legitimate edit to base.')
-    # THE BLOCK'S OWN SIZE, not the file's growth. On a re-run the backup
-    # already holds the PREVIOUS block, so the delta is only whatever the
-    # revision added - 1,949 bytes on one edit - and a check on the delta
-    # fails a correct second application.
-    check('  CONTROL: the block is substantial, not a stub',
-          len(BODY) > 8000, '%d bytes of document' % len(BODY))
-    print('        (file grew %+d bytes this time; the backup may already '
-          'hold a block)' % (len(B) - len(WAS)))
-else:
-    print('  SKIP  no base.html.bak_std to compare against')
+# THE BLOCK'S OWN SIZE, not the file's growth. A check on the delta fails a
+# correct second application, because the backup already holds the previous
+# block and the difference is only whatever the revision added.
+check('  CONTROL: the block is substantial, not a stub',
+      len(BODY) > 8000, '%d bytes of document' % len(BODY))
+
+# WHAT USED TO BE HERE: a byte-for-byte comparison of base-outside-the-block
+# against a snapshot. It is gone; see the note on scope guard #22 above. The
+# patcher makes that claim about its own run, where it is checkable, and
+# section 4 states what it was protecting in a form that cannot decay.
 
 # ===========================================================================
 head('3. it describes a base.html that exists')
@@ -363,12 +356,23 @@ check('no closing comment tag inside the body - it would end the block early '
 # element. The real invariant is that the block did not SWALLOW one of
 # base's own tags, or introduce one outside itself.
 _out = re.sub(r'\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}', '', B, flags=re.S)
-if WAS is not None:
-    for _t in ('<style', '<script'):
-        check('base still has all %d of its %s tags outside the block'
-              % (WAS.count(_t), _t),
-              _out.count(_t) == WAS.count(_t),
-              '%d vs %d' % (_out.count(_t), WAS.count(_t)))
+# NOT "base still has the N tags the snapshot had" - that was scope guard
+# #22, and a pinned count is exactly what kept expiring. The fault being
+# guarded is the block SWALLOWING one of base's own tags, and that has two
+# fingerprints that need no snapshot at all:
+#
+#   1. a swallowed tag is IN the body - and the first check in this section
+#      already says the body holds nothing shaped like a tag, at all;
+#   2. a swallowed OPENING tag leaves its closer stranded outside.
+#
+# Together they are a complete argument, and they stay true however many
+# stylesheets base gains or loses.
+for _open, _close in (('<style', '</style'), ('<script', '</script')):
+    check('every %s outside the block still has its closing tag' % _open,
+          _out.count(_open) == _out.count(_close),
+          '%d open, %d closed' % (_out.count(_open), _out.count(_close)))
+    check('  and there are %s tags to have got wrong' % _open,
+          _out.count(_open) >= 1, str(_out.count(_open)))
 check('  and the block itself contributes no element to the page',
       '<style' not in _out[:_out.find('<html')])
 _stack, _fault = [], None
