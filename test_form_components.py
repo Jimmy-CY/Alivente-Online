@@ -7,11 +7,14 @@ Run from the repo root, after apply_form_components.py.
 
 WHAT THIS SUITE CANNOT DO, SAID FIRST
 
-It cannot tell you the panel should be white or the control 9px by 12px.
-Those were chosen on 16 Sep from a count of your 115 templates - 22 of 23
-panels were already white, and the model screen turned out to be a hybrid
-of the two control dialects rather than a third opinion. This suite holds
-the system to that choice; it does not defend it.
+It cannot tell you the panel should carry a wash or the control be 9px by
+12px. The control came from a count of 115 templates on 16 Sep, where the
+model screen turned out to be a hybrid of the two dialects in use rather
+than a third opinion. THE PANEL DID NOT COME FROM A COUNT, and the first
+version of this suite got that wrong: the count said white 22 to 1 and the
+brief said "look like New Customer Invoice". A majority is evidence about
+what the system does, never an argument about what it should be. This
+suite holds the system to the choice; it does not defend it.
 
 SECTION 3 IS THE ONE THAT EARNS ITS KEEP, AND IT IS NOT THE OBVIOUS CHECK.
 
@@ -101,7 +104,7 @@ WANT = {
     'ctrlPadding': '9px 12px',
     'ctrlFont': '14px',
     'panelRadius': '12px',
-    'panelPad': '28px',
+    'panelPad': '20px',
     'labelFont': '14px',
     'labelGap': '6px',
 }
@@ -247,8 +250,17 @@ card = ' '.join(base_rules.get('.form-card', []))
 ctrl = ' '.join(base_rules.get('.form-control', []))
 lab = ' '.join(base_rules.get('.form-group label', []))
 
-check('  the panel is white, from the paper token',
-      'var(--alv-paper)' in card, card[:40])
+# THE PANEL CARRIES THE MODEL SCREEN'S WASH. The first version of this
+# check asked for var(--alv-paper), because the round had chosen white
+# from a count of 22 to 1. The count was right and the choice was wrong:
+# the brief was to make the system look like New Customer Invoice, and a
+# majority cannot answer that. Both stops are tokens so the wash can be
+# restated in one place.
+check('  the panel carries the wash, from two surface tokens',
+      'linear-gradient' in card and 'var(--alv-surface)' in card
+      and 'var(--alv-surface-deep)' in card, card[:56])
+check('  CONTROL: and no literal survived in it',
+      not re.search(r'#[0-9a-fA-F]{3,6}', card), card[:56])
 check('  the control takes its line and radius from tokens',
       'var(--alv-line)' in ctrl and 'var(--alv-radius)' in ctrl)
 check('  the focus halo has a token of its own',

@@ -785,6 +785,7 @@
            change never silently restyles text. */
         --alv-paper:      #ffffff;
         --alv-surface:    #f8f9fa;
+    --alv-surface-deep: #e9ecef;  /* the far stop of the panel wash */
         --alv-ink:        #21343c;
         --alv-ink-soft:   #5b6b73;
         --alv-ink-faint:  #8a979d;
@@ -2783,10 +2784,17 @@ table.alv-matrix {
    standard here - not one page's taste, but where the two halves of the
    system already agree.
 
-   THE PANEL IS WHITE. 22 of the 23 panels in the system are; the gradient
-   was one page, and a grey wash behind every form is a great deal more
-   grey than behind one. The 12px radius and the shadow are the majority
-   and the model page both.
+   THE PANEL CARRIES THE MODEL SCREEN'S WASH, and the first version of
+   this block did not. 22 of the 23 panels in the system were flat white
+   and the gradient was one page, so the count said white and the count
+   was answering the wrong question. The brief was never "what do most
+   pages do"; it was "make the system look like New Customer Invoice".
+   A majority is evidence about the present, not an argument about the
+   standard - the label standard went against a 338-to-207 majority on
+   purpose for exactly this reason.
+
+   It cost six lines to correct because the panel lives here now. Before
+   this block existed it would have cost 23 pages.
 
    NO FONT-WEIGHT ON THE LABEL. The label round put a strong element
    inside every field label; a weight here would be a second way to say
@@ -2796,12 +2804,13 @@ table.alv-matrix {
    column. A block box stacks a label over a control identically and
    cannot disturb the pages that put something unusual inside a field. */
 .form-card {
-    background: var(--alv-paper);
+    background: linear-gradient(135deg,
+                var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
     border: 1px solid var(--alv-line);
     border-radius: 12px;
-    padding: 28px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 20px 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .form-section-title {
