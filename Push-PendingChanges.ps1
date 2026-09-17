@@ -808,7 +808,13 @@ $suites = @(
     # primary in it, because it has the SAME declaration as the
     # variant retired the day before and the opposite effect.
     # Newest, so most likely to be what breaks.
-    'test_save_and_cancel.py'
+    'test_save_and_cancel.py',
+    # The last entry screens take the house heading, with the module
+    # name DERIVED from the screen Back returns to rather than typed.
+    # Its section 2 follows every Back link and re-derives it, so a
+    # module renamed later shows up as a heading that no longer
+    # matches. Newest, so most likely to be what breaks.
+    'test_entry_headings.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

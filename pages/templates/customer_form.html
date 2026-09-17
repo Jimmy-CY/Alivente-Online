@@ -7,7 +7,8 @@
 
 {% block content %}
 
-<h2><center>{% if mode == 'edit' %}EDIT CUSTOMER{% else %}ADD CUSTOMER{% endif %}</center></h2>
+<h2 class="page-title-h2">INVOICE CUSTOMERS</h2>
+<h4 class="page-subtitle-h4">{% if mode == 'edit' %}EDIT CUSTOMER{% else %}ADD CUSTOMER{% endif %}</h4>
 <br/>
 
 {% for msg in messages %}

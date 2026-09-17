@@ -159,7 +159,8 @@ select.form-control {
     {% endfor %}
 
     <div class="page-header">
-        <h1><i class="fas fa-edit"></i> Edit Workspace — {{ workspace.name }}</h1>
+        <h2 class="page-title-h2">WORKSPACE MANAGEMENT</h2>
+        <h4 class="page-subtitle-h4">EDIT WORKSPACE — {{ workspace.name }}</h4>
         <a href="{% url 'workspace_management' %}" class="btn action-back btn-sm">
             <i class="fas fa-arrow-left"></i> Back
         </a>

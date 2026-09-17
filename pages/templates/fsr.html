@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h2 class="page-title-center">ISSUES</h2>
+<h2 class="page-title-h2">ISSUES</h2>
 <br/>
 
 {% for msg in messages %}
@@ -533,9 +533,6 @@
 
 <style>
 /* Page title (centered) */
-.page-title-center {
-    text-align: center;
-}
 
 /* Desktop default: hide the mobile "More" dropdown wrapper */
 .action-more-wrapper {
@@ -1117,10 +1114,6 @@
 /* ==================== MOBILE RESPONSIVE (≤768px) ==================== */
 @media screen and (max-width: 768px) {
     /* Page title */
-    .page-title-center {
-        font-size: 1.2rem;
-        padding: 0 8px;
-    }
 
     /* Add New takes the leftover space (primary CTA) */
     .action-add-new {

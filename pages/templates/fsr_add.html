@@ -3,8 +3,8 @@
 {% block title %}Add Issue{% endblock %}
 {% block content %}
 
-<h2 class="page-title-center">ISSUES</h2>
-<h4 class="page-subtitle-center">ADD ISSUE</h4>
+<h2 class="page-title-h2">ISSUES</h2>
+<h4 class="page-subtitle-h4">ADD ISSUE</h4>
 <br/>
 
 <form action="{% url 'fsr_commit' %}" method="post">
@@ -60,12 +60,8 @@
 </form>
 
 <style>
-.page-title-center { text-align: center; }
-.page-subtitle-center { text-align: center; }
 
 @media (max-width: 768px) {
-    .page-title-center { font-size: 1.2rem; padding: 0 8px; }
-    .page-subtitle-center { font-size: 1rem; padding: 0 8px; }
 
     .action-back-label {
         display: none;

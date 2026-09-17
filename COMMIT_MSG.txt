@@ -1,116 +1,94 @@
-Save above the fields, and one way out of a form
+the last entry screens get the house heading, derived rather than typed
 
-Every Add and Edit screen should offer the same two controls in the same
-two places. Most already did. This round fixes the ones that did not, and
-a whole class of screen I had never looked at.
+Seventeen of the twenty-seven entry screens already head themselves the
+same way: the MODULE in caps on the h2, the MODE on the h4. Ten did not.
 
-A SCOPE BUG OF MINE, FOUND BY A SCREENSHOT
+THE MODULE NAME WAS ALREADY WRITTEN DOWN
 
-Three rounds decided what an Add or Edit screen is with
+Not by me - on the screen each entry screen's Back button returns to.
+customer_form's Back goes to customer_list, whose heading is INVOICE
+CUSTOMERS. finance_expense_add's goes to finance_expense: EXPENSES.
 
-    (_add|_edit|_form)\.html$
+So it is DERIVED: follow the Back link's {% url %}, find that template,
+read its heading. A table of ten headings typed by me would have been a
+list of filenames again, which is the thing that has been wrong five times
+in this work. The suite re-derives all of it, so renaming a module on its
+list screen reports its Add and Edit screens the same day.
 
-which matches asset_edit.html and NOT edit_asset.html. So edit_asset was
-invisible to the panel round, the action-bar round and both their suites -
-and it is exactly the screen that turned out to have Save at the bottom
-beside a redundant Cancel. You found it by opening the page.
+THE MODE LABEL IS THE PAGE'S OWN WORDS, upper-cased - and only the LITERAL
+text, never the inside of a Django tag. Upper-casing {{ workspace.name }}
+gives a variable that does not exist and the heading renders EMPTY, which
+looks like a blank line rather than an error. The suite sabotages exactly
+that.
 
-The pattern is widened rather than the filename added. It is the fifth
-time a rule of mine has been narrower than the thing it names, and the
-suite has a control proving the new one matches both spellings.
+A FIFTH CLASS PAIR, IN ONE MODULE
 
-CANCEL AND BACK ARE THE SAME ACTION - EXCEPT WHEN THEY ARE NOT
+The Issues screens headed themselves with .page-title-center and
+.page-subtitle-center - text-align: center and nothing else, a strict
+subset of what base's .page-title-h2 already does. All three Issues pages
+are renamed, not only the entry screen, because fixing one would leave
+that module internally inconsistent to fix a system-wide problem.
 
-A text search says eight screens carry both. THAT COUNT CONFLATES TWO
-DIFFERENT CONTROLS. On three of them Cancel is a button with
-data-dismiss="modal", which closes a DIALOG; removing it would break the
-modal. On two more the page is a delete confirmation, where Cancel is the
-safety control and means something Back does not.
+THE RULE I SOLD YOU IS WEAKER THAN I SAID, AND THE SUITE SAYS SO
 
-So a Cancel is treated as a duplicate only when it is a LINK whose href
-matches the Back link's on the same page - provable from the markup rather
-than inferred from the word. Five screens lose one. On customer_form,
-which had a Cancel and no Back, the Cancel BECOMES the Back, so the pair
-is the same everywhere rather than absent on one screen.
+Re-checking every screen rather than only the nine written, the derivation
+resolves 23 of 27 and TWO of those disagree - neither because of this
+round:
 
-SAVE MOVES ON TWO SCREENS, AND THE FIRST ATTEMPT MOVED THE WRONG BUTTONS
+  customer_invoice_form heads itself CUSTOMER INVOICE while its list
+  screen is PHYSICAL INVOICES. Not singular and plural of the same words:
+  two names for one module, with the model screen on one side of it. That
+  wants a person, and it is named so it stays visible.
 
-Taking "the first submit below the first control" picked up STATUS actions
-- Approve, Send, Delete - on customer_invoice_form and
-physical_invoice_edit, and a button inside a modal on
-generate_lease_agreement. Moving any of those to the top would be
-nonsense. It is the primary Save now: the one carrying action-primary,
-outside a dialog, on a page that has no primary above the fields already.
+  edit_asset's module line holds its MODE, because its Back goes to a
+  detail page and there is no module name to read there.
 
-edit_asset also loses the row its Save sat in, and the <hr> that separated
-the fields from it - a divider with nothing left to divide.
+Four more cannot be re-derived at all - Back points at act_expense_all or
+cash_receipt_list, which are url names with no template of that name. Each
+prints the reason, read off the page rather than looked up in a list.
 
-login, my_profile and notification_settings also keep Save below their
-fields and the name pattern does not call them entry screens. They are
-REPORTED rather than moved: widening the pattern again is a decision, and
-leaving them unmentioned is the same silence that hid edit_asset.
+I ALSO ASSUMED url name == template stem. It held for the eight screens
+this round wrote and for barely half of the rest: `projects` lives in
+projects/projects.html. The first re-check called nine screens underivable
+when several were simply in a subdirectory. It searches properly now.
 
-A FOURTH BAR VARIANT - AND THIS ONE IS NOT INERT
+AND SINGULAR IS NOT DRIFT. Comparing headings as strings called three good
+headings wrong - an entry screen naming the singular thing it edits beside
+a list naming the plural is correct English. The comparison normalises a
+trailing S, and I nearly "fixed" three correct pages.
 
-.page-action-buttons-single sets justify-content: flex-end and was
-declared, identically, on three pages. The variant retired yesterday had
-the SAME declaration and did nothing. This one does: below 768px base
-removes the auto margin from .action-back, so this class is the only thing
-keeping a lone Back on the right. Measured at 400px it is the difference
-between Back at 8px and Back at 346px.
+TWO THINGS ARE REMOVED, AND BOTH ARE PRINTED
 
-What decides it is what else is in the bar. A primary button eats the free
-space, leaving justify-content nothing to distribute; a bar holding only
-Back has space to give. Same stylesheet, opposite verdict - which nothing
-static can tell apart, so the suite renders both and measures both.
+Four Issues phone rules that survived the rename and then styled classes
+base owns - three of them in a query with no `screen` keyword, so they
+fired on paper. base declares the font size; their 8px side padding is NOT
+carried over, and the patcher says so by name.
 
-base declares it now, the three copies go, and where Save joins a bar the
-class comes off it, because the bar is no longer a lone-Back bar.
+And two descriptive sentences: "Record a new expense entry for a property"
+and "Update an existing expense entry", which sat as an h5 under the title
+on the two Financials expense screens. With EXPENSES / ADD EXPENSE above
+them they are a third heading saying the same thing, the heading standard
+already forbids a page carrying both, and no other Add or Edit screen has
+one. A sentence is content rather than formatting, so it is printed rather
+than dropped quietly.
 
-SCOPE GUARDS #32 AND #33 - TWO SUITES THIS ROUND BREAKS
+A CRASH, WHICH IS WORSE THAN A FAILURE
 
-test_button_reach required edit_asset to carry an action-secondary, which
-was its Cancel. The claim was never "this page has a Cancel"; it was SAVE
-IS THE ONLY PRIMARY AND THE WAY OUT IS QUIET. It asks that now, and covers
-whichever quiet control the page ends up with.
+The suite appended a bare string to a list whose report loop unpacks a
+pair, so it died part-way through instead of failing. A crash blocks a
+push exactly as hard as a failure and says far less about why - the fourth
+time that lesson has been earned in this project.
 
-test_table_lease_agreement listed .page-action-buttons-single among the
-rules that MUST NOT have been deleted - a safety net against a patcher
-taking too much. base declares it now and the page's copy went with the
-move, so the net failed for the reason the round succeeded. It asks the
-stronger question: the page must still USE the class and base must still
-DECLARE it. A patcher deleting too much fails that just as hard, and a
-later round quietly dropping the component from base fails it too, which
-the old spelling would have missed.
+VERIFIED: 11 checks, sabotaged four ways - rename a module on its list
+screen, put the fifth class pair back, upper-case a Django variable inside
+a heading, and one sabotage that did not fire until I noticed it had
+landed in the {% block title %} rather than the heading. Every suite run
+before and after with full output compared: five differ, four hold their
+verdict exactly and the fifth is this round's own.
 
-FOUR CHECKS OF MINE WERE THE WRONG SHAPE, AND ONE OF THEM COST FOUR PROBES
-
-Requiring the visible text to be unchanged, in a round whose purpose is to
-delete a button. Then stripping the first "Cancel" from the page's
-concatenated text, which removes whichever comes first rather than the one
-deleted. It measures the SIZE of the change now: exactly as many visible
-characters as the elements this round touched, and no more.
-
-Requiring whole-page tag balance, when user_add, user_edit and
-user_permissions have crossed <form> and <div> tags and have had since
-before any round in this sequence - the oldest backup on disk already
-shows it. It is a DELTA now: this round may not make them worse.
-
-AND `\b` IN A PLAIN PYTHON STRING IS A BACKSPACE. The guard this round
-writes into test_table_lease_agreement contained a word boundary that
-became character 0x08, so the regex searched for a backspace, never
-matched, and the check failed while the identical expression typed by hand
-passed. Four probes to see it, because every tool that printed the line
-rendered the backspace as nothing at all. The patcher now refuses to write
-any file containing a control character.
-
-VERIFIED: 12 checks, sabotaged four ways - re-add a duplicate Cancel, put
-Save back below the fields, restore the narrow pattern, re-add a page-local
-copy of the bar rule. Every suite run before and after with full output
-compared: seven differ and all seven pass, including the two repaired here.
-
-NOT PROVED HERE: that Save belongs at the top or that Cancel should go.
-Both were decided from the screens themselves.
+NOT PROVED HERE: that the module names read well. They were read off the
+list screens rather than chosen, so if one is wrong it is wrong in two
+places and this suite will keep them wrong together.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg
