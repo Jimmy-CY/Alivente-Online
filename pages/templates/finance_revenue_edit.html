@@ -61,7 +61,7 @@
     gap: 18px 22px;
 }
 
-.form-field label {
+.form-group label {
     display: block;
     font-weight: 600;
     color: #2c3e50;
@@ -69,20 +69,6 @@
     font-size: 14px;
 }
 
-.form-field .form-control {
-    width: 100%;
-    padding: 9px 12px;
-    border: 2px solid #dee2e6;
-    border-radius: 7px;
-    font-size: 14px;
-    background: white;
-    transition: border-color 0.15s ease;
-}
-.form-field .form-control:focus {
-    border-color: #28a745;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-}
 
 /* ============================================================
    MOBILE — max-width: 768px
@@ -105,9 +91,9 @@
         gap: 14px;
     }
 
-    .form-field .form-control,
-    .form-field input[type="number"],
-    .form-field select {
+    .form-group .form-control,
+    .form-group input[type="number"],
+    .form-group select {
         font-size: 16px !important;
     }
 }
@@ -168,7 +154,7 @@
             <div class="form-grid">
                 
                 <!-- Property -->
-                <div class="form-field">
+                <div class="form-group">
                     <label for="prop"><strong>Property</strong><span class="alv-req">*</span></label>
                     <select id="prop" class="form-control" name="prop" required>
                         <option value="">Select Property</option>
@@ -182,7 +168,7 @@
                 </div>
                 
                 <!-- Revenue Line Type -->
-                <div class="form-field">
+                <div class="form-group">
                     <label for="revenue_line_types"><strong>Revenue Line Type</strong><span class="alv-req">*</span></label>
                     <select id="revenue_line_types" class="form-control" name="revenue_line_types" required>
                         <option value="">Select Revenue Line Type</option>
@@ -196,7 +182,7 @@
                 </div>
                 
                 <!-- Revenue Type -->
-                <div class="form-field">
+                <div class="form-group">
                     <label for="revenue_types"><strong>Revenue Type</strong><span class="alv-req">*</span></label>
                     <select id="revenue_types" class="form-control" name="revenue_types" required>
                         <option value="">Select Revenue Type</option>
@@ -210,7 +196,7 @@
                 </div>
                 
                 <!-- Revenue Amount -->
-                <div class="form-field">
+                <div class="form-group">
                     <label for="revenue_amount"><strong>Revenue Amount (€)</strong><span class="alv-req">*</span></label>
                     <input type="number" 
                            class="form-control" 

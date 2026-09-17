@@ -1,110 +1,100 @@
-one action bar, and the variant that never did anything is retired
+the last page rules that outranked base, and a third name for a field
 
-.page-action-buttons-form declared justify-content: flex-end. base also
-declares .page-action-buttons .action-back with margin-left: auto. Same
-specificity - and in a flex row an auto margin wins, because it consumes
-the free space that justify-content would otherwise have to distribute.
+The component round removed page-local copies base already beat. Those
+deletions could not change anything: base's stylesheet sits after the
+content block, so on equal specificity it had already won.
 
-So on every screen that has a Back button, which is all 49 entry screens,
-the variant was inert. Rendered in Chromium at 1040px, 768px and 400px
-with one, two and five buttons: a bar carrying the class and a bar without
-it are identical in every button's position and size. It bites only on a
-bar with NO Back button, which no entry screen is.
+A COMPOUND RULE IS NOT EQUAL. `.form-field .form-control` is two classes
+where base's is one, and specificity is settled before document order - so
+it wins wherever it sits, however recently base was written. Every
+deletion in this round therefore DOES change a page. This is where the
+last screens actually adopt the standard, and the first component round
+that cannot claim to be invisible.
 
-I SHIPPED HALF OF THAT RULE MYSELF, EIGHT DAYS AGO
+THE THIRD NAME FOR A FIELD
 
-The heading round put the desktop half in base and its commit message said
-the variant "differed only in where it pushes its buttons". It does not
-push them anywhere. I had read the stylesheet and not rendered it, which
-is exactly the failure that round's own suite was built to catch for
-:has() - and I did not apply the same suspicion to the rule beside it.
+The Financials expense screens wrapped their fields in .form-field. The
+rest of the system uses .form-group, which is what base declares and what
+section 3.6 is written in. That third name is the whole reason base's
+field rule never reached those screens: every rule they needed had to be
+written again, scoped to the wrapper, and each one then outranked base for
+good. The wrapper is renamed rather than worked around.
 
-Before this, I told you 45 of 49 screens were "missing the right-aligned
-form variant". They were not missing anything visible. That number was
-wrong and the round it implied would have changed nothing on 45 pages.
+THE RED FOCUS RING
 
-IT WAS WORTH EXACTLY ONE PIXEL, AND THE SUITE SAYS SO
+finance_expense_add and finance_expense_edit declared
 
-Below 768px the variant set align-items: stretch where the plain bar
-centres. The Back button is 40px tall and the others 38px, so the plain bar
-sits them 1px lower. That is the whole behavioural difference removed here,
-on the four screens that carried the class. The first version of the suite
-claimed the rules changed nothing at all; the browser contradicted it at
-two of the three widths within a minute. The check now asserts what is
-true: no horizontal change anywhere, and a vertical difference of at most
-one pixel.
+    .form-field .form-control:focus   border-color #dc3545
 
-FIVE SCREENS MOVE SAVE TO THE TOP
+so every field on those screens turned RED when clicked into. #dc3545 is
+--alv-bad: the colour this system uses for errors and overdue money.
+Nobody chose red focus; it arrived, and stayed because no rule said
+otherwise. Settled 17 Sep: not deliberate. It goes, and those fields take
+base's accent ring like every other screen.
 
-customer_form, user_add, user_edit, workspace_add and workspace_edit put
-their action bar at the BOTTOM of the form. Everywhere else it comes before
-the first field. Save now lives in one place in this system.
+WHAT IS KEPT, AND NAMED WITH THE REASON
 
-Each bar is moved only if it is a self-contained div whose HTML tags and
-Django block tags both balance inside it, and only into a form that opens
-with a csrf token, so there is an unambiguous place to put it. A move is
-checked as a PERMUTATION: the page's non-whitespace characters, its tag
-list and its div and form balances must all be unchanged.
+.vat-input-wrap .form-control keeps its padding-right, which makes room
+for the VAT suffix and which base never claimed. .prorata-panel
+.form-section-title keeps its dark red, because base could claim the
+property but the value carries meaning of its own. A named exception with
+a reason is a standard; an unnamed one is drift.
 
-SCOPE GUARD #30 - A SUITE THAT REQUIRED THE RETIRED CLASS
+REPORTED, NOT TOUCHED: six pages title their panel with an h2 inside
+.form-card rather than with .form-section-title, and one styles a
+Bootstrap card body. Two ways to title a panel is a round of its own.
 
-test_heading_components asserted base defines three classes. Its claim was
-that BASE OWNS THE CLASSES THE STANDARD IS WRITTEN IN, not that there are
-three of them, so holding base to a class nobody should use would be
-holding the system to a mistake. It asserts two now, plus that the third is
-gone from base AND from every template - a stronger claim than the one it
-replaces.
+I CLASSIFIED BY SUBSTRING AND NEARLY DELETED A CARD BODY
 
-SCOPE GUARD #31 - AND A FLOOR CALIBRATED TO THREE CLASSES
+The first classifier asked whether a component's name appeared anywhere in
+the selector. `.form-card .card-body` contains one and styles something
+base has never heard of, so it was marked a duplicate - and deleting it
+would have taken the padding off a card body on a signed-off page. It
+classifies by TARGET now: the last simple selector, which is the element
+the rule actually styles.
 
-The same suite required at least four guarded phone rules. Retiring one
-class takes it to two, so the floor failed for the reason the round
-succeeded. It is two now; the floor exists only so the check above it
-cannot pass on an empty list, and the meaning lives in that line.
+The same classifier called `.form-group label` "something base does not
+own". base declares exactly that selector. It is not compound at all.
 
-FOUR BUGS, AND THREE OF THEM ARE THE SAME BUG
+AND A REPORT THAT COUNTED 651 RULES
 
-A CHECK POINTED AT A SUBSTRING INSTEAD OF AT THE THING IT NAMES, three
-times in one round. base's own note NAMES the class it retired - that is
-what the note is for - so "is the string still there" found the
-explanation and called it a survival. Twice in the patcher, once in the new
-suite. All three ask for a class TOKEN or a RULE now, and the suite has a
-control proving the pattern can tell `page-action-buttons-form` from
-`page-action-buttons-form-x`.
+The suite's report of rules targeting things base does not own printed
+651 - which is every compound selector in the repo, .page-header h1 and
+.filter-label i included, because I dropped the guard limiting it to these
+components. A report with that number in it is not a report about
+anything. It is 7.
 
-One of those had a second edge: the rule pattern used [^{}]* to reach the
-opening brace, which runs forward to the NEXT BRACE ANYWHERE - so with
-prose in between it matched an unrelated rule further down the file. That
-is the standards block's own documented lesson, prose shaped like code,
-arriving inside the check written to enforce it.
+THE FOCUS CHECK COULD NOT FAIL, AND FINDING OUT WHY TOOK THE LONGEST
 
-AND THE MOVE WAS NOT IDEMPOTENT. Cutting the bar's lines and re-inserting
-it is a no-op only if the tool RECOGNISES that the bar is already where it
-is going; without that it re-inserted a newline and the indentation on
-every run, so the file drifted a little each time. An idempotent tool has
-to recognise the state it is trying to reach, not merely be able to reach
-it.
+Section 3 renders each screen and reads the control back, including the
+focus state - which is how the red ring was found and which nothing
+static can see. The first version read the computed border colour
+immediately after focusing, and it passed no matter what the focus rule
+said. The proof was a sabotage: re-adding the red ring was caught by the
+static check and ignored by the rendered one.
 
-TWO CLAIMS IN THE SUITE WERE TOO STRONG AND THE BROWSER SAID SO
+The cause is base's own `transition: border-color 0.15s ease`. The value
+read at 0ms is still the RESTING colour; the animation has barely started.
+Measured across time it goes #e3e8ea, then #68aab3 at 50ms, then #0e7c8b
+by 150ms. An injected !important rule at ID specificity appeared to lose
+for exactly the same reason, which should have been the clue and was not -
+I spent a while concluding the focus ring was dead system-wide and about
+to report an accessibility fault. IT WORKS. The fixture now disables
+transitions, and the check has a control requiring the focused colour to
+DIFFER from the resting one, so it cannot quietly go back to measuring
+nothing.
 
-Section 2 first required the bar to sit INSIDE the form element and be the
-first thing in it. Eight screens put their bar above the form and two put a
-heading inside the form above it - both ordinary arrangements that put Save
-exactly where the decision says. The decision was about what the reader
-sees first, so the check measures that: the bar comes before the first
-control. That is one claim instead of two, and it is the one that was
-actually agreed.
+A rendered check has to stop the clock or wait for it. That is the lesson
+and it applies to every suite in this repo that measures a colour.
 
-VERIFIED: 11 checks, sabotaged three ways - re-add the class to a page,
-re-add the rule to base, move a bar back below the fields. Every suite in
-the repo run before and after with full output compared: five differ and
-all five pass. test_entry_panel now reports 23 screens with the bar above
-the panel instead of 19; test_filter_toggle counts base's braces at 347
-rather than 351; test_standards_block counts one fewer component; and
-test_heading_components carries the two guards above.
-
-NOT PROVED HERE: that Save belongs at the top. That was decided from the
-two rendered side by side.
+VERIFIED: 10 checks, sabotaged three ways - re-add the red ring, re-add a
+duplicate rule, put the third wrapper name back - and the red-ring
+sabotage is now caught by BOTH the static and the rendered check. Every
+suite run before and after with full output compared: four differ, all
+explained. test_form_components counts two more surviving bare rules
+because the renamed wrapper's label rule is now spelled .form-group label;
+test_label_bold reports the same rule under its new name; test_deeper_teal
+counts three fewer accent literals, which went with the deleted rules.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

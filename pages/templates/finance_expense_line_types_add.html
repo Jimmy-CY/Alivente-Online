@@ -39,28 +39,14 @@
     gap: 18px 22px;
 }
 
-.form-field label {
+.form-group label {
     display: block;
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 6px;
     font-size: 14px;
 }
-.form-field .form-control {
-    width: 100%;
-    padding: 9px 12px;
-    border: 2px solid #dee2e6;
-    border-radius: 7px;
-    font-size: 14px;
-    background: white;
-    transition: border-color 0.15s ease;
-}
-.form-field .form-control:focus {
-    border-color: #dc3545;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-}
-.form-field .form-control:disabled {
+.form-group .form-control:disabled {
     background: #e9ecef;
     color: #adb5bd;
     cursor: not-allowed;
@@ -79,10 +65,10 @@
     .form-card { padding: 16px; border-radius: 10px; }
     .form-grid { grid-template-columns: 1fr; gap: 14px; }
 
-    .form-field .form-control,
-    .form-field input[type="text"],
-    .form-field input[type="number"],
-    .form-field select {
+    .form-group .form-control,
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select {
         font-size: 16px !important;
     }
 }
@@ -111,7 +97,7 @@
         <div class="form-card">
             <div class="form-grid">
                 
-                <div class="form-field">
+                <div class="form-group">
                     <label for="expense_line_types_name"><strong>Expense Line Type Name</strong><span class="alv-req">*</span></label>
                     <input type="text" 
                            class="form-control" 
@@ -122,7 +108,7 @@
                            required>
                 </div>
                 
-                <div class="form-field">
+                <div class="form-group">
                     <label for="expense_line_types_description"><strong>Description</strong><span class="alv-req">*</span></label>
                     <input type="text" 
                            class="form-control" 
@@ -133,7 +119,7 @@
                            required>
                 </div>
                 
-                <div class="form-field">
+                <div class="form-group">
                     <label for="expense_line_types_prorata"><strong>Pro-Rata</strong><span class="alv-req">*</span></label>
                     <select class="form-control" 
                             id="expense_line_types_prorata" 
@@ -146,7 +132,7 @@
                     <div class="field-helper">Yes = distribute amount across properties by current value</div>
                 </div>
                 
-                <div class="form-field">
+                <div class="form-group">
                     <label for="expense_line_types_pr_amount"><strong>Pro-Rata Amount (€)</strong><span class="alv-req">*</span></label>
                     <input type="number" 
                            class="form-control" 

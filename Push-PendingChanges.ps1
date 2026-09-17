@@ -796,7 +796,13 @@ $suites = @(
     # retired variant's rules re-applied, because the whole case for
     # removing that class is that it changed nothing. Newest, so most
     # likely to be what breaks.
-    'test_one_action_bar.py'
+    'test_one_action_bar.py',
+    # The compound rules that outranked base. Its section 3 RENDERS
+    # each migrated page's own stylesheet under base and reads the
+    # control back, because unlike the earlier component rounds these
+    # deletions DO change how a page looks. Newest, so most likely to
+    # be what breaks.
+    'test_compound_rules.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -60,26 +60,12 @@
     gap: 18px 22px;
 }
 
-.form-field label {
+.form-group label {
     display: block;
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 6px;
     font-size: 14px;
-}
-.form-field .form-control {
-    width: 100%;
-    padding: 9px 12px;
-    border: 2px solid #dee2e6;
-    border-radius: 7px;
-    font-size: 14px;
-    background: white;
-    transition: border-color 0.15s ease;
-}
-.form-field .form-control:focus {
-    border-color: #28a745;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
 }
 .field-error {
     color: #dc3545;
@@ -105,8 +91,8 @@
         gap: 14px;
     }
 
-    .form-field .form-control,
-    .form-field input[type="text"] {
+    .form-group .form-control,
+    .form-group input[type="text"] {
         font-size: 16px !important;
     }
 }
@@ -143,7 +129,7 @@
         <div class="form-card">
             <div class="form-grid">
                 
-                <div class="form-field">
+                <div class="form-group">
                     <label for="revenue_line_types_name"><strong>Revenue Line Type Name</strong><span class="alv-req">*</span></label>
                     <input type="text" 
                            class="form-control" 
@@ -158,7 +144,7 @@
                     {% endif %}
                 </div>
                 
-                <div class="form-field">
+                <div class="form-group">
                     <label for="revenue_line_types_description"><strong>Description</strong><span class="alv-req">*</span></label>
                     <input type="text" 
                            class="form-control" 
