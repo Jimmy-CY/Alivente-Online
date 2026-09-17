@@ -1,100 +1,116 @@
-the last page rules that outranked base, and a third name for a field
+Save above the fields, and one way out of a form
 
-The component round removed page-local copies base already beat. Those
-deletions could not change anything: base's stylesheet sits after the
-content block, so on equal specificity it had already won.
+Every Add and Edit screen should offer the same two controls in the same
+two places. Most already did. This round fixes the ones that did not, and
+a whole class of screen I had never looked at.
 
-A COMPOUND RULE IS NOT EQUAL. `.form-field .form-control` is two classes
-where base's is one, and specificity is settled before document order - so
-it wins wherever it sits, however recently base was written. Every
-deletion in this round therefore DOES change a page. This is where the
-last screens actually adopt the standard, and the first component round
-that cannot claim to be invisible.
+A SCOPE BUG OF MINE, FOUND BY A SCREENSHOT
 
-THE THIRD NAME FOR A FIELD
+Three rounds decided what an Add or Edit screen is with
 
-The Financials expense screens wrapped their fields in .form-field. The
-rest of the system uses .form-group, which is what base declares and what
-section 3.6 is written in. That third name is the whole reason base's
-field rule never reached those screens: every rule they needed had to be
-written again, scoped to the wrapper, and each one then outranked base for
-good. The wrapper is renamed rather than worked around.
+    (_add|_edit|_form)\.html$
 
-THE RED FOCUS RING
+which matches asset_edit.html and NOT edit_asset.html. So edit_asset was
+invisible to the panel round, the action-bar round and both their suites -
+and it is exactly the screen that turned out to have Save at the bottom
+beside a redundant Cancel. You found it by opening the page.
 
-finance_expense_add and finance_expense_edit declared
+The pattern is widened rather than the filename added. It is the fifth
+time a rule of mine has been narrower than the thing it names, and the
+suite has a control proving the new one matches both spellings.
 
-    .form-field .form-control:focus   border-color #dc3545
+CANCEL AND BACK ARE THE SAME ACTION - EXCEPT WHEN THEY ARE NOT
 
-so every field on those screens turned RED when clicked into. #dc3545 is
---alv-bad: the colour this system uses for errors and overdue money.
-Nobody chose red focus; it arrived, and stayed because no rule said
-otherwise. Settled 17 Sep: not deliberate. It goes, and those fields take
-base's accent ring like every other screen.
+A text search says eight screens carry both. THAT COUNT CONFLATES TWO
+DIFFERENT CONTROLS. On three of them Cancel is a button with
+data-dismiss="modal", which closes a DIALOG; removing it would break the
+modal. On two more the page is a delete confirmation, where Cancel is the
+safety control and means something Back does not.
 
-WHAT IS KEPT, AND NAMED WITH THE REASON
+So a Cancel is treated as a duplicate only when it is a LINK whose href
+matches the Back link's on the same page - provable from the markup rather
+than inferred from the word. Five screens lose one. On customer_form,
+which had a Cancel and no Back, the Cancel BECOMES the Back, so the pair
+is the same everywhere rather than absent on one screen.
 
-.vat-input-wrap .form-control keeps its padding-right, which makes room
-for the VAT suffix and which base never claimed. .prorata-panel
-.form-section-title keeps its dark red, because base could claim the
-property but the value carries meaning of its own. A named exception with
-a reason is a standard; an unnamed one is drift.
+SAVE MOVES ON TWO SCREENS, AND THE FIRST ATTEMPT MOVED THE WRONG BUTTONS
 
-REPORTED, NOT TOUCHED: six pages title their panel with an h2 inside
-.form-card rather than with .form-section-title, and one styles a
-Bootstrap card body. Two ways to title a panel is a round of its own.
+Taking "the first submit below the first control" picked up STATUS actions
+- Approve, Send, Delete - on customer_invoice_form and
+physical_invoice_edit, and a button inside a modal on
+generate_lease_agreement. Moving any of those to the top would be
+nonsense. It is the primary Save now: the one carrying action-primary,
+outside a dialog, on a page that has no primary above the fields already.
 
-I CLASSIFIED BY SUBSTRING AND NEARLY DELETED A CARD BODY
+edit_asset also loses the row its Save sat in, and the <hr> that separated
+the fields from it - a divider with nothing left to divide.
 
-The first classifier asked whether a component's name appeared anywhere in
-the selector. `.form-card .card-body` contains one and styles something
-base has never heard of, so it was marked a duplicate - and deleting it
-would have taken the padding off a card body on a signed-off page. It
-classifies by TARGET now: the last simple selector, which is the element
-the rule actually styles.
+login, my_profile and notification_settings also keep Save below their
+fields and the name pattern does not call them entry screens. They are
+REPORTED rather than moved: widening the pattern again is a decision, and
+leaving them unmentioned is the same silence that hid edit_asset.
 
-The same classifier called `.form-group label` "something base does not
-own". base declares exactly that selector. It is not compound at all.
+A FOURTH BAR VARIANT - AND THIS ONE IS NOT INERT
 
-AND A REPORT THAT COUNTED 651 RULES
+.page-action-buttons-single sets justify-content: flex-end and was
+declared, identically, on three pages. The variant retired yesterday had
+the SAME declaration and did nothing. This one does: below 768px base
+removes the auto margin from .action-back, so this class is the only thing
+keeping a lone Back on the right. Measured at 400px it is the difference
+between Back at 8px and Back at 346px.
 
-The suite's report of rules targeting things base does not own printed
-651 - which is every compound selector in the repo, .page-header h1 and
-.filter-label i included, because I dropped the guard limiting it to these
-components. A report with that number in it is not a report about
-anything. It is 7.
+What decides it is what else is in the bar. A primary button eats the free
+space, leaving justify-content nothing to distribute; a bar holding only
+Back has space to give. Same stylesheet, opposite verdict - which nothing
+static can tell apart, so the suite renders both and measures both.
 
-THE FOCUS CHECK COULD NOT FAIL, AND FINDING OUT WHY TOOK THE LONGEST
+base declares it now, the three copies go, and where Save joins a bar the
+class comes off it, because the bar is no longer a lone-Back bar.
 
-Section 3 renders each screen and reads the control back, including the
-focus state - which is how the red ring was found and which nothing
-static can see. The first version read the computed border colour
-immediately after focusing, and it passed no matter what the focus rule
-said. The proof was a sabotage: re-adding the red ring was caught by the
-static check and ignored by the rendered one.
+SCOPE GUARDS #32 AND #33 - TWO SUITES THIS ROUND BREAKS
 
-The cause is base's own `transition: border-color 0.15s ease`. The value
-read at 0ms is still the RESTING colour; the animation has barely started.
-Measured across time it goes #e3e8ea, then #68aab3 at 50ms, then #0e7c8b
-by 150ms. An injected !important rule at ID specificity appeared to lose
-for exactly the same reason, which should have been the clue and was not -
-I spent a while concluding the focus ring was dead system-wide and about
-to report an accessibility fault. IT WORKS. The fixture now disables
-transitions, and the check has a control requiring the focused colour to
-DIFFER from the resting one, so it cannot quietly go back to measuring
-nothing.
+test_button_reach required edit_asset to carry an action-secondary, which
+was its Cancel. The claim was never "this page has a Cancel"; it was SAVE
+IS THE ONLY PRIMARY AND THE WAY OUT IS QUIET. It asks that now, and covers
+whichever quiet control the page ends up with.
 
-A rendered check has to stop the clock or wait for it. That is the lesson
-and it applies to every suite in this repo that measures a colour.
+test_table_lease_agreement listed .page-action-buttons-single among the
+rules that MUST NOT have been deleted - a safety net against a patcher
+taking too much. base declares it now and the page's copy went with the
+move, so the net failed for the reason the round succeeded. It asks the
+stronger question: the page must still USE the class and base must still
+DECLARE it. A patcher deleting too much fails that just as hard, and a
+later round quietly dropping the component from base fails it too, which
+the old spelling would have missed.
 
-VERIFIED: 10 checks, sabotaged three ways - re-add the red ring, re-add a
-duplicate rule, put the third wrapper name back - and the red-ring
-sabotage is now caught by BOTH the static and the rendered check. Every
-suite run before and after with full output compared: four differ, all
-explained. test_form_components counts two more surviving bare rules
-because the renamed wrapper's label rule is now spelled .form-group label;
-test_label_bold reports the same rule under its new name; test_deeper_teal
-counts three fewer accent literals, which went with the deleted rules.
+FOUR CHECKS OF MINE WERE THE WRONG SHAPE, AND ONE OF THEM COST FOUR PROBES
+
+Requiring the visible text to be unchanged, in a round whose purpose is to
+delete a button. Then stripping the first "Cancel" from the page's
+concatenated text, which removes whichever comes first rather than the one
+deleted. It measures the SIZE of the change now: exactly as many visible
+characters as the elements this round touched, and no more.
+
+Requiring whole-page tag balance, when user_add, user_edit and
+user_permissions have crossed <form> and <div> tags and have had since
+before any round in this sequence - the oldest backup on disk already
+shows it. It is a DELTA now: this round may not make them worse.
+
+AND `\b` IN A PLAIN PYTHON STRING IS A BACKSPACE. The guard this round
+writes into test_table_lease_agreement contained a word boundary that
+became character 0x08, so the regex searched for a backspace, never
+matched, and the check failed while the identical expression typed by hand
+passed. Four probes to see it, because every tool that printed the line
+rendered the backspace as nothing at all. The patcher now refuses to write
+any file containing a control character.
+
+VERIFIED: 12 checks, sabotaged four ways - re-add a duplicate Cancel, put
+Save back below the fields, restore the narrow pattern, re-add a page-local
+copy of the bar rule. Every suite run before and after with full output
+compared: seven differ and all seven pass, including the two repaired here.
+
+NOT PROVED HERE: that Save belongs at the top or that Cancel should go.
+Both were decided from the screens themselves.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

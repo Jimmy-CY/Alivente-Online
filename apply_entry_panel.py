@@ -79,7 +79,13 @@ RECIPE = ('recipe', 'meal_plan', 'wcim_', 'pantry_', 'ingredient_',
 # An Add or Edit screen, by the name it carries. _form is the model page's
 # own convention (customer_invoice_form), and generate_ is the one screen
 # whose name says what it does rather than which half of the pair it is.
-ENTRY = re.compile(r'(_add|_edit|_form)\.html$|(^|/)generate_')
+# WIDENED 17 Sep. The old pattern matched asset_edit.html and NOT
+# edit_asset.html, so that screen was invisible to this round and to
+# the two before it - and it was the one with Save at the bottom
+# beside a redundant Cancel. A list of filenames is not a rule; a
+# pattern that covers both spellings is.
+ENTRY = re.compile(r'(^|/)(add|edit|new)_|(_add|_edit|_form|_new)\.html$'
+                   r'|(^|/)generate_')
 
 VOID = {'input', 'br', 'img', 'hr', 'meta', 'link', 'source', 'area',
         'base', 'col', 'embed', 'param', 'track', 'wbr'}

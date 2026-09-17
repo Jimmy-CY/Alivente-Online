@@ -2896,6 +2896,19 @@ table.alv-matrix {
     color: var(--alv-ink-soft);
 }
 
+/* A BAR HOLDING ONLY A BACK BUTTON right-aligns it. Three pages declared
+   this identically and base declared nothing.
+
+   IT IS NOT THE VARIANT RETIRED YESTERDAY, though the declaration is the
+   same. That one was inert because its bar carried a primary button which
+   ate the free space, leaving justify-content nothing to distribute. A bar
+   holding only Back has free space, and below 768px base removes the auto
+   margin that would otherwise push it right - so without this the lone
+   Back jumps to the left edge on a phone. Measured both ways at 1040px and
+   400px. Same declaration, opposite verdict, and what decides it is what
+   else is in the bar. */
+.page-action-buttons-single { justify-content: flex-end; }
+
 /* THERE IS ONE ACTION BAR. A .page-action-buttons-form variant lived here
    and was inert: its justify-content lost to the auto margin base puts on
    .action-back, which is on every entry screen. Measured in Chromium at

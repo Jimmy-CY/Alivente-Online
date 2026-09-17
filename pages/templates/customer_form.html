@@ -36,8 +36,8 @@
         <button type="submit" class="btn action-primary">
           <i class="fas fa-save"></i> {% if mode == 'edit' %}Save Changes{% else %}Add Customer{% endif %}
         </button>
-        <a href="{% url 'customer_list' %}" class="btn action-secondary">
-          <i class="fas fa-times"></i> Cancel
+        <a href="{% url 'customer_list' %}" class="btn action-back">
+          <i class="fas fa-arrow-left"></i> Back
         </a>
       </div>
 

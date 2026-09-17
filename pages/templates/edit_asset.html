@@ -28,7 +28,10 @@
 {% endfor %}
 
 <!-- Action Buttons (top) -->
-<div class="page-action-buttons page-action-buttons-single">
+<div class="page-action-buttons">
+  <button type="submit" class="btn action-primary">
+  <i class="fas fa-save"></i> Save Changes
+  </button>
     <a href="{% url 'asset_detail' asset.id %}" class="btn action-back">
         <i class="fas fa-arrow-left"></i> Back
     </a>
@@ -227,17 +230,6 @@
                 <textarea name="notes" class="form-control" rows="4" placeholder="Additional notes...">{{ asset.notes }}</textarea>
             </div>
 
-            <hr>
-
-            <!-- Submit Buttons -->
-            <div class="form-submit-row">
-                <a href="{% url 'asset_detail' asset.id %}" class="btn action-secondary">
-                    <i class="fas fa-times"></i> Cancel
-                </a>
-                <button type="submit" class="btn action-primary">
-                    <i class="fas fa-save"></i> Save Changes
-                </button>
-            </div>
         </form>
     </div>
 </div>
@@ -256,9 +248,6 @@
 <style>
 /* ==================== DESKTOP STYLES ==================== */
 
-.page-action-buttons-single {
-    justify-content: flex-end;
-}
 
 /* Form card */
 .form-card .card-body {

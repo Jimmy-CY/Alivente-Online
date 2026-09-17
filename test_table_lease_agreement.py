@@ -202,10 +202,26 @@ for sel, why in (('.upload-target-info', 'the upload banner'),
                  ('.file-upload-input', 'the file field'),
                  ('.modal-fullscreen-mobile', 'the modal on a phone'),
                  ('.end-date-expired', 'the expired-date red'),
-                 ('.page-action-buttons-single', 'the lone Back bar'),
                  ('.action-btn-back', 'Back on a phone')):
     check('  KEPT %-22s (%s)' % (sel, why),
           re.search(re.escape(sel) + r'\s*[,{:.]', CSS) is not None)
+
+# SCOPE GUARD #33. .page-action-buttons-single was in the list above - a
+# safety net against a patcher deleting too much. base declares it now,
+# and this page's own copy went with the move, so "the page still has the
+# rule" fails for the reason the round succeeded.
+#
+# The net still has to hold, so it asks the stronger question: the page
+# must still USE the class, and base must still declare it. A patcher
+# deleting too much fails that just as hard, and a later round quietly
+# dropping the component from base fails it too - which the old spelling
+# would have missed.
+check('  KEPT the lone Back bar, now declared in base',
+      re.search(r'class="[^"]*page-action-buttons-single', SRC)
+      is not None
+      and re.search(r'[.]page-action-buttons-single\s*[{]',
+                    BASE_SRC) is not None)
+
 
 # Presence is not integrity. A negative control that deleted ONE .filter-panel
 # rule passed every check above, because .filter-panel.expanded still matched.

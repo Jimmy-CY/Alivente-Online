@@ -174,9 +174,6 @@ select.form-control {
     <form method="POST" action="{% url 'workspace_edit' workspace.id %}">
         {% csrf_token %}
         <div class="page-action-buttons">
-            <a href="{% url 'workspace_management' %}" class="btn action-secondary">
-                <i class="fas fa-times"></i> Cancel
-            </a>
             <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save Changes
             </button>

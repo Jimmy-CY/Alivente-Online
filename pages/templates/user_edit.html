@@ -295,9 +295,6 @@ select.form-control {
     <form method="POST" action="{% url 'user_edit' target_user.id %}">
         {% csrf_token %}
         <div class="page-action-buttons">
-            <a href="{% url 'user_administration' %}" class="btn action-secondary">
-                <i class="fas fa-times"></i> Cancel
-            </a>
             <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save Changes
             </button>

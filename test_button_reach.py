@@ -175,9 +175,16 @@ check('edit_asset: the yellow bar is gone',
       'bg-warning' not in _ea and 'alv-card alv-card-lead form-card' in _ea)
 check('  Back uses the standard name now',
       'action-btn-back' not in _ea and 'class="btn action-back"' in _ea)
-check('  Save is the primary, Cancel outlined',
-      'class="btn action-primary"' in _ea
-      and 'class="btn action-secondary"' in _ea
+# SCOPE GUARD #32. This required edit_asset to carry an
+# action-secondary, which was its Cancel - and the Cancel has gone,
+# because it went to the same place as Back. The claim was never "this
+# page has a Cancel"; it was SAVE IS THE ONLY PRIMARY AND THE OTHER
+# CONTROL IS QUIET. That is still checkable, and now covers whichever
+# quiet control the page ends up with.
+check('  Save is the primary, and the way out is quiet',
+      _ea.count('class="btn action-primary"') == 1
+      and ('class="btn action-back"' in _ea
+           or 'class="btn action-secondary"' in _ea)
       and 'btn-success' not in _ea)
 check('  and the white-on-yellow heading rule went with it',
       '.form-card .card-header h4' not in _ea)
