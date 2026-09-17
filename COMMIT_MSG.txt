@@ -1,75 +1,81 @@
-Administration and Personal, stage A: the markup fault, the borrowed
-colour, and the queries that printed
+Administration and Personal, stage B: the module heading
 
-These two modules are to be brought onto base's standards exactly like
-every other module. That is several rounds. This one does only the parts
-that change NOTHING you can see on screen, so the module is sound before
-it is redesigned.
+Seven of these eleven screens headed themselves in four different ways.
+They head themselves the house way now.
 
-It matters because eleven templates have never had a test pass and SEVEN
-of them have already been rewritten by this session's sweeps - the label
-round, the components, the panel wrap, the action bar, the Cancel removal,
-the headings. Those rounds were aimed at the modules that get tested.
-These screens were carried along by them.
+A FOUR-PAGE SAMPLE IS NOT A SURVEY, AND I NEARLY REPORTED THE OPPOSITE
 
-THREE PAGES HAD CROSSED TAGS, AND HAVE HAD SINCE BEFORE ANY OF THIS
+Looking for the shape to copy, the first four list screens I opened -
+Tenants, Properties, Suppliers, Expenses - all used a bare
+<h2><center>NAME</center></h2> with no class. From that it looked as
+though base's heading standard covered entry screens only, and that
+putting Administration on it would make this module the odd one out in
+the other direction.
 
-A </div> closing before the </form> it sits inside. Browsers repair that
-silently and not identically, which is how a form works in one browser and
-misbehaves in another with nothing in the markup to explain it. The oldest
-backup on disk already shows it, so no round in this sequence caused it.
+Counted properly, across the 90 property-management templates:
 
-THE REPAIR WAS READ OFF THE NESTING, NOT GUESSED. user_add's three panels
-close at 278, 298 and 352; the </div> at 353 has nothing left to close and
-the container opened at 220 is closed by the one at 358 - so that tag is
-simply EXTRA. user_edit is the same shape. user_permissions is the
-opposite: its .form-card at 331 is never closed, so a </div> is inserted
-before the </form>.
+    46   on base's standard, .page-title-h2
+    17   an h2 with a <center> and no class
+    15   an h2 in some other shape
+     6   an h1
+     3   an h2 with an icon
+     3   no heading at all
 
-Each page's mismatch count must reach ZERO, which is a stronger statement
-than "it got better" - and the suite requires zero across all eleven, so
-a new one cannot arrive unnoticed.
+The standard is the plurality; those four screens are in the 17. So this
+round moves Administration onto the standard AND onto what most of the
+system already does. The 44 stragglers are a later round.
 
-THE COLOUR, AND THE SURVEY THAT CORRECTED ME WHILE I WROTE IT
+THE MODULE NAME IS DERIVED WHERE THERE IS ONE TO DERIVE
 
-#667eea appears 49 times across these screens. I had the survey section
-titled "a colour the palette does not contain" - and its own control line
-came back saying IT IS IN BASE, CHECK THIS. It was right: base uses that
-purple, paired with #764ba2, for the avatar circle with the user's
-initials. Deliberate, and untouched here - 11 uses stay.
+Same rule as the entry screens: follow the Back link and read the heading
+of the screen it returns to. user_permissions returns to
+user_administration, so it becomes USER ADMINISTRATION over PERMISSIONS —
+{{ target_user.username }}.
 
-The other 38 are icons, borders and focus rings borrowing the avatar's
-purple where --alv-accent belongs. Same fault as the red focus ring on the
-Financials expense screens: nobody chose it, it arrived, and no rule
-stopped it. A pairing with #764ba2 marks the avatar; everything else takes
-the token.
+A LANDING SCREEN IS ITS OWN MODULE. user_administration, workspace
+management, help and my_profile have no Back at all; they ARE the top of
+their module, so their own heading becomes the module line and there is no
+mode line to invent.
 
-A report that cannot contradict its author is not worth printing.
+admin_apms has a Back and it goes to `home`. THAT IS NOT A MODULE - it is
+the system root, and deriving from it would head the Administration
+dashboard with whatever the home page calls itself. Named, with the
+reason, and treated as a landing screen.
 
-NINE QUERIES THAT PRINTED
+AND A MODE LABEL DOES NOT REPEAT ITS MODULE. notification_settings calls
+itself "Administration Notification Settings" and returns to
+ADMINISTRATION, which would have given ADMINISTRATION over ADMINISTRATION
+NOTIFICATION SETTINGS. Where the mode begins with the module name, the
+prefix is dropped.
 
-Nine of the eleven carried a max-width query with no `screen` keyword. A4
-portrait is about 718 CSS px, so they fired on paper and printed the page
-in phone layout. The keyword changes nothing on a screen.
+A SIXTH NAME FOR ONE HEADING
 
-The rest of the system still has 79 such queries on 63 pages. Those are
-section 2.I's. These nine are here because this round is about bringing
-one module onto the standard, not because the paper problem is solved.
+admin_apms headed itself with .admin-page-title, declared on that page and
+nowhere else. Sixth name this system has had for one heading, after
+page-title-h2, page-title-center, the bare centred h2, the h1 and the
+icon'd h2. It goes with this round, and the suite requires all of the
+retired ones to be absent from these modules.
 
-VERIFIED: 11 checks, sabotaged three ways - re-cross a tag, put the purple
-back, unguard a query. Section 1 also proves it can SEE a crossed tag,
-tested on a string rather than on the repo, so it cannot quietly go vacuous
-the day the repo is clean. Section 4 renders user_edit's own stylesheet
-under base and reads the focus ring back at rgb(14, 124, 139), with
-transitions disabled - read at 0ms it would still be the resting colour,
-which is how a focus check passes whatever the rule says.
+THE ICONS GO. base's standards block says a heading carries no icon; six
+of these seven started with one.
 
-Every suite run before and after with full output compared: three differ,
-two hold their verdicts exactly and the third is this round's own.
+`&amp;` UPPER-CASED IS `&AMP;`, WHICH RENDERS
 
-STILL TO COME IN THESE MODULES: the module heading on 7 screens, the panel
-on 5, the panel title on all 11, and the two tables. None of that is in
-this round.
+help_page's heading is "Help & User Manual". Upper-casing the literal text
+turned its entity into &AMP; - which browsers mostly forgive, the standard
+does not, and which would have survived for years precisely because it
+LOOKS right on screen. The previous round protected Django tags from
+upper-casing and not entities; this one protects both, and the suite
+sabotages it.
+
+VERIFIED: 11 checks, sabotaged four ways - drop the class, put an icon
+back in a heading, rename a module on its own screen, upper-case the
+entity. Every suite in the repo run before and after with full output
+compared: five differ, four hold their verdicts exactly and the fifth is
+this round's own.
+
+STILL TO COME IN THESE MODULES: the panel on 5 screens, the panel title on
+all 11, and the two tables.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

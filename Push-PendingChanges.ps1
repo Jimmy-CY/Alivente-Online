@@ -820,7 +820,12 @@ $suites = @(
     # three of them did not before this round - a </div> closing
     # before the </form> it sits inside. Newest, so most likely to be
     # what breaks.
-    'test_admin_repair.py'
+    'test_admin_repair.py',
+    # Administration and Personal, stage B: the module heading. Its
+    # section 2 re-derives every module name from the screen Back
+    # returns to, so renaming a module reports its sub-screens the
+    # same day. Newest, so most likely to be what breaks.
+    'test_admin_headings.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
