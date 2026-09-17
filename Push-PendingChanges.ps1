@@ -790,7 +790,13 @@ $suites = @(
     # outside it comes apart for one kind of user and not another,
     # and nothing reading the markup flat can see that. Newest, so
     # most likely to be what breaks.
-    'test_entry_panel.py'
+    'test_entry_panel.py',
+    # One action bar. Its section 2 RENDERS a bar at three widths
+    # with one, two and five buttons and compares it against the
+    # retired variant's rules re-applied, because the whole case for
+    # removing that class is that it changed nothing. Newest, so most
+    # likely to be what breaks.
+    'test_one_action_bar.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

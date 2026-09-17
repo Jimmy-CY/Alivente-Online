@@ -236,6 +236,15 @@ select.form-control {
 
     <form method="POST" action="{% url 'user_add' %}">
         {% csrf_token %}
+        <div class="page-action-buttons">
+            <a href="{% url 'user_administration' %}" class="btn action-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn action-primary">
+                <i class="fas fa-user-plus"></i> Create User
+            </button>
+        </div>
+
 
         <!-- Personal Information -->
         <div class="form-card">
@@ -346,14 +355,6 @@ select.form-control {
         </div>
 
         <!-- Action Buttons -->
-        <div class="page-action-buttons">
-            <a href="{% url 'user_administration' %}" class="btn action-secondary">
-                <i class="fas fa-times"></i> Cancel
-            </a>
-            <button type="submit" class="btn action-primary">
-                <i class="fas fa-user-plus"></i> Create User
-            </button>
-        </div>
 
     </form>
 </div>

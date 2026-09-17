@@ -1,103 +1,110 @@
-the Add and Edit screens get a panel, so the wash has something to paint
+one action bar, and the variant that never did anything is retired
 
-base declares .form-card and it carries the Customer Invoice wash. On
-Properties > Add and Tenants > Add nothing changed, because those pages
-HAVE NO PANEL ELEMENT. Their fields sit straight on the page. A rule
-cannot paint a box that is not there.
+.page-action-buttons-form declared justify-content: flex-end. base also
+declares .page-action-buttons .action-back with margin-left: auto. Same
+specificity - and in a flex row an auto margin wins, because it consumes
+the free space that justify-content would otherwise have to distribute.
 
-That was the real answer to "why does it not look like Customer Invoice",
-and it was never a colour problem. Customer Invoice was one of ten screens
-that already had a panel, which is precisely why it was the screen that
-looked right.
+So on every screen that has a Back button, which is all 49 entry screens,
+the variant was inert. Rendered in Chromium at 1040px, 768px and 400px
+with one, two and five buttons: a bar carrying the class and a bar without
+it are identical in every button's position and size. It bites only on a
+bar with NO Back button, which no entry screen is.
 
-WHAT THIS ROUND DOES, IN THREE CASES
+I SHIPPED HALF OF THAT RULE MYSELF, EIGHT DAYS AGO
 
-  WRAP - 14 Add and Edit screens whose fields sat loose get one panel
-  around everything in the form AFTER the action bar. That is where the
-  model screen puts its own: bar above, panel below.
+The heading round put the desktop half in base and its commit message said
+the variant "differed only in where it pushes its buttons". It does not
+push them anywhere. I had read the stylesheet and not rendered it, which
+is exactly the failure that round's own suite was built to catch for
+:has() - and I did not apply the same suspicion to the rule beside it.
 
-  RENAME - suppliers_add and suppliers_edit already had a panel and called
-  it .form-section. The class becomes .form-card and the page's own rule
-  for it goes, because base declares the same six properties. One name for
-  one thing.
+Before this, I told you 45 of 49 screens were "missing the right-aligned
+form variant". They were not missing anything visible. That number was
+wrong and the round it implied would have changed nothing on 45 pages.
 
-  REPORT AND LEAVE - cash_receipt_add carries the house .alv-card and
-  generate_lease_agreement carries Bootstrap's .card. Both already have a
-  box. Putting a panel around a panel is not what was asked for, and
-  choosing between two existing components is a decision rather than a
-  sweep. Both are named.
+IT WAS WORTH EXACTLY ONE PIXEL, AND THE SUITE SAYS SO
 
-24 of the 26 Add and Edit screens are now on the component.
+Below 768px the variant set align-items: stretch where the plain bar
+centres. The Back button is 40px tall and the others 38px, so the plain bar
+sits them 1px lower. That is the whole behavioural difference removed here,
+on the four screens that carried the class. The first version of the suite
+claimed the rules changed nothing at all; the browser contradicted it at
+two of the three widths within a minute. The check now asserts what is
+true: no horizontal change anywhere, and a vertical difference of at most
+one pixel.
 
-ONE PANEL, NOT THREE, AND THAT IS A DELIBERATE STOP
+FIVE SCREENS MOVE SAVE TO THE TOP
 
-The model screen has three panels with titles - Customer, Settings, Lines.
-Splitting the other screens that way means deciding, per page, which
-fields belong together. That is design work and a tool cannot do it. One
-panel per screen is mechanical, reversible, and puts the wash on every
-Add and Edit screen today. Titled groups can follow per page, by eye, and
-the suite says in as many words that it does not check the grouping.
+customer_form, user_add, user_edit, workspace_add and workspace_edit put
+their action bar at the BOTTOM of the form. Everywhere else it comes before
+the first field. Save now lives in one place in this system.
 
-THE FAILURE THAT WOULD REALLY HURT IS INVISIBLE IN THE DIFF
+Each bar is moved only if it is a self-contained div whose HTML tags and
+Django block tags both balance inside it, and only into a form that opens
+with a csrf token, so there is an unambiguous place to put it. A move is
+checked as a PERMUTATION: the page's non-whitespace characters, its tag
+list and its div and form balances must all be unchanged.
 
-A wrap is a markup change on signed-off pages. The dangerous case is not a
-crooked box: it is a panel whose opening tag sits inside an {% if %} and
-whose closing tag sits outside it. Then the panel closes only sometimes,
-and the page comes apart for one kind of user and not another - in
-production, for somebody without a permission I have.
+SCOPE GUARD #30 - A SUITE THAT REQUIRED THE RETIRED CLASS
 
-So no page is wrapped until its region is proved self-contained: at least
-one control in it, every HTML tag it opens closed inside it, EVERY DJANGO
-BLOCK TAG it opens closed inside it, and no nested form. Any page failing
-any of those is reported and skipped rather than guessed at. The suite
-then re-checks it from the other end, computing the block-tag depth at the
-panel's opening tag and at its closing tag and failing if they differ.
+test_heading_components asserted base defines three classes. Its claim was
+that BASE OWNS THE CLASSES THE STANDARD IS WRITTEN IN, not that there are
+three of them, so holding base to a class nobody should use would be
+holding the system to a mistake. It asserts two now, plus that the third is
+gone from base AND from every template - a stronger claim than the one it
+replaces.
 
-WHAT THE SUITE FOUND THAT THIS ROUND DID NOT CAUSE
+SCOPE GUARD #31 - AND A FLOOR CALIBRATED TO THREE CLASSES
 
-Five screens that already had a panel put their action bar at the BOTTOM
-of the form - customer_form, user_add, user_edit, workspace_add,
-workspace_edit - where the model screen puts Save and Back at the top
-right. That is REPORTED, not failed. Moving a Save button is visible and
-preference-bearing: a decision somebody takes, not a fault a sweep
-corrects. It belongs to the action-bar round.
+The same suite required at least four guarded phone rules. Retiring one
+class takes it to two, so the floor failed for the reason the round
+succeeded. It is two now; the floor exists only so the check above it
+cannot pass on an empty list, and the meaning lives in that line.
 
-And customer_form puts its panel OUTSIDE its form rather than inside. The
-first spelling of that check required the panel to be inside and reported
-the page as broken. Either nesting is legitimate; what must never happen
-is the two OVERLAPPING, which is what a wrap at the wrong offset would
-produce and what no browser recovers from predictably. That is the check
-now.
+FOUR BUGS, AND THREE OF THEM ARE THE SAME BUG
 
-ONE BUG, THE SAME FAMILY AS THE WEEK'S OTHERS
+A CHECK POINTED AT A SUBSTRING INSTEAD OF AT THE THING IT NAMES, three
+times in one round. base's own note NAMES the class it retired - that is
+what the note is for - so "is the string still there" found the
+explanation and called it a survival. Twice in the patcher, once in the new
+suite. All three ask for a class TOKEN or a RULE now, and the suite has a
+control proving the pattern can tell `page-action-buttons-form` from
+`page-action-buttons-form-x`.
 
-The rename check asked whether the string "form-section" survived.
-form-section-title contains it, is a different class, and is one this
-round keeps - so both Suppliers pages reported a failed rename and the
-patcher refused to write anything at all. It asks for the standalone token
-now. Three times this week a check has been pointed at a substring instead
-of at the thing it names.
+One of those had a second edge: the rule pattern used [^{}]* to reach the
+opening brace, which runs forward to the NEXT BRACE ANYWHERE - so with
+prose in between it matched an unrelated rule further down the file. That
+is the standards block's own documented lesson, prose shaped like code,
+arriving inside the check written to enforce it.
 
-VERIFIED: 13 checks, including the panel rendered in Chromium against
-base's real stylesheet - the wash, 20px by 24px, 12px, the softer shadow -
-with a plain div as the control. Every suite in the repo was run before and
-after with full output compared, not just summary lines: two differ, this
-round's own and test_form_components counting two more media-query rules
-because Suppliers' renamed phone rule now reads as .form-card. The other
-82 are byte-identical.
+AND THE MOVE WAS NOT IDEMPOTENT. Cutting the bar's lines and re-inserting
+it is a no-op only if the tool RECOGNISES that the bar is already where it
+is going; without that it re-inserted a newline and the indentation on
+every run, so the file drifted a little each time. An idempotent tool has
+to recognise the state it is trying to reach, not merely be able to reach
+it.
 
-NOT PROVED HERE: that the fields inside each panel are grouped well. One
-box around everything is not the same as a well-organised screen.
+TWO CLAIMS IN THE SUITE WERE TOO STRONG AND THE BROWSER SAID SO
 
-WHAT IS STILL BETWEEN THESE SCREENS AND THE MODEL, in order of how much it
-shows:
+Section 2 first required the bar to sit INSIDE the form element and be the
+first thing in it. Eight screens put their bar above the form and two put a
+heading inside the form above it - both ordinary arrangements that put Save
+exactly where the decision says. The decision was about what the reader
+sees first, so the check measures that: the bar comes before the first
+control. That is one claim instead of two, and it is the one that was
+actually agreed.
 
-  1. the action bar - 45 of 49 screens do not use the right-aligned form
-     variant, and five put it at the bottom;
-  2. the headings - 22 screens have no page-title-h2;
-  3. the 49 compound CSS rules that still outrank base, half of them one
-     Financials rule copied twelve times;
-  4. titled sub-panels, which is per-page design.
+VERIFIED: 11 checks, sabotaged three ways - re-add the class to a page,
+re-add the rule to base, move a bar back below the fields. Every suite in
+the repo run before and after with full output compared: five differ and
+all five pass. test_entry_panel now reports 23 screens with the bar above
+the panel instead of 19; test_filter_toggle counts base's braces at 347
+rather than 351; test_standards_block counts one fewer component; and
+test_heading_components carries the two guards above.
+
+NOT PROVED HERE: that Save belongs at the top. That was decided from the
+two rendered side by side.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

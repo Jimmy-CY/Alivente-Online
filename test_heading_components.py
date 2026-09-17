@@ -63,7 +63,16 @@ BASE = os.path.join(T, 'base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 MARK = 'ALV PAGE HEADING v1'
-CLASSES = ('page-title-h2', 'page-subtitle-h4', 'page-action-buttons-form')
+# SCOPE GUARD #30. This was three classes. .page-action-buttons-form
+# has been retired: it declared justify-content: flex-end and lost every
+# time to the auto margin base puts on .action-back, which is on every
+# entry screen. The heading round's claim was that BASE OWNS THE CLASSES
+# THE STANDARD IS WRITTEN IN - not that there are three of them. Asserting
+# base still defines a class nobody should use would hold the system to a
+# mistake. What replaces it is stronger: the class must be gone from base
+# AND from every template. See test_one_action_bar.py.
+CLASSES = ('page-title-h2', 'page-subtitle-h4')
+RETIRED = 'page-action-buttons-form'
 
 PASS = FAIL = SKIP = 0
 FAILED = []
@@ -190,6 +199,33 @@ check('  CONTROL: and --alv-ink-soft is declared',
 check('  no #6c757d survives on it, which is Bootstrap\'s grey',
       not [r for r in BR if 'page-subtitle' in r[1] and '#6c757d' in r[2]])
 
+# The retired class, checked here as well as in its own suite, because
+# this is the suite that used to REQUIRE it. A claim that changes sides
+# should be visible in the place it used to live.
+#
+# A CLASS TOKEN OR A RULE, NEVER THE BARE STRING. base's own note NAMES the
+# class it retired - that is what the note is for - and the first spelling
+# of this check searched for the string and reported base.html as still
+# carrying it. Third time this week a check has been pointed at a substring
+# instead of at the thing it names.
+_RET_USE = re.compile(r'class="[^"]*(?<![-\w])' + RETIRED + r'(?![-\w])')
+_RET_RULE = re.compile(r'\.' + RETIRED + r'\b[^{}\n]*\{')
+_ret = []
+for _d, _s, _ns in os.walk(T):
+    for _n in sorted(_ns):
+        if not _n.endswith('.html'):
+            continue
+        _t = read(os.path.join(_d, _n))
+        if _RET_USE.search(_t) or _RET_RULE.search(_t):
+            _ret.append(os.path.relpath(os.path.join(_d, _n), T)
+                        .replace(os.sep, '/'))
+check('the retired form-bar variant is gone from base and every page',
+      not _ret, '%d still carry it: %s' % (len(_ret), ', '.join(sorted(_ret)[:4])))
+check('  CONTROL: and the check can see a class token when there is one',
+      bool(_RET_USE.search('class="a ' + RETIRED + ' b"'))
+      and not _RET_USE.search('class="' + RETIRED + '-x"')
+      and bool(_RET_RULE.search('.' + RETIRED + ' { a: b; }')))
+
 # ---------------------------------------------------------------------- 2
 head('2. NO PAGE RESTATES THEM - and none fires on paper')
 
@@ -213,7 +249,7 @@ check('base\'s own phone rules say screen', bool(_bm)
       and all(r[0].startswith('screen') for r in _bm),
       '%d rule(s): %s' % (len(_bm), _bm[0][0] if _bm else ''))
 check('  CONTROL: and there are phone rules to have got wrong',
-      len(_bm) >= 4, '%d' % len(_bm))
+      len(_bm) >= 2, '%d' % len(_bm))
 
 users = [rel_of(p) for p in templates()
          if re.search(r'class="[^"]*\bpage-title-h2\b', read(p))]

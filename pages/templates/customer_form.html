@@ -32,6 +32,15 @@
     <form method="post"
           action="{% if mode == 'edit' %}{% url 'customer_edit' customer.pk %}{% else %}{% url 'customer_add' %}{% endif %}">
       {% csrf_token %}
+      <div class="page-action-buttons">
+        <button type="submit" class="btn action-primary">
+          <i class="fas fa-save"></i> {% if mode == 'edit' %}Save Changes{% else %}Add Customer{% endif %}
+        </button>
+        <a href="{% url 'customer_list' %}" class="btn action-secondary">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+
 
       <div class="form-row">
         <div class="col-md-6">
@@ -103,14 +112,6 @@
         </div>
       </div>
 
-      <div class="page-action-buttons">
-        <button type="submit" class="btn action-primary">
-          <i class="fas fa-save"></i> {% if mode == 'edit' %}Save Changes{% else %}Add Customer{% endif %}
-        </button>
-        <a href="{% url 'customer_list' %}" class="btn action-secondary">
-          <i class="fas fa-times"></i> Cancel
-        </a>
-      </div>
     </form>
   </div>
 </body>

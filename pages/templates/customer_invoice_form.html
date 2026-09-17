@@ -43,7 +43,7 @@
   {% csrf_token %}
 
   <!-- Action Buttons -->
-  <div class="page-action-buttons page-action-buttons-form">
+  <div class="page-action-buttons">
     {% if mode != 'edit' or is_editable %}
       <button class="btn action-primary" type="submit">
         <i class="fas fa-save"></i> {% if mode == 'edit' %}Save{% else %}Save as Draft{% endif %}

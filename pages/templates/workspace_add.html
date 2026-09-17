@@ -108,6 +108,15 @@ select.form-control {
 
     <form method="POST" action="{% url 'workspace_add' %}">
         {% csrf_token %}
+        <div class="page-action-buttons">
+            <a href="{% url 'workspace_management' %}" class="btn action-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn action-primary">
+                <i class="fas fa-plus"></i> Create Workspace
+            </button>
+        </div>
+
 
         <div class="form-card">
             <h2><i class="fas fa-info-circle" style="color:#667eea;"></i> Workspace Details</h2>
@@ -138,14 +147,6 @@ select.form-control {
             </div>
         </div>
 
-        <div class="page-action-buttons">
-            <a href="{% url 'workspace_management' %}" class="btn action-secondary">
-                <i class="fas fa-times"></i> Cancel
-            </a>
-            <button type="submit" class="btn action-primary">
-                <i class="fas fa-plus"></i> Create Workspace
-            </button>
-        </div>
     </form>
 </div>
 
