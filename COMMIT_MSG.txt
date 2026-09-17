@@ -1,94 +1,75 @@
-the last entry screens get the house heading, derived rather than typed
+Administration and Personal, stage A: the markup fault, the borrowed
+colour, and the queries that printed
 
-Seventeen of the twenty-seven entry screens already head themselves the
-same way: the MODULE in caps on the h2, the MODE on the h4. Ten did not.
+These two modules are to be brought onto base's standards exactly like
+every other module. That is several rounds. This one does only the parts
+that change NOTHING you can see on screen, so the module is sound before
+it is redesigned.
 
-THE MODULE NAME WAS ALREADY WRITTEN DOWN
+It matters because eleven templates have never had a test pass and SEVEN
+of them have already been rewritten by this session's sweeps - the label
+round, the components, the panel wrap, the action bar, the Cancel removal,
+the headings. Those rounds were aimed at the modules that get tested.
+These screens were carried along by them.
 
-Not by me - on the screen each entry screen's Back button returns to.
-customer_form's Back goes to customer_list, whose heading is INVOICE
-CUSTOMERS. finance_expense_add's goes to finance_expense: EXPENSES.
+THREE PAGES HAD CROSSED TAGS, AND HAVE HAD SINCE BEFORE ANY OF THIS
 
-So it is DERIVED: follow the Back link's {% url %}, find that template,
-read its heading. A table of ten headings typed by me would have been a
-list of filenames again, which is the thing that has been wrong five times
-in this work. The suite re-derives all of it, so renaming a module on its
-list screen reports its Add and Edit screens the same day.
+A </div> closing before the </form> it sits inside. Browsers repair that
+silently and not identically, which is how a form works in one browser and
+misbehaves in another with nothing in the markup to explain it. The oldest
+backup on disk already shows it, so no round in this sequence caused it.
 
-THE MODE LABEL IS THE PAGE'S OWN WORDS, upper-cased - and only the LITERAL
-text, never the inside of a Django tag. Upper-casing {{ workspace.name }}
-gives a variable that does not exist and the heading renders EMPTY, which
-looks like a blank line rather than an error. The suite sabotages exactly
-that.
+THE REPAIR WAS READ OFF THE NESTING, NOT GUESSED. user_add's three panels
+close at 278, 298 and 352; the </div> at 353 has nothing left to close and
+the container opened at 220 is closed by the one at 358 - so that tag is
+simply EXTRA. user_edit is the same shape. user_permissions is the
+opposite: its .form-card at 331 is never closed, so a </div> is inserted
+before the </form>.
 
-A FIFTH CLASS PAIR, IN ONE MODULE
+Each page's mismatch count must reach ZERO, which is a stronger statement
+than "it got better" - and the suite requires zero across all eleven, so
+a new one cannot arrive unnoticed.
 
-The Issues screens headed themselves with .page-title-center and
-.page-subtitle-center - text-align: center and nothing else, a strict
-subset of what base's .page-title-h2 already does. All three Issues pages
-are renamed, not only the entry screen, because fixing one would leave
-that module internally inconsistent to fix a system-wide problem.
+THE COLOUR, AND THE SURVEY THAT CORRECTED ME WHILE I WROTE IT
 
-THE RULE I SOLD YOU IS WEAKER THAN I SAID, AND THE SUITE SAYS SO
+#667eea appears 49 times across these screens. I had the survey section
+titled "a colour the palette does not contain" - and its own control line
+came back saying IT IS IN BASE, CHECK THIS. It was right: base uses that
+purple, paired with #764ba2, for the avatar circle with the user's
+initials. Deliberate, and untouched here - 11 uses stay.
 
-Re-checking every screen rather than only the nine written, the derivation
-resolves 23 of 27 and TWO of those disagree - neither because of this
-round:
+The other 38 are icons, borders and focus rings borrowing the avatar's
+purple where --alv-accent belongs. Same fault as the red focus ring on the
+Financials expense screens: nobody chose it, it arrived, and no rule
+stopped it. A pairing with #764ba2 marks the avatar; everything else takes
+the token.
 
-  customer_invoice_form heads itself CUSTOMER INVOICE while its list
-  screen is PHYSICAL INVOICES. Not singular and plural of the same words:
-  two names for one module, with the model screen on one side of it. That
-  wants a person, and it is named so it stays visible.
+A report that cannot contradict its author is not worth printing.
 
-  edit_asset's module line holds its MODE, because its Back goes to a
-  detail page and there is no module name to read there.
+NINE QUERIES THAT PRINTED
 
-Four more cannot be re-derived at all - Back points at act_expense_all or
-cash_receipt_list, which are url names with no template of that name. Each
-prints the reason, read off the page rather than looked up in a list.
+Nine of the eleven carried a max-width query with no `screen` keyword. A4
+portrait is about 718 CSS px, so they fired on paper and printed the page
+in phone layout. The keyword changes nothing on a screen.
 
-I ALSO ASSUMED url name == template stem. It held for the eight screens
-this round wrote and for barely half of the rest: `projects` lives in
-projects/projects.html. The first re-check called nine screens underivable
-when several were simply in a subdirectory. It searches properly now.
+The rest of the system still has 79 such queries on 63 pages. Those are
+section 2.I's. These nine are here because this round is about bringing
+one module onto the standard, not because the paper problem is solved.
 
-AND SINGULAR IS NOT DRIFT. Comparing headings as strings called three good
-headings wrong - an entry screen naming the singular thing it edits beside
-a list naming the plural is correct English. The comparison normalises a
-trailing S, and I nearly "fixed" three correct pages.
+VERIFIED: 11 checks, sabotaged three ways - re-cross a tag, put the purple
+back, unguard a query. Section 1 also proves it can SEE a crossed tag,
+tested on a string rather than on the repo, so it cannot quietly go vacuous
+the day the repo is clean. Section 4 renders user_edit's own stylesheet
+under base and reads the focus ring back at rgb(14, 124, 139), with
+transitions disabled - read at 0ms it would still be the resting colour,
+which is how a focus check passes whatever the rule says.
 
-TWO THINGS ARE REMOVED, AND BOTH ARE PRINTED
+Every suite run before and after with full output compared: three differ,
+two hold their verdicts exactly and the third is this round's own.
 
-Four Issues phone rules that survived the rename and then styled classes
-base owns - three of them in a query with no `screen` keyword, so they
-fired on paper. base declares the font size; their 8px side padding is NOT
-carried over, and the patcher says so by name.
-
-And two descriptive sentences: "Record a new expense entry for a property"
-and "Update an existing expense entry", which sat as an h5 under the title
-on the two Financials expense screens. With EXPENSES / ADD EXPENSE above
-them they are a third heading saying the same thing, the heading standard
-already forbids a page carrying both, and no other Add or Edit screen has
-one. A sentence is content rather than formatting, so it is printed rather
-than dropped quietly.
-
-A CRASH, WHICH IS WORSE THAN A FAILURE
-
-The suite appended a bare string to a list whose report loop unpacks a
-pair, so it died part-way through instead of failing. A crash blocks a
-push exactly as hard as a failure and says far less about why - the fourth
-time that lesson has been earned in this project.
-
-VERIFIED: 11 checks, sabotaged four ways - rename a module on its list
-screen, put the fifth class pair back, upper-case a Django variable inside
-a heading, and one sabotage that did not fire until I noticed it had
-landed in the {% block title %} rather than the heading. Every suite run
-before and after with full output compared: five differ, four hold their
-verdict exactly and the fifth is this round's own.
-
-NOT PROVED HERE: that the module names read well. They were read off the
-list screens rather than chosen, so if one is wrong it is wrong in two
-places and this suite will keep them wrong together.
+STILL TO COME IN THESE MODULES: the module heading on 7 screens, the panel
+on 5, the panel title on all 11, and the two tables. None of that is in
+this round.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01EQSrDTGDteE6TmBRTMJndg

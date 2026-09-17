@@ -33,7 +33,7 @@
     color: #2c3e50;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
+    border-bottom: 2px solid var(--alv-accent);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -57,7 +57,7 @@ select.form-control {
     background-color: white;
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .workspace-form-container { padding: 0 8px; }
     .page-header {
         flex-direction: column;
@@ -117,7 +117,7 @@ select.form-control {
 
 
         <div class="form-card">
-            <h2><i class="fas fa-info-circle" style="color:#667eea;"></i> Workspace Details</h2>
+            <h2><i class="fas fa-info-circle" style="color:var(--alv-accent);"></i> Workspace Details</h2>
 
             <div class="form-group mb-4">
                 <label><strong>Workspace Name</strong> <span class="alv-req">*</span></label>

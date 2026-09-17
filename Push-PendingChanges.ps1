@@ -814,7 +814,13 @@ $suites = @(
     # Its section 2 follows every Back link and re-derives it, so a
     # module renamed later shows up as a heading that no longer
     # matches. Newest, so most likely to be what breaks.
-    'test_entry_headings.py'
+    'test_entry_headings.py',
+    # Administration and Personal, stage A. Its section 1 requires
+    # every one of those templates to have ZERO tag mismatches, which
+    # three of them did not before this round - a </div> closing
+    # before the </form> it sits inside. Newest, so most likely to be
+    # what breaks.
+    'test_admin_repair.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
