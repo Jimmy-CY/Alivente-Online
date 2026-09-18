@@ -843,7 +843,13 @@ $suites = @(
     # _sup_probe.html in this directory; on this list two of them run back
     # to back, and the second was answered with net::ERR_FAILED. Every
     # fixture now lives in a mkdtemp directory, and this is what says so.
-    'test_probe_location.py'
+    'test_probe_location.py',
+    # One panel title: h3.form-section-title, sized BY BASE. The
+    # tag used to decide how big it was, and the system had five
+    # answers - two of them at or below the size of the field
+    # labels underneath. Its section 4 measures that, because a
+    # size is not something a string search can check.
+    'test_panel_title.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

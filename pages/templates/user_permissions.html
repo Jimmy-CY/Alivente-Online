@@ -9,19 +9,6 @@
     margin: 0 auto;
 }
 
-
-.form-card h2 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--alv-accent);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .user-meta-box {
     background: #f8f9fa;
     border-radius: 8px;
@@ -199,10 +186,6 @@
         padding: 16px;
         border-radius: 8px;
     }
-    .form-card h2 {
-        font-size: 15px;
-        margin-bottom: 16px;
-    }
 
     /* Select-all bar — stack count above buttons */
     .select-all-bar {
@@ -278,7 +261,7 @@
         {% csrf_token %}
 
         <div class="form-card">
-            <h2><i class="fas fa-lock" style="color:var(--alv-accent);"></i> Module Access</h2>
+            <h3 class="form-section-title"><i class="fas fa-lock"></i> Module Access</h3>
 
             <!-- Select All / None Bar -->
             <div class="select-all-bar">

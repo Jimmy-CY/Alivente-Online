@@ -12,23 +12,31 @@ WHAT IS WRONG TODAY, AND IT IS NOT THE NAMES
       .form-section-title { color: var(--alv-ink); font-weight: 600;
                             margin: 0 0 16px; }
 
-  So the heading TAG decides how big a panel title is, and the system has
-  five answers. Measured on each page as it renders, against its own 14px
-  field label:
+  So the heading TAG decides how big a panel title is. Measured with
+  Bootstrap loaded - which is what ships - and base's size taken away, the
+  four tags these titles actually use come out:
 
-      customer_invoice_form  h5.form-section-title   13.28px   no rule
-      the six Financials     h6.form-section-title   14px      no rule
-      the Administration six bare <h2>, no class     16px      2px rule
-      petty_cash_add         h5.form-section-title   16.8px    2px rule
-      edit_asset             h4.alv-card-title       16px/700  no rule
+      h2 (13 titles)   32px
+      h3                28px
+      h5 ( 6 titles)    20px
+      h6 (12 titles)    16px
 
-  TWO OF THEM RENDER THE TITLE AT OR BELOW THE SIZE OF ITS OWN LABELS.
-  On the model screen, "Personal Information" is SMALLER than the words
-  "First Name" underneath it. That is the defect; the six different class
-  names are only how it got there.
+  ONE COMPONENT, FOUR SIZES, chosen by whichever heading a page happened to
+  reach for. test_panel_title.py section 5 measures exactly that, and its
+  control is what produced these numbers.
 
-  (Checked: customer_invoice_form never had a font-size of its own, so the
-  13.28px is the browser's h5 default and predates every round here.)
+  AN EARLIER VERSION OF THIS PARAGRAPH SAID SOMETHING STRONGER AND WRONG.
+  It listed 13.28px, 14px, 16px, 16.8px and 16px and claimed two of them
+  fell at or below the 14px field labels - "Personal Information" smaller
+  than "First Name" beneath it. Those were measured WITHOUT Bootstrap. The
+  CDN is unreachable from the sandbox, the stylesheet never loaded, and
+  every number was a browser default. With Bootstrap loaded nothing is
+  smaller than its labels.
+
+  The spread is real and is reason enough. The sentence about the labels
+  was not, and it is the same fault as the btn-sm measurement in the
+  button round: a rendering test that renders without the stylesheet the
+  page actually has measures nothing.
 
 WHAT THIS ROUND DOES
 
@@ -66,10 +74,25 @@ WHAT IS REPORTED RATHER THAN SWEPT
   heading would turn the record's NAME into a section title. That page wants
   its own look at.
 
-  The sub-titles that sit OUTSIDE any .form-card - `.lines-title` on two
-  invoice screens, `.pi-section-title` on the two tenant screens, and
-  property_assets' `.form-section-heading`. They are a second level of
-  structure and deserve their own component, which is a decision rather
+  THIS PARAGRAPH USED TO BE WRONG AND THE SURVEY CAUGHT IT. It said the
+  sub-titles "sit OUTSIDE any .form-card" and named four screens. Measured,
+  that is true of exactly one of them:
+
+      customer_invoice_form  .lines-title       at 8623, card 2096-7575   OUT
+      physical_invoice_edit  .lines-title       at 2724, card 1696-5880   IN
+      tenant_add             .pi-section-title  at 9847, card 1187-14893  IN
+      tenant_edit            .pi-section-title  at 11805, card 2371-17054 IN
+
+  Three of the four sit INSIDE a panel, doing a panel title's job under a
+  different name. The sweeper tests containment and was right; the prose
+  was a list written from one page's shape, and the list lost. They are
+  swept, and their page rules go with them - including the icon rules,
+  which is why base takes the icon.
+
+  What IS still out of scope: customer_invoice_form's .lines-title, which
+  really is outside the card and really is a second level of structure, and
+  property_assets' .form-section-heading. Those keep their class, their
+  size and their teal icon, and a component for them is a decision rather
   than a rename.
 
   The 11 form-cards that carry no heading at all. A panel without a title
@@ -146,6 +169,15 @@ SUBTITLE_CLASSES = ('alv-card-title', 'form-section-heading',
 ADD = (('font-size', '16px'),
        ('padding-bottom', '9px'),
        ('border-bottom', '2px solid var(--alv-accent)'))
+
+# A SECOND RULE, not a declaration on the first. 17 of the 34 titles put a
+# Font Awesome icon before the words, and every one of them says the colour
+# again - thirteen as an inline style attribute, four as a page rule
+# `.pi-section-title i { color: #0e7c8b }`. Once base owns the title it has
+# to own the icon too, or stripping those leaves the icon inheriting the
+# title's ink and nobody chose that.
+ADD_I = (('color', 'var(--alv-accent)'),
+         ('margin-right', '6px'))
 
 VOID = {'input', 'br', 'img', 'hr', 'meta', 'link', 'source', 'area',
         'base', 'col', 'embed', 'param', 'track', 'wbr'}
@@ -243,7 +275,7 @@ def split_rules(css):
     return out
 
 
-def subject_is_title(sel):
+def subject_is_title(sel, retired=()):
     """Is this rule a page-local copy of the component?
 
     YES when the title class is the SUBJECT - `.form-section-title`,
@@ -262,7 +294,7 @@ def subject_is_title(sel):
             continue
         head = part.split()[0]
         if any(head == '.' + c or head.startswith('.' + c + ':')
-               for c in TITLE_CLASSES):
+               for c in tuple(TITLE_CLASSES) + tuple(retired)):
             return True
         # `.form-card h2` - the component's own container, not a variant.
         if re.match(r'\.form-card\s+h[1-6]$', part):
@@ -270,7 +302,7 @@ def subject_is_title(sel):
     return False
 
 
-def clean_css(css, killed):
+def clean_css(css, killed, retired=()):
     out, last = [], 0
     for sel, a, b, c in split_rules(css):
         bare = ' '.join(re.sub(r'/\*.*?\*/', ' ', sel, flags=re.S).split())
@@ -282,7 +314,7 @@ def clean_css(css, killed):
             # touches pages with no panel title on them is a diff nobody
             # can review.
             mark = len(killed)
-            inner = clean_css(css[b + 1:c - 1], killed)
+            inner = clean_css(css[b + 1:c - 1], killed, retired)
             if inner.strip() or len(killed) == mark:
                 out.append(css[last:b + 1])
                 out.append(inner)
@@ -293,7 +325,7 @@ def clean_css(css, killed):
             last = c
             continue
         parts = [p.strip() for p in bare.split(',') if p.strip()]
-        keep = [p for p in parts if not subject_is_title(p)]
+        keep = [p for p in parts if not subject_is_title(p, retired)]
         if len(keep) == len(parts):
             continue
         out.append(css[last:a])
@@ -310,38 +342,89 @@ def clean_css(css, killed):
 # ------------------------------------------------------------------ base
 
 def patch_base(check_only, problems):
+    """base gains three declarations and one new rule.
+
+    WRITTEN WITHOUT ASSUMING A LAYOUT. The first version found the newline
+    before the closing brace and inserted there, which works on a rule
+    spread over several lines and silently inserts OUTSIDE the braces on a
+    rule written on one. A fixture with a one-line rule caught it: the
+    declarations vanished, the second run still reported them as pending,
+    and the report listed an icon rule it had not added. Insert at the
+    closing brace instead - that position exists whatever the layout.
+    """
     text, nl, raw = read(BASE)
-    rules = [(sel, a, b, c) for sel, a, b, c in split_rules(text)
+
+    def title_rule(t):
+        r = [(sel, a, b, c) for sel, a, b, c in split_rules(t)
              if ' '.join(re.sub(r'/\*.*?\*/', ' ', sel, flags=re.S).split())
              .endswith('.' + CLS)]
+        return r
+
+    icon_re = re.compile(r'\.%s\s+i\s*\{' % re.escape(CLS))
+    rules = title_rule(text)
     if len(rules) != 1:
         problems.append('base: %d .%s rule(s), expected exactly 1'
                         % (len(rules), CLS))
         return None, None
-    sel, _a, b, c = rules[0]
+
+    _sel, _a, b, c = rules[0]
     body = text[b + 1:c - 1]
-    have = [p for p, _v in ADD
-            if re.search(r'(?<![-\w])%s\s*:' % re.escape(p), body)]
-    if have:
+    missing = [(q, v) for q, v in ADD
+               if not re.search(r'(?<![-\w])%s\s*:' % re.escape(q), body)]
+    need_icon = not icon_re.search(text)
+    if not missing and not need_icon:
         return 'done', None
-    cut = text.rfind('\n', b, c - 1)
-    ins = ''.join('\n    %s: %s;' % (p, v) for p, v in ADD)
-    new = text[:cut] + ins + text[cut:]
-    # The rule must come out with exactly what it had, plus these three.
-    after = split_rules(new)
-    got = [s for s, _x, _y, _z in after
-           if ' '.join(re.sub(r'/\*.*?\*/', ' ', s, flags=re.S).split())
-           .endswith('.' + CLS)]
-    if len(got) != 1:
+
+    added = []
+    new = text
+    if missing:
+        multi = '\n' in body
+        if multi:
+            lead = re.search(r'\n([ \t]*)\S', body)
+            pad = lead.group(1) if lead else '    '
+            ins = ''.join('\n%s%s: %s;' % (pad, q, v) for q, v in missing)
+            at = c - 1
+            back = text.rfind('\n', b, c - 1)
+            if back > b:
+                at = back
+            new = new[:at] + ins + new[at:]
+        else:
+            ins = ''.join(' %s: %s;' % (q, v) for q, v in missing)
+            new = new[:c - 1] + ins.strip() + ' ' + new[c - 1:]
+        added += ['%s: %s' % (q, v) for q, v in missing]
+
+    # The rule must still be one rule, and must now hold all three.
+    r2 = title_rule(new)
+    if len(r2) != 1:
         problems.append('base: the edit did not leave one .%s rule' % CLS)
         return None, None
+    body2 = new[r2[0][2] + 1:r2[0][3] - 1]
+    short = [q for q, _v in ADD
+             if not re.search(r'(?<![-\w])%s\s*:' % re.escape(q), body2)]
+    if short:
+        problems.append('base: %s did not land INSIDE the rule - check the '
+                        'layout of .%s' % (', '.join(short), CLS))
+        return None, None
+
+    if need_icon:
+        end = r2[0][3]
+        head = r2[0][0].lstrip('\n')
+        pad = re.match(r'[ \t]*', head).group(0)
+        decl = ' '.join('%s: %s;' % (q, v) for q, v in ADD_I)
+        new = (new[:end] + '\n' + pad + '.' + CLS + ' i { ' + decl + ' }'
+               + new[end:])
+        added.append('i { %s }' % decl)
+        if not icon_re.search(new):
+            problems.append('base: the icon rule did not go in')
+            return None, None
+
     if not check_only:
         bak = BASE + SUFFIX
         if not os.path.exists(bak):
             with open(bak, 'wb') as f:
                 f.write(raw)
         write(BASE, new, nl)
-    return 'patched', [('%s: %s' % (p, v)) for p, v in ADD]
+    return 'patched', added
 
 
 # --------------------------------------------------------------- the page
@@ -421,8 +504,23 @@ def plan(rel, path, problems):
         out.append(text[last:])
         new = ''.join(out)
 
+    # WHICH CLASSES THIS PAGE'S SWEEP ACTUALLY RETIRED. A rule may only be
+    # deleted where base has taken its job over ON THIS PAGE, and that is
+    # not a property of the class name - it is a property of the markup.
+    #
+    # .lines-title is the case that proves it. On physical_invoice_edit the
+    # heading sits INSIDE the form-card, so it is swept and its rules go.
+    # On customer_invoice_form the same class sits OUTSIDE the card (span
+    # 2096-7575, heading at 8623), is NOT swept, and its rules must stay or
+    # the heading loses its styling with nothing replacing it.
+    retired = set()
+    for w in was:
+        _tag, _dot, name = w.partition('.')
+        if name and name != 'NOCLASS':
+            retired.add(name)
+
     def scrub(m):
-        return m.group(1) + clean_css(m.group(2), killed) + m.group(3)
+        return m.group(1) + clean_css(m.group(2), killed, retired) + m.group(3)
     new = re.sub(r'(<style[^>]*>)(.*?)(</style>)', scrub, new, flags=re.S)
 
     if not edits and not killed:

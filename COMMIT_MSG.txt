@@ -1,359 +1,119 @@
-Administration stage C: the banner comes off, and a sweep rule is corrected
+Administration stage D: one panel title, one size, and the tag stops deciding
 
-Nine screens wrapped their heading in a page-local banner that nothing else
-in this system has. The heading is bare now, the buttons are on one bar, and
-67 page-local rules went with the containers they described. On the way, the
-push gate rejected the round twice and was right both times; both causes are
-fixed here.
+base declared .form-section-title with no font-size, so the heading TAG
+decided how big a panel title was. 34 titles on 19 screens now carry one
+tag and one class, 30 page-local rules went with them, and the two that
+scope the component to a particular panel stayed.
 
-WHAT IT LOOKED LIKE
+ONE COMPONENT, FOUR SIZES
 
-    <div class="page-header">      /* linear-gradient(#667eea, #764ba2)
-                                      display:flex; space-between       */
-      <h2 class="page-title-h2">USER ADMINISTRATION</h2>
-      <h4 class="page-subtitle-h4">ADD NEW USER</h4>
-      <a class="btn action-back btn-sm">Back</a>
-    </div>
+Measured with Bootstrap loaded and base's size taken away, the four tags
+these titles actually used:
 
-Forty-one templates put the heading bare at the top of the block and then
-the action bar. These nine did not.
+    h2, no class at all   13 titles    32px
+    h3                                 28px
+    h5.form-section-title  6 titles    20px
+    h6.form-section-title 12 titles    16px
 
-I FIRST CALLED THIS AN OVERLAP. IT IS NOT ONE.
+Nothing chose those numbers. They are what the browser does with whichever
+heading a page happened to reach for. base says 16px now, with a 9px
+bottom padding and a 2px accent rule, and the tag carries no appearance.
 
-Measured at 1900px the banner puts the three blocks side by side - module
-line at x 625-911, mode line at x 995-1118 - and they never intersect. What
-makes a screenshot look like a collision is the second fault, which is the
-worse one:
+MY OWN MEASUREMENT OF THIS WAS WRONG, AND WRITING THE CONTROL FOUND IT
 
-    module line  #ffffff on the purple    3.66 : 1
-    mode line    #5b6b73 on the purple    1.15 : 1
-    Back         #5b6b73 on the purple    1.15 : 1
+The round's first draft said the sizes were 13.28px, 14px, 16px, 16.8px
+and 16px, and that two of them fell at or BELOW the 14px field labels -
+"Personal Information" smaller than "First Name" beneath it.
 
-AA wants 4.5. The mode line and Back were not overlapping the module name;
-they were invisible, and read as smears across it. All three are on paper
-now and all three clear 4.5.
+Those were measured WITHOUT Bootstrap. The CDN is unreachable from the
+sandbox, the stylesheet never loaded, and every figure was a browser
+default. With Bootstrap loaded nothing was smaller than its labels.
 
-The layout fault is real and separate: base styles .page-title-h2 as a
-CENTRED BLOCK, and a flex row turns three stacked blocks into three items on
-one line.
+    A rendering test that renders without the stylesheet the page
+    actually has measures nothing.
 
-THERE WERE NINE, NOT EIGHT
+Same fault as the btn-sm measurement in the button round, five days apart.
+The spread is real and is reason enough; the sentence about the labels was
+not, and both docstrings now say so. Section 5's control is what produced
+the four true numbers.
 
-The ninth is personal_notification_settings.html, in Bootstrap success green
-rather than purple, with the heading nested one level deeper beside a
-description and a workspace badge. It is not in my checkout, and the
-patcher's LIST said nothing while the suite's RULE found it the moment it
-ran against the full tree.
+THREE HEADINGS THE ROUND SAID IT WOULD NOT TOUCH, AND WAS TOUCHING
+
+The prose named .lines-title and .pi-section-title as out of scope -
+"they sit OUTSIDE any .form-card". Measured, that is true of one of four:
+
+    customer_invoice_form  .lines-title       8623, card 2096-7575   OUT
+    physical_invoice_edit  .lines-title       2724, card 1696-5880   IN
+    tenant_add             .pi-section-title  9847, card 1187-14893  IN
+    tenant_edit            .pi-section-title 11805, card 2371-17054  IN
+
+Three of them sit inside a panel doing a panel title's job under another
+name. The sweeper tests containment and was right; the prose was a list
+written from one page's shape, and the list lost. They are swept.
 
     A list chosen from a corpus you cannot see is a list.
     A rule is a standard.
 
-The list stays, because it says how each page is SHAPED, but the patcher now
-runs the rule over every template and refuses to write if it finds a painted
-heading the list does not name. Its sibling notification_settings.html was
-already in the shape this produces - heading, description, then the bar - so
-the green page copies a page that exists rather than inventing one. Its
-workspace badge becomes .alv-tag, which base defines as a CATEGORY rather
-than a status; that is what a workspace name is, and the badge it replaces
-is white text on translucent white, legible only against the green.
+Second time this week that sentence has been the finding.
 
-WHY THE TWO EARLIER STAGES PASSED IT - both mine, both the same mistake
+AND THEIR CSS WAS BEING LEFT BEHIND
 
-Stage A kept a #667eea whenever a #764ba2 sat within 90 characters, on the
-reasoning "that pair is the avatar". The banner gradient IS that pair,
-written out: `#667eea 0%, #764ba2 100%`. All sixteen banner values were
-spared and the module reported clean. A thing is identified by WHAT IT IS -
-the selector, .user-avatar - not by what sits next to it. Both suites now
-test by selector.
+The sweeper renamed their markup and deleted nothing, because the
+deletable set was a constant - TITLE_CLASSES - rather than a question
+about this page. Six rules would have shipped matching nothing. Dead, not
+wrong, which is why nothing caught it.
 
-Stage B asked whether the heading carried .page-title-h2. It never asked
-WHERE THE HEADING SAT, and a correct class inside a wrong container passes
-that. Section 2 of the new suite is a POSITION check across all 53 pages
-that carry a module heading. The rule is not "inside nothing" - all nine sit
-in a max-width layout container, and so does finance_expense_add, which
-renders correctly. The rule is that no container around the heading may
-PAINT (a background or gradient) or LAY OUT (a flex or grid).
+The set is per page now: a rule may only go where base has taken its job
+over ON THIS PAGE. .lines-title rules go on physical_invoice_edit, where
+the markup was swept, and STAY on customer_invoice_form, where it was not.
 
-THE GATE REJECTED THIS ROUND TWICE, AND WAS RIGHT BOTH TIMES
+BASE ALREADY OWNED THE ICON - THE ROUND ONLY STOPPED REPEATING IT
 
-1. my_profile had two action bars. I put them there - its Save sits at the
-   foot of a long form, so "Back joins the one bar that is already there"
-   would have put Back at the bottom of the page - and I recorded the result
-   as a known open item. It is not an open item, it is a defect:
-   apply_button_sweep's rule is "no page renders its actions twice" and the
-   gate reported `two sets of verbs: my_profile.html`. A page with two sets
-   of verbs does not say which one commits. The <form> now opens above the
-   header bar so Save can sit in it; the Cancel that duplicated Back is
-   gone. BARS_EXPECTED no longer excuses anything.
+17 of the 34 titles put a Font Awesome icon before the words and every one
+said the colour again: 13 as an inline style attribute, 6 as a page rule
+`.pi-section-title i { color: #0e7c8b }`. base has declared
+`.form-section-title i { color: var(--alv-accent); margin-right: 6px }`
+since the form-components round on 16 Sep, and --alv-accent IS #0e7c8b.
 
-2. --strict failed on generate_lease_agreement.html, wanting
-   `disabled-btn` added to
+So all 19 restatements say exactly what base says, and deleting them moves
+nothing on screen. Section 6 measures that rather than asserting it. The
+patcher now refuses to write if that rule is missing - not an addition, a
+dependency made explicit.
 
-       <button type="submit" class="btn action-primary btn-lg"
-               id="generate-btn" disabled>
+WHAT IS REPORTED RATHER THAN SWEPT, each by name and with its reason
 
-   THE TOOL WAS ASKING FOR A BUG. That is a real <button> whose disabled
-   attribute the page's own JavaScript clears once a tenant and a property
-   are chosen (lines 968 and 1085). base already greys it through
-   `.btn.action-primary[disabled]` - a rule apply_button_sweep itself
-   writes. The CLASS outlives the ATTRIBUTE: the button goes live and stays
-   grey. Measured in test_disabled_state.py section 4, both ways.
+  edit_asset.html            one form-card holds the whole form and its
+                             first heading is the record's name. Sweeping
+                             it would make a record name a section title.
+  customer_invoice_form      .lines-title, genuinely outside the card
+  property_assets            .form-section-heading, a second level of
+                             structure under a panel that has a title
+  19 form-cards              carry no heading at all. A panel without a
+                             title is not necessarily wrong, and this
+                             round did not invent one.
 
-   Show-ButtonDrift.py gains js_reenabled_ids() and needs_disabled_class().
-   A control whose disabled state its page assigns in JavaScript never
-   receives the class; a <span> twin still does. It only ever REFUSES TO
-   ADD - a page already carrying the class keeps it - so the swept tree
-   stays a fixed point of the classifier.
+test_panel_title.py    39 checks. Section 4 is the one that earns its
+                       keep, and it exists because this round nearly
+                       shipped the fault it checks for: does any page
+                       style a class its own markup no longer wears? It
+                       fails on what THIS round could have orphaned and
+                       reports the rest - the first draft failed on 19
+                       before the round had even run, half of them false
+                       positives from `class="status-badge status-{{
+                       pi.status }}"`, where the name is built at render
+                       time and no literal scan can see it.
 
-   COUNTED, NOT ASSUMED: 17 controls carry the attribute with a house tone.
-   The 9 static ones include BOTH that already wear the class; the 8 that
-   JavaScript re-enables wear none. The two groups do not overlap, which is
-   what makes this a rule rather than a list - and section 3 of the new
-   suite counts it again on every run.
+FOUND, NOT FIXED: 282 page-local rules across the system name a class no
+markup wears. Left by earlier rounds that moved markup onto base and did
+not follow with the CSS. The suite lists them every run. That is a round
+of its own, and a large one.
 
-THE GATE REJECTED IT A THIRD TIME, AND WAS RIGHT AGAIN
+Three more faults were caught by a fixture rather than by the gate:
+patch_base inserted its declarations OUTSIDE the braces on a rule written
+on one line, reported an icon rule it had not added, and said "patched" on
+every subsequent run; and two control thresholds were numbers I could not
+verify in both a full and a partial checkout.
 
-Moving Back into .page-action-buttons put it under each page's OWN phone
-rules, and six of these nine carry
-
-    @media screen and (max-width: 768px) {
-      .page-action-buttons .btn { width: 100%; ... }
-    }
-
-That was harmless while the bar held one submit button. With Back in there
-it made Back 404px wide on a 390px screen and the page scrolled sideways -
-on six screens at once. Measured on all nine.
-
-BASE LOSES THAT FIGHT RATHER THAN WINNING IT, which is the part I had
-backwards. base declares the bar at line 1703, BEFORE {% block content %}
-at line 2203, so a page-local copy at equal specificity comes LATER in the
-document and wins. The form components are the other way round - base
-declares those AFTER the block - and I had been reasoning from that case.
-
-So the phone layout of a bar belongs to base, and 15 page-local rules
-naming .page-action-buttons or .action-back-label go with the banner.
-
-Section 6 of test_admin_banner.py is new and is the check whose absence let
-this ship: every bar in these modules is rendered at 390px and must not
-overflow, and Back must stay an icon. Its control puts the offending rule
-back and requires the check to fail - measured at Back 376px, overflow true.
-
-test_secondary_visible.py named customer_form.html as an example of a bar
-whose secondary would be hidden. It is not one any more, and the scan was
-right: the save-and-cancel round REMOVED that page's Cancel - its only
-.action-secondary - because it pointed at customer_list and so did its
-Back. The stale name is replaced by a RULE: every page in that set really
-carries a secondary and really has no More menu.
-
-WHAT BASE FORCED, RATHER THAN WHAT I CHOSE
-
-  - `.page-action-buttons .action-back { width:44px; padding:0 }` with
-    `.action-back .action-back-label { display:none }`. Five screens wrote
-    Back's word as a bare text node, which has nothing to hide and would
-    overflow 44px. The word is in the span now.
-
-  - `.page-action-buttons:has(.action-more-btn) .action-secondary
-    { display:none }`. user_administration's ADD USER was a secondary and is
-    NOT in its More menu, so it would have vanished below 768px. It is that
-    page's primary action and is now .action-primary.
-
-btn-sm came off every bar button, MEASURED inert first and with a control:
-outside a bar it changes font, padding, radius, width and height; inside one
-base's `.page-action-buttons .btn` (0,2,0) beats it (0,1,0) on all four
-declarations and the two render pixel-identical.
-
-SUITES
-
-test_admin_banner.py   18 checks, five of them controls. Section 5 renders
-                       the old banner from a literal in the suite, so the
-                       day the check cannot see the fault the control fails
-                       rather than the suite quietly passing.
-test_disabled_state.py 24 checks. Section 4 renders the button and measures
-                       all three states; section 3 re-counts the claim the
-                       rule rests on. It also refuses to run against a
-                       Show-ButtonDrift.py from before this change, with a
-                       sentence rather than a traceback.
-
-Both are on the gate. Sabotage runs - restoring a .page-header rule, making
-a layout container paint, stripping Back's label span, borrowing the purple,
-marking the JS-enabled button permanent, removing base's attribute rule -
-were each caught by the section that owns them.
-
-Two pre-existing suites were repaired by this round rather than around it:
-
-  test_admin_repair.py   section 2 classifies by selector, not proximity,
-                         and carries a control that says so
-  test_admin_headings.py section 3 read every Back as "the module I belong
-                         to". True on a screen INSIDE a module; false on a
-                         module's landing screen, where Back goes UP.
-                         user_administration and workspace_management were
-                         excused only because their Back was hidden inside
-                         the banner where back_url could not see it.
-
-THE BACKLOG BEHIND THE GATE
-
-The gate stops at the first failing suite. That is right for a push, but it
-meant a queue was met one item per push: four in a row were an EARLIER round
-that shipped and left some OTHER suite's snapshot stale, invisible behind
-whichever suite failed ahead of it.
-
-Show-GateAudit.py is new and runs every suite TO THE END. It writes nothing
-and always exits 0 - a report, not a gate. Of 91 suites: 83 passed, 7 failed
-and 1 crashed, and only THREE of those are on the gate:
-
-  test_save_and_cancel    Its KEEP_CANCEL named three dialog-dismissing
-                          Cancels; there are five. The two it missed carry
-                          data-dismiss="modal" inside a .modal-footer, so
-                          they belong on the same grounds. Its evidence test
-                          was `'dismiss' in chunk` - the WORD, anywhere in
-                          the element - and is now the attribute.
-                          I also reported two pages still declaring
-                          .page-action-buttons-single, and measured what
-                          deleting them would cost. THAT WAS WRONG: my
-                          checkout's copies of those two files were stale.
-                          On the real tree no page declares it, the patcher
-                          found nothing to do, and this round changes
-                          neither file. The patcher's own check is what
-                          said so - it reports what it finds rather than
-                          what it was told to expect.
-
-  test_heading_prefix     Fourteen headings "lost a word". They did not: the
-                          entry-headings round moved the mode from the h2 to
-                          the line beneath, so ALIVENTE ONLINE - ADD EXPENSE
-                          became EXPENSES over ADD EXPENSE. Reading the h2
-                          alone called that a rename. It reads the whole
-                          heading block now, and still fails if a round
-                          really drops a word. Same correction as
-                          test_heading_standard.
-
-  test_console_encoding   Ten tools carried an ABBREVIATED console preamble -
-                          the import and the loop without the paragraphs that
-                          say why. All ten are mine, from the last fortnight.
-                          apply_gate_audit.py copies the canonical text OUT
-                          OF test_console_encoding.py, so it cannot invent an
-                          eleventh version.
-
-The other five are not on the gate and do not block: test_banner_pages,
-test_comments_report, test_fi_seg, test_finance_headings and the crash in
-test_map_tiles. Each is real work rather than a correction, and each stays
-on the list.
-
-FOUND AND DELIBERATELY NOT FIXED: tenant_lease_agreement.html holds a BARE
-@media (max-width: 768px) with eleven rules in it, so all eleven fire on
-paper. That is the print-leak defect exactly, on a page outside that round's
-named scope of 34 - and its suite asserts "34 files were in scope, no more".
-A 35th belongs to a round of its own, not smuggled into this one.
-
-THE GATE REJECTED IT A FOURTH TIME, AND THIS ONE WAS NOT THE ROUND
-
-test_table_lease_agreement.py did not fail, it CRASHED:
-
-    Page.goto: net::ERR_FAILED at file:///C:/.../_sup_probe.html
-
-and it had passed under Show-GateAudit.py, which runs the very same
-suites. That difference is the whole diagnosis.
-
-FOUR SUITES WERE WRITING ONE FILENAME. test_table_lease_agreement,
-test_table_properties, test_table_suppliers and test_table_tenants each
-built their Chromium fixture at _sup_probe.html IN THE REPO ROOT,
-rendered it, and deleted it in a finally. The two runners order them
-differently:
-
-    the gate    runs all four: suppliers at 569, properties at 572,
-                tenants at 582, lease_agreement at 583. That one path is
-                created, uploaded by OneDrive, deleted and created again
-                FOUR TIMES in a run, and the fourth is refused.
-
-    the audit   runs sorted(glob('test_*.py')), so lease_agreement comes
-                FIRST of the four. Same suites, same machine, different
-                order, and it passes.
-
-MY FIRST ACCOUNT WAS TOO NARROW AND THE EVIDENCE CORRECTED IT. I said the
-cause was tenants running immediately before lease_agreement. Run by hand,
-one after the other, in exactly that order, lease_agreement passes with
-all 101 checks. What the gate adds is not the adjacency - it is the
-REPETITION, two more creates and deletes of the same path earlier in the
-same run.
-
-I CANNOT MEASURE THE MECHANISM FROM HERE - whether it is OneDrive holding
-a handle, a scanner chasing a file that keeps reappearing, or something
-else about a path churned four times in one run. What differs between the
-run that fails and the run that passes is how many times that one name is
-reused, and a shared name in a synced, version-controlled directory is
-wrong on its own terms whether or not it is this crash's cause. So the
-round does not try to out-guess the sync client. It removes the shared
-name, and the shared directory with it.
-
-    SCRATCH = tempfile.mkdtemp(prefix='alv_probe_')
-
-15 tools, 16 fixtures. mkdtemp gives each PROCESS a directory nobody else
-knows the name of, so two suites cannot collide however they are ordered.
-Three things follow beyond the collision: nothing is written into a git
-working tree, so a suite that dies before its cleanup cannot leave an
-untracked file where the next commit sees it; OneDrive never sees the
-file at all; and .gitignore needs no entry for it - it already carries
-/error_*.html, which is this same habit having cost something once.
-
-THE SET IS FOUND BY A RULE, AND THE FIRST VERSION OF THE RULE WAS WRONG.
-It said "a ROOT-built path opened for writing", and on the real tree that
-is twenty-eight PATCHERS: apply_table_standard writes base.html,
-apply_open_items writes .gitignore, apply_invoice_verification writes
-requirements.txt. Writing source into the working tree is what a patcher
-is FOR. My checkout held eight apply_*.py and the tree holds a hundred
-and twenty-four, so the corpus I tested against could not show me that.
-
-The rule asks for BOTH halves now - written here, AND handed to the
-browser. No apply_*.py in this repo contains the word goto; neither
-.gitignore nor base.html is ever navigated to. That also retires an
-exception list: test_db_error_page's two sample pages needed excusing
-under the old rule and simply do not match the new one.
-
-The list in the patcher is a CROSS-CHECK against the rule: find a
-different set and it stops and prints both. It stopped three times and
-wrote nothing each time, which is the only reason none of this reached
-your tree.
-
-AND THE ROUND EITHER FIXES IT OR EXPLAINS IT
-
-Every tool here carries a paragraph about a crash blocking a push exactly
-as hard as a failure while saying far less about why - and then calls
-pg.goto bare. _goto() reports the path, whether it is on disk, its size
-and the message, and exits 1. If the gate is green after this, the
-ordering account above was right. If it is not, the next run says what it
-could not open instead of raising through six frames of Playwright.
-Measured both ways in section 5 of the new suite, with a control that
-runs the same navigation WITHOUT the helper and requires a traceback.
-
-NOT IN THIS ROUND, DELIBERATELY: 'file://' + path is not a valid file URL
-on Windows. The drive letter lands in the URL's authority slot and the
-separators are backslashes; Chromium repairs it, and has repaired it
-every day for months. 53 sites in 35 tools, NOT ONE with a failure
-attached to it. Correcting them belongs to a round that says it is
-correcting file URLs - putting it here would make this round unable to
-answer the only question it exists to answer. _goto is where that one
-line will land.
-
-test_probe_location.py  31 checks. Section 2 rebuilds the claim from the
-                        .bak_probe backups rather than asserting it - the
-                        four really did share one name, and the suite that
-                        crashed was one of them. Section 3 measures
-                        mkdtemp across two processes started back to back,
-                        because that is what the gate does. Section 6
-                        computes the two runners' orderings instead of
-                        remembering them. Sabotage runs - the shared name
-                        back in ROOT, the atexit cleanup removed, a bare
-                        goto restored, the suite taken off the gate - were
-                        each caught by the section that owns them. One
-                        of those sabotages found a blind spot and is why
-                        the rule reads two shapes of navigation: a suite
-                        that moved its fixture BACK into the repo root
-                        passed, because after this round the call is
-                        _goto(pg, path) and the rule only knew the older
-                        pg.goto('file://' + path).
-
-All 15 suites were run before and after and report the same summary, to
-the check. That is the whole claim of this round: the fixtures moved and
-nothing else did.
-
-STILL TO COME in these modules: the panel title on 11 screens, and the two
-tables on user_administration and workspace_management.
+STILL TO COME in these modules: the two tables on user_administration and
+workspace_management. And a component for the sub-titles that keep a name
+of their own - two screens, and a decision rather than a rename.
