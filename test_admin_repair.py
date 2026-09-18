@@ -24,6 +24,20 @@ A SKIPPED CHECK IS COUNTED IN THE SUMMARY.
 """
 
 # --- CONSOLE ENCODING ----------------------------------- 16 Sep 2026 --
+# This file prints text it read out of the templates, and some of that
+# text is not ASCII - projects/project_task_list.html carries a Greek
+# heading behind the language switch, and it will not be the last. On
+# Windows, Python writes stdout as cp1252 whenever it is not a UTF-8
+# console, and cp1252 cannot encode Greek: the print itself raises
+# UnicodeEncodeError and the run dies part-way through. A crash blocks a
+# push exactly as hard as a failure and says far less about why.
+#
+# So keep the encoding the console really has - forcing UTF-8 only moves
+# the problem to whoever decodes us - and change the ERROR HANDLER, so a
+# character the console cannot draw arrives as a question mark instead of
+# ending the run. stderr too, because a traceback is a print as well.
+# Guarded, because stdout is not always a stream that can be told.
+# See test_console_encoding.py.
 import sys as _sys
 for _stream in (_sys.stdout, _sys.stderr):
     try:
@@ -153,24 +167,67 @@ check('  CONTROL: the check detects a crossed tag',
 # ---------------------------------------------------------------------- 2
 head('2. THE COLOUR IS THE ACCENT, EXCEPT ON THE AVATAR')
 
+# THIS ASKED THE WRONG QUESTION UNTIL 17 Sep. It kept a #667eea whenever a
+# #764ba2 sat within 90 characters, on the reasoning "that pair is the
+# avatar" - and the page-local banner gradient IS that pair written out,
+# `#667eea 0%, #764ba2 100%`. So eight banner gradients were counted as
+# avatars and this section reported the module clean while every
+# Administration screen still wore a purple band.
+#
+# A thing is identified by WHAT IT IS - the selector - not by what happens
+# to sit next to it. That is the test now, and test_admin_banner.py holds
+# the same rule for the screens it swept.
+AVATAR_SELECTORS = ('.user-avatar', '.member-avatar', '.photo-placeholder')
+PURPLE = re.compile(r'%s|%s' % (re.escape(STRAY), re.escape(AVATAR)), re.I)
+
+
+def rules_of(css):
+    out, i, n = [], 0, len(css)
+    while i < n:
+        j = css.find('{', i)
+        if j < 0:
+            break
+        depth, k = 1, j + 1
+        while k < n and depth:
+            if css[k] == '{':
+                depth += 1
+            elif css[k] == '}':
+                depth -= 1
+            k += 1
+        sel = ' '.join(re.sub(r'/\*.*?\*/', ' ', css[i:j], flags=re.S).split())
+        if sel.startswith('@'):
+            out.extend(rules_of(css[j + 1:k - 1]))
+        else:
+            out.append((sel, css[j + 1:k - 1]))
+        i = k
+    return out
+
+
 borrowed, avatar = [], 0
 for rel, path in ALL:
     t = read(path)
-    for m in re.finditer(re.escape(STRAY), t):
-        a, b = max(0, m.start() - 90), min(len(t), m.end() + 90)
-        if AVATAR in t[a:b]:
+    css = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', t, re.S))
+    for sel, body in rules_of(css):
+        n = len(PURPLE.findall(body))
+        if not n:
+            continue
+        if any(s in sel for s in AVATAR_SELECTORS):
             avatar += 1
         else:
-            borrowed.append('%s: %s' % (rel, ' '.join(
-                t[max(0, m.start() - 34):m.end()].split())[-40:]))
+            borrowed.append('%s: %s' % (rel, sel[:44]))
+    markup = re.sub(r'<style[^>]*>.*?</style>', ' ', t, flags=re.S)
+    if PURPLE.search(markup):
+        borrowed.append('%s: in the markup' % rel)
 for x in borrowed[:6]:
     print('        %s' % x)
 check('no screen borrows the avatar purple for anything else', not borrowed,
       '%d do' % len(borrowed))
-print('        %d use(s) of %s remain, all paired with %s - the avatar.'
-      % (avatar, STRAY, AVATAR))
-check('  CONTROL: and the avatar was not swept away with them', avatar >= 4,
-      '%d left' % avatar)
+print('        %d rule(s) keep it, and every one of them is an avatar.'
+      % avatar)
+check('  CONTROL: and the avatar was not swept away with them', avatar >= 3,
+      '%d rule(s) left' % avatar)
+check('  CONTROL: proximity would still call the banner an avatar',
+      AVATAR in 'linear-gradient(135deg, %s 0%%, %s 100%%)' % (STRAY, AVATAR))
 check('  CONTROL: base still declares the accent these took instead',
       re.search(r'--alv-accent:\s*#', B) is not None)
 

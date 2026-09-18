@@ -9,23 +9,6 @@
     margin: 0 auto;
 }
 
-.page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px 25px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.page-header h1 {
-    font-size: 22px;
-    font-weight: bold;
-    margin: 0;
-}
-
 
 .form-card h2 {
     font-size: 16px;
@@ -117,35 +100,10 @@ select.form-control {
 
 @media screen and (max-width: 768px) {
     .workspace-form-container { padding: 0 8px; }
-    .page-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 16px;
-        margin-bottom: 16px;
-        gap: 12px;
-        border-radius: 8px;
-    }
-    .page-header h1 { font-size: 17px; text-align: center; word-break: break-word; }
-    .page-header .btn {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 12px;
-    }
     .form-control, input[type="text"], select { font-size: 16px !important; }
     .form-card { padding: 16px; border-radius: 8px; }
     .form-card h2 { font-size: 15px; margin-bottom: 16px; }
     .workspace-meta { flex-direction: column; gap: 8px; padding: 12px 14px; }
-    .page-action-buttons .btn, .page-action-buttons a.btn {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 11px 14px;
-    }
 }
 </style>
 
@@ -158,13 +116,10 @@ select.form-control {
     </div>
     {% endfor %}
 
-    <div class="page-header">
-        <h2 class="page-title-h2">WORKSPACE MANAGEMENT</h2>
-        <h4 class="page-subtitle-h4">EDIT WORKSPACE — {{ workspace.name }}</h4>
-        <a href="{% url 'workspace_management' %}" class="btn action-back btn-sm">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
-    </div>
+    <h2 class="page-title-h2">WORKSPACE MANAGEMENT</h2>
+    <h4 class="page-subtitle-h4">EDIT WORKSPACE — {{ workspace.name }}</h4>
+    <br/>
+
 
     <div class="workspace-meta">
         <span><i class="fas fa-calendar-plus"></i> Created: {{ workspace.created_at|date:"d M Y H:i" }}</span>
@@ -178,6 +133,7 @@ select.form-control {
             <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save Changes
             </button>
+            <a href="{% url 'workspace_management' %}" class="btn action-back" aria-label="Back"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
         </div>
 
 

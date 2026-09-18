@@ -359,6 +359,75 @@ def is_disabled(open_tag, cls):
     return 'pointer-events' in open_tag or 'not-allowed' in open_tag
 
 
+# ---------------------------------------------------------------------------
+#   A BUTTON JAVASCRIPT RE-ENABLES IS NOT A DISABLED BUTTON   -  17 Sep 2026
+# ---------------------------------------------------------------------------
+# `disabled` on a real <button> is a STATE. base already greys it through
+# `.btn.action-primary[disabled]` and `.btn.action-secondary[disabled]` -
+# rules this very tool writes. The .disabled-btn CLASS is for something that
+# is off PERMANENTLY: the <span> twin rendered when you lack the permission,
+# which has no disabled attribute that means anything and so needs a class
+# to say so.
+#
+# Put the class on a button JavaScript re-enables and IT OUTLIVES THE
+# ATTRIBUTE. generate_lease_agreement.html starts its Generate button
+# disabled and clears the attribute once a tenant and a property are chosen:
+# with the class, the button goes live and stays grey. --strict has been
+# failing on exactly that page, asking for exactly that bug.
+#
+# COUNTED, NOT ASSUMED. Seventeen controls in this repo carry the attribute
+# with a house tone. The nine that are STATIC include both that already wear
+# the class; the eight that JavaScript re-enables wear none. The two groups
+# do not overlap - which is what makes this a rule rather than a list.
+JS_REENABLED = set()        # ids, refreshed per page by scan()/scan_text()
+
+DISABLEABLE = ('button', 'input', 'select', 'textarea', 'fieldset',
+               'optgroup', 'option')
+
+
+def js_reenabled_ids(raw):
+    """Ids this page's own JavaScript switches the disabled state of.
+
+    Read from <script> blocks, which markup_of() blanks - so this has to run
+    on the RAW source, before that. A block qualifies only if it assigns
+    `.disabled` or removes the attribute; within such a block, the ids are
+    the ones it actually looks up. Any assignment counts, not just `= false`:
+    `btn.disabled = !ready` enables too, and the question here is whether the
+    state is DYNAMIC, not which way it happens to point.
+    """
+    ids = set()
+    for blk in re.findall(r'<script[^>]*>(.*?)</script>', raw, re.S | re.I):
+        if not re.search(r"\.disabled\s*=|removeAttribute\(\s*['\"]disabled",
+                         blk):
+            continue
+        for m in re.finditer(r"getElementById\(\s*['\"]([\w-]+)['\"]", blk):
+            ids.add(m.group(1))
+        for m in re.finditer(r"querySelector(?:All)?\(\s*['\"]#([\w-]+)", blk):
+            ids.add(m.group(1))
+    return ids
+
+
+def needs_disabled_class(open_tag, cls):
+    """is_disabled() says the control is OFF. This says whether the CLASS is
+    what should say so.
+
+    It only ever REFUSES TO ADD one. A page already carrying the class keeps
+    it, so this cannot strip a decision someone made on purpose, and the
+    swept tree stays a fixed point of the classifier either way.
+    """
+    if not is_disabled(open_tag, cls):
+        return False
+    if 'disabled-btn' in cls.split():
+        return True                      # already decided; not re-litigated
+    m = re.match(r'<(\w+)', open_tag)
+    tag = m.group(1).lower() if m else ''
+    i = re.search(r'\sid\s*=\s*["\']([^"\']+)["\']', open_tag)
+    if (tag in DISABLEABLE and i and i.group(1) in JS_REENABLED
+            and re.search(r'\sdisabled(?=[\s>=/])', open_tag)):
+        return False                     # base's [disabled] rule owns it
+    return True
+
+
 SIZES = ('btn-sm', 'btn-lg', 'btn-block')
 
 # Class names carried by the markup that NOTHING defines and NOTHING
@@ -484,7 +553,7 @@ def plan_bar(items, in_bar=False):
         else:
             tone = 'action-secondary'
 
-        if is_disabled(tag, cls):
+        if needs_disabled_class(tag, cls):
             tone += ' disabled-btn'
         out.append(tone)
 
@@ -581,6 +650,7 @@ def scan_text(name, raw):
     those edits - which is how --check and apply came to disagree once
     already.
     """
+    globals()['JS_REENABLED'] = js_reenabled_ids(raw)
     return _scan(name, markup_of(raw))
 
 
@@ -591,7 +661,9 @@ def scan(name):
               start, end_of_open_tag)] - offsets so a patcher can rewrite
         the exact occurrence rather than a string that may mean two things.
     """
-    return _scan(name, markup_of(read(os.path.join(TPL, name))))
+    raw = read(os.path.join(TPL, name))
+    globals()['JS_REENABLED'] = js_reenabled_ids(raw)
+    return _scan(name, markup_of(raw))
 
 
 def _scan(name, m):
@@ -705,7 +777,7 @@ def twins(m, hits):
             tone = ' '.join(c for c in want.split()
                             if c in TONES or c == 'disabled-btn')
             tone = ' '.join(c for c in tone.split() if c != 'disabled-btn')
-            if is_disabled(open2, cls2):
+            if needs_disabled_class(open2, cls2):
                 tone += ' disabled-btn'
             taken.add(b.start())
             out.append((kind + ' (twin)', lab,

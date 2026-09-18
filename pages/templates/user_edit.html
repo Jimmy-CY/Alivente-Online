@@ -9,23 +9,6 @@
     margin: 0 auto;
 }
 
-.page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px 25px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.page-header h1 {
-    font-size: 22px;
-    font-weight: bold;
-    margin: 0;
-}
-
 
 .form-card h2 {
     font-size: 16px;
@@ -177,29 +160,6 @@ select.form-control {
         padding: 0 8px;
     }
 
-    /* Page header — stack */
-    .page-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 16px;
-        margin-bottom: 16px;
-        gap: 12px;
-        border-radius: 8px;
-    }
-    .page-header h1 {
-        font-size: 17px;
-        text-align: center;
-        word-break: break-word;
-    }
-    .page-header .btn {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 12px;
-    }
-
     /* iOS zoom guard */
     .form-control,
     input[type="text"],
@@ -243,15 +203,6 @@ select.form-control {
     .role-option i {
         font-size: 20px;
     }
-    .page-action-buttons .btn,
-    .page-action-buttons a.btn {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 11px 14px;
-    }
 }
 </style>
 
@@ -265,13 +216,10 @@ select.form-control {
     {% endfor %}
 
     <!-- Page Header -->
-    <div class="page-header">
-        <h2 class="page-title-h2">USER ADMINISTRATION</h2>
-        <h4 class="page-subtitle-h4">EDIT USER — {{ target_user.username }}</h4>
-        <a href="{% url 'user_administration' %}" class="btn action-back btn-sm">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
-    </div>
+    <h2 class="page-title-h2">USER ADMINISTRATION</h2>
+    <h4 class="page-subtitle-h4">EDIT USER — {{ target_user.username }}</h4>
+    <br/>
+
 
     <!-- User Meta Info -->
     <div class="user-meta-box mb-4">
@@ -299,6 +247,7 @@ select.form-control {
             <button type="submit" class="btn action-primary">
                 <i class="fas fa-save"></i> Save Changes
             </button>
+            <a href="{% url 'user_administration' %}" class="btn action-back" aria-label="Back"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
         </div>
 
 

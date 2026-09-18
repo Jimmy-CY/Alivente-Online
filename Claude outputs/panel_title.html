@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel Title Standard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  :root{
+    --alv-accent:#0e7c8b; --alv-surface:#f8f9fa; --alv-surface-deep:#e9ecef;
+    --alv-ink:#21343c; --alv-ink-soft:#5b6b73; --alv-line:#e3e8ea; --alv-paper:#fff;
+    --alv-radius:8px;
+    --ground:#eef1f3; --card:#fff; --rule:#dfe4e7; --note:#5b6b73; --bad:#b4342b;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --ground:#141a1d; --card:#1b2226; --rule:#2c3639; --note:#9aa9b0; --bad:#e07a70;
+    --alv-ink:#e7eef1; --alv-ink-soft:#a9b8bf; --alv-paper:#1b2226;
+    --alv-surface:#212a2e; --alv-surface-deep:#2a3438; --alv-line:#313c41;
+    --alv-accent:#3fb0c0;}}
+  :root[data-theme="dark"]{
+    --ground:#141a1d; --card:#1b2226; --rule:#2c3639; --note:#9aa9b0; --bad:#e07a70;
+    --alv-ink:#e7eef1; --alv-ink-soft:#a9b8bf; --alv-paper:#1b2226;
+    --alv-surface:#212a2e; --alv-surface-deep:#2a3438; --alv-line:#313c41;
+    --alv-accent:#3fb0c0;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--alv-ink);font-family:var(--font);
+       font-size:15px;line-height:1.5;padding:26px 16px 60px}
+  .wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+  header h1{font-size:25px;margin:0 0 6px;letter-spacing:-.01em;text-wrap:balance}
+  header p{margin:0;color:var(--note);max-width:66ch}
+  .band{background:var(--card);border:1px solid var(--rule);border-radius:14px;overflow:hidden;
+        box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  .band > h2{font-size:14px;margin:0;padding:12px 18px;border-bottom:1px solid var(--rule);
+        letter-spacing:.05em;text-transform:uppercase;color:var(--note);font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:14px;padding:16px 18px 20px}
+  .cell{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .who{font-size:12px;color:var(--note);font-variant-numeric:tabular-nums}
+  .who b{color:var(--alv-ink);font-weight:650}
+  .form-card{background:linear-gradient(135deg,var(--alv-surface) 0%,var(--alv-surface-deep) 100%);
+        border:1px solid var(--alv-line);border-radius:12px;padding:16px 18px 18px}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .form-card{
+        background:linear-gradient(135deg,#212a2e 0%,#2a3438 100%)}}
+  :root[data-theme="dark"] .form-card{background:linear-gradient(135deg,#212a2e 0%,#2a3438 100%)}
+  .t{color:var(--alv-ink);font-weight:600;margin:0 0 14px;display:block}
+  .t i{color:var(--alv-accent);margin-right:6px}
+  .rule{padding-bottom:9px;border-bottom:2px solid var(--alv-accent)}
+  .fg label{display:block;font-size:14px;font-weight:600;color:var(--alv-ink);margin-bottom:5px}
+  .fg .ctl{background:var(--alv-paper);border:2px solid var(--alv-line);border-radius:var(--alv-radius);
+        padding:9px 12px;font-size:14px;color:var(--alv-ink-soft)}
+  .px{font-size:11px;color:var(--note);font-variant-numeric:tabular-nums}
+  .flag{color:var(--bad);font-weight:650}
+  .verdict{padding:12px 18px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--note);
+        display:flex;gap:9px;align-items:flex-start}
+  .verdict i{color:var(--alv-accent);margin-top:3px}
+  footer{color:var(--note);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>One panel title, five sizes</h1>
+    <p>base declares <code>.form-section-title</code> with no <code>font-size</code>, so the
+       heading <em>tag</em> decides how big it is. Measured on each page as it renders today,
+       against its own 14px field label.</p>
+  </header>
+
+  <section class="band">
+    <h2>What ships today</h2>
+    <div class="grid">
+
+      <div class="cell">
+        <div class="who"><b>customer_invoice_form</b> — the model screen<br>
+          <span class="px">h5.form-section-title · <span class="flag">13.28px</span> · no rule</span></div>
+        <div class="form-card">
+          <span class="t" style="font-size:13.28px"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="who"><b>finance_expense_add</b><br>
+          <span class="px">h6.form-section-title · 14px · no rule</span></div>
+        <div class="form-card">
+          <span class="t" style="font-size:14px"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="who"><b>user_add</b>, my_profile, workspace_add<br>
+          <span class="px">bare &lt;h2&gt;, no class · 16px · 2px rule</span></div>
+        <div class="form-card">
+          <span class="t rule" style="font-size:16px"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="who"><b>petty_cash_add</b><br>
+          <span class="px">h5.form-section-title · 16.8px · 2px rule</span></div>
+        <div class="form-card">
+          <span class="t rule" style="font-size:16.8px"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="who"><b>edit_asset</b><br>
+          <span class="px">h4.alv-card-title · 16px · weight 700 · no rule</span></div>
+        <div class="form-card">
+          <span class="t" style="font-size:16px;font-weight:700"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="verdict"><i class="fas fa-circle-xmark"></i>
+      <span>Two of these render the panel title <strong>at or below the size of its own field
+      labels</strong> — the model screen at 13.28px and the Financials screens at 14px flat.
+      A title smaller than the things it titles.</span></div>
+  </section>
+
+  <section class="band">
+    <h2>The two candidates — base declares the size, the tag stops mattering</h2>
+    <div class="grid">
+
+      <div class="cell">
+        <div class="who"><b>A — 16px, 2px accent rule</b><br>
+          <span class="px">what user_add / my_profile / workspace_add / edit_asset already show</span></div>
+        <div class="form-card">
+          <span class="t rule" style="font-size:16px"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+          <div class="fg" style="margin-top:10px"><label>Last Name</label><div class="ctl">Manias</div></div>
+        </div>
+      </div>
+
+      <div class="cell">
+        <div class="who"><b>B — 14px, no rule</b><br>
+          <span class="px">what the Financials expense screens show</span></div>
+        <div class="form-card">
+          <span class="t" style="font-size:14px"><i class="fas fa-user"></i>Personal Information</span>
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+          <div class="fg" style="margin-top:10px"><label>Last Name</label><div class="ctl">Manias</div></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="verdict"><i class="fas fa-circle-info"></i>
+      <span>Whichever wins, base gets the <code>font-size</code> and the tag becomes a pure
+      outline choice — so the panel title can be <code>h3</code> under the <code>h2</code> module
+      line, leaving <code>h4</code> for the sub-titles inside a panel
+      (&ldquo;Invoice Lines&rdquo;, &ldquo;Warranty Information&rdquo;).</span></div>
+  </section>
+
+  <footer>30 panel titles across the property-management side. All of them get rewritten either way,
+    so neither option is cheaper than the other.</footer>
+</div>
+</body>
+</html>

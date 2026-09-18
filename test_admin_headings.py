@@ -23,6 +23,20 @@ A SKIPPED CHECK IS COUNTED IN THE SUMMARY.
 """
 
 # --- CONSOLE ENCODING ----------------------------------- 16 Sep 2026 --
+# This file prints text it read out of the templates, and some of that
+# text is not ASCII - projects/project_task_list.html carries a Greek
+# heading behind the language switch, and it will not be the last. On
+# Windows, Python writes stdout as cp1252 whenever it is not a UTF-8
+# console, and cp1252 cannot encode Greek: the print itself raises
+# UnicodeEncodeError and the run dies part-way through. A crash blocks a
+# push exactly as hard as a failure and says far less about why.
+#
+# So keep the encoding the console really has - forcing UTF-8 only moves
+# the problem to whoever decodes us - and change the ERROR HANDLER, so a
+# character the console cannot draw arrives as a question mark instead of
+# ending the run. stderr too, because a traceback is a print as well.
+# Guarded, because stdout is not always a stream that can be told.
+# See test_console_encoding.py.
 import sys as _sys
 for _stream in (_sys.stdout, _sys.stderr):
     try:
@@ -181,10 +195,30 @@ check('  CONTROL: and the check can see an icon when there is one',
 # ---------------------------------------------------------------------- 3
 head('3. THE DERIVED MODULE NAMES STILL MATCH')
 
+# WHAT A BACK LINK MEANS DEPENDS ON THE SCREEN, and this check got it
+# wrong until the banner came off. It read every Back as "the module I
+# belong to". That holds on a screen INSIDE a module - Add User returns to
+# the list it was launched from - but not on a module's own landing screen,
+# where Back goes UP: user_administration's Back reaches the Administration
+# dashboard, and workspace_management's reaches user_administration.
+#
+# The two were excused by accident, not by rule: their Back sat inside the
+# page-local purple banner, where `back_url` could not see it. Delete the
+# banner and both were suddenly "derived", and both disagreed.
+#
+# THE MODE LINE IS WHAT TELLS THEM APART. A screen with a
+# .page-subtitle-h4 is a screen WITHIN a module and its module line must
+# match its list. A screen without one IS the module, and its Back is
+# navigation.
+
 drift, landing = [], []
 for rel, t in ALL:
     mod = titled(t, H2)
     if mod is None:
+        continue
+    if titled(t, H4) is None:
+        landing.append((rel, 'no mode line - it is a module landing screen, '
+                             'so its Back goes up, not across'))
         continue
     url = back_url(t)
     if not url:

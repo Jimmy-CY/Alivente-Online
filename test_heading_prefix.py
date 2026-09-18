@@ -129,6 +129,24 @@ def title_of(src):
     return m.group(0) if m else None
 
 
+def mode_line_of(src):
+    """The line UNDER the title, whatever tag it uses.
+
+    A ROUND THAT MOVES A WORD DOWN A LINE HAS NOT LOST IT. This round took
+    the brand off the h2. A later one - the entry headings - put the MODULE
+    on the h2 and moved the mode into an h4 beneath, so
+    `ALIVENTE ONLINE - ADD EXPENSE` became `EXPENSES` over `ADD EXPENSE`.
+    Reading the h2 alone called that a lost word on fourteen pages.
+    """
+    mk = markup_of(src)
+    m = re.search(r'<(h1|h2)\b[^>]*>.*?</\1>', mk, re.S | re.I)
+    if not m:
+        return ''
+    s = re.search(r'<(h[3-6])\b[^>]*>(.*?)</\1>', mk[m.end():m.end() + 460],
+                  re.S | re.I)
+    return s.group(2) if s else ''
+
+
 def words_of(t):
     """The alphabetic words a reader sees, Django constructs removed."""
     t = re.sub(r'\{[{%#][^}]*[}%#]\}', ' ', t or '')
@@ -228,7 +246,7 @@ for p in MOVED:
     # page. ALIVENTE and ONLINE are the constant and are expected to go.
     _w = [w for w in words_of(t_was) if w.upper() not in ('ALIVENTE',
                                                           'ONLINE')]
-    _now = ' '.join(words_of(t_now)).upper()
+    _now = ' '.join(words_of(t_now) + words_of(mode_line_of(now))).upper()
     check('  and every other word survived',
           all(w.upper() in _now for w in _w),
           '%s -> %s' % (' '.join(_w)[:22], _now[:26]))

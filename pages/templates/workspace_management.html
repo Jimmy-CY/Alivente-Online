@@ -11,29 +11,6 @@
     margin: 0 auto;
 }
 
-.page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px 25px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.page-header h1 {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-}
-
-.page-header .header-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
 .workspace-table {
     background: white;
     border-radius: 10px;
@@ -134,41 +111,6 @@
 
 @media screen and (max-width: 768px) {
     .workspace-admin-container { padding: 0 8px; }
-    .page-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 16px;
-        margin-bottom: 16px;
-        gap: 12px;
-        border-radius: 8px;
-    }
-    .page-header h1 { font-size: 18px; text-align: center; }
-    .page-header .header-actions {
-        flex-direction: row;
-        gap: 8px;
-        width: 100%;
-    }
-    /* Back+1: primary stays wide, Help + Back collapse to icon buttons */
-    .page-header .header-actions .action-primary {
-        flex: 1 1 auto;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-    }
-    .page-header .header-actions .action-icon,
-    .page-header .header-actions .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .action-back-label { display: none; }
 
     /* iOS zoom guard on any modal inputs */
     .modal .form-control { font-size: 16px; }
@@ -237,20 +179,20 @@
     </div>
     {% endfor %}
 
-    <div class="page-header">
-        <h2 class="page-title-h2">WORKSPACE MANAGEMENT</h2>
-        <div class="header-actions">
-            <a href="{% url 'workspace_add' %}" class="btn action-secondary btn-sm">
-                <i class="fas fa-plus"></i> Add Workspace
-            </a>
-            <button type="button" class="btn action-secondary btn-sm action-icon" data-toggle="modal" data-target="#workspacesHelpModal" aria-label="Help">
-                <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
-            </button>
-            <a href="{% url 'user_administration' %}" class="btn action-secondary btn-sm" aria-label="Back">
-                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-            </a>
-        </div>
+    <h2 class="page-title-h2">WORKSPACE MANAGEMENT</h2>
+    <br/>
+    <div class="page-action-buttons">
+        <a href="{% url 'workspace_add' %}" class="btn action-primary">
+            <i class="fas fa-plus"></i> Add Workspace
+        </a>
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#workspacesHelpModal" aria-label="Help">
+            <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
+        </button>
+        <a href="{% url 'user_administration' %}" class="btn action-back" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
     </div>
+
 
     {% if workspaces %}
     <div class="workspace-table">

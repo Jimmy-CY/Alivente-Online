@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit User Header</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  :root{
+    --alv-accent:#0e7c8b; --alv-accent-ink:#0a5e6a; --alv-accent-soft:#e4f3f5;
+    --alv-accent-line:#a8d8de; --alv-on-accent:#fff;
+    --alv-paper:#fff; --alv-surface:#f8f9fa; --alv-surface-deep:#e9ecef;
+    --alv-ink:#21343c; --alv-ink-soft:#5b6b73; --alv-ink-faint:#8a979d;
+    --alv-line:#e3e8ea; --alv-radius:8px;
+    --ground:#eef1f3; --card:#fff; --rule:#dfe4e7; --note:#5b6b73;
+    --good:#1f8a4c; --bad:#b4342b;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root:not([data-theme="light"]){}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#141a1d; --card:#1b2226; --rule:#2c3639; --note:#9aa9b0;
+      --alv-ink:#e7eef1; --alv-ink-soft:#a9b8bf; --alv-ink-faint:#7d8d95;
+      --alv-paper:#1b2226; --alv-surface:#212a2e; --alv-surface-deep:#2a3438;
+      --alv-line:#313c41; --alv-accent:#3fb0c0; --alv-accent-soft:#17383d;
+      --alv-accent-line:#2a5a62; --good:#4cc47f; --bad:#e07a70;
+    }
+  }
+  :root[data-theme="dark"]{
+      --ground:#141a1d; --card:#1b2226; --rule:#2c3639; --note:#9aa9b0;
+      --alv-ink:#e7eef1; --alv-ink-soft:#a9b8bf; --alv-ink-faint:#7d8d95;
+      --alv-paper:#1b2226; --alv-surface:#212a2e; --alv-surface-deep:#2a3438;
+      --alv-line:#313c41; --alv-accent:#3fb0c0; --alv-accent-soft:#17383d;
+      --alv-accent-line:#2a5a62; --good:#4cc47f; --bad:#e07a70;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--alv-ink);font-family:var(--font);
+       font-size:15px;line-height:1.5;padding:28px 16px 64px}
+  .wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+  header.page h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em;text-wrap:balance}
+  header.page p{margin:0;color:var(--note);max-width:66ch}
+
+  .opt{background:var(--card);border:1px solid var(--rule);border-radius:14px;
+       overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  .opt > .bar{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+       padding:14px 18px;border-bottom:1px solid var(--rule);background:transparent}
+  .tag{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+       padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .tag.now{background:rgba(180,52,43,.12);color:var(--bad)}
+  .tag.ok{background:var(--alv-accent-soft);color:var(--alv-accent);border:1px solid var(--alv-accent-line)}
+  .opt h2{font-size:16px;margin:0;font-weight:650}
+  .opt .sub{font-size:13px;color:var(--note);margin:0}
+  .screen{padding:20px 18px 24px;background:var(--alv-surface)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .screen{background:#182023}}
+  :root[data-theme="dark"] .screen{background:#182023}
+  .verdict{padding:12px 18px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--note);
+       display:flex;gap:9px;align-items:flex-start}
+  .verdict i{color:var(--alv-accent);margin-top:3px}
+
+  /* ---- the system's own components, as base defines them ---- */
+  .page-title-h2{text-align:center;margin:.5rem 0 0;font-size:1.6rem;font-weight:700;color:var(--alv-ink)}
+  .page-subtitle-h4{text-align:center;margin:.25rem 0 1rem;font-size:1.1rem;color:var(--alv-ink-soft)}
+  .page-action-buttons{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1.1rem}
+  .page-action-buttons .action-back{margin-left:auto}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 16px;
+       border-radius:var(--alv-radius);font-size:14px;font-weight:600;line-height:1.2;
+       border:1px solid transparent;white-space:nowrap;cursor:default}
+  .action-primary{background:var(--alv-accent);border-color:var(--alv-accent);color:var(--alv-on-accent)}
+  .action-back{background:var(--alv-paper);border-color:var(--alv-line);color:var(--alv-ink-soft)}
+  .meta{display:flex;gap:18px;flex-wrap:wrap;background:var(--alv-paper);border:1px solid var(--alv-line);
+        border-radius:var(--alv-radius);padding:10px 14px;margin-bottom:1.1rem;
+        font-size:13px;color:var(--alv-ink-soft)}
+  .meta i{color:var(--alv-accent);margin-right:5px}
+  .form-card{background:linear-gradient(135deg,var(--alv-surface) 0%,var(--alv-surface-deep) 100%);
+        border:1px solid var(--alv-line);border-radius:12px;padding:16px 20px 18px;
+        box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .form-card{
+        background:linear-gradient(135deg,#212a2e 0%,#2a3438 100%)}}
+  :root[data-theme="dark"] .form-card{background:linear-gradient(135deg,#212a2e 0%,#2a3438 100%)}
+  .form-section-title{font-size:15px;font-weight:600;margin:0 0 12px;color:var(--alv-ink);
+        padding-bottom:8px;border-bottom:2px solid var(--alv-accent)}
+  .form-section-title i{color:var(--alv-accent);margin-right:6px}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:560px){.fields{grid-template-columns:1fr}}
+  .fg label{display:block;font-size:13px;font-weight:600;color:var(--alv-ink);margin-bottom:5px}
+  .fg .ctl{background:var(--alv-paper);border:2px solid var(--alv-line);border-radius:var(--alv-radius);
+        padding:9px 12px;font-size:14px;color:var(--alv-ink-faint)}
+
+  /* ---- the defect, reproduced exactly ---- */
+  .page-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;
+        padding:20px 25px;border-radius:10px;margin-bottom:25px;
+        display:flex;justify-content:space-between;align-items:center}
+  .page-header .page-title-h2{white-space:nowrap}
+  .page-header .btn{background:transparent;border-color:rgba(255,255,255,.35)}
+
+  .flag{position:absolute;font-size:11px;font-weight:700;letter-spacing:.06em;
+        text-transform:uppercase;color:var(--bad);white-space:nowrap}
+  .hold{position:relative}
+  .marker{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+        color:var(--bad);margin-top:10px}
+  .moved{outline:2px dashed var(--alv-accent);outline-offset:3px;border-radius:var(--alv-radius)}
+  .legend{font-size:12.5px;color:var(--note);display:flex;align-items:center;gap:8px;
+        padding:0 2px}
+  .legend .swatch{width:26px;height:0;border-top:2px dashed var(--alv-accent);display:inline-block}
+  footer{color:var(--note);font-size:13px;text-align:center;padding-top:6px}
+  @media (max-width:640px){
+    .page-header{flex-direction:row}
+    header.page h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <h1>Edit User &mdash; where the header goes</h1>
+    <p>The same screen four ways. The first is what is deployed now; the three below are the
+       choices for stage&nbsp;C. Everything is drawn with the system's own tokens, so the teal,
+       the panel wash and the button metrics are the real ones.</p>
+  </header>
+
+  <div class="legend"><span class="swatch"></span> A dashed outline marks the element that moves.</div>
+
+  <!-- NOW -->
+  <section class="opt">
+    <div class="bar"><span class="tag now">Now</span><h2>The purple banner</h2>
+      <p class="sub">heading, mode line and Back all inside one flex container</p></div>
+    <div class="screen">
+      <div class="page-header">
+        <h2 class="page-title-h2">USER ADMINISTRATION</h2>
+        <h4 class="page-subtitle-h4">EDIT USER &mdash; demetri</h4>
+        <a class="btn action-back"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+      <div class="meta">
+        <span><i class="fas fa-calendar-plus"></i>Joined: 19 Jan 2025</span>
+        <span><i class="fas fa-clock"></i>Last login: 27 Aug 2026 07:58</span>
+        <span><i class="fas fa-hashtag"></i>User ID: 3</span>
+      </div>
+      <div class="page-action-buttons">
+        <button class="btn action-primary"><i class="fas fa-save"></i> Save Changes</button>
+      </div>
+      <div class="form-card">
+        <h5 class="form-section-title"><i class="fas fa-user"></i>Personal Information</h5>
+        <div class="fields">
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+          <div class="fg"><label>Last Name</label><div class="ctl">Manias</div></div>
+        </div>
+      </div>
+      <div class="marker"><i class="fas fa-triangle-exclamation"></i>
+        Three centred blocks in one flex row &mdash; so the mode line lands on the module name,
+        and Back reads grey on purple.</div>
+    </div>
+    <div class="verdict"><i class="fas fa-circle-xmark"></i>
+      <span>Not a house colour, and a container base never intended. Two action bars on one screen.</span></div>
+  </section>
+
+  <!-- OPTION 1 -->
+  <section class="opt">
+    <div class="bar"><span class="tag ok">Option 1</span><h2>Back joins the existing bar</h2>
+      <p class="sub">nothing moves but the Back button</p></div>
+    <div class="screen">
+      <h2 class="page-title-h2">USER ADMINISTRATION</h2>
+      <h4 class="page-subtitle-h4">EDIT USER &mdash; demetri</h4>
+      <div class="meta">
+        <span><i class="fas fa-calendar-plus"></i>Joined: 19 Jan 2025</span>
+        <span><i class="fas fa-clock"></i>Last login: 27 Aug 2026 07:58</span>
+        <span><i class="fas fa-hashtag"></i>User ID: 3</span>
+      </div>
+      <div class="page-action-buttons">
+        <button class="btn action-primary"><i class="fas fa-save"></i> Save Changes</button>
+        <a class="btn action-back moved"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+      <div class="form-card">
+        <h5 class="form-section-title"><i class="fas fa-user"></i>Personal Information</h5>
+        <div class="fields">
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+          <div class="fg"><label>Last Name</label><div class="ctl">Manias</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="verdict"><i class="fas fa-circle-check"></i>
+      <span>One bar, the rule already shipped. The grey meta strip sits between the heading and
+      the bar &mdash; the only unevenness, and only on these three screens.
+      No change to how the form submits.</span></div>
+  </section>
+
+  <!-- OPTION 2 -->
+  <section class="opt">
+    <div class="bar"><span class="tag ok">Option 2</span><h2>The bar rises above the meta strip</h2>
+      <p class="sub">Save leaves the form and is re-attached with <code>form="…"</code></p></div>
+    <div class="screen">
+      <h2 class="page-title-h2">USER ADMINISTRATION</h2>
+      <h4 class="page-subtitle-h4">EDIT USER &mdash; demetri</h4>
+      <div class="page-action-buttons moved">
+        <button class="btn action-primary"><i class="fas fa-save"></i> Save Changes</button>
+        <a class="btn action-back"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+      <div class="meta">
+        <span><i class="fas fa-calendar-plus"></i>Joined: 19 Jan 2025</span>
+        <span><i class="fas fa-clock"></i>Last login: 27 Aug 2026 07:58</span>
+        <span><i class="fas fa-hashtag"></i>User ID: 3</span>
+      </div>
+      <div class="form-card">
+        <h5 class="form-section-title"><i class="fas fa-user"></i>Personal Information</h5>
+        <div class="fields">
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+          <div class="fg"><label>Last Name</label><div class="ctl">Manias</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="verdict"><i class="fas fa-circle-exclamation"></i>
+      <span>Identical on all eight screens. The price: Save now sits outside its
+      <code>&lt;form&gt;</code> and is wired back by attribute &mdash; a change to submission
+      inside a cosmetic round.</span></div>
+  </section>
+
+  <!-- OPTION 3 -->
+  <section class="opt">
+    <div class="bar"><span class="tag ok">Option 3</span><h2>The meta strip drops below the bar</h2>
+      <p class="sub">same picture as Option 2, with no form change</p></div>
+    <div class="screen">
+      <h2 class="page-title-h2">USER ADMINISTRATION</h2>
+      <h4 class="page-subtitle-h4">EDIT USER &mdash; demetri</h4>
+      <div class="page-action-buttons">
+        <button class="btn action-primary"><i class="fas fa-save"></i> Save Changes</button>
+        <a class="btn action-back"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+      <div class="meta moved">
+        <span><i class="fas fa-calendar-plus"></i>Joined: 19 Jan 2025</span>
+        <span><i class="fas fa-clock"></i>Last login: 27 Aug 2026 07:58</span>
+        <span><i class="fas fa-hashtag"></i>User ID: 3</span>
+      </div>
+      <div class="form-card">
+        <h5 class="form-section-title"><i class="fas fa-user"></i>Personal Information</h5>
+        <div class="fields">
+          <div class="fg"><label>First Name</label><div class="ctl">Demetri</div></div>
+          <div class="fg"><label>Last Name</label><div class="ctl">Manias</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="verdict"><i class="fas fa-circle-check"></i>
+      <span>The bar follows the heading on every screen and the form is untouched.
+      The price: your meta strip is reordered, not merely restyled.</span></div>
+  </section>
+
+  <footer>user_add and workspace_add have no meta strip, so all three options render them identically.</footer>
+</div>
+</body>
+</html>

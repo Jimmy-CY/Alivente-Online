@@ -216,9 +216,22 @@ check('and bars a More menu carries', len(CARRIED) >= 15,
       '%d found' % len(CARRIED))
 check('  CONTROL: both sets are non-empty, or the sections below are vacuous',
       NEEDY and CARRIED)
-for _n in ('customer_form.html', 'passport_management.html',
-           'finance/vacancy_management.html'):
+# NAMED EXAMPLES GO STALE, so each one says what would make it leave.
+# customer_form.html was here until 18 Sep. It did not stop qualifying
+# because the scan broke - the save-and-cancel round REMOVED its Cancel,
+# which was its only .action-secondary, because that Cancel pointed at
+# customer_list and so did its Back. A page with no secondary cannot be in
+# a set of pages whose secondary would be hidden. The name was stale; the
+# scan was right.
+for _n in ('passport_management.html', 'finance/vacancy_management.html'):
     check('  %s is among them' % _n, any(n == _n for n, _ in NEEDY))
+# And a RULE rather than a name, so the set cannot quietly fill with the
+# wrong kind of page: everything in NEEDY really does carry a secondary and
+# really has no More menu.
+_wrong = [n for n, bar in NEEDY
+          if 'action-secondary' not in bar or 'action-more-btn' in bar]
+check('  every page in the set has a secondary and no More menu', not _wrong,
+      '%d do not: %s' % (len(_wrong), ', '.join(_wrong[:3])))
 
 # ===========================================================================
 head('3. the eleven, rendered at 390px')

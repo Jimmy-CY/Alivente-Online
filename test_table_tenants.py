@@ -45,6 +45,70 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# --- SCRATCH -------------------------------------------- 18 Sep 2026 --
+# This suite renders a fixture in Chromium, and a fixture has to be a real
+# file before file:// can reach it. Those files used to be written into
+# the repo root. Three things are wrong with that, and the third one bit:
+#
+#   - the root is a git working tree, so a suite that dies before its own
+#     cleanup leaves an untracked file where the next commit can see it;
+#   - the root is inside OneDrive, so every fixture is a create, an upload
+#     and a delete for the sync client to chase;
+#   - THE NAME WAS NOT UNIQUE. Four suites all wrote _sup_probe.html into
+#     that one directory. On the push gate test_table_tenants.py runs
+#     immediately before test_table_lease_agreement.py, so the same path
+#     was created, deleted and created again within a second or two, and
+#     Chromium answered the second one with net::ERR_FAILED. Run
+#     alphabetically by Show-GateAudit.py the order is different, nobody
+#     hands another suite a path they have just deleted, and the same
+#     suite passes - which is why this read as a fault in the gate.
+#
+# mkdtemp hands THIS PROCESS a directory whose name no other process
+# knows, so two suites cannot collide however they are ordered, and
+# nothing is written into the working tree at all.
+# See test_probe_location.py.
+import atexit as _atexit
+import shutil as _shutil
+import tempfile as _tempfile
+
+SCRATCH = _tempfile.mkdtemp(prefix='alv_probe_')
+_atexit.register(_shutil.rmtree, SCRATCH, True)
+
+
+def _probe_failed(path, err):
+    """Say what could not be opened, and what was true of it at the time."""
+    import os as _o
+    there = _o.path.exists(path)
+    print('')
+    print('  !! THE BROWSER COULD NOT OPEN THE FIXTURE')
+    print('     path    : %s' % path)
+    print('     on disk : %s' % (('yes, %d byte(s)' % _o.path.getsize(path))
+                                 if there else 'NO'))
+    print('     reason  : %s' % str(err).split('\n')[0][:150])
+    print('')
+    print('     This is a navigation failure, not a failed check, so the')
+    print('     checks below it never ran. The fixture lives in a')
+    print('     directory mkdtemp made for this process alone, so no other')
+    print('     suite can have taken the name. If it IS on disk and not')
+    print('     empty, something outside this repo is holding it open - a')
+    print('     sync client and an anti-virus scanner are the usual two.')
+
+
+def _goto(pg, path):
+    """Open a local fixture, and SAY SOMETHING if the browser will not.
+
+    Every tool here carries a paragraph about a crash blocking a push
+    exactly as hard as a failure while saying far less about why - and
+    then calls goto bare. This is that paragraph, kept.
+    """
+    try:
+        pg.goto('file://' + path)
+    except Exception as e:
+        _probe_failed(path, e)
+        raise SystemExit(1)
+    return True
+# ------------------------------------------------------------------------
 PAGE = os.path.join(ROOT, 'pages', 'templates', 'tenant.html')
 BASE = os.path.join(ROOT, 'pages', 'templates', 'base.html')
 
@@ -360,7 +424,7 @@ else:
     f = re.sub(r'\{#.*?#\}', '', f, flags=re.S)
     f = re.sub(r'\{[{%][^}%]*[%}]\}', '', f)
 
-    tmp = os.path.join(ROOT, '_sup_probe.html')
+    tmp = os.path.join(SCRATCH, '_sup_probe.html')
     open(tmp, 'w', encoding='utf-8').write(
         '<!doctype html><html><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -393,7 +457,7 @@ else:
                 return got
 
             pg = br.new_page(viewport={'width': 1440, 'height': 900})
-            pg.goto('file://' + tmp)
+            _goto(pg, tmp)
 
             td = cs(pg, 'tbody td:nth-child(2)',
                     ['border-left-width', 'border-top-width', 'text-align'])
@@ -483,7 +547,7 @@ else:
             pg.close()
 
             pg = br.new_page(viewport={'width': 375, 'height': 900})
-            pg.goto('file://' + tmp)
+            _goto(pg, tmp)
             check('mobile: the header row is dropped',
                   cs(pg, 'thead', ['display'])['display'] == 'none')
             c1 = cs(pg, 'tbody tr:nth-child(1)',

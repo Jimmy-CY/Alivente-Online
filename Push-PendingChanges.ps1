@@ -825,7 +825,25 @@ $suites = @(
     # section 2 re-derives every module name from the screen Back
     # returns to, so renaming a module reports its sub-screens the
     # same day. Newest, so most likely to be what breaks.
-    'test_admin_headings.py'
+    'test_admin_headings.py',
+    # The purple banner comes off Administration. Its section 2 is a
+    # POSITION check - the module heading must not be inside any
+    # container - because stage B checked the class and passed a
+    # correct class sitting in a flex row that piled the mode line
+    # on top of it. Newest, so most likely to be what breaks.
+    'test_admin_banner.py',
+    # .disabled-btn marks what is off PERMANENTLY. A <button> whose
+    # disabled attribute JavaScript clears must NOT carry it, or the
+    # class outlives the attribute and the button goes live while
+    # staying grey. This guards a rule in Show-ButtonDrift.py, which
+    # apply_button_sweep.py imports - a SHARED tool, so it needs a
+    # guard of its own rather than riding on the sweep's suite.
+    'test_disabled_state.py',
+    # A fixture belongs to ONE process. Four suites used to build
+    # _sup_probe.html in this directory; on this list two of them run back
+    # to back, and the second was answered with net::ERR_FAILED. Every
+    # fixture now lives in a mkdtemp directory, and this is what says so.
+    'test_probe_location.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

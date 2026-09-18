@@ -208,10 +208,23 @@ for p in MOVED:
         # to go.
         _w = [w for w in re.findall(r'[A-Za-z]{3,}', literal(t_was))
               if w.upper() not in ('ALIVENTE', 'ONLINE')]
-        _kept = [w for w in _w if w.upper() in literal(t_now).upper()]
+        # THE WORDS MAY HAVE MOVED DOWN A LINE, and that is not losing
+        # them. generate_lease_agreement.html read GENERATE LEASE AGREEMENT
+        # on its h2 when this round ran. The entry-headings round later put
+        # the MODULE on the h2 - ADMINISTRATION, derived from where its Back
+        # goes - and moved GENERATE LEASE AGREEMENT to the mode line beneath,
+        # which is what every other screen inside a module now does.
+        #
+        # Reading only the h2 called that a rename. The words are still on
+        # the page, one line lower, so the check reads the whole heading
+        # block. It still fails if a round actually drops them.
+        _t2, _s2 = second_line(now)
+        _where = (literal(t_now) + ' ' + (_s2 or '')).upper()
+        _kept = [w for w in _w if w.upper() in _where]
         check('  and its words survived',
               len(_kept) >= len(_w) - 1,
-              '%s -> %s' % (t_was[:24], t_now[:30]))
+              '%s -> %s%s' % (t_was[:24], t_now[:30],
+                              (' / ' + _s2[:24]) if _s2 else ''))
     check('  no icon in the heading', t_now is not None and '<i ' not in t_now)
     if s_now is not None:
         _l = [c for c in literal(s_now) if c.isalpha()]
