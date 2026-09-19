@@ -849,7 +849,14 @@ $suites = @(
     # answers - two of them at or below the size of the field
     # labels underneath. Its section 4 measures that, because a
     # size is not something a string search can check.
-    'test_panel_title.py'
+    'test_panel_title.py',
+    # One section component, in place of the seven ways this system used
+    # to say "this is a section". Its section 5 exists because one of those
+    # headings is a CONTROL - it opens a notification card - and its
+    # section 7 renders at 375, 390 and 768 with Bootstrap and base inlined,
+    # against a 1280 control, because a rendering test without the page's
+    # stylesheet measures nothing. Newest, so most likely to be what breaks.
+    'test_entry_sections.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

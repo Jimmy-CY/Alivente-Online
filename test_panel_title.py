@@ -92,15 +92,29 @@ NOT_SWEPT = {
                        'heading is the record name, not a section title',
 }
 
-# The two that keep a name of their own, and why. Both were measured:
-# customer_invoice_form's .lines-title sits at 8623 with its card spanning
-# 2096-7575 - genuinely outside. property_assets' .form-section-heading is
-# a second level of structure inside a panel that already has a title.
-KEEPS_ITS_OWN = {
-    'customer_invoice_form.html': ('lines-title', 'it sits OUTSIDE the '
-                                   'form-card - measured, not assumed'),
-    'property_assets.html': ('form-section-heading', 'a second level of '
-                             'structure under a panel that has a title'),
+# SETTLED BY A LATER ROUND - 19 Sep 2026.
+#
+# This round measured two headings that kept a name of their own and left
+# them alone, calling it "a decision rather than a rename":
+# customer_invoice_form's .lines-title sat at 8623 with its card spanning
+# 2096-7575, genuinely outside it; property_assets' .form-section-heading
+# was a second level of structure inside a panel that already had a title.
+#
+# The entry-sections round made the decision. Push 1 gave Invoice Lines a
+# panel of its own, so its title is a panel title like every other, and
+# brought property_assets' sub-heading onto the component too.
+#
+# SO THIS SUITE NOW ASSERTS THE REVERSE, and writing that down is the
+# point. A suite is the record of a decision. When a later round reverses
+# the decision, the record changes to say so - it does not quietly stop
+# looking, and it does not go on failing because it remembers an older
+# answer. The names stay here so the check still runs; the direction is
+# what flipped.
+SETTLED_BY_ENTRY_SECTIONS = {
+    'customer_invoice_form.html': ('lines-title', 'Invoice Lines gained a '
+                                   'panel, so its title is a panel title'),
+    'property_assets.html': ('form-section-heading', 'it adopted the '
+                             'component in push 1'),
 }
 
 PASS = FAIL = SKIP = 0
@@ -497,14 +511,18 @@ for d in debt[:6]:
 if len(debt) > 6:
     print('          .. and %d more' % (len(debt) - 6))
 
-for rel, (name, why) in sorted(KEEPS_ITS_OWN.items()):
+for rel, (name, why) in sorted(SETTLED_BY_ENTRY_SECTIONS.items()):
     src = dict(ALL).get(rel)
     if src is None:
-        skip('%s keeps .%s' % (rel, name), 'not in this checkout')
+        skip('%s and .%s' % (rel, name), 'not in this checkout')
         continue
-    check('  %s keeps .%s' % (rel, name), name in classes_used(src), why[:52])
-    check('    and its rules are still there',
-          name in classes_styled(src))
+    check('  %s no longer wears .%s' % (rel, name),
+          name not in classes_used(src), why[:52])
+    check('    and its rules went with it', name not in classes_styled(src))
+check('  CONTROL: the scan can still SEE a class that IS worn',
+      any(CLS in classes_used(s) for _r, s in ALL))
+check('  CONTROL: .. and one that IS styled',
+      any(CLS in classes_styled(s) for _r, s in ALL))
 
 # ---------------------------------------------------------------------- 5
 head('5. RENDERED - ONE SIZE, WHERE THE TAG USED TO DECIDE')

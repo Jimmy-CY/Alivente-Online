@@ -1,119 +1,143 @@
-Administration stage D: one panel title, one size, and the tag stops deciding
+Entry sections push 1: one section component, and base takes over the phone
 
-base declared .form-section-title with no font-size, so the heading TAG
-decided how big a panel title was. 34 titles on 19 screens now carry one
-tag and one class, 30 page-local rules went with them, and the two that
-scope the component to a particular panel stayed.
+This system had SEVEN ways to say "this is a section" - form-section-title,
+section-title, form-section-heading, pi-section-title, lines-title, a bare
+<h5> and h5.mb-0 - and base declared exactly one of them. Push 1 takes every
+screen that already HAS sections and puts them on that one. It moves no
+fields; that is pushes 2 and 3.
 
-ONE COMPONENT, FOUR SIZES
+On the way it found something bigger than the sections. iOS Safari zooms the
+page whenever a focused input is under 16px, and base sets .form-control to
+14px. SIXTY-TWO PAGES had each written their own guard against that, in
+selector dialects that include `.form-group .form-control`,
+`input[type="text"].form-control`, `.modal-body input[type="number"]`,
+`.line-input` and `.expense-form .form-control`. Same shape as the
+.form-control rule itself before the form-components round: base reached a
+class name and declared none of the behaviour. Base owns it now, in one rule.
 
-Measured with Bootstrap loaded and base's size taken away, the four tags
-these titles actually used:
+WHAT MOVED
 
-    h2, no class at all   13 titles    32px
-    h3                                 28px
-    h5.form-section-title  6 titles    20px
-    h6.form-section-title 12 titles    16px
+    29 headings, 7 files, four dialects -> h3.form-section-title
+        notification_settings              13   bare <h5>
+        preview_imported_recipe             8   h2.section-title
+        personal_notification_settings      2   bare <h5>
+        edit_asset                          2   h5.form-section-heading
+        create_meal_plan                    2   h2.section-title
+        property_assets                     1   h6.form-section-heading
+        customer_invoice_form               1   h5.lines-title
 
-Nothing chose those numbers. They are what the browser does with whichever
-heading a page happened to reach for. base says 16px now, with a 9px
-bottom padding and a 2px accent rule, and the tag carries no appearance.
+    24 page-local rules deleted, each because THIS file no longer wears the
+    class it names - computed per file, not from a constant list.
 
-MY OWN MEASUREMENT OF THIS WAS WRONG, AND WRITING THE CONTROL FOUND IT
+    base gains:  @media screen and (max-width: 768px) {
+                     .form-card    { padding: 16px 14px; }
+                     .form-control { font-size: 16px; }
+                     .form-section-title small { display:block; .75rem }
+                 }
+                 .form-section-title small { font-weight:400; .8rem }
 
-The round's first draft said the sizes were 13.28px, 14px, 16px, 16.8px
-and 16px, and that two of them fell at or BELOW the 14px field labels -
-"Personal Information" smaller than "First Name" beneath it.
+WHAT THE MEASUREMENT CHANGED
 
-Those were measured WITHOUT Bootstrap. The CDN is unreachable from the
-sandbox, the stylesheet never loaded, and every figure was a browser
-default. With Bootstrap loaded nothing was smaller than its labels.
+The mobile rule proposed before measuring had three declarations. Two were
+wrong and only the browser said so.
 
-    A rendering test that renders without the stylesheet the page
-    actually has measures nothing.
+  * Dropping .form-card's margin to 16px made the gap BETWEEN panels equal
+    to the 16px gap between fields INSIDE one. The grouping this round
+    exists to create, erased by the round's own CSS.
+  * Shrinking the title to 15px was unnecessary - at 375px it has 293px to
+    draw in and was never clipped - and would have left it one pixel above
+    the 14px labels.
 
-Same fault as the btn-sm measurement in the button round, five days apart.
-The spread is real and is reason enough; the sentence about the labels was
-not, and both docstrings now say so. Section 5's control is what produced
-the four true numbers.
+What survived is the padding, which buys 293px -> 313px of field width at
+375 wide, and the guard.
 
-THREE HEADINGS THE ROUND SAID IT WOULD NOT TOUCH, AND WAS TOUCHING
+AND THE GUARD FIXED SOMETHING IT WAS NOT AIMED AT. A control sized so iOS
+will not zoom is also a control big enough to hit: 16px inside
+.form-control's 9px padding and 2px border renders 46px, over the 44px tap
+target it was failing at 41px. On the desktop nothing changed - 14px gives
+43px, measured on the deploy machine - so that round is still owed, just no
+longer owed on a phone. (The suite REPORTS both numbers rather than
+asserting them: control height depends on the font the machine has, and a
+threshold that moves with the renderer is not a threshold.)
 
-The prose named .lines-title and .pi-section-title as out of scope -
-"they sit OUTSIDE any .form-card". Measured, that is true of one of four:
+FIVE THINGS CAUGHT BEFORE ANYTHING SHIPPED - THE LAST BY THE GATE
 
-    customer_invoice_form  .lines-title       8623, card 2096-7575   OUT
-    physical_invoice_edit  .lines-title       2724, card 1696-5880   IN
-    tenant_add             .pi-section-title  9847, card 1187-14893  IN
-    tenant_edit            .pi-section-title 11805, card 2371-17054  IN
+  1. `\bform-section\b` MATCHES INSIDE `form-section-title`. A hyphen is a
+     non-word character and \b is happy to sit on it, so renaming
+     .form-section to .form-card turned create_meal_plan's two new headings
+     into class="form-card-title". The self-check found it: 0 component
+     headings where 2 were expected. A class name ends where a character
+     that cannot appear in one begins, and a hyphen can.
+  2. A COMMENT IN FRONT OF @media HIDES IT. Every rule inside a media query
+     was invisible to a walk that tested sel.startswith('@'), because the
+     text handed to it began `/* Card padding */`. split_rules not recursing
+     into @media has now been a bug in four rounds, in four shapes.
+  3. THE PANEL WENT ROUND THE WRONG HEADING. customer_invoice_form already
+     carried a component heading - stage D put it on the Customer panel - so
+     `text.find(the component)` opened a second .form-card inside the first
+     and left Invoice Lines outside both.
+  4. RETARGETING A RULE CAN MAKE IT VISIBLE TO A GUARD IT WAS HIDING FROM.
+     `.notification-card.is-collapsible > h5 { margin-bottom: 0 }` passed
+     every check while it named a TAG, because base does not own h5. Pointed
+     at the component it became a compound rule whose every property base
+     already declares, and test_compound_rules.py stopped the push for it.
+     It was dead weight before this round too - the rule above it already
+     sets margin-bottom: 0 on every card, collapsible or not - so it is
+     deleted rather than excused. The gate found this one; the round's own
+     self-checks did not.
+  5. A SELECTOR SAYS WHAT A RULE IS CALLED; ONLY THE BODY SAYS WHAT IT DOES.
+     `.form-section-heading small` looked harmless in the dry run. Its body
+     was `font-weight: 400`, and base declared nothing like it, so deleting
+     it would have rendered edit_asset's "(up to 5 per asset - JPG/PNG, 5MB
+     each)" at full heading weight. base gains the rule instead. The tool
+     now has --verbose and it should be used before believing a dry run.
 
-Three of them sit inside a panel doing a panel title's job under another
-name. The sweeper tests containment and was right; the prose was a list
-written from one page's shape, and the list lost. They are swept.
+ONE HEADING IN THIS ROUND IS A CONTROL
 
-    A list chosen from a corpus you cannot see is a list.
-    A rule is a standard.
+notification_settings' section title opens and closes its card. Six CSS
+rules selected `.notification-card > h5` and one line of JavaScript did
+card.querySelector('h5'). Both now name the component, which is the right
+selector either way: what makes that element the trigger is that it is the
+card's title, not its tag. .notification-card keeps its name because it also
+carries the open/closed state; only its appearance moved onto base's panel.
 
-Second time this week that sentence has been the finding.
+TWO PANELS COULD NOT BE SPLIT, AND THE ROUND SAYS SO
 
-AND THEIR CSS WAS BEING LEFT BEHIND
+The rule agreed for this round is "a section is a panel". On edit_asset and
+property_assets the <form> opens INSIDE the panel, so closing it at a
+section boundary would cut the form in half. Those two keep one panel with
+titled sections inside, exactly as suppliers_add does, and their <hr> goes
+because the component's own accent rule is the divider now.
 
-The sweeper renamed their markup and deleted nothing, because the
-deletable set was a constant - TITLE_CLASSES - rather than a question
-about this page. Six rules would have shipped matching nothing. Dead, not
-wrong, which is why nothing caught it.
+ONE WORDING CHANGE, NAMED
 
-The set is per page now: a rule may only go where base has taken its job
-over ON THIS PAGE. .lines-title rules go on physical_invoice_edit, where
-the markup was swept, and STAY on customer_invoice_form, where it was not.
+preview_imported_recipe's Cooking Calculator heading loses a fire emoji,
+because fa-fire now does that job. The emoji is in four other places on that
+page and none of them is this round's business. The suite names this one
+exception rather than permitting drift in general.
 
-BASE ALREADY OWNED THE ICON - THE ROUND ONLY STOPPED REPEATING IT
+PROOF
 
-17 of the 34 titles put a Font Awesome icon before the words and every one
-said the colour again: 13 as an inline style attribute, 6 as a page rule
-`.pi-section-title i { color: #0e7c8b }`. base has declared
-`.form-section-title i { color: var(--alv-accent); margin-right: 6px }`
-since the form-components round on 16 Sep, and --alv-accent IS #0e7c8b.
+    test_entry_sections.py    93 passed, 0 failed, 0 skipped
 
-So all 19 restatements say exactly what base says, and deleting them moves
-nothing on screen. Section 6 measures that rather than asserting it. The
-patcher now refuses to write if that rule is missing - not an addition, a
-dependency made explicit.
+Section 4 is an equality, not a list of exceptions: push 1 moves no fields,
+so the ordered list of name= attributes matches the .bak_sect1 backup
+exactly on all seven files. Section 7 renders at 375, 390, 768 and 1280 with
+Bootstrap 4.1.3 and base's own <style> inlined in the order the page loads
+them, against a 1280 control - because a rendering test that renders without
+the page's stylesheet measures nothing, and this month two rounds reported
+browser defaults as the system's numbers. Sabotage-checked: stripping the
+guard from base, putting the JS hook back on a tag and swapping two fields
+each fail it.
 
-WHAT IS REPORTED RATHER THAN SWEPT, each by name and with its reason
+NOT IN THIS PUSH
 
-  edit_asset.html            one form-card holds the whole form and its
-                             first heading is the record's name. Sweeping
-                             it would make a record name a section title.
-  customer_invoice_form      .lines-title, genuinely outside the card
-  property_assets            .form-section-heading, a second level of
-                             structure under a panel that has a title
-  19 form-cards              carry no heading at all. A panel without a
-                             title is not necessarily wrong, and this
-                             round did not invent one.
-
-test_panel_title.py    39 checks. Section 4 is the one that earns its
-                       keep, and it exists because this round nearly
-                       shipped the fault it checks for: does any page
-                       style a class its own markup no longer wears? It
-                       fails on what THIS round could have orphaned and
-                       reports the rest - the first draft failed on 19
-                       before the round had even run, half of them false
-                       positives from `class="status-badge status-{{
-                       pi.status }}"`, where the name is built at render
-                       time and no literal scan can see it.
-
-FOUND, NOT FIXED: 282 page-local rules across the system name a class no
-markup wears. Left by earlier rounds that moved markup onto base and did
-not follow with the CSS. The suite lists them every run. That is a round
-of its own, and a large one.
-
-Three more faults were caught by a fixture rather than by the gate:
-patch_base inserted its declarations OUTSIDE the braces on a rule written
-on one line, reported an icon rule it had not added, and said "patched" on
-every subsequent run; and two control thresholds were numbers I could not
-verify in both a full and a partial checkout.
-
-STILL TO COME in these modules: the two tables on user_administration and
-workspace_management. And a component for the sub-titles that keep a name
-of their own - two screens, and a decision rather than a rename.
+    generate_lease_agreement    its 14 colour-coded Bootstrap headers carry
+                                meaning (amber = new tenant, green = second
+                                tenant). Left alone, by decision.
+    28 forms with no sections   199 controls between them. Push 2 is
+                                Properties, Tenants and Financials; push 3
+                                is Issues, Projects, Administration and
+                                Personal.
+    the 62 local zoom guards    redundant now, but removing them is a sweep
+                                with its own suite.

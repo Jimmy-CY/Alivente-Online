@@ -36,23 +36,6 @@
     text-align: center;
 }
 
-.preview-section {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    margin-bottom: 30px;
-}
-
-.section-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 3px solid #0e7c8b;
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-}
-
 .ai-badge {
     display: inline-block;
     background: #0e7c8b;
@@ -692,7 +675,7 @@ tr.sortable-chosen {
     user-select: none;
 }
 
-.cooking-calc-toggle .section-title {
+.cooking-calc-toggle .form-section-title {
     margin: 0;
     border: none;
     padding: 0;
@@ -864,18 +847,6 @@ tr.sortable-chosen {
         padding: 12px;
         font-size: 13px;
         line-height: 1.5;
-    }
-
-    /* Sections */
-    .preview-section {
-        padding: 16px;
-        border-radius: 10px;
-        margin-bottom: 18px;
-    }
-    .section-title {
-        font-size: 18px;
-        padding-bottom: 8px;
-        margin-bottom: 16px;
     }
     .ai-badge {
         display: block;
@@ -1056,10 +1027,10 @@ tr.sortable-chosen {
         padding: 16px;
         border-radius: 10px;
     }
-    .cooking-calc-toggle .section-title {
+    .cooking-calc-toggle .form-section-title {
         font-size: 16px;
     }
-    .cooking-calc-toggle .section-title span {
+    .cooking-calc-toggle .form-section-title span {
         display: block;
         font-size: 12px !important;
         margin-left: 0 !important;
@@ -1242,11 +1213,11 @@ tr.sortable-chosen {
         <input type="hidden" name="remove_image" id="remove_image" value="0">
 
         <!-- Basic Information Section -->
-        <div class="preview-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-info-circle"></i> Basic Information
                 {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
-            </h2>
+            </h3>
             
             <div class="form-group">
                 <label for="recipe_name"><strong>Recipe Name</strong> <span class="text-danger">*</span></label>
@@ -1322,11 +1293,11 @@ tr.sortable-chosen {
         </div>
 
         <!-- Time & Servings Section -->
-        <div class="preview-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-clock"></i> Time & Servings
                 {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
-            </h2>
+            </h3>
             
             <div class="row">
                 <div class="col-md-3">
@@ -1357,10 +1328,10 @@ tr.sortable-chosen {
         </div>
 
         <!-- Classification Section -->
-        <div class="preview-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-tags"></i> Classification
-            </h2>
+            </h3>
             
             <div class="row">
                 <!-- Courses (Dropdown Multi-Select) -->
@@ -1431,10 +1402,10 @@ tr.sortable-chosen {
         </div>
 
         <!-- Dietary Information Section -->
-        <div class="preview-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-carrot"></i> Dietary Information
-            </h2>
+            </h3>
             
             <div class="form-group">
                 <div class="form-check">
@@ -1473,11 +1444,11 @@ tr.sortable-chosen {
         </div>
 
         <!-- Ingredients Section with TABLE -->
-        <div class="preview-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-list-ul"></i> Ingredients
                 {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
-            </h2>
+            </h3>
             
             <div class="ingredient-table-wrapper">
                 <table class="ingredient-table" id="ingredientsTable">
@@ -1568,11 +1539,11 @@ tr.sortable-chosen {
         </div>
 
         <!-- Instructions Section -->
-        <div class="preview-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-tasks"></i> Instructions
                 {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
-            </h2>
+            </h3>
 
             <!-- Spell Check Button -->
             <div style="margin-bottom: 15px;">
@@ -1632,10 +1603,10 @@ tr.sortable-chosen {
         </div>
 
         <!-- Document Attachment Section -->
-                <div class="preview-section">
-                    <h2 class="section-title">
+                <div class="form-card">
+                    <h3 class="form-section-title">
                         <i class="fas fa-paperclip"></i> Document Attachment
-                    </h2>
+                    </h3>
 
                     {% if mode == 'edit' and recipe.recipe_document %}
                     <!-- Existing document in edit mode -->
@@ -1689,10 +1660,9 @@ tr.sortable-chosen {
             <!-- Cooking Calculator Section -->
             <div class="cooking-calc-section">
                 <div class="cooking-calc-toggle" onclick="toggleCookingCalc(this)" id="cookingCalcToggle">
-                    <h2 class="section-title">
-                        🔥 Cooking Calculator
+                    <h3 class="form-section-title"><i class="fas fa-fire"></i> Cooking Calculator
                         <span style="font-size: 13px; font-weight: 400; color: #6c757d; margin-left: 10px;">(Optional — for braai/BBQ/roast recipes)</span>
-                    </h2>
+                    </h3>
                     <i class="fas fa-chevron-down toggle-chevron"></i>
                 </div>
 

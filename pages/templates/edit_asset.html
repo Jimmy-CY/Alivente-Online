@@ -140,8 +140,7 @@
             </div>
 
             <!-- Warranty Section -->
-            <hr>
-            <h5 class="form-section-heading">Warranty Information</h5>
+                        <h3 class="form-section-title"><i class="fas fa-shield-alt"></i> Warranty Information</h3>
             <div class="form-row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -172,11 +171,10 @@
             </div>
 
             <!-- Photos Section -->
-            <hr>
-            <h5 class="form-section-heading">
+                        <h3 class="form-section-title"><i class="fas fa-camera"></i> 
                 Photos
                 <small class="text-muted">(up to {{ photo_max_count }} per asset — JPG/PNG, 5MB each)</small>
-            </h5>
+            </h3>
 
             {% if photos %}
                 <div class="photo-manage-grid">
@@ -252,19 +250,6 @@
 /* Form card */
 .form-card .card-body {
     padding: 24px;
-}
-
-/* Form section heading (above warranty section) */
-.form-section-heading {
-    color: #2c3e50;
-    font-weight: 600;
-    margin-top: 8px;
-    margin-bottom: 16px;
-    font-size: 1.15rem;
-}
-.form-section-heading small {
-    font-weight: 400;
-    font-size: 0.8rem;
 }
 
 /* Current file info banner (when an invoice is already attached) */
@@ -414,18 +399,6 @@
     }
     .form-card .form-text {
         font-size: 12px;
-    }
-
-    /* Warranty section heading */
-    .form-section-heading {
-        font-size: 1.05rem;
-        margin-top: 4px;
-        margin-bottom: 12px;
-    }
-    .form-section-heading small {
-        display: block;
-        font-size: 0.75rem;
-        margin-top: 2px;
     }
 
     /* Current file banner — wrap long filenames */

@@ -23,23 +23,6 @@
     margin-bottom: 10px;
 }
 
-.form-section {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    margin-bottom: 30px;
-}
-
-.section-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 10px;
-}
-
 .form-group label {
     font-weight: 600;
     color: #2c3e50;
@@ -281,18 +264,6 @@
         font-size: 0.9rem;
     }
 
-    /* Form sections — tighter padding */
-    .form-section {
-        padding: 16px;
-        margin-bottom: 16px;
-        border-radius: 10px;
-    }
-    .section-title {
-        font-size: 1.05rem;
-        margin-bottom: 14px;
-        padding-bottom: 8px;
-    }
-
     /* Date inputs — stack on mobile so they don't shrink */
     .date-range-inputs {
         grid-template-columns: 1fr;
@@ -493,10 +464,10 @@
         {% csrf_token %}
 
         <!-- Basic Information -->
-        <div class="form-section">
-            <h2 class="section-title">
+        <div class="form-card">
+            <h3 class="form-section-title">
                 <i class="fas fa-info-circle"></i> Basic Information
-            </h2>
+            </h3>
 
             <div class="form-group">
                 <label for="plan_name">Meal Plan Name *</label>
@@ -536,10 +507,10 @@
         </div>
 
         <!-- Days and Recipes -->
-        <div class="form-section" id="daysSection" style="display: none;">
-            <h2 class="section-title">
+        <div class="form-card" id="daysSection" style="display: none;">
+            <h3 class="form-section-title">
                 <i class="fas fa-utensils"></i> Assign Recipes to Days
-            </h2>
+            </h3>
 
             <div id="daysContainer">
                 <!-- Days will be dynamically added here -->

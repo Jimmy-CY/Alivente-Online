@@ -45,7 +45,7 @@
     color: var(--alv-ink-soft);
 }
 
-.notification-card > h5 {
+.notification-card > .form-section-title {
     cursor: pointer;
     user-select: none;
     display: flex;
@@ -53,14 +53,13 @@
     gap: 8px;
     margin-bottom: 0;
 }
-.notification-card > h5 .collapse-chevron {
+.notification-card > .form-section-title .collapse-chevron {
     margin-left: auto;
     font-size: 0.85em;
     opacity: 0.55;
     transition: transform 0.15s ease;
 }
-.notification-card.is-open > h5 .collapse-chevron { transform: rotate(90deg); }
-.notification-card.is-collapsible > h5 { margin-bottom: 0; }
+.notification-card.is-open > .form-section-title .collapse-chevron { transform: rotate(90deg); }
 .notification-card .card-body-wrap { padding-top: 14px; }
 .notification-card:not(.is-open) .card-body-wrap { display: none; }
 .notification-toolbar {
@@ -72,20 +71,6 @@
     font-size: 0.9rem; cursor: pointer; padding: 4px 8px;
 }
 .notification-toolbar button:hover { text-decoration: underline; }
-.notification-card {
-    background: white;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.notification-card h5 {
-    margin: 0 0 10px 0;
-    color: #2c3e50;
-    font-weight: 600;
-}
 
 .notification-card .text-muted {
     font-size: 14px;
@@ -130,14 +115,6 @@
        [Help (wide)] [â† Back small icon] */
     .action-back-label {
         display: none;
-    }
-
-    .notification-card {
-        padding: 14px;
-        margin-bottom: 14px;
-    }
-    .notification-card h5 {
-        font-size: 1rem;
     }
 
     .form-group label {
@@ -193,8 +170,8 @@
 {% endfor %}
 
 <!-- Daily Property Management Report -->
-<div class="notification-card">
-    <h5><i class="fas fa-chart-line"></i> Daily Property Management Report</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-chart-line"></i> Daily Property Management Report</h3>
     <p class="text-muted">Automated daily report with vacant properties, expiring leases, and overdue invoices</p>
     
     <form method="post">
@@ -230,8 +207,8 @@
 </div>
 
 <!-- New Lease Upload Reminders -->
-<div class="notification-card">
-    <h5><i class="fas fa-file-contract"></i> New Lease Upload Reminders</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-file-contract"></i> New Lease Upload Reminders</h3>
     <p class="text-muted">Urgent notifications when new lease agreements need to be uploaded</p>
     
     <form method="post">
@@ -267,8 +244,8 @@
 </div>
 
 <!-- Invoice Marked as Paid -->
-<div class="notification-card">
-    <h5><i class="fas fa-receipt"></i> Invoice Marked as Paid</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-receipt"></i> Invoice Marked as Paid</h3>
     <p class="text-muted">Notifications when an invoice is marked as paid in the system</p>
     
     <form method="post">
@@ -304,8 +281,8 @@
 </div>
 
 <!-- Physical Invoices Awaiting Approval -->
-<div class="notification-card">
-    <h5><i class="fas fa-file-invoice-dollar"></i> Physical Invoices Awaiting Approval</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-file-invoice-dollar"></i> Physical Invoices Awaiting Approval</h3>
     <p class="text-muted">Daily reminder listing the physical invoice drafts that still need approving before the 1st. Sent only while drafts are pending.</p>
 
     <form method="post">
@@ -341,8 +318,8 @@
 </div>
 
 <!-- Physical Invoice to Client -->
-<div class="notification-card">
-    <h5><i class="fas fa-paper-plane"></i> Physical Invoice to Client</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-paper-plane"></i> Physical Invoice to Client</h3>
     <p class="text-muted">The monthly physical invoice PDF emailed to each tenant on the 1st. The recipient is the tenant's own email from their record; set any addresses to copy on every client invoice below.</p>
 
     <form method="post">
@@ -374,8 +351,8 @@
 </div>
 
 <!-- Expense Needs Approval -->
-<div class="notification-card">
-    <h5><i class="fas fa-clipboard-check"></i> Expense Needs Approval</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-clipboard-check"></i> Expense Needs Approval</h3>
     <p class="text-muted">Notifications when a non-supervisor creates an expense requiring approval</p>
     
     <form method="post">
@@ -411,8 +388,8 @@
 </div>
 
 <!-- Expense Approved -->
-<div class="notification-card">
-    <h5><i class="fas fa-check-circle"></i> Expense Approved</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-check-circle"></i> Expense Approved</h3>
     <p class="text-muted">Notifications when an expense has been approved and is pending payment</p>
     
     <form method="post">
@@ -448,8 +425,8 @@
 </div>
 
 <!-- Expense Paid -->
-<div class="notification-card">
-    <h5><i class="fas fa-money-check-alt"></i> Expense Paid</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-money-check-alt"></i> Expense Paid</h3>
     <p class="text-muted">Notifications when an expense has been marked as paid</p>
     
     <form method="post">
@@ -485,8 +462,8 @@
 </div>
 
 <!-- Expense Invoice Mismatch -->
-<div class="notification-card">
-    <h5><i class="fas fa-file-invoice-dollar"></i> Expense Invoice Uploaded</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-file-invoice-dollar"></i> Expense Invoice Uploaded</h3>
     <p class="text-muted">Sent every time an invoice is uploaded against an expense, so you know it is ready for payment. The subject line carries the automatic check result and the body contains the full analysis.</p>
 
     <form method="post">
@@ -522,8 +499,8 @@
 </div>
 
 <!-- Friday Status Report - Supervisor Submits -->
-<div class="notification-card">
-    <h5><i class="fas fa-flag-checkered"></i> Friday Status Report (Submitted by Supervisor)</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-flag-checkered"></i> Friday Status Report (Submitted by Supervisor)</h3>
     <p class="text-muted">Email recipients when a supervisor submits the Friday Status Report</p>
     
     <form method="post">
@@ -559,8 +536,8 @@
 </div>
 
 <!-- Friday Status Report - Staff Submits -->
-<div class="notification-card">
-    <h5><i class="fas fa-flag-checkered"></i> Friday Status Report (Submitted by Staff)</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-flag-checkered"></i> Friday Status Report (Submitted by Staff)</h3>
     <p class="text-muted">Email recipients when a non-supervisor submits the Friday Status Report</p>
     
     <form method="post">
@@ -596,8 +573,8 @@
 </div>
 
 <!-- Daily Issue Comments Report -->
-<div class="notification-card">
-    <h5><i class="fas fa-comments"></i> Daily Issue Comments Report</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-comments"></i> Daily Issue Comments Report</h3>
     <p class="text-muted">Daily summary of comments added to issues the day before. Email only sent if comments were added.</p>
     
     <form method="post">
@@ -633,8 +610,8 @@
 </div>
 
 <!-- Urgent Issue Comment Alert -->
-<div class="notification-card">
-    <h5><i class="fas fa-bell"></i> Urgent Issue Comment Alert</h5>
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-bell"></i> Urgent Issue Comment Alert</h3>
     <p class="text-muted">Sent immediately when a user clicks "Notify Now" next to a comment on an issue. The clicker is excluded from recipients (so DM pressing it sends to Stella, and vice versa). 5-minute cooldown per comment.</p>
 
     <form method="post">
@@ -698,7 +675,7 @@
         var open = openSet();
 
         cards.forEach(function (card, index) {
-            var head = card.querySelector('h5');
+            var head = card.querySelector('.form-section-title');
             if (!head || card.classList.contains('is-collapsible')) { return; }
 
             // Identify by the hidden notification_type, so the remembered

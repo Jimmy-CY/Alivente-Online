@@ -2826,6 +2826,42 @@ table.alv-matrix {
     margin-right: 6px;
 }
 
+/* THE PHONE, and base owns both halves of it.
+   `screen and` is not optional: base already carries one bare
+   `@media (max-width: 768px)` that fires on paper, A4 portrait being about
+   718 CSS px of content, and the print-leak round found it the hard way.
+
+   PADDING. 20px 24px costs 48px of a 375px screen before a field starts.
+   14px gives the fields 20px back - measured 293px -> 313px - and the panel
+   still reads as a panel. The margin stays at 22px on purpose: at 16px the
+   gap BETWEEN panels equals the 16px gap between fields inside one, which
+   erases the grouping. Measured, not assumed. See Show-MobileForm.py.
+
+   FONT-SIZE. iOS Safari zooms the page whenever a focused input is under
+   16px, and .form-control is 14px. 62 pages had each written this rule
+   locally before base did. Those locals are now redundant; removing them is
+   a round of its own. */
+@media screen and (max-width: 768px) {
+    .form-card    { padding: 16px 14px; }
+    .form-control { font-size: 16px; }
+    .form-section-title small { display: block; font-size: 0.75rem; }
+}
+
+/* A SECTION TITLE CAN CARRY A QUIET NOTE, and until now only one page knew
+   how. edit_asset's Photos heading reads "Photos (up to 5 per asset -
+   JPG/PNG, 5MB each)" with the parenthetical in a <small>, and the page
+   declared `.form-section-heading small { font-weight: 400; font-size:
+   0.8rem }` to keep it from inheriting the heading's 600. Retiring that
+   class without base picking the rule up would have rendered the note at
+   full heading weight - found by printing the body of every rule this round
+   deletes instead of only its selector. The component needs this; it is not
+   one page's taste. */
+.form-section-title small {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--alv-ink-soft);
+}
+
 .form-group { margin-bottom: 16px; }
 
 .form-group label {

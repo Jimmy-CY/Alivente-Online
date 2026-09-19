@@ -185,7 +185,8 @@
   </div>
 
   <!-- Lines (same editor as tenant invoices) -->
-  <h5 class="lines-title"><i class="fas fa-list"></i> Invoice Lines</h5>
+  <div class="form-card">
+  <h3 class="form-section-title"><i class="fas fa-list"></i> Invoice Lines</h3>
   <div class="lines-scroll">
     <table class="table table-bordered lines-table">
       <thead>
@@ -235,6 +236,7 @@
     </div>
   {% endif %}
 
+  </div>
   {% if mode == 'edit' %}
   <!-- Totals (recomputed on Save) -->
   <div class="totals-card">
@@ -369,9 +371,6 @@ textarea.form-control { resize: vertical; }
 .vat-input-wrap { position: relative; }
 .vat-input-wrap .vat-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #6c757d; font-weight: 600; pointer-events: none; }
 .vat-input-wrap .form-control { padding-right: 32px; }
-
-.lines-title { color: #2c3e50; font-weight: 600; margin-bottom: 12px; }
-.lines-title i { color: #0e7c8b; margin-right: 6px; }
 .lines-scroll { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .lines-table { margin-bottom: 0; min-width: 720px; }
 .lines-table thead th { background-color: #343a40; color: white; font-weight: 600; font-size: 13px; vertical-align: middle; }
