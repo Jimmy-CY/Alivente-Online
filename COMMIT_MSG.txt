@@ -1,143 +1,145 @@
-Entry sections push 1: one section component, and base takes over the phone
+Entry sections push 2: panels built, seven fields moved, and the model
+screen finally stacks on a phone
 
-This system had SEVEN ways to say "this is a section" - form-section-title,
-section-title, form-section-heading, pi-section-title, lines-title, a bare
-<h5> and h5.mb-0 - and base declared exactly one of them. Push 1 takes every
-screen that already HAS sections and puts them on that one. It moves no
-fields; that is pushes 2 and 3.
-
-On the way it found something bigger than the sections. iOS Safari zooms the
-page whenever a focused input is under 16px, and base sets .form-control to
-14px. SIXTY-TWO PAGES had each written their own guard against that, in
-selector dialects that include `.form-group .form-control`,
-`input[type="text"].form-control`, `.modal-body input[type="number"]`,
-`.line-input` and `.expense-form .form-control`. Same shape as the
-.form-control rule itself before the form-components round: base reached a
-class name and declared none of the behaviour. Base owns it now, in one rule.
+Push 1 put every screen that ALREADY had sections onto one component. This
+is the other half: 16 screens, 4 of which have their rows redistributed into
+titled panels, and 7 controls that end up somewhere other than where they
+started. Every one of those seven is named here and named in the suite.
 
 WHAT MOVED
 
-    29 headings, 7 files, four dialects -> h3.form-section-title
-        notification_settings              13   bare <h5>
-        preview_imported_recipe             8   h2.section-title
-        personal_notification_settings      2   bare <h5>
-        edit_asset                          2   h5.form-section-heading
-        create_meal_plan                    2   h2.section-title
-        property_assets                     1   h6.form-section-heading
-        customer_invoice_form               1   h5.lines-title
+    properties_add / properties_edit   1 panel -> 4
+        Property | Address | Status & Reporting | Utilities & Charges
+        moved: prop_floor_area, prop_year_built
 
-    24 page-local rules deleted, each because THIS file no longer wears the
-    class it names - computed per file, not from a constant list.
+    tenant_add / tenant_edit           1 panel -> 5
+        Tenant | Lease | Rent & Charges | Renewal | Physical Invoice (kept)
+        moved: tenant_current, prop, tenant_payment_terms
 
-    base gains:  @media screen and (max-width: 768px) {
-                     .form-card    { padding: 16px 14px; }
-                     .form-control { font-size: 16px; }
-                     .form-section-title small { display:block; .75rem }
-                 }
-                 .form-section-title small { font-weight:400; .8rem }
+    12 screens take a title in front of what is already there, with no
+    panel split, no row rebuilt and no field moved: customer_form,
+    customer_invoice_form, act_expense_add/edit, finance_revenue_add/edit,
+    finance_expense_line_types_add/edit, finance_revenue_line_types_add/edit,
+    finance_valuations_add/edit.
 
-WHAT THE MEASUREMENT CHANGED
+ONE RULE DECIDES WHICH SHAPE A SCREEN CAN HAVE
 
-The mobile rule proposed before measuring had three declarations. Two were
-wrong and only the browser said so.
+A screen gets panel-per-section IF AND ONLY IF its <form> opens BEFORE its
+panel. If the form opens inside the panel, closing the panel at a section
+boundary cuts the form in half. That is one measurement per file and it
+replaces arguing per screen.
 
-  * Dropping .form-card's margin to 16px made the gap BETWEEN panels equal
-    to the 16px gap between fields INSIDE one. The grouping this round
-    exists to create, erased by the round's own CSS.
-  * Shrinking the title to 15px was unnecessary - at 375px it has 293px to
-    draw in and was never clipped - and would have left it one pixel above
-    the 14px labels.
+THE MODEL SCREEN DID NOT STACK ON A PHONE
 
-What survived is the padding, which buys 293px -> 313px of field width at
-375 wide, and the guard.
+customer_invoice_form is the screen this whole standardisation is measured
+against, and it was the only entry screen in the system whose fields stayed
+side by side on a phone. It used Bootstrap's UNPREFIXED column classes -
+col-7, col-5, col-6, col-8, col-4 - which hold their percentage at every
+width, where col-md-* stacks below 768px.
 
-AND THE GUARD FIXED SOMETHING IT WAS NOT AIMED AT. A control sized so iOS
-will not zoom is also a control big enough to hit: 16px inside
-.form-control's 9px padding and 2px border renders 46px, over the 44px tap
-target it was failing at 41px. On the desktop nothing changed - 14px gives
-43px, measured on the deploy machine - so that round is still owed, just no
-longer owed on a phone. (The suite REPORTS both numbers rather than
-asserting them: control height depends on the font the machine has, and a
-threshold that moves with the renderer is not a threshold.)
+    at 375 wide, before   Customer Name and Customer ID   152px, side by side
+    at 375 wide, after                                    313px, stacked
 
-FIVE THINGS CAUGHT BEFORE ANYTHING SHIPPED - THE LAST BY THE GATE
+Seven class names. The desktop is untouched: col-md-6 and col-6 are
+identical at and above 768px. col-12 is left alone - full width at every
+size, never part of the fault.
 
-  1. `\bform-section\b` MATCHES INSIDE `form-section-title`. A hyphen is a
-     non-word character and \b is happy to sit on it, so renaming
-     .form-section to .form-card turned create_meal_plan's two new headings
-     into class="form-card-title". The self-check found it: 0 component
-     headings where 2 were expected. A class name ends where a character
-     that cannot appear in one begins, and a hyphen can.
-  2. A COMMENT IN FRONT OF @media HIDES IT. Every rule inside a media query
-     was invisible to a walk that tested sel.startswith('@'), because the
-     text handed to it began `/* Card padding */`. split_rules not recursing
-     into @media has now been a bug in four rounds, in four shapes.
-  3. THE PANEL WENT ROUND THE WRONG HEADING. customer_invoice_form already
-     carried a component heading - stage D put it on the Customer panel - so
-     `text.find(the component)` opened a second .form-card inside the first
-     and left Invoice Lines outside both.
-  4. RETARGETING A RULE CAN MAKE IT VISIBLE TO A GUARD IT WAS HIDING FROM.
-     `.notification-card.is-collapsible > h5 { margin-bottom: 0 }` passed
-     every check while it named a TAG, because base does not own h5. Pointed
-     at the component it became a compound rule whose every property base
-     already declares, and test_compound_rules.py stopped the push for it.
-     It was dead weight before this round too - the rule above it already
-     sets margin-bottom: 0 on every card, collapsible or not - so it is
-     deleted rather than excused. The gate found this one; the round's own
-     self-checks did not.
-  5. A SELECTOR SAYS WHAT A RULE IS CALLED; ONLY THE BODY SAYS WHAT IT DOES.
-     `.form-section-heading small` looked harmless in the dry run. Its body
-     was `font-weight: 400`, and base declared nothing like it, so deleting
-     it would have rendered edit_asset's "(up to 5 per asset - JPG/PNG, 5MB
-     each)" at full heading weight. base gains the rule instead. The tool
-     now has --verbose and it should be used before believing a dry run.
+THE WIDTH RULE
 
-ONE HEADING IN THIS ROUND IS A CONTROL
+A row whose membership does not change keeps its widths untouched. A row
+that is rebuilt is three across at col-md-4, or four across at col-md-3
+where a panel holds exactly four fields. col-md-3 is the only width this
+round writes: measured, 313px per field at 375 wide and one line of four at
+1280.
 
-notification_settings' section title opens and closes its card. Six CSS
-rules selected `.notification-card > h5` and one line of JavaScript did
-card.querySelector('h5'). Both now name the component, which is the right
-selector either way: what makes that element the trigger is that it is the
-card's title, not its tag. .notification-card keeps its name because it also
-carries the open/closed state; only its appearance moved onto base's panel.
+THE FAULT THAT MATTERS MOST, AND IT WAS THIS ROUND'S OWN
 
-TWO PANELS COULD NOT BE SPLIT, AND THE ROUND SAYS SO
+The first draft SILENTLY DELETED TWO HIDDEN INPUTS. properties_add keeps
 
-The rule agreed for this round is "a section is a panel". On edit_asset and
-property_assets the <form> opens INSIDE the panel, so closing it at a
-section boundary would cut the form in half. Those two keep one panel with
-titled sections inside, exactly as suppliers_add does, and their <hr> goes
-because the component's own accent rule is the divider now.
+    <!-- Hidden fields for coordinates -->
+    <input type="hidden" name="prop_latitude"  id="prop_latitude">
+    <input type="hidden" name="prop_longitude" id="prop_longitude">
 
-ONE WORDING CHANGE, NAMED
+directly inside the panel, above the first row. The rebuild emitted the
+panel from its row blocks alone and discarded both - and THE TOOL'S OWN
+SELF-CHECK DID NOT SEE IT, because that check filtered hidden inputs out
+before counting. The suite caught it: 22 controls before, 20 after.
 
-preview_imported_recipe's Cooking Calculator heading loses a fire emoji,
-because fa-fire now does that job. The emoji is in four other places on that
-page and none of them is this round's business. The suite names this one
-exception rather than permitting drift in general.
+Two fixes, both permanent:
+
+  * The region now carries everything that is not a block, AND PLACES IT
+    WHERE IT BELONGS. Content before the first row goes before the first
+    panel; content between rows is glued to the row that FOLLOWS it, so a
+    comment stays with what it comments; content after the last row goes in
+    front of the panel this round keeps. Anything that is not whitespace, a
+    comment or a control is structural, and the run stops rather than
+    guessing where it goes.
+  * A HIDDEN INPUT IS DATA. The self-check no longer excludes it. Only
+    controls that DO something rather than SAY something are left out.
+
+AND TWO MORE OF THE SAME KIND
+
+  * THE INVARIANT IS RELATIVE ORDER, NOT ABSOLUTE POSITION. The first
+    version compared each field's index and flagged nineteen fields across
+    four screens that had not moved relative to anything - they had simply
+    been stepped over by something that did.
+  * A FORM CAN VANISH WITHOUT CHANGING A BALANCE. Rebuilding a panel that
+    CONTAINS the <form> deletes the open tag and its close together, so the
+    delta stays at zero and the check passes a file with no form in it. The
+    first draft did that to customer_form, and the balance check passed it.
+    The suite counts form tags now, and customer_form takes titles only.
+
+THREE SCREENS CAME OUT OF THIS PUSH, EACH FOR A BETTER ANSWER THAN THE PLAN
+
+  effective_date          gets NO section. The effective-dating round had
+                          already given it one - a callout above the panel
+                          with its own background and a 4px accent
+                          border-left, the most visually separate thing on
+                          the page. A title over it would relabel what is
+                          already grouped. (It is styled inline rather than
+                          by a class base owns. Debt, five files, its own
+                          round.)
+
+  cash_receipt_add        already has two titled sections in the house
+                          .alv-card - "The payment" and "Received from",
+                          the first with an aside. That is an ADOPT job on a
+                          panel component this round has not touched. And
+                          its wording is better than the "Payment" / "Payer"
+                          this round proposed: the rule is that a heading
+                          keeps its words, and the plan would have
+                          overwritten two good ones.
+
+  edit_asset /            purchase_invoice is not a row block - it is a
+  property_assets         .form-group inside {% if asset.purchase_invoice %}
+                          after the Warranty row - and a Purchase section
+                          needs brand_manufacturer lifted past the purchase
+                          fields too, on two screens whose form sits inside
+                          the panel. Two block lifts and a conditional is a
+                          different kind of surgery.
+
+  prop_id                 was named as moving and does not move. It was
+                          already the last field before the format radios. A
+                          field that changes SECTION without changing ORDER
+                          is not a move, and the self-check said so by
+                          refusing to find it moving.
 
 PROOF
 
-    test_entry_sections.py    93 passed, 0 failed, 0 skipped
+    test_entry_sections.py    193 passed, 0 failed, 0 skipped
 
-Section 4 is an equality, not a list of exceptions: push 1 moves no fields,
-so the ordered list of name= attributes matches the .bak_sect1 backup
-exactly on all seven files. Section 7 renders at 375, 390, 768 and 1280 with
-Bootstrap 4.1.3 and base's own <style> inlined in the order the page loads
-them, against a 1280 control - because a rendering test that renders without
-the page's stylesheet measures nothing, and this month two rounds reported
-browser defaults as the system's numbers. Sabotage-checked: stripping the
-guard from base, putting the JS hook back on a tag and swapping two fields
-each fail it.
+Each push checks a span that ends where the next one begins: push 1's
+sections compare .bak_sect1 against .bak_sect2, push 2's compare .bak_sect2
+against the live file. Before that, push 2's extra titles made push 1's
+"every heading reads as it did" zip Invoice Lines against Email and fail a
+round that had done nothing wrong.
 
-NOT IN THIS PUSH
+Sabotage-checked three ways, each caught: deleting one hidden coordinate
+input, swapping tenant_deposit with tenant_rent, and putting one col-8 back.
 
-    generate_lease_agreement    its 14 colour-coded Bootstrap headers carry
-                                meaning (amber = new tenant, green = second
-                                tenant). Left alone, by decision.
-    28 forms with no sections   199 controls between them. Push 2 is
-                                Properties, Tenants and Financials; push 3
-                                is Issues, Projects, Administration and
-                                Personal.
-    the 62 local zoom guards    redundant now, but removing them is a sweep
-                                with its own suite.
+STILL TO COME - push 3
+
+Assets, cash receipts and the .alv-card question, Issues, Projects, the
+Personal modals, and generate_lease_agreement's colour-coded headers, which
+stay parked by decision. Logged on the way: the inline-styled "Applies from"
+callout on five Financials screens, the 62 local iOS-zoom guards base now
+makes redundant, and the 43px desktop tap target.

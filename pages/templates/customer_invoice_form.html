@@ -61,7 +61,7 @@
 
     {% if editable %}
     <div class="form-row">
-      <div class="col-7">
+      <div class="col-md-7">
         <div class="form-group">
           <label for="customerSelect"><strong>Pick a saved customer</strong></label>
           <select id="customerSelect" name="customer_id" class="form-control">
@@ -81,7 +81,7 @@
           <small class="form-text text-muted">Picking one fills the fields below. Edits here apply only to this invoice &mdash; the saved customer is never changed.</small>
         </div>
       </div>
-      <div class="col-5">
+      <div class="col-md-5">
         <div class="form-group save-new-group">
           <label class="save-new-label">
             <input type="checkbox" id="saveCustomer" name="save_customer" value="1">
@@ -94,7 +94,7 @@
     {% endif %}
 
     <div class="form-row">
-      <div class="col-6">
+      <div class="col-md-6">
         <div class="form-group">
           <label for="bill_name"><strong>Customer Name</strong> <span class="alv-req">*</span></label>
           <input type="text" id="bill_name" name="bill_name" class="form-control"
@@ -102,7 +102,7 @@
                  maxlength="255" {% if not editable %}readonly{% endif %}>
         </div>
       </div>
-      <div class="col-6">
+      <div class="col-md-6">
         <div class="form-group">
           <label for="bill_customer_label"><strong>Customer ID</strong></label>
           <input type="text" id="bill_customer_label" name="bill_customer_label" class="form-control"
@@ -113,7 +113,7 @@
     </div>
 
     <div class="form-row">
-      <div class="col-8">
+      <div class="col-md-8">
         <div class="form-group">
           <label for="bill_address"><strong>Billing Address</strong></label>
           <textarea id="bill_address" name="bill_address" class="form-control" rows="3"
@@ -121,7 +121,7 @@
                     placeholder="One line per row">{% if form_data %}{{ form_data.bill_address }}{% else %}{{ pi.bill_address }}{% endif %}</textarea>
         </div>
       </div>
-      <div class="col-4">
+      <div class="col-md-4">
         <div class="form-group">
           <label for="bill_tel"><strong>Billing Tel</strong></label>
           <input type="text" id="bill_tel" name="bill_tel" class="form-control"
@@ -131,8 +131,9 @@
       </div>
     </div>
 
+    <h3 class="form-section-title"><i class="fas fa-envelope"></i> Email</h3>
     <div class="form-row">
-      <div class="col-6">
+      <div class="col-md-6">
         <div class="form-group">
           <label for="bill_email_to"><strong>Email To</strong></label>
           <textarea id="bill_email_to" name="bill_email_to" class="form-control" rows="2"
@@ -141,7 +142,7 @@
           <small class="form-text text-muted">Comma-separated.</small>
         </div>
       </div>
-      <div class="col-6">
+      <div class="col-md-6">
         <div class="form-group">
           <label for="bill_email_cc"><strong>Email CC</strong> (optional)</label>
           <textarea id="bill_email_cc" name="bill_email_cc" class="form-control" rows="2"
@@ -167,6 +168,7 @@
 
   <!-- Invoice settings: date + VAT -->
   <div class="settings-row">
+    <h3 class="form-section-title"><i class="fas fa-file-invoice"></i> Invoice</h3>
     <div class="form-group settings-field">
       <label for="invoice_date"><strong>Invoice Date</strong></label>
       <input type="date" id="invoice_date" name="invoice_date" class="form-control"

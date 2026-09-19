@@ -40,246 +40,243 @@
           <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
   </div>
+<input type="hidden" id="original_prop_name" value="{{ results.prop_name }}">
+
+<!-- Hidden fields for coordinates -->
+<input type="hidden" name="prop_latitude" id="prop_latitude" value="{{ results.prop_latitude|default:'' }}">
+<input type="hidden" name="prop_longitude" id="prop_longitude" value="{{ results.prop_longitude|default:'' }}">
 <div class="form-card">
-
-
-  <input type="hidden" id="original_prop_name" value="{{ results.prop_name }}">
-
-  <!-- Hidden fields for coordinates -->
-  <input type="hidden" name="prop_latitude" id="prop_latitude" value="{{ results.prop_latitude|default:'' }}">
-  <input type="hidden" name="prop_longitude" id="prop_longitude" value="{{ results.prop_longitude|default:'' }}">
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_name"><strong>Property Name</strong> <span class="alv-req">*</span></label>
-        <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" value="{{ results.prop_name }}" required>
-        <small id="nameError" class="text-danger d-none">A property with this name already exists.</small>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_address1"><strong>Address</strong> <span class="alv-req">*</span></label>
-        <input type="text" class="form-control" id="prop_address1" name="prop_address1" placeholder="Address 1" value="{{results.prop_address1}}" required>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_address2"><strong>Address</strong></label>
-        <input type="text" class="form-control" id="prop_address2" name="prop_address2" placeholder="Address 2" value="{{results.prop_address2}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_suburb"><strong>Suburb</strong></label>
-        <input type="text" class="form-control" id="prop_suburb" name="prop_suburb" placeholder="Suburb" value="{{results.prop_suburb}}">
-      </div>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_city"><strong>City</strong> <span class="alv-req">*</span></label>
-        <input type="text" class="form-control" id="prop_city" name="prop_city" placeholder="City" value="{{results.prop_city}}" required>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_province"><strong>Province</strong></label>
-        <input type="text" class="form-control" id="prop_province" name="prop_province" placeholder="Province" value="{{results.prop_province}}">
-      </div>
-    </div>
-    <div class="col-md-2">
-      <div class="form-group">
-        <label for="prop_country"><strong>Country</strong> <span class="alv-req">*</span></label>
-        <select class="form-control" id="prop_country" name="prop_country" required>
-          <option value="" disabled>Select Country</option>
-          <option value="Cyprus" {% if results.prop_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
-          <option value="Greece" {% if results.prop_country == 'Greece' %}selected{% endif %}>Greece</option>
-          <option value="Spain" {% if results.prop_country == 'Spain' %}selected{% endif %}>Spain</option>
-          <option value="Portugal" {% if results.prop_country == 'Portugal' %}selected{% endif %}>Portugal</option>
-          <option value="Italy" {% if results.prop_country == 'Italy' %}selected{% endif %}>Italy</option>
-          <option value="France" {% if results.prop_country == 'France' %}selected{% endif %}>France</option>
-          <option value="Germany" {% if results.prop_country == 'Germany' %}selected{% endif %}>Germany</option>
-          <option value="United Kingdom" {% if results.prop_country == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
-        </select>
-      </div>
-    </div>
-    <div class="col-md-2">
-      <div class="form-group">
-        <label for="prop_pcode"><strong>Post Code</strong> <span class="alv-req">*</span></label>
-        <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" value="{{results.prop_pcode}}" required>
-      </div>
-    </div>
-  </div>
-
-  <!-- MAP SECTION -->
-  <div class="form-row">
-    <div class="col-md-12">
-      <div class="form-group">
-        <label><strong>Property Location on Map</strong></label>
-        <p class="text-muted small map-help-text">Click on the map to set the exact property location</p>
-        <div class="map-container">
-          <div id="propertyMap" class="property-location-map"></div>
-          <div class="map-controls">
-            <button type="button" id="findOnMapBtn" class="btn action-secondary btn-sm map-find-btn">
-              <i class="fas fa-map-marker-alt"></i> Find Address on Map
-            </button>
-            <button type="button" id="clearLocationBtn" class="btn action-secondary btn-sm map-clear-btn">
-              <i class="fas fa-trash-alt"></i> Clear Location
-            </button>
-            <div class="coordinates-display">
-              <small class="text-muted">
-                <strong>Coordinates:</strong>
-                <span id="coordinatesDisplay">
-                  {% if results.prop_latitude and results.prop_longitude %}
-                    Latitude: {{ results.prop_latitude|floatformat:6 }}, Longitude: {{ results.prop_longitude|floatformat:6 }}
-                  {% else %}
-                    Click on map to set location
-                  {% endif %}
-                </span>
-              </small>
-            </div>
+    <h3 class="form-section-title"><i class="fas fa-home"></i> Property</h3>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_name"><strong>Property Name</strong> <span class="alv-req">*</span></label>
+            <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" value="{{ results.prop_name }}" required>
+            <small id="nameError" class="text-danger d-none">A property with this name already exists.</small>
           </div>
         </div>
-      </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_floor_area"><strong>Floor Area</strong></label>
+            <input type="number" class="form-control" id="prop_floor_area" name="prop_floor_area" placeholder="Floor Area" value="{{results.prop_floor_area}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_year_built"><strong>Year Built</strong></label>
+            <input type="number" class="form-control" id="prop_year_built" name="prop_year_built" placeholder="Year Built" value="{{results.prop_year_built}}">
+          </div>
+        </div>
     </div>
-  </div>
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_floor_area"><strong>Floor Area</strong></label>
-        <input type="number" class="form-control" id="prop_floor_area" name="prop_floor_area" placeholder="Floor Area" value="{{results.prop_floor_area}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_year_built"><strong>Year Built</strong></label>
-        <input type="number" class="form-control" id="prop_year_built" name="prop_year_built" placeholder="Year Built" value="{{results.prop_year_built}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_include_in_occupancy"><strong>Include in Occupancy Calculations</strong> <span class="alv-req">*</span></label>
-        <select id="prop_include_in_occupancy" class="form-control" name="prop_include_in_occupancy" required>
-          {% if results.prop_include_in_occupancy %}
-            <option value="True" selected>Yes</option>
-            <option value="False">No</option>
-          {% else %}
-            <option value="True">Yes</option>
-            <option value="False" selected>No</option>
-          {% endif %}
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_status"><strong>Status</strong> <span class="alv-req">*</span></label>
-        <select id="prop_status" class="form-control" name="prop_status" required>
-          <option disabled>Select Property Status</option>
-          {% if results.prop_status == "Active" %}
-            <option selected value="Active">Active</option>
-          {% else %}
-            <option value="Active">Active</option>
-          {% endif %}
-          {% if results.prop_status == "Inactive" %}
-            <option selected value="Inactive">Inactive</option>
-          {% else %}
-            <option value="Inactive">Inactive</option>
-          {% endif %}
-        </select>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_available_for_rent"><strong>Available For Rent</strong> <span class="alv-req">*</span></label>
-        <select id="prop_available_for_rent" class="form-control" name="prop_available_for_rent" required>
-          <option disabled>Select if Available for Rent</option>
-          {% if results.prop_available_for_rent == "Yes" %}
-            <option selected value="Yes">Yes</option>
-          {% else %}
-            <option value="Yes">Yes</option>
-          {% endif %}
-          {% if results.prop_available_for_rent == "No" %}
-            <option selected value="No">No</option>
-          {% else %}
-            <option value="No">No</option>
-          {% endif %}
-        </select>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_title_deed_status"><strong>Title Deed Available</strong> <span class="alv-req">*</span></label>
-        <select id="prop_title_deed_status" class="form-control" name="prop_title_deed_status" required>
-          <option disabled>Select if Title Deed is Available</option>
-          {% if results.prop_title_deed_status == "Yes" %}
-            <option selected value="Yes">Yes</option>
-          {% else %}
-            <option value="Yes">Yes</option>
-          {% endif %}
-          {% if results.prop_title_deed_status == "No" %}
-            <option selected value="No">No</option>
-          {% else %}
-            <option value="No">No</option>
-          {% endif %}
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_electricity"><strong>Electricity Details</strong></label>
-        <input type="text" class="form-control" id="prop_electricity" name="prop_electricity" placeholder="Electricity Details" value="{{results.prop_electricity}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_water"><strong>Water Details</strong></label>
-        <input type="text" class="form-control" id="prop_water" name="prop_water" placeholder="Water Details" value="{{results.prop_water}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_refuse"><strong>Refuse Details</strong></label>
-        <input type="text" class="form-control" id="prop_refuse" name="prop_refuse" placeholder="Refuse Details" value="{{results.prop_refuse}}">
-      </div>
-    </div>
-  </div>
-
-  <div class="form-row">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_property_tax"><strong>Property Tax Details</strong></label>
-        <input type="text" class="form-control" id="prop_property_tax" name="prop_property_tax" placeholder="Property Tax Details" value="{{results.prop_property_tax}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_sewerage"><strong>Sewerage Details</strong></label>
-        <input type="text" class="form-control" id="prop_sewerage" name="prop_sewerage" placeholder="Sewerage Details" value="{{results.prop_sewerage}}">
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="prop_insurance"><strong>Insurance Details</strong></label>
-        <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details" value="{{results.prop_insurance}}">
-      </div>
-    </div>
-  </div>
-
-
 </div>
+<div class="form-card">
+    <h3 class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address</h3>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_address1"><strong>Address</strong> <span class="alv-req">*</span></label>
+            <input type="text" class="form-control" id="prop_address1" name="prop_address1" placeholder="Address 1" value="{{results.prop_address1}}" required>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_address2"><strong>Address</strong></label>
+            <input type="text" class="form-control" id="prop_address2" name="prop_address2" placeholder="Address 2" value="{{results.prop_address2}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_suburb"><strong>Suburb</strong></label>
+            <input type="text" class="form-control" id="prop_suburb" name="prop_suburb" placeholder="Suburb" value="{{results.prop_suburb}}">
+          </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_city"><strong>City</strong> <span class="alv-req">*</span></label>
+            <input type="text" class="form-control" id="prop_city" name="prop_city" placeholder="City" value="{{results.prop_city}}" required>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_province"><strong>Province</strong></label>
+            <input type="text" class="form-control" id="prop_province" name="prop_province" placeholder="Province" value="{{results.prop_province}}">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-group">
+            <label for="prop_country"><strong>Country</strong> <span class="alv-req">*</span></label>
+            <select class="form-control" id="prop_country" name="prop_country" required>
+              <option value="" disabled>Select Country</option>
+              <option value="Cyprus" {% if results.prop_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
+              <option value="Greece" {% if results.prop_country == 'Greece' %}selected{% endif %}>Greece</option>
+              <option value="Spain" {% if results.prop_country == 'Spain' %}selected{% endif %}>Spain</option>
+              <option value="Portugal" {% if results.prop_country == 'Portugal' %}selected{% endif %}>Portugal</option>
+              <option value="Italy" {% if results.prop_country == 'Italy' %}selected{% endif %}>Italy</option>
+              <option value="France" {% if results.prop_country == 'France' %}selected{% endif %}>France</option>
+              <option value="Germany" {% if results.prop_country == 'Germany' %}selected{% endif %}>Germany</option>
+              <option value="United Kingdom" {% if results.prop_country == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-group">
+            <label for="prop_pcode"><strong>Post Code</strong> <span class="alv-req">*</span></label>
+            <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" value="{{results.prop_pcode}}" required>
+          </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <!-- MAP SECTION -->
+        <div class="col-md-12">
+              <div class="form-group">
+                <label><strong>Property Location on Map</strong></label>
+                <p class="text-muted small map-help-text">Click on the map to set the exact property location</p>
+                <div class="map-container">
+                  <div id="propertyMap" class="property-location-map"></div>
+                  <div class="map-controls">
+                    <button type="button" id="findOnMapBtn" class="btn action-secondary btn-sm map-find-btn">
+                      <i class="fas fa-map-marker-alt"></i> Find Address on Map
+                    </button>
+                    <button type="button" id="clearLocationBtn" class="btn action-secondary btn-sm map-clear-btn">
+                      <i class="fas fa-trash-alt"></i> Clear Location
+                    </button>
+                    <div class="coordinates-display">
+                      <small class="text-muted">
+                        <strong>Coordinates:</strong>
+                        <span id="coordinatesDisplay">
+                          {% if results.prop_latitude and results.prop_longitude %}
+                            Latitude: {{ results.prop_latitude|floatformat:6 }}, Longitude: {{ results.prop_longitude|floatformat:6 }}
+                          {% else %}
+                            Click on map to set location
+                          {% endif %}
+                        </span>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+    </div>
+</div>
+<div class="form-card">
+    <h3 class="form-section-title"><i class="fas fa-clipboard-check"></i> Status &amp; Reporting</h3>
+    <div class="form-row">
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="prop_include_in_occupancy"><strong>Include in Occupancy Calculations</strong> <span class="alv-req">*</span></label>
+            <select id="prop_include_in_occupancy" class="form-control" name="prop_include_in_occupancy" required>
+              {% if results.prop_include_in_occupancy %}
+                <option value="True" selected>Yes</option>
+                <option value="False">No</option>
+              {% else %}
+                <option value="True">Yes</option>
+                <option value="False" selected>No</option>
+              {% endif %}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="prop_status"><strong>Status</strong> <span class="alv-req">*</span></label>
+            <select id="prop_status" class="form-control" name="prop_status" required>
+              <option disabled>Select Property Status</option>
+              {% if results.prop_status == "Active" %}
+                <option selected value="Active">Active</option>
+              {% else %}
+                <option value="Active">Active</option>
+              {% endif %}
+              {% if results.prop_status == "Inactive" %}
+                <option selected value="Inactive">Inactive</option>
+              {% else %}
+                <option value="Inactive">Inactive</option>
+              {% endif %}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="prop_available_for_rent"><strong>Available For Rent</strong> <span class="alv-req">*</span></label>
+            <select id="prop_available_for_rent" class="form-control" name="prop_available_for_rent" required>
+              <option disabled>Select if Available for Rent</option>
+              {% if results.prop_available_for_rent == "Yes" %}
+                <option selected value="Yes">Yes</option>
+              {% else %}
+                <option value="Yes">Yes</option>
+              {% endif %}
+              {% if results.prop_available_for_rent == "No" %}
+                <option selected value="No">No</option>
+              {% else %}
+                <option value="No">No</option>
+              {% endif %}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="prop_title_deed_status"><strong>Title Deed Available</strong> <span class="alv-req">*</span></label>
+            <select id="prop_title_deed_status" class="form-control" name="prop_title_deed_status" required>
+              <option disabled>Select if Title Deed is Available</option>
+              {% if results.prop_title_deed_status == "Yes" %}
+                <option selected value="Yes">Yes</option>
+              {% else %}
+                <option value="Yes">Yes</option>
+              {% endif %}
+              {% if results.prop_title_deed_status == "No" %}
+                <option selected value="No">No</option>
+              {% else %}
+                <option value="No">No</option>
+              {% endif %}
+            </select>
+          </div>
+        </div>
+    </div>
+</div>
+<div class="form-card">
+    <h3 class="form-section-title"><i class="fas fa-bolt"></i> Utilities &amp; Charges</h3>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_electricity"><strong>Electricity Details</strong></label>
+            <input type="text" class="form-control" id="prop_electricity" name="prop_electricity" placeholder="Electricity Details" value="{{results.prop_electricity}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_water"><strong>Water Details</strong></label>
+            <input type="text" class="form-control" id="prop_water" name="prop_water" placeholder="Water Details" value="{{results.prop_water}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_refuse"><strong>Refuse Details</strong></label>
+            <input type="text" class="form-control" id="prop_refuse" name="prop_refuse" placeholder="Refuse Details" value="{{results.prop_refuse}}">
+          </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_property_tax"><strong>Property Tax Details</strong></label>
+            <input type="text" class="form-control" id="prop_property_tax" name="prop_property_tax" placeholder="Property Tax Details" value="{{results.prop_property_tax}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_sewerage"><strong>Sewerage Details</strong></label>
+            <input type="text" class="form-control" id="prop_sewerage" name="prop_sewerage" placeholder="Sewerage Details" value="{{results.prop_sewerage}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_insurance"><strong>Insurance Details</strong></label>
+            <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details" value="{{results.prop_insurance}}">
+          </div>
+        </div>
+    </div>
+</div>
+
 </form>
 {% endfor %}
 

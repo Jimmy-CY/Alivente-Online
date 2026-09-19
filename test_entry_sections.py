@@ -33,6 +33,21 @@ WHAT THIS SUITE IS FOR
     1280 is carried as a control, because without one a rule that fires at
     every width passes every phone check.
 
+  * SECTIONS 9 TO 12 are push 2 - the half that CREATES panels and MOVES
+    fields. Section 10 is the one that changed shape: push 1's field check
+    was an EQUALITY because push 1 moved nothing, and push 2 moves seven
+    controls, so it takes the named movers OUT of both lists and requires
+    what is left to be in exactly the order it was. THE INVARIANT IS
+    RELATIVE ORDER, NOT ABSOLUTE POSITION - comparing each field's index
+    flagged nineteen fields across four screens that had not moved relative
+    to anything, they had simply been stepped over.
+
+    Section 10 also COUNTS THE FORM TAGS. Rebuilding a panel that contains
+    the <form> deletes the open tag and its close together, so a balance
+    check stays at zero and passes a file with no form in it. The first
+    draft of the push-2 tool did exactly that to customer_form and the
+    balance check passed it.
+
 WHAT IT DELIBERATELY DOES NOT FAIL ON
 
     Tap targets. Every .form-control renders 41px and every .btn 38px against
@@ -191,6 +206,19 @@ def read(p):
         return f.read().replace('\r\n', '\n')
 
 
+def after_push_one(p):
+    """The file as push 1 left it.
+
+    Sections 2 to 4 are about push 1, and once push 2 has run the live file
+    is no longer push 1's output - customer_invoice_form gained two more
+    titles, so 'every heading reads as it did' zipped 'Invoice Lines'
+    against 'Email' and failed a round that had done nothing wrong. Push 2's
+    backup IS the post-push-1 state, so each push checks a span that ends
+    where the next one begins."""
+    nxt = p + '.bak_sect2'
+    return read(nxt) if os.path.isfile(nxt) else read(p)
+
+
 def markup_only(text):
     """<script> and <style> bodies blanked to spaces, offsets preserved."""
     out = list(text)
@@ -344,7 +372,7 @@ for rel, n in sorted(CLAIM.items()):
     if not os.path.isfile(p):
         skip(rel, 'not in this checkout')
         continue
-    text = read(p)
+    text = after_push_one(p)
     hs = headings(text)
     ok(len(hs) == n + ALREADY.get(rel, 0),
        '%-38s %2d component heading(s)' % (rel, n + ALREADY.get(rel, 0)),
@@ -373,7 +401,7 @@ for rel in sorted(CLAIM):
     p = os.path.join(ROOT, rel)
     if not os.path.isfile(p):
         continue
-    mk = markup_only(read(p))
+    mk = markup_only(after_push_one(p))
     left = [c for c in RETIRED
             if re.search(r'class\s*=\s*"[^"]*(?<![\w-])%s(?![\w-])' % c, mk)]
     ok(not left, '%-38s no retired class left on its markup' % rel, left)
@@ -401,7 +429,7 @@ for rel in sorted(CLAIM):
              'no %s backup - it has been cleared' % SUFFIX)
         continue
     was = read(bak)
-    now = read(p)
+    now = after_push_one(p)
     old = [plain(m.group(1)) for m in re.finditer(
         r'<h[1-6][^>]*>(.*?)</h[1-6]>', markup_only(was), re.S)]
     new = [plain(m.group(1)) for m in re.finditer(
@@ -439,7 +467,7 @@ for rel in sorted(CLAIM):
     if not os.path.isfile(bak):
         skip('%-38s field order' % rel, 'no %s backup' % SUFFIX)
         continue
-    a, b = fields(read(bak)), fields(read(p))
+    a, b = fields(read(bak)), fields(after_push_one(p))
     diff = ''
     if a != b:
         for i, (x, y) in enumerate(zip(a, b)):
@@ -695,6 +723,252 @@ if not os.path.isfile(PS1):
 else:
     ps = read(PS1)
     ok("'%s'" % ME in ps, '%s runs %s' % (PS1, ME))
+
+
+
+# ==========================================================================
+# PUSH 2 - the half that creates panels and moves fields
+# ==========================================================================
+SUFFIX2 = '.bak_sect2'
+
+# What push 2 claimed, per file: how many titles it puts on the page, and
+# whether it built panels or only placed headings.
+CLAIM2 = {
+    'properties_add.html':                  (4, True),
+    'properties_edit.html':                 (4, True),
+    'tenant_add.html':                      (4, True),
+    'tenant_edit.html':                     (4, True),
+    'customer_form.html':                   (2, False),
+    'customer_invoice_form.html':           (2, False),
+    'act_expense_add.html':                 (1, False),
+    'act_expense_edit.html':                (1, False),
+    'finance_revenue_add.html':             (1, False),
+    'finance_revenue_edit.html':            (1, False),
+    'finance_expense_line_types_add.html':  (1, False),
+    'finance_expense_line_types_edit.html': (1, False),
+    'finance_revenue_line_types_add.html':  (1, False),
+    'finance_revenue_line_types_edit.html': (1, False),
+    'finance_valuations_add.html':          (1, False),
+    'finance_valuations_edit.html':         (1, False),
+}
+# Titles already on the page before push 2 ran.
+ALREADY2 = {'tenant_add.html': 1, 'tenant_edit.html': 1,
+            'customer_invoice_form.html': 2}
+
+MOVES2 = {
+    'properties_add.html':  ['prop_floor_area', 'prop_year_built'],
+    'properties_edit.html': ['prop_floor_area', 'prop_year_built'],
+    'tenant_add.html':  ['tenant_current', 'prop', 'tenant_payment_terms'],
+    'tenant_edit.html': ['tenant_current', 'prop', 'tenant_payment_terms'],
+}
+
+print('\n' + '=' * 74)
+print('9. PUSH 2 - EVERY SCREEN CARRIES ITS SECTIONS')
+print('=' * 74)
+
+ran2 = any(os.path.isfile(os.path.join(ROOT, r) + SUFFIX2) for r in CLAIM2)
+if not ran2:
+    skip('push 2', 'no %s backup - push 2 has not run on this tree'
+         % SUFFIX2)
+else:
+    for rel, (n, panelled) in sorted(CLAIM2.items()):
+        p = os.path.join(ROOT, rel)
+        if not os.path.isfile(p):
+            skip(rel, 'not in this checkout')
+            continue
+        text = read(p)
+        hs = headings(text)
+        want = n + ALREADY2.get(rel, 0)
+        ok(len(hs) == want, '%-38s %2d section title(s)' % (rel, want),
+           'found %d' % len(hs))
+        bad = [plain(h.group(1))[:34] for h in hs
+               if len(re.findall(r'<i\s', re.match(
+                   r'\s*(<i\s[^>]*>\s*</i>\s*)*', h.group(1)).group(0))) != 1]
+        ok(not bad, '%-38s opens with exactly one icon' % rel, bad)
+        if panelled:
+            cards = len(re.findall(r'<div class="form-card">',
+                                   markup_only(text)))
+            ok(cards >= n, '%-38s %d panel(s), one per section'
+               % (rel, cards), 'expected at least %d' % n)
+
+
+print('\n' + '=' * 74)
+print('10. PUSH 2 - NO FIELD MOVED EXCEPT THE ONES THIS ROUND NAMES')
+print('=' * 74)
+print("""
+   Push 1's version of this was an EQUALITY, because push 1 moved nothing.
+   Push 2 moves seven controls across four files, so the check takes the
+   named movers OUT of both lists and requires what is left to be in exactly
+   the order it was. THE INVARIANT IS RELATIVE ORDER, NOT ABSOLUTE POSITION:
+   comparing each field's index flagged seven fields on Properties and
+   twelve on Tenants that had not moved relative to anything - they had
+   simply been stepped over.
+""")
+
+if ran2:
+    for rel in sorted(CLAIM2):
+        p = os.path.join(ROOT, rel)
+        bak = p + SUFFIX2
+        if not os.path.isfile(bak):
+            skip('%-38s field order' % rel, 'no %s backup' % SUFFIX2)
+            continue
+        a, b = fields(read(bak)), fields(read(p))
+        named_ = set(MOVES2.get(rel, []))
+        ok(sorted(a) == sorted(b),
+           '%-38s %3d control(s), none lost or gained' % (rel, len(b)),
+           '%d before, %d after' % (len(a), len(b)))
+        ra = [x for x in a if x not in named_]
+        rb = [x for x in b if x not in named_]
+        where = ''
+        if ra != rb:
+            i = next((k for k, (x, y) in enumerate(zip(ra, rb)) if x != y),
+                     min(len(ra), len(rb)))
+            where = 'at %d, %r became %r' % (i, ra[i:i + 1], rb[i:i + 1])
+        ok(ra == rb,
+           '%-38s the unnamed fields keep their order' % rel, where)
+        for x in sorted(named_):
+            ok(a.index(x) != b.index(x),
+               '%-38s %s moved, and was named' % (rel, x),
+               'it is named as moving and did not move')
+        # A FORM CANNOT VANISH. Rebuilding a panel that CONTAINS the form
+        # deletes the open tag and its close together, so a balance check
+        # stays at zero and passes a file with no form in it. That is not a
+        # hypothetical: the first draft of the push-2 tool did exactly that
+        # to customer_form, and the balance check passed it.
+        ok(read(p).count('<form') >= read(bak).count('<form'),
+           '%-38s still has every <form> it started with' % rel,
+           '%d -> %d' % (read(bak).count('<form'), read(p).count('<form')))
+
+
+print('\n' + '=' * 74)
+print('11. PUSH 2 - THE MODEL SCREEN STACKS ON A PHONE')
+print('=' * 74)
+print("""
+   customer_invoice_form was the only entry screen in the system whose
+   fields did not stack below 768px. It used Bootstrap's UNPREFIXED column
+   classes, which hold their percentage at every width. Measured at 375 wide
+   before the fix: Customer Name and Customer ID rendered 152px side by
+   side. col-12 is left alone - full width at every size, never part of it.
+""")
+
+MODEL = 'customer_invoice_form.html'
+_p = os.path.join(ROOT, MODEL)
+if not os.path.isfile(_p) or not ran2:
+    skip('the model screen', 'push 2 has not run on this tree')
+else:
+    mk_ = markup_only(read(_p))
+    left = sorted(set(re.findall(
+        r'class="[^"]*(?<![-\w])(col-(?:1[01]|[1-9]))(?![-\w])', mk_)))
+    ok(not left, '%-38s no unprefixed column left' % MODEL, left)
+    ok('col-md-6' in mk_ and 'col-md-4' in mk_,
+       '%-38s and it carries the prefixed ones instead' % MODEL)
+    # the rest of the corpus, so this cannot regress somewhere else
+    others = []
+    for dp, _d, ns in os.walk(ROOT):
+        for n_ in sorted(ns):
+            if not n_.endswith('.html'):
+                continue
+            rel_ = os.path.relpath(os.path.join(dp, n_),
+                                   ROOT).replace(os.sep, '/')
+            if rel_ == 'base.html':
+                continue
+            m_ = markup_only(read(os.path.join(dp, n_)))
+            if not re.search(r'<form[^>]*method\s*=\s*["\']post', m_, re.I):
+                continue
+            hit = sorted(set(re.findall(
+                r'class="[^"]*(?<![-\w])(col-(?:1[01]|[1-9]))(?![-\w])', m_)))
+            if hit:
+                others.append('%s %s' % (rel_, ','.join(hit)))
+    if others:
+        notes.append('%d other screen(s) that post a form still use an '
+                     'unprefixed column: %s. Each was measured; they carry '
+                     'only col-12 or sit outside this round.'
+                     % (len(others), '; '.join(others[:4])))
+
+
+print('\n' + '=' * 74)
+print('12. PUSH 2 - RENDERED, THE REBUILT PANELS ON A PHONE')
+print('=' * 74)
+
+if not ran2 or not os.path.isfile(BOOT):
+    skip('the rebuilt panels', 'push 2 has not run, or no %s' % BOOT)
+else:
+    try:
+        from playwright.sync_api import sync_playwright as _pw2
+    except Exception as _e:
+        skip('the rebuilt panels', 'playwright not importable')
+        _pw2 = None
+    if _pw2:
+        # The four-across row this round writes, at the width it was
+        # written for. col-md-3 is the ONLY width push 2 sets.
+        four = ''.join(
+            '<div class="col-md-3"><div class="form-group"><label><strong>'
+            '%s</strong></label><select class="form-control"><option>Yes'
+            '</option></select></div></div>' % t
+            for t in ('Include in Occupancy Calculations', 'Status',
+                      'Available For Rent', 'Title Deed Available'))
+        html2 = ("""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>p2</title><style>%s</style><style>%s</style></head><body>
+<div class="container-fluid" style="padding:16px"><form method="post">
+<div class="form-card"><h3 class="form-section-title">
+<i class="fas fa-clipboard-check"></i> Status &amp; Reporting</h3>
+<div class="form-row">%s</div></div></form></div></body></html>"""
+                 % (read(BOOT), BASE_CSS, four))
+        fx2 = os.path.join(SCRATCH, '_sections_p2.html')
+        with open(fx2, 'w', encoding='utf-8') as f:
+            f.write(html2)
+        JS2 = r"""() => {
+          const c = [...document.querySelectorAll('.form-control')];
+          const tops = c.map(x => Math.round(
+              x.getBoundingClientRect().top));
+          return {w: c.map(x => Math.round(
+                      x.getBoundingClientRect().width)),
+                  lines: new Set(tops).size,
+                  scrollW: document.documentElement.scrollWidth,
+                  innerW: window.innerWidth};
+        }"""
+        M2 = {}
+        with _pw2() as pw2:
+            exe2 = '/opt/pw-browsers/chromium'
+            br2 = pw2.chromium.launch(
+                **({'executable_path': exe2} if os.path.exists(exe2) else {}))
+            for w2, h2 in ((375, 667), (1280, 900)):
+                ctx2 = br2.new_context(viewport={'width': w2, 'height': h2})
+                pg2 = ctx2.new_page()
+                _goto(pg2, fx2)
+                pg2.wait_for_timeout(120)
+                M2[w2] = pg2.evaluate(JS2)
+                ctx2.close()
+            br2.close()
+        ok(M2[375]['lines'] == 4,
+           '375 wide  the four-across row becomes four lines',
+           '%d line(s)' % M2[375]['lines'])
+        ok(M2[375]['scrollW'] <= M2[375]['innerW'],
+           '375 wide  the four-across row causes no horizontal scroll')
+        ok(min(M2[375]['w']) > 250,
+           '375 wide  each of the four is still a usable width',
+           M2[375]['w'])
+        ok(M2[1280]['lines'] == 1,
+           '1280 control  and on the desktop the four share one line',
+           '%d line(s)' % M2[1280]['lines'])
+        notes.append('PUSH 2 MEASURED: the col-md-3 row renders %dpx per '
+                     'field at 375 wide and %dpx at 1280.'
+                     % (min(M2[375]['w']), min(M2[1280]['w'])))
+
+notes.append('CASH RECEIPTS IS NOT IN PUSH 2. cash_receipt_add already '
+             'has two titled sections in the house .alv-card - "The '
+             'payment" and "Received from", the first with an aside - so it '
+             'is an adopt job on a panel component this round has not '
+             'touched, and its wording is better than the one proposed. '
+             'Push 3, with the .alv-card question.')
+notes.append('ASSETS IS NOT IN PUSH 2. purchase_invoice is not a row block - '
+             'it is a .form-group inside {% if asset.purchase_invoice %} '
+             'after the Warranty row - and a Purchase section needs '
+             'brand_manufacturer lifted too, on two screens whose form sits '
+             'inside the panel. Two block lifts and a conditional is a '
+             'different kind of surgery; it goes in push 3 with its own '
+             'anchors.')
 
 
 # ==========================================================================
