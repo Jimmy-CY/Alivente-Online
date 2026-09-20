@@ -2746,6 +2746,37 @@ table.alv-matrix {
 .icon-manage:hover { background-color: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
 .icon-color-manage { color: var(--alv-view); }
 
+/* Permissions, lock and unlock: three more NAMES ON EXISTING COLOURS, for
+   Administration's user list. Same rule as Duplicate, Upload and Manage
+   above - no new hex enters the palette.
+
+   Permissions opens a screen that shows what a user MAY do, which is a
+   view, so it wears --alv-view exactly as .icon-manage does.
+
+   Lock and unlock are Disable and Enable. By shape they are the pair that
+   .icon-unapprove and .icon-approve already are - amber and green, a state
+   you can toggle back - and they take their own names rather than
+   borrowing those, because an Enable button carrying a class called
+   `approve` says something the button does not do.
+
+   AND THEY ARE NOT CALLED .icon-disable. base already has .icon-disabled,
+   which is a STATE on a control the user may not use, not an action. Two
+   class names one character apart in one stylesheet is how
+   `\bform-section\b` came to match inside `form-section-title` and cost
+   this project a round; the edge of a class name is not a word boundary,
+   and the cheapest moment to avoid that is before the name exists. */
+.icon-permissions       { color: var(--alv-view); border-color: var(--alv-accent-line); }
+.icon-permissions:hover { background-color: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
+.icon-color-permissions { color: var(--alv-view); }
+
+.icon-lock       { color: var(--alv-warn); border-color: #ecd9a8; }
+.icon-lock:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: #fff; }
+.icon-color-lock { color: var(--alv-warn); }
+
+.icon-unlock       { color: var(--alv-good); border-color: #bfe0cd; }
+.icon-unlock:hover { background-color: var(--alv-good); border-color: var(--alv-good); color: #fff; }
+.icon-color-unlock { color: var(--alv-good); }
+
 /* ===== ALV-MAP-NOKEY v1 ===== */
 /* The map draws from a keyed provider, and the key arrives from the
    environment. When it is absent the tile layer is not added at all and this

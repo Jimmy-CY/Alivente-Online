@@ -871,7 +871,13 @@ $suites = @(
     # the same width and requires it to WRAP. A guard whose control
     # cannot fail is not a guard. Newest, so most likely to be what
     # breaks.
-    'test_label_fit.py'
+    'test_label_fit.py',
+    # The last two hand-rolled tables joined the standard. Its
+    # section 2 asserts the DATA the rebuilt blocks read is the data the
+    # old ones read - the markup around it was replaced wholesale, so a
+    # diff says nothing and the expressions are the only invariant there
+    # is. Newest, so most likely to be what breaks.
+    'test_table_admin.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

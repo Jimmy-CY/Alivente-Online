@@ -11,38 +11,6 @@
     margin: 0 auto;
 }
 
-.workspace-table {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
-
-.workspace-table table {
-    width: 100%;
-    margin: 0;
-}
-
-.workspace-table thead th {
-    background: #f8f9fa;
-    padding: 14px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.workspace-table tbody td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-    vertical-align: middle;
-}
-
-.workspace-table tbody tr:last-child td { border-bottom: none; }
-
 .ws-name {
     font-weight: 600;
     color: #2c3e50;
@@ -68,46 +36,7 @@
     font-weight: 600;
 }
 
-.action-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-
-.btn-edit { background: #ffc107; color: white; }
-.btn-delete { background: #dc3545; color: white; }
-.btn-delete.disabled {
-    background: #e9ecef;
-    color: #adb5bd;
-    cursor: not-allowed;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #6c757d;
-}
-.empty-state i {
-    font-size: 3.5rem;
-    color: #adb5bd;
-    margin-bottom: 16px;
-    display: block;
-}
-
 /* Hover effects guarded so they don't stick on touch devices */
-@media (hover: hover) {
-    .workspace-table tbody tr:hover { background: #f8f9fa; }
-    .action-btn:hover { transform: scale(1.1); }
-    .btn-delete.disabled:hover { transform: none; }
-}
 
 @media screen and (max-width: 768px) {
     .workspace-admin-container { padding: 0 8px; }
@@ -115,50 +44,15 @@
     /* iOS zoom guard on any modal inputs */
     .modal .form-control { font-size: 16px; }
 
-    .workspace-table { background: transparent; box-shadow: none; overflow: visible; }
-    .workspace-table table,
-    .workspace-table thead,
-    .workspace-table tbody,
-    .workspace-table tr,
-    .workspace-table td { display: block; width: 100%; }
-    .workspace-table thead { display: none; }
-    .workspace-table tbody tr {
-        background: white;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        margin-bottom: 12px;
-        padding: 14px;
-    }
-    .workspace-table tbody tr:hover { background: white; }
-    .workspace-table tbody td {
-        padding: 6px 0 !important;
-        border-bottom: none !important;
-        display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        font-size: 13px;
-    }
-    .workspace-table tbody td::before {
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #6c757d;
-        letter-spacing: 0.4px;
-    }
-    .workspace-table tbody td:nth-child(1)::before { content: 'Name'; }
-    .workspace-table tbody td:nth-child(2)::before { content: 'Owner'; }
-    .workspace-table tbody td:nth-child(3)::before { content: 'Members'; }
-    .workspace-table tbody td:nth-child(4)::before { content: 'Updated'; }
-    .workspace-table tbody td:last-child {
-        justify-content: flex-start !important;
-        padding-top: 10px !important;
-        margin-top: 6px;
-        border-top: 1px solid #f0f0f0 !important;
-    }
-    .workspace-table tbody td:last-child::before { content: ''; display: none; }
-    .action-btn { width: 38px; height: 38px; font-size: 14px; }
+    
+
+    
+
+    
+
+    
+
+    
 
     .modal-dialog { max-width: 100% !important; margin: 0 !important; height: 100vh; }
     .modal-content { height: 100vh; border-radius: 0; display: flex; flex-direction: column; border: none; }
@@ -194,68 +88,92 @@
     </div>
 
 
-    {% if workspaces %}
-    <div class="workspace-table">
-        <table>
+    <!-- Workspaces (desktop) / Card list (mobile) -->
+    <div class="table-container">
+        <table class="table alv-table workspaces-table">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Owner</th>
-                    <th>Members</th>
-                    <th>Updated</th>
-                    <th>Actions</th>
+                    <th style="text-align: left; width: 30%">Name</th>
+                    <th style="width: 24%">Owner</th>
+                    <th style="width: 14%">Members</th>
+                    <th style="width: 18%">Updated</th>
+                    <th class="desktop-action-cell cell-actions" style="width: 14%">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for ws in workspaces %}
                 <tr>
-                    <td>
+                    <td data-label="Name" style="text-align: left">
                         <div class="ws-name">
                             <i class="fas fa-layer-group"></i>
                             {{ ws.name }}
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Owner">
                         <div class="ws-owner-name">{{ ws.owner.get_full_name|default:ws.owner.username }}</div>
                         {% if ws.owner.get_full_name %}
                         <div class="ws-owner-username">{{ ws.owner.username }}</div>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="Members">
                         <span class="ws-members" title="{% for m in ws.member_list %}{{ m.user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">
                             <i class="fas fa-users"></i> {{ ws.member_count }}
                         </span>
                     </td>
-                    <td>{{ ws.updated_at|date:"d M Y H:i" }}</td>
-                    <td>
-                        <div style="display:flex; gap:6px;">
-                            <a href="{% url 'workspace_edit' ws.id %}" class="action-btn btn-edit" title="Edit Workspace">
+                    <td data-label="Updated">{{ ws.updated_at|date:"d M Y H:i" }}</td>
+                    <!-- Desktop actions: one cell -->
+                    <td class="desktop-action-cell cell-actions">
+                        <span class="row-actions">
+                            <a href="{% url 'workspace_edit' ws.id %}" class="icon-action-btn icon-edit" title="Edit Workspace">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
                             {% if ws.member_count == 0 %}
-                            <button type="button" class="action-btn btn-delete" title="Delete Workspace"
-                                    onclick="confirmDelete({{ ws.id }}, '{{ ws.name|escapejs }}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                                <button type="button" class="icon-action-btn icon-delete delete-btn" title="Delete Workspace"
+                                        onclick="confirmDelete({{ ws.id }}, '{{ ws.name|escapejs }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             {% else %}
-                            <span class="action-btn btn-delete disabled" title="Cannot delete: workspace has members">
-                                <i class="fas fa-trash"></i>
-                            </span>
+                                <span class="icon-action-btn icon-disabled" title="Cannot delete: workspace has members">
+                                    <i class="fas fa-trash"></i>
+                                </span>
                             {% endif %}
-                        </div>
+                        </span>
+                    </td>
+                    <!-- Mobile-only action bar (hidden on desktop) -->
+                    <td class="mobile-action-bar">
+                        <a href="{% url 'workspace_edit' ws.id %}" class="mobile-action-btn">
+                            <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                            <span class="mobile-action-label">Edit</span>
+                        </a>
+                        {% if ws.member_count == 0 %}
+                            <button type="button" class="mobile-action-btn delete-btn-mobile"
+                                    onclick="confirmDelete({{ ws.id }}, '{{ ws.name|escapejs }}')">
+                                <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                                <span class="mobile-action-label">Delete</span>
+                            </button>
+                        {% else %}
+                            <span class="mobile-action-btn mobile-action-disabled" title="Cannot delete: workspace has members">
+                                <i class="fas fa-trash mobile-action-icon"></i>
+                                <span class="mobile-action-label">Delete</span>
+                            </span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        {% if not workspaces %}
+            {# An empty tbody looks exactly like a failed load. #}
+            <div class="alv-empty">
+                <i class="fas fa-layer-group"></i>
+                <div class="alv-empty-title">No workspaces yet</div>
+                <div class="alv-empty-hint">
+                    Add a workspace to hold a set of Passports, Celebrations and Recipes.
+                </div>
+            </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state">
-        <i class="fas fa-layer-group"></i>
-        <p style="font-weight: 600; margin-bottom: 6px;">No workspaces yet.</p>
-        <small>Click "Add Workspace" to create the first one.</small>
-    </div>
-    {% endif %}
 
 </div>
 

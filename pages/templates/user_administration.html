@@ -14,44 +14,6 @@
 /* Desktop default: hide the mobile "More" dropdown wrapper */
 .action-more-wrapper { display: none; }
 
-.user-table {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
-
-.user-table table {
-    width: 100%;
-    margin: 0;
-}
-
-.user-table thead th {
-    background: #f8f9fa;
-    padding: 14px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.user-table tbody td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-    vertical-align: middle;
-}
-
-.user-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.user-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
 .user-avatar {
     width: 38px;
     height: 38px;
@@ -107,74 +69,6 @@
     font-style: italic;
 }
 
-.badge-superuser {
-    background: var(--alv-accent);
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.badge-staff {
-    background: #0e7c8b;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.badge-user {
-    background: #6c757d;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.status-active {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: #28a745;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.status-inactive {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: #dc3545;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.action-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-
-.action-btn:hover {
-    transform: scale(1.1);
-}
-
-.btn-edit { background: #ffc107; color: white; }
-.btn-permissions { background: #0e7c8b; color: white; }
-.btn-disable { background: #dc3545; color: white; }
-.btn-enable { background: #28a745; color: white; }
-
 /* ============================================================
    MOBILE RESPONSIVE — max-width: 768px
    ============================================================ */
@@ -221,82 +115,17 @@
         font-size: 16px !important;
     }
 
-    /* User table → card layout */
-    .user-table {
-        background: transparent;
-        box-shadow: none;
-        overflow: visible;
-    }
-    .user-table table,
-    .user-table thead,
-    .user-table tbody,
-    .user-table tr,
-    .user-table td {
-        display: block;
-        width: 100%;
-    }
-    .user-table thead {
-        display: none;
-    }
-    .user-table tbody tr {
-        background: white;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        margin-bottom: 12px;
-        padding: 14px;
-    }
-    .user-table tbody tr:hover {
-        background: white;
-    }
-    .user-table tbody td {
-        padding: 6px 0 !important;
-        border-bottom: none !important;
-        text-align: left !important;
-    }
+    
 
-    /* First cell — User info — stays as-is, no label */
-    .user-table tbody td:nth-child(1) {
-        padding-bottom: 10px !important;
-        margin-bottom: 8px;
-        border-bottom: 1px solid #f0f0f0 !important;
-    }
+    
 
-    /* Other cells — label/value pairs via ::before */
-    .user-table tbody td:nth-child(n+2):not(:last-child) {
-        display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        font-size: 13px;
-    }
-    .user-table tbody td:nth-child(n+2):not(:last-child)::before {
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #6c757d;
-        letter-spacing: 0.4px;
-    }
-    .user-table tbody td:nth-child(2)::before { content: 'Role'; }
-    .user-table tbody td:nth-child(3)::before { content: 'Status'; }
-    .user-table tbody td:nth-child(4)::before { content: 'Last Login'; }
-    .user-table tbody td:nth-child(5)::before { content: 'Date Joined'; }
+    
 
-    /* Last cell — Actions — full width row */
-    .user-table tbody td:last-child {
-        padding-top: 10px !important;
-        margin-top: 8px;
-        border-top: 1px solid #f0f0f0 !important;
-    }
-    .user-table tbody td:last-child > div {
-        justify-content: flex-start !important;
-        gap: 10px !important;
-    }
-    .action-btn {
-        width: 38px;
-        height: 38px;
-        font-size: 14px;
-    }
+    
+
+    
+
+    
 
     /* Modals — full screen */
     .modal-dialog {
@@ -377,23 +206,23 @@
     </div>
 
 
-    <!-- User Table -->
-    <div class="user-table">
-        <table>
+    <!-- Users (desktop) / Card list (mobile) -->
+    <div class="table-container">
+        <table class="table alv-table users-table">
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Last Login</th>
-                    <th>Date Joined</th>
-                    <th>Actions</th>
+                    <th style="text-align: left; width: 30%">User</th>
+                    <th style="width: 12%">Role</th>
+                    <th style="width: 12%">Status</th>
+                    <th style="width: 16%">Last Login</th>
+                    <th style="width: 14%">Date Joined</th>
+                    <th class="desktop-action-cell cell-actions" style="width: 16%">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>
+                    <td data-label="User" style="text-align: left">
                         <div class="user-info">
                             <div class="user-avatar">
                                 {% if user.profile.profile_photo %}
@@ -418,59 +247,98 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Role">
                         {% if user.is_superuser %}
-                            <span class="badge-superuser"><i class="fas fa-crown"></i> Superuser</span>
+                            <span class="alv-tag alv-tag-plum"><i class="fas fa-crown"></i> Superuser</span>
                         {% elif user.is_staff %}
-                            <span class="badge-staff"><i class="fas fa-user-tie"></i> Staff</span>
+                            <span class="alv-tag alv-tag-sky"><i class="fas fa-user-tie"></i> Staff</span>
                         {% else %}
-                            <span class="badge-user"><i class="fas fa-user"></i> User</span>
+                            <span class="alv-tag alv-tag-slate"><i class="fas fa-user"></i> User</span>
                         {% endif %}
                     </td>
-                    <td>
-                        {% if user.is_active %}
-                            <span class="status-active"><i class="fas fa-circle" style="font-size:8px;"></i> Active</span>
-                        {% else %}
-                            <span class="status-inactive"><i class="fas fa-circle" style="font-size:8px;"></i> Disabled</span>
-                        {% endif %}
+                    <td data-label="Status">
+                        <span class="alv-pill {% if user.is_active %}alv-pill-good{% else %}alv-pill-neutral{% endif %}">
+                            {% if user.is_active %}Active{% else %}Disabled{% endif %}
+                        </span>
                     </td>
-                    <td>
+                    <td data-label="Last Login">
                         {% if user.last_login %}
                             {{ user.last_login|date:"d M Y H:i" }}
                         {% else %}
                             <span class="text-muted">Never</span>
                         {% endif %}
                     </td>
-                    <td>{{ user.date_joined|date:"d M Y" }}</td>
-                    <td>
-                        <div style="display:flex; gap:6px;">
-                            <a href="{% url 'user_edit' user.id %}" class="action-btn btn-edit" title="Edit User">
+                    <td data-label="Date Joined">{{ user.date_joined|date:"d M Y" }}</td>
+                    <!-- Desktop actions: one cell -->
+                    <td class="desktop-action-cell cell-actions">
+                        <span class="row-actions">
+                            <a href="{% url 'user_edit' user.id %}" class="icon-action-btn icon-edit" title="Edit User">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
-                            <a href="{% url 'user_permissions' user.id %}" class="action-btn btn-permissions" title="Manage Permissions">
+                            <a href="{% url 'user_permissions' user.id %}" class="icon-action-btn icon-permissions" title="Manage Permissions">
                                 <i class="fas fa-key"></i>
                             </a>
                             {% if user.is_active %}
-                            <button type="button" class="action-btn btn-disable" title="Disable User"
-                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
-                                <i class="fas fa-ban"></i>
-                            </button>
+                                <button type="button" class="icon-action-btn icon-lock" title="Disable User"
+                                        onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
+                                    <i class="fas fa-ban"></i>
+                                </button>
                             {% else %}
-                            <button type="button" class="action-btn btn-enable" title="Enable User"
-                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', true)">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button type="button" class="action-btn btn-disable" title="Delete User"
-                                    onclick="confirmDelete({{ user.id }}, '{{ user.username }}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                                <button type="button" class="icon-action-btn icon-unlock" title="Enable User"
+                                        onclick="confirmToggle({{ user.id }}, '{{ user.username }}', true)">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="icon-action-btn icon-delete delete-btn" title="Delete User"
+                                        onclick="confirmDelete({{ user.id }}, '{{ user.username }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             {% endif %}
-                        </div>
+                        </span>
+                    </td>
+                    <!-- Mobile-only action bar (hidden on desktop) -->
+                    <td class="mobile-action-bar">
+                        <a href="{% url 'user_edit' user.id %}" class="mobile-action-btn">
+                            <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                            <span class="mobile-action-label">Edit</span>
+                        </a>
+                        <a href="{% url 'user_permissions' user.id %}" class="mobile-action-btn">
+                            <i class="fas fa-key mobile-action-icon icon-color-permissions"></i>
+                            <span class="mobile-action-label">Permissions</span>
+                        </a>
+                        {% if user.is_active %}
+                            <button type="button" class="mobile-action-btn"
+                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
+                                <i class="fas fa-ban mobile-action-icon icon-color-lock"></i>
+                                <span class="mobile-action-label">Disable</span>
+                            </button>
+                        {% else %}
+                            <button type="button" class="mobile-action-btn"
+                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', true)">
+                                <i class="fas fa-check mobile-action-icon icon-color-unlock"></i>
+                                <span class="mobile-action-label">Enable</span>
+                            </button>
+                            <button type="button" class="mobile-action-btn"
+                                    onclick="confirmDelete({{ user.id }}, '{{ user.username }}')">
+                                <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                                <span class="mobile-action-label">Delete</span>
+                            </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        {% if not users %}
+            {# An empty tbody looks exactly like a failed load. #}
+            <div class="alv-empty">
+                <i class="fas fa-users"></i>
+                <div class="alv-empty-title">No users yet</div>
+                <div class="alv-empty-hint">
+                    Add a user to give someone access; their role and permissions are set from this list.
+                </div>
+            </div>
+        {% endif %}
     </div>
 
 </div>

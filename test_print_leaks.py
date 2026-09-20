@@ -252,7 +252,16 @@ def _queries(css):
 # why eighteen files failed at once. A QUERY-level claim breaks only when a
 # round edits a MEDIA QUERY, which is rare: two rounds have, in a week.
 LATER = {'finance/financial_indicators.html': '.bak_fiseg',
-         'fsr.html': '.bak_iadrill'}
+         'fsr.html': '.bak_iadrill',
+         # Administration stage E, 20 Sep. Its @media (hover: hover) held
+         # three rules and every one of them named a class that round
+         # removed, so the block emptied and went with them. base already
+         # supplies .alv-table tbody tr:hover and .icon-action-btn:hover,
+         # so no hover was lost - only a fifth copy of one. The query claim
+         # is measured up to the point stage E began; what the file looks
+         # like NOW is test_table_admin.py's business, and its section 3
+         # asserts the block went because it emptied.
+         'workspace_management.html': '.bak_stagee'}
 for rel in TARGETS:
     if BAK[rel] is None:
         continue
