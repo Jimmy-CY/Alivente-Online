@@ -206,17 +206,35 @@ def read(p):
         return f.read().replace('\r\n', '\n')
 
 
-def after_push_one(p):
-    """The file as push 1 left it.
+# Each round's backup IS the state the previous round left behind, so a
+# check about round N reads the backup of the EARLIEST round after N that
+# touched this file - and the live file only if none did.
+LATER_BACKUPS = {1: ('.bak_sect2', '.bak_sect3'),
+                 2: ('.bak_sect3',)}
 
-    Sections 2 to 4 are about push 1, and once push 2 has run the live file
-    is no longer push 1's output - customer_invoice_form gained two more
-    titles, so 'every heading reads as it did' zipped 'Invoice Lines'
-    against 'Email' and failed a round that had done nothing wrong. Push 2's
-    backup IS the post-push-1 state, so each push checks a span that ends
-    where the next one begins."""
-    nxt = p + '.bak_sect2'
-    return read(nxt) if os.path.isfile(nxt) else read(p)
+
+def state_after(p, n):
+    """The file as round n left it.
+
+    Sections 2 to 4 are about push 1, and once a later push has run the
+    live file is no longer push 1's output - customer_invoice_form gained
+    two more titles in push 2, so 'every heading reads as it did' zipped
+    'Invoice Lines' against 'Email' and failed a round that had done
+    nothing wrong.
+
+    THE NEXT ROUND IS NOT ALWAYS THE NEXT NUMBER. edit_asset and
+    property_assets were not in push 2 at all, so their post-push-1 state
+    is in .bak_sect3. Looking only at .bak_sect2 read the live file and
+    failed on push 3's work, which is the same fault one round further on.
+    """
+    for suf in LATER_BACKUPS.get(n, ()):
+        if os.path.isfile(p + suf):
+            return read(p + suf)
+    return read(p)
+
+
+def after_push_one(p):
+    return state_after(p, 1)
 
 
 def markup_only(text):
@@ -969,6 +987,126 @@ notes.append('ASSETS IS NOT IN PUSH 2. purchase_invoice is not a row block - '
              'inside the panel. Two block lifts and a conditional is a '
              'different kind of surgery; it goes in push 3 with its own '
              'anchors.')
+
+
+
+# ==========================================================================
+# PUSH 3 - Issues, the Personal modals, and the Assets deferral
+# ==========================================================================
+SUFFIX3 = '.bak_sect3'
+
+CLAIM3 = {
+    'fsr_add.html': 1,
+    'celebration_management.html': 3,
+    'household_member_management.html': 1,
+    'passport_management.html': 3,
+    'view_meal_plan.html': 1,
+    'edit_asset.html': 2,
+    'property_assets.html': 3,
+}
+ALREADY3 = {'edit_asset.html': 2, 'property_assets.html': 1}
+MOVES3 = {
+    'edit_asset.html': ['brand_manufacturer', 'purchase_invoice'],
+    'property_assets.html': ['brand_manufacturer', 'purchase_invoice'],
+}
+# A modal is already a box with a border, a shadow and a header bar. These
+# screens put their form in one and must NOT have gained a panel.
+MODALS = ('celebration_management.html', 'household_member_management.html',
+          'passport_management.html', 'view_meal_plan.html')
+
+print('\n' + '=' * 74)
+print('13. PUSH 3 - TITLES, AND NO PANEL INSIDE A MODAL')
+print('=' * 74)
+
+ran3 = any(os.path.isfile(os.path.join(ROOT, r) + SUFFIX3) for r in CLAIM3)
+if not ran3:
+    skip('push 3', 'no %s backup - push 3 has not run on this tree' % SUFFIX3)
+else:
+    for rel, n in sorted(CLAIM3.items()):
+        p = os.path.join(ROOT, rel)
+        if not os.path.isfile(p):
+            skip(rel, 'not in this checkout')
+            continue
+        text = read(p)
+        want = n + ALREADY3.get(rel, 0)
+        hs = headings(text)
+        ok(len(hs) == want, '%-34s %2d section title(s)' % (rel, want),
+           'found %d' % len(hs))
+        bad = [plain(h.group(1))[:30] for h in hs
+               if len(re.findall(r'<i\s', re.match(
+                   r'\s*(<i\s[^>]*>\s*</i>\s*)*', h.group(1)).group(0))) != 1]
+        ok(not bad, '%-34s opens with exactly one icon' % rel, bad)
+
+    for rel in MODALS:
+        p = os.path.join(ROOT, rel)
+        bak = p + SUFFIX3
+        if not os.path.isfile(bak):
+            skip('%-34s gained no panel' % rel, 'no %s backup' % SUFFIX3)
+            continue
+        a = read(bak).count('<div class="form-card">')
+        b = read(p).count('<div class="form-card">')
+        ok(a == b, '%-34s a modal body is already a panel, so it gained '
+           'none' % rel, '%d -> %d' % (a, b))
+
+print('\n' + '=' * 74)
+print('14. PUSH 3 - THE ASSETS LIFTS, AND NOTHING ELSE MOVED')
+print('=' * 74)
+print("""
+   Both moves are made by anchor rather than by the block index, because
+   purchase_invoice is not a row block - it is a .form-group inside
+   {% if asset.purchase_invoice %} with a link to the existing file in the
+   conditional. The conditional has to survive the lift.
+""")
+
+if not ran3:
+    skip('the Assets lifts', 'push 3 has not run on this tree')
+else:
+    for rel in sorted(MOVES3):
+        p = os.path.join(ROOT, rel)
+        bak = p + SUFFIX3
+        if not os.path.isfile(bak):
+            skip('%-34s the lifts' % rel, 'no %s backup' % SUFFIX3)
+            continue
+        was, now = read(bak), read(p)
+        a, b = fields(was), fields(now)
+        named_ = set(MOVES3[rel])
+        ok(sorted(a) == sorted(b),
+           '%-34s %3d control(s), none lost or gained' % (rel, len(b)),
+           '%d before, %d after' % (len(a), len(b)))
+        ra = [x for x in a if x not in named_]
+        rb = [x for x in b if x not in named_]
+        ok(ra == rb, '%-34s the unnamed fields keep their order' % rel)
+        for x in sorted(named_):
+            ok(a.index(x) != b.index(x),
+               '%-34s %s moved, and was named' % (rel, x))
+        # THE CONDITIONAL SURVIVED THE LIFT. A block cut out of one place
+        # and pasted into another can lose the {% if %} that wrapped it,
+        # and nothing about the field list would show that.
+        for tag in ('{% if', '{% endif %}'):
+            ok(now.count(tag) == was.count(tag),
+               '%-34s Django %s tags unchanged (%d)'
+               % (rel, tag.strip('{% '), was.count(tag)),
+               '%d -> %d' % (was.count(tag), now.count(tag)))
+        # the order the sections now read in
+        titles = [plain(h.group(1)).split('(')[0].strip()
+                  for h in headings(now)]
+        ok(titles[:3] == ['Asset', 'Purchase', 'Warranty Information'],
+           '%-34s the sections read Asset, Purchase, Warranty' % rel, titles)
+
+notes.append('OUT OF THE ROUND, each with a reason measured rather than '
+             'assumed: cash_receipt_add (already sectioned in .alv-card, '
+             'and its first head carries an aside .form-section-title '
+             'cannot); fsr_details (its Edit Issue modal uses .ei-label and '
+             '.ei-input, not the field components - the form-components '
+             'round owns that first); help_page (selected_modules is a '
+             'selection tree, not a form); generate_lease_agreement (its '
+             'colour-coded headers stay, by decision).')
+notes.append('PROJECTS IS HELD. Five screens wait for the rollup fix: a '
+             'parent task has all six get_calculated_* methods and nothing '
+             'that calls them, while a Project has update_project_from_'
+             'tasks() and a signal that fires it. Sectioning those screens '
+             'would rearrange the markup of a behaviour about to change. '
+             'See claude/projects_auto_calculated_rollup.md.')
 
 
 # ==========================================================================

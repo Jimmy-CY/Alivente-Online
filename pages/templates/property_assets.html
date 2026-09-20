@@ -179,6 +179,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <h3 class="form-section-title"><i class="fas fa-box"></i> Asset</h3>
                     <div class="form-row">
                         <!-- Category -->
                         <div class="col-md-6">
@@ -257,6 +258,15 @@
                         </div>
                     </div>
 
+<div class="form-row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label><strong>Brand/Manufacturer</strong></label>
+            <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional">
+        </div>
+    </div>
+</div>
+                    <h3 class="form-section-title"><i class="fas fa-receipt"></i> Purchase</h3>
                     <div class="form-row">
                         <!-- Purchase Date -->
                         <div class="col-md-6">
@@ -307,15 +317,16 @@
                         </div>
 
                         <!-- Brand/Manufacturer -->
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label><strong>Brand/Manufacturer</strong></label>
-                                <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional">
-                            </div>
-                        </div>
+                        
                     </div>
 
                     <!-- Warranty Section -->
+<div class="form-row">
+    <div class="form-group">
+        <label><strong>Purchase Invoice/Receipt</strong></label>
+        <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
+    </div>
+</div>
                                         <h3 class="form-section-title"><i class="fas fa-shield-alt"></i> Warranty Information</h3>
                     <div class="form-row">
                         <div class="col-md-6">
@@ -335,12 +346,10 @@
                     </div>
 
                     <!-- Purchase Invoice Upload -->
-                    <div class="form-group">
-                        <label><strong>Purchase Invoice/Receipt</strong></label>
-                        <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
-                    </div>
+                    
 
                     <!-- Photos Upload -->
+                    <h3 class="form-section-title"><i class="fas fa-camera"></i> Photos</h3>
                     <div class="form-group">
                         <label>Photos <small class="text-muted">(up to 5 — JPG/PNG, 5MB each)</small></label>
                         <div class="photo-upload-controls">

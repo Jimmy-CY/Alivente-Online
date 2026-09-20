@@ -1,145 +1,119 @@
-Entry sections push 2: panels built, seven fields moved, and the model
-screen finally stacks on a phone
+Entry sections push 3: the modals, the Assets deferral, and four screens
+that came out with a reason
 
-Push 1 put every screen that ALREADY had sections onto one component. This
-is the other half: 16 screens, 4 of which have their rows redistributed into
-titled panels, and 7 controls that end up somewhere other than where they
-started. Every one of those seven is named here and named in the suite.
+The last third of the round. 7 screens, 14 titles, 4 fields moved - and four
+screens taken OUT after reading their markup, each for a reason the plan did
+not know.
+
+TWO RULES THIS PUSH NEEDED, AND NEITHER IS A LIST
+
+A MODAL BODY IS ALREADY A PANEL. Four of these screens put their form in a
+.modal-body, which is a box with a border, a shadow and a header bar. A
+.form-card inside one is a panel inside a panel. So inside a modal a section
+is a TITLE and nothing is wrapped round it - and the suite asserts those
+four gained no panel, because "did not add something" is exactly the kind of
+claim that rots.
+
+A SECTION TITLE THAT NEEDS A COMPANION IS AN .alv-card. base declares
+.alv-card properly - the card, its head, its title, its aside, its body, its
+lead variant and its own print rules - and seven pages wear it. It is the
+system's card with a header bar, where .form-card is the entry panel with
+the wash. TWO COMPONENTS, ON PURPOSE.
 
 WHAT MOVED
 
-    properties_add / properties_edit   1 panel -> 4
-        Property | Address | Status & Reporting | Utilities & Charges
-        moved: prop_floor_area, prop_year_built
+    fsr_add                        Issue
+    celebration_management         Contact | Event | Notifications
+    household_member_management    Person
+    passport_management            Document | Validity | File
+    view_meal_plan                 Duplicate Meal Plan
+    edit_asset                     Asset | Purchase  (+ 2 lifts)
+    property_assets                Asset | Purchase | Photos  (+ 2 lifts)
 
-    tenant_add / tenant_edit           1 panel -> 5
-        Tenant | Lease | Rent & Charges | Renewal | Physical Invoice (kept)
-        moved: tenant_current, prop, tenant_payment_terms
+Assets now reads Asset, Purchase, Warranty Information, Photos on both
+screens. brand_manufacturer lifts to the end of Asset and purchase_invoice
+lifts out of Warranty into Purchase.
 
-    12 screens take a title in front of what is already there, with no
-    panel split, no row rebuilt and no field moved: customer_form,
-    customer_invoice_form, act_expense_add/edit, finance_revenue_add/edit,
-    finance_expense_line_types_add/edit, finance_revenue_line_types_add/edit,
-    finance_valuations_add/edit.
+THE LIFTS ARE ANCHORED, NOT INDEXED
 
-ONE RULE DECIDES WHICH SHAPE A SCREEN CAN HAVE
+purchase_invoice is not a row block: it is a bare .form-group after the
+Warranty row, wrapped in {% if asset.purchase_invoice %} with a link to the
+existing file inside the conditional. So both moves cut the block and
+re-insert it as a row of its own above a named section title, each anchor
+asserted to appear exactly once - AND THE SUITE COUNTS THE DJANGO TAGS,
+because a block can lose the {% if %} that wrapped it and nothing about a
+field list would show that.
 
-A screen gets panel-per-section IF AND ONLY IF its <form> opens BEFORE its
-panel. If the form opens inside the panel, closing the panel at a section
-boundary cuts the form in half. That is one measurement per file and it
-replaces arguing per screen.
+THE GATE CAUGHT SOMETHING THIS ROUND DID NOT BREAK AND DID EXPOSE
 
-THE MODEL SCREEN DID NOT STACK ON A PHONE
+test_label_bold.py stopped the push on edit_asset's "Purchase
+Invoice/Receipt" - a field label with no <strong> in it, against a standard
+set on 9 Sep. IT WAS ALREADY LIKE THAT. It sat in a bare .form-group outside
+any row, where that suite's scan did not reach it, and lifting it into the
+Purchase section put it in scope.
 
-customer_invoice_form is the screen this whole standardisation is measured
-against, and it was the only entry screen in the system whose fields stayed
-side by side on a phone. It used Bootstrap's UNPREFIXED column classes -
-col-7, col-5, col-6, col-8, col-4 - which hold their percentage at every
-width, where col-md-* stacks below 768px.
+So the fix is to meet the standard, not to add an exception to the suite. An
+exception would record that the rule does not apply there, and it does.
+property_assets' "Photos (up to 5 ...)" label is plain too and is NOT
+touched: that one is already named in test_label_bold.py's own exception
+list, so it is a decision somebody made, and undoing another round's
+decision is not this round's business.
 
-    at 375 wide, before   Customer Name and Customer ID   152px, side by side
-    at 375 wide, after                                    313px, stacked
+AND A REAL BUG IN THE TOOL, FOUND THE SAME WAY
 
-Seven class names. The desktop is untouched: col-md-6 and col-6 are
-identical at and above 768px. col-12 is left alone - full width at every
-size, never part of the fault.
+Re-running the patcher lifted the block AGAIN. blocks_all() finds the inner
+block, not the .form-row the first lift wrapped it in, so a second run
+wrapped it in another row and left the first one empty - a nested row per
+run. The guard is that everything between the end of the block and the title
+is closing tags and whitespace, which is what "already placed" means.
+Idempotence is a claim; it has to be run twice to be one.
 
-THE WIDTH RULE
+FOUR SCREENS CAME OUT, EACH MEASURED
 
-A row whose membership does not change keeps its widths untouched. A row
-that is rebuilt is three across at col-md-4, or four across at col-md-3
-where a panel holds exactly four fields. col-md-3 is the only width this
-round writes: measured, 313px per field at 375 wide and one line of four at
-1280.
+  cash_receipt_add          already has two titled sections in .alv-card -
+                            "The payment" and "Received from" - and the
+                            first carries an aside saying which number the
+                            receipt will be issued as, which
+                            .form-section-title cannot. Its wording is also
+                            better than the "Payment" / "Payer" proposed.
 
-THE FAULT THAT MATTERS MOST, AND IT WAS THIS ROUND'S OWN
+  fsr_details               its Edit Issue modal uses .ei-modal-body,
+                            .ei-label and .ei-input, and no .form-group or
+                            .form-control anywhere. A section title would be
+                            the only standard thing on the form. It needs
+                            the FIELD components first.
 
-The first draft SILENTLY DELETED TWO HIDDEN INPUTS. properties_add keeps
+  help_page                 selected_modules is a checkbox inside a
+                            selection tree, not a field in a form.
 
-    <!-- Hidden fields for coordinates -->
-    <input type="hidden" name="prop_latitude"  id="prop_latitude">
-    <input type="hidden" name="prop_longitude" id="prop_longitude">
+  generate_lease_agreement  its colour-coded headers stay, by decision.
 
-directly inside the panel, above the first row. The rebuild emitted the
-panel from its row blocks alone and discarded both - and THE TOOL'S OWN
-SELF-CHECK DID NOT SEE IT, because that check filtered hidden inputs out
-before counting. The suite caught it: 22 controls before, 20 after.
+PROJECTS IS HELD, AND NOT FOR A LAYOUT REASON
 
-Two fixes, both permanent:
+project_tasks_edit renders five controls twice: an auto-calculated read-only
+version and an editable one. Those auto-calculated values are computed for
+display and NEVER STORED - a parent task has all six get_calculated_*
+methods and nothing that calls them, while a Project has
+update_project_from_tasks() and a signal that fires it. THE ROLLUP EXISTS
+ONE LEVEL UP AND WAS NEVER IMPLEMENTED ONE LEVEL DOWN.
 
-  * The region now carries everything that is not a block, AND PLACES IT
-    WHERE IT BELONGS. Content before the first row goes before the first
-    panel; content between rows is glued to the row that FOLLOWS it, so a
-    comment stays with what it comments; content after the last row goes in
-    front of the panel this round keeps. Anything that is not whitespace, a
-    comment or a control is structural, and the run stops rather than
-    guessing where it goes.
-  * A HIDDEN INPUT IS DATA. The self-check no longer excludes it. Only
-    controls that DO something rather than SAY something are left out.
-
-AND TWO MORE OF THE SAME KIND
-
-  * THE INVARIANT IS RELATIVE ORDER, NOT ABSOLUTE POSITION. The first
-    version compared each field's index and flagged nineteen fields across
-    four screens that had not moved relative to anything - they had simply
-    been stepped over by something that did.
-  * A FORM CAN VANISH WITHOUT CHANGING A BALANCE. Rebuilding a panel that
-    CONTAINS the <form> deletes the open tag and its close together, so the
-    delta stays at zero and the check passes a file with no form in it. The
-    first draft did that to customer_form, and the balance check passed it.
-    The suite counts form tags now, and customer_form takes titles only.
-
-THREE SCREENS CAME OUT OF THIS PUSH, EACH FOR A BETTER ANSWER THAN THE PLAN
-
-  effective_date          gets NO section. The effective-dating round had
-                          already given it one - a callout above the panel
-                          with its own background and a 4px accent
-                          border-left, the most visually separate thing on
-                          the page. A title over it would relabel what is
-                          already grouped. (It is styled inline rather than
-                          by a class base owns. Debt, five files, its own
-                          round.)
-
-  cash_receipt_add        already has two titled sections in the house
-                          .alv-card - "The payment" and "Received from",
-                          the first with an aside. That is an ADOPT job on a
-                          panel component this round has not touched. And
-                          its wording is better than the "Payment" / "Payer"
-                          this round proposed: the rule is that a heading
-                          keeps its words, and the plan would have
-                          overwritten two good ones.
-
-  edit_asset /            purchase_invoice is not a row block - it is a
-  property_assets         .form-group inside {% if asset.purchase_invoice %}
-                          after the Warranty row - and a Purchase section
-                          needs brand_manufacturer lifted past the purchase
-                          fields too, on two screens whose form sits inside
-                          the panel. Two block lifts and a conditional is a
-                          different kind of surgery.
-
-  prop_id                 was named as moving and does not move. It was
-                          already the last field before the format radios. A
-                          field that changes SECTION without changing ORDER
-                          is not a move, and the self-check said so by
-                          refusing to find it moving.
+Show-ProjectRollup.py ships with this push: read-only, it reports which
+parent tasks are stale, what each would become, the deepest nesting present
+and how many would raise if saved. On the local database: 4 of 4 parents
+stale, every one with an empty start date, an empty expected completion and
+a zero budgeted cost, and one reading Pending while its subtask was under
+way. 0 would raise. See claude/projects_auto_calculated_rollup.md.
 
 PROOF
 
-    test_entry_sections.py    193 passed, 0 failed, 0 skipped
+    test_entry_sections.py    225 passed, 0 failed, 0 skipped
+    test_label_bold.py         13 passed, 0 failed, 0 skipped
 
-Each push checks a span that ends where the next one begins: push 1's
-sections compare .bak_sect1 against .bak_sect2, push 2's compare .bak_sect2
-against the live file. Before that, push 2's extra titles made push 1's
-"every heading reads as it did" zip Invoice Lines against Email and fail a
-round that had done nothing wrong.
+All three pushes, on the gate. Each round's checks read the backup of the
+EARLIEST later round that touched that file, so every push measures a span
+that ends where the next begins - and the next round is not always the next
+number: edit_asset and property_assets skipped push 2 entirely, so their
+post-push-1 state lives in .bak_sect3.
 
-Sabotage-checked three ways, each caught: deleting one hidden coordinate
-input, swapping tenant_deposit with tenant_rent, and putting one col-8 back.
-
-STILL TO COME - push 3
-
-Assets, cash receipts and the .alv-card question, Issues, Projects, the
-Personal modals, and generate_lease_agreement's colour-coded headers, which
-stay parked by decision. Logged on the way: the inline-styled "Applies from"
-callout on five Financials screens, the 62 local iOS-zoom guards base now
-makes redundant, and the 43px desktop tap target.
+Sabotage-checked: removing the conditional around purchase_invoice, and
+wrapping a modal section in a panel.

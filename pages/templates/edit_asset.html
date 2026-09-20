@@ -46,6 +46,7 @@
         <form method="post" enctype="multipart/form-data" id="editAssetForm">
             {% csrf_token %}
 
+            <h3 class="form-section-title"><i class="fas fa-box"></i> Asset</h3>
             <div class="form-row">
                 <!-- Category -->
                 <div class="col-md-6">
@@ -96,6 +97,15 @@
                 </div>
             </div>
 
+<div class="form-row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label><strong>Brand/Manufacturer</strong></label>
+            <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional" value="{{ asset.brand_manufacturer }}">
+        </div>
+    </div>
+</div>
+            <h3 class="form-section-title"><i class="fas fa-receipt"></i> Purchase</h3>
             <div class="form-row">
                 <!-- Purchase Date -->
                 <div class="col-md-6">
@@ -131,15 +141,22 @@
                 </div>
 
                 <!-- Brand/Manufacturer (Optional) -->
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label><strong>Brand/Manufacturer</strong></label>
-                        <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional" value="{{ asset.brand_manufacturer }}">
-                    </div>
-                </div>
+                
             </div>
 
             <!-- Warranty Section -->
+<div class="form-row">
+    <div class="form-group">
+        <label><strong>Purchase Invoice/Receipt</strong></label>
+        {% if asset.purchase_invoice %}
+            <div class="alert alert-info current-file-info">
+                Current file: <a href="{{ asset.purchase_invoice.url }}" target="_blank">{{ asset.purchase_invoice.name }}</a>
+            </div>
+        {% endif %}
+        <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
+        <small class="form-text text-muted">Upload a new file to replace the existing one</small>
+    </div>
+</div>
                         <h3 class="form-section-title"><i class="fas fa-shield-alt"></i> Warranty Information</h3>
             <div class="form-row">
                 <div class="col-md-6">
@@ -159,16 +176,7 @@
             </div>
 
             <!-- Purchase Invoice Upload -->
-            <div class="form-group">
-                <label>Purchase Invoice/Receipt</label>
-                {% if asset.purchase_invoice %}
-                    <div class="alert alert-info current-file-info">
-                        Current file: <a href="{{ asset.purchase_invoice.url }}" target="_blank">{{ asset.purchase_invoice.name }}</a>
-                    </div>
-                {% endif %}
-                <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
-                <small class="form-text text-muted">Upload a new file to replace the existing one</small>
-            </div>
+            
 
             <!-- Photos Section -->
                         <h3 class="form-section-title"><i class="fas fa-camera"></i> 

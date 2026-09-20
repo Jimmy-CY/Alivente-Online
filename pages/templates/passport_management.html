@@ -279,6 +279,7 @@
           {% csrf_token %}
           <input type="hidden" id="passport_id" name="passport_id">
           <input type="hidden" id="form_action" name="action" value="add">
+          <h3 class="form-section-title"><i class="fas fa-passport"></i> Document</h3>
           <div class="form-group">
             <label for="holder_name"><strong>Passport/ID Holder Name:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="holder_name" name="holder_name" required>
@@ -314,6 +315,7 @@
               <option value="Zimbabwe">Zimbabwe</option>
             </select>
           </div>
+          <h3 class="form-section-title"><i class="fas fa-calendar-check"></i> Validity</h3>
           <div class="form-group">
             <label for="date_of_issue"><strong>Date of Issue:</strong></label>
             <input type="date" class="form-control" id="date_of_issue" name="date_of_issue">
@@ -331,6 +333,7 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
+          <h3 class="form-section-title"><i class="fas fa-file-upload"></i> File</h3>
           <div class="form-group" id="file_upload_group">
             <label for="document_file"><strong>Upload Document</strong> <span class="alv-req">*</span></label>
             <input type="file" class="form-control-file file-upload-input" id="document_file" name="document_file" accept="image/*,application/pdf" capture="environment">
