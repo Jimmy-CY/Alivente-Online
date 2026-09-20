@@ -1,119 +1,96 @@
-Entry sections push 3: the modals, the Assets deferral, and four screens
-that came out with a reason
+Entry sections, corrected: a section title is not a grid cell, a modal
+header is already a title, and asset_detail was never reached
 
-The last third of the round. 7 screens, 14 titles, 4 fields moved - and four
-screens taken OUT after reading their markup, each for a reason the plan did
-not know.
+Three faults, all found by LOOKING AT THE SCREENS rather than by any check.
+Every suite passed on all three, and that is the part worth recording.
 
-TWO RULES THIS PUSH NEEDED, AND NEITHER IS A LIST
+1. A SECTION TITLE IS NOT A GRID CELL - 7 screens
 
-A MODAL BODY IS ALREADY A PANEL. Four of these screens put their form in a
-.modal-body, which is a box with a border, a shadow and a header bar. A
-.form-card inside one is a panel inside a panel. So inside a modal a section
-is a TITLE and nothing is wrapped round it - and the suite asserts those
-four gained no panel, because "did not add something" is exactly the kind of
-claim that rots.
+Six screens lay their fields out in
 
-A SECTION TITLE THAT NEEDS A COMPANION IS AN .alv-card. base declares
-.alv-card properly - the card, its head, its title, its aside, its body, its
-lead variant and its own print rules - and seven pages wear it. It is the
-system's card with a header bar, where .form-card is the entry panel with
-the wash. TWO COMPONENTS, ON PURPOSE.
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; }
 
-WHAT MOVED
+and customer_invoice_form puts its invoice date and VAT rate in
 
-    fsr_add                        Issue
-    celebration_management         Contact | Event | Notifications
-    household_member_management    Person
-    passport_management            Document | Validity | File
-    view_meal_plan                 Duplicate Meal Plan
-    edit_asset                     Asset | Purchase  (+ 2 lifts)
-    property_assets                Asset | Purchase | Photos  (+ 2 lifts)
+    .settings-row { display: flex; }
 
-Assets now reads Asset, Purchase, Warranty Information, Photos on both
-screens. brand_manufacturer lifts to the end of Asset and purchase_invoice
-lifts out of Warranty into Purchase.
+Push 2 put the title INSIDE those containers, so it became an ITEM. It took
+one cell. Its accent rule stopped halfway across the panel. The first field
+sat BESIDE the heading instead of under it.
 
-THE LIFTS ARE ANCHORED, NOT INDEXED
+    finance_revenue_add / _edit
+    finance_revenue_line_types_add / _edit
+    finance_expense_line_types_add / _edit
+    customer_invoice_form
 
-purchase_invoice is not a row block: it is a bare .form-group after the
-Warranty row, wrapped in {% if asset.purchase_invoice %} with a link to the
-existing file inside the conditional. So both moves cut the block and
-re-insert it as a row of its own above a named section title, each anchor
-asserted to appear exactly once - AND THE SUITE COUNTS THE DJANGO TAGS,
-because a block can lose the {% if %} that wrapped it and nothing about a
-field list would show that.
+EVERY CHECK PASSED ON ALL SEVEN. They all asked whether the title was
+there; not one asked WHERE. The suite now asks - section 15 walks a tag
+stack and fails on any section title whose parent is a grid or flex
+container.
 
-THE GATE CAUGHT SOMETHING THIS ROUND DID NOT BREAK AND DID EXPOSE
+WHY NOT FIX IT IN base. `.form-section-title { grid-column: 1 / -1 }` would
+make the component span wherever it lands, and it was tempting.
+preview_imported_recipe's Cooking Calculator heading sits inside
+`.cooking-calc-toggle { display: flex }` ON PURPOSE, beside a chevron, and
+notification_settings' heading IS a flex container rather than an item in
+one. A blanket rule would break the two places the arrangement is
+deliberate. The structural fix is precise; the global one is a guess that
+happens to be right six times out of seven.
 
-test_label_bold.py stopped the push on edit_asset's "Purchase
-Invoice/Receipt" - a field label with no <strong> in it, against a standard
-set on 9 Sep. IT WAS ALREADY LIKE THAT. It sat in a bare .form-group outside
-any row, where that suite's scan did not reach it, and lifting it into the
-Purchase section put it in scope.
+2. A MODAL HEADER IS ALREADY A TITLE - 3 screens
 
-So the fix is to meet the standard, not to add an exception to the suite. An
-exception would record that the rule does not apply there, and it does.
-property_assets' "Photos (up to 5 ...)" label is plain too and is NOT
-touched: that one is already named in test_label_bold.py's own exception
-list, so it is a decision somebody made, and undoing another round's
-decision is not this round's business.
+"A modal body is already a panel" was right, and it was half the rule. Push
+3 gave three single-section modals a title that repeats the header the modal
+already carries:
 
-AND A REAL BUG IN THE TOOL, FOUND THE SAME WAY
+    view_meal_plan                 header "Duplicate Meal Plan"
+                                   title  "Duplicate Meal Plan"
+    household_member_management    header "Add Person" / "Edit Person"
+                                   title  "Person"
+    celebration_management         header "Add Contact"
+                                   title  "Contact"
 
-Re-running the patcher lifted the block AGAIN. blocks_all() finds the inner
-block, not the .form-row the first lift wrapped it in, so a second run
-wrapped it in another row and left the first one empty - a nested row per
-run. The guard is that everything between the end of the block and the title
-is closing tags and whitespace, which is what "already placed" means.
-Idempotence is a claim; it has to be run twice to be one.
+The first repeats it word for word. A title on a one-section modal has
+nothing to add: it says the heading again, one line lower. All three are
+gone.
 
-FOUR SCREENS CAME OUT, EACH MEASURED
+A modal with MORE than one section keeps its titles, because there they do
+the dividing - passport_management keeps Document, Validity and File, and
+celebration_management's Add Event keeps Event and Notifications.
 
-  cash_receipt_add          already has two titled sections in .alv-card -
-                            "The payment" and "Received from" - and the
-                            first carries an aside saying which number the
-                            receipt will be issued as, which
-                            .form-section-title cannot. Its wording is also
-                            better than the "Payment" / "Payer" proposed.
+3. asset_detail WAS NEVER REACHED
 
-  fsr_details               its Edit Issue modal uses .ei-modal-body,
-                            .ei-label and .ei-input, and no .form-group or
-                            .form-control anywhere. A section title would be
-                            the only standard thing on the form. It needs
-                            the FIELD components first.
+It was in the first survey with "Maintenance Record" proposed and it was
+lost between that document and push 1. No reason was recorded because there
+was not one. Its two modals carry six fields each in one undivided run.
 
-  help_page                 selected_modules is a checkbox inside a
-                            selection tree, not a field in a form.
+It does NOT get "Maintenance Record" - that is fault 2, and the modal header
+already says it. It gets the split the six fields actually have:
 
-  generate_lease_agreement  its colour-coded headers stay, by decision.
+    Work              Date, Type, Description
+    Provider & Cost   Service Provider, Cost, Invoice/Receipt
 
-PROJECTS IS HELD, AND NOT FOR A LAYOUT REASON
+on both the Add and the Edit modal. The two modals hold the same field
+names, so each is found by its own header rather than by a first match -
+otherwise every title lands in the first one and none in the second.
 
-project_tasks_edit renders five controls twice: an auto-calculated read-only
-version and an editable one. Those auto-calculated values are computed for
-display and NEVER STORED - a parent task has all six get_calculated_*
-methods and nothing that calls them, while a Project has
-update_project_from_tasks() and a signal that fires it. THE ROLLUP EXISTS
-ONE LEVEL UP AND WAS NEVER IMPLEMENTED ONE LEVEL DOWN.
+WHAT THIS ROUND DOES NOT DO
 
-Show-ProjectRollup.py ships with this push: read-only, it reports which
-parent tasks are stale, what each would become, the deepest nesting present
-and how many would raise if saved. On the local database: 4 of 4 parents
-stale, every one with an empty start date, an empty expected completion and
-a zero budgeted cost, and one reading Pending while its subtask was under
-way. 0 would raise. See claude/projects_auto_calculated_rollup.md.
+It moves no field. Every control on every screen it touches is in the same
+order afterwards, and the self-check fails the run if one is not.
 
 PROOF
 
-    test_entry_sections.py    225 passed, 0 failed, 0 skipped
-    test_label_bold.py         13 passed, 0 failed, 0 skipped
+    test_entry_sections.py    232 passed, 0 failed, 0 skipped
 
-All three pushes, on the gate. Each round's checks read the backup of the
-EARLIEST later round that touched that file, so every push measures a span
-that ends where the next begins - and the next round is not always the next
-number: edit_asset and property_assets skipped push 2 entirely, so their
-post-push-1 state lives in .bak_sect3.
+Sabotage-checked: putting a title back inside .form-grid fails section 15
+by name, and removing one asset_detail title fails its count.
 
-Sabotage-checked: removing the conditional around purchase_invoice, and
-wrapping a modal section in a panel.
+THE LESSON, WRITTEN DOWN
+
+A check that asks whether something EXISTS is not a check that it is in the
+right PLACE. Seven screens carried a heading that every suite could see and
+none could locate. The rendered sections of this suite measure size, colour
+and stacking; they render a FIXTURE, which is built correctly by
+construction, so they could never have caught this. What caught it was
+opening the page.

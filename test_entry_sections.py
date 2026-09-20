@@ -995,14 +995,20 @@ notes.append('ASSETS IS NOT IN PUSH 2. purchase_invoice is not a row block - '
 # ==========================================================================
 SUFFIX3 = '.bak_sect3'
 
+# CORRECTED 20 SEP. Push 3 gave three single-section modals a title that
+# repeated the header the modal already carries - word for word on
+# view_meal_plan. A modal body is already a panel AND a modal header is
+# already a title; the second half of that rule was missed. Those three are
+# gone, and asset_detail - which no push reached - gained four.
 CLAIM3 = {
     'fsr_add.html': 1,
-    'celebration_management.html': 3,
-    'household_member_management.html': 1,
+    'celebration_management.html': 2,
+    'household_member_management.html': 0,
     'passport_management.html': 3,
-    'view_meal_plan.html': 1,
+    'view_meal_plan.html': 0,
     'edit_asset.html': 2,
     'property_assets.html': 3,
+    'asset_detail.html': 4,
 }
 ALREADY3 = {'edit_asset.html': 2, 'property_assets.html': 1}
 MOVES3 = {
@@ -1107,6 +1113,89 @@ notes.append('PROJECTS IS HELD. Five screens wait for the rollup fix: a '
              'tasks() and a signal that fires it. Sectioning those screens '
              'would rearrange the markup of a behaviour about to change. '
              'See claude/projects_auto_calculated_rollup.md.')
+
+
+
+# ==========================================================================
+# 15. A SECTION TITLE IS NOT A GRID CELL
+# ==========================================================================
+print("""
+   Seven screens shipped with the title INSIDE their layout container. Six
+   use `.form-grid { display: grid; grid-template-columns: 1fr 1fr }` and
+   customer_invoice_form uses `.settings-row { display: flex }`, so the
+   heading became an ITEM: one cell wide, its accent rule stopping halfway
+   across the panel, with the first field beside it instead of under it.
+
+   EVERY CHECK PASSED. They all asked whether the title was there; none
+   asked WHERE. This is the one that asks.
+""")
+
+LAYOUT = ('form-grid', 'settings-row')
+# Named, with the reason: these two are titles inside a flex container and
+# are meant to be.
+FLEX_OK = {
+    'preview_imported_recipe.html': 'the Cooking Calculator heading sits '
+                                    'beside the toggle chevron',
+    'notification_settings.html': 'the heading IS the flex container',
+    'personal_notification_settings.html': 'same component',
+}
+VOID_T = {'input', 'img', 'br', 'hr', 'meta', 'link', 'source', 'col',
+          'area', 'base', 'embed', 'param', 'track', 'wbr'}
+
+
+def title_parents(mk):
+    out, stack = [], []
+    for m in re.finditer(r'<(/?)([a-zA-Z][\w-]*)([^>]*?)(/?)>', mk):
+        c, tag, at, sc = m.group(1), m.group(2).lower(), m.group(3), m.group(4)
+        if tag == TAG and not c and CLS in at:
+            if stack:
+                out.append(stack[-1][1])
+            continue
+        if tag in VOID_T or sc:
+            continue
+        if c:
+            for k in range(len(stack) - 1, -1, -1):
+                if stack[k][0] == tag:
+                    del stack[k:]
+                    break
+            continue
+        cl = re.search(r'class\s*=\s*["\']([^"\']*)', at)
+        stack.append((tag, cl.group(1).strip() if cl else ''))
+    return out
+
+
+inside, looked = [], 0
+for dp, _d, ns in os.walk(ROOT):
+    for n_ in sorted(ns):
+        if not n_.endswith('.html'):
+            continue
+        rel_ = os.path.relpath(os.path.join(dp, n_), ROOT).replace(os.sep, '/')
+        if rel_ == 'base.html':
+            continue
+        raw = read(os.path.join(dp, n_))
+        if 'class="%s"' % CLS not in raw:
+            continue
+        looked += 1
+        for parent in title_parents(markup_only(raw)):
+            for c in parent.split():
+                if c in LAYOUT:
+                    inside.append('%s: title inside .%s' % (rel_, c))
+
+ok(not inside, 'no section title is a grid cell or a flex item',
+   '\n'.join(inside))
+ok(looked >= 10, 'CONTROL: and there are screens with titles to have got '
+   'wrong', '%d screen(s) carry one' % looked)
+for rel_, why_ in sorted(FLEX_OK.items()):
+    p_ = os.path.join(ROOT, rel_)
+    if os.path.isfile(p_):
+        ok(True, '%-34s deliberately inside a flex container' % rel_, why_)
+
+notes.append('THE FIX ROUND, 20 Sep: seven titles were moved OUT of their '
+             'layout container, three single-section modal titles were '
+             'removed because the modal header already said it, and '
+             'asset_detail - which no push had reached - gained Work and '
+             'Provider & Cost on both of its Maintenance Record modals. '
+             'None of it moved a field.')
 
 
 # ==========================================================================

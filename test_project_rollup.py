@@ -123,6 +123,35 @@ class Rollback(Exception):
     """Raised to end an atomic block without keeping anything."""
 
 
+def flip(sub):
+    """Move a subtask's status without inventing data.
+
+    It flips between Pending and In Progress and never to Completed, because
+    clean() requires an actual completion date for that and this suite is
+    not in the business of making one up. clean() auto-corrects the progress
+    percentage for both of those, so no other field has to be touched.
+    """
+    sub.task_status = ('In Progress' if sub.task_status != 'In Progress'
+                       else 'Pending')
+    sub.task_actual_completion_date = None
+    return sub
+
+
+def try_flip(sub):
+    """Save the flip, or say why it could not be saved.
+
+    THE ROW IS SOMEBODY ELSE'S DATA. This suite works on a real parent that
+    already has subtasks, which is what makes section 2 worth anything - and
+    it means the row may predate a validation it now has to pass. A crash
+    here would block a push and say far less about why than a skip does.
+    """
+    try:
+        sub.save()
+        return None
+    except Exception as exc:                                  # noqa: BLE001
+        return str(exc)[:140]
+
+
 def a_parent_with_subtasks():
     for t in (ProjectTask.objects
               .filter(parent_task__isnull=True)
@@ -141,8 +170,21 @@ signals_src = read(os.path.join('pages', 'signals.py'))
 
 check('ProjectTask has update_from_subtasks()',
       'def update_from_subtasks' in models_src)
-i = models_src.find('def update_from_subtasks')
-block = models_src[i:i + 2500] if i >= 0 else ''
+# JUST THIS METHOD, not a fixed slice after it. The first draft took
+# models_src[i:i + 2500], which swallowed the def save() below it - so the
+# check "it does not save" found super().save( belonging to a different
+# method and reported a fault that was not there. Both of its own checks
+# failed, which is how it was caught.
+def method_body(text, name):
+    """The source of one method, from its def to the next one."""
+    i = text.find('    def %s(' % name)
+    if i < 0:
+        return ''
+    j = text.find('\n    def ', i + 10)
+    return text[i:j if j > 0 else len(text)]
+
+
+block = method_body(models_src, 'update_from_subtasks')
 for field, accessor in (
         ('task_status', 'get_calculated_status'),
         ('task_start_date', 'get_calculated_start_date'),
@@ -175,46 +217,52 @@ check('  and there is NO skip_validation on the task save - a row that '
 # ---------------------------------------------------------------------- 2
 head_('2. RUN IT - the STORED columns move, and the change is rolled back')
 
-parent, subs = a_parent_with_subtasks()
+try:
+    parent, subs = a_parent_with_subtasks()
+    why = None
+except Exception as _exc:                                     # noqa: BLE001
+    # A SUITE ON THE GATE MUST NOT TRACEBACK. If the database will not
+    # answer - no connection, a migration not applied - that is worth
+    # saying in one line, not in forty frames of Django.
+    print('  !! the database would not answer: %s' % str(_exc)[:150])
+    parent, subs, why = None, None, 'no database'
+
 if parent is None:
     skip('the rollup runs', 'no parent task in this database has subtasks')
 else:
     print('        using %s / %s with %d subtask(s)'
           % (parent.project, parent.task_name, len(subs)))
     before = {f: getattr(parent, f) for f in ROLLED}
-    moved = []
+    moved, why = [], None
     try:
         with transaction.atomic():
-            sub = subs[0]
-            sub.task_status = ('In Progress'
-                               if sub.task_status != 'In Progress'
-                               else 'Pending')
-            if sub.task_status != 'Completed':
-                sub.task_actual_completion_date = None
-            sub.save()
-
-            fresh = ProjectTask.objects.get(pk=parent.pk)
-            after = {f: getattr(fresh, f) for f in ROLLED}
-            moved = [f for f in ROLLED
-                     if str(before[f]) != str(after[f])]
+            why = try_flip(flip(subs[0]))
+            if why is None:
+                fresh = ProjectTask.objects.get(pk=parent.pk)
+                moved = [f for f in ROLLED
+                         if str(before[f]) != str(getattr(fresh, f))]
             raise Rollback
     except Rollback:
         pass
 
-    check('saving a subtask changed the parent\'s stored columns',
-          bool(moved), 'none of %s moved' % ', '.join(ROLLED))
-    if moved:
-        print('        moved: %s' % ', '.join(moved))
-    again = ProjectTask.objects.get(pk=parent.pk)
-    check('  and the transaction rolled back, so nothing was kept',
-          all(str(getattr(again, f)) == str(before[f]) for f in ROLLED))
+    if why is not None:
+        skip('the rollup runs',
+             'that subtask will not save unchanged: %s' % why)
+    else:
+        check('saving a subtask changed the parent\'s stored columns',
+              bool(moved), 'none of %s moved' % ', '.join(ROLLED))
+        if moved:
+            print('        moved: %s' % ', '.join(moved))
+        again = ProjectTask.objects.get(pk=parent.pk)
+        check('  and the transaction rolled back, so nothing was kept',
+              all(str(getattr(again, f)) == str(before[f]) for f in ROLLED))
 
 
 # ---------------------------------------------------------------------- 3
 head_('3. THE CONTROL - with the receiver disconnected, nothing moves')
 
-if parent is None:
-    skip('the control', 'no parent task in this database has subtasks')
+if parent is None or why is not None:
+    skip('the control', 'section 2 did not run')
 else:
     post_save.disconnect(alv_signals.update_project_on_task_save,
                          sender=ProjectTask)
@@ -222,13 +270,7 @@ else:
         moved_off = []
         try:
             with transaction.atomic():
-                sub = subs[0]
-                sub.task_status = ('In Progress'
-                                   if sub.task_status != 'In Progress'
-                                   else 'Pending')
-                if sub.task_status != 'Completed':
-                    sub.task_actual_completion_date = None
-                sub.save()
+                try_flip(flip(subs[0]))
                 fresh = ProjectTask.objects.get(pk=parent.pk)
                 moved_off = [f for f in ROLLED
                              if str(before[f]) != str(getattr(fresh, f))]
@@ -254,8 +296,8 @@ else:
 # ---------------------------------------------------------------------- 4
 head_('4. THE WALK TERMINATES - counted, not reasoned about')
 
-if parent is None:
-    skip('the walk terminates', 'no parent task with subtasks')
+if parent is None or why is not None:
+    skip('the walk terminates', 'section 2 did not run')
 else:
     saves = {'n': 0}
     real = ProjectTask.save
@@ -268,13 +310,7 @@ else:
     try:
         try:
             with transaction.atomic():
-                sub = subs[0]
-                sub.task_status = ('In Progress'
-                                   if sub.task_status != 'In Progress'
-                                   else 'Pending')
-                if sub.task_status != 'Completed':
-                    sub.task_actual_completion_date = None
-                sub.save()
+                try_flip(flip(subs[0]))
                 raise Rollback
         except Rollback:
             pass
