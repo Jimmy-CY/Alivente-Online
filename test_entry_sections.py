@@ -1209,6 +1209,266 @@ notes.append('THE FIX ROUND, 20 Sep: seven titles were moved OUT of their '
 
 # ==========================================================================
 print('\n' + '=' * 74)
+print('16. PUSH 4 - THE FIVE PROJECTS SCREENS CARRY THEIR SECTIONS')
+print('=' * 74)
+print("""
+   Held since 19 Sep for the rollup, which shipped and was backfilled on
+   production on 20 Sep. These screens have NO .form-row at all - zero,
+   across all five - so every anchor in that round is a <div class="row ...">
+   or a Django tag. Each screen is already one .form-card, so a section here
+   is a title and not a panel, exactly as it is inside a modal body.
+""")
+
+SUFFIX4 = '.bak_sect4'
+P4 = 'projects/'
+CLAIM4 = {
+    'projects/projects_add.html':          ['Project'],
+    'projects/project_tasks_add.html':     ['Task'],
+    'projects/projects_edit.html':         ['Schedule & Status'],
+    'projects/project_subtasks_add.html':  ['Subtask', 'Schedule & Cost',
+                                            'Completion & Assignment'],
+    'projects/project_tasks_edit.html':    ['Schedule', 'Cost',
+                                            'Completion & Assignment'],
+}
+MOVES4 = {'projects/project_subtasks_add.html': ['task_description']}
+# The one title that must render for a SUBTASK and not for a parent task,
+# because its three fields do not exist for a parent.
+INSIDE_IF4 = {'projects/project_tasks_edit.html':
+              [('Completion & Assignment', '{% if task.parent_task %}')]}
+
+ran4 = any(os.path.isfile(os.path.join(ROOT, r) + SUFFIX4) for r in CLAIM4)
+if not ran4:
+    skip('push 4', 'no %s backup - push 4 has not run on this tree' % SUFFIX4)
+else:
+    for rel, titles in sorted(CLAIM4.items()):
+        p = os.path.join(ROOT, rel)
+        if not os.path.isfile(p):
+            skip(rel, 'not in this checkout')
+            continue
+        text = read(p)
+        got = [plain(h.group(1)).strip() for h in headings(text)]
+        got = [g.replace('&amp;', '&') for g in got]
+        ok(got == titles, '%-38s %s' % (rel, ' · '.join(titles)),
+           'found %s' % got)
+        ok(not re.search(r'<div class="form-row"', markup_only(text)),
+           '%-38s still has no .form-row to anchor on' % rel)
+        cards = len(re.findall(r'<div class="form-card"',
+                               markup_only(text)))
+        ok(cards == 1, '%-38s is one .form-card, so a section is a title'
+           % rel, '%d card(s)' % cards)
+
+
+print('\n' + '=' * 74)
+print('17. PUSH 4 - ONE FIELD MOVED, AND EVERY ROW KEPT ITS OWN FIELDS')
+print('=' * 74)
+print("""
+   THE DIV BALANCE IS BLIND TO A MOVE, and this round proved it rather than
+   assumed it. The first draft cut the description row at the first </div>
+   after the field - the one closing .form-group - and pasted two thirds of
+   a row somewhere else. The fragment held three <div> and one </div>, and
+   THE WHOLE-FILE BALANCE READ ZERO BEFORE AND ZERO AFTER, because what was
+   cut short in one place was left behind in the other.
+
+   So the invariant here is not a count. It is that A FIELD STAYS IN ITS
+   ROW: each row's fields are collected by matching its div, and the SET of
+   those groups must be what it was. A whole row moving leaves the set
+   alone; a row cut in half does not.
+""")
+
+ROW_OPEN4 = re.compile(r'[ \t]*<div class="row"[^>]*>\n')
+
+
+def close_of4(mk, after_open):
+    depth = 1
+    for m in re.finditer(r'<div\b[^>]*>|</div>', mk[after_open:]):
+        depth += 1 if m.group(0) != '</div>' else -1
+        if depth == 0:
+            return after_open + m.end()
+    return None
+
+
+def row_groups4(text):
+    mk = markup_only(text)
+    out = []
+    for m in ROW_OPEN4.finditer(mk):
+        e = close_of4(mk, m.end())
+        if e is None:
+            out.append(('UNCLOSED',))
+            continue
+        out.append(tuple(re.findall(
+            r'<(?:input|select|textarea)\b[^>]*\bname="([^"]+)"',
+            mk[m.end():e])))
+    return sorted(out)
+
+
+if ran4:
+    for rel in sorted(CLAIM4):
+        p = os.path.join(ROOT, rel)
+        bak = p + SUFFIX4
+        if not os.path.isfile(bak):
+            skip('%-38s field order' % rel, 'no %s backup' % SUFFIX4)
+            continue
+        before, after = read(bak), read(p)
+        a, b = fields(before), fields(after)
+        ok(sorted(a) == sorted(b),
+           '%-38s %3d control(s), none lost or gained' % (rel, len(b)),
+           '%d before, %d after' % (len(a), len(b)))
+        named = set(MOVES4.get(rel, []))
+        ra = [x for x in a if x not in named]
+        rb = [x for x in b if x not in named]
+        ok(ra == rb, '%-38s the unnamed fields keep their order' % rel,
+           'first difference at %d'
+           % next((k for k, (x, y) in enumerate(zip(ra, rb)) if x != y), -1))
+        for x in sorted(named):
+            ok(a.index(x) != b.index(x),
+               '%-38s %s moved, and was named' % (rel, x),
+               'named as moving and did not move')
+        ga, gb = row_groups4(before), row_groups4(after)
+        ok(ga == gb, '%-38s every row kept its own fields' % rel,
+           'was %s\nis  %s' % ([g for g in ga if g not in gb][:2],
+                               [g for g in gb if g not in ga][:2]))
+        ok(read(p).count('<form') >= read(bak).count('<form'),
+           '%-38s still has every <form> it started with' % rel)
+
+        # A TITLE ON THE WRONG SIDE OF AN {% if %} WOULD SHOW UP HERE.
+        def dtags(t):
+            return sorted(re.findall(r'\{%\s*(\w+)', t))
+        ok(dtags(before) == dtags(after),
+           '%-38s every Django tag is still there' % rel)
+
+
+print('\n' + '=' * 74)
+print('18. PUSH 4 - THE ICON IS ON THE SECTION TITLE, NOT ON THE FIELD')
+print('=' * 74)
+print("""
+   Projects put a Font Awesome icon on 43 of its 45 field labels. Counted
+   across every screen that posts a form, 121 of 643 labels carried one -
+   but the entry screens this programme has standardised carried ZERO.
+   Adding section titles without stripping these would have given every
+   panel an icon on its heading and an icon on every field beneath it.
+
+   THE LABEL'S TEXT IS UNTOUCHED, and that is asserted separately from the
+   icon being gone: a round that changes what a label SAYS is a different
+   round from one that changes how it is decorated.
+""")
+
+STANDARDISED = ['customer_invoice_form.html', 'properties_add.html',
+                'properties_edit.html', 'tenant_add.html',
+                'tenant_edit.html', 'cash_receipt_add.html']
+
+
+def label_text4(t):
+    return sorted(re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', l)).strip()
+                  for l in re.findall(r'<label\b[^>]*>.*?</label>',
+                                      markup_only(t), re.S))
+
+
+if ran4:
+    for rel in sorted(CLAIM4):
+        p = os.path.join(ROOT, rel)
+        bak = p + SUFFIX4
+        if not os.path.isfile(bak):
+            skip('%-38s label icons' % rel, 'no %s backup' % SUFFIX4)
+            continue
+        before, after = read(bak), read(p)
+        ok(not re.search(r'<label\b[^>]*>\s*<i\s', markup_only(after)),
+           '%-38s no label opens with an icon' % rel)
+        ok(label_text4(before) == label_text4(after),
+           '%-38s and every label still says what it said' % rel)
+        n = len(re.findall(r'<label\b[^>]*>\s*<i\s', markup_only(before)))
+        ok(n > 0, '%-38s CONTROL: it had %d to strip' % (rel, n),
+           'nothing to strip means this check proves nothing')
+
+# THE RULE, not the list: the standardised entry screens carry none either,
+# so "Projects joined the standard" is a statement about the standard.
+for rel in STANDARDISED:
+    p = os.path.join(ROOT, rel)
+    if not os.path.isfile(p):
+        skip('%-38s label icons' % rel, 'not in this checkout')
+        continue
+    ok(not re.search(r'<label\b[^>]*>\s*<i\s', markup_only(read(p))),
+       '%-38s carries none either - the standard Projects joined' % rel)
+
+
+print('\n' + '=' * 74)
+print('19. PUSH 4 - WHERE A TITLE SITS RELATIVE TO A CONDITIONAL AND A TAB')
+print('=' * 74)
+print("""
+   Two placement rules, and both are asserted by walking the document
+   rather than by trusting where the tool put them.
+
+   NO TITLE INSIDE A TAB PANE. Both edit screens divide English from Greek
+   with a Bootstrap tab bar reading English / Ellinika (Greek). A 'Greek
+   Translation' heading inside the Greek pane is word for word the
+   redundancy removed from three modals in the 20 Sep fix round.
+
+   EXACTLY ONE TITLE INSIDE A CONDITIONAL. Completion & Assignment on
+   project_tasks_edit sits inside {% if task.parent_task %}, because a
+   parent task has no actual completion date, no assignee and no progress
+   percentage of its own. Everywhere else the row wraps the {% if %}, so a
+   title before the row renders for a parent AND a subtask - which is the
+   opposite of what the 20 Sep survey assumed, and the reason this round
+   moves no fields on that screen.
+""")
+
+if ran4:
+    for rel in sorted(CLAIM4):
+        p = os.path.join(ROOT, rel)
+        if not os.path.isfile(p):
+            continue
+        mk = markup_only(read(p))
+        # --- the tab panes ------------------------------------------------
+        panes = []
+        for m in re.finditer(r'<div[^>]*class="[^"]*tab-pane[^"]*"[^>]*>',
+                             mk):
+            e = close_of4(mk, m.end())
+            if e is not None:
+                panes.append((m.start(), e))
+        inside_pane = [t.strip() for t in re.findall(
+            r'<%s class="%s"><i[^>]*></i>\s*([^<]+)</%s>' % (TAG, CLS, TAG),
+            mk) if any(a < mk.find('%s</%s>' % (t, TAG)) < b
+                       for a, b in panes)]
+        ok(not inside_pane, '%-38s no title inside a tab pane' % rel,
+           inside_pane)
+        if rel.endswith(('projects_edit.html', 'project_tasks_edit.html')):
+            ok(len(panes) == 2,
+               '%-38s CONTROL: it has 2 tab panes to have got wrong' % rel,
+               '%d pane(s) - with none, the check above is vacuous'
+               % len(panes))
+
+        # --- the conditionals ---------------------------------------------
+        want = dict(INSIDE_IF4.get(rel, []))
+        for m in re.finditer(r'<%s class="%s"><i[^>]*></i>\s*([^<]+)</%s>'
+                             % (TAG, CLS, TAG), mk):
+            title = m.group(1).strip().replace('&amp;', '&')
+            stack = []
+            for k in re.finditer(r'\{%\s*(if|endif)\b[^%]*%\}', mk[:m.start()]):
+                if k.group(1) == 'if':
+                    stack.append(re.sub(r'\s+', ' ', k.group(0)))
+                elif stack:
+                    stack.pop()
+            if title in want:
+                ok(want[title] in stack,
+                   '%-38s %-26s is inside %s' % (rel, title, want[title]),
+                   'open blocks are %s' % (stack or 'none'))
+            else:
+                ok(not stack,
+                   '%-38s %-26s is inside no conditional' % (rel, title),
+                   'it sits inside %s' % stack)
+
+notes.append('PUSH 4, 20 Sep: the five Projects screens. No .form-row on any '
+             'of them, so every anchor is a row div or a Django tag. 43 icons '
+             'came off field labels so the icon belongs to the section title, '
+             'as it does everywhere else. One field moved - task_description '
+             'on project_subtasks_add - and one title sits inside a '
+             'conditional. The row holding Actual Completion Date is hidden '
+             'by script until the status is Completed; the heading above it '
+             'always has Assigned To underneath, so it is never a heading '
+             'with nothing under it.')
+
+
+# ==========================================================================
+print('\n' + '=' * 74)
 if notes:
     print('NOTED, NOT FAILED')
     print('=' * 74)

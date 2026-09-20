@@ -48,12 +48,13 @@ Add New Project
 
   {% csrf_token %}
 
+  <h3 class="form-section-title"><i class="fas fa-project-diagram"></i> Project</h3>
   <div class="row">
     <!-- Project Name -->
     <div class="col-md-6">
       <div class="form-group">
         <label for="project_name">
-          <i class="fas fa-project-diagram"></i> <strong>Project Name</strong> <span class="alv-req">*</span>
+          <strong>Project Name</strong> <span class="alv-req">*</span>
         </label>
         <input type="text"
                class="form-control"
@@ -68,7 +69,7 @@ Add New Project
     <div class="col-md-6">
       <div class="form-group">
         <label for="prop_id">
-          <i class="fas fa-home"></i> <strong>Property</strong> <span class="alv-req">*</span>
+          <strong>Property</strong> <span class="alv-req">*</span>
         </label>
         <select class="form-control" id="prop_id" name="prop_id" required>
           <option value="">Select a property...</option>
@@ -85,7 +86,7 @@ Add New Project
     <div class="col-md-12">
       <div class="form-group">
         <label for="project_description">
-          <i class="fas fa-align-left"></i> <strong>Project Description</strong>
+          <strong>Project Description</strong>
         </label>
         <textarea class="form-control"
                   id="project_description"

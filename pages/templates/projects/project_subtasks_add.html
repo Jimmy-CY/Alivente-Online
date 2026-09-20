@@ -54,11 +54,12 @@ Add Subtask - {{ parent_task.task_name }}
 
   {% csrf_token %}
 
+  <h3 class="form-section-title"><i class="fas fa-tasks"></i> Subtask</h3>
   <div class="row">
     <div class="col-md-6">
       <div class="form-group">
         <label for="task_name">
-          <i class="fas fa-tasks"></i> <strong>Subtask Name</strong> <span class="alv-req">*</span>
+          <strong>Subtask Name</strong> <span class="alv-req">*</span>
         </label>
         <input type="text"
                class="form-control"
@@ -72,7 +73,7 @@ Add Subtask - {{ parent_task.task_name }}
     <div class="col-md-3">
       <div class="form-group">
         <label for="task_priority">
-          <i class="fas fa-flag"></i> <strong>Priority</strong>
+          <strong>Priority</strong>
         </label>
         <select class="form-control" id="task_priority" name="task_priority">
           {% for priority_value, priority_display in task_priority_choices %}
@@ -87,7 +88,7 @@ Add Subtask - {{ parent_task.task_name }}
     <div class="col-md-3">
       <div class="form-group">
         <label for="task_status">
-          <i class="fas fa-info-circle"></i> <strong>Status</strong>
+          <strong>Status</strong>
         </label>
         <select class="form-control" id="task_status" name="task_status">
           {% for status_value, status_display in task_status_choices %}
@@ -101,10 +102,25 @@ Add Subtask - {{ parent_task.task_name }}
   </div>
 
   <div class="row">
+    <div class="col-md-12">
+      <div class="form-group">
+        <label for="task_description">
+          <strong>Subtask Description</strong>
+        </label>
+        <textarea class="form-control"
+                  id="task_description"
+                  name="task_description"
+                  rows="4"
+                  placeholder="Enter subtask description..."></textarea>
+      </div>
+    </div>
+  </div>
+  <h3 class="form-section-title"><i class="fas fa-calendar-alt"></i> Schedule &amp; Cost</h3>
+  <div class="row">
     <div class="col-md-3 col-sm-6">
       <div class="form-group">
         <label for="task_start_date">
-          <i class="fas fa-calendar-alt"></i> <strong>Start Date</strong>
+          <strong>Start Date</strong>
         </label>
         <input type="date"
                class="form-control"
@@ -117,7 +133,7 @@ Add Subtask - {{ parent_task.task_name }}
     <div class="col-md-3 col-sm-6">
       <div class="form-group">
         <label for="task_expected_completion_date">
-          <i class="fas fa-calendar-check"></i> <strong>Expected Completion</strong>
+          <strong>Expected Completion</strong>
         </label>
         <input type="date"
                class="form-control"
@@ -130,7 +146,7 @@ Add Subtask - {{ parent_task.task_name }}
     <div class="col-md-3 col-sm-6">
       <div class="form-group">
         <label for="task_budgeted_cost">
-          <i class="fas fa-euro-sign"></i> <strong>Budgeted Cost</strong>
+          <strong>Budgeted Cost</strong>
         </label>
         <input type="number"
                class="form-control"
@@ -145,7 +161,7 @@ Add Subtask - {{ parent_task.task_name }}
     <div class="col-md-3 col-sm-6">
       <div class="form-group">
         <label for="task_actual_cost">
-          <i class="fas fa-euro-sign"></i> <strong>Actual Cost</strong>
+          <strong>Actual Cost</strong>
         </label>
         <input type="number"
                class="form-control"
@@ -159,11 +175,12 @@ Add Subtask - {{ parent_task.task_name }}
   </div>
 
   <!-- Actual Completion Date (hidden by default) -->
+  <h3 class="form-section-title"><i class="fas fa-user-check"></i> Completion &amp; Assignment</h3>
   <div class="row" id="actualCompletionRow" style="display: none;">
     <div class="col-md-4">
       <div class="form-group">
         <label for="task_actual_completion_date">
-          <i class="fas fa-calendar-times"></i> <strong>Actual Completion Date</strong> <span class="alv-req">*</span>
+          <strong>Actual Completion Date</strong> <span class="alv-req">*</span>
         </label>
         <input type="date"
                class="form-control"
@@ -177,7 +194,7 @@ Add Subtask - {{ parent_task.task_name }}
     <div class="col-md-6">
       <div class="form-group">
         <label for="task_assigned_to">
-          <i class="fas fa-user"></i> <strong>Assigned To</strong>
+          <strong>Assigned To</strong>
         </label>
         <input type="text"
                class="form-control"
@@ -188,20 +205,6 @@ Add Subtask - {{ parent_task.task_name }}
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-md-12">
-      <div class="form-group">
-        <label for="task_description">
-          <i class="fas fa-align-left"></i> <strong>Subtask Description</strong>
-        </label>
-        <textarea class="form-control"
-                  id="task_description"
-                  name="task_description"
-                  rows="4"
-                  placeholder="Enter subtask description..."></textarea>
-      </div>
-    </div>
-  </div>
 
   <div class="alert alert-info" role="alert">
     <div class="d-flex align-items-center">

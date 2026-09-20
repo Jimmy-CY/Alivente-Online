@@ -86,7 +86,7 @@ Edit Project - {{ project.project_name }}
         <div class="col-md-6">
           <div class="form-group">
             <label for="project_name">
-              <i class="fas fa-project-diagram"></i> <strong>Project Name</strong> <span class="alv-req">*</span>
+              <strong>Project Name</strong> <span class="alv-req">*</span>
             </label>
             <input type="text"
                    class="form-control"
@@ -101,7 +101,7 @@ Edit Project - {{ project.project_name }}
         <div class="col-md-6">
           <div class="form-group">
             <label for="prop_id">
-              <i class="fas fa-home"></i> <strong>Property</strong> <span class="alv-req">*</span>
+              <strong>Property</strong> <span class="alv-req">*</span>
             </label>
             <select class="form-control" id="prop_id" name="prop_id" required>
               <option value="">Select a property...</option>
@@ -120,7 +120,7 @@ Edit Project - {{ project.project_name }}
         <div class="col-md-12">
           <div class="form-group">
             <label for="project_description">
-              <i class="fas fa-align-left"></i> <strong>Project Description</strong>
+              <strong>Project Description</strong>
             </label>
             <textarea class="form-control"
                       id="project_description"
@@ -138,7 +138,7 @@ Edit Project - {{ project.project_name }}
         <div class="col-md-12">
           <div class="form-group">
             <label for="project_name_greek">
-              <i class="fas fa-project-diagram"></i> <strong>Όνομα Έργου (Project Name in Greek)</strong>
+              <strong>Όνομα Έργου (Project Name in Greek)</strong>
             </label>
             <input type="text"
                    class="form-control"
@@ -155,7 +155,7 @@ Edit Project - {{ project.project_name }}
         <div class="col-md-12">
           <div class="form-group">
             <label for="project_description_greek">
-              <i class="fas fa-align-left"></i> <strong>Περιγραφή Έργου (Project Description in Greek)</strong>
+              <strong>Περιγραφή Έργου (Project Description in Greek)</strong>
             </label>
             <textarea class="form-control"
                       id="project_description_greek"
@@ -186,12 +186,13 @@ Edit Project - {{ project.project_name }}
     </div>
   </div>
 
+  <h3 class="form-section-title"><i class="fas fa-calendar-check"></i> Schedule &amp; Status</h3>
   <!-- Auto-calculated fields -->
   <div class="row">
     <div class="col-md-4">
       <div class="form-group">
         <label for="project_start_date">
-          <i class="fas fa-calendar-alt"></i> <strong>Start Date (Auto-calculated)</strong>
+          <strong>Start Date (Auto-calculated)</strong>
         </label>
         <input type="date"
                class="form-control auto-calculated-field"
@@ -208,7 +209,7 @@ Edit Project - {{ project.project_name }}
     <div class="col-md-4">
       <div class="form-group">
         <label for="project_expected_completion_date">
-          <i class="fas fa-calendar-check"></i> <strong>Expected Completion (Auto-calculated)</strong>
+          <strong>Expected Completion (Auto-calculated)</strong>
         </label>
         <input type="date"
                class="form-control auto-calculated-field"
@@ -225,7 +226,7 @@ Edit Project - {{ project.project_name }}
     <div class="col-md-4">
       <div class="form-group">
         <label for="project_status">
-          <i class="fas fa-info-circle"></i> <strong>Status (Auto-calculated)</strong>
+          <strong>Status (Auto-calculated)</strong>
         </label>
         <select class="form-control auto-calculated-field"
                 id="project_status"
@@ -247,7 +248,7 @@ Edit Project - {{ project.project_name }}
       <div class="col-md-4">
         <div class="form-group">
           <label for="project_actual_completion_date">
-            <i class="fas fa-calendar-times"></i> <strong>Actual Completion Date (Auto-calculated)</strong>
+            <strong>Actual Completion Date (Auto-calculated)</strong>
           </label>
           <input type="date"
                  class="form-control auto-calculated-field"
