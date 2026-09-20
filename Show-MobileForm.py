@@ -152,7 +152,10 @@ FIELDS = [
     ('prop_pcode', 'Post Code', 'text', 2),
     ('prop_floor_area', 'Floor Area', 'text', 4),
     ('prop_year_built', 'Year Built', 'text', 4),
-    ('prop_include_in_occupancy', 'Include in Occupancy Calculations', 'select', 4),
+    # A COPY, and it is a copy on purpose - this tool renders a
+    # form that does not exist yet, so it cannot read one. Kept in
+    # step with properties_edit.html by hand, and logged as drift.
+    ('prop_include_in_occupancy', 'Include in Occupancy', 'select', 4),
     ('prop_status', 'Status', 'select', 4),
     ('prop_available_for_rent', 'Available For Rent', 'select', 4),
     ('prop_title_deed_status', 'Title Deed Available', 'select', 4),

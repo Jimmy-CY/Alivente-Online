@@ -863,7 +863,15 @@ $suites = @(
     # disconnects the receiver and requires the same sequence to fail -
     # a guard whose control cannot fail is not a guard. Newest, so most
     # likely to be what breaks.
-    'test_project_rollup.py'
+    'test_project_rollup.py',
+    # Four labels that did not fit their own column, and the rule
+    # that let them. Its rendered section measures a col-md-3 at 168px -
+    # the narrowest this application ever draws one, a 992-wide window
+    # with the sidebar open - and its CONTROL renders the OLD label at
+    # the same width and requires it to WRAP. A guard whose control
+    # cannot fail is not a guard. Newest, so most likely to be what
+    # breaks.
+    'test_label_fit.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

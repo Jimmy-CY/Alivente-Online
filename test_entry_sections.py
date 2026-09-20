@@ -919,12 +919,21 @@ else:
     if _pw2:
         # The four-across row this round writes, at the width it was
         # written for. col-md-3 is the ONLY width push 2 sets.
+        # THE LABELS ARE READ, NOT RETYPED. This fixture used to
+        # carry its own copy of the four, and the round that shortened one
+        # of them would have left the copy behind - the fixture measuring
+        # a string the page no longer has, and passing. properties_edit is
+        # the only screen in the corpus with col-md-3 columns in it, and
+        # they are exactly this row.
+        _four_labels = re.findall(
+            r'<div class="col-md-3">\s*<div class="form-group">\s*'
+            r'<label[^>]*>\s*<strong>([^<]+)</strong>',
+            markup_only(read(os.path.join(ROOT, 'properties_edit.html'))))
         four = ''.join(
             '<div class="col-md-3"><div class="form-group"><label><strong>'
             '%s</strong></label><select class="form-control"><option>Yes'
             '</option></select></div></div>' % t
-            for t in ('Include in Occupancy Calculations', 'Status',
-                      'Available For Rent', 'Title Deed Available'))
+            for t in _four_labels)
         html2 = ("""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>p2</title><style>%s</style><style>%s</style></head><body>

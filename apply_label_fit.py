@@ -213,7 +213,15 @@ TOOL_EDITS = {
             '</option></select></div></div>' % t
             for t in ('Include in Occupancy Calculations', 'Status',
                       'Available For Rent', 'Title Deed Available'))""",
-        """        # THE LABELS ARE READ, NOT RETYPED. This fixture used to
+        # A RAW LITERAL, BECAUSE THE TEXT BELOW CONTAINS \s AND \S IS NOT
+        # AN ESCAPE. In a plain string Python leaves an unknown escape
+        # alone and warns; the warning has been on its way to becoming a
+        # SyntaxError for several releases, and a tool that warns every
+        # time it runs is a tool people stop reading the output of. Raw
+        # here emits exactly the same characters, with nothing to warn
+        # about. Nothing in the block ends in a backslash, which is the
+        # one thing a raw literal cannot carry.
+        r"""        # THE LABELS ARE READ, NOT RETYPED. This fixture used to
         # carry its own copy of the four, and the round that shortened one
         # of them would have left the copy behind - the fixture measuring
         # a string the page no longer has, and passing. properties_edit is
