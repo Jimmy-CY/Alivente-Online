@@ -100,7 +100,10 @@ def check(name, ok, extra=''):
     global PASS, FAIL
     if ok:
         PASS += 1
-        print('  PASS  %s %s' % (name, extra))
+        # THE DETAIL BELONGS TO THE FAILURE. Printing it on a pass put
+        # 'none of ... moved' on the end of a line that had just said the
+        # columns DID move, which reads as the opposite of the result.
+        print('  PASS  %s' % name)
     else:
         FAIL += 1
         FAILED.append(name)
@@ -284,13 +287,72 @@ else:
         post_save.connect(alv_signals.update_project_on_task_save,
                           sender=ProjectTask)
     def _connected():
-        for _key, ref in post_save.receivers:
+        # A RECEIVER ROW IS NOT A PAIR. Django 4 stored (lookup_key,
+        # receiver); Django 5 stores (lookup_key, receiver, is_async). A
+        # two-name unpack raised ValueError and took the whole suite down
+        # with it, which blocks a push exactly as hard as a failure would.
+        # Index, do not unpack, and do not assume a length.
+        for row in post_save.receivers:
+            ref = row[1]
             fn = ref() if hasattr(ref, '__call__') and not hasattr(
                 ref, '__name__') else ref
             if fn is alv_signals.update_project_on_task_save:
                 return True
         return False
     check('  and the receiver is connected again', _connected())
+
+
+# ---------------------------------------------------------------------- 3b
+head_('3b. THE TOOLS SAY WHICH DATABASE THEY ANSWERED FROM')
+print("""
+   Five environment variables decide which database this process reads, and
+   settings.py calls load_dotenv() - so a bare run answers from the .env in
+   the repo root and the same command under `railway run` answers from
+   somewhere else, with output that looks exactly the same. A production
+   question was answered from the development database twice on 20 Sep
+   before anyone noticed. The banner is the line that makes the difference
+   visible, and the point of these checks is that BOTH tools carry it - one
+   of two copies saying the wrong thing is worse than neither saying
+   anything.
+""")
+
+try:
+    from pages import db_banner as _bn
+except Exception as _e:                                   # pragma: no cover
+    _bn = None
+    check('pages/db_banner.py imports', False, str(_e))
+
+if _bn is not None:
+    check('pages/db_banner.py imports', True)
+    _d = _bn.describe_database()
+    check('  it reports a host', bool(_d.get('host')),
+          'host is %r' % _d.get('host'))
+    check('  it reports a database name', bool(_d.get('name')),
+          'name is %r' % _d.get('name'))
+    _lines = _bn.banner_lines()
+    check('  the banner names the database it read',
+          any(str(_d['name']) in ln for ln in _lines), _lines)
+    check('  and the host it read it from',
+          any(str(_d['host']) in ln for ln in _lines), _lines)
+    # NO PASSWORD, EVER. The banner is pasted into conversations.
+    from django.conf import settings as _st
+    _pw = (_st.DATABASES.get('default', {}) or {}).get('PASSWORD') or ''
+    check('  and it never prints the password',
+          not _pw or not any(_pw in ln for ln in _lines))
+    print('        %s' % ' | '.join(ln for ln in _lines
+                                    if not ln.startswith('=')))
+
+for _rel in ('Show-ProjectRollup.py',
+             os.path.join('pages', 'management', 'commands',
+                          'backfill_task_rollup.py')):
+    if not os.path.isfile(_rel):
+        skip('%s carries the banner' % _rel, 'not on disk')
+        continue
+    _src = open(_rel, encoding='utf-8').read()
+    check('%s imports pages.db_banner' % os.path.basename(_rel),
+          'from pages.db_banner import' in _src)
+    check('  and calls it', bool(re.search(r'print_banner\(|banner_lines\(',
+                                           _src)))
 
 
 # ---------------------------------------------------------------------- 4

@@ -592,10 +592,64 @@ def cleanup_orphaned_vacancies_after_delete(sender, instance, **kwargs):
 # ============================================================================
 
 
+# ---------------------------------------------------------------------------
+# THE PARENT ROLLUP
+#
+# A Project was kept up to date from its tasks and a PARENT TASK was not.
+# Both receivers below now walk UP from the task that changed before they
+# roll the project, so completing the last subtask reaches the parent's
+# stored columns and not only the accessors one screen happens to call.
+#
+# DEPTH IS A CHECK, NOT AN ASSUMPTION. parent_task is a self-referencing
+# ForeignKey and ProjectTask.clean() sets no depth limit, so the MODEL
+# permits a subtask of a subtask even though the screens only ever offer one
+# level. Show-ProjectRollup.py measured the live data at depth 1 on
+# 20 Sep 2026. A guard written as "the parent has no parent" would be true
+# today and silently wrong the day somebody nests deeper, so this walks
+# until it runs out of parents - and MAX_TASK_DEPTH stops it if a self-FK
+# ever holds a cycle, which one can.
+#
+# RE-ENTRANCY. Saving a parent fires this same receiver with the parent as
+# `instance`. Without a guard it would redo the walk from there, correctly
+# but repeatedly. _ROLLING_UP holds the ids this process is mid-way through
+# saving, and a receiver that sees its own id returns at once.
+MAX_TASK_DEPTH = 10
+_ROLLING_UP = set()
+
+
+def _roll_up_parents(task):
+    """Refresh every ancestor of this task, nearest first."""
+    seen, current = set(), task
+    while current.parent_task_id is not None and len(seen) < MAX_TASK_DEPTH:
+        if current.parent_task_id in seen:
+            break                      # a cycle: stop rather than spin
+        seen.add(current.parent_task_id)
+        parent = current.parent_task
+        parent.update_from_subtasks()
+        _ROLLING_UP.add(parent.pk)
+        try:
+            # NO skip_validation HERE, DELIBERATELY. ProjectTask.save()
+            # calls full_clean(), and a row that cannot validate should not
+            # be written by a background rollup - it should fail loudly and
+            # stay as it was. Show-ProjectRollup.py reports how many rows
+            # would raise before any of this runs; it found none.
+            parent.save()
+        except Exception as exc:                              # noqa: BLE001
+            print('Rollup: task %s did not validate and was left alone: %s'
+                  % (parent.pk, exc))
+            return
+        finally:
+            _ROLLING_UP.discard(parent.pk)
+        current = parent
+
+
 @receiver(post_save, sender=ProjectTask)
 def update_project_on_task_save(sender, instance, **kwargs):
-    """Update project totals when a task is saved"""
+    """Update the parent task, then the project."""
+    if instance.pk in _ROLLING_UP:
+        return          # this save IS the rollup
     try:
+        _roll_up_parents(instance)
         instance.project.update_project_from_tasks()
         instance.project.save(skip_validation=True)
     except Exception as e:
@@ -607,6 +661,7 @@ def update_project_on_task_save(sender, instance, **kwargs):
 def update_project_on_task_delete(sender, instance, **kwargs):
     """Update project totals when a task is deleted"""
     try:
+        _roll_up_parents(instance)
         instance.project.update_project_from_tasks()
         instance.project.save(skip_validation=True)
     except Exception as e:

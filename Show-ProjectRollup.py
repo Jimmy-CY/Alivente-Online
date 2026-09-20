@@ -192,6 +192,13 @@ for project in qs:
             would_raise += 1
         rows.append((project, task, len(subs), diffs, err))
 
+# WHICH DATABASE. This tool is the evidence a --write is decided on, so it
+# says where the evidence came from before it says anything else. See
+# pages/db_banner.py.
+from pages.db_banner import print_banner                          # noqa: E402
+
+print('')
+print_banner()
 print('\n' + BAR)
 print('PARENT TASKS vs THEIR OWN SUBTASKS - read-only')
 print(BAR)

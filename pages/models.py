@@ -518,6 +518,41 @@ class ProjectTask(models.Model):
         else:  # This is a main task - use day-based calculation like projects
             return self.get_subtask_progress() / 100.0
     
+    def update_from_subtasks(self):
+        """Write this task's six calculated values onto its stored columns.
+
+        THE EXACT SHAPE OF Project.update_project_from_tasks(), and that is
+        the point. A Project is kept up to date from its tasks: that method
+        writes calculated to stored, and a post_save and post_delete signal
+        on ProjectTask fires it. A PARENT TASK had all six matching
+        get_calculated_* methods and NOTHING THAT CALLED THEM. The rollup
+        existed one level up and was never implemented one level down.
+
+        What that looked like from outside: tick the last subtask Completed
+        and the parent still said In Progress everywhere except
+        project_tasks_edit, which renders the accessors into its disabled
+        (Auto-calculated) inputs - so the one screen that advertised the
+        behaviour was the one screen that had it.
+
+        WHY THE VALUE HAS TO BE STORED AND NOT JUST READ. Every
+        get_calculated_* already falls back to the stored value when a task
+        has no subtasks, so reading the accessor is never wrong and a
+        read-side fix is tempting. But a database cannot call a Python
+        method: any .filter(task_status=...), .order_by() or Sum() over main
+        tasks reads the column. That is what settles it.
+
+        NO save() HERE - the caller saves, exactly as
+        update_project_from_tasks does, so neither can recurse into itself.
+        """
+        self.task_status = self.get_calculated_status()
+        self.task_start_date = self.get_calculated_start_date()
+        self.task_expected_completion_date = (
+            self.get_calculated_expected_completion())
+        self.task_actual_completion_date = (
+            self.get_calculated_actual_completion())
+        self.task_budgeted_cost = self.get_calculated_budgeted_cost()
+        self.task_actual_cost = self.get_calculated_actual_cost()
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)

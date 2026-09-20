@@ -856,7 +856,14 @@ $suites = @(
     # section 7 renders at 375, 390 and 768 with Bootstrap and base inlined,
     # against a 1280 control, because a rendering test without the page's
     # stylesheet measures nothing. Newest, so most likely to be what breaks.
-    'test_entry_sections.py'
+    'test_entry_sections.py',
+    # A parent task is kept in line with its own subtasks, the way a
+    # project already is with its tasks. Its section 2 RUNS against the
+    # real database inside a transaction it rolls back, and section 3
+    # disconnects the receiver and requires the same sequence to fail -
+    # a guard whose control cannot fail is not a guard. Newest, so most
+    # likely to be what breaks.
+    'test_project_rollup.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
