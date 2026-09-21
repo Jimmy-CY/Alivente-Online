@@ -6,15 +6,16 @@
 {% block content %}
 <div class="report-container">
     <div class="report-content">
-        <div class="header-container">
-            <div class="report-title-container">
-                <h2 class="report-title-main">RESOLVED ISSUES REPORT</h2>
+        <div class="alv-report-head">
+            <div class="alv-report-titles">
+                <div class="alv-report-brand">ALIVENTE ONLINE</div>
+                <h2 class="alv-report-title">RESOLVED ISSUES REPORT</h2>
                 {% if f_date and t_date %}
-                    <h3 class="report-title-sub">
+                    <h3 class="alv-report-sub">
                         {{ f_date }} to {{ t_date }}
                     </h3>
                 {% else %}
-                    <h3 class="report-title-sub text-danger">
+                    <h3 class="alv-report-sub text-danger">
                         Date range not specified
                     </h3>
                 {% endif %}
@@ -70,33 +71,9 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid var(--alv-line);
-    }
 
-    .report-title-container {
-        display: flex;
-        flex-direction: column;
-    }
 
-    .report-title-main {
-        font-size: 1.8rem;
-        color: var(--alv-ink);
-        margin: 0;
-        font-weight: bold;
-    }
 
-    .report-title-sub {
-        font-size: 1.2rem;
-        color: var(--alv-ink-soft);
-        margin: 5px 0 0 0;
-        font-weight: normal;
-    }
 
     .status-card {
         margin-bottom: 40px;
@@ -243,31 +220,10 @@
         }
 
         /* Header — stack title and Back button */
-        .header-container {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 12px;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-        }
 
-        .report-title-container {
-            text-align: center;
-        }
 
-        .report-title-main {
-            font-size: 1.2rem;
-        }
 
-        .report-title-sub {
-            font-size: 0.95rem;
-        }
 
-        .back-button {
-            width: 100%;
-            text-align: center;
-            padding: 10px 12px;
-        }
 
         /* Status card (per-property) */
         .status-card {

@@ -8,10 +8,11 @@ Lease Agreement - {{ property.prop_name }}
 {% block content %}
 <div class="report-container">
     <div class="report-content">
-        <div class="header-container">
-            <div class="title-wrapper">
-                <h2 class="report-title">LEASE AGREEMENT ({{ property.prop_name }})</h2>
-                <h3 class="report-subtitle">for {{ tenant.tenant_name }}</h3>
+        <div class="alv-report-head">
+            <div class="alv-report-titles">
+                <div class="alv-report-brand">ALIVENTE ONLINE</div>
+                <h2 class="alv-report-title">LEASE AGREEMENT ({{ property.prop_name }})</h2>
+                <h3 class="alv-report-sub">for {{ tenant.tenant_name }}</h3>
             </div>
             <a href="{% url 'tenant' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
@@ -75,35 +76,9 @@ Lease Agreement - {{ property.prop_name }}
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 20px;
-}
 
-.title-wrapper {
-    flex: 1;
-    min-width: 0;
-}
 
-.report-title {
-    font-size: 1.8rem;
-    color: #2c3e50;
-    margin: 0;
-    font-weight: bold;
-    text-transform: uppercase;
-    word-break: break-word;
-}
 
-.report-subtitle {
-    font-size: 1.4rem;
-    color: #2c3e50;
-    margin: 5px 0 0 0;
-    font-weight: normal;
-    word-break: break-word;
-}
 
 .property-section {
     margin-top: 20px;
@@ -192,23 +167,6 @@ Lease Agreement - {{ property.prop_name }}
     }
 
     /* Header — stack title block above Back button */
-    .header-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-    .report-title {
-        font-size: 1.15rem;
-    }
-    .report-subtitle {
-        font-size: 0.95rem;
-    }
-    .back-button {
-        width: 100%;
-        text-align: center;
-        padding: 10px 12px;
-    }
 
     /* Lease document card stacks vertically */
     .lease-document-card {

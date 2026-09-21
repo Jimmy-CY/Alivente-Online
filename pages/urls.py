@@ -54,7 +54,6 @@ urlpatterns = [
     path('petty_cash_rep/', views.petty_cash_rep, name='petty_cash_rep'),
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
     path('issues_rep/', views.issues_rep, name='issues_rep'),
-    path('property/<int:prop_id>/title-deed/', views.title_deed_report, name='title_deed_report'),
     path('property_report/<int:prop_id>', views.property_report, name='property_report'),
     path('supplier_report/<int:supplier_id>', views.supplier_report, name='supplier_report'),
     path('tenant_report/<int:tenant_id>', views.tenant_report, name='tenant_report'),
@@ -209,7 +208,6 @@ urlpatterns = [
     path('properties_edit/<prop_id>', views.properties_edit, name='properties_edit'),
     path('properties_commit/', views.properties_commit, name='properties_commit'),
     path('properties_edit_commit/<prop_id>', views.properties_edit_commit, name='properties_edit_commit'),
-    path('properties_title_deed/', views.properties_title_deed, name='properties_title_deed'),
     path('properties/map/', views.properties_map_view, name='properties_map_view'),
 
 

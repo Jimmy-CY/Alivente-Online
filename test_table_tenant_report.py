@@ -202,6 +202,14 @@ check('  and hides the Back button on paper',
       is not None)
 
 # ====================================== WHAT MUST NOT HAVE GONE
+# LATER - test_report_head.py, 21 Sep: the title row and the title went
+# to base's report-title component, so those two are judged on the file as
+# THIS round left it.
+_RT = PAGE + '.bak_reporthead'
+_CSS_LEFT = CSS
+if os.path.exists(_RT):
+    _CSS_LEFT = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>',
+                                      read(_RT), re.S))
 for sel, why in (('.report-container', 'the page shell'),
                  ('.report-content', 'the sheet'),
                  ('.header-container', 'the title row'),
@@ -214,14 +222,26 @@ for sel, why in (('.report-container', 'the page shell'),
                  ('.detail-value', 'the value'),
                  ('.date-box', 'the date chip')):
     check('  KEPT %-20s (%s)' % (sel, why),
-          re.search(re.escape(sel) + r'\s*[,{:.]', CSS) is not None)
+          re.search(re.escape(sel) + r'\s*[,{:.]',
+                    _CSS_LEFT if sel in ('.header-container',
+                                         '.report-title-main') else CSS)
+          is not None)
 
 _sels = [' '.join(re.sub(r'/\*.*?\*/', '', mm.group(1), flags=re.S).split())
          for mm in re.finditer(r'([^{}]+)\{', CSS)]
 
 
+_sels_left = [' '.join(re.sub(r'/\*.*?\*/', '', mm.group(1),
+                                flags=re.S).split())
+              for mm in re.finditer(r'([^{}]+)\{', _CSS_LEFT)]
+
+
 def group(prefix):
-    return sum(1 for x in _sels if prefix in x)
+    # LATER - test_report_head.py, 21 Sep: '.report' counts the page shell
+    # AND the title, and the title's rules went to base - so that group is
+    # counted on the file as THIS round left it.
+    src = _sels_left if prefix == '.report' else _sels
+    return sum(1 for x in src if prefix in x)
 
 
 for prefix, floor, why in (('.detail', 9, 'the label/value machinery'),

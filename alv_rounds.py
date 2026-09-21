@@ -27,6 +27,7 @@ ROUNDS = [
     '.bak_histpurge',
     '.bak_modalhead',
     '.bak_eimodal',
+    '.bak_reporthead',
 ]
 
 

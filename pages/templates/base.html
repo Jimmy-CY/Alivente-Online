@@ -3029,6 +3029,73 @@ table.alv-matrix {
 .alv-modal-head .close:hover { opacity: 1 !important; }
 /* /ALV MODAL HEAD v1 */
 
+/* ALV REPORT HEAD v1 - the title row every business report shares.
+   Titles on the left, Back or a headline figure on the right. The title
+   is a label, so capitals, in ink; the subtitle - a date, a period, the
+   record - in the soft ink, a size down. ALIVENTE ONLINE sits above the
+   title on paper only: since 8 Sep no heading carries the brand, and a
+   printed or emailed report is the one place it is the content rather
+   than chrome. On a phone the row stacks and centres. See
+   test_report_head.py. */
+.alv-report-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.alv-report-titles {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+.alv-report-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--alv-ink);
+    text-transform: uppercase;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.alv-report-sub {
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--alv-ink-soft);
+    margin: 5px 0 0 0;
+    overflow-wrap: anywhere;
+}
+.alv-report-brand { display: none; }
+@media screen and (max-width: 768px) {
+    .alv-report-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .alv-report-titles { align-items: center; text-align: center; }
+    .alv-report-title { font-size: 1.25rem; }
+    .alv-report-sub { font-size: 1rem; }
+    .alv-report-head > .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        padding: 10px 12px;
+    }
+}
+@media print {
+    .alv-report-brand {
+        display: block;
+        margin: 0 0 4px 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        color: var(--alv-accent-ink);
+    }
+}
+/* /ALV REPORT HEAD v1 */
+
 /* ===== ALV PAGE HEADING v1 ===== */
 /* The three classes base's own standards block is written in, which base
    did not declare until now. Every page that wanted one wrote it out: 33

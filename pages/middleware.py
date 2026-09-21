@@ -860,7 +860,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             ('properties_edit', 'auth.can_access_properties'),
             ('properties_commit', 'auth.can_access_properties'),
             ('properties_edit_commit', 'auth.can_access_properties'),
-            ('properties_title_deed', 'auth.can_access_properties'),
             ('title_deeds_management', 'auth.can_access_properties'),
             ('property_report', 'auth.can_access_properties'),
             ('property/', 'auth.can_access_properties'),

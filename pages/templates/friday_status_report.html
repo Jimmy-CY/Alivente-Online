@@ -6,10 +6,11 @@
 {% block content %}
 <div class="report-container">
     <div class="report-content">
-        <div class="header-container">
-            <div class="report-title-container">
-                <h2 class="report-title-main">FRIDAY STATUS REPORT</h2>
-                <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
+        <div class="alv-report-head">
+            <div class="alv-report-titles">
+                <div class="alv-report-brand">ALIVENTE ONLINE</div>
+                <h2 class="alv-report-title">FRIDAY STATUS REPORT</h2>
+                <h3 class="alv-report-sub">{{ today|date:"Y-m-d" }}</h3>
                 {% if is_summarized_report %}
                 <div class="report-type-indicator">
                     <span class="alv-pill alv-pill-neutral report-type-pill">
@@ -127,34 +128,9 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        gap: 16px;
-    }
 
-    .report-title-container {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-width: 0;
-    }
 
-    .report-title-main {
-        font-size: 1.8rem;
-        color: var(--alv-ink);
-        margin: 0;
-        font-weight: bold;
-    }
 
-    .report-title-sub {
-        font-size: 1.4rem;
-        color: var(--alv-ink-soft);
-        margin: 5px 0 0 0;
-        font-weight: normal;
-    }
 
     .report-type-indicator {
         margin-top: 10px;
@@ -364,24 +340,9 @@
         }
 
         /* Header — stack title block and action buttons */
-        .header-container {
-            flex-direction: column;
-            gap: 14px;
-            align-items: stretch;
-            margin-bottom: 18px;
-        }
 
-        .report-title-container {
-            text-align: center;
-        }
 
-        .report-title-main {
-            font-size: 1.2rem;
-        }
 
-        .report-title-sub {
-            font-size: 1rem;
-        }
 
         /* Action buttons — primary wide + back icon */
         .header-actions {

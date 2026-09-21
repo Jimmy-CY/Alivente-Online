@@ -225,10 +225,11 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 
 <div class="report-container">
     <div class="report-content">
-        <div class="header-container">
-            <div class="report-title-container">
-                <h2 class="report-title-main">OUTSTANDING INVOICES REPORT</h2>
-                <h3 class="report-title-sub">{{ today }}</h3>
+        <div class="alv-report-head">
+            <div class="alv-report-titles">
+                <div class="alv-report-brand">ALIVENTE ONLINE</div>
+                <h2 class="alv-report-title">OUTSTANDING INVOICES REPORT</h2>
+                <h3 class="alv-report-sub">{{ today }}</h3>
             </div>
             <a href="{% url 'tenant' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
@@ -462,32 +463,9 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     min-height: auto;
 }
 
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    gap: 16px;
-}
 
-.report-title-container {
-    flex: 1;
-    min-width: 0;
-}
 
-.report-title-main {
-    font-size: 1.8rem;
-    color: #2c3e50;
-    margin: 0;
-    font-weight: bold;
-}
 
-.report-title-sub {
-    font-size: 1.4rem;
-    color: #6c757d;
-    margin: 5px 0 0 0;
-    font-weight: normal;
-}
 
 /* Age Analysis */
 .age-analysis-section {
@@ -666,23 +644,6 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     }
 
     /* Header — stack title block above Back button */
-    .header-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-    .report-title-main {
-        font-size: 1.25rem;
-    }
-    .report-title-sub {
-        font-size: 1rem;
-    }
-    .back-button {
-        width: 100%;
-        text-align: center;
-        padding: 10px 12px;
-    }
 
     .analysis-title {
         font-size: 1.1rem;

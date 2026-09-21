@@ -7,10 +7,11 @@
 <div class="report-container">
   <div class="report-content">
 
-    <div class="header-container">
-      <div class="report-title-container">
-        <h2 class="report-title-main">Tenant Payment Behaviour</h2>
-        <h3 class="report-title-sub">Days from invoice to payment &middot; {{ today }}</h3>
+    <div class="alv-report-head">
+      <div class="alv-report-titles">
+          <div class="alv-report-brand">ALIVENTE ONLINE</div>
+        <h2 class="alv-report-title">Tenant Payment Behaviour</h2>
+        <h3 class="alv-report-sub">Days from invoice to payment &middot; {{ today }}</h3>
       </div>
       <a href="{% url 'tenant' %}" class="btn back-button" role="button">
         <i class="fas fa-arrow-left"></i> Back
@@ -241,36 +242,9 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 16px;
-}
 
-.report-title-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    flex: 1;
-    min-width: 0;
-}
 
-.report-title-main {
-    font-size: 1.8rem;
-    color: #2c3e50;
-    margin: 0;
-    font-weight: bold;
-    text-transform: uppercase;
-}
 
-.report-title-sub {
-    font-size: 1.1rem;
-    color: #6c757d;
-    margin: 5px 0 0 0;
-    font-weight: normal;
-}
 
 /* The summary strip is base's .alv-stats and .alv-stat now, phone grid and
    all. What used to live here was the fourth copy of a tile four screens had
@@ -438,8 +412,6 @@
 @media screen and (max-width: 768px) {
     .report-container { padding: 10px; }
     .report-content { width: 100%; padding: 16px; }
-    .report-title-main { font-size: 1.25rem; }
-    .report-title-sub { font-size: 0.9rem; }
 
     /* Cards, not a squeezed table: nine numeric columns are unreadable at
        phone width, and horizontal scrolling hides exactly the column that

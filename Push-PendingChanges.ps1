@@ -933,7 +933,13 @@ $suites = @(
     # Bootstrap from two fixture files, opens both, fills the comment, and
     # closes them on Escape, the backdrop and Cancel.
     # Newest, so most likely to be what breaks.
-    'test_ei_modal.py'
+    'test_ei_modal.py',
+    # One report title, owned by base. Nine report screens render the
+    # same title and subtitle at 1280, 375 and on paper, the brand shows
+    # on paper only, and the dead title-deed pair stays gone - no view,
+    # URL or access rule points at it.
+    # Newest, so most likely to be what breaks.
+    'test_report_head.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
