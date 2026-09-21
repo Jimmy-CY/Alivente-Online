@@ -939,7 +939,13 @@ $suites = @(
     # on paper only, and the dead title-deed pair stays gone - no view,
     # URL or access rule points at it.
     # Newest, so most likely to be what breaks.
-    'test_report_head.py'
+    'test_report_head.py',
+    # The Applies-from panel on five Financials entry screens and the two
+    # delete pop-ups' choice cards are base's. Only style attributes moved;
+    # rendered, all five panels and both card pairs read the same, from
+    # base's tokens. Valuations names the date Applies from too.
+    # Newest, so most likely to be what breaks.
+    'test_applies_from.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

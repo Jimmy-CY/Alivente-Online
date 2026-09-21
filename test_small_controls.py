@@ -356,6 +356,16 @@ else:
                       for c in now if c[4] < 16]
             if base_was is None:
                 continue
+            # LATER - test_applies_from.py, 21 Sep: compare with the page
+            # and base as THIS round left them; a later round may restyle
+            # a control on purpose.
+            from alv_rounds import as_left_by
+            _lt = as_left_by(p, SUFFIX, read)
+            _bl = '\n'.join(styles_of(as_left_by(BASE_PATH, SUFFIX, read)))
+            if _lt != t:
+                t, mk = _lt, body_markup(_lt)
+                now = render(br, fixture(boot, _bl, styles_of(t), mk), 375)
+            _base_now = _bl if _lt != read(p) else base_now
             old_t = read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else t
             old_mk = body_markup(old_t)
             before = render(br, fixture(boot, base_was, styles_of(old_t),
@@ -377,7 +387,7 @@ else:
                                         y[4], y[5]))
             d_old = render(br, fixture(boot, base_was, styles_of(old_t),
                                        old_mk), 1280)
-            d_now = render(br, fixture(boot, base_now, styles_of(t), mk),
+            d_now = render(br, fixture(boot, _base_now, styles_of(t), mk),
                            1280)
             if len(d_old) != len(d_now) or d_old != d_now:
                 diff = [(x, y) for x, y in zip(d_old, d_now) if x != y]

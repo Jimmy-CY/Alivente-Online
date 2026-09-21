@@ -3096,6 +3096,73 @@ table.alv-matrix {
 }
 /* /ALV REPORT HEAD v1 */
 
+/* ALV APPLIES v1 - the date a Financials figure takes effect from, and
+   the two ways to stop one. The panel sits under an entry form: a soft
+   surface, the accent rule down its left edge, the label in ink with the
+   calendar mark in the accent, the date as base's own field kept narrow,
+   and the guidance under it in the soft ink. The choice cards are the two
+   radios a delete pop-up offers - stop it from a date, the calm one, in
+   the accent; remove it completely, which cannot be undone, in the bad
+   colour. Their note and their date line indent to clear the radio. See
+   test_applies_from.py. */
+.alv-applies {
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
+    border-left: 4px solid var(--alv-accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+}
+.alv-applies > label {
+    display: block;
+    font-weight: 600;
+    color: var(--alv-ink);
+    margin-bottom: 6px;
+}
+.alv-applies > label > i { color: var(--alv-accent); }
+.alv-applies > .form-control { max-width: 220px; }
+.alv-applies-help {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+    line-height: 1.5;
+}
+.alv-choice {
+    display: block;
+    border: 1px solid var(--alv-line);
+    border-left: 4px solid var(--alv-accent);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-weight: 400;
+}
+.alv-choice:last-child { margin-bottom: 0; }
+.alv-choice--danger {
+    border-color: color-mix(in srgb, var(--alv-bad) 30%, #fff);
+    border-left-color: var(--alv-bad);
+}
+.alv-choice--danger > strong { color: var(--alv-bad); }
+.alv-choice-note {
+    display: block;
+    margin: 6px 0 0 22px;
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+}
+.alv-choice-when {
+    display: block;
+    margin: 10px 0 0 22px;
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+}
+.alv-choice-when > .form-control {
+    display: inline-block;
+    width: auto;
+    margin-left: 6px;
+    padding: 6px 10px;
+}
+/* /ALV APPLIES v1 */
+
 /* ===== ALV PAGE HEADING v1 ===== */
 /* The three classes base's own standards block is written in, which base
    did not declare until now. Every page that wanted one wrote it out: 33

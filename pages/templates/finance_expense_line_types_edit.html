@@ -368,19 +368,22 @@
              script lives at the end of this template. The cascade cannot run
              without an amount change, so a date box at any other time would be
              inviting someone to date a change that is not one. -->
-        <div id="fh-applies-from"
-             style="display:none; background:#f8f9fa; border:1px solid #e9ecef;
-                    border-left:4px solid #0e7c8b; border-radius:8px;
-                    padding:14px 18px; margin-bottom:18px;">
-          <label for="effective_date"
-                 style="display:block; font-weight:600; color:#2c3e50; margin-bottom:6px;">
-            <i class="fas fa-calendar-day" style="color:#0e7c8b;"></i> Applies from
+        <div class="page-action-buttons">
+            <button type="submit" class="btn action-primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{% url 'finance_expense_line_types' %}" class="btn action-back" aria-label="Back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+            </a>
+        </div>
+
+        <div id="fh-applies-from" class="alv-applies" style="display:none;">
+          <label for="effective_date">
+            <i class="fas fa-calendar-day"></i> <strong>Applies from</strong>
           </label>
           <input type="date" id="effective_date" name="effective_date"
-                 value="{% now 'Y-m-d' %}"
-                 style="border:2px solid #e9ecef; border-radius:8px; padding:8px 12px;
-                        font-size:14px; background:#fff;">
-          <p style="margin:8px 0 0 0; font-size:13px; color:#6c757d; line-height:1.5;">
+                 value="{% now 'Y-m-d' %}" class="form-control">
+          <p class="alv-applies-help">
             The new amount applies to every payment month on or after this date.
             Earlier months keep the figure that applied before.
             <br>
@@ -390,15 +393,6 @@
             <strong>This year is at the new amount?</strong> Date it 1 January of
             this year, so the charge month picks it up.
           </p>
-        </div>
-
-        <div class="page-action-buttons">
-            <button type="submit" class="btn action-primary">
-                <i class="fas fa-save"></i> Save
-            </button>
-            <a href="{% url 'finance_expense_line_types' %}" class="btn action-back" aria-label="Back">
-                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-            </a>
         </div>
         
         <div class="form-card">

@@ -28,6 +28,7 @@ ROUNDS = [
     '.bak_modalhead',
     '.bak_eimodal',
     '.bak_reporthead',
+    '.bak_appliesfrom',
 ]
 
 
