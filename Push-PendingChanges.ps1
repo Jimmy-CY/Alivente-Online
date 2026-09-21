@@ -884,7 +884,14 @@ $suites = @(
     # padding may change. fsr.html is its control - a guard that is NOT
     # redundant, which the same render must show changing. Newest, so
     # most likely to be what breaks.
-    'test_zoom_guards.py'
+    'test_zoom_guards.py',
+    # Every text control 16px on a phone. Its rendered section is the
+    # invariant itself - every page that extends base, at 375, and NO
+    # text control under 16px - plus the other half: at 1280, every
+    # control's size identical to before the round. Its control takes the
+    # new rule back out of base and must find the small ones again.
+    # Newest, so most likely to be what breaks.
+    'test_small_controls.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

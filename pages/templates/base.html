@@ -2942,6 +2942,30 @@ table.alv-matrix {
     .form-control { font-size: 16px; }
 }
 
+/* ALV SMALL CONTROLS v1 - EVERY TEXT CONTROL, not only the one class.
+   The rule above reaches .form-control and nothing else. Rendering all
+   128 pages that extend base at 375 wide found 64 text controls on 16
+   pages still under 16px, so iOS zoomed on every one: 30 quantity boxes
+   on the lease generator, filter dropdowns on Properties, Tenants and
+   Physical Invoices, the Analysis year pickers, the Edit Issue fields,
+   seven "Applies from" dates. Chromium's own cascade said the same of
+   all 64 - the PAGE made it small, with a local rule or an inline style
+   at 13-14px, which beats a plain base rule by coming later or by being
+   written on the element.
+   So this one is important, the only way a stylesheet outranks inline.
+   It cannot make anything smaller: measured, no text control on any page
+   is above 16px at 375. The desktop is untouched - screen, 768 and below.
+   Checkboxes, radios, buttons, colour and file pickers are left out;
+   iOS does not zoom on them. Keep the input selector on ONE line - a
+   line break inside that chain is a descendant combinator.
+   See Show-SmallControls.py and test_small_controls.py. */
+@media screen and (max-width: 768px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="file"]):not([type="image"]):not([type="range"]):not([type="color"]),
+    select,
+    textarea { font-size: 16px !important; }
+}
+/* /ALV SMALL CONTROLS v1 */
+
 /* ===== ALV PAGE HEADING v1 ===== */
 /* The three classes base's own standards block is written in, which base
    did not declare until now. Every page that wanted one wrote it out: 33

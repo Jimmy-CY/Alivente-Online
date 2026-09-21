@@ -632,7 +632,14 @@ else:
     # out 32 / 28 / 20 / 16. Nothing was smaller than its labels; what was
     # true, and is enough, is that ONE component had FOUR sizes depending
     # on which heading tag a page happened to reach for.
-    stripped = re.sub(r'(?<![-\w])font-size\s*:\s*16px\s*;', '',
+    # LATER - test_small_controls.py, 21 Sep. base gained a phone rule
+    # setting every text control to 16px !important, and a pattern with no
+    # room for !important left it standing in the stripped copy, so this
+    # control reported it could not run. The strip allows !important now;
+    # the rule it also removes is about inputs, which this fixture has none
+    # of, so nothing measured here moves.
+    stripped = re.sub(r'(?<![-\w])font-size\s*:\s*16px\s*'
+                      r'(?:!important\s*)?;', '',
                       base_css(BASE_SRC))
     if 'font-size: 16px' in stripped:
         check('  CONTROL: the size could be taken back out of base', False)

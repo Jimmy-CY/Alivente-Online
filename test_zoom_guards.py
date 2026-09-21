@@ -398,7 +398,16 @@ if not ran or sync_playwright is None or not os.path.isfile(BOOT):
          % BOOT)
 else:
     boot = read(BOOT)
-    base_now = COMMENT.sub('', '\n'.join(styles_of(BASE)))
+    # LATER - test_small_controls.py, 21 Sep. base gained a rule setting
+    # EVERY text control to 16px on a phone, so the controls this round
+    # left small now move - correctly, and because of that round, not this
+    # one. Left in, it would also stop fsr.html's control from failing: a
+    # guard removed by hand could no longer change anything. So "now" here
+    # is base without that one block, cut out by its own begin and end
+    # comments, and this section goes on measuring only what ITS round did.
+    base_now = COMMENT.sub('', re.sub(
+        r'/\* ALV SMALL CONTROLS v1\b.*?/\* /ALV SMALL CONTROLS v1 \*/', '',
+        '\n'.join(styles_of(BASE)), flags=re.S))
     base_was = COMMENT.sub('', '\n'.join(styles_of(
         read(os.path.join(ROOT, 'base.html') + SUFFIX))))
     exe = '/opt/pw-browsers/chromium'
