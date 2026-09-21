@@ -2868,13 +2868,17 @@ table.alv-matrix {
    gap BETWEEN panels equals the 16px gap between fields inside one, which
    erases the grouping. Measured, not assumed. See Show-MobileForm.py.
 
-   FONT-SIZE. iOS Safari zooms the page whenever a focused input is under
-   16px, and .form-control is 14px. 62 pages had each written this rule
-   locally before base did. Those locals are now redundant; removing them is
-   a round of its own. */
+   FONT-SIZE is not here, and that is deliberate. The iOS zoom guard -
+   .form-control at 16px below 768px - lives ONCE, in the form-components
+   rule further down. This block used to declare it a second time, written
+   without noticing the first; the zoom-guard round removed the copy.
+
+   It also said "62 pages had each written this rule locally" and that
+   those were redundant. Measured, it was 72 rules on 60 pages, and a third
+   of them were not: they guard controls with no .form-control class, which
+   this rule never reaches. See Show-ZoomGuards.py. */
 @media screen and (max-width: 768px) {
     .form-card    { padding: 16px 14px; }
-    .form-control { font-size: 16px; }
     .form-section-title small { display: block; font-size: 0.75rem; }
 }
 

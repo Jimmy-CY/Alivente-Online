@@ -877,7 +877,14 @@ $suites = @(
     # old ones read - the markup around it was replaced wholesale, so a
     # diff says nothing and the expressions are the only invariant there
     # is. Newest, so most likely to be what breaks.
-    'test_table_admin.py'
+    'test_table_admin.py',
+    # The page-local iOS zoom guards base made redundant. Its rendered
+    # section is the definition of redundant: every page touched, at 375
+    # and 1280, before and after, and NO control's computed font-size or
+    # padding may change. fsr.html is its control - a guard that is NOT
+    # redundant, which the same render must show changing. Newest, so
+    # most likely to be what breaks.
+    'test_zoom_guards.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
