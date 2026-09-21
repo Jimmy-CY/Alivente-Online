@@ -282,8 +282,8 @@ else:
         # is the file as it stood before that round, when its backup is
         # there - this section goes on judging only its own round.
         before = read(p + SUFFIX)
-        after = (read(p + '.bak_printq') if os.path.isfile(p + '.bak_printq')
-                 else read(p))
+        from alv_rounds import as_left_by
+        after = as_left_by(p, SUFFIX, read)
         out = lambda t: re.sub(r'<style[^>]*>.*?</style>', '<style/>', t,
                                flags=re.S)
         gone = all_decls(css_of(before)) - all_decls(css_of(after))

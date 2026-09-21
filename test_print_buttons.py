@@ -210,7 +210,11 @@ if blocks:
        'the block\'s comments say nothing a CSS tool would read as CSS')
 bak = BASE_PATH + SUFFIX
 if os.path.isfile(bak):
-    ok(re.sub(r'\n\n' + MARK.pattern, '', BASE, count=1, flags=re.S)
+    # LATER - test_modal_heads.py, 21 Sep: base as THIS round left it.
+    from alv_rounds import as_left_by
+    ok(re.sub(r'\n\n' + MARK.pattern, '', as_left_by(BASE_PATH, SUFFIX,
+                                                       read),
+              count=1, flags=re.S)
        == read(bak), 'nothing else in base changed')
 else:
     skip('nothing else in base changed', 'no %s backup' % SUFFIX)
@@ -323,10 +327,18 @@ else:
                     others.append('%s %s %s' % (rel, y[2], 'appeared'
                                                 if y[0] else 'vanished'))
             for w in (375, 1280):
-                a = render(br, fixture(boot, base_was, styles_of(old_t),
-                                       old_mk), w, 'screen', SNAP)
-                b = render(br, fixture(boot, base_now, styles_of(t), mk), w,
-                           'screen', SNAP)
+                # LATER - test_modal_heads.py, 21 Sep. The screen as THIS
+                # round found it against the screen as it LEFT it - base and
+                # page both. A page this round never touched is the same
+                # text on both sides, so only base can differ.
+                from alv_rounds import as_left_by
+                _lt = as_left_by(p, SUFFIX, read)
+                _ot = read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else _lt
+                a = render(br, fixture(boot, base_was, styles_of(_ot),
+                                       body_markup(_ot)), w, 'screen', SNAP)
+                b = render(br, fixture(boot, '\n'.join(styles_of(
+                    as_left_by(BASE_PATH, SUFFIX, read))), styles_of(_lt),
+                    body_markup(_lt)), w, 'screen', SNAP)
                 if a != b:
                     screen_moved.append('%s at %d' % (rel, w))
         ok(len(all_pages) > 100, 'CONTROL: %d page(s) printed'

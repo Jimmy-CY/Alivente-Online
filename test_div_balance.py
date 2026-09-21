@@ -259,7 +259,10 @@ for name in FILES:
     if not os.path.isfile(p + SUFFIX):
         skip(name, 'no %s backup' % SUFFIX)
         continue
-    a, b = read(p + SUFFIX).split('\n'), read(p).split('\n')
+    # LATER - test_modal_heads.py, 21 Sep: the file as THIS round left it.
+    from alv_rounds import as_left_by
+    a = read(p + SUFFIX).split('\n')
+    b = as_left_by(p, SUFFIX, read).split('\n')
     moved, other = 0, []
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b) \
             .get_opcodes():

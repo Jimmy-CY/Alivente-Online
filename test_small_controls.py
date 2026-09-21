@@ -227,8 +227,8 @@ if os.path.isfile(bak):
     # block to base, after this one. "base" here is base as it stood before
     # that round, when its backup is there, so this goes on judging only
     # its own block.
-    _then = (read(BASE_PATH + '.bak_printbtn')
-             if os.path.isfile(BASE_PATH + '.bak_printbtn') else BASE)
+    from alv_rounds import as_left_by
+    _then = as_left_by(BASE_PATH, SUFFIX, read)
     ok(re.sub(r'\n\n' + MARK.pattern, '', _then, count=1, flags=re.S)
        == read(bak),
        'nothing else in base changed - base without the block is the backup')
@@ -266,8 +266,8 @@ else:
         # LATER - test_print_queries.py, 21 Sep. That round put `screen
         # and ` in front of this page's phone queries; the file is judged
         # as it stood before that round when its backup is there.
-        then = (read(DASH + '.bak_printq')
-                if os.path.isfile(DASH + '.bak_printq') else d)
+        from alv_rounds import as_left_by
+        then = as_left_by(DASH, SUFFIX, read)
         ok(was.count(one) == 1 and
            was.replace(one, one.replace(' !important;', ';', 1)) == then,
            'and that is the only change in the file - the other two '

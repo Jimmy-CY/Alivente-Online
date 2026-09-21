@@ -238,8 +238,8 @@ else:
         # LATER - test_div_balance.py, 21 Sep. That round fixed unpaired
         # </div> tags in three files this round had touched. The earliest
         # later round's backup is the file as this round left it.
-        now = next((read(p + s) for s in ('.bak_printbtn', '.bak_divbal')
-                    if os.path.isfile(p + s)), None) or read(p)
+        from alv_rounds import as_left_by
+        now = as_left_by(p, SUFFIX, read)
         was = read(p + SUFFIX)
         k = now.count(ADD) - was.count(ADD)
         n_add += k
@@ -468,8 +468,8 @@ else:
             # LATER - test_div_balance.py, 21 Sep. Section 5 renders the
             # page as this round left it: the earliest later round's backup,
             # when there is one.
-            now = next((read(p + s) for s in ('.bak_printbtn', '.bak_divbal')
-                        if os.path.isfile(p + s)), None) or read(p)
+            from alv_rounds import as_left_by
+            now = as_left_by(p, SUFFIX, read)
             was = read(p + SUFFIX)
             for w in (375, 1280):
                 snaps = []

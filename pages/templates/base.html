@@ -2988,6 +2988,47 @@ table.alv-matrix {
 }
 /* /ALV PRINT BUTTONS v1 */
 
+/* ALV MODAL HEAD v1 - ONE POP-UP HEADER.
+   Measured 21 Sep: 87 modal headers in 16 looks, and base defined none. A
+   delete confirmation was red on fourteen, white on two, grey on one.
+   This is the teal banner the Issues, Help and preview pop-ups already
+   wore, with a white title and a white close button; the danger variant
+   is the same banner in red, for a pop-up that deletes something.
+   The paint is important on purpose. Headers were painted by Bootstrap's
+   own important colour classes, by page rules scoped to a modal's id and
+   by inline styles, and the standard has to win over all three.
+   See test_modal_heads.py. */
+.alv-modal-head {
+    background: linear-gradient(135deg, var(--alv-accent) 0%,
+                var(--alv-accent-ink) 100%) !important;
+    color: var(--alv-on-accent) !important;
+    border-bottom: 0 !important;
+    padding: 16px 20px !important;
+    align-items: center;
+}
+.alv-modal-head--danger {
+    background: linear-gradient(135deg, var(--alv-bad) 0%,
+                color-mix(in srgb, var(--alv-bad) 78%, #000) 100%) !important;
+}
+.alv-modal-head .modal-title,
+.alv-modal-head h1, .alv-modal-head h2, .alv-modal-head h3,
+.alv-modal-head h4, .alv-modal-head h5, .alv-modal-head h6 {
+    color: var(--alv-on-accent) !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    line-height: 1.3;
+    margin: 0;
+}
+.alv-modal-head .modal-title i,
+.alv-modal-head h5 i { color: inherit !important; margin-right: 8px; }
+.alv-modal-head .close {
+    color: var(--alv-on-accent) !important;
+    opacity: 0.85 !important;
+    text-shadow: none !important;
+}
+.alv-modal-head .close:hover { opacity: 1 !important; }
+/* /ALV MODAL HEAD v1 */
+
 /* ===== ALV PAGE HEADING v1 ===== */
 /* The three classes base's own standards block is written in, which base
    did not declare until now. Every page that wanted one wrote it out: 33

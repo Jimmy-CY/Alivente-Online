@@ -342,8 +342,21 @@ head('5. the overlay is still hand-rolled, and the script still works')
 for sel in ('.ia-drill-overlay{', '.ia-drill{', '.ia-drill-head{',
             '.ia-drill-body{', '.ia-desc{'):
     check('the overlay keeps %s' % sel, sel in css_of(FC))
-check('base still has no modal component of its own - so this is one asker',
-      not re.search(r'\.alv-(modal|dialog|overlay|sheet)\b', BASE_CSS))
+# LATER - test_modal_heads.py, 21 Sep: base now owns the pop-up HEADER
+# (.alv-modal-head, .alv-modal-head--danger) and nothing else - no dialog,
+# overlay or body. The drill overlay is hand-rolled, not a .modal-header,
+# so it is still one asker and keeps its own rules.
+NO_MODAL = re.compile(r'\.alv-(modal|dialog|overlay|sheet)(?![\w-])'
+                      r'|\.alv-modal-(?!head\b)[\w-]')
+check('base still has no modal component of its own - only the header',
+      not NO_MODAL.search(BASE_CSS))
+check('  CONTROL: a whole .alv-modal in base would be caught',
+      bool(NO_MODAL.search(BASE_CSS + '\n.alv-modal{display:block}')))
+check('  CONTROL: so would a .alv-modal-body',
+      bool(NO_MODAL.search(BASE_CSS + '\n.alv-modal-body{padding:0}')))
+check('  and the drill head did not become one of base\'s modal heads',
+      not re.search(r'ia-drill-head[^"]*alv-modal-head'
+                    r'|alv-modal-head[^"]*ia-drill-head', read(IA)))
 
 # Losing a hook leaves a dialog that renders correctly and does nothing.
 for hook in ('iaDrillOverlay', 'iaDrillBody', 'iaDrillClose', 'iaDrillTitle',

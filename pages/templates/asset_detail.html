@@ -315,7 +315,7 @@
         <div class="modal-content">
             <form method="post" action="{% url 'add_maintenance' asset.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="modal-header">
+                <div class="modal-header alv-modal-head">
                     <h5 class="modal-title">Add Maintenance Record</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
@@ -377,7 +377,7 @@
         <div class="modal-content">
             <form method="post" id="editMaintenanceForm" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="modal-header">
+                <div class="modal-header alv-modal-head">
                     <h5 class="modal-title">Edit Maintenance Record</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
@@ -437,7 +437,7 @@
 <div class="modal fade" id="invoiceViewerModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header alv-modal-head">
                 <h5 class="modal-title">Invoice / Receipt</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
@@ -459,7 +459,7 @@
 <div class="modal fade" id="photoViewerModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header alv-modal-head">
                 <h5 class="modal-title">Photo</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>

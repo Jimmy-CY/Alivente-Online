@@ -920,7 +920,14 @@ $suites = @(
     # neighbour's untouched. Its control disconnects the receiver and
     # must see the orphans come back. Newest, so most likely to be what
     # breaks.
-    'test_history_purge.py'
+    'test_history_purge.py',
+    # One pop-up header, owned by base. Every business modal is opened
+    # in the browser and must read the teal banner - or red, exactly when
+    # its title says Delete - white title, white close, one size. Its
+    # control puts the class on a header painted by bg-info, a page rule
+    # and an inline style at once, and base must win over all three.
+    # Newest, so most likely to be what breaks.
+    'test_modal_heads.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
