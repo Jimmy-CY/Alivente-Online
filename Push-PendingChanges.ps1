@@ -912,7 +912,15 @@ $suites = @(
     # element landed - inside the content wrapper now, outside it (or
     # swallowed by a card) from the backups. Newest, so most likely to be
     # what breaks.
-    'test_div_balance.py'
+    'test_div_balance.py',
+    # A financial row's history goes with it, on every route. Its
+    # database section builds the real schema in an in-memory SQLite,
+    # deletes rows by a view-style delete, a queryset delete and a
+    # property cascade, and requires their snapshots gone and a
+    # neighbour's untouched. Its control disconnects the receiver and
+    # must see the orphans come back. Newest, so most likely to be what
+    # breaks.
+    'test_history_purge.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -690,3 +690,50 @@ def save_user_profile(sender, instance, **kwargs):
     """Automatically save the UserProfile when the User is saved"""
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+
+# ============================================================================
+# FINANCIAL HISTORY GOES WITH ITS ROW
+# ============================================================================
+# FinancialFigureHistory keys on source_pk - a plain integer, not a foreign
+# key - so nothing cascades when the row it describes is deleted. Rows left
+# behind are orphans: unreachable by the resolver, and waiting to attach
+# themselves to whatever is ever given that id again. Thirty of them sit on
+# Live from before 24 Aug, cut adrift by the old pro-rata delete-and-recreate.
+#
+# The views purge on the two budgeted-expense delete paths. This covers every
+# other route - a delete from Django's admin, a property cascade, a queryset
+# delete, the actual-expense delete that never purged - because Django sends
+# post_delete for every object those remove. It runs inside the deleting
+# transaction and is deliberately NOT fail-safe: quietly leaving history
+# behind is the failure this exists to prevent.
+#
+# instance.pk is still set in post_delete; Django clears it afterwards.
+# See test_history_purge.py and Remove-HistoryOrphans.ps1.
+# ============================================================================
+from .models import (expense as _fh_expense, revenue as _fh_revenue,
+                     prop_values as _fh_prop_values,
+                     act_expense as _fh_act_expense, FinancialFigureHistory,
+                     KIND_VALUATION, KIND_ACTUAL_EXPENSE)
+
+HISTORY_KIND_OF = {
+    _fh_expense: FinancialFigureHistory.KIND_BUDGET,
+    _fh_revenue: FinancialFigureHistory.KIND_REVENUE,
+    _fh_prop_values: KIND_VALUATION,
+    _fh_act_expense: KIND_ACTUAL_EXPENSE,
+}
+
+
+def purge_history_of_deleted_row(sender, instance, **kwargs):
+    """Delete every history snapshot of a financial row being deleted."""
+    kind = HISTORY_KIND_OF.get(sender)
+    if kind is None or instance.pk is None:
+        return
+    FinancialFigureHistory.objects.filter(
+        kind=kind, source_pk=instance.pk).delete()
+
+
+for _fh_model in HISTORY_KIND_OF:
+    post_delete.connect(purge_history_of_deleted_row, sender=_fh_model,
+                        dispatch_uid='alv_history_purge_%s'
+                        % _fh_model.__name__)
