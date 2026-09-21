@@ -380,8 +380,11 @@ else:
         br = pw.chromium.launch(**({'executable_path': exe}
                                    if os.path.exists(exe) else {}))
         bad, total, guarded = [], 0, 0
+        from alv_rounds import as_left_by
         for rel, p in TOUCHED:
-            now, was = read(p), read(p + SUFFIX)
+            # LATER - test_ei_modal.py, 21 Sep: the file as THIS round left
+            # it; a later round may delete a block that was never ours.
+            now, was = as_left_by(p, SUFFIX, read), read(p + SUFFIX)
             s_now, pr_now = block_probes(now, 'n')
             s_was, pr_was = block_probes(was, 'w')
             if len(pr_now) != len(pr_was):

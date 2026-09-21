@@ -159,12 +159,17 @@ for name, now in (('FSR', SNC), ('FD', DNC)):
 
 # WHITE IS TWO TOKENS. The edit-issue modal's dialog is --alv-paper; the text
 # on its teal gradient is --alv-on-accent. Interchangeable only by accident.
+# LATER - test_ei_modal.py, 21 Sep: the .ei-* pop-ups became Bootstrap
+# modals and their rules went. This round's decision is judged on the file
+# as it LEFT it - the eimodal backup when there is one.
+_FDL = (nocomment(read(FD + '.bak_eimodal'))
+        if os.path.exists(FD + '.bak_eimodal') else DNC)
 check('the gradient header takes on-accent ink, not paper',
       re.search(r'\.ei-modal-header\s*\{[^}]*color:\s*var\(--alv-on-accent\)',
-                css_of(DNC)) is not None)
+                css_of(_FDL)) is not None)
 check('  and the dialog itself takes paper',
       re.search(r'\.ei-modal-content\s*\{[^}]*background:\s*var\(--alv-paper\)',
-                css_of(DNC)) is not None)
+                css_of(_FDL)) is not None)
 
 # ===========================================================================
 head('2. the six rules nothing rendered')
@@ -186,7 +191,7 @@ for name, now, was, sels in (
 for sel in ('.ei-modal', '.ei-modal-header', '.ei-input', '.ei-label',
             '.ei-modal-footer'):
     check('  .. but %-18s survives - only the unused one went' % sel,
-          sel in css_of(DNC))
+          sel in css_of(_FDL))
 
 # ===========================================================================
 head('3. the browser: is the red a scale now?')

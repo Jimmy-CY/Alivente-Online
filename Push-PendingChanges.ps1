@@ -927,7 +927,13 @@ $suites = @(
     # control puts the class on a header painted by bg-info, a page rule
     # and an inline style at once, and base must win over all three.
     # Newest, so most likely to be what breaks.
-    'test_modal_heads.py'
+    'test_modal_heads.py',
+    # The Issue page's two edit pop-ups are Bootstrap modals with base's
+    # header and base's fields. Its render runs the real jQuery and
+    # Bootstrap from two fixture files, opens both, fills the comment, and
+    # closes them on Escape, the backdrop and Cancel.
+    # Newest, so most likely to be what breaks.
+    'test_ei_modal.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

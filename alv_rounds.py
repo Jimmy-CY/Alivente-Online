@@ -26,6 +26,7 @@ ROUNDS = [
     '.bak_divbal',
     '.bak_histpurge',
     '.bak_modalhead',
+    '.bak_eimodal',
 ]
 
 
