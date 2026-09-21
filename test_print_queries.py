@@ -235,8 +235,11 @@ else:
         # dashboard rows print-keep, in a file this round had touched. The
         # file is judged as it stood before that round when its backup is
         # there.
-        now = (read(p + '.bak_printbtn') if os.path.isfile(p + '.bak_printbtn')
-               else read(p))
+        # LATER - test_div_balance.py, 21 Sep. That round fixed unpaired
+        # </div> tags in three files this round had touched. The earliest
+        # later round's backup is the file as this round left it.
+        now = next((read(p + s) for s in ('.bak_printbtn', '.bak_divbal')
+                    if os.path.isfile(p + s)), None) or read(p)
         was = read(p + SUFFIX)
         k = now.count(ADD) - was.count(ADD)
         n_add += k
@@ -462,7 +465,12 @@ else:
                         Math.round(e.getBoundingClientRect().width)]; })"""
         moved = []
         for rel, p in TOUCHED:
-            now, was = read(p), read(p + SUFFIX)
+            # LATER - test_div_balance.py, 21 Sep. Section 5 renders the
+            # page as this round left it: the earliest later round's backup,
+            # when there is one.
+            now = next((read(p + s) for s in ('.bak_printbtn', '.bak_divbal')
+                        if os.path.isfile(p + s)), None) or read(p)
+            was = read(p + SUFFIX)
             for w in (375, 1280):
                 snaps = []
                 for t in (now, was):

@@ -491,7 +491,12 @@ check('  CONTROL: it really does have headings to have got wrong',
 # Structure untouched: this round edits text and adds a comment.
 for p in MOVED:
     rel = rel_of(p)
-    now, was = markup_of(read(p)), markup_of(read(p + '.bak_hstd'))
+    # LATER - test_div_balance.py, 21 Sep. That round paired the <div>
+    # tags this check found at +1 and left alone; the file is judged as it
+    # stood before that round.
+    now = markup_of(read(p + '.bak_divbal') if os.path.isfile(p + '.bak_divbal')
+                    else read(p))
+    was = markup_of(read(p + '.bak_hstd'))
     d_now = len(re.findall(r'<div\b', now)) - len(re.findall(r'</div>', now))
     d_was = len(re.findall(r'<div\b', was)) - len(re.findall(r'</div>', was))
     check('%-40s <div> balance unchanged' % rel, d_now == d_was,

@@ -905,7 +905,14 @@ $suites = @(
     # buttons may have left the page. Its control strips print-keep from
     # home's dashboard rows and must see the cards print empty. Newest,
     # so most likely to be what breaks.
-    'test_print_buttons.py'
+    'test_print_buttons.py',
+    # Every <div> pairs, on every branch of every if. Its rendered
+    # section runs three templates through Django's own engine on the
+    # branch that was broken and asks the browser where the page's last
+    # element landed - inside the content wrapper now, outside it (or
+    # swallowed by a card) from the backups. Newest, so most likely to be
+    # what breaks.
+    'test_div_balance.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

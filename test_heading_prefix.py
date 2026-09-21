@@ -232,7 +232,12 @@ check('the round left backups to compare against', len(MOVED) >= 60,
 _hdr = 0
 for p in MOVED:
     rel = rel_of(p)
-    now, was = read(p), read(p + '.bak_pfx')
+    # LATER - test_div_balance.py, 21 Sep. That round paired the <div>
+    # tags this check found at +1 and left alone - correctly, it edits text.
+    # The file is judged as it stood before that round.
+    now = (read(p + '.bak_divbal') if os.path.isfile(p + '.bak_divbal')
+           else read(p))
+    was = read(p + '.bak_pfx')
     t_now, t_was = title_of(now), title_of(was)
     if t_was is None or PREFIX not in t_was:
         continue                          # a tab-only or comment-only change
