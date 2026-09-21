@@ -223,7 +223,13 @@ if blocks:
        'the block\'s comments say nothing a CSS tool would read as CSS')
 bak = BASE_PATH + SUFFIX
 if os.path.isfile(bak):
-    ok(re.sub(r'\n\n' + MARK.pattern, '', BASE, count=1, flags=re.S)
+    # LATER - test_print_buttons.py, 21 Sep. That round added its own
+    # block to base, after this one. "base" here is base as it stood before
+    # that round, when its backup is there, so this goes on judging only
+    # its own block.
+    _then = (read(BASE_PATH + '.bak_printbtn')
+             if os.path.isfile(BASE_PATH + '.bak_printbtn') else BASE)
+    ok(re.sub(r'\n\n' + MARK.pattern, '', _then, count=1, flags=re.S)
        == read(bak),
        'nothing else in base changed - base without the block is the backup')
 else:

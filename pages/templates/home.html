@@ -102,7 +102,7 @@ Home
         </div>
 
         {% with it=today_by_category.vacant %}{% if it %}
-        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
                 data-category="{{ it.category }}"
                 aria-label="{{ it.count }} {{ it.label }}, tap for details">
           <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
@@ -139,7 +139,7 @@ Home
         {% endif %}
 
         {% with it=today_by_category.expiring %}{% if it %}
-        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
                 data-category="{{ it.category }}"
                 aria-label="{{ it.count }} {{ it.label }}, tap for details">
           <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
@@ -150,7 +150,7 @@ Home
         {% endif %}{% endwith %}
 
         {% with it=today_by_category.declined %}{% if it %}
-        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
                 data-category="{{ it.category }}"
                 aria-label="{{ it.count }} {{ it.label }}, tap for details">
           <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
@@ -204,7 +204,7 @@ Home
         {% endfor %}
 
         {% with it=today_by_category.overdue %}{% if it %}
-        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
                 data-category="{{ it.category }}"
                 aria-label="{{ it.count }} {{ it.label }}, tap for details">
           <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
@@ -249,7 +249,7 @@ Home
         {% if today_by_category.approval or today_by_category.payment %}
         <div class="ins-actions">
           {% with it=today_by_category.approval %}{% if it %}
-          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
                   data-category="{{ it.category }}"
                   aria-label="{{ it.count }} {{ it.label }}, tap for details">
             <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
@@ -259,7 +259,7 @@ Home
           </button>
           {% endif %}{% endwith %}
           {% with it=today_by_category.payment %}{% if it %}
-          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill"
+          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
                   data-category="{{ it.category }}"
                   aria-label="{{ it.count }} {{ it.label }}, tap for details">
             <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>

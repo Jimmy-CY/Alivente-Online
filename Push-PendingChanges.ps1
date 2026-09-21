@@ -899,7 +899,13 @@ $suites = @(
     # it to fire on screen and NOT on paper, then read the same block from
     # the backup, where it must fire on BOTH. Newest, so most likely to be
     # what breaks.
-    'test_print_queries.py'
+    'test_print_queries.py',
+    # Buttons stay on the screen. Printed at A4 width, every page that
+    # extends base must show no button but a .print-keep one - and ONLY
+    # buttons may have left the page. Its control strips print-keep from
+    # home's dashboard rows and must see the cards print empty. Newest,
+    # so most likely to be what breaks.
+    'test_print_buttons.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

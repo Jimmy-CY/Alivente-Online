@@ -2966,6 +2966,28 @@ table.alv-matrix {
 }
 /* /ALV SMALL CONTROLS v1 */
 
+/* ALV PRINT BUTTONS v1 - A BUTTON IS FURNITURE ON PAPER.
+   base's print block names containers - the action bar, the mobile bar,
+   modals - and a button anywhere else printed. Measured at A4 portrait
+   width: 283 of them on 55 pages, from Help and Back to row actions,
+   disabled placeholders, quick-set chips and view toggles.
+   So every button goes, the three button input types with it. The one
+   exception is a button that IS content: mark it print-keep and it
+   prints. home's dashboard rows are the case this was written for -
+   each row of a card is a button so a keyboard can click through it,
+   and without the mark the cards would print empty.
+   Measured before writing: only buttons and what is inside them leave
+   the page; nothing else on any page moves. The screen is untouched.
+   See test_print_buttons.py. */
+@media print {
+    button:not(.print-keep),
+    .btn:not(.print-keep),
+    input[type="submit"],
+    input[type="button"],
+    input[type="reset"] { display: none !important; }
+}
+/* /ALV PRINT BUTTONS v1 */
+
 /* ===== ALV PAGE HEADING v1 ===== */
 /* The three classes base's own standards block is written in, which base
    did not declare until now. Every page that wanted one wrote it out: 33

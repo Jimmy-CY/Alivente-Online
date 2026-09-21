@@ -149,6 +149,52 @@ else:
     planned[HOME] = (src, src.replace(ROW_OLD, ROW_NEW))
     report.append('%-42s 6 insight rows marked print-keep' % 'home.html')
 
+# ---- 2b. two suites that compare a file to THEIR round's backup ---------
+# test_small_controls says base is its backup plus ITS block; this round adds
+# a second block to base. test_print_queries says each file it touched is its
+# backup plus `screen and `; home.html was one of them and gains print-keep
+# here. Both would report this round as theirs. Each learns to read the file
+# as it stood before THIS round when that backup is there. Caught by the
+# all-suites sweep on the laptop - the push gate would have stopped on them.
+SUITE_EDITS = [
+    ('test_small_controls.py',
+     r"""    ok(re.sub(r'\n\n' + MARK.pattern, '', BASE, count=1, flags=re.S)
+       == read(bak),""",
+     r"""    # LATER - test_print_buttons.py, 21 Sep. That round added its own
+    # block to base, after this one. "base" here is base as it stood before
+    # that round, when its backup is there, so this goes on judging only
+    # its own block.
+    _then = (read(BASE_PATH + '.bak_printbtn')
+             if os.path.isfile(BASE_PATH + '.bak_printbtn') else BASE)
+    ok(re.sub(r'\n\n' + MARK.pattern, '', _then, count=1, flags=re.S)
+       == read(bak),"""),
+    ('test_print_queries.py',
+     r"""    for rel, p in TOUCHED:
+        now, was = read(p), read(p + SUFFIX)""",
+     r"""    for rel, p in TOUCHED:
+        # LATER - test_print_buttons.py, 21 Sep. That round marked home's
+        # dashboard rows print-keep, in a file this round had touched. The
+        # file is judged as it stood before that round when its backup is
+        # there.
+        now = (read(p + '.bak_printbtn') if os.path.isfile(p + '.bak_printbtn')
+               else read(p))
+        was = read(p + SUFFIX)"""),
+]
+for name, old, new in SUITE_EDITS:
+    if not os.path.isfile(name):
+        report.append('%-42s not on disk - nothing to adjust' % name)
+        continue
+    src = read(name)
+    if 'LATER - test_print_buttons.py' in src:
+        report.append('%-42s already reads the pre-round file' % name)
+    elif src.count(old) != 1:
+        problems.append('%s: anchor found %d time(s), expected 1'
+                        % (name, src.count(old)))
+    else:
+        planned[name] = (src, src.replace(old, new, 1))
+        report.append('%-42s reads the file as it was before this round'
+                      % name)
+
 # ---- 3. the gate ----------------------------------------------------------
 GATE_NOTE = """    # Buttons stay on the screen. Printed at A4 width, every page that
     # extends base must show no button but a .print-keep one - and ONLY
@@ -190,6 +236,13 @@ if BASE in planned:
     if len(c) != 2 or any('@' in x or 'display' in x for x in c):
         problems.append('base.html: a comment says something a tool would '
                         'read as CSS')
+import ast
+for name, (src, text) in planned.items():
+    if name.endswith('.py'):
+        try:
+            ast.parse(text)
+        except SyntaxError as e:
+            problems.append('%s: does not parse - line %s' % (name, e.lineno))
 if HOME in planned:
     src, text = planned[HOME]
     if text.replace(' ' + KEEP + '"', '"') != src:

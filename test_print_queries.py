@@ -231,7 +231,13 @@ else:
     bad = []
     n_add = 0
     for rel, p in TOUCHED:
-        now, was = read(p), read(p + SUFFIX)
+        # LATER - test_print_buttons.py, 21 Sep. That round marked home's
+        # dashboard rows print-keep, in a file this round had touched. The
+        # file is judged as it stood before that round when its backup is
+        # there.
+        now = (read(p + '.bak_printbtn') if os.path.isfile(p + '.bak_printbtn')
+               else read(p))
+        was = read(p + SUFFIX)
         k = now.count(ADD) - was.count(ADD)
         n_add += k
         if len(now) - len(was) != k * len(ADD):
