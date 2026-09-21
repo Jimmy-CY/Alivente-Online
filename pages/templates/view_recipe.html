@@ -452,7 +452,7 @@ body {
    The green gradient becomes its own card BELOW the image,
    instead of wrapping it (cleaner placeholder treatment).
    ============================================================ */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
 
     /* === TOP ACTION BAR — Back+2+ standard:
          [Edit Recipe (wide)] [⋮ Shopping List, Print, View Doc, Cooking Times, Nutrition] [← Back] === */
@@ -873,7 +873,7 @@ body {
 }
 
 /* Tablet view - smaller image but still visible */
-@media (min-width: 769px) and (max-width: 1024px) {
+@media screen and (min-width: 769px) and (max-width: 1024px) {
     .recipe-thumbnail,
     .recipe-thumbnail-placeholder {
         width: 150px;
@@ -1220,7 +1220,7 @@ body {
 }
 
 /* Mobile-friendly conversion modal */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     #conversionMiniModal .modal-dialog {
         max-width: 100% !important;
         margin: 0 !important;
@@ -1376,7 +1376,7 @@ body {
 /* Cards (mobile only) */
 .breakdown-cards-wrap { display: none; }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .breakdown-table-wrap { display: none; }
     .breakdown-cards-wrap { display: block; }
 
@@ -1805,7 +1805,7 @@ body {
 }
 
 /* Mobile adjustments */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .ai-goal-grid {
         grid-template-columns: 1fr;
         gap: 8px;

@@ -930,24 +930,24 @@ body { overflow-x: hidden; }
 /* ============================================================
    RESPONSIVE BREAKPOINTS
    ============================================================ */
-@media (max-width: 1400px) {
+@media screen and (max-width: 1400px) {
     .property-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
     .property-grid { grid-template-columns: repeat(3, 1fr); }
     .pl-act-table td, .pl-act-table th { font-size: 0.75rem; padding: 3px 6px; }
     /* First-column width is now percentage-based; scales automatically. */
 }
 
-@media (max-width: 992px) {
+@media screen and (max-width: 992px) {
     .property-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ============================================================
    MOBILE (≤768px)
    ============================================================ */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .pl-year-dropdown { flex: 1 1 auto; min-width: 0; }
     .pl-year-dropdown .btn { width: 100%; padding: 12px 14px; font-size: 15px; }
     .pl-help-btn { display: none; }
@@ -1034,7 +1034,7 @@ body { overflow-x: hidden; }
 }
 
 /* Phone portrait: hide table content (rotate prompt shown by JS) */
-@media (orientation: portrait) and (max-width: 768px) {
+@media screen and (orientation: portrait) and (max-width: 768px) {
     #profitLossContainer { display: none; }
 }
 

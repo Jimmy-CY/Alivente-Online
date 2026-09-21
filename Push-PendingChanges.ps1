@@ -891,7 +891,15 @@ $suites = @(
     # control's size identical to before the round. Its control takes the
     # new rule back out of base and must find the small ones again.
     # Newest, so most likely to be what breaks.
-    'test_small_controls.py'
+    'test_small_controls.py',
+    # Every phone query says screen, so no phone layout reaches paper -
+    # the P&L printed without its table, three pages printed a
+    # rotate-your-phone prompt instead of their content. Its
+    # probes put a marker in every block this round guarded and require
+    # it to fire on screen and NOT on paper, then read the same block from
+    # the backup, where it must fire on BOTH. Newest, so most likely to be
+    # what breaks.
+    'test_print_queries.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -416,10 +416,21 @@ check('  CONTROL: one was filled teal and one filled green',
 # THE BARE PHONE QUERIES STAY BARE. The print round measured what these
 # blocks DO and classified them as needing a read, not a fix. A later round
 # quietly reversing that would make the record unreliable.
-for name, txt in (('friday_status_report.html', S), ('fsr_details.html', D)):
-    bare = re.findall(r'@media\s*\(\s*max-width:\s*768px\s*\)', txt)
-    check('%-26s keeps its bare phone query - the print round\'s call'
+# LATER - test_print_queries.py, 21 Sep. That round, agreed, gave every
+# phone query in every template `screen and`, these two included. So the
+# print round's call is asserted where it was true - the file as it stood
+# before that round - and the reversal is asserted as the new record.
+for name, path, txt in (('friday_status_report.html', FSR, S),
+                        ('fsr_details.html', FD, D)):
+    was = (read(path + '.bak_printq') if os.path.isfile(path + '.bak_printq')
+           else txt)
+    bare = re.findall(r'@media\s*\(\s*max-width:\s*768px\s*\)', was)
+    check('%-26s kept its bare phone query - the print round\'s call'
           % name, bool(bare), '%d' % len(bare))
+    if was is not txt:
+        check('  and the phone-queries round has since guarded it',
+              not re.search(r'@media\s*\(\s*max-width', txt)
+              and '@media screen and (max-width: 768px)' in txt)
 
 # The Notify round's page-local tint, decided last night with one asker.
 check('the Notify round\'s warn tint is untouched', '#ecd9a8' in DNC)

@@ -264,7 +264,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
    Use high-specificity selectors with !important to beat any
    rules in base.html that target .main-content / .with-sidebar
    descendants. */
-@media (max-width: 768px) and (orientation: portrait) {
+@media screen and (max-width: 768px) and (orientation: portrait) {
     body .pl-content,
     .main-content .pl-content,
     .main-content.with-sidebar .pl-content {
@@ -286,7 +286,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
 /* Desktop / large tablet: existing behaviour (already defined above) */
 
-@media (max-width: 1200px) {
+@media screen and (max-width: 1200px) {
     .profit-loss-table {
         font-size: 0.75rem;
     }
@@ -308,7 +308,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
     }
 }
 
-@media (max-width: 992px) {
+@media screen and (max-width: 992px) {
     .profit-loss-table {
         font-size: 0.7rem;
     }
@@ -445,7 +445,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
 /* Original ≤768px rules — kept but only effective in non-portrait
    contexts (because portrait now hides .pl-content entirely) */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .profit-loss-table {
         font-size: 0.65rem;
     }
@@ -465,7 +465,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
     }
 }
 
-@media (max-width: 576px) {
+@media screen and (max-width: 576px) {
     .profit-loss-table td, .profit-loss-table th {
         padding: 2px 3px;
     }

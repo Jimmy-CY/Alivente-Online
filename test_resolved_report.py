@@ -371,8 +371,17 @@ for _need in ('.alv-pill', '.alv-pill-neutral'):
 # NOT THIS ROUND, asserted so the record stays reliable. The print round
 # measured this block and classified it as needing a read, not a fix; a later
 # round quietly reversing that would make the classification worthless.
-check('the bare phone query is still bare - that is the print round\'s call',
-      re.search(r'@media\s*\(\s*max-width:\s*768px\s*\)', F) is not None)
+# LATER - test_print_queries.py, 21 Sep. That round, agreed, gave every
+# phone query `screen and`. The print round's call is asserted on the file
+# as it stood before that round, and the reversal as the new record.
+_F0 = (read(RIR + '.bak_printq') if os.path.isfile(RIR + '.bak_printq')
+       else F)
+check('the bare phone query was still bare - that was the print round\'s call',
+      re.search(r'@media\s*\(\s*max-width:\s*768px\s*\)', _F0) is not None)
+if _F0 is not F:
+    check('  and the phone-queries round has since guarded it',
+          not re.search(r'@media\s*\(\s*max-width', F)
+          and '@media screen and (max-width: 768px)' in F)
 check('the print block is untouched',
       re.search(r'(?s)@media print\{.*?\n    \}', F.replace(' {', '{'))
       is not None)

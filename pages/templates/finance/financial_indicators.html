@@ -386,7 +386,7 @@
 .fi-section.s2 { border-left-color: #0f766e; } .fi-section.s2 .fi-ibadge { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
 .fi-section.s3 { border-left-color: #7c3aed; } .fi-section.s3 .fi-ibadge { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
 .fi-section.s4 { border-left-color: #d97706; } .fi-section.s4 .fi-ibadge { background: rgba(217, 119, 6, 0.12); color: #d97706; }
-@media (max-width: 640px) {
+@media screen and (max-width: 640px) {
     .fi-section-head { flex-wrap: wrap; }
     .fi-head-summary { width: 100%; }
 }
@@ -940,7 +940,7 @@
 }
 
 /* Very narrow phones (≤380px): tighten indicator cards to single column? No — keep 2-up. */
-@media (max-width: 380px) {
+@media screen and (max-width: 380px) {
     .indicator-card {
         padding: 10px 6px;
     }

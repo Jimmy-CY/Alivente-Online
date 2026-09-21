@@ -276,7 +276,14 @@ else:
        'expected about 43')
     for rel in pages:
         p = os.path.join(ROOT, rel)
-        before, after = read(p + SUFFIX), read(p)
+        # LATER - test_print_queries.py, 21 Sep. That round put `screen
+        # and ` in front of the phone queries in these same files, which
+        # this check would read as a line THIS round added. So "after"
+        # is the file as it stood before that round, when its backup is
+        # there - this section goes on judging only its own round.
+        before = read(p + SUFFIX)
+        after = (read(p + '.bak_printq') if os.path.isfile(p + '.bak_printq')
+                 else read(p))
         out = lambda t: re.sub(r'<style[^>]*>.*?</style>', '<style/>', t,
                                flags=re.S)
         gone = all_decls(css_of(before)) - all_decls(css_of(after))

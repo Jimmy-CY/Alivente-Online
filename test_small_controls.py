@@ -257,8 +257,13 @@ else:
         # year select's, the one with min-width after it, was the target.
         one = ('font-size: 14px !important;\n' + ' ' * 47 +
                'min-width: 120px !important;')
+        # LATER - test_print_queries.py, 21 Sep. That round put `screen
+        # and ` in front of this page's phone queries; the file is judged
+        # as it stood before that round when its backup is there.
+        then = (read(DASH + '.bak_printq')
+                if os.path.isfile(DASH + '.bak_printq') else d)
         ok(was.count(one) == 1 and
-           was.replace(one, one.replace(' !important;', ';', 1)) == d,
+           was.replace(one, one.replace(' !important;', ';', 1)) == then,
            'and that is the only change in the file - the other two '
            '14px !important on the page are untouched')
     else:
