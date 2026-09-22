@@ -407,6 +407,12 @@ textarea.form-control { resize: vertical; }
   .totals-card { max-width: none; }
   .status-action-row { justify-content: stretch; }
   .status-action-form, .status-action-form .btn { width: 100%; }
+  /* 44px to tap - page-own buttons, so the page raises them. And
+     this page keeps its own .icon-action-btn, written after
+     base, so base's floor cannot reach the line's Remove. */
+  .btn-approve, .btn-delete, .btn-duplicate, .btn-send,
+  .btn-unapprove { min-height: 44px; }
+  .icon-action-btn { width: 44px; height: 44px; }
   .line-input, .form-control { font-size: 16px; }
 }
 </style>

@@ -1985,7 +1985,7 @@
         .page-action-buttons .action-primary {
           flex: 1 1 auto;
           min-width: 0;
-          height: 38px;
+          height: 44px;
         }
         /* A SECONDARY HIDES ONLY WHERE SOMETHING CARRIES IT - 7 Sep.
            This rule used to read `.page-action-buttons .action-secondary`,
@@ -2005,17 +2005,18 @@
           display: none;
         }
         /* And it has to be SIZED, which it never needed while it was always
-           hidden here: its neighbours are all 38px and it came out 35. */
+           hidden here: its neighbours were all 38px and it came out 35.
+           44px since 22 Sep, with the rest of the bar - ALV TAP TARGET. */
         .page-action-buttons .action-secondary {
           flex: 0 1 auto;
           min-width: 0;
-          height: 38px;
+          height: 44px;
         }
         .page-action-buttons .action-back {
           margin-left: 0;
           flex: 0 0 auto;
           width: 44px;
-          height: 38px;
+          height: 44px;
           padding: 0;
         }
         .page-action-buttons .action-back .action-back-label { display: none; }
@@ -2031,7 +2032,7 @@
            becomes a white box on white. Measured, not guessed. */
         .page-action-buttons .action-more-btn {
           width: 44px;
-          height: 38px;
+          height: 44px;
           padding: 0;
           display: flex;
           align-items: center;
@@ -2568,7 +2569,7 @@ textarea.form-control { height: auto; }
 @media screen and (max-width: 768px) {
   /* Same treatment Back gets: keep the target, drop the label. */
   .page-action-buttons .action-filter {
-    flex: 0 0 auto; width: 44px; height: 38px;
+    flex: 0 0 auto; width: 44px; height: 44px;
     padding: 0; justify-content: center; gap: 0;
   }
   .page-action-buttons .action-filter .action-filter-label { display: none; }
@@ -2578,6 +2579,32 @@ textarea.form-control { height: auto; }
   }
   .page-action-buttons .action-filter { position: relative; }
 }
+
+/* ===== ALV TAP TARGET v1 ===== 22 Sep 2026
+   44px is the smallest thing a thumb should be asked to hit, and 3.4 of
+   the standards has promised it on a phone for weeks. Until 22 Sep base
+   itself made the action bar 38px there, fifteen pages put 44 back with
+   copies of their own, and seven more did it for their pop-up footers.
+
+   PHONE ONLY. On a desk a pointer is precise and the bar stays 35px.
+   The bar's heights are set in its own phone rules; this block is the
+   FLOOR for every house button wherever it sits. min-height, not height,
+   so a page that pins a height loses to the floor instead of fighting it.
+   A page's own button classes are the page's to raise - base cannot know
+   them.                                          [test_tap_target.py] */
+@media screen and (max-width: 768px) {
+  .page-action-buttons .btn,
+  .action-more-item,
+  .btn.action-primary,
+  .btn.action-secondary,
+  .btn.action-danger,
+  .btn.action-back,
+  .btn.back-button,
+  .status-btn,
+  .modal-footer .btn { min-height: 44px; }
+  .icon-action-btn { width: 44px; height: 44px; }
+}
+/* ===== /ALV TAP TARGET v1 ===== */
 
 @media print {
   .alv-filter, .btn.action-filter { display: none !important; }

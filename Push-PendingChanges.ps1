@@ -964,7 +964,10 @@ $suites = @(
     'test_standards_doc.py',
     # Section C round C1: Customer Name required, Resolved authors as
     # chips, Quick Actions dropped, the occupancy label, settings tidied,
-    'test_c_small.py'
+    'test_c_small.py',
+    # Section C round C2: 44px to tap on a phone - the bar, the floor in
+    # base, the pages' own copies gone,
+    'test_tap_target.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

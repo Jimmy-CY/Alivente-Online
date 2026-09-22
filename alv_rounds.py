@@ -32,6 +32,7 @@ ROUNDS = [
     '.bak_oldrounds',
     '.bak_stddoc',
     '.bak_csmall',
+    '.bak_tap',
 ]
 
 

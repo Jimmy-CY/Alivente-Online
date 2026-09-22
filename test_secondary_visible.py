@@ -115,6 +115,12 @@ if not os.path.exists(BAK):
 B, WAS = read(BASE), read(BAK)
 BCSS, WCSS = css_of(B), css_of(WAS)
 CODE, WCODE = nocomment(BCSS), nocomment(WCSS)
+# LATER - test_tap_target.py, 22 Sep. The row was 38px when this round
+# ran; round C2 made the whole bar 44px on a phone. "Sized like its
+# neighbours" is asked of the height base gives the Primary, not of 38.
+_rh = re.search(r'\.page-action-buttons \.action-primary\s*\{[^}]*?'
+                r'(?<![-\w])height:\s*(\d+)px', CODE)
+ROW_H = _rh.group(1) if _rh else '38'
 
 
 def bars_of(path):
@@ -170,7 +176,7 @@ check('exactly one :has() rule - the round adds one',
       str(CODE.count(':has(.action-more-btn)')))
 check('the secondary is sized like its neighbours',
       re.search(r'(?m)^\s*\.page-action-buttons \.action-secondary\s*\{'
-                r'[^}]*height:\s*38px', CODE) is not None)
+                r'[^}]*height:\s*' + ROW_H + 'px', CODE) is not None)
 check('  CONTROL: it never was before - it did not need to be while hidden',
       not re.search(r'(?m)^\s*\.page-action-buttons \.action-secondary\s*\{'
                     r'[^}]*height', WCODE))
@@ -193,7 +199,8 @@ check('base has more than one phone block, so "the" phone block is a trap',
 check('  the narrowed hide is inside one of them',
       any(':has(.action-more-btn)' in x for x in BLOCKS))
 check('  and so is the sizing rule',
-      any(re.search(r'\.action-secondary\s*\{[^}]*height:\s*38px', x)
+      any(re.search(r'\.action-secondary\s*\{[^}]*height:\s*' + ROW_H
+                    + 'px', x)
           for x in BLOCKS))
 
 # ===========================================================================
@@ -355,7 +362,7 @@ if sync_playwright is not None and FIX:
         _sec_h = [h for e, h in zip(now['classes'], now['heights'])
                   if 'action-secondary' in e] if now else []
         check('  the secondary is the height base gives the row',
-              _sec_h and _sec_h[0] == 38, str(_sec_h))
+              _sec_h and _sec_h[0] == int(ROW_H), str(_sec_h))
         if now and not now['oneHeight']:
             print('        NOTE: %s renders a ragged row %s - a local rule '
                   'sizes a neighbour, not this round' % (rel, now['heights']))

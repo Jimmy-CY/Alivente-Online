@@ -366,6 +366,22 @@
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
+    /* 44px to tap. A 44px circle would cover too much of the
+       photo, so the circle stays 32px and the TARGET grows: an
+       invisible 8px ring. The pair is spaced 16px so the two
+       rings meet rather than overlap - a tap between them must
+       not land on Delete - and moved 8px in, or the tile's
+       overflow:hidden would clip the ring. */
+    .photo-manage-actions { top: 8px; right: 8px; gap: 16px; }
+    .btn-photo-star,
+    .btn-photo-delete { position: relative; }
+    .btn-photo-star::before,
+    .btn-photo-delete::before {
+        content: '';
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+    }
 
 
     /* Form card — tighter padding */
