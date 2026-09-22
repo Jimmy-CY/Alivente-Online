@@ -945,7 +945,23 @@ $suites = @(
     # rendered, all five panels and both card pairs read the same, from
     # base's tokens. Valuations names the date Applies from too.
     # Newest, so most likely to be what breaks.
-    'test_applies_from.py'
+    'test_applies_from.py',
+    # The coloured page banners went (7 Sep); judged on the pages as that round left them.
+    'test_banner_pages.py',
+    # The Comments Report onto the table standard (2 Sep), as that round left it.
+    'test_comments_report.py',
+    # Financials headings off their bands (8 Sep), as that round left them.
+    'test_finance_headings.py',
+    # FI's segmented control on base's .alv-seg (5 Sep), as that round left base and the page.
+    'test_fi_seg.py',
+    # Map tiles off CARTO onto OSM (7 Sep), as that round left the map pages.
+    'test_map_tiles.py',
+    # The five above judge their own rounds again, and the Comments Report wears base's report title. Newest, so most likely to be what breaks.
+    'test_old_rounds.py',
+    # base.html's standards block records the decisions of 16-22 Sep,
+    # and still costs the visitor nothing. Newest, so most likely to be
+    # what breaks.
+    'test_standards_doc.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

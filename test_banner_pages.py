@@ -138,9 +138,17 @@ for _n in PAGES:
     if not os.path.exists(os.path.join(T, _n + '.bak_banner')):
         sys.exit('! no %s.bak_banner - run apply_banner_pages.py first.' % _n)
 
-NOW = {n: read(os.path.join(T, n)) for n in PAGES}
+# LATER - test_old_rounds.py, 21 Sep: judged on each page, and on base, as
+# THIS round left them. The finance-headings round (8 Sep) rebuilt
+# occupancy_trends' header the next morning, and later rounds fixed the
+# base fault this suite's CONTROL points at - both on purpose.
+sys.path.insert(0, ROOT)
+from alv_rounds import as_left_by, as_of
+NOW = {n: as_left_by(os.path.join(T, n), '.bak_banner', read) for n in PAGES}
 WAS = {n: read(os.path.join(T, n + '.bak_banner')) for n in PAGES}
-BCSS = css_of(read(BASE))
+_T_BANNER = max(os.path.getmtime(os.path.join(T, n + '.bak_banner'))
+                for n in PAGES)
+BCSS = css_of(as_of(BASE, _T_BANNER, read))
 
 # ===========================================================================
 head('1. the band is gone from the stylesheet')
@@ -480,6 +488,13 @@ try:
             'l10n': 'django.templatetags.l10n',
             'tz': 'django.templatetags.tz'}
     for _dir, _sub, _files in os.walk(ROOT):
+        # LATER - test_old_rounds.py, 22 Sep: never walk into a virtualenv.
+        # The laptop keeps one INSIDE the repo, so this walk handed Django
+        # every installed package's templatetags under a wrong module path,
+        # and the Engine refused them all - a failure hidden for weeks
+        # behind the four FAIL lines above it.
+        _sub[:] = [s for s in _sub if s != 'site-packages' and
+                   not os.path.isfile(os.path.join(_dir, s, 'pyvenv.cfg'))]
         if os.path.basename(_dir) != 'templatetags':
             continue
         _app = os.path.basename(os.path.dirname(_dir))

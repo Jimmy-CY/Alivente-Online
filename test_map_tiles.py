@@ -123,7 +123,12 @@ if not os.path.exists(MV):
 if not os.path.exists(BAK):
     sys.exit('! no map_view.html.bak_maptiles - run apply_map_tiles.py first.')
 
-F, WAS = read(MV), read(BAK)
+# LATER - test_old_rounds.py, 21 Sep: judged on map_view as THIS round left
+# it. The map-provider round (16 Sep) replaced these tiles on purpose, so
+# the file now is not this round's to answer for.
+sys.path.insert(0, ROOT)
+from alv_rounds import as_left_by
+F, WAS = as_left_by(MV, '.bak_maptiles', read), read(BAK)
 FC, WC = code_of(F), code_of(WAS)
 OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 
@@ -149,6 +154,8 @@ check('the CARTO retina suffix is gone - OSM serves no @2x', '{r}' not in FC)
 check('  CONTROL: it was in the old URL', '{r}' in WC)
 
 _url, _opts = layer_of(F)
+# A page with no tile layer FAILS the checks below; it must not crash them.
+_opts = _opts or {}
 check('exactly one tile layer on the page', FC.count('L.tileLayer(') == 1,
       str(FC.count('L.tileLayer(')))
 check('  and its url is the OSM one', _url == OSM, str(_url))
@@ -173,7 +180,10 @@ for name in PEERS:
         print('  SKIP  %s not present' % name)
         continue
     _seen += 1
-    purl, popts = layer_of(read(p))
+    # LATER - test_old_rounds.py: the peer as it stood when this round ran.
+    from alv_rounds import as_of
+    purl, popts = layer_of(as_of(p, os.path.getmtime(BAK), read))
+    popts = popts or {}
     check('%-24s uses the same tile URL' % name, purl == OSM, str(purl))
     check('  and sets no subdomains either - Leaflet defaults to abc',
           'subdomains' not in popts)

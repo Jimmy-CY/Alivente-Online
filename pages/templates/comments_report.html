@@ -32,27 +32,6 @@
    `print-color-adjust: exact` was not this file overriding itself; it
    was a deliberate flat fallback, because a gradient does not print.
    With no band there is nothing left to force. */
-.report-header {
-    color: var(--alv-ink);
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
-
-.report-header-left h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 600;
-}
-
-.report-header-left .subtitle {
-    margin: 5px 0 0 0;
-    color: var(--alv-ink-soft);
-    font-size: 14px;
-}
-
 /* THE TABLE STANDARD IS base's - .alv-table.
 
    .report-table lived here and was a full second copy of it: six rules for
@@ -347,25 +326,6 @@
         padding: 0 6px;
     }
 
-    /* Header — stack title and stat box */
-    .report-header {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-        gap: 14px;
-        padding: 16px 18px;
-        margin-bottom: 18px;
-        border-radius: 10px;
-    }
-
-    .report-header-left h1 {
-        font-size: 1.3rem;
-    }
-
-    .report-header-left .subtitle {
-        font-size: 13px;
-    }
-
     .action-back-label {
         display: none;
     }
@@ -510,10 +470,11 @@
         </a>
     </div>
 
-    <div class="report-header">
-        <div class="report-header-left">
-            <h1><i class="fas fa-comments"></i> Comments Report</h1>
-            <p class="subtitle">{{ period_label }}</p>
+    <div class="alv-report-head">
+        <div class="alv-report-titles">
+            <div class="alv-report-brand">ALIVENTE ONLINE</div>
+            <h2 class="alv-report-title">Comments Report</h2>
+            <p class="alv-report-sub">{{ period_label }}</p>
         </div>
         <div class="alv-stat">
             <div class="alv-stat-value">{{ comment_count }}</div>

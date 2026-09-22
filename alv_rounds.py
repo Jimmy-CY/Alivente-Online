@@ -29,14 +29,54 @@ ROUNDS = [
     '.bak_eimodal',
     '.bak_reporthead',
     '.bak_appliesfrom',
+    '.bak_oldrounds',
+    '.bak_stddoc',
 ]
 
 
 def as_left_by(path, suffix, read):
     """The text of `path` as the round whose backups end in `suffix` left
-    it - the earliest later round's backup of it, or the file itself."""
-    later = ROUNDS[ROUNDS.index(suffix) + 1:] if suffix in ROUNDS else []
-    for s in later:
-        if os.path.isfile(path + s):
-            return read(path + s)
-    return read(path)
+    it - the earliest later round's backup of it, or the file itself.
+
+    A round in ROUNDS is placed by the list. A round OLDER than the list
+    is placed by its backups' times: see later_backup()."""
+    if suffix in ROUNDS:
+        for s in ROUNDS[ROUNDS.index(suffix) + 1:]:
+            if os.path.isfile(path + s):
+                return read(path + s)
+        return read(path)
+    return read(later_backup(path, suffix) or path)
+
+
+def later_backup(path, suffix):
+    """For a round older than ROUNDS: of the file's backups, the one
+    written FIRST AFTER this round's own - by modification time, which is
+    when the next round saved the file before touching it, so its content
+    is the file exactly as this round left it. None when no later round
+    touched the file (the file itself is then the answer), or when this
+    round left no backup to date it by."""
+    own = path + suffix
+    if not os.path.isfile(own):
+        return None
+    return backup_after(path, os.path.getmtime(own), own)
+
+
+def backup_after(path, when, skip=None):
+    """The file's first backup written after `when`, or None."""
+    folder, name = os.path.split(path)
+    best = None
+    for n in os.listdir(folder or '.'):
+        p = os.path.join(folder, n)
+        if not n.startswith(name + '.bak_') or p == skip:
+            continue
+        t = os.path.getmtime(p)
+        if t > when and (best is None or t < best[0]):
+            best = (t, p)
+    return best[1] if best else None
+
+
+def as_of(path, when, read):
+    """The text of `path` as it stood at time `when` - for a file a round
+    READ but did not back up: its first backup written after `when`, or
+    the file itself if nothing has touched it since."""
+    return read(backup_after(path, when) or path)

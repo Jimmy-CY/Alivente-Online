@@ -98,7 +98,12 @@ def nocomment(text):
 for p in (BASE, FI):
     if not os.path.exists(p):
         sys.exit('! %s not found - run from the repo root' % p)
-BS, F = read(BASE), read(FI)
+# LATER - test_old_rounds.py, 21 Sep: base and the page as THIS round left
+# them. Twenty later rounds have added to base; they are not this round's
+# delta, and "base changed by comment only" is a claim about 5 Sep.
+sys.path.insert(0, ROOT)
+from alv_rounds import as_left_by
+BS, F = as_left_by(BASE, '.bak_fiseg', read), as_left_by(FI, '.bak_fiseg', read)
 if 'alv-seg' not in F:
     print('\n! not patched - run apply_fi_seg.py first.')
     sys.exit(1)

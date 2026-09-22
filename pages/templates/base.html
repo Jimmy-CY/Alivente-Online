@@ -4,7 +4,7 @@
 {% comment %}
 ===============================================================================
   ALIVENTE ONLINE - THE SYSTEM STANDARD
-  Revised 8 September 2026.
+  Revised 22 September 2026.
 ===============================================================================
 
   WHY THIS IS HERE, AND NOT IN A README
@@ -17,7 +17,7 @@
   deciding it should.
 
   ONE RULE ABOUT THIS BLOCK ITSELF: IT MUST NOT CONTAIN ANYTHING SHAPED
-  LIKE AN HTML TAG. Forty-one suites parse base.html with regular
+  LIKE AN HTML TAG. More than a hundred suites parse base.html with regular
   expressions, and several of them find a stylesheet by matching an opening
   style tag, then anything, then a closing one. A sentence in here containing
   a literal style tag opens such a match at the prose and closes it at base's
@@ -52,7 +52,12 @@
   rule as real but assume it is already slightly wrong somewhere, and expect
   a scan to find exceptions - because every scan run on this codebase has.
 
-  41 suites run on the push gate. `Push-PendingChanges.ps1` holds the list.
+  EVERY SUITE IN THE REPO RUNS ON THE PUSH GATE - 108 of them on 22 Sep -
+  and `Push-PendingChanges.ps1` holds the list. SINCE 22 SEP NONE IS KNOWN
+  TO FAIL. Five had failed on every run for weeks, and not one of them had
+  found a fault in a page: each judged its own round against a file that a
+  later, agreed round had changed. They judge their own rounds again and
+  sit on the gate. So a FAIL line is always news now - keep it that way.
 
 -------------------------------------------------------------------------------
   1. HOW A CHANGE IS MADE
@@ -79,28 +84,49 @@
        - `--check` - a dry run that writes nothing
        - SELF-CHECKING BEFORE WRITING - if the checks fail, no byte is
          written. Not "written then reverted". Never written.
+       - LINE ENDINGS KEPT - a CRLF file stays CRLF, and its backup is
+         written with the ORIGINAL's line endings, not the patcher's.
+       - REGISTERED - its backup suffix appended to ROUNDS in
+         `alv_rounds.py`, oldest first. See step 4.
 
   4. TEST.  One `test_*.py` per round, and it must contain CONTROLS: checks
      that deliberately break the change and confirm the suite notices. A
      suite with no control has, on this codebase, shipped a 500, silently
      done nothing against a CRLF file, and agreed with a bug it shared.
 
-  5. PUSH.  `Push-PendingChanges.ps1` runs all 41 suites first and stages
-     nothing if any fails. The commit message says what changed and WHY,
+     Run it against the REVERTED tree as well. It must FAIL there - and
+     fail, not crash: a crash blocks a push exactly as hard and says far
+     less about why.
+
+     JUDGE THE ROUND ON THE FILE AS THE ROUND LEFT IT, never on the file
+     as it is now. Later rounds WILL change that file, on purpose, and a
+     suite reading it now turns their work into its own failure - that
+     happened in almost every round of 21 Sep before it was solved once.
+     `alv_rounds.as_left_by` answers it: the file as round R left it is the
+     next round's backup of it. A round in ROUNDS is placed by the list; an
+     older one by its backups' modification times. `alv_rounds.as_of`
+     gives a file as it stood at a moment, for a file a round read but did
+     not back up.
+
+  5. PUSH.  `Push-PendingChanges.ps1` runs every suite on the gate first
+     and stages nothing if any fails. BEFORE IT, THE ALL-SUITES SWEEP: every
+     suite run to the end, because the gate stops at the first failure and
+     hides the rest. Compare the sweep's FAIL lines with the sweep before the
+     round - lines, not exit codes. The commit message says what changed and WHY,
      including what was considered and rejected.
 
   6. TEST ON LIVE.  A person opens the screens. This step has caught things
      no suite could: a 500, missing map tiles, a red figure on a page of good
      news, and three headings that disagreed with each other. It is not
-     optional, and it is why Administration and Personal - which have never
-     had it - are not "done" merely because they compile.
+     optional, and it is why Personal - which has never had it - is not
+     "done" merely because it compiles.
 
 -------------------------------------------------------------------------------
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  52 design tokens and 109 component classes. A page should reach for these
-  and define almost nothing of its own.
+  54 design tokens and the component classes below. A page should reach
+  for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
 
@@ -137,7 +163,15 @@
                  -duplicate/-unapprove  .icon-disabled  .status-btn
     Menus        .ui-menu  .ui-menu-toggle  .ui-menu-panel  .ui-menu-item
     Filters      .alv-filter  .alv-filter-active  .action-filter-count
-    Forms        .alv-req
+    Headings     .page-title-h2  .page-subtitle-h4
+    Reports      .alv-report-head  .alv-report-titles  .alv-report-title
+                 .alv-report-sub  .alv-report-brand
+    Pop-ups      .alv-modal-head (+ --danger)
+    Forms        .alv-req  .form-card  .form-section-title  .form-group
+                 .form-text  .form-control
+                 .alv-applies  .alv-applies-help
+                 .alv-choice (+ --danger -note -when)
+    Print        .print-keep
     Empty        .alv-empty  .alv-empty-title  .alv-empty-hint
     Segmented    .alv-seg
     A11y         .alv-visually-hidden
@@ -238,6 +272,11 @@
 
       A page has an h4 or an h5, not both. Settled 8 Sep 2026.
 
+      THE MARKUP, since 16 Sep: base declares the heading, so a page writes
+      h2.page-title-h2 and h4.page-subtitle-h4 and styles neither. 66 pages
+      do. 22 list pages still write h2 > center, which renders the same and
+      is a mechanical tidy for a later round, not a second standard.
+
       KNOWN EXCEPTION: `customer_invoice_form` reads `New invoice` in its
       else branch - a mode label in sentence case where every other one
       shouts. One word, found by the suite, left for a round that agrees to
@@ -287,13 +326,15 @@
       rule below doing the work a dash would otherwise do. Two pages:
       `project_tasks_add` and `project_subtasks_add`.
 
-      KNOWN GAP: 10 pages still carry a record name on the h1 or h2, and
+      KNOWN GAP: 8 pages still carry a record name on the h1 or h2, and
       each belongs to a round already planned rather than to this rule -
       three Administration pages waiting on that module's test pass; two
       left-aligned page headers where the record IS the title and the header
-      wants restructuring; three report screens that share the report title
-      component and should be settled when it is hoisted; and an email body
-      and a PDF, neither of which has chrome to inherit a brand from.
+      wants restructuring; one report, lease_agreement_report, now on base's
+      report title (3.10) but still naming its record in it; and an email
+      body and a PDF, neither of which has chrome to inherit a brand from.
+      Two more report screens were on this list - the title-deed pair - and
+      were deleted on 21 Sep: nothing rendered either of them usefully.
 
   3.3 TABLES                                     [test_table_standard.py,
                                                   test_card_standard.py]
@@ -321,6 +362,14 @@
       deleted Cancel from six Add/Edit forms that have no Back button either.
       If you add a More menu to a bar, its secondaries start hiding on
       phones again - that is the intent, but check the menu lists them.
+
+      THE BAR IS THE FIRST THING IN THE FORM. Settled 16 Sep: Save sits
+      above the fields, and nothing sits above the bar.
+                                                 [test_one_action_bar.py,
+                                                  test_save_and_cancel.py]
+      The Applies-from panel sat above it on five Financials screens until
+      21 Sep, invisible to both suites because its date was not a
+      .form-control. It is directly under the bar now (3.6).
 
   3.5 ROW ACTIONS                                [test_action_standard.py,
                                                   test_detail_property.py]
@@ -409,6 +458,20 @@
       Controls must not be pinned to a fixed height; Bootstrap 4.1.3 does
       this and shaves the descenders off the value.
 
+      SIXTEEN PIXELS ON A PHONE. Every text input, select and textarea is
+      16px below 768px, from one base rule marked important - the only way
+      a stylesheet outranks an inline style - because iOS zooms the whole
+      page on anything smaller. 64 controls on 16 pages were under it on
+      21 Sep.                                    [test_small_controls.py]
+
+      ONE FIELD, ONE NAME. The date a Financials figure takes effect from is
+      Applies from on every screen - Valuations labelled it differently
+      until 21 Sep. Its panel is .alv-applies, straight under the Save bar,
+      with the guidance in .alv-applies-help; its date is a .form-control.
+      Where a pop-up offers stopping something from a date or removing it
+      completely, the two radios are .alv-choice cards, the destructive one
+      .alv-choice--danger.                       [test_applies_from.py]
+
   3.7 PRINT                                      [test_print_leaks.py,
                                                   test_card_standard.py]
 
@@ -419,13 +482,48 @@
       say why in a comment - and expect a later round to take it away when
       base grows the same rule.
 
+      NO BUTTON PRINTS, unless it carries .print-keep - one base print rule
+      since 21 Sep, the opt-out for the few that are content, not
+      controls.                                  [test_print_buttons.py]
+      A PHONE RULE NEVER REACHES PAPER. A4 portrait is about 718 CSS px, so
+      a max-width query without screen fires on paper; every one in the
+      system says screen since 21 Sep - 106 clauses on 82 pages.
+                                                 [test_print_queries.py]
+      A printed report carries ALIVENTE ONLINE above its title (3.10).
+
   3.8 MOBILE                                                [CONVENTION]
 
       768px is the breakpoint, `@media screen and (max-width: 768px)` so it
       cannot also apply to paper. Tables become cards, action bars collapse,
-      44px is the minimum touch target. MOBILE HAS NEVER BEEN REVIEWED
-      SYSTEMATICALLY - treat any mobile claim in this file as untested unless
-      a suite is named beside it.
+      44px is the minimum touch target on a phone. Two phone claims ARE
+      measured now - text size and paper, in 3.6 and 3.7 - and every Add/Edit
+      screen has been rendered at 375. The rest of mobile has still never
+      been reviewed systematically: treat any other mobile claim in this
+      file as untested unless a suite is named beside it.
+
+  3.9 POP-UPS                                    [test_modal_heads.py,
+                                                  test_ei_modal.py]
+
+      A pop-up is a Bootstrap modal, and its header is .alv-modal-head: the
+      teal banner, a white title, a white close. A pop-up that deletes
+      something is .alv-modal-head--danger, in red - that, and only that.
+      Settled 21 Sep: 51 headers on 31 business templates had been sixteen
+      different looks. The Personal side's 36 wait for its own round.
+
+      base owns the HEADER only - no dialog, overlay or body component. The
+      one hand-built overlay left, the Issues analysis drill-down, is
+      deliberate and is not a modal header.
+
+  3.10 REPORTS                                   [test_report_head.py,
+                                                  test_old_rounds.py]
+
+      A report heads itself with .alv-report-head: the title in capitals on
+      the left (.alv-report-title), what it covers underneath
+      (.alv-report-sub), Back or a headline figure on the right. On a phone
+      the row stacks and centres. On paper, and only on paper, ALIVENTE
+      ONLINE (.alv-report-brand) sits above the title - the one place the
+      brand is content rather than chrome. Ten reports, settled 21 Sep; they
+      had built it three ways, in four greys.
 
 -------------------------------------------------------------------------------
   4. THE RULES THAT KEEP BEING RELEARNED
@@ -493,22 +591,47 @@
     do not re-point it at the new string and do not add an exception: ask
     what the claim is ABOUT and rewrite it to check that. Six of the
     fourteen were guards this project wrote that named the very round that
-    would invalidate them.
+    would invalidate them. Since 21 Sep the usual answer is one line:
+    judge the round on the file as it left it (step 4, `alv_rounds`).
+
+  * A FAILING SUITE IS NOT ALWAYS A FAILING PAGE. Five suites failed on
+    every sweep for weeks and were carried as known failures. Four were
+    judging their round against a file later rounds had changed; the fifth
+    had been wrong about its own round from the first day. A known-failure
+    list hides the next real failure among the old ones - keep it at zero.
+
+  * A STANDARD CAN BE ESCAPED BY A MISSING CLASS. The Applies-from panel
+    sat above Save on five screens for weeks because its date was not a
+    .form-control, so the suites that keep the bar first never saw it.
+    Giving it the class surfaced the fault. Ask, do not exempt.
+
+  * A SURVEY COUNT MUST BE OF THE EXACT TOKEN. "26 templates use the
+    action-bar class" was a substring count that also caught
+    mobile-action-bar; the real number was seven, all on the Personal side.
+
+  * DUPLICATED CAN MEAN DEAD. Two title-deed templates looked like a copy to
+    merge; reading their views showed neither was rendered usefully by
+    anything, and they were deleted instead. Read the view before planning
+    the merge.
 
 -------------------------------------------------------------------------------
   5. WHERE THE PLAN LIVES
 -------------------------------------------------------------------------------
 
   The outstanding work, the decisions still open, and the history of every
-  round are kept in the project docs, not here - `claude/running_list.md` is
-  the current one. This file describes the standard; that file describes how
+  round are kept in the project docs, not here -
+  `claude/outstanding_review_21_sep.md` is the current list, which replaced
+  `claude/running_list.md`, and `claude/RESUME_HERE.md` says where things
+  stand. This file describes the standard; that file describes how
   far the system has got towards it, and neither should try to be the other.
 
   Two things worth knowing without opening it:
 
-  * ADMINISTRATION AND PERSONAL HAVE NEVER BEEN REVIEWED OR TESTED. Not
-    styling, not behaviour, not on Live. Assume unknown defects, not untidy
-    CSS.
+  * PERSONAL HAS NEVER BEEN REVIEWED OR TESTED. Not styling, not
+    behaviour, not on Live. Assume unknown defects, not untidy CSS. It is
+    the next section of work once the outstanding list is done.
+    Administration was brought into line with every other module on
+    20 Sep and has been tested on Live.
 
   * THE RECIPE / MEAL-PLAN SIDE IS DELIBERATELY OUTSIDE EVERY SWEEP, by a
     hardcoded exclusion list in `Show-ButtonDrift.py`. It is not on the push

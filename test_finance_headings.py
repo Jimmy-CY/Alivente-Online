@@ -131,9 +131,16 @@ for _r in PAGES:
     if not os.path.exists(path_of(_r) + '.bak_hdr'):
         sys.exit('! no %s.bak_hdr - run apply_finance_headings.py first.' % _r)
 
-NOW = {r: read(path_of(r)) for r in PAGES}
+# LATER - test_old_rounds.py, 21 Sep: judged on each page, and on base, as
+# THIS round left them. The heading-components round (16 Sep) moved every
+# <h2><center> onto h2.page-title-h2 on purpose; that is its decision, and
+# this suite checks this one's.
+sys.path.insert(0, ROOT)
+from alv_rounds import as_left_by, as_of
+NOW = {r: as_left_by(path_of(r), '.bak_hdr', read) for r in PAGES}
 WAS = {r: read(path_of(r) + '.bak_hdr') for r in PAGES}
-BCSS = css_of(read(BASE))
+_T_HDR = max(os.path.getmtime(path_of(r) + '.bak_hdr') for r in PAGES)
+BCSS = css_of(as_of(BASE, _T_HDR, read))
 
 # ===========================================================================
 head('1. the band is gone, and only the band')
@@ -296,9 +303,25 @@ def rgb(s):
     return tuple(int(x) for x in re.findall(r'\d+', s)[:3])
 
 
+# LATER - test_old_rounds.py, 21 Sep: occupancy_trends' band was already
+# gone when this round ran - the banner round took it on 7 Sep, the day
+# before (its .bak_banner is older than its .bak_hdr). This check has
+# failed on it ever since; it asserted a BEFORE this round never saw.
+_ALREADY_PLAIN = {'occupancy_trends.html'}
 if sync_playwright is not None and FIX:
     for rel in PAGES:
         now, was = paint(rel, True), paint(rel, False)
+        if rel in _ALREADY_PLAIN:
+            check('%-38s BEFORE it was already plain - the banner round '
+                  'had been' % rel, was is not None and not was['gradient'])
+            check('  AFTER it sits on none',
+                  now is not None and not now['gradient'])
+            check('  AFTER it is dark on paper',
+                  now is not None and sum(rgb(now['ink'])) < 330,
+                  str(now and now['ink']))
+            check('  and it is centred in its container',
+                  now is not None and now['centred'])
+            continue
         check('%-38s BEFORE the heading sat on a gradient' % rel,
               was is not None and was['gradient'])
         check('  AFTER it sits on none', now is not None and not now['gradient'])

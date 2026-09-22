@@ -107,7 +107,14 @@ def nocomment_html(text):
 for p in (BASE, CR):
     if not os.path.exists(p):
         sys.exit('! %s not found - run from the repo root' % p)
-BS, C = read(BASE), read(CR)
+# LATER - test_old_rounds.py, 21 Sep: judged on the page, and on base, as
+# THIS round (.bak_crb, 2 Sep) left them. The banner round took the teal
+# band off on 7 Sep and the report-title round moved the header onto
+# base's report title on 21 Sep - both on purpose, neither this round's.
+sys.path.insert(0, ROOT)
+from alv_rounds import as_left_by, as_of
+BS = as_of(BASE, os.path.getmtime(CR + '.bak_crb'), read)
+C = as_left_by(CR, '.bak_crb', read)
 if 'class="alv-table"' not in C:
     print('\n! not patched - run apply_comments_report.py first.')
     sys.exit(1)
@@ -466,10 +473,17 @@ check('the teal gradient banner is untouched',
 # CC, not C. The page still EXPLAINS the removal in prose, and reading the
 # raw file finds the explanation and calls the removal a failure. That is
 # the same trap the note twenty lines above this one is about.
+# LATER - test_old_rounds.py, 21 Sep: this suite now judges its own round
+# on the page as THAT round left it (.bak_crb). These two were written by
+# the banner round, 7 Sep, about ITS change - so they read the page as the
+# banner round left it.
+_CB = as_left_by(CR, '.bak_banner', read)
+_CCB = nocomment_html(_CB)
 check('  and its .stat-box has gone to base, as the page says it should',
-      '.stat-box {' not in CC, 'still defined' if '.stat-box {' in CC else '')
+      '.stat-box {' not in _CCB,
+      'still defined' if '.stat-box {' in _CCB else '')
 check('    CONTROL: the page still says why, in prose the stripper removes',
-      '.stat-box' in C and '.stat-box' not in CC)
+      '.stat-box' in _CB and '.stat-box' not in _CCB)
 if sync_playwright is not None:
     check('  rendered: the banner still carries a gradient',
           'gradient' in DESK['headBg'], DESK['headBg'][:48])
