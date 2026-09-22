@@ -31,6 +31,7 @@ ROUNDS = [
     '.bak_appliesfrom',
     '.bak_oldrounds',
     '.bak_stddoc',
+    '.bak_csmall',
 ]
 
 

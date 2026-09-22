@@ -663,7 +663,7 @@ class props(models.Model):
     prop_insurance = models.CharField(max_length=255, blank=True, null=True)
     prop_include_in_occupancy = models.BooleanField(
         default=True,
-        verbose_name="Include in Occupancy Metrics",
+        verbose_name="Include in Occupancy",
         help_text="Uncheck to exclude this property from occupancy rate and days-to-fill calculations (e.g., for seasonal rentals)"
     )
 

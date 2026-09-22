@@ -961,7 +961,10 @@ $suites = @(
     # base.html's standards block records the decisions of 16-22 Sep,
     # and still costs the visitor nothing. Newest, so most likely to be
     # what breaks.
-    'test_standards_doc.py'
+    'test_standards_doc.py',
+    # Section C round C1: Customer Name required, Resolved authors as
+    # chips, Quick Actions dropped, the occupancy label, settings tidied,
+    'test_c_small.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

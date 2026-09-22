@@ -291,9 +291,19 @@ for sel, why in (('.resolution-time', 'a rule for the very figure above, '
             _worn.append(_n)
     check('  and no template in the repo wears it', not _worn, str(_worn[:4]))
 
-check('the comment authors still show as text, which was left open on '
+# LATER - test_c_small.py, 22 Sep. Left open here on purpose, and then
+# decided on the Section C sheet (item 6): a chip, like every other
+# comment author. This round's call is asserted on the file as it
+# stood before round C1, and the chip as the new record.
+_F1 = (read(RIR + '.bak_csmall') if os.path.isfile(RIR + '.bak_csmall')
+       else F)
+_M1 = markup_of(_F1)
+check('the comment authors still showed as text, which was left open on '
       'purpose rather than folded in',
-      'comment-date' in FMK and 'alv-tag' not in FMK)
+      'comment-date' in _M1 and 'alv-tag' not in _M1)
+if _F1 is not F:
+    check('  and round C1 has since made them the house chip',
+          'alv-tag comment-author' in FMK)
 
 # ===========================================================================
 head('5. it is a report, so it gets printed')

@@ -1371,9 +1371,18 @@ if ran4:
             skip('%-38s label icons' % rel, 'no %s backup' % SUFFIX4)
             continue
         before, after = read(bak), read(p)
+        # LATER - test_c_small.py, 22 Sep. Round C1 dropped the label
+        # "Quick Actions:" from two of these screens, as decided. The
+        # claim here - stripping the icons changed no label's words - is
+        # about push 4, so it is asked of the file as push 4 LEFT it.
+        try:
+            from alv_rounds import as_left_by as _alb
+            _left4 = _alb(p, SUFFIX4, read)
+        except Exception:
+            _left4 = after
         ok(not re.search(r'<label\b[^>]*>\s*<i\s', markup_only(after)),
            '%-38s no label opens with an icon' % rel)
-        ok(label_text4(before) == label_text4(after),
+        ok(label_text4(before) == label_text4(_left4),
            '%-38s and every label still says what it said' % rel)
         n = len(re.findall(r'<label\b[^>]*>\s*<i\s', markup_only(before)))
         ok(n > 0, '%-38s CONTROL: it had %d to strip' % (rel, n),

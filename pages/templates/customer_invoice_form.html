@@ -99,7 +99,7 @@
           <label for="bill_name"><strong>Customer Name</strong> <span class="alv-req">*</span></label>
           <input type="text" id="bill_name" name="bill_name" class="form-control"
                  value="{% if form_data %}{{ form_data.bill_name }}{% else %}{{ pi.bill_name }}{% endif %}"
-                 maxlength="255" {% if not editable %}readonly{% endif %}>
+                 maxlength="255" required {% if not editable %}readonly{% endif %}>
         </div>
       </div>
       <div class="col-md-6">

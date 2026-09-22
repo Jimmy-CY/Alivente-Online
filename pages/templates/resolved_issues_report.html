@@ -40,7 +40,8 @@
                     <div class="comments-container">
                         {% for comment in issue.comments %}
                         <div class="comment-row">
-                            <span class="comment-date">{{ comment.comment_date|date:"Y-m-d" }} ({{ comment.user|upper }}):</span>
+                            <span class="comment-date">{{ comment.comment_date|date:"Y-m-d" }}</span>
+                            <span class="alv-tag comment-author">{{ comment.user }}</span>
                             <span class="comment-text">{{ comment.comment }}</span>
                         </div>
                         {% endfor %}
