@@ -467,26 +467,6 @@ Physical Invoices
   .pi-empty { display: block; }
 }
 
-    /* Chip styling, identical to the seven pages that already have it. This
-       SHOULD live in base.html - base owns .alv-filter-active and counts
-       .filter-tag to drive the Filter button's badge, so it owns the row but
-       not the thing in it. Hoisting means editing eight pages at once and is
-       logged as its own round rather than smuggled into this one. */
-    .filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-tag {
-      background: #0e7c8b; color: white; padding: 4px 12px;
-      border-radius: 14px; font-size: 12px; font-weight: 500;
-      display: inline-flex; align-items: center; gap: 6px;
-    }
-    .filter-tag .remove-tag {
-      background: rgba(255, 255, 255, 0.3); border: none; color: white;
-      border-radius: 50%; width: 16px; height: 16px; line-height: 1;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 12px; cursor: pointer; text-decoration: none;
-    }
-    .filter-tag .remove-tag:hover {
-      background: rgba(255, 255, 255, 0.5); color: white; text-decoration: none;
-    }
 </style>
 
 <script>

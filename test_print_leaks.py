@@ -261,7 +261,12 @@ LATER = {'finance/financial_indicators.html': '.bak_fiseg',
          # is measured up to the point stage E began; what the file looks
          # like NOW is test_table_admin.py's business, and its section 3
          # asserts the block went because it emptied.
-         'workspace_management.html': '.bak_stagee'}
+         'workspace_management.html': '.bak_stagee',
+         # LATER - test_filter_chip.py, 22 Sep. Round C3 moved the
+         # filter chip into base. projects.html's hover query held one
+         # rule - the chip x's hover - so it emptied and went with it;
+         # base carries that hover now. Measured up to where C3 began.
+         'projects/projects.html': '.bak_chip'}
 for rel in TARGETS:
     if BAK[rel] is None:
         continue

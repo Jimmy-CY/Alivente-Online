@@ -2566,6 +2566,68 @@ textarea.form-control { height: auto; }
 }
 .alv-filter-active-label { color: var(--alv-ink-soft); font-weight: 600; }
 
+/* ===== ALV FILTER CHIP v1 ===== 22 Sep 2026
+   The chip that says a filter is on - "Property: Limassol  x". Nine pages
+   carried the same four rules, copied from one another; this is them, once,
+   painted from the tokens. Scripts build most chips at run time, so the
+   class names ARE the interface: .filter-tags holds them, .filter-tag is
+   one, .filter-tag .remove-tag is its x (a <button>, or an <a> where
+   clearing is a link).
+
+   THE x IS 16PX TO SEE AND 44PX TO TAP. On a phone an invisible ring
+   grows the target to 44px, and the rows are spaced 20px so the rings of
+   two rows meet rather than overlap. On paper the chips print - they say
+   what the sheet shows - and the x, a control, does not.
+                                                [test_filter_chip.py] */
+.filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  background: var(--alv-accent);
+  color: var(--alv-paper);
+  font-size: 12px;
+  font-weight: 500;
+}
+.filter-tag .remove-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  color: var(--alv-paper);
+  font-size: 10px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+.filter-tag .remove-tag:hover,
+.filter-tag .remove-tag:focus-visible {
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--alv-paper);
+  text-decoration: none;
+}
+@media screen and (max-width: 768px) {
+  .filter-tags { row-gap: 20px; }
+  .filter-tag .remove-tag { position: relative; }
+  .filter-tag .remove-tag::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+  }
+}
+@media print {
+  .filter-tag .remove-tag { display: none !important; }
+}
+/* ===== /ALV FILTER CHIP v1 ===== */
+
 @media screen and (max-width: 768px) {
   /* Same treatment Back gets: keep the target, drop the label. */
   .page-action-buttons .action-filter {

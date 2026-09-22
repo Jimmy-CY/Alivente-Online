@@ -204,7 +204,6 @@ check('  including the per-page card-title rule :first-child replaced',
 for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.filter-grid', 'its layout'),
                  ('.search-btn', 'the search button'),
-                 ('.filter-tag', 'the active-filter chips'),
                  ('.modal-header', 'the delete modal'),
                  ('.delete-modal-grid', 'its grid'),
                  ('.action-add-new', 'Add New'),
@@ -213,6 +212,12 @@ for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.btn-info', 'the page-header buttons')):
     check('  KEPT %-22s (%s)' % (sel, why),
           re.search(re.escape(sel) + r'\s*[,{:.]', CSS) is not None)
+# LATER - test_filter_chip.py, 22 Sep. The chips moved into base in
+# round C3, so this page no longer keeps .filter-tag - base does. The
+# safety net is asked of the place the rule now lives.
+check('  MOVED .filter-tag to base  (the active-filter chips)',
+      re.search(r'\.filter-tag\s*\{', BASE_SRC) is not None
+      and re.search(r'\.filter-tag\s*[,{:.]', CSS) is None)
 
 # Presence is not integrity. A negative control that deleted ONE .filter-panel
 # rule passed every check above, because .filter-panel.expanded still matched.
@@ -230,7 +235,11 @@ def group(prefix):
 # margin lets a rule go missing quietly, which is the failure this exists to
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
-for prefix, floor, why in (('.filter', 27, 'filter panel + chips'),
+for prefix, floor, why in (('.filter', 24, 'filter panel'),
+                           # 27 UNTIL ROUND C3, 22 Sep: .filter-tags,
+                           # .filter-tag and .filter-tag .remove-tag
+                           # moved into base. The floor moved with
+                           # the decision, by exactly those three.
                            # 11 UNTIL THE MODULE-WIDE BUTTON SWEEP. That round
                            # deleted three page-local rules base.html had come
                            # to own - `.page-action-buttons .action-secondary`,

@@ -71,7 +71,7 @@ Suppliers
     </div>
 
     <div class="alv-filter-active" id="activeFilters">
-          <span class="active-filters-label">Active filters:</span>
+          <span class="alv-filter-active-label">Active filters:</span>
           <div class="filter-tags" id="filterTags"></div>
         </div>
 
@@ -328,11 +328,6 @@ Suppliers
 .search-btn:active { transform: scale(0.98); }
 .btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-size: 13px; padding: 6px 12px; transition: all 0.3s ease; }
 .btn-outline-secondary:hover { background: #6c757d; color: white; transform: translateY(-1px); }
-.active-filters { margin-top: 16px; padding-top: 16px; border-top: 1px solid #dee2e6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.active-filters-label { font-weight: 500; color: #495057; font-size: 14px; }
-.filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-tag { background: #0e7c8b; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-.filter-tag .remove-tag { background: rgba(255, 255, 255, 0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; }
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #0a5e6a; border-color: #0a5e6a; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
@@ -473,15 +468,6 @@ Suppliers
   .filter-select,
   .search-input {
     font-size: 16px;
-  }
-
-  /* Active filters: tighter on mobile */
-  .active-filters {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
   }
 
   /* Delete modal — full-screen on mobile */

@@ -107,7 +107,7 @@ Tenants
     </div>
 
     <div class="alv-filter-active" id="activeFilters">
-          <span class="active-filters-label">Active filters:</span>
+          <span class="alv-filter-active-label">Active filters:</span>
           <div class="filter-tags" id="filterTags"></div>
         </div>
 
@@ -355,11 +355,6 @@ Tenants
 .filter-input:focus, .filter-select:focus { border-color: #0e7c8b; box-shadow: 0 0 0 3px rgba(14, 124, 139, 0.1); outline: none; position: relative; z-index: 20; }
 .btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-size: 13px; padding: 6px 12px; transition: all 0.3s ease; }
 .btn-outline-secondary:hover { background: #6c757d; color: white; transform: translateY(-1px); }
-.active-filters { margin-top: 16px; padding-top: 16px; border-top: 1px solid #dee2e6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.active-filters-label { font-weight: 500; color: #495057; font-size: 14px; }
-.filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-tag { background: #0e7c8b; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-.filter-tag .remove-tag { background: rgba(255, 255, 255, 0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; }
 .lease-end-cell { font-weight: 600; }
 .lease-end-red { color: var(--alv-bad); }
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
@@ -485,14 +480,6 @@ Tenants
     gap: 12px;
   }
 
-  /* Active filters: tighter on mobile */
-  .active-filters {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-  }
 }
 
 /* A destructive row action is a POST now, not a link - a link is followed by

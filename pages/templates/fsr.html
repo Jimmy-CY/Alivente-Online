@@ -331,7 +331,7 @@
     </div>
 
     <div class="alv-filter-active" id="activeFilters">
-                <span class="active-filters-label">Active filters:</span>
+                <span class="alv-filter-active-label">Active filters:</span>
                 <div class="filter-tags" id="filterTags"></div>
             </div>
 
@@ -712,55 +712,6 @@
     background: #6c757d;
     color: white;
     transform: translateY(-1px);
-}
-
-/* Active Filters */
-.active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.active-filters-label {
-    font-weight: 500;
-    color: #495057;
-    font-size: 14px;
-}
-
-.filter-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.filter-tag {
-    background: #0e7c8b;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.filter-tag .remove-tag {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 10px;
 }
 
 /* Date Logged Column Styling */
@@ -1192,12 +1143,6 @@
     input[type="date"].form-control,
     input[type="text"].form-control {
         font-size: 16px !important;
-    }
-
-    /* Active filter tags wrap nicely */
-    .active-filters {
-        flex-direction: column;
-        align-items: flex-start;
     }
 
     /* ==================== MODALS — full-screen on mobile ==================== */

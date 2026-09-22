@@ -33,6 +33,7 @@ ROUNDS = [
     '.bak_stddoc',
     '.bak_csmall',
     '.bak_tap',
+    '.bak_chip',
 ]
 
 

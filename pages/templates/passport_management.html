@@ -45,8 +45,8 @@
 </div>
 
     <div class="alv-filter-active" id="passportActiveFilters">
-                <span>Active filters:</span>
-                <div class="passport-filter-tags" id="passportFilterTags"></div>
+                <span class="alv-filter-active-label">Active filters:</span>
+                <div class="filter-tags" id="passportFilterTags"></div>
             </div>
 
 <!-- Filter Panel -->
@@ -494,42 +494,6 @@
     background-size: 16px 12px;
     padding-right: 40px;
 }
-.passport-active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.passport-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-tag {
-    background: #0e7c8b;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.passport-remove-tag {
-    background: rgba(255,255,255,0.3);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 10px;
-    line-height: 1;
-}
-.passport-remove-tag:hover { background: rgba(255,255,255,0.5); }
 
 /* Add New button row */
 .add-new-button-row {
@@ -902,10 +866,10 @@ function updatePassportActiveFilters() {
     if (!filterTagsDiv) return;
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    if (holderSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Holder: ${holderSelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button></span>`; hasFilters = true; }
-    if (docTypeSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Type: ${docTypeSelect.options[docTypeSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button></span>`; hasFilters = true; }
-    if (countrySelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${countrySelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('country')" type="button">×</button></span>`; hasFilters = true; }
-    if (statusSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${statusSelect.options[statusSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('status')" type="button">×</button></span>`; hasFilters = true; }
+    if (holderSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Holder: ${holderSelect.value} <button class="remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button></span>`; hasFilters = true; }
+    if (docTypeSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Type: ${docTypeSelect.options[docTypeSelect.selectedIndex].text} <button class="remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button></span>`; hasFilters = true; }
+    if (countrySelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${countrySelect.value} <button class="remove-tag" onclick="clearPassportFilter('country')" type="button">×</button></span>`; hasFilters = true; }
+    if (statusSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${statusSelect.options[statusSelect.selectedIndex].text} <button class="remove-tag" onclick="clearPassportFilter('status')" type="button">×</button></span>`; hasFilters = true; }
 }
 
 function addNewDocument() {

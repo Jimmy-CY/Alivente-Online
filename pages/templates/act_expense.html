@@ -145,53 +145,6 @@
     padding-right: 40px;
 }
 
-.active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.filter-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.filter-tag {
-    background: #0e7c8b;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.remove-tag {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 10px;
-    line-height: 1;
-}
-
-.remove-tag:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
 
@@ -519,7 +472,7 @@
 </div>
 
     <div class="alv-filter-active" id="activeFilters">
-                <span>Active filters:</span>
+                <span class="alv-filter-active-label">Active filters:</span>
                 <div class="filter-tags" id="filterTags"></div>
             </div>
 

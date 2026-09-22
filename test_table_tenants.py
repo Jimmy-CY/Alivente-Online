@@ -254,13 +254,18 @@ check('  including the per-page card-title rule :first-child replaced',
 # A patcher that deleted too much would pass every check above.
 for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.filter-grid', 'its layout'),
-                 ('.filter-tag', 'the active-filter chips'),
                  ('.action-add-new', 'Add New'),
                  ('.action-more-btn', 'the mobile More menu'),
                  ('.action-back', 'Back'),
                  ('.btn-info', 'the page-header buttons')):
     check('  KEPT %-22s (%s)' % (sel, why),
           re.search(re.escape(sel) + r'\s*[,{:.]', CSS) is not None)
+# LATER - test_filter_chip.py, 22 Sep. The chips moved into base in
+# round C3, so this page no longer keeps .filter-tag - base does. The
+# safety net is asked of the place the rule now lives.
+check('  MOVED .filter-tag to base  (the active-filter chips)',
+      re.search(r'\.filter-tag\s*\{', BASE_SRC) is not None
+      and re.search(r'\.filter-tag\s*[,{:.]', CSS) is None)
 
 # Presence is not integrity. A negative control that deleted ONE .filter-panel
 # rule passed every check above, because .filter-panel.expanded still matched.
@@ -286,7 +291,11 @@ _rule_pairs = [(re.sub(r'/\*.*?\*/', '', m.group(1), flags=re.S).strip(),
                 m.group(2))
                for m in re.finditer(r'([^{}]+)\{([^{}]*)\}', CSS)]
 
-for prefix, floor, why in (('.filter', 26, 'filter panel + chips'),
+for prefix, floor, why in (('.filter', 23, 'filter panel'),
+                           # 26 UNTIL ROUND C3, 22 Sep: .filter-tags,
+                           # .filter-tag and .filter-tag .remove-tag
+                           # moved into base. The floor moved with
+                           # the decision, by exactly those three.
                            ('.action-', 8, 'page-header buttons'),
                            ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
