@@ -375,9 +375,13 @@
                     </label>
                     <select name="propcountry" class="form-control filter-select" id="countrySelect">
                         <option value="">All Countries</option>
-                        <option value="Cyprus" {% if request.POST.propcountry == 'Cyprus' %}selected{% endif %}>Cyprus</option>
-                        <option value="Greece" {% if request.POST.propcountry == 'Greece' %}selected{% endif %}>Greece</option>
-                        <option value="Spain" {% if request.POST.propcountry == 'Spain' %}selected{% endif %}>Spain</option>
+                        {# The countries properties are in, from the view - #}
+                        {# the same list properties.html now shows. [D2] #}
+                        {# `selected_country`, not request.POST: the view #}
+                        {# already strips it and already passes it. #}
+                        {% for c in countries %}{% if c %}
+                        <option value="{{ c }}" {% if selected_country == c %}selected{% endif %}>{{ c }}</option>
+                        {% endif %}{% endfor %}
                     </select>
                 </div>
 

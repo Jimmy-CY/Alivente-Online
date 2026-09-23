@@ -175,87 +175,8 @@
     margin: 0;
 }
 
-/* Edit button — red theme (outlined) */
-.btn-row-edit {
-    background: white;
-    color: #dc3545;
-    border: 2px solid #dc3545;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.btn-row-edit:hover {
-    background: #dc3545;
-    color: white;
-    text-decoration: none;
-}
-.btn-row-edit-disabled {
-    background: #f8f9fa;
-    color: #adb5bd;
-    border: 2px solid #dee2e6;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: not-allowed;
-    pointer-events: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
 
-/* Delete button — darker red to read as destructive */
-.btn-row-delete {
-    background: white;
-    color: #a71d2a;
-    border: 2px solid #a71d2a;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-family: inherit;
-    line-height: 1.5;
-}
-.btn-row-delete:hover {
-    background: #a71d2a;
-    color: white;
-}
-.btn-row-delete-disabled {
-    background: #f8f9fa;
-    color: #adb5bd;
-    border: 2px solid #dee2e6;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: not-allowed;
-    pointer-events: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
 
-/* hover-explains-disabled
-   Both disabled variants above set pointer-events:none, which suppresses hover
-   entirely - so their `title` never appeared, and a disabled control still has
-   to be able to say why it is disabled. Restored here rather than edited above,
-   so the reason is recorded next to the fix.
-
-   Nothing becomes clickable: these are spans, not links or buttons, and
-   neither carries a click handler. cursor:not-allowed still reads as disabled. */
-.btn-row-edit-disabled,
-.btn-row-delete-disabled {
-    pointer-events: auto;
-}
 
 /* Hover guard */
 @media (hover: hover) and (pointer: fine) {
@@ -425,16 +346,7 @@
         display: block;
         width: 100%;
     }
-    .btn-row-edit,
-    .btn-row-edit-disabled,
-    .btn-row-delete,
-    .btn-row-delete-disabled {
-        width: 100%;
-        justify-content: center;
-        padding: 9px 14px;
-        font-size: 14px;
     }
-}
 </style>
 
 <div class="expense-container">

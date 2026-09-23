@@ -1117,7 +1117,7 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
         modalBody.innerHTML = html;
     }
 
-    modalFooter.innerHTML = `<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>`;
+    modalFooter.innerHTML = `<button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>`;
 
     $('#monthlyExpenseModal').modal('show');
 
@@ -1173,10 +1173,10 @@ function showExpenseBreakdown(lineType, data) {
 
     modalBody.innerHTML = html;
     modalFooter.innerHTML = `
-        <button type="button" class="btn btn-info" onclick="showMonthlyView()">
+        <button type="button" class="btn action-secondary" onclick="showMonthlyView()">
             <i class="fas fa-arrow-left"></i> Back
         </button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
     `;
 }
 

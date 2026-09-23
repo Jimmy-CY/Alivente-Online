@@ -74,8 +74,13 @@ BASE = os.path.join(T, 'base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 
+# map_test.html was the fourth until round D1, 23 Sep: a developer
+# page no view or URL rendered. The round deleted it and asserts
+# below that it is gone, so this list is three by decision.
 PAGES = ('properties_add.html', 'properties_edit.html',
-         'map_view.html', 'map_test.html')
+         'map_view.html')
+assert not os.path.exists(os.path.join(T, 'map_test.html')), \
+    'map_test.html is back - it was deleted as dead in round D1'
 GEOCODERS = ('properties_add.html', 'properties_edit.html')
 
 # The hosts this round exists to stop calling. Spelled in pieces so that a

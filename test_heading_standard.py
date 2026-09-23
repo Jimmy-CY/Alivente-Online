@@ -293,8 +293,7 @@ OUT_OF_SCOPE = {
     # an icon, which the standard forbids.
     'categories_management.html', 'celebration_calendar.html',
     'celebration_dashboard.html', 'celebration_management.html',
-    'create_meal_plan.html', 'create_recipe (OLD DO NOT USE).html',
-    'edit_recipe (OLD DO NOT USE).html', 'household_member_management.html',
+    'create_meal_plan.html', 'household_member_management.html',
     'ingredient_base_units_management.html', 'ingredient_families.html',
     'map_ingredients_nutrition.html', 'meal_plan_calendar.html',
     'meal_plan_shopping_list.html', 'measurement_units_management.html',
@@ -311,7 +310,7 @@ OUT_OF_SCOPE = {
     'comments_report.html',        # its own round
     'help_page.html',              # the Help module
     'home.html',                   # the portfolio dashboard
-    'map_test.html', 'map_view.html',        # the map pages
+    'map_view.html',                         # the map page
     'tenant_payment_days.html',    # tenant payment behaviour
 }
 print('        %d page(s) are outside this standard, by name, each against '

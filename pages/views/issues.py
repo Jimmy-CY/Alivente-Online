@@ -106,6 +106,10 @@ def fsr(request):
     # Pass search query to template for displaying in search input
     context = {
         "props": results,
+        # The same list as properties.html, from the same field and
+        # the same queryset, so the two filters can never disagree.
+        # props.objects, not `results`, which is already filtered. [D2]
+        "countries": props.objects.values_list('prop_country', flat=True).distinct().order_by('prop_country'),
         "issues": isresults,
         "issues_details": idresults,
         "search_query": search_query,

@@ -67,7 +67,11 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
 MV = os.path.join(T, 'map_view.html')
 BAK = MV + '.bak_maptiles'
-PEERS = ('properties_add.html', 'properties_edit.html', 'map_test.html')
+# map_test.html was a third peer until round D1, 23 Sep, which
+# deleted it as dead - no view and no URL ever rendered it.
+PEERS = ('properties_add.html', 'properties_edit.html')
+assert not os.path.exists(os.path.join(T, 'map_test.html')), \
+    'map_test.html is back - it was deleted as dead in round D1'
 
 PASS = FAIL = 0
 FAILED = []

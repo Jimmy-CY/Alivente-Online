@@ -184,12 +184,12 @@
         <div class="selection-header-right">
             <div class="selection-buttons">
                 <span class="pl-select-all-group">
-                    <button class="btn btn-info btn-sm" id="selectAllBtn" onclick="event.stopPropagation();"
+                    <button class="btn action-secondary" id="selectAllBtn" onclick="event.stopPropagation();"
                             title="Selects the active properties. Inactive ones stay off - tick them individually, or use + Inactive.">Select All</button>
-                    {% if has_inactive %}<button class="btn btn-secondary btn-sm" id="selectAllIncBtn" onclick="event.stopPropagation();"
+                    {% if has_inactive %}<button class="btn action-secondary" id="selectAllIncBtn" onclick="event.stopPropagation();"
                             title="Selects every property, inactive ones included. Their earlier years still report in full; a year they contributed nothing to leaves them out of the indicators.">+ Inactive</button>{% endif %}
                 </span>
-                <button class="btn btn-secondary btn-sm" id="selectNoneBtn" onclick="event.stopPropagation();">Select None</button>
+                <button class="btn action-secondary" id="selectNoneBtn" onclick="event.stopPropagation();">Select None</button>
             </div>
             <i class="fas fa-chevron-down selection-toggle-icon" id="propSelectionToggleIcon"></i>
         </div>
@@ -522,7 +522,6 @@
     }
 }
 
-.btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 4px; }
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover { background: #0e7c8b; color: white; text-decoration: none; }

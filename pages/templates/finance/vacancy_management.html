@@ -412,11 +412,6 @@
     display: flex;
     gap: 10px;
 }
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 6px;
-}
 .selection-counter {
     font-size: 14px;
     color: #6c757d;
@@ -685,9 +680,11 @@
         gap: 8px;
         margin-bottom: 12px;
     }
-    .selection-buttons .btn-sm {
+    /* The two buttons split the row on a phone. Height is not set
+       here: they are .action-secondary now, and base's ALV TAP
+       TARGET block floors every house button at 44px below 768. */
+    .selection-buttons .btn {
         flex: 1;
-        padding: 9px 12px;
     }
     .property-grid {
         grid-template-columns: 1fr;
@@ -871,8 +868,8 @@ class VacancyDashboard {
                 </div>
                 <div class="selection-body">
                     <div class="selection-buttons" style="margin-bottom: 12px;">
-                        <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
-                        <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
+                        <button class="btn action-secondary" id="selectAllBtn">Select All</button>
+                        <button class="btn action-secondary" id="selectNoneBtn">Select None</button>
                     </div>
                     <div class="property-grid">
                         ${this.properties.map(property => `

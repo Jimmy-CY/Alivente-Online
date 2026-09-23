@@ -121,9 +121,14 @@ Properties
             </label>
             <select name="country" class="form-control filter-select" id="countrySelect">
               <option value="">All Countries</option>
-              <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
-              <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
-              <option value="Spain" {% if selected_country == 'Spain' %}selected{% endif %}>Spain</option>
+              {# The countries properties are in, from the view. [D2] #}
+              {# `if c` skips the blank one: prop_country is nullable, #}
+              {# and a blank option would read as a second "All". #}
+              {# No hardcoded fallback - an empty list means there are #}
+              {# no properties, and offering ones you cannot pick lies. #}
+              {% for c in countries %}{% if c %}
+              <option value="{{ c }}" {% if selected_country == c %}selected{% endif %}>{{ c }}</option>
+              {% endif %}{% endfor %}
             </select>
           </div>
 

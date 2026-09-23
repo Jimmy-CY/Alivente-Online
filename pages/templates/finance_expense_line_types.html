@@ -105,60 +105,8 @@
     justify-content: flex-end;
 }
 
-.btn-row-edit {
-    background: white;
-    color: #dc3545;
-    border: 2px solid #dc3545;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.btn-row-edit:hover {
-    background: #dc3545;
-    color: white;
-    text-decoration: none;
-}
 
-.btn-row-delete {
-    background: white;
-    color: #6c757d;
-    border: 2px solid #dee2e6;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.btn-row-delete:hover {
-    background: #dc3545;
-    color: white;
-    border-color: #dc3545;
-}
 
-.btn-row-edit-disabled,
-.btn-row-delete-disabled {
-    background: #f8f9fa;
-    color: #adb5bd;
-    border: 2px solid #dee2e6;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: not-allowed;
-    pointer-events: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
 
 .empty-state {
     text-align: center;
@@ -355,16 +303,7 @@
         flex-direction: column;
         gap: 8px;
     }
-    .btn-row-edit,
-    .btn-row-edit-disabled,
-    .btn-row-delete,
-    .btn-row-delete-disabled {
-        width: 100%;
-        justify-content: center;
-        padding: 9px 14px;
-        font-size: 14px;
-    }
-
+    
     /* === Full-screen delete modal on mobile === */
     #deleteModal .modal-dialog {
         max-width: 100% !important;

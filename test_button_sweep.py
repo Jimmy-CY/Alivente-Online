@@ -655,8 +655,14 @@ check('the shape rule sits BEFORE the bar layout (%d < %d)' % (_shape, _bar),
 _fh = load(os.path.join(TPL, 'act_expense.html'))
 check('filter chrome untouched - Clear All is still btn-outline-secondary',
       'btn-outline-secondary' in _fh)
-_pd = load(os.path.join(TPL, 'tenant_payment_days.html'))
-check('the tenants segmented toggle is untouched',
+# D3, 23 Sep: `pd-toolbar` was never a segmented toggle - it holds ONE
+# link at a time in an {% if %}/{% else %}, and both branches wrote the
+# same class - so the round retoned it. What the SWEEP left alone is
+# still the claim, so it is read from the sweep's own copy.
+_pdp = os.path.join(TPL, 'tenant_payment_days.html')
+_pd = load(_pdp + '.bak_rowact') if os.path.exists(_pdp + '.bak_rowact') \
+    else load(_pdp)
+check('the tenants toolbar was untouched BY THE SWEEP',
       _pd.count('btn-outline-secondary') >= 2)
 
 # The decisions you signed off, spot-checked by name.
@@ -1160,7 +1166,16 @@ _open = [h for h in _all if not h[5]]
 # lower the number. When the last page is decided there is no state in which
 # eight existed, and the control retires with the finding it guards. That is
 # the section's own stated goal: "when these are done the number is 4".
-_LATER = {'finance/financial_indicators.html': '.bak_fiseg'}
+_LATER = {'finance/financial_indicators.html': '.bak_fiseg',
+          # D2, 23 Sep: this page's Select All / Select None are now
+          # house secondaries, decided the same way as the twin above.
+          'finance/vacancy_management.html': '.bak_three',
+          # D3, 23 Sep: the last two script-built pages are decided.
+          # With these the count is eight in four again, and there is
+          # now no state in which eight are undecided - which is what
+          # the note above said would happen.
+          'finance/cashflow_forecast.html': '.bak_rowact',
+          'asset_detail.html': '.bak_rowact'}
 
 
 def _as_swept(f):
@@ -1185,7 +1200,12 @@ check('HISTORICAL: eight in four pages, as the sweep left them (%d in %d)'
       len(_was_all) == 8 and len(_was) == 4)
 check('and the scan still sees into <script> on live pages (%d in %d, %d '
       'still undecided)' % (len(_all), len(_js), len(_open)),
-      len(_all) >= 6 and len(_js) >= 3)
+      # 6 in 3 until D2 decided vacancy_management's pair; 4 in 2 until
+      # D3 decided cashflow_forecast's three and asset_detail's one.
+      # THE FINDING IS CLOSED, so this is no longer a floor - it is the
+      # statement that nothing is left. The scanner-level CONTROL below
+      # is what still guards the scan itself.
+      len(_all) == 0 and len(_js) == 0 and len(_open) == 0)
 # THE INVARIANT, asked of the scanner rather than counted off the corpus, so
 # that finishing the last page is a pass and not a failure.
 check('CONTROL: .. and would still see one on the day no page has any',
@@ -1207,9 +1227,16 @@ check('.. its All/None pair carries a house tone INSIDE the script',
 # The two pages nobody has decided yet. Naming them keeps the finding
 # specific: when these are done the number is 4, all of them LEAVE, and
 # this check is the one that says so out loud.
-check('the undecided ones are still reported (cashflow_forecast, asset_detail)',
-      len(_js.get('finance/cashflow_forecast.html', [])) == 3
-      and len(_js.get('asset_detail.html', [])) == 1)
+# The two that were last. Named, so that closing them is recorded here
+# rather than showing only as a number going to zero.
+check('the last two are decided too (cashflow_forecast, asset_detail)',
+      not _js.get('finance/cashflow_forecast.html')
+      and not _js.get('asset_detail.html'))
+check('.. and they carry house tones now, in the script',
+      'btn action-secondary' in load(os.path.join(
+          TPL, 'finance', 'cashflow_forecast.html'))
+      and 'btn action-primary' in load(os.path.join(
+          TPL, 'asset_detail.html')))
 
 # act_expense.html: the twelve were DECIDED, not swept and not forgotten.
 _ae_raw = load(os.path.join(TPL, 'act_expense.html'))
@@ -1229,19 +1256,25 @@ check('.. and Save Changes is still there, still built in JavaScript',
 # vacancy_management. The claim worth keeping is that a LEAVE reason CARRIES
 # ACROSS into a button built inside a script, and that is asked of the
 # scanner below rather than counted off whatever is left undone.
-_LEAVE_REASON = 'segmented toggle - colour is state'
-_was_open = [h for h in _was_all if not h[5]]
-check('HISTORICAL: four of the eight carried a LEAVE reason (%d)'
-      % (len(_was_all) - len(_was_open)),
-      len(_was_all) - len(_was_open) == 4
-      and all(h[5] == _LEAVE_REASON for h in _was_all if h[5]))
+# The reason those four carried was 'segmented toggle - colour is
+# state', and D3 removed it: .selection-buttons is Select All and
+# Select None, two one-shot actions, not a toggle. The REASON cannot
+# be recomputed with today's tool, so the shape of the finding is what
+# is kept - four of the eight sat in the one wrapper the sweep had
+# decided in markup, which is the fact the carry-across existed for.
+_LEAVE_REASON = 'row actions'
+_was_sel = [h for h in _was_all if h[2] and 'selection-buttons' in h[2]]
+check('HISTORICAL: four of the eight sat in .selection-buttons (%d)'
+      % len(_was_sel), len(_was_sel) == 4)
 check('every reason still reported is the one its wrapper gives',
       all(h[5] == _LEAVE_REASON for h in _all if h[5]))
+# Asked with a wrapper that is STILL on the LEAVE list, since the one
+# this used before is not any more. The claim is unchanged.
 check('CONTROL: a LEAVE wrapper carries its reason into a script-built '
       'button, whether or not a live page still has one',
       [h[5] for h in sb.js_buttons(
-          '<script>var h = `<div class="selection-buttons">'
-          '<button class="btn btn-info btn-sm">Select All</button>'
+          '<script>var h = `<div class="btn-group">'
+          '<button class="btn btn-info btn-sm">Edit</button>'
           '</div>`;</script>')] == [_LEAVE_REASON])
 # THE DIVERGENCE THIS ROUND OPENED. .selection-buttons is built identically
 # on two pages; Financials' pair is now two quiet house buttons and
@@ -1283,9 +1316,14 @@ check('CONTROL: a class list containing ${...} is skipped, not guessed',
 # label on a decision somebody makes by eye.
 check('CONTROL: no button is reported as "assigned to class"',
       not [h for h in _all if h[3] == 'class'])
-check('a real .innerHTML target IS reported (cashflow_forecast modalFooter)',
-      any(h[3] == 'modalFooter'
-          for h in _js.get('finance/cashflow_forecast.html', [])))
+# Asked of the scanner, not of the corpus: cashflow_forecast's three
+# are decided, and a control that needed an undecided page would have
+# retired with them instead of going on meaning something.
+check('CONTROL: a real .innerHTML target IS reported',
+      [h[3] for h in sb.js_buttons(
+          '<script>modalFooter.innerHTML = `<button '
+          'class="btn btn-info">Close</button>`;</script>')]
+      == ['modalFooter'])
 
 # CONTROL 4: the PATCHER does not rewrite inside a <script>. The whole
 # point of a separate kind is that a person decides these.
@@ -1312,16 +1350,21 @@ check('CONTROL: .. and leaves the one inside <script> byte-identical',
       and 'btn btn-success' in _probe_js.group(1)
       and 'action-primary' not in _probe_js.group(1))
 # And the live page nobody has decided yet is still as it was found.
-check('finance/cashflow_forecast.html script block is untouched '
-      '(btn btn-info still there)',
-      'btn btn-info' in load(os.path.join(TPL, 'finance/cashflow_forecast.html')))
+check('finance/cashflow_forecast.html script block was untouched BY '
+      'THE SWEEP (btn btn-info still there when it finished)',
+      'btn btn-info' in _as_swept('finance/cashflow_forecast.html'))
 
 # The report has to say so on the CLEAN path too, or the finding disappears
 # on exactly the day the markup is finished.
 _r10 = subprocess.run([sys.executable, 'Show-ButtonDrift.py'],
                       cwd=ROOT, capture_output=True, text=True)
-check('a clean --strict run still prints the <script> finding',
-      'BUILT INSIDE <script>' in _r10.stdout)
+# It printed the finding for as long as there was one. There is not,
+# so what the clean run must now say is that nothing is left - and
+# the two halves together still make this impossible to satisfy by
+# the report going quiet about a finding that survives.
+check('with none left, the clean run says nothing is undecided',
+      'Nothing drifting, and nothing undecided' in _r10.stdout
+      and 'BUILT INSIDE <script>' not in _r10.stdout)
 _r10b = subprocess.run([sys.executable, 'Show-ButtonDrift.py', '--js'],
                        cwd=ROOT, capture_output=True, text=True)
 check('--js lists every one of them with a line number',

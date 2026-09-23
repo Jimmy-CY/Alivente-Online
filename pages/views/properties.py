@@ -454,6 +454,12 @@ def properties_page(request):
     # Pass filter values back to template for form persistence
     context = {
         'props': results,
+        # The filter's countries are the ones properties are actually
+        # IN, read from the data - not three names typed into the
+        # markup. From props.objects and not from `results`, which is
+        # already filtered: the list must not narrow to the choice
+        # just made. Same line as finance_expense_add/_edit. [D2]
+        'countries': props.objects.values_list('prop_country', flat=True).distinct().order_by('prop_country'),
         'search_query': search_query,
         'selected_country': selected_country,
         'selected_status': selected_status,

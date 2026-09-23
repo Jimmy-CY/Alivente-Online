@@ -36,6 +36,9 @@ ROUNDS = [
     '.bak_chip',
     '.bak_quad',
     '.bak_lease',
+    '.bak_dead',
+    '.bak_three',
+    '.bak_rowact',
 ]
 
 

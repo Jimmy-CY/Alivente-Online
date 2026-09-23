@@ -41,11 +41,11 @@
 
     <div class="pd-toolbar">
       {% if show_all %}
-        <a href="{% url 'tenant_payment_days' %}" class="btn btn-outline-secondary btn-sm">
+        <a href="{% url 'tenant_payment_days' %}" class="btn action-secondary">
           <i class="fas fa-user-check"></i> Current tenants only
         </a>
       {% else %}
-        <a href="{% url 'tenant_payment_days' %}?all=1" class="btn btn-outline-secondary btn-sm">
+        <a href="{% url 'tenant_payment_days' %}?all=1" class="btn action-secondary">
           <i class="fas fa-users"></i> Include past tenants
         </a>
       {% endif %}

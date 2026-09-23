@@ -976,7 +976,17 @@ $suites = @(
     'test_quadrant_tokens.py',
     # Section C round C5: the lease generator's thirteen coloured card
     # headers are house sections - three panels and ten titles,
-    'test_lease_sections.py'
+    'test_lease_sections.py',
+    # Section D round D1: four dead templates gone, and the orphan scan
+    # reads a script - a class a script builds is worn,
+    'test_dead_files.py',
+    # Section D round D2: the Help label, the country filter read from
+    # the data, and Select All as a secondary,
+    'test_small_three.py',
+    # Section D round D3: base owns the labelled row action, the last
+    # four script-built buttons are decided, and three stale LEAVE
+    # reasons are gone,
+    'test_row_actions.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

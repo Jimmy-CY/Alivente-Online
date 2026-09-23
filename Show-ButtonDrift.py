@@ -154,9 +154,6 @@ LEAVE = {
     'subtask-actions': 'row actions',
     'project-status-container': 'row actions',
     'zoom-controls': 'a zoom widget',
-    'fi-trend-controls': 'segmented toggle - colour is state',
-    'pd-toolbar': 'segmented toggle - colour is state',
-    'selection-buttons': 'segmented toggle - colour is state',
 }
 
 # Buttons outside any bar whose tone was decided one at a time, from rendered
@@ -175,6 +172,16 @@ DECIDED = {
     'pdf-viewer-error':        [('*', P)],
     'notification-card':       [('save', P)],
     'timeline-controls-group': [('*', S)],
+    # D3, 23 Sep. These three were LEAVE, all three with the reason
+    # "segmented toggle - colour is state". None of them is a
+    # segmented toggle: selection-buttons is Select All / Select None,
+    # two one-shot actions; fi-trend-controls already carried house
+    # tones; and pd-toolbar holds ONE link at a time in an if/else,
+    # with both branches writing the same class. Moved here so the
+    # tool CHECKS them rather than staying silent about them.
+    'selection-buttons':       [('*', S)],
+    'fi-trend-controls':       [('*', S)],
+    'pd-toolbar':              [('*', S)],
     'timeline-controls-secondary': [('*', B)],
     'alert':                   [('*', S)],
     'map-controls':            [('*', S)],
@@ -867,11 +874,15 @@ def js_buttons(raw):
             line = raw.count('\n', 0, base + b.start()) + 1
             # A wrapper already on the LEAVE list was decided once, in
             # markup, and the decision does not change because the div
-            # happens to be built by JavaScript. financial_indicators and
-            # vacancy_management both put their Select All / Select None
-            # pair in .selection-buttons - a segmented toggle whose colour
-            # IS its state. Carry the reason across rather than asking for
-            # the same four decisions a second time.
+            # happens to be built by JavaScript - a row action inside a
+            # .btn-group is a row action wherever the div came from.
+            # Carry the reason across rather than asking for the same
+            # decision a second time.
+            #
+            # This used to cite .selection-buttons as the example, and
+            # called it a segmented toggle whose colour IS its state.
+            # It is not one - it is Select All and Select None, two
+            # one-shot actions - and D3 (23 Sep) moved it to DECIDED.
             why = LEAVE.get(wrap.split()[0]) if wrap else None
             out.append((label_of(b.group(3)), cls, wrap, sink, line, why))
     return out

@@ -271,6 +271,39 @@ def classes_used(text):
     return out
 
 
+def script_names(text):
+    """(names, prefixes) a SCRIPT on this page can put on an element.
+
+    The scan below used to ask whether the whole class name appeared in a
+    script between quotes. That found `classList.add('is-open')` and missed
+    every name a script BUILDS - `'sorted-' + direction`, or a template
+    literal `class="tag ${kind}"`. Three rules this project wrote itself
+    were on the orphan list for that reason, and Section D's own list said
+    the sort-arrow rules on two Financials pages were dead when both pages
+    draw them at run time.
+
+    So: every token of every string a script holds is a NAME, and anything
+    a script concatenates or interpolates onto gives a PREFIX, which makes
+    the names under it unprovable rather than dead."""
+    js = '\n'.join(re.findall(r'<script[^>]*>(.*?)</script>', text, re.S))
+    names, prefixes = set(), set()
+    for q in re.finditer(r'"([^"\n]*)"|\'([^\'\n]*)\'|`([^`]*)`', js, re.S):
+        s = next((g for g in q.groups() if g is not None), '')
+        for m in re.finditer(r'class="([^"]*)"', s):
+            s += ' ' + m.group(1)
+        for tok in re.split(r'[\s"\'<>]+', s):
+            if not tok:
+                continue
+            if '${' in tok or '+' in tok:
+                pre = re.split(r'\$\{|\+', tok)[0]
+                if len(pre) > 2:
+                    prefixes.add(pre)
+            elif re.match(r'^[A-Za-z][-\w]*$', tok):
+                names.add(tok)
+    for m in re.finditer(r'[\'"`]([\w-]+-)[\'"`]\s*\+', js):
+        prefixes.add(m.group(1))
+    return names, prefixes
+
 def classes_styled(text):
     """Every class name a page-local rule names as the SUBJECT.
 
@@ -480,12 +513,16 @@ for rel, src in ALL:
     used = classes_used(src)
     pres = interpolated_prefixes(src)
     scripts = ' '.join(re.findall(r'<script[^>]*>(.*?)</script>', src, re.S))
+    jsnames, jspres = script_names(src)
     for name, sels in sorted(classes_styled(src).items()):
         if name in used or name in classes_used(BASE_SRC):
             continue
         if any(name.startswith(x) for x in pres):
             continue
         if re.search(r'["\'`]%s["\'`]' % re.escape(name), scripts):
+            continue
+        # A class the page's own script builds is worn - see script_names.
+        if name in jsnames or any(name.startswith(p) for p in jspres):
             continue
         line = '%s: .%s  (%s)' % (rel, name, sorted(sels)[0])
         (mine if name in RETIRED else debt).append(line)
