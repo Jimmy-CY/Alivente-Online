@@ -1932,16 +1932,28 @@ $('#manageModal').on('hidden.bs.modal', function () {
 .an-quad-key { display:grid; grid-template-columns:1fr 1fr; gap:6px 18px; margin:14px 0 4px; font-size:12px; color:#495057; }
 .an-quad-key div { display:flex; gap:8px; align-items:flex-start; }
 .an-dot { width:12px; height:12px; border-radius:3px; margin-top:2px; flex-shrink:0; }
+/* The key says what the bands say, so it takes the same four tokens. */
+.an-dot.is-bad  { background:var(--alv-bad-soft); }
+.an-dot.is-warn { background:var(--alv-warn-soft); }
+.an-dot.is-info { background:var(--alv-accent-soft); }
+.an-dot.is-good { background:var(--alv-good-soft); }
+.an-quad-key b.is-bad  { color:var(--alv-bad); }
+.an-quad-key b.is-warn { color:var(--alv-warn); }
+.an-quad-key b.is-info { color:var(--alv-accent-ink); }
+.an-quad-key b.is-good { color:var(--alv-good); }
 table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13.5px; }
 .an-table th, .an-table td { padding:8px 8px; border-bottom:1px solid #f1f3f5; }
 .an-table th { text-align:left; color:#495057; font-weight:600; border-bottom:2px solid #e9ecef; }
 .an-table td.num, .an-table th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .an-table td.ctr, .an-table th.ctr { text-align:center; }
-.an-table tr.danger td { background:#fdecec; }
+.an-table tr.danger td { background:var(--alv-bad-soft); }
 .an-src { font-size:11px; color:#adb5bd; }
 .an-flag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
-.an-flag.warn { background:#fdecec; color:#c0322f; }
-.an-flag.ok { background:#e8f6ec; color:#1f7a37; }
+.an-flag.warn { background:var(--alv-bad-soft); color:var(--alv-bad); }
+.an-flag.ok { background:var(--alv-good-soft); color:var(--alv-good); }
+.an-chg.is-bad { color:var(--alv-bad); }
+.an-chg.is-good { color:var(--alv-good); }
+.an-warn-icon { color:var(--alv-bad); }
 .an-note { font-size:12px; color:#495057; margin-top:10px; margin-bottom:0; }
 @media screen and (max-width: 768px) {
   .analysis-dialog { max-width:100%; margin:0; height:100vh; }
@@ -1977,10 +1989,10 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
           <div class="an-basisrow"><span id="analysisBadge" class="an-badge"></span><span id="analysisSub" class="an-sub"></span></div>
           <div class="an-chart-wrap"><canvas id="analysisChart"></canvas><div id="analysisTip"></div></div>
           <div class="an-quad-key">
-            <div><span class="an-dot" style="background:#ffd7d7"></span><b style="color:#c92a2a">Watch</b>&nbsp;— surprise costs over 10% of rent while rent is flat or falling.</div>
-            <div><span class="an-dot" style="background:#ffe8cc"></span><b style="color:#e8590c">Costs high, rent rising</b>&nbsp;— surprises heavy, but rent is growing.</div>
-            <div><span class="an-dot" style="background:#e7f5ff"></span><b style="color:#1971c2">Rent stalled</b>&nbsp;— costs low, but rent isn't growing.</div>
-            <div><span class="an-dot" style="background:#d3f9d8"></span><b style="color:#2f9e44">Healthy</b>&nbsp;— rent rising and surprise costs low.</div>
+            <div><span class="an-dot is-bad"></span><b class="is-bad">Watch</b>&nbsp;— surprise costs over 10% of rent while rent is flat or falling.</div>
+            <div><span class="an-dot is-warn"></span><b class="is-warn">Costs high, rent rising</b>&nbsp;— surprises heavy, but rent is growing.</div>
+            <div><span class="an-dot is-info"></span><b class="is-info">Rent stalled</b>&nbsp;— costs low, but rent isn't growing.</div>
+            <div><span class="an-dot is-good"></span><b class="is-good">Healthy</b>&nbsp;— rent rising and surprise costs low.</div>
           </div>
           <div class="table-responsive">
             <table class="an-table">
@@ -2054,29 +2066,52 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         X_CAP = Math.max(10, cap*1.3);
     }
 
+    /* THE ANALYSIS POP-UP READS BASE'S MEANING TOKENS - 22 Sep 2026.
+       A canvas element cannot wear a class, so a chart's colours have to be
+       VALUES; they do not have to be LITERALS. Read off :root once, as
+       fsr.html's Issues Analysis charts have since 20 Sep, with base's own
+       values as fallbacks so a renamed token degrades to the right colour
+       rather than to nothing - Chart.js draws nothing at all for an empty
+       string, and reports no error.
+
+       The four quadrants ARE the four meanings: Watch is bad, costs high
+       with rent rising is warn, rent stalled is info, healthy is good. */
+    var AN_CS = getComputedStyle(document.documentElement);
+    function anTok(name, fallback){
+        var v = AN_CS.getPropertyValue('--alv-' + name);
+        return (v && v.trim()) || fallback;
+    }
+    var Q_BAD       = anTok('bad',       '#b3261e'),
+        Q_BAD_SOFT  = anTok('bad-soft',  '#fbeae9'),
+        Q_WARN      = anTok('warn',      '#9a6a08'),
+        Q_WARN_SOFT = anTok('warn-soft', '#fdf3dd'),
+        Q_INFO      = anTok('accent-ink', '#0a5e6a'),
+        Q_INFO_SOFT = anTok('accent-soft', '#e4f3f5'),
+        Q_GOOD      = anTok('good',      '#1e7d4f'),
+        Q_GOOD_SOFT = anTok('good-soft', '#e6f4ec');
+
     var quadrantPlugin = {
         id:'quads',
         beforeDatasetsDraw:function(c){
             var xs=c.scales.x, ys=c.scales.y, a=c.chartArea, ctx=c.ctx; if(!xs||!ys||!a) return;
             var x0=Math.max(a.left,Math.min(a.right,xs.getPixelForValue(X_DIV)));
             var y10=Math.max(a.top,Math.min(a.bottom,ys.getPixelForValue(DANGER_PCT)));
-            ctx.save(); ctx.globalAlpha=0.32;
-            ctx.fillStyle='#ffd7d7'; ctx.fillRect(a.left,a.top,x0-a.left,y10-a.top);
-            ctx.fillStyle='#ffe8cc'; ctx.fillRect(x0,a.top,a.right-x0,y10-a.top);
-            ctx.fillStyle='#e7f5ff'; ctx.fillRect(a.left,y10,x0-a.left,a.bottom-y10);
-            ctx.fillStyle='#d3f9d8'; ctx.fillRect(x0,y10,a.right-x0,a.bottom-y10);
-            ctx.globalAlpha=1;
+            ctx.save();
+            ctx.fillStyle=Q_BAD_SOFT;  ctx.fillRect(a.left,a.top,x0-a.left,y10-a.top);
+            ctx.fillStyle=Q_WARN_SOFT; ctx.fillRect(x0,a.top,a.right-x0,y10-a.top);
+            ctx.fillStyle=Q_INFO_SOFT; ctx.fillRect(a.left,y10,x0-a.left,a.bottom-y10);
+            ctx.fillStyle=Q_GOOD_SOFT; ctx.fillRect(x0,y10,a.right-x0,a.bottom-y10);
             ctx.setLineDash([5,4]); ctx.lineWidth=1; ctx.strokeStyle='rgba(0,0,0,0.28)';
             ctx.beginPath(); ctx.moveTo(x0,a.top); ctx.lineTo(x0,a.bottom); ctx.stroke();
-            ctx.strokeStyle='#dc3545';
+            ctx.strokeStyle=Q_BAD;
             ctx.beginPath(); ctx.moveTo(a.left,y10); ctx.lineTo(a.right,y10); ctx.stroke();
             ctx.setLineDash([]);
             ctx.font='700 11px system-ui,sans-serif'; ctx.textBaseline='top';
-            ctx.fillStyle='rgba(201,42,42,.78)'; ctx.textAlign='left'; ctx.fillText('WATCH', a.left+6, a.top+5);
-            ctx.fillStyle='rgba(232,89,12,.8)'; ctx.textAlign='right'; ctx.fillText('COSTS HIGH · RENT RISING', a.right-6, a.top+5);
+            ctx.fillStyle=Q_BAD;  ctx.textAlign='left'; ctx.fillText('WATCH', a.left+6, a.top+5);
+            ctx.fillStyle=Q_WARN; ctx.textAlign='right'; ctx.fillText('COSTS HIGH · RENT RISING', a.right-6, a.top+5);
             ctx.textBaseline='bottom';
-            ctx.fillStyle='rgba(25,113,194,.8)'; ctx.textAlign='left'; ctx.fillText('RENT STALLED', a.left+6, a.bottom-5);
-            ctx.fillStyle='rgba(47,158,68,.85)'; ctx.textAlign='right'; ctx.fillText('HEALTHY', a.right-6, a.bottom-5);
+            ctx.fillStyle=Q_INFO; ctx.textAlign='left'; ctx.fillText('RENT STALLED', a.left+6, a.bottom-5);
+            ctx.fillStyle=Q_GOOD; ctx.textAlign='right'; ctx.fillText('HEALTHY', a.right-6, a.bottom-5);
             ctx.restore();
         }
     };
@@ -2163,7 +2198,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
             return {
                 label:p.prop_name, _base:col, _pinDir:pinDir, _pinVal:(pinDir!==0?last.x:0),
                 data:[{x:clampX(last.x), y:last.y, _p:last}], showLine:false,
-                pointBackgroundColor: last.danger ? '#dc3545' : col,
+                pointBackgroundColor: last.danger ? Q_BAD : col,
                 pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:8, pointHoverRadius:10
             };
         });
@@ -2231,7 +2266,8 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         rows.forEach(function(r){
             var tr=document.createElement('tr'); if(r.danger) tr.className='danger';
             var chg = (r.x==null) ? '<span class="an-src">—</span>'
-                : '<span style="color:'+(r.x<0?'#dc3545':'#1f7a37')+';">'+pctTxt(r.x)+'</span>';
+                : '<span class="an-chg ' + (r.x<0?'is-bad':'is-good') + '">'
+                  + pctTxt(r.x) + '</span>';
             tr.innerHTML =
                 '<td>'+esc(r.name)+' <span class="an-src">('+esc(r.source)+')</span></td>'+
                 '<td class="num">'+euro(r.rent)+'</td>'+
@@ -2244,7 +2280,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         });
         var flagged = rows.filter(function(r){ return r.danger; }).length;
         document.getElementById('analysisNote').innerHTML = flagged
-            ? ('<i class="fas fa-exclamation-triangle" style="color:#dc3545;"></i> '+flagged+' propert'+(flagged>1?'ies':'y')+' in the watch zone.')
+            ? ('<i class="fas fa-exclamation-triangle an-warn-icon"></i> '+flagged+' propert'+(flagged>1?'ies':'y')+' in the watch zone.')
             : 'No properties in the watch zone.';
     }
 

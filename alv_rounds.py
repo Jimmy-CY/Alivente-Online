@@ -34,6 +34,7 @@ ROUNDS = [
     '.bak_csmall',
     '.bak_tap',
     '.bak_chip',
+    '.bak_quad',
 ]
 
 
