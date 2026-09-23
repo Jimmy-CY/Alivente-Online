@@ -973,7 +973,10 @@ $suites = @(
     'test_filter_chip.py',
     # Section C round C4: the Expenses vs Rent analysis takes base's
     # meaning tokens - the quadrants, the labels, the table and the key,
-    'test_quadrant_tokens.py'
+    'test_quadrant_tokens.py',
+    # Section C round C5: the lease generator's thirteen coloured card
+    # headers are house sections - three panels and ten titles,
+    'test_lease_sections.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -188,6 +188,11 @@ DECIDED = {
     'numbering-controls':      [('*', S)],
     'header-actions':          [('*', S)],
     'd-flex':                  [('*', S)],
+    # A section title that carries its own control - round C5,
+    # 23 Sep. The control belongs to the section, not to the
+    # pop-up around it, so it is a secondary like the d-flex
+    # header it replaced.
+    'lease-title-row':         [('*', S)],
     'detail-row':              [('*', S)],
     'add-line-wrap':           [('*', S)],
     'modal-body':              [('*', B)],
@@ -610,14 +615,18 @@ def innermost_wrapper(m, pos):
     wrapper has to be known, not guessed from the class string.
     """
     best = None
-    for w in re.finditer(r'<(?:div|section|form|td|li)\b[^>]*class="([^"]*)"[^>]*>',
+    for w in re.finditer(r'<(div|section|form|td|li|h[1-6])\b[^>]*class="([^"]*)"[^>]*>',
                          m):
         a = w.start()
         if a > pos:
             break
+        # ITS OWN TAG, not always a div - round C5, 23 Sep. A section
+        # title that carries a control is the wrapper of that control,
+        # and it ends at </h3>, not at the next </div>.
+        _tag = w.group(1)
         depth, end = 0, None
-        for d in re.finditer(r'<div\b|</div>', m[a:]):
-            if d.group(0) == '</div>':
+        for d in re.finditer(r'<%s\b|</%s>' % (_tag, _tag), m[a:]):
+            if d.group(0) == '</%s>' % _tag:
                 depth -= 1
                 if depth == 0:
                     end = a + d.end()
@@ -625,7 +634,7 @@ def innermost_wrapper(m, pos):
             else:
                 depth += 1
         if end and a <= pos < end and (best is None or a > best[0]):
-            best = (a, w.group(1))
+            best = (a, w.group(2))
     return best[1].split() if best else []
 
 
