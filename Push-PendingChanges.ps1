@@ -986,7 +986,10 @@ $suites = @(
     # Section D round D3: base owns the labelled row action, the last
     # four script-built buttons are decided, and three stale LEAVE
     # reasons are gone,
-    'test_row_actions.py'
+    'test_row_actions.py',
+    # Section D round D4: base owns the filter field - one height, one
+    # chevron and one focus ring on the ten pages that each had their own,
+    'test_filter_field.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

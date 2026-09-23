@@ -62,9 +62,9 @@
     <div class="passport-filter-content" id="passportFilterContent">
         <form action="{% url 'passport_management' %}" method="GET" id="passportFilterForm">
             <div class="passport-filter-grid">
-                <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-user"></i> <strong>Holder</strong></label>
-                    <select name="holder" class="form-control passport-filter-select" id="holderSelect">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-user"></i> <strong>Holder</strong></label>
+                    <select name="holder" class="form-control filter-select" id="holderSelect">
                         <option value="">All Holders</option>
                         <option value="Demetri Manias" {% if selected_holder == 'Demetri Manias' %}selected{% endif %}>Demetri Manias</option>
                         <option value="Angela Manias" {% if selected_holder == 'Angela Manias' %}selected{% endif %}>Angela Manias</option>
@@ -72,9 +72,9 @@
                         <option value="Alexandra Manias" {% if selected_holder == 'Alexandra Manias' %}selected{% endif %}>Alexandra Manias</option>
                     </select>
                 </div>
-                <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-passport"></i> <strong>Type</strong></label>
-                    <select name="doc_type" class="form-control passport-filter-select" id="docTypeSelect">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-passport"></i> <strong>Type</strong></label>
+                    <select name="doc_type" class="form-control filter-select" id="docTypeSelect">
                         <option value="">All Types</option>
                         <option value="passport" {% if selected_doc_type == 'passport' %}selected{% endif %}>Passport</option>
                         <option value="id" {% if selected_doc_type == 'id' %}selected{% endif %}>ID</option>
@@ -83,9 +83,9 @@
                         <option value="arc" {% if selected_doc_type == 'arc' %}selected{% endif %}>ARC</option>
                     </select>
                 </div>
-                <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-globe"></i> <strong>Country</strong></label>
-                    <select name="country" class="form-control passport-filter-select" id="countrySelect">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-globe"></i> <strong>Country</strong></label>
+                    <select name="country" class="form-control filter-select" id="countrySelect">
                         <option value="">All Countries</option>
                         <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
                         <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
@@ -93,9 +93,9 @@
                         <option value="Zimbabwe" {% if selected_country == 'Zimbabwe' %}selected{% endif %}>Zimbabwe</option>
                     </select>
                 </div>
-                <div class="passport-filter-group">
-                    <label class="passport-filter-label"><i class="fas fa-check-circle"></i> <strong>Status</strong></label>
-                    <select name="status" class="form-control passport-filter-select" id="statusSelect">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-check-circle"></i> <strong>Status</strong></label>
+                    <select name="status" class="form-control filter-select" id="statusSelect">
                         <option value="">All Statuses</option>
                         <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
                         <option value="renewal" {% if selected_status == 'renewal' %}selected{% endif %}>Applied for Renewal</option>
@@ -468,32 +468,6 @@
     align-items: end;
     margin-bottom: 20px;
 }
-.passport-filter-group { display: flex; flex-direction: column; }
-.passport-filter-label {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 6px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.passport-filter-select {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
-    background: white;
-    width: 100%;
-    height: 44px;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 12px center;
-    background-repeat: no-repeat;
-    background-size: 16px 12px;
-    padding-right: 40px;
-}
 
 /* Add New button row */
 .add-new-button-row {
@@ -570,10 +544,7 @@
         gap: 12px;
         margin-bottom: 12px;
     }
-    .passport-filter-select {
-        font-size: 16px; /* prevents iOS zoom-on-focus */
-    }
-
+    
     /* Mobile-only sort dropdown */
     .mobile-sort-control {
         display: flex !important;

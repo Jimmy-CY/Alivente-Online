@@ -203,7 +203,6 @@ check('  including the per-page card-title rule :first-child replaced',
 # A patcher that deleted too much would pass every check above.
 for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.filter-grid', 'its layout'),
-                 ('.search-btn', 'the search button'),
                  ('.modal-header', 'the delete modal'),
                  ('.delete-modal-grid', 'its grid'),
                  ('.action-add-new', 'Add New'),
@@ -218,6 +217,13 @@ for sel, why in (('.filter-panel', 'the filter panel'),
 check('  MOVED .filter-tag to base  (the active-filter chips)',
       re.search(r'\.filter-tag\s*\{', BASE_SRC) is not None
       and re.search(r'\.filter-tag\s*[,{:.]', CSS) is None)
+
+# LATER - round D4, 23 Sep. The filter field and the search box moved into
+# base, so this page no longer keeps .search-btn - base does. Asked of the
+# place the rule now lives, exactly as .filter-tag is above.
+check('  MOVED .search-btn to base (the search button)',
+      re.search(r'\.search-btn\s*\{', BASE_SRC) is not None
+      and re.search(r'\.search-btn\s*[,{:.]', CSS) is None)
 
 # Presence is not integrity. A negative control that deleted ONE .filter-panel
 # rule passed every check above, because .filter-panel.expanded still matched.
@@ -235,7 +241,14 @@ def group(prefix):
 # margin lets a rule go missing quietly, which is the failure this exists to
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
-for prefix, floor, why in (('.filter', 24, 'filter panel'),
+for prefix, floor, why in (('.filter', 17, 'filter panel'),
+                           # 24 UNTIL ROUND D4, 23 Sep: base took the
+                           # filter field - .filter-group,
+                           # .filter-label, .filter-label i,
+                           # .filter-select, .filter-input and their
+                           # :focus. The floor moved with the
+                           # decision, by exactly those rules, and the
+                           # MOVED check above names where they went.
                            # 27 UNTIL ROUND C3, 22 Sep: .filter-tags,
                            # .filter-tag and .filter-tag .remove-tag
                            # moved into base. The floor moved with
@@ -254,8 +267,7 @@ for prefix, floor, why in (('.filter', 24, 'filter panel'),
                            # went, so the next person does not have to work out
                            # why the number changed.
                            ('.action-', 8, 'page-header buttons'),
-                           ('.modal', 10, 'delete modal'),
-                           ('.search', 8, 'search box')):
+                           ('.modal', 10, 'delete modal')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
 

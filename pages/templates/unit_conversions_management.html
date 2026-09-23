@@ -210,36 +210,9 @@
     flex-wrap: wrap;
 }
 
-.filter-search {
-    flex: 1;
-    min-width: 200px;
-    padding: 10px 14px;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-}
 
-.filter-search:focus {
-    outline: none;
-    border-color: #667eea;
-}
 
-.filter-select {
-    padding: 10px 14px;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    background: white;
-    transition: border-color 0.2s;
-    min-width: 160px;
-}
 
-.filter-select:focus {
-    outline: none;
-    border-color: #667eea;
-}
 
 .scope-toggle {
     display: flex;
@@ -409,13 +382,7 @@
         align-items: stretch;
         gap: 10px;
     }
-    .filter-search,
-    .filter-select {
-        width: 100%;
-        min-width: 0;
-        max-width: none;
-    }
-    .scope-toggle {
+        .scope-toggle {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
     }
@@ -436,7 +403,7 @@
     input[type="date"],
     select,
     textarea,
-    .filter-search,
+    .filter-input,
     .filter-select {
         font-size: 16px !important;
     }
@@ -636,7 +603,7 @@
         <div class="filter-bar">
             <input type="text"
                    id="conversionSearch"
-                   class="filter-search"
+                   class="filter-input"
                    placeholder="🔍 Search by ingredient or unit..."
                    oninput="applyFilters()">
 

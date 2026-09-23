@@ -465,9 +465,32 @@ else:
         def strip_16(css):
             return re.sub(r'font-size\s*:\s*16px\s*(!important)?\s*;?', '',
                           css)
-        for rel, why in (('fsr.html', 'kept by rule - it sets filters to 14px'),
+        # LATER - round D4, 23 Sep. fsr's own guard is REDUNDANT now:
+        # base's filter field carries the 16px, so stripping the page's
+        # copy moves nothing. That is not the guard going away, it is
+        # the guard moving, and the pair of checks below says so -
+        # measured at 375: 0 controls move without the page's copy, 9
+        # move when base's is taken as well.
+        _t = read(os.path.join(ROOT, 'fsr.html'))
+        _mk = body_markup(_t)
+        _real = render(br, page_html(boot, base_now, styles_of(_t),
+                                     _mk), 375)
+        _nopage = render(br, page_html(
+            boot, base_now, [strip_16(c) for c in styles_of(_t)],
+            _mk), 375)
+        _noboth = render(br, page_html(
+            boot, [strip_16(c) for c in base_now],
+            [strip_16(c) for c in styles_of(_t)], _mk), 375)
+        ok(_real == _nopage,
+           'CONTROL  fsr.html' + ' ' * 27 + 'its own guard is redundant'
+           ' - base carries it now')
+        ok(_real != _noboth,
+           '  and the guard that replaced it is real - %d control(s) '
+           'move when base\'s goes too'
+           % sum(1 for x, y in zip(_real, _noboth) if x != y))
+        for rel, why in (
                          ('preview_imported_recipe.html',
-                          'an ORPHAN guard - 24 inputs with no .form-control')):
+                          'an ORPHAN guard - 24 inputs with no .form-control'),):
             p = os.path.join(ROOT, rel)
             if not os.path.isfile(p):
                 skip('CONTROL %s' % rel, 'not in this checkout')

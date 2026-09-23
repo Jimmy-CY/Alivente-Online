@@ -2668,6 +2668,167 @@ textarea.form-control { height: auto; }
 }
 .alv-filter-active-label { color: var(--alv-ink-soft); font-weight: 600; }
 
+/* ===== ALV FILTER FIELD v1 ===== 23 Sep 2026
+   The filter bar's own controls - the Country / Status dropdown, the text
+   box beside it, and the search input welded to its button. TEN pages
+   carried a copy, the same properties in the same order, and they had
+   drifted into disagreeing about the one thing that matters most here.
+
+   MEASURED IN CHROMIUM, the same Country filter, before this block:
+
+     page                          desk   phone   chevron
+     act_expense                    44      44      yes
+     passport_management            44      44      yes
+     physical_invoice_list          44      44      NO
+     fsr / properties / suppliers   44      46      yes
+     tenant                         44      46      yes
+     projects/projects              48      48      yes
+     invoices                       42      43      NO
+     unit_conversions_management    42      43      NO
+
+   Four different heights on a phone, and THREE OF THE TEN below the 44px
+   decision 3.4 has promised since it was written. Nobody had measured it;
+   the running list recorded this as "the filter selects' own 44px rules on
+   five pages", which was wrong about the number and wrong about the fault.
+
+   HEIGHT, not min-height. 44 on the desk and 44 on the phone, so the
+   control is the same size everywhere - which min-height cannot give,
+   because the 16px iOS zoom guard grows the box to 46 or 48. Two pages
+   already fixed the height and measured 44 at both widths; this is them.
+
+   PAINTED FROM THE TOKENS. The copies wrote #e9ecef for the border and
+   #0e7c8b for the focus. The focus literal already WAS --alv-accent; the
+   border moves to --alv-line (#e3e8ea), which is the colour every other
+   field in the system uses, so the filter bar finally matches the form
+   below it. The chevron keeps its literal grey - a data: URI cannot read
+   a custom property.
+
+   z-index 10, and 20 on focus, with `overflow: visible` on the group:
+   five of the ten needed it so a focus ring is not clipped by the field
+   beside it. It travels with the component rather than being dropped.
+
+   A page joins by DELETING its copy. Nine keep their class names, so no
+   markup moves; passport_management, recipe_management and
+   unit_conversions_management wrote their own names and are renamed.
+                                              [test_filter_field.py] */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: visible;
+}
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--alv-ink-strong);
+  font-size: 14px;
+  font-weight: 500;
+}
+.filter-label i { color: var(--alv-ink-soft); width: 14px; }
+
+.filter-select,
+.filter-input {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 44px;
+  padding: 10px 14px;
+  background: var(--alv-paper);
+  border: 2px solid var(--alv-line);
+  border-radius: var(--alv-radius);
+  font-family: var(--alv-font-ui);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.filter-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px 12px;
+  padding-right: 40px;
+}
+.filter-select:focus,
+.filter-input:focus {
+  z-index: 20;
+  border-color: var(--alv-accent);
+  box-shadow: 0 0 0 3px var(--alv-accent-ring);
+  outline: none;
+}
+
+/* The search box: an input welded to a button, which is why the two carry
+   half a radius each and no border between them. The button was teal on
+   five pages and GREEN on recipe_management - the same colour-by-module
+   fault D3 found in the row actions, and the same answer: it is the one
+   thing you came to the bar to do, so it is the accent, everywhere. */
+.search-input-group {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 10px 14px;
+  background: var(--alv-paper);
+  border: 2px solid var(--alv-line);
+  border-right: none;
+  border-radius: var(--alv-radius) 0 0 var(--alv-radius);
+  font-family: var(--alv-font-ui);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.search-input:focus {
+  position: relative;
+  z-index: 20;
+  border-color: var(--alv-accent);
+  box-shadow: 0 0 0 3px var(--alv-accent-ring);
+  outline: none;
+}
+.search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 10px 16px;
+  background: var(--alv-accent);
+  border: 2px solid var(--alv-accent);
+  border-left: none;
+  border-radius: 0 var(--alv-radius) var(--alv-radius) 0;
+  color: var(--alv-on-accent);
+  cursor: pointer;
+}
+.search-btn:hover,
+.search-btn:focus {
+  background: var(--alv-accent-ink);
+  border-color: var(--alv-accent-ink);
+  color: var(--alv-on-accent);
+}
+.search-btn:active { transform: scale(0.98); }
+.search-btn:focus-visible {
+  outline: 2px solid var(--alv-accent);
+  outline-offset: 2px;
+}
+
+/* 16px stops iOS zooming the page when a control is tapped. HEIGHT is
+   fixed above, so the bigger type does not grow the box - which is the
+   whole reason this component sets height rather than min-height. */
+@media screen and (max-width: 768px) {
+  .filter-select,
+  .filter-input,
+  .search-input { font-size: 16px; }
+  .search-input-group { width: 100%; }
+}
+/* ===== /ALV FILTER FIELD v1 ===== */
+
 /* ===== ALV FILTER CHIP v1 ===== 22 Sep 2026
    The chip that says a filter is on - "Property: Limassol  x". Nine pages
    carried the same four rules, copied from one another; this is them, once,

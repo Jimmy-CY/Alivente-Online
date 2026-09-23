@@ -65,49 +65,10 @@
     margin-bottom: 20px;
 }
 
-.recipe-filter-group {
-    display: flex;
-    flex-direction: column;
-}
 
-.recipe-filter-label {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 6px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
 
-.recipe-search-input-group {
-    display: flex;
-}
 
-.recipe-search-input {
-    border: 2px solid #e9ecef;
-    border-radius: 8px 0 0 8px;
-    border-right: none;
-    padding: 10px 14px;
-    font-size: 14px;
-    background: white;
-    flex: 1;
-    height: 44px;
-}
 
-.recipe-search-btn {
-    background: #28a745;
-    border: 2px solid #28a745;
-    border-left: none;
-    border-radius: 0 8px 8px 0;
-    color: white;
-    padding: 10px 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 44px;
-}
 
 /* Multi-Select Filter Dropdown Styles */
 .filter-multiselect-dropdown { position: relative; }
@@ -1537,8 +1498,7 @@
     .recipe-filter-panel { padding: 14px; border-radius: 8px; }
     .recipe-filter-title { font-size: 15px; }
     .recipe-filter-grid { grid-template-columns: 1fr; gap: 12px; }
-    .recipe-search-input { font-size: 16px; }
-    .filter-multiselect-button { font-size: 14px; }
+        .filter-multiselect-button { font-size: 14px; }
     .filter-multiselect-menu { max-height: 60vh; }
     .filter-action-buttons { flex-direction: column; gap: 8px; }
     .filter-action-buttons .btn { width: 100%; }
@@ -1819,15 +1779,15 @@
 
             <div class="recipe-filter-grid">
                 <!-- Search Filter -->
-                <div class="recipe-filter-group">
-                    <label class="recipe-filter-label">
+                <div class="filter-group">
+                    <label class="filter-label">
                         <i class="fas fa-search"></i> Search Recipe
                     </label>
-                    <div class="recipe-search-input-group">
-                        <input type="text" name="search" class="recipe-search-input" id="searchInput"
+                    <div class="search-input-group">
+                        <input type="text" name="search" class="search-input" id="searchInput"
                                placeholder="{% if search_type == 'ingredient' %}Search by ingredient...{% else %}Search by name...{% endif %}"
                                value="{{ search_query }}">
-                        <button type="submit" class="recipe-search-btn">
+                        <button type="submit" class="search-btn">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
@@ -1848,8 +1808,8 @@
                 </div>
 
                 <!-- Course Filter -->
-                <div class="recipe-filter-group">
-                    <label class="recipe-filter-label">
+                <div class="filter-group">
+                    <label class="filter-label">
                         <i class="fas fa-utensils"></i> Courses
                     </label>
                     <div class="filter-multiselect-dropdown">
@@ -1874,8 +1834,8 @@
                 </div>
 
                 <!-- Category Filter -->
-                <div class="recipe-filter-group">
-                    <label class="recipe-filter-label">
+                <div class="filter-group">
+                    <label class="filter-label">
                         <i class="fas fa-tag"></i> Categories
                     </label>
                     <div class="filter-multiselect-dropdown">
@@ -1900,8 +1860,8 @@
                 </div>
 
                 <!-- Protein Filter -->
-                <div class="recipe-filter-group">
-                    <label class="recipe-filter-label">
+                <div class="filter-group">
+                    <label class="filter-label">
                         <i class="fas fa-drumstick-bite"></i> Proteins
                     </label>
                     <div class="filter-multiselect-dropdown">
@@ -1935,8 +1895,8 @@
                 </div>
 
                 <!-- Author Filter -->
-                <div class="recipe-filter-group">
-                    <label class="recipe-filter-label">
+                <div class="filter-group">
+                    <label class="filter-label">
                         <i class="fas fa-user-edit"></i> Author
                     </label>
                     <div class="filter-multiselect-dropdown">
@@ -1961,8 +1921,8 @@
                 </div>
 
                 <!-- Nutrition Sort (Step 3) -->
-                <div class="recipe-filter-group">
-                    <label class="recipe-filter-label">
+                <div class="filter-group">
+                    <label class="filter-label">
                         <i class="fas fa-apple-alt"></i> Sort by Nutrition
                     </label>
                     <div class="nutrition-sort-row">

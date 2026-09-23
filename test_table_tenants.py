@@ -291,7 +291,14 @@ _rule_pairs = [(re.sub(r'/\*.*?\*/', '', m.group(1), flags=re.S).strip(),
                 m.group(2))
                for m in re.finditer(r'([^{}]+)\{([^{}]*)\}', CSS)]
 
-for prefix, floor, why in (('.filter', 23, 'filter panel'),
+for prefix, floor, why in (('.filter', 17, 'filter panel'),
+                           # 23 UNTIL ROUND D4, 23 Sep: base took the
+                           # filter field - .filter-group,
+                           # .filter-label, .filter-label i,
+                           # .filter-select, .filter-input and their
+                           # :focus. The floor moved with the
+                           # decision, by exactly those rules, and the
+                           # MOVED check above names where they went.
                            # 26 UNTIL ROUND C3, 22 Sep: .filter-tags,
                            # .filter-tag and .filter-tag .remove-tag
                            # moved into base. The floor moved with
