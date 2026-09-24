@@ -989,7 +989,10 @@ $suites = @(
     'test_row_actions.py',
     # Section D round D4: base owns the filter field - one height, one
     # chevron and one focus ring on the ten pages that each had their own,
-    'test_filter_field.py'
+    'test_filter_field.py',
+    # Section D round D5: base owns the series scale, a property keeps its
+    # colour when the chart is filtered, and 59 status literals take tokens,
+    'test_series_scale.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

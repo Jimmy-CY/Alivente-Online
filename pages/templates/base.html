@@ -125,7 +125,7 @@
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  54 design tokens and the component classes below. A page should reach
+  62 design tokens and the component classes below. A page should reach
   for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
@@ -139,6 +139,8 @@
                (each with a -soft companion for backgrounds)
     Ageing     --alv-age-1 .. --alv-age-4  (+ -soft)
     Grading    --alv-grade-1 .. --alv-grade-5  (+ -soft)
+    Series     --alv-series-1 .. --alv-series-8   one colour per THING
+               on a chart - never a status, never cycled past eight
     Tag inks   --alv-tag-clay/moss/plum/sky/slate-ink
     Action     --alv-edit  --alv-view
     Shape      --alv-radius  --alv-radius-sm  --alv-font-ui
@@ -996,6 +998,70 @@
         --alv-grade-4-soft: #fae3da;
         --alv-grade-5:      #b3261e;
         --alv-grade-5-soft: #f7d3ce;
+
+        /* THE SERIES SCALE - one colour per THING, on a chart.
+           ===== ALV SERIES SCALE v1 ===== 23 Sep 2026
+
+           act_expense and financial_indicators each drew one mark per
+           property from its own hardcoded array of twelve colours, and the
+           two arrays shared not one value. Run through a palette validator,
+           both FAILED, and two pairs were the same colour to a reader with
+           ordinary sight:
+
+             financial_indicators  the PORTFOLIO line #0e7c8b and the 12th
+                                   property #00838f      delta-E  2.0
+             act_expense           properties 10 and 11
+                                   #d6336c and #c2255c   delta-E  5.0
+
+           The floor is 15. Below it the two cannot be told apart at all -
+           and on Financial Indicators the collision was with the portfolio
+           average, the line every property is being compared against.
+
+           THE HOUSE INKS CANNOT DO THIS JOB, and that was measured before
+           this scale was written. The five tag inks were tried first: all
+           five fall below the chroma floor (they read as grey on a chart
+           surface), moss and clay separate by delta-E 2.1 under protanopia,
+           slate and plum by 7.5 in ordinary sight. Those inks were drawn to
+           sit BEHIND TEXT IN A CHIP, where low chroma is the whole point. A
+           2px mark on white is a different job and needs more colour. A
+           second, more muted attempt failed the same two checks. So this
+           scale is louder than the rest of the palette on purpose.
+
+           VALIDATED, not chosen by eye:
+             lightness band    all 8 inside L 0.43-0.77   PASS
+             chroma floor      all 8 >= 0.1               PASS
+             CVD separation    worst adjacent 9.1         PASS
+             normal vision     worst adjacent 19.6        PASS
+             contrast          3 slots under 3:1          WARN - relieved by
+                               the legend both charts already carry
+
+           THE ORDER IS LOAD-BEARING. The checks are run on ADJACENT pairs,
+           so re-ordering can break them: two re-orderings tried here
+           dropped CVD separation to 6.1 and 6.9, into the band that is
+           legal only with a second encoding. This order is the validated
+           one, rotated by one place so that BLUE - the only hue within
+           delta-E 15 of the accent, at 12.4 - lands in the last slot
+           instead of the first. Rotation preserves every adjacent pair.
+           Check any change with a validator; do not eyeball it.
+
+           NOT A STATUS COLOUR. good, warn, bad and the grade steps are
+           reserved for what a number MEANS. These say only WHICH thing a
+           mark belongs to, and a chart must never borrow one for the other.
+
+           EIGHT, AND NO NINTH HUE. A ninth series does not get a generated
+           colour - it takes slot 1 again with a second MARK, so no two
+           series are ever identical: a dash on a line chart, a different
+           point shape where the mark is a dot. Sixteen distinguishable
+           series; past that a chart needs fewer things on it, not more
+           colours.                                  [test_series_scale.py] */
+        --alv-series-1:   #eb6834;   /* orange  */
+        --alv-series-2:   #1baf7a;   /* aqua    */
+        --alv-series-3:   #eda100;   /* yellow  */
+        --alv-series-4:   #e87ba4;   /* magenta */
+        --alv-series-5:   #008300;   /* green   */
+        --alv-series-6:   #4a3aa7;   /* violet  */
+        --alv-series-7:   #e34948;   /* red     */
+        --alv-series-8:   #2a78d6;   /* blue    */
 
         /* Action colours for the icon buttons. */
         --alv-edit:       #2563eb;

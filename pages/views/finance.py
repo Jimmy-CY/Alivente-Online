@@ -2393,11 +2393,23 @@ def _financial_indicators_trend(request):
         portfolio['expensesToRevenue'].append(round(t_exp / t_rev * 100, 2) if t_rev > 0 else None)
         portfolio['rentPerSqm'].append(round(t_rev / 12 / t_area, 2) if t_area > 0 else None)
 
+    # THE CHART'S COLOUR FOLLOWS THE PROPERTY, not its place in this
+    # list. `properties` here is filtered to Active, and the chart
+    # then drew only the TICKED ones - so unticking one property
+    # repainted every property below it.
+    # The slot is a property's rank among ALL properties, ordered by the
+    # one thing about it that never changes. Adding a property appends;
+    # nothing already on the chart moves. [D5]
+    slot_of = {pid: i for i, pid in enumerate(
+        props.objects.order_by('prop_id').values_list('prop_id',
+                                                      flat=True))}
+
     prop_series = []
     for prop in properties:
         pm = meta[prop.prop_id]
         prop_series.append({
             'id': prop.prop_id,
+            'slot': slot_of.get(prop.prop_id, 0),
             'name': pm['name'],
             'grossROI': pm['grossROI'],
             'netROI': pm['netROI'],

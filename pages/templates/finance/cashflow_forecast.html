@@ -67,39 +67,42 @@
     <!-- FORECASTCF v2 : revenue toggle (top, default ON) -->
     <style id="cfV2Style">
     .cf-toggle-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;background:#e8f6f5;border:1px solid #b7e0dd;border-radius:10px;margin-bottom:16px;}
-    .cf-switch{display:flex;align-items:center;gap:8px;font-weight:600;color:#0f766e;cursor:pointer;margin:0;font-size:.98rem;}
+    .cf-switch{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--alv-accent);cursor:pointer;margin:0;font-size:.98rem;}
     .cf-switch input{width:17px;height:17px;cursor:pointer;}
     .cf-hint{color:#555;font-size:.8rem;}
     #summaryCardsContainer .card-body.cf-compact{padding:8px 12px;}
     .cf-compact .cf-line{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;padding:2px 0;line-height:1.35;}
     .cf-compact .cf-lbl{color:#666;}
     .cf-compact .cf-val{font-weight:700;font-variant-numeric:tabular-nums;}
-    .cf-rev .cf-val{color:#0f766e;}
+    .cf-rev .cf-val{color:var(--alv-accent);}
     .cf-net{border-top:1px solid #eee;margin-top:3px;padding-top:4px !important;}
-    .cf-net.cf-neg .cf-val{color:#c0392b;}
-    .cf-net.cf-pos .cf-val{color:#0f766e;}
+    .cf-net.cf-neg .cf-val{color:var(--alv-bad);}
+    .cf-net.cf-pos .cf-val{color:var(--alv-accent);}
     .cf-net-note{text-align:center;margin:2px 0 16px;color:#444;font-size:.9rem;}
-    .cf-net-note .cf-neg{color:#c0392b;font-weight:600;}
+    .cf-net-note .cf-neg{color:var(--alv-bad);font-weight:600;}
     .cf-range{display:block;font-size:10px;font-weight:500;opacity:.9;text-transform:none;letter-spacing:0;margin-top:2px;}
-    #cfHoverTip{position:fixed;z-index:9999;display:none;background:#fff;border:1px solid #cfe3e0;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:10px 12px;font-size:.82rem;max-width:300px;pointer-events:none;color:#2c3e50;}
-    .cf-tip-h{font-weight:700;color:#0f766e;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;}
+    #cfHoverTip{position:fixed;z-index:9999;display:none;background:#fff;border:1px solid var(--alv-accent-line);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:10px 12px;font-size:.82rem;max-width:300px;pointer-events:none;color:var(--alv-ink);}
+    .cf-tip-h{font-weight:700;color:var(--alv-accent);margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;}
     .cf-tip-t{width:100%;border-collapse:collapse;}
     .cf-tip-t td{padding:2px 0;vertical-align:top;}
     .cf-tip-num{text-align:right;font-variant-numeric:tabular-nums;padding-left:16px;white-space:nowrap;}
     .cf-tip-tot td{border-top:1px solid #eee;font-weight:700;padding-top:4px;}
     .cf-tip-empty{color:#888;}
     .cf-slider-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:16px;background:#f4fbfa;border:1px solid #d6ece9;border-radius:10px;}
-    .cf-slider-cap{font-weight:600;color:#0f766e;font-size:.9rem;}
+    .cf-slider-cap{font-weight:600;color:var(--alv-accent);font-size:.9rem;}
     .cf-slider-end{font-size:.8rem;color:#666;}
     .cf-slider-track{position:relative;flex:1;min-width:140px;max-width:340px;display:flex;align-items:center;}
-    .cf-slider{flex:1;min-width:0;width:100%;accent-color:#0f766e;cursor:pointer;}
-    .cf-breakeven-mark{position:absolute;top:50%;transform:translate(-50%,-50%);width:3px;height:22px;background:#c0392b;border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.65);display:none;}
-    .cf-breakeven-note{font-size:.8rem;font-weight:600;color:#c0392b;white-space:nowrap;}
-    .cf-slider-val{font-weight:700;color:#0f766e;font-variant-numeric:tabular-nums;min-width:44px;text-align:right;}
-    .legend-color.income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%);}
-    .legend-color.outflow{background:linear-gradient(135deg,#e2685f 0%,#d9534f 100%);}
-    .timeline-bar.cf-bar-income{background:linear-gradient(135deg,#0f9488 0%,#0f766e 100%) !important;}
-    .timeline-bar.cf-bar-out{background:linear-gradient(135deg,#e2685f 0%,#d9534f 100%) !important;}
+    .cf-slider{flex:1;min-width:0;width:100%;accent-color:var(--alv-accent);cursor:pointer;}
+    .cf-breakeven-mark{position:absolute;top:50%;transform:translate(-50%,-50%);width:3px;height:22px;background:var(--alv-bad);border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.65);display:none;}
+    .cf-breakeven-note{font-size:.8rem;font-weight:600;color:var(--alv-bad);white-space:nowrap;}
+    .cf-slider-val{font-weight:700;color:var(--alv-accent);font-variant-numeric:tabular-nums;min-width:44px;text-align:right;}
+    /* Money in is the house accent, money out is the bad token - the
+       same two colours these already were, named instead of spelled,
+       and flat rather than a gradient. [D5] */
+    .legend-color.income{background:var(--alv-accent);}
+    .legend-color.outflow{background:var(--alv-bad);}
+    .timeline-bar.cf-bar-income{background:var(--alv-accent) !important;}
+    .timeline-bar.cf-bar-out{background:var(--alv-bad) !important;}
     </style>
     <div class="cf-toggle-bar">
         <label class="cf-switch">
@@ -203,8 +206,8 @@
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
-        background: #0a5e6a;
-        border-color: #0a5e6a;
+        background: var(--alv-accent-ink);
+        border-color: var(--alv-accent-ink);
         color: white;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -212,7 +215,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .action-back:hover { background: #0e7c8b; color: white; text-decoration: none; }
+    .action-back:hover { background: var(--alv-accent); color: white; text-decoration: none; }
 }
 
 /* ============================================================
@@ -231,7 +234,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
     transition: all 0.3s ease;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
     height: auto;
 }
 
@@ -266,7 +269,7 @@
     margin: 0 0 5px 0;
     font-size: 24px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .summary-card .card-subtitle {
@@ -291,7 +294,7 @@
    ============================================================ */
 .chart-panel {
     background: white;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 30px;
@@ -301,13 +304,13 @@
 .chart-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--alv-line);
 }
 
 .chart-title {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 5px 0;
 }
 
@@ -324,9 +327,9 @@
     margin-bottom: 20px;
     margin-left: 70px;
     padding: 15px;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-radius: 6px;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .legend-item { display: flex; align-items: center; gap: 8px; }
@@ -338,9 +341,6 @@
     border: 1px solid rgba(0,0,0,0.1);
 }
 
-.legend-color.red { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
-.legend-color.orange { background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%); }
-.legend-color.green { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
 
 .legend-text {
     font-size: 14px;
@@ -375,9 +375,6 @@
     cursor: pointer;
 }
 
-.timeline-bar.red { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
-.timeline-bar.orange { background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%); }
-.timeline-bar.green { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
 
 @media (hover: hover) and (pointer: fine) {
     .timeline-bar:hover {
@@ -392,7 +389,7 @@
 .rotate-prompt {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%);
+    background: linear-gradient(135deg, var(--alv-accent) 0%, var(--alv-accent-ink) 100%);
     z-index: 9999;
     display: none;
     align-items: center;
@@ -437,23 +434,23 @@
     font-weight: 600;
 }
 
-.rotate-prompt__back:hover { background: white; color: #0e7c8b; text-decoration: none; }
+.rotate-prompt__back:hover { background: white; color: var(--alv-accent); text-decoration: none; }
 
 /* ============================================================
    MODAL STYLING
    ============================================================ */
 .modal-content {
     border-radius: 8px;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .modal-header {
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background: var(--alv-surface);
+    border-bottom: 1px solid var(--alv-line);
     border-radius: 8px 8px 0 0;
 }
 
-.modal-title { color: #2c3e50; font-weight: 600; }
+.modal-title { color: var(--alv-ink); font-weight: 600; }
 
 .modal-body {
     min-height: 400px;
@@ -462,15 +459,15 @@
 }
 
 .modal-property-breakdown {
-    border-left: 3px solid #0e7c8b;
+    border-left: 3px solid var(--alv-accent);
     padding: 15px;
     margin: 12px 0;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-radius: 6px;
 }
 
 .modal-property-breakdown h6 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 8px;
     font-weight: 600;
 }
@@ -500,14 +497,14 @@
 @media (hover: hover) and (pointer: fine) {
     .clickable-row:hover {
         background-color: #e3f2fd !important;
-        border-left-color: #0e7c8b;
+        border-left-color: var(--alv-accent);
     }
 }
 
 .btn-info {
-    background-color: #0e7c8b;
+    background-color: var(--alv-accent);
     color: white;
-    border: 1px solid #0e7c8b;
+    border: 1px solid var(--alv-accent);
     transition: all 0.3s ease;
     border-radius: 6px;
     font-weight: 500;
@@ -515,8 +512,8 @@
 
 @media (hover: hover) and (pointer: fine) {
     .btn-info:hover {
-        background-color: #0a5e6a;
-        border-color: #0a5e6a;
+        background-color: var(--alv-accent-ink);
+        border-color: var(--alv-accent-ink);
         color: white;
         text-decoration: none;
         transform: translateY(-1px);
@@ -539,7 +536,7 @@
 }
 
 .spinner-border.text-info {
-    color: #0e7c8b !important;
+    color: var(--alv-accent) !important;
     width: 3rem;
     height: 3rem;
 }
@@ -934,7 +931,7 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         const gridLine = document.createElement("div");
         gridLine.style.cssText = `position:absolute;bottom:${bottomPosition}px;left:0;right:0;height:1px;border-top:2px solid #000;background-color:#000;z-index:1;opacity:0.2;`;
         const gridLabel = document.createElement("div");
-        gridLabel.style.cssText = `position:absolute;bottom:${bottomPosition - 8}px;left:5px;font-size:${isMobileLandscape ? '9px' : '11px'};color:#6c757d;background:white;padding:2px 6px;border-radius:2px;font-weight:500;z-index:2;border:1px solid #e9ecef;white-space:nowrap;line-height:1;`;
+        gridLabel.style.cssText = `position:absolute;bottom:${bottomPosition - 8}px;left:5px;font-size:${isMobileLandscape ? '9px' : '11px'};color:#6c757d;background:white;padding:2px 6px;border-radius:2px;font-weight:500;z-index:2;border:1px solid var(--alv-line);white-space:nowrap;line-height:1;`;
         gridLabel.textContent = `€${gridValue.toLocaleString()}`;
         timelineContainer.appendChild(gridLine);
         timelineContainer.appendChild(gridLabel);
@@ -969,7 +966,7 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         let labelHtml;
         if (show) {
             const net = inc - out;
-            labelHtml = `<strong>${month.name}</strong><br><span style="color:${net < 0 ? '#c0392b' : '#0f766e'};font-weight:700;">Net ${cfEuro(net)}</span>`;
+            labelHtml = `<strong>${month.name}</strong><br><span style="color:${net < 0 ? 'var(--alv-bad)' : 'var(--alv-accent)'};font-weight:700;">Net ${cfEuro(net)}</span>`;
         } else {
             labelHtml = `<strong>${month.name}</strong><br><strong>${cfEuro(out)}</strong>`;
         }
@@ -1086,11 +1083,11 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
     } else {
         monthExpenses.sort((a, b) => a.lineType.localeCompare(b.lineType));
         let html = `
-            <div class="mb-3" style="text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
-                <h5 style="color: #0e7c8b; margin: 0;">Total Month: €${totalMonth.toFixed(2)}</h5>
+            <div class="mb-3" style="text-align: center; background: var(--alv-surface); padding: 15px; border-radius: 8px; border: 1px solid var(--alv-line);">
+                <h5 style="color: var(--alv-accent); margin: 0;">Total Month: €${totalMonth.toFixed(2)}</h5>
             </div>
             <table class="table table-hover" style="table-layout: fixed; width: 100%;">
-                <thead style="background: #f8f9fa;">
+                <thead style="background: var(--alv-surface);">
                     <tr>
                         <th style="width: 65%; border-top: none; word-wrap: break-word;">Expense Line Type</th>
                         <th style="width: 35%; text-align: right; border-top: none;">Total Amount</th>
@@ -1102,12 +1099,12 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
             html += `
                 <tr class="clickable-row expense-line-row" data-index="${index}" style="cursor: pointer;">
                     <td style="white-space: normal; word-wrap: break-word; padding-right: 10px;">
-                        <i class="fas fa-receipt" style="color: #0e7c8b; margin-right: 8px;"></i>
+                        <i class="fas fa-receipt" style="color: var(--alv-accent); margin-right: 8px;"></i>
                         <strong>${expense.lineType}</strong>
                         <small style="display: block; color: #6c757d; margin-top: 4px;">Tap for property breakdown</small>
                     </td>
                     <td style="text-align: right; vertical-align: top; padding-top: 12px;">
-                        <strong style="color: #0e7c8b;">€${expense.amount.toFixed(2)}</strong>
+                        <strong style="color: var(--alv-accent);">€${expense.amount.toFixed(2)}</strong>
                         <i class="fas fa-chevron-right" style="color: #6c757d; margin-left: 8px; font-size: 12px;"></i>
                     </td>
                 </tr>
@@ -1144,11 +1141,11 @@ function showExpenseBreakdown(lineType, data) {
     modalTitle.innerHTML = `<i class="fas fa-receipt"></i> ${lineType}`;
 
     let html = `
-        <div class="mb-4" style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
-            <h4 class="mb-1" style="color: #2c3e50;">Total: <span style="color: #0e7c8b;">€${data.amount.toFixed(2)}</span></h4>
+        <div class="mb-4" style="background: var(--alv-surface); padding: 16px; border-radius: 8px; border: 1px solid var(--alv-line);">
+            <h4 class="mb-1" style="color: var(--alv-ink);">Total: <span style="color: var(--alv-accent);">€${data.amount.toFixed(2)}</span></h4>
             <p class="text-muted mb-0">${window.currentModalState.monthName} &middot; ${lineType}</p>
         </div>
-        <h6 style="color: #2c3e50; margin-bottom: 16px;"><i class="fas fa-building"></i> Property Breakdown</h6>
+        <h6 style="color: var(--alv-ink); margin-bottom: 16px;"><i class="fas fa-building"></i> Property Breakdown</h6>
     `;
 
     if (!data.properties || Object.keys(data.properties).length === 0) {
@@ -1162,7 +1159,7 @@ function showExpenseBreakdown(lineType, data) {
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap: wrap;">
                         <h6 style="margin:0;"><i class="fas fa-building"></i> ${property}</h6>
                         <div style="text-align:right;">
-                            <strong style="color: #0e7c8b;">€${amount.toFixed(2)}</strong>
+                            <strong style="color: var(--alv-accent);">€${amount.toFixed(2)}</strong>
                             <small class="text-muted" style="display:block;">${percentage}% of total</small>
                         </div>
                     </div>

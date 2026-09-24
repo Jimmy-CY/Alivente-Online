@@ -1998,12 +1998,43 @@ document.addEventListener('DOMContentLoaded', function() {
 (function () {
     var CHART = null, DATA = null;
     var PORT = '#0e7c8b';
-    var PALETTE = ['#e67e22', '#2c82c9', '#27ae60', '#8e44ad', '#c0392b', '#16a085',
-                   '#d35400', '#2980b9', '#f39c12', '#7f8c8d', '#c2185b', '#00838f'];
+    // THE SERIES SCALE, read from base - see ALV SERIES SCALE v1. The
+    // twelve colours that used to be here put #00838f in slot 12, which
+    // is delta-E 2.0 from PORT above - the PORTFOLIO AVERAGE line, the
+    // one every property is being compared against. With twelve
+    // properties selected, one of them WAS the portfolio line.
+    //
+    // A NINTH PROPERTY DOES NOT GET A NINTH COLOUR. It takes slot 1
+    // again with a DASHED line. Shape is not available here: styleFor
+    // already uses it to mark the current and future years. [D5]
+    var AN_CS = getComputedStyle(document.documentElement);
+    function anTok(name, fallback){
+        var v = AN_CS.getPropertyValue('--alv-' + name);
+        return (v && v.trim()) || fallback;
+    }
+    var SERIES_FALLBACK = ['#eb6834','#1baf7a','#eda100','#e87ba4',
+                           '#008300','#4a3aa7','#e34948','#2a78d6'];
+    var SERIES = SERIES_FALLBACK.map(function(fb, i){
+        return anTok('series-' + (i + 1), fb);
+    });
+    function seriesColour(slot){
+        return SERIES[(slot || 0) % SERIES.length];
+    }
+    function seriesDash(slot){
+        return Math.floor((slot || 0) / SERIES.length) % 2 ? [6, 4] : [];
+    }
     function unit(key) { return key === 'rentPerSqm' ? ' \u20ac/m\u00b2' : '%'; }
-    function styleFor(color, years) {
+    function styleFor(color, years, opts) {
+        // WIDTH IS AN ENCODING HERE. The portfolio line used to be told
+        // apart from a property only by its colour, and its colour was
+        // delta-E 2.0 from one of them. It is heavier now, so it reads
+        // as the baseline in grey scale, in print, and to a reader who
+        // cannot separate the two hues. [D5]
+        opts = opts || {};
         return {
             borderColor: color, backgroundColor: color, tension: 0.25, spanGaps: true,
+            borderWidth: opts.width || 2,
+            borderDash: opts.dash || [],
             pointBackgroundColor: color,
             pointStyle: years.map(function (y) { return y >= DATA.current_year ? 'rectRot' : 'circle'; }),
             pointRadius: years.map(function (y) { return y >= DATA.current_year ? 5 : 3; })
@@ -2032,12 +2063,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) el.textContent = (n === 0) ? 'Portfolio only' : (n + ' selected');
     }
     function datasets(ind, i0, i1, vYears) {
-        var out = [Object.assign({ label: 'Portfolio', data: DATA.portfolio[ind].slice(i0, i1 + 1) }, styleFor(PORT, vYears))];
-        var ids = selectedIds(), ci = 0;
+        var out = [Object.assign(
+            { label: 'Portfolio', data: DATA.portfolio[ind].slice(i0, i1 + 1) },
+            styleFor(PORT, vYears, { width: 4 }))];
+        var ids = selectedIds();
         DATA.properties.forEach(function (p) {
             if (ids.indexOf(String(p.id)) === -1) return;
-            var color = PALETTE[ci % PALETTE.length]; ci++;
-            out.push(Object.assign({ label: p.name, data: p[ind].slice(i0, i1 + 1) }, styleFor(color, vYears)));
+            // p.slot, NOT ci: ci counted only the TICKED properties, so
+            // unticking one repainted every property below it. [D5]
+            out.push(Object.assign(
+                { label: p.name, data: p[ind].slice(i0, i1 + 1) },
+                styleFor(seriesColour(p.slot), vYears,
+                         { dash: seriesDash(p.slot) })));
         });
         return out;
     }

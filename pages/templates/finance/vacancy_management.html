@@ -210,7 +210,7 @@
 .period-title {
     font-size: 16px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0;
     display: flex;
     align-items: center;
@@ -336,7 +336,7 @@
 .indicator-value {
     font-size: 18px;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 /* Property Selection Panel */
@@ -360,7 +360,7 @@
 .selection-title {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0;
     display: flex;
     align-items: center;
@@ -440,7 +440,7 @@
 .chart-title {
     font-size: 16px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 5px 0;
 }
 .chart-subtitle {
@@ -547,7 +547,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 .trends-button-panel h5 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 15px;
 }
 .trends-button-panel p {
@@ -769,6 +769,21 @@
 </style>
 
 <script>
+// THE TOKENS, read from base - see ALV SERIES SCALE v1 and the grading
+// scale. This page painted three INDICATORS (three categories) and the
+// bars BELOW them (a grading against the portfolio average) out of the
+// same green / amber / red, so the same colour meant two different
+// things on one screen. The indicators take series tokens; the bars
+// take grade steps; the average line takes ink. [D5]
+const AN_CS = getComputedStyle(document.documentElement);
+function anTok(name, fallback){
+    const v = AN_CS.getPropertyValue('--alv-' + name);
+    return (v && v.trim()) || fallback;
+}
+const GRADE_GOOD = anTok('grade-1', '#1e7d4f');
+const GRADE_MID  = anTok('grade-3', '#5b6b73');
+const GRADE_BAD  = anTok('grade-5', '#b3261e');
+
 // Global variables
 let dashboardInstance = null;
 let currentPeriod = 'past_year';
@@ -795,7 +810,7 @@ class VacancyDashboard {
                 key: 'occupancyRate', 
                 label: 'Occupancy Rate (%)', 
                 icon: 'fas fa-home', 
-                color: '#28a745', 
+                color: anTok('series-1', '#eb6834'),
                 format: (val) => val === null || val === undefined ? 'N/A' : `${val.toFixed(1)}%`,
                 description: 'Percentage of time properties are occupied. Higher values indicate better performance.',
                 sortable: true
@@ -804,7 +819,7 @@ class VacancyDashboard {
                 key: 'avgDaysToFill', 
                 label: 'Avg Days to Fill', 
                 icon: 'fas fa-clock', 
-                color: '#fd7e14', 
+                color: anTok('series-2', '#1baf7a'),
                 format: (val) => {
                     if (val === null || val === undefined) return 'N/A';
                     if (val === 0) return '0 days';
@@ -817,7 +832,7 @@ class VacancyDashboard {
                 key: 'vacancyCost', 
                 label: 'Vacancy Cost (€)', 
                 icon: 'fas fa-money-bill-wave', 
-                color: '#e74c3c', 
+                color: anTok('series-3', '#eda100'),
                 format: (val) => val === null || val === undefined ? 'N/A' : `€${val.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`,
                 description: 'Total revenue lost due to vacant periods. Calculated as days vacant × (monthly rent ÷ 30). Lower values indicate better performance.',
                 sortable: true
@@ -1246,10 +1261,14 @@ class VacancyDashboard {
         
         const backgroundColors = data.map(value => {
             if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
-                if (value === 0) return '#28a745';
-                return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
+                if (value === 0) return GRADE_GOOD;
+                return value <= portfolioAverage ? GRADE_GOOD
+                     : value <= portfolioAverage * 1.2 ? GRADE_MID
+                     : GRADE_BAD;
             } else {
-                return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
+                return value >= portfolioAverage ? GRADE_GOOD
+                     : value >= portfolioAverage * 0.8 ? GRADE_MID
+                     : GRADE_BAD;
             }
         });
             
@@ -1274,7 +1293,11 @@ class VacancyDashboard {
                     label: 'Portfolio Average',
                     data: Array(labels.length).fill(portfolioAverage),
                     type: 'line',
-                    borderColor: '#ff6b35',
+                    // A REFERENCE LINE, not a series. It is the thing
+                    // every bar is measured against, so it takes ink
+                    // rather than a colour that could be mistaken for
+                    // one of the grades beside it. [D5]
+                    borderColor: anTok('ink-soft', '#5b6b73'),
                     borderWidth: 2,
                     borderDash: [5, 5],
                     fill: false,

@@ -1049,6 +1049,17 @@ def act_expense_analysis_data(request):
         years_to_compute = sorted(
             set(available_years) | {min(available_years) - 1}, reverse=True)
 
+    # THE CHART'S COLOUR FOLLOWS THE PROPERTY, not its place in this
+    # list. The list below DROPS a property with no data in the
+    # chosen years, so its index moved whenever the year range
+    # moved - and the chart repainted itself when it did.
+    # The slot is a property's rank among ALL properties, ordered by the
+    # one thing about it that never changes. Adding a property appends;
+    # nothing already on the chart moves. [D5]
+    slot_of = {pid: i for i, pid in enumerate(
+        props.objects.order_by('prop_id').values_list('prop_id',
+                                                      flat=True))}
+
     properties = []
     for p in props.objects.all().order_by('prop_country', 'prop_name'):
         leases = list(tenant.objects.filter(prop=p))
@@ -1091,6 +1102,7 @@ def act_expense_analysis_data(request):
         if any_data:
             properties.append({
                 'prop_id': p.prop_id,
+                'slot': slot_of.get(p.prop_id, 0),
                 'prop_name': p.prop_name or '(Unnamed property)',
                 'years': year_data,
             })

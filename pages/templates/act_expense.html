@@ -1950,7 +1950,30 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
 (function() {
     'use strict';
     var ANALYSIS_URL = "{% url 'act_expense_analysis_data' %}";
-    var PALETTE = ['#0e7c8b','#e8590c','#2f9e44','#7048e8','#1c7ed6','#e64980','#f08c00','#0ca678','#5c7cfa','#d6336c','#c2255c','#495057'];
+    // THE SERIES SCALE, read from base - see ALV SERIES SCALE v1. The
+    // twelve colours that used to be here failed a palette validator:
+    // properties 10 and 11 were delta-E 5.0 apart, which is the same
+    // colour to anyone looking at it, and slot 1 was the accent, which
+    // is the portfolio's own teal on the other chart.
+    //
+    // A NINTH PROPERTY DOES NOT GET A NINTH COLOUR. It takes slot 1
+    // again with a different POINT SHAPE. On this chart a property is a
+    // dot, not a line, so a dash would say nothing - which is why the
+    // second mark here is a shape and on financial_indicators, where
+    // shape already means the year, it is a dash. [D5]
+    var SERIES_FALLBACK = ['#eb6834','#1baf7a','#eda100','#e87ba4',
+                           '#008300','#4a3aa7','#e34948','#2a78d6'];
+    var SERIES = SERIES_FALLBACK.map(function(fb, i){
+        return anTok('series-' + (i + 1), fb);
+    });
+    var SERIES_SHAPES = ['circle', 'triangle'];
+    function seriesColour(slot){
+        return SERIES[(slot || 0) % SERIES.length];
+    }
+    function seriesShape(slot){
+        return SERIES_SHAPES[Math.floor((slot || 0) / SERIES.length)
+                             % SERIES_SHAPES.length];
+    }
     var DANGER_PCT = 10, X_DIV = 0, X_CAP = 50;
     var chart = null, loaded = false, DATA = null;
     var labelHitboxes = [], canvasHandler = null;
@@ -2112,7 +2135,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
     function buildDatasets(){
         var years = plottedYears();
         return (DATA.properties||[]).map(function(p, idx){
-            var col = PALETTE[idx % PALETTE.length];
+            var col = seriesColour(p.slot), shape = seriesShape(p.slot);
             var pts = years.map(function(y){ return pointFor(p, y); })
                            .filter(function(pt){ return pt && pt.x!=null && pt.y!=null; });
             if (!pts.length) return { label:p.prop_name, _base:col, _hide:true, _pinDir:0, data:[] };
@@ -2129,6 +2152,7 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                     pointBorderColor: pts.map(function(_,i){ return i===n-1?'#fff':rgba(col,0.3); }),
                     pointBorderWidth: pts.map(function(_,i){ return i===n-1?2:1; }),
                     pointRadius: pts.map(function(_,i){ return 3+5*(i/(n-1)); }),
+                    pointStyle: shape,
                     pointHoverRadius: 9
                 };
             }
@@ -2136,7 +2160,8 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
                 label:p.prop_name, _base:col, _pinDir:pinDir, _pinVal:(pinDir!==0?last.x:0),
                 data:[{x:clampX(last.x), y:last.y, _p:last}], showLine:false,
                 pointBackgroundColor: last.danger ? Q_BAD : col,
-                pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:8, pointHoverRadius:10
+                pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:8,
+                pointStyle: shape, pointHoverRadius:10
             };
         });
     }
