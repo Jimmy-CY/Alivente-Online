@@ -246,6 +246,15 @@
 }
 
 .summary-card .card-header {
+    /* ONE HEADER FOR ALL THREE HORIZONS. [D8, 25 Sep]
+       These wore #dc3545 / #fd7e14 / #28a745 - a time horizon painted in
+       status colours. Two failed contrast with their own white text
+       (2.57 and 3.13 against the 4.5 the text needs), and the red one
+       sat above a POSITIVE Net drawn in teal by .cf-net.cf-pos, so the
+       card said two opposite things at once. Current Month / Next 3 /
+       Next 12 is a sequence, not a state: the icon, the label and the
+       date range say which one it is. White on the accent is 4.91. */
+    background: var(--alv-accent);
     padding: 12px 20px;
     margin: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -255,7 +264,7 @@
     margin: 0;
     font-size: 13px;
     font-weight: 600;
-    color: white;
+    color: var(--alv-on-accent);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -277,16 +286,6 @@
     font-size: 12px;
     color: #6c757d;
     font-weight: 500;
-}
-
-.summary-card.current-month .card-header {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
-.summary-card.short-term .card-header {
-    background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%);
-}
-.summary-card.long-term .card-header {
-    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
 }
 
 /* ============================================================

@@ -329,11 +329,28 @@ for rel in KEPT_BY_RULE:
        'the round touched it')
     if guards(css_of(read(p))) == 0:
         unguarded.append(rel)
-if unguarded:
-    notes.append('%d page(s) shrink a text control below 16px and carry NO '
-                 'guard at all - on a phone those controls may be under 16px '
-                 'today: %s. Not this round\'s to fix; measured and reported.'
-                 % (len(unguarded), ', '.join(unguarded)))
+# LATER - Section D round D8, 25 Sep. THIS NOTE USED TO BE PRINTED HERE,
+# from `unguarded`, and it was wrong on all four pages it named:
+#
+#   fsr_details            HAS a guard - `font-size: 16px !important;
+#                          /* iOS zoom guard */` in its own phone query
+#   physical_invoice_list  HAS a guard - `font-size: 16px` in its phone
+#                          query
+#   suppliers              .filter-title is an <h5>; iOS zooms a focused
+#                          FORM FIELD, not a heading
+#   invoices               .btn-outline-secondary is a BUTTON. Same
+#
+# The first two are one bug in guards(): its control pattern is
+# `(?<![-\w])(input|select|textarea)(?![-\w])`, and those pages spell
+# their classes .numbering-input and .comment-input-full - the word is
+# preceded by a HYPHEN, the lookbehind rejects it, and a real 16px guard
+# goes uncounted. The other two are the note trusting a selector that
+# merely looks control-ish.
+#
+# Rather than a better regex, the note is now built from the RENDER, at
+# 375, in the browser section below - where a page can only be named if
+# its controls really do measure small. `unguarded` is kept as the list
+# of pages to LOOK at, which is all a selector can honestly give.
 
 
 # ==========================================================================
@@ -511,6 +528,35 @@ else:
                 notes.append('CONTROL %s: %s.%s goes %s -> %s at 375 when its '
                              'guard is removed by hand.'
                              % (rel, x[1].lower(), x[3][:24], x[4], y[4]))
+
+        # ---- the note, MEASURED ----------------------------------- D8 --
+        # Every page the selectors call unguarded, rendered at 375. Only a
+        # control that really measures under 16px is reported, and when
+        # none does the suite says so with the count it checked - a note
+        # that can only ever shrink is how the last one stayed wrong.
+        really, looked = [], 0
+        for rel in unguarded:
+            p = os.path.join(ROOT, rel)
+            if not os.path.isfile(p):
+                continue
+            t = read(p)
+            rows = render(br, page_html(boot, base_now, styles_of(t),
+                                        body_markup(t)), 375)
+            looked += len(rows)
+            really += ['%s %s.%s %s' % (rel, c[1].lower(), c[3][:20], c[4])
+                       for c in rows if float(c[4][:-2]) < 16]
+        if really:
+            notes.append('%d control(s) on the %d page(s) with no guard in '
+                         'their own CSS really do measure below 16px at 375: '
+                         '%s' % (len(really), len(unguarded),
+                                 '; '.join(really[:6])))
+        else:
+            notes.append('%d page(s) have no 16px guard their CSS can be '
+                         'read as carrying - and RENDERED at 375, %d control'
+                         '(s) across them measure under 16px. The selector '
+                         'says look; the render says there is nothing there. '
+                         'Pages looked at: %s'
+                         % (len(unguarded), len(really), ', '.join(unguarded)))
         br.close()
 
     if small_after:

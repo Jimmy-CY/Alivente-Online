@@ -43,6 +43,7 @@ ROUNDS = [
     '.bak_series',
     '.bak_modal',
     '.bak_backlabel',
+    '.bak_horizon',
 ]
 
 

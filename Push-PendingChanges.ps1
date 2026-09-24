@@ -998,7 +998,11 @@ $suites = @(
     'test_modal_overlay.py',
     # Section D round D7: base hides the Back word wherever the button
     # sits, and 77 pages stop each writing the rule unscoped,
-    'test_back_label.py'
+    'test_back_label.py',
+    # Section D round D8: a time horizon is not a status - the three
+    # cashflow summary cards take one accent header, two of which had been
+    # failing contrast - and the zoom-guard note is measured, not guessed,
+    'test_horizon_cards.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
