@@ -272,14 +272,23 @@ for prefix, floor, why in (('.filter', 17, 'filter panel'),
                            # stops being a floor. The check below names what
                            # went, so the next person does not have to work out
                            # why the number changed.
-                           ('.action-', 8, 'page-header buttons'),
+                           # 8 UNTIL ROUND D7, 24 Sep: base took the
+                           # Back word's hide rule, rescoped from
+                           # `.page-action-buttons .action-back
+                           # .action-back-label` to the back button
+                           # itself. This page wrote
+                           # `.action-back-label { display: none }`
+                           # unscoped, as 76 others did. The floor
+                           # moved with the decision, by exactly
+                           # that one rule.
+                           ('.action-', 7, 'page-header buttons'),
                            ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
 
-# WHY EIGHT AND NOT ELEVEN. A floor alone records a number, not a reason - and
-# this one has now moved once, which is exactly when a check earns an
-# explanation. The three rules the button sweep removed are named here, and
+# WHY SEVEN AND NOT ELEVEN. A floor alone records a number, not a reason - and
+# this one has now moved twice - the button sweep, then round D7 - which is
+# exactly when a check earns an explanation. The three rules the button sweep removed are named here, and
 # each is asserted to be defined in base.html: a rule is only safe to delete
 # locally BECAUSE something replaced it.
 _SWEPT = ('.page-action-buttons .action-secondary',
@@ -303,8 +312,8 @@ for _s in _SWEPT:
           _s not in _flat
           and re.search(re.escape(_s.split()[-1]) + r'\s*[,{:]', BASE_SRC)
           is not None)
-check('  CONTROL: the eight that remain are page-specific, not base\'s',
-      group('.action-') == 8)
+check('  CONTROL: the seven that remain are page-specific, not base\'s',
+      group('.action-') == 7)
 
 for prefix in ('.icon-', '.mobile-action', '.table-container',
                '.properties-table', '.status'):

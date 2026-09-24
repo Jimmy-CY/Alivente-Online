@@ -2198,7 +2198,33 @@
           height: 44px;
           padding: 0;
         }
-        .page-action-buttons .action-back .action-back-label { display: none; }
+        /* ===== ALV BACK LABEL v1 ===== 24 Sep 2026
+           The word beside the arrow on a Back button, hidden below 768px
+           so the button is a 44px square. 3.4 asks for the square; this
+           is what makes room for it.
+
+           THIS RULE USED TO BE THREE ANCESTORS DEEP -
+           `.page-action-buttons .action-back .action-back-label` - and 77
+           pages each wrote `.action-back-label { display: none }`,
+           unscoped, to make up the difference. Measured 24 Sep: one rule
+           per page, the same declaration on every one of them, and of the
+           100 label elements in the system base could reach only 85. Of
+           the other fifteen, fourteen sit in a .action-back that is not
+           inside the bar - so deleting their copy WITHOUT widening this
+           would have put the word back on a phone - and one sat on a
+           .btn.back-button with no rule at all, which is why
+           resolved_issues_report SHOWED THE WORD.
+
+           The label only ever appears inside a back button. That is what
+           it is scoped to now, and nothing else. .back-button comes too:
+           base already settled, beside the paint rules above, that it "is
+           what four report pages call theirs - same thing, different
+           name", and gave it the same treatment rather than rewriting
+           four templates.
+           See test_back_label.py. */
+        .action-back .action-back-label,
+        .back-button .action-back-label { display: none; }
+        /* ===== /ALV BACK LABEL v1 ===== */
 
         .action-more-wrapper {
           display: block;

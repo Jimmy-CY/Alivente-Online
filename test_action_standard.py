@@ -232,8 +232,18 @@ check('  the More menu appears',
       is not None)
 check('  and Back keeps a 44px target',
       re.search(r'\.action-back\s*\{[^}]*width:\s*44px', MOBILE) is not None)
-check('  losing only its label',
-      '.action-back-label { display: none; }' in MOBILE)
+# LATER - Section D round D7, 24 Sep. This was a SUBSTRING test: the
+# text it looked for is the tail of any selector ending in
+# .action-back-label, so it could not tell base's rule from a page's
+# unscoped copy pasted in beside it. D7 rewrote the rule, so it is
+# asked for the SELECTOR now, and a control proves it can tell.
+_LBL = re.compile(r'\.action-back\s+\.action-back-label\s*,\s*'
+                  r'\.back-button\s+\.action-back-label\s*\{'
+                  r'[^}]*display:\s*none')
+check('  losing only its label, wherever the Back button sits',
+      _LBL.search(MOBILE) is not None)
+check('    CONTROL: an unscoped copy would NOT satisfy it',
+      _LBL.search('.action-back-label { display: none; }') is None)
 check('base.html braces still balance',
       BLOCK.count('{') == BLOCK.count('}'))
 

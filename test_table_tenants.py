@@ -303,7 +303,16 @@ for prefix, floor, why in (('.filter', 17, 'filter panel'),
                            # .filter-tag and .filter-tag .remove-tag
                            # moved into base. The floor moved with
                            # the decision, by exactly those three.
-                           ('.action-', 8, 'page-header buttons'),
+                           # 8 UNTIL ROUND D7, 24 Sep: base took the
+                           # Back word's hide rule, rescoped from
+                           # `.page-action-buttons .action-back
+                           # .action-back-label` to the back button
+                           # itself. This page wrote
+                           # `.action-back-label { display: none }`
+                           # unscoped, as 76 others did. The floor
+                           # moved with the decision, by exactly
+                           # that one rule.
+                           ('.action-', 7, 'page-header buttons'),
                            ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)

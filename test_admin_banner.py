@@ -663,9 +663,15 @@ if SKIP:
     print('')
     print('  %d check(s) DID NOT RUN. That is not the same as passing.' % SKIP)
 print('')
-print('  NOTED, NOT FIXED: workspace_management spells its Help button\'s')
-print('  label .action-back-label. base only hides that span inside an')
-print('  .action-back, so it is inert - a wrong name, not a wrong render.')
+# LATER - Section D round D7, 24 Sep. Both halves of this note are
+# spent. D2 made workspace_management's Help a bare label, so the
+# stray class name is gone rather than inert; D7 rescoped base's
+# rule to the back button itself. A note that describes a state two
+# rounds have left behind is how the next survey gets its count
+# wrong - which is the fault D7 was fixing.
+print('  CLOSED: workspace_management\'s Help no longer spells its')
+print('  label .action-back-label - D2 made it bare text - and D7')
+print('  rescoped base\'s rule to .action-back / .back-button.')
 print('')
 print('  STILL TO COME in these modules: the panel title on 11 screens,')
 print('  and the two tables on user_administration and workspace_management.')

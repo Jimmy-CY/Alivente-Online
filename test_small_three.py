@@ -258,22 +258,48 @@ ok(len(bare) > len(shapes.get('span', [])),
 # The whole point: the class is only harmless while this page has no
 # unscoped copy of the hide rule. Someone else's page is the proof that
 # it is not a theory.
-_unscoped = []
+_unscoped, _was_unscoped = [], []
 for base_, dirs, files in os.walk(T):
     dirs[:] = [d for d in dirs if d != '__pycache__']
     for f in files:
         if not f.endswith('.html') or '.bak_' in f:
             continue
+        p_ = os.path.join(base_, f)
         if re.search(r'(?m)^\s*\.action-back-label\s*\{[^}]*display:\s*none',
-                     read(os.path.join(base_, f))):
+                     read(p_)):
             _unscoped.append(f)
-ok(len(_unscoped) > 50,
-   '%d other pages carry an UNSCOPED .action-back-label hide rule'
-   % len(_unscoped), len(_unscoped))
-ok(re.search(r'\.page-action-buttons\s+\.action-back\s+\.action-back-label',
+        # LATER - Section D round D7, 24 Sep. Round D7 deleted all
+        # 77 of those copies and widened base's rule to reach the
+        # back button wherever it sits. The CLAIM is unchanged and
+        # still has to be true - it is asked of the file as it
+        # stood before D7, which is what D7's backup holds.
+        elif os.path.isfile(p_ + '.bak_backlabel') and re.search(
+                r'(?m)^\s*\.action-back-label\s*\{[^}]*display:\s*none',
+                read(p_ + '.bak_backlabel')):
+            _was_unscoped.append(f)
+ok(not _unscoped,
+   'no page carries an unscoped .action-back-label hide rule any '
+   'more - D7 removed every one', _unscoped[:6])
+ok(len(_was_unscoped) > 50,
+   '  CONTROL: %d of them did, and that is what made this page\'s '
+   'stray class name a real risk rather than a theory'
+   % len(_was_unscoped), len(_was_unscoped))
+# LATER - Section D round D7, 24 Sep. Base's rule was
+# `.page-action-buttons .action-back .action-back-label` and is now
+# `.action-back .action-back-label, .back-button .action-back-label`.
+# The point of this check - that base hides the span only INSIDE a
+# back button, which is what makes a Help button wearing the class
+# inert - is exactly the same, and is now true in more places.
+ok(re.search(r'\.action-back\s+\.action-back-label\s*,\s*'
+             r'\.back-button\s+\.action-back-label',
              B_NOW) is not None,
-   "  while base's own rule is scoped to .action-back - which is why "
-   'nothing was broken YET')
+   "  while base's own rule is scoped to the back button - which is "
+   'why nothing was broken YET')
+ok(re.search(r'\.page-action-buttons\s+\.action-back\s+'
+             r'\.action-back-label',
+             re.sub(r'/\*.*?\*/', '', B_NOW, flags=re.S)) is None,
+   '  and it is no longer scoped to the BAR as well, which is what '
+   'left fourteen pages out of reach')
 
 # CONTROL: the Back button beside it was not touched.
 _back = re.search(r'<a[^>]*class="btn action-back".*?</a>', W_NOW, re.S)

@@ -995,7 +995,10 @@ $suites = @(
     'test_series_scale.py',
     # Section D round D6: the last six pop-up headers on the property
     # side, and base owns the overlay the drill-down two are built in,
-    'test_modal_overlay.py'
+    'test_modal_overlay.py',
+    # Section D round D7: base hides the Back word wherever the button
+    # sits, and 77 pages stop each writing the rule unscoped,
+    'test_back_label.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
