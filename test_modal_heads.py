@@ -138,6 +138,13 @@ BUSINESS = [
     'tenant_lease_agreement.html', 'title_deeds_management.html',
     'user_administration.html', 'workspace_management.html',
 ]
+# LATER - Section D round D6, 24 Sep. passport_management's three
+# headers joined the house class with the rest of the property
+# side's six. It is NAMED here rather than added to BUSINESS,
+# because it is not a business template: the Personal check below
+# stays live for all 28 others, and this records the one that did
+# not wait. test_modal_overlay.py is what judges those three now.
+D6 = {'passport_management.html': 'Section D round D6, 24 Sep'}
 
 passed = failed = skipped = 0
 notes = []
@@ -238,14 +245,28 @@ for d, _, fs in os.walk(ROOT):
         if not f.endswith('.html') or '.bak' in f:
             continue
         rel = os.path.relpath(os.path.join(d, f), ROOT).replace('\\', '/')
-        if rel in BUSINESS or rel == 'base.html':
+        if rel in BUSINESS or rel == 'base.html' or rel in D6:
             continue
-        if HEAD in read(os.path.join(d, f)):
+        # LATER - Section D round D6, 24 Sep. Asked of CLASS
+        # ATTRIBUTES, not of the file: a page that merely NAMES
+        # the class, in a comment or in prose, is not wearing it.
+        if re.search(r'class="[^"]*\b%s\b' % HEAD,
+                     read(os.path.join(d, f))):
             personal.append(rel)
         if os.path.isfile(os.path.join(d, f) + SUFFIX):
             personal.append(rel + ' (has a backup - was edited)')
 ok(not personal, 'no template outside the business list was touched - the '
    'Personal side waits for its own round', '\n'.join(personal[:8]))
+# An exception that is not checked is an escape hatch. The one page
+# named above must really carry the class, or naming it hid a loss.
+ok(all(HEAD in read(os.path.join(ROOT, r)) for r in D6),
+   '  and the one named exception, %s, really does carry it'
+   % ', '.join(sorted(D6)))
+ok(re.search(r'class="[^"]*\b%s\b' % HEAD,
+             '<div class="modal-header %s">' % HEAD) is not None
+   and re.search(r'class="[^"]*\b%s\b' % HEAD,
+                 '<!-- .%s is what it would wear -->' % HEAD) is None,
+   '  CONTROL: the scan counts the class worn and not the class named')
 
 # ==========================================================================
 try:

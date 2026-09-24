@@ -348,8 +348,16 @@ for sel in ('.ia-drill-overlay{', '.ia-drill{', '.ia-drill-head{',
 # so it is still one asker and keeps its own rules.
 NO_MODAL = re.compile(r'\.alv-(modal|dialog|overlay|sheet)(?![\w-])'
                       r'|\.alv-modal-(?!head\b)[\w-]')
-check('base still has no modal component of its own - only the header',
+# LATER - Section D round D6, 24 Sep. Base took the RULES for
+# .modal-overlay, the pop-up home and notifications build in
+# JavaScript. That is a page's own class name, the way
+# .filter-select was in D4 - not an .alv- component - so what this
+# check has always guarded is unchanged, and the sentence now says
+# which. The drill-down on this page is a different overlay again.
+check('base still has no .alv- modal component of its own - only the header',
       not NO_MODAL.search(BASE_CSS))
+check('  and the Issues drill-down is still the page\'s own',
+      'ia-drill' not in BASE_CSS)
 check('  CONTROL: a whole .alv-modal in base would be caught',
       bool(NO_MODAL.search(BASE_CSS + '\n.alv-modal{display:block}')))
 check('  CONTROL: so would a .alv-modal-body',

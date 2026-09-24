@@ -253,6 +253,11 @@ _names = set(re.findall(
     r'\.(alv-[a-z0-9-]+|action-[a-z0-9-]+|page-action-buttons|icon-[a-z0-9-]+|'
     r'ui-menu[\w-]*|row-actions|cell-actions|table-container|'
     r'mobile-action-[a-z0-9-]+|status-btn|back-button|disabled-btn|'
+    # LATER - Section D round D6, 24 Sep. The block names
+    # .modal-overlay and the five classes inside it. Without these
+    # the new entry in section 2 would be named and never checked.
+    r'modal-overlay|modal-content|modal-header|modal-title|'
+    r'modal-close|modal-body|'
     r'desktop-action-cell)\b', BODY))
 _ghostc = sorted(c for c in _names if c not in _defined)
 check('every component it names is defined in base', not _ghostc,

@@ -169,6 +169,8 @@
     Reports      .alv-report-head  .alv-report-titles  .alv-report-title
                  .alv-report-sub  .alv-report-brand
     Pop-ups      .alv-modal-head (+ --danger)
+                 .modal-overlay (with .modal-content .modal-header
+                 .modal-title .modal-close .modal-body inside it)
     Forms        .alv-req  .form-card  .form-section-title  .form-group
                  .form-text  .form-control
                  .alv-applies  .alv-applies-help
@@ -510,11 +512,20 @@
       teal banner, a white title, a white close. A pop-up that deletes
       something is .alv-modal-head--danger, in red - that, and only that.
       Settled 21 Sep: 51 headers on 31 business templates had been sixteen
-      different looks. The Personal side's 36 wait for its own round.
+      different looks. Round D6, 24 Sep, closed the property side with
+      passport_management's last three. The Personal side's 33 wait for
+      its own round.
 
-      base owns the HEADER only - no dialog, overlay or body component. The
-      one hand-built overlay left, the Issues analysis drill-down, is
-      deliberate and is not a modal header.
+      THIS PARAGRAPH USED TO SAY base owns the HEADER only, and that the
+      one hand-built overlay left was the Issues analysis drill-down. The
+      count was wrong: there were THREE. home and notifications each
+      carried a copy of the same eleven-rule .modal-overlay, built in
+      JavaScript, where .alv-modal-head could never reach it. Base owns
+      those rules now - the same gradient as the header above, painted
+      from the tokens, 100dvh rather than 100vh on a phone - and the
+      pages keep the class names, because their markup is a string in a
+      script. The Issues drill-down keeps its own ia-drill-* names and is
+      still the page's.
 
   3.10 REPORTS                                   [test_report_head.py,
                                                   test_old_rounds.py]
@@ -3569,6 +3580,98 @@ table.alv-matrix {
 }
 .alv-modal-head .close:hover { opacity: 1 !important; }
 /* /ALV MODAL HEAD v1 */
+
+/* ===== ALV MODAL OVERLAY v1 ===== 24 Sep 2026
+   THE POP-UP THAT IS NOT BOOTSTRAP'S.
+
+   home and notifications build their drill-down pop-up in JavaScript - a
+   div with class="modal-overlay", written as a string - so there is no
+   .modal-dialog for .alv-modal-head to hang on, and 3.9 could never have
+   reached it. Both pages carried the same eleven rules, one copied from
+   the other; home's own comment said so.
+
+   DIFFED, not eyeballed: the two copies differed in exactly two ways.
+   One is whitespace inside rgba(). The other is the phone height - home
+   said 100dvh, notifications said 100vh - and 100vh is wrong on a phone,
+   because a browser's address bar counts inside 100vh and is not part of
+   the screen: the pop-up's bottom edge, and its last row, sit under the
+   toolbar. home had already fixed it. This is home's.
+
+   The header is the SAME gradient declaration as .alv-modal-head, so
+   this pop-up and the 51 Bootstrap ones are ONE look; both copies spelt
+   the accent #0e7c8b by hand. test_modal_overlay.py renders the two and
+   fails if they ever stop matching.
+
+   The class names are the pages' own, unchanged: the markup is built in
+   a script, so base takes the RULES and the pages keep the NAMES -
+   exactly the call D4 made for .filter-select.
+
+   Two literals are deliberate. rgba(0,0,0,.5) is the backdrop and
+   rgba(0,0,0,.3) its shadow: there is no token for a scrim, and neither
+   is a colour of the palette. The 12px corner is a POP-UP's corner;
+   --alv-radius is 8px and is the card's.
+   See test_modal_overlay.py. */
+.modal-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+.modal-overlay .modal-content {
+    background: var(--alv-paper);
+    border-radius: 12px;
+    max-width: 90vw; max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+.modal-overlay .modal-header {
+    background: linear-gradient(135deg, var(--alv-accent) 0%,
+                var(--alv-accent-ink) 100%);
+    color: var(--alv-on-accent);
+    padding: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.modal-overlay .modal-title {
+    margin: 0;
+    font-size: 20px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+}
+.modal-overlay .modal-close {
+    background: none; border: none;
+    color: var(--alv-on-accent);
+    font-size: 24px; cursor: pointer; padding: 0;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+.modal-overlay .modal-close:hover {
+    background: color-mix(in srgb, var(--alv-on-accent) 20%, transparent);
+}
+.modal-overlay .modal-body {
+    padding: 20px;
+    max-height: 70vh; overflow-y: auto;
+}
+@media screen and (max-width: 768px) {
+    .modal-overlay { height: 100dvh; }
+    .modal-overlay .modal-content {
+        max-width: 100vw; max-height: 100dvh;
+        width: 100vw; height: 100dvh;
+        border-radius: 0;
+        display: flex; flex-direction: column;
+        padding-top: env(safe-area-inset-top, 0);
+        padding-bottom: env(safe-area-inset-bottom, 0);
+        box-sizing: border-box;
+    }
+    .modal-overlay .modal-header { padding: 14px 16px; flex-shrink: 0; }
+    .modal-overlay .modal-title { font-size: 16px; }
+    .modal-overlay .modal-body {
+        padding: 14px; max-height: none;
+        flex: 1 1 auto; overflow-y: auto;
+    }
+}
+/* ===== /ALV MODAL OVERLAY v1 ===== */
+
 
 /* ALV REPORT HEAD v1 - the title row every business report shares.
    Titles on the left, Back or a headline figure on the right. The title

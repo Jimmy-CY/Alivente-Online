@@ -41,6 +41,7 @@ ROUNDS = [
     '.bak_rowact',
     '.bak_field',
     '.bak_series',
+    '.bak_modal',
 ]
 
 

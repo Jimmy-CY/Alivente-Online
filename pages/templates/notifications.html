@@ -164,70 +164,12 @@
     color: #2c3e50;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
 
-.modal-overlay .modal-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 90vw;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
 
-.modal-overlay .modal-header {
-    background: #0e7c8b;
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
-.modal-overlay .modal-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
-.modal-overlay .modal-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
 
-.modal-overlay .modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
 
-.modal-overlay .modal-body {
-    padding: 20px;
-    max-height: 70vh;
-    overflow-y: auto;
-}
 
 .table-container {
     overflow-x: auto;
@@ -400,30 +342,7 @@
         font-size: 22px;
     }
 
-    /* === Detail modal-overlay → full screen, table → cards === */
-    .modal-overlay .modal-content {
-        max-width: 100vw;
-        max-height: 100vh;
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-        display: flex;
-        flex-direction: column;
-    }
-    .modal-overlay .modal-header {
-        padding: 14px 16px;
-        flex-shrink: 0;
-    }
-    .modal-overlay .modal-title {
-        font-size: 16px;
-    }
-    .modal-overlay .modal-body {
-        padding: 14px;
-        max-height: none;
-        flex: 1 1 auto;
-        overflow-y: auto;
-    }
-
+                
     /* Tables → card layout */
     .data-table thead {
         display: none;
@@ -889,21 +808,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Scoped CSS overrides so the Bootstrap help modal isn't affected by the page's custom modal-overlay styles -->
+<!-- Scoped CSS overrides for the shared help modal. The HEADER override went
+     in round D6, 24 Sep: help_modal_shell.html wears .alv-modal-head, and this
+     re-spelt base's own gradient by hand. The three below are untouched and
+     the reason given for them has not been measured. -->
 <style>
 #notificationHelpModal .modal-content {
     max-width: none !important;
     max-height: none !important;
     border-radius: 0.3rem;
     box-shadow: none;
-}
-#notificationHelpModal .modal-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%) !important;
-    color: white !important;
-    padding: 1rem !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
 }
 #notificationHelpModal .modal-body {
     padding: 25px !important;

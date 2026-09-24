@@ -223,7 +223,16 @@ else:
 print('\n' + '=' * 74)
 print('2. home\'S DASHBOARD ROWS ARE CONTENT, AND SAY SO')
 print('=' * 74)
-h = read(HOME)
+# LATER - Section D round D6, 24 Sep. home gave its .modal-overlay
+# rules to base, so home.html on disk is no longer what THIS round
+# left. Asked of the file as this round left it, which is what every
+# suite has done since alv_rounds.py landed on 21 Sep.
+sys.path.insert(0, os.getcwd())
+try:
+    from alv_rounds import as_left_by as _left
+except Exception:
+    _left = None
+h = _left(HOME, SUFFIX, read) if _left else read(HOME)
 rows = re.findall(r'<button\b[^>]*class="([^"]*\btoday-row\b[^"]*)"', h)
 ok(len(rows) >= 6 and all(KEEP in r.split() for r in rows),
    'every one of home\'s %d insight rows carries .print-keep' % len(rows),
