@@ -319,8 +319,10 @@
     transform: scale(1.08);
 }
 .btn-photo-star-active {
-    background: #f39c12;
-    color: white;
+    /* The COVER photo - a selection, not a warning. #f39c12 carried
+       white at 2.19, below the 3.0 that even large text needs. [D10] */
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     cursor: default;
 }
 .btn-photo-star-active:hover {

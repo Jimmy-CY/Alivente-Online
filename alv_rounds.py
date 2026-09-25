@@ -45,6 +45,7 @@ ROUNDS = [
     '.bak_backlabel',
     '.bak_horizon',
     '.bak_avatar',
+    '.bak_contrast',
 ]
 
 

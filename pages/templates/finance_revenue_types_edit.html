@@ -133,9 +133,11 @@
     transition: all 0.15s ease;
 }
 .quickset-btn:hover {
-    background: #28a745;
-    color: white;
-    border-color: #28a745;
+    /* A hover, not a state. Green meant nothing here and carried
+       white at 3.13. [D10] */
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+    border-color: var(--alv-accent);
 }
 
 /* ============================================================

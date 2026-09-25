@@ -1005,7 +1005,10 @@ $suites = @(
     'test_horizon_cards.py',
     # Section D round D9: base owns the avatar - five copies of one disc,
     # four of them failing contrast with their own initials,
-    'test_avatar.py'
+    'test_avatar.py',
+    # Section D round D10: fifteen rules put white text on a colour too
+    # light to carry it - five of them failed even for large text,
+    'test_contrast.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
