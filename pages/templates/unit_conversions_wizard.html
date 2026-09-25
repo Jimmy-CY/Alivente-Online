@@ -8,17 +8,6 @@
     max-width: 900px;
     margin: 0 auto;
 }
-
-/* === Action bar (Back on right) === */
-.action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 18px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
 /* === Page header === */
 .page-header {
     background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
@@ -466,7 +455,7 @@
 <div class="conversions-wizard">
 
     <!-- Action Bar -->
-    <div class="action-bar">
+    <div class="page-action-buttons">
         {% if return_to == 'recipe' and scoped_recipe %}
             <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn btn-secondary action-back">
                 <i class="fas fa-arrow-left"></i> Back to Recipe

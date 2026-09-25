@@ -281,8 +281,12 @@ head('1. THE SOURCE - 83 SITES GONE, 2 NAMED ONES KEPT')
 # ==========================================================================
 ok(as_left_by is not None, 'alv_rounds imported')
 ok(SUFFIX in ROUNDS, '%s is registered in alv_rounds.ROUNDS' % SUFFIX)
-ok(ROUNDS and ROUNDS[-1] == SUFFIX,
-   '%s is the LAST round in ROUNDS' % SUFFIX, ROUNDS[-3:] if ROUNDS else '')
+# LATER - Section E round E3, 25 Sep. Was ROUNDS[-1] == SUFFIX, which
+# is true only until the next round is written. Order, not recency. [E3]
+ok(SUFFIX in ROUNDS and '.bak_pershead' in ROUNDS
+   and ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_pershead'),
+   'alv_rounds lists %s after .bak_pershead' % SUFFIX,
+   ROUNDS[-3:] if ROUNDS else '')
 
 left, missing_bak = [], []
 for name, want in sorted(FILES.items()):

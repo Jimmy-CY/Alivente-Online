@@ -22,21 +22,7 @@
     font-size: 32px;
     font-weight: bold;
     margin-bottom: 10px;
-}
-
-.action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 25px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-/* Desktop: hide the mobile-only "More" dropdown wrapper */
-.action-bar .action-more-wrapper { display: none; }
-
-/* Card-Style Conversion Table */
+}/* Card-Style Conversion Table */
 .conversions-card {
     background: white;
     border-radius: 12px;
@@ -277,50 +263,7 @@
     }
     .page-header > p {
         font-size: 14px !important;
-    }
-
-    /* Action bar — Back+2+ standard:
-       [Add Conversion (wide)] [⋮ Missing Conversions when present] [← Back] */
-    .action-bar {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-    .action-bar .action-secondary {
-        display: none;  /* Missing Conversions warning lives in More menu on mobile */
-    }
-    .action-bar .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-        gap: 6px;
-    }
-    .action-bar .action-more-wrapper {
-        display: block;
-        position: relative;
-        flex: 0 0 auto;
-    }
-    .action-bar .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .action-more-menu {
+    }ion-more-menu {
         position: absolute;
         top: calc(100% + 6px);
         right: 0;
@@ -352,17 +295,6 @@
         outline: none;
         color: #2c3e50;
     }
-    .action-bar .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-
     /* Card padding tighter */
     .conversions-card {
         padding: 16px;
@@ -536,7 +468,7 @@
 <div class="conversions-container">
     
     <!-- Action Bar -->
-    <div class="action-bar">
+    <div class="page-action-buttons">
         {% if perms.auth.can_edit_personal %}
         <button onclick="openAddModal()" class="btn btn-success action-primary">
             <i class="fas fa-plus"></i> Add New Conversion

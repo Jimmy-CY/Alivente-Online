@@ -8,17 +8,6 @@
     max-width: 900px;
     margin: 0 auto;
 }
-
-/* === Action bar (Back on right) === */
-.action-bar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 18px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
 /* === Page header === */
 .page-header {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -633,7 +622,7 @@
 <div class="nutrition-wizard">
     
     <!-- Action Bar -->
-    <div class="action-bar">
+    <div class="page-action-buttons">
         {% if return_to == 'recipe' and scoped_recipe %}
             <button type="button" 
                     class="btn btn-secondary action-back" 

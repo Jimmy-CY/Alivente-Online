@@ -1013,6 +1013,7 @@ $suites = @(
     # .alv-modal-head - fifteen of them were failing their own white text,
     'test_personal_heads.py'
     'test_purple.py'
+    'test_action_bar.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

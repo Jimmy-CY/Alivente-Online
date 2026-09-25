@@ -426,9 +426,30 @@ check('occupancy_trends no longer uses .action-bar',
 # round. A floor asserted against a partial tree is a check that fails
 # correct work, which is worse than no check.
 if len(_all) >= 60:
-    check('  and the other .action-bar pages are untouched - a name base does '
-          'not define, on a name-count that is its own survey',
-          len(_ab) >= 25, '%d still use it' % len(_ab))
+    # LATER - Section E round E3, 25 Sep. THE NAME IS GONE. Counted by
+    # exact class token instead of by substring: NO template wears
+    # action-bar any more - the seven that did now wear the house
+    # container. What the old substring count was really seeing:
+    #   16 x mobile-action-bar  - a different component, base defines it
+    #    3 x a locally-named bar of their own:
+    #         celebration_management  contact-action-bar-mobile,
+    #                                 event-action-bar-mobile
+    #         preview_imported_recipe preview-action-bar
+    #         view_recipe             recipe-action-bar
+    # Those four names are the same problem under four more names, and
+    # they are a round of their own. Named here so they cannot grow back
+    # quietly. [E3]
+    _tok = lambda t, w: any(
+        w in m.group(1).split()
+        for m in re.finditer(r'class="([^"]*)"', t))
+    _texts = {n: markup_of(read(os.path.join(T, n))) for n in _all}
+    _exact = sorted(n for n in _all if _tok(_texts[n], 'action-bar'))
+    _mob = sorted(n for n in _all if _tok(_texts[n], 'mobile-action-bar'))
+    check('  NO template wears action-bar any more - E3 moved all seven '
+          'onto the house container', not _exact, ', '.join(_exact[:5]))
+    check('  and the 16 mobile-action-bar pages are untouched - a '
+          'different component, which base does define',
+          len(_mob) >= 14, '%d wear it' % len(_mob))
 else:
     print('  SKIP  only %d template(s) here - the .action-bar corpus count '
           'needs the whole tree' % len(_all))
