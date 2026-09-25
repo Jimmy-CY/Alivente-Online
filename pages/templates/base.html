@@ -178,6 +178,7 @@
     Print        .print-keep
     Empty        .alv-empty  .alv-empty-title  .alv-empty-hint
     Segmented    .alv-seg
+    People       .alv-avatar (+ --md --lg --xl --ring)
     A11y         .alv-visually-hidden
 
 -------------------------------------------------------------------------------
@@ -853,8 +854,6 @@
     .sidebar-toggle:hover { background: #0a5e6a; }
 
     .sidebar-user { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; flex-shrink: 0; overflow: hidden; }
-    .sidebar-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3); overflow: hidden; }
-    .sidebar-avatar img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
     .sidebar-user-info { flex: 1; min-width: 0; transition: opacity 0.2s; }
     .sidebar.minimised .sidebar-user-info { opacity: 0; width: 0; overflow: hidden; }
     .sidebar-username { color: white; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2420,7 +2419,7 @@
 
     <div class="sidebar-user">
         <a href="{% url 'my_profile' %}" style="text-decoration:none; flex-shrink:0;">
-            <div class="sidebar-avatar">
+            <div class="alv-avatar alv-avatar--ring">
                 {% if request.user.profile.profile_photo %}
                     <img src="{{ request.user.profile.profile_photo.url }}" alt="Profile">
                 {% else %}
@@ -2498,7 +2497,7 @@
                     {% if request.user.profile.profile_photo %}
                         <img src="{{ request.user.profile.profile_photo.url }}" alt="Profile" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.6);">
                     {% else %}
-                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px;border:2px solid rgba(255,255,255,0.6);">
+                        <div class="alv-avatar alv-avatar--md alv-avatar--ring">
                             {% if request.user.first_name and request.user.last_name %}{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
                             {% elif request.user.first_name %}{{ request.user.first_name|first|upper }}
                             {% else %}{{ request.user.username|first|upper }}{% endif %}
@@ -3697,6 +3696,63 @@ table.alv-matrix {
     }
 }
 /* ===== /ALV MODAL OVERLAY v1 ===== */
+
+/* ===== ALV AVATAR v1 ===== 25 Sep 2026
+   The signed-in person, as a disc of their initials. FIVE copies of this
+   existed - .sidebar-avatar and an inline style= in base itself,
+   .member-avatar on workspace_edit, .user-avatar on user_administration
+   and .photo-placeholder on my_profile - all painting the same purple
+   gradient, all flex-centring the same white initials, at 32 / 36 / 38 /
+   32 / 80 pixels.
+
+   FOUR OF THE FIVE FAILED CONTRAST. The initials are 12-15px, so 4.5:1 is
+   the bar, and #667eea - the light end of the gradient, the top-left half
+   of the disc - measures 3.66 against white. (The 80px one is large text
+   and passed at 3.0; said so it is not claimed as more than it was.)
+
+   THE PAINT IS FLAT, AND THAT IS MEASURED. This disc sits on the sidebar,
+   #343a40, so it has to carry white initials AND stay apart from what is
+   behind it. The house gradient - accent to accent-ink, as .alv-modal-head
+   wears - ends 11.7 from the sidebar, which is not far enough: the bottom
+   of the disc would melt into it. The flat accent is 4.91 against its
+   text and 20.9 from the sidebar.
+
+   The size is a modifier, never a copy. The ring is a modifier too: it
+   exists for the two that sit on a dark surface, where a disc needs an
+   edge.
+   See test_avatar.py. */
+.alv-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.alv-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.alv-avatar--md { width: 36px; height: 36px; font-size: 13px; }
+.alv-avatar--lg { width: 38px; height: 38px; font-size: 15px; }
+.alv-avatar--xl {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+    letter-spacing: 1px;
+}
+/* On a dark surface only - the sidebar and the mobile nav. On paper the
+   ring is white on white and draws nothing. */
+.alv-avatar--ring { border: 2px solid rgba(255, 255, 255, 0.3); }
+/* ===== /ALV AVATAR v1 ===== */
 
 
 /* ALV REPORT HEAD v1 - the title row every business report shares.

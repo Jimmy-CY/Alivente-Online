@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personal Accent Comparison</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  /* the house, unchanged */
+  --ink:#21343c; --ink-strong:#41535c; --ink-soft:#55606b; --ink-faint:#8a979d;
+  --paper:#ffffff; --surface:#f8f9fa; --line:#e3e8ea; --line-soft:#f1f3f5;
+  --good:#1e7d4f; --warn:#9a6a08; --bad:#b3261e;
+  --sans:"Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+/* the two accents, as token sets */
+.teal{--accent:#0e7c8b;--accent-ink:#0a5e6a;--accent-soft:#e4f3f5;--accent-line:#a8d8de;--on-accent:#ffffff;}
+.violet{--accent:#72639d;--accent-ink:#564b78;--accent-soft:#f0eefa;--accent-line:#d0c8ec;--on-accent:#ffffff;}
+.olive{--accent:#6c7432;--accent-ink:#525824;--accent-soft:#eff1e5;--accent-line:#ccd2ae;--on-accent:#ffffff;}
+.green{--accent:#457d52;--accent-ink:#335f3d;--accent-soft:#e9f3ea;--accent-line:#b8d8bd;--on-accent:#ffffff;}
+
+*,*::before,*::after{box-sizing:border-box;}
+body{
+  margin:0;background:var(--surface);color:var(--ink);
+  font-family:var(--sans);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 16px 72px;}
+h1{font-size:clamp(26px,4vw,34px);margin:0 0 6px;letter-spacing:-.01em;text-wrap:balance;}
+.lede{color:var(--ink-soft);margin:0 0 8px;max-width:64ch;}
+.stamp{font-family:var(--mono);font-size:12px;color:var(--ink-faint);
+  letter-spacing:.04em;text-transform:uppercase;margin:0 0 36px;}
+h2{font-size:13px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-strong);margin:44px 0 14px;font-weight:700;}
+h2:first-of-type{margin-top:28px;}
+.note{font-size:14px;color:var(--ink-soft);margin:0 0 18px;max-width:72ch;}
+
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;}
+.panel > header{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  padding:11px 16px;border-bottom:1px solid var(--line);background:var(--line-soft);
+}
+.panel h3{margin:0;font-size:14px;font-weight:700;letter-spacing:.01em;}
+.panel .hexid{font-family:var(--mono);font-size:12px;color:var(--ink-soft);}
+.body{padding:18px 16px 20px;display:flex;flex-direction:column;gap:18px;}
+
+/* ---- real house components, rebuilt from base.html ---- */
+.swatches{display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--line);}
+.sw{flex:1;height:46px;display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:4px;font-family:var(--mono);font-size:10px;}
+.sw1{background:var(--accent-ink);color:#fff;}
+.sw2{background:var(--accent);color:#fff;}
+.sw3{background:var(--accent-line);color:var(--ink);}
+.sw4{background:var(--accent-soft);color:var(--ink);}
+
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.btn{font-family:inherit;font-size:14px;font-weight:600;border-radius:8px;
+  padding:0 16px;height:38px;display:inline-flex;align-items:center;gap:7px;
+  cursor:pointer;border:1px solid transparent;}
+.action-primary{background:var(--accent);color:var(--on-accent);}
+.action-primary:hover{background:var(--accent-ink);}
+.action-secondary{background:var(--paper);color:var(--accent);border-color:var(--accent);}
+.action-back{background:transparent;color:var(--ink-soft);}
+.action-danger{background:var(--paper);color:var(--bad);border-color:var(--bad);}
+
+.alv-modal-head{
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-ink) 100%);
+  color:var(--on-accent);padding:14px 18px;border-radius:8px 8px 0 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.alv-modal-head h4{margin:0;font-size:18px;font-weight:600;}
+.alv-modal-head .x{opacity:.85;font-size:22px;line-height:1;}
+.modal-body{border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;
+  padding:14px 18px;font-size:14px;color:var(--ink-soft);}
+
+.avatars{display:flex;align-items:center;gap:12px;}
+.alv-avatar{border-radius:50%;background:var(--accent);color:var(--on-accent);
+  font-weight:600;font-size:12px;width:32px;height:32px;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;}
+.alv-avatar--lg{width:38px;height:38px;font-size:15px;}
+.alv-avatar--xl{width:60px;height:60px;font-size:22px;letter-spacing:1px;}
+.onbar{background:#343a40;padding:9px 12px;border-radius:8px;display:flex;
+  align-items:center;gap:9px;color:#cdd3d7;font-size:13px;}
+
+.filter-group{display:flex;flex-direction:column;gap:5px;}
+.filter-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-strong);font-weight:700;}
+.filter-select{height:44px;border:1px solid var(--line);border-radius:8px;
+  padding:0 12px;font-family:inherit;font-size:14px;background:var(--paper);
+  color:var(--ink);width:100%;}
+.filter-select.focused{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-line);}
+
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-strong);padding:7px 10px;border-bottom:2px solid var(--line);}
+td{padding:9px 10px;border-bottom:1px solid var(--line-soft);}
+tr.sel td{background:var(--accent-soft);}
+.chip{display:inline-block;background:var(--accent-soft);color:var(--accent-ink);
+  border:1px solid var(--accent-line);border-radius:999px;padding:2px 11px;
+  font-size:12px;font-weight:600;}
+.tag{display:inline-block;color:#fff;border-radius:5px;padding:2px 9px;
+  font-size:12px;font-weight:600;}
+
+/* ---- the evidence table ---- */
+.evidence{width:100%;border-collapse:collapse;background:var(--paper);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px;}
+.evidence th{background:var(--line-soft);padding:10px 12px;white-space:nowrap;}
+.evidence td{padding:10px 12px;font-variant-numeric:tabular-nums;}
+.evidence td.num{font-family:var(--mono);text-align:right;}
+.dot{display:inline-block;width:13px;height:13px;border-radius:3px;
+  vertical-align:-2px;margin-right:7px;}
+.verdict{font-weight:700;font-size:12px;letter-spacing:.03em;}
+.v-no{color:var(--bad);} .v-ok{color:var(--good);} .v-mid{color:var(--warn);}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+.callout{border-left:3px solid var(--warn);background:#fdf3dd;
+  padding:13px 16px;border-radius:0 8px 8px 0;font-size:14px;margin:18px 0 0;}
+.callout b{color:var(--ink);}
+.collide{display:flex;align-items:center;gap:0;border-radius:8px;overflow:hidden;
+  border:1px solid var(--line);max-width:340px;}
+.collide div{flex:1;height:52px;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:12px;font-weight:600;
+  font-family:var(--mono);}
+footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--ink-faint);}
+@media (max-width:600px){ .wrap{padding:26px 16px 56px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Personal side — the accent, compared</h1>
+  <p class="lede">The same house components, painted with the property side's teal and with the proposed violet. Every number below is computed, not estimated.</p>
+  <p class="stamp">Alivente Online · 25 September 2026</p>
+
+  <h2>The components, side by side</h2>
+  <div class="pair">
+
+    <div class="panel teal">
+      <header><h3>Property — teal (unchanged)</h3><span class="hexid">#0e7c8b</span></header>
+      <div class="body">
+        <div class="swatches"><div class="sw sw1">ink</div><div class="sw sw2">accent</div><div class="sw sw3">line</div><div class="sw sw4">soft</div></div>
+        <div class="row">
+          <button class="btn action-primary">Save</button>
+          <button class="btn action-secondary">Add Recipe</button>
+          <button class="btn action-danger">Delete</button>
+          <button class="btn action-back">← Back</button>
+        </div>
+        <div>
+          <div class="alv-modal-head"><h4>Confirm Import</h4><span class="x">×</span></div>
+          <div class="modal-body">The pop-up header, the filter focus ring and the avatar all read from the same accent token.</div>
+        </div>
+        <div class="avatars">
+          <span class="alv-avatar">DM</span>
+          <span class="alv-avatar alv-avatar--lg">DM</span>
+          <span class="alv-avatar alv-avatar--xl">DM</span>
+          <span class="onbar"><span class="alv-avatar">DM</span> on the sidebar</span>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Category</label>
+          <select class="filter-select focused"><option>All categories</option></select>
+        </div>
+        <div class="scroll"><table>
+          <tr><th>Recipe</th><th>Status</th></tr>
+          <tr class="sel"><td>Lemon Orzo <span class="chip">selected</span></td><td><span class="tag" style="background:var(--good)">Complete</span></td></tr>
+          <tr><td>Slow Ragù</td><td><span class="tag" style="background:var(--warn)">Draft</span></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="panel violet">
+      <header><h3>Personal — violet (proposed)</h3><span class="hexid">#72639d</span></header>
+      <div class="body">
+        <div class="swatches"><div class="sw sw1">ink</div><div class="sw sw2">accent</div><div class="sw sw3">line</div><div class="sw sw4">soft</div></div>
+        <div class="row">
+          <button class="btn action-primary">Save</button>
+          <button class="btn action-secondary">Add Recipe</button>
+          <button class="btn action-danger">Delete</button>
+          <button class="btn action-back">← Back</button>
+        </div>
+        <div>
+          <div class="alv-modal-head"><h4>Confirm Import</h4><span class="x">×</span></div>
+          <div class="modal-body">Identical markup and identical rules — only the four accent tokens differ.</div>
+        </div>
+        <div class="avatars">
+          <span class="alv-avatar">DM</span>
+          <span class="alv-avatar alv-avatar--lg">DM</span>
+          <span class="alv-avatar alv-avatar--xl">DM</span>
+          <span class="onbar"><span class="alv-avatar">DM</span> on the sidebar</span>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Category</label>
+          <select class="filter-select focused"><option>All categories</option></select>
+        </div>
+        <div class="scroll"><table>
+          <tr><th>Recipe</th><th>Status</th></tr>
+          <tr class="sel"><td>Lemon Orzo <span class="chip">selected</span></td><td><span class="tag" style="background:var(--good)">Complete</span></td></tr>
+          <tr><td>Slow Ragù</td><td><span class="tag" style="background:var(--warn)">Draft</span></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Why not green</h2>
+  <p class="note"><b>Because <code>--alv-good</code> is already green.</b> Here is a “Save” button beside a “Complete” badge, in each candidate. The brand colour and the success state have to be tellable apart.</p>
+
+  <div class="pair">
+    <div class="panel green">
+      <header><h3>A true green accent</h3><span class="hexid">#457d52</span></header>
+      <div class="body">
+        <div class="collide">
+          <div style="background:var(--accent)">accent<br>#457d52</div>
+          <div style="background:var(--good)">good<br>#1e7d4f</div>
+        </div>
+        <div class="row"><button class="btn action-primary">Save</button>
+          <span class="tag" style="background:var(--good);padding:8px 12px">Complete</span></div>
+        <p class="note" style="margin:0"><span class="verdict v-no">ΔE 3.0</span> — the same colour to anyone looking. A green button and a green success badge stop meaning different things.</p>
+      </div>
+    </div>
+    <div class="panel olive">
+      <header><h3>The best green available</h3><span class="hexid">#6c7432</span></header>
+      <div class="body">
+        <div class="collide">
+          <div style="background:var(--accent)">accent<br>#6c7432</div>
+          <div style="background:var(--good)">good<br>#1e7d4f</div>
+        </div>
+        <div class="row"><button class="btn action-primary">Save</button>
+          <span class="tag" style="background:var(--good);padding:8px 12px">Complete</span></div>
+        <p class="note" style="margin:0"><span class="verdict v-mid">ΔE 7.5</span> from the nearest status colour — still short of the teal's 9.4, and most people would call this olive rather than green.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>The numbers</h2>
+  <div class="scroll">
+  <table class="evidence">
+    <tr>
+      <th>Candidate</th><th>White text</th><th>vs <code>good</code></th>
+      <th>vs <code>warn</code></th><th>vs <code>bad</code></th><th>vs teal</th><th></th>
+    </tr>
+    <tr>
+      <td><span class="dot" style="background:#0e7c8b"></span>Teal <code>#0e7c8b</code> <em style="color:var(--ink-faint)">today</em></td>
+      <td class="num">4.91</td><td class="num">9.4</td><td class="num">19.0</td>
+      <td class="num">27.1</td><td class="num">—</td>
+      <td class="verdict">the bar</td>
+    </tr>
+    <tr>
+      <td><span class="dot" style="background:#72639d"></span>Violet <code>#72639d</code></td>
+      <td class="num">5.27</td><td class="num">19.0</td><td class="num">19.5</td>
+      <td class="num">20.8</td><td class="num">12.2</td>
+      <td class="verdict v-ok">clearest on the wheel</td>
+    </tr>
+    <tr>
+      <td><span class="dot" style="background:#6c7432"></span>Olive <code>#6c7432</code></td>
+      <td class="num">5.02</td><td class="num">7.7</td><td class="num">7.5</td>
+      <td class="num">19.8</td><td class="num">13.3</td>
+      <td class="verdict v-mid">below the bar</td>
+    </tr>
+    <tr>
+      <td><span class="dot" style="background:#457d52"></span>Green <code>#457d52</code></td>
+      <td class="num">4.87</td><td class="num">3.0</td><td class="num">12.6</td>
+      <td class="num">24.1</td><td class="num">9.0</td>
+      <td class="verdict v-no">collides with good</td>
+    </tr>
+    <tr>
+      <td><span class="dot" style="background:#667eea"></span>Today's purple <code>#667eea</code></td>
+      <td class="num v-no">3.66</td><td class="num">—</td><td class="num">—</td>
+      <td class="num">—</td><td class="num">—</td>
+      <td class="verdict v-no">fails its own text</td>
+    </tr>
+  </table>
+  </div>
+
+  <div class="callout">
+    <b>The violet is not a new colour.</b> The Personal side already carries 67 purple literals across 11 templates — <code>#667eea</code> at hue 271 and <code>#764ba2</code> at hue 305. The proposed accent sits at hue 295, between them, at the teal's own lightness and chroma. It makes the identity those pages already have into a token — and fixes it: <code>#667eea</code> carries white text at 3.66 and fails, which is what D9 found on all five avatars. The token passes at 5.27.
+  </div>
+
+  <footer>
+    Contrast is WCAG against white text; the title in each pop-up header is measured against the lightest stop of its gradient. Distances are OKLab ΔE × 100, the same metric the series scale is validated with. Every component above is rebuilt from <code>base.html</code>'s own rules — only the four accent tokens change between the two panels.
+  </footer>
+
+</div>
+</body>
+</html>

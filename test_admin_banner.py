@@ -78,7 +78,14 @@ RECIPE = ('recipe', 'meal_plan', 'wcim_', 'pantry_', 'ingredient_',
           'categories_management')
 
 DEAD = ('page-header', 'header-actions')
-AVATAR_SELECTORS = ('.user-avatar', '.member-avatar', '.photo-placeholder')
+# LATER - Section D round D9, 25 Sep. All three of these ARE the same
+# avatar, and base owns it now as .alv-avatar, painted from the accent
+# rather than a purple gradient whose light end failed contrast with
+# its own initials. They are kept in the list because the check is
+# 'nothing BORROWS the purple', and a page that has none of it cannot
+# borrow any - so the list going unused is the round working.
+AVATAR_SELECTORS = ('.user-avatar', '.member-avatar', '.photo-placeholder',
+                    '.alv-avatar')
 PURPLE = re.compile(r'#667eea|#764ba2', re.I)
 BACK_RE = re.compile(r'(?<![-\w])action-back(?![-\w])')
 
@@ -391,8 +398,20 @@ check('purple survives only where the selector says avatar', not borrowed,
       '%d elsewhere' % len(borrowed))
 for x in kept:
     print('        kept: %s' % x)
+# LATER - Section D round D9, 25 Sep. This counted the avatars by the
+# PURPLE they kept, and D9 took the purple away: base owns the disc
+# now, painted from the accent, because the gradient's light end
+# measured 3.66 against its own white initials. `kept` is 0 and the
+# claim - that the banner sweep did not take the avatars with it - is
+# unchanged. It is asked of the DISCS, which are still on the screens,
+# rather than of a colour they no longer wear.
+_discs = [rel for rel, t in ADMIN_ALL
+          if re.search(r'class="[^"]*\balv-avatar\b', t)]
 check('  CONTROL: and the avatars were not swept away with the banner',
-      len(kept) >= 3, '%d rule(s)' % len(kept))
+      len(_discs) >= 1, '%d screen(s) still draw one: %s'
+      % (len(_discs), ', '.join(_discs)))
+check('  and not one of them is purple any more - base paints the '
+      'disc from the accent [D9]', not kept, kept[:3])
 # STAGE A JUDGED THIS BY PROXIMITY - a #667eea within 90 characters of a
 # #764ba2 was "the avatar" - and the banner gradient is that pair written
 # out, so all sixteen banner values were spared. The selector is the test.

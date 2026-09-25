@@ -43,21 +43,6 @@
     border: 3px solid var(--alv-accent);
 }
 
-.photo-placeholder {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 28px;
-    font-weight: 600;
-    border: 3px solid var(--alv-accent);
-    flex-shrink: 0;
-    letter-spacing: 1px;
-}
 
 .photo-actions {
     display: flex;
@@ -251,7 +236,7 @@
                 {% if profile.profile_photo %}
                     <img src="{{ profile.profile_photo.url }}" alt="Profile Photo" class="photo-preview" id="photoPreview">
                 {% else %}
-                    <div class="photo-placeholder" id="photoPlaceholder">
+                    <div class="alv-avatar alv-avatar--xl" id="photoPlaceholder">
                         {% if request.user.first_name and request.user.last_name %}{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}{% else %}{{ request.user.username|first|upper }}{% endif %}
                     </div>
                     <img src="" alt="Profile Photo" class="photo-preview" id="photoPreview" style="display:none;">

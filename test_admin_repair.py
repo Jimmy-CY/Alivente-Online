@@ -177,7 +177,14 @@ head('2. THE COLOUR IS THE ACCENT, EXCEPT ON THE AVATAR')
 # A thing is identified by WHAT IT IS - the selector - not by what happens
 # to sit next to it. That is the test now, and test_admin_banner.py holds
 # the same rule for the screens it swept.
-AVATAR_SELECTORS = ('.user-avatar', '.member-avatar', '.photo-placeholder')
+# LATER - Section D round D9, 25 Sep. All three of these ARE the same
+# avatar, and base owns it now as .alv-avatar, painted from the accent
+# rather than a purple gradient whose light end failed contrast with
+# its own initials. They are kept in the list because the check is
+# 'nothing BORROWS the purple', and a page that has none of it cannot
+# borrow any - so the list going unused is the round working.
+AVATAR_SELECTORS = ('.user-avatar', '.member-avatar', '.photo-placeholder',
+                    '.alv-avatar')
 PURPLE = re.compile(r'%s|%s' % (re.escape(STRAY), re.escape(AVATAR)), re.I)
 
 
@@ -222,9 +229,17 @@ for x in borrowed[:6]:
     print('        %s' % x)
 check('no screen borrows the avatar purple for anything else', not borrowed,
       '%d do' % len(borrowed))
-print('        %d rule(s) keep it, and every one of them is an avatar.'
-      % avatar)
-check('  CONTROL: and the avatar was not swept away with them', avatar >= 3,
+# LATER - Section D round D9, 25 Sep. Same re-point as
+# test_admin_banner: the avatars were counted by the purple they
+# kept, and base owns the disc now - painted from the accent,
+# because the old gradient's light end measured 3.66 against its own
+# white initials. The claim is unchanged; it is asked of the discs.
+print('        %d purple rule(s) keep it. Since D9 that is 0: the '
+      'avatars are base\'s and are painted from the accent.' % avatar)
+_discs = [rel for rel, path in ALL
+          if re.search(r'class="[^"]*\balv-avatar\b', read(path))]
+check('  CONTROL: and the avatar was not swept away with them',
+      len(_discs) >= 1,
       '%d rule(s) left' % avatar)
 check('  CONTROL: proximity would still call the banner an avatar',
       AVATAR in 'linear-gradient(135deg, %s 0%%, %s 100%%)' % (STRAY, AVATAR))

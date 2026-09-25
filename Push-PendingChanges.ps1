@@ -1002,7 +1002,10 @@ $suites = @(
     # Section D round D8: a time horizon is not a status - the three
     # cashflow summary cards take one accent header, two of which had been
     # failing contrast - and the zoom-guard note is measured, not guessed,
-    'test_horizon_cards.py'
+    'test_horizon_cards.py',
+    # Section D round D9: base owns the avatar - five copies of one disc,
+    # four of them failing contrast with their own initials,
+    'test_avatar.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

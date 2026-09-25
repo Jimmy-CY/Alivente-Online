@@ -286,8 +286,12 @@ DEAD = {'user_administration.html':
         'workspace_management.html':
         ['workspace-table', 'action-btn', 'btn-edit', 'btn-delete',
          'empty-state']}
+# LATER - Section D round D9, 25 Sep. user-avatar MOVED to base as
+# .alv-avatar, with the four other copies of the same disc. The page
+# keeps the element; it stopped keeping the class, so the name comes
+# out of KEPT and the check below asks where it went instead.
 KEPT = {'user_administration.html':
-        ['user-avatar', 'user-info', 'user-name', 'user-email',
+        ['user-info', 'user-name', 'user-email',
          'user-workspace', 'user-admin-container', 'action-more-btn'],
         'workspace_management.html':
         ['ws-name', 'ws-owner-name', 'ws-owner-username', 'ws-members',
