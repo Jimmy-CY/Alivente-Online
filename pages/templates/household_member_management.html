@@ -191,7 +191,7 @@
     <form method="post" class="modal-content">
       {% csrf_token %}
       <input type="hidden" name="action" value="add_member">
-      <div class="modal-header">
+      <div class="modal-header alv-modal-head">
         <h5 class="modal-title"><i class="fas fa-user-plus"></i> Add Person</h5>
         <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
       </div>
@@ -233,7 +233,7 @@
       {% csrf_token %}
       <input type="hidden" name="action" value="edit_member">
       <input type="hidden" name="member_id" id="edit_member_id">
-      <div class="modal-header">
+      <div class="modal-header alv-modal-head">
         <h5 class="modal-title"><i class="fas fa-user-edit"></i> Edit Person</h5>
         <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
       </div>

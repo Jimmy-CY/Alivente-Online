@@ -239,29 +239,37 @@ ok(total == 51 and not bad, '%d header(s) on %d business template(s) carry '
 ok(n_danger == 9 and not danger_wrong,
    'the danger variant is on exactly the %d whose title says Delete'
    % n_danger, '\n'.join(danger_wrong[:8]))
-personal = []
+# LATER - Section E round E1, 25 Sep. THE PERSONAL SIDE HAS HAD ITS ROUND.
+# This held the line "the Personal side waits for its own round" by
+# failing if any template outside BUSINESS wore the class. E1 gave all 32
+# of its remaining headers to .alv-modal-head - fifteen of which were
+# failing their own white text - so that line is spent, and what replaces
+# it is strictly stronger: EVERY modal header in the system carries the
+# class, and the only one that does not is named here with its reason.
+LEAVE = {'recipe_management.html':
+         'the Recipe View modal renders in an IFRAME; its header is a '
+         'close strip - no border, 8px padding, and a title a script '
+         'fills in that is never shown. A pop-up header by markup, not '
+         'by intent. [E1]'}
+naked = []
 for d, _, fs in os.walk(ROOT):
-    for f in fs:
+    for f in sorted(fs):
         if not f.endswith('.html') or '.bak' in f:
             continue
         rel = os.path.relpath(os.path.join(d, f), ROOT).replace('\\', '/')
-        if rel in BUSINESS or rel == 'base.html' or rel in D6:
+        if rel == 'base.html':
             continue
-        # LATER - Section D round D6, 24 Sep. Asked of CLASS
-        # ATTRIBUTES, not of the file: a page that merely NAMES
-        # the class, in a comment or in prose, is not wearing it.
-        if re.search(r'class="[^"]*\b%s\b' % HEAD,
-                     read(os.path.join(d, f))):
-            personal.append(rel)
-        if os.path.isfile(os.path.join(d, f) + SUFFIX):
-            personal.append(rel + ' (has a backup - was edited)')
-ok(not personal, 'no template outside the business list was touched - the '
-   'Personal side waits for its own round', '\n'.join(personal[:8]))
-# An exception that is not checked is an escape hatch. The one page
-# named above must really carry the class, or naming it hid a loss.
-ok(all(HEAD in read(os.path.join(ROOT, r)) for r in D6),
-   '  and the one named exception, %s, really does carry it'
-   % ', '.join(sorted(D6)))
+        for cls, _rest, title in heads(read(os.path.join(d, f))):
+            if HEAD in cls:
+                continue
+            naked.append('%s: %s' % (rel, title or '(no title)'))
+ok(len(naked) == 1 and naked[0].startswith('recipe_management.html'),
+   'EVERY modal header in the system wears the class - the single one '
+   'that does not is the Recipe View close strip, and it is recorded',
+   '\n'.join(naked[:8]))
+for rel, why in LEAVE.items():
+    print('        LEAVE %s' % rel)
+    print('              %s' % why[:66])
 ok(re.search(r'class="[^"]*\b%s\b' % HEAD,
              '<div class="modal-header %s">' % HEAD) is not None
    and re.search(r'class="[^"]*\b%s\b' % HEAD,

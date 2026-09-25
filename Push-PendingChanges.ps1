@@ -1008,7 +1008,10 @@ $suites = @(
     'test_avatar.py',
     # Section D round D10: fifteen rules put white text on a colour too
     # light to carry it - five of them failed even for large text,
-    'test_contrast.py'
+    'test_contrast.py',
+    # Section E round E1: the Personal side's 33 pop-up headers join
+    # .alv-modal-head - fifteen of them were failing their own white text,
+    'test_personal_heads.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -46,6 +46,7 @@ ROUNDS = [
     '.bak_horizon',
     '.bak_avatar',
     '.bak_contrast',
+    '.bak_pershead',
 ]
 
 

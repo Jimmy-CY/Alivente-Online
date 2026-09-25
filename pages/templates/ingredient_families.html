@@ -152,9 +152,9 @@
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="action" value="create_family">
-          <div class="modal-header bg-success text-white">
+          <div class="modal-header alv-modal-head">
             <h5 class="modal-title"><i class="fas fa-plus"></i> Create new family</h5>
-            <button type="button" class="close text-white" data-dismiss="modal">
+            <button type="button" class="close" data-dismiss="modal">
               <span>&times;</span>
             </button>
           </div>
@@ -190,9 +190,9 @@
           {% csrf_token %}
           <input type="hidden" name="action" value="update_family">
           <input type="hidden" name="family_id" id="editFamilyId">
-          <div class="modal-header bg-info text-white">
+          <div class="modal-header alv-modal-head">
             <h5 class="modal-title"><i class="fas fa-pencil-alt"></i> Edit family</h5>
-            <button type="button" class="close text-white" data-dismiss="modal">
+            <button type="button" class="close" data-dismiss="modal">
               <span>&times;</span>
             </button>
           </div>
