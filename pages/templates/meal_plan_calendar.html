@@ -12,7 +12,7 @@
 }
 
 .calendar-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 25px 30px;
     border-radius: 12px;
@@ -108,7 +108,7 @@
 }
 
 .mini-calendar-nav button:hover {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
 }
 
@@ -145,7 +145,7 @@
 }
 
 .mini-calendar-week.selected .mini-calendar-day:not(.empty) {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
 }
 
@@ -155,7 +155,7 @@
 
 .mini-calendar-day.today {
     font-weight: 700;
-    border: 2px solid #667eea;
+    border: 2px solid var(--alv-accent);
 }
 
 .mini-calendar-day.has-meal::after {
@@ -171,7 +171,7 @@
 }
 
 .mini-calendar-day.in-meal-plan {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
 }
 
@@ -218,7 +218,7 @@
 
 .meal-plan-list-item.active {
     background: #e8f4ff;
-    border-color: #667eea;
+    border-color: var(--alv-accent);
 }
 
 .meal-plan-list-item h4 {
@@ -282,7 +282,7 @@
 }
 
 .week-detail-header h2 i {
-    color: #667eea;
+    color: var(--alv-accent-ink);
     margin-right: 10px;
 }
 
@@ -333,7 +333,7 @@
 }
 
 .day-card.today {
-    border: 2px solid #667eea;
+    border: 2px solid var(--alv-accent);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -346,7 +346,7 @@
 }
 
 .day-card.today .day-card-header {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
 }
 
@@ -358,7 +358,7 @@
 
 .day-card-header .today-badge {
     background: white;
-    color: #667eea;
+    color: var(--alv-accent-ink);
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 11px;
@@ -401,7 +401,7 @@
     width: 70px;
     height: 70px;
     border-radius: 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -440,7 +440,7 @@
 }
 
 .recipe-meta i {
-    color: #667eea;
+    color: var(--alv-accent-ink);
 }
 
 .recipe-actions {
@@ -469,7 +469,7 @@
 .add-recipe-btn {
     margin-top: 12px;
     padding: 8px 20px;
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
     border: none;
     border-radius: 6px;
@@ -503,8 +503,8 @@
 }
 
 .add-another-btn:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: var(--alv-accent);
+    color: var(--alv-accent-ink);
     background: #f8f9ff;
 }
 
@@ -542,7 +542,7 @@
 }
 
 .legend-dot.today {
-    border: 2px solid #667eea;
+    border: 2px solid var(--alv-accent);
     background: white;
 }
 
@@ -826,7 +826,7 @@
 
 .view-toggle .toggle-btn.active {
     background: white;
-    color: #667eea;
+    color: var(--alv-accent-ink);
 }
 
 .view-toggle .toggle-btn.active:hover {
@@ -1297,7 +1297,7 @@
                                 {% if recipe.recipe_image %}
                                 <img src="{{ recipe.recipe_image.url }}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
                                 {% else %}
-                                <div style="width: 50px; height: 50px; border-radius: 6px; background: #667eea; display: flex; align-items: center; justify-content: center; color: white;">
+                                <div style="width: 50px; height: 50px; border-radius: 6px; background: var(--alv-accent); display: flex; align-items: center; justify-content: center; color: white;">
                                     <i class="fas fa-utensils"></i>
                                 </div>
                                 {% endif %}

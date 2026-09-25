@@ -22,14 +22,8 @@
 }
 
 .preview-header {
-    {% if mode == 'edit' %}
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    {% elif mode == 'create' %}
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    {% else %}
-    background: linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%);
-    {% endif %}
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     padding: 30px;
     border-radius: 12px;
     margin-bottom: 30px;
@@ -640,7 +634,7 @@ tr.sortable-chosen {
 }
 
 .spell-step-badge {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
     padding: 4px 10px;
     border-radius: 12px;
@@ -1954,7 +1948,7 @@ tr.sortable-chosen {
                     <!-- Unit Type -->
                     <div class="form-group">
                         <label style="font-weight: 600;">Unit Type *</label>
-                        <select id="newMeasurementType" class="form-control" style="border: 2px solid #6f42c1;">
+                        <select id="newMeasurementType" class="form-control" style="border: 2px solid var(--alv-accent);">
                             <option value="volume">Volume (ml, cups, tbsp)</option>
                             <option value="weight">Weight (g, kg, oz)</option>
                             <option value="count" selected>Count (pieces, cans, bottles)</option>

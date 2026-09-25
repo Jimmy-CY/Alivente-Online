@@ -10,7 +10,7 @@
 }
 
 .page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 12px 20px;
     border-radius: 8px;
@@ -96,13 +96,13 @@
     align-items: center;
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #667eea;
+    border-bottom: 2px solid var(--alv-accent);
 }
 
 .day-header-left h2 {
     font-size: 16px;
     font-weight: 700;
-    color: #667eea;
+    color: var(--alv-accent-ink);
     margin: 0;
     display: flex;
     align-items: center;
@@ -121,7 +121,7 @@
 }
 
 .recipe-count {
-    color: #667eea;
+    color: var(--alv-accent-ink);
     font-weight: 600;
 }
 
@@ -143,7 +143,7 @@
 .recipe-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    border-color: #667eea;
+    border-color: var(--alv-accent);
     text-decoration: none;
     color: inherit;
 }
@@ -206,7 +206,7 @@
 }
 
 .recipe-tag {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
     padding: 2px 8px;
     border-radius: 8px;
@@ -429,7 +429,7 @@
     .page-header {
         background: white !important;
         color: black !important;
-        border: 2px solid #667eea;
+        border: 2px solid var(--alv-accent);
     }
     
     .days-grid {
@@ -647,7 +647,7 @@
                             {% endfor %}
                             
                             {% for category in meal_recipe.recipe.categories.all %}
-                            <span class="recipe-tag" style="background: #6f42c1;">{{ category.name }}</span>
+                            <span class="recipe-tag" style="background: var(--alv-accent);">{{ category.name }}</span>
                             {% endfor %}
                         </div>
                     </div>

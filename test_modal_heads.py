@@ -242,8 +242,9 @@ ok(n_danger == 9 and not danger_wrong,
 # LATER - Section E round E1, 25 Sep. THE PERSONAL SIDE HAS HAD ITS ROUND.
 # This held the line "the Personal side waits for its own round" by
 # failing if any template outside BUSINESS wore the class. E1 gave all 32
-# of its remaining headers to .alv-modal-head - fifteen of which were
-# failing their own white text - so that line is spent, and what replaces
+# of its remaining headers to .alv-modal-head - eleven of which were
+# failing their own white text (the class names suggested fifteen;
+# rendered it is eleven, and rendering is what counts) - so that line is spent, and what replaces
 # it is strictly stronger: EVERY modal header in the system carries the
 # class, and the only one that does not is named here with its reason.
 LEAVE = {'recipe_management.html':

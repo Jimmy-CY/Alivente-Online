@@ -384,7 +384,7 @@
 /* Per-section accent colours */
 .fi-section.s1 { border-left-color: #0e7c8b; } .fi-section.s1 .fi-ibadge { background: rgba(14, 124, 139, 0.12); color: #0e7c8b; }
 .fi-section.s2 { border-left-color: #0f766e; } .fi-section.s2 .fi-ibadge { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
-.fi-section.s3 { border-left-color: #7c3aed; } .fi-section.s3 .fi-ibadge { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+.fi-section.s3 { border-left-color: var(--alv-accent); } .fi-section.s3 .fi-ibadge { background: color-mix(in srgb, var(--alv-accent) 12%, transparent); color: var(--alv-accent-ink); }
 .fi-section.s4 { border-left-color: #d97706; } .fi-section.s4 .fi-ibadge { background: rgba(217, 119, 6, 0.12); color: #d97706; }
 @media screen and (max-width: 640px) {
     .fi-section-head { flex-wrap: wrap; }
@@ -410,7 +410,7 @@
 }
 .fi-weights-toggle:hover { background: #f8f9fa; }
 .fi-weights-badge {
-    background: #7c3aed; color: #fff; font-size: 10px; font-weight: 700;
+    background: var(--alv-accent); color: #fff; font-size: 10px; font-weight: 700;
     padding: 1px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: .03em;
 }
 .fi-weights-caret { font-size: 11px; color: #6c757d; }

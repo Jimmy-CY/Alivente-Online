@@ -27,7 +27,7 @@
 
 /* Celebration Management Styles */
 .celebration-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 30px;
     border-radius: 12px;
@@ -82,7 +82,7 @@
 }
 
 .contact-card:hover {
-    border-color: #667eea;
+    border-color: var(--alv-accent);
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
 }
 
@@ -153,7 +153,7 @@
 }
 
 .event-item.nameday {
-    border-left-color: #6f42c1;
+    border-left-color: var(--alv-accent);
     background: #f0ebf8;
 }
 
@@ -220,7 +220,7 @@
 }
 
 .upcoming-widget {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 20px;
     border-radius: 12px;
@@ -342,7 +342,7 @@
 }
 
 #contactSearch:focus {
-    border-color: #667eea;
+    border-color: var(--alv-accent);
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
 
@@ -462,7 +462,7 @@
         text-decoration: none;
     }
     .toolbar-actions .action-more-item i {
-        color: #667eea;
+        color: var(--alv-accent-ink);
         width: 18px;
         text-align: center;
         flex-shrink: 0;
@@ -1411,7 +1411,7 @@ function handleEventTypeChange() {
     if (eventType === 'nameday') {
         dateLabel.innerHTML = 'Date (Month & Day) <span class="text-danger">*</span>';
         dateHelp.textContent = 'Select any year - only month and day will be used for annual recurrence';
-        dateHelp.style.color = '#6f42c1';
+        dateHelp.style.color = 'var(--alv-accent)';
         dateHelp.style.fontWeight = '600';
     } else if (eventType === 'birthday') {
         dateLabel.innerHTML = 'Date <span class="text-danger">*</span>';

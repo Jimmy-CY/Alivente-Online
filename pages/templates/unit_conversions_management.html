@@ -11,7 +11,7 @@
 }
 
 .page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 30px 40px;
     border-radius: 12px;
@@ -239,7 +239,7 @@
 }
 
 .scope-btn.active {
-    background: #667eea;
+    background: var(--alv-accent);
     color: white;
 }
 
@@ -695,7 +695,7 @@
                     <td colspan="3" style="text-align: center; padding: 40px; color: #6c757d;">
                         <i class="fas fa-search fa-2x mb-3" style="display: block; color: #dee2e6;"></i>
                         No conversions match your filters.
-                        <br><a href="#" onclick="clearFilters(); return false;" style="color: #667eea;">Clear filters</a>
+                        <br><a href="#" onclick="clearFilters(); return false;" style="color: var(--alv-accent-ink);">Clear filters</a>
                     </td>
                 </tr>
             </tbody>
@@ -1152,7 +1152,7 @@ function openMissingConversionsModal() {
             
             row.innerHTML = `
                 <div class="mb-2">
-                    <strong style="color: #667eea;"><i class="fas fa-carrot"></i> ${item.ingredient}</strong>
+                    <strong style="color: var(--alv-accent-ink);"><i class="fas fa-carrot"></i> ${item.ingredient}</strong>
                     <div style="font-size: 13px; color: #6c757d; margin-top: 4px;">
                         <i class="fas fa-utensils"></i> Used in: ${item.recipe_example}
                     </div>

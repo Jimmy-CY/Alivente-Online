@@ -475,10 +475,17 @@ for d, _x, fs in os.walk(T):
 ok(not circles,
    'NOT ONE purple rule paints a circle any more - every avatar in the '
    'system is base\'s', circles[:5])
-ok(others >= 40,
-   'the %d purple rules that remain paint page headers, calendar '
-   'highlights, hover states and badges on the Personal side - a look, '
-   'not a component, and 2.K\'s by agreement' % others, others)
+# LATER - Section E round E2, 25 Sep. 2.K ARRIVED. This held the
+# deferral by requiring that forty-odd purple rules still existed.
+# E2 took the imported palette out of the system, so the floor is
+# now a ceiling of zero: not one rule anywhere paints with #667eea
+# or #764ba2. The two literals that survive E2 are a mention inside
+# D9's own comment (stripped by nocomment above) and a metric colour
+# in financial_indicators - neither is a rule, and neither is here.
+ok(others == 0,
+   'not one rule anywhere still paints with the imported purple - '
+   'E2 took the palette out, and D9\'s deferral to 2.K is spent',
+   others)
 
 ok(SUFFIX in ROUNDS and '.bak_horizon' in ROUNDS
    and ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_horizon'),

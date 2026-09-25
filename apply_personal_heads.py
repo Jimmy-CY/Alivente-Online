@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """apply_personal_heads.py - Section E, round E1: the Personal side's
-pop-up headers join the house, and fifteen contrast failures go with them.
+pop-up headers join the house, and eleven contrast failures go with them.
 
     python apply_personal_heads.py --check     dry run, nothing written
     python apply_personal_heads.py             apply

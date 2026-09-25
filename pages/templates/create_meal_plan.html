@@ -10,7 +10,7 @@
 }
 
 .page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 40px;
     border-radius: 12px;
@@ -43,7 +43,7 @@
 }
 
 .date-input:focus {
-    border-color: #667eea;
+    border-color: var(--alv-accent);
     outline: none;
 }
 
@@ -65,7 +65,7 @@
 .day-title {
     font-size: 20px;
     font-weight: 600;
-    color: #667eea;
+    color: var(--alv-accent-ink);
 }
 
 .day-date {
@@ -98,7 +98,7 @@
 }
 
 .recipe-select:focus {
-    border-color: #667eea;
+    border-color: var(--alv-accent);
     outline: none;
 }
 
@@ -1024,7 +1024,7 @@ function createRecipeSelectorCard(recipe) {
         tagsHtml += `<span class="recipe-selector-card-badge" style="background: #0e7c8b; color: white;">${course}</span>`;
     });
     recipe.categories.forEach(cat => {
-        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #6f42c1; color: white;">${cat}</span>`;
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-accent); color: white;">${cat}</span>`;
     });
 
     if (recipe.is_vegetarian) {

@@ -47,6 +47,7 @@ ROUNDS = [
     '.bak_avatar',
     '.bak_contrast',
     '.bak_pershead',
+    '.bak_purple',
 ]
 
 

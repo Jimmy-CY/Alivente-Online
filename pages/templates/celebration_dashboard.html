@@ -8,7 +8,7 @@
 
 <style>
 .dashboard-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 40px;
     border-radius: 12px;
@@ -52,20 +52,20 @@
     color: inherit;
 }
 .action-card:hover {
-    border-color: #667eea;
+    border-color: var(--alv-accent);
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
     transform: translateY(-5px);
     text-decoration: none;
     color: inherit;
 }
 .action-card i { font-size: 48px; margin-bottom: 15px; display: block; }
-.action-card.contacts i { color: #667eea; }
+.action-card.contacts i { color: var(--alv-accent-ink); }
 .action-card.events i { color: #0e7c8b; }
 .action-card h4 { margin: 0 0 10px 0; font-weight: 600; }
 .action-card p { margin: 0; color: #6c757d; font-size: 14px; }
 
 .upcoming-widget {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--alv-accent);
     color: white;
     padding: 30px;
     border-radius: 12px;
@@ -214,10 +214,10 @@
     <p>Track birthdays, namedays, anniversaries, and special occasions</p>
     <div class="header-actions">
         <button type="button" class="btn btn-light btn-sm action-primary" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
-            <i class="fas fa-question-circle" style="color:#667eea;"></i> Help
+            <i class="fas fa-question-circle" style="color:var(--alv-accent-ink);"></i> Help
         </button>
         <a href="{% url 'personal_page' %}" class="btn btn-light btn-sm action-back" aria-label="Back to Personal Page">
-            <i class="fas fa-arrow-left" style="color:#667eea;"></i><span class="action-back-label" style="color:#495057;"> Back</span>
+            <i class="fas fa-arrow-left" style="color:var(--alv-accent-ink);"></i><span class="action-back-label" style="color:#495057;"> Back</span>
         </a>
     </div>
 </div>

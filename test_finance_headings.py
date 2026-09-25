@@ -447,10 +447,24 @@ for _d, _s, _fs in os.walk(T):
                          _m.group(1)) and 'linear-gradient' in _m.group(2):
                 _left.append(_rel)
                 break
-print('        %d template(s) still carry a coloured page banner - the purple '
-      'nine\n        in Administration, and the Personal ones. Their modules '
-      'inherit this.' % len(_left))
-check('and the number is a floor, not a silence', len(_left) >= 8,
+# LATER - Section E round E2, 25 Sep. The floor was eight while the
+# purple banners were still there; E2 flattened those, and what is
+# left is the GREEN AND AMBER of the same imported pack, on six
+# templates. Six of their seven rules fail their own white text -
+# 3.13, 2.13 x4 and 1.63 - and they are a round of their own. Named,
+# because a floor lets a set grow back in silence.
+print('        %d template(s) still carry a gradient page banner - '
+      'green and amber,\n        from the same imported pack the purple came from. Six of\n        their seven rules fail their own white text. [E2]' % len(_left))
+_EXPECT_BANNERS = {
+    'categories_management.html',
+    'household_member_management.html',
+    'ingredient_base_units_management.html',
+    'map_ingredients_nutrition.html',
+    'meal_plan_shopping_list.html',
+    'unit_conversions_wizard.html',
+}
+check('and it is exactly the six named green/amber banners [E2]',
+      set(_left) == _EXPECT_BANNERS,
       ', '.join(sorted(set(_left))[:5]))
 
 print('\n' + '=' * 72)

@@ -155,7 +155,7 @@ body {
 }
 
 .tag-course   { background: #0e7c8b; color: white; font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
-.tag-category { background: #6f42c1; color: white; font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.tag-category { background: var(--alv-accent); color: white; font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-protein  { background: #fd7e14; color: white; font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-vegetarian { background: #28a745; color: white; font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-author   { background: #546e7a; color: white; font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
@@ -1455,9 +1455,9 @@ body {
 
 /* AI Suggestions accent color — soft purple for "AI/aspirational" content */
 :root {
-    --ai-accent: #6f42c1;
+    --ai-accent: var(--alv-accent);
     --ai-accent-light: #f3eafa;
-    --ai-accent-dark: #5a32a3;
+    --ai-accent-dark: var(--alv-accent-ink);
 }
 
 /* Toggle button — same shape as nutritionBreakdownToggle but different color */
@@ -1485,7 +1485,7 @@ body {
 .ai-intro {
     background: var(--ai-accent-light);
     border-left: 4px solid var(--ai-accent);
-    color: #3d2466;
+    color: var(--alv-accent-ink);
     padding: 10px 14px;
     border-radius: 4px;
     font-size: 13px;
