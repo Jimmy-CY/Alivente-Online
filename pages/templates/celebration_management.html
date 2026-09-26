@@ -351,19 +351,7 @@
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
-}
-
-/* Mobile-only contact action bar — hidden on desktop */
-.contact-action-bar-mobile {
-    display: none;
-}
-
-/* Mobile-only event action bar — hidden on desktop */
-.event-action-bar-mobile {
-    display: none;
-}
-
-/* ==================== MOBILE STYLES (≤768px) ==================== */
+}/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
     /* Header tighter */
     .celebration-header {
@@ -533,54 +521,8 @@
        cannot leak the desktop icons onto mobile. */
     .contact-header .contact-actions {
         display: none !important;
-    }
-
-    /* Show mobile-only contact action bar at bottom of card */
-    .contact-action-bar-mobile {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #f1f3f5;
-    }
-    .contact-action-bar-mobile .mobile-action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        padding: 8px 4px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 11px;
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        color: #495057;
-        min-height: 50px;
-        cursor: pointer;
-    }
-    .contact-action-bar-mobile .mobile-action-btn:hover,
-    .contact-action-bar-mobile .mobile-action-btn:active {
-        background: #e9ecef;
-    }
-    .contact-action-bar-mobile .mobile-action-icon {
-        font-size: 16px;
-        line-height: 1;
-    }
-    .contact-action-bar-mobile .mobile-action-icon.icon-color-add { color: #28a745; }
-    .contact-action-bar-mobile .mobile-action-icon.icon-color-edit { color: #ffc107; }
-    .contact-action-bar-mobile .mobile-action-icon.icon-color-delete { color: #dc3545; }
-    .contact-action-bar-mobile .mobile-action-disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    .contact-action-bar-mobile .mobile-action-disabled .mobile-action-icon {
-        color: #adb5bd;
-    }
-
-    /* In compact (collapsed) state — hide the mobile action bar too */
-    .contact-card.compact-view:not(.expanded) .contact-action-bar-mobile {
+    }In compact (collapsed) state — hide the mobile action bar too */
+    .contact-card.compact-view:not(.expanded) .mobile-action-bar {
         display: none;
     }
 
@@ -619,52 +561,7 @@
        !important guards against JS-set inline styles, same reason as contact-actions. */
     .event-item .event-actions {
         display: none !important;
-    }
-
-    /* Show mobile-only event action bar at bottom of each event */
-    .event-action-bar-mobile {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid rgba(0,0,0,0.08);
-    }
-    .event-action-bar-mobile .mobile-action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        padding: 6px 4px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 11px;
-        background: white;
-        border: 1px solid #e9ecef;
-        color: #495057;
-        min-height: 44px;
-        cursor: pointer;
-    }
-    .event-action-bar-mobile .mobile-action-btn:hover,
-    .event-action-bar-mobile .mobile-action-btn:active {
-        background: #f8f9fa;
-    }
-    .event-action-bar-mobile .mobile-action-icon {
-        font-size: 14px;
-        line-height: 1;
-    }
-    .event-action-bar-mobile .mobile-action-icon.icon-color-edit { color: #ffc107; }
-    .event-action-bar-mobile .mobile-action-icon.icon-color-delete { color: #dc3545; }
-    .event-action-bar-mobile .mobile-action-disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    .event-action-bar-mobile .mobile-action-disabled .mobile-action-icon {
-        color: #adb5bd;
-    }
-
-    /* Compact view on mobile — single column */
+    } Compact view on mobile — single column */
     .contacts-container.compact-grid {
         grid-template-columns: 1fr;
     }
@@ -914,7 +811,7 @@
                         </div>
 
                         <!-- Mobile-only event action bar (hidden on desktop) -->
-                        <div class="event-action-bar-mobile">
+                        <div class="mobile-action-bar cols-2" data-actions="event">
                             {% if perms.auth.can_edit_celebrations %}
                             <button type="button" class="mobile-action-btn" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])">
                                 <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
@@ -945,7 +842,7 @@
             </div>
 
             <!-- Mobile-only contact action bar (hidden on desktop) -->
-            <div class="contact-action-bar-mobile">
+            <div class="mobile-action-bar" data-actions="contact">
                 {% if perms.auth.can_edit_celebrations %}
                 <button type="button" class="mobile-action-btn" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')">
                     <i class="fas fa-calendar-plus mobile-action-icon icon-color-add"></i>
@@ -1268,7 +1165,7 @@ function toggleView() {
     contactCards.forEach(card => {
         const eventList = card.querySelector('.event-list');
         const contactActions = card.querySelector('.contact-actions');
-        const contactActionBarMobile = card.querySelector('.contact-action-bar-mobile');
+        const contactActionBarMobile = card.querySelector('[data-actions="contact"]');
 
         if (isCompactView) {
             eventList.style.display = 'none';
@@ -1286,7 +1183,7 @@ function toggleView() {
         } else {
             // Restore default visibility — clear inline styles so the CSS
             // (including the mobile @media rules that hide .contact-actions
-            // and show .contact-action-bar-mobile) takes over again.
+            // and show the contact action grid) takes over again.
             // Setting an explicit value here would force the desktop icons
             // to appear on mobile alongside the mobile bar.
             eventList.style.display = '';
@@ -1323,7 +1220,7 @@ function toggleView() {
 function toggleCardExpand(card) {
     const eventList = card.querySelector('.event-list');
     const contactActions = card.querySelector('.contact-actions');
-    const contactActionBarMobile = card.querySelector('.contact-action-bar-mobile');
+    const contactActionBarMobile = card.querySelector('[data-actions="contact"]');
 
     if (card.classList.contains('expanded')) {
         // Collapse — hide everything

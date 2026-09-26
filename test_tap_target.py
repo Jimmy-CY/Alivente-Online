@@ -361,9 +361,24 @@ for rel in ('fsr.html', 'projects/projects.html', 'tenant.html',
     ok(re.search(r'\.filter-select[^{]*\{[^}]*min-height:\s*44px',
                  now(path(rel))) is not None,
        '%s keeps its filter select at 44px - a control, not a copy' % rel)
+# LATER - Section E round E3b, 25 Sep. celebration_management HAS HAD ITS
+# ROUND. It no longer declares a minimum of its own: its two action grids
+# were local copies of .mobile-action-bar, and deleting them hands the
+# buttons to base's .mobile-action-btn, which gives 56px - LARGER than the
+# 44px and 50px the local rules declared. Rendered at 390px the round
+# leaves no control under 44px at all (see test_named_bars.py section 2).
+# So the page is no longer "untouched", and what it lost made it better.
+# The tap round itself still never touched it - no .bak_tap backup. [E3b]
+DONE_OWN_ROUND = {'celebration_management.html':
+                  'E3b - its grids are base\'s now, and base gives 56px'}
 for rel in ('celebration_management.html', 'view_recipe.html',
             'ingredient_base_units_management.html', 'wcim_extras.html'):
     if os.path.isfile(path(rel)):
+        if rel in DONE_OWN_ROUND:
+            ok(not os.path.isfile(path(rel) + SUFFIX),
+               '%s had its own round (%s), and the tap round still never '
+               'touched it' % (rel, DONE_OWN_ROUND[rel]))
+            continue
         ok('min-height: 44px' in read(path(rel))
            and not os.path.isfile(path(rel) + SUFFIX),
            '%s (Personal) is untouched until its own round' % rel)

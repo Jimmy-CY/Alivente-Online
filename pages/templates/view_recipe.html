@@ -67,24 +67,7 @@ body {
 .recipe-detail-container {
     max-width: 1200px;
     margin: 0 auto;
-}
-
-/* Top action bar (Back+2+ pattern) */
-.recipe-action-bar {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.recipe-action-bar .action-back {
-    margin-left: auto;
-}
-/* Desktop: hide the mobile-only More dropdown wrapper */
-.recipe-action-bar .action-more-wrapper { display: none; }
-
-.recipe-header {
+}ecipe-header {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     padding: 40px;
@@ -452,62 +435,7 @@ body {
    The green gradient becomes its own card BELOW the image,
    instead of wrapping it (cleaner placeholder treatment).
    ============================================================ */
-@media screen and (max-width: 768px) {
-
-    /* === TOP ACTION BAR — Back+2+ standard:
-         [Edit Recipe (wide)] [⋮ Shopping List, Print, View Doc, Cooking Times, Nutrition] [← Back] === */
-    .recipe-action-bar {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-    /* Hide desktop secondaries on mobile — they live in the More menu */
-    .recipe-action-bar .action-secondary {
-        display: none;
-    }
-    .recipe-action-bar .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-        gap: 6px;
-    }
-    .recipe-action-bar .action-more-wrapper {
-        display: block;
-        position: relative;
-        flex: 0 0 auto;
-        margin-left: 0;
-    }
-    .recipe-action-bar .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .recipe-action-bar .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 0 0 0;
-    }
-    .action-more-menu {
+@media screen and (max-width: 768px) {n-more-menu {
         position: absolute;
         top: calc(100% + 6px);
         right: 0;
@@ -1834,7 +1762,7 @@ body {
 
     <!-- Top action bar — Back+2+ standard:
          Edit (primary) + secondaries hidden on mobile in More menu + Back -->
-    <div class="recipe-action-bar">
+    <div class="page-action-buttons">
         <!-- PRIMARY: Edit Recipe -->
         {% if perms.auth.can_edit_personal %}
         <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="btn btn-warning action-primary">

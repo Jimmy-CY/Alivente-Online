@@ -49,6 +49,7 @@ ROUNDS = [
     '.bak_pershead',
     '.bak_purple',
     '.bak_actionbar',
+    '.bak_namedbars',
 ]
 
 
