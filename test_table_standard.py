@@ -435,7 +435,7 @@ try:
         pn = styles(pg, '#pneutral', ['background-color', 'color'])
         pgd = styles(pg, '#pgood', ['background-color', 'color'])
         check('Inactive is grey, not red - decision 3',
-              pn['color'] == 'rgb(107, 119, 128)')
+              pn['color'] == 'rgb(97, 108, 116)')
         check('  and a good state is green, distinct from the accent',
               pgd['color'] == 'rgb(30, 125, 79)')
 

@@ -186,7 +186,7 @@ FRAG = ("<div class='table-container'><table class='table alv-table pi-table'>"
                   for k in ('approve', 'unapprove', 'send', 'duplicate')))
 
 WANT = {'view': 'rgb(14, 124, 139)', 'approve': 'rgb(30, 125, 79)',
-        'unapprove': 'rgb(154, 106, 8)', 'send': 'rgb(14, 124, 139)',
+        'unapprove': 'rgb(142, 98, 7)', 'send': 'rgb(14, 124, 139)',
         'duplicate': 'rgb(37, 99, 235)', 'delete': 'rgb(179, 38, 30)'}
 BOOTSTRAP_WAS = {'approve': 'rgb(40, 167, 69)', 'unapprove': 'rgb(253, 126, 20)',
                  'send': 'rgb(0, 123, 255)', 'duplicate': 'rgb(111, 66, 193)'}

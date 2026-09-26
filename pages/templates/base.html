@@ -737,6 +737,18 @@
       .text-info { color: var(--alv-accent) !important; }
       .border-info { border-color: var(--alv-accent) !important; }
       .badge-info { background-color: var(--alv-accent); color: var(--alv-on-accent); }
+
+      /* ===== ALV MUTED TEXT v1 ===== 26 Sep 2026
+         Bootstrap's .text-muted is #6c757d, used 260 times across 68
+         templates, and base never had an opinion about it. It measures
+         4.69 on white - a pass, barely - and 3.95 on #e9ecef, which is
+         what the cards and rows it sits on are actually painted. It was
+         262 of the 565 elements the rendered survey found below their
+         bar: forty-six per cent of the whole problem, in one colour.
+         Pointed at --alv-neutral so the house has ONE muted ink rather
+         than two opinions about the same idea. !important because
+         Bootstrap's own utility carries it. */
+      .text-muted { color: var(--alv-neutral) !important; }
       .alert-info {
         background-color: var(--alv-accent-soft);
         border-color: var(--alv-accent-line);
@@ -935,13 +947,13 @@
            matching on one, including our own test extractor.) */
         --alv-good:       #1e7d4f;
         --alv-good-soft:  #e6f4ec;
-        --alv-warn:       #9a6a08;
+        --alv-warn:       #8e6207;
         --alv-warn-soft:  #fdf3dd;
         --alv-bad:        #b3261e;
         --alv-bad-soft:   #fbeae9;
         --alv-info:       var(--alv-accent);
         --alv-info-soft:  var(--alv-accent-soft);
-        --alv-neutral:    #6b7780;
+        --alv-neutral:    #616c74;
         --alv-neutral-soft: #eef1f2;
 
         /* THE CATEGORY FAMILY'S INKS, lifted out of the .alv-tag-* rules so
@@ -983,7 +995,7 @@
            like any other healthy state. */
         --alv-age-1:      #8a7a12;
         --alv-age-1-soft: #fdf8e6;
-        --alv-age-2:      #9a6a08;
+        --alv-age-2:      #8e6207;
         --alv-age-2-soft: #fbeec9;
         --alv-age-3:      #a8481a;
         --alv-age-3-soft: #f8e0cd;

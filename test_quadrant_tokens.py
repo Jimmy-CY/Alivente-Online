@@ -213,13 +213,17 @@ ok(P_NOW.count('var AN_CS = getComputedStyle') == 1
    and P_NOW.count('function anTok(') == 1,
    'the tokens are read off :root once')
 for name, fallback in (('bad', '#b3261e'), ('bad-soft', '#fbeae9'),
-                       ('warn', '#9a6a08'), ('warn-soft', '#fdf3dd'),
+                       ('warn', '#8e6207'), ('warn-soft', '#fdf3dd'),
                        ('accent-ink', '#0a5e6a'), ('accent-soft', '#e4f3f5'),
                        ('good', '#1e7d4f'), ('good-soft', '#e6f4ec')):
     ok(re.search(r"anTok\('%s',\s*'#[0-9a-f]{6}'\)" % re.escape(name), P_NOW)
        is not None, '  it asks for --alv-%s' % name)
+    # LATER - F1, 26 Sep. Read the page LIVE here. P_NOW is the file
+    # as the QUADRANT round left it, and base below is read live, so
+    # comparing them asks whether a frozen page matches a moving base -
+    # true only until a token moves. [F1]
     _m = re.search(r"anTok\('%s',\s*'(#[0-9a-f]{6})'\)" % re.escape(name),
-                   P_NOW)
+                   read(PAGE))
     _b = re.search(r'--alv-%s:\s*(#[0-9a-fA-F]{6})' % re.escape(name), B_NOW)
     if _m and _b:
         ok(_m.group(1).lower() == _b.group(1).lower(),

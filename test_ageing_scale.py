@@ -299,9 +299,21 @@ head('4. the scale, and nothing painting round it')
 for _n in (1, 2, 3, 4):
     check('base defines --alv-age-%d' % _n, '--alv-age-%d:' % _n in BC)
     check('  and its soft variant', '--alv-age-%d-soft:' % _n in BC)
+# LATER - F1, 26 Sep. Was hard-coded to warn's and bad's VALUES, so it
+# broke the moment a token moved even though the scale moved with it.
+# Ask whether the two TOKENS agree - which is what the check is for. [F1]
+def _tokval(t):
+    m = re.search(re.escape(t) + r':\s*(#[0-9a-fA-F]{6})', BC)
+    return m.group(1).lower() if m else None
+
+
 check('step 2 IS the warn colour, so the scale cannot drift from the '
-      'semantics beside it', '--alv-age-2:      #9a6a08' in BC)
-check('step 4 IS the bad colour', '--alv-age-4:      #b3261e' in BC)
+      'semantics beside it',
+      _tokval('--alv-age-2') is not None
+      and _tokval('--alv-age-2') == _tokval('--alv-warn'))
+check('step 4 IS the bad colour',
+      _tokval('--alv-age-4') is not None
+      and _tokval('--alv-age-4') == _tokval('--alv-bad'))
 
 
 def _hex(tok):

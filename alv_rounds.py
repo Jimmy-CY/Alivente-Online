@@ -50,6 +50,7 @@ ROUNDS = [
     '.bak_purple',
     '.bak_actionbar',
     '.bak_namedbars',
+    '.bak_palette',
 ]
 
 
