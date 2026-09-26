@@ -51,6 +51,7 @@ ROUNDS = [
     '.bak_actionbar',
     '.bak_namedbars',
     '.bak_palette',
+    '.bak_linesoft',
 ]
 
 
