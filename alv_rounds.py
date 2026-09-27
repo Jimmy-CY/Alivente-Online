@@ -60,6 +60,7 @@ ROUNDS = [
     '.bak_personalteal',
     '.bak_celebrations',
     '.bak_bodybacks',
+    '.bak_barmobile',
 ]
 
 

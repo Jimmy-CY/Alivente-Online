@@ -442,14 +442,7 @@
 </script>
 {% endfor %}
 
-<div class="toolbar-search">
-        <input type="text"
-               id="contactSearch"
-               class="form-control"
-               placeholder="Search contacts..."
-               onkeyup="searchContacts()"
-               style="width: 250px;">
-    </div>
+
 
 <div class="page-action-buttons">
         <!-- PRIMARY action (wide on mobile) -->
@@ -500,11 +493,32 @@
             </div>
         </div>
 
+        <button type="button" class="btn action-filter" id="filterBtn"
+                aria-pressed="false" aria-controls="celebrationFilterPanel"
+                aria-label="Show filters">
+            <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+        </button>
+
         <!-- BACK -->
         <a href="{% url 'celebration_dashboard' %}" class="btn action-back" aria-label="Back to Dashboard">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     
+</div>
+
+<div class="alv-filter" id="celebrationFilterPanel">
+    <div class="filter-group">
+        <label class="filter-label" for="contactSearch">
+            <i class="fas fa-search"></i> <strong>Search contacts</strong>
+        </label>
+        <div class="search-input-group">
+            <input type="text"
+                   id="contactSearch"
+                   class="form-control search-input"
+                   placeholder="Search contacts..."
+                   onkeyup="searchContacts()">
+        </div>
+    </div>
 </div>
 
 

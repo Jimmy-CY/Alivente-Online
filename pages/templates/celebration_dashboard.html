@@ -99,6 +99,25 @@
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
             <i class="fas fa-question-circle"></i> Help
         </button>
+
+        <!-- MOBILE-ONLY "More": base hides .action-secondary in a bar that
+             has a .action-more-btn, so the two above move in here below
+             768px and the phone gets primary + More + Back. -->
+        <div class="action-more-wrapper">
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn"
+                    aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <a href="{% url 'celebration_calendar' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-calendar-alt"></i> View Events
+                </a>
+                <button type="button" class="action-more-item" role="menuitem"
+                        data-toggle="modal" data-target="#celebration_dashboardHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+            </div>
+        </div>
         <a href="{% url 'personal_page' %}" class="btn action-back" aria-label="Back to Personal Page">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a></div>

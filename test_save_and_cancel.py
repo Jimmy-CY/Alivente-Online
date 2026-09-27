@@ -248,7 +248,24 @@ check('  CONTROL: every kept Cancel is one this round named',
           in why for rel, why in kept))
 
 # ---------------------------------------------------------------------- 3
-head('3. RENDERED - the single-button bar variant is NOT the inert one')
+head('3. RENDERED - a LONE BACK IS RIGHT-ALIGNED ON A PHONE')
+
+# This section used to assert that .page-action-buttons-single is NOT inert,
+# unlike the -form variant retired beside it. That was true when written and
+# is FALSE as of H2b (27 Sep). H2b gave base
+#     .page-action-buttons:not(:has(.action-primary)) .action-back
+#         { margin-left: auto; }
+# inside the phone block, because thirteen bars hold a lone Back and wear no
+# class at all - the user saw it as "the Back is wrong here". That rule covers
+# the only case the class ever changed, so the class now changes nothing.
+# Measured in Chromium, eight combinations, both widths: with the H2b rule
+# present every one puts Back 8px from the right edge, class or no class. With
+# the rule removed, exactly one combination moves - a lone Back with no class
+# drops to the left edge at 400px. So the class is redundant, not wrong; three
+# pages still wear it (title_deeds_management, tenant_lease_agreement,
+# preview_imported_recipe) and retiring it is its own round.
+# What this section tests now is the OUTCOME the class was bought for, and it
+# fails if whichever mechanism is live goes away.
 
 check('base declares the single-button bar',
       bool(re.search(r'\.%s\s*\{' % SINGLE, B)))
@@ -267,11 +284,15 @@ try:
 except ImportError:
     sync_playwright = None
 
+R3 = ('a lone Back sits at the right edge on a phone',
+      '  and so does one in a bar that carries a primary',
+      '  CONTROL: pull base\'s H2b rule and the classless bar breaks',
+      '  CONTROL: with the rule gone the class still saves its three pages',
+      '  the class is redundant, not wrong - H2b covers what it covered')
+
 if sync_playwright is None:
-    skip('the class keeps a lone Back on the right at phone width',
-         'playwright is not installed')
-    skip('CONTROL: and it does nothing to a bar that carries a primary',
-         'playwright is not installed')
+    for _t in R3:
+        skip(_t, 'playwright is not installed')
 else:
     cut = B.find('{% block content %}')
     pre, post = [], []
@@ -285,36 +306,63 @@ else:
         return h + ('<a href="#" class="btn action-back">'
                     '<span class="action-back-label">Back</span></a></div>')
 
-    def left(pg, html):
+    # H2b's rule, quoted from base so a reformat there is noticed rather
+    # than silently turning the CONTROLs into no-ops.
+    H2B = ('.page-action-buttons:not(:has(.action-primary)) .action-back {'
+           '\n          margin-left: auto;\n        }')
+
+    def gap(pg, html, css):
+        """How far Back's right edge is from the viewport's right edge."""
         pg.set_content("<!doctype html><meta charset=utf-8><style>%s</style>"
-                       "%s<style>%s</style>"
-                       % ('\n'.join(pre), html, '\n'.join(post)),
+                       "%s<style>%s</style>" % (css[0], html, css[1]),
                        wait_until='load')
-        return pg.evaluate("() => Math.round(document.querySelector("
-                           "'.action-back').getBoundingClientRect().left)")
+        return pg.evaluate(
+            "() => Math.round(innerWidth - document.querySelector("
+            "'.action-back').getBoundingClientRect().right)")
     try:
+        live = ('\n'.join(pre), '\n'.join(post))
+        if H2B not in live[0] and H2B not in live[1]:
+            raise AssertionError('base no longer spells H2B the way this '
+                                 'suite quotes it - requote it')
+        gone = tuple(s.replace(H2B, '') for s in live)
         with sync_playwright() as pw:
             br = pw.chromium.launch()
             pg = br.new_page(viewport={'width': 400, 'height': 300})
             pg.route('**://**', lambda r: r.abort())
-            lone_off = left(pg, bar('', False))
-            lone_on = left(pg, bar(SINGLE, False))
-            prim_off = left(pg, bar('', True))
-            prim_on = left(pg, bar(SINGLE, True))
+            m = {}
+            for tag, css in (('live', live), ('gone', gone)):
+                for nm, ex, pr in (('lone', '', False),
+                                   ('lone+cls', SINGLE, False),
+                                   ('prim', '', True),
+                                   ('prim+cls', SINGLE, True)):
+                    m[(tag, nm)] = gap(pg, bar(ex, pr), css)
             br.close()
-        print('        at 400px, a lone Back sits at %d without the class and '
-              '%d with it.' % (lone_off, lone_on))
-        check('the class keeps a lone Back on the right at phone width',
-              lone_on > lone_off, '%d -> %d' % (lone_off, lone_on))
-        check('CONTROL: and it does nothing to a bar that carries a primary',
-              prim_on == prim_off,
-              'which is why the -form variant was retired: %d vs %d'
-              % (prim_off, prim_on))
+        print('        at 400px, Back\'s gap from the right edge:')
+        for tag in ('live', 'gone'):
+            print('          base %-5s  %s' % (tag, '  '.join(
+                '%s %dpx' % (n, m[(tag, n)])
+                for n in ('lone', 'lone+cls', 'prim', 'prim+cls'))))
+
+        check(R3[0], m[('live', 'lone')] <= 8,
+              'it is %dpx short' % m[('live', 'lone')])
+        check(R3[1], m[('live', 'prim')] <= 8,
+              'it is %dpx short' % m[('live', 'prim')])
+        check(R3[2], m[('gone', 'lone')] > 8,
+              'without it the classless bar is ALREADY right-aligned, so '
+              'section 2 of test_bar_mobile is measuring nothing: %dpx'
+              % m[('gone', 'lone')])
+        check(R3[3], m[('gone', 'lone+cls')] <= 8,
+              'the class no longer does its own job either: %dpx'
+              % m[('gone', 'lone+cls')])
+        check(R3[4],
+              m[('live', 'lone')] == m[('live', 'lone+cls')]
+              == m[('live', 'prim')] == m[('live', 'prim+cls')],
+              'the class still changes something under the live base - this '
+              'note is wrong: %s' % {k[1]: v for k, v in m.items()
+                                     if k[0] == 'live'})
     except Exception as e:
-        skip('the class keeps a lone Back on the right at phone width',
-             'the browser would not run: %s' % str(e)[:40])
-        skip('CONTROL: and it does nothing to a bar that carries a primary',
-             'the browser would not run: %s' % str(e)[:40])
+        for _t in R3:
+            skip(_t, 'the browser would not run: %s' % str(e)[:40])
 
 # ---------------------------------------------------------------------- 4
 head('4. THE ENTRY PATTERN IS THE WIDE ONE')

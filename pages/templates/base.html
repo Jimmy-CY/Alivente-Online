@@ -2213,6 +2213,21 @@
           height: 44px;
           padding: 0;
         }
+        /* A BAR WITH NO PRIMARY HAS NOTHING TO PUSH BACK RIGHT.
+           `margin-left: 0` above is correct only while a
+           `.action-primary { flex: 1 1 auto }` is in the bar taking the
+           slack. Fifteen bars hold a Back and NO primary, and on a phone
+           every one of them packed Back hard against its neighbours:
+           measured at 390px, celebration_calendar left it 316px from the
+           right edge, unit_conversions_wizard 300, finance and
+           notification_settings 236, occupancy_trends 220,
+           passport_management 184. properties came out at 0 - because it
+           HAS a primary.
+           Found 27 Sep, reported as "the Back is wrong here" on one page;
+           it was wrong on about thirteen. */
+        .page-action-buttons:not(:has(.action-primary)) .action-back {
+          margin-left: auto;
+        }
         /* ===== ALV BACK LABEL v1 ===== 24 Sep 2026
            The word beside the arrow on a Back button, hidden below 768px
            so the button is a 44px square. 3.4 asks for the square; this
