@@ -13,9 +13,8 @@
         Based on <strong>{{ anchor_labels|join:" + " }}</strong>. Tick anything you have on hand &mdash; this step is optional.
       </p>
     </div>
-    <a href="{% url 'wcim_landing' %}" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
+    <a aria-label="Back to What Can I Make?" href="{% url 'wcim_landing' %}" class="btn action-back">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
   </div>
 
   <form method="post">

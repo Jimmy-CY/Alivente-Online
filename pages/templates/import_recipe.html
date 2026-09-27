@@ -278,9 +278,8 @@
 <div class="import-container">
 
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Recipes
-        </a>
+        <a aria-label="Back to Recipe Management" href="{% url 'recipe_management' %}" class="btn action-back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
     </div>
 
     <h2 class="page-title-h2">AI RECIPE IMPORT</h2>

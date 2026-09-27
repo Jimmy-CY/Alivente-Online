@@ -18,9 +18,8 @@
       <a href="{% url 'ingredient_families_management' %}" class="btn btn-outline-success">
         <i class="fas fa-sitemap"></i> Families
       </a>
-      <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Back
-      </a>
+      <a aria-label="Back to Recipe Management" href="{% url 'recipe_management' %}" class="btn action-back">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
     </div>
   </div>
 

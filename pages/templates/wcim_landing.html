@@ -12,9 +12,8 @@
         Pick what you're in the mood for. You can select more than one.
       </p>
     </div>
-    <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
+    <a aria-label="Back to Recipe Management" href="{% url 'recipe_management' %}" class="btn action-back">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
   </div>
 
   <form method="post">

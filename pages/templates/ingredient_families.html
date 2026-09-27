@@ -18,9 +18,8 @@
       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createFamilyModal">
         <i class="fas fa-plus"></i> Create family
       </button>
-      <a href="{% url 'pantry_staples_management' %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Back
-      </a>
+      <a aria-label="Back to Pantry Staples" href="{% url 'pantry_staples_management' %}" class="btn action-back">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
     </div>
   </div>
 

@@ -613,13 +613,11 @@
             {% endif %}
         </p>
         {% if return_to == 'recipe' and scoped_recipe %}
-            <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn btn-info">
-                <i class="fas fa-arrow-left"></i> Back to Recipe
-            </a>
+            <a aria-label="Back to Recipe" href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn action-back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
         {% else %}
-            <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-info">
-                <i class="fas fa-arrow-left"></i> Back to Ingredients
-            </a>
+            <a aria-label="Back to Ingredient Shopping Units" href="{% url 'ingredient_base_units_management' %}" class="btn action-back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
         {% endif %}
     </div>
     
