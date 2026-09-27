@@ -193,7 +193,7 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '.icon-action-btn {';              What = 'the house icon button has one home' },
     @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar {';            What = 'and so does the mobile action bar' },
     @{ File = 'pages\templates\base.html';                Text = '.sidebar-toggle:hover { background: #0a5e6a;'; What = 'sidebar hover uses the new ink' },
-    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: #0a5e6a';         What = 'and so does a page-local btn-info hover' },
+    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: var(--alv-accent-ink)'; What = 'and so does a page-local btn-info hover' },
     @{ File = 'pages\templates\suppliers.html';           Text = 'class="table alv-table suppliers-table"'; What = 'Suppliers is on the standard' },
     @{ File = 'pages\templates\suppliers.html';           Text = 'No suppliers to show';            What = 'and finally has an empty state' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-table .desktop-action-cell';  What = 'action columns stay centred' },
@@ -1017,6 +1017,7 @@ $suites = @(
     'test_named_bars.py'
     'test_palette.py'
     'test_line_soft.py'
+    'test_accent_ink.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

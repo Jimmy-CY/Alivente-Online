@@ -52,6 +52,7 @@ ROUNDS = [
     '.bak_namedbars',
     '.bak_palette',
     '.bak_linesoft',
+    '.bak_accentink',
 ]
 
 
