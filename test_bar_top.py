@@ -440,10 +440,15 @@ head('4. THE SCOPE WAS DRAWN BY THE WRONG INSTRUMENT')
 # The census that sized this round looked only inside a .page-action-buttons
 # bar. Four Back controls sit outside one, and two of them were the loudest
 # things on the pages this round is about.
+#
+# READ AS THIS ROUND LEFT IT (lesson 40). This section is a claim about the
+# state G2 found, so it must read now(), not the live file. H2 has since
+# moved celebration_management's Back INTO the bar - correctly - and against
+# the live file "the bar-only census could not see it" became false.
 seen_by_bar_only = 0
 seen_file_wide = 0
 for p in templates():
-    t = read(p)
+    t = now(p)
     if rel_of(p) == 'base.html':
         continue
     seen_by_bar_only += len(backs_in_bar_only(t))
@@ -457,7 +462,7 @@ for rel in MISSED_BY_BAR_ONLY:
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
-    t = read(p)
+    t = now(p)
     ok(len(backs_in(t)) > len(backs_in_bar_only(t)),
        '%-38s has a Back the bar-only census could not see' % rel,
        '%d file-wide, %d in the bar'

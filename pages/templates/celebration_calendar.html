@@ -8,20 +8,6 @@
 
 <style>
 
-.calendar-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.calendar-toolbar-left {
-    display: flex;
-    gap: 10px;
-}
-
 .calendar-navigation {
     display: flex;
     justify-content: space-between;
@@ -344,24 +330,6 @@
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
 
-    /* Toolbar — stack: Back button on top full-width, then toggle (hidden) */
-    .calendar-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-    .calendar-toolbar-left {
-        order: 2; /* Push toggle below Back, but it's hidden anyway */
-    }
-    .calendar-toolbar-right {
-        order: 1;
-    }
-    .calendar-toolbar .btn {
-        width: 100%;
-        padding: 10px 12px;
-    }
-
     /* Hide the calendar/timeline toggle on mobile — we always show timeline */
     #viewToggleBtn {
         display: none !important;
@@ -443,8 +411,7 @@
 <h2 class="page-title-h2">CELEBRATION CALENDAR</h2>
 
 
-<div class="calendar-toolbar">
-    <div class="calendar-toolbar-left">
+<div class="page-action-buttons">
         <!-- View Toggle Button (hidden on mobile via CSS) -->
         <button class="btn btn-info" id="viewToggleBtn" onclick="toggleCalendarView()">
             {% if default_view == 'timeline' %}
@@ -453,13 +420,11 @@
                 <i class="fas fa-list"></i> Timeline View
             {% endif %}
         </button>
-    </div>
-
-    <div class="calendar-toolbar-right">
-        <a href="{% url 'celebration_dashboard' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
+    
+        <a href="{% url 'celebration_dashboard' %}" class="btn action-back" aria-label="Back to Dashboard">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
-    </div>
+    
 </div>
 
 <!-- Mobile-only banner explaining the simplified view -->

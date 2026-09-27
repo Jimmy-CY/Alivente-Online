@@ -25,32 +25,6 @@
     border-radius: 6px 6px 0 0;
 }
 
-/* Top toolbar */
-.celebration-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 12px;
-}
-
-.toolbar-actions {
-    display: flex;
-    gap: 10px;
-    flex: 1;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.toolbar-search {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-/* Desktop: hide the mobile "More" dropdown wrapper */
-.toolbar-actions .action-more-wrapper { display: none; }
-
 .contact-card {
     background: white;
     border: 2px solid #e9ecef;
@@ -334,131 +308,6 @@
 }/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
 
-    /* Toolbar — stacked rows, action row first then search */
-    .celebration-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        margin-bottom: 14px;
-    }
-
-    /* Action row — Back+2+ standard:
-       [Add Contact (wide)] [⋮ More] [← Back] */
-    .toolbar-actions {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        flex-wrap: nowrap;
-        align-items: stretch;
-    }
-
-    /* Hide secondary actions on mobile — they live in the More menu */
-    .toolbar-actions .action-secondary {
-        display: none;
-    }
-
-    /* Add Contact takes the leftover space (primary action) */
-    .toolbar-actions .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-        gap: 6px;
-    }
-
-    /* More dropdown wrapper — visible on mobile only */
-    .toolbar-actions .action-more-wrapper {
-        display: block;
-        position: relative;
-        flex: 0 0 auto;
-    }
-    .toolbar-actions .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .toolbar-actions .action-more-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 200;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        min-width: 220px;
-        padding: 6px 0;
-    }
-    .toolbar-actions .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        transition: background 0.15s ease;
-        text-decoration: none;
-    }
-    .toolbar-actions .action-more-item i {
-        color: var(--alv-accent-ink);
-        width: 18px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-    .toolbar-actions .action-more-item:hover,
-    .toolbar-actions .action-more-item:active,
-    .toolbar-actions .action-more-item:focus {
-        background: #f0f2ff;
-        outline: none;
-        color: #2c3e50;
-        text-decoration: none;
-    }
-    .toolbar-actions .action-more-item.btn-action-disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    /* Back button — icon-only on mobile */
-    .toolbar-actions .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-
-    /* Search row */
-    .toolbar-search {
-        flex-direction: column;
-        gap: 8px;
-        align-items: stretch;
-    }
-    .toolbar-search #contactSearch {
-        width: 100% !important;
-        font-size: 16px; /* prevent iOS zoom */
-    }
-
     /* Contact card tighter */
     .contact-card {
         padding: 14px;
@@ -593,37 +442,45 @@
 </script>
 {% endfor %}
 
-<div class="celebration-toolbar">
-    <div class="toolbar-actions">
+<div class="toolbar-search">
+        <input type="text"
+               id="contactSearch"
+               class="form-control"
+               placeholder="Search contacts..."
+               onkeyup="searchContacts()"
+               style="width: 250px;">
+    </div>
+
+<div class="page-action-buttons">
         <!-- PRIMARY action (wide on mobile) -->
         {% if perms.auth.can_edit_celebrations %}
-        <button class="btn btn-primary action-primary" onclick="addContact()">
+        <button class="btn action-primary" onclick="addContact()">
             <i class="fas fa-user-plus"></i> Add Contact
         </button>
         {% else %}
-        <button class="btn btn-primary action-primary btn-action-disabled" disabled title="No permission to edit">
+        <button class="btn action-primary btn-action-disabled" disabled title="No permission to edit">
             <i class="fas fa-user-plus"></i> Add Contact
         </button>
         {% endif %}
 
         <!-- SECONDARY actions: visible on desktop, hidden on mobile (moved to More menu) -->
         {% if perms.auth.can_edit_celebrations %}
-        <button class="btn btn-success action-secondary" onclick="$('#importModal').modal('show')">
+        <button class="btn action-secondary" onclick="$('#importModal').modal('show')">
             <i class="fas fa-file-upload"></i> Import from Excel
         </button>
         {% else %}
-        <button class="btn btn-success action-secondary btn-action-disabled" disabled title="No permission to edit">
+        <button class="btn action-secondary btn-action-disabled" disabled title="No permission to edit">
             <i class="fas fa-file-upload"></i> Import from Excel
         </button>
         {% endif %}
 
-        <button class="btn btn-outline-secondary action-secondary" id="viewToggleBtn" onclick="toggleView()">
+        <button class="btn action-secondary" id="viewToggleBtn" onclick="toggleView()">
             <i class="fas fa-th-large"></i> Compact View
         </button>
 
         <!-- MOBILE-ONLY "More" dropdown -->
         <div class="action-more-wrapper">
-            <button type="button" class="btn btn-primary action-more-btn" id="actionMoreBtn"
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn"
                     aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
@@ -647,17 +504,9 @@
         <a href="{% url 'celebration_dashboard' %}" class="btn action-back" aria-label="Back to Dashboard">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
-    </div>
-
-    <div class="toolbar-search">
-        <input type="text"
-               id="contactSearch"
-               class="form-control"
-               placeholder="Search contacts..."
-               onkeyup="searchContacts()"
-               style="width: 250px;">
-    </div>
+    
 </div>
+
 
 <!-- Contacts List -->
 <div class="contacts-container detailed-grid">
@@ -685,25 +534,25 @@
                     {% endif %}
                 </div>
                 <!-- Desktop contact actions (hidden on mobile via CSS) -->
-                <div class="contact-actions">
+                <div class="contact-actions row-actions">
                     {% if perms.auth.can_edit_celebrations %}
-                    <button class="btn btn-sm btn-success" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')" title="Add Event">
+                    <button class="icon-action-btn icon-event" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')" title="Add Event">
                         <i class="fas fa-calendar-plus"></i>
                     </button>
-                    <button class="btn btn-sm btn-warning" onclick="editContact({{ contact.id }}, '{{ contact.name }}', '{{ contact.relationship }}', '{{ contact.email }}', '{{ contact.phone }}', `{{ contact.notes|escapejs }}`)" title="Edit Contact">
-                        <i class="fas fa-edit"></i>
+                    <button class="icon-action-btn icon-edit" onclick="editContact({{ contact.id }}, '{{ contact.name }}', '{{ contact.relationship }}', '{{ contact.email }}', '{{ contact.phone }}', `{{ contact.notes|escapejs }}`)" title="Edit Contact">
+                        <i class="fas fa-pencil-alt"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteContact({{ contact.id }}, '{{ contact.name }}')" title="Delete Contact">
+                    <button class="icon-action-btn icon-delete" onclick="deleteContact({{ contact.id }}, '{{ contact.name }}')" title="Delete Contact">
                         <i class="fas fa-trash"></i>
                     </button>
                     {% else %}
-                    <span class="btn btn-sm btn-success btn-action-disabled" title="No permission to edit">
+                    <span class="icon-action-btn icon-disabled" title="No permission to edit">
                         <i class="fas fa-calendar-plus"></i>
                     </span>
-                    <span class="btn btn-sm btn-warning btn-action-disabled" title="No permission to edit">
-                        <i class="fas fa-edit"></i>
+                    <span class="icon-action-btn icon-disabled" title="No permission to edit">
+                        <i class="fas fa-pencil-alt"></i>
                     </span>
-                    <span class="btn btn-sm btn-danger btn-action-disabled" title="No permission to delete">
+                    <span class="icon-action-btn icon-disabled" title="No permission to delete">
                         <i class="fas fa-trash"></i>
                     </span>
                     {% endif %}
@@ -758,19 +607,19 @@
                             </div>
                         </div>
                         <!-- Desktop event actions (hidden on mobile via CSS) -->
-                        <div class="event-actions">
+                        <div class="event-actions row-actions">
                             {% if perms.auth.can_edit_celebrations %}
-                            <button class="btn btn-sm btn-warning" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])" title="Edit Event">
-                                <i class="fas fa-edit"></i>
+                            <button class="icon-action-btn icon-edit" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])" title="Edit Event">
+                                <i class="fas fa-pencil-alt"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')" title="Delete Event">
+                            <button class="icon-action-btn icon-delete" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')" title="Delete Event">
                                 <i class="fas fa-trash"></i>
                             </button>
                             {% else %}
-                            <span class="btn btn-sm btn-warning btn-action-disabled" title="No permission to edit">
-                                <i class="fas fa-edit"></i>
+                            <span class="icon-action-btn icon-disabled" title="No permission to edit">
+                                <i class="fas fa-pencil-alt"></i>
                             </span>
-                            <span class="btn btn-sm btn-danger btn-action-disabled" title="No permission to delete">
+                            <span class="icon-action-btn icon-disabled" title="No permission to delete">
                                 <i class="fas fa-trash"></i>
                             </span>
                             {% endif %}
@@ -899,8 +748,8 @@
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Contact</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">Save Contact</button>
                 </div>
             </form>
         </div>
@@ -989,8 +838,8 @@
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Event</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">Save Event</button>
                 </div>
             </form>
         </div>
@@ -1020,8 +869,8 @@
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete Contact</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-secondary action-danger">Delete Contact</button>
                 </div>
             </form>
         </div>
@@ -1052,8 +901,8 @@
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete Event</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-secondary action-danger">Delete Event</button>
                 </div>
             </form>
         </div>
@@ -1106,8 +955,8 @@
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">
                         <i class="fas fa-upload"></i> Import Contacts
                     </button>
                 </div>

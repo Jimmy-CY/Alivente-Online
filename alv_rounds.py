@@ -58,6 +58,7 @@ ROUNDS = [
     '.bak_bartop',
     '.bak_reqmarker',
     '.bak_personalteal',
+    '.bak_celebrations',
 ]
 
 
