@@ -376,7 +376,10 @@
 <div class="categories-container">
     
     <!-- Action Bar -->
-    <div class="page-action-buttons">
+    
+    <!-- Page Header -->
+    <h2 class="page-title-h2">CATEGORIES MANAGEMENT</h2>
+<div class="page-action-buttons">
         {% if perms.auth.can_edit_personal %}
         <button type="button" class="btn action-primary" data-toggle="modal" data-target="#addCategoryModal">
             <i class="fas fa-plus"></i> Add Category
@@ -387,12 +390,9 @@
         </button>
         {% endif %}
         <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipe Management">
-            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Recipe Management</span>
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
-
-    <!-- Page Header -->
-    <h2 class="page-title-h2">CATEGORIES MANAGEMENT</h2>
 
 
     <!-- Categories Table -->

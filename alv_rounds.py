@@ -55,6 +55,7 @@ ROUNDS = [
     '.bak_accentink',
     '.bak_surfdeep',
     '.bak_pagetitle',
+    '.bak_bartop',
 ]
 
 

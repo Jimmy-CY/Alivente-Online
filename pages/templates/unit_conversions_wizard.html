@@ -415,21 +415,19 @@
 <div class="conversions-wizard">
 
     <!-- Action Bar -->
-    <div class="page-action-buttons">
-        {% if return_to == 'recipe' and scoped_recipe %}
-            <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn btn-secondary action-back">
-                <i class="fas fa-arrow-left"></i> Back to Recipe
-            </a>
-        {% else %}
-            <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary action-back">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-        {% endif %}
-    </div>
-
+    
     <!-- Page Header -->
     <h2 class="page-title-h2">SET UNIT CONVERSIONS</h2>
 {% if scoped_recipe %}<h4 class="page-subtitle-h4">SETTING CONVERSIONS FOR {{ scoped_recipe.recipe_name }}</h4>{% endif %}
+<div class="page-action-buttons">
+        {% if return_to == 'recipe' and scoped_recipe %}
+            <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn action-back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+        {% else %}
+            <a href="{% url 'ingredient_base_units_management' %}" class="btn action-back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+        {% endif %}
+    </div>
 
 
     {% if total_count == 0 %}

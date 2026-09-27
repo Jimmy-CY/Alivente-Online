@@ -440,7 +440,10 @@
 <div class="conversions-container">
     
     <!-- Action Bar -->
-    <div class="page-action-buttons">
+    
+    <!-- Page Header -->
+    <h2 class="page-title-h2">UNIT CONVERSIONS MANAGEMENT</h2>
+<div class="page-action-buttons">
         {% if perms.auth.can_edit_personal %}
         <button onclick="openAddModal()" class="btn btn-success action-primary">
             <i class="fas fa-plus"></i> Add New Conversion
@@ -483,13 +486,10 @@
             </div>
         {% endif %}
 
-        <a href="{% url 'recipe_management' %}" class="btn btn-secondary action-back" aria-label="Back to Recipe Management">
-            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Recipe Management</span>
+        <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipe Management">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
-
-    <!-- Page Header -->
-    <h2 class="page-title-h2">UNIT CONVERSIONS MANAGEMENT</h2>
 
 
     <!-- Conversions Table -->

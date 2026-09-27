@@ -1077,7 +1077,11 @@ tr.sortable-chosen {
 <div class="preview-container">
     
     <!-- Top action bar -->
-    <div class="page-action-buttons{% if mode != 'edit' %} page-action-buttons-single{% endif %}">
+    
+    <h2 class="page-title-h2">{% if mode == 'create' %}CREATE NEW RECIPE
+            {% elif mode == 'edit' %}EDIT RECIPE
+            {% else %}REVIEW IMPORTED RECIPE{% endif %}</h2>
+<div class="page-action-buttons{% if mode != 'edit' %} page-action-buttons-single{% endif %}">
         {% if mode == 'edit' %}
         <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-success action-primary">
             <i class="fas fa-eye"></i> View Recipe
@@ -1085,15 +1089,11 @@ tr.sortable-chosen {
         {% endif %}
 
         <a href="{% if mode == 'import' %}{% url 'import_recipe' %}{% else %}{% url 'recipe_management' %}{% endif %}"
-           class="btn btn-secondary action-back"
+           class="btn action-back"
            aria-label="{% if mode == 'import' %}Back to Import{% else %}Back to Recipes{% endif %}">
-            <i class="fas fa-arrow-left"></i><span class="action-back-label"> {% if mode == 'import' %}Back to Import{% else %}Back to Recipes{% endif %}</span>
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
-
-    <h2 class="page-title-h2">{% if mode == 'create' %}CREATE NEW RECIPE
-            {% elif mode == 'edit' %}EDIT RECIPE
-            {% else %}REVIEW IMPORTED RECIPE{% endif %}</h2>
 
 
     <div class="alert-info-custom">

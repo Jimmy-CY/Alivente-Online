@@ -981,7 +981,10 @@
 <div class="ingredients-container">
     
     <!-- Action Bar -->
-    <div class="page-action-buttons">
+    
+    <!-- Page Header -->
+    <h2 class="page-title-h2">INGREDIENT SHOPPING UNITS</h2>
+<div class="page-action-buttons">
         {% if unmapped_count > 0 %}
             <a href="{% url 'map_ingredients_wizard' %}" class="btn btn-info action-primary"
                title="{{ unmapped_count }} ingredient{{ unmapped_count|pluralize }} not yet mapped to nutrition data.">
@@ -1018,13 +1021,10 @@
             </span>
         {% endif %}
         
-        <a href="{% url 'recipe_management' %}" class="btn btn-secondary action-back" aria-label="Back to Recipe Management">
-            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Recipe Management</span>
+        <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipe Management">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
-
-    <!-- Page Header -->
-    <h2 class="page-title-h2">INGREDIENT SHOPPING UNITS</h2>
 
 
     <!-- Filter Bar -->
