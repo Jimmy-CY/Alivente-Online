@@ -162,7 +162,7 @@
 }
 
 .btn-icon-disabled {
-    background: #e9ecef !important;
+    background: var(--alv-surface-deep) !important;
     color: #adb5bd !important;
     border-color: #dee2e6 !important;
     cursor: not-allowed !important;
@@ -170,7 +170,7 @@
 }
 
 .btn-icon-disabled:hover {
-    background: #e9ecef !important;
+    background: var(--alv-surface-deep) !important;
     color: #adb5bd !important;
     transform: none !important;
 }
@@ -1093,12 +1093,12 @@ function openMissingConversionsModal() {
                 <div class="row align-items-end mb-2">
                     <div class="col-md-2">
                         <label style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">From:</label>
-                        <input type="text" class="form-control" value="${item.from_unit}" readonly style="background: #e9ecef;">
+                        <input type="text" class="form-control" value="${item.from_unit}" readonly style="background: var(--alv-surface-deep);">
                     </div>
                     
                     <div class="col-md-2">
                         <label style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">To:</label>
-                        <input type="text" class="form-control" value="${item.to_unit}" readonly style="background: #e9ecef;">
+                        <input type="text" class="form-control" value="${item.to_unit}" readonly style="background: var(--alv-surface-deep);">
                     </div>
                     
                     <div class="col-md-6">

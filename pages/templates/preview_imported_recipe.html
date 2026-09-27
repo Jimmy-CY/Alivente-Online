@@ -689,7 +689,7 @@ tr.sortable-chosen {
 }
 
 .calc-schedule-preview {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
     border-radius: 10px;
     padding: 20px 24px;
     margin-top: 20px;
@@ -1243,7 +1243,7 @@ tr.sortable-chosen {
                 <div class="col-md-3">
                     <div class="form-group">
                         <label for="total_time">Total Time (minutes)</label>
-                        <input type="number" class="form-control" id="total_time" name="total_time" value="{{ extracted_data.total_time }}" min="0" readonly style="background-color: #e9ecef;">
+                        <input type="number" class="form-control" id="total_time" name="total_time" value="{{ extracted_data.total_time }}" min="0" readonly style="background-color: var(--alv-surface-deep);">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -1776,7 +1776,7 @@ tr.sortable-chosen {
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="newIngredientName"><strong>Ingredient Name</strong></label>
-                        <input type="text" class="form-control" id="newIngredientName" readonly style="background: #e9ecef; font-weight: 600; font-size: 16px;">
+                        <input type="text" class="form-control" id="newIngredientName" readonly style="background: var(--alv-surface-deep); font-weight: 600; font-size: 16px;">
                     </div>
                     
                     <div class="form-group">
@@ -1843,7 +1843,7 @@ tr.sortable-chosen {
                                            id="newMeasurementName" 
                                            class="form-control" 
                                            readonly
-                                           style="background: #e9ecef; font-weight: 600;">
+                                           style="background: var(--alv-surface-deep); font-weight: 600;">
                                 </div>
                             </div>
                             <div class="col-md-6">

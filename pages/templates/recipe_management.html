@@ -9,7 +9,7 @@
 <style>
 /* Recipe Filter Panel Styles */
 .recipe-filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
     border: 1px solid #dee2e6;
     border-radius: 12px;
     padding: 24px;
@@ -486,7 +486,7 @@
 .recipe-delete-btn { background: #dc3545; color: white; }
 
 .recipe-image-action-btn.disabled-action {
-    background: #e9ecef;
+    background: var(--alv-surface-deep);
     color: #6c757d;
     opacity: 0.5;
     cursor: not-allowed;
@@ -551,7 +551,7 @@
 
 .recipe-list-item:last-child { border-bottom: none; }
 .recipe-list-item:nth-child(even) { background: #f8f9fa; }
-.recipe-list-item:hover { background: #e9ecef; }
+.recipe-list-item:hover { background: var(--alv-surface-deep); }
 
 .recipe-list-image {
     width: 50px;
@@ -678,7 +678,7 @@
 }
 
 .recipe-list-action-btn.disabled-action {
-    background: #e9ecef;
+    background: var(--alv-surface-deep);
     color: #6c757d;
     opacity: 0.5;
     cursor: not-allowed;
@@ -751,7 +751,7 @@
     transition: background 0.2s;
 }
 
-.category-header:hover { background: #e9ecef; }
+.category-header:hover { background: var(--alv-surface-deep); }
 
 .toggle-icon { transition: transform 0.3s; color: #28a745; }
 .toggle-icon.rotated { transform: rotate(-90deg); }
@@ -1450,7 +1450,7 @@
     }
     .action-more-divider {
         height: 1px;
-        background: #e9ecef;
+        background: var(--alv-surface-deep);
         margin: 6px 0;
     }
     .top-button-right .action-back {
@@ -1557,7 +1557,7 @@
     .recipe-card-actions-mobile .recipe-edit-btn { background: #ffc107; color: white; }
     .recipe-card-actions-mobile .recipe-duplicate-btn { background: #0e7c8b; color: white; }
     .recipe-card-actions-mobile .recipe-delete-btn { background: #dc3545; color: white; }
-    .recipe-card-actions-mobile .disabled-action { background: #e9ecef; color: #6c757d; opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    .recipe-card-actions-mobile .disabled-action { background: var(--alv-surface-deep); color: #6c757d; opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
     /* Favourite heart on image: smaller for compact 2-col */
     .recipe-favourite-btn { width: 28px; height: 28px; font-size: 13px; top: 6px; left: 6px; }
