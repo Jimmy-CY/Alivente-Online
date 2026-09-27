@@ -290,7 +290,20 @@ def _browser():
     return _BR
 
 
+TMPL_TAG = re.compile(r'\{%.*?%\}', re.S)
+TMPL_VAR = re.compile(r'\{\{.*?\}\}', re.S)
+
+
 def render(page_css, bar_html, width, css=None, tail='', js=BAR_JS):
+    # A TEMPLATE TAG IS NOT A FLEX ITEM. The bar is rendered verbatim, so a
+    # bare {% if %} sitting between two buttons - not inside an attribute -
+    # became an anonymous TEXT flex item with real width, and the bar wrapped
+    # to two rows in the fixture while rendering as one row on the page.
+    # household_member_management joined this list in G1 and is the first bar
+    # here whose {% if %} sits in the markup rather than in an href, so it
+    # read as a two-row bar that the full page does not have. Every other
+    # rendering fixture in this tree already strips these; this one did not.
+    bar_html = TMPL_VAR.sub('x', TMPL_TAG.sub('', bar_html))
     doc = ('<!doctype html><meta charset=utf-8><style>%s</style>'
            '<style>%s</style><style>%s</style>'
            '<style>body{margin:0;padding:8px}</style><body>'

@@ -7,32 +7,6 @@
 {% block content %}
 
 <style>
-.dashboard-header {
-    background: var(--alv-accent);
-    color: white;
-    padding: 40px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    text-align: center;
-    position: relative;
-}
-.dashboard-header h2 { margin: 0 0 10px 0; font-weight: 600; font-size: 32px; }
-.dashboard-header p { margin: 0; opacity: 0.9; font-size: 18px; }
-
-/* Header action buttons (Help + Back) — top-right corner on desktop */
-.header-actions {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    display: flex;
-    gap: 8px;
-}
-.header-actions .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
 
 .dashboard-actions {
     display: grid;
@@ -102,51 +76,6 @@
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
-    .dashboard-header {
-        padding: 18px 16px 16px 16px;
-        margin-bottom: 16px;
-    }
-    .dashboard-header h2 {
-        font-size: 1.3rem;
-        margin-bottom: 6px;
-    }
-    .dashboard-header p {
-        font-size: 0.9rem;
-    }
-
-    /* Header actions — flow inline below the heading on mobile.
-       HTML order is heading → subtitle → action row, so margin-top
-       gives breathing room below the subtitle.
-       Layout: [Help (wide)] [← Back small icon] — Back+1 standard. */
-    .header-actions {
-        position: static;
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        margin-top: 16px;
-        align-items: stretch;
-    }
-    .header-actions .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-        gap: 6px;
-    }
-    .header-actions .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        justify-content: center;
-        margin: 0;
-    }
 
     /* Action cards — single column */
     .dashboard-actions {
@@ -209,18 +138,14 @@
 }
 </style>
 
-<div class="dashboard-header">
-    <h2><i class="fas fa-birthday-cake"></i> Celebration Dashboard</h2>
-    <p>Track birthdays, namedays, anniversaries, and special occasions</p>
-    <div class="header-actions">
-        <button type="button" class="btn btn-light btn-sm action-primary" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
-            <i class="fas fa-question-circle" style="color:var(--alv-accent-ink);"></i> Help
+<h2 class="page-title-h2">CELEBRATION DASHBOARD</h2>
+<div class="page-action-buttons"><button type="button" class="btn action-secondary" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
+            <i class="fas fa-question-circle"></i> Help
         </button>
-        <a href="{% url 'personal_page' %}" class="btn btn-light btn-sm action-back" aria-label="Back to Personal Page">
-            <i class="fas fa-arrow-left" style="color:var(--alv-accent-ink);"></i><span class="action-back-label" style="color:#495057;"> Back</span>
-        </a>
-    </div>
-</div>
+        <a href="{% url 'personal_page' %}" class="btn action-back" aria-label="Back to Personal Page">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a></div>
+
 
 <div class="dashboard-actions">
     <a href="{% url 'celebration_management' %}" class="action-card contacts">

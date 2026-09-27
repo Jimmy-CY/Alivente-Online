@@ -455,15 +455,22 @@ for _d, _s, _fs in os.walk(T):
 # because a floor lets a set grow back in silence.
 print('        %d template(s) still carry a gradient page banner - '
       'green and amber,\n        from the same imported pack the purple came from. Six of\n        their seven rules fail their own white text. [E2]' % len(_left))
+# LATER - Section G round G1, 27 Sep. That round of its own has now run:
+# all sixteen coloured page banners in Personal came off and every one of
+# those pages wears base's .page-title-h2 instead. FIVE of the six named
+# above are therefore gone.
+#
+# The sixth is not a page banner and never was. The selector pattern above
+# includes nm-header, and ingredient_base_units_management declares
+# .nm-header for its SINGLE-INGREDIENT NUTRITION MAPPING MODAL - a modal
+# head, on its own teal ground, with nothing to do with the page head. Two
+# more of the same kind survive G1 on other pages (.progress-bar-fill twice)
+# and are out of its scope too. Left named here rather than dropped, so the
+# set still cannot grow back in silence.
 _EXPECT_BANNERS = {
-    'categories_management.html',
-    'household_member_management.html',
-    'ingredient_base_units_management.html',
-    'map_ingredients_nutrition.html',
-    'meal_plan_shopping_list.html',
-    'unit_conversions_wizard.html',
+    'ingredient_base_units_management.html',     # .nm-header, a MODAL head
 }
-check('and it is exactly the six named green/amber banners [E2]',
+check('and what is left is the one modal head, not a page banner [G1]',
       set(_left) == _EXPECT_BANNERS,
       ', '.join(sorted(set(_left))[:5]))
 

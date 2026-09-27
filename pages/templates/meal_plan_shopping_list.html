@@ -8,28 +8,6 @@
     max-width: 1000px;
     margin: 0 auto;
 }
-
-.page-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 30px 40px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    font-size: 32px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.page-header-meta {
-    display: flex;
-    gap: 25px;
-    margin-top: 15px;
-    font-size: 15px;
-    opacity: 0.95;
-}
 .ingredients-card {
     background: white;
     border-radius: 12px;
@@ -398,12 +376,6 @@
         max-width: 100%;
     }
     
-    .page-header {
-        background: white !important;
-        color: black !important;
-        border: 2px solid #28a745;
-    }
-    
     .ingredients-card {
         box-shadow: none;
         border: 1px solid #dee2e6;
@@ -429,24 +401,6 @@
 @media screen and (max-width: 768px) {
     .shopping-list-container {
         padding: 0 8px;
-    }  /* Page header — tighter */
-    .page-header {
-        padding: 22px 16px;
-        margin-bottom: 18px;
-        border-radius: 10px;
-    }
-    .page-header h1 {
-        font-size: 24px;
-        margin-bottom: 6px;
-    }
-    .page-header > p {
-        font-size: 15px !important;
-    }
-    .page-header-meta {
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 12px;
-        font-size: 13px;
     }
 
     /* Step indicator — shrink badges */
@@ -616,20 +570,9 @@
     </div>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-shopping-cart"></i> Shopping List</h1>
-        <p style="font-size: 18px; margin-bottom: 0;">{{ meal_plan.plan_name }}</p>
-        <div class="page-header-meta">
-            <span>
-                <i class="fas fa-calendar"></i>
-                {{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}
-            </span>
-            <span>
-                <i class="fas fa-utensils"></i>
-                {% if meal_plan.days.count %}{{ meal_plan.days.count }}{% else %}0{% endif %} day{{ meal_plan.days.count|pluralize }}
-            </span>
-        </div>
-    </div>
+    <h2 class="page-title-h2">SHOPPING LIST</h2>
+<h4 class="page-subtitle-h4">{{ meal_plan.plan_name }} &mdash; {{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }} &mdash; {% if meal_plan.days.count %}{{ meal_plan.days.count }}{% else %}0{% endif %} day{{ meal_plan.days.count|pluralize }}</h4>
+
 
     {% if has_missing_conversions %}
     {% if perms.auth.can_edit_personal %}

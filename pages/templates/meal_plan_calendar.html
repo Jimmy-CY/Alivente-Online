@@ -11,47 +11,11 @@
     padding: 20px;
 }
 
-.calendar-header {
-    background: var(--alv-accent);
-    color: white;
-    padding: 25px 30px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.calendar-header h1 {
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0;
-}
-
-.calendar-header-actions {
-    display: flex;
-    gap: 12px;
-}
-
 /* View toggle on its own row */
 .view-toggle-row {
     display: flex;
     justify-content: center;
     margin: 0 0 20px 0;
-}
-
-.calendar-header-actions .btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 500;
-}
-
-.btn-header-disabled {
-    background: rgba(255,255,255,0.3) !important;
-    color: rgba(255,255,255,0.7) !important;
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
 }
 
 .calendar-layout {
@@ -574,56 +538,6 @@
         padding: 8px;
     }
 
-    /* Header */
-    .calendar-header {
-        flex-direction: column;
-        gap: 14px;
-        padding: 18px 14px;
-        margin-bottom: 16px;
-        border-radius: 10px;
-        text-align: center;
-    }
-    .calendar-header h1 {
-        font-size: 22px;
-    }
-
-    /* Header actions — Back+1 standard:
-       [New Meal Plan (wide)] [← Back small icon]
-       View Toggle lives in its own row below */
-    .calendar-header-actions {
-        display: flex !important;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px !important;
-        width: 100%;
-    }
-    .calendar-header-actions .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin: 0;
-        gap: 6px;
-    }
-    .calendar-header-actions .action-back {
-        flex: 0 0 auto;
-        width: 50px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-
     .view-toggle-row {
         margin-bottom: 16px;
     }
@@ -911,24 +825,21 @@
 <div class="calendar-container">
     
     <!-- Header -->
-    <div class="calendar-header">
-        <h1><i class="fas fa-calendar-alt"></i> Meal Plan Calendar</h1>
-        <div class="calendar-header-actions">
-            {% if perms.auth.can_edit_personal %}
+    <h2 class="page-title-h2">MEAL PLAN CALENDAR</h2>
+<div class="page-action-buttons">{% if perms.auth.can_edit_personal %}
             <a href="{% url 'create_meal_plan' %}" class="btn btn-success action-primary">
                 <i class="fas fa-plus"></i> New Meal Plan
             </a>
             {% else %}
-            <span class="btn btn-header-disabled action-primary" title="No permission to create">
+            <span class="btn action-primary disabled-btn" title="No permission to create">
                 <i class="fas fa-plus"></i> New Meal Plan
             </span>
             {% endif %}
 
             <a href="{% url 'recipe_management' %}" class="btn btn-secondary action-back" aria-label="Back to Recipes">
                 <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-            </a>
-        </div>
-    </div>
+            </a></div>
+
 
     <!-- View Toggle (List vs Calendar) — its own row -->
     <div class="view-toggle-row">

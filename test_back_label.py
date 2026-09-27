@@ -314,8 +314,15 @@ else:
         ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
         pg = ctx.new_page()
 
+        # LISTED FROM now(), NOT read(). This section measures the tree AS
+        # THIS ROUND LEFT IT - now() winds later rounds back - so listing the
+        # wearers from the raw file on disk asks it to measure a page that
+        # does not wear the label in the version it renders. G1 exposed
+        # exactly that: it put action-back-label on
+        # household_member_management, which had none when this round ran,
+        # and the page then read as "renders no label to measure".
         wearers = [p for p in templates()
-                   if 'action-back-label' in read(p)
+                   if 'action-back-label' in now(p)
                    and os.path.basename(p) != 'base.html']
         ok(len(wearers) >= 90, 'the label is worn on %d template(s)'
            % len(wearers), len(wearers))

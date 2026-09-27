@@ -209,8 +209,21 @@ def read(p):
 # Each round's backup IS the state the previous round left behind, so a
 # check about round N reads the backup of the EARLIEST round after N that
 # touched this file - and the live file only if none did.
-LATER_BACKUPS = {1: ('.bak_sect2', '.bak_sect3'),
-                 2: ('.bak_sect3',)}
+#
+# AND THE CHAIN DOES NOT STOP AT PUSH 3. This list was hand-kept and named
+# only the three section pushes, so once a LATER round touched one of these
+# files, state_after fell through to the live file and judged push 1 on
+# another round's work. G1 - which lifts every Personal page onto base's own
+# .page-title-h2 - is the round that found it: create_meal_plan and
+# preview_imported_recipe read as heading drift when nothing was wrong.
+# The central register in alv_rounds is appended here, oldest first, so
+# every future round is covered without editing this line again.
+try:
+    from alv_rounds import ROUNDS as _ROUNDS
+except Exception:
+    _ROUNDS = []
+LATER_BACKUPS = {1: ('.bak_sect2', '.bak_sect3') + tuple(_ROUNDS),
+                 2: ('.bak_sect3',) + tuple(_ROUNDS)}
 
 
 def state_after(p, n):

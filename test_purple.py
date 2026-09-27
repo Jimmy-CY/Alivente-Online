@@ -496,9 +496,33 @@ if os.path.isfile(fh):
     ok('_EXPECT_BANNERS' in t,
        'the gradient banners left over are NAMED, not counted by a floor')
     ok('len(_left) >= 8' not in t, '  and the old floor of eight is gone')
+    # THOSE TWO WERE DEFERRED, AND THE DEBT IS NOW PAID. This round named
+    # household_member_management and unit_conversions_wizard in that set
+    # because it could not reach their green/amber banners. Section G round
+    # G1 removed every coloured page banner in Personal, so they are no
+    # longer in the set - and asking for their NAMES in that file now asks
+    # for the debt to still be outstanding. What this round actually cared
+    # about is asked of the templates themselves, which is a stronger claim
+    # than a name in a sibling suite.
     for name in ('household_member_management.html',
                  'unit_conversions_wizard.html'):
-        ok(name in t, '  %s is named among them' % name)
+        p = os.path.join(T, name)
+        if not os.path.isfile(p):
+            skip(name, 'not on disk')
+            continue
+        css = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>',
+                                   read(p), re.S | re.I))
+        # A BANNER SELECTOR, not any gradient. unit_conversions_wizard still
+        # paints .progress-bar-fill amber, which is a progress bar and was
+        # never this round's business or G1's.
+        left = [' '.join(m.group(1).split())
+                for m in re.finditer(r'([^{}]*)\{([^{}]*)\}', css)
+                if 'linear-gradient' in m.group(2)
+                and re.search(r'page-header|hm-header|celebration-header'
+                              r'|calendar-header|preview-header|import-header',
+                              m.group(1))]
+        ok(not left,
+           '  %s has no gradient PAGE BANNER left [G1]' % name, left)
 
 # ==========================================================================
 head('4. CONTROLS - checks that would catch a vacuous suite')

@@ -9,20 +9,6 @@
     margin: 0 auto;
 }
 
-.page-header {
-    background: var(--alv-accent);
-    color: white;
-    padding: 40px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    font-size: 36px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
 .form-group label {
     font-weight: 600;
     color: #2c3e50;
@@ -243,18 +229,6 @@
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
-    /* Header tighter */
-    .page-header {
-        padding: 18px 16px;
-        margin-bottom: 16px;
-    }
-    .page-header h1 {
-        font-size: 1.4rem;
-        margin-bottom: 6px;
-    }
-    .page-header p {
-        font-size: 0.9rem;
-    }
 
     /* Date inputs — stack on mobile so they don't shrink */
     .date-range-inputs {
@@ -397,15 +371,9 @@
 <div class="meal-plan-container">
 
     <!-- Page Header -->
-    <div class="page-header">
-        {% if edit_mode %}
-        <h1><i class="fas fa-edit"></i> Edit Meal Plan</h1>
-        <p>Update your meal plan details</p>
-        {% else %}
-        <h1><i class="fas fa-calendar-plus"></i> Create Meal Plan</h1>
-        <p>Plan your meals for the week</p>
-        {% endif %}
-    </div>
+    <h2 class="page-title-h2">MEAL PLANS</h2>
+<h4 class="page-subtitle-h4">{% if edit_mode %}EDIT MEAL PLAN{% else %}CREATE MEAL PLAN{% endif %}</h4>
+
 
     {% if edit_mode %}
     <form method="POST" action="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" id="mealPlanForm">

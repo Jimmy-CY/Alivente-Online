@@ -7,20 +7,6 @@
 {% block content %}
 
 <style>
-/* Calendar Styles */
-.calendar-header {
-    background: var(--alv-accent);
-    color: white;
-    padding: 30px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.calendar-header h2 {
-    margin: 0;
-    font-weight: 600;
-}
 
 .calendar-toolbar {
     display: flex;
@@ -358,15 +344,6 @@
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
 
-    /* Header — tighter */
-    .calendar-header {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-    .calendar-header h2 {
-        font-size: 1.3rem;
-    }
-
     /* Toolbar — stack: Back button on top full-width, then toggle (hidden) */
     .calendar-toolbar {
         flex-direction: column;
@@ -463,9 +440,8 @@
 }
 </style>
 
-<div class="calendar-header">
-    <h2><i class="fas fa-calendar-alt"></i> Celebration Calendar</h2>
-</div>
+<h2 class="page-title-h2">CELEBRATION CALENDAR</h2>
+
 
 <div class="calendar-toolbar">
     <div class="calendar-toolbar-left">

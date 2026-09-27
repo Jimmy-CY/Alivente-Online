@@ -25,26 +25,6 @@
     border-radius: 6px 6px 0 0;
 }
 
-/* Celebration Management Styles */
-.celebration-header {
-    background: var(--alv-accent);
-    color: white;
-    padding: 30px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.celebration-header h2 {
-    margin: 0 0 10px 0;
-    font-weight: 600;
-}
-
-.celebration-header p {
-    margin: 0;
-    opacity: 0.9;
-}
-
 /* Top toolbar */
 .celebration-toolbar {
     display: flex;
@@ -353,18 +333,6 @@
     pointer-events: none;
 }/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
-    /* Header tighter */
-    .celebration-header {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-    .celebration-header h2 {
-        font-size: 1.3rem;
-        margin-bottom: 6px;
-    }
-    .celebration-header p {
-        font-size: 0.9rem;
-    }
 
     /* Toolbar — stacked rows, action row first then search */
     .celebration-toolbar {
@@ -604,10 +572,8 @@
 }
 </style>
 
-<div class="celebration-header">
-    <h2><i class="fas fa-birthday-cake"></i> Celebration Management</h2>
-    <p>Track birthdays, namedays, anniversaries, and special occasions</p>
-</div>
+<h2 class="page-title-h2">CELEBRATION MANAGEMENT</h2>
+
 
 {% for msg in messages %}
 <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">

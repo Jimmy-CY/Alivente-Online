@@ -6,12 +6,6 @@
 
 {% block content %}
 <style>
-.hm-header { background: linear-gradient(135deg, #28a745 0%, #218838 100%); color:#fff; padding:30px; border-radius:12px; margin-bottom:30px; box-shadow:0 4px 12px rgba(0,0,0,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; }
-.hm-header h2 { margin:0 0 8px 0; font-weight:600; }
-.hm-header p { margin:0; opacity:.9; }
-.hm-badge { display:inline-block; background:rgba(255,255,255,.22); padding:4px 12px; border-radius:14px; font-size:13px; font-weight:500; margin-top:8px; }
-.hm-actions { display:flex; gap:8px; flex-shrink:0; }
-.hm-btn-white { background:#fff; color:#28a745; border:none; padding:10px 18px; border-radius:8px; font-weight:600; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
 .hm-card { background:#fff; border:2px solid #e9ecef; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
 .hm-table { margin:0; }
 .hm-table th { background:#f8f9fa; border-top:none; font-size:13px; text-transform:uppercase; letter-spacing:.03em; color:#6c757d; }
@@ -29,20 +23,10 @@
 
 /* Hover effects guarded so they don't stick on touch devices */
 @media (hover:hover) {
-  .hm-btn-white:hover { color:#1e7e34; text-decoration:none; }
 }
 
 /* ==================== MOBILE (≤768px) ==================== */
 @media screen and (max-width:768px) {
-
-  /* Header stacks; action buttons become a Back+1 row:
-     [Add Person (wide)] [Help (icon)] [← Back (icon)] */
-  .hm-header { padding:18px; flex-direction:column; align-items:stretch; text-align:center; }
-  .hm-actions { width:100%; flex-wrap:nowrap; gap:8px; }
-  .hm-btn-white { padding:10px 12px; }
-  .hm-actions .hm-btn-primary { flex:1 1 auto; min-width:0; justify-content:center; }
-  .hm-actions .hm-btn-icon { flex:0 0 auto; width:48px; padding:10px 0; justify-content:center; }
-  .hm-actions .hm-btn-icon .hm-btn-label { display:none; }
 
   /* Table -> stacked cards */
   .hm-table thead { display:none; }
@@ -78,26 +62,20 @@
 }
 </style>
 
-<div class="hm-header">
-  <div>
-    <h2><i class="fas fa-users"></i> Household Members</h2>
-    <p>The people events are relevant to, and who receives each kind of notification.</p>
-    {% if workspace %}<span class="hm-badge"><i class="fas fa-layer-group"></i> {{ workspace.name }}</span>{% endif %}
-  </div>
-  <div class="hm-actions">
-    {% if can_edit %}
-    <button type="button" class="hm-btn-white hm-btn-primary" data-toggle="modal" data-target="#addMemberModal">
-      <i class="fas fa-plus"></i> <span class="hm-btn-label">Add Person</span>
+<h2 class="page-title-h2">HOUSEHOLD MEMBERS</h2>
+{% if workspace %}<h4 class="page-subtitle-h4">{{ workspace.name }}</h4>{% endif %}
+<div class="page-action-buttons">{% if can_edit %}
+    <button type="button" class="btn action-primary" data-toggle="modal" data-target="#addMemberModal">
+      <i class="fas fa-plus"></i> Add Person
     </button>
     {% endif %}
-    <button type="button" class="hm-btn-white hm-btn-icon" data-toggle="modal" data-target="#household_member_managementHelpModal" aria-label="Help">
-      <i class="fas fa-question-circle"></i> <span class="hm-btn-label">Help</span>
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#household_member_managementHelpModal" aria-label="Help">
+      <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'personal_page' %}" class="hm-btn-white hm-btn-icon" aria-label="Back to Personal">
-      <i class="fas fa-arrow-left"></i> <span class="hm-btn-label">Back</span>
-    </a>
-  </div>
-</div>
+    <a href="{% url 'personal_page' %}" class="btn action-back" aria-label="Back to Personal">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a></div>
+
 
 {% for msg in messages %}
 <div class="alert alert-{% if msg.tags %}{{ msg.tags }}{% else %}success{% endif %} alert-dismissible fade show" role="alert">

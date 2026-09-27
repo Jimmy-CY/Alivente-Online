@@ -466,7 +466,41 @@ else:
             .map(e => { const s = getComputedStyle(e);
                 return [e.checkVisibility(), s.display, s.fontSize,
                         Math.round(e.getBoundingClientRect().width)]; })"""
-        moved = []
+        # A DIFFERENCE THIS CHECK CANNOT DESCRIBE IS NOT YET A DIFFERENCE.
+        #
+        # 27 Sep: this section stopped a push on
+        # error_pages/connectivity_error.html at 375 and said only that.
+        # Measured afterwards: the laptop's copy of that file and of its
+        # .bak_printq are byte for byte the sandbox's, the only difference
+        # between the two versions is `@media (max-width: 480px)` gaining
+        # `screen and` - which fires identically ON a screen at 375 - and
+        # the comparison came back identical twelve times out of twelve.
+        # It had also passed three full sweeps. What it has in common with
+        # the pixel gate demoted in F2a-1 is that it failed LATE IN A LOADED
+        # RUN and nowhere else.
+        #
+        # So: snapshot twice before believing a move, and when it survives
+        # the retry, SAY WHAT MOVED. "connectivity_error.html at 375" cost
+        # an hour and told nobody anything; the element, the property and
+        # the two values would have cost nothing.
+        def snap(t, w):
+            ctx, pg = load(br, fixture(boot, base_css, styles_of(t),
+                                       body_markup(t)), w, 900, 'screen')
+            try:
+                return pg.evaluate(SNAP)
+            finally:
+                ctx.close()
+
+        def describe(a, b):
+            out = []
+            for i, (x, y) in enumerate(zip(a, b)):
+                if x != y:
+                    out.append('    element %d: %r -> %r' % (i, x, y))
+            if len(a) != len(b):
+                out.append('    element count %d -> %d' % (len(a), len(b)))
+            return out[:6]
+
+        moved, flaked = [], []
         for rel, p in TOUCHED:
             # LATER - test_div_balance.py, 21 Sep. Section 5 renders the
             # page as this round left it: the earliest later round's backup,
@@ -475,17 +509,45 @@ else:
             now = as_left_by(p, SUFFIX, read)
             was = read(p + SUFFIX)
             for w in (375, 1280):
-                snaps = []
-                for t in (now, was):
-                    ctx, pg = load(br, fixture(boot, base_css, styles_of(t),
-                                               body_markup(t)),
-                                   w, 900, 'screen')
-                    snaps.append(pg.evaluate(SNAP))
-                    ctx.close()
-                if snaps[0] != snaps[1]:
-                    moved.append('%s at %d' % (rel, w))
+                a, b = snap(now, w), snap(was, w)
+                if a == b:
+                    continue
+                a2, b2 = snap(now, w), snap(was, w)      # once more, on the
+                if a2 == b2:                             # same page, before
+                    flaked.append('%s at %d' % (rel, w))  # believing it
+                    continue
+                moved.append('%s at %d' % (rel, w))
+                moved += describe(a2, b2)
         ok(not moved, 'every touched page, at 375 and 1280, renders exactly '
-           'as it did', '\n'.join(moved[:8]))
+           'as it did', '\n'.join(moved[:12]))
+        if flaked:
+            print('        NOTE: %d comparison(s) differed once and were '
+                  'identical on a second\n              render of the same '
+                  'two files - a measurement, not a move: %s'
+                  % (len(flaked), ', '.join(flaked[:4])))
+
+        # CONTROL: THE RETRY MUST NOT SWALLOW A REAL MOVE. A retry that
+        # cannot tell a flake from a change turns this section into a
+        # section that always passes. Take a page this round touched, widen
+        # one rule by hand, and require BOTH renders to disagree and the
+        # description to name what moved.
+        if TOUCHED:
+            rel, p = TOUCHED[0]
+            real = read(p + SUFFIX)
+            hurt = real.replace('</style>',
+                                '.error-container,.container,body *'
+                                '{font-size:33px !important}</style>', 1)
+            if hurt != real:
+                c1, c2 = snap(hurt, 375), snap(real, 375)
+                d1, d2 = snap(hurt, 375), snap(real, 375)
+                ok(c1 != c2 and d1 != d2,
+                   'CONTROL: a page whose font-size really is changed '
+                   'differs on BOTH renders - the retry cannot hide a move')
+                ok(describe(d1, d2),
+                   '  and the failure names the element and both values: %s'
+                   % (describe(d1, d2)[0].strip() if describe(d1, d2) else ''))
+            else:
+                skip('the retry control', 'no </style> in %s' % rel)
         br.close()
 
 # ==========================================================================

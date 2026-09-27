@@ -9,20 +9,6 @@
     max-width: 1400px;
     margin: 0 auto;
 }
-
-.page-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 30px 40px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    font-size: 32px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
 /* Count badges next to the action-bar buttons (e.g. "Map Nutrition Data (12)"). */
 .page-action-buttons .btn .action-count-badge {
     display: inline-flex;
@@ -510,19 +496,6 @@
 @media screen and (max-width: 768px) {
     .ingredients-container {
         padding: 0 8px;
-    }
-
-    .page-header {
-        padding: 22px 16px;
-        margin-bottom: 18px;
-        border-radius: 10px;
-    }
-    .page-header h1 {
-        font-size: 22px;
-        margin-bottom: 6px;
-    }
-    .page-header > p {
-        font-size: 14px !important;
     }  /* Mobile: show the short label, hide the full one */
     .page-action-buttons .action-primary .action-label-full { display: none; }
     .page-action-buttons .action-primary .action-label-short { display: inline; }
@@ -1051,10 +1024,8 @@
     </div>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <h1><i class="fas fa-balance-scale"></i> Ingredient Shopping Units</h1>
-        <p style="font-size: 16px; margin-bottom: 0;">Set default units for shopping list aggregation</p>
-    </div>
+    <h2 class="page-title-h2">INGREDIENT SHOPPING UNITS</h2>
+
 
     <!-- Filter Bar -->
     <div class="filter-bar">

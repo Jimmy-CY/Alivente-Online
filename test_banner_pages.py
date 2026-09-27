@@ -455,10 +455,30 @@ else:
           'needs the whole tree' % len(_all))
 
 _cm = os.path.join(T, 'categories_management.html')
+_rel_cm = 'categories_management.html'
 if os.path.exists(_cm):
-    check('categories_management is untouched - it is recipe-side, and only '
-          'the NAME-based exclusion list missed it',
-          'linear-gradient' in css_of(read(_cm)))
+    # THIS ROUND WALKED PAST IT, and Section G round G1 has since taken it.
+    #
+    # The check used to read the live file, so once G1 removed every coloured
+    # page banner in Personal it read as a regression here. as_left_by cannot
+    # help: this page has no .bak_banner precisely BECAUSE this round never
+    # touched it, so there is no backup to date the chain from.
+    #
+    # What is still true, and still worth asserting, is the history: the page
+    # was left out of PAGES, and it really did carry a gradient banner at the
+    # time - otherwise "the exclusion list missed it" claims nothing. Its
+    # pre-G1 state is frozen in .bak_pagetitle.
+    _pre = _cm + '.bak_pagetitle'
+    if os.path.isfile(_pre):
+        check('categories_management was left out of PAGES and really did '
+              'carry a gradient banner - G1 has since taken it',
+              _rel_cm not in PAGES and 'linear-gradient' in css_of(read(_pre)))
+        check('  and it is gone now, which is G1\'s business, not this one\'s',
+              'linear-gradient' not in css_of(read(_cm)))
+    else:
+        check('categories_management is untouched - it is recipe-side, and '
+              'only the NAME-based exclusion list missed it',
+              'linear-gradient' in css_of(read(_cm)))
 
 for name in PAGES:
     txt = NOW[name]

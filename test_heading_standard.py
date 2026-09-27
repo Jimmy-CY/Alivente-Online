@@ -365,10 +365,16 @@ check('every h5 descriptive line is sentence case, not capitals',
 # whose case belongs to the data and which no rule here can set. Judging
 # those on capitalisation they do not control would fail correct pages, so
 # they are separated by whether the line is mostly interpolation.
+# THREE LETTERS WAS TOO LOW A BAR. Shopping List's h4 is
+# "{{ plan }} - {{ from }} - {{ to }} - {{ n }} day{{ ...|pluralize }}": four
+# template tags and the literal word "day", which is data with a unit on it,
+# not a mode label. At three it counted as a label and failed for not
+# shouting. The shortest real label in the corpus is ADD EXPENSE at ten
+# letters, so six separates them with room either side.
 _labels = [(r, t) for r, t in H4
-           if len([c for c in literal(t) if c.isalpha()]) >= 3]
+           if len([c for c in literal(t) if c.isalpha()]) >= 6]
 _records = [(r, t) for r, t in H4
-            if len([c for c in literal(t) if c.isalpha()]) < 3]
+            if len([c for c in literal(t) if c.isalpha()]) < 6]
 print('        of the h4s, %d are mode labels and %d name a record - the '
       'record\n        names take their case from the data.'
       % (len(_labels), len(_records)))
