@@ -95,10 +95,10 @@
 <style>
   /* Colour Variables */
   :root {
-    --personal-dark: #28a745;
-    --personal-light: #d4edda;
+    --personal-dark: var(--alv-accent);
+    --personal-light: var(--alv-accent-soft);
     --future-dark: #6c757d;
-    --future-light: #e9ecef;
+    --future-light: var(--alv-surface-deep);
   }
 
 
@@ -150,7 +150,7 @@
   }
 
   .admin-tab.personal-tab:not(.active):hover {
-    background-color: #e8f5e9;
+    background-color: var(--alv-accent-soft);
   }
 
   .admin-tab.future-tab {
@@ -243,12 +243,12 @@
   }
 
   .btn-personal {
-    background-color: #28a745;
+    background-color: var(--alv-accent);
     border: none;
   }
 
   .btn-personal:hover {
-    background-color: #218838;
+    background-color: var(--alv-accent-ink);
   }
 
   /* Coming-soon tile is non-interactive */

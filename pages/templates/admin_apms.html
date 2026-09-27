@@ -63,10 +63,10 @@
 <style>
   /* Colour Variables */
   :root {
-    --alivente-dark: #0e7c8b;
-    --alivente-light: #d1ecf1;
+    --alivente-dark: var(--alv-accent);
+    --alivente-light: var(--alv-accent-soft);
     --future-dark: #6c757d;
-    --future-light: #e9ecef;
+    --future-light: var(--alv-surface-deep);
   }
 
   /* Desktop: hide the mobile "More" dropdown wrapper */
@@ -120,7 +120,7 @@
   }
   
   .admin-tab.alivente-tab:not(.active):hover {
-    background-color: #e8f4f8;
+    background-color: var(--alv-accent-soft);
   }
   
   .admin-tab.future-tab {
@@ -146,7 +146,7 @@
   }
 
   .admin-tab.future-tab:not(.active):hover {
-    background-color: #f1f3f5;
+    background-color: var(--alv-line-soft);
   }
   
   /* Tab Content */
@@ -221,7 +221,7 @@
   }
   
   .btn-alivente {
-    background-color: #0e7c8b;
+    background-color: var(--alv-accent);
     border: none;
   }
   
