@@ -848,7 +848,7 @@ function addNewDocument() {
     document.getElementById('submitBtnText').textContent = 'Save';
     document.getElementById('document_file').required = true;
     document.getElementById('file_upload_group').style.display = 'block';
-    document.querySelector('#file_upload_group .required-marker').style.display = 'inline';
+    document.querySelector('#file_upload_group .alv-req').style.display = 'inline';
     $('#addEditModal').modal('show');
 }
 
@@ -865,7 +865,7 @@ function editDocument(passportId, holderName, docType, docNumber, country, issue
     document.getElementById('addEditModalLabel').textContent = 'Edit Passport/ID Information';
     document.getElementById('submitBtnText').textContent = 'Update';
     document.getElementById('document_file').required = false;
-    document.querySelector('#file_upload_group .required-marker').style.display = 'none';
+    document.querySelector('#file_upload_group .alv-req').style.display = 'none';
     $('#addEditModal').modal('show');
 }
 

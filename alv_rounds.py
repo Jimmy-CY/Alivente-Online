@@ -56,6 +56,7 @@ ROUNDS = [
     '.bak_surfdeep',
     '.bak_pagetitle',
     '.bak_bartop',
+    '.bak_reqmarker',
 ]
 
 

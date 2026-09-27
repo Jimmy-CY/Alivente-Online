@@ -554,8 +554,17 @@ else:
 
 # REGISTERED, AND ON THE GATE.
 ok(SUFFIX in ROUNDS, '%s is registered in alv_rounds.ROUNDS' % SUFFIX)
-ok(ROUNDS and ROUNDS[-1] == SUFFIX, '  and it is the newest round',
-   ROUNDS[-1] if ROUNDS else None)
+# NOT "AND IT IS THE NEWEST ROUND". That check passes on the day it is
+# written and fails on the day the next round is registered - lesson 54,
+# which was already written down when this suite asked for it anyway. H1
+# was registered the same afternoon and turned it red. What is worth
+# asserting is the ORDER: this round came after the one it builds on, so
+# as_left_by unwinds them the right way round.
+ok(ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_pagetitle'),
+   '  and it is registered AFTER .bak_pagetitle, the round it builds on',
+   '%s at %d, .bak_pagetitle at %d'
+   % (SUFFIX, ROUNDS.index(SUFFIX), ROUNDS.index('.bak_pagetitle'))
+   if SUFFIX in ROUNDS and '.bak_pagetitle' in ROUNDS else ROUNDS[-3:])
 ps1 = os.path.join(ROOT, PS1)
 ok(os.path.isfile(ps1) and ME in read(ps1), '%s is on the push gate' % ME)
 ok(os.path.isfile(os.path.join(ROOT, PATCHER)),
