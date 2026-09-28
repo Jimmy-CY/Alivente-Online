@@ -16,32 +16,15 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.categories-table {
-    width: 100%;
-    border-collapse: collapse;
-}
 
-.categories-table thead {
-    background: #f8f9fa;
-}
 
-.categories-table th {
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #dee2e6;
-}
 
-.categories-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e9ecef;
-    vertical-align: middle;
-}
 
-.categories-table tbody tr:hover {
-    background: #f8f9fa;
-}
+
+
+
+
+
 
 .edit-mode {
     background: #fffbf0 !important;
@@ -284,48 +267,19 @@
         font-size: 16px !important;
     }
 
-    /* Categories table → cards */
-    .categories-table thead {
-        display: none;
-    }
-    .categories-table,
-    .categories-table tbody,
-    .categories-table tbody tr {
-        display: block;
-        width: 100%;
-    }
-    .categories-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    .categories-table tbody tr:hover {
-        background: white;
-    }
+
+
+
+
     .categories-table tbody tr.edit-mode {
         background: #fffbf0 !important;
         border-color: #ffc107;
     }
-    .categories-table tbody td {
-        display: block !important;
-        padding: 6px 0 !important;
-        border-bottom: none !important;
-        text-align: left !important;
-    }
-    .categories-table tbody td::before {
-        display: block;
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #6c757d;
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
-    }
-    .categories-table tbody td:nth-child(1)::before { content: 'Category Name'; }
-    .categories-table tbody td:nth-child(2)::before { content: 'Ingredients'; }
-    .categories-table tbody td:nth-child(3)::before { content: 'Actions'; }
+
+
+
+
+
     .action-btn {
         padding: 8px 14px;
         font-size: 16px;
@@ -402,19 +356,20 @@
         </h2>
         
         {% if categories_with_count %}
-        <table class="categories-table">
+        <div class="table-container">
+        <table class="table alv-table categories-table">
             <thead>
                 <tr>
                     <th style="width: 60%;">Category Name</th>
                     <th style="width: 25%;">Ingredients Using</th>
-                    <th style="width: 15%; text-align: center;">Actions</th>
+                    <th style="width: 15%; text-align: center;" class="cell-actions">Actions</th>
                 </tr>
             </thead>
             <tbody id="categoriesTableBody">
                 {% for item in categories_with_count %}
                 <tr id="category-row-{{ item.category.ingredient_category_id }}" data-category-id="{{ item.category.ingredient_category_id }}">
                     <!-- Category Name -->
-                    <td>
+                    <td data-label="Category Name">
                         <span class="category-name-display">{{ item.category.name }}</span>
                         {% if perms.auth.can_edit_personal %}
                         <input type="text" 
@@ -425,7 +380,7 @@
                     </td>
                     
                     <!-- Ingredient Count with Popup -->
-                    <td>
+                    <td data-label="Ingredients">
                         <span class="ingredient-popup-trigger" onclick="toggleIngredientPopup(this, event)">
                             <span class="ingredient-count">
                                 <i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}
@@ -449,7 +404,7 @@
                     </td>
                     
                     <!-- Actions -->
-                    <td style="text-align: center;">
+                    <td style="text-align: center;" class="cell-actions">
                         <div class="action-buttons">
                             {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
@@ -488,6 +443,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         {% else %}
         <div class="empty-state" id="emptyState">
             <i class="fas fa-tags"></i>

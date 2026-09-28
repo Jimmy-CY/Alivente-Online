@@ -7,9 +7,6 @@
 {% block content %}
 <style>
 .hm-card { background:#fff; border:2px solid #e9ecef; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-.hm-table { margin:0; }
-.hm-table th { background:#f8f9fa; border-top:none; font-size:13px; text-transform:uppercase; letter-spacing:.03em; color:#6c757d; }
-.hm-table td { vertical-align:middle; }
 .status-pill { padding:2px 10px; border-radius:10px; font-size:12px; font-weight:600; }
 .status-active { background:#d4edda; color:#155724; }
 .status-inactive { background:#f1f3f5; color:#868e96; }
@@ -28,29 +25,7 @@
 /* ==================== MOBILE (≤768px) ==================== */
 @media screen and (max-width:768px) {
 
-  /* Table -> stacked cards */
-  .hm-table thead { display:none; }
   .hm-card { border:none; box-shadow:none; background:transparent; overflow:visible; }
-  .hm-table, .hm-table tbody, .hm-table tr, .hm-table td { display:block; width:100%; }
-  .hm-table tr {
-    background:#fff; border:1px solid #e9ecef; border-radius:12px;
-    margin-bottom:14px; padding:12px 14px; box-shadow:0 2px 8px rgba(0,0,0,.08);
-  }
-  .hm-table td {
-    border:none; padding:7px 0; display:flex; align-items:center;
-    justify-content:space-between; gap:12px; text-align:right;
-  }
-  .hm-table td::before {
-    content:attr(data-label); flex:0 0 auto; text-align:left;
-    font-size:12px; text-transform:uppercase; letter-spacing:.03em;
-    color:#6c757d; font-weight:600;
-  }
-  /* Name as card heading */
-  .hm-table td.hm-name-cell {
-    justify-content:flex-start; border-bottom:1px solid var(--alv-line-soft);
-    margin-bottom:6px; padding-bottom:10px; font-size:16px;
-  }
-  .hm-table td.hm-name-cell::before { display:none; }
   /* Keep "Linked account" hidden on mobile, as before */
   .hm-table .hide-sm { display:none; }
   /* Actions: label above, buttons in a left-aligned row below */
@@ -86,7 +61,8 @@
 
 {% if members %}
 <div class="hm-card">
-  <table class="table hm-table">
+  <div class="table-container">
+  <table class="table alv-table hm-table">
     <thead>
       <tr>
         <th>Name</th>
@@ -94,13 +70,13 @@
         <th class="hide-sm">Linked account</th>
         <th>Status</th>
         {% for col in sub_columns %}<th class="text-center">{{ col.label }}</th>{% endfor %}
-        {% if can_edit %}<th class="text-right">Actions</th>{% endif %}
+        {% if can_edit %}<th class=" cell-actions">Actions</th>{% endif %}
       </tr>
     </thead>
     <tbody>
       {% for m in members %}
       <tr>
-        <td class="hm-name-cell"><strong>{{ m.name }}</strong></td>
+        <td data-label="Name"><strong>{{ m.name }}</strong></td>
         <td data-label="Email">{% if m.email %}{{ m.email }}{% else %}<span class="unlinked">no email</span>{% endif %}</td>
         <td class="hide-sm" data-label="Linked account">
           {% if m.user %}<span class="linked-pill"><i class="fas fa-user"></i> {{ m.user.get_full_name|default:m.user.username }}</span>
@@ -125,7 +101,7 @@
         </td>
         {% endfor %}
         {% if can_edit %}
-        <td class="text-right hm-actions-cell" data-label="Actions" style="white-space:nowrap;">
+        <td class=" hm-actions-cell cell-actions" data-label="Actions" style="white-space:nowrap;">
           <button type="button" class="btn btn-sm btn-outline-secondary edit-member-btn"
                   data-id="{{ m.id }}" data-name="{{ m.name }}" data-email="{{ m.email|default:'' }}"
                   data-user="{{ m.user_id|default:'' }}" data-active="{{ m.is_active|yesno:'1,0' }}"
@@ -153,6 +129,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
 <p class="sub-note"><i class="fas fa-info-circle"></i> Toggle a tickbox to opt a member in or out of that notification. Changes save immediately.</p>
 {% else %}

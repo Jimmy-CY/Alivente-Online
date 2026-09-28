@@ -77,32 +77,15 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.ingredients-table {
-    width: 100%;
-    border-collapse: collapse;
-}
 
-.ingredients-table thead {
-    background: #f8f9fa;
-}
 
-.ingredients-table th {
-    padding: 10px 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #dee2e6;
-}
 
-.ingredients-table td {
-    padding: 8px 15px;
-    border-bottom: 1px solid #e9ecef;
-    vertical-align: middle;
-}
 
-.ingredients-table tbody tr:hover {
-    background: #f8f9fa;
-}
+
+
+
+
+
 
 .category-badge {
     background: #0e7c8b;
@@ -547,50 +530,22 @@
         font-size: 16px !important;
     }
 
-    .ingredients-table thead {
-        display: none;
-    }
-    .ingredients-table,
-    .ingredients-table tbody,
-    .ingredients-table tbody tr {
-        display: block;
-        width: 100%;
-    }
-    .ingredients-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    .ingredients-table tbody tr:hover {
-        background: white;
-    }
+
+
+
+
     .ingredients-table tbody tr.edit-mode {
         background: #fffbf0 !important;
         border-color: #ffc107;
     }
-    .ingredients-table tbody td {
-        display: block !important;
-        padding: 8px 0 !important;
-        border-bottom: none !important;
-        text-align: left !important;
-    }
-    .ingredients-table tbody td::before {
-        display: block;
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #6c757d;
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
-    }
-    .ingredients-table tbody td:nth-child(1)::before { content: 'Ingredient Name'; }
-    .ingredients-table tbody td:nth-child(2)::before { content: 'Category'; }
-    .ingredients-table tbody td:nth-child(3)::before { content: 'Shopping Unit'; }
-    .ingredients-table tbody td:nth-child(4)::before { content: 'Conversion'; }
-    .ingredients-table tbody td:nth-child(5)::before { content: 'Nutrition'; }
-    .ingredients-table tbody td:nth-child(6)::before { content: 'Action'; }
+
+
+
+
+
+
+
+
 
     .action-buttons {
         justify-content: flex-start;
@@ -1067,7 +1022,8 @@
         </h2>
         
         {% if ingredients_with_base %}
-        <table class="ingredients-table">
+        <div class="table-container">
+        <table class="table alv-table ingredients-table">
             <thead>
                 <tr>
                     <th style="width: 26%;">Ingredient Name</th>
@@ -1075,7 +1031,7 @@
                     <th style="width: 16%;">Shopping Unit</th>
                     <th style="width: 14%;">Conversion</th>
                     <th style="width: 14%;">Nutrition</th>
-                    <th style="width: 12%; text-align: center;">Action</th>
+                    <th style="width: 12%; text-align: center;" class="cell-actions">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -1093,7 +1049,7 @@
                     data-current-sugar="{{ item.ingredient.sugar_per_100g|default_if_none:'' }}"
                     data-current-sodium="{{ item.ingredient.sodium_per_100g|default_if_none:'' }}">
                     <!-- Ingredient Name -->
-                    <td>
+                    <td data-label="Ingredient Name">
                         <span class="ingredient-name-display">
                             <strong>{{ item.ingredient.name }}</strong>
                         </span>
@@ -1106,7 +1062,7 @@
                     </td>
                     
                     <!-- Category -->
-                    <td>
+                    <td data-label="Category">
                         <span class="category-display">
                             {% if item.ingredient.category %}
                             <span class="category-badge">{{ item.ingredient.category.name }}</span>
@@ -1128,7 +1084,7 @@
                     </td>
                     
                     <!-- Shopping Unit -->
-                    <td>
+                    <td data-label="Shopping Unit">
                         <span class="unit-display-text">
                             {% if item.ingredient.default_unit %}
                             <strong>{{ item.ingredient.default_unit.name }}</strong>
@@ -1150,7 +1106,7 @@
                     </td>
                     
                     <!-- Conversion status -->
-                    <td>
+                    <td data-label="Conversion">
                         {% if item.conversion_status == 'ready' %}
                             <span class="conversion-badge conversion-ready"
                                   data-tip-type="conversion"
@@ -1186,7 +1142,7 @@
                     </td>
                     
                     <!-- Nutrition mapping status -->
-                    <td>
+                    <td data-label="Nutrition">
                         {% if item.ingredient.fdc_id is not None or item.ingredient.calories_per_100g is not None %}
                             <span class="nutrition-badge nutrition-mapped"
                                   data-tip-type="nutrition"
@@ -1210,7 +1166,7 @@
                     </td>
                     
                     <!-- Actions -->
-                    <td style="text-align: center;">
+                    <td style="text-align: center;" class="cell-actions">
                         <div class="action-buttons">
                             {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
@@ -1249,6 +1205,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         
         {# Embed ingredient conversions as JSON — read by the Nutrition Mapping modal #}
         <script type="application/json" id="all-ingredient-conversions">

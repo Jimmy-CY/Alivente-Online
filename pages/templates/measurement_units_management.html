@@ -15,32 +15,15 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.units-table {
-    width: 100%;
-    border-collapse: collapse;
-}
 
-.units-table thead {
-    background: #f8f9fa;
-}
 
-.units-table th {
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #dee2e6;
-}
 
-.units-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e9ecef;
-    vertical-align: middle;
-}
 
-.units-table tbody tr:hover {
-    background: #f8f9fa;
-}
+
+
+
+
+
 
 .edit-mode {
     background: #fffbf0 !important;
@@ -342,50 +325,21 @@
         font-size: 16px !important;
     }
 
-    /* Units table → cards */
-    .units-table thead {
-        display: none;
-    }
-    .units-table,
-    .units-table tbody,
-    .units-table tbody tr {
-        display: block;
-        width: 100%;
-    }
-    .units-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    .units-table tbody tr:hover {
-        background: white;
-    }
+
+
+
+
     .units-table tbody tr.edit-mode {
         background: #fffbf0 !important;
         border-color: #ffc107;
     }
-    .units-table tbody td {
-        display: block !important;
-        padding: 8px 0 !important;
-        border-bottom: none !important;
-        text-align: left !important;
-    }
-    .units-table tbody td::before {
-        display: block;
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #6c757d;
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
-    }
-    .units-table tbody td:nth-child(1)::before { content: 'Unit Name'; }
-    .units-table tbody td:nth-child(2)::before { content: 'Abbreviation'; }
-    .units-table tbody td:nth-child(3)::before { content: 'Type'; }
-    .units-table tbody td:nth-child(4)::before { content: 'Usage'; }
-    .units-table tbody td:nth-child(5)::before { content: 'Actions'; }
+
+
+
+
+
+
+
 
     /* Action buttons left-align */
     .action-buttons {
@@ -482,21 +436,22 @@
         </h2>
         
         {% if units_with_count %}
-        <table class="units-table">
+        <div class="table-container">
+        <table class="table alv-table units-table">
             <thead>
                 <tr>
                     <th style="width: 30%;">Unit Name</th>
                     <th style="width: 15%;">Abbreviation</th>
                     <th style="width: 15%;">Type</th>
                     <th style="width: 25%;">Usage</th>
-                    <th style="width: 15%; text-align: center;">Actions</th>
+                    <th style="width: 15%; text-align: center;" class="cell-actions">Actions</th>
                 </tr>
             </thead>
             <tbody id="unitsTableBody">
                 {% for item in units_with_count %}
                 <tr id="unit-row-{{ item.unit.measurement_unit_id }}" data-unit-id="{{ item.unit.measurement_unit_id }}">
                     <!-- Unit Name -->
-                    <td>
+                    <td data-label="Unit Name">
                         <span class="unit-name-display">
                             <strong>{{ item.unit.name }}</strong>
                             {% if item.unit.name_plural %}
@@ -524,7 +479,7 @@
                     </td>
                     
                     <!-- Abbreviation -->
-                    <td>
+                    <td data-label="Abbreviation">
                         <span class="unit-abbr-display">
                             {% if item.unit.abbreviation %}
                             {{ item.unit.abbreviation }}
@@ -556,7 +511,7 @@
                     </td>
                     
                     <!-- Unit Type -->
-                    <td>
+                    <td data-label="Type">
                         <span class="unit-type-display">
                             <span class="unit-type-badge unit-type-{{ item.unit.unit_type }}">
                                 {{ item.unit.get_unit_type_display }}
@@ -574,7 +529,7 @@
                     </td>
                     
                     <!-- Usage Count with Clickable Popups -->
-                    <td>
+                    <td data-label="Usage">
                         <div class="usage-count">
                             {% if item.total_usage > 0 %}
                             <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -622,7 +577,7 @@
                     </td>
                     
                     <!-- Actions -->
-                    <td style="text-align: center;">
+                    <td style="text-align: center;" class="cell-actions">
                         <div class="action-buttons">
                             {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
@@ -661,6 +616,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
         {% else %}
         <div class="empty-state" id="emptyState">
             <i class="fas fa-ruler"></i>

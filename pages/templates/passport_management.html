@@ -139,24 +139,24 @@
 
 <!-- Passports Table (desktop) / Card list (mobile) -->
 <div class="table-container">
-<table class="table table-bordered table-striped text-center passport-table" id="passportTable">
+<table class="table alv-table table-bordered table-striped passport-table" id="passportTable">
 <thead>
     <tr>
-        <th class="sortable-header" style="text-align: left; width: 16%;" onclick="sortTable(0)">Passport/ID Holder Name <i class="fas fa-sort"></i></th>
-        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(1)">Document Type <i class="fas fa-sort"></i></th>
-        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(2)">Document Number <i class="fas fa-sort"></i></th>
-        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(3)">Country of Issue <i class="fas fa-sort"></i></th>
-        <th class="sortable-header" style="text-align: center; width: 11%; white-space: nowrap;" onclick="sortTable(4)">Date of Issue <i class="fas fa-sort"></i></th>
-        <th class="sortable-header" style="text-align: center; width: 11%; white-space: nowrap;" onclick="sortTable(5)">Expiry Date <i class="fas fa-sort"></i></th>
-        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(6)">Status <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 14%">Actions</th>
+        <th class="sortable-header" style="width: 16%" onclick="sortTable(0)">Passport/ID Holder Name <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="width: 12%" onclick="sortTable(1)">Document Type <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="width: 12%" onclick="sortTable(2)">Document Number <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="width: 12%" onclick="sortTable(3)">Country of Issue <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="width: 11%; white-space: nowrap" onclick="sortTable(4)">Date of Issue <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="width: 11%; white-space: nowrap" onclick="sortTable(5)">Expiry Date <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="width: 12%" onclick="sortTable(6)">Status <i class="fas fa-sort"></i></th>
+        <th style="width: 14%" class="desktop-action-cell cell-actions">Actions</th>
     </tr>
 </thead>
 <tbody>
     {% for passport in passports %}
     <tr>
-        <td data-label="Holder" data-sort-key="holder" data-sort-value="{{ passport.holder_name }}" style="text-align: left">{{ passport.holder_name }}</td>
-        <td data-label="Type" data-sort-key="doc-type" data-sort-value="{{ passport.document_type }}" style="text-align: center">
+        <td data-label="Holder" data-sort-key="holder" data-sort-value="{{ passport.holder_name }}">{{ passport.holder_name }}</td>
+        <td data-label="Type" data-sort-key="doc-type" data-sort-value="{{ passport.document_type }}">
             {% if passport.document_type == 'passport' %}<span class="badge badge-primary">Passport</span>
             {% elif passport.document_type == 'id' %}<span class="badge badge-info">ID</span>
             {% elif passport.document_type == 'drivers_license' %}<span class="badge badge-secondary">Driver's License</span>
@@ -165,10 +165,10 @@
             {% else %}<span class="badge badge-secondary">{{ passport.get_document_type_display }}</span>
             {% endif %}
         </td>
-        <td data-label="Number" style="text-align: center">{{ passport.document_number|default:"-" }}</td>
-        <td data-label="Country" data-sort-key="country" data-sort-value="{{ passport.country_of_issue }}" style="text-align: center">{{ passport.country_of_issue|default:"-" }}</td>
-        <td data-label="Issued" data-sort-key="issue" data-sort-value="{{ passport.date_of_issue|date:'Y-m-d' }}" style="text-align: center; white-space: nowrap;">{{ passport.date_of_issue|date:"Y-m-d"|default:"-" }}</td>
-        <td data-label="Expires" data-sort-key="expiry" data-sort-value="{{ passport.expiry_date|date:'Y-m-d' }}" style="text-align: center; white-space: nowrap;">
+        <td data-label="Number">{{ passport.document_number|default:"-" }}</td>
+        <td data-label="Country" data-sort-key="country" data-sort-value="{{ passport.country_of_issue }}">{{ passport.country_of_issue|default:"-" }}</td>
+        <td data-label="Issued" data-sort-key="issue" data-sort-value="{{ passport.date_of_issue|date:'Y-m-d' }}" style="white-space: nowrap">{{ passport.date_of_issue|date:"Y-m-d"|default:"-" }}</td>
+        <td data-label="Expires" data-sort-key="expiry" data-sort-value="{{ passport.expiry_date|date:'Y-m-d' }}" style="white-space: nowrap">
             {% if passport.expiry_date %}
                 {% now "Y-m-d" as today_date %}
                 {% with expiry_str=passport.expiry_date|date:"Y-m-d" %}
@@ -184,7 +184,7 @@
                 -
             {% endif %}
         </td>
-        <td data-label="Status" data-sort-key="status" data-sort-value="{{ passport.status }}" style="text-align: center">
+        <td data-label="Status" data-sort-key="status" data-sort-value="{{ passport.status }}">
             {% if passport.status == 'active' %}<span class="badge badge-success">Active</span>
             {% elif passport.status == 'renewal' %}<span class="badge badge-warning">Applied for Renewal</span>
             {% elif passport.status == 'inactive' %}<span class="badge badge-secondary">Inactive</span>
@@ -193,7 +193,7 @@
         </td>
 
         <!-- Desktop actions cell -->
-        <td class="desktop-action-cell" style="text-align: center">
+        <td class="desktop-action-cell cell-actions">
             {% if passport.document_file %}
                 <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document"><i class="fas fa-eye"></i></button>
                 {% if perms.auth.can_edit_personal %}
@@ -571,62 +571,6 @@
         width: 100%;
         text-align: center;
         padding: 10px 12px;
-    }
-    .passport-table {
-        border: none;
-        background: transparent;
-    }
-    .passport-table thead {
-        display: none;
-    }
-    .passport-table,
-    .passport-table tbody,
-    .passport-table tr,
-    .passport-table td {
-        display: block;
-        width: 100%;
-    }
-    .passport-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .passport-table tbody tr:nth-of-type(even) {
-        background: white;
-    }
-    .passport-table td {
-        border: none !important;
-        padding: 6px 0 !important;
-        text-align: left !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        min-height: 28px;
-        white-space: normal !important;
-    }
-    .passport-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #495057;
-        font-size: 13px;
-        flex-shrink: 0;
-    }
-    /* The Holder Name (first cell) gets prominence */
-    .passport-table td[data-label="Holder"] {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid var(--alv-line-soft) !important;
-        display: block;
-    }
-    .passport-table td[data-label="Holder"]::before {
-        display: none;
     }
 
     /* Hide desktop action cell */
