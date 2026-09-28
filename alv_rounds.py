@@ -69,6 +69,7 @@ ROUNDS = [
     '.bak_hubbar',
     '.bak_goodwarn',
     '.bak_moremenu',
+    '.bak_subtree',
 ]
 
 
