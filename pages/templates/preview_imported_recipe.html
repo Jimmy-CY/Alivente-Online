@@ -97,38 +97,11 @@
     margin-bottom: 20px;
 }
 
-.ingredient-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #f8f9fa;
-    border-radius: 8px;
-    overflow: visible; /* Allow overflow */
-}
 
-.ingredient-table thead {
-    background: #0e7c8b;
-    color: white;
-}
 
-.ingredient-table th {
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-}
 
-.ingredient-table tbody tr {
-    background: white;
-    border-bottom: 1px solid #dee2e6;
-}
 
-.ingredient-table tbody tr:last-child {
-    border-bottom: none;
-}
 
-.ingredient-table td {
-    padding: 8px;
-    position: relative;
-}
 
 .ingredient-table input {
     width: 100%;
@@ -802,42 +775,6 @@ tr.sortable-chosen {
         line-height: 1.4;
     }
 
-    /* ============================================================
-       INGREDIENT & INSTRUCTION TABLES → CARD LAYOUT ON MOBILE
-       ============================================================ */
-    .ingredient-table thead {
-        display: none;
-    }
-    .ingredient-table,
-    .ingredient-table tbody,
-    .ingredient-table tr {
-        display: block;
-        width: 100%;
-    }
-    .ingredient-table {
-        background: transparent;
-    }
-    .ingredient-table tr.ingredient-row,
-    .ingredient-table tr.instruction-row {
-        background: #fafafa;
-        border: 2px solid #dee2e6;
-        border-radius: 10px;
-        padding: 40px 12px 12px 12px;
-        margin-bottom: 12px;
-        position: relative;
-    }
-    .ingredient-table tr.ingredient-row:hover,
-    .ingredient-table tr.instruction-row:hover {
-        background: #fafafa;
-    }
-    .ingredient-table td {
-        display: block !important;
-        width: 100% !important;
-        padding: 6px 0 !important;
-        position: static;
-        text-align: left !important;
-        border-bottom: none;
-    }
 
     /* Drag handle — top-left of card */
     #ingredientsTable td.drag-col,
@@ -849,26 +786,7 @@ tr.sortable-chosen {
         padding: 0 !important;
     }
 
-    /* Remove button — top-right of card */
-    #ingredientsTable td.actions-col,
-    #instructionsTable td:last-child {
-        position: absolute !important;
-        top: 8px;
-        right: 8px;
-        width: auto !important;
-        padding: 0 !important;
-    }
 
-    /* Field labels above each input via ::before */
-    .ingredient-table td::before {
-        display: block;
-        font-weight: 700;
-        font-size: 11px;
-        color: #6c757d;
-        margin-bottom: 4px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
     /* Hide ::before for drag/remove cells */
     #ingredientsTable td.drag-col::before,
     #ingredientsTable td.actions-col::before,
@@ -877,17 +795,7 @@ tr.sortable-chosen {
         display: none;
     }
 
-    /* Ingredient table field labels */
-    #ingredientsTable td:nth-child(2)::before { content: 'Quantity'; }
-    #ingredientsTable td:nth-child(3)::before { content: 'Measurement'; }
-    #ingredientsTable td:nth-child(4)::before { content: 'Ingredient'; }
-    #ingredientsTable td:nth-child(5)::before { content: 'Preparation'; }
-    #ingredientsTable td:nth-child(6)::before { content: 'Group'; }
 
-    /* Instructions table field labels */
-    #instructionsTable td:nth-child(2)::before { content: 'Step'; }
-    #instructionsTable td:nth-child(3)::before { content: 'Instruction'; }
-    #instructionsTable td:nth-child(4)::before { content: 'Group'; }
 
     /* Step number badge — left-aligned in stacked card */
     #instructionsTable .step-number-badge-table {
@@ -1345,7 +1253,8 @@ tr.sortable-chosen {
             </h3>
             
             <div class="ingredient-table-wrapper">
-                <table class="ingredient-table" id="ingredientsTable">
+                <div class="table-container">
+                <table class="table alv-table ingredient-table" id="ingredientsTable">
                     <thead>
                         <tr>
                             <th class="drag-col"><i class="fas fa-grip-vertical"></i></th>
@@ -1354,7 +1263,7 @@ tr.sortable-chosen {
                             <th class="ingredient-col">Ingredient</th>
                             <th class="preparation-col">Preparation</th>
                             <th class="group-col">Group</th>
-                            <th class="actions-col">Actions</th>
+                            <th class="actions-col cell-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="ingredientsTableBody">
@@ -1363,10 +1272,10 @@ tr.sortable-chosen {
                             <td class="drag-col">
                                 <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                             </td>
-                            <td>
+                            <td data-label="Quantity">
                                 <input type="text" name="ingredient_quantity[]" value="{{ ing.quantity }}" required>
                             </td>
-                            <td>
+                            <td data-label="Measurement">
                                 <div class="autocomplete-wrapper">
                                     <input type="text" 
                                            name="ingredient_measurement[]" 
@@ -1381,7 +1290,7 @@ tr.sortable-chosen {
                                     <div class="autocomplete-dropdown measurement-dropdown"></div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Ingredient">
                                 <div class="autocomplete-wrapper">
                                     <input type="text" 
                                            name="ingredient_name[]" 
@@ -1396,7 +1305,7 @@ tr.sortable-chosen {
                                     <div class="autocomplete-dropdown ingredient-dropdown"></div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Preparation">
                                 <div class="autocomplete-wrapper">
                                     <input type="text" 
                                            name="ingredient_preparation[]" 
@@ -1410,13 +1319,13 @@ tr.sortable-chosen {
                                     <div class="autocomplete-dropdown preparation-dropdown"></div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Group">
                                 <input type="text" 
                                        name="ingredient_group[]" 
                                        value="{{ ing.group }}"
                                        placeholder="e.g., For the sauce">
                             </td>
-                            <td>
+                            <td class="cell-actions">
                                 <button type="button" class="remove-item-btn" onclick="removeIngredientRow(this)">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -1425,6 +1334,7 @@ tr.sortable-chosen {
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
             
             <button type="button" class="add-item-btn" onclick="addIngredientRow()">
@@ -1447,14 +1357,15 @@ tr.sortable-chosen {
             </div>
             
             <div class="ingredient-table-wrapper">
-                <table class="ingredient-table" id="instructionsTable">
+                <div class="table-container">
+                <table class="table alv-table ingredient-table" id="instructionsTable">
                     <thead>
                         <tr>
                             <th style="width: 4%; text-align: center;"><i class="fas fa-grip-vertical"></i></th>
                             <th style="width: 8%;">Step #</th>
                             <th style="width: 56%;">Instruction</th>
                             <th style="width: 20%;">Group</th>
-                            <th style="width: 12%; text-align: center;">Actions</th>
+                            <th style="width: 12%; text-align: center;" class="cell-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="instructionsTableBody">
@@ -1463,24 +1374,24 @@ tr.sortable-chosen {
                             <td style="text-align: center;">
                                 <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                             </td>
-                            <td style="text-align: center;">
+                            <td data-label="Step" style="text-align: center;">
                                 <div class="step-number-badge-table">{{ forloop.counter }}</div>
                                 <input type="hidden" name="step_number[]" value="{{ forloop.counter }}">
                             </td>
-                            <td>
+                            <td data-label="Instruction">
                                 <textarea class="form-control instruction-textarea" 
                                           name="instruction[]" 
                                           rows="1" 
                                           required 
                                           oninput="autoResize(this)">{% if instruction.instruction %}{{ instruction.instruction }}{% else %}{{ instruction }}{% endif %}</textarea>
                             </td>
-                            <td>
+                            <td data-label="Group">
                                 <input type="text" 
                                        name="instruction_group[]"
                                        value="{{ instruction.group }}"
                                        placeholder="e.g., Preparation">
                             </td>
-                            <td style="text-align: center;">
+                            <td style="text-align: center;" class="cell-actions">
                                 <button type="button" class="remove-item-btn" onclick="removeInstructionRow(this)">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -1489,6 +1400,7 @@ tr.sortable-chosen {
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </div>
             
             <button type="button" class="add-item-btn" onclick="addInstructionRow()">
@@ -3089,10 +3001,10 @@ function addIngredientRow() {
         <td class="drag-col">
             <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
         </td>
-        <td>
+        <td data-label="Quantity">
             <input type="text" name="ingredient_quantity[]" required>
         </td>
-        <td>
+        <td data-label="Measurement">
             <div class="autocomplete-wrapper">
                 <input type="text" 
                        name="ingredient_measurement[]"
@@ -3106,7 +3018,7 @@ function addIngredientRow() {
                 <div class="autocomplete-dropdown measurement-dropdown"></div>
             </div>
         </td>
-        <td>
+        <td data-label="Ingredient">
             <div class="autocomplete-wrapper">
                 <input type="text" 
                        name="ingredient_name[]"
@@ -3120,7 +3032,7 @@ function addIngredientRow() {
                 <div class="autocomplete-dropdown ingredient-dropdown"></div>
             </div>
         </td>
-        <td>
+        <td data-label="Preparation">
             <div class="autocomplete-wrapper">
                 <input type="text" 
                        name="ingredient_preparation[]"
@@ -3133,12 +3045,12 @@ function addIngredientRow() {
                 <div class="autocomplete-dropdown preparation-dropdown"></div>
             </div>
         </td>
-        <td>
+        <td data-label="Group">
             <input type="text" 
                    name="ingredient_group[]" 
                    placeholder="e.g., For the sauce">
         </td>
-        <td>
+        <td class="cell-actions">
             <button type="button" class="remove-item-btn" onclick="removeIngredientRow(this)">
                 <i class="fas fa-times"></i>
             </button>
@@ -3181,23 +3093,23 @@ function addInstructionRow() {
         <td style="text-align: center;">
             <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
         </td>
-        <td style="text-align: center;">
+        <td data-label="Step" style="text-align: center;">
             <div class="step-number-badge-table">${newStepNumber}</div>
             <input type="hidden" name="step_number[]" value="${newStepNumber}">
         </td>
-        <td>
+        <td data-label="Instruction">
             <textarea class="form-control instruction-textarea" 
                       name="instruction[]" 
                       rows="1" 
                       required 
                       oninput="autoResize(this)"></textarea>
         </td>
-        <td>
+        <td data-label="Group">
             <input type="text" 
                    name="instruction_group[]" 
                    placeholder="e.g., Preparation">
         </td>
-        <td style="text-align: center;">
+        <td style="text-align: center;" class="cell-actions">
             <button type="button" class="remove-item-btn" onclick="removeInstructionRow(this)">
                 <i class="fas fa-times"></i>
             </button>

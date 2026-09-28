@@ -439,16 +439,20 @@ QUEUE = [
     'finance_expense.html', 'finance_expense_line_types.html',
     'finance_revenue.html', 'finance_revenue_line_types.html',
     'finance_valuations.html', 'physical_invoice_list.html',
-    'preview_imported_recipe.html', 'projects/project_task_list.html',
+    'projects/project_task_list.html',
     'projects/projects.html', 'property_detail.html',
     'title_deeds_management.html',
 ]
-# Left the queue on 27 Sep, round H4 - .bak_tablepersonal.
+# Left the queue: 27 Sep round H4 (.bak_tablepersonal), then 28 Sep round
+# H5a (.bak_tablepreview). A page leaving is a migration and comes off
+# QUEUE in the same round; this list is what it left FOR, so the check
+# below can say the queue shrank rather than merely that it changed.
 MIGRATED_H4 = [
     'categories_management.html', 'household_member_management.html',
     'ingredient_base_units_management.html',
     'measurement_units_management.html', 'passport_management.html',
     'unit_conversions_management.html',
+    'preview_imported_recipe.html',
 ]
 _cards = []
 for rel in TARGETS:
@@ -460,7 +464,7 @@ check('the hand-rolled card views left are exactly the ones queued',
       sorted(_cards) == sorted(QUEUE),
       'joined: %s\nleft  : %s'
       % (sorted(set(_cards) - set(QUEUE)), sorted(set(QUEUE) - set(_cards))))
-check('  and the six H4 migrated are off it',
+check('  and the seven migrated so far are off it',
       not (set(_cards) & set(MIGRATED_H4)),
       sorted(set(_cards) & set(MIGRATED_H4)))
 check('  CONTROL: all six were on it before that round, so this check '

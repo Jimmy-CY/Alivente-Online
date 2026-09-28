@@ -63,6 +63,7 @@ ROUNDS = [
     '.bak_barmobile',
     '.bak_tablepersonal',
     '.bak_rowpersonal',
+    '.bak_tablepreview',
 ]
 
 
