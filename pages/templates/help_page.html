@@ -21,10 +21,6 @@
     color: #2c3e50;
     margin-bottom: 6px;
   }
-  .help-hero p {
-    color: #6c757d;
-    margin: 0;
-  }
 
   /* Search bar */
   .help-search-wrap {
@@ -342,53 +338,6 @@
   .help-empty.visible { display: block; }
   .help-empty i { font-size: 48px; color: #adb5bd; margin-bottom: 14px; }
 
-  /* Hero action row — Generate User Manual + Back */
-  .help-hero-actions {
-    margin-top: 14px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    align-items: stretch;
-  }
-  .btn-generate-manual {
-    background: linear-gradient(135deg, #0e7c8b, var(--alv-accent-ink));
-    color: white;
-    border: none;
-    padding: 10px 22px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn-generate-manual:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(14, 124, 139,0.35);
-    color: white;
-  }
-  .btn-help-back {
-    background: white;
-    color: #0e7c8b;
-    border: 2px solid #0e7c8b;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-  }
-  .btn-help-back:hover {
-    background: #0e7c8b;
-    color: white;
-    text-decoration: none;
-  }
 
   /* Generate Manual modal styling */
   .manual-modal .modal-dialog {
@@ -740,32 +689,6 @@
     .help-hero h2 {
       font-size: 1.4rem;
     }
-    .help-hero p {
-      font-size: 13px;
-    }
-    .help-hero-actions {
-      gap: 8px;
-      flex-wrap: nowrap;
-    }
-    .btn-generate-manual {
-      flex: 1 1 auto;
-      min-width: 0;
-      justify-content: center;
-      padding: 12px 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .btn-help-back {
-      flex: 0 0 auto;
-      width: 50px;
-      padding: 0;
-      justify-content: center;
-      align-items: center;
-    }
-    .btn-help-back .help-back-label {
-      display: none;
-    }
 
     /* Search bar */
     .help-search-wrap {
@@ -920,13 +843,13 @@
 
   <div class="help-hero">
     <h2 class="page-title-h2">HELP &amp; USER MANUAL</h2>
-    <p>Browse every module in Alivente Online. Search below or expand a section to find what you need.</p>
-    <div class="help-hero-actions">
-      <button type="button" class="btn-generate-manual" data-toggle="modal" data-target="#generateManualModal">
+    <p class="page-note">Browse every module in Alivente Online. Search below or expand a section to find what you need.</p>
+    <div class="page-action-buttons">
+      <button type="button" class="btn action-primary" data-toggle="modal" data-target="#generateManualModal">
         <i class="fas fa-book"></i> Generate User Manual
       </button>
-      <a href="{% url 'home' %}" class="btn-help-back" aria-label="Back to home">
-        <i class="fas fa-arrow-left"></i><span class="help-back-label"> Back</span>
+      <a href="{% url 'home' %}" class="btn action-back" role="button" aria-label="Back to home">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
     </div>
   </div>

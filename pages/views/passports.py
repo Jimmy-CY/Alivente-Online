@@ -33,6 +33,7 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..models import Passport
@@ -172,8 +173,21 @@ def passport_management(request):
     if selected_status:
         passports = passports.filter(status=selected_status)
 
-    # Order by creation date (newest first)
-    passports = passports.order_by('-created_at')
+    # Order by expiry date, soonest first, with undated documents last.
+    #
+    # THIS ORDERING IS NOT NEW - it is where it should always have been.
+    # Until W1 the view ordered by '-created_at' and the TEMPLATE then
+    # re-sorted the whole table in JavaScript, on load, at every width:
+    # applyMobileSort('expiry-asc') ran inside a DOMContentLoaded with no
+    # width guard, driven by a select that CSS hid above 768px but never
+    # removed from the DOM. So the desktop was being ordered by a control
+    # only the phone could see.
+    #
+    # nulls_last matches what that code did with a missing date
+    # (`if (aEmpty) return 1`), and -created_at is kept as the tie-break
+    # so documents sharing an expiry hold the order they had.
+    passports = passports.order_by(
+        F('expiry_date').asc(nulls_last=True), '-created_at')
 
     # Add expiry warning flag to each passport (for 6-month warning)
     today = date.today()

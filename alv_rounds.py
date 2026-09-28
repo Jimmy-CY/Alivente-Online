@@ -72,6 +72,8 @@ ROUNDS = [
     '.bak_subtree',
     '.bak_morecss',
     '.bak_lastmenu',
+    '.bak_walk1',
+    '.bak_walk2',
 ]
 
 

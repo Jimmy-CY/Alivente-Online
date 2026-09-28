@@ -97,13 +97,20 @@ VOID = {'input', 'br', 'img', 'hr', 'meta', 'link', 'source', 'area',
 # actions twice" and the push gate rejected it as `two sets of verbs`. A
 # page with two sets of verbs does not say which one commits. Its Save now
 # sits in the one bar, like every other entry screen in this round.
-BARS_EXPECTED = {'help_page.html': 0}
+#
+# W2, 28 Sep 2026: THE EXCEPTION IS GONE, AND THAT IS THE POINT. This
+# dict used to hold `help_page.html: 0`, with the reason "its actions
+# live in a page-local .help-hero-actions - the hero is its own round,
+# not this one". That round happened: help_page gave up .help-hero-actions,
+# .btn-generate-manual, .btn-help-back and .help-back-label - eleven rules
+# and 1,761 characters - and joined .page-action-buttons like every other
+# page. So it is no longer an exception, and the general rule below now
+# covers it. See test_walk_help.py.
+BARS_EXPECTED = {}
 
 # And the reason each exception has, printed rather than assumed.
-BARS_WHY = {
-    'help_page.html': 'its actions live in a page-local .help-hero-actions - '
-                      'the hero is its own round, not this one',
-}
+# Empty is the desired state: every page has exactly one bar.
+BARS_WHY = {}
 
 PASS = FAIL = SKIP = 0
 FAILED = []
