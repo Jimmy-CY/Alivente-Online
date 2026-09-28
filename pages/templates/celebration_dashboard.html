@@ -103,12 +103,12 @@
         <!-- MOBILE-ONLY "More": base hides .action-secondary in a bar that
              has a .action-more-btn, so the two above move in here below
              768px and the phone gets primary + More + Back. -->
-        <div class="action-more-wrapper">
-            <button type="button" class="btn action-more-btn" id="actionMoreBtn"
+        <div class="action-more-wrapper" data-menu>
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
                     aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
-            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+            <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
                 <a href="{% url 'celebration_calendar' %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-calendar-alt"></i> View Events
                 </a>

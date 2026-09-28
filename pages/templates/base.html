@@ -2771,10 +2771,22 @@
 <!-- ==================== SHARED ACTION DROPDOWN ==================== -->
 <!-- Drives any element marked `data-menu`, with `data-menu-toggle` on the
      button and `data-menu-panel` on the panel. Deliberately NOT bound to
-     `.action-more-wrapper`: several templates still carry their own copy of
-     initializeMoreMenu(), and a class-wide binder would double-bind there -
-     the menu would open and immediately close. Pages opt in by adding the
-     three attributes; everything else is untouched.
+     `.action-more-wrapper`: a page carrying its own opener would be
+     double-bound by a class-wide binder - the menu would open and
+     immediately close. Pages opt in by adding the three attributes;
+     everything else is untouched.
+
+     H8, 28 Sep 2026: twenty-six pages gave up their copy and opted in,
+     31,642 characters of JavaScript, nineteen of them identical to the
+     byte. THREE STILL CARRY ONE, and they are the reason this binder
+     stays opt-in rather than becoming class-wide:
+
+         invoices.html               an inlined IIFE, on [hidden]
+         physical_invoice_list.html  the same, inside DOMContentLoaded
+         finance_pl_act.html         the same, on a .show class
+
+     All three work. When they join, this binder can bind
+     .action-more-wrapper directly and the attributes stop being needed.
 
      Also deliberately not Bootstrap's .dropdown, which is bound to open on
      HOVER further down this file for the nav bar. An action menu should need

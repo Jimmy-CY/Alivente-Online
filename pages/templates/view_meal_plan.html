@@ -421,12 +421,12 @@
             {% endif %}
 
             <!-- Mobile-only More dropdown -->
-            <div class="action-more-wrapper">
-                <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn"
+            <div class="action-more-wrapper" data-menu>
+                <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn" data-menu-toggle
                         aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
                     {% if perms.auth.can_edit_personal %}
                     <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="action-more-item" role="menuitem">
                         <i class="fas fa-edit"></i> Edit
@@ -667,42 +667,7 @@
 {% endif %}
 
 <script>
-// Mobile-only "More" actions dropdown
-function initializeMoreMenu() {
-    const moreBtn = document.getElementById('actionMoreBtn');
-    const moreMenu = document.getElementById('actionMoreMenu');
-    if (!moreBtn || !moreMenu) return;
 
-    function closeMenu() {
-        moreMenu.setAttribute('hidden', '');
-        moreBtn.setAttribute('aria-expanded', 'false');
-    }
-    function openMenu() {
-        moreMenu.removeAttribute('hidden');
-        moreBtn.setAttribute('aria-expanded', 'true');
-    }
-    moreBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const isOpen = !moreMenu.hasAttribute('hidden');
-        if (isOpen) closeMenu(); else openMenu();
-    });
-    document.addEventListener('click', function(e) {
-        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
-            closeMenu();
-            moreBtn.focus();
-        }
-    });
-    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
-        item.addEventListener('click', function() { closeMenu(); });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    initializeMoreMenu();
-});
 
 function confirmDelete(button, mealPlanName) {
     document.getElementById('deleteForm').action = button.getAttribute('data-delete-url');

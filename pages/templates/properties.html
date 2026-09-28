@@ -57,11 +57,11 @@ Properties
     </button>
 
     <!-- Mobile-only "More" dropdown -->
-    <div class="action-more-wrapper">
-      <button type="button" class="btn action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+    <div class="action-more-wrapper" data-menu>
+      <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true">
         <i class="fas fa-ellipsis-v"></i>
       </button>
-      <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+      <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
         <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#propertiesHelpModal">
           <i class="fas fa-question-circle"></i> Help
         </button>
@@ -477,55 +477,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize the mobile "More" dropdown menu
-    initializeMoreMenu();
 });
 
-// Mobile-only "More" actions dropdown
-function initializeMoreMenu() {
-    const moreBtn = document.getElementById('actionMoreBtn');
-    const moreMenu = document.getElementById('actionMoreMenu');
-    if (!moreBtn || !moreMenu) return;
-
-    function closeMenu() {
-        moreMenu.setAttribute('hidden', '');
-        moreBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    function openMenu() {
-        moreMenu.removeAttribute('hidden');
-        moreBtn.setAttribute('aria-expanded', 'true');
-    }
-
-    moreBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const isOpen = !moreMenu.hasAttribute('hidden');
-        if (isOpen) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    });
-
-    document.addEventListener('click', function(e) {
-        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
-            closeMenu();
-        }
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
-            closeMenu();
-            moreBtn.focus();
-        }
-    });
-
-    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
-        item.addEventListener('click', function() {
-            closeMenu();
-        });
-    });
-}
 
 
 

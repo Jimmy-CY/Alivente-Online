@@ -517,16 +517,28 @@ ok(abs(len(js_now) - len(js_was)) < 40,
    '  this round changed no JavaScript', '%d -> %d'
    % (len(js_was), len(js_now)))
 
-# NOT THIS ROUND'S WORK, COUNTED SO IT IS NOT FORGOTTEN.
+# NOT THIS ROUND'S WORK, COUNTED SO IT IS NOT FORGOTTEN - AND THEN PAID.
+#
+# This check was written on 28 Sep with `>= 25`, recording that base owned
+# the More menu's markup and CSS but not its behaviour, and that
+# twenty-nine pages each wrote out their own opener. H8 took that on the
+# same day: twenty-seven of them gave their copy up and opted into base's
+# data-menu binder instead.
+#
+# The floor is now a CEILING, because the debt is the thing being
+# counted and it has been paid down to three. Those three keep a
+# hand-inlined handler and are the reason base's binder is still opt-in
+# rather than bound to .action-more-wrapper - bound class-wide it would
+# double-bind them and the menu would open and immediately close.
+# See test_more_menu.py.
 copies = [rel for rel, p in templates()
           if 'actionMoreBtn' in js_of(read(p)) and rel != 'base.html']
 ok('actionMoreBtn' not in js_of(read(BASE)),
    'base owns the More menu\'s markup and CSS but NOT its behaviour')
-ok(len(copies) >= 25,
-   '  so %d pages each carry their own copy of the opener - its own round'
-   % len(copies), len(copies))
-print('        %s' % ', '.join(sorted(copies)[:6]))
-print('        ... and %d more' % max(0, len(copies) - 6))
+ok(len(copies) <= 3,
+   '  and %d page(s) still write out their own opener - H8 took the other '
+   'twenty-seven' % len(copies), len(copies))
+print('        %s' % (', '.join(sorted(copies)) or 'none'))
 
 # ==========================================================================
 head('7. CONTROLS, AND THE GATE')
