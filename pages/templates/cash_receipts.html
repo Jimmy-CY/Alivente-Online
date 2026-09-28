@@ -120,7 +120,7 @@ Receipts
                         class="rec-inline-form"
                         onsubmit="return confirm('Void receipt {{ row.number }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
                     {% csrf_token %}
-                    <button type="submit" class="icon-action-btn icon-delete" title="Void this receipt">
+                    <button type="submit" class="icon-action-btn icon-void" title="Void this receipt">
                       <i class="fas fa-ban"></i>
                     </button>
                   </form>

@@ -414,31 +414,41 @@ else:
 
     TAG = re.compile(r'\{%\s*(if|elif|else|endif)\b.*?%\}', re.S)
 
-    def one_branch(x):
+    def one_branch(t):
         """Keep the FIRST branch of every {% if %}, tags and all.
 
-        Django renders one branch. The plain fixture strips the tags and
-        leaves every branch standing, so a permission-gated control and
-        its no-permission twin both appear and the row has twice the
-        cells it really has."""
+        A STACK, NOT A DEPTH COUNTER. The first version tracked depth and only
+        ever cut at depth 1, so an if/else NESTED INSIDE AN ELSE-LESS if was
+        never examined - and that is exactly how household_member_management
+        writes its Activate/Deactivate toggle:
+
+            {% if can_edit %}                      <- no else, never cut
+              <button class="... {% if m.is_active %}icon-lock
+                                {% else %}icon-unlock{% endif %}">
+
+        so the fixture rendered BOTH halves and the button came out with the
+        class `icon-lockicon-unlock` and the title `DeactivateActivate`.
+        Django renders one. An endif closes the innermost frame first, so a
+        stack collapses inside-out and needs no special case for nesting.
+        """
         while True:
-            depth, start, first_end, cut_at = 0, None, None, None
-            for m in TAG.finditer(x):
+            stack, cut = [], None
+            for m in TAG.finditer(t):
                 k = m.group(1)
                 if k == 'if':
-                    depth += 1
-                    if depth == 1:
-                        start, first_end, cut_at = m.start(), m.end(), None
+                    stack.append([m.start(), m.end(), None])
+                elif k in ('elif', 'else'):
+                    if stack and stack[-1][2] is None:
+                        stack[-1][2] = m.start()
                 elif k == 'endif':
-                    depth -= 1
-                    if depth == 0 and cut_at is not None:
-                        x = x[:start] + x[first_end:cut_at] + x[m.end():]
+                    if not stack:
+                        return t          # unbalanced: leave it alone
+                    start, first_end, cut = stack.pop()
+                    if cut is not None:
+                        t = t[:start] + t[first_end:cut] + t[m.end():]
                         break
-                elif depth == 1 and k in ('elif', 'else') and cut_at is None:
-                    cut_at = m.start()
             else:
-                return x
-
+                return t
     def styles_for(x):
         return [re.sub(r'\{%.*?%\}', '', mm.group(1), flags=re.S)
                 for mm in re.finditer(r'<style[^>]*>(.*?)</style>', x,
@@ -615,23 +625,42 @@ for rel, why in sorted(LEAVE.items()):
     if len(why) > 100:
         print('        %s' % why[100:200])
 
-# the row BUTTONS are a second standard and the next round
-still = {}
+# THE ROW BUTTONS - A DEBT THIS SUITE RECORDED, AND H6 PAID.
+# This check used to read "the row controls still wear their own classes -
+# a second standard, and the next round", and it was right to: H4 put the
+# classes on the CELLS and left 43 Bootstrap and page-local buttons inside
+# them. H6 (.bak_rowpersonal) replaced every one. A deferral is a debt and
+# its round must pay it (lesson 53) - so the check is turned round rather
+# than deleted, and it now fails if any of them comes back.
+# READ THE FILE AS IT IS, NOT AS THIS ROUND LEFT IT. now() rolls a file
+# back to the state H4 handed on, which is the right instrument for every
+# other check here and the WRONG one for this: the question is whether the
+# debt has since been paid, and at H4's state the answer is always no.
+# Four checks went red the moment H6 shipped, and the round was correct
+# each time (lesson 40, from the other side).
+still, house = {}, {}
 for rel in sorted(SIX):
-    t = now(os.path.join(T, rel))
+    t = read(os.path.join(T, rel))
     sp = table_of(t, SIX[rel][0])
     body = markup(t)[sp[0]:sp[1]]
     n = len(re.findall(r'class="[^"]*\bbtn-(?:sm|success|warning|danger|'
                        r'outline-\w+|light|icon)\b', body))
     if n:
         still[rel] = n
-print('        the row BUTTONS are untouched on purpose, and there are '
-      '%d of them:' % sum(still.values()))
-for rel, n in still.items():
+    house[rel] = len(re.findall(r'\bicon-action-btn\b', body))
+print('        house row controls inside the six tables, as they are now:')
+for rel, n in sorted(house.items()):
     print('          %-40s %d' % (rel[:40], n))
-ok(bool(still),
-   'the row controls still wear their own classes - a second standard, '
-   'and the next round', still)
+ok(not still,
+   'the row controls are house controls now - the debt this section used '
+   'to record has been paid', still)
+ok(all(n > 0 for n in house.values()),
+   '  and every one of the six has some', house)
+ok(sum(house.values()) >= 24, '  %d in all' % sum(house.values()))
+ok(any(re.search(r'\bbtn-sm\b', markup(was(os.path.join(T, r))))
+       for r in SIX),
+   '  CONTROL: the backups still show the Bootstrap ones, so this check '
+   'can be seen to move')
 
 # ==========================================================================
 head('7. THE RULES THAT WERE DUPLICATING base ARE GONE')
@@ -719,7 +748,12 @@ base_now = read(BASE)
 ok(len(re.findall(r'\.alv-table', css_of(base_now))) > 20,
    'base really does own this component', len(re.findall(
        r'\.alv-table', css_of(base_now))))
-ok(was(BASE) == base_now, '  and this round did not change base at all')
+# H4 LEFT base ALONE - asked of the round, not of the file. A later round
+# may edit base for its own reasons (H6 added three icon names two days
+# later), and this must keep meaning "H4 did not", which is what the
+# absence of an H4 backup says.
+ok(not os.path.isfile(BASE + SUFFIX),
+   '  and this round did not change base at all - it took no backup of it')
 
 # a revert must be caught
 probe = os.path.join(T, 'passport_management.html')
@@ -744,9 +778,10 @@ print('\n' + '=' * 74)
 print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
 print('=' * 74)
 print('')
-print('  NOT PROVED HERE: that the row BUTTONS inside these tables are')
-print('  right. They are not - they wear btn-sm btn-warning and friends')
-print('  where the house spells icon-action-btn icon-edit. Section 6')
-print('  counts them and names them as the next round.')
+print('  NOT PROVED HERE: that these tables are RIGHT for their data -')
+print('  that the columns are the ones a person needs and in that order.')
+print('  This suite proves they wear the house component and keep every')
+print('  heading they already showed. Section 6\'s row-button debt was')
+print('  paid by H6 and the check now guards against its return.')
 print('=' * 74)
 sys.exit(1 if failed else 0)

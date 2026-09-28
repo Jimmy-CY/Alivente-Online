@@ -62,6 +62,7 @@ ROUNDS = [
     '.bak_bodybacks',
     '.bak_barmobile',
     '.bak_tablepersonal',
+    '.bak_rowpersonal',
 ]
 
 

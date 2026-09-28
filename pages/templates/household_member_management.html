@@ -102,26 +102,26 @@
         {% endfor %}
         {% if can_edit %}
         <td class=" hm-actions-cell cell-actions" data-label="Actions" style="white-space:nowrap;">
-          <button type="button" class="btn btn-sm btn-outline-secondary edit-member-btn"
+          <button type="button" class="icon-action-btn icon-edit edit-member-btn"
                   data-id="{{ m.id }}" data-name="{{ m.name }}" data-email="{{ m.email|default:'' }}"
                   data-user="{{ m.user_id|default:'' }}" data-active="{{ m.is_active|yesno:'1,0' }}"
                   data-toggle="modal" data-target="#editMemberModal" title="Edit">
-            <i class="fas fa-pen"></i>
+            <i class="fas fa-pencil-alt"></i>
           </button>
           <form method="post" style="display:inline;">
             {% csrf_token %}
             <input type="hidden" name="action" value="toggle_active">
             <input type="hidden" name="member_id" value="{{ m.id }}">
-            <button type="submit" class="btn btn-sm btn-outline-{% if m.is_active %}warning{% else %}success{% endif %}"
+            <button type="submit" class="icon-action-btn {% if m.is_active %}icon-lock{% else %}icon-unlock{% endif %}"
                     title="{% if m.is_active %}Deactivate{% else %}Activate{% endif %}">
-              <i class="fas fa-{% if m.is_active %}pause{% else %}play{% endif %}"></i>
+              <i class="fas fa-{% if m.is_active %}ban{% else %}check{% endif %}"></i>
             </button>
           </form>
           <form method="post" style="display:inline;" onsubmit="return confirm('Delete {{ m.name|escapejs }}? This cannot be undone.');">
             {% csrf_token %}
             <input type="hidden" name="action" value="delete_member">
             <input type="hidden" name="member_id" value="{{ m.id }}">
-            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+            <button type="submit" class="icon-action-btn icon-delete" title="Delete"><i class="fas fa-trash"></i></button>
           </form>
         </td>
         {% endif %}

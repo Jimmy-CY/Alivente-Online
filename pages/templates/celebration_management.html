@@ -643,7 +643,7 @@
                         <div class="mobile-action-bar cols-2" data-actions="event">
                             {% if perms.auth.can_edit_celebrations %}
                             <button type="button" class="mobile-action-btn" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])">
-                                <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
+                                <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                                 <span>Edit</span>
                             </button>
                             <button type="button" class="mobile-action-btn" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')">
@@ -652,7 +652,7 @@
                             </button>
                             {% else %}
                             <span class="mobile-action-btn mobile-action-disabled">
-                                <i class="fas fa-edit mobile-action-icon"></i>
+                                <i class="fas fa-pencil-alt mobile-action-icon"></i>
                                 <span>Edit</span>
                             </span>
                             <span class="mobile-action-btn mobile-action-disabled">
@@ -678,7 +678,7 @@
                     <span>Add Event</span>
                 </button>
                 <button type="button" class="mobile-action-btn" onclick="editContact({{ contact.id }}, '{{ contact.name }}', '{{ contact.relationship }}', '{{ contact.email }}', '{{ contact.phone }}', `{{ contact.notes|escapejs }}`)">
-                    <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
+                    <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                     <span>Edit</span>
                 </button>
                 <button type="button" class="mobile-action-btn" onclick="deleteContact({{ contact.id }}, '{{ contact.name }}')">
@@ -691,7 +691,7 @@
                     <span>Add Event</span>
                 </span>
                 <span class="mobile-action-btn mobile-action-disabled">
-                    <i class="fas fa-edit mobile-action-icon"></i>
+                    <i class="fas fa-pencil-alt mobile-action-icon"></i>
                     <span>Edit</span>
                 </span>
                 <span class="mobile-action-btn mobile-action-disabled">

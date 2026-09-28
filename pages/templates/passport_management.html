@@ -195,21 +195,21 @@
         <!-- Desktop actions cell -->
         <td class="desktop-action-cell cell-actions">
             {% if passport.document_file %}
-                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document"><i class="fas fa-eye"></i></button>
+                <button type="button" class="icon-action-btn icon-view" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document"><i class="fas fa-eye"></i></button>
                 {% if perms.auth.can_edit_personal %}
-                    <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-edit"></i></button>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')" title="Delete"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="icon-action-btn icon-delete" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')" title="Delete"><i class="fas fa-trash"></i></button>
                 {% else %}
-                    <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;" title="Edit"><i class="fas fa-edit" style="color: #6c757d;"></i></button>
-                    <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;" title="Delete"><i class="fas fa-trash" style="color: #6c757d;"></i></button>
+                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Delete"><i class="fas fa-trash"></i></button>
                 {% endif %}
             {% else %}
                 {% if perms.auth.can_edit_personal %}
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ passport.id }})" title="Upload Document"><i class="fas fa-upload"></i></button>
-                    <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-edit"></i></button>
+                    <button type="button" class="icon-action-btn icon-upload" onclick="uploadDocument({{ passport.id }})" title="Upload Document"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% else %}
-                    <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;" title="Upload Document"><i class="fas fa-upload" style="color: #6c757d;"></i></button>
-                    <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;" title="Edit"><i class="fas fa-edit" style="color: #6c757d;"></i></button>
+                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Upload Document"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% endif %}
             {% endif %}
         </td>
@@ -237,12 +237,12 @@
 
             {% if perms.auth.can_edit_personal %}
                 <button type="button" class="mobile-action-btn" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')">
-                    <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
+                    <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                     <span class="mobile-action-label">Edit</span>
                 </button>
             {% else %}
                 <span class="mobile-action-btn mobile-action-disabled">
-                    <i class="fas fa-edit mobile-action-icon"></i>
+                    <i class="fas fa-pencil-alt mobile-action-icon"></i>
                     <span class="mobile-action-label">Edit</span>
                 </span>
             {% endif %}

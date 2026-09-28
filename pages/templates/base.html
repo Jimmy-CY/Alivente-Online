@@ -1317,6 +1317,31 @@
       .icon-upload   { color: var(--alv-edit); border-color: #c9d8f7; }
       .icon-upload:hover { background: var(--alv-edit); border-color: var(--alv-edit); color: #fff; }
 
+      /* Save and Cancel - the two halves of an INLINE EDIT, which three
+         Personal pages do in the row itself rather than on a screen of
+         their own. Same rule as .icon-upload above: a new action takes
+         its own NAME on an EXISTING colour, never a seventh tone.
+
+         Save is --alv-good, which .icon-approve and .icon-unlock already
+         wear - committing an edit is a confirmation, and it reads as one.
+
+         Cancel is .icon-action-btn's own resting ink. It is deliberately
+         NOT "no class at all": a button with no alias says nothing about
+         itself, and if the quiet one ever needs to stop being quiet, that
+         is one line here rather than a search across every page. */
+      .icon-save   { color: var(--alv-good); border-color: #bfe0cd; }
+      .icon-save:hover { background: var(--alv-good); border-color: var(--alv-good); color: #fff; }
+      .icon-cancel { color: var(--alv-ink-soft); border-color: var(--alv-line); }
+      .icon-cancel:hover { background: var(--alv-neutral); border-color: var(--alv-ink-faint); color: var(--alv-ink-strong); }
+
+      /* Void - Cash Receipts, and the same rule again. It wore
+         .icon-delete and drew fa-ban, so .icon-delete had two pictures
+         and neither the class nor the glyph said what the button does:
+         voiding a receipt KEEPS the record. Danger's colour is right;
+         Delete's name was not. */
+      .icon-void   { color: var(--alv-danger); border-color: #f2cecb; }
+      .icon-void:hover { background: var(--alv-danger); border-color: var(--alv-danger); color: #fff; }
+
       /* Approve / unapprove / send, used by Physical Invoices. */
       .icon-approve   { color: var(--alv-good); border-color: #bfe0cd; }
       .icon-approve:hover { background: var(--alv-good); border-color: var(--alv-good); color: #fff; }

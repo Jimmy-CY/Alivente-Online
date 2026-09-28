@@ -81,53 +81,19 @@
     text-align: center;
 }
 
-.btn-icon {
-    padding: 8px 14px;
-    border: 2px solid;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-    margin: 0 4px;
-}
 
-.btn-edit {
-    background: white;
-    color: #0e7c8b;
-    border-color: #0e7c8b;
-}
 
-.btn-edit:hover {
-    background: #0e7c8b;
-    color: white;
-    transform: scale(1.05);
-}
 
-.btn-delete {
-    background: white;
-    color: #dc3545;
-    border-color: #dc3545;
-}
 
-.btn-delete:hover {
-    background: #dc3545;
-    color: white;
-    transform: scale(1.05);
-}
 
-.btn-icon-disabled {
-    background: var(--alv-surface-deep) !important;
-    color: #adb5bd !important;
-    border-color: #dee2e6 !important;
-    cursor: not-allowed !important;
-    opacity: 0.6;
-}
 
-.btn-icon-disabled:hover {
-    background: var(--alv-surface-deep) !important;
-    color: #adb5bd !important;
-    transform: none !important;
-}
+
+
+
+
+
+
+
 
 .empty-state {
     text-align: center;
@@ -308,10 +274,7 @@
     .actions-cell {
         text-align: left !important;
     }
-    .btn-icon {
-        padding: 9px 14px;
-        margin: 0 4px 0 0;
-    }
+
 
     /* No-results row — JS sets display:table-row, override on mobile */
     #noResultsRow[style*="table-row"] {
@@ -500,20 +463,20 @@
                     <td class="actions-cell cell-actions" style="text-align: center;">
                         {% if perms.auth.can_edit_personal %}
                         <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}', '{{ conversion.multiplier }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name }}{% endif %}')" 
-                                class="btn-icon btn-edit" 
+                                class="icon-action-btn icon-edit" 
                                 title="Edit">
-                            <i class="fas fa-edit"></i>
+                            <i class="fas fa-pencil-alt"></i>
                         </button>
                         <button onclick="deleteConversion({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}')" 
-                                class="btn-icon btn-delete" 
+                                class="icon-action-btn icon-delete" 
                                 title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                         {% else %}
-                        <span class="btn-icon btn-icon-disabled" title="No permission to edit">
+                        <span class="icon-action-btn icon-disabled" title="No permission to edit">
                             <i class="fas fa-edit"></i>
                         </span>
-                        <span class="btn-icon btn-icon-disabled" title="No permission to delete">
+                        <span class="icon-action-btn icon-disabled" title="No permission to delete">
                             <i class="fas fa-trash"></i>
                         </span>
                         {% endif %}

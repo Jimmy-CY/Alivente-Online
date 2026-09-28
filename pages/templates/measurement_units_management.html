@@ -103,46 +103,21 @@
     font-size: 14px;
 }
 
-.action-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.2s;
-}
 
-.action-btn:hover {
-    background: #f8f9fa;
-}
 
-.btn-edit {
-    color: #ffc107;
-}
 
-.btn-delete {
-    color: #dc3545;
-}
 
-.btn-save {
-    color: #28a745;
-}
 
-.btn-cancel {
-    color: #6c757d;
-}
 
-.action-btn-disabled {
-    color: #adb5bd !important;
-    cursor: not-allowed !important;
-    opacity: 0.6;
-}
 
-.action-btn-disabled:hover {
-    background: transparent !important;
-    color: #adb5bd !important;
-}
+
+
+
+
+
+
+
+
 
 .action-buttons {
     display: flex;
@@ -345,10 +320,7 @@
     .action-buttons {
         justify-content: flex-start;
     }
-    .action-btn {
-        padding: 8px 14px;
-        font-size: 16px;
-    }
+
 
     /* Usage popup — clamp width for narrow viewports */
     .usage-popup {
@@ -582,30 +554,30 @@
                             {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
-                                <button class="action-btn btn-edit" onclick="enterEditMode({{ item.unit.measurement_unit_id }})" title="Edit">
+                                <button class="icon-action-btn icon-edit" onclick="enterEditMode({{ item.unit.measurement_unit_id }})" title="Edit">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
-                                <button class="action-btn btn-delete" onclick="deleteUnit({{ item.unit.measurement_unit_id }})" title="Delete">
-                                    <i class="fas fa-trash-alt"></i>
+                                <button class="icon-action-btn icon-delete" onclick="deleteUnit({{ item.unit.measurement_unit_id }})" title="Delete">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                             
                             <!-- Edit Mode Actions -->
                             <div class="edit-actions">
-                                <button class="action-btn btn-save" onclick="saveUnit({{ item.unit.measurement_unit_id }})" title="Save">
+                                <button class="icon-action-btn icon-save" onclick="saveUnit({{ item.unit.measurement_unit_id }})" title="Save">
                                     <i class="fas fa-save"></i>
                                 </button>
-                                <button class="action-btn btn-cancel" onclick="cancelEdit({{ item.unit.measurement_unit_id }})" title="Cancel">
+                                <button class="icon-action-btn icon-cancel" onclick="cancelEdit({{ item.unit.measurement_unit_id }})" title="Cancel">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                             {% else %}
                             <!-- Read-only: disabled icons -->
                             <div class="view-actions">
-                                <span class="action-btn action-btn-disabled" title="No permission to edit">
+                                <span class="icon-action-btn icon-disabled" title="No permission to edit">
                                     <i class="fas fa-pencil-alt"></i>
                                 </span>
-                                <span class="action-btn action-btn-disabled" title="No permission to delete">
+                                <span class="icon-action-btn icon-disabled" title="No permission to delete">
                                     <i class="fas fa-trash-alt"></i>
                                 </span>
                             </div>
@@ -798,7 +770,7 @@ async function saveUnit(unitId) {
     }
     
     // Show loading
-    const saveBtn = row.querySelector('.btn-save');
+    const saveBtn = row.querySelector('.icon-save');
     const originalHTML = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     saveBtn.disabled = true;
