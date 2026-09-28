@@ -1224,36 +1224,12 @@ body {
     line-height: 1.5;
 }
 
-.breakdown-table-wrap {
-    overflow-x: auto;
-}
-.breakdown-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-.breakdown-table thead th {
-    background: #f8f9fa;
-    padding: 10px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    border-bottom: 2px solid #28a745;
-    text-align: left;
-}
-.breakdown-table thead th.bt-num { text-align: right; }
-.breakdown-table tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #e9ecef;
-    color: #2c3e50;
-    vertical-align: middle;
-}
-.breakdown-table tbody td.bt-num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-}
+
+
+
+
+
+
 .breakdown-table tbody td.bt-name {
     font-weight: 600;
 }
@@ -1286,95 +1262,30 @@ body {
     letter-spacing: 0.3px;
     vertical-align: middle;
 }
-.breakdown-table tfoot td {
-    padding: 12px;
-    background: #28a745;
-    color: white;
-    font-weight: 700;
-    border-bottom: none;
-}
-.breakdown-table tfoot td.bt-num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-}
 
-/* Cards (mobile only) */
-.breakdown-cards-wrap { display: none; }
+
+
+
 
 @media screen and (max-width: 768px) {
-    .breakdown-table-wrap { display: none; }
-    .breakdown-cards-wrap { display: block; }
 
-    .breakdown-card {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    .breakdown-card.unmapped,
-    .breakdown-card.unconvertible {
-        background: #fff8e6;
-        border-color: #ffc107;
-    }
-    .breakdown-card.totals {
-        background: #28a745;
-        color: white;
-        border-color: #28a745;
-    }
-    .breakdown-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 8px;
-    }
-    .breakdown-card-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #2c3e50;
-        flex: 1;
-    }
-    .breakdown-card.totals .breakdown-card-name { color: white; }
-    .breakdown-card-amount {
-        font-size: 11px;
-        color: #6c757d;
-        margin-top: 2px;
-        font-weight: 400;
-    }
-    .breakdown-card-status {
-        background: #ffc107;
-        color: #856404;
-        font-size: 10px;
-        padding: 2px 8px;
-        border-radius: 8px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        flex-shrink: 0;
-    }
-    .breakdown-card-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        padding: 3px 0;
-    }
-    .breakdown-card-label { color: #6c757d; }
-    .breakdown-card.totals .breakdown-card-label { color: rgba(255,255,255,0.85); }
-    .breakdown-card-value {
-        color: #2c3e50;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-    }
-    .breakdown-card.totals .breakdown-card-value { color: white; }
-    .breakdown-card-value.bt-na {
-        color: #adb5bd;
-        font-style: italic;
-        font-weight: 400;
-    }
-    .breakdown-card.totals .breakdown-card-value.bt-na {
-        color: rgba(255,255,255,0.7);
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 /* ============================================================
@@ -2241,15 +2152,15 @@ body {
                         </div>
 
                         <!-- Desktop table -->
-                        <div class="breakdown-table-wrap">
-                            <table class="breakdown-table">
+                        <div class="table-container">
+                            <table class="table alv-table breakdown-table">
                                 <thead>
                                     <tr>
                                         <th class="bt-name">Ingredient</th>
-                                        <th class="bt-num">Calories</th>
-                                        <th class="bt-num">Carbs (g)</th>
-                                        <th class="bt-num">Fat (g)</th>
-                                        <th class="bt-num">Protein (g)</th>
+                                        <th class="bt-num num">Calories</th>
+                                        <th class="bt-num num">Carbs (g)</th>
+                                        <th class="bt-num num">Fat (g)</th>
+                                        <th class="bt-num num">Protein (g)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="breakdownTableBody"></tbody>
@@ -2257,8 +2168,6 @@ body {
                             </table>
                         </div>
 
-                        <!-- Mobile cards -->
-                        <div class="breakdown-cards-wrap" id="breakdownCardsWrap"></div>
                     </div>
 
                     <!-- =====================================================
@@ -3062,11 +2971,11 @@ function renderBreakdown(d) {
         
         return `
             <tr class="${rowClass}">
-                <td class="bt-name">${escapeHtmlNutrition(c.name)}${statusBadge}${amountLine}</td>
-                <td class="bt-num">${cell(c.calories, 0)}</td>
-                <td class="bt-num">${cell(c.carbs, 1)}</td>
-                <td class="bt-num">${cell(c.fat, 1)}</td>
-                <td class="bt-num">${cell(c.protein, 1)}</td>
+                <td data-label="Ingredient" class="bt-name">${escapeHtmlNutrition(c.name)}${statusBadge}${amountLine}</td>
+                <td data-label="Calories" class="bt-num num">${cell(c.calories, 0)}</td>
+                <td data-label="Carbs (g)" class="bt-num num">${cell(c.carbs, 1)}</td>
+                <td data-label="Fat (g)" class="bt-num num">${cell(c.fat, 1)}</td>
+                <td data-label="Protein (g)" class="bt-num num">${cell(c.protein, 1)}</td>
             </tr>
         `;
     }).join('');
@@ -3074,86 +2983,13 @@ function renderBreakdown(d) {
     tfoot.innerHTML = `
         <tr>
             <td>Per 100g total</td>
-            <td class="bt-num">${totalCal.toFixed(0)}</td>
-            <td class="bt-num">${totalCarb.toFixed(1)}</td>
-            <td class="bt-num">${totalFat.toFixed(1)}</td>
-            <td class="bt-num">${totalProtein.toFixed(1)}</td>
+            <td data-label="Calories" class="bt-num num">${totalCal.toFixed(0)}</td>
+            <td data-label="Carbs (g)" class="bt-num num">${totalCarb.toFixed(1)}</td>
+            <td data-label="Fat (g)" class="bt-num num">${totalFat.toFixed(1)}</td>
+            <td data-label="Protein (g)" class="bt-num num">${totalProtein.toFixed(1)}</td>
         </tr>
     `;
     
-    // === Mobile cards ===
-    const cardsWrap = document.getElementById('breakdownCardsWrap');
-    let cardsHtml = sorted.map(c => {
-        const cardClass = !c.is_mapped ? 'unmapped' : (!c.is_convertible ? 'unconvertible' : '');
-        const statusBadge = !c.is_mapped
-            ? '<span class="breakdown-card-status">Not mapped</span>'
-            : (!c.is_convertible ? '<span class="breakdown-card-status">Needs conversion</span>' : '');
-        const amountLine = (c.amount_g !== null && c.amount_g !== undefined)
-            ? `<div class="breakdown-card-amount">${formatNutritionNumber(c.amount_g, 1)} g</div>`
-            : (c.amount_display ? `<div class="breakdown-card-amount">${escapeHtmlNutrition(c.amount_display)}</div>` : '');
-        
-        const valWithUnit = (v, decimals, suffix) => {
-            if (v === null || v === undefined) return '<span class="bt-na">N/A</span>';
-            return `${Number(v).toFixed(decimals)}${suffix || ''}`;
-        };
-        
-        return `
-            <div class="breakdown-card ${cardClass}">
-                <div class="breakdown-card-header">
-                    <div>
-                        <div class="breakdown-card-name">${escapeHtmlNutrition(c.name)}</div>
-                        ${amountLine}
-                    </div>
-                    ${statusBadge}
-                </div>
-                <div class="breakdown-card-row">
-                    <span class="breakdown-card-label">Calories</span>
-                    <span class="breakdown-card-value">${valWithUnit(c.calories, 0, '')}</span>
-                </div>
-                <div class="breakdown-card-row">
-                    <span class="breakdown-card-label">Carbs</span>
-                    <span class="breakdown-card-value">${valWithUnit(c.carbs, 1, ' g')}</span>
-                </div>
-                <div class="breakdown-card-row">
-                    <span class="breakdown-card-label">Fat</span>
-                    <span class="breakdown-card-value">${valWithUnit(c.fat, 1, ' g')}</span>
-                </div>
-                <div class="breakdown-card-row">
-                    <span class="breakdown-card-label">Protein</span>
-                    <span class="breakdown-card-value">${valWithUnit(c.protein, 1, ' g')}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    // Totals card at the end (mobile only)
-    cardsHtml += `
-        <div class="breakdown-card totals">
-            <div class="breakdown-card-header">
-                <div>
-                    <div class="breakdown-card-name">Per 100g total</div>
-                </div>
-            </div>
-            <div class="breakdown-card-row">
-                <span class="breakdown-card-label">Calories</span>
-                <span class="breakdown-card-value">${totalCal.toFixed(0)}</span>
-            </div>
-            <div class="breakdown-card-row">
-                <span class="breakdown-card-label">Carbs</span>
-                <span class="breakdown-card-value">${totalCarb.toFixed(1)} g</span>
-            </div>
-            <div class="breakdown-card-row">
-                <span class="breakdown-card-label">Fat</span>
-                <span class="breakdown-card-value">${totalFat.toFixed(1)} g</span>
-            </div>
-            <div class="breakdown-card-row">
-                <span class="breakdown-card-label">Protein</span>
-                <span class="breakdown-card-value">${totalProtein.toFixed(1)} g</span>
-            </div>
-        </div>
-    `;
-    
-    cardsWrap.innerHTML = cardsHtml;
 }
 
 function formatNutritionNumber(value, decimals) {
