@@ -46,12 +46,12 @@ Invoices
     </button>
 
     <!-- Mobile-only More dropdown (holds the secondary actions) -->
-    <div class="action-more-wrapper">
-      <button type="button" class="btn action-more-btn" id="actionMoreBtn"
+    <div class="action-more-wrapper" data-menu>
+      <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
               aria-label="More actions" aria-expanded="false" aria-haspopup="true">
         <i class="fas fa-ellipsis-v"></i>
       </button>
-      <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+      <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
         <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#invoicesHelpModal">
           <i class="fas fa-question-circle"></i> Help
         </button>
@@ -331,25 +331,6 @@ td.overdue-cell.is-overdue {
 document.addEventListener('DOMContentLoaded', function() {
     updateActiveFilters();
 
-    // Mobile More-menu (Help lives here on phones)
-    (function () {
-        var moreBtn = document.getElementById('actionMoreBtn');
-        var moreMenu = document.getElementById('actionMoreMenu');
-        if (!moreBtn || !moreMenu) return;
-        function closeMenu() { moreMenu.hidden = true; moreBtn.setAttribute('aria-expanded', 'false'); }
-        function openMenu() { moreMenu.hidden = false; moreBtn.setAttribute('aria-expanded', 'true'); }
-        moreBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (moreMenu.hidden) { openMenu(); } else { closeMenu(); }
-        });
-        document.addEventListener('click', function (e) {
-            if (!moreMenu.hidden && !moreMenu.contains(e.target) && e.target !== moreBtn) { closeMenu(); }
-        });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeMenu(); } });
-        moreMenu.querySelectorAll('.action-more-item').forEach(function (item) {
-            item.addEventListener('click', function () { closeMenu(); });
-        });
-    })();
 
     // Auto-submit on dropdown filter change
     ['propertySelect', 'tenantSelect'].forEach(id => {

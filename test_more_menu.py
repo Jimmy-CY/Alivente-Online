@@ -313,10 +313,17 @@ for n, p in mine:
     ok('initializeMoreMenu' not in j,
        '%-38s wrote out no opener' % n.replace('.html', ''))
 
-left = [n for n in DEFERRED if 'actionMoreBtn' in js_of(read(os.path.join(T, n)))]
+# AS H8 LEFT THEM. H10 took all three onto the binder, so the LIVE
+# files hold no handler any more - and this check would report that
+# H8's opt-in was unnecessary when it was necessary at the time.
+# now() walks forward to the first later round's backup, which is
+# each page exactly as H8 left it.
+left = [n for n in DEFERRED
+        if 'actionMoreBtn' in js_of(now(os.path.join(T, n)))]
 ok(sorted(left) == sorted(DEFERRED),
-   'the three deferred pages DO still hold one - which is why the binder '
-   'stays opt-in', left)
+   'the three deferred pages held one when this round ran - which is why '
+   'the binder was made opt-in (H10 took all three; it stays opt-in for '
+   'the reason recorded in base)', left)
 ok('querySelectorAll(\'[data-menu]\')' in js_of(now(BASE))
    or "querySelectorAll('[data-menu]')" in js_of(now(BASE)),
    '  base binds by attribute, not by .action-more-wrapper')

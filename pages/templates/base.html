@@ -2792,8 +2792,22 @@
          physical_invoice_list.html  the same, inside DOMContentLoaded
          finance_pl_act.html         the same, on a .show class
 
-     All three work. When they join, this binder can bind
-     .action-more-wrapper directly and the attributes stop being needed.
+     All three work.
+
+     H10, 28 Sep 2026: they joined, and 32 of 32 pages are now on this
+     binder. THE SENTENCE THAT USED TO END THIS NOTE SAID THE ATTRIBUTES
+     WOULD THEN STOP BEING NEEDED. That was wrong, and correcting it is
+     worth more than deleting it.
+
+     This binder finds its toggle and its panel BY ATTRIBUTE. A bare
+     .action-more-wrapper carries neither, so binding the class would
+     still bind nothing unless base learned the More menu's own id and
+     class names - the exact coupling this component was written to
+     avoid. And taking the attributes off the pages that do work would
+     be ninety-six edits to buy nothing.
+
+     So the opt-in is permanent, and it is the house idiom: .ui-menu,
+     the other component this binder drives, opts in the same way.
 
      Also deliberately not Bootstrap's .dropdown, which is bound to open on
      HOVER further down this file for the nav bar. An action menu should need

@@ -460,8 +460,8 @@ else:
     dash = os.path.join(T, 'property_management_dashboard.html')
     pl = os.path.join(T, 'finance_pl_act.html')
     for width, label in ((390, 'a phone'), (1280, 'a desktop')):
-        keep = drive([('d', read(dash))], width, False, 'dash_k%d' % width)
-        cut = drive([('d', read(dash))], width, True, 'dash_c%d' % width)
+        keep = drive([('d', now(dash))], width, False, 'dash_k%d' % width)
+        cut = drive([('d', now(dash))], width, True, 'dash_c%d' % width)
         k, c = keep['d'], cut['d']
         kb = '%dx%d' % (k[1]['bw'], k[1]['bh']) if k[0] != 'no button' \
             else 'no button'
@@ -470,8 +470,16 @@ else:
         ok(kb != cb,
            'property_management_dashboard on %-9s  keeps %s, stripped %s'
            % (label, kb, cb))
-    strip_state = drive([('p', read(pl))], 390, True, 'pl_c')['p']
-    keep_state = drive([('p', read(pl))], 390, False, 'pl_k')['p']
+    # AS H9 LEFT IT, NOT AS IT IS NOW. H10 gave finance_pl_act the
+    # `hidden` attribute and took its rules, so the live file no longer
+    # renders open when they are stripped - and this check would report
+    # that H9's exclusion was unjustified when it was justified at the
+    # time. now() walks forward to the first later round's backup, which
+    # is this page exactly as H9 left it. That is what alv_rounds is for,
+    # and a suite asking about its OWN round must never read the live
+    # file (lesson 40, from the other side again).
+    strip_state = drive([('p', now(pl))], 390, True, 'pl_c')['p']
+    keep_state = drive([('p', now(pl))], 390, False, 'pl_k')['p']
     ok(keep_state[0] == 'driven' and not keep_state[1]['menuVis'],
        'finance_pl_act arrives CLOSED with its own rules')
     ok(strip_state[0] == 'driven' and strip_state[1]['menuVis'],
