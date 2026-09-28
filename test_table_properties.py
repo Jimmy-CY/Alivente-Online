@@ -212,11 +212,22 @@ check('  including the per-page card-title rule :first-child replaced',
 for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.filter-grid', 'its layout'),
                  ('.action-add-new', 'Add New'),
-                 ('.action-more-btn', 'the mobile More menu'),
+                 # H9, 28 Sep 2026: .action-more-btn came OUT of this
+                 # list. It was here because the table round had no
+                 # business touching the More menu - and it was right not
+                 # to. H9 gave the whole component's CSS back to base,
+                 # where it had been styled all along, so this page no
+                 # longer keeps that rule and the check below asks where
+                 # it went instead. Same shape as .filter-tag in C3.
                  ('.action-back', 'Back'),
                  ('.btn-info', 'the page-header buttons')):
     check('  KEPT %-22s (%s)' % (sel, why),
           re.search(re.escape(sel) + r'\s*[,{:.]', CSS) is not None)
+# H9, 28 Sep 2026. The More menu's CSS went home to base, so the safety
+# net is asked of the place the rule now lives rather than of this page.
+check('  GIVEN UP .action-more-btn  (H9 - base styles the More menu)',
+      re.search(r'\.action-more-btn\s*[,{:.]', CSS) is None
+      and re.search(r'\.action-more-btn\s*[,{:.]', BASE_SRC) is not None)
 # LATER - test_filter_chip.py, 22 Sep. The chips moved into base in
 # round C3, so this page no longer keeps .filter-tag - base does. The
 # safety net is asked of the place the rule now lives.
@@ -281,7 +292,10 @@ for prefix, floor, why in (('.filter', 17, 'filter panel'),
                            # unscoped, as 76 others did. The floor
                            # moved with the decision, by exactly
                            # that one rule.
-                           ('.action-', 7, 'page-header buttons'),
+                           # H9 lowered this floor from 7 to 2: the five it
+                           # counted were the More menu's, and base owns
+                           # those now. What is left is this page's own.
+                           ('.action-', 2, 'page-header buttons'),
                            ('.btn-', 4, 'page-header button colours')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
@@ -313,7 +327,7 @@ for _s in _SWEPT:
           and re.search(re.escape(_s.split()[-1]) + r'\s*[,{:]', BASE_SRC)
           is not None)
 check('  CONTROL: the seven that remain are page-specific, not base\'s',
-      group('.action-') == 7)
+      group('.action-') == 2)
 
 for prefix in ('.icon-', '.mobile-action', '.table-container',
                '.properties-table', '.status'):
@@ -322,8 +336,13 @@ for prefix in ('.icon-', '.mobile-action', '.table-container',
 
 check('  the mobile @media block still exists for the page-specific half',
       re.search(r'@media[^{]*max-width:\s*768px', CSS) is not None)
+# H9 LOWERED THIS FLOOR, 28 Sep 2026, from 120. It is a net against a
+# patcher that deletes too much - not a claim about how much CSS
+# this page ought to have. H9 gave the More menu's rules back to
+# base, a legitimate 13 lines, so the net is re-hung underneath
+# rather than taken down.
 check('  and the page still has substantial CSS of its own (%d lines)'
-      % CSS.count('\n'), CSS.count('\n') > 120)
+      % CSS.count('\n'), CSS.count('\n') > 90)
 
 # ---------------------------------------------------------------------------
 # WHY THE .filter FLOOR MOVED  (27 Aug, the filter round)

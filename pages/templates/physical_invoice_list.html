@@ -341,8 +341,6 @@ Physical Invoices
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* The More dropdown is a mobile-only component; hidden on desktop. */
-.action-more-wrapper { display: none; }
 
 .btn-info { background-color: #0e7c8b; color: white; border: 1px solid #0e7c8b; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: var(--alv-accent-ink); border-color: var(--alv-accent-ink); color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -391,18 +389,6 @@ Physical Invoices
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
-  /* More dropdown — shown on mobile only */
-  .action-more-wrapper { display: block; position: relative; flex: 0 0 auto; }
-  .action-more-btn {
-    width: 44px; height: 38px; padding: 0; margin: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .action-more-menu {
-    position: absolute; top: calc(100% + 6px); right: 0; z-index: 200;
-    background: white; border: 1px solid #dee2e6; border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.14); padding: 6px; min-width: 210px;
-  }
-  .action-more-menu[hidden] { display: none; }
   .action-back {
     flex: 0 0 auto; width: 44px; height: 38px; padding: 0;
     display: flex; align-items: center; justify-content: center; margin: 0;

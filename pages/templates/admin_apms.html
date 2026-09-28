@@ -69,8 +69,6 @@
     --future-light: var(--alv-surface-deep);
   }
 
-  /* Desktop: hide the mobile "More" dropdown wrapper */
-  .action-more-wrapper { display: none; }
 
   /* Tab Navigation */
   .admin-tabs {
@@ -263,43 +261,6 @@
      MOBILE RESPONSIVE — max-width: 768px
      ============================================================ */
   @media screen and (max-width: 768px) {
-    /* Page title — tighter */
-
-    /* More dropdown wrapper — visible on mobile only */
-    .action-more-wrapper {
-      display: block;
-      position: relative;
-      flex: 0 0 auto;
-    }
-    .action-more-btn {
-      width: 44px;
-      height: 38px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-    }
-    .action-more-menu {
-      position: absolute;
-      top: calc(100% + 6px);
-      right: 0;
-      z-index: 200;
-      background: white;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-      min-width: 220px;
-      padding: 6px 0;
-    }
-    .action-more-item:hover,
-    .action-more-item:active,
-    .action-more-item:focus {
-      background: #f0f8ff;
-      outline: none;
-      color: #2c3e50;
-      text-decoration: none;
-    }
 
     /* Tabs — keep side-by-side but size for narrow viewports.
        Each tab takes equal width via flex:1; reduce padding/font; tighten icon gap. */

@@ -206,11 +206,22 @@ for sel, why in (('.filter-panel', 'the filter panel'),
                  ('.modal-header', 'the delete modal'),
                  ('.delete-modal-grid', 'its grid'),
                  ('.action-add-new', 'Add New'),
-                 ('.action-more-btn', 'the mobile More menu'),
+                 # H9, 28 Sep 2026: .action-more-btn came OUT of this
+                 # list. It was here because the table round had no
+                 # business touching the More menu - and it was right not
+                 # to. H9 gave the whole component's CSS back to base,
+                 # where it had been styled all along, so this page no
+                 # longer keeps that rule and the check below asks where
+                 # it went instead. Same shape as .filter-tag in C3.
                  ('.action-back', 'Back'),
                  ('.btn-info', 'the page-header buttons')):
     check('  KEPT %-22s (%s)' % (sel, why),
           re.search(re.escape(sel) + r'\s*[,{:.]', CSS) is not None)
+# H9, 28 Sep 2026. The More menu's CSS went home to base, so the safety
+# net is asked of the place the rule now lives rather than of this page.
+check('  GIVEN UP .action-more-btn  (H9 - base styles the More menu)',
+      re.search(r'\.action-more-btn\s*[,{:.]', CSS) is None
+      and re.search(r'\.action-more-btn\s*[,{:.]', BASE_SRC) is not None)
 # LATER - test_filter_chip.py, 22 Sep. The chips moved into base in
 # round C3, so this page no longer keeps .filter-tag - base does. The
 # safety net is asked of the place the rule now lives.
@@ -275,7 +286,10 @@ for prefix, floor, why in (('.filter', 17, 'filter panel'),
                            # unscoped, as 76 others did. The floor
                            # moved with the decision, by exactly
                            # that one rule.
-                           ('.action-', 7, 'page-header buttons'),
+                           # H9 lowered this floor from 7 to 2: the five it
+                           # counted were the More menu's, and base owns
+                           # those now. What is left is this page's own.
+                           ('.action-', 2, 'page-header buttons'),
                            ('.modal', 10, 'delete modal')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
@@ -307,7 +321,7 @@ for _s in _SWEPT:
           and re.search(re.escape(_s.split()[-1]) + r'\s*[,{:]', BASE_SRC)
           is not None)
 check('  CONTROL: the seven that remain are page-specific, not base\'s',
-      group('.action-') == 7)
+      group('.action-') == 2)
 
 for prefix in ('.icon-', '.mobile-action', '.table-container',
                '.suppliers-table'):

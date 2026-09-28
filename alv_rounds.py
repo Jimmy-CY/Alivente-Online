@@ -70,6 +70,7 @@ ROUNDS = [
     '.bak_goodwarn',
     '.bak_moremenu',
     '.bak_subtree',
+    '.bak_morecss',
 ]
 
 

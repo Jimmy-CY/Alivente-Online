@@ -2387,6 +2387,13 @@
           background: var(--alv-surface);
           color: var(--alv-ink);
         }
+        /* HOW IT HIDES. base has styled this menu completely
+           since the action-bar round and never said this - every page
+           that works, works because the BROWSER hides [hidden] for us,
+           and two pages wrote the rule out locally rather than lean on
+           that. One line, and the component is whole. */
+        .action-more-menu[hidden] { display: none; }
+
         .action-more-menu {
           position: absolute;
           top: calc(100% + 6px);

@@ -290,9 +290,17 @@ DEAD = {'user_administration.html':
 # .alv-avatar, with the four other copies of the same disc. The page
 # keeps the element; it stopped keeping the class, so the name comes
 # out of KEPT and the check below asks where it went instead.
+# LATER AGAIN - Section H round H9, 28 Sep 2026. action-more-btn came
+# out of KEPT for the same reason user-avatar did. It was listed because
+# the TABLE round had no business touching the More menu, and it was
+# right not to. H9 gave that whole component's CSS back to base, which
+# had styled it all along, so this page no longer keeps the rule - and
+# most of its copy had never applied anyway, base scoping its own as
+# `.page-action-buttons .action-more-btn`, (0,2,0) against (0,1,0).
+# The check below asks where the rule went instead.
 KEPT = {'user_administration.html':
         ['user-info', 'user-name', 'user-email',
-         'user-workspace', 'user-admin-container', 'action-more-btn'],
+         'user-workspace', 'user-admin-container'],
         'workspace_management.html':
         ['ws-name', 'ws-owner-name', 'ws-owner-username', 'ws-members',
          'workspace-admin-container']}
@@ -320,6 +328,11 @@ if ran:
             ok(re.search(EDGE % re.escape('.' + c), after) is not None,
                '%-26s .%-16s survives - it styles content, not the table'
                % (rel, c))
+        if rel == 'user_administration.html':
+            ok(re.search(EDGE % re.escape('.action-more-btn'), after)
+               is None,
+               '%-26s .action-more-btn  GIVEN UP in H9 - base styles the '
+               'More menu' % rel)
         # A MEDIA BLOCK MAY GO, BUT ONLY BY EMPTYING. test_print_leaks.py
         # promises every media query a page had is still there, and it was
         # right to: deleting a guarded query is the fault it exists to
