@@ -125,7 +125,7 @@
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  62 design tokens and the component classes below. A page should reach
+  66 design tokens and the component classes below. A page should reach
   for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
@@ -136,7 +136,8 @@
     Surface    --alv-paper  --alv-surface  --alv-neutral  --alv-neutral-soft
     Lines      --alv-line  --alv-line-soft
     Meaning    --alv-good  --alv-warn  --alv-bad  --alv-info  --alv-danger
-               (each with a -soft companion for backgrounds)
+               (each with a -soft companion for backgrounds;
+                good and warn also -ink and -line, as accent has)
     Ageing     --alv-age-1 .. --alv-age-4  (+ -soft)
     Grading    --alv-grade-1 .. --alv-grade-5  (+ -soft)
     Series     --alv-series-1 .. --alv-series-8   one colour per THING
@@ -202,6 +203,29 @@
       NEVER: a hex in a page's own style block. NEVER: a colour keyword (`red`,
       `white`) - those are invisible to a hex-based audit and hid a defect
       for weeks. NEVER: a semantic token used for decoration.
+
+      3.1a BOOTSTRAP'S OWN COLOUR FAMILIES           [test_good_warn.py]
+
+      Bootstrap 4.1.3 is linked from a CDN and ships its own meanings.
+      base answers the three that overlap ours, in the style block that
+      must stay immediately after that link:
+
+          info     -> --alv-accent     bg text border badge alert
+                                       list-group-item, a:hover
+          success  -> --alv-good       the same seven
+          warning  -> --alv-warn       the same seven
+
+      So `class="badge badge-success"` is house green with no page rule,
+      and an alert a page builds inside a JS string is covered too,
+      because the class is the same either way.
+
+      THE BUTTON FAMILIES ARE DELIBERATELY NOT ANSWERED. btn-success,
+      btn-warning and btn-outline-success are worn 52 times and not once
+      as a status - they are Save, Add, Create, Generate, Email,
+      Continue, Edit. Giving them a house tint would make drift look
+      deliberate and hide it from Show-ButtonDrift.py. An action takes
+      .action-primary or .action-secondary, by WEIGHT, per 3.1. A suite
+      fails if a btn-* family ever appears in base.
 
   3.2 PAGE HEADINGS      [test_heading_standard.py, test_heading_prefix.py]
 
@@ -756,6 +780,58 @@
       }
       .list-group-item-info { background-color: var(--alv-accent-soft); color: var(--alv-accent-ink); }
       a.text-info:hover, a.text-info:focus { color: var(--alv-accent-ink) !important; }
+
+      /* ===== ALV SUCCESS AND WARNING v1 ===== 28 Sep 2026
+         The last two Bootstrap families that carry a MEANING, answered
+         the same way INFO is answered above. #28a745 measures 3.13 on
+         white and 2.64 on the #e9ecef wash the panels are painted;
+         #ffc107 measures 1.63 and 1.37. Six card heads make it worse by
+         adding text-white - wcim_results heads a whole tier with white
+         on #ffc107, which is 1.63 and unreadable.
+
+         A COLOUR IS SET ON EVERY FILL, not only a background. Bootstrap
+         gives .badge-warning DARK ink because its yellow demands it;
+         repainting only the background would have left #212529 on
+         #8e6207.
+
+         THE BUTTON FAMILIES ARE ABSENT ON PURPOSE. btn-success 40,
+         btn-warning 8, btn-outline-success 4, and read out, every one is
+         an action - Save, Add, Create, Generate, Email, Continue, Edit.
+         The page-header action bar's standard below already settles
+         that: colour on an action is by WEIGHT, not by verb.
+         (Its marker name is not written out here - test_action_standard
+         counts that token and expects to find it once, at the standard
+         itself. Prose naming a marker is the same family as prose shaped
+         like a CSS declaration, which base already warns about two
+         blocks down.) Painting them here would make
+         52 buttons look deliberate while still being drift, and hide
+         them from Show-ButtonDrift. They want .action-primary and
+         .action-secondary, in a round that can weigh which control on a
+         page is the main one. test_good_warn.py fails if a
+         btn-*success or btn-*warning selector ever appears in base. */
+      .bg-success { background-color: var(--alv-good) !important; }
+      .text-success { color: var(--alv-good) !important; }
+      .border-success { border-color: var(--alv-good) !important; }
+      .badge-success { background-color: var(--alv-good); color: var(--alv-on-accent); }
+      .alert-success {
+        background-color: var(--alv-good-soft);
+        border-color: var(--alv-good-line);
+        color: var(--alv-good-ink);
+      }
+      .list-group-item-success { background-color: var(--alv-good-soft); color: var(--alv-good-ink); }
+      a.text-success:hover, a.text-success:focus { color: var(--alv-good-ink) !important; }
+
+      .bg-warning { background-color: var(--alv-warn) !important; }
+      .text-warning { color: var(--alv-warn) !important; }
+      .border-warning { border-color: var(--alv-warn) !important; }
+      .badge-warning { background-color: var(--alv-warn); color: var(--alv-on-accent); }
+      .alert-warning {
+        background-color: var(--alv-warn-soft);
+        border-color: var(--alv-warn-line);
+        color: var(--alv-warn-ink);
+      }
+      .list-group-item-warning { background-color: var(--alv-warn-soft); color: var(--alv-warn-ink); }
+      a.text-warning:hover, a.text-warning:focus { color: var(--alv-warn-ink) !important; }
     </style>
     <link rel="stylesheet" href="{% static 'css/my_style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -947,8 +1023,12 @@
            matching on one, including our own test extractor.) */
         --alv-good:       #1e7d4f;
         --alv-good-soft:  #e6f4ec;
+        --alv-good-ink:   #155737;   /* ink on the tint - measures 7.56  */
+        --alv-good-line:  #bfe0cd;   /* the tint's own edge              */
         --alv-warn:       #8e6207;
         --alv-warn-soft:  #fdf3dd;
+        --alv-warn-ink:   #6a4a05;   /* ink on the tint - measures 7.34  */
+        --alv-warn-line:  #ecd39e;   /* the tint's own edge              */
         --alv-bad:        #b3261e;
         --alv-bad-soft:   #fbeae9;
         --alv-info:       var(--alv-accent);
@@ -1329,7 +1409,7 @@
          NOT "no class at all": a button with no alias says nothing about
          itself, and if the quiet one ever needs to stop being quiet, that
          is one line here rather than a search across every page. */
-      .icon-save   { color: var(--alv-good); border-color: #bfe0cd; }
+      .icon-save   { color: var(--alv-good); border-color: var(--alv-good-line); }
       .icon-save:hover { background: var(--alv-good); border-color: var(--alv-good); color: #fff; }
       .icon-cancel { color: var(--alv-ink-soft); border-color: var(--alv-line); }
       .icon-cancel:hover { background: var(--alv-neutral); border-color: var(--alv-ink-faint); color: var(--alv-ink-strong); }

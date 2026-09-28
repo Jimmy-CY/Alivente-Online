@@ -222,15 +222,31 @@ PROBE = """() => {
   return o; }"""
 
 
-async def paint(frag, page_css):
+async def paint(frag, page_css, base_css=None):
+    """Render a fragment. `base_css` defaults to base as it is now.
+
+    SECTION 4 PASSES '' ON PURPOSE - 28 Sep 2026, H7. The negative
+    controls assert BOOTSTRAP's values: solid #28a745, solid #ffc107,
+    #d4edda. They were rendered through current base, which worked only
+    for as long as base had no opinion about those families - and H7
+    gave it one, so `.alert alert-success` came back as the house good
+    tint and the control failed while describing history correctly.
+
+    A control that says "WAS Bootstrap green" should be rendered against
+    Bootstrap, which is what it claims to be measuring. Rendering it
+    through a stylesheet that keeps changing under it makes the control
+    an assertion about TODAY's base, which is section 2's job, not
+    section 4's."""
     from playwright.async_api import async_playwright
+    if base_css is None:
+        base_css = css_of(BASE)
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page(viewport={'width': 900, 'height': 500})
         await pg.set_content(
             "<style>%s</style><style>%s</style><style>%s</style>"
             "<body style='padding:20px'>%s</body>"
-            % (BOOTSTRAP, css_of(BASE), page_css, frag))
+            % (BOOTSTRAP, base_css, page_css, frag))
         await pg.wait_for_timeout(80)
         out = await pg.evaluate(PROBE)
         await br.close()
@@ -272,7 +288,7 @@ async def main():
     if not check('the backup exists to compare against', HAVE,
                  '(run apply_manage_modal.py first)'):
         return
-    was = await paint(OLD_FRAG, css_of(OLD))
+    was = await paint(OLD_FRAG, css_of(OLD), '')
     check('CONTROL: Add to Existing WAS solid Bootstrap green',
           was['add']['bg'] == 'rgb(40, 167, 69)', was['add']['bg'])
     check('CONTROL: Replace WAS solid amber',
