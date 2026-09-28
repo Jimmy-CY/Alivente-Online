@@ -3974,6 +3974,35 @@ table.alv-matrix {
 }
 .page-title-h2:has(+ .page-subtitle-h4) { margin-bottom: 0; }
 
+/* THE LINE UNDER THE BAR. A page that has to say what it is FOR
+   has nowhere house to say it: .page-subtitle-h4 is a MODE label -
+   ADD NEW PROPERTY - and 37 of its 38 wearers are two or three
+   capitalised words. So five pages each invented a name for this
+   one sentence and base declared none of them:
+
+       .sub-note   household_member_management   12px  #6c757d
+       .an-note    act_expense                   12px  #495057
+       .pd-note    tenant_payment_days           .85rem #7f8c8d
+       .ia-hint    fsr (in a chart modal)        12px  accent, bold
+
+   This is the first two of those, which are the same thing. It
+   sits BELOW the action bar, not above it: the title and the
+   controls are what every screen has, and the explanation is what
+   this screen adds. */
+.page-note {
+  font-size: 12px;
+  color: var(--alv-ink-soft);
+  margin: 14px auto 1rem;
+  text-align: center;
+  /* A SENTENCE, NOT A LABEL. Centred and unconstrained it ran 966px
+     across at 12px on a 1280px screen - measured - which is about 150
+     characters to a line and reads as a caption stretched to fit.
+     Capped so it wraps as a paragraph; the cap is inert below it, so a
+     phone is unaffected. */
+  max-width: 68ch;
+}
+
+
 .page-subtitle-h4 {
     text-align: center;
     margin-top: 0.25rem;

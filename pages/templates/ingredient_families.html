@@ -4,24 +4,16 @@
 <div class="container my-4">
 
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-start mb-3">
-    <div>
-      <h2 class="mb-1" style="color: #2c3e50;">
-        <i class="fas fa-sitemap text-success"></i> Ingredient Families
-      </h2>
-      <p class="text-muted mb-0">
-        Items in the same family are partial substitutes when matching recipes.
-        The matcher gives 70% credit when you have a family member but not the exact ingredient.
-      </p>
-    </div>
-    <div style="display: flex; gap: 8px;">
-      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createFamilyModal">
+  <h2 class="page-title-h2">INGREDIENT FAMILIES</h2>
+  <div class="page-action-buttons">
+    <button type="button" class="btn action-primary" data-toggle="modal" data-target="#createFamilyModal">
         <i class="fas fa-plus"></i> Create family
       </button>
       <a aria-label="Back to Pantry Staples" href="{% url 'pantry_staples_management' %}" class="btn action-back">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
-    </div>
   </div>
+  <p class="page-note">Items in the same family are partial substitutes when matching recipes.
+        The matcher gives 70% credit when you have a family member but not the exact ingredient.</p>
 
   <!-- Flash messages -->
   {% if messages %}

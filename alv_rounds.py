@@ -65,6 +65,7 @@ ROUNDS = [
     '.bak_rowpersonal',
     '.bak_tablepreview',
     '.bak_tablebreakdown',
+    '.bak_househeader',
 ]
 
 

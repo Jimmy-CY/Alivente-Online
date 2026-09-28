@@ -4,18 +4,12 @@
 <div class="container my-4">
 
   <!-- Header -->
-  <div class="wcim-extras-header mb-3">
-    <div>
-      <h2 class="mb-1" style="color: #2c3e50;">
-        <i class="fas fa-check-double text-success"></i> What else do you have?
-      </h2>
-      <p class="text-muted mb-0">
-        Based on <strong>{{ anchor_labels|join:" + " }}</strong>. Tick anything you have on hand &mdash; this step is optional.
-      </p>
-    </div>
+  <h2 class="page-title-h2">WHAT ELSE DO YOU HAVE?</h2>
+  <div class="page-action-buttons">
     <a aria-label="Back to What Can I Make?" href="{% url 'wcim_landing' %}" class="btn action-back">
       <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
   </div>
+  <p class="page-note">Based on <strong>{{ anchor_labels|join:" + " }}</strong>. Tick anything you have on hand &mdash; this step is optional.</p>
 
   <form method="post">
     {% csrf_token %}
