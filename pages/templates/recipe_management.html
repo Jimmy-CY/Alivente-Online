@@ -346,29 +346,13 @@
     box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 
-/* Top button bar */
-.top-button-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
 
-.top-button-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
 
-.top-button-right {
-    display: flex;
-    gap: 10px;
-}
 
-/* Desktop: hide the mobile-only More dropdown */
-.top-button-right .action-more-wrapper { display: none; }
+
+
+
+
 
 /* View Toggle Styles */
 .view-toggle-container {
@@ -1345,37 +1329,8 @@
     h2, h4 { padding: 0 8px; }
     h2 { font-size: 1.3rem; }
     h4 { font-size: 1rem; }
-
-    /* === TOP BUTTON BAR — Back+2+ standard:
-       [Add Recipe (wide)] [⋮ More menu] [← Back small icon]
-       All other actions (Meal Plans, What Can I Make, Favourites, Settings sub-items, Help)
-       live in the More menu. === */
-    .top-button-bar {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 8px;
-    }
-    .top-button-group {
-        flex: 1 1 auto;
-        min-width: 0;
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 0;
-    }
-    /* Hide all secondaries (Meal Plans / What Can I Make / Favourites / Settings) on mobile */
-    .top-button-group .action-secondary {
-        display: none;
-    }
-    /* Add Recipe primary takes the leftover space */
-    .top-button-group .action-primary {
-        flex: 1 1 auto;
-        min-width: 0;
+.page-action-buttons .dropdown-btn-container .dropdown-btn {
         width: 100%;
-    }
-    .top-button-group .action-primary .dropdown-btn {
-        width: 100%;
-        height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1386,83 +1341,52 @@
         text-overflow: ellipsis;
         gap: 6px;
     }
+            /* A SPLIT BUTTON IS A CONTROL INSIDE A WRAPPER, and base's
+               phone rules are written for the control. Three things
+               follow, all measured:
 
-    /* Right group: More + Back (Help button hidden on mobile) */
-    .top-button-right {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 8px;
-        align-items: stretch;
-    }
-    .top-button-right .action-secondary {
-        display: none;  /* Help — hidden, goes into More menu */
-    }
-    .top-button-right .action-more-wrapper {
-        display: block;
-        position: relative;
-    }
-    .top-button-right .action-more-btn {
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
-    .action-more-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 200;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        min-width: 240px;
-        padding: 6px 0;
-    }
-    .action-more-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        background: none;
-        border: none;
-        text-align: left;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: #2c3e50;
-        cursor: pointer;
-        text-decoration: none;
-    }
-    .action-more-item i {
-        color: #28a745;
-        width: 18px;
-        flex-shrink: 0;
-        text-align: center;
-    }
-    .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
-        background: #f0fff4;
-        outline: none;
-        color: #2c3e50;
-        text-decoration: none;
-    }
-    .action-more-divider {
-        height: 1px;
-        background: var(--alv-surface-deep);
-        margin: 6px 0;
-    }
-    .top-button-right .action-back {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 38px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
+               1. base hides .action-secondary when the bar has a More
+                  button - but that hides the BUTTON, not the div round
+                  it, so Settings left a 200px empty wrapper and pushed
+                  Back 152px off the end of the bar.
+               2. the primary wrapper is not a flex item base knows
+                  about, so it sized to content (200px) where every
+                  other house primary fills the row.
+               3. the collapsed menu still has a border and a margin, so
+                  its wrapper stood 54px tall beside 44px siblings.
+
+               base uses :has() itself, so this invents no technique. */
+            .page-action-buttons
+                .dropdown-btn-container:has(.action-secondary) {
+              display: none;
+            }
+            .page-action-buttons
+                .dropdown-btn-container:has(.action-primary) {
+              flex: 1 1 auto;
+              min-width: 0;
+            }
+            .page-action-buttons .dropdown-btn-container
+                .dropdown-menu-custom {
+              margin-top: 0;
+              border-width: 0;
+            }
+            .page-action-buttons .dropdown-btn-container.mobile-active
+                .dropdown-menu-custom {
+              margin-top: 6px;
+              border-width: 2px;
+            }
+
+
+
+
+
+
+
+
+
+
+
+
 
     /* === DROPDOWN MENUS — flow inline below button on mobile via .mobile-active === */
     .dropdown-menu-custom {
@@ -1624,8 +1548,8 @@
 
 </style>
 
-<h2><center>RECIPE MANAGEMENT</center></h2>
-<h4><center>CREATE / VIEW / EDIT / DELETE RECIPES</center></h4>
+<h2 class="page-title-h2">RECIPE MANAGEMENT</h2>
+<h4 class="page-subtitle-h4">CREATE / VIEW / EDIT / DELETE RECIPES</h4>
 <br/>
 
 {% for msg in messages %}
@@ -1646,12 +1570,11 @@
 </script>
 {% endfor %}
 
-<div class="top-button-bar">
-    <div class="top-button-group">
-        <!-- Add Recipe Dropdown (PRIMARY) -->
+<div class="page-action-buttons">
+            <!-- Add Recipe Dropdown (PRIMARY) -->
         {% if perms.auth.can_edit_personal %}
-        <div class="dropdown-btn-container action-primary">
-            <button class="btn btn-success dropdown-btn">
+        <div class="dropdown-btn-container">
+            <button class="btn action-primary dropdown-btn">
                 <i class="fas fa-plus"></i> Add Recipe
                 <i class="fas fa-chevron-down"></i>
             </button>
@@ -1665,19 +1588,19 @@
             </div>
         </div>
         {% else %}
-        <span class="btn btn-secondary dropdown-btn action-primary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <span class="btn action-primary dropdown-btn" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
             <i class="fas fa-plus"></i> Add Recipe
             <i class="fas fa-chevron-down"></i>
         </span>
         {% endif %}
 
         <!-- Meal Plans -->
-        <a href="{% url 'meal_plans' %}" class="btn btn-primary action-secondary">
+        <a href="{% url 'meal_plans' %}" class="btn action-secondary">
             <i class="fas fa-calendar-alt"></i> Meal Plans
         </a>
 
         <!-- What Can I Make -->
-        <a href="{% url 'find_matching_recipes' %}" class="btn btn-primary action-secondary">
+        <a href="{% url 'find_matching_recipes' %}" class="btn action-secondary">
             <i class="fas fa-search"></i> What Can I Make?
         </a>
 
@@ -1688,8 +1611,8 @@
         </a>
 
         <!-- Settings Dropdown -->
-        <div class="dropdown-btn-container action-secondary">
-            <button class="btn btn-secondary dropdown-btn">
+        <div class="dropdown-btn-container">
+            <button class="btn action-secondary dropdown-btn">
                 <i class="fas fa-cog"></i> Settings
                 <i class="fas fa-chevron-down"></i>
             </button>
@@ -1708,17 +1631,16 @@
                 </a>
             </div>
         </div>
-    </div>
+    
 
-    <div class="top-button-right">
-        <!-- Desktop Help button (hidden on mobile, accessed via More menu) -->
-        <button type="button" class="btn btn-success action-secondary" data-toggle="modal" data-target="#recipe_managementHelpModal">
+            <!-- Desktop Help button (hidden on mobile, accessed via More menu) -->
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#recipe_managementHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
 
         <!-- Mobile-only More dropdown — contains everything secondary -->
         <div class="action-more-wrapper">
-            <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn"
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn"
                     aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
@@ -1755,7 +1677,7 @@
         <a href="{% url 'personal_page' %}" class="btn action-back" role="button" aria-label="Back to Personal">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
-    </div>
+    
 </div>
 <br/>
 

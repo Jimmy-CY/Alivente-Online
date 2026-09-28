@@ -2345,6 +2345,17 @@
           color: var(--alv-ink);
           text-decoration: none;
         }
+        /* The rule between two groups of menu items. Only
+           recipe_management has ever drawn one, in its own copy of this
+           menu, and base declared no such name - so the one page that
+           wanted a divider kept the whole component locally to get it.
+           Already on a token when it arrived; it only had to move. */
+        .action-more-divider {
+          height: 1px;
+          background: var(--alv-surface-deep);
+          margin: 6px 0;
+        }
+
         .action-more-item-danger { color: var(--alv-danger); }
         .action-more-item-danger i { color: var(--alv-danger); }
       }
