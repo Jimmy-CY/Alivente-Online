@@ -263,8 +263,19 @@
 /* 2-column grid for compact view */
 .contacts-container.compact-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    /* THREE ACROSS, asked for 29 Sep. There is a step between three and
+       one: at 1199 and below a third column puts a name like Charis
+       Chrysanthou (Alexandra) onto two lines inside a 12px-padded card,
+       so that width keeps the two it had. Below 768 it is one, as
+       before. */
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+}
+
+@media screen and (max-width: 1199px) {
+    .contacts-container.compact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* Remove margin in compact grid since grid gap handles spacing */
@@ -419,6 +430,151 @@
         padding: 10px 12px;
     }
 }
+
+/* ===== A TO Z ===== 29 Sep 2026
+   Recipe Management's strip, class for class, so that one later round can
+   lift it into base for both pages. Its copy hard-codes #28a745 six
+   times, and #dee2e6, #495057 and #d0d0d0 besides; this one is painted
+   from the tokens, because Personal takes the house teal.
+
+   28px on the desk and 34 on a phone. The letters are a row of 26, so
+   they cannot all be 44 - the compromise is the one Recipes made, plus a
+   little: the phone size goes UP rather than down, and the row scrolls
+   rather than wrapping, so a thumb has a bigger target than a mouse. */
+.letter-filter-container {
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-line);
+    border-radius: var(--alv-radius);
+    padding: 10px 12px;
+    margin-bottom: 20px;
+}
+.letter-filter-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+.letter-filter-wrapper::-webkit-scrollbar { height: 6px; }
+.letter-filter-wrapper::-webkit-scrollbar-track {
+    background: var(--alv-surface); border-radius: 3px;
+}
+.letter-filter-wrapper::-webkit-scrollbar-thumb {
+    background: var(--alv-accent); border-radius: 3px;
+}
+.letter-filter-list {
+    display: flex;
+    gap: 4px;
+    min-width: min-content;
+    padding: 2px 0;
+    justify-content: center;
+}
+.letter-filter-item {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    /* THE BOX IS TEAL ON EVERY LETTER - Demetri, 29 Sep. Recipes greys
+       the border of a letter nobody is named with; here the box keeps the
+       accent and it is the PALE accent that says unavailable, so the row
+       reads as one control rather than two. */
+    border: 1.5px solid var(--alv-accent);
+    border-radius: 4px;
+    background: var(--alv-paper);
+    color: var(--alv-accent);
+    font-family: var(--alv-font-ui);
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.letter-filter-item.available {
+    color: var(--alv-accent);
+    border-color: var(--alv-accent);
+}
+.letter-filter-item.available:hover {
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+}
+.letter-filter-item.disabled {
+    /* Still a teal box, in the soft tone, so unavailable reads as quiet
+       rather than as a different component. */
+    color: var(--alv-ink-faint);
+    border-color: var(--alv-accent-soft);
+    background: var(--alv-surface);
+    cursor: not-allowed;
+}
+.letter-filter-item.active {
+    background: var(--alv-accent);
+    border-color: var(--alv-accent);
+    color: var(--alv-on-accent);
+}
+.letter-filter-item:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: 2px;
+}
+
+@media screen and (max-width: 768px) {
+    /* BIGGER on a phone, not smaller, and the row scrolls. */
+    .letter-filter-container { padding: 8px 10px; }
+    .letter-filter-list { justify-content: flex-start; gap: 4px; }
+    .letter-filter-item { width: 34px; height: 34px; font-size: 13px; }
+}
+
+/* ===== THE FILTER PANEL'S OWN LAYOUT ===== 29 Sep 2026
+   base owns .alv-filter, .filter-group, .filter-label, .filter-select,
+   .filter-input, the chips and the count. What is NOT in base yet is the
+   panel's grid and its header, which seven other pages each carry a copy
+   of - four different column counts, three different borders, and
+   #2c3e50 / #dee2e6 written out in all seven.
+
+   This is the eighth copy, and the only one painted from the tokens. It
+   is here rather than in base because lifting the component means
+   measuring all eight and converting them together, which is its own
+   round. This block is written to be DELETED by that round. */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--alv-line);
+}
+.filter-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--alv-ink);
+    font-size: 18px;
+    font-weight: 600;
+    user-select: none;
+}
+.filter-title i { color: var(--alv-ink-soft); }
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+@media screen and (max-width: 768px) {
+    /* ONE COLUMN, and the header wraps - three 44px controls side by side
+       on a phone is three controls nobody can read the labels of. */
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .filter-header {
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+    .filter-title { font-size: 15px; }
+    #clearAllBtn { flex: 0 0 auto; }
+}
 </style>
 
 <h2 class="page-title-h2">CELEBRATION MANAGEMENT</h2>
@@ -506,21 +662,103 @@
     
 </div>
 
+<!-- THE CHIPS LIVE OUTSIDE THE PANEL. base's words: a closed
+     panel must never mean invisible filtering. base also counts them and
+     shows this row - this page writes chips and nothing else. -->
+<div class="alv-filter-active" id="activeFilters">
+    <span class="alv-filter-active-label">Active filters:</span>
+    <div class="filter-tags" id="filterTags"></div>
+</div>
+
 <div class="alv-filter" id="celebrationFilterPanel">
-    <div class="filter-group">
-        <label class="filter-label" for="contactSearch">
-            <i class="fas fa-search"></i> <strong>Search contacts</strong>
-        </label>
-        <div class="search-input-group">
-            <input type="text"
-                   id="contactSearch"
-                   class="form-control search-input"
-                   placeholder="Search contacts..."
-                   onkeyup="searchContacts()">
+    <div class="filter-header">
+        <h5 class="filter-title">
+            <i class="fas fa-filter"></i> Celebration Filters
+        </h5>
+        <button type="button" class="btn action-secondary btn-sm"
+                id="clearAllBtn" onclick="clearCelebrationFilters()">
+            <i class="fas fa-times-circle"></i> Clear All
+        </button>
+    </div>
+
+    <div class="filter-content">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label class="filter-label" for="contactSearch">
+                    <i class="fas fa-search"></i> <strong>Search contacts</strong>
+                </label>
+                <input type="text"
+                       id="contactSearch"
+                       class="filter-input"
+                       placeholder="Name or email..."
+                       onkeyup="applyCelebrationFilters()">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="eventTypeFilter">
+                    <i class="fas fa-tag"></i> <strong>Event Type</strong>
+                </label>
+                <select id="eventTypeFilter" class="filter-select"
+                        onchange="applyCelebrationFilters()">
+                    <option value="">All Event Types</option>
+                    <option value="birthday">Birthday</option>
+                    <option value="nameday">Nameday</option>
+                    <option value="anniversary">Anniversary</option>
+                    <option value="custom">Custom Event</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label" for="eventMonthFilter">
+                    <i class="fas fa-calendar-alt"></i> <strong>Month</strong>
+                </label>
+                <select id="eventMonthFilter" class="filter-select"
+                        onchange="applyCelebrationFilters()">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Shown only when the filters match nothing. It is a SEPARATE block
+     from No Contacts Yet, because "you have no contacts" and "none of
+     your contacts match this" are different facts and the second one
+     needs the way out that the first does not. -->
+<div class="alv-empty" id="noMatches" style="display: none;">
+    <i class="fas fa-filter"></i>
+    <div class="alv-empty-title">Nothing matches these filters</div>
+    <div class="alv-empty-hint">
+        Try a different month or event type, or
+        <a href="#" onclick="clearCelebrationFilters(); return false;">clear
+        all filters</a>.
+    </div>
+</div>
+
+
+<!-- A TO Z. Recipes' class names exactly, so a later round can lift the
+     strip into base once for both pages. What differs is underneath: this
+     one filters what is already rendered instead of reloading with
+     ?letter=, because every contact is on this page and a reload would
+     throw the other three filters away. The letters are written by the
+     script, which also decides which of them are grey. -->
+<div class="letter-filter-container">
+    <div class="letter-filter-wrapper">
+        <div class="letter-filter-list" id="letterFilterList"></div>
+    </div>
+</div>
 
 <!-- Contacts List -->
 <div class="contacts-container detailed-grid">
@@ -577,7 +815,9 @@
             <div class="event-list">
                 {% if contact.celebration_events.all %}
                     {% for event in contact.celebration_events.all %}
-                    <div class="event-item {{ event.event_type }}">
+                    <div class="event-item {{ event.event_type }}"
+                         data-event-type="{{ event.event_type }}"
+                         data-event-month="{{ event.event_date|date:'n' }}">
                         <div class="event-info">
                             <div>
                                 <span class="badge badge-{{ event.get_color_class }} event-type-badge">
@@ -1068,22 +1308,187 @@ function toggleCardExpand(card) {
     }
 }
 
-// Search functionality
-function searchContacts() {
-    const searchTerm = document.getElementById('contactSearch').value.toLowerCase();
-    const contactCards = document.querySelectorAll('.contact-card');
+// ===== FILTERING =====
+// Search narrows CONTACTS. Type and Month narrow EVENTS, and a contact
+// showing none of them drops out - see the round's note for why that is
+// the only reading that answers the question the filter is asked.
+//
+// One function does all three, because three functions each hiding things
+// on their own is three ways to disagree about what is visible. Nothing
+// here writes the Filter button's count: base watches the chip row and
+// keeps that in step itself.
+const EVENT_TYPE_LABELS = {
+    'birthday': 'Birthday',
+    'nameday': 'Nameday',
+    'anniversary': 'Anniversary',
+    'custom': 'Custom Event'
+};
+const MONTH_LABELS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    contactCards.forEach(card => {
+function celebrationFilterState() {
+    const el = id => document.getElementById(id);
+    return {
+        search: (el('contactSearch') ? el('contactSearch').value : '').trim(),
+        type: el('eventTypeFilter') ? el('eventTypeFilter').value : '',
+        month: el('eventMonthFilter') ? el('eventMonthFilter').value : '',
+        letter: CEL_LETTER
+    };
+}
+
+function applyCelebrationFilters() {
+    const f = celebrationFilterState();
+    const term = f.search.toLowerCase();
+    const filteringEvents = !!(f.type || f.month);
+    let shown = 0;
+
+    document.querySelectorAll('.contact-card').forEach(card => {
         const name = card.querySelector('.contact-info h4').textContent.toLowerCase();
-        const email = card.querySelector('.contact-details')?.textContent.toLowerCase() || '';
+        const details = card.querySelector('.contact-details');
+        const email = details ? details.textContent.toLowerCase() : '';
+        const matchesSearch = !term || name.includes(term) || email.includes(term);
+        // The letter is about the NAME, and about its first character -
+        // so it is a contact filter, like search, and not an event one.
+        const matchesLetter = !f.letter || contactLetter(card) === f.letter;
 
-        if (name.includes(searchTerm) || email.includes(searchTerm)) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
+        // Events first, so the count below is the count AFTER hiding.
+        let visibleEvents = 0;
+        card.querySelectorAll('.event-item').forEach(item => {
+            const okType = !f.type || item.dataset.eventType === f.type;
+            const okMonth = !f.month || item.dataset.eventMonth === f.month;
+            const show = okType && okMonth;
+            item.style.display = show ? '' : 'none';
+            if (show) visibleEvents++;
+        });
+
+        // A contact with no events at all cannot match an event filter,
+        // and must not be hidden when there is none.
+        const keep = matchesSearch && matchesLetter
+                     && (!filteringEvents || visibleEvents > 0);
+        card.style.display = keep ? '' : 'none';
+        if (keep) shown++;
+    });
+
+    const noMatches = document.getElementById('noMatches');
+    if (noMatches) {
+        const anyFilter = !!(term || filteringEvents || f.letter);
+        noMatches.style.display = (anyFilter && shown === 0) ? '' : 'none';
+    }
+    renderCelebrationChips(f);
+}
+
+// The chips ARE the record of what is on - base counts them to number the
+// Filter button, so a filter without a chip would be a filter the button
+// does not know about.
+function renderCelebrationChips(f) {
+    const box = document.getElementById('filterTags');
+    if (!box) return;
+    const chips = [];
+    if (f.search) chips.push(['contactSearch', 'Search', f.search]);
+    if (f.type) chips.push(['eventTypeFilter', 'Type',
+                            EVENT_TYPE_LABELS[f.type] || f.type]);
+    if (f.month) chips.push(['eventMonthFilter', 'Month',
+                             MONTH_LABELS[parseInt(f.month, 10) - 1] || f.month]);
+    // The letter has no field to blank, so its chip carries the id of the
+    // strip and clearOneCelebrationFilter knows that one name.
+    if (f.letter) chips.push(['letterFilterList', 'Letter', f.letter]);
+
+    box.textContent = '';
+    chips.forEach(([id, label, value]) => {
+        const tag = document.createElement('span');
+        tag.className = 'filter-tag';
+        // textContent, not innerHTML: the search chip carries whatever was
+        // typed into the box.
+        tag.appendChild(document.createTextNode(label + ': ' + value + ' '));
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'remove-tag';
+        x.setAttribute('aria-label', 'Clear ' + label + ' filter');
+        x.textContent = '\u00d7';
+        x.onclick = () => clearOneCelebrationFilter(id);
+        tag.appendChild(x);
+        box.appendChild(tag);
     });
 }
+
+function clearOneCelebrationFilter(id) {
+    if (id === 'letterFilterList') {
+        setCelebrationLetter('');
+        return;
+    }
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+    applyCelebrationFilters();
+}
+
+function clearCelebrationFilters() {
+    ['contactSearch', 'eventTypeFilter', 'eventMonthFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    setCelebrationLetter('');
+}
+
+// The old name, kept because it is what the search box called and what a
+// reader will look for. It is the same function now, not a second one.
+function searchContacts() {
+    applyCelebrationFilters();
+}
+
+// ===== A TO Z =====
+// The chosen letter is a variable and not a field, because the control is
+// a row of buttons. One writer, same as the rest: setCelebrationLetter is
+// the only thing that assigns it.
+let CEL_LETTER = '';
+const CEL_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+function contactLetter(card) {
+    const h = card.querySelector('.contact-info h4');
+    // textContent, not the markup: the heading carries an icon and a
+    // relationship badge, and neither of those is the contact's name.
+    const name = h ? h.textContent.trim() : '';
+    return name ? name.charAt(0).toUpperCase() : '';
+}
+
+function setCelebrationLetter(letter) {
+    CEL_LETTER = (CEL_LETTER === letter) ? '' : letter;   // click again to clear
+    document.querySelectorAll('.letter-filter-item').forEach(el => {
+        el.classList.toggle('active', !!CEL_LETTER
+                            && el.dataset.letter === CEL_LETTER);
+    });
+    applyCelebrationFilters();
+}
+
+// WHICH LETTERS ARE GREY IS MEASURED OFF THE PAGE. Recipes asks the view,
+// because its list is paged; here every contact is already rendered, so
+// the page itself is the count.
+function buildCelebrationAlphabet() {
+    const list = document.getElementById('letterFilterList');
+    if (!list) return;
+    const have = new Set();
+    document.querySelectorAll('.contact-card').forEach(card => {
+        const l = contactLetter(card);
+        if (l) have.add(l);
+    });
+    list.textContent = '';
+    CEL_ALPHABET.forEach(letter => {
+        const on = have.has(letter);
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'letter-filter-item ' + (on ? 'available' : 'disabled');
+        el.dataset.letter = letter;
+        el.textContent = letter;
+        if (on) {
+            el.onclick = () => setCelebrationLetter(letter);
+        } else {
+            el.disabled = true;
+            el.setAttribute('aria-label', 'No contacts starting with '
+                            + letter);
+        }
+        list.appendChild(el);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', buildCelebrationAlphabet);
 
 
 

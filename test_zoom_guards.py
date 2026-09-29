@@ -457,7 +457,21 @@ else:
         for rel in pages:
             p = os.path.join(ROOT, rel)
             before, after = read(p + SUFFIX), read(p)
-            mk = body_markup(after)
+            # THE MARKUP AS THIS ROUND LEFT IT, not as it is now - the
+            # same reason as_left_by is used in the section above, and it
+            # cost a red gate on 29 Sep to find here too. P1 put a
+            # .filter-input on celebration_management, and .filter-input
+            # is not in base as this round left it: ALV FILTER FIELD v1
+            # landed five rounds later. So under `base_was` the control
+            # is unstyled and under `base_now` it is the component, and
+            # the difference has nothing to do with zoom guards. Its
+            # font-size was 16px under both, which is the thing this
+            # section is actually about.
+            #
+            # A control added after this round is asked the question it
+            # CAN answer, in the section below: rendered under today's
+            # base at 375, is it 16px?
+            mk = body_markup(as_left_by(p, SUFFIX, read))
             for w in (375, 1280):
                 a = render(br, page_html(boot, base_was, styles_of(before),
                                          mk), w)
@@ -477,6 +491,38 @@ else:
                                     for c in b if float(c[4][:-2]) < 16]
         ok(counted > 0, 'CONTROL: there were controls to measure',
            '%d measured' % counted)
+
+        # ==============================================================
+        # AND THE PROMISE ITSELF, ON TODAY'S MARKUP - added 29 Sep.
+        #     Everything above compares this round against itself. That
+        #     is the right question for a regression check and it is NOT
+        #     the promise: 16px on a phone, on every text control that is
+        #     on the page NOW, including the ones later rounds put there.
+        #
+        #     P1's three filter controls are the reason this exists. They
+        #     ARE 16px at 375 - but nothing asked them, and had they been
+        #     14px this suite would have reported a styling difference
+        #     rather than a phone that zooms when you tap a search box.
+        #
+        #     MEASURED BEFORE IT WAS WRITTEN: 0 of the controls on these
+        #     40 pages are under 16px today, so this fails on a
+        #     regression and not on a backlog. small_after below stays a
+        #     NOTE - that one is about the markup as this round left it,
+        #     and this one is about the page as it stands.
+        # ==============================================================
+        small_now = []
+        for rel in pages:
+            t_now = read(os.path.join(ROOT, rel))
+            for c in render(br, page_html(boot, base_now, styles_of(t_now),
+                                          body_markup(t_now)), 375):
+                if float(re.match(r'([0-9.]+)', c[4]).group(1)) < 16:
+                    small_now.append('%s  %s.%s  %s'
+                                     % (rel, c[1], c[3][:24], c[4]))
+        ok(not small_now,
+           'AT 375, every control on every one of these %d page(s) - as '
+           'they stand TODAY, not as this round left them - measures 16px '
+           'or more, which is the promise' % len(pages), small_now)
+
 
         # ---- the controls ------------------------------------------------
         def strip_16(css):

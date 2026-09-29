@@ -3036,6 +3036,19 @@ textarea.form-control { height: auto; }
   position: relative;
   z-index: 10;
   width: 100%;
+  /* BORDER-BOX, ADDED 29 SEP 2026, AND THE REASON IS ABOVE THIS BLOCK.
+     height: 44px in the browser's default content-box means 44 of
+     CONTENT, and this component's own 10px padding and 2px border are
+     then added to it: 68.
+
+     IT HID BEHIND TWO THINGS AT ONCE. The browser's own sheet gives a
+     <select> border-box and a text <input> content-box, so the same rule
+     was right on one element and 68 on the other; and 25 of the 30 uses
+     also carry .form-control, which Bootstrap makes border-box, covering
+     the difference wherever it appears. Two bare text inputs were left,
+     and both measured 68 today.
+                                                [test_filter_box.py] */
+  box-sizing: border-box;
   height: 44px;
   padding: 10px 14px;
   background: var(--alv-paper);

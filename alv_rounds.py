@@ -88,6 +88,11 @@ ROUNDS = [
     '.bak_crsdetr',
     '.bak_waitdown',
     '.bak_crscomment',
+    '.bak_celfilter',
+    '.bak_futuretab',
+    '.bak_celaz',
+    '.bak_filterbox',
+    '.bak_zoommk',
 ]
 
 

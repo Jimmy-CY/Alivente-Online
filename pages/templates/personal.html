@@ -42,10 +42,23 @@
     <i class="fas fa-user"></i>
     <span>PERSONAL</span>
   </div>
+  {% comment %}
+    THE FUTURE TAB, OFF SINCE 29 SEP 2026, AT DEMETRI'S ASK.
+    It never had a panel behind it - the container below holds
+    personal-panel and nothing else - so clicking it did nothing, on a
+    page whose other tab is the whole point of the screen.
+
+    TO PUT IT BACK: delete this line and the endcomment line. Nothing
+    else was removed. The rules it needs are still in the stylesheet
+    below - .admin-tab.future-tab, .tab-panel.future-panel and the two
+    --future-* tokens - left there unused on purpose, so reinstating is
+    two deletions and not a rebuild. A sweep for unused rules should
+    find this note before it finds them.
   <div class="admin-tab future-tab personal-active">
     <i class="fas fa-clock"></i>
     <span>FUTURE</span>
   </div>
+  {% endcomment %}
 </div>
 
 <!-- Tab Content -->
