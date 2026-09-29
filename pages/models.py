@@ -2723,15 +2723,27 @@ class CelebrationEvent(models.Model):
                 return next_occurrence.year - self.event_date.year
         return None
     
-    def get_color_class(self):
-        """Get Bootstrap color class based on event type"""
-        colors = {
-            'birthday': 'info',      # Blue
-            'nameday': 'primary',    # Purple/Blue
-            'anniversary': 'danger', # Red
-            'custom': 'success',     # Green
-        }
-        return colors.get(self.event_type, 'secondary')
+    #: An event TYPE is a category, not a verdict. This used to be
+    #: get_color_class(), returning Bootstrap names - and 'danger' is the
+    #: red this system uses for a failure, 'success' the green it uses
+    #: for one that worked. An anniversary was painted in the error
+    #: colour and a custom event in the success colour, on three screens.
+    #:
+    #: base owns a categorical chip set for exactly this: five hues that
+    #: mean nothing but themselves. The four types map onto four of them.
+    #: The value is a class name, used as-is - not a Bootstrap suffix, so
+    #: a template writes `class="alv-tag {{ event.tone_class }}"`.
+    TONE_CLASSES = {
+        'birthday': 'alv-tag-sky',
+        'nameday': 'alv-tag-moss',
+        'anniversary': 'alv-tag-clay',
+        'custom': 'alv-tag-plum',
+    }
+
+    @property
+    def tone_class(self):
+        """The categorical chip class for this event's type."""
+        return self.TONE_CLASSES.get(self.event_type, 'alv-tag-slate')
     
     def get_icon(self):
         """Get icon for event type"""

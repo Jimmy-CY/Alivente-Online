@@ -94,24 +94,29 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* THESE TWO WERE THE SAME COLOUR. birthday was #0e7c8b and nameday was
+   var(--alv-accent), which IS #0e7c8b - so on the month grid the type was
+   carried entirely by the icon. Four tones now, and the icon stays,
+   because a categorical set differs by hue and hue alone is not enough
+   on its own. */
 .event-dot.birthday {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-tag-sky-ink);
+    color: var(--alv-on-accent);
 }
 
 .event-dot.nameday {
-    background: var(--alv-accent);
-    color: white;
+    background: var(--alv-tag-moss-ink);
+    color: var(--alv-on-accent);
 }
 
 .event-dot.anniversary {
-    background: #dc3545;
-    color: white;
+    background: var(--alv-tag-clay-ink);
+    color: var(--alv-on-accent);
 }
 
 .event-dot.custom {
-    background: #28a745;
-    color: white;
+    background: var(--alv-tag-plum-ink);
+    color: var(--alv-on-accent);
 }
 
 .event-legend {
@@ -138,10 +143,10 @@
     border-radius: 4px;
 }
 
-.legend-color.birthday { background: #0e7c8b; }
-.legend-color.nameday { background: var(--alv-accent); }
-.legend-color.anniversary { background: #dc3545; }
-.legend-color.custom { background: #28a745; }
+.legend-color.birthday { background: var(--alv-tag-sky-ink); }
+.legend-color.nameday { background: var(--alv-tag-moss-ink); }
+.legend-color.anniversary { background: var(--alv-tag-clay-ink); }
+.legend-color.custom { background: var(--alv-tag-plum-ink); }
 
 /* Timeline/List View Styles */
 .timeline-container {
@@ -219,23 +224,23 @@
 }
 
 .timeline-event-item.birthday {
-    border-left-color: #0e7c8b;
-    background: #f8fdff;
+    border-left-color: var(--alv-tag-sky-ink);
+    background: var(--alv-tag-sky-soft);
 }
 
 .timeline-event-item.nameday {
-    border-left-color: var(--alv-accent);
-    background: #faf8fc;
+    border-left-color: var(--alv-tag-moss-ink);
+    background: var(--alv-tag-moss-soft);
 }
 
 .timeline-event-item.anniversary {
-    border-left-color: #dc3545;
-    background: #fff8f9;
+    border-left-color: var(--alv-tag-clay-ink);
+    background: var(--alv-tag-clay-soft);
 }
 
 .timeline-event-item.custom {
-    border-left-color: #28a745;
-    background: #f8fcf9;
+    border-left-color: var(--alv-tag-plum-ink);
+    background: var(--alv-tag-plum-soft);
 }
 
 .timeline-event-info {
@@ -534,7 +539,7 @@
                             <span class="timeline-event-name">
                                 <i class="fas fa-user-circle"></i> {{ event_data.contact.name }}
                             </span>
-                            <span class="badge badge-{{ event_data.event.get_color_class }} timeline-event-badge">
+                            <span class="alv-tag {{ event_data.event.tone_class }} timeline-event-badge">
                                 {{ event_data.event.get_event_type_display }}
                             </span>
                             {% if event_data.event.get_age %}

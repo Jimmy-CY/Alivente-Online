@@ -94,6 +94,7 @@ ROUNDS = [
     '.bak_filterbox',
     '.bak_zoommk',
     '.bak_tabedge',
+    '.bak_evtone',
 ]
 
 

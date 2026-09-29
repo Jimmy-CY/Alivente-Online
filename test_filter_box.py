@@ -272,6 +272,17 @@ head('4. NOTHING ELSE MOVED')
 # ==========================================================================
 b = alv_tree.path_of(BASE) + SUFFIX
 if os.path.isfile(b):
+    # AND THE FILE AS THIS ROUND LEFT IT, NOT AS IT IS NOW. C1 added ten
+    # tokens to base on 29 Sep and this diff called every one of them a
+    # change of P4's - which it is not. as_left_by() hands back base as
+    # P4 left it: the first later round's backup of it, or the file
+    # itself while no later round has touched it.
+    try:
+        from alv_rounds import as_left_by
+        mine = as_left_by(alv_tree.path_of(BASE), SUFFIX, read)
+    except Exception:
+        mine = base
+
     # DIFF THE RULES, NOT THE FILE. The round adds a fifteen-line note
     # explaining itself, and a line-by-line diff calls every line of it a
     # change. Strip the comments from both sides first - lesson 21, and
@@ -280,7 +291,7 @@ if os.path.isfile(b):
         return [l for l in re.sub(r'/\*.*?\*/', '', css_of(t),
                                   flags=re.S).split('\n') if l.strip()]
     import difflib
-    d = list(difflib.unified_diff(rules(read(b)), rules(base),
+    d = list(difflib.unified_diff(rules(read(b)), rules(mine),
                                   lineterm='', n=0))
     added = [l[1:] for l in d if l.startswith('+') and not l.startswith('+++')]
     removed = [l[1:] for l in d

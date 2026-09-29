@@ -101,24 +101,27 @@
     gap: 12px;
 }
 
+/* ONE TONE PER TYPE, and the row takes the same one as its chip.
+   Anniversary was #dc3545 - the error red - and custom was #28a745, the
+   success green. Both now name a tone that means nothing but itself. */
 .event-item.birthday {
-    border-left-color: #0e7c8b;
-    background: #e7f6f8;
+    border-left-color: var(--alv-tag-sky-ink);
+    background: var(--alv-tag-sky-soft);
 }
 
 .event-item.nameday {
-    border-left-color: var(--alv-accent);
-    background: #f0ebf8;
+    border-left-color: var(--alv-tag-moss-ink);
+    background: var(--alv-tag-moss-soft);
 }
 
 .event-item.anniversary {
-    border-left-color: #dc3545;
-    background: #f8e7e9;
+    border-left-color: var(--alv-tag-clay-ink);
+    background: var(--alv-tag-clay-soft);
 }
 
 .event-item.custom {
-    border-left-color: #28a745;
-    background: #e7f4e9;
+    border-left-color: var(--alv-tag-plum-ink);
+    background: var(--alv-tag-plum-soft);
 }
 
 .event-info {
@@ -820,7 +823,7 @@
                          data-event-month="{{ event.event_date|date:'n' }}">
                         <div class="event-info">
                             <div>
-                                <span class="badge badge-{{ event.get_color_class }} event-type-badge">
+                                <span class="alv-tag {{ event.tone_class }} event-type-badge">
                                     {{ event.get_event_type_display }}
                                 </span>
                                 <span class="event-date">{{ event.event_date|date:"F j" }}</span>

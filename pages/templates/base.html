@@ -125,7 +125,7 @@
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  66 design tokens and the component classes below. A page should reach
+  76 design tokens and the component classes below. A page should reach
   for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
@@ -1057,6 +1057,20 @@
         --alv-tag-slate-ink: #55606b;
         --alv-tag-plum-ink:  #6b4a72;
 
+        /* AND THEIR GROUNDS, NAMED - 29 Sep. The five .alv-tag rules
+           below already wrote these exact values as literals; the inks
+           two lines up were pulled out for the reason the comment
+           above gives, and the grounds were left behind. Celebrations
+           needs them outside a chip - a row's background and a stripe
+           take the same tone as the chip on that row - and a page
+           cannot reach into a rule to borrow a literal. Same values,
+           so nothing changes appearance. */
+        --alv-tag-sky-soft:   #e8f1f5;  --alv-tag-sky-line:   #d3e4ec;
+        --alv-tag-moss-soft:  #eef4e9;  --alv-tag-moss-line:  #dde8d6;
+        --alv-tag-clay-soft:  #f7efe7;  --alv-tag-clay-line:  #ecdfd2;
+        --alv-tag-slate-soft: #eef1f3;  --alv-tag-slate-line: #e0e5e9;
+        --alv-tag-plum-soft:  #f3edf5;  --alv-tag-plum-line:  #e5dae8;
+
         /* A sequential scale, for AGEING. Four steps, mild to severe.
            Named for ageing rather than a general-purpose sequence: one use
            case does not justify a general scale, and the same restraint
@@ -1982,11 +1996,11 @@
         opacity: .55;
         flex: none;
       }
-      .alv-tag-sky   { color: var(--alv-tag-sky-ink);   background: #e8f1f5; border-color: #d3e4ec; }
-      .alv-tag-moss  { color: var(--alv-tag-moss-ink);  background: #eef4e9; border-color: #dde8d6; }
-      .alv-tag-clay  { color: var(--alv-tag-clay-ink);  background: #f7efe7; border-color: #ecdfd2; }
-      .alv-tag-slate { color: var(--alv-tag-slate-ink); background: #eef1f3; border-color: #e0e5e9; }
-      .alv-tag-plum  { color: var(--alv-tag-plum-ink);  background: #f3edf5; border-color: #e5dae8; }
+      .alv-tag-sky   { color: var(--alv-tag-sky-ink); background: var(--alv-tag-sky-soft); border-color: var(--alv-tag-sky-line); }
+      .alv-tag-moss  { color: var(--alv-tag-moss-ink); background: var(--alv-tag-moss-soft); border-color: var(--alv-tag-moss-line); }
+      .alv-tag-clay  { color: var(--alv-tag-clay-ink); background: var(--alv-tag-clay-soft); border-color: var(--alv-tag-clay-line); }
+      .alv-tag-slate { color: var(--alv-tag-slate-ink); background: var(--alv-tag-slate-soft); border-color: var(--alv-tag-slate-line); }
+      .alv-tag-plum  { color: var(--alv-tag-plum-ink); background: var(--alv-tag-plum-soft); border-color: var(--alv-tag-plum-line); }
 
       /* ================================================================
          Print                                              --alv-print-std
