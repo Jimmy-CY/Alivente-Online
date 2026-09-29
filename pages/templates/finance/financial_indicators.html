@@ -12,21 +12,12 @@
     <br/>
 
     {% for msg in messages %}
-        <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-            <strong></strong> <center>{{ msg }}</center>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <script>
-            setTimeout(function() {
-                document.querySelectorAll('.auto-dismiss').forEach(alert => {
-                    alert.classList.remove('show');
-                    alert.classList.add('fade');
-                    setTimeout(() => alert.remove(), 500);
-                });
-            }, 2000);
-        </script>
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
     {% endfor %}
 
     <!-- Action Buttons -->
@@ -474,7 +465,6 @@
 .property-checkbox input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #0e7c8b;
 }
 
 .property-checkbox label {

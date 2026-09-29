@@ -125,7 +125,7 @@
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  76 design tokens and the component classes below. A page should reach
+  78 design tokens and the component classes below. A page should reach
   for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
@@ -818,6 +818,14 @@
         border-color: var(--alv-good-line);
         color: var(--alv-good-ink);
       }
+      /* THE ONE THAT WAS MISSING - 29 Sep. info, success and warning were
+         all brought onto the tokens; danger was left as Bootstrap's own,
+         and M1 makes it the commonest bar on the system. */
+      .alert-danger {
+        background-color: var(--alv-bad-soft);
+        border-color: var(--alv-bad-line);
+        color: var(--alv-bad-ink);
+      }
       .list-group-item-success { background-color: var(--alv-good-soft); color: var(--alv-good-ink); }
       a.text-success:hover, a.text-success:focus { color: var(--alv-good-ink) !important; }
 
@@ -1031,6 +1039,8 @@
         --alv-warn-line:  #ecd39e;   /* the tint's own edge              */
         --alv-bad:        #b3261e;
         --alv-bad-soft:   #fbeae9;
+        --alv-bad-ink:    #8f1d17;   /* ink on the tint - measures 7.66  */
+        --alv-bad-line:   #f2cecb;   /* the tint's own edge              */
         --alv-info:       var(--alv-accent);
         --alv-info-soft:  var(--alv-accent-soft);
         --alv-neutral:    #616c74;
@@ -1996,6 +2006,47 @@
         opacity: .55;
         flex: none;
       }
+      /* ===== ALV MESSAGE v1 ===== 29 Sep 2026
+         The bar Django's messages framework renders. 77 loops across the
+         tree wrote it sixteen different ways; they now write one, and
+         .alv-message is what marks a bar as one of THOSE rather than one
+         of the twenty static alerts a page puts in its own content.
+
+         THE TEXT STAYS CENTRED. Fifty-odd of the loops centred it with a
+         <center> tag - deprecated, and what the G-series is removing. It
+         is a rule here instead, so the only thing that moved on the
+         screen when the round landed was the colour.
+
+         The close button is Bootstrap's, positioned absolutely, so the
+         centred text needs room on both sides rather than one.
+                                                 [test_message_bar.py] */
+      /* ===== ALV CONTROL ACCENT v1 ===== 29 Sep 2026
+         A browser paints a checkbox, a radio and a range slider with
+         accent-color and with nothing else - so this one property
+         decides what every tick in the system looks like.
+
+         IT WAS BEING DECIDED NINE TIMES. Measured before this rule was
+         written: accent-color appeared on nine pages with FIVE values -
+         #0e7c8b on three (the accent, longhand), var(--alv-accent) on
+         one, #28a745 on Household Members, and #dc3545 / #adb5bd on the
+         two expense screens. A tick was green on one screen and teal on
+         another for no reason either screen could give.
+
+         A page that wants a different one still can: this is a plain
+         element selector, so any class-based rule beats it. The expense
+         screens' red is left exactly that way, deliberately, and is
+         reported by the suite rather than overridden.
+                                              [test_control_accent.py] */
+      input[type="checkbox"],
+      input[type="radio"],
+      input[type="range"] { accent-color: var(--alv-accent); }
+
+      .alv-message { text-align: center; }
+      .alv-message.alert-dismissible { padding-right: 52px; padding-left: 52px; }
+      @media screen and (max-width: 768px) {
+        .alv-message.alert-dismissible { padding-right: 44px; padding-left: 16px; text-align: left; }
+      }
+
       .alv-tag-sky   { color: var(--alv-tag-sky-ink); background: var(--alv-tag-sky-soft); border-color: var(--alv-tag-sky-line); }
       .alv-tag-moss  { color: var(--alv-tag-moss-ink); background: var(--alv-tag-moss-soft); border-color: var(--alv-tag-moss-line); }
       .alv-tag-clay  { color: var(--alv-tag-clay-ink); background: var(--alv-tag-clay-soft); border-color: var(--alv-tag-clay-line); }
@@ -4382,6 +4433,37 @@ table.alv-matrix {
     try { new MutationObserver(sync).observe(chips, {childList: true, subtree: true}); }
     catch (e) { /* no observer: the count is stale, the chips are not */ }
   }
+
+  /* ===== THE MESSAGE BAR'S OWN TIMER ===== 29 Sep 2026
+     Fifty-one pages carried this script, identical, INSIDE the message
+     loop - so a page with three messages emitted it three times, and the
+     behaviour of every bar in the system was decided in fifty-one
+     places.
+
+     WHICH BARS FADE IS THE DECISION, AND IT CHANGED. Every bar used to
+     go after two seconds, errors included. With the bars taking their
+     colour from the tag there are far more red ones - errors outnumber
+     successes 281 to 158 - and a failure that disappears before it can
+     be read is worse than the grey one it replaced.
+
+     So: a SUCCESS or an INFORMATION bar leaves on its own, because it
+     reports something that went fine and needs no action. A DANGER or a
+     WARNING bar waits to be dismissed. Two seconds is the timing the 51
+     copies used and it is kept, so only the WHICH changed, not the HOW
+     LONG.
+                                                 [test_message_bar.py] */
+  document.addEventListener('DOMContentLoaded', function () {
+    var fading = document.querySelectorAll(
+      '.alv-message.alert-success, .alv-message.alert-info');
+    if (!fading.length) return;
+    setTimeout(function () {
+      Array.prototype.forEach.call(fading, function (bar) {
+        bar.classList.remove('show');
+        bar.classList.add('fade');
+        setTimeout(function () { bar.remove(); }, 500);
+      });
+    }, 2000);
+  });
 
   document.addEventListener('DOMContentLoaded', function () {
     var btn = document.querySelector('.action-filter');

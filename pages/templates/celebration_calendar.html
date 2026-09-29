@@ -316,19 +316,24 @@
 }
 
 /* Mobile-only banner explaining timeline view */
+/* IT EXPLAINS WHAT YOU ARE LOOKING AT - it does not report that
+   something happened. It was a gradient running from an informational
+   teal into #d4edda, which is Bootstrap's SUCCESS green, so it ended in
+   the colour this system uses for "that worked". Flat accent now, on the
+   tokens, and green goes back to meaning one thing. */
 .mobile-view-banner {
     display: none;
-    background: linear-gradient(135deg, #e7f5f8 0%, #d4edda 100%);
-    border: 1px solid #b8daff;
-    border-radius: 8px;
+    background: var(--alv-accent-soft);
+    border: 1px solid var(--alv-accent-line);
+    border-radius: var(--alv-radius);
     padding: 10px 14px;
     margin-bottom: 16px;
     font-size: 13px;
-    color: #495057;
+    color: var(--alv-ink-strong);
     text-align: center;
 }
 .mobile-view-banner i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-right: 6px;
 }
 

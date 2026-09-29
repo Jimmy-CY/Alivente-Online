@@ -95,6 +95,8 @@ ROUNDS = [
     '.bak_zoommk',
     '.bak_tabedge',
     '.bak_evtone',
+    '.bak_msgbar',
+    '.bak_ctlaccent',
 ]
 
 

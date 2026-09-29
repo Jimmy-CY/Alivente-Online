@@ -219,7 +219,16 @@ if ran:
         if not os.path.isfile(bak):
             skip('%-26s data' % rel, 'no %s backup' % SUFFIX)
             continue
-        a, b = expressions(read(bak)), expressions(read(p))
+        # THE FILE AS THIS ROUND LEFT IT. M1 collapsed 77 message bars
+        # onto one shape on 29 Sep, taking the hand-rolled
+        # {% if 'success' in msg.tags %} branches out of these two - a
+        # later round's edit, not an expression this one dropped.
+        try:
+            from alv_rounds import as_left_by
+            mine = as_left_by(p, SUFFIX, read)
+        except Exception:
+            mine = read(p)
+        a, b = expressions(read(bak)), expressions(mine)
         lost = {}
         for e in set(a):
             d = a.count(e) - b.count(e)

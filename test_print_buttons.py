@@ -311,19 +311,35 @@ else:
                                    if os.path.exists(exe) else {}))
         on_paper, others, went, screen_moved = [], [], 0, []
         all_pages = pages()
+        from alv_rounds import as_left_by
         for rel, p in all_pages:
             t = read(p)
             mk = body_markup(t)
+            # THE PAGE AS THIS ROUND LEFT IT, for the before/after below.
+            # `t` stays TODAY'S markup, because the .print-keep promise
+            # above is about every page as it stands - but comparing
+            # today's element COUNT against the day of the round makes
+            # every later round's edit look like this one's. M1 took a
+            # <strong></strong> and a <center> out of 77 message bars on
+            # 29 Sep and this reported 411 elements moving. The screen
+            # comparison below was given as_left_by on 21 Sep; the print
+            # comparison was left behind.
+            lt = as_left_by(p, SUFFIX, read)
+            lmk = body_markup(lt)
             now = render(br, fixture(boot, base_now, styles_of(t), mk), 718,
                          'print', SEEN, BTN)
             on_paper += ['%s %s' % (rel, e[2]) for e in now
                          if e[0] and e[4] and not e[3]]
             if base_was is None:
                 continue
-            old_t = read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else t
+            old_t = read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else lt
             old_mk = body_markup(old_t)
             was = render(br, fixture(boot, base_was, styles_of(old_t),
                                      old_mk), 718, 'print', SEEN, BTN)
+            mine = render(br, fixture(boot, '\n'.join(styles_of(
+                as_left_by(BASE_PATH, SUFFIX, read))), styles_of(lt), lmk),
+                718, 'print', SEEN, BTN)
+            now = mine
             if len(was) != len(now):
                 others.append('%s: %d elements before, %d now'
                               % (rel, len(was), len(now)))

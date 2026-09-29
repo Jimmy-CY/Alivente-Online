@@ -392,9 +392,19 @@ b = alv_tree.path_of('base.html') + SUFFIX
 if os.path.isfile(b):
     old_toks = len(set(re.findall(r'(--alv-[a-z0-9-]+)\s*:',
                                   css_of(read(b)))))
-    ok(toks - old_toks == 10,
+    # AND base AS THIS ROUND LEFT IT, not as it is now. M1 added two more
+    # tokens on 29 Sep and this control read twelve - C1 still added ten.
+    try:
+        from alv_rounds import as_left_by
+        mine_toks = len(set(re.findall(
+            r'(--alv-[a-z0-9-]+)\s*:',
+            css_of(as_left_by(alv_tree.path_of('base.html'), SUFFIX,
+                              read)))))
+    except Exception:
+        mine_toks = toks
+    ok(mine_toks - old_toks == 10,
        '  CONTROL: this round added exactly ten - five grounds and five '
-       'lines', '%d -> %d' % (old_toks, toks))
+       'lines', '%d -> %d' % (old_toks, mine_toks))
 else:
     skipped += 1
 

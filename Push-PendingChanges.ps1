@@ -1060,6 +1060,8 @@ $suites = @(
     'test_zoom_markup.py'
     'test_tab_right_edge.py'
     'test_event_tones.py'
+    'test_message_bar.py'
+    'test_control_accent.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -12,21 +12,12 @@
 <br/>
 
 {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-        <strong></strong> <center>{{ msg }}</center>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <script>
-        setTimeout(function() {
-            document.querySelectorAll('.auto-dismiss').forEach(alert => {
-                alert.classList.remove('show');
-                alert.classList.add('fade');
-                setTimeout(() => alert.remove(), 500);
-            });
-        }, 2000);
-    </script>
+  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+    {{ msg }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
 {% endfor %}
 
 <!-- Rotate-to-landscape prompt (mobile portrait only) -->
@@ -92,7 +83,7 @@
     .cf-slider-cap{font-weight:600;color:var(--alv-accent);font-size:.9rem;}
     .cf-slider-end{font-size:.8rem;color:#666;}
     .cf-slider-track{position:relative;flex:1;min-width:140px;max-width:340px;display:flex;align-items:center;}
-    .cf-slider{flex:1;min-width:0;width:100%;accent-color:var(--alv-accent);cursor:pointer;}
+    .cf-slider{flex:1;min-width:0;width:100%;cursor:pointer;}
     .cf-breakeven-mark{position:absolute;top:50%;transform:translate(-50%,-50%);width:3px;height:22px;background:var(--alv-bad);border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.65);display:none;}
     .cf-breakeven-note{font-size:.8rem;font-weight:600;color:var(--alv-bad);white-space:nowrap;}
     .cf-slider-val{font-weight:700;color:var(--alv-accent);font-variant-numeric:tabular-nums;min-width:44px;text-align:right;}

@@ -384,12 +384,12 @@
     {% if messages %}
     <div class="container" style="max-width: 1200px; margin: 0 auto;">
         {% for msg in messages %}
-        <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% elif 'warning' in msg.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-            <strong>{{ msg }}</strong>
+          <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+            {{ msg }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
+              <span aria-hidden="true">&times;</span>
             </button>
-        </div>
+          </div>
         {% endfor %}
     </div>
     <script>

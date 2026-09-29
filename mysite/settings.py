@@ -241,6 +241,22 @@ LOGGING = {
     },
 }
 
+# THE MESSAGE TAG THAT HAS NO BOOTSTRAP CLASS - added 29 Sep 2026.
+#     Django tags an error message 'error'. Bootstrap 4.1.3 defines
+#     alert-danger and has no alert-error at all, so a template writing
+#     `alert-{{ message.tags }}` produces an unstyled box for every
+#     error - and errors are the most common message in this system:
+#     281 messages.error(...) calls against 158 successes.
+#
+#     Two pages were doing exactly that. Four more worked around it by
+#     hand, each with its own {% if message.tags == 'error' %}. This one
+#     line replaces all six workarounds and lets every message bar in
+#     the tree use one shape.
+#                                                 [test_message_bar.py]
+from django.contrib.messages import constants as message_constants
+
+MESSAGE_TAGS = {message_constants.ERROR: 'danger'}
+
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Europe/Athens"
