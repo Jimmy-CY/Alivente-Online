@@ -147,7 +147,23 @@
     color: var(--personal-dark);
     background-color: white;
     border-bottom-color: var(--personal-dark);
-    border-right: none;
+    /* IT DRAWS ITS OWN RIGHT EDGE NOW - 29 Sep, and here is the history.
+       This rule said `border-right: none`, because the FUTURE tab sat
+       hard against it and drew the shared line itself, through
+       .admin-tab.future-tab.personal-active's border-left-color. Two
+       tabs, one edge, drawn once.
+
+       P2 commented the Future tab out, and the line went with it: the
+       tab was left open on its right and the panel's border began in
+       mid-air. Nothing butts against this tab any more, so it draws all
+       four of its own sides.
+
+       admin_apms.html carries the same `border-right: none` and KEEPS
+       it - both of its tabs are still there, so its shared edge still
+       has somebody drawing it. If its Future tab is ever switched off
+       too, it needs this same line removed; apply_tab_right_edge.py
+       refuses to run while that page's Future tab is missing, so the
+       question cannot be forgotten. */
     border-radius: 10px 10px 0 0;
   }
 

@@ -93,6 +93,7 @@ ROUNDS = [
     '.bak_celaz',
     '.bak_filterbox',
     '.bak_zoommk',
+    '.bak_tabedge',
 ]
 
 
