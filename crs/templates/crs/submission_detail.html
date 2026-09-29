@@ -6,7 +6,8 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CRS SUBMISSION</center></h2>
+<h2 class="page-title-h2">CRS SUBMISSIONS</h2>
+<h4 class="page-subtitle-h4">{{ title|upper }}</h4>
 <br/>
 
 {% for msg in messages %}
@@ -26,21 +27,18 @@
 
 <!-- Action Buttons -->
 <div class="page-action-buttons">
-  <button type="button" class="btn btn-success btn-sm action-icon"
+  <button type="button" class="btn action-secondary"
         data-toggle="modal" data-target="#crs_submissionsHelpModal" aria-label="Help">
     <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
   </button>
-  <a href="{% url 'crs:submission_list' %}" class="btn btn-success action-back" role="button" aria-label="Back to list">
+  <a href="{% url 'crs:submission_list' %}" class="btn action-back" role="button" aria-label="Back to list">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
 
-<div class="crs-panel-container">
-  <div class="crs-panel">
-
-    <!-- Header strip -->
+<!-- Header strip -->
     <div class="detail-header">
-      <span class="status-badge status-{{ submission.status }}">{{ submission.get_status_display }}</span>
+      <span class="alv-pill status-{{ submission.status }}">{{ submission.get_status_display }}</span>
       <div class="ref-id-display">
         <small>MessageRefID</small>
         <code>{{ submission.message_ref_id }}</code>
@@ -48,8 +46,8 @@
     </div>
 
     <!-- Selection (read-only — set at draft creation) -->
-    <div class="detail-section">
-      <div class="detail-section-title">Selection</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Selection</h3>
       <dl class="detail-grid">
         <dt>Reporting FI</dt>
         <dd>{{ submission.reporting_fi.name }}</dd>
@@ -61,14 +59,14 @@
         <dd><code>{{ submission.sending_company_in }}</code></dd>
         {% if submission.is_nil_return %}
         <dt>Submission Type</dt>
-        <dd><span class="status-badge" style="background:#fff3cd;color:#856404;">Nil Return (CRS703)</span></dd>
+        <dd><span class="alv-pill alv-pill-info">Nil Return (CRS703)</span></dd>
         {% endif %}
       </dl>
     </div>
 
     <!-- Message Header — editable form when draft -->
-    <div class="detail-section">
-      <div class="detail-section-title">Message Header</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Message Header</h3>
 
       {% if is_draft and perms.auth.can_edit_crs %}
       <form method="post" action="{% url 'crs:submission_save' submission.pk %}" novalidate>
@@ -78,52 +76,52 @@
         {% endif %}
 
         <div class="form-grid">
-          <div class="form-field">
-            <label for="{{ header_form.transmitting_country.id_for_label }}">Transmitting Country <span class="req">*</span></label>
+          <div class="form-group">
+            <label for="{{ header_form.transmitting_country.id_for_label }}">Transmitting Country <span class="alv-req">*</span></label>
             {{ header_form.transmitting_country }}
             {% if header_form.transmitting_country.errors %}<div class="field-error">{{ header_form.transmitting_country.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">Auto-set from the Reporting FI's residence country.</small>
+            <small class="form-text">Auto-set from the Reporting FI's residence country.</small>
           </div>
           {% if submission.country_config.receiving_country_strategy == 'split_by_residence' %}
-          <div class="form-field">
+          <div class="form-group">
             <label>Receiving Country</label>
             <div style="padding: 7px 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px; background: #e9ecef; color: #6c757d; font-style: italic;">
               Determined per file at XML generation time
             </div>
-            <small class="field-help">This jurisdiction is configured for Split by Residence — one XML file per receiving country, set automatically based on each account holder's tax residence.</small>
+            <small class="form-text">This jurisdiction is configured for Split by Residence — one XML file per receiving country, set automatically based on each account holder's tax residence.</small>
           </div>
           {% else %}
-          <div class="form-field">
-            <label for="{{ header_form.receiving_country.id_for_label }}">Receiving Country <span class="req">*</span></label>
+          <div class="form-group">
+            <label for="{{ header_form.receiving_country.id_for_label }}">Receiving Country <span class="alv-req">*</span></label>
             {{ header_form.receiving_country }}
             {% if header_form.receiving_country.errors %}<div class="field-error">{{ header_form.receiving_country.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">Auto-set to match Transmitting Country (Combined Domestic File).</small>
+            <small class="form-text">Auto-set to match Transmitting Country (Combined Domestic File).</small>
           </div>
           {% endif %}
 
-          <div class="form-field">
-            <label for="{{ header_form.document_type.id_for_label }}">Document Type <span class="req">*</span></label>
+          <div class="form-group">
+            <label for="{{ header_form.document_type.id_for_label }}">Document Type <span class="alv-req">*</span></label>
             {{ header_form.document_type }}
             {% if header_form.document_type.errors %}<div class="field-error">{{ header_form.document_type.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">OECD1 for new data (default). OECD2/3 for corrections/deletions.</small>
+            <small class="form-text">OECD1 for new data (default). OECD2/3 for corrections/deletions.</small>
           </div>
-          <div class="form-field">
-            <label for="{{ header_form.message_type.id_for_label }}">Message Type <span class="req">*</span></label>
+          <div class="form-group">
+            <label for="{{ header_form.message_type.id_for_label }}">Message Type <span class="alv-req">*</span></label>
             {{ header_form.message_type }}
             {% if header_form.message_type.errors %}<div class="field-error">{{ header_form.message_type.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">CRS701 for new info (default). CRS702 corrections, CRS703 nil.</small>
+            <small class="form-text">CRS701 for new info (default). CRS702 corrections, CRS703 nil.</small>
           </div>
 
-          <div class="form-field form-field-full" id="corr-msg-ref-wrapper"{% if header_form.message_type.value != 'CRS702' %} style="display: none;"{% endif %}>
+          <div class="form-group form-group-full" id="corr-msg-ref-wrapper"{% if header_form.message_type.value != 'CRS702' %} style="display: none;"{% endif %}>
             <label for="{{ header_form.corr_message_ref_id.id_for_label }}">Corr Message Ref ID</label>
             {{ header_form.corr_message_ref_id }}
             {% if header_form.corr_message_ref_id.errors %}<div class="field-error">{{ header_form.corr_message_ref_id.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">Only populate for CRS702 correction messages. Leave empty for CRS701.</small>
+            <small class="form-text">Only populate for CRS702 correction messages. Leave empty for CRS701.</small>
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-success btn-sm">
+          <button type="submit" class="btn action-primary">
             <i class="fas fa-save"></i> Save Header Changes
           </button>
         </div>
@@ -164,8 +162,8 @@
     <!-- Customer Data Excel — hidden after closure (Excel purged) and for nil returns -->
     {% if not submission.is_nil_return %}
     {% if is_draft or submission.uploaded_excel %}
-    <div class="detail-section">
-      <div class="detail-section-title">Customer Data Excel</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Customer Data Excel</h3>
 
       <div class="excel-status">
         {% if submission.uploaded_excel %}
@@ -177,7 +175,7 @@
             </div>
             <div class="excel-actions">
               <a href="{% url 'crs:submission_excel_download' submission.pk %}"
-                 class="btn btn-sm btn-info" title="Download">
+                 class="btn action-secondary" title="Download">
                 <i class="fas fa-download"></i> Download
               </a>
               {% if is_draft and perms.auth.can_edit_crs %}
@@ -185,7 +183,7 @@
                     style="display: inline;"
                     onsubmit="return confirm('Remove the uploaded Excel? You can upload a different file afterwards.');">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-danger" title="Remove">
+                <button type="submit" class="btn action-danger" title="Remove">
                   <i class="fas fa-times"></i> Remove
                 </button>
               </form>
@@ -207,7 +205,7 @@
         {% csrf_token %}
         <div class="excel-upload-row">
           {{ excel_form.uploaded_excel }}
-          <button type="submit" class="btn btn-success btn-sm">
+          <button type="submit" class="btn action-primary">
             <i class="fas fa-upload"></i>
             {% if submission.uploaded_excel %} Replace{% else %} Upload{% endif %}
           </button>
@@ -215,7 +213,7 @@
         {% if excel_form.uploaded_excel.errors %}
         <div class="field-error">{{ excel_form.uploaded_excel.errors|join:" " }}</div>
         {% endif %}
-        <small class="field-help">
+        <small class="form-text">
           .xlsx or .xls, max 25 MB. Format: two sheets (Individuals, Organisations)
           per the <a href="{% url 'crs:download_template' %}"><strong>downloadable template</strong></a>.
         </small>
@@ -227,8 +225,8 @@
     
     <!-- Excel Validation -->
     {% if parse_result %}
-    <div class="detail-section">
-      <div class="detail-section-title">Excel Validation</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Excel Validation</h3>
 
       {% if not parse_result.is_valid %}
         <div class="validation-banner banner-error">
@@ -256,26 +254,26 @@
             <i class="fas fa-folder-open"></i> <code>{{ label }}</code>
             <span class="validation-group-count">{{ errors|length }}</span>
           </div>
-          <table class="validation-table">
+          <table class="table alv-table validation-table">
             <thead>
               <tr><th>Cell</th><th>Field</th><th>Value</th><th>Reason</th>{% if is_draft and perms.auth.can_edit_crs %}<th>Fix</th>{% endif %}</tr>
             </thead>
             <tbody>
               {% for e in errors %}
               <tr class="row-error">
-                <td>{{ e.col }}{{ e.row }}</td>
-                <td>{{ e.field }}</td>
-                <td><code>{{ e.value|truncatechars:40 }}</code></td>
-                <td>{{ e.reason }}</td>
+                <td data-label="Cell">{{ e.col }}{{ e.row }}</td>
+                <td data-label="Field">{{ e.field }}</td>
+                <td data-label="Value"><code>{{ e.value|truncatechars:40 }}</code></td>
+                <td data-label="Reason">{{ e.reason }}</td>
                 {% if is_draft and perms.auth.can_edit_crs %}
-                <td class="fix-cell">
+                <td data-label="Fix" class="fix-cell">
                   {% if e.fixable %}
                   <form method="post" action="{% url 'crs:submission_fix_cell' submission.pk %}" class="fix-form">
                     {% csrf_token %}
                     <input type="hidden" name="sheet" value="{{ e.sheet }}">
                     <input type="hidden" name="cell" value="{{ e.col }}{{ e.row }}">
                     <input type="text" name="value" class="fix-input" placeholder="new value" autocomplete="off">
-                    <button type="submit" class="btn btn-success fix-btn">Apply</button>
+                    <button type="submit" class="btn action-primary fix-btn">Apply</button>
                   </form>
                   {% else %}
                   <span class="fix-na">fix in Excel</span>
@@ -292,7 +290,7 @@
       {% endif %}
 
       {% if any_structural_errors and is_draft and perms.auth.can_edit_crs %}
-      <div class="field-help" style="margin-top: 6px;">
+      <div class="form-text" style="margin-top: 6px;">
         Some errors can't be fixed here —
         <a href="{% url 'crs:submission_excel_download' submission.pk %}">download the workbook</a>
         (it includes any in-system fixes you've applied), correct them in Excel, and re-upload.
@@ -308,18 +306,18 @@
             <i class="fas fa-folder-open"></i> <code>{{ label }}</code>
             <span class="validation-group-count">{{ corrections|length }}</span>
           </div>
-          <table class="validation-table">
+          <table class="table alv-table validation-table">
             <thead>
               <tr><th>Cell</th><th>Field</th><th>Original</th><th>Corrected</th><th>Reason</th></tr>
             </thead>
             <tbody>
               {% for c in corrections %}
               <tr class="row-correction">
-                <td>{{ c.col }}{{ c.row }}</td>
-                <td>{{ c.field }}</td>
-                <td><code>{{ c.original|truncatechars:30 }}</code></td>
-                <td><code>{{ c.corrected|truncatechars:30 }}</code></td>
-                <td>{{ c.reason }}</td>
+                <td data-label="Cell">{{ c.col }}{{ c.row }}</td>
+                <td data-label="Field">{{ c.field }}</td>
+                <td data-label="Original"><code>{{ c.original|truncatechars:30 }}</code></td>
+                <td data-label="Corrected"><code>{{ c.corrected|truncatechars:30 }}</code></td>
+                <td data-label="Reason">{{ c.reason }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -332,19 +330,19 @@
       {% if parse_result.accounts and parse_result.is_valid %}
       <details class="validation-details">
         <summary>{{ parse_result.accounts|length }} account{{ parse_result.accounts|length|pluralize }} parsed</summary>
-        <table class="validation-table">
+        <table class="table alv-table validation-table">
           <thead>
             <tr><th>Sheet</th><th>Row</th><th>Account Number</th><th>Holder</th><th>Balance</th><th>CPs</th></tr>
           </thead>
           <tbody>
             {% for a in parse_result.accounts %}
             <tr>
-              <td>{{ a.sheet }}</td>
-              <td>{{ a.row_number }}</td>
-              <td><code>{{ a.account_number|truncatechars:30 }}</code></td>
-              <td>{% if a.holder_name %}{{ a.holder_name }} ({{ a.holder_type }}){% else %}{{ a.holder_first_name }} {{ a.holder_last_name }}{% endif %}</td>
-              <td>{{ a.balance }} {{ a.balance_currency }}</td>
-              <td>{{ a.controlling_persons|length }}</td>
+              <td data-label="Sheet">{{ a.sheet }}</td>
+              <td data-label="Row">{{ a.row_number }}</td>
+              <td data-label="Account Number"><code>{{ a.account_number|truncatechars:30 }}</code></td>
+              <td data-label="Holder">{% if a.holder_name %}{{ a.holder_name }} ({{ a.holder_type }}){% else %}{{ a.holder_first_name }} {{ a.holder_last_name }}{% endif %}</td>
+              <td data-label="Balance">{{ a.balance }} {{ a.balance_currency }}</td>
+              <td data-label="CPs">{{ a.controlling_persons|length }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -356,8 +354,8 @@
 
     <!-- Generated XML files (one for combined, N for split) -->
     {% if is_draft or submission.xml_files.exists %}
-    <div class="detail-section">
-      <div class="detail-section-title">Generated XML</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Generated XML</h3>
 
       {% if submission.xml_files.exists %}
       <div class="xml-files-list">
@@ -376,7 +374,7 @@
             </small>
           </div>
           <div class="xml-file-actions">
-            <button type="button" class="btn btn-sm btn-secondary xml-view-btn"
+            <button type="button" class="btn action-secondary xml-view-btn"
                     data-view-url="{% url 'crs:submission_xml_file_view' submission.pk xml_file.pk %}"
                     data-download-url="{% url 'crs:submission_xml_file_download' submission.pk xml_file.pk %}"
                     data-rc="{{ xml_file.receiving_country }}"
@@ -384,7 +382,7 @@
               <i class="fas fa-eye"></i> View
             </button>
             <a href="{% url 'crs:submission_xml_file_download' submission.pk xml_file.pk %}"
-               class="btn btn-sm btn-info">
+               class="btn action-secondary">
               <i class="fas fa-download"></i> Download
             </a>
           </div>
@@ -394,7 +392,7 @@
 
       {% if submission.xml_files.count > 1 %}
       <a href="{% url 'crs:submission_xml_files_download_all' submission.pk %}"
-         class="btn btn-info btn-sm" style="margin-top: 12px;">
+         class="btn action-secondary" style="margin-top: 12px;">
         <i class="fas fa-file-archive"></i> Download all as ZIP
       </a>
       {% endif %}
@@ -403,10 +401,10 @@
       <form method="post" action="{% url 'crs:submission_generate_xml' submission.pk %}"
             style="margin-top: 12px;">
         {% csrf_token %}
-        <button type="submit" class="btn btn-warning btn-sm">
+        <button type="submit" class="btn action-secondary">
           <i class="fas fa-sync"></i> Regenerate
         </button>
-        <small class="field-help" style="display: inline-block; margin-left: 8px;">
+        <small class="form-text" style="display: inline-block; margin-left: 8px;">
           Regenerating discards all current files and rebuilds from the workbook.
         </small>
       </form>
@@ -418,20 +416,20 @@
         {% if submission.is_nil_return %}
         <form method="post" action="{% url 'crs:submission_generate_xml' submission.pk %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn action-primary">
             <i class="fas fa-cogs"></i> Generate Nil XML
           </button>
-          <small class="field-help" style="display: block; margin-top: 8px;">
+          <small class="form-text" style="display: block; margin-top: 8px;">
             Produces a single CRS703 nil return for {{ submission.transmitting_country }} — no account data.
           </small>
         </form>
         {% elif submission.uploaded_excel and parse_result and parse_result.is_valid %}
         <form method="post" action="{% url 'crs:submission_generate_xml' submission.pk %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn action-primary">
             <i class="fas fa-cogs"></i> Generate XML
           </button>
-          <small class="field-help" style="display: block; margin-top: 8px;">
+          <small class="form-text" style="display: block; margin-top: 8px;">
             {% if submission.country_config.receiving_country_strategy == 'split_by_residence' %}
               Will produce one file per reportable receiving country (split-by-residence mode).
             {% else %}
@@ -440,7 +438,7 @@
           </small>
         </form>
         {% else %}
-        <small class="field-help">
+        <small class="form-text">
           Upload a clean Excel workbook first.
         </small>
         {% endif %}
@@ -450,8 +448,8 @@
     {% endif %}
 
     {% if xml_validations %}
-    <div class="detail-section">
-      <div class="detail-section-title">XSD Validation</div>
+    <div class="form-card">
+      <h3 class="form-section-title">XSD Validation</h3>
       {% for v in xml_validations %}
       <div class="validation-group">
         <div class="validation-group-header">
@@ -469,14 +467,14 @@
         </div>
         <details>
           <summary>Show errors</summary>
-          <table class="validation-table">
+          <table class="table alv-table validation-table">
             <thead><tr><th>Line</th><th>Domain</th><th>Message</th></tr></thead>
             <tbody>
               {% for err in v.result.errors %}
               <tr>
-                <td>{{ err.line }}</td>
-                <td>{{ err.domain_name }}</td>
-                <td>{{ err.message }}</td>
+                <td data-label="Line">{{ err.line }}</td>
+                <td data-label="Domain">{{ err.domain_name }}</td>
+                <td data-label="Message">{{ err.message }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -490,27 +488,27 @@
 
     <!-- Actions (drafts only) -->
     {% if is_draft and perms.auth.can_edit_crs %}
-    <div class="detail-section">
-      <div class="detail-section-title">Actions</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Actions</h3>
       {% if xml_all_valid %}
       <form method="post" action="{% url 'crs:submission_close' submission.pk %}"
             onsubmit="return confirm('Close this submission?\n\nThis will PERMANENTLY DELETE:\n  • the uploaded Excel\n  • the generated XML — make sure you have downloaded it first\n\nAfter close, the submission becomes read-only. Only metadata and lifecycle history are retained.\n\nThis cannot be undone — proceed?');"
             style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn btn-warning">
+        <button type="submit" class="btn action-danger">
           <i class="fas fa-lock"></i> Close Submission
         </button>
       </form>
-      <small class="field-help" style="display: block; margin-top: 10px;">
+      <small class="form-text" style="display: block; margin-top: 10px;">
         Closing deletes both the uploaded Excel and all generated XML files. Download
         what you need first. After close, the submission becomes read-only and only
         metadata + lifecycle history are retained.
       </small>
       {% else %}
-      <button type="button" class="btn btn-warning" disabled>
+      <button type="button" class="btn action-danger" disabled>
         <i class="fas fa-lock"></i> Close
       </button>
-      <small class="field-help" style="display: block; margin-top: 10px;">
+      <small class="form-text" style="display: block; margin-top: 10px;">
         {% if not submission.xml_files.exists %}
           Generate XML before closing.
         {% else %}
@@ -523,8 +521,8 @@
 
     <!-- Submission Lifecycle (post-draft) -->
     {% if not is_draft %}
-    <div class="detail-section">
-      <div class="detail-section-title">Submission Lifecycle</div>
+    <div class="form-card">
+      <h3 class="form-section-title">Submission Lifecycle</h3>
 
       <div class="lifecycle-events">
         <div class="lifecycle-event">
@@ -586,7 +584,7 @@
           {% csrf_token %}
           <label>Submission notes (optional — reference number, portal receipt, etc.)</label>
           <textarea name="notes" rows="2" class="form-control" placeholder="e.g. Portal receipt #ABC123, filed via TaxisNet"></textarea>
-          <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 8px;">
+          <button type="submit" class="btn action-secondary" style="margin-top: 8px;">
             <i class="fas fa-paper-plane"></i> Mark as Submitted Externally
           </button>
         </form>
@@ -600,16 +598,16 @@
           {% csrf_token %}
           <label>Acknowledgement notes (optional)</label>
           <textarea name="notes" rows="2" class="form-control" placeholder="e.g. Acknowledged 2026-05-22, no issues raised"></textarea>
-          <button type="submit" class="btn btn-success btn-sm" style="margin-top: 8px;">
+          <button type="submit" class="btn action-secondary" style="margin-top: 8px;">
             <i class="fas fa-check-circle"></i> Mark as Acknowledged
           </button>
         </form>
 
         <form method="post" action="{% url 'crs:submission_mark_rejected' submission.pk %}">
           {% csrf_token %}
-          <label>Rejection reason <span class="req">*</span></label>
+          <label>Rejection reason <span class="alv-req">*</span></label>
           <textarea name="notes" rows="2" class="form-control" required placeholder="What did the tax authority report? (required)"></textarea>
-          <button type="submit" class="btn btn-danger btn-sm" style="margin-top: 8px;">
+          <button type="submit" class="btn action-secondary" style="margin-top: 8px;">
             <i class="fas fa-times-circle"></i> Mark as Rejected
           </button>
         </form>
@@ -632,15 +630,13 @@
 
     {% if perms.auth.can_edit_crs %}
     <div class="detail-actions">
-      <button type="button" class="btn btn-danger btn-sm"
+      <button type="button" class="btn action-danger"
               onclick="confirmSubmissionDelete({{ submission.pk }}, '{{ submission.message_ref_id|escapejs }}')">
         <i class="fas fa-trash"></i> Delete Submission
       </button>
     </div>
     {% endif %}
 
-  </div>
-</div>
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteSubmissionModal" tabindex="-1" role="dialog">
@@ -662,10 +658,10 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
         <form id="deleteSubmissionForm" method="POST">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger">
+          <button type="submit" class="btn action-danger">
             <i class="fas fa-trash"></i> Delete
           </button>
         </form>
@@ -687,10 +683,10 @@
           <pre id="xmlViewerContent" class="xml-modal-pre">Loading…</pre>
         </div>
         <div class="xml-modal-footer">
-          <a id="xmlViewerDownload" href="#" class="btn btn-info btn-sm">
+          <a id="xmlViewerDownload" href="#" class="btn action-secondary">
             <i class="fas fa-download"></i> Download
           </a>
-          <button type="button" class="btn btn-secondary btn-sm" id="xmlViewerFooterClose">
+          <button type="button" class="btn action-secondary" id="xmlViewerFooterClose">
             Close
           </button>
         </div>
@@ -742,19 +738,12 @@
 </script>
 
 <style>
-  :root {
-    --crs-dark: #28a745;
-    --crs-light: #d4edda;
-  }
-  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
-  .page-action-buttons {
-    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
-  }
-  .crs-panel-container { max-width: 900px; margin: 0 auto; }
-  .crs-panel {
-    padding: 30px; border: 3px solid var(--crs-dark);
-    background-color: var(--crs-light); border-radius: 10px;
-  }
+  /* RETONED, NOT DELETED - see the note in apply_crs_detail_colour.py.
+     Ten rules in the validation, XML and lifecycle clusters still read
+     this pair, and those clusters are X9 and X10. Pointing the alias at
+     the house accent turns all ten teal in one line; X10 deletes the
+     block when the last reader has gone. personal.html does the same
+     thing with --personal-dark. */
 
   /* Header strip */
   .detail-header {
@@ -765,38 +754,27 @@
     display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
   }
   .ref-id-display small {
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--alv-ink-soft);
   }
   .ref-id-display code {
-    font-size: 13px; background: white; color: #495057;
+    font-size: 13px; background: var(--alv-paper); color: var(--alv-ink-strong);
     padding: 4px 8px; border-radius: 4px; word-break: break-all;
   }
 
-  .status-badge {
-    display: inline-block;
-    padding: 4px 12px; border-radius: 12px;
-    font-size: 12px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .status-draft                { background: #e9ecef; color: #495057; }
-  .status-closed               { background: #cce5ff; color: #004085; }
-  .status-submitted_externally { background: #fff3cd; color: #856404; }
-  .status-acknowledged         { background: #d4edda; color: #155724; }
-  .status-rejected             { background: #f8d7da; color: #721c24; }
+  /* THE FIVE LIFECYCLE TONES, the same mapping X6 made on the list.
+     The geometry is base's .alv-pill now; these five rules are nothing
+     but a status mapped to a meaning, and each was already the Bootstrap
+     colour for the meaning the house has a token for. The NAMES stay
+     because the class is built from the model's status key - in the
+     markup and again in the modal JS - so an .alv-pill-good can never be
+     written there without a mapping in two languages, which would
+     drift. */
+  .status-draft                { background: var(--alv-neutral-soft); color: var(--alv-neutral); }
+  .status-closed               { background: var(--alv-info-soft); color: var(--alv-accent-ink); }
+  .status-submitted_externally { background: var(--alv-warn-soft); color: var(--alv-warn); }
+  .status-acknowledged         { background: var(--alv-good-soft); color: var(--alv-good); }
+  .status-rejected             { background: var(--alv-bad-soft); color: var(--alv-bad); }
 
-  /* Sections */
-  .detail-section {
-    background: white; border-radius: 8px;
-    padding: 18px 20px; margin-bottom: 14px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  .detail-section-title {
-    font-size: 13px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    color: var(--crs-dark);
-    border-bottom: 2px solid var(--crs-light);
-    padding-bottom: 8px; margin-bottom: 12px;
-  }
 
   /* Read-only data list */
   .detail-grid {
@@ -804,36 +782,23 @@
     gap: 10px 14px; margin: 0;
   }
   .detail-grid dt {
-    font-size: 12px; font-weight: 600; color: #6c757d;
+    font-size: 12px; font-weight: 600; color: var(--alv-ink-soft);
     text-transform: uppercase; letter-spacing: 0.4px;
   }
-  .detail-grid dd { margin: 0; font-size: 14px; color: #2c3e50; }
+  .detail-grid dd { margin: 0; font-size: 14px; color: var(--alv-ink); }
   .detail-grid dd code {
-    font-size: 13px; background: #f1f3f5; padding: 2px 6px; border-radius: 3px;
+    font-size: 13px; background: var(--alv-line-soft); padding: 2px 6px; border-radius: 3px;
   }
-  .detail-grid dd small { color: #6c757d; }
+  .detail-grid dd small { color: var(--alv-ink-soft); }
 
   /* Form grid (re-uses pattern from other CRS forms) */
   .form-grid {
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
   }
-  .form-field { display: flex; flex-direction: column; gap: 4px; }
-  .form-field-full { grid-column: 1 / -1; }
-  .form-field label {
-    font-size: 12px; font-weight: 600; color: #495057; margin: 0;
-  }
-  .form-field .req { color: #dc3545; }
-  .form-field .form-control {
-    padding: 7px 10px; border: 1px solid #ced4da;
-    border-radius: 5px; font-size: 14px;
-  }
-  .form-field textarea.form-control { resize: vertical; }
-  .form-field .field-help {
-    font-size: 11px; color: #6c757d; font-style: italic;
-  }
+  .form-group-full { grid-column: 1 / -1; }
   .form-field .field-error,
   .field-error {
-    font-size: 12px; color: #dc3545; font-weight: 600;
+    font-size: 12px; color: var(--alv-bad); font-weight: 600;
   }
   .form-actions {
     display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;
@@ -844,29 +809,29 @@
   .excel-current,
   .xml-current {
     display: flex; align-items: center; gap: 14px;
-    background: #f8f9fa; border: 1px solid #e9ecef;
+    background: var(--alv-surface); border: 1px solid var(--alv-line);
     border-radius: 6px; padding: 12px 14px;
     flex-wrap: wrap;
   }
-  .excel-current > i.fa-file-excel { font-size: 1.8rem; color: #1d6f42; }
-  .xml-current   > i.fa-file-code  { font-size: 1.8rem; color: #17a2b8; }
+  .excel-current > i.fa-file-excel { font-size: 1.8rem; color: var(--alv-tag-moss-ink); }
+  .xml-current   > i.fa-file-code  { font-size: 1.8rem; color: var(--alv-accent); }
   .excel-meta,
   .xml-meta {
     flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;
   }
   .excel-meta strong,
-  .xml-meta strong { font-size: 14px; color: #2c3e50; word-break: break-all; }
+  .xml-meta strong { font-size: 14px; color: var(--alv-ink); word-break: break-all; }
   .excel-size,
-  .xml-detail { font-size: 11px; color: #6c757d; }
+  .xml-detail { font-size: 11px; color: var(--alv-ink-soft); }
   .excel-actions,
   .xml-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .excel-empty,
   .xml-empty {
     display: flex; align-items: center; gap: 12px;
-    background: #f8f9fa; border: 1px dashed #ced4da;
+    background: var(--alv-surface); border: 1px dashed var(--alv-line);
     border-radius: 6px; padding: 16px;
-    color: #6c757d; font-style: italic;
+    color: var(--alv-ink-soft); font-style: italic;
   }
   .excel-empty i,
   .xml-empty i { font-size: 1.6rem; opacity: 0.5; }
@@ -878,8 +843,8 @@
   }
   .excel-upload-row input[type="file"] {
     flex: 1 1 auto; min-width: 0;
-    padding: 4px; border: 1px solid #ced4da; border-radius: 5px;
-    background: white; font-size: 13px;
+    padding: 4px; border: 1px solid var(--alv-line); border-radius: 5px;
+    background: var(--alv-paper); font-size: 13px;
   }
 
   /* Disabled action row (Generate / Validate / Close placeholders) */
@@ -890,9 +855,9 @@
   /* Audit + delete row at bottom */
   .detail-audit {
     display: flex; justify-content: space-between;
-    font-size: 11px; color: #6c757d;
+    font-size: 11px; color: var(--alv-ink-soft);
     margin-top: 10px; padding-top: 10px;
-    border-top: 1px dashed var(--crs-dark);
+    border-top: 1px dashed var(--alv-accent);
   }
   .detail-actions {
     margin-top: 16px;
@@ -906,62 +871,51 @@
     font-size: 14px;
   }
   .validation-banner i { font-size: 1.3rem; flex-shrink: 0; }
-  .banner-success { background: #d4edda; color: #155724; }
-  .banner-warning { background: #fff3cd; color: #856404; }
-  .banner-error   { background: #f8d7da; color: #721c24; }
+  /* The validation banner's three states. Bootstrap's success, warning
+     and danger were already the house's good, warn and bad - they only
+     had to say so. */
+  .banner-success { background: var(--alv-good-soft); color: var(--alv-good); }
+  .banner-warning { background: var(--alv-warn-soft); color: var(--alv-warn); }
+  .banner-error   { background: var(--alv-bad-soft); color: var(--alv-bad); }
 
   .validation-details { margin-bottom: 10px; }
   .validation-details summary {
     cursor: pointer; font-size: 13px; font-weight: 600;
-    color: #495057; padding: 6px 0;
+    color: var(--alv-ink-strong); padding: 6px 0;
   }
-  .validation-details summary:hover { color: var(--crs-dark); }
+  .validation-details summary:hover { color: var(--alv-accent); }
 
-  .validation-table {
-    width: 100%; margin: 8px 0 0 0;
-    background: white; border: 1px solid #e9ecef;
-    border-radius: 6px; overflow: hidden; font-size: 12px;
-  }
-  .validation-table th {
-    background: #f8f9fa; padding: 8px 10px; text-align: left;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
-    color: #6c757d; border-bottom: 1px solid #dee2e6;
-  }
-  .validation-table td {
-    padding: 6px 10px; border-bottom: 1px solid #f0f0f0;
-    vertical-align: top; word-break: break-word;
-  }
   .validation-table tbody tr:last-child td { border-bottom: none; }
   .validation-table code {
-    font-size: 11px; background: #f1f3f5; color: #495057;
+    font-size: 11px; background: var(--alv-line-soft); color: var(--alv-ink-strong);
     padding: 1px 5px; border-radius: 3px;
   }
-  .row-error td      { background: #fff5f5; }
-  .row-correction td { background: #fffbeb; }
+  .row-error td      { background: var(--alv-bad-soft); }
+  .row-correction td { background: var(--alv-warn-soft); }
 
   /* Inline error-fix controls */
   .fix-cell { white-space: nowrap; }
   .fix-form { display: flex; gap: 4px; align-items: center; }
-  .fix-input { width: 110px; padding: 3px 6px; font-size: 12px; border: 1px solid #ced4da; border-radius: 4px; }
+  .fix-input { width: 110px; padding: 3px 6px; font-size: 12px; border: 1px solid var(--alv-line); border-radius: 4px; }
   .fix-btn { padding: 3px 8px; font-size: 11px; }
-  .fix-na { font-size: 11px; color: #adb5bd; font-style: italic; }
+  .fix-na { font-size: 11px; color: var(--alv-ink-faint); font-style: italic; }
 
   .validation-group { margin-top: 12px; }
   .validation-group:first-of-type { margin-top: 4px; }
   .validation-group-header {
     display: flex; align-items: center; gap: 10px;
-    background: #f8f9fa; padding: 8px 12px;
-    border: 1px solid #e9ecef; border-bottom: none;
+    background: var(--alv-surface); padding: 8px 12px;
+    border: 1px solid var(--alv-line); border-bottom: none;
     border-radius: 6px 6px 0 0;
-    font-size: 12px; color: #495057;
+    font-size: 12px; color: var(--alv-ink-strong);
   }
   .validation-group-header code {
-    font-size: 12px; background: white; padding: 2px 7px;
-    border-radius: 3px; color: var(--crs-dark); font-weight: 600;
+    font-size: 12px; background: var(--alv-paper); padding: 2px 7px;
+    border-radius: 3px; color: var(--alv-accent); font-weight: 600;
   }
   .validation-group-count {
-    margin-left: auto; font-size: 11px; color: #6c757d;
-    background: #e9ecef; padding: 2px 9px; border-radius: 10px; font-weight: 600;
+    margin-left: auto; font-size: 11px; color: var(--alv-ink-soft);
+    background: var(--alv-line); padding: 2px 9px; border-radius: 10px; font-weight: 600;
   }
   .validation-group .validation-table { border-radius: 0 0 6px 6px; }
 
@@ -974,7 +928,7 @@
     padding: 20px;
   }
   .xml-modal-content {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     width: 100%; max-width: 1000px;
     max-height: 90vh;
@@ -983,22 +937,22 @@
   }
   .xml-modal-header {
     padding: 14px 20px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--alv-line);
     display: flex; align-items: center; justify-content: space-between;
   }
   .xml-modal-header h3 {
     margin: 0; font-size: 14px; font-weight: 700;
-    color: var(--crs-dark);
+    color: var(--alv-accent);
     text-transform: uppercase; letter-spacing: 0.4px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .xml-modal-close {
     background: none; border: none;
     font-size: 18px; cursor: pointer;
-    color: #6c757d; padding: 4px 10px;
+    color: var(--alv-ink-soft); padding: 4px 10px;
     border-radius: 4px;
   }
-  .xml-modal-close:hover { background: #f0f0f0; color: #2c3e50; }
+  .xml-modal-close:hover { background: var(--alv-line-soft); color: var(--alv-ink); }
   .xml-modal-body {
     flex: 1 1 auto;
     overflow: auto;
@@ -1011,14 +965,14 @@
     box-sizing: border-box;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 14px; line-height: 1.5;
-    background: #f8f9fa;
-    color: #2c3e50;
+    background: var(--alv-surface);
+    color: var(--alv-ink);
     white-space: pre;
     border: none;
   }
   .xml-modal-footer {
     padding: 12px 20px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--alv-line);
     display: flex; gap: 8px; justify-content: flex-end;
   }
 
@@ -1029,39 +983,39 @@
   .xml-file-row {
     display: flex; align-items: center; gap: 14px;
     padding: 10px 14px;
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
     border-radius: 5px;
   }
   .xml-file-icon {
     flex-shrink: 0; width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
-    background: #e7f3ff;
+    background: var(--alv-accent-soft);
     border-radius: 5px;
-    color: var(--crs-dark); font-size: 16px;
+    color: var(--alv-accent); font-size: 16px;
   }
   .xml-file-meta { flex: 1; min-width: 0; }
-  .xml-file-name { font-size: 13px; font-weight: 600; color: #2c3e50; }
-  .xml-file-meta small { font-size: 11px; color: #6c757d; }
+  .xml-file-name { font-size: 13px; font-weight: 600; color: var(--alv-ink); }
+  .xml-file-meta small { font-size: 11px; color: var(--alv-ink-soft); }
   .xml-file-rc {
     display: inline-block;
     padding: 1px 6px; margin-right: 4px;
-    background: var(--crs-dark); color: white;
+    background: var(--alv-accent); color: var(--alv-paper);
     border-radius: 3px;
     font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
   }
   .xml-file-actions { flex-shrink: 0; }
   .xml-empty { text-align: center; padding: 14px; }
-  .xml-empty p { color: #6c757d; margin: 0 0 10px 0; font-size: 13px; }
+  .xml-empty p { color: var(--alv-ink-soft); margin: 0 0 10px 0; font-size: 13px; }
 
   .validation-group {
     margin-bottom: 14px;
-    border: 1px solid #dee2e6; border-radius: 5px; overflow: hidden;
+    border: 1px solid var(--alv-line); border-radius: 5px; overflow: hidden;
   }
   .validation-group-header {
     padding: 8px 12px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background: var(--alv-surface);
+    border-bottom: 1px solid var(--alv-line);
     font-size: 12px;
   }
 
@@ -1073,39 +1027,39 @@
   .lifecycle-event {
     display: flex; align-items: center; gap: 14px;
     padding: 10px 14px;
-    background: #f8f9fa;
-    border-left: 3px solid var(--crs-dark);
+    background: var(--alv-surface);
+    border-left: 3px solid var(--alv-accent);
     border-radius: 4px;
   }
-  .lifecycle-event.lifecycle-rejected { border-left-color: #dc3545; }
+  .lifecycle-event.lifecycle-rejected { border-left-color: var(--alv-bad); }
   .lifecycle-icon {
     flex-shrink: 0; width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
-    background: white; border-radius: 50%;
-    color: var(--crs-dark); font-size: 14px;
+    background: var(--alv-paper); border-radius: 50%;
+    color: var(--alv-accent); font-size: 14px;
   }
-  .lifecycle-rejected .lifecycle-icon { color: #dc3545; }
+  .lifecycle-rejected .lifecycle-icon { color: var(--alv-bad); }
   .lifecycle-text {
     display: flex; flex-direction: column; gap: 2px;
     min-width: 0;
   }
-  .lifecycle-text strong { font-size: 13px; color: #2c3e50; }
-  .lifecycle-text small  { font-size: 11px; color: #6c757d; }
+  .lifecycle-text strong { font-size: 13px; color: var(--alv-ink); }
+  .lifecycle-text small  { font-size: 11px; color: var(--alv-ink-soft); }
 
   .lifecycle-notes {
     margin-top: 14px;
     padding: 12px 14px;
-    background: #fff9e6;
-    border-left: 3px solid #ffc107;
+    background: var(--alv-warn-soft);
+    border-left: 3px solid var(--alv-warn);
     border-radius: 4px;
   }
   .lifecycle-notes-label {
-    font-size: 11px; font-weight: 700; color: #856404;
+    font-size: 11px; font-weight: 700; color: var(--alv-warn);
     text-transform: uppercase; letter-spacing: 0.4px;
     margin-bottom: 6px;
   }
   .lifecycle-notes-content {
-    margin: 0; font-size: 13px; color: #495057;
+    margin: 0; font-size: 13px; color: var(--alv-ink-strong);
     white-space: pre-wrap; word-wrap: break-word;
     background: transparent; border: none; padding: 0;
     font-family: inherit;
@@ -1113,36 +1067,34 @@
 
   .lifecycle-next-action {
     margin-top: 18px; padding-top: 16px;
-    border-top: 1px dashed #ced4da;
+    border-top: 1px dashed var(--alv-line);
   }
   .lifecycle-next-label {
-    font-size: 12px; font-weight: 600; color: #495057;
+    font-size: 12px; font-weight: 600; color: var(--alv-ink-strong);
     margin-bottom: 10px;
   }
   .lifecycle-next-action label {
     display: block; font-size: 12px; font-weight: 600;
-    color: #495057; margin: 10px 0 4px 0;
+    color: var(--alv-ink-strong); margin: 10px 0 4px 0;
   }
   .lifecycle-next-action label:first-of-type { margin-top: 0; }
   .lifecycle-next-action textarea.form-control {
     font-family: inherit; font-size: 13px; resize: vertical;
-    padding: 7px 10px; border: 1px solid #ced4da; border-radius: 5px;
+    padding: 7px 10px; border: 1px solid var(--alv-line); border-radius: 5px;
     width: 100%; box-sizing: border-box;
   }
-  .lifecycle-next-action .req { color: #dc3545; }
+  .lifecycle-next-action .req { color: var(--alv-bad); }
 
   .lifecycle-terminal {
     margin-top: 14px; padding: 10px 14px;
-    background: #f8f9fa;
-    border: 1px dashed #ced4da; border-radius: 4px;
-    font-size: 12px; color: #6c757d; font-style: italic;
+    background: var(--alv-surface);
+    border: 1px dashed var(--alv-line); border-radius: 4px;
+    font-size: 12px; color: var(--alv-ink-soft); font-style: italic;
     text-align: center;
   }
 
   /* Mobile */
   @media (max-width: 768px) {
-    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
-    .crs-panel { padding: 16px; }
     .detail-grid { grid-template-columns: 1fr; gap: 4px 0; }
     .detail-grid dt { margin-top: 8px; }
     .detail-grid dd { margin-bottom: 4px; }
@@ -1151,7 +1103,6 @@
     .form-grid { grid-template-columns: 1fr; }
     .form-actions { flex-direction: column-reverse; gap: 8px; }
     .form-actions .btn { width: 100%; }
-    .form-field .form-control { font-size: 16px !important; }
     .detail-action-row .btn { width: 100%; }
     .excel-current,
     .xml-current { flex-direction: column; align-items: flex-start; }

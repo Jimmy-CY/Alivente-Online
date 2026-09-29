@@ -83,6 +83,9 @@ ROUNDS = [
     '.bak_crshub',
     '.bak_crssub',
     '.bak_crsstart',
+    '.bak_crsdetc',
+    '.bak_crsdets',
+    '.bak_crsdetr',
 ]
 
 

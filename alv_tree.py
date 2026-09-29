@@ -248,6 +248,7 @@ CRS_HOUSE = [
     'crs/index.html',           # X5 - the hub: panel KEPT, and retoned
     'crs/submission_list.html', # X6 - the Submissions list and its badges
     'crs/submission_start.html',  # X7 - the Start Submission entry screen
+    'crs/submission_detail.html',  # X8 colour, X9 sections+tables, X10 rest
 ]
 
 
