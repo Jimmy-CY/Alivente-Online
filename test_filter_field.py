@@ -136,7 +136,7 @@ SUFFIX = '.bak_field'
 ME = 'test_filter_field.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 PAGES = ['act_expense.html', 'fsr.html', 'invoices.html',
          'passport_management.html', 'physical_invoice_list.html',
          'projects/projects.html', 'properties.html',
@@ -291,7 +291,7 @@ ok('appearance: none' in _decl and '-webkit-appearance: none' in _decl,
    '  and the chevron replaces the browser\'s arrow, on every engine')
 
 for name in PAGES:
-    p = os.path.join(T, *name.split('/'))
+    p = alv_tree.join(*name.split('/'))
     left = [s for s in selectors(now(p)) if mine(s)]
     ok(not left, '%-34s keeps no copy of its own' % name, left)
     # A page that was renamed wrote its own names, so "what it had before"
@@ -411,7 +411,7 @@ else:
             where = 'phone' if vw == 375 else 'desk '
             seen, before = {}, {}
             for name in PAGES:
-                p = os.path.join(T, *name.split('/'))
+                p = alv_tree.join(*name.split('/'))
                 seen[name] = dict(render(pg, fixture(B_NOW, now(p)),
                                          FIELD_JS, {}))
                 before[name] = dict(render(
@@ -475,7 +475,7 @@ else:
                 anywhere - three of these pages set that on some other
                 control, and recipe_management had no filter select at
                 all."""
-                src = was(os.path.join(T, *n.split('/')))
+                src = was(alv_tree.join(*n.split('/')))
                 cls = WAS_NAMES.get(n, {}).get('filter-select',
                                                'filter-select')
                 for m in re.finditer(r'<style[^>]*>(.*?)</style>', src,
@@ -509,14 +509,14 @@ else:
                 head('3. IT IS THE SAME FIELD AS THE FORM BELOW IT')
             # ==============================================================
                 cmp_ = render(pg, fixture(
-                    B_NOW, now(os.path.join(T, 'properties.html')),
+                    B_NOW, now(alv_tree.join('properties.html')),
                     BODY + '<input class="form-control" value="y">'),
                     FORM_JS, 0)
                 ok(cmp_['field'] and cmp_['field'] == cmp_['form'],
                    'the filter field and .form-control share a border and a '
                    'radius - %s' % cmp_['field'], cmp_)
                 old = render(pg, fixture(
-                    B_WAS, was(os.path.join(T, 'properties.html')),
+                    B_WAS, was(alv_tree.join('properties.html')),
                     BODY + '<input class="form-control" value="y">'),
                     FORM_JS, 0)
                 ok(old['field'] != old['form'],
@@ -526,7 +526,7 @@ else:
                 _fx = os.path.join(SCRATCH, '_field_%04d.html' % k[0])
                 with open(_fx, 'w', encoding='utf-8') as _f:
                     _f.write(fixture(B_NOW,
-                                     now(os.path.join(T, 'tenant.html'))))
+                                     now(alv_tree.join('tenant.html'))))
                 _goto(pg, _fx)
                 pg.focus('.filter-select')
                 # The border TRANSITIONS to the accent over .15s, so a read
@@ -544,7 +544,7 @@ else:
                 # The search button, page by page - the green one.
                 btns = {}
                 for name in SEARCH:
-                    p = os.path.join(T, *name.split('/'))
+                    p = alv_tree.join(*name.split('/'))
                     btns[name] = dict(render(
                         pg, fixture(B_WAS, was(p), body_was(name)),
                         FIELD_JS, WAS_NAMES.get(name, {})))[
@@ -557,7 +557,7 @@ else:
                    'colour-by-module fault D3 found', btns)
                 nowb = {}
                 for name in SEARCH:
-                    p = os.path.join(T, *name.split('/'))
+                    p = alv_tree.join(*name.split('/'))
                     nowb[name] = dict(render(
                         pg, fixture(B_NOW, now(p)), FIELD_JS, {}))[
                             '.search-btn']['bg']
@@ -580,7 +580,7 @@ RENAMED = {'passport_management.html': ['passport-filter-group',
                                       'recipe-search-btn'],
            'unit_conversions_management.html': ['filter-search']}
 for name, olds in sorted(RENAMED.items()):
-    p = os.path.join(T, *name.split('/'))
+    p = alv_tree.join(*name.split('/'))
     a, b = now(p), was(p)
     for old in olds:
         ok(old not in a, '%-32s no longer says %r' % (name, old),
@@ -612,7 +612,7 @@ ok(not named_in_js, 'no script anywhere names one of the old classes',
 # and one of those lines was .filter-search. It had to follow the rename
 # or it would point at a class nothing wears - an orphan of exactly the
 # kind D1 taught the scan to count.
-_uc = now(os.path.join(T, 'unit_conversions_management.html'))
+_uc = now(alv_tree.join('unit_conversions_management.html'))
 ok('.filter-search' not in _uc,
    'unit_conversions: the zoom guard followed the rename')
 ok('.filter-input,' in _uc and 'font-size: 16px !important' in _uc,
@@ -622,7 +622,7 @@ ok('.filter-input,' in _uc and 'font-size: 16px !important' in _uc,
 head('5. SCOPE')
 # ==========================================================================
 for name in PAGES:
-    p = os.path.join(T, *name.split('/'))
+    p = alv_tree.join(*name.split('/'))
     if not os.path.isfile(p + SUFFIX):
         skip('scope on %s' % name, 'no %s backup' % SUFFIX)
         continue

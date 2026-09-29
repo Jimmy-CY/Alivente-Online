@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Verify, tidy and push the pending Alivente-Online changes.
 
@@ -1051,6 +1051,8 @@ $suites = @(
     'test_crs_detail_colour.py'
     'test_crs_detail_structure.py'
     'test_crs_detail_rest.py'
+    'test_waiting_down.py'
+    'test_crs_comment_fix.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

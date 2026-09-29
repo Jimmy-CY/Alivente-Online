@@ -104,7 +104,7 @@ CRS_PAGES = [
 #
 #     So it is measured with the gate's own detector, after the round, and
 #     it may only FALL. Each later round that converts a census lowers it.
-WALKERS_OWN_ROOT_MAX = 64
+WALKERS_OWN_ROOT_MAX = 51
 
 passed = failed = skipped = 0
 
@@ -231,9 +231,41 @@ CONVERT = alv_tree.CONVERTED
 WAITING = alv_tree.WAITING
 INDIRECT = alv_tree.WAITING_INDIRECT
 ALREADY_WIDE = alv_tree.ALREADY_WIDE
+# The fifth category, added by X11. A suite that carries the words
+# os.walk in a string literal and never calls it - see
+# alv_tree.MENTIONS_ONLY for why the crude test below was kept and
+# the exception named instead.
+MENTIONS = alv_tree.MENTIONS_ONLY
+
+# X0's OWN THIRTY-THREE, PINNED - lesson 17.
+#     This section checks that each converted suite imports alv_tree,
+#     walks via walk3(), no longer builds a root, and carries a
+#     .bak_treeroots backup. All four are true of the suites X0
+#     converted, and the fourth cannot be true of any later round's -
+#     X11's thirteen carry .bak_waitdown. Reading the live register here
+#     made X0's suite fail the day X11 landed, with nothing wrong.
+#
+#     A suite asserts what ITS OWN round guarantees. The register belongs
+#     to whichever round is last, and section 3 below keeps reading it
+#     live, because catching the NEXT census that builds its own root is
+#     the whole point of it.
+MINE = [
+    'test_accent_ink.py', 'test_action_bar.py', 'test_admin_banner.py',
+    'test_admin_headings.py', 'test_admin_repair.py',
+    'test_applies_from.py', 'test_avatar.py', 'test_console_encoding.py',
+    'test_div_balance.py', 'test_entry_sections.py', 'test_filter_field.py',
+    'test_filter_gap.py', 'test_finance_headings.py',
+    'test_form_components.py', 'test_house_header.py', 'test_hub_bar.py',
+    'test_label_fit.py', 'test_last_menus.py', 'test_map_provider.py',
+    'test_more_css.py', 'test_more_menu.py', 'test_named_bars.py',
+    'test_one_action_bar.py', 'test_page_title.py', 'test_palette.py',
+    'test_print_buttons.py', 'test_report_head.py', 'test_row_personal.py',
+    'test_secondary_visible.py', 'test_small_controls.py',
+    'test_table_admin.py', 'test_tap_target.py', 'test_zoom_guards.py',
+]
 
 bad_imp, bad_walk, bad_rel = [], [], []
-for n in CONVERT:
+for n in MINE:
     t = read(os.path.join(ROOT, n))
     if not re.search(r'^import alv_tree$', t, re.M):
         bad_imp.append(n)
@@ -241,21 +273,24 @@ for n in CONVERT:
         bad_walk.append(n)
     if walks_own_root(t):
         bad_rel.append(n)
-ok(len(CONVERT) == 33, '33 suites were converted', len(CONVERT))
+ok(len(MINE) == 33, '33 suites were converted', len(MINE))
+ok(not set(MINE) - set(CONVERT),
+   '  and all 33 are still on the live register',
+   sorted(set(MINE) - set(CONVERT)))
 ok(not bad_imp, '  every one imports alv_tree', bad_imp)
 ok(not bad_walk, '  every one walks via alv_tree.walk3()', bad_walk)
 ok(not bad_rel, '  and none still walks a root of its own', bad_rel)
 
-ok(all(os.path.isfile(os.path.join(ROOT, n + SUFFIX)) for n in CONVERT),
+ok(all(os.path.isfile(os.path.join(ROOT, n + SUFFIX)) for n in MINE),
    '  each has a %s backup' % SUFFIX,
-   [n for n in CONVERT if not os.path.isfile(os.path.join(ROOT, n + SUFFIX))])
+   [n for n in MINE if not os.path.isfile(os.path.join(ROOT, n + SUFFIX))])
 
 # CONTROL: the round is real. A backup must still walk the narrow root.
-sample = CONVERT[0] + SUFFIX
+sample = MINE[0] + SUFFIX
 if os.path.isfile(os.path.join(ROOT, sample)):
     ok(walks_own_root(read(os.path.join(ROOT, sample))),
        'CONTROL: reverting %s puts its own root back, so section 2 would '
-       'FAIL - a revert is caught' % CONVERT[0])
+       'FAIL - a revert is caught' % MINE[0])
 else:
     skipped += 1
     print('  skip the revert control  (no backup yet)')
@@ -266,7 +301,8 @@ head('3. EVERY WALKING SUITE IS ACCOUNTED FOR')
 walking = [n for n in scripts()
            if n.startswith('test_') and n != ME
            and 'os.walk(' in read(os.path.join(ROOT, n))]
-known = set(CONVERT) | set(WAITING) | set(INDIRECT) | set(ALREADY_WIDE)
+known = (set(CONVERT) | set(WAITING) | set(INDIRECT)
+         | set(ALREADY_WIDE) | set(MENTIONS))
 orphans = sorted(set(walking) - known)
 ok(not orphans,
    'every one of the %d walking suites is in exactly one list - converted, '
@@ -276,11 +312,13 @@ ok(not orphans,
    'That is the mistake X0 is paying for; add it to CONVERT if it passes '
    'with the wider tree, or to WAITING against the round that will let it.'
    % orphans)
-lists = [set(CONVERT), set(WAITING), set(INDIRECT), set(ALREADY_WIDE)]
+lists = [set(CONVERT), set(WAITING), set(INDIRECT),
+         set(ALREADY_WIDE), set(MENTIONS)]
 overlap = sorted({n for i, a in enumerate(lists) for b in lists[i + 1:]
                   for n in a & b})
 ok(not overlap, '  and in exactly one, not two', overlap)
-missing = sorted(n for n in list(WAITING) + list(INDIRECT) + ALREADY_WIDE
+missing = sorted(n for n in list(WAITING) + list(INDIRECT)
+                 + list(MENTIONS) + ALREADY_WIDE
                  if not os.path.isfile(os.path.join(ROOT, n)))
 ok(not missing, '  and every name in the register is a file that exists',
    missing)

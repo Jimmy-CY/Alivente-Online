@@ -71,7 +71,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
 SETTINGS = os.path.join(ROOT, 'mysite', 'settings.py')
 CTXPROC = os.path.join(ROOT, 'mysite', 'context_processors.py')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 
@@ -80,7 +80,7 @@ ME = os.path.basename(__file__)
 # below that it is gone, so this list is three by decision.
 PAGES = ('properties_add.html', 'properties_edit.html',
          'map_view.html')
-assert not os.path.exists(os.path.join(T, 'map_test.html')), \
+assert not os.path.exists(alv_tree.join('map_test.html')), \
     'map_test.html is back - it was deleted as dead in round D1'
 GEOCODERS = ('properties_add.html', 'properties_edit.html')
 
@@ -234,7 +234,7 @@ BLOCK = re.compile(
 
 
 def block_of(rel):
-    m = BLOCK.search(read(os.path.join(T, rel)))
+    m = BLOCK.search(read(alv_tree.join(rel)))
     return m.group(1) if m else None
 
 
@@ -317,7 +317,7 @@ check('  and it really is all four of them',
       '%d page(s)' % sum(len(v) for v in shapes.values()))
 
 for rel in GEOCODERS:
-    txt = read(os.path.join(T, rel))
+    txt = read(alv_tree.join(rel))
     check('%-22s builds its lookup from the context' % rel,
           "'{{ MAP_GEOCODE_URL|escapejs }}' + encodeURIComponent(address)"
           in txt)

@@ -51,10 +51,11 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 
@@ -122,14 +123,14 @@ def inert(text):
 
 def templates():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html'):
                 continue
             path = os.path.join(dirpath, n)
             if os.path.abspath(path) == os.path.abspath(BASE):
                 continue
-            rel = os.path.relpath(path, T).replace(os.sep, '/')
+            rel = alv_tree.rel(path).replace(os.sep, '/')
             if any(t in rel for t in RECIPE):
                 continue
             out.append((rel, path))

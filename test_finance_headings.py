@@ -63,7 +63,7 @@ import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 FIXTURE = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 REVENUE = ['finance_revenue.html', 'finance_revenue_add.html',
@@ -123,7 +123,7 @@ def markup_of(t):
 
 
 def path_of(rel):
-    return os.path.join(T, rel.replace('/', os.sep))
+    return alv_tree.join(rel.replace('/', os.sep))
 
 
 for _r in PAGES:

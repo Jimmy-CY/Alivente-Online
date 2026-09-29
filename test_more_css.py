@@ -115,7 +115,7 @@ SUFFIX = '.bak_morecss'
 ME = 'test_more_css.py'
 PATCHER = 'apply_more_css.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -255,8 +255,8 @@ ok(len(mine) == 24, '24 pages gave up their copy', len(mine))
 gone = sum(len(was(p)) - len(now(p)) for _, p in mine)
 ok(gone > 21000, '  %d characters of duplicated CSS removed' % gone, gone)
 for rel, why in sorted(SKIP.items()):
-    ok(os.path.isfile(os.path.join(T, rel))
-       and not os.path.isfile(os.path.join(T, rel) + SUFFIX),
+    ok(os.path.isfile(alv_tree.join(rel))
+       and not os.path.isfile(alv_tree.join(rel) + SUFFIX),
        '  %s was not touched - %s' % (rel.replace('.html', ''), why))
 ok(any(rel.startswith('projects/') for rel, _ in mine),
    '  and the census WALKED - projects/ is in it')
@@ -272,7 +272,7 @@ ok(all(more_rules(was(p)) for _, p in mine),
    '  CONTROL: every one of them did before this round')
 
 # asset_detail is the proof that specificity, not order, was deciding.
-ad = os.path.join(T, 'asset_detail.html')
+ad = alv_tree.join('asset_detail.html')
 ok(len(more_rules(was(ad))) >= 1 and len(was(ad)) - len(now(ad)) > 100,
    'asset_detail had a local copy at all', len(more_rules(was(ad))))
 bc = css_of(now(BASE))
@@ -320,8 +320,8 @@ ok(not any('var(' in c for c in found.values()),
 # None of those menus holds a destructive action, so none of the colours
 # was carrying a meaning that is now lost.
 for rel in found:
-    mk = re.sub(r'<[^>]*>', ' ', was(os.path.join(T, *rel.split('/'))))
-    ok('action-more-item-danger' not in was(os.path.join(T, *rel.split('/'))),
+    mk = re.sub(r'<[^>]*>', ' ', was(alv_tree.join(*rel.split('/'))))
+    ok('action-more-item-danger' not in was(alv_tree.join(*rel.split('/'))),
        '  %s holds no destructive item, so its colour meant nothing'
        % rel.replace('.html', ''))
 ok(any(bare(m.group(1)) == '.action-more-item i' for m in RULE.finditer(bc)),
@@ -458,8 +458,8 @@ head('6. THE TWO EXCLUSIONS, PROVED BY STRIPPING THEM IN THE FIXTURE')
 if not HAVE or not binder:
     skip('the rendered exclusions', 'no browser')
 else:
-    dash = os.path.join(T, 'property_management_dashboard.html')
-    pl = os.path.join(T, 'finance_pl_act.html')
+    dash = alv_tree.join('property_management_dashboard.html')
+    pl = alv_tree.join('finance_pl_act.html')
     for width, label in ((390, 'a phone'), (1280, 'a desktop')):
         keep = drive([('d', now(dash))], width, False, 'dash_k%d' % width)
         cut = drive([('d', now(dash))], width, True, 'dash_c%d' % width)
@@ -503,7 +503,7 @@ ok(len(strip_more('.a{x:1}.action-more-item{y:2}.b{z:3}')) ==
    len('.a{x:1}.b{z:3}'),
    '  the fixture stripper removes only the rule it is aiming at')
 
-ok(more_rules(was(os.path.join(T, 'view_recipe.html'))),
+ok(more_rules(was(alv_tree.join('view_recipe.html'))),
    'reverting a page puts its copy back, so section 2 would FAIL')
 ok('.action-more-menu[hidden]' not in css_of(was(BASE)),
    '  and reverting base takes the hide rule with it, so section 3 would '

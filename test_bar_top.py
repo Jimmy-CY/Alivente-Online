@@ -62,6 +62,7 @@ _atexit.register(_shutil.rmtree, SCRATCH, True)
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -78,7 +79,7 @@ SUFFIX = '.bak_bartop'
 ME = 'test_bar_top.py'
 PATCHER = 'apply_bar_top.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 
 TITLE_CLS = 'page-title-h2'
 SUB_CLS = 'page-subtitle-h4'
@@ -278,7 +279,7 @@ def label_of(html):
 
 def templates():
     out = []
-    for d, _s, fs in os.walk(T):
+    for d, _s, fs in alv_tree.walk3():
         for f in fs:
             if f.endswith('.html'):
                 out.append(os.path.join(d, f))
@@ -286,7 +287,7 @@ def templates():
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    return alv_tree.rel(p).replace(os.sep, '/')
 
 
 # ==========================================================================
@@ -294,7 +295,7 @@ head('1. THE BAR MOVED, AND NOTHING IN IT CHANGED')
 # ==========================================================================
 moved = 0
 for rel in MOVE:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -344,7 +345,7 @@ relabelled = 0
 for rel, idx, want, _col in BACKS:
     if (rel, idx) in LEFT:
         continue
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip('%s [%d]' % (rel, idx), 'not on disk')
         continue
@@ -400,7 +401,7 @@ decoloured = 0
 for rel, idx, _w, col in BACKS:
     if col is None:
         continue
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip('%s [%d]' % (rel, idx), 'not on disk')
         continue
@@ -458,7 +459,7 @@ ok(seen_file_wide > seen_by_bar_only,
    % (seen_file_wide, seen_by_bar_only),
    'if these were equal the lesson would be untestable')
 for rel in MISSED_BY_BAR_ONLY:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -467,8 +468,8 @@ for rel in MISSED_BY_BAR_ONLY:
        '%-38s has a Back the bar-only census could not see' % rel,
        '%d file-wide, %d in the bar'
        % (len(backs_in(t)), len(backs_in_bar_only(t))))
-cm = os.path.join(T, 'celebration_management.html')
-rm = os.path.join(T, 'recipe_management.html')
+cm = alv_tree.join('celebration_management.html')
+rm = alv_tree.join('recipe_management.html')
 if os.path.isfile(cm) and os.path.isfile(rm):
     ok(COLOUR.search(was(cm)[slice(*backs_in(was(cm))[0])]) is not None
        and COLOUR.search(was(rm)[slice(*backs_in(was(rm))[0])]) is not None,
@@ -479,7 +480,7 @@ if os.path.isfile(cm) and os.path.isfile(rm):
 head('5. WHAT THIS ROUND DID NOT DO, AND WHY')
 # ==========================================================================
 for (rel, idx), why in sorted(LEFT.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -535,7 +536,7 @@ sm = [rel_of(p) for p in templates()
 ok(len(sm) >= 2, '  and %d page(s) still carry it, untouched' % len(sm), sm)
 
 # THE HOUSE FORM, READ OFF THE HOUSE.
-props = os.path.join(T, 'properties.html')
+props = alv_tree.join('properties.html')
 if os.path.isfile(props):
     m = [read(props)[s:e] for s, e in backs_in(read(props))]
     ok(m and COLOUR.search(m[0]) is None and label_of(m[0]) == 'Back',
@@ -546,7 +547,7 @@ else:
     skip('properties.html', 'not on disk')
 
 # A REVERT MUST FAIL, NOT CRASH.
-cm = os.path.join(T, 'categories_management.html')
+cm = alv_tree.join('categories_management.html')
 if os.path.isfile(cm + SUFFIX):
     old = was(cm)
     ok(bar_span(old)[0] < title_at(old),

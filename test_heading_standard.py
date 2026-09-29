@@ -75,10 +75,11 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 # The brand, which a heading must NOT carry. See scope guard #16 above.
 PREFIX = 'ALIVENTE ONLINE - '
 # The one page whose heading IS the brand: shown when the database is
@@ -121,11 +122,11 @@ def markup_of(t):
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    return alv_tree.rel(p).replace(os.sep, '/')
 
 
 TEMPLATES = []
-for _d, _s, _fs in os.walk(T):
+for _d, _s, _fs in alv_tree.walk3():
     for _f in _fs:
         if _f.endswith('.html'):
             TEMPLATES.append(os.path.join(_d, _f))
@@ -469,7 +470,7 @@ head('4. what the round left alone')
 # over: they are now checked for COMPLIANCE, and the fact that they were
 # deferred and then done is recorded rather than asserted forever.
 for rel in sorted(DEFERRED):
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.join(rel.replace('/', os.sep))
     if not os.path.exists(p):
         continue
     check('%-40s was deferred, and has since been done' % rel,

@@ -96,7 +96,7 @@ ME = 'test_named_bars.py'
 PATCHER = 'apply_named_bars.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 
 BARS = ('preview-action-bar', 'recipe-action-bar',
         'contact-action-bar-mobile', 'event-action-bar-mobile')
@@ -263,7 +263,7 @@ ok(SUFFIX in ROUNDS and '.bak_actionbar' in ROUNDS
 # <script>. A class name lives in THREE places. Ask about all three.
 missing, leftovers = [], []
 for name in sorted(FILES):
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     if not os.path.isfile(p + SUFFIX):
         missing.append(name)
     cur = uncommented(now(p))
@@ -300,13 +300,13 @@ for d, _x, fs in alv_tree.walk3():
 ok(not loose, 'and no template anywhere else carries one either',
    '\n'.join(loose))
 
-pv = now(os.path.join(T, 'preview_imported_recipe.html'))
+pv = now(alv_tree.join('preview_imported_recipe.html'))
 ok("{% if mode != 'edit' %} page-action-buttons-single" in pv,
    "the preview bar's conditional is INVERTED - -single is the "
    'NO-primary case, as its two existing users show')
 ok('has-primary' not in pv, '  and has-primary is gone')
 
-cm = now(os.path.join(T, GRIDS))
+cm = now(alv_tree.join(GRIDS))
 ok(wears(cm, 'mobile-action-bar') == 2,
    'both celebration grids wear the house grid')
 ok('mobile-action-bar cols-2' in cm,
@@ -434,7 +434,7 @@ else:
         seen_b = seen_a = icons_b = icons_a = 0
         unread = []
         for name in sorted(FILES):
-            p = os.path.join(T, name)
+            p = alv_tree.join(name)
             rows_a = look(br, B_NOW, styles_of(now(p)), body_markup(now(p)),
                           NOW_SEL[name])
             rows_b = look(br, B_WAS, styles_of(was(p)), body_markup(was(p)),

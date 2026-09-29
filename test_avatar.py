@@ -95,10 +95,10 @@ SUFFIX = '.bak_avatar'
 ME = 'test_avatar.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
-WSE = os.path.join(T, 'workspace_edit.html')
-UAD = os.path.join(T, 'user_administration.html')
-PRO = os.path.join(T, 'my_profile.html')
+BASE = alv_tree.join('base.html')
+WSE = alv_tree.join('workspace_edit.html')
+UAD = alv_tree.join('user_administration.html')
+PRO = alv_tree.join('my_profile.html')
 SIDEBAR = '#343a40'          # what the sidebar disc sits on
 
 passed = failed = skipped = 0

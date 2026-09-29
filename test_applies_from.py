@@ -121,7 +121,7 @@ ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
     sys.exit('! pages/templates not found - run from the repo root')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 SUFFIX = '.bak_appliesfrom'
 BOOT = 'test_fixture_bootstrap413.css'
 PS1 = 'Push-PendingChanges.ps1'
@@ -211,7 +211,7 @@ ok('var(--alv-accent)' in bb and 'var(--alv-bad)' in bb,
 head('2. THE FIVE ENTRY SCREENS')
 # ==========================================================================
 for name in PANEL_PAGES:
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     t = read(p)
     pn = panel_of(t)
     ok(pn and t.count('class="alv-applies"') == 1,
@@ -252,7 +252,7 @@ for name in PANEL_PAGES:
 head('3. THE TWO DELETE POP-UPS')
 # ==========================================================================
 for name, (pre, radio) in CHOICE_PAGES.items():
-    t = read(os.path.join(T, name))
+    t = read(alv_tree.join(name))
     cards = re.findall(r'<label class="(alv-choice[^"]*)">', t)
     ok(cards == ['alv-choice', 'alv-choice alv-choice--danger'],
        '%-38s two cards, the calm one then the danger one' % name, cards)
@@ -275,7 +275,7 @@ for name, (pre, radio) in CHOICE_PAGES.items():
 head('4. ONE NAME FOR THE DATE')
 # ==========================================================================
 for name in LABEL_PAGES:
-    t = read(os.path.join(T, name))
+    t = read(alv_tree.join(name))
     ok('<label for="effective_date"><strong>Applies from</strong></label>'
        in t, '%-38s says Applies from' % name)
 stray = []
@@ -310,7 +310,7 @@ def split(t, pan):
 
 n = 0
 for name in PANEL_PAGES + list(CHOICE_PAGES) + LABEL_PAGES:
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     if os.path.isfile(p + SUFFIX):
         n += 1
         was, now = read(p + SUFFIX), as_left_by(p, SUFFIX, read)
@@ -412,7 +412,7 @@ else:
                                    if os.path.exists(exe) else {}))
         for w in (1280, 375):
             print('\n  -- %dpx' % w)
-            got = {n_: run(br, BASE_SRC, read(os.path.join(T, n_)), w,
+            got = {n_: run(br, BASE_SRC, read(alv_tree.join(n_)), w,
                            PANEL_PROBE) for n_ in PANEL_PAGES}
             ok(all(got.values()), 'every panel renders',
                [a for a, b in got.items() if not b])
@@ -439,7 +439,7 @@ else:
                     ok(all(x['width'] <= 221 for x in vals),
                        '  the date stays narrow on a desk',
                        [round(x['width']) for x in vals])
-            cards = {n_: run(br, BASE_SRC, read(os.path.join(T, n_)), w,
+            cards = {n_: run(br, BASE_SRC, read(alv_tree.join(n_)), w,
                              CARD_PROBE) for n_ in CHOICE_PAGES}
             c = Counter(tuple(v) for v in cards.values())
             ok(len(c) == 1, 'both pop-ups draw the same card pair', c)
@@ -452,13 +452,13 @@ else:
         print('\n  -- CONTROL, from the backups')
         bb_ = BASE + SUFFIX
         if os.path.isfile(bb_) and os.path.isfile(
-                os.path.join(T, PANEL_PAGES[0]) + SUFFIX):
-            was = run(br, read(bb_), read(os.path.join(T, PANEL_PAGES[0]) +
+                alv_tree.join(PANEL_PAGES[0]) + SUFFIX):
+            was = run(br, read(bb_), read(alv_tree.join(PANEL_PAGES[0]) +
                                           SUFFIX), 1280, PANEL_PROBE)
             ok(was and was['label'].endswith('rgb(44, 62, 80)'),
                'CONTROL: before, the label was the page\'s own #2c3e50',
                was and was['label'])
-            wc = run(br, read(bb_), read(os.path.join(T, 'finance_expense.html')
+            wc = run(br, read(bb_), read(alv_tree.join('finance_expense.html')
                                          + SUFFIX), 1280, CARD_PROBE)
             ok(len(wc) == 2 and wc[1].startswith('rgb(220, 53, 69)'),
                'CONTROL: and the red card the page\'s own #dc3545', wc)

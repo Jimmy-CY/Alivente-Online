@@ -68,10 +68,11 @@ import os
 import re
 import subprocess
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 SUFFIX = '.bak_ptitle'
@@ -322,11 +323,11 @@ def classes_styled(text):
 
 def templates():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html') or '.bak' in n:
                 continue
-            rel = os.path.relpath(os.path.join(dirpath, n), T)
+            rel = alv_tree.rel(os.path.join(dirpath, n))
             rel = rel.replace(os.sep, '/')
             if rel == 'base.html' or any(r in rel for r in RECIPE):
                 continue
@@ -714,7 +715,7 @@ head('6. THE THREE RENAMED SUB-TITLES RENDER AS THEY DID')
 # and base says color: var(--alv-accent); margin-right: 6px, with
 # --alv-accent: #0e7c8b. So the claim is that nothing moved. Measured.
 MOVED = ('tenant_add.html', 'tenant_edit.html', 'physical_invoice_edit.html')
-baks = [r for r in MOVED if os.path.exists(os.path.join(T, r) + SUFFIX)]
+baks = [r for r in MOVED if os.path.exists(alv_tree.join(r) + SUFFIX)]
 if not baks:
     skip('the three renamed icons render unchanged',
          'no %s backup present - a fresh clone, or not applied here'
@@ -724,7 +725,7 @@ elif not HAVE_PW or BOOT is None:
 else:
     same = []
     for rel in baks:
-        before = read(os.path.join(T, rel) + SUFFIX)
+        before = read(alv_tree.join(rel) + SUFFIX)
         old = re.search(r'\.(pi-section-title|lines-title)\s+i\s*\{([^}]*)\}',
                         before)
         if not old:

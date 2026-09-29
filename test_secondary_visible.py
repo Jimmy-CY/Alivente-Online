@@ -67,7 +67,7 @@ import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BAK = BASE + '.bak_secvis'
 FIXTURE = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
@@ -322,7 +322,7 @@ def render(page_css, bar_html, width, css=None, tail='', js=BAR_JS):
 
 def page_css_for(rel):
     # ASK alv_tree WHICH ROOT THE LABEL CAME FROM.
-    # This used to be os.path.join(T, ...) with T still pages/templates,
+    # This used to be alv_tree.join(...) with T still pages/templates,
     # which was correct until X0 widened the walk and the labels started
     # arriving as crs/country_list.html - a path under pages/templates
     # that has never existed. The suite then died with a

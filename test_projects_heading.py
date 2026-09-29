@@ -56,6 +56,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -152,11 +153,11 @@ def parts(src):
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    return alv_tree.rel(p).replace(os.sep, '/')
 
 
 TEMPLATES = []
-for _d, _s, _fs in os.walk(T):
+for _d, _s, _fs in alv_tree.walk3():
     for _f in _fs:
         if _f.endswith('.html'):
             TEMPLATES.append(os.path.join(_d, _f))
@@ -166,7 +167,7 @@ TEMPLATES.sort()
 head('1. the round ran, and left something to measure against')
 # ===========================================================================
 MOVED = [r for r in EXPECT
-         if os.path.exists(os.path.join(T, r.replace('/', os.sep))
+         if os.path.exists(alv_tree.join(r.replace('/', os.sep))
                            + '.bak_prj')]
 check('the round left backups', len(MOVED) >= 11, '%d of %d'
       % (len(MOVED), len(EXPECT)))
@@ -175,7 +176,7 @@ check('the round left backups', len(MOVED) >= 11, '%d of %d'
 head('2. each page against its own backup')
 # ===========================================================================
 for rel, (mod, label, var) in sorted(EXPECT.items()):
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.join(rel.replace('/', os.sep))
     if not os.path.exists(p):
         check('%-42s exists' % rel, False)
         continue
@@ -248,7 +249,7 @@ else:
 head('4. the two ADD-UNDER-A-PARENT screens - a decision, both ways')
 # ===========================================================================
 for rel in NO_DASH:
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.join(rel.replace('/', os.sep))
     if not os.path.exists(p):
         continue
     _, b = parts(read(p))
@@ -261,9 +262,8 @@ for rel in NO_DASH:
 # measuring nothing, so the pages that DO take one are asserted too.
 _dashed = [r for r in EXPECT
            if r not in NO_DASH and EXPECT[r][2]
-           and os.path.exists(os.path.join(T, r.replace('/', os.sep)))
-           and DASH in (parts(read(os.path.join(
-               T, r.replace('/', os.sep))))[1] or
+           and os.path.exists(alv_tree.join(r.replace('/', os.sep)))
+           and DASH in (parts(read(alv_tree.join(r.replace('/', os.sep))))[1] or
                type('', (), {'group': lambda s, n: ''})()).group(3)]
 check('  CONTROL: the pages that DO take an em dash still have one',
       len(_dashed) >= 6, '%d page(s)' % len(_dashed))
@@ -271,7 +271,7 @@ check('  CONTROL: the pages that DO take an em dash still have one',
 # ===========================================================================
 head('5. the Greek branch, which is a live feature and not decoration')
 # ===========================================================================
-p = os.path.join(T, 'projects', 'project_task_list.html')
+p = alv_tree.join('projects', 'project_task_list.html')
 if os.path.exists(p):
     _, b = parts(read(p))
     txt = b.group(3) if b else ''
@@ -361,7 +361,7 @@ check('    CONTROL: and the set is not empty, so it is measuring something',
 head('7. structure, and the media query that fires on paper')
 # ===========================================================================
 for rel in sorted(EXPECT):
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.join(rel.replace('/', os.sep))
     bak = p + '.bak_prj'
     if not os.path.exists(bak):
         continue
@@ -430,7 +430,7 @@ def _own_block(src):
 # handed it over completely, with nothing bare left behind.
 _want, _new, _missing, _hoisted = [], [], [], []
 for r in sorted(EXPECT):
-    _p = os.path.join(T, r.replace('/', os.sep))
+    _p = alv_tree.join(r.replace('/', os.sep))
     if not os.path.exists(_p):
         continue
     blk = _own_block(read(_p))

@@ -58,10 +58,11 @@ import asyncio
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 FIXTURE = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 MARK = '<span class="alv-req">*</span>'
 
@@ -106,11 +107,11 @@ def visible(t):
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    return alv_tree.rel(p).replace(os.sep, '/')
 
 
 TEMPLATES = []
-for _d, _s, _fs in os.walk(T):
+for _d, _s, _fs in alv_tree.walk3():
     for _f in _fs:
         if _f.endswith('.html'):
             _p = os.path.join(_d, _f)
@@ -279,7 +280,7 @@ else:
     async def _run():
         from playwright.async_api import async_playwright
         # A REAL LABEL FROM A REAL TEMPLATE, not one typed here.
-        src = read(os.path.join(T, 'properties_add.html'))
+        src = read(alv_tree.join('properties_add.html'))
         m = re.search(r'<label\b[^>]*>[^<]*(?:<strong>.*?</strong>)?\s*'
                       + re.escape(MARK) + r'</label>', src, re.S)
         if m is None:

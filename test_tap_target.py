@@ -130,7 +130,7 @@ SUFFIX = '.bak_tap'
 ME = 'test_tap_target.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 MARK = re.compile(r'/\* ===== ALV TAP TARGET v1 =====.*?'
                   r'/\* ===== /ALV TAP TARGET v1 ===== \*/', re.S)
 PERSONAL = ('recipe', 'meal_plan', 'ingredient', 'wcim', 'celebration',
@@ -205,7 +205,7 @@ def head(t):
 
 
 def path(rel):
-    return os.path.join(T, *rel.split('/'))
+    return alv_tree.join(*rel.split('/'))
 
 
 def now(p):

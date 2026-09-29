@@ -56,10 +56,11 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 MARK = 'ALV PAGE HEADING v1'
@@ -112,7 +113,7 @@ def read(p):
 
 def templates():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in names:
             if n.endswith('.html'):
                 out.append(os.path.join(dirpath, n))
@@ -120,7 +121,7 @@ def templates():
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    return alv_tree.rel(p).replace(os.sep, '/')
 
 
 def stylesheets(text):
@@ -211,13 +212,13 @@ check('  no #6c757d survives on it, which is Bootstrap\'s grey',
 _RET_USE = re.compile(r'class="[^"]*(?<![-\w])' + RETIRED + r'(?![-\w])')
 _RET_RULE = re.compile(r'\.' + RETIRED + r'\b[^{}\n]*\{')
 _ret = []
-for _d, _s, _ns in os.walk(T):
+for _d, _s, _ns in alv_tree.walk3():
     for _n in sorted(_ns):
         if not _n.endswith('.html'):
             continue
         _t = read(os.path.join(_d, _n))
         if _RET_USE.search(_t) or _RET_RULE.search(_t):
-            _ret.append(os.path.relpath(os.path.join(_d, _n), T)
+            _ret.append(alv_tree.rel(os.path.join(_d, _n))
                         .replace(os.sep, '/'))
 check('the retired form-bar variant is gone from base and every page',
       not _ret, '%d still carry it: %s' % (len(_ret), ', '.join(sorted(_ret)[:4])))

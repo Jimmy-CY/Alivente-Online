@@ -35,6 +35,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.join(ROOT, 'pages', 'templates', 'base.html')
@@ -86,7 +87,14 @@ check('the new accent value is #%s' % NEW_HEX,
       re.search(r'--alv-accent:\s*#' + NEW_HEX, BASE_SRC, re.I) is not None)
 
 # ============================================== THE SWEEP, ACROSS THE TREE
-SEARCH_DIRS = [os.path.join(ROOT, 'pages', 'templates'),
+# WIDENED, NOT REPLACED. X0 converted 33 censuses by swapping
+# os.walk(T) for alv_tree.walk3() - and REFUSED this file, because
+# walk3() covers the template tree only and swapping it in here would
+# have silently dropped help_content and static, two directories this
+# round is meant to cover. roots() returns BOTH template roots, so the
+# sweep now sees the CRS app as well and still sees everything it saw
+# before.
+SEARCH_DIRS = alv_tree.roots() + [
                os.path.join(ROOT, 'pages', 'help_content'),
                os.path.join(ROOT, 'static')]
 

@@ -106,7 +106,7 @@ SUFFIX = '.bak_filtergap'
 ME = 'test_filter_gap.py'
 PATCHER = 'apply_filter_gap.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -248,14 +248,14 @@ ok(FIXED[0] in users, '  and %s is one of them' % FIXED[0])
 ok(set(KEEP) <= set(users),
    '  as are the eight that already had a gap of their own')
 own = [n for n in KEEP
-       if rules('\n'.join(STYLE.findall(read(os.path.join(T, n)))),
+       if rules('\n'.join(STYLE.findall(read(alv_tree.join(n)))),
                 '.filter-panel')
-       or rules('\n'.join(STYLE.findall(read(os.path.join(T, n)))),
+       or rules('\n'.join(STYLE.findall(read(alv_tree.join(n)))),
                 '.passport-filter-panel')]
 ok(len(own) >= 7,
    '  %d of them carry a SECOND class whose rule sets the margin' % len(own),
    own)
-fixed_css = '\n'.join(STYLE.findall(read(os.path.join(T, FIXED[0]))))
+fixed_css = '\n'.join(STYLE.findall(read(alv_tree.join(FIXED[0]))))
 ok(not rules(fixed_css, '.filter-panel'),
    '  and %s does NOT - its panel is .alv-filter and nothing else, which '
    'is why it alone had no gap' % FIXED[0].replace('.html', ''))
@@ -318,7 +318,7 @@ def measure(rel, width, base_text):
     fx = os.path.join(SCRATCH, '%s_%d.html' % (rel.replace('.html', ''),
                                                width))
     with open(fx, 'w', encoding='utf-8') as fh:
-        fh.write(fixture(read(os.path.join(T, rel)), base_text))
+        fh.write(fixture(read(alv_tree.join(rel)), base_text))
     with sync_playwright() as pw:
         br = pw.chromium.launch(**({'executable_path': EXE}
                                    if os.path.exists(EXE) else {}))

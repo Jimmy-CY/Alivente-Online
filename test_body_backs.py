@@ -56,6 +56,7 @@ _atexit.register(_shutil.rmtree, SCRATCH, True)
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -236,11 +237,11 @@ def one(text, frag, want_word=None, want_aria=None):
 head('1. NOT ONE BACK IN THE TREE WEARS A BOOTSTRAP COLOUR')
 # ==========================================================================
 left = []
-for d, _s, fs in os.walk(T):
+for d, _s, fs in alv_tree.walk3():
     for f in sorted(fs):
         if not f.endswith('.html') or f == 'base.html':
             continue
-        rel = os.path.relpath(os.path.join(d, f), T).replace(os.sep, '/')
+        rel = alv_tree.rel(os.path.join(d, f)).replace(os.sep, '/')
         mk = blanked(read(os.path.join(d, f)))
         for m in re.finditer(r'<(a|button|span)\b[^>]*class="([^"]*)"[^>]*>'
                              r'(.*?)</\1\s*>', mk, re.S):
@@ -252,7 +253,7 @@ for d, _s, fs in os.walk(T):
 ok(not left, 'no Back control anywhere still carries one', left)
 n_before = 0
 for rel in sorted(set([j[0] for j in NINE] + [j[0] for j in FOUR])):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p + SUFFIX):
         continue
     for m in re.finditer(r'<(a|button)\b[^>]*class="([^"]*)"[^>]*>(.*?)'
@@ -268,7 +269,7 @@ ok(n_before == 13,
 head('2. THE NINE LOST A WORD, NOT THE INFORMATION')
 # ==========================================================================
 for rel, frag, before_w, after_w, aria in NINE:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -297,7 +298,7 @@ for rel, frag, before_w, after_w, aria in NINE:
 head('3. THE FOUR THAT ARE NOT PAGE BACKS KEEP THEIR WORDS')
 # ==========================================================================
 for rel, frag, keeps, why in FOUR:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -321,14 +322,14 @@ print('    Named, so none of them has to be investigated again:')
 for what, why in sorted(LEFT_ALONE.items()):
     print('      %-34s %s' % (what, why))
 bb = 0
-for d, _s, fs in os.walk(T):
+for d, _s, fs in alv_tree.walk3():
     for f in fs:
         if f.endswith('.html'):
             bb += len(re.findall(r'class="[^"]*(?<![\w-])back-button(?![\w-])',
                                  blanked(read(os.path.join(d, f)))))
 ok(bb >= 7, '.back-button is worn %d time(s) and is left alone - base '
    'declares it in the SAME rule as .action-back' % bb, bb)
-base_css = '\n'.join(STYLE.findall(read(os.path.join(T, 'base.html'))))
+base_css = '\n'.join(STYLE.findall(read(alv_tree.join('base.html'))))
 ok(re.search(r'\.btn\.action-back\s*,\s*\n?\s*\.btn\.back-button', base_css)
    is not None,
    '  and they really are declared together, which is why it is house',
@@ -337,8 +338,8 @@ ok(re.search(r'\.btn\.action-back\s*,\s*\n?\s*\.btn\.back-button', base_css)
 NO_BAR = ('import_recipe.html', 'ingredient_families.html',
           'pantry_staples.html', 'wcim_extras.html', 'wcim_landing.html')
 nb = [r for r in NO_BAR
-      if os.path.isfile(os.path.join(T, r))
-      and 'page-action-buttons' not in blanked(now(os.path.join(T, r)))]
+      if os.path.isfile(alv_tree.join(r))
+      and 'page-action-buttons' not in blanked(now(alv_tree.join(r)))]
 ok(len(nb) == 5,
    'the five hand-rolled-header pages still have NO action bar - this '
    'round fixed the class and the word, not where the control sits, and '
@@ -356,7 +357,7 @@ ok(word('<a>{% if x %}Back{% endif %}</a>') == 'Back',
 ok(COLOUR.search('btn action-back') is None,
    'the colour match does not fire on .action-back itself')
 ok(COLOUR.search('btn btn-info') is not None, '  and does on btn-info')
-mi = os.path.join(T, 'map_ingredients_nutrition.html')
+mi = alv_tree.join('map_ingredients_nutrition.html')
 if os.path.isfile(mi + SUFFIX):
     ok(one(was(mi), '?reopen_nutrition=1', 'Back to Recipe') is not None,
        'reverting map_ingredients_nutrition brings "Back to Recipe" back, '

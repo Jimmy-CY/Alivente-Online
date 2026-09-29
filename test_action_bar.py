@@ -93,7 +93,7 @@ ME = 'test_action_bar.py'
 PATCHER = 'apply_action_bar.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 HOUSE = 'page-action-buttons'
 TAP = 44                        # the house minimum, from base
 PHONE = 390                     # inside base's max-width: 768 break
@@ -232,7 +232,7 @@ ok(SUFFIX in ROUNDS and '.bak_purple' in ROUNDS
 
 missing, notworn, stillold = [], [], []
 for name in sorted(FILES):
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     if not os.path.isfile(p + SUFFIX):
         missing.append(name)
     cur = now(p)
@@ -263,7 +263,7 @@ ok(sorted(loose) == sorted('%s: action-buttons' % r for r in ROW_CELL),
    'action cells - and nothing else in the system', '\n'.join(loose))
 
 for (rel, what), why in sorted(LEAVE.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     body = now(p)
     hit = (wears(body, what) if not what.startswith('.')
            else what in body)
@@ -280,7 +280,7 @@ ok('margin-left: auto' in b,
 
 # The print rule: renamed in place, siblings intact. Deleting it would
 # have printed the action bar onto the shopping list.
-sl = now(os.path.join(T, 'meal_plan_shopping_list.html'))
+sl = now(alv_tree.join('meal_plan_shopping_list.html'))
 pr = re.search(r'@media print\s*\{(.*?)\n\s*\}', sl, re.S)
 blk = pr.group(1) if pr else ''
 ok('.' + HOUSE in blk, 'the shopping list still hides its bar when printed')
@@ -289,8 +289,8 @@ ok(all(s in blk for s in PRINT_SIBLINGS),
    [s for s in PRINT_SIBLINGS if s not in blk])
 
 for name in UNWRAP:
-    cur = now(os.path.join(T, name))
-    old = was(os.path.join(T, name))
+    cur = now(alv_tree.join(name))
+    old = was(alv_tree.join(name))
     ok(cur.count('<div') == old.count('<div') - 1
        and cur.count('</div>') == old.count('</div>') - 1,
        '%s lost exactly one <div> pair - the inner wrapper' % name,
@@ -299,7 +299,7 @@ for name in UNWRAP:
 
 drops = 0
 for name, (d, k, r) in sorted(FILES.items()):
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     before = len(OLDTOKEN.findall(uncommented(was(p))))
     after = len(OLDTOKEN.findall(uncommented(now(p))))
     drops += before - after
@@ -369,7 +369,7 @@ else:
         small_before, small_after = [], []
         seen_before = seen_after = 0
         for name in sorted(FILES):
-            p = os.path.join(T, name)
+            p = alv_tree.join(name)
             a = look(br, B_NOW, styles_of(now(p)), body_markup(now(p)),
                      '.' + HOUSE)
             bfr = look(br, B_WAS, styles_of(was(p)), body_markup(was(p)),

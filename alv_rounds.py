@@ -86,6 +86,8 @@ ROUNDS = [
     '.bak_crsdetc',
     '.bak_crsdets',
     '.bak_crsdetr',
+    '.bak_waitdown',
+    '.bak_crscomment',
 ]
 
 

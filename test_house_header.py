@@ -114,7 +114,7 @@ SUFFIX = '.bak_househeader'
 ME = 'test_house_header.py'
 PATCHER = 'apply_house_header.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -256,7 +256,7 @@ def templates():
 head('1. FIVE HEADERS ARE THE HOUSE SHAPE NOW')
 # ==========================================================================
 for rel in sorted(FIVE):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     mk = markup(now(p))
     m = re.search(r'<h2 class="page-title-h2">(.*?)</h2>', mk, re.S)
     ok(m is not None and m.group(1).strip() == FIVE[rel],
@@ -295,7 +295,7 @@ ok(not iconed,
 ok(total >= 80, '  and there are %d of them, so this is not passing on an '
    'empty set' % total)
 for rel in sorted(FIVE):
-    was_mk = markup(was(os.path.join(T, rel)))
+    was_mk = markup(was(alv_tree.join(rel)))
     ok('text-success"></i>' in was_mk or '<i class="fas' in was_mk,
        '  CONTROL: %-20s had one before this round' % rel[:20])
 
@@ -305,21 +305,21 @@ head('3. THE LOSS GATE, RE-PROVED')
 # G1 shipped four silent losses before it had one. A diff does not read as
 # loss when what disappeared is {{ x }}.
 for rel in sorted(FIVE):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     b, a = was(p), now(p)
     lost = [t for t in set(TAGS.findall(b)) if t not in a]
     ok(not lost, '%-26s every template tag survived' % rel[:26],
        lost[:3])
-ok(len(set(TAGS.findall(was(os.path.join(T, 'wcim_results.html'))))) >= 5,
+ok(len(set(TAGS.findall(was(alv_tree.join('wcim_results.html'))))) >= 5,
    '  and wcim_results had %d distinct tags to lose, so the gate had '
    'something to catch'
-   % len(set(TAGS.findall(was(os.path.join(T, 'wcim_results.html'))))))
+   % len(set(TAGS.findall(was(alv_tree.join('wcim_results.html'))))))
 
 # ==========================================================================
 head('4. THE CONTROLS ARE TONED, AND ONE IS MISSING ON PURPOSE')
 # ==========================================================================
 for rel in sorted(TONE):
-    mk = markup(now(os.path.join(T, rel)))
+    mk = markup(now(alv_tree.join(rel)))
     m = re.search(r'<div class="page-action-buttons">(.*?)</div>', mk, re.S)
     got = []
     for c in re.finditer(r'<(?:a|button)\b[^>]*class="([^"]*)"',
@@ -358,7 +358,7 @@ ok(m is not None and 'max-width' in m.group(1),
    '12px - measured on a 1280px screen')
 
 for rel, old in sorted(ADOPTED.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     ok(sel_here(css_of(now(p)), '.%s' % old) == 0
        and sel_here(css_of(was(p)), '.%s' % old) == 1,
        '%-26s .%s is gone' % (rel[:26], old))
@@ -366,7 +366,7 @@ for rel, old in sorted(ADOPTED.items()):
        '  %-24s and the line wears .page-note' % '')
 
 for cls, (rel, why) in sorted(NOT_THIS.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     ok(sel_here(css_of(now(p)), '.%s' % cls) >= 1
        or ('.%s' % cls) in css_of(now(p)),
        '.%-9s is KEPT on %s' % (cls, rel[:26]))
@@ -444,7 +444,7 @@ else:
 
                 for w in (1280, 390):
                     for rel in sorted(FIVE):
-                        g = look(now(os.path.join(T, rel)), w)
+                        g = look(now(alv_tree.join(rel)), w)
                         if not ok(g, '%-22s %4dpx renders'
                                   % (rel[:22], w)):
                             continue
@@ -462,9 +462,9 @@ else:
                                '  %-20s Back is flush right' % '',
                                g['backGap'])
 
-                wide = look(now(os.path.join(T, 'pantry_staples.html')),
+                wide = look(now(alv_tree.join('pantry_staples.html')),
                             1280)
-                narrow = look(now(os.path.join(T, 'pantry_staples.html')),
+                narrow = look(now(alv_tree.join('pantry_staples.html')),
                               390)
                 ok(wide['noteW'] < 600,
                    'the note is capped on a wide screen: %dpx, not the '
@@ -473,7 +473,7 @@ else:
                    '  and the cap is inert on a phone: %dpx'
                    % narrow['noteW'])
 
-                b4 = look(was(os.path.join(T, 'pantry_staples.html')), 1280)
+                b4 = look(was(alv_tree.join('pantry_staples.html')), 1280)
                 ok(b4 is None,
                    'CONTROL: the backup has no .page-title-h2 at all, so '
                    'section 6 can be seen to move', b4)
@@ -487,7 +487,7 @@ ok(css_of('<style>a{/* } */ color: red}</style>').count('}') == 1,
 ok('page-note' not in markup('<style>.page-note{x:1}</style><p>hi</p>'),
    '  and the markup reader does not see a class named only in CSS')
 
-ok('page-title-h2' not in markup(was(os.path.join(T, 'wcim_landing.html'))),
+ok('page-title-h2' not in markup(was(alv_tree.join('wcim_landing.html'))),
    'reverting takes the house title off, so section 1 would FAIL - a '
    'revert is caught')
 ok('.page-note' not in css_of(was(BASE)),

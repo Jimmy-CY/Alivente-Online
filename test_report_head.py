@@ -121,7 +121,7 @@ ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
     sys.exit('! pages/templates not found - run from the repo root')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 SUFFIX = '.bak_reporthead'
 BOOT = 'test_fixture_bootstrap413.css'
 PS1 = 'Push-PendingChanges.ps1'
@@ -226,7 +226,7 @@ ok('@media screen and (max-width: 768px)' in bb and
 head('2. THE NINE REPORT SCREENS WEAR IT')
 # ==========================================================================
 for name in PAGES:
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     if not os.path.isfile(p):
         ok(False, '%s exists' % name)
         continue
@@ -293,7 +293,7 @@ def removed_ok(lines):
 bad = []
 checked = 0
 for name in PAGES:
-    p = os.path.join(T, name)
+    p = alv_tree.join(name)
     if not os.path.isfile(p + SUFFIX):
         continue
     a = read(p + SUFFIX).split('\n')
@@ -432,7 +432,7 @@ else:
             print('\n  -- %s (%dpx, %s)' % (mode, w, media))
             got = {}
             for name in PAGES:
-                p = os.path.join(T, name)
+                p = alv_tree.join(name)
                 if os.path.isfile(p):
                     got[name] = look(br, fixture(base_css, read(p)), w, media,
                                      NEW_SEL)
@@ -491,7 +491,7 @@ else:
         was = Counter()
         seen = 0
         for name in PAGES:
-            p = os.path.join(T, name) + SUFFIX
+            p = alv_tree.join(name) + SUFFIX
             if not os.path.isfile(p):
                 continue
             seen += 1
@@ -518,8 +518,8 @@ else:
 head('5. THE DEAD TITLE-DEED PAIR IS GONE')
 # ==========================================================================
 for name in DEAD:
-    ok(not os.path.exists(os.path.join(T, name)), '%s is deleted' % name)
-    b = os.path.join(T, name) + SUFFIX
+    ok(not os.path.exists(alv_tree.join(name)), '%s is deleted' % name)
+    b = alv_tree.join(name) + SUFFIX
     if os.path.isfile(b):
         ok(True, '  and its backup is kept, %s' % os.path.basename(b))
 for rel in (os.path.join('pages', 'urls.py'),
@@ -537,7 +537,7 @@ for d, _, fs in alv_tree.walk3():
             if re.search(r"\{%\s*url\s+'(" + '|'.join(DEAD_NAMES) + r")'", t):
                 stray.append(f)
 ok(not stray, 'no template links to either', stray)
-ok(os.path.isfile(os.path.join(T, 'title_deeds_management.html')),
+ok(os.path.isfile(alv_tree.join('title_deeds_management.html')),
    'Administration\'s title-deed screen - the live one - is still there')
 
 sys.path.insert(0, ROOT)

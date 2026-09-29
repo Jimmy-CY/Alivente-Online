@@ -77,8 +77,8 @@ import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
-MODEL = os.path.join(T, 'customer_invoice_form.html')
+BASE = alv_tree.join('base.html')
+MODEL = alv_tree.join('customer_invoice_form.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 

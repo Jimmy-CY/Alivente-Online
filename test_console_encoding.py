@@ -339,7 +339,7 @@ else:
 # ---------------------------------------------------------------------- 5
 head('5. THE EXPOSURE IS REAL, NOT A STORY')
 
-tl = os.path.join(T, 'projects', 'project_task_list.html')
+tl = alv_tree.join('projects', 'project_task_list.html')
 if not os.path.exists(tl):
     check('the template that started this is here', False, tl)
 else:

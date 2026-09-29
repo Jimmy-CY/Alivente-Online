@@ -62,9 +62,21 @@
           <td data-label="Name" style="text-align: left"><strong>{{ fi.name }}</strong></td>
           <td data-label="Residence">{{ fi.res_country_code }}</td>
           <td data-label="INs">
-            {# A COUNT, not a health reading - so -info and -neutral, never
-               -good. Standard 3.1: --alv-info is informational, neutral
-               emphasis, and a colour must not mean two things at once. #}
+            {% comment %}
+              A COUNT, not a health reading - so -info and -neutral,
+              never -good. Standard 3.1: --alv-info is informational,
+              neutral emphasis, and a colour must not mean two things at
+              once.
+
+              AND IT IS THIS TAG, NOT THE HASH ONE, BECAUSE THIS NOTE IS
+              THREE LINES LONG. Django's hash comment ends at the
+              newline, so the version that shipped was never a comment at
+              all and the page printed it in the INs column of every row.
+              No brace is written inside this block on purpose: a comment
+              that quotes tags is the next reader's trap. See
+              test_crs_comment_fix.py, which sweeps the whole tree for the
+              shape and counts the opens against the closes.
+            {% endcomment %}
             {% if fi.in_count %}
               <span class="alv-pill alv-pill-info">{{ fi.in_count }}</span>
             {% else %}

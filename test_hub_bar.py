@@ -115,11 +115,11 @@ SUFFIX = '.bak_hubbar'
 ME = 'test_hub_bar.py'
 PATCHER = 'apply_hub_bar.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 REL = 'recipe_management.html'
-PAGE = os.path.join(T, REL)
+PAGE = alv_tree.join(REL)
 
 TITLE = 'RECIPE MANAGEMENT'
 SUBTITLE = 'CREATE / VIEW / EDIT / DELETE RECIPES'

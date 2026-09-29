@@ -115,7 +115,7 @@ ME = 'test_accent_ink.py'
 PATCHER = 'apply_accent_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 
 LITERAL = '#0a5e6a'
 TOKNAME = '--alv-accent-ink'
@@ -347,7 +347,7 @@ ok(ROUNDS.index('.bak_linesoft') < ROUNDS.index(SUFFIX) if
 
 tb = ta = 0
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -366,7 +366,7 @@ ok(ta == 0, '  and none is left in any CSS', ta)
 ok(len(EXPECTED) == 41, 'across 41 templates', len(EXPECTED))
 
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if os.path.isfile(p + SUFFIX):
         ok(shape(was(p)) == shape(now(p)),
            '%-42s everything outside a CSS payload is byte-identical' % rel)
@@ -379,7 +379,7 @@ head('2. THE TWO USES IN A SCRIPT, WHICH STAY')
 # off the DOM and falls back to the literal: var(--tok, #literal) written in
 # JavaScript, and already the right pattern.
 for rel, n in sorted(IN_SCRIPT.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -416,7 +416,7 @@ if _live.get(TOKNAME, '').strip().lower() != LITERAL:
 
 trips = 0
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p + SUFFIX):
         skip(rel, 'no backup - round not applied here')
         continue
@@ -436,7 +436,7 @@ head('4. WHAT THIS ROUND REFUSED TO DO')
 # Classify by what a rule PAINTS (lesson 39).
 lift_files = set()
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         continue
     body = css_of(now(p))
@@ -481,7 +481,7 @@ ok(TOKEN in _bc and '.btn-info:hover' in _bc,
 # for the standard, and asserted so the standards round can find it.
 found = 0
 for rel in CONTRADICTS:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -524,7 +524,7 @@ ok(not os.path.isfile(BASE + SUFFIX), '  and this round never touched base')
 head('5. TOKEN SCOPE - who can resolve a var(), and who cannot')
 # ==========================================================================
 for rel in NO_TOKEN_SCOPE:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -537,7 +537,7 @@ for rel in NO_TOKEN_SCOPE:
 
 # THE SHELL IS THE ONE FILE IN SCOPE WITHOUT {% extends %}, and only because
 # every page that renders it has one. Checked, not assumed.
-shell = os.path.join(T, SHELL)
+shell = alv_tree.join(SHELL)
 ok(not re.search(r'\{%\s*extends\b', now(shell)),
    '%s has no {%% extends %%} of its own' % SHELL)
 tagf = os.path.join(ROOT, 'pages', 'templatetags', 'help_modal_tags.py')
@@ -564,7 +564,7 @@ ok(not bad,
    '  every one of which extends base, so the shell always has tokens',
    ', '.join(bad))
 ok('manual_pdf.html' in NO_TOKEN_SCOPE
-   and SHELL not in read(os.path.join(T, 'manual_pdf.html')),
+   and SHELL not in read(alv_tree.join('manual_pdf.html')),
    '  manual_pdf.html does NOT render the shell - it takes the help '
    'CONTENT, which is why help_content needs fallbacks and the shell does not')
 
@@ -575,7 +575,7 @@ ok(sum(EXPECTED.values()) == 120, 'the survey total is 120',
    sum(EXPECTED.values()))
 ok(len(EXPECTED) == 41, 'across 41 files', len(EXPECTED))
 
-_p = os.path.join(T, 'projects/projects_detail.html')
+_p = alv_tree.join('projects/projects_detail.html')
 if os.path.isfile(_p + SUFFIX):
     _a = was(_p)
     ok(round_trip(_a, LIT.sub('#ff0000', _a), TABLE)[0] is False,
@@ -596,7 +596,7 @@ ok(len(STYLE.findall(HTML_C.sub(_sp, CSS_C.sub(_sp, _trap)))) == 0,
    'accept="image/*" - the bug, reproduced')
 ok(in_css(_trap) == 1, '  and THIS suite\'s order still finds the rule')
 for rel in ('preview_imported_recipe.html',):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     if os.path.isfile(p):
         mine = len(css_of(now(p)))
         house = len('\n'.join(STYLE.findall(
@@ -617,7 +617,7 @@ ok(in_css('<img alt="#0a5e6a">') == 0,
 
 # A REVERT MUST FAIL A CHECK, NOT CRASH (lesson 55).
 try:
-    _src = os.path.join(T, 'projects/projects_detail.html')
+    _src = alv_tree.join('projects/projects_detail.html')
     if os.path.isfile(_src + SUFFIX):
         _dst = os.path.join(SCRATCH, 'reverted.html')
         _shutil.copyfile(_src + SUFFIX, _dst)

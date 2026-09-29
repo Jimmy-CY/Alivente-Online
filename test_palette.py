@@ -97,7 +97,7 @@ ME = 'test_palette.py'
 PATCHER = 'apply_palette.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BAR = 4.5
 
 # The surfaces the house paints things on. The palette used to be judged
@@ -387,9 +387,9 @@ print('      { background: transparent } on purpose, so on a page whose')
 print('      bar sits on an accent header the label is dark ink on it.')
 print('')
 for rel, (txt, c) in sorted(STILL_BROKEN.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     ok(os.path.isfile(p), '%-34s %r still measures %.2f' % (rel, txt, c))
-ok(all(not os.path.isfile(os.path.join(T, r) + SUFFIX) for r in STILL_BROKEN),
+ok(all(not os.path.isfile(alv_tree.join(r) + SUFFIX) for r in STILL_BROKEN),
    '  neither was edited here - they belong to the Personal pass')
 
 # ==========================================================================

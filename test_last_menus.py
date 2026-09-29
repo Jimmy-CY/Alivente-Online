@@ -102,7 +102,7 @@ SUFFIX = '.bak_lastmenu'
 ME = 'test_last_menus.py'
 PATCHER = 'apply_last_menus.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -267,7 +267,7 @@ ok(all(re.search(r'id="actionMoreMenu"[^>]*\bhidden\b', markup(now(p)))
 head('2. THE THREE GAVE UP A HANDLER THEY REALLY HAD')
 # ==========================================================================
 for rel in MINE:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     ok('actionMoreBtn' in js_of(was(p)),
        '%-28s CONTROL: it wrote one before this round'
        % rel.replace('.html', ''))
@@ -283,7 +283,7 @@ for rel in MINE:
 # ==========================================================================
 head('3. finance_pl_act GIVES UP WHAT H9 COULD NOT TAKE')
 # ==========================================================================
-fp = os.path.join(T, 'finance_pl_act.html')
+fp = alv_tree.join('finance_pl_act.html')
 ok(len(paints(was(fp))) == 8,
    'it painted the component with %d rules' % len(paints(was(fp))),
    paints(was(fp)))
@@ -377,7 +377,7 @@ else:
         for rel in MINE:
             fx = os.path.join(SCRATCH, rel.replace('/', '_'))
             with open(fx, 'w', encoding='utf-8') as fh:
-                fh.write(fixture(now(os.path.join(T, rel))))
+                fh.write(fixture(now(alv_tree.join(rel))))
             pg = ctx.new_page()
             _goto(pg, fx)
             s0 = pg.evaluate(STATE)
@@ -402,7 +402,7 @@ else:
 # ==========================================================================
 head('6. CONTROLS, AND THE GATE')
 # ==========================================================================
-ok('actionMoreBtn' in js_of(was(os.path.join(T, 'invoices.html'))),
+ok('actionMoreBtn' in js_of(was(alv_tree.join('invoices.html'))),
    'reverting a page puts its handler back, so section 2 would FAIL')
 ok(WRONG in was(BASE),
    "  and reverting base puts H8's wrong sentence back, so section 4 "

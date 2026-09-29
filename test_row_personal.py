@@ -111,7 +111,7 @@ SUFFIX = '.bak_rowpersonal'
 ME = 'test_row_personal.py'
 PATCHER = 'apply_row_personal.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -349,7 +349,7 @@ head('2. EVERY ROW CONTROL ON THE SIX PAGES IS A HOUSE CONTROL')
 # ==========================================================================
 total = 0
 for rel in sorted(WANT):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     got = {}
     for names, _g in house_controls(now(p)):
         # BY REGEX, NOT BY split(). household_member_management builds its
@@ -456,7 +456,7 @@ JS_PAGES = ['categories_management.html',
             'ingredient_base_units_management.html',
             'measurement_units_management.html']
 for rel in JS_PAGES:
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
     js = js_of(now(p))
     ok('.btn-save' not in js,
        '%-38s the script no longer asks for .btn-save' % rel[:38],
@@ -593,7 +593,7 @@ else:
             for width in (1280, 390):
                 sizes, colours = set(), {}
                 for rel in sorted(WANT):
-                    src = now(os.path.join(T, rel))
+                    src = now(alv_tree.join(rel))
                     seen_here = look(src, width)
                     shown = [c for c in seen_here if c['w']]
                     ok(len(seen_here) == in_body(src),
@@ -630,7 +630,7 @@ else:
                 for k in both if EXPECT[1280][k] != EXPECT[390][k]})
             desk = set()
             for rel in sorted(WANT):
-                mk2 = markup(now(os.path.join(T, rel)))
+                mk2 = markup(now(alv_tree.join(rel)))
                 for m in re.finditer(r'<td[^>]*desktop-action-cell[^>]*>'
                                      r'(.*?)</td>', mk2, re.S):
                     desk |= set(re.findall(r'\bicon-[\w-]+\b', m.group(1)))
@@ -656,8 +656,8 @@ else:
             # instead, which is where the fault was: four buttons carried
             # `style="opacity: 0.5"` and an inner `style="color: #6c757d"`,
             # saying in literals what .icon-disabled says in tokens.
-            pmk = markup(now(os.path.join(T, 'passport_management.html')))
-            pwas = markup(was(os.path.join(T, 'passport_management.html')))
+            pmk = markup(now(alv_tree.join('passport_management.html')))
+            pwas = markup(was(alv_tree.join('passport_management.html')))
             dis = [m.group(0) for m in CTRL.finditer(pmk)
                    if 'icon-disabled' in m.group(2).split()]
             ok(len(dis) == 4, 'the four forbidden controls are still there '
@@ -674,7 +674,7 @@ else:
                '  and the grey literal inside them is gone too')
 
             # CONTROL: the backup rendered Bootstrap's filled pills
-            old = look(was(os.path.join(T, 'passport_management.html')), 1280)
+            old = look(was(alv_tree.join('passport_management.html')), 1280)
             ok(not old,
                'CONTROL: the backup has no .icon-action-btn at all, so '
                'section 6 can be seen to move', len(old))
@@ -691,7 +691,7 @@ KEEP = {'categories_management.html': ['.edit-actions'],
         'ingredient_base_units_management.html': ['.edit-actions'],
         'measurement_units_management.html': ['.edit-actions']}
 for rel in sorted(DEAD):
-    p = os.path.join(T, rel)
+    p = alv_tree.join(rel)
 
     def count(text):
         n = 0
@@ -721,7 +721,7 @@ ok(not house_controls('<style>.icon-action-btn{x:1}</style><p>hi</p>'),
 ok(not house_controls('<script>var a = \'icon-action-btn\';</script>'),
    '  nor one named only in a script (lesson 50 in reverse)')
 
-probe = os.path.join(T, 'passport_management.html')
+probe = alv_tree.join('passport_management.html')
 ok(not house_controls(was(probe)),
    'reverting a page takes every .icon-action-btn off it, so section 2 '
    'would FAIL - a revert is caught')

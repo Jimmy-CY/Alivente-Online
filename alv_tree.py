@@ -107,6 +107,44 @@ def path_of(label, base=None):
                   % (label, [os.path.basename(r) for r in roots(base)]))
 
 
+def join(*parts, **kw):
+    """The path of the template named by `parts`, under whichever root
+    holds it - path_of() for code that is composing a path rather than
+    asserting a fact.
+
+    WHY THIS IS FORGIVING AND path_of() IS NOT. X0 widened the walk and
+    the label and left the way back on the narrow root: 155 sites across
+    26 converted suites still read
+
+        p = os.path.join(T, rel)
+
+    with T fixed at pages/templates, so a CRS label resolved to a path
+    that cannot exist. One of them crashed the laptop's gate. But dozens
+    of the others sit inside `if os.path.exists(...)` - a guard ASKING
+    whether a file is there - and path_of() raising would turn every one
+    of those questions into a crash. So this returns the path under the
+    first root when no root holds the file, which is exactly what
+    os.path.join(T, ...) returned, and exists() answers False as before.
+
+        join('properties.html')        pages/templates/properties.html
+        join('crs/index.html')         crs/templates/crs/index.html
+        join('projects', 'x.html')     pages/templates/projects/x.html
+        join('not_a_file.html')        pages/templates/not_a_file.html
+
+    Separators go either way, because the callers were written for
+    os.path.join and some of them hand it a label with forward slashes.
+    Use path_of() when the file MUST be there and a wrong answer should
+    stop the run; use this when composing.
+    """
+    rel_ = os.path.join(*parts).replace('/', os.sep).replace('\\', os.sep)
+    rs = roots(kw.get('base'))
+    for r in rs:
+        p = os.path.join(r, rel_)
+        if os.path.isfile(p):
+            return p
+    return os.path.join(rs[0], rel_)
+
+
 def walk3(base=None):
     """os.walk's OWN 3-tuple - (folder, dirs, names) - across every root.
 
@@ -163,16 +201,22 @@ def templates(base=None, include_base=True):
 # crs/templates - one file, rather than editing 63 to find out - and each
 # PASSED. Then converted, and run again for real.
 CONVERTED = [
-    'test_accent_ink.py', 'test_action_bar.py', 'test_admin_banner.py',
-    'test_admin_headings.py', 'test_admin_repair.py', 'test_applies_from.py',
-    'test_avatar.py', 'test_console_encoding.py', 'test_div_balance.py',
-    'test_entry_sections.py', 'test_filter_field.py', 'test_filter_gap.py',
-    'test_finance_headings.py', 'test_form_components.py',
+    'test_accent_ink.py', 'test_accent_shades.py', 'test_action_bar.py',
+    'test_admin_banner.py', 'test_admin_headings.py',
+    'test_admin_repair.py', 'test_applies_from.py', 'test_avatar.py',
+    'test_bar_top.py', 'test_body_backs.py', 'test_console_encoding.py',
+    'test_deeper_teal.py', 'test_div_balance.py', 'test_entry_headings.py',
+    'test_entry_panel.py', 'test_entry_sections.py', 'test_filter_field.py',
+    'test_filter_gap.py', 'test_finance_headings.py',
+    'test_form_components.py', 'test_heading_components.py',
+    'test_heading_prefix.py', 'test_heading_standard.py',
     'test_house_header.py', 'test_hub_bar.py', 'test_label_fit.py',
     'test_last_menus.py', 'test_map_provider.py', 'test_more_css.py',
     'test_more_menu.py', 'test_named_bars.py', 'test_one_action_bar.py',
-    'test_page_title.py', 'test_palette.py', 'test_print_buttons.py',
-    'test_report_head.py', 'test_row_personal.py', 'test_secondary_visible.py',
+    'test_page_title.py', 'test_palette.py', 'test_panel_title.py',
+    'test_print_buttons.py', 'test_projects_heading.py',
+    'test_report_head.py', 'test_required_sweep.py', 'test_row_personal.py',
+    'test_save_and_cancel.py', 'test_secondary_visible.py',
     'test_small_controls.py', 'test_table_admin.py', 'test_tap_target.py',
     'test_zoom_guards.py',
 ]
@@ -186,33 +230,30 @@ ALREADY_WIDE = ['test_banner_pages.py', 'test_standards_block.py']
 # and let the suite be widened. Their narrow root is a stated position,
 # not an oversight. Each entry comes off this list in the round it names.
 WAITING = {
-    'test_accent_shades.py': 'X-hex   CRS keeps #17a2b8 in three pages',
-    'test_back_label.py': 'X-bar   CRS writes its own .action-back-label rules',
-    'test_bar_top.py': 'X-btn   CRS Back carries btn-success',
-    'test_body_backs.py': 'X-btn   the same Back controls',
-    'test_button_sweep.py': 'X-btn   24 btn-success/btn-warning across the 8',
-    'test_compound_rules.py': 'X-form  4 CRS forms wrap fields in a third name',
-    'test_contrast.py': 'X-hex   CRS colour pairs never measured',
-    'test_deeper_teal.py': 'X-hex   #17a2b8 again',
-    'test_disabled_state.py': 'X-btn   36 CRS buttons the classifier disagrees',
-    'test_entry_headings.py': 'X-form  2 CRS forms state no mode line',
-    'test_entry_panel.py': 'X-panel .crs-panel is a box of its own',
-    'test_heading_components.py': 'X-head  8 CRS pages restyle .page-title-h2',
-    'test_heading_prefix.py': 'X-head  4 CRS titles name the brand',
-    'test_heading_standard.py': 'X-head  8 CRS pages unaccounted for',
-    'test_label_bold.py': 'X-form  2 CRS pages, plain field labels',
-    'test_line_soft.py': 'X-hex   CRS line literals',
-    'test_modal_heads.py': 'X-modal no CRS modal wears .alv-modal-head',
-    'test_panel_title.py': 'X-panel 3 CRS pages declare what base owns',
-    'test_print_queries.py': 'X-print a bare max-width clause in CRS',
-    'test_projects_heading.py': 'X-head  2 CRS forms unaccounted for',
-    'test_req_marker.py': 'X-form  CRS dereferences a selector its markup lacks',
-    'test_required_marker.py': 'X-form  4 CRS pages style .req',
-    'test_required_sweep.py': 'X-form  1 unmarked required field in CRS',
-    'test_save_and_cancel.py': 'X-form  2 CRS forms offer Cancel and Back both',
-    'test_small_three.py': 'X-bar   CRS hide rules and Back labelling',
-    'test_subtree_tones.py': 'X-count it asserts the walk finds 138; now 146',
-    'test_surface_deep.py': 'X-hex   CRS background and border literals',
+    'test_back_label.py': 'pages  no page defines .action-back-label any more',
+    'test_button_sweep.py':
+        'pages  its own census says 120 templates, not 146',
+    'test_compound_rules.py':
+        'pages  one page still wraps its fields in a third name',
+    'test_contrast.py': 'pages  colour pairs on the pages side never measured',
+    'test_disabled_state.py':
+        'pages  12 buttons the classifier disagrees with',
+    'test_label_bold.py': 'pages  plain field labels the sweep has not named',
+    'test_line_soft.py':
+        'pages  the six literals it counts are a pages-side figure',
+    'test_modal_heads.py':
+        'pages  the Recipe View close strip, recorded but unresolved',
+    'test_print_queries.py': 'pages  a bare max-width clause outside base',
+    'test_req_marker.py':
+        'pages  a selector dereferenced with no markup behind it',
+    'test_required_marker.py':
+        'pages  a .req RULE survives somewhere, though the markup went',
+    'test_small_three.py':
+        'pages  a non-Back control still labelled as a Back',
+    'test_subtree_tones.py':
+        'count  it asserts a walk finds 138; it now finds 146',
+    'test_surface_deep.py':
+        'pages  background literals survive, and its 93 border uses wait on F2b',
 }
 
 # FAILED the experiment WITHOUT walking a template root of its own - so
@@ -225,9 +266,30 @@ WAITING = {
 #   this one's census. It is listed so that it is accounted for rather
 #   than looking like an omission, and it comes off when X-panel lands.
 WAITING_INDIRECT = {
-    'test_dead_files.py': 'X-panel it runs test_panel_title and reads its '
-                          'verdict; its own walk is over pages/, not '
-                          'pages/templates',
+    'test_dead_files.py': 'it runs test_panel_title and reads ITS verdict; its own walk '
+                          'is over pages/, not pages/templates',
+}
+
+
+# MENTIONS os.walk WITHOUT WALKING ANYTHING - the fifth category, and it
+# exists because X0's net is deliberately crude and should stay that way.
+#
+#   Section 3 of test_tree_roots.py finds every walking suite with a plain
+#   substring test, `'os.walk(' in text`, and fails if one is on none of
+#   these lists. That crudeness is the point: a census built in a shape
+#   nobody has thought of yet still lands in the net. X0's own detector
+#   was once too clever and went blind to a list of roots.
+#
+#   test_waiting_down.py carries the words in two string LITERALS - the
+#   detector it borrows from X0, and a CONTROL asserting that detector
+#   finds a narrow walk. It never calls os.walk; its own suite proves that
+#   from the parse tree, not by reading itself. Tightening the substring
+#   test to spare it would have traded a real net for a comfortable one,
+#   so the exception is named here instead.
+MENTIONS_ONLY = {
+    'test_waiting_down.py': 'X11  the words are in two string literals - a '
+                            'borrowed detector and the CONTROL that proves '
+                            'it works. No os.walk call in the parse tree.',
 }
 
 

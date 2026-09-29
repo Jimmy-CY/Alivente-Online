@@ -56,10 +56,11 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 
 PREFIX = 'ALIVENTE ONLINE - '
 BRAND = 'Alivente Online'
@@ -107,11 +108,11 @@ def markup_of(t):
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    return alv_tree.rel(p).replace(os.sep, '/')
 
 
 TEMPLATES = []
-for _d, _s, _fs in os.walk(T):
+for _d, _s, _fs in alv_tree.walk3():
     for _f in _fs:
         if _f.endswith('.html'):
             _p = os.path.join(_d, _f)
@@ -344,7 +345,7 @@ check('  the standalone set is small and known', len(_alone) <= 12,
 # ===========================================================================
 head('5. the exception, and the comments that named the old rule')
 # ===========================================================================
-_p = os.path.join(T, KEEPS_THE_BRAND.replace('/', os.sep))
+_p = alv_tree.join(KEEPS_THE_BRAND.replace('/', os.sep))
 if os.path.exists(_p):
     _t = title_of(read(_p))
     check('%s keeps its heading' % KEEPS_THE_BRAND,
