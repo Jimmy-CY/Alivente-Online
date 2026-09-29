@@ -74,6 +74,15 @@ ROUNDS = [
     '.bak_lastmenu',
     '.bak_walk1',
     '.bak_walk2',
+    '.bak_filtergap',
+    '.bak_treeroots',
+    '.bak_crscountry',
+    '.bak_crsform',
+    '.bak_crsfi',
+    '.bak_crsfiform',
+    '.bak_crshub',
+    '.bak_crssub',
+    '.bak_crsstart',
 ]
 
 

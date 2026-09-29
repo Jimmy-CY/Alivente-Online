@@ -64,6 +64,7 @@ _atexit.register(_shutil.rmtree, SCRATCH, True)
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -581,7 +582,7 @@ ok(re.search(r'\.' + TITLE_CLS + r'\s*\{', base_css) is not None,
 ok(re.search(r'\.' + SUB_CLS + r'\s*\{', base_css) is not None,
    '  and .%s' % SUB_CLS)
 n = 0
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in fs:
         if f.endswith('.html') and '.bak_' not in f:
             if wears(now(os.path.join(d, f)), TITLE_CLS):

@@ -85,6 +85,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -198,10 +199,10 @@ def paints(t):
 
 def walked():
     out = []
-    for folder, _, names in os.walk(T):
+    for folder, _, names in alv_tree.walk3():
         for n in sorted(names):
             if n.endswith('.html'):
-                rel = os.path.relpath(os.path.join(folder, n), T)
+                rel = alv_tree.rel(os.path.join(folder, n))
                 out.append((rel.replace(os.sep, '/'),
                             os.path.join(folder, n)))
     return sorted(out)

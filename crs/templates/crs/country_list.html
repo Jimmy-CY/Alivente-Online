@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CRS COUNTRY CONFIGURATIONS</center></h2>
+<h2 class="page-title-h2">CRS COUNTRY CONFIGURATIONS</h2>
 <br/>
 
 {% for msg in messages %}
@@ -30,89 +30,123 @@
 <!-- Action Buttons -->
 <div class="page-action-buttons">
   {% if perms.auth.can_edit_crs %}
-  <a href="{% url 'crs:country_add' %}" class="btn btn-info action-primary">
+  <a href="{% url 'crs:country_add' %}" class="btn action-primary" role="button">
     <i class="fas fa-plus"></i> Add Country
   </a>
   {% endif %}
-  <button type="button" class="btn btn-success btn-sm action-icon"
+  <button type="button" class="btn action-secondary"
         data-toggle="modal" data-target="#crs_country_configurationsHelpModal" aria-label="Help">
-    <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
+    <i class="fas fa-question-circle"></i> Help
   </button>
-  <a href="{% url 'crs:index' %}" class="btn btn-success action-back" role="button" aria-label="Back to CRS landing">
+  <a href="{% url 'crs:index' %}" class="btn action-back" role="button" aria-label="Back to CRS landing">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
 
-<!-- Single Panel -->
-<div class="crs-panel-container">
-  <div class="crs-panel">
-
-    {% if countries %}
-    <div class="crs-table">
-      <table>
+<!-- Countries table (desktop) / card list (mobile) -->
+<div class="table-container">
+  <table class="table alv-table crs-country-table">
         <thead>
-          <tr>
-            <th>Code</th>
-            <th>Country</th>
-            <th>Status</th>
-            <th>Schema</th>
-            <th>Last Updated</th>
-            <th>Actions</th>
-          </tr>
+      <tr>
+        <th style="text-align: left; width: 10%">Code</th>
+        <th style="width: 30%">Country</th>
+        <th style="width: 14%">Status</th>
+        <th style="width: 12%">Schema</th>
+        <th style="width: 20%">Last Updated</th>
+        <th class="desktop-action-cell cell-actions" style="width: 14%">Actions</th>
+      </tr>
         </thead>
-        <tbody>
-          {% for country in countries %}
-          <tr>
-            <td><strong>{{ country.country_code }}</strong></td>
-            <td>{{ country.country_name }}</td>
-            <td>
-              {% if country.is_active %}
-                <span class="status-active"><i class="fas fa-circle"></i> Active</span>
-              {% else %}
-                <span class="status-inactive"><i class="fas fa-circle"></i> Inactive</span>
-              {% endif %}
-            </td>
-            <td>{{ country.oecd_version }}</td>
-            <td>{{ country.updated_at|date:"d M Y H:i" }}</td>
-            <td>
-              <div class="row-actions">
-                <button type="button" class="action-btn btn-view" title="View"
-                        onclick="viewCountry({{ country.pk }})">
-                  <i class="fas fa-eye"></i>
-                </button>
-                {% if perms.auth.can_edit_crs %}
+    <tbody>
+      {% for country in countries %}
+        <tr>
+          <td data-label="Code" style="text-align: left"><strong>{{ country.country_code }}</strong></td>
+          <td data-label="Country">{{ country.country_name }}</td>
+          <td data-label="Status">
+            {% if country.is_active %}
+              <span class="alv-pill alv-pill-good">Active</span>
+            {% else %}
+              <span class="alv-pill alv-pill-neutral">Inactive</span>
+            {% endif %}
+          </td>
+          <td data-label="Schema">{{ country.oecd_version }}</td>
+          <td data-label="Last Updated">{{ country.updated_at|date:"d M Y H:i" }}</td>
+
+          <!-- Desktop actions: one cell, three buttons -->
+          <td class="desktop-action-cell cell-actions">
+            <span class="row-actions">
+              <button type="button" class="icon-action-btn icon-view" title="View Country Configuration"
+                      onclick="viewCountry({{ country.pk }})">
+                <i class="fas fa-eye"></i>
+              </button>
+              {% if perms.auth.can_edit_crs %}
                 <a href="{% url 'crs:country_edit' country.pk %}"
-                   class="action-btn btn-edit" title="Edit">
+                   class="icon-action-btn icon-edit" title="Edit Country Configuration">
                   <i class="fas fa-pencil-alt"></i>
                 </a>
-                <button type="button" class="action-btn btn-delete" title="Delete"
+                <button type="button" class="icon-action-btn icon-delete" title="Delete Country Configuration"
                         onclick="confirmCountryDelete({{ country.pk }}, '{{ country.country_code }} — {{ country.country_name|escapejs }}')">
                   <i class="fas fa-trash"></i>
                 </button>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="crs-empty">
-      <i class="fas fa-globe"></i>
-      <p>No country configurations yet.</p>
-      <small>Click "Add Country" to create one.</small>
-    </div>
-    {% endif %}
+              {% else %}
+                <span class="icon-action-btn icon-disabled" title="No edit permission">
+                  <i class="fas fa-pencil-alt"></i>
+                </span>
+                <span class="icon-action-btn icon-disabled" title="No delete permission">
+                  <i class="fas fa-trash"></i>
+                </span>
+              {% endif %}
+            </span>
+          </td>
 
-  </div>
+          <!-- Mobile-only action bar (hidden on desktop) -->
+          <td class="mobile-action-bar">
+            <button type="button" class="mobile-action-btn" onclick="viewCountry({{ country.pk }})">
+              <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+              <span class="mobile-action-label">View</span>
+            </button>
+            {% if perms.auth.can_edit_crs %}
+              <a href="{% url 'crs:country_edit' country.pk %}" class="mobile-action-btn">
+                <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                <span class="mobile-action-label">Edit</span>
+              </a>
+              <button type="button" class="mobile-action-btn"
+                      onclick="confirmCountryDelete({{ country.pk }}, '{{ country.country_code }} — {{ country.country_name|escapejs }}')">
+                <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                <span class="mobile-action-label">Delete</span>
+              </button>
+            {% else %}
+              <span class="mobile-action-btn mobile-action-disabled">
+                <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                <span class="mobile-action-label">Edit</span>
+              </span>
+              <span class="mobile-action-btn mobile-action-disabled">
+                <i class="fas fa-trash mobile-action-icon"></i>
+                <span class="mobile-action-label">Delete</span>
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not countries %}
+    {# An empty tbody looks exactly like a failed load. #}
+    <div class="alv-empty">
+      <i class="fas fa-globe"></i>
+      <div class="alv-empty-title">No country configurations yet</div>
+      <div class="alv-empty-hint">
+        Add your first country to tell the system how its files are built.
+      </div>
+    </div>
+  {% endif %}
 </div>
 
 <!-- View Country Modal -->
 <div class="modal fade" id="viewCountryModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-info text-white">
+      <div class="modal-header alv-modal-head">
         <h5 class="modal-title">
           <i class="fas fa-globe"></i> Country Configuration
         </h5>
@@ -142,7 +176,7 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -228,144 +262,35 @@
 </script>
 
 <style>
-  :root {
-    --crs-dark: #28a745;
-    --crs-light: #d4edda;
-  }
-  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
-  .page-action-buttons {
-    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
-  }
-  .crs-panel-container { max-width: 900px; margin: 0 auto; }
-  .crs-panel {
-    padding: 30px; border: 3px solid var(--crs-dark);
-    background-color: var(--crs-light); border-radius: 10px;
-  }
 
-  .crs-table {
-    background: white; border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;
-  }
-  .crs-table table { width: 100%; margin: 0; }
-  .crs-table thead th {
-    background: #f8f9fa; padding: 12px 14px;
-    font-size: 12px; font-weight: 600; color: #495057;
-    border-bottom: 2px solid #dee2e6;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .crs-table tbody td {
-    padding: 12px 14px; border-bottom: 1px solid #f0f0f0;
-    font-size: 14px; vertical-align: middle;
-  }
-  .crs-table tbody tr:last-child td { border-bottom: none; }
-  .crs-table tbody tr:hover { background: #f8f9fa; }
 
-  .status-active {
-    display: inline-flex; align-items: center; gap: 5px;
-    color: #28a745; font-weight: 600; font-size: 13px;
-  }
-  .status-active i { font-size: 8px; }
-  .status-inactive {
-    display: inline-flex; align-items: center; gap: 5px;
-    color: #6c757d; font-weight: 600; font-size: 13px;
-  }
-  .status-inactive i { font-size: 8px; }
 
-  /* Row actions */
-  .row-actions { display: flex; gap: 6px; }
-  .action-btn {
-    width: 30px; height: 30px; border-radius: 6px; border: none;
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 12px; transition: all 0.2s;
-    text-decoration: none;
-  }
-  .action-btn:hover { transform: scale(1.1); }
-  .btn-view { background: #17a2b8; color: white; }
-  .btn-edit { background: #ffc107; color: white; }
-  .btn-delete { background: #dc3545; color: white; }
   .view-row { margin-bottom: 8px; line-height: 1.5; }
-  .view-row label { font-weight: 600; color: #495057; margin-right: 8px; margin-bottom: 0; }
+  .view-row label { font-weight: 600; color: var(--alv-ink-strong); margin-right: 8px; margin-bottom: 0; }
+  /* The modal's section headings. base does not own this component, so
+     the rule stays - but the colour comes from the house accent rather
+     than from a --crs-dark that no longer exists, and the rule below it
+     from --alv-line rather than a hex. */
   .view-section-h {
     margin: 20px 0 10px 0; padding-bottom: 6px;
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 2px solid var(--alv-line);
     font-size: 13px; font-weight: 700; text-transform: uppercase;
-    color: var(--crs-dark); letter-spacing: 0.5px;
+    color: var(--alv-accent); letter-spacing: 0.5px;
   }
   .view-section-h:first-child { margin-top: 0; }
   .view-code {
     display: inline-block; padding: 2px 8px;
-    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    background: var(--alv-surface); border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
     font-family: Consolas, monospace; font-size: 12px;
-    color: #c7254e; word-break: break-all; max-width: 100%;
+    color: var(--alv-ink); word-break: break-all; max-width: 100%;
   }
 
-  .crs-empty {
-    text-align: center; padding: 40px 20px; color: #6c757d;
-  }
-  .crs-empty i {
-    font-size: 3rem; color: var(--crs-dark);
-    margin-bottom: 12px; opacity: 0.5;
-  }
-  .crs-empty p { font-size: 1rem; margin-bottom: 4px; font-weight: 600; }
-  .crs-empty small { font-style: italic; }
 
   /* ==================== MOBILE STYLES (≤768px) ==================== */
   @media (max-width: 768px) {
-    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
-    .page-action-buttons {
-      flex-direction: row; gap: 8px; flex-wrap: nowrap;
-      align-items: stretch; margin-bottom: 14px;
-    }
-    .page-action-buttons .action-primary {
-      flex: 1 1 auto; min-width: 0; height: 38px;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 12px; font-size: 13px; white-space: nowrap;
-      margin: 0; gap: 6px;
-    }
-    .page-action-buttons .action-back {
-      flex: 0 0 auto; width: 50px; height: 38px; padding: 0;
-      display: flex; align-items: center; justify-content: center; margin: 0;
-    }
-    .action-back-label { display: none; }
-    .crs-panel { padding: 16px; }
 
-    /* Table → card layout */
-    .crs-table { background: transparent; box-shadow: none; overflow: visible; }
-    .crs-table table,
-    .crs-table thead,
-    .crs-table tbody,
-    .crs-table tr,
-    .crs-table td { display: block; width: 100%; }
-    .crs-table thead { display: none; }
-    .crs-table tbody tr {
-      background: white; border: 1px solid #e9ecef;
-      border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      margin-bottom: 12px; padding: 12px;
-    }
-    .crs-table tbody tr:hover { background: white; }
-    .crs-table tbody td {
-      padding: 6px 0 !important; border-bottom: none !important;
-      display: flex !important; justify-content: space-between;
-      align-items: center; gap: 12px; font-size: 13px;
-    }
-    .crs-table tbody td::before {
-      font-weight: 700; font-size: 11px; text-transform: uppercase;
-      color: #6c757d; letter-spacing: 0.4px;
-    }
-    .crs-table tbody td:nth-child(1)::before { content: 'Code'; }
-    .crs-table tbody td:nth-child(2)::before { content: 'Country'; }
-    .crs-table tbody td:nth-child(3)::before { content: 'Status'; }
-    .crs-table tbody td:nth-child(4)::before { content: 'Schema'; }
-    .crs-table tbody td:nth-child(5)::before { content: 'Last Updated'; }
 
-    .crs-table tbody td:last-child {
-      justify-content: flex-start !important;
-      padding-top: 10px !important; margin-top: 6px;
-      border-top: 1px solid #f0f0f0 !important;
-    }
-    .crs-table tbody td:last-child::before { content: ''; display: none; }
-    .row-actions { gap: 10px; }
-    .action-btn { width: 38px; height: 38px; font-size: 14px; }
 
     /* Modal — full screen */
     .modal-dialog { max-width: 100% !important; margin: 0 !important; height: 100vh; }

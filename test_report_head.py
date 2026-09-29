@@ -114,6 +114,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 from collections import Counter
 
 ROOT = os.getcwd()
@@ -529,7 +530,7 @@ for rel in (os.path.join('pages', 'urls.py'),
         hits = [nm for nm in DEAD_NAMES if re.search(r'\b%s\b' % nm, t)]
         ok(not hits, '%s names neither' % rel, hits)
 stray = []
-for d, _, fs in os.walk(T):
+for d, _, fs in alv_tree.walk3():
     for f in fs:
         if f.endswith('.html') and '.bak' not in f:
             t = read(os.path.join(d, f))

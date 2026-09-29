@@ -2878,8 +2878,29 @@
 /* The panel. Hidden is the DEFAULT STATE, not a class you add - so a page
    that fails to run any JS shows a clean list rather than a sprung-open
    panel. `hidden` beats nothing: it is one class, no !important. */
-.alv-filter            { display: none; }
+.alv-filter            { display: none; margin-bottom: 30px; }
 .alv-filter.is-open    { display: block; }
+/* THE GAP UNDER AN OPEN PANEL, and why it is on .alv-filter rather than
+   on .is-open beside the rule that opens it.
+
+   W3, 28 Sep 2026. Reported on Celebration Management: the open panel
+   touched the first contact card. Measured across the ten pages that
+   use this component, with the panel forced open, nine already had a
+   gap of 20 to 33px - because each carries a SECOND class,
+   .filter-panel or .passport-filter-panel, whose rule sets a margin
+   alongside a gradient and a border. celebration_management's panel is
+   .alv-filter and nothing else, so it had nowhere to get one.
+
+   .alv-filter.is-open is (0,2,0) and would have BEATEN all nine of
+   those pages, imposing 30px on physical_invoice_list's 20 and on
+   passport_management's 12 on a phone - two visible changes nobody
+   asked for. On .alv-filter it is (0,1,0), the same weight as a page's
+   own rule, and base is read first, so a page that states a margin
+   still wins and a page that states none inherits this. That is what a
+   default should mean.
+
+   30px because eight of the nine already use it. The margin is inert
+   while the panel is display:none, so it costs nothing until it opens. */
 
 /* The button. NOT .action-secondary: base hides those on a phone
    (`.page-action-buttons .action-secondary { display:none }`) and

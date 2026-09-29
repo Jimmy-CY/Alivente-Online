@@ -59,6 +59,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -433,11 +434,11 @@ for rel in PAGES:
 
 # THE COLOURED BANNERS THIS ROUND DID NOT REACH, as a report with a floor.
 _left = []
-for _d, _s, _fs in os.walk(T):
+for _d, _s, _fs in alv_tree.walk3():
     for _f in _fs:
         if not _f.endswith('.html'):
             continue
-        _rel = os.path.relpath(os.path.join(_d, _f), T).replace(os.sep, '/')
+        _rel = alv_tree.rel(os.path.join(_d, _f)).replace(os.sep, '/')
         if _rel in PAGES or _rel == 'base.html':
             continue
         _c = css_of(nocomment(read(os.path.join(_d, _f))))

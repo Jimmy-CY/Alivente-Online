@@ -114,6 +114,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 from collections import Counter
 
 ROOT = os.getcwd()
@@ -278,7 +279,7 @@ for name in LABEL_PAGES:
     ok('<label for="effective_date"><strong>Applies from</strong></label>'
        in t, '%-38s says Applies from' % name)
 stray = []
-for d, _, fs in os.walk(T):
+for d, _, fs in alv_tree.walk3():
     for f in fs:
         if f.endswith('.html') and '.bak' not in f and \
                 'Effective From' in read(os.path.join(d, f)):

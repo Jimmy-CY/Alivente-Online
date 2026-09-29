@@ -73,6 +73,7 @@ import collections
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -218,14 +219,14 @@ def touches_owned(sels):
 
 def pages():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html'):
                 continue
             path = os.path.join(dirpath, n)
             if os.path.abspath(path) == os.path.abspath(BASE):
                 continue
-            rel = os.path.relpath(path, T).replace(os.sep, '/')
+            rel = alv_tree.rel(path).replace(os.sep, '/')
             if any(t in rel for t in RECIPE):
                 continue
             out.append((rel, path))

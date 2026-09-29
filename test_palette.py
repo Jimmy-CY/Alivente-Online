@@ -79,6 +79,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -287,7 +288,7 @@ ok(bool(m) and '!important' in m.group(1),
 # the list cannot grow quietly.
 FALLBACK_FILES = {'act_expense.html', 'fsr.html', 'fsr_details.html'}
 touched = set()
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in sorted(fs):
         if f.endswith(SUFFIX):
             touched.add(f[:-len(SUFFIX)])

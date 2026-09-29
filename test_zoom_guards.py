@@ -119,6 +119,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 from collections import Counter
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
@@ -198,12 +199,11 @@ def guards(css):
 
 
 touched = []
-for dp, _d, ns in os.walk(ROOT):
+for dp, _d, ns in alv_tree.walk3():
     for n in sorted(ns):
         if n.endswith('.html') and os.path.isfile(os.path.join(dp, n)
                                                   + SUFFIX):
-            touched.append(os.path.relpath(os.path.join(dp, n),
-                                           ROOT).replace(os.sep, '/'))
+            touched.append(alv_tree.rel(os.path.join(dp, n)).replace(os.sep, '/'))
 pages = [r for r in touched if r != 'base.html']
 ran = bool(touched)
 

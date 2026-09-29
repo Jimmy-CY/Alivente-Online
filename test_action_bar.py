@@ -75,6 +75,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -249,11 +250,11 @@ ok(not stillold, 'and none of them still wears the old name',
 # The whole system, not just the nine - a name that survives anywhere is
 # a name that can come back.
 loose = []
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in sorted(fs):
         if not f.endswith('.html') or '.bak' in f:
             continue
-        rel = os.path.relpath(os.path.join(d, f), T).replace('\\', '/')
+        rel = alv_tree.rel(os.path.join(d, f)).replace('\\', '/')
         for old in ('action-bar', 'action-buttons'):
             if wears(now(os.path.join(d, f)), old):
                 loose.append('%s: %s' % (rel, old))
@@ -451,7 +452,7 @@ ok(OLDTOKEN.search('.action-bar .btn') is not None,
    '  and does match a real selector')
 ok(uncommented('a/* .action-bar {} */b') == 'ab',
    'the comment stripper really removes a CSS comment')
-house_pages = sum(1 for d, _x, fs in os.walk(T) for f in fs
+house_pages = sum(1 for d, _x, fs in alv_tree.walk3() for f in fs
                   if f.endswith('.html') and '.bak' not in f
                   and wears(read(os.path.join(d, f)), HOUSE))
 ok(house_pages >= 90,

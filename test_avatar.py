@@ -78,6 +78,7 @@ import math
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -458,7 +459,7 @@ ok(B_NOW.count('{') == B_NOW.count('}'), 'base braces balance')
 # is called - which is how the fifth avatar was found at all, after a
 # search for "avatar" in the class name returned four.
 circles, others = [], 0
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in sorted(fs):
         if not f.endswith('.html') or '.bak' in f:
             continue

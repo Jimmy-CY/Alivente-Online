@@ -98,6 +98,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -268,11 +269,11 @@ def sel_here(css, want):
 
 
 def templates():
-    for d, _x, fs in os.walk(T):
+    for d, _x, fs in alv_tree.walk3():
         for f in sorted(fs):
             if f.endswith('.html') and '.bak' not in f:
                 p = os.path.join(d, f)
-                yield os.path.relpath(p, T).replace('\\', '/'), p
+                yield alv_tree.rel(p).replace('\\', '/'), p
 
 
 t_now, t_was = now(PAGE), was(PAGE)

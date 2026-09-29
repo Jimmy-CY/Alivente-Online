@@ -62,6 +62,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -190,11 +191,11 @@ def page_css(text):
 
 def admin_pages():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html') or '.bak' in n:
                 continue
-            rel = os.path.relpath(os.path.join(dirpath, n), T)
+            rel = alv_tree.rel(os.path.join(dirpath, n))
             rel = rel.replace(os.sep, '/')
             if ADMIN.search(rel) or PERSONAL.search(rel):
                 out.append((rel, os.path.join(dirpath, n)))
@@ -203,11 +204,11 @@ def admin_pages():
 
 def all_pages():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html') or '.bak' in n:
                 continue
-            rel = os.path.relpath(os.path.join(dirpath, n), T)
+            rel = alv_tree.rel(os.path.join(dirpath, n))
             rel = rel.replace(os.sep, '/')
             if rel == 'base.html' or any(r in rel for r in RECIPE):
                 continue

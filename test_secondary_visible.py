@@ -63,6 +63,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -141,7 +142,7 @@ def bars_of(path):
 
 
 TEMPLATES = []
-for _dir, _sub, _files in os.walk(T):
+for _dir, _sub, _files in alv_tree.walk3():
     for _f in _files:
         if _f.endswith('.html'):
             TEMPLATES.append(os.path.join(_dir, _f))
@@ -154,7 +155,7 @@ for _p in TEMPLATES:
         if not _sec:
             continue
         (CARRIED if 'action-more-btn' in _blk else NEEDY).append(
-            (os.path.relpath(_p, T).replace(os.sep, '/'), _blk))
+            (alv_tree.rel(_p).replace(os.sep, '/'), _blk))
 
 # ===========================================================================
 head('1. the rule in base')
@@ -320,7 +321,14 @@ def render(page_css, bar_html, width, css=None, tail='', js=BAR_JS):
 
 
 def page_css_for(rel):
-    return css_of(read(os.path.join(T, rel.replace('/', os.sep))))
+    # ASK alv_tree WHICH ROOT THE LABEL CAME FROM.
+    # This used to be os.path.join(T, ...) with T still pages/templates,
+    # which was correct until X0 widened the walk and the labels started
+    # arriving as crs/country_list.html - a path under pages/templates
+    # that has never existed. The suite then died with a
+    # FileNotFoundError rather than a failed check, which is a worse way
+    # to be told and slipped past eight sweeps.
+    return css_of(read(alv_tree.path_of(rel)))
 
 
 # THE MARKUP SAID ELEVEN; THE BROWSER SAYS SIX.

@@ -113,6 +113,7 @@ import difflib
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -250,11 +251,11 @@ def business(rel):
 
 
 TEMPLATES = []
-for _d, _sub, _fs in os.walk(T):
+for _d, _sub, _fs in alv_tree.walk3():
     for _f in _fs:
         if not _f.endswith('.html') or '.bak_' in _f:
             continue
-        _rel = os.path.relpath(os.path.join(_d, _f), T).replace(os.sep, '/')
+        _rel = alv_tree.rel(os.path.join(_d, _f)).replace(os.sep, '/')
         if _rel == 'base.html' or 'OLD DO NOT USE' in _rel:
             continue
         if not business(_rel):

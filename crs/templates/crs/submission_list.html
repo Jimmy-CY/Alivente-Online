@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CRS SUBMISSIONS</center></h2>
+<h2 class="page-title-h2">CRS SUBMISSIONS</h2>
 <br/>
 
 {% for msg in messages %}
@@ -30,89 +30,123 @@
 <!-- Action Buttons -->
 <div class="page-action-buttons">
   {% if perms.auth.can_edit_crs %}
-  <a href="{% url 'crs:submission_start' %}" class="btn btn-info action-primary">
+  <a href="{% url 'crs:submission_start' %}" class="btn action-primary" role="button">
     <i class="fas fa-plus"></i> Start Submission
   </a>
   {% endif %}
-  <button type="button" class="btn btn-success btn-sm action-icon"
+  <button type="button" class="btn action-secondary"
         data-toggle="modal" data-target="#crs_submissionsHelpModal" aria-label="Help">
-    <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
+    <i class="fas fa-question-circle"></i> Help
   </button>
-  <a href="{% url 'crs:index' %}" class="btn btn-success action-back" role="button" aria-label="Back to CRS landing">
+  <a href="{% url 'crs:index' %}" class="btn action-back" role="button" aria-label="Back to CRS landing">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
 
-<!-- Single Panel -->
-<div class="crs-panel-container">
-  <div class="crs-panel">
-
-    {% if submissions %}
-    <div class="crs-table">
-      <table>
+<!-- Submissions (desktop) / card list (mobile) -->
+<div class="table-container">
+  <table class="table alv-table crs-submission-table">
         <thead>
-          <tr>
-            <th>Year</th>
-            <th>Country</th>
-            <th>FI</th>
-            <th>Status</th>
-            <th>MessageRefID</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
+      <tr>
+        <th style="text-align: left; width: 8%">Year</th>
+        <th style="width: 10%">Country</th>
+        <th style="width: 24%">FI</th>
+        <th style="width: 14%">Status</th>
+        <th style="width: 22%">MessageRefID</th>
+        <th style="width: 12%">Created</th>
+        <th class="desktop-action-cell cell-actions" style="width: 10%">Actions</th>
+      </tr>
         </thead>
-        <tbody>
-          {% for sub in submissions %}
-          <tr>
-            <td><strong>{{ sub.year }}</strong></td>
-            <td>{{ sub.country_config.country_code }}</td>
-            <td>{{ sub.reporting_fi.name }}</td>
-            <td>
-              <span class="status-badge status-{{ sub.status }}">{{ sub.get_status_display }}</span>
-            </td>
-            <td class="ref-id" title="{{ sub.message_ref_id }}">
-              <code>{{ sub.message_ref_id|truncatechars:30 }}</code>
-            </td>
-            <td>{{ sub.created_at|date:"d M Y H:i" }}</td>
-            <td>
-              <div class="row-actions">
-                <button type="button" class="action-btn btn-view" title="View"
-                        onclick="viewSubmission({{ sub.pk }})">
-                  <i class="fas fa-eye"></i>
-                </button>
-                {% if perms.auth.can_edit_crs %}
+    <tbody>
+      {% for sub in submissions %}
+        <tr>
+          <td data-label="Year" style="text-align: left"><strong>{{ sub.year }}</strong></td>
+          <td data-label="Country">{{ sub.country_config.country_code }}</td>
+          <td data-label="FI">{{ sub.reporting_fi.name }}</td>
+          <td data-label="Status">
+            <span class="alv-pill status-{{ sub.status }}">{{ sub.get_status_display }}</span>
+          </td>
+          <td data-label="MessageRefID" class="ref-id" title="{{ sub.message_ref_id }}">
+            <code>{{ sub.message_ref_id|truncatechars:30 }}</code>
+          </td>
+          <td data-label="Created">{{ sub.created_at|date:"d M Y H:i" }}</td>
+
+          <!-- Desktop actions: one cell, three buttons -->
+          <td class="desktop-action-cell cell-actions">
+            <span class="row-actions">
+              <button type="button" class="icon-action-btn icon-view" title="View Submission"
+                      onclick="viewSubmission({{ sub.pk }})">
+                <i class="fas fa-eye"></i>
+              </button>
+              {% if perms.auth.can_edit_crs %}
                 <a href="{% url 'crs:submission_detail' sub.pk %}"
-                   class="action-btn btn-edit" title="Edit">
+                   class="icon-action-btn icon-edit" title="Open Submission">
                   <i class="fas fa-pencil-alt"></i>
                 </a>
-                <button type="button" class="action-btn btn-delete" title="Delete Submission"
+                <button type="button" class="icon-action-btn icon-delete" title="Delete Submission"
                         onclick="confirmSubmissionDelete({{ sub.pk }}, '{{ sub.message_ref_id|escapejs }}')">
                   <i class="fas fa-trash"></i>
                 </button>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="crs-empty">
-      <i class="fas fa-file-export"></i>
-      <p>No submissions yet.</p>
-      <small>Click "Start Submission" to create your first draft.</small>
-    </div>
-    {% endif %}
+              {% else %}
+                <span class="icon-action-btn icon-disabled" title="No edit permission">
+                  <i class="fas fa-pencil-alt"></i>
+                </span>
+                <span class="icon-action-btn icon-disabled" title="No delete permission">
+                  <i class="fas fa-trash"></i>
+                </span>
+              {% endif %}
+            </span>
+          </td>
 
-  </div>
+          <!-- Mobile-only action bar (hidden on desktop) -->
+          <td class="mobile-action-bar">
+            <button type="button" class="mobile-action-btn" onclick="viewSubmission({{ sub.pk }})">
+              <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+              <span class="mobile-action-label">View</span>
+            </button>
+            {% if perms.auth.can_edit_crs %}
+              <a href="{% url 'crs:submission_detail' sub.pk %}" class="mobile-action-btn">
+                <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                <span class="mobile-action-label">Open</span>
+              </a>
+              <button type="button" class="mobile-action-btn"
+                      onclick="confirmSubmissionDelete({{ sub.pk }}, '{{ sub.message_ref_id|escapejs }}')">
+                <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                <span class="mobile-action-label">Delete</span>
+              </button>
+            {% else %}
+              <span class="mobile-action-btn mobile-action-disabled">
+                <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                <span class="mobile-action-label">Open</span>
+              </span>
+              <span class="mobile-action-btn mobile-action-disabled">
+                <i class="fas fa-trash mobile-action-icon"></i>
+                <span class="mobile-action-label">Delete</span>
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not submissions %}
+    {# An empty tbody looks exactly like a failed load. #}
+    <div class="alv-empty">
+      <i class="fas fa-file-export"></i>
+      <div class="alv-empty-title">No submissions yet</div>
+      <div class="alv-empty-hint">
+        Start one to build a CRS file for a year, a country and an FI.
+      </div>
+    </div>
+  {% endif %}
 </div>
 
 <!-- View Submission Modal -->
 <div class="modal fade" id="viewSubmissionModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-info text-white">
+      <div class="modal-header alv-modal-head">
         <h5 class="modal-title">
           <i class="fas fa-file-export"></i> Submission
         </h5>
@@ -162,7 +196,7 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -229,7 +263,7 @@
     const statusEl = document.getElementById('vs_status');
     statusEl.innerHTML = '';
     const badge = document.createElement('span');
-    badge.className = 'status-badge status-' + s.status_key;
+    badge.className = 'alv-pill status-' + s.status_key;
     badge.textContent = s.status;
     statusEl.appendChild(badge);
 
@@ -345,181 +379,99 @@
 </script>
 
 <style>
-  :root {
-    --crs-dark: #28a745;
-    --crs-light: #d4edda;
-  }
-  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
-  .page-action-buttons {
-    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
-  }
-  .crs-panel-container { max-width: 1100px; margin: 0 auto; }
-  .crs-panel {
-    padding: 30px; border: 3px solid var(--crs-dark);
-    background-color: var(--crs-light); border-radius: 10px;
-  }
 
-  .crs-table {
-    background: white; border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;
-  }
-  .crs-table table { width: 100%; margin: 0; }
-  .crs-table thead th {
-    background: #f8f9fa; padding: 12px 14px;
-    font-size: 12px; font-weight: 600; color: #495057;
-    border-bottom: 2px solid #dee2e6;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .crs-table tbody td {
-    padding: 12px 14px; border-bottom: 1px solid #f0f0f0;
-    font-size: 14px; vertical-align: middle;
-  }
-  .crs-table tbody tr:last-child td { border-bottom: none; }
-  .crs-table tbody tr:hover { background: #f8f9fa; }
 
   .ref-id code {
     font-size: 12px;
-    background: #f1f3f5;
-    color: #495057;
+    background: var(--alv-line-soft);
+    color: var(--alv-ink-strong);
     padding: 2px 6px;
     border-radius: 3px;
   }
 
-  /* Status badges */
-  .status-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  .status-draft                { background: #e9ecef; color: #495057; }
-  .status-closed               { background: #cce5ff; color: #004085; }
-  .status-submitted_externally { background: #fff3cd; color: #856404; }
-  .status-acknowledged         { background: #d4edda; color: #155724; }
-  .status-rejected             { background: #f8d7da; color: #721c24; }
+  /* THE FIVE LIFECYCLE TONES.
+     The badge's geometry is base's .alv-pill now; these five rules are
+     nothing but the mapping from a status to a meaning, and each was
+     already the Bootstrap colour for the meaning the house has a token
+     for: secondary, info, warning, success, danger.
 
-  /* Row actions */
-  .row-actions { display: flex; gap: 6px; }
-  .action-btn {
-    width: 30px; height: 30px; border-radius: 6px; border: none;
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 12px; transition: all 0.2s;
-    text-decoration: none;
-  }
-  .action-btn:hover { transform: scale(1.1); }
-  .btn-view   { background: #17a2b8; color: white; }
-  .btn-edit   { background: #ffc107; color: white; }
-  .btn-delete { background: #dc3545; color: white; }
+     The NAMES cannot be .alv-pill-good and friends, because the class is
+     built from the model's status key - a template variable appended to
+     `status-` in the markup, and 'status-' + s.status_key in the modal's
+     JS. Writing a mapping in both places would be two mappings in two
+     languages, which drift. Five CSS rules do not.
+
+     (And that sentence used to quote the template tag itself. A CSS
+     comment containing braces BREAKS every regex rule reader in this
+     repo: the pattern that finds a rule is selector-brace-body-brace,
+     so a brace inside a comment splits it in the wrong place and the
+     selector comes back as the tail of the prose. Lesson 21 says strip
+     comments before comparing a selector - but bare() runs AFTER the
+     pattern has already mis-split. The gate below now refuses any CSS
+     comment carrying a brace, so this cannot happen quietly again.)
+
+     A `pill_class` property on the Submission model - the shape
+     CelebrationEvent already uses at pages/models.py:2726 - would let
+     both emit the house class directly and delete all five. That is a
+     change to crs/models.py, so it is noted, not done in a styling
+     round. */
+  .status-draft                { background: var(--alv-neutral-soft); color: var(--alv-neutral); }
+  .status-closed               { background: var(--alv-info-soft); color: var(--alv-accent-ink); }
+  .status-submitted_externally { background: var(--alv-warn-soft); color: var(--alv-warn); }
+  .status-acknowledged         { background: var(--alv-good-soft); color: var(--alv-good); }
+  .status-rejected             { background: var(--alv-bad-soft); color: var(--alv-bad); }
+
 
   /* View modal */
   .view-row { margin-bottom: 8px; line-height: 1.5; }
-  .view-row label { font-weight: 600; color: #495057; margin-right: 8px; margin-bottom: 0; }
+  .view-row label { font-weight: 600; color: var(--alv-ink-strong); margin-right: 8px; margin-bottom: 0; }
+  /* The modal's section headings - base does not own this component. */
   .view-section-h {
     margin: 20px 0 10px 0; padding-bottom: 6px;
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 2px solid var(--alv-line);
     font-size: 13px; font-weight: 700; text-transform: uppercase;
-    color: var(--crs-dark); letter-spacing: 0.5px;
+    color: var(--alv-accent); letter-spacing: 0.5px;
   }
   .view-section-h:first-child { margin-top: 0; }
   .view-code {
     display: inline-block; padding: 2px 8px;
-    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    background: var(--alv-surface); border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
     font-family: Consolas, monospace; font-size: 12px;
-    color: #c7254e; word-break: break-all; max-width: 100%;
+    color: var(--alv-ink); word-break: break-all; max-width: 100%;
   }
   .view-block {
     margin: 4px 0 0 0; padding: 10px;
-    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    background: var(--alv-surface); border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
     font-family: inherit; font-size: 13px;
     white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
   }
   .view-empty {
     margin-top: 6px; padding: 12px;
-    background: #f8f9fa; border-radius: 4px;
-    color: #6c757d; font-style: italic; font-size: 13px;
+    background: var(--alv-surface); border-radius: var(--alv-radius-sm);
+    color: var(--alv-ink-soft); font-style: italic; font-size: 13px;
   }
   .view-files-table { width: 100%; margin-top: 6px; border-collapse: collapse; }
+  /* NOT .alv-table, deliberately: base's table carries a phone card
+     layout, a row-action grammar and a sticky head, none of which a short
+     list inside a dialog wants. Kept, moved onto tokens. */
   .view-files-table th {
-    background: #f8f9fa; padding: 6px 8px;
-    font-size: 11px; text-transform: uppercase; color: #6c757d;
-    border-bottom: 2px solid #dee2e6; text-align: left; letter-spacing: 0.4px;
+    background: var(--alv-surface); padding: 6px 8px;
+    font-size: 11px; text-transform: uppercase; color: var(--alv-ink-soft);
+    border-bottom: 2px solid var(--alv-line); text-align: left; letter-spacing: 0.4px;
   }
   .view-files-table td {
     padding: 6px 8px; font-size: 13px;
-    border-bottom: 1px solid #f0f0f0; vertical-align: middle;
+    border-bottom: 1px solid var(--alv-line-soft); vertical-align: middle;
   }
   .view-files-table tr:last-child td { border-bottom: none; }
   
-  .crs-empty {
-    text-align: center; padding: 40px 20px; color: #6c757d;
-  }
-  .crs-empty i {
-    font-size: 3rem; color: var(--crs-dark);
-    margin-bottom: 12px; opacity: 0.5;
-  }
-  .crs-empty p { font-size: 1rem; margin-bottom: 4px; font-weight: 600; }
-  .crs-empty small { font-style: italic; }
 
   /* ==================== MOBILE STYLES (≤768px) ==================== */
   @media (max-width: 768px) {
-    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
-    .page-action-buttons {
-      flex-direction: row; gap: 8px; flex-wrap: nowrap;
-      align-items: stretch; margin-bottom: 14px;
-    }
-    .page-action-buttons .action-primary {
-      flex: 1 1 auto; min-width: 0; height: 38px;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 12px; font-size: 13px; white-space: nowrap;
-      margin: 0; gap: 6px;
-    }
-    .page-action-buttons .action-back {
-      flex: 0 0 auto; width: 50px; height: 38px; padding: 0;
-      display: flex; align-items: center; justify-content: center; margin: 0;
-    }
-    .action-back-label { display: none; }
-    .crs-panel { padding: 16px; }
 
-    .crs-table { background: transparent; box-shadow: none; overflow: visible; }
-    .crs-table table,
-    .crs-table thead,
-    .crs-table tbody,
-    .crs-table tr,
-    .crs-table td { display: block; width: 100%; }
-    .crs-table thead { display: none; }
-    .crs-table tbody tr {
-      background: white; border: 1px solid #e9ecef;
-      border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      margin-bottom: 12px; padding: 12px;
-    }
-    .crs-table tbody tr:hover { background: white; }
-    .crs-table tbody td {
-      padding: 6px 0 !important; border-bottom: none !important;
-      display: flex !important; justify-content: space-between;
-      align-items: center; gap: 12px; font-size: 13px;
-    }
-    .crs-table tbody td::before {
-      font-weight: 700; font-size: 11px; text-transform: uppercase;
-      color: #6c757d; letter-spacing: 0.4px;
-    }
-    .crs-table tbody td:nth-child(1)::before { content: 'Year'; }
-    .crs-table tbody td:nth-child(2)::before { content: 'Country'; }
-    .crs-table tbody td:nth-child(3)::before { content: 'FI'; }
-    .crs-table tbody td:nth-child(4)::before { content: 'Status'; }
-    .crs-table tbody td:nth-child(5)::before { content: 'Ref ID'; }
-    .crs-table tbody td:nth-child(6)::before { content: 'Created'; }
 
-    .crs-table tbody td:last-child {
-      justify-content: flex-start !important;
-      padding-top: 10px !important; margin-top: 6px;
-      border-top: 1px solid #f0f0f0 !important;
-    }
-    .crs-table tbody td:last-child::before { content: ''; display: none; }
-    .row-actions { gap: 10px; }
-    .action-btn { width: 38px; height: 38px; font-size: 14px; }
 
     /* Modal — full screen */
     .modal-dialog { max-width: 100% !important; margin: 0 !important; height: 100vh; }

@@ -50,6 +50,7 @@ import collections
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -126,11 +127,11 @@ def faults(scan):
 
 def pages():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html'):
                 continue
-            rel = os.path.relpath(os.path.join(dirpath, n), T)
+            rel = alv_tree.rel(os.path.join(dirpath, n))
             rel = rel.replace(os.sep, '/')
             if ADMIN.search(rel) or PERSONAL.search(rel):
                 out.append((rel, os.path.join(dirpath, n)))

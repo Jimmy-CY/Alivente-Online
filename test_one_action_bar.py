@@ -53,6 +53,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -135,11 +136,11 @@ def inert(text):
 
 def templates():
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if n.endswith('.html'):
                 path = os.path.join(dirpath, n)
-                out.append((os.path.relpath(path, T).replace(os.sep, '/'),
+                out.append((alv_tree.rel(path).replace(os.sep, '/'),
                             path))
     return sorted(out)
 

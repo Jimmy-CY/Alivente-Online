@@ -97,6 +97,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -388,7 +389,7 @@ for rel, n in sorted(IN_SCRIPT.items()):
        "  including anTok('accent-ink', '%s') - the fallback pattern in JS"
        % LITERAL)
 total_script = 0
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in fs:
         if f.endswith('.html') and '.bak_' not in f:
             total_script += in_script(now(os.path.join(d, f)))
@@ -449,7 +450,7 @@ for rel in sorted(EXPECTED):
 # 24 inside this round's 41. Summing two selector counts double-counts every
 # file that wears both. The suite's own check caught it.
 tree_lift = set()
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in fs:
         if not f.endswith('.html') or '.bak_' in f or f == 'base.html':
             continue
@@ -457,7 +458,7 @@ for d, _x, fs in os.walk(T):
         for sel in LIFT_SELECTORS:
             for m in re.finditer(re.escape(sel) + r'[^{}]*\{([^}]*)\}', body):
                 if all(pr in m.group(1) for pr in LIFT_PROPS):
-                    tree_lift.add(os.path.relpath(os.path.join(d, f), T)
+                    tree_lift.add(alv_tree.rel(os.path.join(d, f))
                                   .replace('\\', '/'))
 ok(len(lift_files) == 24,
    'the 24 templates in this round that add %s to base\'s own hover rule '
@@ -546,7 +547,7 @@ if os.path.isfile(tagf):
 else:
     skip('help_modal_tags.py', 'not on disk')
 users, bad = 0, []
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in fs:
         if not f.endswith('.html') or '.bak_' in f or f == SHELL:
             continue

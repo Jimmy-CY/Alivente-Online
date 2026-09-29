@@ -64,6 +64,7 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+import alv_tree
 import types
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -126,7 +127,7 @@ def templates():
     suites were missing.
     """
     out = []
-    for dirpath, _dirs, names in os.walk(T):
+    for dirpath, _dirs, names in alv_tree.walk3():
         for n in names:
             if n.endswith('.html'):
                 out.append(os.path.join(dirpath, n))
@@ -342,8 +343,8 @@ check('the sweep reached more than the top level', len(_dirs) >= 2,
 check('  and found a corpus, not a handful', len(ALL) >= 60,
       '%d template(s)' % len(ALL))
 
-tiles = [os.path.relpath(p, T) for p in ALL if OSM_TILES in read(p)]
-geo = [os.path.relpath(p, T) for p in ALL if OSM_GEOCODE in read(p)]
+tiles = [alv_tree.rel(p) for p in ALL if OSM_TILES in read(p)]
+geo = [alv_tree.rel(p) for p in ALL if OSM_GEOCODE in read(p)]
 check('no template asks OpenStreetMap for a tile', not tiles,
       '%d: %s' % (len(tiles), ', '.join(tiles[:4])))
 check('no template calls the OpenStreetMap geocoder', not geo,
@@ -381,7 +382,7 @@ check('  and it takes its colours from base tokens, not from literals',
                                                       rule),
       '%d token(s)' % rule.count('var(--alv-'))
 check('  and no page defines its own',
-      not [os.path.relpath(p, T) for p in ALL
+      not [alv_tree.rel(p) for p in ALL
            if p != BASE and '.alv-map-nokey {' in read(p)])
 
 # ---------------------------------------------------------------------- 6

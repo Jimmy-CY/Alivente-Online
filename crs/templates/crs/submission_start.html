@@ -5,7 +5,8 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ALIVENTE ONLINE - START CRS SUBMISSION</center></h2>
+<h2 class="page-title-h2">CRS SUBMISSIONS</h2>
+<h4 class="page-subtitle-h4">START A SUBMISSION</h4>
 <br/>
 
 {% for msg in messages %}
@@ -15,97 +16,89 @@
   </div>
 {% endfor %}
 
-<!-- Action Buttons -->
-<div class="page-action-buttons">
-  <a href="{% url 'crs:submission_list' %}" class="btn btn-success action-back" role="button" aria-label="Back to list">
-    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-  </a>
-</div>
+{% if form.non_field_errors %}
+<div class="alert alert-danger">{{ form.non_field_errors }}</div>
+{% endif %}
 
-<!-- Form Panel -->
-<div class="crs-panel-container">
-  <div class="crs-panel">
+<form method="post" novalidate id="submissionStartForm">
+  {% csrf_token %}
 
-    {% if form.non_field_errors %}
-    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-    {% endif %}
-
-    <form method="post" novalidate id="submissionStartForm">
-      {% csrf_token %}
-
-      <div class="form-section">
-        <div class="form-section-title">Selection</div>
-        <div class="form-section-note">
-          A draft submission is created for one (FI, Country, Year) combination.
-          The MessageRefID is minted automatically from the country's template
-          and is immutable after creation.
-        </div>
-
-        <div class="form-grid">
-          <div class="form-field form-field-full">
-            <label for="id_fi">Reporting FI <span class="req">*</span></label>
-            {{ form.reporting_fi }}
-            {% if form.reporting_fi.errors %}<div class="field-error">{{ form.reporting_fi.errors|join:" " }}</div>{% endif %}
-          </div>
-
-          <div class="form-field">
-            <label for="{{ form.country_config.id_for_label }}">Country <span class="req">*</span></label>
-            {{ form.country_config }}
-            {% if form.country_config.errors %}<div class="field-error">{{ form.country_config.errors|join:" " }}</div>{% endif %}
-          </div>
-
-          <div class="form-field">
-            <label for="id_year_select">Reporting Year <span class="req">*</span></label>
-            <select id="id_year_select" class="form-control">
-              {% for y in year_choices %}
-                <option value="{{ y }}" {% if y == default_year %}selected{% endif %}>{{ y }}</option>
-              {% endfor %}
-              <option value="__custom__">Custom…</option>
-            </select>
-            <input type="number" id="id_year_custom" class="form-control"
-                   min="2014" max="2099" placeholder="Enter year (e.g. 2020)"
-                   style="display: none; margin-top: 6px;">
-            <input type="hidden" name="year" id="id_year" value="{{ default_year }}">
-            {% if form.year.errors %}<div class="field-error">{{ form.year.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">Last day of this year is used as ReportingPeriod (e.g. 2025 → 2025-12-31).</small>
-          </div>
-
-          <div class="form-field form-field-full">
-            <label for="id_sending_in">Sending Company IN — TIN <span class="req">*</span></label>
-            {{ form.sending_company_in }}
-            {% if form.sending_company_in.errors %}<div class="field-error">{{ form.sending_company_in.errors|join:" " }}</div>{% endif %}
-            <small class="field-help" id="in-help">
-              Choose a Reporting FI first to see its registered TINs.
-            </small>
-            <div id="no-tins-warning" class="field-error" style="display: none;">
-              This FI has no TIN registered. CRS requires a TIN —
-              <a href="#" id="edit-fi-link">edit the FI</a> to add one first.
-            </div>
-          </div>
-          <div class="form-field form-field-full">
-            <label class="nil-checkbox-label"
-                   style="display: flex; flex-direction: row; align-items: center; gap: 8px; margin-left: 10px;">
-              {{ form.is_nil_return }}
-              <span>Nil return — the FI has no reportable accounts for this period</span>
-            </label>
-            <small class="field-help" style="margin-left: 10px;">
-              Produces a CRS703 nil return with no account data. No Excel upload required.
-            </small>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Row -->
-      <div class="form-actions">
-        <a href="{% url 'crs:submission_list' %}" class="btn btn-secondary">Cancel</a>
-        <button type="submit" class="btn btn-success" id="submitBtn">
-          <i class="fas fa-play"></i> Create Draft
-        </button>
-      </div>
-    </form>
-
+  <!-- Action Buttons. The primary lives HERE, beside Back, which is
+       why the form has to open above it - it is a submit. The house
+       has no footer row on an entry screen, and this page used to
+       have one holding a second control to the same place. -->
+  <div class="page-action-buttons">
+    <button type="submit" class="btn action-primary" id="submitBtn">
+      <i class="fas fa-play"></i> Create Draft
+    </button>
+    <a href="{% url 'crs:submission_list' %}" class="btn action-back" role="button" aria-label="Back to list">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
   </div>
-</div>
+
+  <div class="form-card">
+    <h3 class="form-section-title">Selection</h3>
+    <div class="form-section-note">
+      A draft submission is created for one (FI, Country, Year) combination.
+      The MessageRefID is minted automatically from the country's template
+      and is immutable after creation.
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group form-group-full">
+        <label for="id_fi">Reporting FI <span class="alv-req">*</span></label>
+        {{ form.reporting_fi }}
+        {% if form.reporting_fi.errors %}<div class="field-error">{{ form.reporting_fi.errors|join:" " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.country_config.id_for_label }}">Country <span class="alv-req">*</span></label>
+        {{ form.country_config }}
+        {% if form.country_config.errors %}<div class="field-error">{{ form.country_config.errors|join:" " }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_year_select">Reporting Year <span class="alv-req">*</span></label>
+        <select id="id_year_select" class="form-control">
+          {% for y in year_choices %}
+            <option value="{{ y }}" {% if y == default_year %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+          <option value="__custom__">Custom…</option>
+        </select>
+        <input type="number" id="id_year_custom" class="form-control"
+               min="2014" max="2099" placeholder="Enter year (e.g. 2020)"
+               style="display: none; margin-top: 6px;">
+        <input type="hidden" name="year" id="id_year" value="{{ default_year }}">
+        {% if form.year.errors %}<div class="field-error">{{ form.year.errors|join:" " }}</div>{% endif %}
+        <small class="form-text">Last day of this year is used as ReportingPeriod (e.g. 2025 → 2025-12-31).</small>
+      </div>
+
+      <div class="form-group form-group-full">
+        <label for="id_sending_in">Sending Company IN — TIN <span class="alv-req">*</span></label>
+        {{ form.sending_company_in }}
+        {% if form.sending_company_in.errors %}<div class="field-error">{{ form.sending_company_in.errors|join:" " }}</div>{% endif %}
+        <small class="form-text" id="in-help">
+          Choose a Reporting FI first to see its registered TINs.
+        </small>
+        <div id="no-tins-warning" class="field-error" style="display: none;">
+          This FI has no TIN registered. CRS requires a TIN —
+          <a href="#" id="edit-fi-link">edit the FI</a> to add one first.
+        </div>
+      </div>
+      <div class="form-group form-group-full">
+        <label class="nil-checkbox-label"
+               style="display: flex; flex-direction: row; align-items: center; gap: 8px; margin-left: 10px;">
+          {{ form.is_nil_return }}
+          <span>Nil return — the FI has no reportable accounts for this period</span>
+        </label>
+        <small class="form-text" style="margin-left: 10px;">
+          Produces a CRS703 nil return with no account data. No Excel upload required.
+        </small>
+      </div>
+    </div>
+  </div>
+
+</form>
 
 <script id="fi-tins-data" type="application/json">{{ fi_tins_json|safe }}</script>
 
@@ -189,58 +182,22 @@
 </script>
 
 <style>
-  :root {
-    --crs-dark: #28a745;
-    --crs-light: #d4edda;
-  }
-  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
-  .page-action-buttons {
-    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
-  }
-  .crs-panel-container { max-width: 900px; margin: 0 auto; }
-  .crs-panel {
-    padding: 30px; border: 3px solid var(--crs-dark);
-    background-color: var(--crs-light); border-radius: 10px;
-  }
 
-  .form-section {
-    background: white; border-radius: 8px;
-    padding: 20px; margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  .form-section-title {
-    font-size: 13px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    color: var(--crs-dark);
-    border-bottom: 2px solid var(--crs-light);
-    padding-bottom: 8px; margin-bottom: 14px;
-  }
   .form-section-note {
-    font-size: 12px; color: #6c757d;
+    font-size: 12px; color: var(--alv-ink-soft);
     margin-bottom: 14px; line-height: 1.6;
   }
 
+  /* Two columns, one on a phone - a house convention twelve form pages
+     already share, with finance_expense_add's gap. */
   .form-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px 22px;
   }
-  .form-field { display: flex; flex-direction: column; gap: 4px; }
-  .form-field-full { grid-column: 1 / -1; }
-  .form-field label {
-    font-size: 12px; font-weight: 600; color: #495057; margin: 0;
-  }
-  .form-field .req { color: #dc3545; }
-  .form-field .form-control {
-    padding: 7px 10px; border: 1px solid #ced4da;
-    border-radius: 5px; font-size: 14px;
-  }
-  .form-field .form-control:disabled {
-    background: #e9ecef; color: #6c757d;
-  }
-  .form-field .field-help {
-    font-size: 11px; color: #6c757d; font-style: italic;
-  }
-  .form-field .field-error {
-    font-size: 12px; color: #dc3545; font-weight: 600;
+  .form-group-full { grid-column: 1 / -1; }
+  /* base has no field-error component, so this stays - on the token
+     that means the thing it means. */
+  .field-error {
+    font-size: 12px; color: var(--alv-bad); font-weight: 600;
   }
 
   /* Bootstrap 4's .form-check-input uses position:absolute + a -1.25rem left
@@ -252,24 +209,9 @@
     flex: 0 0 auto;
   }
 
-  .form-actions {
-    display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;
-  }
 
   @media (max-width: 768px) {
-    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
-    .page-action-buttons { margin-bottom: 14px; }
-    .page-action-buttons .action-back {
-      flex: 0 0 auto; width: 50px; height: 38px; padding: 0;
-      display: flex; align-items: center; justify-content: center; margin: 0;
-    }
-    .action-back-label { display: none; }
-    .crs-panel { padding: 16px; }
-    .form-section { padding: 14px; }
-    .form-grid { grid-template-columns: 1fr; }
-    .form-actions { flex-direction: column-reverse; gap: 8px; }
-    .form-actions .btn { width: 100%; }
-    .form-field .form-control { font-size: 16px !important; }
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
   }
 </style>
 

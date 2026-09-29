@@ -147,6 +147,7 @@ import json
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
 if not os.path.isdir(ROOT):
@@ -895,12 +896,11 @@ else:
        '%-38s and it carries the prefixed ones instead' % MODEL)
     # the rest of the corpus, so this cannot regress somewhere else
     others = []
-    for dp, _d, ns in os.walk(ROOT):
+    for dp, _d, ns in alv_tree.walk3():
         for n_ in sorted(ns):
             if not n_.endswith('.html'):
                 continue
-            rel_ = os.path.relpath(os.path.join(dp, n_),
-                                   ROOT).replace(os.sep, '/')
+            rel_ = alv_tree.rel(os.path.join(dp, n_)).replace(os.sep, '/')
             if rel_ == 'base.html':
                 continue
             m_ = markup_only(read(os.path.join(dp, n_)))
@@ -1187,11 +1187,11 @@ def title_parents(mk):
 
 
 inside, looked = [], 0
-for dp, _d, ns in os.walk(ROOT):
+for dp, _d, ns in alv_tree.walk3():
     for n_ in sorted(ns):
         if not n_.endswith('.html'):
             continue
-        rel_ = os.path.relpath(os.path.join(dp, n_), ROOT).replace(os.sep, '/')
+        rel_ = alv_tree.rel(os.path.join(dp, n_)).replace(os.sep, '/')
         if rel_ == 'base.html':
             continue
         raw = read(os.path.join(dp, n_))

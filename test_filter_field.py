@@ -119,6 +119,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -595,7 +596,7 @@ for name, olds in sorted(RENAMED.items()):
 # assumed - and counted again here, across every template, because a
 # script on ANOTHER page could have reached these.
 named_in_js = {}
-for base_, dirs, files in os.walk(T):
+for base_, dirs, files in alv_tree.walk3():
     dirs[:] = [d for d in dirs if d != '__pycache__']
     for f in sorted(files):
         if not f.endswith('.html') or '.bak_' in f:

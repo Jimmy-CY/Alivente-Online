@@ -85,6 +85,7 @@ import os
 import re
 import subprocess
 import sys
+import alv_tree
 import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -354,14 +355,14 @@ else:
 # A floor, not a count. A pinned number here would be a scope guard the
 # next agreed round trips over - that has happened twenty-one times.
 corpus = []
-for dirpath, _dirs, names in os.walk(T):
+for dirpath, _dirs, names in alv_tree.walk3():
     for n in names:
         if not n.endswith('.html'):
             continue
         p = os.path.join(dirpath, n)
         try:
             if any(ord(c) > 127 for c in read(p)):
-                corpus.append(os.path.relpath(p, T))
+                corpus.append(alv_tree.rel(p))
         except Exception:
             pass
 check('and it is not the only template with non-ASCII in it',

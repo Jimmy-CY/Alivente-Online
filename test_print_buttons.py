@@ -110,6 +110,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
 if not os.path.isdir(ROOT):
@@ -172,12 +173,12 @@ def body_markup(t):
 
 def pages():
     out = []
-    for d, _, fs in os.walk(ROOT):
+    for d, _, fs in alv_tree.walk3():
         for f in fs:
             if not f.endswith('.html') or 'OLD DO NOT USE' in f:
                 continue
             p = os.path.join(d, f)
-            rel = os.path.relpath(p, ROOT).replace('\\', '/')
+            rel = alv_tree.rel(p).replace('\\', '/')
             if rel != 'base.html' and re.search(
                     r'\{%\s*extends\s+["\']base\.html', read(p)):
                 out.append((rel, p))

@@ -78,6 +78,7 @@ def _goto(pg, path):
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -287,11 +288,11 @@ ok(not leftovers, 'not one of the four local bar names survives anywhere '
 
 # The whole tree, so a name cannot come back somewhere else.
 loose = []
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in sorted(fs):
         if not f.endswith('.html') or '.bak' in f:
             continue
-        rel = os.path.relpath(os.path.join(d, f), T).replace('\\', '/')
+        rel = alv_tree.rel(os.path.join(d, f)).replace('\\', '/')
         t = uncommented(now(os.path.join(d, f)))
         for bar in BARS:
             if bar in t:

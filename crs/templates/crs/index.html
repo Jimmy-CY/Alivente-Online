@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CRS REPORTING</center></h2>
+<h2 class="page-title-h2">CRS REPORTING</h2>
 <br/>
 
 {% for msg in messages %}
@@ -29,11 +29,11 @@
 
 <!-- Action Buttons (Back to Personal) -->
 <div class="page-action-buttons">
-  <button type="button" class="btn btn-success btn-sm action-icon"
+  <button type="button" class="btn action-secondary"
           data-toggle="modal" data-target="#crsHelpModal" aria-label="Help">
-      <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
+      <i class="fas fa-question-circle"></i> Help
   </button>
-  <a href="{% url 'personal_page' %}" class="btn btn-success action-back" role="button" aria-label="Back to personal">
+  <a href="{% url 'personal_page' %}" class="btn action-back" role="button" aria-label="Back to personal">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
 </div>
@@ -69,23 +69,8 @@
 </div>
 
 <style>
-  :root {
-    --crs-dark: #28a745;
-    --crs-light: #d4edda;
-  }
 
-  .page-title-h2 {
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-  }
 
-  /* ==================== ACTION BUTTONS (DESKTOP) ==================== */
-  .page-action-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
 
   /* ==================== PANEL ==================== */
   .crs-panel-container {
@@ -93,10 +78,17 @@
     margin: 0 auto;
   }
 
+  /* KEPT, and only retoned - unlike the .crs-panel that X1 to X4
+     DELETED from the list and form screens. A house LIST page has no
+     outer panel, so there was nothing to retone it to. A house HUB has
+     exactly this: personal.html's .tab-panel is 30px of padding, a 3px
+     solid border and a radius, coloured from --alv-accent and
+     --alv-accent-soft. Same shape to the pixel; only the colour was
+     ever wrong. */
   .crs-panel {
     padding: 30px;
-    border: 3px solid var(--crs-dark);
-    background-color: var(--crs-light);
+    border: 3px solid var(--alv-accent);
+    background-color: var(--alv-accent-soft);
     border-radius: 10px;
   }
 
@@ -120,7 +112,7 @@
     color: white;
     padding: 16px;
     text-align: center;
-    background-color: #28a745;
+    background-color: var(--alv-accent);
     border: none;
   }
 
@@ -129,7 +121,7 @@
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
     color: white;
     text-decoration: none;
-    background-color: #218838;
+    background-color: var(--alv-accent-ink);
   }
 
   .crs-btn i {
@@ -150,49 +142,12 @@
     margin-top: 4px;
   }
 
-  .crs-coming-label {
-    font-size: 0.7rem;
-    opacity: 0.75;
-    margin-top: 8px;
-    font-style: italic;
-  }
 
-  /* Coming-soon cards (current state for all three) — visible but not clickable */
-  .crs-btn.coming-soon {
-    opacity: 0.85;
-    cursor: default;
-  }
 
   /* ==================== MOBILE STYLES (≤768px) ==================== */
   @media (max-width: 768px) {
 
-    .page-title-h2 {
-      font-size: 1.25rem;
-      margin-bottom: 0.75rem;
-    }
 
-    .page-action-buttons {
-      display: flex;
-      flex-direction: row;
-      gap: 8px;
-      flex-wrap: nowrap;
-      align-items: stretch;
-      margin-bottom: 14px;
-    }
-    .page-action-buttons .action-icon,
-    .page-action-buttons .action-back {
-      flex: 0 0 auto;
-      width: 50px;
-      height: 38px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-    }
-    .action-back-label {
-      display: none;
-    }
 
     .crs-panel {
       padding: 16px;

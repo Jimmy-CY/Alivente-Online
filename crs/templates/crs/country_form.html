@@ -5,7 +5,8 @@
 
 {% block content %}
 
-<h2 class="page-title-h2"><center>ALIVENTE ONLINE - {{ title|upper }}</center></h2>
+<h2 class="page-title-h2">CRS COUNTRY CONFIGURATIONS</h2>
+<h4 class="page-subtitle-h4">{{ title|upper }}</h4>
 <br/>
 
 {% for msg in messages %}
@@ -17,195 +18,155 @@
   </div>
 {% endfor %}
 
-<!-- Action Buttons -->
-<div class="page-action-buttons">
-  <a href="{% url 'crs:country_list' %}" class="btn btn-success action-back" role="button" aria-label="Back to list">
-    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-  </a>
-</div>
+{% if form.non_field_errors %}
+<div class="alert alert-danger">{{ form.non_field_errors }}</div>
+{% endif %}
 
-<!-- Form Panel -->
-<div class="crs-panel-container">
-  <div class="crs-panel">
+<form method="post" novalidate>
+  {% csrf_token %}
 
-    {% if form.non_field_errors %}
-    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-    {% endif %}
-
-    <form method="post" novalidate>
-      {% csrf_token %}
-
-      <!-- Identity -->
-      <div class="form-section">
-        <div class="form-section-title">Identity</div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="{{ form.country_code.id_for_label }}">Country Code <span class="req">*</span></label>
-            {{ form.country_code }}
-            {% if form.country_code.errors %}<div class="field-error">{{ form.country_code.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">{{ form.country_code.help_text }}</small>
-          </div>
-          <div class="form-field">
-            <label for="{{ form.country_name.id_for_label }}">Country Name <span class="req">*</span></label>
-            {{ form.country_name }}
-            {% if form.country_name.errors %}<div class="field-error">{{ form.country_name.errors|join:" " }}</div>{% endif %}
-          </div>
-          <div class="form-field form-field-check">
-            <label class="check-label">
-              {{ form.is_active }}
-              <span>Active</span>
-            </label>
-            <small class="field-help">{{ form.is_active.help_text }}</small>
-          </div>
-        </div>
-      </div>
-
-      <!-- Schema -->
-      <div class="form-section">
-        <div class="form-section-title">Schema</div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="{{ form.oecd_version.id_for_label }}">OECD Version <span class="req">*</span></label>
-            {{ form.oecd_version }}
-            {% if form.oecd_version.errors %}<div class="field-error">{{ form.oecd_version.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">{{ form.oecd_version.help_text }}</small>
-          </div>
-          <div class="form-field">
-            <label for="{{ form.default_currency.id_for_label }}">Default Currency <span class="req">*</span></label>
-            {{ form.default_currency }}
-            {% if form.default_currency.errors %}<div class="field-error">{{ form.default_currency.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">{{ form.default_currency.help_text }}</small>
-          </div>
-          <div class="form-field form-field-full">
-            <label for="{{ form.receiving_country_strategy.id_for_label }}">Receiving Country Strategy <span class="req">*</span></label>
-            {{ form.receiving_country_strategy }}
-            {% if form.receiving_country_strategy.errors %}<div class="field-error">{{ form.receiving_country_strategy.errors|join:" " }}</div>{% endif %}
-            <small class="field-help">{{ form.receiving_country_strategy.help_text }}</small>
-          </div>
-        </div>
-      </div>
-
-      <!-- Reference ID Templates -->
-      <div class="form-section">
-        <div class="form-section-title">Reference ID Templates</div>
-        <div class="form-section-note">
-          Tokens resolved at submission time:
-          <code>[SENDING_FI_IN]</code>, <code>[YEAR]</code>,
-          <code>[YYYYMMDDHHMM]</code>, <code>[CURRENT_DATE]</code>, <code>[UUID]</code>.
-        </div>
-
-        <div class="form-field form-field-full">
-          <label for="{{ form.message_ref_id_template.id_for_label }}">Message Ref ID Template</label>
-          {{ form.message_ref_id_template }}
-          {% if form.message_ref_id_template.errors %}<div class="field-error">{{ form.message_ref_id_template.errors|join:" " }}</div>{% endif %}
-        </div>
-        <div class="form-field form-field-full">
-          <label for="{{ form.fi_doc_ref_id_template.id_for_label }}">FI Doc Ref ID Template</label>
-          {{ form.fi_doc_ref_id_template }}
-          {% if form.fi_doc_ref_id_template.errors %}<div class="field-error">{{ form.fi_doc_ref_id_template.errors|join:" " }}</div>{% endif %}
-        </div>
-        <div class="form-field form-field-full">
-          <label for="{{ form.account_doc_ref_id_template.id_for_label }}">Account Doc Ref ID Template</label>
-          {{ form.account_doc_ref_id_template }}
-          {% if form.account_doc_ref_id_template.errors %}<div class="field-error">{{ form.account_doc_ref_id_template.errors|join:" " }}</div>{% endif %}
-        </div>
-        <div class="form-field form-field-full">
-          <label for="{{ form.output_filename_template.id_for_label }}">Output Filename Template</label>
-          {{ form.output_filename_template }}
-          {% if form.output_filename_template.errors %}<div class="field-error">{{ form.output_filename_template.errors|join:" " }}</div>{% endif %}
-        </div>
-      </div>
-
-      <!-- Validation -->
-      <div class="form-section">
-        <div class="form-section-title">Validation</div>
-        <div class="form-field form-field-full">
-          <label for="{{ form.tin_regex.id_for_label }}">TIN Regex</label>
-          {{ form.tin_regex }}
-          {% if form.tin_regex.errors %}<div class="field-error">{{ form.tin_regex.errors|join:" " }}</div>{% endif %}
-          <small class="field-help">{{ form.tin_regex.help_text }}</small>
-        </div>
-      </div>
-
-      <!-- Submit Row -->
-      <div class="form-actions">
-        <a href="{% url 'crs:country_list' %}" class="btn btn-secondary">Cancel</a>
-        <button type="submit" class="btn btn-success">
-          <i class="fas fa-save"></i>
-          {% if mode == "add" %} Create Country{% else %} Save Changes{% endif %}
-        </button>
-      </div>
-    </form>
-
+  <!-- Action Buttons. The primary lives HERE, beside Back, which is
+       why the form has to open above it - it is a submit. The house
+       has no footer row on an entry screen, and this page used to
+       have one holding Cancel as well as Back: two controls going to
+       the same place. -->
+  <div class="page-action-buttons">
+    <button type="submit" class="btn action-primary">
+      <i class="fas fa-save"></i>{% if mode == "add" %} Create Country{% else %} Save Changes{% endif %}
+    </button>
+    <a href="{% url 'crs:country_list' %}" class="btn action-back" role="button" aria-label="Back to list">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
   </div>
-</div>
+
+  <!-- Identity -->
+  <div class="form-card">
+    <h3 class="form-section-title">Identity</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="{{ form.country_code.id_for_label }}">Country Code <span class="alv-req">*</span></label>
+        {{ form.country_code }}
+        {% if form.country_code.errors %}<div class="field-error">{{ form.country_code.errors|join:" " }}</div>{% endif %}
+        <small class="form-text">{{ form.country_code.help_text }}</small>
+      </div>
+      <div class="form-group">
+        <label for="{{ form.country_name.id_for_label }}">Country Name <span class="alv-req">*</span></label>
+        {{ form.country_name }}
+        {% if form.country_name.errors %}<div class="field-error">{{ form.country_name.errors|join:" " }}</div>{% endif %}
+      </div>
+      <div class="form-group form-group-check">
+        <label class="check-label">
+          {{ form.is_active }}
+          <span>Active</span>
+        </label>
+        <small class="form-text">{{ form.is_active.help_text }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schema -->
+  <div class="form-card">
+    <h3 class="form-section-title">Schema</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="{{ form.oecd_version.id_for_label }}">OECD Version <span class="alv-req">*</span></label>
+        {{ form.oecd_version }}
+        {% if form.oecd_version.errors %}<div class="field-error">{{ form.oecd_version.errors|join:" " }}</div>{% endif %}
+        <small class="form-text">{{ form.oecd_version.help_text }}</small>
+      </div>
+      <div class="form-group">
+        <label for="{{ form.default_currency.id_for_label }}">Default Currency <span class="alv-req">*</span></label>
+        {{ form.default_currency }}
+        {% if form.default_currency.errors %}<div class="field-error">{{ form.default_currency.errors|join:" " }}</div>{% endif %}
+        <small class="form-text">{{ form.default_currency.help_text }}</small>
+      </div>
+      <div class="form-group form-group-full">
+        <label for="{{ form.receiving_country_strategy.id_for_label }}">Receiving Country Strategy <span class="alv-req">*</span></label>
+        {{ form.receiving_country_strategy }}
+        {% if form.receiving_country_strategy.errors %}<div class="field-error">{{ form.receiving_country_strategy.errors|join:" " }}</div>{% endif %}
+        <small class="form-text">{{ form.receiving_country_strategy.help_text }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reference ID Templates -->
+  <div class="form-card">
+    <h3 class="form-section-title">Reference ID Templates</h3>
+    <div class="form-section-note">
+      Tokens resolved at submission time:
+      <code>[SENDING_FI_IN]</code>, <code>[YEAR]</code>,
+      <code>[YYYYMMDDHHMM]</code>, <code>[CURRENT_DATE]</code>, <code>[UUID]</code>.
+    </div>
+
+    <div class="form-group form-group-full">
+      <label for="{{ form.message_ref_id_template.id_for_label }}">Message Ref ID Template</label>
+      {{ form.message_ref_id_template }}
+      {% if form.message_ref_id_template.errors %}<div class="field-error">{{ form.message_ref_id_template.errors|join:" " }}</div>{% endif %}
+    </div>
+    <div class="form-group form-group-full">
+      <label for="{{ form.fi_doc_ref_id_template.id_for_label }}">FI Doc Ref ID Template</label>
+      {{ form.fi_doc_ref_id_template }}
+      {% if form.fi_doc_ref_id_template.errors %}<div class="field-error">{{ form.fi_doc_ref_id_template.errors|join:" " }}</div>{% endif %}
+    </div>
+    <div class="form-group form-group-full">
+      <label for="{{ form.account_doc_ref_id_template.id_for_label }}">Account Doc Ref ID Template</label>
+      {{ form.account_doc_ref_id_template }}
+      {% if form.account_doc_ref_id_template.errors %}<div class="field-error">{{ form.account_doc_ref_id_template.errors|join:" " }}</div>{% endif %}
+    </div>
+    <div class="form-group form-group-full">
+      <label for="{{ form.output_filename_template.id_for_label }}">Output Filename Template</label>
+      {{ form.output_filename_template }}
+      {% if form.output_filename_template.errors %}<div class="field-error">{{ form.output_filename_template.errors|join:" " }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Validation -->
+  <div class="form-card">
+    <h3 class="form-section-title">Validation</h3>
+    <div class="form-group form-group-full">
+      <label for="{{ form.tin_regex.id_for_label }}">TIN Regex</label>
+      {{ form.tin_regex }}
+      {% if form.tin_regex.errors %}<div class="field-error">{{ form.tin_regex.errors|join:" " }}</div>{% endif %}
+      <small class="form-text">{{ form.tin_regex.help_text }}</small>
+    </div>
+  </div>
+
+</form>
 
 <style>
-  :root {
-    --crs-dark: #28a745;
-    --crs-light: #d4edda;
-  }
 
-  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
-  .page-action-buttons {
-    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
-  }
-  .crs-panel-container { max-width: 900px; margin: 0 auto; }
-  .crs-panel {
-    padding: 30px; border: 3px solid var(--crs-dark);
-    background-color: var(--crs-light); border-radius: 10px;
-  }
 
-  /* Form sections */
-  .form-section {
-    background: white; border-radius: 8px;
-    padding: 20px; margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  .form-section:last-of-type { margin-bottom: 20px; }
-  .form-section-title {
-    font-size: 13px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px;
-    color: var(--crs-dark);
-    border-bottom: 2px solid var(--crs-light);
-    padding-bottom: 8px; margin-bottom: 14px;
-  }
   .form-section-note {
-    font-size: 12px; color: #6c757d;
+    font-size: 12px; color: var(--alv-ink-soft);
     margin-bottom: 12px; line-height: 1.6;
   }
+  /* The token chips. #c7254e was Bootstrap 3's inline-code colour, carried
+     in by copy and meaning nothing here; --alv-ink for the same reason it
+     was chosen in X1 - accent means primary action and selection, and a
+     template token is neither. */
   .form-section-note code {
-    background: #f1f3f5; color: #c7254e;
+    background: var(--alv-line-soft); color: var(--alv-ink);
     padding: 1px 5px; border-radius: 3px; font-size: 11px;
   }
 
+  /* Two columns, one on a phone. base does not own this, but eleven
+     house form pages already do exactly it - eight as .form-grid and
+     three as .form-row-2 - so it is a convention waiting to be hoisted,
+     not something CRS invented. The gap is finance_expense_add's. */
   .form-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px 22px;
   }
-  .form-field { display: flex; flex-direction: column; gap: 4px; }
-  .form-field-full { grid-column: 1 / -1; }
-  .form-field label {
-    font-size: 12px; font-weight: 600; color: #495057; margin: 0;
-  }
-  .form-field .req { color: #dc3545; }
-  .form-field .form-control {
-    padding: 7px 10px; border: 1px solid #ced4da;
-    border-radius: 5px; font-size: 14px;
-  }
-  .form-field .form-control:disabled {
-    background: #e9ecef; color: #6c757d;
-  }
-  .form-field .field-help {
-    font-size: 11px; color: #6c757d; font-style: italic;
-  }
-  .form-field .field-error {
-    font-size: 12px; color: #dc3545; font-weight: 600;
+  .form-group-full { grid-column: 1 / -1; }
+  /* base has no field-error component, so this stays - on the token
+     that means the thing it means. #dc3545 was Bootstrap's danger. */
+  .field-error {
+    font-size: 12px; color: var(--alv-bad); font-weight: 600;
   }
 
   /* Checkbox row */
   .check-label {
     display: flex; align-items: center; gap: 8px;
-    font-size: 14px; font-weight: 600; color: #495057;
+    font-size: 14px; font-weight: 600; color: var(--alv-ink-strong);
     cursor: pointer; margin: 0;
   }
   .check-label .form-check-input {
@@ -213,27 +174,10 @@
     margin: 0;
   }
 
-  /* Submit row */
-  .form-actions {
-    display: flex; justify-content: flex-end; gap: 10px;
-    margin-top: 8px;
-  }
 
   /* Mobile */
   @media (max-width: 768px) {
-    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
-    .page-action-buttons { margin-bottom: 14px; }
-    .page-action-buttons .action-back {
-      flex: 0 0 auto; width: 50px; height: 38px; padding: 0;
-      display: flex; align-items: center; justify-content: center; margin: 0;
-    }
-    .action-back-label { display: none; }
-    .crs-panel { padding: 16px; }
-    .form-section { padding: 14px; }
-    .form-grid { grid-template-columns: 1fr; }
-    .form-actions { flex-direction: column-reverse; gap: 8px; }
-    .form-actions .btn { width: 100%; }
-    .form-field .form-control { font-size: 16px !important; }
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
   }
 </style>
 

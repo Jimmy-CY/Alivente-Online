@@ -110,6 +110,7 @@ import difflib
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
 if not os.path.isdir(ROOT):
@@ -235,7 +236,7 @@ ok(scan(ctl_attr) == (0, []),
 ok(scan(ctl_stray)[0] == -1, 'CONTROL: a stray </div> is caught',
    scan(ctl_stray))
 bad, n = [], 0
-for d, _, fs in os.walk(ROOT):
+for d, _, fs in alv_tree.walk3():
     for f in fs:
         if not f.endswith('.html') or 'OLD DO NOT USE' in f:
             continue
@@ -244,7 +245,7 @@ for d, _, fs in os.walk(ROOT):
         total, issues = scan(read(p))
         if total or issues:
             bad.append('%s: net %+d, branches %s'
-                       % (os.path.relpath(p, ROOT), total, issues[:2]))
+                       % (alv_tree.rel(p), total, issues[:2]))
 ok(n > 100 and not bad, 'all %d template(s): every if-branch and every file '
    'comes out even' % n, '\n'.join(bad[:8]))
 

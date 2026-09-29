@@ -131,6 +131,7 @@ import json
 import os
 import re
 import sys
+import alv_tree
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
 if not os.path.isdir(ROOT):
@@ -211,12 +212,11 @@ CLAIM = [
 
 def four_across_rows():
     out = {}
-    for dp, _d, ns in os.walk(ROOT):
+    for dp, _d, ns in alv_tree.walk3():
         for n in sorted(ns):
             if not n.endswith('.html'):
                 continue
-            rel = os.path.relpath(os.path.join(dp, n),
-                                  ROOT).replace(os.sep, '/')
+            rel = alv_tree.rel(os.path.join(dp, n)).replace(os.sep, '/')
             if rel == 'base.html':
                 continue
             mk = markup_only(read(os.path.join(dp, n)))
@@ -518,12 +518,11 @@ if _pw_ok:
    decision is recorded rather than re-argued.
 """)
         items = []
-        for dp, _d, ns in os.walk(ROOT):
+        for dp, _d, ns in alv_tree.walk3():
             for n in sorted(ns):
                 if not n.endswith('.html'):
                     continue
-                rel = os.path.relpath(os.path.join(dp, n),
-                                      ROOT).replace(os.sep, '/')
+                rel = alv_tree.rel(os.path.join(dp, n)).replace(os.sep, '/')
                 if rel == 'base.html':
                     continue
                 mk = markup_only(read(os.path.join(dp, n)))
