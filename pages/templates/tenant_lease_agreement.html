@@ -17,12 +17,120 @@
   </div>
 {% endfor %}
 
-<!-- Action Buttons -->
-<div class="page-action-buttons page-action-buttons-single">
+<!-- Action Buttons. The -single modifier is gone with the second and
+     third control: it exists to push a lone Back to the right, and base
+     already puts Back on the right when there is something beside it. -->
+<div class="page-action-buttons">
+    {% if show_all %}
+      <a href="{% url 'tenant_lease_agreement' %}?{{ filter_qs }}" class="btn action-secondary" role="button">
+        <i class="fas fa-user-check"></i> Current tenants only
+      </a>
+    {% else %}
+      <a href="{% url 'tenant_lease_agreement' %}?{{ filter_qs }}all=1" class="btn action-secondary" role="button">
+        <i class="fas fa-users"></i> Include past tenants
+      </a>
+    {% endif %}
+
+    <button type="button" class="btn action-filter" id="filterBtn"
+            aria-pressed="false" aria-controls="filterPanel"
+            aria-label="Show filters">
+      <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+    </button>
+
     <a href="{% url 'admin_apms' %}" class="btn action-back" role="button">
         <i class="fas fa-arrow-left"></i> Back
     </a>
 </div>
+
+<div class="alv-filter-active" id="activeFilters">
+  <span class="alv-filter-active-label">Active filters:</span>
+  <div class="filter-tags" id="filterTags"></div>
+</div>
+
+<!-- Collapsible Filter Panel. Frame, field and chips are all base's -
+     H1 moved the frame there and D4 the field, so this page writes no
+     rule of its own. -->
+<div class="alv-filter filter-panel" id="filterPanel">
+  <div class="filter-header">
+    <h5 class="filter-title">
+      <i class="fas fa-filter"></i> <span class="filter-title-text">Lease Agreement Filters</span><span class="filter-title-text-mobile">Filters</span>
+    </h5>
+    <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
+    </button>
+  </div>
+
+  <div class="filter-content" id="filterContent">
+    <form action="{% url 'tenant_lease_agreement' %}" method="get" id="filterForm">
+      {% if show_all %}<input type="hidden" name="all" value="1">{% endif %}
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label class="filter-label" for="searchInput">
+            <i class="fas fa-search"></i> <strong>Search</strong>
+          </label>
+          <div class="search-input-group">
+            <input type="text"
+                   name="search"
+                   id="searchInput"
+                   class="form-control search-input"
+                   placeholder="Tenant or property name..."
+                   value="{{ search_query|default:'' }}">
+            <button type="button" class="search-btn" id="searchBtn" aria-label="Search">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="propertySelect">
+            <i class="fas fa-building"></i> <strong>Property</strong>
+          </label>
+          <select name="propname" class="form-control filter-select" id="propertySelect">
+            <option value="">All Properties</option>
+            {% for p in props %}
+              <option value="{{ p.prop_name }}" {% if selected_property == p.prop_name %}selected{% endif %}>{{ p.prop_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="agreementSelect">
+            <i class="fas fa-file-contract"></i> <strong>Agreement</strong>
+          </label>
+          <select name="agreement" class="form-control filter-select" id="agreementSelect">
+            <option value="">All Agreements</option>
+            <option value="attached" {% if selected_agreement == 'attached' %}selected{% endif %}>Attached</option>
+            <option value="missing" {% if selected_agreement == 'missing' %}selected{% endif %}>Missing</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="leaseSelect">
+            <i class="fas fa-calendar-times"></i> <strong>Lease</strong>
+          </label>
+          <select name="lease" class="form-control filter-select" id="leaseSelect">
+            <option value="">All Leases</option>
+            <option value="active" {% if selected_lease == 'active' %}selected{% endif %}>Active</option>
+            <option value="expired" {% if selected_lease == 'expired' %}selected{% endif %}>Expired</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* THE COLUMN COUNT IS THE PAGE'S, and only the column count. H1 moved
+   the filter FRAME into base but not grid-template-columns, because the
+   number of fields differs: Suppliers has two, Tenants three, this has
+   four. The phone override below is the ninth identical copy of one
+   rule and belongs in base - reported in test_lease_filter.py, not
+   fixed here. 30 Sep 2026. */
+.filter-grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
+@media screen and (max-width: 768px) {
+    .filter-grid { grid-template-columns: 1fr; gap: 12px; }
+}
+</style>
 
 {% if perms.auth.can_access_tenants %}
 
@@ -315,6 +423,90 @@ function deleteDocument(tenantId, tenantName) {
     $('#deleteModal').modal('show');
 }
 {% endif %}
+
+/* ===== THE FILTER, page side ===== 30 Sep 2026 ======================
+   Four controls, and the same shape as Properties and Tenants. The
+   selects submit on change; the search box submits on Enter or on its
+   button, NOT on every keystroke. The chips are built from the control
+   values and base counts them - see the alv-filter script in base.html,
+   which owns the open state and the count. [test_lease_filter.py] */
+document.addEventListener('DOMContentLoaded', function () {
+    updateActiveFilters();
+    ['propertySelect', 'agreementSelect', 'leaseSelect'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', function () {
+                document.getElementById('filterForm').submit();
+            });
+        }
+    });
+    var box = document.getElementById('searchInput');
+    if (box) {
+        box.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
+    var go = document.getElementById('searchBtn');
+    if (go) {
+        go.addEventListener('click', function () {
+            document.getElementById('filterForm').submit();
+        });
+    }
+    var clear = document.getElementById('clearAllBtn');
+    if (clear) {
+        clear.addEventListener('click', function () {
+            ['searchInput', 'propertySelect', 'agreementSelect',
+             'leaseSelect'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) { el.value = ''; }
+            });
+            document.getElementById('filterForm').submit();
+        });
+    }
+});
+
+function updateActiveFilters() {
+    var tags = document.getElementById('filterTags');
+    if (!tags) { return; }
+    var say = {attached: 'Attached', missing: 'Missing',
+               active: 'Active', expired: 'Expired'};
+    var of = [
+        ['search', 'Search', 'searchInput'],
+        ['property', 'Property', 'propertySelect'],
+        ['agreement', 'Agreement', 'agreementSelect'],
+        ['lease', 'Lease', 'leaseSelect']
+    ];
+    tags.innerHTML = '';
+    of.forEach(function (row) {
+        var el = document.getElementById(row[2]);
+        if (!el || !el.value) { return; }
+        var shown = say[el.value] || el.value;
+        var chip = document.createElement('span');
+        chip.className = 'filter-tag';
+        /* textContent, not a template string - a tenant called Smith &
+           Co would otherwise arrive as markup. */
+        chip.textContent = row[1] + ': ' + shown + ' ';
+        var x = document.createElement('button');
+        x.className = 'remove-tag';
+        x.type = 'button';
+        x.setAttribute('aria-label', 'Remove the ' + row[1] + ' filter');
+        x.textContent = '\u00d7';
+        x.addEventListener('click', function () { clearFilter(row[0]); });
+        chip.appendChild(x);
+        tags.appendChild(chip);
+    });
+}
+
+function clearFilter(which) {
+    var id = {search: 'searchInput', property: 'propertySelect',
+              agreement: 'agreementSelect', lease: 'leaseSelect'}[which];
+    var el = id && document.getElementById(id);
+    if (el) { el.value = ''; }
+    document.getElementById('filterForm').submit();
+}
 
 function viewDocument(documentUrl, documentName, tenantName) {
     // Use the shared PDF viewer component

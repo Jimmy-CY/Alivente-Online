@@ -575,10 +575,13 @@ for p in alv_tree.templates():
         house.append(rel)
     if 'class="alv-filter-active"' in m:
         rows.append(rel)
-ok(len(house) == 11, 'eleven pages wear the house filter', len(house))
+# TWELVE SINCE T4, 30 Sep 2026. Manage Lease Agreements joined the
+# house filter, chips row and all (test_lease_filter.py). EXACT and
+# not >= : this census exists so the set cannot change in silence.
+ok(len(house) == 12, 'twelve pages wear the house filter', len(house))
 ok(PAGE in rows, '%s is one of the rows' % PAGE)
-ok(len(rows) == 11,
-   'and ELEVEN of eleven now put their chips on base\'s row - the fourth '
+ok(len(rows) == 12,
+   'and TWELVE of twelve now put their chips on base\'s row - the fourth '
    'copy was the last one', sorted(set(house) - set(rows)))
 
 # ==========================================================================

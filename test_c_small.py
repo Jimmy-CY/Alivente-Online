@@ -415,9 +415,16 @@ ok(bool(_mh and _fh and _mh.group(1) == _fh.group(1))
    '  same type, default and help text as the model - a label only')
 _all = sorted(n[:-3] for n in os.listdir(MIG_DIR)
               if re.match(r'\d{4}_.*\.py$', n))
-ok(bool(_all) and _all[-1] == MIG_NAME
+# UPDATED 30 Sep 2026 BY N1. This read "it is the newest, and the only
+# 0094". Being the newest was never this round's claim - it was only
+# true at the time, and N1 added 0095_none_columns (test_none_columns.py).
+# What C1 actually guarantees is that its migration is THERE, exactly
+# once, and that the numbering has not forked - so that is what is asked
+# now, and a second 0094 still fails it.
+ok(bool(_all) and MIG_NAME in _all
    and sum(1 for n in _all if n.startswith('0094_')) == 1,
-   '  it is the newest, and the only 0094', _all[-2:])
+   '  it is there exactly once, and nothing else is numbered 0094',
+   _all[-2:])
 
 DJ = r'''
 import sys, django
@@ -456,8 +463,14 @@ else:
     except Exception as e:
         out = 'could not run: %s' % e
     lv = re.search(r'LEAVES (\S*)', out)
-    ok(lv is not None and lv.group(1) == MIG_NAME,
-       'Django sees one leaf, and it is 0094',
+    # ONE LEAF, whatever it is now called. Naming 0094 as the leaf was
+    # naming the newest migration, which is a moving target - N1's 0095
+    # is the leaf today and something else will be tomorrow. The claim
+    # that matters is that there is exactly ONE: two leaves mean the
+    # graph has forked, which is the failure this check exists for.
+    ok(lv is not None and lv.group(1) and ',' not in lv.group(1),
+       'Django sees exactly one leaf (%s)'
+       % (lv.group(1) if lv else '-'),
        lv.group(1) if lv else out[-600:])
     ok('CLEAN yes' in out, 'makemigrations finds nothing left to write - '
        'the models and the migrations agree', out[-600:])

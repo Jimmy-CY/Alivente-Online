@@ -161,7 +161,10 @@ ok(PAGE in house, '%s wears the house filter' % PAGE)
 ok(not other,
    'and NO page in the tree has a filter UI that is not the house one',
    other)
-ok(len(house) == 11, 'eleven pages have one, all the same', len(house))
+# TWELVE SINCE T4, 30 Sep 2026. Manage Lease Agreements joined the
+# house filter, chips row and all (test_lease_filter.py). EXACT and
+# not >= : this census exists so the set cannot change in silence.
+ok(len(house) == 12, 'twelve pages have one, all the same', len(house))
 
 b = alv_tree.path_of(PAGE) + SUFFIX
 if os.path.isfile(b):

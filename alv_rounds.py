@@ -109,6 +109,13 @@ ROUNDS = [
     '.bak_reportback',
     '.bak_rowform',
     '.bak_statsfold',
+    '.bak_leasefilter',
+    '.bak_nonecols',
+    '.bak_reportarrow',
+    '.bak_fieldadd',
+    '.bak_projtable',
+    '.bak_dashback',
+    '.bak_livesearch',
 ]
 
 

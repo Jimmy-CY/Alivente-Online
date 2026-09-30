@@ -19,9 +19,9 @@
                         {% if active_tenant and box_type == 'lease' %} ({{ active_tenant.tenant_name }}){% endif %}
                     </h2>
                 </div>
-                <div class="page-header-actions">
-                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn action-secondary">
-                        <i class="fas fa-home"></i> Property Dashboard
+                <div class="page-header-actions page-action-buttons page-action-buttons-single">
+                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn action-back" role="button" aria-label="Back to the property dashboard">
+                        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
                     </a>
                 </div>
             </div>
@@ -1495,11 +1495,12 @@
         font-size: 1.3rem;
         margin-bottom: 0;
     }
-    .page-header-actions .btn {
-        width: 100%;
-        text-align: center;
-        padding: 10px 16px;
-    }
+    /* The .page-header-actions .btn rule that was here stretched
+       every button in this header to the full width of the phone. The
+       header now holds nothing but Back, and a Back the width of a
+       phone is what T1 spent a round removing from the report heads -
+       base already makes it a 44px square here. 30 Sep 2026.
+                                            [test_dash_back.py] */
 
     /* Card body — tighter on mobile */
     .card-body {

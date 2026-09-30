@@ -46,6 +46,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -254,7 +255,73 @@ def tenant_edit_commit(request, tenant_id):
 @login_required
 @permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_lease_agreement(request):
-    tenants = tenant.objects.all().order_by('prop__prop_country', 'prop__prop_name', 'tenant_name')
+    # THE FILTER - 30 Sep 2026. Four things, all of them agreed, and all
+    # of them read from GET. The house is split five POST to six GET, so
+    # there is no standard to mirror; GET is right here because this
+    # view's POST already belongs to action=upload and action=delete,
+    # and because the current/past toggle is a link that has to be able
+    # to carry the filter with it. See test_lease_filter.py.
+    search = request.GET.get('search', '').strip()
+    selected_property = request.GET.get('propname', '')
+    selected_agreement = request.GET.get('agreement', '')
+    selected_lease = request.GET.get('lease', '')
+    show_all = request.GET.get('all') == '1'
+
+    tenants = tenant.objects.all()
+
+    # CURRENT TENANTS UNLESS ASKED. The screen used to open on every
+    # tenant who has ever held a lease; Tenants and Payment Behaviour
+    # both open on the current ones with the same toggle, and this is
+    # now the third.
+    if not show_all:
+        tenants = tenants.filter(tenant_current='Yes')
+
+    # ONE BOX, TWO COLUMNS. Tenant or property, because those are the
+    # two things the table shows and either one is how you would look.
+    if search:
+        tenants = tenants.filter(Q(tenant_name__icontains=search)
+                                 | Q(prop__prop_name__icontains=search))
+
+    if selected_property:
+        tenants = tenants.filter(prop__prop_name=selected_property)
+
+    # ATTACHED OR MISSING. A FileField with nothing in it is the empty
+    # string on some rows and NULL on others - the model allows both -
+    # so both have to be named or `missing` would quietly under-report.
+    if selected_agreement == 'attached':
+        tenants = tenants.exclude(tenant_lease_agreement='').exclude(
+            tenant_lease_agreement__isnull=True)
+    elif selected_agreement == 'missing':
+        tenants = tenants.filter(Q(tenant_lease_agreement='')
+                                 | Q(tenant_lease_agreement__isnull=True))
+
+    # EXPIRED OR ACTIVE, against today. A row with no end date is in
+    # neither: it cannot be said to have expired, and calling it active
+    # would be an invention.
+    today = date.today()
+    if selected_lease == 'expired':
+        tenants = tenants.filter(tenant_lease_end_date__lt=today)
+    elif selected_lease == 'active':
+        tenants = tenants.filter(tenant_lease_end_date__gte=today)
+
+    tenants = tenants.order_by('prop__prop_country', 'prop__prop_name', 'tenant_name')
+
+    # THE PROPERTIES IN THE FILTER are the ones tenants are actually in,
+    # read from the data and NOT from the filtered rows - a list that
+    # narrowed to the choice just made would be a one-way door. Same
+    # line as properties_page. It does follow the current/past toggle,
+    # so a property whose only tenant has left is not offered while you
+    # are looking at the current ones.
+    if show_all:
+        offer = props.objects.filter(tenant__isnull=False)
+    else:
+        offer = props.objects.filter(tenant__tenant_current='Yes')
+
+    # WHAT THE TOGGLE CARRIES. The filter minus `all`, so the link to
+    # past tenants keeps the search and the selects you already set.
+    keep = request.GET.copy()
+    keep.pop('all', None)
+    keep = keep.urlencode()
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -262,7 +329,10 @@ def tenant_lease_agreement(request):
 
         if not tenant_id:
             messages.error(request, 'No tenant selected')
-            return redirect('tenant_lease_agreement')
+            # BACK TO THE SAME FILTERED LIST, not to all tenants.
+            # get_full_path() is this page plus its query string, so an
+            # upload leaves you where you were. 30 Sep 2026.
+            return redirect(request.get_full_path())
 
         try:
             tenant_obj = get_object_or_404(tenant, pk=tenant_id)
@@ -284,7 +354,7 @@ def tenant_lease_agreement(request):
                     # Validate file size (10MB limit)
                     if uploaded_file.size > 10 * 1024 * 1024:
                         messages.error(request, 'File size exceeds 10MB limit')
-                        return redirect('tenant_lease_agreement')
+                        return redirect(request.get_full_path())
 
                     # Validate file type
                     allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
@@ -292,7 +362,7 @@ def tenant_lease_agreement(request):
 
                     if file_extension not in allowed_extensions:
                         messages.error(request, 'Invalid file type. Please upload PDF or image files only.')
-                        return redirect('tenant_lease_agreement')
+                        return redirect(request.get_full_path())
 
                     try:
                         # Ensure directory exists
@@ -319,6 +389,13 @@ def tenant_lease_agreement(request):
 
     context = {
         'tenants': tenants,
+        'props': offer.distinct().order_by('prop_country', 'prop_name'),
+        'search_query': search,
+        'selected_property': selected_property,
+        'selected_agreement': selected_agreement,
+        'selected_lease': selected_lease,
+        'show_all': show_all,
+        'filter_qs': (keep + '&') if keep else '',
     }
     return render(request, 'tenant_lease_agreement.html', context)
 

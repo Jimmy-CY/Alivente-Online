@@ -184,12 +184,19 @@ for p in alv_tree.templates():
     hits = FAM.findall(nocom(read(p)))
     if hits:
         left[rel] = len(hits)
-ok(sorted(left) == [LEFT],
-   'the only Bootstrap tone left in the whole tree is on %s' % LEFT, left)
-ok(left.get(LEFT) == 3,
-   '  and it is the three buttons welded into an input group, where '
-   'Bootstrap owns the geometry - the category Show-ButtonDrift already '
-   'excludes by name', left.get(LEFT))
+# NONE LEFT SINCE D3, 30 Sep 2026. R1 left three behind on
+# property_assets - the + buttons welded into an input group, which
+# Show-ButtonDrift excluded by name because Bootstrap owned their
+# geometry. Demetri looked straight at them and asked why they were
+# green, so base gained .action-field-add and they took it: Bootstrap
+# still owns the geometry, which is what the exclusion protected, but
+# not the colour. See test_field_add.py.
+#
+# An EXACT empty, not a floor: a Bootstrap tone reappearing anywhere is
+# the whole thing this round exists to notice.
+ok(not left,
+   'no Bootstrap tone is left anywhere in the tree - R1 took forty-four '
+   'and D3 took the last three', left)
 ok(not re.search(r"className = 'btn btn-(?:success|warning|danger)'",
                  nocom(read(alv_tree.join(ADMIN)))),
    'and no page assigns one in script either')
@@ -368,10 +375,13 @@ else:
 head('6. REPORTED, NOT CHANGED')
 # ==========================================================================
 t = read(alv_tree.join(LEFT))
-ok(len(FAM.findall(nocom(t))) == 3,
-   '%s keeps its three - welded into an input group' % LEFT)
+ok(len(FAM.findall(nocom(t))) == 0,
+   '%s gave up its three as well - D3, 30 Sep' % LEFT)
 ok('input-group-append' in nocom(t),
-   '  and they really are inside one, which is the reason')
+   '  and they are still welded into an input group, which is why only '
+   'their colour moved and their geometry did not')
+ok('action-field-add' in nocom(t),
+   '  wearing base\'s .action-field-add now')
 adm = nocom(read(alv_tree.join(ADMIN)))
 ok("'modal-header bg-success text-white'" in adm,
    'RECORDED: %s still paints its confirm modal header bg-success and '

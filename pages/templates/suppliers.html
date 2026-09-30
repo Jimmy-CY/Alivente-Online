@@ -91,6 +91,8 @@ Suppliers
                      name="supname"
                      id="searchInput"
                      class="form-control search-input"
+                     data-live-search=".suppliers-table"
+                     data-live-search-cell="Contact Person"
                      placeholder="Search by contact person name..."
                      value="{{ selected_supplier|default:'' }}{{ search_query|default:'' }}{{ supname_query|default:'' }}">
               <button type="button" class="search-btn" id="searchBtn">

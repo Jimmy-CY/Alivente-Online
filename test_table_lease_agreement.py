@@ -280,11 +280,23 @@ for sel, why in (('.upload-target-info', 'the upload banner'),
 # deleting too much fails that just as hard, and a later round quietly
 # dropping the component from base fails it too - which the old spelling
 # would have missed.
-check('  KEPT the lone Back bar, now declared in base',
-      re.search(r'class="[^"]*page-action-buttons-single', SRC)
-      is not None
+# UPDATED 30 Sep 2026 BY T4. The bar is no longer a LONE Back: this page
+# now carries Include past tenants and a Filter button beside it, so the
+# -single modifier - whose whole job is to push a solitary Back to the
+# right - was removed with them. See test_lease_filter.py.
+#
+# The net still has to hold, and it asks the same three things in the
+# spelling that is now true: base must still DECLARE the component (a
+# later round quietly dropping it from base fails here), the page must
+# still have its action bar (a patcher deleting too much fails here),
+# and the bar must hold the three controls T4 put in it.
+check('  KEPT the action bar, and base still declares the -single modifier',
+      re.search(r'class="page-action-buttons"', SRC) is not None
       and re.search(r'[.]page-action-buttons-single\s*[{]',
                     BASE_SRC) is not None)
+check('    and the bar is no longer a lone Back - T4 put two beside it',
+      'action-filter' in SRC and 'Include past tenants' in SRC
+      and 'page-action-buttons-single' not in SRC)
 
 
 # Presence is not integrity. A negative control that deleted ONE .filter-panel

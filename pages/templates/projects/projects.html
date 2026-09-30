@@ -156,17 +156,16 @@ Projects
 
   <!-- Projects Table -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center projects-table">
+    <table class="table alv-table projects-table">
       <thead>
         <tr>
           <th style="text-align: left; width: 30%">Project Name</th>
-          <th style="width: 20%">Property</th>
-          <th style="width: 13%">Status</th>
+          <th style="width: 18%">Property</th>
+          <th style="width: 12%">Status</th>
           <th style="width: 12%">Progress</th>
           <th style="width: 10%">Start Date</th>
           <th style="width: 10%">End Date</th>
-          <th style="width: 8%">Edit</th>
-          <th style="width: 7%">Delete</th>
+          <th class="desktop-action-cell cell-actions" style="width: 8%">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -217,35 +216,63 @@ Projects
                 <span class="text-muted">Not set</span>
               {% endif %}
             </td>
-            <td data-label="View" class="cell-action cell-action--view-mobile">
-              <a href="{% url 'projects_detail' project.project_id %}"
-                 class="btn btn-info action-btn action-btn--view"
-                 title="View Project">
-                <i class="fas fa-eye"></i><span class="btn-label-text"> View</span>
+            <!-- ONE ACTIONS COLUMN - 30 Sep 2026. Three cells and two
+                 headers became one of each. View, Edit and Delete are
+                 base's .icon-action-btn now, the same size on every row,
+                 and the slots a permission removes are drawn as
+                 .icon-disabled twins so the cluster never shifts. The
+                 phone gets base's .mobile-action-bar instead of the
+                 33.33% grid this page built for itself.
+                                              [test_projects_table.py] -->
+            <td class="desktop-action-cell cell-actions">
+              <span class="row-actions">
+                <a href="{% url 'projects_detail' project.project_id %}"
+                   class="icon-action-btn icon-view" title="View Project">
+                  <i class="fas fa-eye"></i>
+                </a>
+                {% if perms.auth.can_edit_projects %}
+                  <a href="{% url 'projects_edit' project.project_id %}"
+                     class="icon-action-btn icon-edit" title="Edit Project">
+                    <i class="fas fa-pencil-alt"></i>
+                  </a>
+                  <a href="{% url 'projects_delete' project.project_id %}"
+                     class="icon-action-btn icon-delete" title="Delete Project">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled" title="No edit permission">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                  <span class="icon-action-btn icon-disabled" title="No edit permission">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                {% endif %}
+              </span>
+            </td>
+
+            <td class="mobile-action-bar cols-3">
+              <a href="{% url 'projects_detail' project.project_id %}" class="mobile-action-btn">
+                <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                <span class="mobile-action-label">View</span>
               </a>
-            </td>
-            <td data-label="Edit" class="cell-action">
               {% if perms.auth.can_edit_projects %}
-                <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-light action-btn action-btn--edit">
-                  <i class="fas fa-edit"></i><span class="btn-label-text"> Edit</span>
+                <a href="{% url 'projects_edit' project.project_id %}" class="mobile-action-btn">
+                  <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </a>
+                <a href="{% url 'projects_delete' project.project_id %}" class="mobile-action-btn">
+                  <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                  <span class="mobile-action-label">Delete</span>
                 </a>
               {% else %}
-                <button type="button" class="btn btn-light action-btn action-btn--edit" disabled style="opacity: 0.5;">
-                  <i class="fas fa-edit" style="color: #6c757d;"></i><span class="btn-label-text" style="color: #6c757d;"> Edit</span>
-                </button>
-              {% endif %}
-            </td>
-            <td data-label="Delete" class="cell-action">
-              {% if perms.auth.can_edit_projects %}
-                <a href="{% url 'projects_delete' project.project_id %}"
-                   class="btn btn-danger action-btn delete-btn"
-                   title="Delete Project">
-                  <i class="fas fa-trash"></i><span class="btn-label-text"> Delete</span>
-                </a>
-              {% else %}
-                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                  <i class="fas fa-trash" style="color: #6c757d;"></i><span class="btn-label-text" style="color: #6c757d;"> Delete</span>
-                </button>
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </span>
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-trash mobile-action-icon"></i>
+                  <span class="mobile-action-label">Delete</span>
+                </span>
               {% endif %}
             </td>
           </tr>
@@ -471,23 +498,22 @@ Projects
     transition: width 0.3s ease;
 }
 
-.action-btn {
-    border-color: #dee2e6;
-    transition: all 0.2s ease;
-    padding: 6px 12px;
-    font-size: 14px;
-    text-decoration: none;
-    color: #495057;
-}
+      /* THE ROW ACTIONS ARE base's - 30 Sep 2026. Fifteen rules
+         lived here: .action-btn and its hover, .delete-btn in a literal
+         #dc3545, .btn-label-text { display: none } for a label the
+         markup wrote and the CSS then hid on every screen, and a
+         33.33% three-up grid this page built for the phone. base owns
+         all of it - .icon-action-btn, .row-actions, the icon colours,
+         .mobile-action-bar and its columns - so the fifteen are gone
+         and nothing about the page renders differently for it, except
+         that Delete is now the size of Edit.
+                                          [test_projects_table.py] */
 
-.btn-label-text { display: none; }
+
+
 
 @media (hover: hover) and (pointer: fine) {
-    .action-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        text-decoration: none;
-    }
+
 }
 
 .btn-info {
@@ -511,30 +537,15 @@ Projects
     }
 }
 
-.delete-btn {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
+
 
 /* Desktop: hide the mobile-only View action cell.
    On desktop the clickable project name in column 1 serves as the
    "view" affordance, so we don't need a redundant icon button. */
-.cell-action--view-mobile { display: none; }
+
 
 @media (hover: hover) and (pointer: fine) {
-    .delete-btn:hover {
-        background-color: #c82333;
-        border-color: #bd2130;
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-        text-decoration: none;
-    }
+
 }
 
 /* ============================================================
@@ -656,43 +667,21 @@ Projects
     .projects-table td.cell-date[data-label="End Date"] { padding-left: 4px; }
 
     /* Action cells: View + Edit + Delete side-by-side as icon-only buttons */
-    .projects-table td.cell-action {
-        display: inline-block !important;
-        width: calc(33.33% - 4px) !important;
-        padding: 8px 0 0 0;
-        margin-top: 4px;
-        vertical-align: top;
-    }
-    .projects-table td.cell-action[data-label="View"]   { padding-right: 4px; }
-    .projects-table td.cell-action[data-label="Edit"]   { padding-left: 2px; padding-right: 2px; }
-    .projects-table td.cell-action[data-label="Delete"] { padding-left: 4px; }
-    .projects-table td.cell-action::before { display: none; }
+
+
+
+
+
 
     /* Icon-only buttons — small, square, icon-centered */
     .projects-table td.cell-action .action-btn,
-    .projects-table td.cell-action .delete-btn {
-        display: flex;
-        width: 100%;
-        height: 40px;
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        font-size: 16px;
-        border-radius: 6px;
-        gap: 0;
-    }
+
     /* Hide the text labels on mobile — icon-only */
-    .projects-table td.cell-action .btn-label-text { display: none; }
+
 
     /* View button: white background with teal icon (mobile) */
-    .projects-table td.cell-action--view-mobile .action-btn--view {
-        background: white;
-        border: 1px solid #0e7c8b;
-        color: #0e7c8b;
-    }
-    .projects-table td.cell-action--view-mobile .action-btn--view i {
-        color: #0e7c8b !important;
-    }
+
+
 
     /* Empty state */
     .projects-table tr td[colspan] {

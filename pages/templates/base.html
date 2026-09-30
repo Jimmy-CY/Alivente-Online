@@ -2329,6 +2329,35 @@
         border: 1px solid var(--alv-line);
         color: var(--alv-ink);
       }
+      /* A SMALL ADD CONTROL WELDED TO A FIELD - 30 Sep 2026. Demetri, on the
+         Add New Asset panel: why are these + buttons in green, they
+         should be in teal. Three of them on property_assets - add a
+         category, a subcategory, a supplier - all raw
+         btn-outline-success, with not one line of CSS on the page. They
+         were green because nothing had ever decided otherwise, and
+         Show-ButtonDrift had them under LEAVE as welded to an input, so
+         the report said nothing drifting over three green buttons.
+
+         BOOTSTRAP KEEPS THE GEOMETRY. `btn` stays on the element and
+         input-group-append still matches the height of the field beside
+         it - that is what the LEAVE note was really protecting. Only
+         the colour moves, and the hover fills rather than tints, which
+         is the move .btn.action-secondary above already makes.
+
+         A NAME, because there will be a fourth: a page that grows an
+         inline add button reaches for btn-outline-success today because
+         there is nothing else to reach for.   [test_field_add.py] */
+      .btn.action-field-add {
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-accent);
+        color: var(--alv-accent);
+      }
+      .btn.action-field-add:hover,
+      .btn.action-field-add:focus {
+        background: var(--alv-accent);
+        border-color: var(--alv-accent);
+        color: var(--alv-paper);
+      }
       .action-secondary:hover,
       .action-secondary:focus,
       .btn.action-secondary:hover,
@@ -4673,6 +4702,95 @@ table.alv-matrix {
     function init() {
         Array.prototype.forEach.call(
             document.querySelectorAll('.alv-stats-collapse'), fold);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+
+  <script>
+/* ===== alv-live-search v1 ===== 30 Sep 2026 =========================
+   A search box that narrows a table as you type, with no server and no
+   reload. Demetri asked for it on the Suppliers contact field.
+
+   OPT IN with two attributes on the input:
+
+     data-live-search="<css selector for the table>"
+     data-live-search-cell="<the data-label of the column to match>"
+
+   IT MATCHES ONE COLUMN, ON PURPOSE. Every one of these boxes also
+   posts to a server filter that matches ONE model field, and the two
+   have to agree - a live filter that matched the whole row would give
+   a different answer from the same box pressed with Enter, which is
+   worse than having no live filter at all. The cell is named rather
+   than guessed, so a page cannot opt in without deciding.
+
+   ONLY FOR A TABLE THAT HOLDS EVERY ROW. A paginated list has rows the
+   browser has never seen, so narrowing what is on screen would quietly
+   answer a different question. projects paginates at 25 and is not
+   opted in.
+
+   THE GLASS STILL WORKS. Typing narrows the screen; Enter asks the
+   server and leaves a chip behind. Neither replaces the other.
+
+   WITH THIS SCRIPT BLOCKED nothing is hidden and the box behaves
+   exactly as it did before - the server search is untouched.
+                                             [test_live_search.py] */
+(function () {
+    "use strict";
+    function norm(s) { return (s || '').toLowerCase().trim(); }
+
+    function wire(box) {
+        var table = document.querySelector(
+            box.getAttribute('data-live-search'));
+        var label = box.getAttribute('data-live-search-cell');
+        if (!table || !label) { return; }
+        var body = table.tBodies[0];
+        if (!body) { return; }
+        var note = document.createElement('tr');
+        note.className = 'alv-live-search-empty';
+        note.style.display = 'none';
+        var cell = document.createElement('td');
+        cell.colSpan = 99;
+        cell.className = 'alv-empty-title';
+        note.appendChild(cell);
+        body.appendChild(note);
+
+        function run() {
+            var q = norm(box.value);
+            var rows = body.querySelectorAll(
+                'tr:not(.alv-live-search-empty)');
+            var shown = 0;
+            Array.prototype.forEach.call(rows, function (row) {
+                var td = row.querySelector('[data-label="' + label + '"]');
+                /* A row with no such cell is not a data row - an empty
+                   state, a totals line - and is left alone. */
+                if (!td) { return; }
+                var hit = !q || norm(td.textContent).indexOf(q) >= 0;
+                row.style.display = hit ? '' : 'none';
+                if (hit) { shown += 1; }
+            });
+            if (q && shown === 0) {
+                cell.textContent = 'Nothing here matches ' + box.value;
+                note.style.display = '';
+            } else {
+                note.style.display = 'none';
+            }
+            box.setAttribute('aria-describedby', 'alvLiveCount');
+        }
+
+        box.addEventListener('input', run);
+        /* Enter still goes to the server, so it must NOT be swallowed
+           here - the page's own handler submits the form. */
+        run();
+    }
+
+    function init() {
+        Array.prototype.forEach.call(
+            document.querySelectorAll('[data-live-search]'), wire);
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);

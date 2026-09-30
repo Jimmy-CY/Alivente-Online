@@ -419,13 +419,22 @@ for rel, p in templates():
     if _n:
         btn_where[rel] = _n
         btn += _n
-ok(btn == 3,
-   '  %d button uses are left, and they are named below - R1 took the '
-   'other forty-four on 30 Sep' % btn, btn)
-ok(sorted(btn_where) == ['property_assets.html'],
-   '  and all three are on property_assets, welded into an input group '
-   'where Bootstrap owns the geometry - the category Show-ButtonDrift '
-   'excludes by name', btn_where)
+# NONE LEFT SINCE D3, 30 Sep 2026. This read "three are left, and all
+# three are on property_assets, welded into an input group where
+# Bootstrap owns the geometry - the category Show-ButtonDrift excludes
+# by name". Demetri looked at those three + buttons and asked why they
+# were green, so base gained .action-field-add and they took it -
+# Bootstrap still owns their geometry, which is what the exclusion was
+# really protecting, but not their colour. See test_field_add.py.
+#
+# Kept as an EXACT zero rather than dropped: btn-success and
+# btn-warning coming back anywhere is exactly what this round exists to
+# notice.
+ok(btn == 0,
+   '  %d button use(s) of btn-success or btn-warning are left in the '
+   'whole tree - R1 took forty-four on 30 Sep and D3 took the last '
+   'three' % btn, btn_where)
+ok(not btn_where, '  and no page carries one', btn_where)
 
 # ==========================================================================
 head('4. TWO PAGES GAVE UP A COPY, ONE KEEPS ONE')

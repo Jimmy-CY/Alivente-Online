@@ -253,10 +253,14 @@ for p in alv_tree.templates():
                          t):
         (paired if 'form-control' in m.group(1) else bare).append(
             (alv_tree.rel(p), m.group(1)))
-ok(len(paired) + len(bare) == 30,
-   'thirty uses of the two class names across the tree',
+# 33 AND 28 SINCE T4, 30 Sep 2026. Manage Lease Agreements gained a
+# search box and three selects, all four paired with .form-control the
+# way this round asks (test_lease_filter.py). Kept EXACT, not >= : the
+# whole point of the census is that the set cannot change in silence.
+ok(len(paired) + len(bare) == 33,
+   'thirty-three uses of the two class names across the tree',
    len(paired) + len(bare))
-ok(len(paired) == 25, '  twenty-five pair it with .form-control, and do '
+ok(len(paired) == 28, '  twenty-eight pair it with .form-control, and do '
    'not move', len(paired))
 ins = [b for b in bare if 'filter-input' in b[1]]
 ok(len(ins) == 2,

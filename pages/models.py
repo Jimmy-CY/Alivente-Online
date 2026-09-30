@@ -39,7 +39,7 @@ def project_document_upload_path(instance, filename):
 
 class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
-    project_name = models.CharField(max_length=255, blank=True, null=True)
+    project_name = models.CharField(max_length=255, blank=True)
     prop = models.ForeignKey('props', on_delete=models.CASCADE)  # Changed to string reference
     project_start_date = models.DateField(blank=True, null=True)
     project_expected_completion_date = models.DateField(blank=True, null=True)
@@ -54,13 +54,12 @@ class Project(models.Model):
         max_length=20,
         choices=PROJECT_STATUS_CHOICES,
         default='Pending',
-        blank=True,
-        null=True
+        blank=True
     )
     
-    project_description = models.TextField(blank=True, null=True)
-    project_name_greek = models.CharField(max_length=255, blank=True, null=True, help_text='Greek translation of project name')
-    project_description_greek = models.TextField(blank=True, null=True, help_text='Greek translation of project description')
+    project_description = models.TextField(blank=True)
+    project_name_greek = models.CharField(max_length=255, blank=True, help_text='Greek translation of project name')
+    project_description_greek = models.TextField(blank=True, help_text='Greek translation of project description')
     project_total_budgeted_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0.00)
     project_total_actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0.00)
     project_created_date = models.DateTimeField(auto_now_add=True)
@@ -253,10 +252,10 @@ class ProjectTask(models.Model):
     task_id = models.AutoField(primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     parent_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='subtasks')
-    task_name = models.CharField(max_length=255, blank=True, null=True)
-    task_description = models.TextField(blank=True, null=True)  # longtext
-    task_name_greek = models.CharField(max_length=255, blank=True, null=True, help_text='Greek translation of task name')
-    task_description_greek = models.TextField(blank=True, null=True, help_text='Greek translation of task description')
+    task_name = models.CharField(max_length=255, blank=True)
+    task_description = models.TextField(blank=True)  # longtext
+    task_name_greek = models.CharField(max_length=255, blank=True, help_text='Greek translation of task name')
+    task_description_greek = models.TextField(blank=True, help_text='Greek translation of task description')
     task_start_date = models.DateField(blank=True, null=True)
     task_expected_completion_date = models.DateField(blank=True, null=True)
     task_actual_completion_date = models.DateField(blank=True, null=True)
@@ -270,8 +269,7 @@ class ProjectTask(models.Model):
         max_length=20,
         choices=TASK_STATUS_CHOICES,
         default='Pending',
-        blank=True,
-        null=True
+        blank=True
     )
     
     TASK_PRIORITY_CHOICES = [
@@ -283,13 +281,12 @@ class ProjectTask(models.Model):
     task_priority = models.CharField(
         max_length=10,
         choices=TASK_PRIORITY_CHOICES,
-        blank=True,
-        null=True
+        blank=True
     )
     
     task_budgeted_cost = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, default=0.00)
     task_actual_cost = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, default=0.00)
-    task_assigned_to = models.CharField(max_length=255, blank=True, null=True)
+    task_assigned_to = models.CharField(max_length=255, blank=True)
     
     # NEW: Progress percentage field (only for subtasks)
     task_progress_percentage = models.IntegerField(
@@ -570,11 +567,11 @@ class ProjectDocument(models.Model):
     document_id = models.AutoField(primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_documents')
     task = models.ForeignKey('ProjectTask', on_delete=models.CASCADE, blank=True, null=True, related_name='task_documents')  # Changed to string reference
-    document_name = models.CharField(max_length=255, blank=True, null=True)
-    document_description = models.TextField(blank=True, null=True)
+    document_name = models.CharField(max_length=255, blank=True)
+    document_description = models.TextField(blank=True)
     document_file = models.FileField(upload_to=project_document_upload_path, blank=True, null=True)
     document_uploaded_date = models.DateTimeField(auto_now_add=True)
-    document_uploaded_by = models.CharField(max_length=255, blank=True, null=True)
+    document_uploaded_by = models.CharField(max_length=255, blank=True)
     
     def __str__(self):
         return self.document_name or f"Document {self.document_id}"
@@ -639,28 +636,28 @@ def lease_agreement_upload_path(instance, filename):
 ##### Create your models here ###############
 class props(models.Model):
     prop_id = models.AutoField(primary_key=True)
-    prop_name = models.CharField(max_length=255, blank=True, null=True)
-    prop_address1 = models.CharField(max_length=255, blank=True, null=True)
-    prop_address2 = models.CharField(max_length=255, blank=True, null=True)
-    prop_suburb = models.CharField(max_length=255, blank=True, null=True)
-    prop_city = models.CharField(max_length=255, blank=True, null=True)
-    prop_province = models.CharField(max_length=255, blank=True, null=True)
-    prop_country = models.CharField(max_length=255, blank=True, null=True)
-    prop_pcode = models.CharField(max_length=255, blank=True, null=True)
+    prop_name = models.CharField(max_length=255, blank=True)
+    prop_address1 = models.CharField(max_length=255, blank=True)
+    prop_address2 = models.CharField(max_length=255, blank=True)
+    prop_suburb = models.CharField(max_length=255, blank=True)
+    prop_city = models.CharField(max_length=255, blank=True)
+    prop_province = models.CharField(max_length=255, blank=True)
+    prop_country = models.CharField(max_length=255, blank=True)
+    prop_pcode = models.CharField(max_length=255, blank=True)
     prop_latitude = models.DecimalField(max_digits=10, decimal_places=8, blank=True, null=True)
     prop_longitude = models.DecimalField(max_digits=11, decimal_places=8, blank=True, null=True)
     prop_floor_area = models.IntegerField(blank=True, null=True)
     prop_year_built = models.IntegerField(blank=True, null=True)
-    prop_status = models.CharField(max_length=255, blank=True, null=True)
-    prop_available_for_rent = models.CharField(max_length=255, blank=True, null=True)
+    prop_status = models.CharField(max_length=255, blank=True)
+    prop_available_for_rent = models.CharField(max_length=255, blank=True)
     prop_title_deed = models.FileField(upload_to=title_deed_upload_path, blank=True, null=True)
-    prop_title_deed_status = models.CharField(max_length=255, blank=True, null=True)
-    prop_electricity = models.CharField(max_length=255, blank=True, null=True)
-    prop_water = models.CharField(max_length=255, blank=True, null=True)
-    prop_refuse = models.CharField(max_length=255, blank=True, null=True)
-    prop_property_tax = models.CharField(max_length=255, blank=True, null=True)
-    prop_sewerage = models.CharField(max_length=255, blank=True, null=True)
-    prop_insurance = models.CharField(max_length=255, blank=True, null=True)
+    prop_title_deed_status = models.CharField(max_length=255, blank=True)
+    prop_electricity = models.CharField(max_length=255, blank=True)
+    prop_water = models.CharField(max_length=255, blank=True)
+    prop_refuse = models.CharField(max_length=255, blank=True)
+    prop_property_tax = models.CharField(max_length=255, blank=True)
+    prop_sewerage = models.CharField(max_length=255, blank=True)
+    prop_insurance = models.CharField(max_length=255, blank=True)
     prop_include_in_occupancy = models.BooleanField(
         default=True,
         verbose_name="Include in Occupancy",
@@ -678,9 +675,9 @@ class props(models.Model):
 class petty(models.Model):
     petty_cash_id = models.AutoField(primary_key=True)
     petty_cash_date = models.DateField(blank=True, null=True)
-    petty_cash_description = models.CharField(max_length=55, blank=True, null=True)
+    petty_cash_description = models.CharField(max_length=55, blank=True)
     petty_cash_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    petty_cash_dr_cr = models.CharField(max_length=2, blank=True, null=True)
+    petty_cash_dr_cr = models.CharField(max_length=2, blank=True)
 
     def __str__(self):
         return self.petty_cash_description
@@ -691,21 +688,21 @@ class petty(models.Model):
 class tenant(models.Model):
     tenant_id = models.AutoField(primary_key=True)
     prop = models.ForeignKey(props, on_delete=models.CASCADE)
-    tenant_type = models.CharField(max_length=255, blank=True, null=True)
-    tenant_name = models.CharField(max_length=255, blank=True, null=True)
-    tenant_contact_person = models.CharField(max_length=255, blank=True, null=True)
-    tenant_contact_number = models.CharField(max_length=255, blank=True, null=True)
-    tenant_email = models.CharField(max_length=255, blank=True, null=True)
+    tenant_type = models.CharField(max_length=255, blank=True)
+    tenant_name = models.CharField(max_length=255, blank=True)
+    tenant_contact_person = models.CharField(max_length=255, blank=True)
+    tenant_contact_number = models.CharField(max_length=255, blank=True)
+    tenant_email = models.CharField(max_length=255, blank=True)
     tenant_deposit = models.IntegerField(blank=True, null=True)
     tenant_lease_start_date = models.DateField(blank=True, null=True)
     tenant_lease_end_date = models.DateField(blank=True, null=True)
-    tenant_rental_type = models.CharField(max_length=255, blank=True, null=True)
-    tenant_renewal = models.CharField(max_length=255, blank=True, null=True)
+    tenant_rental_type = models.CharField(max_length=255, blank=True)
+    tenant_renewal = models.CharField(max_length=255, blank=True)
     tenant_renewal_period = models.IntegerField(blank=True, null=True)
     tenant_rent = models.IntegerField(blank=True, null=True)
     tenant_levies = models.IntegerField(blank=True, null=True)
     tenant_payment_terms = models.IntegerField(blank=True, null=True)
-    tenant_current = models.CharField(max_length=255, blank=True, null=True)
+    tenant_current = models.CharField(max_length=255, blank=True)
     tenant_lease_agreement = models.FileField(
         upload_to=lease_agreement_upload_path, 
         blank=True, 
@@ -714,8 +711,7 @@ class tenant(models.Model):
     )
     tenant_lease_agreement_status = models.CharField(
         max_length=255, 
-        blank=True, 
-        null=True,
+        blank=True,
         verbose_name="Lease Agreement Status"
     )
     RENEWAL_STATUS_CHOICES = [
@@ -728,7 +724,6 @@ class tenant(models.Model):
         choices=RENEWAL_STATUS_CHOICES,
         default='pending',
         blank=True,
-        null=True,
         verbose_name="Renewal Status"
     )
     tenant_physical_invoice_required = models.BooleanField(
@@ -778,12 +773,12 @@ class tenant(models.Model):
 
 class supplier(models.Model):
     supplier_id = models.AutoField(primary_key=True)
-    supplier_contact_person = models.CharField(max_length=255, blank=True, null=True)
-    supplier_contact_number = models.CharField(max_length=255, blank=True, null=True)
-    supplier_email = models.CharField(max_length=255, blank=True, null=True)
-    supplier_company_name = models.CharField(max_length=255, blank=True, null=True)
-    supplier_role = models.CharField(max_length=255, blank=True, null=True)
-    supplier_country = models.CharField(max_length=255, blank=True, null=True)
+    supplier_contact_person = models.CharField(max_length=255, blank=True)
+    supplier_contact_number = models.CharField(max_length=255, blank=True)
+    supplier_email = models.CharField(max_length=255, blank=True)
+    supplier_company_name = models.CharField(max_length=255, blank=True)
+    supplier_role = models.CharField(max_length=255, blank=True)
+    supplier_country = models.CharField(max_length=255, blank=True)
     
     def __str__(self):
         return self.supplier_contact_person
@@ -795,7 +790,7 @@ class invoices(models.Model):
     invoice_id = models.AutoField(primary_key=True)
     tenant = models.ForeignKey(tenant, on_delete=models.CASCADE)
     invoice_date = models.DateField(blank=True, null=True)
-    invoice_paid = models.CharField(max_length=255, blank=True, null=True)
+    invoice_paid = models.CharField(max_length=255, blank=True)
     invoice_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     # Date the invoice was marked paid, stamped automatically in save() below.
     # Read by the tenant payment-behaviour report (tenant_payment_days_view)
@@ -950,7 +945,7 @@ class PhysicalInvoice(models.Model):
     period_year = models.PositiveSmallIntegerField()
     period_month = models.PositiveSmallIntegerField(help_text='1-12')
     invoice_date = models.DateField(help_text='Printed on the invoice (1st of the period month).')
-    invoice_number = models.CharField(max_length=32, blank=True, null=True,
+    invoice_number = models.CharField(max_length=32, blank=True,
         help_text='PR-#### — assigned when the invoice is sent.')
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
@@ -968,7 +963,7 @@ class PhysicalInvoice(models.Model):
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='approved_physical_invoices')
     sent_at = models.DateTimeField(null=True, blank=True)
-    email_status = models.CharField(max_length=20, blank=True, null=True)
+    email_status = models.CharField(max_length=20, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1089,12 +1084,12 @@ class PhysicalInvoiceNumbering(models.Model):
 class issues(models.Model):
     issues_id = models.AutoField(primary_key=True)
     prop = models.ForeignKey(props, on_delete=models.CASCADE)
-    issues_heading = models.CharField(max_length=255, blank=True, null=True)
-    issues_description = models.CharField(max_length=255, blank=True, null=True)
+    issues_heading = models.CharField(max_length=255, blank=True)
+    issues_description = models.CharField(max_length=255, blank=True)
     issues_date_logged = models.DateField(blank=True, null=True)
-    issues_status = models.CharField(max_length=255, blank=True, null=True)
+    issues_status = models.CharField(max_length=255, blank=True)
     issues_resolution_date = models.DateField(blank=True, null=True, default=None)
-    issues_resolving_user = models.CharField(max_length=255, blank=True, null=True)
+    issues_resolving_user = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.issues_heading
@@ -1105,8 +1100,8 @@ class issues(models.Model):
 class issues_details(models.Model):
     issues_details_id = models.AutoField(primary_key=True)
     issues = models.ForeignKey(issues, on_delete=models.CASCADE)
-    issues_details_comment = models.CharField(max_length=255, blank=True, null=True)
-    issues_details_user = models.CharField(max_length=255, blank=True, null=True)
+    issues_details_comment = models.CharField(max_length=255, blank=True)
+    issues_details_user = models.CharField(max_length=255, blank=True)
     issues_details_date = models.DateField(blank=True, null=True)
     issues_details_last_notified_at = models.DateTimeField(null=True, blank=True)    
 
@@ -1178,8 +1173,8 @@ class IssueAuditLog(models.Model):
         help_text="Model field that changed, e.g. 'issues_heading', "
                   "'issues_description', 'prop'.",
     )
-    old_value = models.TextField(blank=True, null=True)
-    new_value = models.TextField(blank=True, null=True)
+    old_value = models.TextField(blank=True)
+    new_value = models.TextField(blank=True)
     changed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1206,19 +1201,19 @@ class prop_values(models.Model):
 
 class revenue_types(models.Model):
     revenue_types_id = models.AutoField(primary_key=True)
-    revenue_types_name = models.CharField(max_length=255, blank=True, null=True)
-    revenue_types_jan = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_feb = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_mar = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_apr = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_may = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_jun = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_jul = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_aug = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_sep = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_oct = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_nov = models.CharField(max_length=3, blank=True, null=True)
-    revenue_types_dec = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_name = models.CharField(max_length=255, blank=True)
+    revenue_types_jan = models.CharField(max_length=3, blank=True)
+    revenue_types_feb = models.CharField(max_length=3, blank=True)
+    revenue_types_mar = models.CharField(max_length=3, blank=True)
+    revenue_types_apr = models.CharField(max_length=3, blank=True)
+    revenue_types_may = models.CharField(max_length=3, blank=True)
+    revenue_types_jun = models.CharField(max_length=3, blank=True)
+    revenue_types_jul = models.CharField(max_length=3, blank=True)
+    revenue_types_aug = models.CharField(max_length=3, blank=True)
+    revenue_types_sep = models.CharField(max_length=3, blank=True)
+    revenue_types_oct = models.CharField(max_length=3, blank=True)
+    revenue_types_nov = models.CharField(max_length=3, blank=True)
+    revenue_types_dec = models.CharField(max_length=3, blank=True)
 
     def __str__(self):
         return str(self.revenue_types_name)
@@ -1228,8 +1223,8 @@ class revenue_types(models.Model):
 
 class revenue_line_types(models.Model):
     revenue_line_types_id = models.AutoField(primary_key=True)
-    revenue_line_types_name = models.CharField(max_length=255, blank=True, null=True)
-    revenue_line_types_description = models.CharField(max_length=255, blank=True, null=True)
+    revenue_line_types_name = models.CharField(max_length=255, blank=True)
+    revenue_line_types_description = models.CharField(max_length=255, blank=True)
     # Which lease value (if any) this line type is fed from. '' = normal editable
     # revenue-table line type; 'rent'/'levies' = driven by the lease, read-only on
     # leased properties. Replaces the old name-substring matching so renaming the
@@ -1269,19 +1264,19 @@ class revenue(models.Model):
 
 class expense_types(models.Model):
     expense_types_id = models.AutoField(primary_key=True)
-    expense_types_name = models.CharField(max_length=255, blank=True, null=True)
-    expense_types_jan = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_feb = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_mar = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_apr = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_may = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_jun = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_jul = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_aug = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_sep = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_oct = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_nov = models.CharField(max_length=3, blank=True, null=True)
-    expense_types_dec = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_name = models.CharField(max_length=255, blank=True)
+    expense_types_jan = models.CharField(max_length=3, blank=True)
+    expense_types_feb = models.CharField(max_length=3, blank=True)
+    expense_types_mar = models.CharField(max_length=3, blank=True)
+    expense_types_apr = models.CharField(max_length=3, blank=True)
+    expense_types_may = models.CharField(max_length=3, blank=True)
+    expense_types_jun = models.CharField(max_length=3, blank=True)
+    expense_types_jul = models.CharField(max_length=3, blank=True)
+    expense_types_aug = models.CharField(max_length=3, blank=True)
+    expense_types_sep = models.CharField(max_length=3, blank=True)
+    expense_types_oct = models.CharField(max_length=3, blank=True)
+    expense_types_nov = models.CharField(max_length=3, blank=True)
+    expense_types_dec = models.CharField(max_length=3, blank=True)
 
     def __str__(self):
         return str(self.expense_types_name)
@@ -1291,9 +1286,9 @@ class expense_types(models.Model):
 
 class expense_line_types(models.Model):
     expense_line_types_id = models.AutoField(primary_key=True)
-    expense_line_types_name = models.CharField(max_length=255, blank=True, null=True)
-    expense_line_types_description = models.CharField(max_length=255, blank=True, null=True)
-    expense_line_types_prorata = models.CharField(max_length=3, blank=True, null=True)
+    expense_line_types_name = models.CharField(max_length=255, blank=True)
+    expense_line_types_description = models.CharField(max_length=255, blank=True)
+    expense_line_types_prorata = models.CharField(max_length=3, blank=True)
     expense_line_types_pr_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
@@ -1331,32 +1326,32 @@ class act_expense(models.Model):
     act_expense_id = models.AutoField(primary_key=True)
     act_expense_date = models.DateField(blank=True, null=True)
     prop = models.ForeignKey(props, on_delete=models.CASCADE)
-    act_expense_description = models.CharField(max_length=55, blank=True, null=True)
+    act_expense_description = models.CharField(max_length=55, blank=True)
     # max_digits widened 6 -> 10 (Aug 2026). At 6 the ceiling was EUR 9,999.99,
     # which silently blocked any larger invoice (a renovation, a boiler).
     act_expense_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    act_expense_approved = models.CharField(max_length=3, blank=True, null=True)
-    act_expense_paid = models.CharField(max_length=3, blank=True, null=True)
+    act_expense_approved = models.CharField(max_length=3, blank=True)
+    act_expense_paid = models.CharField(max_length=3, blank=True)
     act_expense_document = models.FileField(upload_to=expense_document_upload_path, blank=True, null=True)
 
     # ---- Invoice verification (two-way match) -----------------------------
     # Written by pages.services.invoice_verification when a document is
     # uploaded. Advisory only: nothing here ever alters a financial figure.
     act_expense_verify_status = models.CharField(
-        max_length=20, blank=True, null=True,
+        max_length=20, blank=True,
         help_text='verified | mismatch | unverified | not_invoice | pending')
     act_expense_verify_checked_at = models.DateTimeField(blank=True, null=True)
     act_expense_verify_total = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True,
         help_text='Payable total as read from the invoice.')
     act_expense_verify_date = models.DateField(blank=True, null=True)
-    act_expense_verify_number = models.CharField(max_length=60, blank=True, null=True)
-    act_expense_verify_supplier = models.CharField(max_length=120, blank=True, null=True)
-    act_expense_verify_notes = models.TextField(blank=True, null=True)
+    act_expense_verify_number = models.CharField(max_length=60, blank=True)
+    act_expense_verify_supplier = models.CharField(max_length=120, blank=True)
+    act_expense_verify_notes = models.TextField(blank=True)
     act_expense_verify_raw = models.TextField(
-        blank=True, null=True, help_text='Full extraction payload - the audit record.')
+        blank=True, help_text='Full extraction payload - the audit record.')
     act_expense_verify_model = models.CharField(
-        max_length=60, blank=True, null=True,
+        max_length=60, blank=True,
         help_text='Model + prompt version, so old verdicts stay interpretable.')
 
     def verify_badge(self):
@@ -1605,8 +1600,8 @@ class MeasurementUnit(models.Model):
     measurement_unit_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, help_text='Singular name (e.g., teaspoon, cup, gram)')
     name_plural = models.CharField(max_length=50, blank=True, help_text='Plural name (e.g., teaspoons, cups, grams)')
-    abbreviation = models.CharField(max_length=10, blank=True, null=True, help_text='Singular short form (e.g., tsp, cup, g)')
-    abbreviation_plural = models.CharField(max_length=10, blank=True, null=True, help_text='Plural short form (e.g., tsp, cups, g)')
+    abbreviation = models.CharField(max_length=10, blank=True, help_text='Singular short form (e.g., tsp, cup, g)')
+    abbreviation_plural = models.CharField(max_length=10, blank=True, help_text='Plural short form (e.g., tsp, cups, g)')
     unit_type = models.CharField(max_length=20, choices=UNIT_TYPE_CHOICES, default='other')
     created_date = models.DateTimeField(auto_now_add=True)
     
@@ -1631,7 +1626,7 @@ class IngredientCategory(models.Model):
     """Categories for organizing ingredients"""
     ingredient_category_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True, help_text='e.g., Vegetables, Poultry, Dairy')
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -1661,7 +1656,7 @@ class Ingredient(models.Model):
         blank=True,
         help_text='Default measurement unit for this ingredient'
     )
-    notes = models.TextField(blank=True, null=True, help_text='Storage tips, substitutions, etc.')
+    notes = models.TextField(blank=True, help_text='Storage tips, substitutions, etc.')
     
     # === USDA FoodData Central nutrition data ===
     # All nutrition values are per 100g. The recipe nutrition calculator
@@ -1673,11 +1668,11 @@ class Ingredient(models.Model):
         help_text='USDA FoodData Central food ID (set when mapped to nutrition data)'
     )
     fdc_description = models.CharField(
-        max_length=300, null=True, blank=True,
+        max_length=300, blank=True,
         help_text='USDA description of the matched food (for reference)'
     )
     fdc_data_type = models.CharField(
-        max_length=30, null=True, blank=True,
+        max_length=30, blank=True,
         help_text='USDA data type: Foundation, SR Legacy, Survey (FNDDS), or Branded'
     )
     
@@ -1727,7 +1722,6 @@ class Ingredient(models.Model):
     nutrition_source = models.CharField(
         max_length=10,
         choices=NUTRITION_SOURCE_CHOICES,
-        null=True,
         blank=True,
         help_text='Where the per-100g nutrition values came from. NULL = not set yet.'
     )
@@ -1828,7 +1822,7 @@ class RecipeCategory(models.Model):
     """Categories for recipes (Pasta, Salad, Asian, etc.)"""
     recipe_category_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True, help_text='e.g., Pasta, Salad, Asian, Burgers')
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -1867,7 +1861,7 @@ class Recipe(models.Model):
     
     recipe_id = models.AutoField(primary_key=True)
     recipe_name = models.CharField(max_length=255, help_text='Name of the recipe')
-    recipe_description = models.TextField(blank=True, null=True, help_text='Brief description or introduction')
+    recipe_description = models.TextField(blank=True, help_text='Brief description or introduction')
     
     # Time fields (in minutes)
     prep_time = models.IntegerField(blank=True, null=True, help_text='Preparation time in minutes')
@@ -1885,7 +1879,7 @@ class Recipe(models.Model):
     proteins = models.ManyToManyField('CustomProtein', blank=True, related_name='recipes')
     
     # Additional fields
-    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True, null=True)
+    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True)
     recipe_image = models.ImageField(upload_to=recipe_image_upload_path, blank=True, null=True)
     recipe_document = models.FileField(
         upload_to=recipe_document_upload_path,
@@ -1902,7 +1896,7 @@ class Recipe(models.Model):
     # Tracking
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-    created_by = models.CharField(max_length=255, blank=True, null=True, help_text='User who created this recipe')
+    created_by = models.CharField(max_length=255, blank=True, help_text='User who created this recipe')
     
     AUTHOR_CHOICES = [
         ('General', 'General'),
@@ -1990,7 +1984,6 @@ class RecipeIngredient(models.Model):
     preparation_note = models.CharField(
         max_length=255, 
         blank=True, 
-        null=True, 
         help_text='Additional preparation notes'
     )
     
@@ -1998,7 +1991,6 @@ class RecipeIngredient(models.Model):
     ingredient_group = models.CharField(
         max_length=100, 
         blank=True, 
-        null=True, 
         help_text='e.g., "For the sauce", "For garnish"'
     )
     
@@ -2058,7 +2050,7 @@ class RecipeIngredientText(models.Model):
     recipe_ingredient_text_id = models.AutoField(primary_key=True)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='text_ingredients')
     ingredient_text = models.CharField(max_length=500, help_text='Plain text ingredient')
-    ingredient_group = models.CharField(max_length=100, blank=True, null=True, help_text='Ingredient grouping')  # ADD THIS
+    ingredient_group = models.CharField(max_length=100, blank=True, help_text='Ingredient grouping')  # ADD THIS
     order = models.IntegerField(default=0, help_text='Display order')
     
     def __str__(self):
@@ -2091,7 +2083,6 @@ class RecipeInstruction(models.Model):
     instruction_group = models.CharField(
         max_length=100, 
         blank=True, 
-        null=True, 
         help_text='e.g., "Preparation", "Cooking", "Assembly"'
     )
     time_estimate = models.IntegerField(
@@ -2511,10 +2502,10 @@ class Contact(models.Model):
 
     name = models.CharField(max_length=200)
     relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, default='other')
-    email = models.EmailField(blank=True, null=True)
-    phone = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=50, blank=True)
     photo = models.ImageField(upload_to='contacts/', blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True)
     workspace = models.ForeignKey(
         'pages.Workspace',
         on_delete=models.CASCADE,
@@ -2562,7 +2553,7 @@ class HouseholdMember(models.Model):
         related_name='household_members',
     )
     name = models.CharField(max_length=200)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True)
     user = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -2642,7 +2633,7 @@ class CelebrationEvent(models.Model):
     event_date = models.DateField(help_text="The date of the event (month and day)")
     is_recurring = models.BooleanField(default=True, help_text="If checked, event repeats annually")
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -2962,7 +2953,6 @@ class AssetCategory(models.Model):
     icon = models.CharField(
         max_length=50, 
         blank=True, 
-        null=True, 
         help_text="FontAwesome icon class (e.g., 'fa-snowflake')"
     )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -3044,7 +3034,6 @@ class PropertyAsset(models.Model):
     brand_manufacturer = models.CharField(
         max_length=100, 
         blank=True, 
-        null=True, 
         verbose_name="Brand/Manufacturer"
     )
     
@@ -3061,7 +3050,7 @@ class PropertyAsset(models.Model):
     )
     
     # Notes
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True)
     
     # Metadata
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -3136,7 +3125,6 @@ class AssetMaintenance(models.Model):
     service_provider = models.CharField(
         max_length=200, 
         blank=True, 
-        null=True, 
         help_text="Technician/company name (optional)"
     )
     invoice = models.FileField(
@@ -3288,7 +3276,7 @@ class FinancialFigureHistory(models.Model):
 
     # pk of the source config row that changed (expense_id / revenue_id)
     source_pk = models.IntegerField(help_text='expense_id or revenue_id of the source row')
-    line_type = models.CharField(max_length=255, blank=True, null=True,
+    line_type = models.CharField(max_length=255, blank=True,
         help_text='Denormalised line-type label, e.g. Rental / Insurance.')
 
     effective_date = models.DateField(help_text='Date from which these values apply.')
@@ -3309,7 +3297,7 @@ class FinancialFigureHistory(models.Model):
     nov = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     dec = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
-    source = models.CharField(max_length=30, blank=True, null=True,
+    source = models.CharField(max_length=30, blank=True,
         help_text='budget | direct | prorata | prorata_line | prorata_valuation | seed')
     changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     changed_at = models.DateTimeField(auto_now_add=True)

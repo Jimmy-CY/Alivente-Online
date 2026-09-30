@@ -601,9 +601,9 @@ body .rotate-prompt .rotate-prompt-back:hover,
                 <div>
                     <h2 class="mb-1">{{ property.prop_name }}</h2>
                 </div>
-                <div>
-                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn action-secondary">
-                        <i class="fas fa-home"></i> Property Dashboard
+                <div class="page-action-buttons page-action-buttons-single">
+                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn action-back" role="button" aria-label="Back to the property dashboard">
+                        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
                     </a>
                 </div>
             </div>

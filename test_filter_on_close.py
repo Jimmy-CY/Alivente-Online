@@ -172,7 +172,11 @@ for p in alv_tree.templates():
         manual.append(rel)
     else:
         auto.append(rel)
-ok(len(auto) + len(manual) == 11, 'eleven pages carry the house filter',
+# TWELVE SINCE T4, 30 Sep 2026. Manage Lease Agreements joined the house
+# filter (test_lease_filter.py). The number stays EXACT rather than
+# becoming >= : this census exists so a page joining or leaving the set
+# is visible, and >= would let a page leave in silence.
+ok(len(auto) + len(manual) == 12, 'twelve pages carry the house filter',
    len(auto) + len(manual))
 ok(not manual,
    'and NOT ONE of them now waits for an Apply button - which is what '

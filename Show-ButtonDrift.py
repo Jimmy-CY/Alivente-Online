@@ -149,6 +149,13 @@ LEAVE = {
     'passport-filter-header': 'filter panel chrome',
     'filter-header-right': 'filter panel chrome',
     'pdf-viewer-controls': "the PDF viewer's own icon toolbar",
+    # 30 Sep 2026: this still covers the buttons welded to an input
+    # whose GEOMETRY is Bootstrap's, which is what the note meant. It
+    # no longer covers their COLOUR. property_assets carried three
+    # btn-outline-success + buttons under this entry, and the report
+    # said "nothing drifting" over them for weeks - Demetri saw the
+    # green. base now has .action-field-add and they wear it, so they
+    # are not in this count any more. See test_field_add.py.
     'input-group-append': 'welded to an input; Bootstrap owns the geometry',
     'btn-group': 'row actions',
     'subtask-actions': 'row actions',
