@@ -1406,7 +1406,7 @@ function renderDoneState() {
                 <div class="icon"><i class="fas fa-check-circle"></i></div>
                 <h2>${headline}</h2>
                 <p>${sub}</p>
-                <button type="button" onclick="goBackToRecipe()" class="btn btn-success" style="margin-right:10px;">
+                <button type="button" onclick="goBackToRecipe()" class="btn action-secondary" style="margin-right:10px;">
                     <i class="fas fa-arrow-left"></i> ${SCOPED_RETURN_LABEL}
                 </button>
                 ${stillToGo > 0 ? `<a href="?recipe_id={{ scoped_recipe.recipe_id|default:'' }}&return_to=recipe" class="btn btn-info"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}

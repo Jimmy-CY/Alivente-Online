@@ -105,6 +105,7 @@ ROUNDS = [
     '.bak_housetitle',
     '.bak_subh5',
     '.bak_filterframe',
+    '.bak_retone',
 ]
 
 

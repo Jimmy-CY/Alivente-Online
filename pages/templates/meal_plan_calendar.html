@@ -827,7 +827,7 @@
     <!-- Header -->
     <h2 class="page-title-h2">MEAL PLAN CALENDAR</h2>
 <div class="page-action-buttons">{% if perms.auth.can_edit_personal %}
-            <a href="{% url 'create_meal_plan' %}" class="btn btn-success action-primary">
+            <a href="{% url 'create_meal_plan' %}" class="btn action-primary">
                 <i class="fas fa-plus"></i> New Meal Plan
             </a>
             {% else %}
@@ -1078,7 +1078,7 @@
                         <h3>No Meal Plan for This Week</h3>
                         {% if perms.auth.can_edit_personal %}
                         <p>Create a meal plan to start adding recipes to this week.</p>
-                        <a href="{% url 'create_meal_plan' %}?start_date={{ selected_week_start|date:'Y-m-d' }}" class="btn btn-success btn-lg">
+                        <a href="{% url 'create_meal_plan' %}?start_date={{ selected_week_start|date:'Y-m-d' }}" class="btn action-primary btn-lg">
                             <i class="fas fa-plus"></i> Create Meal Plan for This Week
                         </a>
                         {% else %}

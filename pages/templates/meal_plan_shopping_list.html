@@ -594,7 +594,7 @@
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 25px;">
-            <button onclick="saveAllConversions()" id="saveConversionsBtn" class="btn btn-success" style="flex: 1; padding: 15px; font-size: 16px;">
+            <button onclick="saveAllConversions()" id="saveConversionsBtn" class="btn action-primary" style="flex: 1; padding: 15px; font-size: 16px;">
                 <i class="fas fa-save"></i> Save Conversions & Generate List
             </button>
             <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary" style="padding: 15px;">
@@ -873,7 +873,7 @@
                 <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
-                <button onclick="generateShoppingList()" class="btn btn-success">
+                <button onclick="generateShoppingList()" class="btn action-primary">
                     Generate List <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
@@ -938,7 +938,7 @@
                 <button onclick="goBackToReview()" class="btn action-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
-                <button onclick="window.location.href='{% url 'view_meal_plan' meal_plan.meal_plan_id %}'" class="btn btn-success">
+                <button onclick="window.location.href='{% url 'view_meal_plan' meal_plan.meal_plan_id %}'" class="btn action-primary">
                     <i class="fas fa-check"></i> Done
                 </button>
             </div>

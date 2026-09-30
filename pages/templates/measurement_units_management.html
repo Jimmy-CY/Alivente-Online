@@ -387,11 +387,11 @@
     <h2 class="page-title-h2">MEASUREMENT UNITS MANAGEMENT</h2>
 <div class="page-action-buttons">
         {% if perms.auth.can_edit_personal %}
-        <button type="button" class="btn btn-success action-primary" data-toggle="modal" data-target="#addUnitModal">
+        <button type="button" class="btn action-primary" data-toggle="modal" data-target="#addUnitModal">
             <i class="fas fa-plus"></i> Add Measurement Unit
         </button>
         {% else %}
-        <button type="button" class="btn btn-success action-primary" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+        <button type="button" class="btn action-primary" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
             <i class="fas fa-plus"></i> Add Measurement Unit
         </button>
         {% endif %}
@@ -686,7 +686,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="addUnit()">
+                <button type="button" class="btn action-primary" onclick="addUnit()">
                     <i class="fas fa-plus"></i> Add Unit
                 </button>
             </div>

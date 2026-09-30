@@ -66,11 +66,16 @@
         padding: 10px 12px;
     }
 
-    /* Save button full-width on mobile */
-    .notification-card .btn-success {
-        width: 100%;
-        padding: 10px 12px;
-    }
+    /* THE SAVE BUTTON FULL-WIDTH ON A PHONE WAS HERE, and it had
+       stopped reaching anything. This page's four Save buttons wear
+       .action-primary - an earlier round renamed them and left this
+       rule pointing at the class they used to have. Measured 30 Sep:
+       zero btn-success elements on the page.
+
+       AND base SAYS IT ANYWAY, for the class they wear now:
+       .page-action-buttons .action-primary takes flex 1 1 auto below
+       768px, which is the primary taking the width. Dead twice over.
+                                                   [test_retone.py] */
 }
 </style>
 

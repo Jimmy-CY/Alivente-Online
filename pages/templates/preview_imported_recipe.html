@@ -991,7 +991,7 @@ tr.sortable-chosen {
             {% else %}REVIEW IMPORTED RECIPE{% endif %}</h2>
 <div class="page-action-buttons{% if mode != 'edit' %} page-action-buttons-single{% endif %}">
         {% if mode == 'edit' %}
-        <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-success action-primary">
+        <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn action-primary">
             <i class="fas fa-eye"></i> View Recipe
         </a>
         {% endif %}
@@ -1627,7 +1627,7 @@ tr.sortable-chosen {
 
         <!-- Action Buttons -->
         <div style="display: flex; justify-content: center; gap: 16px; margin-top: 30px; margin-bottom: 50px;">
-            <button type="submit" class="btn btn-success btn-lg">
+            <button type="submit" class="btn action-primary btn-lg">
                 <i class="fas fa-save"></i> 
                 {% if mode == 'create' %}Save Recipe
                 {% elif mode == 'edit' %}Update Recipe
@@ -1687,7 +1687,7 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" onclick="confirmAddIngredient()">
+                    <button type="button" class="btn action-secondary" onclick="confirmAddIngredient()">
                         <i class="fas fa-check"></i> Add Ingredient
                     </button>
                 </div>
@@ -1781,7 +1781,7 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" onclick="confirmAddMeasurement()">
+                    <button type="button" class="btn action-secondary" onclick="confirmAddMeasurement()">
                         <i class="fas fa-check"></i> Add Measurement
                     </button>
                 </div>

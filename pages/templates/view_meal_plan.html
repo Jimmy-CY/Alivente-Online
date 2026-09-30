@@ -355,13 +355,13 @@
 
         
             <!-- PRIMARY: Shopping List -->
-            <a href="{% url 'meal_plan_shopping_list' meal_plan.meal_plan_id %}" class="btn btn-success action-primary">
+            <a href="{% url 'meal_plan_shopping_list' meal_plan.meal_plan_id %}" class="btn action-primary">
                 <i class="fas fa-shopping-cart"></i> Shopping List
             </a>
 
             <!-- SECONDARIES (desktop visible, mobile hidden) -->
             {% if perms.auth.can_edit_personal %}
-            <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-warning action-secondary">
+            <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="btn action-secondary">
                 <i class="fas fa-edit"></i> Edit
             </a>
             <button type="button"
@@ -396,7 +396,7 @@
 
             <!-- Mobile-only More dropdown -->
             <div class="action-more-wrapper" data-menu>
-                <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn" data-menu-toggle
+                <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
                         aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                     <i class="fas fa-ellipsis-v"></i>
                 </button>

@@ -361,13 +361,13 @@ function confirmToggle(userId, username, enable) {
         header.className = 'modal-header bg-success text-white';
         title.textContent = 'Enable User';
         message.textContent = `Are you sure you want to enable "${username}"? They will be able to log in again.`;
-        submitBtn.className = 'btn btn-success';
+        submitBtn.className = 'btn action-primary';
         submitBtn.textContent = 'Enable';
     } else {
         header.className = 'modal-header bg-danger text-white';
         title.textContent = 'Disable User';
         message.textContent = `Are you sure you want to disable "${username}"? They will no longer be able to log in.`;
-        submitBtn.className = 'btn btn-danger';
+        submitBtn.className = 'btn action-danger';
         submitBtn.textContent = 'Disable';
     }
     

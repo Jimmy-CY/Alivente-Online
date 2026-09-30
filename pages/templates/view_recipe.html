@@ -1630,22 +1630,22 @@ body {
     <div class="page-action-buttons">
         <!-- PRIMARY: Edit Recipe -->
         {% if perms.auth.can_edit_personal %}
-        <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="btn btn-warning action-primary">
+        <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="btn action-primary">
             <i class="fas fa-edit"></i> Edit Recipe
         </a>
         {% else %}
-        <span class="btn btn-warning action-primary btn-action-disabled" title="No permission to edit">
+        <span class="btn action-primary btn-action-disabled" title="No permission to edit">
             <i class="fas fa-edit"></i> Edit Recipe
         </span>
         {% endif %}
 
         <!-- SECONDARIES (desktop visible, mobile hidden) -->
         {% if show_nutrition_button %}
-        <button onclick="openNutritionModal()" class="btn btn-success action-secondary">
+        <button onclick="openNutritionModal()" class="btn action-secondary">
             <i class="fas fa-leaf"></i> Nutrition
         </button>
         {% endif %}
-        <button onclick="openShoppingListModal()" class="btn btn-success action-secondary">
+        <button onclick="openShoppingListModal()" class="btn action-secondary">
             <i class="fas fa-shopping-cart"></i> Shopping List
         </button>
         <button onclick="window.print()" class="btn btn-secondary action-secondary">
@@ -1667,7 +1667,7 @@ body {
 
         <!-- Mobile-only More dropdown -->
         <div class="action-more-wrapper" data-menu>
-            <button type="button" class="btn btn-warning action-more-btn" id="actionMoreBtn" data-menu-toggle
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
                     aria-label="More actions" aria-expanded="false" aria-haspopup="true">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
@@ -1974,7 +1974,7 @@ body {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="conversionMiniCancel">Cancel</button>
-                <button type="button" class="btn btn-warning" id="conversionMiniSaveBtn" style="font-weight: 600;" disabled>
+                <button type="button" class="btn action-primary" id="conversionMiniSaveBtn" style="font-weight: 600;" disabled>
                     <i class="fas fa-save"></i> Save & Recalculate
                 </button>
             </div>
@@ -2422,15 +2422,15 @@ body {
                             <i class="fas fa-copy"></i> Copy
                         </button>
                         {% if perms.auth.can_edit_personal %}
-                        <button class="btn btn-success" onclick="sendEmail()">
+                        <button class="btn action-secondary" onclick="sendEmail()">
                             <i class="fas fa-envelope"></i> Email
                         </button>
                         {% else %}
-                        <button class="btn btn-success share-btn-disabled" disabled title="No permission to send email">
+                        <button class="btn action-secondary share-btn-disabled" disabled title="No permission to send email">
                             <i class="fas fa-envelope"></i> Email
                         </button>
                         {% endif %}
-                        <button class="btn btn-success" onclick="shareToWhatsApp()">
+                        <button class="btn action-secondary" onclick="shareToWhatsApp()">
                             <i class="fab fa-whatsapp"></i> WhatsApp
                         </button>
                     </div>

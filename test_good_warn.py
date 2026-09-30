@@ -406,15 +406,26 @@ ok('WEIGHT' in doc,
    '  and points at the action standard rather than repeating it')
 
 # the count, so the number in the docstring stays true
-btn = 0
+# COMMENTS OUT FIRST. Reading the raw file counted four
+# - the three real ones and the words btn-success inside a comment that
+# exists to say there is no btn-success on that page. A census of code
+# that reads prose counts prose.
+btn, btn_where = 0, {}
 for rel, p in templates():
     if rel == 'base.html':
         continue
-    btn += len(re.findall(r'\bbtn-(?:outline-)?(?:success|warning)\b',
-                          read(p)))
-ok(btn >= 45,
-   '  %d button uses are left alone, visibly, for their own round' % btn,
-   btn)
+    _bare = re.sub(r'<!--.*?-->|/\*.*?\*/', '', read(p), flags=re.S)
+    _n = len(re.findall(r'\bbtn-(?:outline-)?(?:success|warning)\b', _bare))
+    if _n:
+        btn_where[rel] = _n
+        btn += _n
+ok(btn == 3,
+   '  %d button uses are left, and they are named below - R1 took the '
+   'other forty-four on 30 Sep' % btn, btn)
+ok(sorted(btn_where) == ['property_assets.html'],
+   '  and all three are on property_assets, welded into an input group '
+   'where Bootstrap owns the geometry - the category Show-ButtonDrift '
+   'excludes by name', btn_where)
 
 # ==========================================================================
 head('4. TWO PAGES GAVE UP A COPY, ONE KEEPS ONE')
