@@ -290,6 +290,12 @@ MENTIONS_ONLY = {
     'test_waiting_down.py': 'X11  the words are in two string literals - a '
                             'borrowed detector and the CONTROL that proves '
                             'it works. No os.walk call in the parse tree.',
+    'test_house_title.py': 'G3a  the same shape, one round later. It lifts '
+                           'the detector out of X0 and runs it against four '
+                           'CONTROL strings - one of which is a walk of a '
+                           'template root, because the whole point is that '
+                           'the detector still sees a real one. It reads the '
+                           'tree through alv_tree and calls os.walk nowhere.',
 }
 
 

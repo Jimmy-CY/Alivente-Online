@@ -102,6 +102,7 @@ ROUNDS = [
     '.bak_recchips',
     '.bak_crspill',
     '.bak_applyclose',
+    '.bak_housetitle',
 ]
 
 

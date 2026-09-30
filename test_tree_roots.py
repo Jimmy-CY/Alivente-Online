@@ -62,7 +62,9 @@ _atexit.register(_shutil.rmtree, SCRATCH, True)
 
 import glob
 import os
+import io
 import re
+import tokenize
 import sys
 
 ROOT = os.getcwd()
@@ -142,6 +144,52 @@ def scripts():
     return out
 
 
+def code_only(text):
+    """Python source with its comments and its docstrings blanked out,
+    line for line, so a detector reads CODE and not prose.
+
+    LESSON 21, INSIDE THE INSTRUMENT - 30 Sep 2026. G3a's patcher carried
+    a comment explaining that it used alv_tree and not a walk of its own
+    root, and it NAMED the call it was avoiding. walks_own_root read the
+    words, found a template root assigned two lines above, and counted
+    the file. The debt rose by one, two suites failed, and nothing was
+    wrong.
+
+    Every gate in this repo strips comments before it reads markup or
+    CSS. This one reads PYTHON, and did not. tokenize is exact where a
+    regex would not be: it knows a # inside a string is not a comment,
+    which matters in a repo whose scripts are full of hexes.
+
+    Spans are blanked rather than removed, so every row and column stays
+    where it was and the assignment-reader below still sees a statement
+    per line. Unparsable source is returned untouched: measuring it as it
+    stands is honest, and refusing to measure it is not.
+    """
+    lines = text.split('\n')
+    try:
+        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except Exception:
+        return text
+    STARTS = (tokenize.NEWLINE, tokenize.NL, tokenize.INDENT,
+              tokenize.DEDENT, tokenize.ENCODING)
+    kill, prev = [], None
+    for tok in toks:
+        drop = tok.type == tokenize.COMMENT
+        if tok.type == tokenize.STRING and (prev is None or prev in STARTS):
+            drop = True          # a string opening a statement: a docstring
+        if drop:
+            (r1, c1), (r2, c2) = tok.start, tok.end
+            for r in range(r1, r2 + 1):
+                a = c1 if r == r1 else 0
+                b = c2 if r == r2 else len(lines[r - 1])
+                kill.append((r - 1, a, b))
+        prev = tok.type
+    for r, a, b in kill:
+        ln = lines[r]
+        lines[r] = ln[:a] + ' ' * (b - a) + ln[b:]
+    return '\n'.join(lines)
+
+
 def walks_own_root(text):
     """Calls os.walk on a root this file built from a template path.
 
@@ -162,6 +210,12 @@ def walks_own_root(text):
     assignment is read across continuation lines, and a walk over any
     variable bound in a `for ... in <LIST>` counts too.
     """
+    # CODE, NOT PROSE - 30 Sep. This line used to read the whole file,
+    # comments included, so a comment that NAMED os.walk of a root was
+    # indistinguishable from a call to it. G3a's own patcher was counted
+    # that way. Every other gate in this repo strips comments before it
+    # reads; this one reads Python, and now does too.
+    text = code_only(text)
     walked = set(re.findall(r'os\.walk\(\s*([A-Za-z_][\w.]*)\s*\)', text))
     holders = set()
     for v in walked:
@@ -363,6 +417,20 @@ ok(not walks_own_root("R = os.path.dirname(__file__)\n"
    'test_banner_pages and test_standards_block are left alone')
 ok(not walks_own_root('for a, b, c in alv_tree.walk3():\n    pass\n'),
    '  and does not see a converted loop')
+
+# THE SHAPE THAT FOOLED IT, 30 Sep. A file that says os.walk of a template
+# root IN A COMMENT and never calls it. This detector counted G3a's patcher
+# for exactly this, so the control is kept executable.
+ok(not walks_own_root("T = os.path.join(R, 'pages', 'templates')\n"
+                      "# this file does not os.walk(T) - it uses alv_tree\n"
+                      "for p in alv_tree.templates():\n    pass\n"),
+   '  and does NOT see a walk that exists only in a comment - which is '
+   'what it saw on 30 Sep, in the round that fixed it')
+ok(walks_own_root("T = os.path.join(R, 'pages', 'templates')\n"
+                  "# a comment mentioning nothing\n"
+                  "for a, b, c in os.walk(T):\n    pass\n"),
+   '  while a REAL walk beside a comment is still seen - the fix removes '
+   'prose, not sight')
 
 # THE ONE THE FIRST DRAFT GOT WRONG. Keep it executable so it cannot be
 # got wrong again.

@@ -56,7 +56,9 @@ for _stream in (_sys.stdout, _sys.stderr):
 import ast
 import glob
 import os
+import io
 import re
+import tokenize
 import sys
 
 ROOT = os.getcwd()
@@ -129,10 +131,62 @@ def joins_T(text):
     return len(re.findall(r'os\.path\.join\(\s*T\s*,', text))
 
 
+def code_only(text):
+    """Python source with its comments and its docstrings blanked out,
+    line for line, so a detector reads CODE and not prose.
+
+    LESSON 21, INSIDE THE INSTRUMENT - 30 Sep 2026. G3a's patcher carried
+    a comment explaining that it used alv_tree and not a walk of its own
+    root, and it NAMED the call it was avoiding. walks_own_root read the
+    words, found a template root assigned two lines above, and counted
+    the file. The debt rose by one, two suites failed, and nothing was
+    wrong.
+
+    Every gate in this repo strips comments before it reads markup or
+    CSS. This one reads PYTHON, and did not. tokenize is exact where a
+    regex would not be: it knows a # inside a string is not a comment,
+    which matters in a repo whose scripts are full of hexes.
+
+    Spans are blanked rather than removed, so every row and column stays
+    where it was and the assignment-reader below still sees a statement
+    per line. Unparsable source is returned untouched: measuring it as it
+    stands is honest, and refusing to measure it is not.
+    """
+    lines = text.split('\n')
+    try:
+        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except Exception:
+        return text
+    STARTS = (tokenize.NEWLINE, tokenize.NL, tokenize.INDENT,
+              tokenize.DEDENT, tokenize.ENCODING)
+    kill, prev = [], None
+    for tok in toks:
+        drop = tok.type == tokenize.COMMENT
+        if tok.type == tokenize.STRING and (prev is None or prev in STARTS):
+            drop = True          # a string opening a statement: a docstring
+        if drop:
+            (r1, c1), (r2, c2) = tok.start, tok.end
+            for r in range(r1, r2 + 1):
+                a = c1 if r == r1 else 0
+                b = c2 if r == r2 else len(lines[r - 1])
+                kill.append((r - 1, a, b))
+        prev = tok.type
+    for r, a, b in kill:
+        ln = lines[r]
+        lines[r] = ln[:a] + ' ' * (b - a) + ln[b:]
+    return '\n'.join(lines)
+
+
 def walks_own_root(text):
     """X0's detector, verbatim, so section 5 measures what X0's gate
     measures. Two detectors and one constant is how X0's first ceiling
     came out wrong."""
+    # CODE, NOT PROSE - 30 Sep. This line used to read the whole file,
+    # comments included, so a comment that NAMED os.walk of a root was
+    # indistinguishable from a call to it. G3a's own patcher was counted
+    # that way. Every other gate in this repo strips comments before it
+    # reads; this one reads Python, and now does too.
+    text = code_only(text)
     walked = set(re.findall(r'os\.walk\(\s*([A-Za-z_][\w.]*)\s*\)', text))
     holders = set()
     for v in walked:
