@@ -143,14 +143,27 @@
     color: #2c3e50;
 }
 
+/* PROXIMITY BY EMPHASIS, NOT BY COLOUR - 29 Sep. This line said
+   #dc3545 for anything inside a week: the red this system uses for a
+   failure. A birthday tomorrow is not a failure.
+
+   The plan had been to put it on --alv-age-*, until base's own comment
+   was read: that scale is SEVERITY, and its top step is the same red.
+   So the near end of the scale is the accent - this system's way of
+   saying look here - and the far end is simply quiet. */
 .event-countdown {
     font-size: 12px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-top: 4px;
 }
 
-.event-countdown.urgent {
-    color: #dc3545;
+.event-countdown.soon {
+    color: var(--alv-ink-strong);
+    font-weight: 600;
+}
+
+.event-countdown.imminent {
+    color: var(--alv-accent);
     font-weight: 600;
 }
 
@@ -824,7 +837,7 @@
                                     ({{ event.get_years }} years)
                                 {% endif %}
                             </div>
-                            <div class="event-countdown {% if event.days_until <= 7 %}urgent{% endif %}">
+                            <div class="event-countdown {% if event.days_until <= 1 %}imminent{% elif event.days_until <= 7 %}soon{% endif %}">
                                 {% with days=event.days_until %}
                                     {% if days == 0 %}
                                         🎉 Today!

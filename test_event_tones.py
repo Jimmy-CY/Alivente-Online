@@ -243,8 +243,16 @@ for name, text in ((MGMT, mgmt), (CAL, cal)):
         ok(not bad, '%-28s %s rules carry no verdict hex (%d rule(s))'
            % (name, sel, len(rules)), bad)
 
-# The reds this round deliberately LEFT.
-ok('.event-countdown.urgent' in bare(css_of(mgmt)),
+# The reds this round deliberately LEFT - AS THIS ROUND LEFT THEM.
+#     C2 took them on 29 Sep, which is the right thing to have done: red
+#     for a birthday this week was the same fault one screen down. What
+#     C1 is answerable for is not touching them, and that stays true.
+try:
+    from alv_rounds import as_left_by
+    mgmt_mine = as_left_by(alv_tree.path_of(MGMT), SUFFIX, read)
+except Exception:
+    mgmt_mine = mgmt
+ok('.event-countdown.urgent' in bare(css_of(mgmt_mine)),
    'the urgency reds are still there and untouched - red for "this is '
    'happening very soon" is a colour meaning ONE thing, which is the rule '
    'this round enforces rather than breaks')

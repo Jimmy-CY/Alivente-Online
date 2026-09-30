@@ -97,6 +97,8 @@ ROUNDS = [
     '.bak_evtone',
     '.bak_msgbar',
     '.bak_ctlaccent',
+    '.bak_countdown',
+    '.bak_recfilter',
 ]
 
 

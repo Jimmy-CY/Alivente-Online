@@ -283,24 +283,29 @@
     flex-shrink: 0;
 }
 
+/* THE SAME DECISION AS THE LINE ON CELEBRATION MANAGEMENT - 29 Sep.
+   This chip filled #ffc107 for today and #dc3545 for this week: the
+   system's caution amber and its failure red, on a birthday. Now the
+   near end is the accent and the far end is quiet, and nothing on this
+   screen claims anything has gone wrong. */
 .timeline-event-countdown {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 8px 15px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     white-space: nowrap;
 }
 
-.timeline-event-countdown.today {
-    background: #ffc107;
-    color: white;
+.timeline-event-countdown.soon {
+    background: var(--alv-surface-deep);
+    color: var(--alv-ink-strong);
 }
 
-.timeline-event-countdown.soon {
-    background: #dc3545;
-    color: white;
+.timeline-event-countdown.imminent {
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
 }
 
 .no-events-timeline {
@@ -556,7 +561,7 @@
                     </div>
 
                     <div class="timeline-event-meta">
-                        <div class="timeline-event-countdown {% if event_data.days_until == 0 %}today{% elif event_data.days_until <= 7 %}soon{% endif %}">
+                        <div class="timeline-event-countdown {% if event_data.days_until <= 1 %}imminent{% elif event_data.days_until <= 7 %}soon{% endif %}">
                             {% if event_data.days_until == 0 %}
                                 🎉 Today!
                             {% elif event_data.days_until == 1 %}

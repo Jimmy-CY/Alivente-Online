@@ -24,7 +24,6 @@
     margin-bottom: 20px;
     padding-bottom: 12px;
     border-bottom: 2px solid #dee2e6;
-    cursor: pointer;
 }
 
 .recipe-filter-title {
@@ -42,17 +41,13 @@
     font-size: 16px;
 }
 
-.recipe-filter-toggle-icon {
-    transition: transform 0.3s ease;
-    margin-left: 8px;
-    font-size: 14px;
-}
 
+
+/* THE CONTENT IS ALWAYS VISIBLE INSIDE THE PANEL - 30 Sep. It used to
+   collapse separately, with its own .expanded class and its own script,
+   INSIDE a panel that did not collapse at all. The panel is the thing
+   that opens and closes now, and .alv-filter does that. */
 .recipe-filter-content {
-    display: none;
-}
-
-.recipe-filter-content.expanded {
     display: block;
 }
 
@@ -291,13 +286,13 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: #28a745 #f1f1f1;
+    scrollbar-color: var(--alv-accent) var(--alv-surface);
 }
 
 .letter-filter-wrapper::-webkit-scrollbar { height: 6px; }
 .letter-filter-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
-.letter-filter-wrapper::-webkit-scrollbar-thumb { background: #28a745; border-radius: 3px; }
-.letter-filter-wrapper::-webkit-scrollbar-thumb:hover { background: #218838; }
+.letter-filter-wrapper::-webkit-scrollbar-thumb { background: var(--alv-accent); border-radius: 3px; }
+.letter-filter-wrapper::-webkit-scrollbar-thumb:hover { background: var(--alv-accent-ink); }
 
 .letter-filter-list {
     display: flex;
@@ -326,12 +321,14 @@
 }
 
 .letter-filter-item:hover { text-decoration: none; }
-.letter-filter-item.available { color: #28a745; border-color: #28a745; }
+/* TEAL, ASKED FOR BY NAME - 30 Sep. Celebration Management's strip took
+   the same tones in P3, which is why the two pages share these class
+   names: one later round can lift the component into base once. */
+.letter-filter-item.available { color: var(--alv-accent); border-color: var(--alv-accent); }
 .letter-filter-item.available:hover {
-    background: #28a745;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 .letter-filter-item.disabled {
     color: #d0d0d0;
@@ -340,10 +337,9 @@
     background: #f8f9fa;
 }
 .letter-filter-item.active {
-    background: #28a745;
-    color: white;
-    border-color: #28a745;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+    border-color: var(--alv-accent);
 }
 
 
@@ -387,7 +383,7 @@
 
 .view-toggle-btn:last-child { border-right: none; }
 .view-toggle-btn:hover { background: #f8f9fa; }
-.view-toggle-btn.active { background: #28a745; color: white; }
+.view-toggle-btn.active { background: var(--alv-accent); color: var(--alv-on-accent); }
 .view-toggle-btn i { font-size: 16px; }
 
 /* Grid View Styles */
@@ -1665,6 +1661,14 @@
             </div>
         </div>
 
+        <!-- THE HOUSE FILTER BUTTON. aria-controls is not decoration -
+             base's script reads it to find the panel this button owns. -->
+        <button type="button" class="btn action-filter" id="filterBtn"
+                aria-pressed="false" aria-controls="recipeFilterPanel"
+                aria-label="Show filters">
+            <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count=""></span>
+        </button>
+
         <a href="{% url 'personal_page' %}" class="btn action-back" role="button" aria-label="Back to Personal">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -1673,11 +1677,15 @@
 <br/>
 
 <!-- Filter Panel -->
-<div class="recipe-filter-panel" id="recipeFilterPanel">
-    <div class="recipe-filter-header" onclick="toggleRecipeFilterPanel()">
+<div class="alv-filter recipe-filter-panel" id="recipeFilterPanel">
+    <!-- .alv-filter is what hides this on load and what base's script
+         opens. The header no longer opens anything: one panel with two
+         things toggling it is two things that can disagree about whether
+         it is open. The chevron went with the onclick, because an arrow
+         that does nothing is worse than no arrow. -->
+    <div class="recipe-filter-header">
         <h5 class="recipe-filter-title">
             <i class="fas fa-filter"></i> Recipe Filters
-            <i class="fas fa-chevron-down recipe-filter-toggle-icon" id="recipeFilterToggleIcon"></i>
         </h5>
         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllRecipeFilters(event)">
             <i class="fas fa-times-circle"></i> Clear All
@@ -2767,13 +2775,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const savedView = localStorage.getItem('recipeView') || 'grid';
     switchView(savedView);
 
-    const filterContent = document.getElementById('recipeFilterContent');
-    const toggleIcon = document.getElementById('recipeFilterToggleIcon');
-
-    if (filterContent && toggleIcon) {
-        filterContent.classList.remove('expanded');
-        toggleIcon.style.transform = 'rotate(0deg)';
-    }
+    /* THE LOAD-TIME COLLAPSE IS NOT NEEDED ANY MORE. It reached for
+       the content and the chevron to force them shut on every load -
+       .alv-filter does that now, with a CSS rule, before any script
+       runs. The panel is closed on load because it is never open until
+       the button opens it. */
 
     updateFilterDisplay('course');
     updateFilterDisplay('category');
@@ -2806,27 +2812,23 @@ function checkForRecipeActiveFilters() {
 }
 
 function expandRecipeFilterPanel() {
-    const filterContent = document.getElementById('recipeFilterContent');
-    const toggleIcon = document.getElementById('recipeFilterToggleIcon');
-    if (filterContent && toggleIcon) {
-        filterContent.classList.add('expanded');
-        toggleIcon.style.transform = 'rotate(180deg)';
-    }
+    /* KEPT, AND REWIRED. Five places call this - after a filter is
+       applied, after one is cleared - because the form submits and the
+       page reloads, and the panel should come back open. Those callers
+       are right and none of them changed; only what this does changed,
+       from opening the page's own collapse to opening the house panel.
+
+       It sets aria-pressed as well as the class, because base's setOpen
+       sets both and the button's own styling reads the attribute. */
+    const panel = document.getElementById('recipeFilterPanel');
+    const btn = document.getElementById('filterBtn');
+    if (panel) { panel.classList.add('is-open'); }
+    if (btn) { btn.setAttribute('aria-pressed', 'true'); }
 }
 
-function toggleRecipeFilterPanel() {
-    const filterContent = document.getElementById('recipeFilterContent');
-    const toggleIcon = document.getElementById('recipeFilterToggleIcon');
-    if (filterContent.classList.contains('expanded')) {
-        filterContent.classList.remove('expanded');
-        toggleIcon.style.transform = 'rotate(0deg)';
-        sessionStorage.setItem('recipeUserInteracted', 'false');
-    } else {
-        filterContent.classList.add('expanded');
-        toggleIcon.style.transform = 'rotate(180deg)';
-        sessionStorage.setItem('recipeUserInteracted', 'true');
-    }
-}
+/* toggleRecipeFilterPanel() WAS HERE, and base's Filter button does its
+   job now - the same button, the same script, on all eleven pages that
+   have a filter. It is not replaced by anything on this page. */
 
 function clearAllRecipeFilters(event) {
     event.stopPropagation();
