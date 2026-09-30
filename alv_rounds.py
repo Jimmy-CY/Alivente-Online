@@ -106,6 +106,9 @@ ROUNDS = [
     '.bak_subh5',
     '.bak_filterframe',
     '.bak_retone',
+    '.bak_reportback',
+    '.bak_rowform',
+    '.bak_statsfold',
 ]
 
 

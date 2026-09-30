@@ -100,8 +100,19 @@ check('no raw Bootstrap blue survives', '#007bff' not in CT)
 check('  nor red', '#dc3545' not in CT)
 check('  and base really does define the icons',
       '.icon-edit' in sels_of(BASE) and '.icon-action-btn' in sels_of(BASE))
-check('the page kept its own inline-form wrappers, which base has no name for',
-      '.cust-inline-form' in _left and '.cust-inline-form-mobile' in _left)
+# UPDATED 30 Sep 2026 BY T2. This read 'the page kept its own
+# inline-form wrappers, which base has no name for' - and base has a
+# name for the mobile one now: .mobile-action-bar > form { display:
+# contents; }. Four pages had each written that wrapper out for
+# themselves, in two different dialects, and two more pages that never
+# copied it had a narrow Delete button ever since. So
+# .cust-inline-form-mobile is GONE, base owns it, and the DESKTOP
+# wrapper - .cust-inline-form, which base still has no name for - stays.
+# See test_row_form.py.
+check('the page kept its DESKTOP inline-form wrapper, which base has no '
+      'name for', '.cust-inline-form' in _left)
+check('  and its mobile one is gone - base owns that now (T2)',
+      '.cust-inline-form-mobile' not in _left)
 check('  it is down to %d rules from 41' % len(_left), len(_left) <= 6,
       ', '.join(_left))
 check('the mobile bar declares its two columns', 'mobile-action-bar cols-2' in CT)

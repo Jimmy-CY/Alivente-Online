@@ -1771,6 +1771,28 @@
         .mobile-action-bar.cols-2 { grid-template-columns: repeat(2, 1fr); }
         .mobile-action-bar.cols-4 { grid-template-columns: repeat(4, 1fr); }
 
+    /* A ROW ACTION THAT POSTS IS WRAPPED IN A FORM - 30 Sep 2026.
+       Demetri, on Tenants on a phone: why is Delete smaller, and why is
+       there a gap between Delete and Report?
+
+       One cause, both symptoms. Edit, Report and Agreement are links,
+       so each is a grid item and fills its column. Delete has to post,
+       so it is a button inside a form - and the GRID's item is the
+       form. The form fills the column; the button inside sizes to its
+       own content. Measured at 390px on tenant.html: an 85px column
+       holding a 42px button. The 43px it does not fill is the gap.
+
+       display: contents takes the form out of the LAYOUT without taking
+       it out of the document - it still posts, still carries its action
+       and its CSRF token - and puts its BUTTON in the grid, where the
+       other three already are.
+
+       Not a typo. Four pages had already solved this locally in two
+       different dialects, and the two pages that never got a copy were
+       still broken. Eight copied rules came out when this arrived.
+                                                   [test_row_form.py] */
+    .mobile-action-bar > form { display: contents; }
+
         .mobile-action-btn {
           display: flex;
           flex-direction: column;
@@ -1968,12 +1990,62 @@
          all five sit on one line. The variant saved 23px of strip height and
          cost a 9.9px label. The restraint above this block stands. */
       .alv-stat-age .alv-stat-value { color: var(--age, var(--alv-ink-strong)); }
+/* A STRIP THAT FOLDS ON A PHONE - 30 Sep 2026, OPT-IN. Demetri, on
+   Payment Behaviour: on a phone show average days to pay and flagged
+   slow, and put the rest behind a chevron. Four tiles are a 2x2 block on
+   a phone, and two of the four answered the question.
+
+   Three names. .alv-stats-collapse says this group folds;
+   .alv-stat-more marks a tile that folds away; .alv-stats-more is the
+   chevron, a grid item spanning both columns. Opt-in because four pages
+   use .alv-stats and one of them asked - fsr, with five, is the obvious
+   next one and is NOT folded.
+
+   The chevron is desktop-invisible: above 768px the strip is four
+   columns across and there is nothing to fold.
+                                              [test_stats_fold.py] */
+.alv-stats-more { display: none; }
 
       @media screen and (max-width: 768px) {
         /* Four figures across a phone is four figures nobody can read. */
         .alv-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .alv-stat { padding: 12px 10px; }
         .alv-stat-value { font-size: 1.4rem; }
+    /* THE FOLD, AND WHY IT WAITS FOR THE SCRIPT - 30 Sep 2026. Hiding is
+       conditional on .js-ready, which base's script adds. With
+       JavaScript off nothing is hidden and no chevron appears: the page
+       renders as it does today rather than putting two numbers behind a
+       control that cannot be pressed.        [test_stats_fold.py] */
+    .alv-stats-collapse.js-ready .alv-stat-more { display: none; }
+    .alv-stats-collapse.js-ready.is-open .alv-stat-more { display: block; }
+    .alv-stats-collapse.js-ready .alv-stats-more {
+        display: flex;
+        grid-column: 1 / -1;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 10px 12px;
+        background: var(--alv-surface);
+        border: 1px dashed var(--alv-line);
+        border-radius: 6px;
+        font-family: var(--alv-font-ui);
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: var(--alv-ink-soft);
+        cursor: pointer;
+        user-select: none;
+    }
+    .alv-stats-collapse.js-ready .alv-stats-more:focus-visible {
+        outline: 2px solid var(--alv-accent);
+        outline-offset: 2px;
+    }
+    .alv-stats-more-chev { transition: transform .15s ease; }
+    .alv-stats-collapse.is-open .alv-stats-more-chev {
+        transform: rotate(180deg);
+    }
       }
 
       /* ================================================================
@@ -4140,6 +4212,23 @@ table.alv-matrix {
     overflow-wrap: anywhere;
 }
 .alv-report-brand { display: none; }
+/* WHAT SITS BESIDE BACK - 30 Sep 2026. A report head holds titles and,
+   on the right, Back. Payment Behaviour also carries a view switch -
+   Include past tenants - which is navigation like Back rather than an
+   action on the data, and it had been sitting in a toolbar below the
+   summary strip, three scrolls from the thing it switches.
+
+   A row, so the head keeps its two children and anything beside Back is
+   laid out by one rule rather than by each page. Back inside this row is
+   a flex item at its own width, which is what the phone rule below was
+   arranging for when Back was a direct child.  [test_stats_fold.py] */
+.alv-report-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex: 0 0 auto;
+}
 @media screen and (max-width: 768px) {
     .alv-report-head {
         flex-direction: column;
@@ -4155,6 +4244,38 @@ table.alv-matrix {
         justify-content: center;
         text-align: center;
         padding: 10px 12px;
+    }
+    /* EXCEPT BACK - 30 Sep 2026. Demetri, testing on a phone, wrote
+       "Back button" against four report screens in a row.
+
+       The rule above stretches every button in the head to the full
+       width and centres it, which is right for a headline figure and
+       wrong for Back. Back is the one control in this system that is
+       deliberately BORDERLESS - transparent background, transparent
+       border, quiet on purpose. Measured at 390px it came out 362px
+       wide, centred, and invisible: a line of centred text with an
+       arrow in front of it, sitting under the date.
+
+       So Back keeps its own width and goes to the right of the column -
+       which is where it sits on a desktop, where it sits in every
+       action bar, and where base's own phone rule for an action bar
+       puts it. The 44px target is untouched.
+
+       EIGHT REPORT PAGES, AND NOT ONE OF THEM IS EDITED. Every one
+       already writes the markup 3.10 asks for.
+                                             [test_report_back.py] */
+    .alv-report-head > .btn.back-button,
+    .alv-report-head > .btn.action-back {
+        width: auto;
+        align-self: flex-end;
+    }
+    /* The head is a column here, and .alv-report-actions is stretched
+       across it like any other child - so the row it draws runs the full
+       width of the phone with its first child left and Back right, which
+       is what Demetri asked for. 30 Sep 2026. [test_stats_fold.py] */
+    .alv-report-actions {
+        justify-content: space-between;
+        width: 100%;
     }
 }
 @media print {
@@ -4480,6 +4601,84 @@ table.alv-matrix {
     });
   }, { threshold: [1], rootMargin: '-1px 0px 0px 0px' });
   Array.prototype.forEach.call(heads, function (h) { io.observe(h); });
+})();
+</script>
+
+  <script>
+/* ===== alv-stats-fold v1 ===== 30 Sep 2026 =========================
+   A summary strip that folds on a phone. Opt in by putting
+   .alv-stats-collapse on the .alv-stats group and .alv-stat-more on
+   each tile that folds away; this script finds them, writes the chevron
+   row, and remembers the state for the session.
+
+   IT WRITES THE CHEVRON, so no page types one - and it writes the COUNT
+   from the tiles it found, so "2 more" cannot fall out of step with the
+   markup. It adds .js-ready, and the CSS hides nothing until that class
+   is on: with this script blocked the strip renders in full, which is
+   what it did before the fold existed.
+
+   The key is the path, so two folding pages do not share one answer.
+   sessionStorage is wrapped, because a browser refusing it must not
+   take the toggle down with it. See test_stats_fold.py. */
+(function () {
+    "use strict";
+    function key(el, i) {
+        return 'alvStatsFold:' + location.pathname + ':' + (el.id || i);
+    }
+    function get(k) {
+        try { return sessionStorage.getItem(k); } catch (e) { return null; }
+    }
+    function set(k, v) {
+        try { sessionStorage.setItem(k, v); } catch (e) {}
+    }
+    function label(row, n, open) {
+        row.innerHTML = '<span class="alv-stats-more-text">'
+            + (open ? 'Show less' : (n + ' more'))
+            + '</span><i class="fas fa-chevron-down alv-stats-more-chev"'
+            + ' aria-hidden="true"></i>';
+    }
+    function fold(group, i) {
+        var more = group.querySelectorAll('.alv-stat-more');
+        if (!more.length) { return; }
+        var row = group.querySelector('.alv-stats-more');
+        if (!row) {
+            row = document.createElement('div');
+            row.className = 'alv-stats-more';
+            group.appendChild(row);
+        }
+        row.setAttribute('role', 'button');
+        row.setAttribute('tabindex', '0');
+        var k = key(group, i);
+        var open = get(k) === 'open';
+        function apply() {
+            group.classList.toggle('is-open', open);
+            row.setAttribute('aria-expanded', open ? 'true' : 'false');
+            label(row, more.length, open);
+        }
+        function flip() {
+            open = !open;
+            set(k, open ? 'open' : 'shut');
+            apply();
+        }
+        row.addEventListener('click', flip);
+        row.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                flip();
+            }
+        });
+        group.classList.add('js-ready');
+        apply();
+    }
+    function init() {
+        Array.prototype.forEach.call(
+            document.querySelectorAll('.alv-stats-collapse'), fold);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
 </script>
 

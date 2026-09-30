@@ -163,7 +163,17 @@ def rules_for(css, cls):
     return re.findall(r'(?:^|[,{}\s])\.%s\s*\{([^}]*)\}' % cls, css, re.M)
 
 
-base = read(alv_tree.path_of('base.html'))
+# LESSON 17, 30 Sep 2026. base as THIS round left it. T3 added the
+# alv-stats-fold controller - a <script> in base, outside every <style> -
+# and section 5's scope check reads everything outside the stylesheet, so
+# a live read failed this suite about a round it does not judge.
+try:
+    from alv_rounds import as_left_by as _left
+except Exception:
+    def _left(path, suffix, rd):
+        return rd(path)
+
+base = _left(alv_tree.path_of('base.html'), SUFFIX, read)
 bcss = inert(css_of(base))
 BOOT = ''
 _b = os.path.join(ROOT, 'test_fixture_bootstrap413.css')

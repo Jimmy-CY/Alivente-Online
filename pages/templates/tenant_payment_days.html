@@ -13,18 +13,29 @@
         <h2 class="alv-report-title">Tenant Payment Behaviour</h2>
         <h3 class="alv-report-sub">Days from invoice to payment &middot; {{ today }}</h3>
       </div>
-      <a href="{% url 'tenant' %}" class="btn back-button" role="button">
-        <i class="fas fa-arrow-left"></i> Back
-      </a>
+      <div class="alv-report-actions">
+        {% if show_all %}
+          <a href="{% url 'tenant_payment_days' %}" class="btn action-secondary">
+            <i class="fas fa-user-check"></i> Current tenants only
+          </a>
+        {% else %}
+          <a href="{% url 'tenant_payment_days' %}?all=1" class="btn action-secondary">
+            <i class="fas fa-users"></i> Include past tenants
+          </a>
+        {% endif %}
+        <a href="{% url 'tenant' %}" class="btn back-button" role="button">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+      </div>
     </div>
 
     {% if summary.payments_measured %}
-    <div class="alv-stats">
-      <div class="alv-stat">
+    <div class="alv-stats alv-stats-collapse">
+      <div class="alv-stat alv-stat-more">
         <div class="alv-stat-value">{{ summary.payments_measured }}</div>
         <div class="alv-stat-label">payments measured</div>
       </div>
-      <div class="alv-stat">
+      <div class="alv-stat alv-stat-more">
         <div class="alv-stat-value">{{ summary.tenants_measured }}</div>
         <div class="alv-stat-label">tenants with data</div>
       </div>
@@ -39,16 +50,8 @@
     </div>
     {% endif %}
 
+    {% if summary.no_measurement_yet or summary.missing_terms %}
     <div class="pd-toolbar">
-      {% if show_all %}
-        <a href="{% url 'tenant_payment_days' %}" class="btn action-secondary">
-          <i class="fas fa-user-check"></i> Current tenants only
-        </a>
-      {% else %}
-        <a href="{% url 'tenant_payment_days' %}?all=1" class="btn action-secondary">
-          <i class="fas fa-users"></i> Include past tenants
-        </a>
-      {% endif %}
       {% if summary.no_measurement_yet %}
         <!-- The section that used to list these, with a reason each, is gone.
              The count remains so they are not silently dropped. -->
@@ -65,6 +68,7 @@
         </span>
       {% endif %}
     </div>
+    {% endif %}
 
     {% if rows %}
     <div class="table-container">

@@ -167,7 +167,13 @@ for _sel in ('.alv-stats', '.alv-stat', '.alv-stat-value', '.alv-stat-label'):
 # The page.
 _tiles = len(re.findall(r'class="alv-stat[" ]', PC))
 check('the page carries four tiles', _tiles == 4, '%d' % _tiles)
-check('  in exactly one grid', PC.count('class="alv-stats"') == 1)
+# ONE GRID, asked of the class LIST rather than the whole attribute.
+# T3 made it class="alv-stats alv-stats-collapse" so the strip folds to
+# two tiles on a phone (test_stats_fold.py), and an exact-string count
+# read that as zero grids. The claim here is that there is one grid and
+# the page did not go back to four copied tiles - which is still true.
+_grids = len(re.findall(r'class="[^"]*\balv-stats(?![\w-])', PC))
+check('  in exactly one grid', _grids == 1, '%d' % _grids)
 check('  each with a figure and a label',
       PC.count('alv-stat-value') == 4 and PC.count('alv-stat-label') == 4)
 check('  and the flagged one carries a verdict', 'alv-stat-attn' in PC)

@@ -353,14 +353,13 @@
         color: var(--alv-ink);
     }
 
-    /* The delete needs a <form> around it, and .mobile-action-bar is a grid
-       whose children are the tiles - so the form becomes the grid item and
-       the button inside it stops filling the cell. Two rules, rather than
-       display: contents, which is a cleverness that reads as a typo. */
-    .alv-table td.mobile-action-bar > form { display: block; }
-    .alv-table td.mobile-action-bar > form .mobile-action-btn {
-        width: 100%;
-    }
+    /* The two rules that were here said what base now says once,
+       in a selector more specific than base's - so base's rule
+       could not have rendered on this page while they stood. The
+       comment above them called display: contents a cleverness
+       that reads as a typo; base carries a comment saying what it
+       does, and four pages had written this out three different
+       ways. 30 Sep 2026.             [test_row_form.py] */
 
     /* Issue link */
     .issue-link {
