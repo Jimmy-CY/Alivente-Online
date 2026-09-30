@@ -166,7 +166,7 @@
                  -duplicate/-unapprove  .icon-disabled  .status-btn
     Menus        .ui-menu  .ui-menu-toggle  .ui-menu-panel  .ui-menu-item
     Filters      .alv-filter  .alv-filter-active  .action-filter-count
-    Headings     .page-title-h2  .page-subtitle-h4
+    Headings     .page-title-h2  .page-subtitle-h4  .page-subtitle-h5
     Reports      .alv-report-head  .alv-report-titles  .alv-report-title
                  .alv-report-sub  .alv-report-brand
     Pop-ups      .alv-modal-head (+ --danger)
@@ -303,7 +303,10 @@
 
       THE MARKUP, since 16 Sep: base declares the heading, so a page writes
       h2.page-title-h2 and h4.page-subtitle-h4 and styles neither. 117 pages
-      do.
+      do. Since 30 Sep base declares h5.page-subtitle-h5 too, which it had
+      never done although this document has described the h5 line since
+      8 Sep: thirteen of them on twelve pages centred themselves with a
+      center tag and rendered 20px on a phone where the h4 renders 16.
 
       THE h2 > center SPELLING WAS NOT THE SAME THING, and this note used
       to say it was. The phone rule below sizes .page-title-h2 at 1.25rem
@@ -3087,6 +3090,55 @@ textarea.form-control { height: auto; }
    markup moves; passport_management, recipe_management and
    unit_conversions_management wrote their own names and are renamed.
                                               [test_filter_field.py] */
+/* ===== ALV FILTER FRAME v1 ===== 30 Sep 2026
+   base has owned the FIELD in this panel since 23 Sep - the group, the
+   label, the select, the input. It owned none of the frame around them,
+   and nine pages wrote that out themselves: thirty-one rules saying
+   three things, with four pages declaring the header TWICE and the
+   first declaration never rendering at all.
+
+   WHAT RENDERED WAS NEARLY THE SAME EVERYWHERE. The differences were
+   #2c3e50 on the title (8 of 9) and #dee2e6 on the border (5 of 9) -
+   hexes in a page's own style block, which the standards name as NEVER
+   - plus a cursor and a hover on a header nothing clicks.
+
+   THE VALUES ARE NOT NEW. celebration_management was tokenised in a
+   round this week, and measured against these three rules it matches
+   all three exactly. base adopts the one copy that has been reviewed;
+   the other eight come to it.
+
+   A PAGE STILL NAMES ITS OWN COLUMNS. grid-template-columns is left to
+   the page and really does differ - 2fr 1fr 1fr, 1fr 1fr, four equal
+   columns - because how many filters a screen has is the screen's
+   business.
+                                            [test_filter_frame.py] */
+.filter-grid {
+    display: grid;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--alv-line);
+}
+
+.filter-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--alv-ink);
+    user-select: none;
+}
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -4204,6 +4256,13 @@ table.alv-matrix {
     margin-bottom: 1rem;
 }
 .page-title-h2:has(+ .page-subtitle-h4) { margin-bottom: 0; }
+/* AND THE SAME FOR THE OTHER SUBTITLE. G3a put twelve pages onto
+   .page-title-h2 whose next line is an h5, and this selector did not know
+   about the h5 - so the gap the rule exists to close stayed open on every
+   one of them. Named separately rather than in a list, because :has()
+   with a comma inside is read as "has any of these DESCENDANTS" by more
+   than one minifier, and this is a sibling test. */
+.page-title-h2:has(+ .page-subtitle-h5) { margin-bottom: 0; }
 
 /* THE LINE UNDER THE BAR. A page that has to say what it is FOR
    has nowhere house to say it: .page-subtitle-h4 is a MODE label -
@@ -4241,6 +4300,28 @@ table.alv-matrix {
     color: var(--alv-ink-soft);
 }
 
+/* THE DESCRIPTIVE LINE, DECLARED AT LAST - 30 Sep 2026.
+   The standards block above has said since 8 Sep that an h5 holds a
+   SENTENCE describing the page, where the h4 holds a mode label - and
+   base gave the h4 a class and the h5 nothing. So thirteen lines on
+   twelve pages centred themselves with a center tag, took no colour
+   from the palette, and sat outside every phone rule base has: 20px
+   where its own sibling is 16px, measured at 390.
+
+   IDENTICAL TO THE h4 ON PURPOSE. What separates the two is the TAG and
+   the words, not the treatment - a subtitle is a subtitle. The h5 is
+   already the smaller of the two before either rule applies.
+
+   lease_timeline had invented this class locally and painted it #6c757d,
+   Bootstrap's grey. That rule is gone; its two size overrides are not,
+   and the suite says why.                    [test_subtitle_h5.py] */
+.page-subtitle-h5 {
+    text-align: center;
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+    color: var(--alv-ink-soft);
+}
+
 /* A BAR HOLDING ONLY A BACK BUTTON right-aligns it. Three pages declared
    this identically and base declared nothing.
 
@@ -4267,6 +4348,7 @@ table.alv-matrix {
 @media screen and (max-width: 768px) {
     .page-title-h2    { font-size: 1.25rem; }
     .page-subtitle-h4 { font-size: 1rem; margin-bottom: 0.75rem; }
+    .page-subtitle-h5 { font-size: 1rem; margin-bottom: 0.75rem; }
 
 }
 </style>

@@ -103,6 +103,8 @@ ROUNDS = [
     '.bak_crspill',
     '.bak_applyclose',
     '.bak_housetitle',
+    '.bak_subh5',
+    '.bak_filterframe',
 ]
 
 

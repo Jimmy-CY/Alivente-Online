@@ -549,31 +549,9 @@
    is here rather than in base because lifting the component means
    measuring all eight and converting them together, which is its own
    round. This block is written to be DELETED by that round. */
-.filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--alv-line);
-}
-.filter-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    color: var(--alv-ink);
-    font-size: 18px;
-    font-weight: 600;
-    user-select: none;
-}
 .filter-title i { color: var(--alv-ink-soft); }
 .filter-grid {
-    display: grid;
     grid-template-columns: 2fr 1fr 1fr;
-    gap: 20px;
-    align-items: end;
 }
 
 @media screen and (max-width: 768px) {

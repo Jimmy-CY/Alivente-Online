@@ -344,14 +344,17 @@ Physical Invoices
     margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-.filter-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-.filter-title { margin: 0; color: #2c3e50; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.filter-header {
+    flex-wrap: wrap;
+}
 .filter-title i { color: #0e7c8b; }
 .period-summary { color: #495057; font-size: 14px; font-weight: 500; }
 .filter-header-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .pi-clear-all { white-space: nowrap; }
 
-.filter-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; align-items: end; }
+.filter-grid {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
 
 /* Numbering ("dispenser") panel */
 .numbering-panel { background: #ffffff; border: 1px solid #dee2e6; border-left: 4px solid #0e7c8b; border-radius: 10px; padding: 16px 20px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }

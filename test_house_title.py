@@ -166,7 +166,15 @@ def inert(t):
 patcher = read(os.path.join(ROOT, PATCHER))
 JOBS = re.findall(r"^\s*\('([^']+\.html)',\s*'([^']*)'\),\s*$", patcher, re.M)
 
-base = read(alv_tree.path_of('base.html'))
+# AS G3a LEFT IT - lesson 17. Every claim below is about what G3a did
+# to base and to twenty-one pages; a later round editing the same files
+# must not turn this suite's own scope check into a list of strays. G3b
+# was that round, on 30 Sep.
+try:
+    from alv_rounds import as_left_by as _left
+    base = _left(alv_tree.path_of('base.html'), SUFFIX, read)
+except Exception:
+    base = read(alv_tree.path_of('base.html'))
 
 # BOOTSTRAP 4.1.3, THE REPO'S OWN COPY. The whole finding is that an
 # unclassed h2 keeps BOOTSTRAP's 2rem, so a fixture without Bootstrap
@@ -393,7 +401,11 @@ for rel, title in JOBS:
     path = alv_tree.join(rel.replace('/', os.sep))
     if not os.path.isfile(path + SUFFIX):
         continue
-    a, b = read(path + SUFFIX).split('\n'), read(path).split('\n')
+    try:
+        _now = _left(path, SUFFIX, read)
+    except Exception:
+        _now = read(path)
+    a, b = read(path + SUFFIX).split('\n'), _now.split('\n')
     ops = [o for o in difflib.SequenceMatcher(None, a, b,
                                               autojunk=False).get_opcodes()
            if o[0] != 'equal']

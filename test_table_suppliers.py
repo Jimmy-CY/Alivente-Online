@@ -252,7 +252,10 @@ def group(prefix):
 # margin lets a rule go missing quietly, which is the failure this exists to
 # catch. If a later round legitimately removes one, the number moves with it -
 # deliberately, in the same commit.
-for prefix, floor, why in (('.filter', 17, 'filter panel'),
+# H1 lowered this floor from 17 to 14 on 30 Sep: the three it
+# counted were .filter-grid, .filter-header and .filter-title, and
+# base owns those now. What is left is this page's own.
+for prefix, floor, why in (('.filter', 14, 'filter panel'),
                            # 24 UNTIL ROUND D4, 23 Sep: base took the
                            # filter field - .filter-group,
                            # .filter-label, .filter-label i,

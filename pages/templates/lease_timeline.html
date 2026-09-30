@@ -6,7 +6,7 @@
 {% block content %}
         {# HEADING STANDARD - 8 Sep. Title in capitals, no brand prefix - the brand is in the browser tab. Subtitle in sentence case. See the standards block at the top of base.html. #}
 <h2 class="page-title-h2">LEASE TIMELINE</h2>
-<h5 class="page-subtitle-h5"><center>Visual lease calendar</center></h5>
+<h5 class="page-subtitle-h5">Visual lease calendar</h5>
 <br/>
 
 <!-- Mobile portrait orientation prompt — visible only on phones in portrait -->
@@ -75,11 +75,17 @@
 <style>
 /* ==================== DESKTOP STYLES ==================== */
 
-.page-subtitle-h5 {
-    margin-top: 0.25rem;
-    margin-bottom: 1rem;
-    color: #6c757d;
-}
+/* .page-subtitle-h5 WAS DECLARED HERE, and base declares it now - 30 Sep.
+   It was the only page that had invented the class, and it painted it
+   #6c757d: Bootstrap's grey, which the standards block names as belonging
+   to no palette this project defines. base's is --alv-ink-soft, and adds
+   the centring this page was getting from a center tag.
+
+   THE TWO SIZE OVERRIDES BELOW STAY. They are 0.95rem in portrait and
+   0.85rem in landscape on a page that draws a calendar and wants the
+   density, and base's declaration is a plain class selector that a page
+   rule beats. Kept deliberately, and named in the suite so the set cannot
+   grow back in silence.                      [test_subtitle_h5.py] */
 
 /* Rotate prompt — hidden on desktop and landscape */
 .rotate-prompt {

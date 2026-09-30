@@ -332,7 +332,7 @@
         <h5 class="filter-title">
             <i class="fas fa-filter"></i> Issue Filters
         </h5>
-        <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+        <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-times-circle"></i> Clear All
         </button>
     </div>
@@ -543,33 +543,6 @@
     padding: 24px;
 }
 
-.filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dee2e6;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-header {
-    padding-bottom: 12px;
-    border-bottom: 2px solid #dee2e6;
-    margin-bottom: 20px;
-}
-
-.filter-title {
-    margin: 0;
-    color: #2c3e50;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-}
-
 .filter-title i {
     color: #0e7c8b;
 }
@@ -580,10 +553,7 @@
 }
 
 .filter-grid {
-    display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 20px;
-    align-items: end;
 }
 
 

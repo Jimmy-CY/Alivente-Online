@@ -65,7 +65,7 @@ Invoices
       <h5 class="filter-title">
         <i class="fas fa-filter"></i> Invoice Filters
       </h5>
-      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm">
         <i class="fas fa-times-circle"></i> Clear All
       </button>
     </div>
@@ -204,29 +204,6 @@ Invoices
     padding: 24px;
 }
 
-.filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    padding-bottom: 0;
-    gap: 12px;
-}
-
-.filter-header:hover {
-    opacity: 0.8;
-}
-
-.filter-title {
-    margin: 0;
-    color: #2c3e50;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-}
-
 .filter-title i {
     color: #0e7c8b;
 }
@@ -236,10 +213,7 @@ Invoices
 }
 
 .filter-grid {
-    display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: end;
 }
 
 
