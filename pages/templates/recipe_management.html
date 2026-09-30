@@ -678,12 +678,8 @@
     to { transform: rotate(360deg); }
 }
 
-.filter-action-buttons {
-    display: flex;
-    gap: 10px;
-    grid-column: 1 / -1;
-    justify-content: center;
-}
+/* .filter-action-buttons was the Apply row's rule, and the row went on
+   30 Sep with the button in it.                [test_filter_on_close.py] */
 
 /* Ingredient Matcher Modal Styles */
 .ingredient-category-card {
@@ -1389,8 +1385,6 @@
     .recipe-filter-grid { grid-template-columns: 1fr; gap: 12px; }
         .filter-multiselect-button { font-size: 14px; }
     .filter-multiselect-menu { max-height: 60vh; }
-    .filter-action-buttons { flex-direction: column; gap: 8px; }
-    .filter-action-buttons .btn { width: 100%; }
 
     /* Step 3: nutrition controls on mobile */
     .nutrition-sort-row select { font-size: 16px; }  /* avoid iOS zoom */
@@ -1847,15 +1841,11 @@
                     </small>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="filter-action-buttons">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-filter"></i> Apply Filters
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="clearAllRecipeFilters(event)">
-                        <i class="fas fa-times"></i> Clear All
-                    </button>
-                </div>
+                <!-- THE APPLY BUTTON WAS HERE - taken 30 Sep. Nothing
+                     replaces it: a tick list applies when it closes, the
+                     search on Enter, the nutrition sort on change. The
+                     row held one other thing, a SECOND Clear All, and
+                     the panel header two inches above has one already. -->
             </div>
 
         </form>
@@ -2699,17 +2689,91 @@ function updateRecipeCount() {
 }
 
 // Multi-select filter dropdown
+/* ===== APPLY WHEN THE LIST CLOSES ===== 30 Sep 2026
+   Ten of the eleven pages with the house filter submit the moment a
+   control changes. This page could not: its four filters are tick
+   lists, so submitting on every tick would reload the page once per
+   box. It had an Apply button instead - and a page with an Apply
+   button has a state where the chips say one thing and the list
+   shows another, which is what Demetri photographed.
+
+   So the moment that counts is not the tick, it is the CLOSE. A menu
+   records what was ticked when it opened; when it closes it compares,
+   and submits only if the answer changed. Opening a list to read it
+   is not a filter change and must not cost a reload.
+
+   Three things close a menu and all three come through closeMenus():
+   a second click on its own button, opening another menu, and a click
+   anywhere else on the page.
+                                          [test_filter_on_close.py] */
+var RECIPE_MENU_OPEN = null;     /* {id, sig} for the menu now open */
+
+
+function recipeMenuSignature(menu) {
+    return Array.prototype.map.call(
+        menu.querySelectorAll('input[type="checkbox"]'),
+        function (cb) { return cb.checked ? '1' : '0'; }).join('');
+}
+
+
+function applyRecipeFilters() {
+    /* The two flags the page already uses to decide what to reopen
+       after the reload. Set here so every path through this round
+       looks to the rest of the page exactly like the old Apply. */
+    try {
+        sessionStorage.setItem('recipeUserInteracted', 'true');
+        sessionStorage.setItem('recipeJustAppliedFilters', 'true');
+    } catch (e) { /* private mode: the panel starts closed, no worse */ }
+    document.getElementById('recipeFilterForm').submit();
+}
+
+
+function closeRecipeMenus(except) {
+    /* Close every open menu but `except`, and say whether the one that
+       was open closed with a different set of ticks than it opened
+       with. Returns true if the page should now apply. */
+    var changed = false;
+    document.querySelectorAll('.filter-multiselect-menu').forEach(
+        function (menu) {
+            if (menu.id === except || !menu.classList.contains('show')) {
+                return;
+            }
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+            if (RECIPE_MENU_OPEN && RECIPE_MENU_OPEN.id === menu.id) {
+                if (RECIPE_MENU_OPEN.sig !== recipeMenuSignature(menu)) {
+                    changed = true;
+                }
+                RECIPE_MENU_OPEN = null;
+            }
+        });
+    return changed;
+}
+
+
 function toggleFilterDropdown(dropdownId) {
     const dropdown = document.getElementById(dropdownId);
     const button = dropdown.previousElementSibling;
-    document.querySelectorAll('.filter-multiselect-menu').forEach(menu => {
-        if (menu.id !== dropdownId) {
-            menu.classList.remove('show');
-            menu.previousElementSibling.classList.remove('active');
+    const wasOpen = dropdown.classList.contains('show');
+    /* Another menu closing is a close like any other - if the user
+       ticked something in it and then reached straight for this one,
+       that tick is applied. */
+    var changed = closeRecipeMenus(dropdownId);
+    if (wasOpen) {
+        dropdown.classList.remove('show');
+        button.classList.remove('active');
+        if (RECIPE_MENU_OPEN && RECIPE_MENU_OPEN.id === dropdownId &&
+            RECIPE_MENU_OPEN.sig !== recipeMenuSignature(dropdown)) {
+            changed = true;
         }
-    });
-    dropdown.classList.toggle('show');
-    button.classList.toggle('active');
+        RECIPE_MENU_OPEN = null;
+    } else {
+        dropdown.classList.add('show');
+        button.classList.add('active');
+        RECIPE_MENU_OPEN = {id: dropdownId,
+                            sig: recipeMenuSignature(dropdown)};
+    }
+    if (changed) { applyRecipeFilters(); }
 }
 
 function toggleFilterCheckbox(event, checkboxId) {
@@ -2720,12 +2784,38 @@ function toggleFilterCheckbox(event, checkboxId) {
     }
 }
 
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('.filter-multiselect-dropdown')) {
-        document.querySelectorAll('.filter-multiselect-menu').forEach(menu => {
-            menu.classList.remove('show');
-            menu.previousElementSibling.classList.remove('active');
+document.addEventListener('DOMContentLoaded', function () {
+    /* SORT BY NUTRITION HAD NO HANDLER AT ALL - it was the one control
+       that genuinely needed the Apply button, because nothing else
+       would ever submit for it. It is a single select: changed IS
+       finished, the way it is on the other ten pages. */
+    var nut = document.getElementById('nutritionSortSelect');
+    if (nut) {
+        nut.addEventListener('change', function () { applyRecipeFilters(); });
+    }
+    /* NAME / INGREDIENT changes WHAT a term means, so it re-searches -
+       but only when there is a term. Switching the radio over an empty
+       box changes the placeholder and nothing else, and reloading the
+       page to run an empty search again would be a reload that changes
+       nothing on screen. */
+    ['searchByName', 'searchByIngredient'].forEach(function (id) {
+        var r = document.getElementById(id);
+        if (!r) { return; }
+        r.addEventListener('change', function () {
+            var box = document.getElementById('searchInput');
+            if (box && box.value.trim()) { applyRecipeFilters(); }
         });
+    });
+});
+
+
+document.addEventListener('click', function(event) {
+    /* THE COMMONEST WAY TO LEAVE A TICK LIST is to click away from it,
+       so this is the path that matters most. It closes through the
+       same function as the other two, which is the point: one place
+       decides whether a close means apply. */
+    if (!event.target.closest('.filter-multiselect-dropdown')) {
+        if (closeRecipeMenus(null)) { applyRecipeFilters(); }
     }
 });
 

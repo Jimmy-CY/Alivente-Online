@@ -101,6 +101,7 @@ ROUNDS = [
     '.bak_recfilter',
     '.bak_recchips',
     '.bak_crspill',
+    '.bak_applyclose',
 ]
 
 

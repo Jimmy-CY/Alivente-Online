@@ -157,7 +157,14 @@ def mk_of(t):
 PATH = alv_tree.path_of(PAGE)
 BAK = PATH + SUFFIX
 base = read(alv_tree.path_of('base.html'))
-page = read(PATH)
+# AS F2 LEFT IT - lesson 17. Every section below judges what F2 did,
+# and a later round editing this same page must not make F2's own
+# scope check report strays. F3 was that round, on 30 Sep.
+try:
+    from alv_rounds import as_left_by
+    page = as_left_by(PATH, SUFFIX, read)
+except Exception:
+    page = read(PATH)
 was = read(BAK) if os.path.isfile(BAK) else ''
 
 print('=' * 74)
