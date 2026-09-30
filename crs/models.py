@@ -495,6 +495,37 @@ class Submission(models.Model):
         """ReportingPeriod for the OECD Message Header — Dec 31 of self.year."""
         return date(self.year, 12, 31)
 
+    # ===== How the lifecycle is DRAWN ======================================
+    # Ten CSS rules across two templates used to say this - five on the
+    # list and the same five on the detail page - because the class was
+    # built by appending self.status to "status-" in the markup, and
+    # again in the View modal's JavaScript. Two concatenations in two
+    # languages, and a mapping that would have had to be written in both.
+    #
+    # It belongs here instead, where the status is. The template asks for
+    # sub.pill_class and the modal's payload carries the same string, so
+    # the table badge and the modal badge cannot disagree about a colour
+    # the way two hand-written mappings eventually would.
+    #
+    # A PROPERTY IS NOT A FIELD: no migration, nothing in the database
+    # changes. The same shape CelebrationEvent.tone_class uses.
+    PILL_CLASSES = {
+        "draft":                "alv-pill-neutral",
+        "closed":               "alv-pill-info",
+        "submitted_externally": "alv-pill-attn",
+        "acknowledged":         "alv-pill-good",
+        "rejected":             "alv-pill-bad",
+    }
+
+    @property
+    def pill_class(self):
+        """The house pill classes for this submission's lifecycle state.
+
+        Neutral for an unknown status, which is the honest answer: a
+        state nobody has given a meaning to must not borrow one."""
+        return "alv-pill %s" % self.PILL_CLASSES.get(
+            self.status, "alv-pill-neutral")
+
 
 class SubmissionXMLFile(models.Model):
     """One generated CRS XML file belonging to a Submission.

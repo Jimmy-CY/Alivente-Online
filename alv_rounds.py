@@ -99,6 +99,8 @@ ROUNDS = [
     '.bak_ctlaccent',
     '.bak_countdown',
     '.bak_recfilter',
+    '.bak_recchips',
+    '.bak_crspill',
 ]
 
 

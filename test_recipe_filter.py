@@ -309,8 +309,19 @@ ok('cursor: pointer' not in (re.search(
    '  and the header no longer looks clickable')
 
 # ==========================================================================
-head('5. WHAT THIS ROUND LEFT, AND SAID SO')
+head('5. WHAT THIS ROUND LEFT, AND SAID SO - AS THIS ROUND LEFT IT')
 # ==========================================================================
+# F2 took all three of these on 30 Sep, which is the right thing to have
+# done: this section is the reason it existed. What F1 is answerable for
+# is having left them and said so, and that stays true - so read the page
+# as F1 left it, not as it stands.
+try:
+    from alv_rounds import as_left_by
+    _mine = as_left_by(alv_tree.path_of(PAGE), SUFFIX, read)
+except Exception:
+    _mine = page
+bare = re.sub(r'/\*.*?\*/', '', css_of(_mine), flags=re.S)
+mk = mk_of(_mine)
 ok('.recipe-filter-tag' in bare,
    'the chip family is still page-local - a fourth copy of something base '
    'owns, and its own round')

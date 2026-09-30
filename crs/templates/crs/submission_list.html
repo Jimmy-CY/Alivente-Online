@@ -55,7 +55,7 @@
           <td data-label="Country">{{ sub.country_config.country_code }}</td>
           <td data-label="FI">{{ sub.reporting_fi.name }}</td>
           <td data-label="Status">
-            <span class="alv-pill status-{{ sub.status }}">{{ sub.get_status_display }}</span>
+            <span class="{{ sub.pill_class }}">{{ sub.get_status_display }}</span>
           </td>
           <td data-label="MessageRefID" class="ref-id" title="{{ sub.message_ref_id }}">
             <code>{{ sub.message_ref_id|truncatechars:30 }}</code>
@@ -204,6 +204,7 @@
       sending_in:     "{{ sub.sending_company_in|escapejs }}",
       status:         "{{ sub.get_status_display|escapejs }}",
       status_key:     "{{ sub.status }}",
+      pill_class:     "{{ sub.pill_class }}",
       tx_country:     "{{ sub.transmitting_country }}",
       rx_country:     "{{ sub.receiving_country|default:'(determined per file)' }}",
       doc_type:       "{{ sub.get_document_type_display|escapejs }}",
@@ -254,7 +255,7 @@
     const statusEl = document.getElementById('vs_status');
     statusEl.innerHTML = '';
     const badge = document.createElement('span');
-    badge.className = 'alv-pill status-' + s.status_key;
+    badge.className = s.pill_class;
     badge.textContent = s.status;
     statusEl.appendChild(badge);
 
@@ -380,37 +381,18 @@
     border-radius: 3px;
   }
 
-  /* THE FIVE LIFECYCLE TONES.
-     The badge's geometry is base's .alv-pill now; these five rules are
-     nothing but the mapping from a status to a meaning, and each was
-     already the Bootstrap colour for the meaning the house has a token
-     for: secondary, info, warning, success, danger.
+  /* THE FIVE LIFECYCLE TONES WERE HERE - taken 30 Sep.
+     They were kept, correctly, while the class was built by appending
+     the status key to a prefix in two languages: a mapping to
+     .alv-pill-good would then have had to be written twice, and two
+     mappings drift. Submission.pill_class writes it once, on the model,
+     and the markup and the modal JS both read that.
 
-     The NAMES cannot be .alv-pill-good and friends, because the class is
-     built from the model's status key - a template variable appended to
-     `status-` in the markup, and 'status-' + s.status_key in the modal's
-     JS. Writing a mapping in both places would be two mappings in two
-     languages, which drift. Five CSS rules do not.
-
-     (And that sentence used to quote the template tag itself. A CSS
-     comment containing braces BREAKS every regex rule reader in this
-     repo: the pattern that finds a rule is selector-brace-body-brace,
-     so a brace inside a comment splits it in the wrong place and the
-     selector comes back as the tail of the prose. Lesson 21 says strip
-     comments before comparing a selector - but bare() runs AFTER the
-     pattern has already mis-split. The gate below now refuses any CSS
-     comment carrying a brace, so this cannot happen quietly again.)
-
-     A `pill_class` property on the Submission model - the shape
-     CelebrationEvent already uses at pages/models.py:2726 - would let
-     both emit the house class directly and delete all five. That is a
-     change to crs/models.py, so it is noted, not done in a styling
-     round. */
-  .status-draft                { background: var(--alv-neutral-soft); color: var(--alv-neutral); }
-  .status-closed               { background: var(--alv-info-soft); color: var(--alv-accent-ink); }
-  .status-submitted_externally { background: var(--alv-warn-soft); color: var(--alv-warn); }
-  .status-acknowledged         { background: var(--alv-good-soft); color: var(--alv-good); }
-  .status-rejected             { background: var(--alv-bad-soft); color: var(--alv-bad); }
+     Each of the five set the same background and the same colour as the
+     base class that now replaces it; what they did NOT set is the
+     border, so these five pills were the only ones in the system without
+     one. They have it now.
+                                                    [test_crs_pill.py] */
 
 
   /* View modal */

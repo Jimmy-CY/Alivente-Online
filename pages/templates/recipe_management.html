@@ -135,46 +135,18 @@
 
 .filter-multiselect-item label { cursor: pointer; margin: 0; flex: 1; }
 
-.recipe-active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
+/* THE CHIP RULES WERE HERE, AND base HAS OWNED THEM SINCE 22 SEP -
+   ALV FILTER CHIP v1. Five rules: the row, the holder, the chip, its x
+   and the x's hover. The chip was #28a745; every other chip in the
+   system is the accent, and this one was green for no reason this page
+   could give. The row's own top border and margin went too - it needed
+   a separator when it sat at the bottom of the panel, and it does not
+   now that it sits above it.
 
-.recipe-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.recipe-filter-tag {
-    background: #28a745;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.recipe-remove-tag {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 10px;
-    line-height: 1;
-}
-
-.recipe-remove-tag:hover { background: rgba(255, 255, 255, 0.5); }
+   NOTHING REPLACES THEM. base's phone treatment comes with them, which
+   this page never had: the x is 16px to see and 44px to tap, and the
+   chips print while the x does not.
+                                              [test_recipe_chips.py] */
 
 /* === STEP 3 — Nutrition sort controls + result badges === */
 .nutrition-sort-row {
@@ -1676,6 +1648,16 @@
 </div>
 <br/>
 
+<!-- THE CHIPS LIVE OUTSIDE THE PANEL - 30 Sep. F1 made this panel close
+     on load; the chips were inside it, so closing it hid what the list
+     was filtered by. base's words on the component: a closed panel must
+     never mean invisible filtering. base also counts these and shows the
+     row - this page writes chips and nothing else. -->
+<div class="alv-filter-active" id="recipeActiveFilters">
+    <span class="alv-filter-active-label">Active filters:</span>
+    <div class="filter-tags" id="recipeFilterTags"></div>
+</div>
+
 <!-- Filter Panel -->
 <div class="alv-filter recipe-filter-panel" id="recipeFilterPanel">
     <!-- .alv-filter is what hides this on load and what base's script
@@ -1876,10 +1858,6 @@
                 </div>
             </div>
 
-            <div class="recipe-active-filters" id="recipeActiveFilters" style="display: none;">
-                <span>Active filters:</span>
-                <div class="recipe-filter-tags" id="recipeFilterTags"></div>
-            </div>
         </form>
     </div>
 </div>
@@ -2867,7 +2845,6 @@ function clearRecipeFilterGroup(filterType) {
 
 function updateRecipeActiveFilters() {
     const searchInput = document.getElementById('searchInput');
-    const activeFiltersDiv = document.getElementById('recipeActiveFilters');
     const filterTagsDiv = document.getElementById('recipeFilterTags');
     if (!filterTagsDiv) return;
 
@@ -2878,44 +2855,38 @@ function updateRecipeActiveFilters() {
     const authorCheckboxes = document.querySelectorAll('input[name="author"]:checked');
 
     filterTagsDiv.innerHTML = '';
-    let hasFilters = false;
 
     if (search) {
         const searchTypeLabel = document.getElementById('searchByIngredient').checked ? 'Ingredient' : 'Name';
-        filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">${searchTypeLabel}: ${search}<button class="recipe-remove-tag" onclick="clearRecipeFilterGroup('search')" type="button">×</button></span>`;
-        hasFilters = true;
+        filterTagsDiv.innerHTML += `<span class="filter-tag">${searchTypeLabel}: ${search}<button class="remove-tag" onclick="clearRecipeFilterGroup('search')" type="button">×</button></span>`;
     }
 
     if (courseCheckboxes.length > 0) {
         courseCheckboxes.forEach(cb => {
             const label = cb.nextElementSibling.textContent;
-            filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Course: ${label} <button class="recipe-remove-tag" onclick="clearSingleFilter('course', '${cb.value}')" type="button">×</button></span>`;
+            filterTagsDiv.innerHTML += `<span class="filter-tag">Course: ${label} <button class="remove-tag" onclick="clearSingleFilter('course', '${cb.value}')" type="button">×</button></span>`;
         });
-        hasFilters = true;
     }
 
     if (categoryCheckboxes.length > 0) {
         categoryCheckboxes.forEach(cb => {
             const label = cb.nextElementSibling.textContent;
-            filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Category: ${label} <button class="recipe-remove-tag" onclick="clearSingleFilter('category', '${cb.value}')" type="button">×</button></span>`;
+            filterTagsDiv.innerHTML += `<span class="filter-tag">Category: ${label} <button class="remove-tag" onclick="clearSingleFilter('category', '${cb.value}')" type="button">×</button></span>`;
         });
-        hasFilters = true;
     }
 
     if (proteinCheckboxes.length > 0) {
         proteinCheckboxes.forEach(cb => {
             const label = cb.nextElementSibling.textContent;
-            filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Protein: ${label} <button class="recipe-remove-tag" onclick="clearSingleFilter('protein', '${cb.value}')" type="button">×</button></span>`;
+            filterTagsDiv.innerHTML += `<span class="filter-tag">Protein: ${label} <button class="remove-tag" onclick="clearSingleFilter('protein', '${cb.value}')" type="button">×</button></span>`;
         });
-        hasFilters = true;
     }
 
     if (authorCheckboxes.length > 0) {
         authorCheckboxes.forEach(cb => {
             const label = cb.nextElementSibling.textContent;
-            filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Author: ${label} <button class="recipe-remove-tag" onclick="clearSingleFilter('author', '${cb.value}')" type="button">×</button></span>`;
+            filterTagsDiv.innerHTML += `<span class="filter-tag">Author: ${label} <button class="remove-tag" onclick="clearSingleFilter('author', '${cb.value}')" type="button">×</button></span>`;
         });
-        hasFilters = true;
     }
 
     // Step 3 — nutrition sort chip
@@ -2924,11 +2895,8 @@ function updateRecipeActiveFilters() {
         const orderInput = document.getElementById('nutritionOrderInput');
         const orderLabel = (orderInput && orderInput.value === 'asc') ? '↑' : '↓';
         const nutLabel = labelMap[NUTRITION_SORT] || NUTRITION_SORT;
-        filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Nutrition: ${nutLabel} ${orderLabel} <button class="recipe-remove-tag" onclick="clearNutritionSort()" type="button">×</button></span>`;
-        hasFilters = true;
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Nutrition: ${nutLabel} ${orderLabel} <button class="remove-tag" onclick="clearNutritionSort()" type="button">×</button></span>`;
     }
-
-    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
 }
 
 function clearSingleFilter(filterType, value) {

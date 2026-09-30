@@ -32,7 +32,7 @@
 
 <!-- Header strip -->
     <div class="detail-header">
-      <span class="alv-pill status-{{ submission.status }}">{{ submission.get_status_display }}</span>
+      <span class="{{ submission.pill_class }}">{{ submission.get_status_display }}</span>
       <div class="ref-id-display">
         <small>MessageRefID</small>
         <code>{{ submission.message_ref_id }}</code>
@@ -755,19 +755,18 @@
     padding: 4px 8px; border-radius: 4px; word-break: break-all;
   }
 
-  /* THE FIVE LIFECYCLE TONES, the same mapping X6 made on the list.
-     The geometry is base's .alv-pill now; these five rules are nothing
-     but a status mapped to a meaning, and each was already the Bootstrap
-     colour for the meaning the house has a token for. The NAMES stay
-     because the class is built from the model's status key - in the
-     markup and again in the modal JS - so an .alv-pill-good can never be
-     written there without a mapping in two languages, which would
-     drift. */
-  .status-draft                { background: var(--alv-neutral-soft); color: var(--alv-neutral); }
-  .status-closed               { background: var(--alv-info-soft); color: var(--alv-accent-ink); }
-  .status-submitted_externally { background: var(--alv-warn-soft); color: var(--alv-warn); }
-  .status-acknowledged         { background: var(--alv-good-soft); color: var(--alv-good); }
-  .status-rejected             { background: var(--alv-bad-soft); color: var(--alv-bad); }
+  /* THE FIVE LIFECYCLE TONES WERE HERE - taken 30 Sep.
+     They were kept, correctly, while the class was built by appending
+     the status key to a prefix in two languages: a mapping to
+     .alv-pill-good would then have had to be written twice, and two
+     mappings drift. Submission.pill_class writes it once, on the model,
+     and the markup and the modal JS both read that.
+
+     Each of the five set the same background and the same colour as the
+     base class that now replaces it; what they did NOT set is the
+     border, so these five pills were the only ones in the system without
+     one. They have it now.
+                                                    [test_crs_pill.py] */
 
 
   /* Read-only data list */
