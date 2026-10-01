@@ -73,6 +73,8 @@
                    name="search"
                    id="searchInput"
                    class="form-control search-input"
+                   data-live-search=".lease-agreements-table"
+                   data-live-search-cell="Tenant,Property"
                    placeholder="Tenant or property name..."
                    value="{{ search_query|default:'' }}">
             <button type="button" class="search-btn" id="searchBtn" aria-label="Search">

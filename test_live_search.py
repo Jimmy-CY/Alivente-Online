@@ -91,12 +91,27 @@ PAGE = 'suppliers.html'
 VIEW = os.path.join('pages', 'views', 'suppliers.py')
 EXE = '/opt/pw-browsers/chromium'
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
-# Eligible, and deliberately not opted in - each needs its own answer
-# about which column the server matches.
-CANDIDATES = ('properties.html', 'fsr.html',
-              'ingredient_base_units_management.html',
-              'unit_conversions_management.html',
-              'tenant_lease_agreement.html')
+# Eligible, and STILL deliberately not opted in - each needs its own
+# answer about which column the server matches, and nobody has walked
+# these two screens.
+CANDIDATES = ('ingredient_base_units_management.html',
+              'unit_conversions_management.html')
+# Left this list on 1 Oct, round N3 (.bak_searchhint), each naming the
+# column or columns its own view filters on:
+#
+#     properties.html          prop_name               -> Property
+#     fsr.html                 issues_heading          -> Issue
+#                              issues_description      -> Description
+#     tenant_lease_agreement   tenant_name             -> Tenant
+#                              prop__prop_name         -> Property
+#
+# A page leaving this list is a decision taken, and comes off it in the
+# same round - the shape test_print_leaks.py uses for its own queue. The
+# check below then says the list SHRANK rather than merely that it moved.
+# act_expense.html was eligible all along and N2 never considered it; N3
+# opted it in too.
+OPTED_IN_BY_N3 = ('properties.html', 'fsr.html',
+                  'tenant_lease_agreement.html', 'act_expense.html')
 
 passed = failed = skipped = 0
 
@@ -323,9 +338,13 @@ ok('page_obj' in read(pj) or 'paginator' in read(pj),
 for rel in CANDIDATES:
     p = alv_tree.path_of(rel)
     ok('data-live-search' not in read(p),
-       '%-40s eligible, not opted in' % rel)
+       '%-40s eligible, still not opted in' % rel)
+for rel in OPTED_IN_BY_N3:
+    p = alv_tree.path_of(rel)
+    ok('data-live-search' in read(p),
+       '%-40s opted in by N3, 1 Oct' % rel)
 print('')
-print('  Each of those five renders every row, so each COULD have this.')
+print('  Each of those two renders every row, so each COULD have this.')
 print('  Each also needs its own answer to the question this round turns')
 print('  on - which column does its server search match - and that answer')
 print('  is the correctness of the feature, not a detail of it. They are')

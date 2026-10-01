@@ -97,6 +97,8 @@ Properties
                      name="search"
                      id="searchInput"
                      class="form-control search-input"
+                     data-live-search=".properties-table"
+                     data-live-search-cell="Property"
                      placeholder="Search by property name..."
                      value="{{ search_query|default:'' }}">
               <button type="button" class="search-btn" id="searchBtn">

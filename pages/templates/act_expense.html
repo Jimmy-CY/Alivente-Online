@@ -419,6 +419,8 @@
                                name="search"
                                id="searchInput"
                                class="form-control search-input"
+                               data-live-search=".expense-table"
+                               data-live-search-cell="Description"
                                placeholder="Search by description..."
                                value="{{ search_query|default:'' }}">
                         <button type="button" class="search-btn" id="searchBtn">
@@ -809,6 +811,13 @@
 
 <!-- JavaScript -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+{# E1, 1 Oct 2026 - Analysis opened onto Loading and stayed there from #}
+{# 23 Sep. The series map called anTok() seventy lines before AN_CS was #}
+{# assigned; var hoists the name, not the value, so the call threw and #}
+{# the IIFE died before it bound its click handler. The definition is #}
+{# above its first use now, and reads lazily so the next insertion #}
+{# above it cannot do this again.          [test_analysis_order.py] #}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
@@ -1895,6 +1904,36 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
     // dot, not a line, so a dash would say nothing - which is why the
     // second mark here is a shape and on financial_indicators, where
     // shape already means the year, it is a dash. [D5]
+    /* THE ANALYSIS POP-UP READS BASE'S MEANING TOKENS - 22 Sep 2026,
+       MOVED HERE AND MADE LAZY 1 Oct 2026.
+
+       A canvas element cannot wear a class, so a chart's colours have to
+       be VALUES; they do not have to be LITERALS. Read off :root, as
+       fsr.html's Issues Analysis charts have since 20 Sep, with base's
+       own values as fallbacks so a renamed token degrades to the right
+       colour rather than to nothing - Chart.js draws nothing at all for
+       an empty string, and reports no error.
+
+       The four quadrants ARE the four meanings: Watch is bad, costs high
+       with rent rising is warn, rent stalled is info, healthy is good.
+
+       THIS BLOCK USED TO SIT SEVENTY LINES BELOW, and the SERIES map
+       right under this comment called anTok before AN_CS was assigned.
+       `var` hoists the name and not the value, so AN_CS was undefined,
+       the call threw, and the whole IIFE died before it reached the
+       click handler at the bottom - which is why Analysis opened onto
+       "Loading..." and stayed there from 23 Sep to 1 Oct.
+
+       It is lazy now as well as moved. Moving it alone fixes today and
+       leaves the trap armed for whoever inserts the next block above.
+                                          [test_analysis_order.py] */
+    var AN_CS = null;
+    function anTok(name, fallback){
+        if (!AN_CS) { AN_CS = getComputedStyle(document.documentElement); }
+        var v = AN_CS.getPropertyValue('--alv-' + name);
+        return (v && v.trim()) || fallback;
+    }
+
     var SERIES_FALLBACK = ['#eb6834','#1baf7a','#eda100','#e87ba4',
                            '#008300','#4a3aa7','#e34948','#2a78d6'];
     var SERIES = SERIES_FALLBACK.map(function(fb, i){
@@ -1960,21 +1999,6 @@ table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-siz
         X_CAP = Math.max(10, cap*1.3);
     }
 
-    /* THE ANALYSIS POP-UP READS BASE'S MEANING TOKENS - 22 Sep 2026.
-       A canvas element cannot wear a class, so a chart's colours have to be
-       VALUES; they do not have to be LITERALS. Read off :root once, as
-       fsr.html's Issues Analysis charts have since 20 Sep, with base's own
-       values as fallbacks so a renamed token degrades to the right colour
-       rather than to nothing - Chart.js draws nothing at all for an empty
-       string, and reports no error.
-
-       The four quadrants ARE the four meanings: Watch is bad, costs high
-       with rent rising is warn, rent stalled is info, healthy is good. */
-    var AN_CS = getComputedStyle(document.documentElement);
-    function anTok(name, fallback){
-        var v = AN_CS.getPropertyValue('--alv-' + name);
-        return (v && v.trim()) || fallback;
-    }
     var Q_BAD       = anTok('bad',       '#b3261e'),
         Q_BAD_SOFT  = anTok('bad-soft',  '#fbeae9'),
         Q_WARN      = anTok('warn',      '#8e6207'),

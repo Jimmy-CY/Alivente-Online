@@ -119,6 +119,8 @@ ROUNDS = [
     '.bak_barstretch',
     '.bak_secscope',
     '.bak_tasktable',
+    '.bak_searchhint',
+    '.bak_analysisorder',
 ]
 
 

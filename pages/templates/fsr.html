@@ -351,6 +351,8 @@
                                name="search"
                                id="searchInput"
                                class="form-control search-input"
+                               data-live-search="#issuesTable"
+                               data-live-search-cell="Issue,Description"
                                placeholder="Search by issue heading or description..."
                                value="{{ search_query|default:'' }}">
                         <button type="button" class="search-btn" id="searchBtn">

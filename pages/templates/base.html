@@ -3308,6 +3308,20 @@ textarea.form-control { height: auto; }
    five pages and GREEN on recipe_management - the same colour-by-module
    fault D3 found in the row actions, and the same answer: it is the one
    thing you came to the bar to do, so it is the accent, everywhere. */
+/* A search box that does NOT narrow as you type says so, once,
+   quietly, under the box. Two lists cannot have the live filter -
+   projects and recipes both search a field that is not rendered on the
+   page (a project's description, a recipe's ingredients), so narrowing
+   the screen would answer a different question from the glass. Demetri
+   asked for the line on 1 Oct 2026.       [test_search_hint.py] */
+.alv-search-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: var(--alv-ink-soft);
+}
+
 .search-input-group {
   position: relative;
   display: flex;
@@ -4712,21 +4726,28 @@ table.alv-matrix {
 </script>
 
   <script>
-/* ===== alv-live-search v1 ===== 30 Sep 2026 =========================
+/* ===== alv-live-search v2 ===== 1 Oct 2026 ==========================
    A search box that narrows a table as you type, with no server and no
    reload. Demetri asked for it on the Suppliers contact field.
 
    OPT IN with two attributes on the input:
 
      data-live-search="<css selector for the table>"
-     data-live-search-cell="<the data-label of the column to match>"
+     data-live-search-cell="<data-label>[,<data-label>...]"
 
-   IT MATCHES ONE COLUMN, ON PURPOSE. Every one of these boxes also
-   posts to a server filter that matches ONE model field, and the two
-   have to agree - a live filter that matched the whole row would give
-   a different answer from the same box pressed with Enter, which is
-   worse than having no live filter at all. The cell is named rather
-   than guessed, so a page cannot opt in without deciding.
+   IT MATCHES THE COLUMNS THE SERVER MATCHES, AND NO OTHERS. v1 took one
+   name because suppliers filters on one model field. Two of the four
+   pages added on 1 Oct filter on two - fsr does Q(issues_heading) |
+   Q(issues_description), tenant_lease_agreement does Q(tenant_name) |
+   Q(prop__prop_name) - so the attribute is a LIST now and a row matches
+   if ANY named column matches, which is the same OR the server does.
+
+   What it must never become is "match the whole row". The box also
+   posts to the server, and the two have to agree: a live filter that
+   matched a column the server ignores would give a different answer
+   from the same box pressed with Enter, which is worse than having no
+   live filter at all. The columns are named rather than guessed, so a
+   page cannot opt in without deciding.
 
    ONLY FOR A TABLE THAT HOLDS EVERY ROW. A paginated list has rows the
    browser has never seen, so narrowing what is on screen would quietly
@@ -4738,7 +4759,7 @@ table.alv-matrix {
 
    WITH THIS SCRIPT BLOCKED nothing is hidden and the box behaves
    exactly as it did before - the server search is untouched.
-                                             [test_live_search.py] */
+                                             [test_live_search.py, test_search_hint.py] */
 (function () {
     "use strict";
     function norm(s) { return (s || '').toLowerCase().trim(); }
@@ -4746,8 +4767,14 @@ table.alv-matrix {
     function wire(box) {
         var table = document.querySelector(
             box.getAttribute('data-live-search'));
-        var label = box.getAttribute('data-live-search-cell');
-        if (!table || !label) { return; }
+        var labels = (box.getAttribute('data-live-search-cell') || '')
+            .split(',');
+        var i;
+        for (i = labels.length - 1; i >= 0; i -= 1) {
+            labels[i] = labels[i].trim();
+            if (!labels[i]) { labels.splice(i, 1); }
+        }
+        if (!table || !labels.length) { return; }
         var body = table.tBodies[0];
         if (!body) { return; }
         var note = document.createElement('tr');
@@ -4765,11 +4792,19 @@ table.alv-matrix {
                 'tr:not(.alv-live-search-empty)');
             var shown = 0;
             Array.prototype.forEach.call(rows, function (row) {
-                var td = row.querySelector('[data-label="' + label + '"]');
-                /* A row with no such cell is not a data row - an empty
-                   state, a totals line - and is left alone. */
-                if (!td) { return; }
-                var hit = !q || norm(td.textContent).indexOf(q) >= 0;
+                var cells = [], k, td;
+                for (k = 0; k < labels.length; k += 1) {
+                    td = row.querySelector(
+                        '[data-label="' + labels[k] + '"]');
+                    if (td) { cells.push(td); }
+                }
+                /* A row with none of those cells is not a data row - an
+                   empty state, a totals line - and is left alone. */
+                if (!cells.length) { return; }
+                var hit = !q;
+                for (k = 0; !hit && k < cells.length; k += 1) {
+                    hit = norm(cells[k].textContent).indexOf(q) >= 0;
+                }
                 row.style.display = hit ? '' : 'none';
                 if (hit) { shown += 1; }
             });

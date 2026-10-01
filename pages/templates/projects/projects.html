@@ -117,6 +117,11 @@ Projects
                 <i class="fas fa-search"></i>
               </button>
             </div>
+            {# This list is searched on the SERVER. It cannot narrow as you type: #}
+            {# the view filters on a field that is not on the page, so a live #}
+            {# filter would answer a different question from the glass. #}
+            {#                                   [test_search_hint.py] #}
+            <small class="alv-search-hint">Type your search, then press the magnifying glass.</small>
           </div>
 
           <!-- Property Filter -->
