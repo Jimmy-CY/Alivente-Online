@@ -572,7 +572,19 @@ Projects
         font-size: 15px;
     }
     /* Hide secondary button — moves to More menu */
-    .action-secondary { display: none; }
+        /* `.action-secondary { display: none; }` was here, unscoped,
+           and it hid every secondary on the page below 768px - not just
+           the ones in the action bar. On Project Detail that was Gantt
+           Chart, Duplicate Project, Add Task, Add Subtask, Add First
+           Task, four modal Cancels and a Delete confirmation. Demetri
+           went looking for Add Task on a phone and there was nothing
+           there.
+
+           base has the scoped version - it hides a secondary only
+           inside a bar that HAS a More menu to hold it - and every one
+           of these pages has that menu, so the bar is unchanged.
+           30 Sep 2026.                 [test_secondary_scope.py] */
+
     .action-back {
         flex-shrink: 0;
         padding: 12px 14px;

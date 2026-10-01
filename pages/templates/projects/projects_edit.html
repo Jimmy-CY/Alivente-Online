@@ -457,12 +457,14 @@ label i { color: #6c757d; margin-right: 4px; }
         width: 100%;
         justify-content: center;
     }
-    .page-action-buttons .btn {
-        width: 100%;
-        padding: 14px;
-        font-size: 15px;
-        margin: 0 !important;
-    }
+        /* The rule that was here set width: 100% on every button in
+           this bar below 768px. base already sizes them - the primary
+           grows, Back is a 44px square - and the two selectors have the
+           same specificity, so this one won on stylesheet order alone.
+           Demetri saw the result on Issues: a 34px Edit Issue with its
+           text overflowing, beside a 386px Back running off the screen.
+           30 Sep 2026.                    [test_bar_stretch.py] */
+
 }
 
 /* HEADING STANDARD - shape B, 9 Sep. Same block as properties_add and its

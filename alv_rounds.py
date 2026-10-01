@@ -116,6 +116,8 @@ ROUNDS = [
     '.bak_projtable',
     '.bak_dashback',
     '.bak_livesearch',
+    '.bak_barstretch',
+    '.bak_secscope',
 ]
 
 

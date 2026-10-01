@@ -650,11 +650,14 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ==================== MOBILE (≤768px) ==================== */
 @media screen and (max-width: 768px) {
     /* Page title */
-    .page-action-buttons > .btn,
-    .page-action-buttons > a {
-        width: 100%;
-        text-align: center;
-    }
+        /* The rule that was here set width: 100% on every button in
+           this bar below 768px. base already sizes them - the primary
+           grows, Back is a 44px square - and the two selectors have the
+           same specificity, so this one won on stylesheet order alone.
+           Demetri saw the result on Issues: a 34px Edit Issue with its
+           text overflowing, beside a 386px Back running off the screen.
+           30 Sep 2026.                    [test_bar_stretch.py] */
+
 
     /* Report container — minimal padding */
     .report-container {

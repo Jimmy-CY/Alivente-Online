@@ -432,7 +432,12 @@ for rel, _s in LINES:
     p = alv_tree.join(rel.replace('/', os.sep))
     if not os.path.isfile(p + SUFFIX):
         continue
-    a, b = read(p + SUFFIX).split('\n'), read(p).split('\n')
+    # LESSON 17: the page as THIS round left it, not as it is now. I1
+    # later removed a stretch rule from finance_expense_types and
+    # finance_revenue_types (test_bar_stretch.py), and reading the live
+    # file made this suite fail about a round it does not judge.
+    a = read(p + SUFFIX).split('\n')
+    b = _left(p, SUFFIX, read).split('\n')
     ops = [o for o in difflib.SequenceMatcher(None, a, b,
                                               autojunk=False).get_opcodes()
            if o[0] != 'equal']
