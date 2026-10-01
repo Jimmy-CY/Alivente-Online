@@ -123,6 +123,7 @@ ROUNDS = [
     '.bak_analysisorder',
     '.bak_detailpills',
     '.bak_projpills',
+    '.bak_stats3up',
 ]
 
 
