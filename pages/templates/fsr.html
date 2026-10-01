@@ -338,8 +338,14 @@
     </div>
 
     <div class="filter-content" id="filterContent">
-        <form action="{% url 'fsr' %}" method="post" id="filterForm">
-            {% csrf_token %}
+        {# GET, NOT POST - Section F round F1, 1 Oct 2026. A filter is a    #}
+        {# VIEW, not a change: the URL then carries it, Back works, and a   #}
+        {# refresh does not re-submit. The csrf token that was on this line #}
+        {# is GONE ON PURPOSE - a GET form serialises every field into the  #}
+        {# query string, so it would have put the token in the address bar, #}
+        {# the history and the Referer. Django exempts safe methods, so it  #}
+        {# was never needed here.                   [test_filter_get.py]    #}
+        <form action="{% url 'fsr' %}" method="get" id="filterForm">
             <div class="filter-grid">
                 <!-- Search Bar -->
                 <div class="filter-group">

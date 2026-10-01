@@ -134,6 +134,13 @@ def get_email_recipients(notification_type, workspace=None):
         'friday_status_report_staff': {'to': ['demetrimanias@gmail.com'], 'cc': ['angmaniasbakers@gmail.com']},
         'issue_comments_daily': {'to': ['demetrimanias@gmail.com'], 'cc': []},
         'issue_comment_urgent': {'to': ['demetrimanias@gmail.com', 'stella.simitopoulos@alivente.com'], 'cc': []},
+        # NAMED, not left to the catch-all below - Section A round A2.
+        # get_email_recipients falls through to
+        # {'to': ['demetrimanias@gmail.com']} for any type not listed
+        # here, which is why this notice arrived all along even with no
+        # row and no card. Relying on that means a change to the
+        # catch-all silently moves this type too.
+        'password_reset_requested': {'to': ['demetrimanias@gmail.com'], 'cc': []},
     }
 
     defaults = default_recipients.get(notification_type, {'to': ['demetrimanias@gmail.com'], 'cc': []})

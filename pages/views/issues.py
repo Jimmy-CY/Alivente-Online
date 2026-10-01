@@ -64,11 +64,12 @@ logger = logging.getLogger(__name__)
 @login_required
 @permission_required('auth.can_access_issues', raise_exception=True)
 def fsr(request):
-    # Get filter parameters
-    prop_output = request.POST.get('propname', '').strip()
-    country_output = request.POST.get('propcountry', '').strip()
-    status_output = request.POST.get('issuestatus', '').strip()
-    search_query = request.POST.get('search', '').strip()
+    # Get filter parameters - from the QUERY STRING since F1, 1 Oct
+    # 2026. The form that sends them is method="get"; see the note on it.
+    prop_output = request.GET.get('propname', '').strip()
+    country_output = request.GET.get('propcountry', '').strip()
+    status_output = request.GET.get('issuestatus', '').strip()
+    search_query = request.GET.get('search', '').strip()
 
     # Start with all objects
     results = props.objects.all().order_by('prop_country', 'prop_name')

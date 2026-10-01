@@ -1096,6 +1096,26 @@ $suites = @(
     # proved by running rather than by reading. Newest, so most
     # likely to be what breaks.
     'test_auth_flow.py'
+    # A filter travels by GET. Its section 3 drives all five pages
+    # through the real views against a database it builds itself,
+    # and its control sends the OLD POST and requires the filter to
+    # be IGNORED - which is the only way to show the move happened
+    # rather than that both are being read. Newest, so most likely
+    # to be what breaks.
+    'test_filter_get.py'
+    # Every configurable notification type has a control on the
+    # settings screen. It RENDERS the page rather than reading the
+    # four lists that have to agree, because A1 added a type to
+    # three of them, wrote a suite that checked those same three,
+    # and shipped a type nobody could configure. Newest, so most
+    # likely to be what breaks.
+    'test_notify_types.py'
+    # The login box takes an email as well as a username. Its
+    # section 3 drives real sign-ins against a database it builds
+    # itself, and its control shows Django's own backend refusing
+    # the address - so the resolution step is provably what makes
+    # it work. Newest, so most likely to be what breaks.
+    'test_login_email.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

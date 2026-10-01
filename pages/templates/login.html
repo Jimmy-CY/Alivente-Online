@@ -33,8 +33,12 @@
     {% csrf_token %}
     {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
     <div class="form-group">
-        <label for="usernameInput"><strong>Username</strong></label>
-        <input type="text" class="form-control" placeholder="Enter Username" name="username" id="usernameInput" value="{{ username|default:'' }}" autocomplete="username" autofocus>
+        {# EITHER, SINCE A3. The box takes a username or the      #}
+        {# address the invitation arrived at - which is what      #}
+        {# people reach for, because the reset was about the      #}
+        {# address.                     [test_login_email.py]     #}
+        <label for="usernameInput"><strong>Username or Email</strong></label>
+        <input type="text" class="form-control" placeholder="Enter username or email address" name="username" id="usernameInput" value="{{ username|default:'' }}" autocomplete="username" autofocus>
     </div>
     <div class="form-group">
         <label for="passwordInput"><strong>Password</strong></label>

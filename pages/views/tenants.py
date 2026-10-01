@@ -108,10 +108,11 @@ def _apply_physical_invoice_fields(request, tenant_obj):
 @login_required
 @permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_page(request):
-    # Get filter values from the new form
-    selected_property = request.POST.get('propname', '').strip()
-    selected_tenant = request.POST.get('tenantname', '').strip()
-    selected_status = request.POST.get('act', '').strip()
+    # Get filter values from the QUERY STRING since F1, 1 Oct 2026.
+    # The form that sends them is method="get"; see the note on it.
+    selected_property = request.GET.get('propname', '').strip()
+    selected_tenant = request.GET.get('tenantname', '').strip()
+    selected_status = request.GET.get('act', '').strip()
 
     # Start with all properties and tenants
     all_properties = props.objects.all().order_by('prop_country', 'prop_name')

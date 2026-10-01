@@ -111,9 +111,10 @@ def _open_invoice_rows(open_invoices, shown_props, shown_tenants):
 @login_required
 @permission_required('auth.can_access_invoices', raise_exception=True)
 def invoices_page(request):
-    # Get filter values from POST request
-    prop_output = request.POST.get('propname', '')
-    tenant_output = request.POST.get('tenantname', '')
+    # Get filter values from the QUERY STRING since F1, 1 Oct 2026.
+    # The form that sends them is method="get"; see the note on it.
+    prop_output = request.GET.get('propname', '')
+    tenant_output = request.GET.get('tenantname', '')
 
     # Always get all props for the dropdown
     all_props = props.objects.all().order_by('prop_country', 'prop_name')

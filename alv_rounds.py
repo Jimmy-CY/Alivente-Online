@@ -125,6 +125,9 @@ ROUNDS = [
     '.bak_projpills',
     '.bak_stats3up',
     '.bak_authflow',
+    '.bak_filterget',
+    '.bak_pwnotify',
+    '.bak_loginemail',
 ]
 
 

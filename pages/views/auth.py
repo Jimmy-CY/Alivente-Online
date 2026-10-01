@@ -15,6 +15,9 @@ administrator-facing trigger is user_reset_password in views/users.py.
 
 Functions
 ---------
+- account_for        : maps whatever was typed in the login box - a
+                       username or an email address - to the username to
+                       authenticate. Added by round A3, 1 Oct 2026.
 - login_user         : GET renders the login form; POST authenticates,
                        honours a safe ?next=, and on failure redirects
                        back with a red message - which login.html can now
@@ -33,6 +36,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -67,6 +71,43 @@ def _safe_next(request):
     return ''
 
 
+def account_for(identifier):
+    """The USERNAME to authenticate, given whatever was typed in the box.
+
+    Demetri, 1 Oct 2026, locked out of an account whose username is
+    `Demetrios` by typing the address the reset email had just arrived at.
+    The box now takes either.
+
+    THE ORDER IS THE WHOLE DESIGN:
+
+      1. If it names an account, it IS a username. Checked first and
+         exactly, so a username always beats an address that happens to
+         look like one - nobody can make somebody else's login ambiguous
+         by choosing an email.
+      2. No @, no lookup. That string is not an address and the query
+         could only answer no.
+      3. Exactly one match, case-insensitively - the spelling Forgot
+         Password and the duplicate check on Add/Edit User already use.
+      4. TWO MATCHES REFUSE. One address on two accounts is a state this
+         system no longer allows but may still contain, and guessing
+         which one was meant is worse than failing. The identifier falls
+         through unchanged and authenticate() says no, with the same
+         sentence any other wrong answer gets.
+
+    Returns a string either way; it never raises and never reveals
+    whether anything matched.
+    """
+    identifier = (identifier or '').strip()
+    if not identifier:
+        return identifier
+    if User.objects.filter(username=identifier).exists():
+        return identifier
+    if '@' not in identifier:
+        return identifier
+    found = list(User.objects.filter(email__iexact=identifier)[:2])
+    return found[0].username if len(found) == 1 else identifier
+
+
 def _disabled_with_right_password(username, password):
     """True when the username exists, the password is RIGHT, and the
     account is switched off.
@@ -91,8 +132,10 @@ def _disabled_with_right_password(username, password):
 
 def login_user(request):
     if request.method == "POST":
-        username = (request.POST.get("username") or '').strip()
+        typed = (request.POST.get("username") or '').strip()
         password = request.POST.get("password") or ''
+        # EITHER A USERNAME OR AN EMAIL - A3. See account_for().
+        username = account_for(typed)
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
@@ -100,6 +143,10 @@ def login_user(request):
             # it is a red message at the login screen) or otherwise, you just
             # log in." Landing on the application IS the confirmation.
             return redirect(_safe_next(request) or 'home')
+        # `username` is already account_for()'s answer, so an
+        # email plus the right password on a disabled account
+        # reaches this branch rather than falling through to
+        # the generic line.
         if _disabled_with_right_password(username, password):
             messages.error(request, DISABLED_ACCOUNT)
         else:
@@ -147,10 +194,16 @@ def password_forgot(request):
     nothing is the same answer, one email fewer.
     """
     if request.method == 'POST':
-        address = (request.POST.get('email') or '').strip()
-        if address:
-            for user in User.objects.filter(email__iexact=address,
-                                            is_active=True):
+        # EITHER, HERE TOO - A3. Somebody who thinks of themselves
+        # as `Demetrios` should not be told nothing happened because they
+        # typed it. The link still goes to the ADDRESS ON THE ACCOUNT and
+        # never to whatever was typed, so this adds no way to send mail
+        # anywhere new.
+        typed = (request.POST.get('email') or '').strip()
+        if typed:
+            for user in User.objects.filter(
+                    Q(email__iexact=typed) | Q(username=account_for(typed)),
+                    is_active=True).distinct():
                 _send_link(request, user, pwr.MODE_RESET)
                 _notify_reset_requested(request, user)
         messages.info(request, FORGOT_SENT)

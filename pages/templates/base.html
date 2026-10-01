@@ -3242,7 +3242,25 @@ textarea.form-control { height: auto; }
    the page and really does differ - 2fr 1fr 1fr, 1fr 1fr, four equal
    columns - because how many filters a screen has is the screen's
    business.
-                                            [test_filter_frame.py] */
+
+   AND IT SUBMITS BY GET. Settled 1 Oct 2026, Section F round F1, after a
+   census found eleven filter forms in three spellings - four method="GET",
+   two method="get", five method="post" - plus one page that filters in
+   the browser and never asks the server at all.
+
+   A FILTER IS A VIEW, NOT A CHANGE. With GET the URL carries it, so a
+   narrowed list can be bookmarked, re-opened and sent to somebody; Back
+   returns to it instead of asking the browser to resubmit a form; and a
+   refresh is safe. The five POST pages were converted in F1.
+
+   WITH NO csrf_token IN IT. A GET form serialises every field into the
+   query string, so a token left in one lands in the address bar, the
+   history and the Referer header. Django exempts safe methods; it is not
+   needed and must not be there.
+
+   Lowercase `get`, for no better reason than that an attribute value is
+   lowercase everywhere else in this file.
+                            [test_filter_frame.py] [test_filter_get.py] */
 .filter-grid {
     display: grid;
     gap: 20px;

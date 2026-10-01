@@ -633,6 +633,49 @@
     </form>
 </div>
 
+{# ADDED 1 Oct 2026, Section A round A2, because A1 did not. A1 put    #}
+{# this type in the model, in admin_types and in migration 0096 and     #}
+{# stopped, because its own note said adding a choice was "half" a      #}
+{# change. It is a QUARTER of one: this template hand-writes a card per #}
+{# type rather than looping, so a type with no card here is             #}
+{# configurable by nobody and nothing reports it.   [test_notify_types.py] #}
+<!-- Password Reset Requested -->
+<div class="notification-card form-card">
+    <h3 class="form-section-title"><i class="fas fa-key"></i> Password Reset Requested</h3>
+    <p class="text-muted">Sent when a set-password link goes out - from Reset Password on the user list, or when somebody uses Forgot Password. Suppressed when the person who asked is the person it is about. The link itself always goes to the account's own address; this is only the notice about it.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="notification_type" value="password_reset_requested">
+
+        <div class="form-group">
+            <label><strong>TO:</strong> Primary Recipients</label>
+            <textarea
+                class="form-control"
+                name="to_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.password_reset_requested.to_emails }}</textarea>
+            <div class="field-hint">Administrators who should know a password link was sent</div>
+        </div>
+
+        <div class="form-group">
+            <label><strong>CC:</strong> Carbon Copy Recipients (optional)</label>
+            <textarea
+                class="form-control"
+                name="cc_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.password_reset_requested.cc_emails }}</textarea>
+            <div class="field-hint">Additional recipients who should be informed</div>
+        </div>
+
+        <button type="submit" class="btn action-primary">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+
 {% render_help_modal "admin_notification_settings" %}
 
 

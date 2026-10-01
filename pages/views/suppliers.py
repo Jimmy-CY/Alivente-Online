@@ -40,8 +40,10 @@ from ..models import supplier
 @login_required
 @permission_required('auth.can_access_suppliers', raise_exception=True)
 def suppliers(request):
-    sup_output = request.POST.get('supname')
-    sup_count = request.POST.get('supcount')
+    # From the QUERY STRING since F1, 1 Oct 2026. The form that sends
+    # them is method="get"; see the note on it.
+    sup_output = request.GET.get('supname')
+    sup_count = request.GET.get('supcount')
 
     # Start with all suppliers
     sresults = supplier.objects.all().order_by('supplier_country', 'supplier_contact_person')

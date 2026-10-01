@@ -543,9 +543,16 @@ for rel in ('notification_settings.html', 'personal_notification_settings.html')
     n_card = len(re.findall(r'class="[^"]*notification-card[^"]*"', mk))
     n_both = len(re.findall(
         r'class="[^"]*notification-card form-card[^"]*"', mk))
-    ok(n_card == n_both and n_card == CLAIM[rel],
+    # >= AND NOT ==, since 1 Oct 2026 (Section A round A2).
+    # This line reads the LIVE file while CLAIM is about the
+    # file as push 1 left it - read through state_after(),
+    # which resolves to a copy frozen weeks ago. The two
+    # agreed only until a later round added a card. What this
+    # check is actually about is n_card == n_both; the count
+    # is here to catch a card going missing, which >= does.
+    ok(n_card == n_both and n_card >= CLAIM[rel],
        '%-38s all %d card(s) keep their name AND take base\'s panel'
-       % (rel, CLAIM[rel]), '%d cards, %d with form-card' % (n_card, n_both))
+       % (rel, n_card), '%d cards, %d with form-card' % (n_card, n_both))
 
 
 # ==========================================================================

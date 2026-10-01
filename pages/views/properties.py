@@ -430,10 +430,11 @@ def get_property_tenant_data(request):
 @login_required
 @permission_required('auth.can_access_properties', raise_exception=True)
 def properties_page(request):
-    # Get filter values from the new form
-    search_query = request.POST.get('search', '').strip()
-    selected_country = request.POST.get('country', '')
-    selected_status = request.POST.get('status', '')
+    # Get filter values from the QUERY STRING since F1, 1 Oct 2026.
+    # The form that sends them is method="get"; see the note on it.
+    search_query = request.GET.get('search', '').strip()
+    selected_country = request.GET.get('country', '')
+    selected_status = request.GET.get('status', '')
 
     # Start with all properties
     results = props.objects.all()

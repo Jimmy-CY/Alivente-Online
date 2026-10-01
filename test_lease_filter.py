@@ -118,11 +118,15 @@ FUNC = 'tenant_lease_agreement'
 
 # The eleven that filter, and how each submits. Measured, then written
 # down, so a page changing sides is a failure here rather than a silence.
-HOW = {'act_expense.html': 'get', 'fsr.html': 'post', 'invoices.html': 'post',
+# ALL GET SINCE 1 Oct 2026, Section F round F1. The five that
+# said post - fsr, invoices, properties, suppliers, tenant -
+# were converted in one round, with the csrf token removed from
+# each form in the same change.
+HOW = {'act_expense.html': 'get', 'fsr.html': 'get', 'invoices.html': 'get',
        'passport_management.html': 'get',
        'physical_invoice_list.html': 'get',
-       'projects/projects.html': 'get', 'properties.html': 'post',
-       'suppliers.html': 'post', 'tenant.html': 'post',
+       'projects/projects.html': 'get', 'properties.html': 'get',
+       'suppliers.html': 'get', 'tenant.html': 'get',
        'ingredient_base_units_management.html': 'get',
        'recipe_management.html': 'get'}
 # List screens that still cannot be narrowed at all. Named, not counted.
@@ -556,16 +560,16 @@ for rel, want in sorted(HOW.items()):
     seen[rel] = got
     ok(got == want, '%-42s %s' % (rel, got), 'expected %s' % want)
 n_post = sum(1 for v in seen.values() if v == 'post')
-ok(n_post == 5 and len(seen) - n_post == 6,
-   '%d POST against %d GET - and T4 makes the GET side seven'
-   % (n_post, len(seen) - n_post))
+ok(n_post == 0 and len(seen) == 11,
+   'all %d of them submit by GET - none by POST' % len(seen),
+   'post: %s' % [k for k, v in seen.items() if v == 'post'])
 print('')
-print('  Three spellings of the same thing are in use - method="GET",')
-print('  method="get" and no method at all. T4 is method="get" because')
-print('  this view\'s POST already belongs to action=upload and')
-print('  action=delete, and because the current/past toggle is a link')
-print('  that has to be able to carry the filter. Settling the other ten')
-print('  is a round of its own.')
+print('  SETTLED 1 Oct 2026 by Section F round F1, which was the round')
+print('  this note asked for. Every filter form now submits by GET, so')
+print('  the URL carries the filter, Back works and a refresh is safe.')
+print('  Two spellings of it remain - method="GET" on four pages and')
+print('  method="get" on seven - which is a cosmetic difference that')
+print('  changes nothing a browser does. See test_filter_get.py.')
 
 # ==========================================================================
 head('6. WHAT STILL CANNOT BE NARROWED')
