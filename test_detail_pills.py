@@ -311,22 +311,30 @@ ok('Click to change the status' in m,
 # ==========================================================================
 head('6. NOT THIS ROUND - THE OTHER TWO PROJECTS PAGES')
 # ==========================================================================
-# projects.html and project_gantt.html carry the same three .status-*
-# colours. They are named here so "the Projects pills are done" is not
-# read off this suite passing.
-left = []
+# WHEN THIS ROUND SHIPPED, projects.html and project_gantt.html still
+# carried the same three .status-* colours, and this section asserted
+# that - so "the Projects pills are done" could not be read off P3
+# passing. P4 converted them an hour later, which made the assertion
+# false while nothing was wrong: the list had SHRUNK, which is the
+# outcome it existed to track.
+#
+# So it now says what is true either way: those two pages must not carry
+# private status colours, and if they ever do again, that is drift. The
+# module-wide statement lives in test_projects_pills.py section 5, which
+# walks all eleven Projects templates rather than these two.
+back = []
 for rel in ('projects/projects.html', 'projects/project_gantt.html'):
     p = alv_tree.join(rel.replace('/', os.sep))
     if not os.path.isfile(p):
         continue
-    if re.search(r'\.status-pending\s*\{', css_of(read(p))):
-        left.append(rel)
-ok(len(left) == 2,
-   'both of the other Projects pages still carry their own .status-* '
-   'colours, and are a round of their own',
-   'found %s' % left)
-for rel in left:
-    print('       %s' % rel)
+    if re.search(r'\.status-pending(?![\w-])[^{}]*\{', css_of(read(p))):
+        back.append(rel)
+ok(not back,
+   'the other two Projects pages were finished by P4 and have not '
+   'drifted back', back)
+print('       projects/projects.html and projects/project_gantt.html')
+print('       were converted by P4 (.bak_projpills). The module-wide')
+print('       check is test_projects_pills.py section 5.')
 
 # ==========================================================================
 head('7. THE GATE')

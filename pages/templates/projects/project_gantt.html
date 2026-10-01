@@ -79,10 +79,7 @@ Gantt Chart - {{ project.project_name }}
       </div>
       <div class="col-md-4">
         <div class="project-status-info">
-          <span class="status-badge
-            {% if project.get_calculated_status == 'Completed' %}status-completed
-            {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
-            {% else %}status-pending{% endif %}">
+          <span class="alv-pill {% if project.get_calculated_status == 'Completed' %}alv-pill-good{% elif project.get_calculated_status == 'In Progress' %}alv-pill-info{% elif project.get_calculated_status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
             {{ project.get_calculated_status }}
           </span>
           <div class="project-progress mt-2">
@@ -253,17 +250,11 @@ Gantt Chart - {{ project.project_name }}
     text-align: right;
 }
 
-.status-badge {
-    padding: 6px 15px;
-    border-radius: 15px;
-    font-size: 13px;
-    font-weight: 500;
-    display: inline-block;
-}
 
-.status-completed { background: #d4edda; color: #155724; }
-.status-in-progress { background: #fff3cd; color: #856404; }
-.status-pending { background: #f8d7da; color: #721c24; }
+
+
+
+
 
 .project-progress { margin-top: 10px; }
 
@@ -841,3 +832,8 @@ document.getElementById('printBtn').addEventListener('click', function() {
 </script>
 
 {% endblock %}
+
+{# P4, 1 Oct 2026 - the Status pill was this page's own: #}
+{# .status-badge plus three literals, Pending among them at #}
+{# #f8d7da. It is base's .alv-pill now, on the tone map #}
+{# agreed for P2.                 [test_projects_pills.py] #}

@@ -122,6 +122,7 @@ ROUNDS = [
     '.bak_searchhint',
     '.bak_analysisorder',
     '.bak_detailpills',
+    '.bak_projpills',
 ]
 
 
