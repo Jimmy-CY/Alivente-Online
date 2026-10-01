@@ -24,10 +24,16 @@ because "the definition is above the use" is not the same statement as
 "the page's JavaScript runs". Measured, on the page's own IIFE:
 
     before   pageerror: TypeError ...getPropertyValue
-             click -> #analysisLoading still display:block
+             click -> fetch NEVER called, #analysisLoading still block
     after    pageerror: none
-             click -> #analysisLoading display:none,
+             click -> fetch called once, #analysisLoading display:none,
                       the empty branch reached display:block
+
+window.fetch is replaced IN THE PAGE rather than intercepted by the
+browser. The first version of this suite used Playwright's route(), which
+passed here and failed on Demetri's laptop - whether route() catches a
+file:// fetch is a property of the Playwright build, not of the round.
+The suite was reporting its own environment and calling it the page.
 
 SECTION 5 IS THE GATE THAT WAS MISSING. Three templates cache
 getComputedStyle in a var and read it from a helper. Two were always in
@@ -203,6 +209,27 @@ ok(now.count('var AN_CS') == 1 and now.count('function anTok') == 1,
 # ==========================================================================
 head('3. THE PAGE\'S OWN IIFE, RUN IN CHROMIUM')
 # ==========================================================================
+# THE FETCH IS STUBBED IN THE PAGE, NOT INTERCEPTED BY THE BROWSER.
+#
+# The first version of this suite stubbed the endpoint with Playwright's
+# route() and passed here - then FAILED on Demetri's laptop with
+# "#analysisLoading is still block". A fetch from a file:// page resolves
+# to file:///analysis-data/, and whether route() intercepts that is a
+# property of the Playwright build, not of the round. So the suite was
+# reporting the test environment and calling it the page.
+#
+# Replacing window.fetch before the IIFE runs removes the network from
+# the question entirely. It is also a STRONGER check: the stub records
+# that fetch was called, so the suite can say the handler ran rather
+# than inferring it from a div that moved.
+STUB = (
+    '<script>window.__fetched = [];'
+    'window.fetch = function (u, o) {'
+    '  window.__fetched.push(String(u));'
+    '  return Promise.resolve({ ok: true, status: 200,'
+    '    json: function () { return Promise.resolve('
+    '      {"properties": [], "available_years": []}); } });'
+    '};</script>')
 FIXTURE = (
     '<!doctype html><html><head><meta charset="utf-8">'
     '<style>:root{--alv-series-1:#eb6834;--alv-bad:#b3261e;'
@@ -211,6 +238,7 @@ FIXTURE = (
     '<div id="analysisLoading">Loading...</div>'
     '<div id="analysisEmpty" style="display:none"></div>'
     '<div id="analysisContent" style="display:none"></div>'
+    + STUB +
     '<script src="%s"></script></body></html>')
 
 
@@ -230,13 +258,6 @@ def run_iife(js, tag):
                                    if os.path.exists(EXE) else {}))
         pg = br.new_page()
         pg.on('pageerror', lambda e: errs.append(str(e)))
-        # The endpoint is stubbed with an EMPTY answer on purpose: the
-        # question here is whether the handler runs at all, not whether
-        # the chart draws. An empty answer takes the shortest path that
-        # still proves the fetch happened.
-        pg.route('**/analysis-data/', lambda r: r.fulfill(
-            status=200, content_type='application/json',
-            body='{"properties":[],"available_years":[]}'))
         _goto(pg, page)
         pg.wait_for_timeout(200)
         load_errs = list(errs)
@@ -245,6 +266,7 @@ def run_iife(js, tag):
         disp = dict((s, pg.eval_on_selector(
             s, 'e => getComputedStyle(e).display'))
             for s in ('#analysisLoading', '#analysisEmpty'))
+        disp['fetched'] = pg.evaluate('() => window.__fetched || []')
         br.close()
     return load_errs, disp
 
@@ -263,11 +285,19 @@ elif not js_now:
 else:
     errs, disp = run_iife(js_now, 'after')
     ok(not errs, 'the page\'s JavaScript loads without throwing', errs)
+    # THE HANDLER RAN - said by the stub recording the call, not guessed
+    # from a div that moved.
+    ok(len(disp['fetched']) == 1,
+       '  and clicking Analysis calls fetch exactly once',
+       'it called it %d time(s): %s'
+       % (len(disp['fetched']), disp['fetched']))
+    if disp['fetched']:
+        print('       it fetched %s' % disp['fetched'][0])
     ok(disp['#analysisLoading'] == 'none',
-       '  and clicking Analysis leaves the Loading state',
+       '  the Loading state is left',
        'it is still %s' % disp['#analysisLoading'])
     ok(disp['#analysisEmpty'] == 'block',
-       '  reaching the branch that answers - so the fetch really ran',
+       '  and the branch that answers is reached',
        'the empty branch is %s' % disp['#analysisEmpty'])
 
 # ==========================================================================
@@ -296,6 +326,9 @@ else:
         ok(disp0['#analysisLoading'] != 'none',
            '  and Loading stayed on screen, which is what Demetri saw',
            'it was %s' % disp0['#analysisLoading'])
+        ok(not disp0['fetched'],
+           '  because it never even reached fetch - the IIFE died first',
+           'it fetched %s' % disp0['fetched'])
 
 # ==========================================================================
 head('5. THE GATE THAT WAS MISSING - TREE-WIDE')

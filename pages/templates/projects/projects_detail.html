@@ -81,22 +81,23 @@ Project Details - {{ project.project_name }}
     </div>
     <div class="col-md-4 text-right overview-status-col">
       <div class="project-status-container">
-        <span class="status-badge
-          {% if project.get_calculated_status == 'Completed' %}status-completed
-          {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
-          {% else %}status-pending{% endif %}">
+        <span class="alv-pill {% if project.get_calculated_status == 'Completed' %}alv-pill-good{% elif project.get_calculated_status == 'In Progress' %}alv-pill-info{% elif project.get_calculated_status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
           {{ project.get_calculated_status }}
         </span>
 
-        {% if perms.auth.can_edit_projects %}
-          <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-sm btn-info ml-2">
-            <i class="fas fa-edit"></i>
-          </a>
-        {% else %}
-          <button type="button" class="btn btn-sm btn-light ml-2" disabled style="opacity: 0.5;">
-            <i class="fas fa-edit" style="color: #6c757d;"></i>
-          </button>
-        {% endif %}
+        <span class="row-actions">
+          {% if perms.auth.can_edit_projects %}
+            <a href="{% url 'projects_edit' project.project_id %}"
+               class="icon-action-btn icon-edit" title="Edit Project">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+          {% else %}
+            <span class="icon-action-btn icon-disabled"
+                  title="No edit permission">
+              <i class="fas fa-pencil-alt"></i>
+            </span>
+          {% endif %}
+        </span>
       </div>
     </div>
   </div>
@@ -174,7 +175,7 @@ Project Details - {{ project.project_name }}
       <i class="fas fa-tasks"></i> Project Tasks
     </h4>
     {% if perms.auth.can_edit_projects %}
-      <a href="{% url 'project_tasks_add' project.project_id %}" class="btn action-secondary btn-sm add-task-btn">
+      <a href="{% url 'project_tasks_add' project.project_id %}" class="btn action-secondary add-task-btn">
         <i class="fas fa-plus"></i> Add Task
       </a>
     {% endif %}
@@ -187,12 +188,12 @@ Project Details - {{ project.project_name }}
           <div class="task-header">
             <div class="task-title-section">
               <h5 class="task-title">
-                <span class="task-priority-indicator priority-{{ task.task_priority|lower }}">
+                <span class="alv-pill {% if task.task_priority == 'Critical' %}alv-pill-bad{% elif task.task_priority == 'High' or task.task_priority == 'Medium' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
                   {{ task.task_priority }}
                 </span>
                 <span class="task-name-text">{{ task.task_name }}</span>
                 {% if perms.auth.can_edit_projects %}
-                  <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn action-secondary btn-sm ml-2 add-subtask-btn">
+                  <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn action-secondary ml-2 add-subtask-btn">
                     <i class="fas fa-plus"></i> Add Subtask
                   </a>
                 {% endif %}
@@ -239,28 +240,31 @@ Project Details - {{ project.project_name }}
               </div>
             </div>
             <div class="task-actions">
-              <span class="task-status-badge status-{{ task.get_calculated_status|slugify }}">
+              <span class="alv-pill {% if task.get_calculated_status == 'Completed' %}alv-pill-good{% elif task.get_calculated_status == 'In Progress' %}alv-pill-info{% elif task.get_calculated_status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
                 {{ task.get_calculated_status }}
               </span>
-              {% if perms.auth.can_edit_projects %}
-                <div class="btn-group ml-2">
-                  <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}" class="btn btn-sm btn-info">
-                    <i class="fas fa-edit"></i>
+              <span class="row-actions ml-2">
+                {% if perms.auth.can_edit_projects %}
+                  <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}"
+                     class="icon-action-btn icon-edit" title="Edit Task">
+                    <i class="fas fa-pencil-alt"></i>
                   </a>
-                  <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteTask('{{ task.task_id }}', '{{ task.task_name|escapejs }}', {{ task.subtasks.all|length }})">
+                  <button type="button" class="icon-action-btn icon-delete"
+                          title="Delete Task"
+                          onclick="confirmDeleteTask('{{ task.task_id }}', '{{ task.task_name|escapejs }}', {{ task.subtasks.all|length }})">
                     <i class="fas fa-trash"></i>
                   </button>
-                </div>
-              {% else %}
-                <div class="btn-group ml-2">
-                  <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;">
-                    <i class="fas fa-edit" style="color: #6c757d;"></i>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;">
-                    <i class="fas fa-trash" style="color: #6c757d;"></i>
-                  </button>
-                </div>
-              {% endif %}
+                {% else %}
+                  <span class="icon-action-btn icon-disabled"
+                        title="No edit permission">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                  <span class="icon-action-btn icon-disabled"
+                        title="No edit permission">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                {% endif %}
+              </span>
             </div>
           </div>
 
@@ -277,33 +281,43 @@ Project Details - {{ project.project_name }}
                   <div class="subtask-item">
                     <div class="subtask-header">
                       <div class="subtask-title">
-                        <span class="subtask-priority-indicator priority-{{ subtask.task_priority|lower }}">
+                        <span class="alv-pill {% if subtask.task_priority == 'Critical' %}alv-pill-bad{% elif subtask.task_priority == 'High' or subtask.task_priority == 'Medium' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
                           {{ subtask.task_priority }}
                         </span>
                         <span class="subtask-name-text">{{ subtask.task_name }}</span>
                       </div>
                       <div class="subtask-actions">
                         {% if perms.auth.can_edit_projects %}
-                          <span class="subtask-status-badge status-{{ subtask.task_status|slugify }} clickable-status"
+                          <span class="alv-pill {% if subtask.task_status == 'Completed' %}alv-pill-good{% elif subtask.task_status == 'In Progress' %}alv-pill-info{% elif subtask.task_status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %} clickable-status"
+                                title="Click to change the status"
                                 onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
                             {{ subtask.task_status }}
                           </span>
-                          <a href="{% url 'project_tasks_edit' project.project_id subtask.task_id %}" class="btn btn-xs btn-info ml-1">
-                            <i class="fas fa-edit"></i>
-                          </a>
-                          <button type="button" class="btn btn-xs btn-danger ml-1" onclick="confirmDeleteSubtask('{{ subtask.task_id }}', '{{ subtask.task_name|escapejs }}')">
-                            <i class="fas fa-trash"></i>
-                          </button>
+                          <span class="row-actions ml-1">
+                            <a href="{% url 'project_tasks_edit' project.project_id subtask.task_id %}"
+                               class="icon-action-btn icon-edit" title="Edit Subtask">
+                              <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <button type="button" class="icon-action-btn icon-delete"
+                                    title="Delete Subtask"
+                                    onclick="confirmDeleteSubtask('{{ subtask.task_id }}', '{{ subtask.task_name|escapejs }}')">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </span>
                         {% else %}
-                          <span class="subtask-status-badge status-{{ subtask.task_status|slugify }}">
+                          <span class="alv-pill {% if subtask.task_status == 'Completed' %}alv-pill-good{% elif subtask.task_status == 'In Progress' %}alv-pill-info{% elif subtask.task_status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
                             {{ subtask.task_status }}
                           </span>
-                          <button type="button" class="btn btn-xs btn-light ml-1" disabled style="opacity: 0.5;">
-                            <i class="fas fa-edit" style="color: #6c757d;"></i>
-                          </button>
-                          <button type="button" class="btn btn-xs btn-light ml-1" disabled style="opacity: 0.5;">
-                            <i class="fas fa-trash" style="color: #6c757d;"></i>
-                          </button>
+                          <span class="row-actions ml-1">
+                            <span class="icon-action-btn icon-disabled"
+                                  title="No edit permission">
+                              <i class="fas fa-pencil-alt"></i>
+                            </span>
+                            <span class="icon-action-btn icon-disabled"
+                                  title="No edit permission">
+                              <i class="fas fa-trash"></i>
+                            </span>
+                          </span>
                         {% endif %}
                       </div>
                     </div>
@@ -710,16 +724,6 @@ Project Details - {{ project.project_name }}
     gap: 8px;
 }
 
-.status-badge {
-    padding: 6px 15px;
-    border-radius: 15px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.status-completed { background: #d4edda; color: #155724; }
-.status-in-progress { background: #fff3cd; color: #856404; }
-.status-pending { background: #f8d7da; color: #721c24; }
 
 .stat-card {
     background: #f8f9fa;
@@ -842,46 +846,24 @@ Project Details - {{ project.project_name }}
     flex-shrink: 0;
 }
 
-/* Priority Indicators */
-.task-priority-indicator, .subtask-priority-indicator {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-right: 0;
-}
-
-.priority-critical { background: #dc3545; color: white; }
-.priority-high { background: var(--alv-warn); color: var(--alv-on-accent); }
-.priority-medium { background: #ffc107; color: #212529; }
-.priority-low { background: #6c757d; color: white; }
-
-.task-status-badge, .subtask-status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
-}
-
 .clickable-status {
     cursor: pointer;
     transition: all 0.2s ease;
     border: 1px solid transparent;
 }
 
+/* The subtask status pill is a CONTROL - clicking it changes the
+   status - so it keeps a cursor and a hover. Only the colour changed:
+   #007bff was Bootstrap's blue, and the accent is the house signal for
+   something you can act on.    [test_detail_pills.py] */
 @media (hover: hover) and (pointer: fine) {
     .clickable-status:hover {
         transform: scale(1.05);
-        border: 1px solid #007bff;
-        box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+        border-color: var(--alv-accent);
+        box-shadow: 0 2px 4px var(--alv-accent-soft);
     }
 }
 
-.status-not-started { background: #f8d7da; color: #721c24; }
-.status-on-hold { background: #e2e3e5; color: #383d41; }
 
 /* Subtasks */
 .subtasks-section {
@@ -1027,7 +1009,6 @@ Project Details - {{ project.project_name }}
 
 .btn-info i { color: white !important; }
 
-.btn-xs { padding: 2px 6px; font-size: 11px; border-radius: 3px; }
 
 .btn-danger {
     background-color: #dc3545;
@@ -1641,3 +1622,11 @@ $(document).ready(function() {
 </script>
 
 {% endblock %}
+
+{# P3, 1 Oct 2026 - Project Detail joins the standard. Ten buttons in #}
+{# three clusters were btn-info / btn-danger / btn-light at three #}
+{# different sizes - 32x31, 28x24 and the project one - and are one #}
+{# 34x34 control now, 44x44 on a phone. Six pills #}
+{# and seventeen page rules, including Pending as #f8d7da, are base's #}
+{# .alv-pill now. The subtask status pill is still a control: it keeps #}
+{# its click and its hover, on the accent.    [test_detail_pills.py] #}
