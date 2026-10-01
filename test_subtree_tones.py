@@ -15,7 +15,7 @@ SECTION 2 IS THE ROUND: four hexes and one colour keyword leave three
 projects/ pages, so the two families really do have one owner.
 
 SECTION 3 IS THE TREE-WIDE GATE that stops this recurring. It walks
-every one of the 138 and fails if any page declares a rule for one of
+every one of the 142 and fails if any page declares a rule for one of
 H7's families except the two that are named and reasoned.
 
 THIS IS NOT A CONTRAST ROUND AND SECTION 6 SAYS SO IN NUMBERS. #856404
@@ -245,8 +245,13 @@ sub = [(rel, p) for rel, p in tree if '/' in rel]
 # ==========================================================================
 head('1. THE CENSUS BUG, MADE PERMANENT')
 # ==========================================================================
-ok(len(tree) == 138, 'a WALK finds 138 templates', len(tree))
-ok(len(top) == 120, '  a flat listing finds 120 - what H7 counted',
+# 138 and 120 until 1 Oct 2026, when Section A round A1 added the
+# four public set-password pages. All four sit at the ROOT of
+# pages/templates, so both numbers move by four and the eighteen
+# that live in subdirectories - the whole point of this section -
+# is still eighteen.
+ok(len(tree) == 142, 'a WALK finds 142 templates', len(tree))
+ok(len(top) == 124, '  a flat listing finds 124 - 120 was what H7 counted',
    len(top))
 ok(len(sub) == 18, '  so 18 live in subdirectories and H7 never saw them',
    len(sub))

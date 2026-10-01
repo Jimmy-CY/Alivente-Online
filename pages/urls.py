@@ -33,6 +33,22 @@ urlpatterns = [
     path('user-administration/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('user-administration/<int:user_id>/permissions/', views.user_permissions, name='user_permissions'),
     path('user-administration/<int:user_id>/delete/', views.user_delete, name='user_delete'),
+    # SET A PASSWORD BY EMAIL - Section A round A1, 1 Oct 2026.
+    # One administrator trigger and three public pages.
+    #
+    # DJANGO'S OWN auth URLconf IS DELIBERATELY NOT INCLUDED. This project
+    # authenticates SMTP with EMAIL_PASSWORD through smtplib and does not
+    # use Django's send_mail - the note in views/expenses.py says so and
+    # says why. The stock PasswordResetView calls send_mail, so including
+    # it would produce a flow that looks complete, reports success, and
+    # delivers nothing. Only the TOKEN GENERATOR is Django's; the sending
+    # is the project's.
+    path('user-administration/<int:user_id>/reset-password/', views.user_reset_password, name='user_reset_password'),
+    path('forgot-password/', views.password_forgot, name='password_forgot'),
+    # done/ before the two-segment pattern: one segment cannot match two,
+    # so the order is for a reader rather than the resolver.
+    path('set-password/done/', views.password_set_done, name='password_set_done'),
+    path('set-password/<str:uidb64>/<str:token>/', views.password_set, name='password_set'),
     # Workspace Management (Personal-module multi-tenancy)
     path('workspace-management/', views.workspace_management, name='workspace_management'),
     path('workspace-management/add/', views.workspace_add, name='workspace_add'),

@@ -2821,6 +2821,15 @@ class NotificationRecipient(models.Model):
         ('issue_comment_urgent', 'Urgent Issue Comment Alert'),
         ('physical_invoice_review', 'Physical Invoices Awaiting Approval'),
         ('physical_invoice_client', 'Physical Invoice to Client'),
+        # THE 16TH, added by Section A round A1: who hears about it
+        # when somebody asks for a password link. Configurable from
+        # Administration -> Notification Settings rather than
+        # hardcoded - and see notification_settings() in
+        # views/notifications.py, which filters these choices
+        # through a SECOND, hardcoded list. A type missing from that
+        # list renders on no screen and reports no error.
+        #                                   [test_auth_flow.py]
+        ('password_reset_requested', 'Password Reset Requested'),
     )
 
     # Notification types that are scoped to a workspace (one recipient row

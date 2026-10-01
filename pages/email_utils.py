@@ -154,6 +154,100 @@ def format_email_recipients_for_header(email_list):
     return ', '.join(email_list)
 
 
+def send_html_email(subject, html_body, text_body, recipients):
+    """Send one multipart email. True if it went out, False if it did not.
+
+    Added by Section A round A1 for the set-password flow, where a send
+    that fails silently leaves a person locked out of an account waiting
+    for an email nobody sent. Every caller checks the return value.
+
+    THE SMTP BLOCK BELOW IS A SECOND COPY, AND THAT IS SAID OUT LOUD
+    RATHER THAN HIDDEN. send_issue_comments_email() has the same six env
+    vars and the same SSL/TLS dance. Rewriting it to call this function is
+    the obvious tidy and is DELIBERATELY NOT DONE IN THIS ROUND: that
+    function is what the daily cron and the Notify Urgent button use, and
+    putting a working production mail path at risk buys this round nothing.
+    It is a follow-up.
+
+    What stops the two drifting in the meantime is test_auth_flow.py
+    section 7, which reads both blocks and requires the same variable names
+    with the same defaults. A copy nobody is watching drifts; a copy a
+    suite is watching is just a copy.
+
+    Parameters
+    ----------
+    subject    -- the subject line. Header-encoded, so Greek survives.
+    html_body  -- the HTML alternative.
+    text_body  -- the plain-text alternative, for clients that prefer it
+                  and for anything that strips HTML.
+    recipients -- {'to': [...], 'cc': [...], 'all': [...]} - the shape
+                  get_email_recipients() returns.
+    """
+    smtp_object = None
+
+    if not recipients or not recipients.get('all'):
+        logger.warning('send_html_email: no recipients, skipping')
+        return False
+
+    try:
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+
+        if not email_password:
+            logger.error('send_html_email: EMAIL_PASSWORD not set')
+            return False
+
+        msg = MIMEMultipart('alternative')
+        msg['From'] = email_user
+        msg['To'] = format_email_recipients_for_header(recipients['to'])
+        if recipients.get('cc'):
+            msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
+        # RFC 2047, same reason as the issue-comments sender: a Greek first
+        # name in a subject line is garbled without it.
+        msg['Subject'] = Header(subject, 'utf-8')
+
+        # text FIRST, html SECOND. A multipart/alternative reader shows the
+        # LAST part it understands, so this order means an HTML client sees
+        # the HTML and a plain-text one still gets a usable message. The
+        # other order shows everybody the plain text.
+        msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+        if email_use_ssl:
+            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+        else:
+            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+            smtp_object.ehlo()
+            if email_use_tls:
+                smtp_object.starttls()
+
+        smtp_object.login(email_user, email_password)
+        smtp_object.sendmail(email_user, recipients['all'], msg.as_string())
+
+        logger.info('send_html_email sent: %s', subject)
+        return True
+
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error('send_html_email SMTP authentication error: %s', e)
+        return False
+    except smtplib.SMTPException as e:
+        logger.error('send_html_email SMTP error: %s', e)
+        return False
+    except Exception as e:
+        logger.error('send_html_email failed: %s', e, exc_info=True)
+        return False
+    finally:
+        if smtp_object:
+            try:
+                smtp_object.quit()
+            except Exception:
+                pass
+
+
 # ============================================================================
 # Issue-comments email rendering & sending
 # Used by both the daily cron (check_lease_renewal_and_invoices) and the

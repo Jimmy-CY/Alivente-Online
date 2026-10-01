@@ -92,23 +92,6 @@ select.form-control {
     cursor: pointer;
 }
 
-.password-strength {
-    height: 4px;
-    border-radius: 2px;
-    margin-top: 6px;
-    transition: all 0.3s;
-    background: var(--alv-surface-deep);
-}
-
-.strength-weak { background: #dc3545; width: 33%; }
-.strength-medium { background: #ffc107; width: 66%; }
-.strength-strong { background: #28a745; width: 100%; }
-
-.strength-text {
-    font-size: 11px;
-    margin-top: 3px;
-}
-
 /* ============================================================
    MOBILE RESPONSIVE — max-width: 768px
    ============================================================ */
@@ -194,32 +177,37 @@ select.form-control {
                            placeholder="Enter username" required>
                 </div>
                 <div class="form-group">
-                    <label><strong>Email Address</strong></label>
+                    {# REQUIRED SINCE A1. The invitation email is the only way #}
+                    {# this account ever gets a password, so an account with   #}
+                    {# no address would have no route in at all.               #}
+                    {#                              [test_auth_flow.py]       #}
+                    <label><strong>Email Address</strong> <span class="alv-req">*</span></label>
                     <input type="email" name="email" class="form-control"
                            value="{{ form_data.email|default:'' }}"
-                           placeholder="Enter email address">
+                           placeholder="Enter email address" required>
                 </div>
             </div>
         </div>
 
-        <!-- Password -->
+        {# NO PASSWORD FIELDS SINCE A1. Demetri: the administrator stops  #}
+        {# typing passwords. The two fields that were here, and the        #}
+        {# strength meter that went with them, are gone - and with them    #}
+        {# the hand-rolled len < 8 check that was the only password rule   #}
+        {# this system ever enforced. The four configured validators run   #}
+        {# on the page the emailed link opens.      [test_auth_flow.py]    #}
+        <!-- Password: chosen by the user, from a link we email them -->
         <div class="form-card">
-            <h3 class="form-section-title"><i class="fas fa-lock"></i> Password</h3>
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label><strong>Password</strong> <span class="alv-req">*</span></label>
-                    <input type="password" name="password1" id="password1" class="form-control"
-                           placeholder="Enter password" required onkeyup="checkPasswordStrength()">
-                    <div class="password-strength" id="passwordStrength"></div>
-                    <div class="strength-text" id="strengthText"></div>
-                </div>
-                <div class="form-group">
-                    <label><strong>Confirm Password</strong> <span class="alv-req">*</span></label>
-                    <input type="password" name="password2" id="password2" class="form-control"
-                           placeholder="Confirm password" required onkeyup="checkPasswordMatch()">
-                    <div class="strength-text" id="matchText"></div>
-                </div>
-            </div>
+            <h3 class="form-section-title"><i class="fas fa-envelope"></i> Password</h3>
+            <p class="text-muted" style="font-size:13px;">
+                You do not set a password here. When this user is created they
+                are emailed a link to choose their own, and until they use it
+                the account has no password at all. The link works once and
+                expires after three days.
+            </p>
+            <p class="text-muted" style="font-size:13px; margin-bottom:0;">
+                If the email does not arrive, press <strong>Reset Password</strong>
+                on the user list to send it again.
+            </p>
         </div>
 
         <!-- Role & Status -->
@@ -288,58 +276,6 @@ function selectRole(element, role) {
     element.querySelector('input[type="radio"]').checked = true;
 }
 
-function checkPasswordStrength() {
-    const password = document.getElementById('password1').value;
-    const strengthBar = document.getElementById('passwordStrength');
-    const strengthText = document.getElementById('strengthText');
-
-    if (password.length === 0) {
-        strengthBar.className = 'password-strength';
-        strengthText.textContent = '';
-        return;
-    }
-
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    if (strength <= 1) {
-        strengthBar.className = 'password-strength strength-weak';
-        strengthText.textContent = 'Weak password';
-        strengthText.style.color = '#dc3545';
-    } else if (strength <= 2) {
-        strengthBar.className = 'password-strength strength-medium';
-        strengthText.textContent = 'Medium password';
-        strengthText.style.color = '#ffc107';
-    } else {
-        strengthBar.className = 'password-strength strength-strong';
-        strengthText.textContent = 'Strong password';
-        strengthText.style.color = '#28a745';
-    }
-
-    checkPasswordMatch();
-}
-
-function checkPasswordMatch() {
-    const p1 = document.getElementById('password1').value;
-    const p2 = document.getElementById('password2').value;
-    const matchText = document.getElementById('matchText');
-
-    if (p2.length === 0) {
-        matchText.textContent = '';
-        return;
-    }
-
-    if (p1 === p2) {
-        matchText.textContent = '✓ Passwords match';
-        matchText.style.color = '#28a745';
-    } else {
-        matchText.textContent = '✗ Passwords do not match';
-        matchText.style.color = '#dc3545';
-    }
-}
 </script>
 
 {% endblock %}

@@ -92,23 +92,6 @@ select.form-control {
     cursor: pointer;
 }
 
-.password-strength {
-    height: 4px;
-    border-radius: 2px;
-    margin-top: 6px;
-    transition: all 0.3s;
-    background: var(--alv-surface-deep);
-}
-
-.strength-weak { background: #dc3545; width: 33%; }
-.strength-medium { background: #ffc107; width: 66%; }
-.strength-strong { background: #28a745; width: 100%; }
-
-.strength-text {
-    font-size: 11px;
-    margin-top: 3px;
-}
-
 .user-meta-box {
     background: #f8f9fa;
     border-radius: 8px;
@@ -253,35 +236,50 @@ select.form-control {
                     <small class="text-muted">Username cannot be changed.</small>
                 </div>
                 <div class="form-group">
-                    <label><strong>Email Address</strong></label>
+                    {# REQUIRED SINCE A1, on edit as well as add: an edit that #}
+                    {# could CLEAR the address would take away the account's   #}
+                    {# only route in, and Add User's rule would guard nothing. #}
+                    {#                              [test_auth_flow.py]       #}
+                    <label><strong>Email Address</strong> <span class="alv-req">*</span></label>
                     <input type="email" name="email" class="form-control"
                            value="{{ target_user.email }}"
-                           placeholder="Enter email address">
+                           placeholder="Enter email address" required>
                 </div>
             </div>
         </div>
 
+        {# NO PASSWORD FIELDS SINCE A1 - the administrator does not type  #}
+        {# passwords. The button below only OPENS the confirm dialog; the  #}
+        {# form that posts the reset sits OUTSIDE this one, below the      #}
+        {# point where the edit form closes, because a form nested in a    #}
+        {# form is invalid HTML and the browser drops the inner one. That  #}
+        {# is the lesson round require_post learned the hard way - and     #}
+        {# that round ALSO learned not to write the tag itself into a      #}
+        {# note like this one, because the balance counter in              #}
+        {# test_admin_repair reads prose and counts what it finds.         #}
+        {#                                          [test_auth_flow.py]    #}
         <!-- Reset Password -->
         <div class="form-card">
-            <h3 class="form-section-title"><i class="fas fa-lock"></i> Reset Password</h3>
+            <h3 class="form-section-title"><i class="fas fa-envelope"></i> Reset Password</h3>
             <p class="text-muted" style="font-size:13px; margin-bottom:16px;">
-                Leave blank to keep the current password.
+                Nobody here sets this user's password. Pressing the button
+                emails them a link to choose their own. The link works once
+                and expires after three days - and their <strong>current
+                password keeps working</strong> until they use it, so a
+                reset cannot lock anybody out.
             </p>
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label><strong>New Password</strong></label>
-                    <input type="password" name="password1" id="password1" class="form-control"
-                           placeholder="Enter new password" onkeyup="checkPasswordStrength()">
-                    <div class="password-strength" id="passwordStrength"></div>
-                    <div class="strength-text" id="strengthText"></div>
-                </div>
-                <div class="form-group">
-                    <label><strong>Confirm New Password</strong></label>
-                    <input type="password" name="password2" id="password2" class="form-control"
-                           placeholder="Confirm new password" onkeyup="checkPasswordMatch()">
-                    <div class="strength-text" id="matchText"></div>
-                </div>
+            {% if target_user.email %}
+            <button type="button" class="btn action-secondary"
+                    onclick="confirmReset()">
+                <i class="fas fa-envelope"></i> Reset Password
+            </button>
+            {% else %}
+            <div class="alert alert-warning" style="font-size:13px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                This account has <strong>no email address</strong>, so no link
+                can be sent. Add one above, save, and the button appears.
             </div>
+            {% endif %}
         </div>
 
         <!-- Role & Status -->
@@ -355,7 +353,41 @@ select.form-control {
     </form>
 </div>
 
+{# THE RESET DIALOG, AND ITS FORM, OUTSIDE THE EDIT FORM ON PURPOSE. #}
+<div class="modal fade" id="resetPwModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title"><i class="fas fa-envelope"></i> Email a Password Link</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>An email will be sent to
+                   <strong>{{ target_user.email }}</strong> with a link for
+                   <strong>{{ target_user.username }}</strong> to choose a new
+                   password.</p>
+                <p class="text-muted">The link works once and expires after
+                   three days. Their current password keeps working until they
+                   use it.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'user_reset_password' target_user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn action-primary">
+                        <i class="fas fa-paper-plane"></i> Send the Email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+function confirmReset() {
+    $('#resetPwModal').modal('show');
+}
+
 function selectRole(element, role) {
     document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
     element.classList.add('selected');
@@ -365,58 +397,6 @@ function selectRole(element, role) {
     }
 }
 
-function checkPasswordStrength() {
-    const password = document.getElementById('password1').value;
-    const strengthBar = document.getElementById('passwordStrength');
-    const strengthText = document.getElementById('strengthText');
-
-    if (password.length === 0) {
-        strengthBar.className = 'password-strength';
-        strengthText.textContent = '';
-        return;
-    }
-
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    if (strength <= 1) {
-        strengthBar.className = 'password-strength strength-weak';
-        strengthText.textContent = 'Weak password';
-        strengthText.style.color = '#dc3545';
-    } else if (strength <= 2) {
-        strengthBar.className = 'password-strength strength-medium';
-        strengthText.textContent = 'Medium password';
-        strengthText.style.color = '#ffc107';
-    } else {
-        strengthBar.className = 'password-strength strength-strong';
-        strengthText.textContent = 'Strong password';
-        strengthText.style.color = '#28a745';
-    }
-
-    checkPasswordMatch();
-}
-
-function checkPasswordMatch() {
-    const p1 = document.getElementById('password1').value;
-    const p2 = document.getElementById('password2').value;
-    const matchText = document.getElementById('matchText');
-
-    if (p2.length === 0) {
-        matchText.textContent = '';
-        return;
-    }
-
-    if (p1 === p2) {
-        matchText.textContent = '✓ Passwords match';
-        matchText.style.color = '#28a745';
-    } else {
-        matchText.textContent = '✗ Passwords do not match';
-        matchText.style.color = '#dc3545';
-    }
-}
 </script>
 
 {% endblock %}

@@ -302,7 +302,7 @@
       A page has an h4 or an h5, not both. Settled 8 Sep 2026.
 
       THE MARKUP, since 16 Sep: base declares the heading, so a page writes
-      h2.page-title-h2 and h4.page-subtitle-h4 and styles neither. 117 pages
+      h2.page-title-h2 and h4.page-subtitle-h4 and styles neither. 121 pages
       do. Since 30 Sep base declares h5.page-subtitle-h5 too, which it had
       never done although this document has described the h5 line since
       8 Sep: thirteen of them on twelve pages centred themselves with a
@@ -3841,6 +3841,25 @@ table.alv-matrix {
 .icon-lock       { color: var(--alv-warn); border-color: #ecd9a8; }
 .icon-lock:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: #fff; }
 .icon-color-lock { color: var(--alv-warn); }
+
+/* Reset Password: ANOTHER NAME ON AN EXISTING COLOUR, added by Section A
+   round A1 for the user list's row actions. No new hex enters the palette -
+   the rule Duplicate, Upload, Manage and Event were all added under.
+
+   WHY --alv-warn. It is the same WEIGHT of action as Disable: it begins
+   the process that replaces somebody's password. Not --alv-edit, which
+   would sit beside the pencil at a glance and read as "change this row";
+   not --alv-delete, because nothing is destroyed - the current password
+   keeps working until the emailed link is used.
+
+   WHY ITS OWN NAME AND NOT .icon-lock. A class carries ONE PICTURE.
+   .icon-lock is fa-ban (Disable); this is fa-envelope. Hanging a second
+   glyph on a class that already has one is precisely the drift
+   test_icon_buttons section 1b exists to catch, and .icon-edit had
+   already done it once.                            [test_auth_flow.py] */
+.icon-reset-pw       { color: var(--alv-warn); border-color: #ecd9a8; }
+.icon-reset-pw:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: #fff; }
+.icon-color-reset-pw { color: var(--alv-warn); }
 
 .icon-unlock       { color: var(--alv-good); border-color: #bfe0cd; }
 .icon-unlock:hover { background-color: var(--alv-good); border-color: var(--alv-good); color: #fff; }

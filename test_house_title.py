@@ -264,8 +264,12 @@ ok(not left,
 
 wearers = [alv_tree.rel(p) for p in alv_tree.templates()
            if re.search(r'<h[1-6][^>]*class="[^"]*\b%s\b' % CLS, inert(read(p)))]
-ok(len(wearers) == 117,
-   '117 templates now wear the class, which is the number base\'s note '
+# 117 until 1 Oct 2026. Section A round A1 added four public pages -
+# the set-password form, the used-or-expired page, the confirmation
+# and Forgot password - and all four wear the house title. The
+# number and base's note move together or one of them is lying.
+ok(len(wearers) == 121,
+   '121 templates now wear the class, which is the number base\'s note '
    'states', len(wearers))
 
 # WHAT IS DELIBERATELY LEFT: the hand-rolled headers. They are a content
@@ -432,7 +436,7 @@ ok('renders the same and' not in doc,
    'on a desktop and false on a phone')
 ok('32px against 20px' in doc,
    '  replaced by the measurement, so the next reader has the number')
-ok('117 pages' in doc, '  and the count is the one section 2 just checked')
+ok('117 pages' in doc, '  and the note that round wrote still says what was true THEN - doc is read through as_left_by, so it is a frozen copy; the live count is section 2\'s')
 bak = alv_tree.path_of('base.html') + SUFFIX
 if os.path.isfile(bak):
     old = read(bak)

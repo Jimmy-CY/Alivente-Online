@@ -137,6 +137,12 @@ BUSINESS = [
     'property_management_dashboard.html', 'suppliers.html',
     'tenant_lease_agreement.html', 'title_deeds_management.html',
     'user_administration.html', 'workspace_management.html',
+    # ADDED 1 Oct 2026 by Section A round A1. user_edit.html had no
+    # modal until the Reset Password dialog landed on it, so it was
+    # never on this list. A business template with a modal header
+    # belongs here; an unwatched header is how the ten different
+    # looks this round found got there in the first place.
+    'user_edit.html',
 ]
 # LATER - Section D round D6, 24 Sep. passport_management's three
 # headers joined the house class with the rest of the property
@@ -233,7 +239,9 @@ for rel in BUSINESS:
         n_danger += DANGER in cls
         if (DANGER in cls) != want:
             danger_wrong.append('%s: "%s"' % (rel, title))
-ok(total == 51 and not bad, '%d header(s) on %d business template(s) carry '
+# 51 until A1, which added the Reset Password dialog to the user
+# list and to the edit screen.
+ok(total == 53 and not bad, '%d header(s) on %d business template(s) carry '
    'the class and nothing that fights it' % (total, len(BUSINESS)),
    '\n'.join(bad[:8]))
 ok(n_danger == 9 and not danger_wrong,
@@ -381,7 +389,7 @@ else:
                                           styles_of(o), body_markup(o))):
                     was_looks[(h['bg'][:40], h['ink'], h['size'],
                                h['weight'])] += 1
-        ok(sum(now_looks.values()) == 51 and not off,
+        ok(sum(now_looks.values()) == 53 and not off,
            '%d header(s): teal banner, red exactly where it deletes, white '
            '20px/600 title, white close, 16px 20px'
            % sum(now_looks.values()), '\n'.join(off[:8]))

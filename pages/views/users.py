@@ -21,10 +21,12 @@ Functions
 ---------
 - user_administration : List users; POST toggles a user's active flag
                         (cannot disable yourself).
-- user_add            : Create a user (validates username / email /
-                        password; optional superuser role).
-- user_edit           : Update a user; optional password reset; cannot
-                        strip your own superuser status.
+- user_add            : Create a user with NO USABLE PASSWORD and email
+                        them a link to choose one. Email is required.
+- user_edit           : Update a user; cannot strip your own superuser
+                        status. No password fields since round A1.
+- user_reset_password : POST-only. Emails a set-password link. Does not
+                        clear the current password - see the view.
 - user_permissions    : Grant/revoke per-module access & edit
                         permissions (edit implies access).
 - user_delete         : Permanently delete a user (must be disabled,
@@ -42,6 +44,12 @@ from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
 from pages.permissions import MODULE_PERMISSIONS
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from pages import password_reset as pwr
+# The public flow owns the sending; this module owns the admin trigger.
+# No cycle: views/auth.py imports nothing from here.
+from .auth import _notify_reset_requested, _send_link
 
 from ..models import UserProfile, Workspace
 
@@ -107,8 +115,6 @@ def user_add(request):
         last_name = request.POST.get('last_name', '').strip()
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip()
-        password1 = request.POST.get('password1', '')
-        password2 = request.POST.get('password2', '')
         role = request.POST.get('role', 'user')
         is_active = request.POST.get('is_active') == '1'
         workspace_id = request.POST.get('workspace_id', '').strip()
@@ -119,13 +125,21 @@ def user_add(request):
             errors.append('Username is required.')
         if User.objects.filter(username=username).exists():
             errors.append('Username already exists.')
-        if not password1:
-            errors.append('Password is required.')
-        if password1 != password2:
-            errors.append('Passwords do not match.')
-        if len(password1) < 8:
-            errors.append('Password must be at least 8 characters.')
-        if email and User.objects.filter(email=email).exists():
+        # EMAIL IS REQUIRED NOW - Demetri: "Email must be required on Add
+        # User." It has to be. The account is created with NO USABLE
+        # PASSWORD and an emailed link is the only way one ever gets set,
+        # so an account with no address has no route in at all.
+        # Show-UserEmails.py was written before this round to check that no
+        # existing account was already in that state. None was.
+        if not email:
+            errors.append('Email address is required - the new user is sent '
+                          'a link to choose their own password, so there has '
+                          'to be somewhere to send it.')
+        # iexact, not exact. Forgot Password matches the address
+        # case-insensitively, so two accounts differing only in case would
+        # both answer one request and "which account did I just reset"
+        # would have no answer.
+        if email and User.objects.filter(email__iexact=email).exists():
             errors.append('A user with this email already exists.')
 
         # Validate workspace_id (empty string = unassigned, which is allowed)
@@ -144,11 +158,15 @@ def user_add(request):
                 'workspaces': workspaces,
             })
 
-        # Create the user
+        # Create the user WITH NO USABLE PASSWORD. password=None makes
+        # create_user call set_unusable_password(), so there is no password
+        # for anybody to know - not the new user, not the administrator
+        # creating them. The invitation below is the only way in, which is
+        # the entire point of the change.
         new_user = User.objects.create_user(
             username=username,
             email=email,
-            password=password1,
+            password=None,
             first_name=first_name,
             last_name=last_name,
         )
@@ -166,7 +184,25 @@ def user_add(request):
             profile.workspace = workspace
             profile.save(update_fields=['workspace', 'updated_at'])
 
-        messages.success(request, f'User "{username}" created successfully!')
+        # THE INVITATION - AND A LOUD FAILURE IF IT DOES NOT GO OUT.
+        #
+        # The account is NOT rolled back on a mail failure. Rolling it back
+        # would throw away the role, the status and the workspace the
+        # administrator just set, and Reset Password on the user list
+        # retries the send in one click. What must never happen is a
+        # SILENT failure: this account has an unusable password, so with no
+        # email nobody can get into it and nothing on screen would say so.
+        if _send_link(request, new_user, pwr.MODE_WELCOME):
+            messages.success(
+                request,
+                f'User "{username}" created. A link to choose a password has '
+                f'been emailed to {email}.')
+        else:
+            messages.error(
+                request,
+                f'User "{username}" was created, BUT THE INVITATION EMAIL DID '
+                f'NOT GO OUT to {email}. They cannot log in until it does - '
+                f'use Reset Password on the user list to send it again.')
         return redirect('user_administration')
 
     return render(request, 'user_add.html', {
@@ -191,17 +227,21 @@ def user_edit(request, user_id):
         email = request.POST.get('email', '').strip()
         role = request.POST.get('role', 'user')
         is_active = request.POST.get('is_active') == '1'
-        new_password = request.POST.get('password1', '').strip()
-        confirm_password = request.POST.get('password2', '').strip()
         workspace_id = request.POST.get('workspace_id', '').strip()
 
+        # NO PASSWORD FIELDS HERE ANY MORE - A1. The administrator does not
+        # type passwords; Reset Password emails a link. See
+        # user_reset_password below.
         errors = []
-        if email and User.objects.filter(email=email).exclude(id=user_id).exists():
+        # REQUIRED ON EDIT TOO, which is one step past what Demetri asked
+        # for ("Email must be required on Add User") and follows from it:
+        # if an edit could CLEAR the address, the account it cleared would
+        # lose its only route in, and Add User's rule would guard nothing.
+        if not email:
+            errors.append('Email address is required - it is the only way '
+                          'this account can be sent a password link.')
+        if email and User.objects.filter(email__iexact=email).exclude(id=user_id).exists():
             errors.append('A user with this email already exists.')
-        if new_password and new_password != confirm_password:
-            errors.append('Passwords do not match.')
-        if new_password and len(new_password) < 8:
-            errors.append('Password must be at least 8 characters.')
 
         # Validate workspace_id (empty string = unassigned)
         workspace = None
@@ -240,9 +280,6 @@ def user_edit(request, user_id):
             else:
                 target_user.is_superuser = False
                 target_user.is_staff = False
-
-        if new_password:
-            target_user.set_password(new_password)
 
         target_user.save()
 
@@ -376,6 +413,70 @@ def user_delete(request, user_id):
         messages.success(request, f'User "{username}" has been permanently deleted.')
         return redirect('user_administration')
 
+    return redirect('user_administration')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
+@require_POST
+def user_reset_password(request, user_id):
+    """Email this user a link to set a new password.
+
+    Demetri: "If I reset a user's Password, I should get a popup coming up
+    that tells me that an email will be sent to the user... When I press
+    OK, it needs to draft a standard Password Reset email."
+
+    The popup is the confirm modal on the user list and on the edit screen;
+    it names the address before anything is sent. This view is what OK
+    does.
+
+    WHAT IT DOES NOT DO: clear the current password. That is deliberate and
+    it is the fail-safe order. If the send fails - wrong address, SMTP
+    down, Gmail throttling - the person can still log in exactly as they
+    could a minute ago. Clear it first and a failed send locks somebody out
+    of a system they could reach before an administrator tried to help
+    them. The old password dies when the emailed link is USED, because the
+    token is derived from the password hash.
+
+    THE ADMINISTRATOR IS TREATED IDENTICALLY. Demetri asked: "Does this
+    mean that the admin user is treated in exactly the same way?" Yes.
+    There is no branch on is_superuser anywhere in this flow. The only
+    difference is that the courtesy notice is suppressed when the person
+    resetting is the person being reset.
+
+    @require_POST is innermost, below the auth decorators - the order
+    test_require_post.py section 3 proves: outermost, a logged-out caller
+    would get 405 instead of the login page, which both answers wrongly and
+    confirms the URL exists.
+    """
+    target_user = get_object_or_404(User, id=user_id)
+    address = (target_user.email or '').strip()
+
+    if not address:
+        messages.error(
+            request,
+            f'"{target_user.username}" has no email address, so there is '
+            f'nowhere to send a link. Add one on their Edit screen first.')
+        return redirect('user_administration')
+
+    if _send_link(request, target_user, pwr.MODE_RESET):
+        _notify_reset_requested(request, target_user)
+        messages.success(
+            request,
+            f'A link to set a new password has been emailed to {address}. '
+            f'It works once and expires after three days. "'
+            f'{target_user.username}" can still log in with their current '
+            f'password until they use it.')
+    else:
+        # LOUD, because the alternative is somebody waiting for an email
+        # that was never sent.
+        messages.error(
+            request,
+            f'THE EMAIL DID NOT GO OUT to {address}. "'
+            f'{target_user.username}" has NOT been sent a link - their '
+            f'current password still works. Check the mail settings and '
+            f'try again.')
     return redirect('user_administration')
 
 

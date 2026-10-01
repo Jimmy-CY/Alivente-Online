@@ -164,6 +164,20 @@ DB_FORCE_CLEANUP_INTERVAL = 25      # Force cleanup every 25 requests (reduced f
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
+# HOW LONG A SET-PASSWORD LINK LIVES - Section A round A1.
+# Demetri: "3 days is fine". 259200 seconds is also Django's own
+# default, so this line changes no behaviour today - it WRITES THE
+# DECISION DOWN, because a Django upgrade that changed the default
+# would otherwise change an agreed decision with nothing in the
+# repo recording that it had been agreed.
+#                                            [test_auth_flow.py]
+PASSWORD_RESET_TIMEOUT = 259200
+
+# These four have been configured since the project started and
+# NOTHING RAN THEM: user_add and user_edit checked len < 8 by hand
+# and called set_password directly, which does not validate. Round
+# A1 replaced both with SetPasswordForm, which does. "password" and
+# "12345678" were accepted before it and are refused after it.
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",

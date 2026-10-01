@@ -222,6 +222,12 @@
                             <a href="{% url 'user_permissions' user.id %}" class="icon-action-btn icon-permissions" title="Manage Permissions">
                                 <i class="fas fa-key"></i>
                             </a>
+                            {% if user.email %}
+                            <button type="button" class="icon-action-btn icon-reset-pw" title="Email a Password Link"
+                                    onclick="confirmReset({{ user.id }}, '{{ user.username|escapejs }}', '{{ user.email|escapejs }}')">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            {% endif %}
                             {% if user.is_active %}
                                 <button type="button" class="icon-action-btn icon-lock" title="Disable User"
                                         onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
@@ -249,6 +255,13 @@
                             <i class="fas fa-key mobile-action-icon icon-color-permissions"></i>
                             <span class="mobile-action-label">Permissions</span>
                         </a>
+                        {% if user.email %}
+                        <button type="button" class="mobile-action-btn"
+                                onclick="confirmReset({{ user.id }}, '{{ user.username|escapejs }}', '{{ user.email|escapejs }}')">
+                            <i class="fas fa-envelope mobile-action-icon icon-color-reset-pw"></i>
+                            <span class="mobile-action-label">Password</span>
+                        </button>
+                        {% endif %}
                         {% if user.is_active %}
                             <button type="button" class="mobile-action-btn"
                                     onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
@@ -345,6 +358,39 @@
     </div>
 </div>
 
+<!-- Reset Password Modal -->
+{# THE POPUP DEMETRI ASKED FOR: "I should get a popup coming up that tells  #}
+{# me that an email will be sent to the user". It names the ADDRESS, because #}
+{# the address is the thing that can be wrong and the only thing an         #}
+{# administrator can check before pressing send.     [test_auth_flow.py]    #}
+<div class="modal fade" id="resetPwModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title"><i class="fas fa-envelope"></i> Email a Password Link</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>An email will be sent to
+                   <strong id="resetPwEmail"></strong> with a link for
+                   <strong id="resetPwUser"></strong> to choose a new password.</p>
+                <p class="text-muted">The link works once and expires after
+                   three days. Their current password keeps working until they
+                   use it, so this cannot lock them out.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                <form id="resetPwForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn action-primary">
+                        <i class="fas fa-paper-plane"></i> Send the Email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% render_help_modal "user_administration" %}
 
 <script>
@@ -379,6 +425,14 @@ function confirmDelete(userId, username) {
     document.getElementById('deleteUsername').textContent = username;
     document.getElementById('deleteForm').action = `/user-administration/${userId}/delete/`;
     $('#deleteModal').modal('show');
+}
+
+function confirmReset(userId, username, email) {
+    document.getElementById('resetPwUser').textContent = username;
+    document.getElementById('resetPwEmail').textContent = email;
+    document.getElementById('resetPwForm').action =
+        `/user-administration/${userId}/reset-password/`;
+    $('#resetPwModal').modal('show');
 }
 
 

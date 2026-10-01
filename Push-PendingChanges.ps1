@@ -1089,23 +1089,49 @@ $suites = @(
     'test_detail_pills.py'
     'test_projects_pills.py'
     'test_stats_3up.py'
+    # Login and set-password-by-email. Its section 4 runs REAL
+    # tokens and a REAL SetPasswordForm against a sqlite database it
+    # builds itself, because the project's settings point at MySQL
+    # and no suite can reach it - so this is the one flow that is
+    # proved by running rather than by reading. Newest, so most
+    # likely to be what breaks.
+    'test_auth_flow.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
 # have been written yet - but the COUNT of skips is the thing worth seeing,
 # because "23 passed" reads identically whether 23 ran or 23 were skipped.
 $skipped = @()
+# NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
+# the 203, it shows 1/203 and then name for the first one... This way I can
+# monitor progress and manage my time better."
+#
+# THE TOTAL IS $suites.Count, NOT A NUMBER TYPED HERE. The list grows by a
+# line every round - 197 three weeks ago, 203 today - and a hardcoded total
+# would be wrong the first time somebody appends to it and would go on
+# being wrong silently. The width is computed from the count too, so the
+# numbers stay in a straight column whether there are 99 or 1,099.
+#
+# The three names carry a suite prefix because this script is 1,200 lines
+# and $label already belongs to the manifest loop five hundred lines up.
+$suiteNo = 0
+$suiteWide = ('' + $suites.Count).Length
 foreach ($t in $suites) {
+    $suiteNo++
+    $suiteLabel = ('[' + ('' + $suiteNo).PadLeft($suiteWide) + '/' + $suites.Count + ']')
     if (-not (Test-Path (Join-Path $root $t))) {
-        Warn ($t + ' not present - skipped')
+        Warn ($suiteLabel + ' ' + $t + ' not present - skipped')
         $skipped += $t
         continue
     }
     Say ''
-    Say ('  == ' + $t)
+    Say ('  == ' + $suiteLabel + ' ' + $t)
     & python $t 2>&1 | ForEach-Object { Say ('     ' + $_) }
     if ($LASTEXITCODE -ne 0) {
-        Bad ($t + ' FAILED')
+        # THE NUMBER ON THE FAILURE LINE TOO. In a 203-suite run the failure
+        # scrolls past the banner that said which suite was starting, and
+        # "test_x FAILED" alone does not say how far in it was.
+        Bad ($suiteLabel + ' ' + $t + ' FAILED')
         if (-not $Force) { Say ''; Say '  Stopping.  Nothing has been staged.'; exit 1 }
     }
 }

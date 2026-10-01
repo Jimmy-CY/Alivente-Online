@@ -706,6 +706,15 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             'admin/',
             'login/',
             'logout/',
+            # THE SET-PASSWORD FLOW IS PUBLIC BY DEFINITION - A1.
+            # Somebody following an emailed password link is
+            # anonymous; that is the entire reason they were sent
+            # one. Without these two lines this middleware bounced
+            # them to the login page they cannot use, and the round
+            # did nothing at all. Found by driving the flow, not by
+            # reading it.                   [test_auth_flow.py]
+            'forgot-password/',
+            'set-password/',
             'accounts/',
             'api/',  # If you have API endpoints
             'media/',  # Media files

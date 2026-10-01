@@ -71,6 +71,10 @@ def notification_settings(request):
         'friday_status_report_staff',
         'issue_comments_daily',
         'issue_comment_urgent',
+        # A1: without this line the 16th type is in the model, in the
+        # migration, and on NO SCREEN. Adding a choice is half a
+        # change; this list is the other half.  [test_auth_flow.py]
+        'password_reset_requested',
     ]
 
     # NOTE: local dict (not the enclosing function); named distinctly to

@@ -10,7 +10,7 @@ THE BLIND SPOT THIS SUITE EXISTS TO CLOSE.
     A gate that cannot see a file does not fail. It agrees. That is what
     makes this class of bug expensive: the instrument reports success.
 
-SECTION 1 IS THE TREE ITSELF - both roots, 146 templates, and the zero
+SECTION 1 IS THE TREE ITSELF - both roots, 150 templates, and the zero
 basename collisions that dozens of other suites depend on without saying
 so.
 
@@ -85,7 +85,9 @@ PATCHER = 'apply_tree_roots.py'
 PS1 = 'Push-PendingChanges.ps1'
 
 # Measured 28 Sep, with the app staged from the laptop.
-MAIN_N = 138
+# 142 since 1 Oct: Section A round A1 added the four public
+# set-password pages. CRS_N is untouched.
+MAIN_N = 142
 CRS_N = 8
 TOTAL_N = MAIN_N + CRS_N
 

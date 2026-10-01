@@ -57,11 +57,13 @@ WHAT IT DOES NOT DO
   secret.
 """
 # --- CONSOLE ENCODING ----------------------------------- 16 Sep 2026 --
-# This file prints text it read out of the database, and a username or a
-# first name may not be ASCII. On Windows, Python writes stdout as cp1252
-# whenever it is not a UTF-8 console, and cp1252 cannot encode Greek: the
-# print itself raises UnicodeEncodeError and the run dies part-way
-# through. A crash says far less about why than a failure does.
+# This file prints text it read out of the templates, and some of that
+# text is not ASCII - projects/project_task_list.html carries a Greek
+# heading behind the language switch, and it will not be the last. On
+# Windows, Python writes stdout as cp1252 whenever it is not a UTF-8
+# console, and cp1252 cannot encode Greek: the print itself raises
+# UnicodeEncodeError and the run dies part-way through. A crash blocks a
+# push exactly as hard as a failure and says far less about why.
 #
 # So keep the encoding the console really has - forcing UTF-8 only moves
 # the problem to whoever decodes us - and change the ERROR HANDLER, so a
@@ -117,7 +119,61 @@ print('')
 print('READ-ONLY. Nothing is written. No password is read or printed.')
 print('')
 
-users = list(User.objects.all().order_by('-is_superuser', 'username'))
+# THE CONNECTION IS THE FIRST THING THAT CAN FAIL, AND A TRACEBACK SAYS
+# LESS ABOUT WHY THAN ONE SENTENCE DOES.
+#
+# `railway run` injects production's environment variables but runs
+# Python ON THIS MACHINE. Railway's MYSQLHOST is a .railway.internal
+# name, which resolves only inside Railway's own network - so from a
+# laptop it fails in DNS before it ever reaches MySQL. That is not a
+# fault in this tool and not a fault in the database.
+try:
+    users = list(User.objects.all().order_by('-is_superuser', 'username'))
+except Exception as e:
+    from pages.db_banner import describe_database
+    host = str(describe_database()['host'])
+    print('')
+    print(BAR)
+    print('  COULD NOT REACH THE DATABASE')
+    print(BAR)
+    print('  %s' % str(e)[:150])
+    print('')
+    if host.endswith('.railway.internal'):
+        print('  The host is %s' % host)
+        print('')
+        print('  That is Railway\'s PRIVATE name. It resolves only from')
+        print('  inside Railway, so `railway run` cannot reach it from a')
+        print('  laptop - railway run sets the variables here and runs the')
+        print('  process here. Two ways round it:')
+        print('')
+        print('  1. RUN IT INSIDE RAILWAY (no password needed on your')
+        print('     machine, and the private name resolves):')
+        print('')
+        print('         railway ssh')
+        print('         python Show-UserEmails.py')
+        print('')
+        print('     The file has to be in the deployed commit for this.')
+        print('')
+        print('  2. OR POINT AT THE PUBLIC PROXY from here. In the Railway')
+        print('     dashboard, open the MySQL service -> Variables and take')
+        print('     RAILWAY_TCP_PROXY_DOMAIN and RAILWAY_TCP_PROXY_PORT.')
+        print('     Then, in PowerShell - and WITHOUT railway run, which')
+        print('     would put the private name back:')
+        print('')
+        print('         $env:MYSQLHOST="<proxy domain>"')
+        print('         $env:MYSQLPORT="<proxy port>"')
+        print('         $env:MYSQLDATABASE="railway"')
+        print('         $env:MYSQLUSER="root"')
+        print('         $env:MYSQLPASSWORD="<from the dashboard>"')
+        print('         python Show-UserEmails.py')
+        print('')
+        print('     Check the banner says the proxy domain before you')
+        print('     believe the numbers.')
+    else:
+        print('  Check that %s is reachable from here.' % host)
+    print(BAR)
+    raise SystemExit(1)
+
 if not users:
     print('No users at all. That is itself worth knowing.')
     raise SystemExit(0)

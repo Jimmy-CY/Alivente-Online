@@ -124,6 +124,7 @@ ROUNDS = [
     '.bak_detailpills',
     '.bak_projpills',
     '.bak_stats3up',
+    '.bak_authflow',
 ]
 
 

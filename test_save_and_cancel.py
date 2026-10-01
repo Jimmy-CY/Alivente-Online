@@ -81,6 +81,12 @@ KEEP_CANCEL = {
     # three above. The round named three of five; the check said so.
     'finance_expense_line_types_edit.html': 'it dismisses a dialog',
     'finance_valuations_edit.html': 'it dismisses a dialog',
+    # ADDED 1 Oct 2026 by Section A round A1. user_edit grew a Reset
+    # Password dialog, and its Cancel dismisses that dialog - it is
+    # not a second way out of the edit form, which still has only
+    # Back. Same grounds as the five above: data-dismiss="modal"
+    # inside a .modal-footer.
+    'user_edit.html': 'it dismisses a dialog',
 }
 
 PASS = FAIL = SKIP = 0
