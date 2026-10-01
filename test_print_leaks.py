@@ -439,7 +439,6 @@ QUEUE = [
     'finance_expense.html', 'finance_expense_line_types.html',
     'finance_revenue.html', 'finance_revenue_line_types.html',
     'finance_valuations.html', 'physical_invoice_list.html',
-    'projects/project_task_list.html',
     'projects/projects.html', 'property_detail.html',
     'title_deeds_management.html',
 ]
@@ -454,6 +453,11 @@ MIGRATED_H4 = [
     'unit_conversions_management.html',
     'preview_imported_recipe.html',
 ]
+# Left the queue: 1 Oct round P2 (.bak_tasktable). project_task_list had
+# the whole pattern hand-rolled - thead hidden, tr as a card, and its own
+# td[data-label]::before that had drifted to 11px UPPERCASE #6c757d while
+# base drew 12.5px sentence case. It wears .alv-table now.
+MIGRATED_P2 = ['projects/project_task_list.html']
 _cards = []
 for rel in TARGETS:
     c = css_of(SRC[rel])
@@ -464,13 +468,13 @@ check('the hand-rolled card views left are exactly the ones queued',
       sorted(_cards) == sorted(QUEUE),
       'joined: %s\nleft  : %s'
       % (sorted(set(_cards) - set(QUEUE)), sorted(set(QUEUE) - set(_cards))))
-check('  and the seven migrated so far are off it',
-      not (set(_cards) & set(MIGRATED_H4)),
-      sorted(set(_cards) & set(MIGRATED_H4)))
+check('  and the eight migrated so far are off it',
+      not (set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2))),
+      sorted(set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2))))
 check('  CONTROL: all six were on it before that round, so this check '
       'can be seen to move',
-      all(rel in TARGETS for rel in MIGRATED_H4),
-      [r for r in MIGRATED_H4 if r not in TARGETS])
+      all(rel in TARGETS for rel in MIGRATED_H4 + MIGRATED_P2),
+      [r for r in MIGRATED_H4 + MIGRATED_P2 if r not in TARGETS])
 
 print('\n' + '=' * 72)
 print('  %d passed, %d failed' % (PASS, FAIL))

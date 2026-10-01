@@ -73,18 +73,18 @@ Task List - {{ project.project_name }}
         </p>
       </div>
       <div class="col-md-4">
-        <div class="task-summary">
-          <div class="summary-stat">
-            <div class="stat-number">{{ total_tasks }}</div>
-            <div class="stat-label">{% if language == 'greek' %}Συνολικές Εργασίες{% else %}Total Tasks{% endif %}</div>
+        <div class="alv-stats task-summary">
+          <div class="alv-stat">
+            <div class="alv-stat-value">{{ total_tasks }}</div>
+            <div class="alv-stat-label">{% if language == 'greek' %}Συνολικές Εργασίες{% else %}Total Tasks{% endif %}</div>
           </div>
-          <div class="summary-stat">
-            <div class="stat-number">{{ completed_tasks }}</div>
-            <div class="stat-label">{% if language == 'greek' %}Ολοκληρωμένες{% else %}Completed{% endif %}</div>
+          <div class="alv-stat alv-stat-good">
+            <div class="alv-stat-value">{{ completed_tasks }}</div>
+            <div class="alv-stat-label">{% if language == 'greek' %}Ολοκληρωμένες{% else %}Completed{% endif %}</div>
           </div>
-          <div class="summary-stat">
-            <div class="stat-number">{{ pending_tasks }}</div>
-            <div class="stat-label">{% if language == 'greek' %}Εκκρεμείς{% else %}Pending{% endif %}</div>
+          <div class="alv-stat alv-stat-attn">
+            <div class="alv-stat-value">{{ pending_tasks }}</div>
+            <div class="alv-stat-label">{% if language == 'greek' %}Εκκρεμείς{% else %}Pending{% endif %}</div>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ Task List - {{ project.project_name }}
 
   <!-- Task List Table -->
   <div class="task-list-container">
-    <table class="table table-striped task-list-table">
+    <table class="table alv-table task-list-table">
       <thead>
         <tr>
           <th>{% if language == 'greek' %}Όνομα Εργασίας{% else %}Task Name{% endif %}</th>
@@ -102,6 +102,7 @@ Task List - {{ project.project_name }}
           <th>{% if language == 'greek' %}Κατάσταση{% else %}Status{% endif %}</th>
           <th>{% if language == 'greek' %}Ημ. Έναρξης{% else %}Start Date{% endif %}</th>
           <th>{% if language == 'greek' %}Αναμ. Λήξη{% else %}Expected End{% endif %}</th>
+                  <th class="desktop-action-cell cell-actions">{% if language == 'greek' %}Ενέργειες{% else %}Actions{% endif %}</th>
         </tr>
       </thead>
       <tbody>
@@ -137,7 +138,7 @@ Task List - {{ project.project_name }}
               </div>
             </td>
             <td class="cell-type" data-label="{% if language == 'greek' %}Τύπος{% else %}Type{% endif %}">
-              <span class="type-badge type-{{ item.type|lower }}">
+              <span class="alv-pill alv-pill-neutral">
                 {% if language == 'greek' %}
                   {% if item.type == 'project' %}Έργο{% elif item.type == 'task' %}Εργασία{% else %}Υπο-εργασία{% endif %}
                 {% else %}
@@ -147,7 +148,7 @@ Task List - {{ project.project_name }}
             </td>
             <td class="cell-priority" data-label="{% if language == 'greek' %}Προτεραιότητα{% else %}Priority{% endif %}">
               {% if item.priority %}
-                <span class="priority-badge priority-{{ item.priority|lower }}">
+                <span class="alv-pill {% if item.priority == 'Critical' %}alv-pill-bad{% elif item.priority == 'High' or item.priority == 'Medium' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
                   {% if language == 'greek' %}
                     {% if item.priority == 'Critical' %}Κρίσιμη
                     {% elif item.priority == 'High' %}Υψηλή
@@ -163,7 +164,7 @@ Task List - {{ project.project_name }}
               {% endif %}
             </td>
             <td class="cell-status" data-label="{% if language == 'greek' %}Κατάσταση{% else %}Status{% endif %}">
-              <span class="status-badge status-{{ item.status|slugify }}">
+              <span class="alv-pill {% if item.status == 'Completed' %}alv-pill-good{% elif item.status == 'In Progress' %}alv-pill-info{% elif item.status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %}">
                 {% if language == 'greek' %}
                   {% if item.status == 'Completed' %}Ολοκληρωμένη
                   {% elif item.status == 'In Progress' %}Σε Εξέλιξη
@@ -194,10 +195,57 @@ Task List - {{ project.project_name }}
                 <span class="text-muted no-date">{% if language == 'greek' %}Δεν ορίστηκε{% else %}Not set{% endif %}</span>
               {% endif %}
             </td>
+            <td class="desktop-action-cell cell-actions">
+              <span class="row-actions">
+                {% if item.task_obj and perms.auth.can_edit_projects %}
+                  <a href="{% url 'project_tasks_edit' project.project_id item.task_obj.task_id %}"
+                     class="icon-action-btn icon-edit"
+                     title="{% if language == 'greek' %}Επεξεργασία{% else %}Edit{% endif %}">
+                    <i class="fas fa-pencil-alt"></i>
+                  </a>
+                  <a href="{% url 'project_tasks_delete' project.project_id item.task_obj.task_id %}"
+                     class="icon-action-btn icon-delete"
+                     title="{% if language == 'greek' %}Διαγραφή{% else %}Delete{% endif %}">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled"
+                        title="{% if language == 'greek' %}Δεν είναι διαθέσιμο εδώ{% else %}Not available here{% endif %}">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                  <span class="icon-action-btn icon-disabled"
+                        title="{% if language == 'greek' %}Δεν είναι διαθέσιμο εδώ{% else %}Not available here{% endif %}">
+                    <i class="fas fa-trash"></i>
+                  </span>
+                {% endif %}
+              </span>
+            </td>
+
+            <td class="mobile-action-bar cols-2">
+              {% if item.task_obj and perms.auth.can_edit_projects %}
+                <a href="{% url 'project_tasks_edit' project.project_id item.task_obj.task_id %}" class="mobile-action-btn">
+                  <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                  <span class="mobile-action-label">{% if language == 'greek' %}Επεξεργασία{% else %}Edit{% endif %}</span>
+                </a>
+                <a href="{% url 'project_tasks_delete' project.project_id item.task_obj.task_id %}" class="mobile-action-btn">
+                  <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                  <span class="mobile-action-label">{% if language == 'greek' %}Διαγραφή{% else %}Delete{% endif %}</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn is-disabled">
+                  <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                  <span class="mobile-action-label">{% if language == 'greek' %}Επεξεργασία{% else %}Edit{% endif %}</span>
+                </span>
+                <span class="mobile-action-btn is-disabled">
+                  <i class="fas fa-trash mobile-action-icon"></i>
+                  <span class="mobile-action-label">{% if language == 'greek' %}Διαγραφή{% else %}Delete{% endif %}</span>
+                </span>
+              {% endif %}
+            </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="text-center text-muted py-4">
+            <td colspan="8" class="text-center text-muted py-4">
               {% if language == 'greek' %}
                 Δεν βρέθηκαν εργασίες για αυτόν τον χρήστη.
               {% else %}
@@ -307,37 +355,10 @@ Task List - {{ project.project_name }}
     width: 16px;
 }
 
-.task-summary {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-}
-
-.summary-stat {
-    text-align: center;
-    background: #f8f9fa;
-    padding: 14px 8px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    min-width: 100px;
-    flex: 1;
-}
-
-.stat-number {
-    font-size: 22px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 4px;
-}
-
-.stat-label {
-    font-size: 11px;
-    color: #6c757d;
-    font-weight: 500;
-    word-wrap: break-word;
-    line-height: 1.2;
-}
+/* Three stats, so three columns - fsr sets 5 and the two finance pages
+   set 3 the same way. base takes it to 2 on a phone by itself.
+                                            [test_task_table.py] */
+.task-summary { --alv-stats-cols: 3; }
 
 /* ============================================================
    TABLE — DESKTOP
@@ -357,37 +378,35 @@ Task List - {{ project.project_name }}
     width: 100%;
 }
 
-.task-list-table thead th {
-    background: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-    color: #2c3e50;
-    padding: 14px 10px;
-    vertical-align: middle;
-    font-size: 13px;
-}
-
 .task-list-table th,
 .task-list-table td {
+    /* The wrapping is this page's own - base does not set it, and a
+       fixed-layout table with long task names and descriptions needs
+       it. The padding and the vertical-align were here too; both are
+       base's .alv-table tbody td now.          [test_task_table.py] */
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    vertical-align: top;
-    padding: 12px 8px;
 }
 
+/* Seven columns, summing to 100. projects.html had eight that
+   summed to 110 until P1; nobody noticed because the browser
+   normalises it, which is exactly why it is asserted here.
+                                       [test_task_table.py] */
 .task-list-table th:nth-child(1),
-.task-list-table td:nth-child(1) { width: 40%; min-width: 250px; }
+.task-list-table td:nth-child(1) { width: 32%; min-width: 250px; }
 .task-list-table th:nth-child(2),
-.task-list-table td:nth-child(2) { width: 12%; min-width: 80px; }
+.task-list-table td:nth-child(2) { width: 10%; min-width: 78px; }
 .task-list-table th:nth-child(3),
-.task-list-table td:nth-child(3) { width: 12%; min-width: 80px; }
+.task-list-table td:nth-child(3) { width: 10%; min-width: 78px; }
 .task-list-table th:nth-child(4),
-.task-list-table td:nth-child(4) { width: 12%; min-width: 90px; }
+.task-list-table td:nth-child(4) { width: 11%; min-width: 88px; }
 .task-list-table th:nth-child(5),
-.task-list-table td:nth-child(5) { width: 12%; min-width: 90px; }
+.task-list-table td:nth-child(5) { width: 12%; min-width: 110px; }
 .task-list-table th:nth-child(6),
-.task-list-table td:nth-child(6) { width: 12%; min-width: 90px; }
+.task-list-table td:nth-child(6) { width: 13%; min-width: 118px; }
+.task-list-table th:nth-child(7),
+.task-list-table td:nth-child(7) { width: 12%; min-width: 110px; }
 
 .task-row { transition: background-color 0.2s ease; }
 
@@ -441,30 +460,6 @@ Task List - {{ project.project_name }}
 .task-icon { color: #2ecc71; font-size: 16px; }
 .subtask-icon { color: #f39c12; font-size: 12px; }
 .overdue-icon { color: #e74c3c; font-size: 12px; margin-left: 5px; }
-
-/* Badges */
-.type-badge, .priority-badge, .status-badge {
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    display: inline-block;
-}
-
-.type-badge { text-transform: uppercase; }
-.type-project { background: rgba(52, 152, 219, 0.15); color: #2980b9; }
-.type-task { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
-.type-subtask { background: rgba(243, 156, 18, 0.15); color: #e67e22; }
-
-.priority-critical { background: #dc3545; color: white; }
-.priority-high { background: var(--alv-warn); color: var(--alv-on-accent); }
-.priority-medium { background: #ffc107; color: #212529; }
-.priority-low { background: #6c757d; color: white; }
-
-.status-completed, .status-ολοκληρωμένη { background: #d4edda; color: #155724; }
-.status-in-progress, .status-σε-εξέλιξη { background: #fff3cd; color: #856404; }
-.status-on-hold, .status-σε-αναμονή { background: #e2e3e5; color: #383d41; }
-.status-pending, .status-εκκρεμής { background: #f8d7da; color: #721c24; }
 
 .date-value {
     font-family: 'Courier New', monospace;
@@ -533,18 +528,6 @@ Task List - {{ project.project_name }}
     .task-list-header > .row {
         flex-direction: column;
     }
-    .task-summary {
-        flex-direction: row;
-        gap: 8px;
-        justify-content: stretch;
-        margin-top: 16px;
-    }
-    .summary-stat {
-        min-width: 0;
-        padding: 10px 6px;
-    }
-    .stat-number { font-size: 18px; }
-    .stat-label { font-size: 10px; }
 
     /* Table → cards */
     .task-list-container {
@@ -554,84 +537,13 @@ Task List - {{ project.project_name }}
         overflow: visible;
         padding: 0;
     }
-    .task-list-table,
-    .task-list-table thead,
-    .task-list-table tbody,
-    .task-list-table tr,
-    .task-list-table td {
-        display: block;
-        width: 100%;
-    }
-    .task-list-table thead {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-    }
     .task-list-table {
         background: transparent;
         table-layout: auto;
         min-width: 0;
     }
-    .task-list-table tr {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        margin-bottom: 14px;
-        padding: 14px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    }
-    .task-list-table td {
-        text-align: left !important;
-        border: none;
-        padding: 6px 0;
-        font-size: 14px;
-        position: relative;
-        min-width: 0 !important;
-        width: 100% !important;
-    }
-    .task-list-table td[data-label]::before {
-        content: attr(data-label);
-        display: inline-block;
-        font-weight: 600;
-        color: #6c757d;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        margin-bottom: 2px;
-        width: 100%;
-    }
-    /* Task name cell becomes the card title — no label prefix */
-    .task-list-table td.task-name-cell {
-        padding-bottom: 10px;
-        margin-bottom: 6px;
-        border-bottom: 1px solid var(--alv-line-soft);
-    }
-    .task-list-table td.task-name-cell::before {
-        display: none;
-    }
     .task-name { font-size: 15px; }
 
-    /* Group Type / Priority / Status on a single row (3 columns) */
-    .task-list-table td.cell-type,
-    .task-list-table td.cell-priority,
-    .task-list-table td.cell-status {
-        display: inline-block !important;
-        width: calc(33.33% - 4px) !important;
-        vertical-align: top;
-        padding: 6px 0 6px 0;
-    }
-    .task-list-table td.cell-priority { padding-left: 4px; padding-right: 4px; }
-    .task-list-table td.cell-status { padding-left: 4px; }
-
-    /* Group Start / End on a single row (2 columns) */
-    .task-list-table td.cell-start-date,
-    .task-list-table td.cell-end-date {
-        display: inline-block !important;
-        width: calc(50% - 4px) !important;
-        vertical-align: top;
-        padding: 6px 0 6px 0;
-    }
-    .task-list-table td.cell-end-date { padding-left: 4px; }
 
     .task-indent-0 { padding-left: 0; }
     .task-indent-1 { padding-left: 12px; }
@@ -642,7 +554,6 @@ Task List - {{ project.project_name }}
         padding: 24px 16px !important;
         text-align: center !important;
     }
-    .task-list-table tr td[colspan]::before { display: none; }
 
     /* Footer rows stack */
     .task-list-footer .row { flex-direction: column; gap: 16px; }
@@ -685,7 +596,13 @@ function exportToExcel() {
         const data = [];
 
         rows.forEach((row) => {
-            const cells = row.querySelectorAll('th, td');
+            /* The two action cells are controls, not data. Without
+               this the sheet gained a blank column and a column reading
+               "Edit Delete" on every line, and !cols below described six
+               columns of an eight-column sheet.   [test_task_table.py] */
+            const cells = row.querySelectorAll(
+                'th:not(.cell-actions):not(.mobile-action-bar), '
+                + 'td:not(.cell-actions):not(.mobile-action-bar)');
             const rowData = [];
             cells.forEach(cell => {
                 let text = cell.textContent.trim();
@@ -730,3 +647,11 @@ if (exportBtnMobile) {
 </script>
 
 {% endblock %}
+
+{# P2, 1 Oct 2026 - this page used to rebuild base's table standard #}
+{# under .task-list-table: 23 rules, 77 declarations, and a phone #}
+{# card label that had drifted to 11px UPPERCASE #6c757d while the #}
+{# house was 12.5px sentence case in var(--alv-ink-soft). The table #}
+{# is .alv-table now and base owns the card. The Actions column is #}
+{# new - the screen had no way to act on a row at all - and the #}
+{# Excel export skips it.              [test_task_table.py] #}

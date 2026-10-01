@@ -118,6 +118,7 @@ ROUNDS = [
     '.bak_livesearch',
     '.bak_barstretch',
     '.bak_secscope',
+    '.bak_tasktable',
 ]
 
 
