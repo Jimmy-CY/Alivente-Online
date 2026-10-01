@@ -176,7 +176,9 @@ for p in alv_tree.templates():
 # filter (test_lease_filter.py). The number stays EXACT rather than
 # becoming >= : this census exists so a page joining or leaving the set
 # is visible, and >= would let a page leave in silence.
-ok(len(auto) + len(manual) == 12, 'twelve pages carry the house filter',
+# twelve until 1 Oct 2026; F2 gave Receipts and Invoice
+# Customers one each.
+ok(len(auto) + len(manual) == 14, 'fourteen pages carry the house filter',
    len(auto) + len(manual))
 ok(not manual,
    'and NOT ONE of them now waits for an Apply button - which is what '

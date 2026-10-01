@@ -6,6 +6,22 @@ Invoice Customers
 {% endblock %}
 
 {% block content %}
+<style>
+/* ONE RULE, AND THE PHONE STACK. The first version also carried four
+   rules swapping a long label for a short one on a phone - which is
+   what properties.html does, copied. test_icon_buttons caps this page's
+   leftover CSS and was right to complain: a panel on the Customers page
+   does not need its heading to say Customer. The heading is just
+   Filters, on every width, and four rules and four spans went with it.
+ base owns .filter-grid, .filter-header,
+   .filter-title, .filter-group, .filter-label, .filter-select,
+   .filter-input, .search-input-group, .search-btn, .filter-tags and
+   .filter-tag - and leaves grid-template-columns to the page, because
+   how many filters a screen has is the screen's business. Zero literal
+   colours.                                   [test_filters_in_rc.py] */
+.filter-grid { grid-template-columns: 2fr 1fr 1fr; }
+@media screen and (max-width: 768px) { .filter-grid { grid-template-columns: 1fr; } }
+</style>
 
 <h2 class="page-title-h2">INVOICE CUSTOMERS</h2>
 <br/>
@@ -30,9 +46,90 @@ Invoice Customers
           <i class="fas fa-plus"></i> Add New
         </span>
       {% endif %}
+      <button type="button" class="btn action-filter" id="filterBtn"
+              aria-pressed="false" aria-controls="filterPanel"
+              aria-label="Show filters">
+        <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+      </button>
       <a href="{% url 'physical_invoice_list' %}" class="btn action-back" aria-label="Back to physical invoices">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
+    </div>
+
+    {# THE CHIPS. base owns the row, the tag and the x; the page says    #}
+    {# which filters are on.                   [test_filters_in_rc.py]  #}
+    <div class="alv-filter-active" id="activeFilters">
+      <span class="alv-filter-active-label">Active filters:</span>
+      <div class="filter-tags" id="filterTags"></div>
+    </div>
+
+    <div class="alv-filter filter-panel" id="filterPanel">
+      <div class="filter-header">
+        <h5 class="filter-title">
+          <i class="fas fa-filter"></i> Filters
+        </h5>
+        <button type="button" id="clearAllBtn" class="btn action-secondary btn-sm">
+          <i class="fas fa-times-circle"></i> Clear All
+        </button>
+      </div>
+
+      <div class="filter-content" id="filterContent">
+        {# GET, no csrf token - the house spelling since F1. A GET form   #}
+        {# serialises every field into the query string, so a token in    #}
+        {# one lands in the address bar and the Referer.                  #}
+        <form action="{% url 'customer_list' %}" method="get" id="filterForm">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label class="filter-label" for="customerInput">
+                <i class="fas fa-search"></i> <strong>Customer</strong>
+              </label>
+              <div class="search-input-group">
+                {# data-live-search narrows what is ALREADY on screen as   #}
+                {# you type; the same box posts to the server on Enter and #}
+                {# leaves a chip. base's note: neither replaces the other. #}
+                {# Only ONE box per table may do this - two would hide and #}
+                {# show the same rows against each other.                  #}
+                <input type="text"
+                       name="customer"
+                       id="customerInput"
+                       class="form-control search-input"
+                       data-live-search=".customers-table"
+                       data-live-search-cell="Customer"
+                       placeholder="Search by customer name..."
+                       value="{{ customer_q|default:'' }}">
+                <button type="button" class="search-btn" id="searchBtn"
+                        aria-label="Search">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label" for="customerIdInput">
+                <i class="fas fa-hashtag"></i> <strong>Customer ID</strong>
+              </label>
+              <input type="text"
+                     name="customer_id"
+                     id="customerIdInput"
+                     class="form-control filter-input"
+                     placeholder="Search by customer ID..."
+                     value="{{ customer_id_q|default:'' }}">
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label" for="hasInvoicesSelect">
+                <i class="fas fa-file-invoice"></i> <strong>Invoices</strong>
+              </label>
+              <select name="has_invoices" class="form-control filter-select"
+                      id="hasInvoicesSelect">
+                <option value="">All Customers</option>
+                <option value="yes" {% if has_invoices == 'yes' %}selected{% endif %}>With invoices</option>
+                <option value="no" {% if has_invoices == 'no' %}selected{% endif %}>Without invoices</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
 
   <!-- Customers Table (desktop) / Card list (mobile) -->
@@ -136,5 +233,82 @@ Invoice Customers
   /* the form is out of the layout in base - .mobile-action-bar > form */
 }
 </style>
+<script>
+/* THE FILTER, WIRED THE WAY EVERY OTHER FILTER PAGE IS WIRED.
+   base opens and closes the panel and keeps the count on the button; this
+   says what the controls do.              [test_filters_in_rc.py] */
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function submit() { var f = $('filterForm'); if (f) { f.submit(); } }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var sel = $('hasInvoicesSelect');
+    if (sel) { sel.addEventListener('change', submit); }
+
+    /* A TEXT BOX HAS NO USEFUL change EVENT for this - it fires on blur,
+       which is not what pressing Enter feels like. Both boxes submit on
+       Enter, and the magnifier submits the one beside it. */
+    ['customerInput', 'customerIdInput'].forEach(function (id) {
+      var box = $(id);
+      if (!box) { return; }
+      box.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); submit(); }
+      });
+    });
+    var btn = $('searchBtn');
+    if (btn) { btn.addEventListener('click', submit); }
+
+    var clear = $('clearAllBtn');
+    if (clear) {
+      clear.addEventListener('click', function () {
+        ['customerInput', 'customerIdInput'].forEach(function (id) {
+          if ($(id)) { $(id).value = ''; }
+        });
+        if ($('hasInvoicesSelect')) { $('hasInvoicesSelect').value = ''; }
+        submit();
+      });
+    }
+    chips();
+  });
+
+  function chips() {
+    var tags = $('filterTags');
+    if (!tags) { return; }
+    var name = $('customerInput') ? $('customerInput').value : '';
+    var cid = $('customerIdInput') ? $('customerIdInput').value : '';
+    var has = $('hasInvoicesSelect') ? $('hasInvoicesSelect').value : '';
+    tags.innerHTML = '';
+    if (name) { tags.appendChild(chip('Customer: "' + name + '"', 'customerInput')); }
+    if (cid) { tags.appendChild(chip('Customer ID: "' + cid + '"', 'customerIdInput')); }
+    if (has) {
+      tags.appendChild(chip(has === 'yes' ? 'With invoices' : 'Without invoices',
+                            'hasInvoicesSelect'));
+    }
+  }
+
+  /* BUILT WITH textContent, NOT innerHTML. A customer name is data
+     somebody typed, and pasting it into markup makes an apostrophe or a
+     < into a rendering bug at best. */
+  function chip(label, controlId) {
+    var span = document.createElement('span');
+    span.className = 'filter-tag';
+    span.appendChild(document.createTextNode(label + ' '));
+    var x = document.createElement('button');
+    x.className = 'remove-tag';
+    x.type = 'button';
+    x.setAttribute('aria-label', 'Remove this filter');
+    x.textContent = '\u00d7';
+    x.addEventListener('click', function () {
+      var c = document.getElementById(controlId);
+      if (c) { c.value = ''; }
+      var f = document.getElementById('filterForm');
+      if (f) { f.submit(); }
+    });
+    span.appendChild(x);
+    return span;
+  }
+})();
+</script>
 
 {% endblock %}

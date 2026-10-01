@@ -1116,6 +1116,12 @@ $suites = @(
     # the address - so the resolution step is provably what makes
     # it work. Newest, so most likely to be what breaks.
     'test_login_email.py'
+    # The two screens that could not be narrowed, now narrowed.
+    # Its section 4 drives both through the real views against a
+    # database it builds itself, and section 5 opens Receipts in a
+    # browser and types into the live box to watch TOTAL ISSUED
+    # follow it. Newest, so most likely to be what breaks.
+    'test_filters_in_rc.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

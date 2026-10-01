@@ -40,7 +40,8 @@ from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
 
 from pages.models import tenant as Tenant
-from django.db.models import ExpressionWrapper, F, IntegerField, ProtectedError
+from django.db.models import (Count, ExpressionWrapper, F,
+                              IntegerField, ProtectedError)
 from pages.models import (
     InvoiceCustomer, PhysicalInvoice, PhysicalInvoiceLine, PhysicalInvoiceNumbering,
 )
@@ -770,8 +771,38 @@ def _customer_post(request, obj):
 @login_required
 @permission_required('auth.can_access_invoices', raise_exception=True)
 def customer_list(request):
-    """The saved invoice-customer book."""
-    customers = InvoiceCustomer.objects.all().order_by("name")
+    """The saved invoice-customer book, narrowed - IN-1, 1 Oct 2026.
+
+    Three controls, agreed with Demetri: the name, the customer ID, and
+    whether the customer has any invoices at all. The third is the one
+    worth having - it finds the customers who were set up and never
+    billed, which no amount of scrolling makes obvious.
+
+    FROM THE QUERY STRING. method="get" is the house spelling since F1:
+    the URL carries the filter, so a narrowed list can be bookmarked and
+    sent, Back returns to it, and a refresh is safe.
+
+    ONE QUERY, NOT ONE PER ROW. invoice_count was c.invoices.count()
+    inside the loop - a query per customer. It is an annotate now, which
+    the has-invoices filter needs anyway: you cannot filter on a number
+    you compute in Python after the queryset has been evaluated.
+    """
+    name_q = (request.GET.get("customer") or "").strip()
+    id_q = (request.GET.get("customer_id") or "").strip()
+    has_q = (request.GET.get("has_invoices") or "").strip()
+
+    customers = (InvoiceCustomer.objects
+                 .annotate(n_invoices=Count("invoices"))
+                 .order_by("name"))
+    if name_q:
+        customers = customers.filter(name__icontains=name_q)
+    if id_q:
+        customers = customers.filter(customer_id_label__icontains=id_q)
+    if has_q == "yes":
+        customers = customers.filter(n_invoices__gt=0)
+    elif has_q == "no":
+        customers = customers.filter(n_invoices=0)
+
     rows = []
     for c in customers:
         rows.append({
@@ -779,9 +810,15 @@ def customer_list(request):
             "name": c.name,
             "customer_id_label": c.customer_id_label,
             "email_to": c.email_to,
-            "invoice_count": c.invoices.count(),
+            "invoice_count": c.n_invoices,
         })
-    return render(request, "customer_list.html", {"rows": rows})
+    return render(request, "customer_list.html", {
+        "rows": rows,
+        # echoed back so the controls hold what was asked for
+        "customer_q": name_q,
+        "customer_id_q": id_q,
+        "has_invoices": has_q,
+    })
 
 
 @login_required

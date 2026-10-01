@@ -257,10 +257,14 @@ for p in alv_tree.templates():
 # search box and three selects, all four paired with .form-control the
 # way this round asks (test_lease_filter.py). Kept EXACT, not >= : the
 # whole point of the census is that the set cannot change in silence.
-ok(len(paired) + len(bare) == 33,
-   'thirty-three uses of the two class names across the tree',
+# 33 and 28 until 1 Oct 2026. F2 added five: a .filter-input
+# and a .filter-select on Invoice Customers, two and one on
+# Receipts. All five are paired with .form-control, which is
+# what this suite is about, so the bare count does not move.
+ok(len(paired) + len(bare) == 38,
+   'thirty-eight uses of the two class names across the tree',
    len(paired) + len(bare))
-ok(len(paired) == 28, '  twenty-eight pair it with .form-control, and do '
+ok(len(paired) == 33, '  thirty-three pair it with .form-control, and do '
    'not move', len(paired))
 ins = [b for b in bare if 'filter-input' in b[1]]
 ok(len(ins) == 2,

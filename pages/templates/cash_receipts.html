@@ -32,9 +32,92 @@ Receipts
         <i class="fas fa-plus"></i> Issue Receipt
       </span>
     {% endif %}
+    <button type="button" class="btn action-filter" id="filterBtn"
+            aria-pressed="false" aria-controls="filterPanel"
+            aria-label="Show filters">
+      <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+    </button>
     <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
       <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
+  </div>
+
+  {# THE CHIPS, then the panel. base owns both components; the page says #}
+  {# which filters are on.                   [test_filters_in_rc.py]    #}
+  <div class="alv-filter-active" id="activeFilters">
+    <span class="alv-filter-active-label">Active filters:</span>
+    <div class="filter-tags" id="filterTags"></div>
+  </div>
+
+  <div class="alv-filter filter-panel" id="filterPanel">
+    <div class="filter-header">
+      <h5 class="filter-title">
+        <i class="fas fa-filter"></i> Filters
+      </h5>
+      <button type="button" id="clearAllBtn" class="btn action-secondary btn-sm">
+        <i class="fas fa-times-circle"></i> Clear All
+      </button>
+    </div>
+
+    <div class="filter-content" id="filterContent">
+      {# GET, no csrf token - the house spelling since F1. #}
+      <form action="{% url 'cash_receipt_list' %}" method="get" id="filterForm">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label class="filter-label" for="fromInput">
+              <i class="fas fa-calendar-alt"></i> <strong>From</strong>
+            </label>
+            <input type="date" name="from" id="fromInput"
+                   class="form-control filter-input"
+                   value="{{ date_from|default:'' }}">
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="toInput">
+              <i class="fas fa-calendar-alt"></i> <strong>To</strong>
+            </label>
+            <input type="date" name="to" id="toInput"
+                   class="form-control filter-input"
+                   value="{{ date_to|default:'' }}">
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="payerInput">
+              <i class="fas fa-search"></i> <strong>Received From</strong>
+            </label>
+            <div class="search-input-group">
+              {# NARROWS AS YOU TYPE, and posts on Enter. payer_name is    #}
+              {# snapshotted onto the receipt when it is issued, so this   #}
+              {# matches what was actually typed, not the tenant table.    #}
+              <input type="text"
+                     name="payer"
+                     id="payerInput"
+                     class="form-control search-input"
+                     data-live-search=".receipts-table"
+                     data-live-search-cell="Received From"
+                     placeholder="Search by payer name..."
+                     value="{{ payer_q|default:'' }}">
+              <button type="button" class="search-btn" id="searchBtn"
+                      aria-label="Search">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="statusSelect">
+              <i class="fas fa-info-circle"></i> <strong>Status</strong>
+            </label>
+            <select name="status" class="form-control filter-select"
+                    id="statusSelect">
+              <option value="">All Receipts</option>
+              <option value="issued" {% if status_q == 'issued' %}selected{% endif %}>Issued</option>
+              <option value="void" {% if status_q == 'void' %}selected{% endif %}>Void</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div class="rec-next">Next receipt number: <strong>{{ next_number }}</strong></div>
@@ -59,7 +142,10 @@ Receipts
       </thead>
       <tbody>
         {% for row in rows %}
-          <tr{% if row.is_void %} class="rec-void"{% endif %}>
+          {# data-amount is the view's own '%.2f' string, so no  #}
+          {# locale or separator can get into the number the script #}
+          {# adds up. It never reads the formatted cell.            #}
+          <tr{% if row.is_void %} class="rec-void"{% endif %} data-amount="{{ row.amount_raw }}" data-currency="{{ row.currency|default:'EUR' }}" data-void="{% if row.is_void %}1{% else %}0{% endif %}">
             <td data-label="Receipt #" class="ref">{{ row.number }}{% if row.is_edited %}
               <span class="rec-edited" title="Edited on {{ row.edited_display }} — any copy already sent shows the previous details">edited</span>{% endif %}</td>
             <td data-label="Date">{{ row.date|date:"Y-m-d" }}</td>
@@ -189,7 +275,9 @@ Receipts
       <tfoot>
         <tr>
           <td class="cell-totals-label" colspan="4">TOTAL ISSUED</td>
-          <td class="num" data-label="Total issued">&euro; {{ receipt_total|floatformat:2|intcomma }}</td>
+          <td class="num" data-label="Total issued" id="receiptTotal">
+            {% for t in receipt_totals %}<div class="receipt-total-line">{{ t.symbol }} {{ t.amount|floatformat:2|intcomma }}</div>{% empty %}<div class="receipt-total-line">&euro; 0.00</div>{% endfor %}
+          </td>
           <td></td>
           <td></td>
         </tr>
@@ -306,6 +394,151 @@ Receipts
     }
     .receipts-table tfoot .cell-totals-label::before { content: none; }
 }
+
+/* TWO RULES AND THE PHONE STACK - see the note on customer_list for why
+   there are not six.
+ base owns every filter class; it leaves
+   grid-template-columns to the page, because how many filters a screen
+   has is the screen's business. Zero literal colours.
+                                              [test_filters_in_rc.py] */
+.filter-grid { grid-template-columns: 1fr 1fr 2fr 1fr; }
+/* one line per currency, so two of them do not run together */
+.receipt-total-line + .receipt-total-line { margin-top: 2px; }
+@media screen and (max-width: 768px) { .filter-grid { grid-template-columns: 1fr; } }
 </style>
+
+<script>
+/* THE FILTER, AND THE TOTAL THAT FOLLOWS IT.
+   base opens and closes the panel, keeps the count on the button, and
+   runs the live search. This says what the controls do and keeps TOTAL
+   ISSUED honest while they do it.          [test_filters_in_rc.py] */
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function submit() { var f = $('filterForm'); if (f) { f.submit(); } }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    /* THE DATES AND THE STATUS GO TO THE SERVER, because they change
+       which rows exist. Received From does not - it narrows what is
+       already here, which is what "searches as the user types" means. */
+    ['fromInput', 'toInput', 'statusSelect'].forEach(function (id) {
+      var el = $(id);
+      if (el) { el.addEventListener('change', submit); }
+    });
+    var payer = $('payerInput');
+    if (payer) {
+      payer.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); submit(); }
+      });
+    }
+    var btn = $('searchBtn');
+    if (btn) { btn.addEventListener('click', submit); }
+
+    var clear = $('clearAllBtn');
+    if (clear) {
+      clear.addEventListener('click', function () {
+        ['fromInput', 'toInput', 'payerInput'].forEach(function (id) {
+          if ($(id)) { $(id).value = ''; }
+        });
+        if ($('statusSelect')) { $('statusSelect').value = ''; }
+        submit();
+      });
+    }
+    chips();
+    watchTotal();
+  });
+
+  function chips() {
+    var tags = $('filterTags');
+    if (!tags) { return; }
+    var f = $('fromInput') ? $('fromInput').value : '';
+    var t = $('toInput') ? $('toInput').value : '';
+    var p = $('payerInput') ? $('payerInput').value : '';
+    var s = $('statusSelect') ? $('statusSelect').value : '';
+    tags.innerHTML = '';
+    if (f) { tags.appendChild(chip('From: ' + f, 'fromInput')); }
+    if (t) { tags.appendChild(chip('To: ' + t, 'toInput')); }
+    if (p) { tags.appendChild(chip('Received from: "' + p + '"', 'payerInput')); }
+    if (s) { tags.appendChild(chip(s === 'void' ? 'Void' : 'Issued', 'statusSelect')); }
+  }
+
+  /* BUILT WITH textContent, NOT innerHTML. A payer name is data somebody
+     typed, and pasting it into markup makes an apostrophe or a < into a
+     rendering bug at best. */
+  function chip(label, controlId) {
+    var span = document.createElement('span');
+    span.className = 'filter-tag';
+    span.appendChild(document.createTextNode(label + ' '));
+    var x = document.createElement('button');
+    x.className = 'remove-tag';
+    x.type = 'button';
+    x.setAttribute('aria-label', 'Remove this filter');
+    x.textContent = '\u00d7';
+    x.addEventListener('click', function () {
+      var c = document.getElementById(controlId);
+      if (c) { c.value = ''; }
+      submit();
+    });
+    span.appendChild(x);
+    return span;
+  }
+
+  /* ===== TOTAL ISSUED FOLLOWS THE FILTER =====
+     Demetri asked for exactly this. The server sums the rows it sent, so
+     the page is right on load and right with this script blocked. When
+     the live Received From box hides a row, that sum stops describing
+     what is on screen - so it is recomputed HERE, from the same numbers.
+
+     data-amount, NEVER THE CELL. The visible cell carries a currency sign
+     and a thousands separator; data-amount is the string the view wrote
+     with %.2f. Parsing display text back into a number is how a total
+     starts disagreeing with itself.
+
+     A MutationObserver ON THE ROWS, not a handler on the box, because
+     base's live-search sets row.style.display and we must run AFTER it
+     whichever order the two scripts were wired in.
+
+     GROUPED BY CURRENCY, because CashReceipt.currency is a real column.
+     One currency reads as one line, exactly as before. */
+  function watchTotal() {
+    var table = document.querySelector('.receipts-table');
+    var cell = $('receiptTotal');
+    if (!table || !table.tBodies[0] || !cell) { return; }
+    var body = table.tBodies[0];
+
+    function money(n) {
+      var s = n.toFixed(2).split('.');
+      return s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + s[1];
+    }
+
+    function recount() {
+      var sums = {}, order = [];
+      Array.prototype.forEach.call(
+        body.querySelectorAll('tr[data-amount]'), function (row) {
+          if (row.style.display === 'none') { return; }
+          if (row.getAttribute('data-void') === '1') { return; }
+          var code = row.getAttribute('data-currency') || 'EUR';
+          if (sums[code] === undefined) { sums[code] = 0; order.push(code); }
+          sums[code] += parseFloat(row.getAttribute('data-amount')) || 0;
+        });
+      cell.innerHTML = '';
+      if (!order.length) { order = ['EUR']; sums.EUR = 0; }
+      order.forEach(function (code) {
+        var d = document.createElement('div');
+        d.className = 'receipt-total-line';
+        d.textContent = (code === 'EUR' ? '\u20ac' : code) + ' '
+          + money(sums[code]);
+        cell.appendChild(d);
+      });
+    }
+
+    try {
+      new MutationObserver(recount).observe(
+        body, {attributes: true, attributeFilter: ['style'], subtree: true});
+    } catch (e) { /* no observer: the server's total stands, which is right */ }
+    recount();
+  }
+})();
+</script>
 
 {% endblock %}

@@ -128,9 +128,18 @@ HOW = {'act_expense.html': 'get', 'fsr.html': 'get', 'invoices.html': 'get',
        'projects/projects.html': 'get', 'properties.html': 'get',
        'suppliers.html': 'get', 'tenant.html': 'get',
        'ingredient_base_units_management.html': 'get',
-       'recipe_management.html': 'get'}
+       'recipe_management.html': 'get',
+       # ADDED 1 Oct 2026 by F2, written in the spelling F1
+       # settled a few hours earlier.
+       'cash_receipts.html': 'get',
+       'customer_list.html': 'get'}
 # List screens that still cannot be narrowed at all. Named, not counted.
-BARE = ('cash_receipts.html', 'comments_report.html', 'customer_list.html',
+# cash_receipts.html and customer_list.html LEFT THIS LIST on
+# 1 Oct 2026, Section F round F2 - IN-1 and RC-1 gave both of
+# them a filter. A screen comes off this list in the round
+# that narrows it, so the list never names something already
+# dealt with.
+BARE = ('comments_report.html',
         'petty_cash.html', 'finance_expense.html', 'finance_revenue.html',
         'finance_valuations.html', 'title_deeds_management.html',
         'user_administration.html', 'workspace_management.html',
@@ -560,7 +569,7 @@ for rel, want in sorted(HOW.items()):
     seen[rel] = got
     ok(got == want, '%-42s %s' % (rel, got), 'expected %s' % want)
 n_post = sum(1 for v in seen.values() if v == 'post')
-ok(n_post == 0 and len(seen) == 11,
+ok(n_post == 0 and len(seen) == 13,
    'all %d of them submit by GET - none by POST' % len(seen),
    'post: %s' % [k for k, v in seen.items() if v == 'post'])
 print('')

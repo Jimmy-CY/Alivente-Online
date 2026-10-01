@@ -578,9 +578,11 @@ for p in alv_tree.templates():
 # TWELVE SINCE T4, 30 Sep 2026. Manage Lease Agreements joined the
 # house filter, chips row and all (test_lease_filter.py). EXACT and
 # not >= : this census exists so the set cannot change in silence.
-ok(len(house) == 12, 'twelve pages wear the house filter', len(house))
+# twelve until 1 Oct 2026; F2 gave Receipts and Invoice
+# Customers one each.
+ok(len(house) == 14, 'fourteen pages wear the house filter', len(house))
 ok(PAGE in rows, '%s is one of the rows' % PAGE)
-ok(len(rows) == 12,
+ok(len(rows) == 14,
    'and TWELVE of twelve now put their chips on base\'s row - the fourth '
    'copy was the last one', sorted(set(house) - set(rows)))
 

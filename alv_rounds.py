@@ -128,6 +128,7 @@ ROUNDS = [
     '.bak_filterget',
     '.bak_pwnotify',
     '.bak_loginemail',
+    '.bak_filtersinrc',
 ]
 
 

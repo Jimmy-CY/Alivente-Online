@@ -164,7 +164,12 @@ ok(not other,
 # TWELVE SINCE T4, 30 Sep 2026. Manage Lease Agreements joined the
 # house filter, chips row and all (test_lease_filter.py). EXACT and
 # not >= : this census exists so the set cannot change in silence.
-ok(len(house) == 12, 'twelve pages have one, all the same', len(house))
+# twelve until 1 Oct 2026; F2 gave Receipts and Invoice
+# Customers one each. The FIFTH list of this shape the round
+# had to move - five suites each keep their own count of how
+# many pages carry the house filter, and none of them knows
+# about the others.
+ok(len(house) == 14, 'fourteen pages have one, all the same', len(house))
 
 b = alv_tree.path_of(PAGE) + SUFFIX
 if os.path.isfile(b):

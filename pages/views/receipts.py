@@ -46,6 +46,7 @@ existence the first time a superuser opens any user's permissions screen.
 import io
 import os
 from datetime import date, datetime
+from collections import OrderedDict
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
@@ -56,6 +57,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from xhtml2pdf import pisa
@@ -196,18 +198,71 @@ def store_pdf(receipt):
 
 
 # ---------------------------------------------------------------------- list
+def _as_date(raw):
+    """A date from the query string, or None.
+
+    TWO WAYS A URL CAN CARRY A BAD DATE, AND parse_date TREATS THEM
+    DIFFERENTLY. For something it cannot read at all - "not-a-date" - it
+    returns None. For something that matches its pattern and is not a real
+    date - "2026-13-45" - it RAISES ValueError, because it gets as far as
+    building a datetime.date and that fails.
+
+    To this view they are the same thing: a filter it cannot apply. A
+    hand-edited address bar is the ordinary way either arrives, and
+    showing an unfiltered list is a better answer than a 500. Found by
+    test_filters_in_rc.py section 3b, which asked for both.
+    """
+    try:
+        return parse_date((raw or '').strip())
+    except ValueError:
+        return None
+
+
 @login_required
 @permission_required('auth.can_access_receipts', raise_exception=True)
 def cash_receipt_list(request):
-    """Issued receipts, newest first.
+    """Issued receipts, newest first, narrowed - RC-1, 1 Oct 2026.
 
     The rows are built here rather than in the template - the same reasoning
     as Open Invoices. A template that decides its own rows cannot tell you
     whether it drew any, so it cannot have an empty state.
+
+    THREE OF THE FOUR CONTROLS ARE HERE AND ONE IS NOT. From, To and Status
+    change WHICH ROWS EXIST, so they are a server filter in the query
+    string, the house spelling since F1. Received From narrows in the
+    browser as you type - Demetri asked for "an open field that searches as
+    the user types", and a round trip per keystroke is not that.
+
+    A BAD DATE IS IGNORED, NOT RAISED. parse_date returns None for anything
+    it cannot read, and a hand-edited URL is the ordinary way that happens.
+    Dropping the clause shows an unfiltered list; letting it through would
+    show a 500 to somebody who mistyped their own address bar.
+
+    AND THE TOTAL IS GROUPED BY CURRENCY. It used to be one blind sum
+    printed behind a hardcoded euro sign, while CashReceipt.currency is a
+    real column with a default of EUR - so a single receipt in anything else
+    made that number add unlike things together, silently. One currency
+    still reads as one line. The browser re-sums the same way when the live
+    filter hides a row; see the script on the page.
     """
+    date_from = _as_date(request.GET.get('from'))
+    date_to = _as_date(request.GET.get('to'))
+    payer_q = (request.GET.get('payer') or '').strip()
+    status_q = (request.GET.get('status') or '').strip()
+
     qs = (CashReceipt.objects
           .select_related('tenant', 'customer', 'prop')
           .order_by('-receipt_date', '-cash_receipt_id'))
+    if date_from:
+        qs = qs.filter(receipt_date__gte=date_from)
+    if date_to:
+        qs = qs.filter(receipt_date__lte=date_to)
+    if payer_q:
+        qs = qs.filter(payer_name__icontains=payer_q)
+    if status_q == 'issued':
+        qs = qs.filter(is_void=False)
+    elif status_q == 'void':
+        qs = qs.filter(is_void=True)
 
     rows = []
     for r in qs:
@@ -227,14 +282,33 @@ def cash_receipt_list(request):
             'status_pill': 'alv-pill-neutral' if r.is_void else 'alv-pill-good',
             'status_display': 'Void' if r.is_void else 'Issued',
             'has_pdf': bool(r.pdf_file),
+            # A PLAIN STRING FOR THE BROWSER TO ADD UP. Written here with
+            # %.2f rather than left to a template filter, so no locale and
+            # no thousands separator can ever get into it - the script
+            # reads this attribute, never the formatted cell beside it.
+            'amount_raw': '%.2f' % (r.amount or Decimal('0.00')),
         })
 
-    total = sum((r['amount'] for r in rows if not r['is_void']), Decimal('0.00'))
+    # PER CURRENCY, NOT ONE SUM. See the docstring.
+    totals = OrderedDict()
+    for row in rows:
+        if row['is_void']:
+            continue
+        code = (row['currency'] or 'EUR').strip().upper()
+        totals[code] = totals.get(code, Decimal('0.00')) + row['amount']
+    receipt_totals = [{'currency': c, 'amount': a,
+                       'symbol': '\u20ac' if c == 'EUR' else c}
+                      for c, a in totals.items()]
 
     return render(request, "cash_receipts.html", {
         "rows": rows,
-        "receipt_total": total,
+        "receipt_totals": receipt_totals,
         "next_number": preview_next(),
+        # echoed back so the controls hold what was asked for
+        "date_from": (request.GET.get('from') or '').strip(),
+        "date_to": (request.GET.get('to') or '').strip(),
+        "payer_q": payer_q,
+        "status_q": status_q,
     })
 
 
