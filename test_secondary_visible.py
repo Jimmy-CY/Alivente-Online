@@ -241,6 +241,62 @@ _wrong = [n for n, bar in NEEDY
 check('  every page in the set has a secondary and no More menu', not _wrong,
       '%d do not: %s' % (len(_wrong), ', '.join(_wrong[:3])))
 
+
+def read_text(p):
+    with open(p, encoding='utf-8', errors='replace') as fh:
+        return fh.read().replace('\r\n', '\n')
+
+
+# ===========================================================================
+# ONE SECONDARY IS HIDDEN ON A PHONE ON PURPOSE - A-BAR, 2 Oct 2026.
+#
+# celebration_calendar's Calendar/Timeline toggle became an .action-secondary
+# in A-BAR; it had worn Bootstrap's btn-info since the page was written, and
+# it was the last control in any of the app's 123 bars with no house role.
+# That put it in NEEDY - a secondary with no More menu - and this suite
+# failed it, correctly asking the question it exists to ask.
+#
+# The answer is that this one is different. The toggle switches between the
+# calendar GRID and the timeline, and the grid is not drawn on a phone at
+# all: the page hides the toggle itself at 768px and puts
+# .mobile-view-banner in its place, saying "calendar grid available on
+# desktop". A control whose only job is unavailable is correctly ABSENT.
+# There is nothing behind it on a phone to reach.
+#
+# AN EXEMPTION BY OMISSION WOULD BE A HOLE - a suite that passes and cannot
+# tell you whether the page is exempt or whether the scan stopped seeing it.
+# So the reason is written down here AND checked below: the hide, the
+# banner, and the fact that the page is still in the scanned set. If any of
+# the three goes, this suite fails, which is what you want - either of the
+# first two going would make the toggle genuinely unreachable.
+EXEMPT = {
+    'celebration_calendar.html':
+        'the view toggle is hidden at 768px by the page itself, and '
+        '.mobile-view-banner says why - the calendar grid it switches to is '
+        'not drawn on a phone, so there is nothing behind it to reach',
+}
+_scanned = [n for n, _b in NEEDY]
+for _name, _why in sorted(EXEMPT.items()):
+    check('%s is EXEMPT, and still in the scanned set' % _name,
+          _name in _scanned, '%d bars scanned' % len(_scanned))
+    print('           because %s' % _why)
+    _src = read_text(alv_tree.path_of(_name))
+    _css = '\n'.join(re.findall(r'<style\b[^>]*>(.*?)</style>', _src, re.S))
+    _mob = [m.group(0) for m in
+            re.finditer(r'@media[^{]*max-width[^{]*\{', _css)]
+    _hide = re.search(r'#viewToggleBtn\s*\{[^}]*display\s*:\s*none', _css)
+    check('  the page really does hide it - %s' % (_hide.group(0)[:46]
+                                                   if _hide else 'IT DOES NOT'),
+          bool(_hide) and bool(_mob))
+    check('  and really does carry the banner the user sees instead',
+          'mobile-view-banner' in _src)
+
+NEEDY = [(n, b) for n, b in NEEDY if n not in EXEMPT]
+check('nothing else is exempt - %d bar(s) still judged' % len(NEEDY),
+      len(EXEMPT) == 1 and len(NEEDY) >= 6,
+      '%d exempt, %d judged' % (len(EXEMPT), len(NEEDY)))
+
+
 # ===========================================================================
 head('3. the eleven, rendered at 390px')
 # ===========================================================================

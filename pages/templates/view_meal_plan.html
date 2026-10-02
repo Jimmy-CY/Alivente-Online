@@ -348,11 +348,13 @@
     {% endif %}
    
     <!-- Action Bar -->
+    <!-- A-BAR, 2 Oct 2026. Back used to come FIRST here, ahead of Shopping
+         List, and there was no Back at the end at all - so the exit sat
+         where every other screen puts its primary, and the place your hand
+         goes for Back on the other 125 bars held Delete. It moves to the
+         end, after the phone More menu, which is where base's flex row and
+         `.page-action-buttons .action-back` expect it. -->
     <div class="page-action-buttons">
-        <a href="{% url 'meal_plans' %}" class="btn action-back" aria-label="Back to Meal Plans">
-            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
-        </a>
-
         
             <!-- PRIMARY: Shopping List -->
             <a href="{% url 'meal_plan_shopping_list' meal_plan.meal_plan_id %}" class="btn action-primary">
@@ -434,7 +436,10 @@
                     {% endif %}
                 </div>
             </div>
-        
+
+        <a href="{% url 'meal_plans' %}" class="btn action-back" aria-label="Back to Meal Plans">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
     </div>
 
     <!-- Compact Page Header -->

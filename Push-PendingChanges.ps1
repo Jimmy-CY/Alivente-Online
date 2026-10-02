@@ -121,6 +121,13 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\celebration_management.html'; Text = 'span class="contact-name"'; What = 'C-1: the contact name has a span of its own' },
+    @{ File = 'pages\templates\celebration_management.html'; Text = 'THE COLLAPSED COMPACT CARD IS A LIST ROW'; What = 'C-1: the compact card rules are on the page' },
+    @{ File = 'pages\templates\celebration_management.html'; Text = '}In compact'; Absent = $true; What = 'C-1: the stray close-comment that killed two rules has not come back' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'Desktop: [New Customer Invoice] [Help]'; What = 'A-BAR: Help sits BEHIND the primary on Physical Invoices' },
+    @{ File = 'pages\templates\view_meal_plan.html'; Text = 'A-BAR, 2 Oct 2026. Back used to come FIRST here'; What = 'A-BAR: Back sits at the END of the bar on View Meal Plan' },
+    @{ File = 'pages\templates\properties_edit.html'; Text = 'A-BAR, 2 Oct 2026. Assets came before Save'; What = 'A-BAR: Save sits ahead of Assets on the property edit form' },
+    @{ File = 'pages\templates\celebration_calendar.html'; Text = 'class="btn btn-info"'; Absent = $true; Code = $true; What = 'A-BAR: the Calendar/Timeline toggle is no longer Bootstrap btn-info' },
     @{ File = 'pages\models.py';                          Text = 'FH_BASELINE_DATE = _fh_date(';  What = 'baseline constant' },
     @{ File = 'pages\models.py';                          Text = 'def ensure_expense_baseline';   What = 'expense baseline helper' },
     @{ File = 'pages\models.py';                          Text = 'def ensure_revenue_baseline';   What = 'revenue baseline helper' },
@@ -1169,6 +1176,21 @@ $suites = @(
     # markup in Chromium and reads back that the figures sit ABOVE
     # the table - an ordering claim that a grep cannot make.
     'test_issue_stats.py'
+    # The ORDER of the action bar - primary, secondaries, filter,
+    # Back - asserted for the first time, across all 123 bars and all
+    # 142 variants their {% if %} branches can render. Its section 4
+    # draws the three moved bars in Chromium and reads the controls
+    # back BY THEIR x POSITION, because base lays the bar out with
+    # flex and flex has four ways to disagree with the markup.
+    'test_bar_order.py'
+    # The compact contact card - one line a name, no icon and no
+    # pill until the card is opened. Its section 2 draws the cards at
+    # three column counts and reads the name's TRUE text width with a
+    # Range, because a clipped flex item lies about its own width. Its
+    # section 3 is the one no suite had: CSS comments must balance,
+    # tree-wide - two rules on that page had been discarded by the
+    # parser since 25 Sep while the braces balanced perfectly.
+    'test_compact_card.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -304,6 +304,46 @@
     display: block;
 }
 
+/* THE COLLAPSED COMPACT CARD IS A LIST ROW, NOT A HEADING - C-1,
+   2 Oct 2026.
+
+   Demetri, with a screenshot: reduce the font of the Contact Name so every
+   name fits on one line; drop the Friend/Family pill until the card is
+   opened; and drop the person icon too.
+
+   Measured at 1280px, where the grid is three across and a card is 365px:
+   at 1.5rem with the icon and the pill on the same line, five of the eight
+   longest names in his list took two lines and two took THREE. A compact
+   row three lines tall is not compact, and a grid whose row heights depend
+   on the length of a name does not scan.
+
+   EVERY SELECTOR HERE CARRIES :not(.expanded). Clicking the card brings
+   back the pill, the icon and the heading size, which is exactly what he
+   asked for - the pill is wanted, just not forty times at once. */
+.contact-card.compact-view:not(.expanded) .contact-info h4 {
+    font-size: 1.05rem;
+    flex-wrap: nowrap;
+    gap: 0;
+}
+
+.contact-card.compact-view:not(.expanded) .contact-info h4 > i,
+.contact-card.compact-view:not(.expanded) .relationship-badge {
+    display: none;
+}
+
+/* THE ELLIPSIS IS A BACKSTOP, NOT THE PLAN. At 1.05rem every name in the
+   list fits the narrowest card with room to spare; this is what happens to
+   a name longer than any of them - one line, clipped - rather than a third
+   row appearing under it. min-width:0 is required: a flex item will not
+   shrink below its content without it, and the ellipsis would never
+   trigger. */
+.contact-card.compact-view:not(.expanded) .contact-name {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Adjust contact header for compact view */
 .contact-card.compact-view .contact-header {
     margin-bottom: 0;
@@ -365,7 +405,13 @@
        cannot leak the desktop icons onto mobile. */
     .contact-header .contact-actions {
         display: none !important;
-    }In compact (collapsed) state — hide the mobile action bar too */
+    }
+
+    /* In compact (collapsed) state - hide the mobile action bar too.
+       THIS RULE HAD NEVER ONCE APPLIED. Its comment lost its opening slash-
+       star in E3b on 25 Sep, so the prose read as the start of a selector,
+       ran on to the next brace, and took this rule down with it. Repaired
+       C-1, 2 Oct 2026. */
     .contact-card.compact-view:not(.expanded) .mobile-action-bar {
         display: none;
     }
@@ -405,7 +451,12 @@
        !important guards against JS-set inline styles, same reason as contact-actions. */
     .event-item .event-actions {
         display: none !important;
-    } Compact view on mobile — single column */
+    }
+
+    /* Compact view on mobile - single column.
+       Dead since 25 Sep for the same reason as the rule above, which is
+       why compact view on a phone has been showing TWO columns. Repaired
+       C-1, 2 Oct 2026. */
     .contacts-container.compact-grid {
         grid-template-columns: 1fr;
     }
@@ -753,7 +804,7 @@
             <div class="contact-header">
                 <div class="contact-info">
                     <h4>
-                        <i class="fas fa-user-circle"></i> {{ contact.name }}
+                        <i class="fas fa-user-circle"></i> <span class="contact-name">{{ contact.name }}</span>
                         <span class="badge badge-secondary relationship-badge">{{ contact.get_relationship_display }}</span>
                     </h4>
                     <div class="contact-details">

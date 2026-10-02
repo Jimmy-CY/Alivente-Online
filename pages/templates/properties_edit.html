@@ -16,13 +16,18 @@
   {% csrf_token %}
 
   <!-- Action Buttons (Assets + Save + Back) -->
+  <!-- A-BAR, 2 Oct 2026. Assets came before Save on an EDIT form, where
+       Save is the whole point of the screen - and this bar is
+       justify-content: flex-end, so the secondary sat nearer the middle of
+       the page with Save tucked between it and Back. Save goes first. Not
+       reported: this one came out of the census. -->
   <div class="page-action-buttons page-action-buttons-edit">
-      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn action-secondary" role="button">
-          <i class="fas fa-box"></i> Assets
-      </a>
       <button class="btn action-primary" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
+      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn action-secondary" role="button">
+          <i class="fas fa-box"></i> Assets
+      </a>
 
       <!-- Mobile-only "More" dropdown -->
       <div class="action-more-wrapper" data-menu>

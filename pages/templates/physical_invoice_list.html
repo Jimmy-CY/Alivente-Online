@@ -21,17 +21,24 @@ Physical Invoices
 {% endfor %}
 
 <body>
-    <!-- Action Buttons - Desktop: [Help] [New Customer Invoice] [Manage Customers] [Back]
+    <!-- Action Buttons - Desktop: [New Customer Invoice] [Help] [Manage Customers] [Back]
                           Mobile:  [New Customer Invoice (wide)] [More] [Back] -->
+    <!-- A-BAR, 2 Oct 2026. Help used to open this bar, to the LEFT of the
+         primary - Demetri, with a screenshot: why is the Help Button on the
+         left of Customer Invoice. The primary goes first in all 123 bars in
+         this app, and Help is the first SECONDARY, which is where
+         act_expense and household_member_management already put it. So Help
+         moves exactly one place right. The order line above described the
+         defect too, and is corrected with it. -->
     <div class="page-action-buttons">
-      <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#physical_invoicesHelpModal">
-        <i class="fas fa-question-circle"></i> Help
-      </button>
       {% if perms.auth.can_edit_invoices %}
         <a href="{% url 'customer_invoice_create' %}" class="btn action-primary">
           <i class="fas fa-file-invoice-dollar"></i> New Customer Invoice
         </a>
       {% endif %}
+      <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#physical_invoicesHelpModal">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
       {% if perms.auth.can_access_invoices %}
         <a href="{% url 'customer_list' %}" class="btn action-secondary">
           <i class="fas fa-address-book"></i> Manage Customers
