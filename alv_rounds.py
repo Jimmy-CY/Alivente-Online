@@ -129,6 +129,10 @@ ROUNDS = [
     '.bak_pwnotify',
     '.bak_loginemail',
     '.bak_filtersinrc',
+    '.bak_importmodel',
+    '.bak_aeline',
+    '.bak_filterdistinct',
+    '.bak_tabs',
 ]
 
 

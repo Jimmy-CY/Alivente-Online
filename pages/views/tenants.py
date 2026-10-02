@@ -118,6 +118,38 @@ def tenant_page(request):
     all_properties = props.objects.all().order_by('prop_country', 'prop_name')
     all_tenants = tenant.objects.all().order_by('tenant_name')
 
+    # WHAT MAY BE CHOSEN IS NOT WHAT IS SHOWN - F3, 1 Oct 2026.
+    #
+    # Both dropdowns on this page were built from the FILTERED lists, so
+    # choosing a tenant left only that tenant in the tenant dropdown and
+    # there was no way to reach another one without clearing the filter
+    # first. A one-way door. Open Invoices had the same defect, was fixed
+    # for it, and the fix was never carried here - which is what happens
+    # when one queryset answers both "which rows" and "which choices".
+    #
+    # AND EACH NAME ONCE. A tenant record is per lease, so one person
+    # with two leases is two rows; the filter sends the NAME, so those
+    # two rows are one choice. Demetri: "it must only show one of each
+    # duplicate."
+    #
+    # prop_available_for_rent LIVES HERE NOW. The template used to carry
+    # it as an {% if %} inside the option loop, where the view could not
+    # see it - so a change to the view would silently stop agreeing with
+    # a rule nobody knew was there.
+    all_prop_names = (props.objects
+                      .filter(prop_available_for_rent='Yes')
+                      .exclude(prop_name__isnull=True)
+                      .exclude(prop_name__exact='')
+                      .order_by('prop_name')
+                      .values_list('prop_name', flat=True)
+                      .distinct())
+    all_tenant_names = (tenant.objects
+                        .exclude(tenant_name__isnull=True)
+                        .exclude(tenant_name__exact='')
+                        .order_by('tenant_name')
+                        .values_list('tenant_name', flat=True)
+                        .distinct())
+
     # Filter tenants based on the selected criteria
     filtered_tenants = all_tenants
 
@@ -168,6 +200,10 @@ def tenant_page(request):
         'tenant': filtered_tenants,
         'tenant_rows': tenant_rows,
         'props': filtered_properties,
+        # The option lists - distinct, and from the WHOLE table, so using
+        # the filter never removes the way back out of it. [F3]
+        'all_prop_names': all_prop_names,
+        'all_tenant_names': all_tenant_names,
         'selected_property': selected_property,
         'selected_tenant': selected_tenant,
         'selected_status': selected_status,
@@ -391,6 +427,24 @@ def tenant_lease_agreement(request):
     context = {
         'tenants': tenants,
         'props': offer.distinct().order_by('prop_country', 'prop_name'),
+        # LEASE AGREEMENTS - the same distinct-by-name as the Tenants
+        # page, found by F3's tree-wide census rather than reported.
+        #
+        # The .distinct() above dedupes PROPERTY ROWS - a property with
+        # three tenants is one row after the join - but this filter sends
+        # prop_name, so two properties sharing a name are still two
+        # options that do the same thing.
+        #
+        # AND IT IS NOT THE WHOLE TABLE, deliberately: `offer` is already
+        # narrowed to the properties that have a tenant at all, which is
+        # the point of this screen. That narrowing does not depend on
+        # what is chosen, so this one was never a one-way door. [F3]
+        'all_prop_names': (offer
+                           .exclude(prop_name__isnull=True)
+                           .exclude(prop_name__exact='')
+                           .order_by('prop_name')
+                           .values_list('prop_name', flat=True)
+                           .distinct()),
         'search_query': search,
         'selected_property': selected_property,
         'selected_agreement': selected_agreement,

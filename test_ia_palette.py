@@ -381,9 +381,24 @@ else:
     check('  and C2 has since migrated both onto base',
           'class="alv-stats"' in FC and 'alv-pill alv-pill-good' in FC
           and '.ia-kpi{background:' not in FC)
-check('.ia-tab is still a hand-rolled tab - the segmented control is its '
-      'own round, with the Budget/Actuals .btn-group',
-      '.ia-tab{border:none;background:transparent' in FC)
+# MOVED by AE-2, 2 Oct 2026 - the SCOPE GUARD kind, and this file's
+# fourth. It read ".ia-tab is still a hand-rolled tab - the segmented
+# control is its own round". True when written, and it named the round
+# that would end it: ALV-SEG's own note promised base a tab bar "when a
+# second page ever wants one". Five did, and 205 of the app's tabs are
+# rendered by one of them, so AE-2 lifted THESE rules into base - the one
+# tab copy in the tree already entirely on tokens.
+_TB = os.path.join(T, 'fsr.html.bak_tabs')
+if os.path.exists(_TB):
+    check('.ia-tab WAS a hand-rolled tab when this round ran - measured on '
+          'fsr.html.bak_tabs',
+          '.ia-tab{border:none;background:transparent' in nocomment(read(_TB)))
+    check('  and AE-2 has since lifted it into base, verbatim',
+          '.ia-tab{border:none;background:transparent' not in FC
+          and 'alv-tab' in FC)
+else:
+    check('.ia-tab is still a hand-rolled tab - the segmented control is '
+          'its own round', '.ia-tab{border:none;background:transparent' in FC)
 # MOVED by the print-leak round - the SCOPE GUARD kind of 4b, and the sixth
 # time this project has moved one. This said "the page-local @media is still
 # unqualified, that round owns it". True when written; that round has landed.

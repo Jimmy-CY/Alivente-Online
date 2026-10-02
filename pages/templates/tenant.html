@@ -130,10 +130,8 @@ Tenants
             </label>
             <select name="propname" class="form-control filter-select" id="propertySelect">
               <option value="">All Properties</option>
-              {% for results in props %}
-                {% if results.prop_available_for_rent == "Yes" %}
-                  <option value="{{results.prop_name}}" {% if selected_property == results.prop_name %}selected{% endif %}>{{results.prop_name}}</option>
-                {% endif %}
+              {% for name in all_prop_names %}
+                <option value="{{name}}" {% if selected_property == name %}selected{% endif %}>{{name}}</option>
               {% endfor %}
             </select>
           </div>
@@ -145,8 +143,8 @@ Tenants
             </label>
             <select name="tenantname" class="form-control filter-select" id="tenantSelect">
               <option value="">All Tenants</option>
-              {% for tresults in tenant %}
-                <option value="{{tresults.tenant_name}}" {% if selected_tenant == tresults.tenant_name %}selected{% endif %}>{{tresults.tenant_name}}</option>
+              {% for name in all_tenant_names %}
+                <option value="{{name}}" {% if selected_tenant == name %}selected{% endif %}>{{name}}</option>
               {% endfor %}
             </select>
           </div>

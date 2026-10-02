@@ -322,31 +322,11 @@ label i { color: #6c757d; margin-right: 4px; }
     flex-wrap: wrap;
 }
 
-.language-tabs .nav-link {
-    border: 1px solid transparent;
-    border-radius: 6px 6px 0 0;
-    font-weight: 500;
-    color: #495057;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    padding: 8px 16px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .language-tabs .nav-link:hover {
-        border-color: #e9ecef #e9ecef #dee2e6;
-        background-color: #f8f9fa;
-    }
-}
-
-.language-tabs .nav-link.active {
-    color: #0e7c8b;
-    background-color: #fff;
-    border-color: #dee2e6 #dee2e6 #fff;
-    border-bottom-color: transparent;
-}
+/* Box tabs on #495057 / #0e7c8b lived here, and the same three rules
+   again in project_tasks_edit.html. They were the nearest thing the tree
+   had to a reviewed tab, and they are still not the standard: ALV-SEG's
+   note settled that a tab bar is underlined, not boxed, and the Issues
+   Analysis bar is the copy base took. [AE-2] */
 
 .flag-emoji {
     font-size: 16px;
@@ -442,12 +422,8 @@ label i { color: #6c757d; margin-right: 4px; }
     .language-tabs .nav-item {
         flex: 1;
     }
-    .language-tabs .nav-link {
-        text-align: center;
-        justify-content: center;
-        padding: 10px 8px;
-        font-size: 13px;
-    }
+    /* A phone block for these tabs used to be here. base is full-width
+       at every width, so there is nothing left for it to say. [AE-2] */
 
     /* Translation buttons stack */
     .translation-buttons {

@@ -738,13 +738,9 @@ document.addEventListener('DOMContentLoaded', function() {
     max-height: none !important;
     background: white;
 }
-#notificationHelpModal .nav-tabs .nav-link {
-    color: #495057;
-}
-#notificationHelpModal .nav-tabs .nav-link.active {
-    color: #0e7c8b;
-    font-weight: 600;
-}
+/* Two rules repainting the HELP modal's tabs used to be here - a page
+   colouring a component that belongs to another template, which is how
+   five tab bars ended up with five looks. base says it once. [AE-2] */
 </style>
 
 {% render_help_modal "notification" %}

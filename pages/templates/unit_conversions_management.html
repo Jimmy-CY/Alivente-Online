@@ -379,8 +379,8 @@
 
             <select id="fromUnitFilter" class="filter-select" onchange="applyFilters()">
                 <option value="">All From-Units</option>
-                {% for unit in all_units %}
-                <option value="{{ unit.name|lower }}">{{ unit.name }}</option>
+                {% for name in all_unit_names %}
+                <option value="{{ name|lower }}">{{ name }}</option>
                 {% endfor %}
             </select>
 

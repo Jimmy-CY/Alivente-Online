@@ -275,7 +275,8 @@ $sentinels = @(
     @{ File = 'pages\views\invoices.py';                  Text = '"rows": _open_invoice_rows(iresults, filtered_props, filtered_tenants)'; What = 'and still from the FILTERED lists, so filtering still filters' },
     @{ File = 'pages\templates\invoices.html';            Text = 'class="table alv-table invoices-table"'; What = 'Open Invoices is on the table standard' },
     @{ File = 'pages\templates\invoices.html';            Text = '{% if not rows %}'; What = 'an empty result says so instead of looking like a failed load' },
-    @{ File = 'pages\templates\invoices.html';            Text = '{% for prop in all_props %}'; What = 'the filter dropdown lists every property, not just the chosen one' },
+    @{ File = 'pages\templates\invoices.html';            Text = '{% for name in all_prop_names %}'; What = 'the property dropdown lists every property, each once, not just the chosen one' },
+    @{ File = 'pages\templates\invoices.html';            Text = '{% for name in all_tenant_names %}'; What = 'and the tenant dropdown lists each NAME once - a tenant row is per lease' },
     @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar.cols-1'; What = 'a single mobile action gets the whole card width' },
     # Icon buttons. The SECOND of these is a fault this session shipped: the
     # no-permission Paid tick wore `is-disabled`, which base defines only for
@@ -1122,6 +1123,31 @@ $suites = @(
     # browser and types into the live box to watch TOTAL ISSUED
     # follow it. Newest, so most likely to be what breaks.
     'test_filters_in_rc.py'
+    # EVERY ANTHROPIC CALL SITE IN THE TREE, AGAINST ONE LIST.
+    # Four files each hard-coded their own model id and one of
+    # them sat on a model retired on 15 June 2026, so the AI
+    # Import tool answered 'try a different file' for three and
+    # a half months. No suite could see it: a model id is text.
+    # This one reads the source and says so.
+    'test_ai_models.py'
+    # Five filters on one line, and the drill-down. Its section
+    # 3 opens Chromium at six widths and reads back where every
+    # control landed, because the defect AE-1 fixes - a date
+    # input 15px narrower than a date - is invisible to a grep
+    # and was invisible on screen for as long as it existed.
+    'test_ae_line.py'
+    # One option per choice. Its section 3 renders all five
+    # dropdowns through the real views against a database it
+    # builds itself, seeded with the duplicates from Demetri's
+    # screenshot, and counts the options. A dropdown that lists
+    # one thing twice cannot be seen by reading a template.
+    'test_filter_distinct.py'
+    # The tab standard. base had NO tab rule at all, and the one
+    # that renders 205 of the app's 213 tabs wrote its colour
+    # inline on {% if forloop.first %} - so every help modal
+    # highlighted whichever tab rendered first, not the one you
+    # opened. Its section 4 clicks a tab and reads the colour back.
+    'test_tabs.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

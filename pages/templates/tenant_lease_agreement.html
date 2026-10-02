@@ -89,8 +89,8 @@
           </label>
           <select name="propname" class="form-control filter-select" id="propertySelect">
             <option value="">All Properties</option>
-            {% for p in props %}
-              <option value="{{ p.prop_name }}" {% if selected_property == p.prop_name %}selected{% endif %}>{{ p.prop_name }}</option>
+            {% for name in all_prop_names %}
+              <option value="{{ name }}" {% if selected_property == name %}selected{% endif %}>{{ name }}</option>
             {% endfor %}
           </select>
         </div>

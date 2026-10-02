@@ -254,9 +254,22 @@ check('  built from the FILTERED lists, so filtering still filters',
       '_open_invoice_rows(iresults, filtered_props, filtered_tenants)' in VT)
 check('  and the dropdowns get the unfiltered ones',
       '"all_props": all_props' in VT and '"all_tenants": all_tenants' in VT)
-check('the template asks for all_props / all_tenants',
-      '{% for prop in all_props %}' in PT
-      and '{% for tenant_item in all_tenants %}' in PT)
+# AND SINCE F3 IT ASKS FOR THE DISTINCT NAME LISTS - 1 Oct 2026.
+#
+# Demetri, with a screenshot: the tenant dropdown listed Anastasia
+# Spiropoulou three times. A tenant row is per LEASE, and this filter
+# sends the NAME, so three rows were three options doing the same thing.
+#
+# all_props and all_tenants are still in the context and still checked
+# above, because other parts of it are built from them. What moved is
+# what the OPTION LOOPS read.               [test_filter_distinct.py]
+check('the template asks for the distinct name lists',
+      '{% for name in all_prop_names %}' in PT
+      and '{% for name in all_tenant_names %}' in PT)
+check('  and no longer loops the row querysets, which repeat a name '
+      'once per lease',
+      '{% for prop in all_props %}' not in PT
+      and '{% for tenant_item in all_tenants %}' not in PT)
 check('  and no longer for the filtered lists - the bug that trapped you '
       'on one property',
       '{% for prop in props %}' not in PT

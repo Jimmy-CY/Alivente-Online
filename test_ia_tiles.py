@@ -437,8 +437,22 @@ if sync_playwright is not None and os.path.exists(BBAK):
 # ===========================================================================
 head('5. scope, and the lesson from C1')
 # ===========================================================================
-check('.ia-tab is untouched - the segmented control is its own round',
-      '.ia-tab{border:none;background:transparent' in FC)
+# MOVED by AE-2, 2 Oct 2026 - the SCOPE GUARD, and the fifth in this
+# file written NAMING the round that would invalidate it. This read
+# ".ia-tab is untouched - the segmented control is its own round": C2
+# saying it stayed in its lane. That round has landed. base has a tab
+# component now, and it is these very rules - the only tab styling in the
+# tree that was already on tokens.
+_TB = os.path.join(T, 'fsr.html.bak_tabs')
+if os.path.exists(_TB):
+    check('.ia-tab WAS untouched by C2 - measured on fsr.html.bak_tabs',
+          '.ia-tab{border:none;background:transparent' in read(_TB))
+    check('  and AE-2 has since moved it onto base',
+          '.ia-tab{border:none;background:transparent' not in FC
+          and 'alv-tab' in FC)
+else:
+    check('.ia-tab is untouched - the segmented control is its own round',
+          '.ia-tab{border:none;background:transparent' in FC)
 # MOVED 5 Sep - the SCOPE GUARD, ninth time in this project, and the fourth
 # guard written NAMING the round that would invalidate it. This read
 # `'table.ia-tbl{' in FC and '.ia-drill{' in FC`: C2 asserting it stayed in

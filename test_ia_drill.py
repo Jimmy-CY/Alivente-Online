@@ -380,8 +380,19 @@ check('C1 survives: the charts still read base tokens',
       'iaTok(' in FC and 'AGE_BANDS' in FC)
 check('C2 survives: the stat strip still bands its tiles',
       'alv-stat-age' in FC and 'ageBand(' in FC)
-check('the segmented tabs are still NOT segments - that was decided 2 Sep',
-      '.ia-tab{' in css_of(FC) and 'alv-seg' not in FC)
+# MOVED by AE-2, 2 Oct 2026. This read "the segmented tabs are still
+# NOT segments - that was decided 2 Sep", and tested it by finding
+# .ia-tab{ in this page's own CSS. The decision has not changed; where
+# the rule lives has. base carries BOTH components now, and its note on
+# each says why they are not interchangeable: a segment is a page-level
+# choice, filled; a tab is a panel-level one, underlined.
+check('the tabs are still NOT segments - decided 2 Sep, and base now says '
+      'it in the component note',
+      'alv-seg' not in FC and 'alv-tab' in FC)
+_TB = os.path.join(T, 'fsr.html.bak_tabs')
+if os.path.exists(_TB):
+    check('  CONTROL: the rule WAS on this page - measured on '
+          'fsr.html.bak_tabs', '.ia-tab{' in css_of(read(_TB)))
 
 # Structure.
 for blk in re.findall(r'<style[^>]*>(.*?)</style>', F, re.S):

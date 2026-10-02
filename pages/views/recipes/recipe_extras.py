@@ -61,6 +61,7 @@ the normalization standard. 100% ASCII.
 """
 
 import json
+import logging
 import uuid
 
 from django.contrib import messages
@@ -90,11 +91,14 @@ from ._helpers import (
     get_or_create_unit,
 )
 from .ai_extract import (
+    RecipeExtractionError,
     extract_recipe_with_ai,
     extract_text_from_docx,
     extract_text_from_image,
     extract_text_from_pdf,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -274,12 +278,21 @@ def import_recipe(request):
                 messages.error(request, 'Unsupported file format.')
                 return redirect('import_recipe')
 
-            # Use Claude AI to extract
+            # Use Claude AI to extract. It RAISES with a reason now
+            # rather than returning None - see the note on
+            # RecipeExtractionError. The old code turned every failure
+            # into one sentence telling the person to try a different
+            # file, which is why a model retired on 15 June 2026 read as
+            # a bad Word document for three and a half months.
+            #
+            # THAT SENTENCE IS DESCRIBED, NOT QUOTED, and deliberately:
+            # test_ai_models.py asserts it appears nowhere in this file,
+            # and a comment quoting it would fail that check while
+            # looking like prose. Three notes in this round tripped over
+            # the same thing - a record of a string is not the place to
+            # write the string. apply_import_model.py carries the exact
+            # wording.
             extracted_data = extract_recipe_with_ai(text_content, file_ext)
-
-            if not extracted_data:
-                messages.error(request, 'Could not extract recipe data. Please try a different file.')
-                return redirect('import_recipe')
 
             # Store in session
             temp_id = str(uuid.uuid4())
@@ -291,7 +304,19 @@ def import_recipe(request):
             messages.success(request, 'Recipe extracted successfully! Please review and edit as needed.')
             return redirect('preview_imported_recipe', temp_id=temp_id)
 
+        except RecipeExtractionError as e:
+            # A reason written to be read by the person who uploaded the
+            # file. It is already logged where it was raised.
+            messages.error(request, str(e))
+            return redirect('import_recipe')
+
         except Exception as e:
+            # Anything else really is about the file - a PDF that will
+            # not open, an image in a format PIL cannot decode - so this
+            # one keeps its wording. It is logged with a traceback now,
+            # which it never was.
+            logger.exception('recipe import: %s could not be read',
+                             getattr(uploaded_file, 'name', '?'))
             messages.error(request, f'Error processing file: {str(e)}')
             return redirect('import_recipe')
 

@@ -224,7 +224,14 @@ CONVERTED = [
 # Passed the experiment, but walk the REPO, not the template directory.
 # They already see every file there is; pointing them at the template tree
 # would NARROW them.
-ALREADY_WIDE = ['test_banner_pages.py', 'test_standards_block.py']
+ALREADY_WIDE = ['test_banner_pages.py',
+                'test_standards_block.py',
+                # Walks the repo for .py, not the template
+                # roots: it censuses every Anthropic call
+                # site, and one of those can be written in
+                # any file. Pointing it at the template
+                # tree would blind it. [R1]
+                'test_ai_models.py']
 
 # FAILED with CRS in the tree, against the round that will fix the module
 # and let the suite be widened. Their narrow root is a stated position,

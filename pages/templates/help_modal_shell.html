@@ -41,15 +41,19 @@
 
       <!-- Tabs -->
       <div class="modal-body" style="padding:0;">
-        <ul class="nav nav-tabs" id="{{ module.slug }}HelpTabs" role="tablist" style="border-bottom:2px solid #0e7c8b; padding:0 20px; background:#f8f9fa;">
+        {# The strip keeps its padding and its surface - layout, which is #}
+        {# this shell's own. The 2px #}
+        {# accent border it used to draw is base's 1px line now, and the #}
+        {# per-tab colour below is gone entirely. See the note on the #}
+        {# component in base.html. [AE-2] #}
+        <ul class="nav nav-tabs" id="{{ module.slug }}HelpTabs" role="tablist" style="padding:0 20px; background:var(--alv-surface);">
           {% for tab in module.tabs %}
             <li class="nav-item">
               <a class="nav-link {% if forloop.first %}active{% endif %}"
                  id="{{ module.slug }}__{{ tab.slug }}-tab"
                  data-toggle="tab"
                  href="#{{ module.slug }}__{{ tab.slug }}"
-                 role="tab"
-                 style="color:{% if forloop.first %}#0e7c8b{% else %}#495057{% endif %}; font-weight:600;">
+                 role="tab">
                 <i class="fas {{ tab.icon }}"></i> {{ tab.name }}
               </a>
             </li>

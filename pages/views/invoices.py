@@ -116,10 +116,43 @@ def invoices_page(request):
     prop_output = request.GET.get('propname', '')
     tenant_output = request.GET.get('tenantname', '')
 
-    # Always get all props for the dropdown
-    all_props = props.objects.all().order_by('prop_country', 'prop_name')
+    # THE DROPDOWNS ARE LISTS OF NAMES, AND EACH NAME ONCE - F3,
+    # 1 Oct 2026. Demetri, with a screenshot: "Where there are duplicate
+    # tenants or fields in any of the filter fields, then it must only
+    # show one of each duplicate."
+    #
+    # A tenant record is per LEASE, so one person renting two flats is
+    # two rows and the table is right to hold them that way. But this
+    # filter sends the NAME - the option value is tenant_name and the
+    # filter below is .filter(tenant_name=...) - so three rows called
+    # Anastasia Spiropoulou are three options that do exactly the same
+    # thing. One choice, printed three times.
+    #
+    # values_list OF THE FIELD THE FILTER ACTUALLY SENDS, so "distinct"
+    # means distinct in the only sense that matters here. The shape is
+    # the one properties.py, issues.py and suppliers.py have used for
+    # their Country lists all along.
+    #
+    # NULL AND BLANK ARE EXCLUDED: an empty option sitting under "All
+    # Tenants" is a second way of saying all, and choosing it filters to
+    # the rows with no name at all.
+    all_prop_names = (props.objects
+                      .exclude(prop_name__isnull=True)
+                      .exclude(prop_name__exact='')
+                      .order_by('prop_name')
+                      .values_list('prop_name', flat=True)
+                      .distinct())
+    all_tenant_names = (tenant.objects
+                        .exclude(tenant_name__isnull=True)
+                        .exclude(tenant_name__exact='')
+                        .order_by('tenant_name')
+                        .values_list('tenant_name', flat=True)
+                        .distinct())
 
-    # Always get all tenants for the dropdown
+    # Still the ROW sources for the table below - a different question
+    # from "what may be chosen", which is what used to be answered with
+    # one queryset for both.
+    all_props = props.objects.all().order_by('prop_country', 'prop_name')
     all_tenants = tenant.objects.all().order_by('tenant_name')
 
     # Get unpaid invoices
@@ -146,8 +179,14 @@ def invoices_page(request):
         # from the filtered lists, so choosing property X left the property
         # dropdown holding only X - you could not move to Y without clearing
         # first. Both of these were already in this context and unused.
+        #
+        # AND SINCE F3 THEY ARE LISTS OF DISTINCT NAMES, not of rows. The
+        # two below are left in place because other parts of this context
+        # are built from them; the template reads the _names pair.
         "all_props": all_props,
         "all_tenants": all_tenants,
+        "all_prop_names": all_prop_names,
+        "all_tenant_names": all_tenant_names,
         "selected_property": prop_output if prop_output != "All" else "",
         "selected_tenant": tenant_output if tenant_output != "All" else "",
     }

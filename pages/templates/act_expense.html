@@ -44,16 +44,46 @@
     font-size: 16px;
 }
 
+/* FIVE FILTERS, ONE GRID - AE-1, 1 Oct 2026. Demetri: "Fit Search,
+   Property, Status, From and To on one line."
+
+   THEY WERE ON TWO LINES BECAUSE THEY WERE IN TWO GRIDS. This rule held
+   the first three; a second rule, .date-filter-grid, held From and To at
+   150px each and is deleted. Its two groups are children of this one
+   now, so there are five.
+
+   AND 150px WAS NEVER ENOUGH. A date input needs 165 - measured, not
+   guessed: a date input carrying 31/12/2026 at width:auto reports 165px
+   in Chromium, which is the text plus the picker icon plus this
+   component's own 14px padding and 2px border. So From and To have been
+   clipping their own value at every desktop width for as long as that
+   rule existed, and at 162px on a phone. A truncated date still looks
+   like a date, which is why nobody reported it. 170px leaves 5px.
+
+   THREE BANDS, because five columns do not fit in every panel. Bootstrap
+   caps the container, so the panel is 1110px wide on any screen from
+   1200px up, 930 from 992, and 690 from 769. At 690 the flexible tracks
+   would fall to 58px and "All Properties" would be unreadable - so that
+   band keeps the shape it has today rather than pretending. Measured at
+   each: every control clears 165 at every width.
+                                                     [test_ae_line.py] */
 .filter-grid {
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 170px 170px;
     margin-bottom: 20px;
 }
 
-.date-filter-grid {
-    display: grid;
-    grid-template-columns: 150px 150px;
-    gap: 20px;
-    align-items: end;
+/* THE BAND WHERE FIVE DO NOT FIT. Three up, two under - which is what
+   the page looked like before AE-1, reached with one grid instead of
+   two.
+
+   THIS BLOCK MUST STAY ABOVE THE 768px BLOCK BELOW. A 390px phone
+   matches both, and the later rule wins; if these two ever swap places
+   the phone silently gets three columns at 100px each. There is a gate
+   on the order in apply_ae_line.py and a check in the suite. */
+@media screen and (max-width: 1199px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
 }
 
 
@@ -80,14 +110,15 @@
     .filter-title {
         font-size: 0.95rem;
     }
+    /* ONE COLUMN, INCLUDING THE DATES - AE-1. There used to be a
+       .date-filter-grid here putting From and To 2-up, which gave each
+       of them 162px against the 165 a date input needs. Stacked they
+       get 334, and this page stops being the only filter panel in the
+       house that does not simply stack on a phone. */
     .filter-grid {
         grid-template-columns: 1fr;
         gap: 12px;
         margin-bottom: 12px;
-    }
-    .date-filter-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
     }
         .expense-table td.cell-amount {
         font-size: 1.05rem;
@@ -142,21 +173,11 @@
     #manageModal .form-row .form-group {
         margin-bottom: 12px;
     }
-    /* Tab nav — make it scrollable horizontally if needed and tighter */
-    #manageModal .nav-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-    }
-    #manageModal .nav-tabs .nav-item {
-        flex-shrink: 0;
-    }
-    #manageModal .nav-tabs .nav-link {
-        font-size: 13px;
-        padding: 10px 12px;
-        white-space: nowrap;
-    }
+    /* The Manage tabs said nothing about colour, so Bootstrap's raw
+       #007bff showed through on the two that are not current - which is
+       the defect Demetri reported. Everything these three rules did say
+       is base's now, to the pixel: nowrap, the same overflow, 13px and
+       10px 12px. [AE-2] */
     /* Document action buttons — stack neatly */
     #invoiceContent .doc-action-row {
         display: flex;
@@ -452,9 +473,7 @@
                         <option value="approved_and_paid" {% if selected_status == 'approved_and_paid' %}selected{% endif %}>Approved and Paid</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="date-filter-grid">
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-calendar-alt"></i> <strong>From Date</strong>
@@ -694,6 +713,20 @@
 .report-chart-wrap { position: relative; width: 100%; margin-bottom: 18px; }
 .report-grand-total { text-align: right; font-weight: 700; color: #2c3e50; margin-bottom: 12px; font-size: 1.05rem; }
 .report-drill-title { font-weight: 600; color: #2c3e50; margin-bottom: 12px; }
+/* TITLE LEFT, BACK RIGHT - AE-3. The Back used to sit on its own line
+   above the title, at the left, and said "Back to overview". It is on
+   the title's line now, at the right, which is where every Back in the
+   house sits, and it says Back. flex-shrink: 0 on the button so a long
+   property name takes the squeeze instead of the word. */
+.report-drill-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.report-drill-head .report-drill-title { margin-bottom: 0; min-width: 0; }
+.report-drill-head .btn { flex-shrink: 0; }
 .report-drill-total { text-align: right; font-weight: 700; color: #2c3e50; margin-top: 8px; }
 @media screen and (max-width: 768px) {
     /* Full-screen modal */
@@ -771,10 +804,12 @@
         </div>
 
         <div id="reportDrill" style="display:none;">
-          <button type="button" class="btn action-back btn-sm mb-3" id="reportDrillBack">
-            <i class="fas fa-arrow-left"></i> Back to overview
-          </button>
-          <h6 id="reportDrillTitle" class="report-drill-title"></h6>
+          <div class="report-drill-head">
+            <h6 id="reportDrillTitle" class="report-drill-title"></h6>
+            <button type="button" class="btn action-back btn-sm" id="reportDrillBack">
+              <i class="fas fa-arrow-left"></i> Back
+            </button>
+          </div>
           <!-- Approved and Paid used to be columns here. They could only ever
                read "Yes": the endpoint behind this table filters on exactly
                those two fields, so both were constant by construction and the
@@ -1565,9 +1600,34 @@ $('#manageModal').on('hidden.bs.modal', function () {
         return picked.length ? picked.join(',') : 'all';
     }
 
+    // THE YEARS BAR IS A TRAP WHILE DRILLED DOWN, not just redundant.
+    // Every checkbox in it calls loadData(), and loadData() ends by
+    // calling showOverview() - so touching a year while reading one
+    // property's expenses threw you back out to the overview, with
+    // nothing on screen saying why. It is hidden while the drill is
+    // open and restored with the overview. [AE-3]
+    //
+    // style.display = '' rather than 'flex': the stylesheet already says
+    // flex, and a value written here would have to be kept in step with
+    // it by hand.
+    function yearBar(show) {
+        var bar = document.querySelector('.report-year-bar');
+        if (bar) { bar.style.display = show ? '' : 'none'; }
+    }
+
+    // WHAT THE HIDDEN BAR WAS SAYING, SAID IN THE HEADING INSTEAD. The
+    // drill endpoint is passed the same year selection as the overview,
+    // so with the bar gone there would be nothing on screen to say which
+    // years these figures cover. [AE-3]
+    function yearScope() {
+        var p = selectedYearsParam();
+        return p === 'all' ? 'all years' : p.split(',').join(', ');
+    }
+
     function showOverview() {
         document.getElementById('reportDrill').style.display = 'none';
         document.getElementById('reportOverview').style.display = 'block';
+        yearBar(true);
     }
 
     function buildYearCheckboxes(years) {
@@ -1714,7 +1774,12 @@ $('#manageModal').on('hidden.bs.modal', function () {
     }
 
     function openDrill(propId, propName) {
-        document.getElementById('reportDrillTitle').textContent = propName;
+        // textContent, not innerHTML - a property called Smith & Co is a
+        // name, not markup. It was already textContent; the year scope
+        // joins it on the same side of that line. [AE-3]
+        document.getElementById('reportDrillTitle').textContent =
+            propName + ' \u00b7 ' + yearScope();
+        yearBar(false);
                 document.getElementById('reportDrillBody').innerHTML = '<tr><td colspan="4" class="report-note-cell"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
         document.getElementById('reportDrillTotal').textContent = '';
         document.getElementById('reportOverview').style.display = 'none';

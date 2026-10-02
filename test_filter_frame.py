@@ -189,6 +189,26 @@ for _n in _ast.walk(_ast.parse(patcher)):
                      _ast.literal_eval(_n.value).items())
         break
 
+# A LATER ROUND MAY MOVE A COLUMN TEMPLATE, AND ONE HAS.
+#
+# Section AE round AE-1, 1 Oct 2026, put Actual Expenses' five filters on
+# one line, so its .filter-grid no longer says what apply_filter_frame.py
+# recorded when H1 lifted the frame into base.
+#
+# THE PATCHER IS NOT EDITED TO MATCH. A patcher is the record of what it
+# did on the day it ran; rewriting its tables to keep a later suite happy
+# turns the record into a diary of the present. The live claim belongs
+# here, which is also the file that asserts it. Amending it by name keeps
+# the check EXACT - the alternative, loosening section 2 to compare key
+# sets instead of values, would have stopped noticing a column template
+# changing by accident, which is the thing it is for.
+#                                                    [test_ae_line.py]
+AMENDED = {
+    ('act_expense.html', '.filter-grid', 'grid-template-columns'):
+        ('2fr 1fr 1fr',
+         'minmax(0, 1.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 170px 170px'),
+}
+
 base = read(alv_tree.path_of('base.html'))
 BOOT = ''
 _b = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
@@ -255,8 +275,15 @@ for rel in sorted(PANELS):
         e = effective(t, sel)
         if e:
             leftovers[sel] = e
-    want = dict((s, PANELS[rel][s]['keep']) for s in FRAME
+    want = dict((s, dict(PANELS[rel][s]['keep'])) for s in FRAME
                 if PANELS[rel].get(s, {}).get('keep'))
+    for (a_rel, a_sel, a_key), (a_was, a_now) in AMENDED.items():
+        if a_rel == rel and a_sel in want:
+            if want[a_sel].get(a_key) != a_was:
+                ok(False, '%s: AMENDED says %s used to be %r and the '
+                   'patcher does not agree' % (rel, a_key, a_was),
+                   want[a_sel].get(a_key))
+            want[a_sel][a_key] = a_now
     ok(leftovers == want,
        '%-34s %s' % (rel, ('keeps ' + '; '.join(
            '%s %s' % (s.replace('.filter-', ''),
@@ -369,6 +396,13 @@ if HAVE_PW and BOOT:
                 if (k in ('header.mb', 'header.pb') and v[0] == '0px'
                         and rel in ('invoices.html', 'projects/projects.html')):
                     continue   # the two with no separator gain the house one
+                if (k == 'grid.cols' and rel == 'act_expense.html'
+                        and len(v[1].split()) == 5):
+                    # AE-1 PUT FIVE FILTERS ON ONE LINE, 1 Oct 2026. The
+                    # one thing this round is allowed to have moved since
+                    # H1, and it is still a claim: FIVE tracks, measured
+                    # in the browser, not merely "something changed".
+                    continue
                 moved.append('%s %s %s' % (rel, k, v))
         ok(not moved,
            'and the ONLY things that moved are the ones this round names: '

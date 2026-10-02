@@ -457,9 +457,28 @@ def unit_conversions_management(request):
     # Scan for missing conversions across all recipes
     missing_conversions = scan_for_missing_conversions()
 
+    # THE FROM-UNIT FILTER NEEDS NAMES, NOT ROWS - F3, 1 Oct 2026.
+    #
+    # all_units stays exactly as it is: the two Add-Conversion dropdowns
+    # on this page send measurement_unit_id, so each row there really is
+    # its own choice. The FILTER at the top of the page is the odd one -
+    # it sends the name, lowercased, so two units whose names differ only
+    # in case are one choice listed twice.
+    #
+    # WHICH IS WHY THIS DEDUPES ON lower(), NOT WITH .distinct(). The
+    # database would call Cup and cup two distinct names; the option
+    # value makes them one. Dedupe in the sense the filter uses. The same
+    # shape physical_invoices.py already uses for its own unit census.
+    _seen, all_unit_names = set(), []
+    for _n in all_units.values_list('name', flat=True):
+        if _n and _n.lower() not in _seen:
+            _seen.add(_n.lower())
+            all_unit_names.append(_n)
+
     context = {
         'conversions': conversions,
         'all_units': all_units,
+        'all_unit_names': all_unit_names,
         'all_ingredients': all_ingredients,
         'missing_conversions': json.dumps(missing_conversions) if missing_conversions else '[]',
         'missing_count': len(missing_conversions),

@@ -123,7 +123,10 @@ LEFT_ALONE = {
     '.btn.back-button x8': 'base declares it as a TWIN of .action-back',
     '.rotate-prompt-back x4': 'inside the landscape rotate prompt',
     '.btn-help-back': 'the help shell',
-    'act_expense "Back to overview"': 'a drill-down return within the page',
+    'act_expense drill Back': 'a drill-down return within the page - it '
+                              'said "Back to overview" when this round '
+                              'ran and says "Back" since AE-3, 1 Oct '
+                              '2026; still not a page Back',
     'connectivity_error "Go Back"': 'an error page with no bar anywhere',
 }
 

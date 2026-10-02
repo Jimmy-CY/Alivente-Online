@@ -129,8 +129,10 @@ LEFT = {
     ('projects/project_task_list.html', 0):
         'its label is {% if greek %} - a language toggle, not a stray label',
     ('act_expense.html', 3):
-        'a DRILL-DOWN return inside a report - it names where it goes '
-        'because it goes somewhere on the same page',
+        'a DRILL-DOWN return inside a report, not a page Back. B2 left it '
+        'saying "Back to overview"; AE-3 shortened it to "Back" on 1 Oct '
+        '2026 and moved it onto the drill heading, at the right. It is '
+        'still left alone BY THIS ROUND - the reason was never the label',
     ('error_pages/connectivity_error.html', 0):
         'an error page with no action bar and no arrow',
 }
@@ -389,9 +391,21 @@ for p in templates():
             long_left.append((rel, lbl))
 # Three, not four: project_task_list's label is a conditional, so it reads
 # as no single word at all and never appears in this list.
-ok(len(long_left) == 3,
-   'three Back controls still say something else - Cancel, Back to '
-   'overview, Go Back - and section 5 names each',
+#
+# AND TWO, NOT THREE, SINCE AE-3 (1 Oct 2026). The third was Actual
+# Expenses' "Back to overview", which that round shortened to "Back" and
+# moved onto the drill heading. B2 had left it alone because it is a
+# drill-down return rather than a page Back, and it still is - what
+# changed is that it now says the house word while being one.
+#
+# THE REMAINING TWO ARE NAMED, not counted. A bare number is what let the
+# first version of this ledger go on listing three things after one of
+# them had been fixed.
+ok(sorted(long_left) == [('create_meal_plan.html', 'Cancel'),
+                         ('error_pages/connectivity_error.html', 'Go Back')],
+   'two Back controls still say something else - Cancel on a form, where '
+   'Cancel may be right, and Go Back on an error page with no bar - and '
+   'section 5 names each',
    long_left)
 
 # ==========================================================================

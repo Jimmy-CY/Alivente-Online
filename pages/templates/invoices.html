@@ -87,9 +87,9 @@ Invoices
             </label>
             <select name="propname" class="form-control filter-select" id="propertySelect">
               <option value="">All Properties</option>
-              {% for prop in all_props %}
-                <option value="{{ prop.prop_name }}" {% if selected_property == prop.prop_name %}selected{% endif %}>
-                  {{ prop.prop_name }}
+              {% for name in all_prop_names %}
+                <option value="{{ name }}" {% if selected_property == name %}selected{% endif %}>
+                  {{ name }}
                 </option>
               {% endfor %}
             </select>
@@ -102,9 +102,9 @@ Invoices
             </label>
             <select name="tenantname" class="form-control filter-select" id="tenantSelect">
               <option value="">All Tenants</option>
-              {% for tenant_item in all_tenants %}
-                <option value="{{ tenant_item.tenant_name }}" {% if selected_tenant == tenant_item.tenant_name %}selected{% endif %}>
-                  {{ tenant_item.tenant_name }}
+              {% for name in all_tenant_names %}
+                <option value="{{ name }}" {% if selected_tenant == name %}selected{% endif %}>
+                  {{ name }}
                 </option>
               {% endfor %}
             </select>

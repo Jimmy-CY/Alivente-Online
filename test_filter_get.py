@@ -444,6 +444,20 @@ if django_up:
             re.compile(r'^<form .*method="(post|get)".*id="filterForm">$'),
             re.compile(r'^<input type="hidden" name="csrfmiddlewaretoken"'),
         )
+        # AND, ON TWO PAGES, THE OPTION ORDER - F3, 1 Oct 2026.
+        #
+        # F3 made every filter dropdown list each choice once. A
+        # distinct values_list can only be ordered by a field that is IN
+        # the list: order by prop_country as well and Django puts that
+        # column in the SELECT, two rows with one name become distinct
+        # again, and the duplicate is back. So these two are ordered by
+        # name now, not by country then name.
+        #
+        # THE ORDER MAY MOVE; THE SET MAY NOT. Checked below, per page,
+        # so an option appearing or disappearing still fails.
+        #                                  [test_filter_distinct.py]
+        _F3_PAGES = ('fsr.html', 'invoices.html')
+        _OPTION = re.compile(r'^(<option\b|</option>$|[A-Za-z0-9])')
         _got = {}
         for _w in ('before', 'after'):
             _use(_w)
@@ -454,15 +468,31 @@ if django_up:
         for _p, _url, _m, _f, _nn in FIVE:
             _b, _a = _got[(_p, 'before')], _got[(_p, 'after')]
             _extra = []
+            _f3 = _p in _F3_PAGES
             for _op in difflib.SequenceMatcher(None, _b, _a).get_opcodes():
                 if _op[0] == 'equal':
                     continue
                 for _ln in _b[_op[1]:_op[2]] + _a[_op[3]:_op[4]]:
-                    if not any(_r.match(_ln) for _r in _EXPECTED):
-                        _extra.append(_ln[:70])
+                    if any(_r.match(_ln) for _r in _EXPECTED):
+                        continue
+                    if _f3 and _OPTION.match(_ln):
+                        continue          # order, checked as a set below
+                    _extra.append(_ln[:70])
             ok(not _extra,
-               '%-18s differs ONLY by the method and the token line'
-               % _p, _extra[:3])
+               '%-18s differs ONLY by the method and the token line%s'
+               % (_p, ' (and, since F3, the option ORDER)' if _f3 else ''),
+               _extra[:3])
+            if _f3:
+                # THE SAME CHOICES, IN A DIFFERENT ORDER. Sets, so a
+                # dropdown that quietly lost an option still fails.
+                _bo = sorted(x for x in _b if _OPTION.match(x))
+                _ao = sorted(x for x in _a if _OPTION.match(x))
+                ok(_bo == _ao,
+                   '%-18s   and offers exactly the same options, '
+                   'reordered by name' % '',
+                   'lost %s\ngained %s'
+                   % ([x for x in _bo if x not in _ao][:2],
+                      [x for x in _ao if x not in _bo][:2]))
             ok(len(_b) - len(_a) == 1,
                '%-18s   and is exactly one line shorter - the token'
                % '', '%d -> %d' % (len(_b), len(_a)))

@@ -111,6 +111,24 @@ def fsr(request):
         # the same queryset, so the two filters can never disagree.
         # props.objects, not `results`, which is already filtered. [D2]
         "countries": props.objects.values_list('prop_country', flat=True).distinct().order_by('prop_country'),
+        # AND THE PROPERTY LIST, THE SAME WAY - F3, 1 Oct 2026.
+        #
+        # D2 made the Country dropdown read from props.objects rather
+        # than from `results`, and gave the reason in the note above.
+        # The Property dropdown beside it was left reading `results`,
+        # which is filtered by BOTH the country and the property - so
+        # choosing a property left only that property in the list and
+        # there was no way back to another without clearing. The same
+        # defect D2 fixed, in the field next to it.
+        #
+        # distinct() because the filter sends prop_name, so two rows
+        # with one name are one choice, not two. [F3]
+        "all_prop_names": (props.objects
+                           .exclude(prop_name__isnull=True)
+                           .exclude(prop_name__exact='')
+                           .order_by('prop_name')
+                           .values_list('prop_name', flat=True)
+                           .distinct()),
         "issues": isresults,
         "issues_details": idresults,
         "search_query": search_query,

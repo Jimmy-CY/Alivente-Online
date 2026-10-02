@@ -3543,6 +3543,110 @@ textarea.form-control { height: auto; }
 
 
 
+/* ===== ALV TABS v1 ===== */
+/* Panel-level tabs: several views of one panel, one of them current, the
+   bar sitting directly above the thing it controls.
+
+   THE LOOK IS NOT CHOSEN HERE. ALV-SEG's note settled what a tab bar is
+   when the segmented control went in - "full width, with an underline
+   under the current one, sitting directly above the chart they control" -
+   and said base would get one when a second page asked. Five did, and
+   205 of the tabs in this app are rendered by one of them. These are the
+   Issues Analysis modal's own rules, the one copy that was already
+   entirely on tokens, lifted as they stand.
+
+   NOT ALV-SEG, AND THE DIFFERENCE IS IN THAT NOTE TOO. A segment is a
+   PAGE-level choice worn in an action bar, and the chosen one is FILLED.
+   A tab is a panel-level choice worn above the panel, and the current one
+   is UNDERLINED. Two controls, two jobs; neither is a substitute.
+
+   NEVER A BARE .nav-link. The TOP NAVIGATION BAR wears .nav-link ten
+   times in this very file - every menu item, the bell, the profile link,
+   Login. A rule on .nav-link alone would repaint the whole navigation.
+   Every selector below is scoped to .nav-tabs, and apply_tabs.py gates
+   it.
+
+   TWO SPELLINGS BECAUSE BOOTSTRAP'S PLUGIN OWNS THE BEHAVIOUR. Four of
+   the five bars are `data-toggle="tab"` on a .nav-link inside
+   ul.nav.nav-tabs; the plugin keys on that markup, so renaming it would
+   mean reimplementing it. .alv-tab is for a bar that is not Bootstrap's.
+
+   AND THE RULE MUST BEAT BOOTSTRAP AT EQUAL SPECIFICITY, which it does by
+   being LATER: bootstrap.min.css is linked above this block, not below.
+   .nav-tabs .nav-link.active is 0,3,0 in both sheets.
+
+   WHAT IT REPLACED, named so it is never re-derived: #007bff, which is
+   Bootstrap's own .nav-link and what act_expense's three tabs and all 205
+   help tabs fell back to; #495057 and #0e7c8b, written inline per tab by
+   the help shell and again as rules by notifications.html and the two
+   projects pages; and #dee2e6 / #e9ecef / #f8f9fa on the box-tab borders
+   and hovers. Not one of them survives in the CSS below - the whole
+   component is tokens.
+
+   flex: 1 1 0 WITH white-space: nowrap, at both ends. Three tabs share
+   the row equally, which is the reviewed look. Nine - the largest help
+   modal - cannot shrink below their own text, so the bar scrolls rather
+   than stacking into slivers.
+                                                        [test_tabs.py] */
+.alv-tabs,
+.nav-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    border-bottom: 1px solid var(--alv-line);
+    margin-bottom: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+.alv-tab,
+.nav-tabs .nav-link {
+    flex: 1 1 0;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--alv-ink-soft);
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.alv-tab.active,
+.alv-tab[aria-selected="true"],
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link[aria-selected="true"] {
+    color: var(--alv-accent-ink);
+    background: transparent;
+    border-color: transparent;
+    border-bottom-color: var(--alv-accent);
+}
+.alv-tab:focus-visible,
+.nav-tabs .nav-link:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -2px;
+}
+@media (hover: hover) and (pointer: fine) {
+    .alv-tab:not(.active):hover,
+    .nav-tabs .nav-link:not(.active):hover {
+        color: var(--alv-accent-ink);
+        border-bottom-color: var(--alv-accent-line);
+    }
+}
+@media screen and (max-width: 768px) {
+    .alv-tab,
+    .nav-tabs .nav-link {
+        flex: 0 0 auto;
+        font-size: 12.5px;
+        padding: 9px 10px;
+    }
+}
+/* ===== /ALV TABS v1 ===== */
+
 /* ===== ALV-SEG v1 ===== */
 /* A segmented control: two or three views of the same screen, one of them
    current. Deferred twice as "one use does not justify a component" -
