@@ -51,7 +51,7 @@
             <i class="fas fa-pencil-alt"></i>
           </button>
           <form method="post" class="d-inline mb-0"
-                onsubmit="return confirm('Delete the family &quot;{{ family.name }}&quot;? Its {{ family.members.all|length }} member ingredient(s) will become unassigned. This cannot be undone.');">
+                onsubmit="return confirm('Delete the family &quot;{{ family.name|escapejs }}&quot;? Its {{ family.members.all|length|escapejs }} member ingredient(s) will become unassigned. This cannot be undone.');">
             {% csrf_token %}
             <input type="hidden" name="action" value="delete_family">
             <input type="hidden" name="family_id" value="{{ family.family_id }}">

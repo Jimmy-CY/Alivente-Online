@@ -50,7 +50,7 @@
         <div style="display:flex; align-items:center; gap:8px;">
             <label for="fiYear" style="font-weight:600; margin:0;"><strong>Year</strong></label>
             <select id="fiYear" class="form-control" style="width:auto;"
-                    onchange="location.href='?year=' + this.value + '&basis={{ basis }}';">
+                    onchange="location.href='?year=' + this.value + '&basis={{ basis|escapejs }}';">
                 {% for y in available_years %}
                 <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}{% if y > current_year %} &mdash; outlook{% endif %}</option>
                 {% endfor %}

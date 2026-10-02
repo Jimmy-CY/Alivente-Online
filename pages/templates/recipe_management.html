@@ -1718,7 +1718,7 @@
                         </button>
                         <div class="filter-multiselect-menu" id="courseFilterDropdown">
                             {% for course in courses %}
-                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'course-filter-{{ course.recipe_course_id }}')">
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'course-filter-{{ course.recipe_course_id|escapejs }}')">
                                 <input type="checkbox"
                                        id="course-filter-{{ course.recipe_course_id }}"
                                        name="course"
@@ -1744,7 +1744,7 @@
                         </button>
                         <div class="filter-multiselect-menu" id="categoryFilterDropdown">
                             {% for cat in categories %}
-                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'category-filter-{{ cat.recipe_category_id }}')">
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'category-filter-{{ cat.recipe_category_id|escapejs }}')">
                                 <input type="checkbox"
                                        id="category-filter-{{ cat.recipe_category_id }}"
                                        name="category"
@@ -1770,7 +1770,7 @@
                         </button>
                         <div class="filter-multiselect-menu" id="proteinFilterDropdown">
                             {% for protein in proteins %}
-                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'protein-filter-{{ protein.custom_protein_id }}')">
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'protein-filter-{{ protein.custom_protein_id|escapejs }}')">
                                 <input type="checkbox"
                                        id="protein-filter-{{ protein.custom_protein_id }}"
                                        name="protein"
@@ -1805,7 +1805,7 @@
                         </button>
                         <div class="filter-multiselect-menu" id="authorFilterDropdown">
                             {% for author in authors %}
-                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'author-filter-{{ forloop.counter }}')">
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'author-filter-{{ forloop.counter|escapejs }}')">
                                 <input type="checkbox"
                                        id="author-filter-{{ forloop.counter }}"
                                        name="author"
@@ -1865,7 +1865,7 @@
                 {% if letter_info.available %}
                     <a href="?{% if search_query %}search={{ search_query }}&search_type={{ search_type }}&{% endif %}{% for course in selected_courses %}course={{ course }}&{% endfor %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}{% for prot in selected_proteins %}protein={{ prot }}&{% endfor %}{% for auth in selected_authors %}author={{ auth }}&{% endfor %}{% if nutrition_sort %}nutrition_sort={{ nutrition_sort }}&nutrition_order={{ nutrition_order }}&{% endif %}letter={{ letter_info.letter }}"
                        class="letter-filter-item available {% if selected_letter == letter_info.letter %}active{% endif %}"
-                       onclick="return handleLetterClick(event, '{{ letter_info.letter }}');">
+                       onclick="return handleLetterClick(event, '{{ letter_info.letter|escapejs }}');">
                         {{ letter_info.letter }}
                     </a>
                 {% else %}
@@ -1948,7 +1948,7 @@
                 <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
                     <i class="fas fa-copy"></i>
                 </button>
-                <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
+                <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Delete Recipe">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 {% else %}
@@ -2052,7 +2052,7 @@
                 <button type="button" class="recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
                     <i class="fas fa-copy"></i>
                 </button>
-                <button type="button" class="recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
+                <button type="button" class="recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Delete Recipe">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 {% else %}
@@ -2176,7 +2176,7 @@
             <button type="button" class="recipe-list-action-btn recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
                 <i class="fas fa-copy"></i>
             </button>
-            <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
+            <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Delete Recipe">
                 <i class="fas fa-trash-alt"></i>
             </button>
             {% else %}

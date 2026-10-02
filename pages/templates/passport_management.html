@@ -168,10 +168,10 @@
         <!-- Desktop actions cell -->
         <td class="desktop-action-cell cell-actions">
             {% if passport.document_file %}
-                <button type="button" class="icon-action-btn icon-view" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document"><i class="fas fa-eye"></i></button>
+                <button type="button" class="icon-action-btn icon-view" onclick="viewDocument('{{ passport.document_file.url|escapejs }}', '{{ passport.document_file.name|escapejs }}', '{{ passport.holder_name|escapejs }}')" title="View Document"><i class="fas fa-eye"></i></button>
                 {% if perms.auth.can_edit_personal %}
-                    <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
-                    <button type="button" class="icon-action-btn icon-delete" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')" title="Delete"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="icon-action-btn icon-delete" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}')" title="Delete"><i class="fas fa-trash"></i></button>
                 {% else %}
                     <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
                     <button type="button" class="icon-action-btn icon-disabled" disabled title="Delete"><i class="fas fa-trash"></i></button>
@@ -179,7 +179,7 @@
             {% else %}
                 {% if perms.auth.can_edit_personal %}
                     <button type="button" class="icon-action-btn icon-upload" onclick="uploadDocument({{ passport.id }})" title="Upload Document"><i class="fas fa-upload"></i></button>
-                    <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% else %}
                     <button type="button" class="icon-action-btn icon-disabled" disabled title="Upload Document"><i class="fas fa-upload"></i></button>
                     <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
@@ -190,7 +190,7 @@
         <!-- Mobile actions bar -->
         <td class="mobile-action-bar">
             {% if passport.document_file %}
-                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')">
+                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ passport.document_file.url|escapejs }}', '{{ passport.document_file.name|escapejs }}', '{{ passport.holder_name|escapejs }}')">
                     <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
                     <span class="mobile-action-label">View</span>
                 </button>
@@ -209,7 +209,7 @@
             {% endif %}
 
             {% if perms.auth.can_edit_personal %}
-                <button type="button" class="mobile-action-btn" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')">
+                <button type="button" class="mobile-action-btn" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')">
                     <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                     <span class="mobile-action-label">Edit</span>
                 </button>
@@ -221,7 +221,7 @@
             {% endif %}
 
             {% if passport.document_file and perms.auth.can_edit_personal %}
-                <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')">
+                <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}')">
                     <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                     <span class="mobile-action-label">Delete</span>
                 </button>

@@ -251,7 +251,7 @@ Project Details - {{ project.project_name }}
                   </a>
                   <button type="button" class="icon-action-btn icon-delete"
                           title="Delete Task"
-                          onclick="confirmDeleteTask('{{ task.task_id }}', '{{ task.task_name|escapejs }}', {{ task.subtasks.all|length }})">
+                          onclick="confirmDeleteTask('{{ task.task_id|escapejs }}', '{{ task.task_name|escapejs }}', {{ task.subtasks.all|length }})">
                     <i class="fas fa-trash"></i>
                   </button>
                 {% else %}
@@ -271,7 +271,7 @@ Project Details - {{ project.project_name }}
           <!-- Subtasks -->
           {% if task.subtasks.all %}
             <div class="subtasks-section">
-              <h6 class="subtasks-header" onclick="toggleSubtasks('task-{{ task.task_id }}')">
+              <h6 class="subtasks-header" onclick="toggleSubtasks('task-{{ task.task_id|escapejs }}')">
                 <i class="fas fa-indent"></i> Subtasks
                 <span class="subtask-progress">({{ task.get_completed_subtask_count }}/{{ task.get_subtask_count }} completed - {{ task.get_subtask_progress }}%)</span>
                 <i class="fas fa-chevron-down subtasks-toggle-icon" id="toggle-task-{{ task.task_id }}"></i>
@@ -290,7 +290,7 @@ Project Details - {{ project.project_name }}
                         {% if perms.auth.can_edit_projects %}
                           <span class="alv-pill {% if subtask.task_status == 'Completed' %}alv-pill-good{% elif subtask.task_status == 'In Progress' %}alv-pill-info{% elif subtask.task_status == 'On Hold' %}alv-pill-attn{% else %}alv-pill-neutral{% endif %} clickable-status"
                                 title="Click to change the status"
-                                onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
+                                onclick="editTaskStatus('{{ subtask.task_id|escapejs }}', '{{ subtask.task_status|escapejs }}')">
                             {{ subtask.task_status }}
                           </span>
                           <span class="row-actions ml-1">
@@ -300,7 +300,7 @@ Project Details - {{ project.project_name }}
                             </a>
                             <button type="button" class="icon-action-btn icon-delete"
                                     title="Delete Subtask"
-                                    onclick="confirmDeleteSubtask('{{ subtask.task_id }}', '{{ subtask.task_name|escapejs }}')">
+                                    onclick="confirmDeleteSubtask('{{ subtask.task_id|escapejs }}', '{{ subtask.task_name|escapejs }}')">
                               <i class="fas fa-trash"></i>
                             </button>
                           </span>

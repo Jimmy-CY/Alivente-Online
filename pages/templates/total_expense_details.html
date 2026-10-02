@@ -37,7 +37,7 @@
                             {% if expense.act_expense_invoice %}
                                 <i class="fas fa-file-alt" 
                                    style="color: #28a745; cursor: pointer;" 
-                                   onclick="viewInvoiceQuick('{{ expense.act_expense_invoice.url }}', '{{ expense.act_expense_invoice.name }}')"
+                                   onclick="viewInvoiceQuick('{{ expense.act_expense_invoice.url|escapejs }}', '{{ expense.act_expense_invoice.name|escapejs }}')"
                                    title="View Invoice"></i>
                             {% else %}
                                 <i class="fas fa-file-alt" style="color: #6c757d;" title="No Invoice"></i>

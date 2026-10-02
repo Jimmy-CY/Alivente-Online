@@ -172,7 +172,7 @@
         <td class="desktop-action-cell cell-actions">
             <span class="row-actions">
                 {% if tenant.tenant_lease_agreement %}
-                    <button type="button" class="icon-action-btn icon-view" title="View Lease Agreement" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
+                    <button type="button" class="icon-action-btn icon-view" title="View Lease Agreement" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url|escapejs }}', '{{ tenant.tenant_lease_agreement.name|escapejs }}', '{{ tenant.tenant_name|escapejs }}')">
                         <i class="fas fa-file-contract"></i>
                     </button>
                 {% else %}
@@ -183,7 +183,7 @@
 
                 {% if perms.auth.can_edit_tenants %}
                     {% if tenant.tenant_lease_agreement %}
-                        <button type="button" class="icon-action-btn icon-delete" title="Delete Lease Agreement" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
+                        <button type="button" class="icon-action-btn icon-delete" title="Delete Lease Agreement" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name|escapejs }}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     {% else %}
@@ -202,7 +202,7 @@
         <!-- Mobile-only action bar (hidden on desktop) -->
         <td class="mobile-action-bar cols-2">
             {% if tenant.tenant_lease_agreement %}
-                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
+                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url|escapejs }}', '{{ tenant.tenant_lease_agreement.name|escapejs }}', '{{ tenant.tenant_name|escapejs }}')">
                     <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
                     <span class="mobile-action-label">View</span>
                 </button>
@@ -215,7 +215,7 @@
 
             {% if perms.auth.can_edit_tenants %}
                 {% if tenant.tenant_lease_agreement %}
-                    <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
+                    <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name|escapejs }}')">
                         <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                         <span class="mobile-action-label">Delete</span>
                     </button>

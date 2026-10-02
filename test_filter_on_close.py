@@ -97,6 +97,10 @@ try:
     from alv_rounds import ROUNDS
 except Exception:
     ROUNDS = []
+try:
+    from alv_rounds import as_left_by
+except Exception:
+    as_left_by = None
 
 SUFFIX = '.bak_applyclose'
 ME = 'test_filter_on_close.py'
@@ -462,7 +466,19 @@ head('5. SCOPE')
 # ==========================================================================
 if was:
     import difflib
-    a, b = was.split('\n'), page.split('\n')
+    # AS THIS ROUND LEFT IT, NOT AS THE PAGE IS TODAY - J-1, 2 Oct 2026.
+    #
+    # This compared the round's backup against the LIVE file, so it was
+    # never measuring this round's scope: it measured every edit any
+    # LATER round has made to recipe_management.html. J-1 added
+    # |escapejs at eight sites in it and the guard reported eight
+    # strays - correctly spotted, wrongly attributed.
+    #
+    # as_left_by() walks forward to the next backup and returns the file
+    # as THIS round left it, so the claim stays about this round however
+    # many land afterwards.
+    _left = (as_left_by(PATH, SUFFIX, read) if as_left_by else page)
+    a, b = was.split('\n'), _left.split('\n')
     regions = {
         'toggleFilterDropdown': 'function toggleFilterDropdown',
         'the outside-click listener': "closest('.filter-multiselect-dropdown')",

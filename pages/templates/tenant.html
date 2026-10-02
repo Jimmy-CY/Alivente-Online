@@ -211,7 +211,7 @@ Tenants
                     {% if perms.auth.can_edit_tenants %}
                       <form method="post" action="{% url 'delete_tenant' tresults.tenant_id %}"
                             class="tenant-inline-form"
-                            onsubmit="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                            onsubmit="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name|escapejs }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
                         {% csrf_token %}
                         <button type="submit" class="icon-action-btn icon-delete" title="Delete Tenant">
                           <i class="fas fa-trash"></i>
@@ -229,7 +229,7 @@ Tenants
 
                     {% if tresults.tenant_lease_agreement %}
                       <a href="#"
-                         onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}'); return false;"
+                         onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url|escapejs }}', '{{ tresults.tenant_lease_agreement.name|escapejs }}', '{{ tresults.tenant_name|escapejs }}'); return false;"
                          class="icon-action-btn icon-view"
                          title="View Lease Agreement">
                         <i class="fas fa-file-contract"></i>
@@ -259,7 +259,7 @@ Tenants
                   {% if perms.auth.can_edit_tenants %}
                     <form method="post" action="{% url 'delete_tenant' tresults.tenant_id %}"
                           class="tenant-inline-form"
-                          onsubmit="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                          onsubmit="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name|escapejs }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
                       {% csrf_token %}
                       <button type="submit" class="mobile-action-btn">
                         <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
@@ -280,7 +280,7 @@ Tenants
 
                   {% if tresults.tenant_lease_agreement %}
                     <a href="#"
-                       onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}'); return false;"
+                       onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url|escapejs }}', '{{ tresults.tenant_lease_agreement.name|escapejs }}', '{{ tresults.tenant_name|escapejs }}'); return false;"
                        class="mobile-action-btn">
                       <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
                       <span class="mobile-action-label">Agreement</span>

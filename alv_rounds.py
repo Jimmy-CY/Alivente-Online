@@ -134,6 +134,8 @@ ROUNDS = [
     '.bak_filterdistinct',
     '.bak_tabs',
     '.bak_plicon',
+    '.bak_jsescape',
+    '.bak_issuestats',
 ]
 
 

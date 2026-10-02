@@ -230,16 +230,16 @@
                             {% endif %}
                             {% if user.is_active %}
                                 <button type="button" class="icon-action-btn icon-lock" title="Disable User"
-                                        onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
+                                        onclick="confirmToggle({{ user.id }}, '{{ user.username|escapejs }}', false)">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             {% else %}
                                 <button type="button" class="icon-action-btn icon-unlock" title="Enable User"
-                                        onclick="confirmToggle({{ user.id }}, '{{ user.username }}', true)">
+                                        onclick="confirmToggle({{ user.id }}, '{{ user.username|escapejs }}', true)">
                                     <i class="fas fa-check"></i>
                                 </button>
                                 <button type="button" class="icon-action-btn icon-delete delete-btn" title="Delete User"
-                                        onclick="confirmDelete({{ user.id }}, '{{ user.username }}')">
+                                        onclick="confirmDelete({{ user.id }}, '{{ user.username|escapejs }}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             {% endif %}
@@ -264,18 +264,18 @@
                         {% endif %}
                         {% if user.is_active %}
                             <button type="button" class="mobile-action-btn"
-                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
+                                    onclick="confirmToggle({{ user.id }}, '{{ user.username|escapejs }}', false)">
                                 <i class="fas fa-ban mobile-action-icon icon-color-lock"></i>
                                 <span class="mobile-action-label">Disable</span>
                             </button>
                         {% else %}
                             <button type="button" class="mobile-action-btn"
-                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', true)">
+                                    onclick="confirmToggle({{ user.id }}, '{{ user.username|escapejs }}', true)">
                                 <i class="fas fa-check mobile-action-icon icon-color-unlock"></i>
                                 <span class="mobile-action-label">Enable</span>
                             </button>
                             <button type="button" class="mobile-action-btn"
-                                    onclick="confirmDelete({{ user.id }}, '{{ user.username }}')">
+                                    onclick="confirmDelete({{ user.id }}, '{{ user.username|escapejs }}')">
                                 <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                                 <span class="mobile-action-label">Delete</span>
                             </button>

@@ -64,7 +64,7 @@
     <div class="alv-card-head">
         <h4 class="alv-card-title mb-0">
             {% if first_photo %}
-                <img src="{{ first_photo.image.url }}" alt="" class="asset-header-thumb" onclick="viewPhoto('{{ first_photo.image.url }}')">
+                <img src="{{ first_photo.image.url }}" alt="" class="asset-header-thumb" onclick="viewPhoto('{{ first_photo.image.url|escapejs }}')">
             {% else %}
                 <i class="fas fa-box"></i>
             {% endif %}
@@ -110,7 +110,7 @@
                     <span class="detail-label">Invoice:</span>
                     <span class="detail-value">
                         {% if asset.purchase_invoice %}
-                            <button type="button" class="btn action-secondary btn-sm" onclick="viewInvoice('{{ asset.purchase_invoice.url }}', '{{ asset.purchase_invoice.name }}')">
+                            <button type="button" class="btn action-secondary btn-sm" onclick="viewInvoice('{{ asset.purchase_invoice.url|escapejs }}', '{{ asset.purchase_invoice.name|escapejs }}')">
                                 <i class="fas fa-file-pdf"></i> View Invoice
                             </button>
                         {% else %}
@@ -141,7 +141,7 @@
     <div class="alv-card-body">
         <div class="photo-grid">
             {% for photo in photos %}
-                <div class="photo-tile" onclick="viewPhoto('{{ photo.image.url }}')">
+                <div class="photo-tile" onclick="viewPhoto('{{ photo.image.url|escapejs }}')">
                     <img src="{{ photo.image.url }}" alt="Asset photo">
                 </div>
             {% endfor %}
@@ -249,7 +249,7 @@
                         <td data-label="Actions" class="desktop-action-cell cell-actions">
                           <span class="row-actions">
                             {% if record.invoice %}
-                                <button type="button" class="icon-action-btn icon-view" title="View invoice" onclick="viewInvoice('{{ record.invoice.url }}', '{{ record.invoice.name }}')">
+                                <button type="button" class="icon-action-btn icon-view" title="View invoice" onclick="viewInvoice('{{ record.invoice.url|escapejs }}', '{{ record.invoice.name|escapejs }}')">
                                     <i class="fas fa-file-invoice"></i>
                                 </button>
                             {% else %}
@@ -261,11 +261,11 @@
                                 <button type="button" class="icon-action-btn icon-edit" title="Edit record"
                                     onclick="openEditMaintenance(
                                         {{ record.id }},
-                                        '{{ record.date|date:'Y-m-d' }}',
-                                        '{{ record.maintenance_type }}',
+                                        '{{ record.date|date:'Y-m-d'|escapejs }}',
+                                        '{{ record.maintenance_type|escapejs }}',
                                         '{{ record.description|escapejs }}',
                                         '{{ record.service_provider|default:''|escapejs }}',
-                                        '{{ record.cost|default:'' }}'
+                                        '{{ record.cost|default:''|escapejs }}'
                                     )">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>

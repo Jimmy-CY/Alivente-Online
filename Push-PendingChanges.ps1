@@ -1157,6 +1157,18 @@ $suites = @(
     # section 4 clicks the icon in BOTH places and reads back
     # which document opened.
     'test_pl_invoice_icon.py'
+    # A name with an apostrophe in it. 145 values across 19
+    # templates were pasted into JavaScript string literals in
+    # inline handlers, so a tenant called O'Brien made the View
+    # Lease Agreement button a syntax error - it did nothing, in
+    # silence. Its section 2 renders through Django and clicks in
+    # Chromium; its section 1 is the gate that catches the next one.
+    'test_js_escape.py'
+    # The issue figures, moved above the table they summarise and
+    # put on base's stat tile. Its section 3 renders the real
+    # markup in Chromium and reads back that the figures sit ABOVE
+    # the table - an ordering claim that a grep cannot make.
+    'test_issue_stats.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

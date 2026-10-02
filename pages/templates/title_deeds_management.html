@@ -52,7 +52,7 @@
         </td>
         <td data-label="Title Deed" class="desktop-action-cell">
             {% if property.prop_title_deed %}
-                <button type="button" class="icon-action-btn icon-view" title="View title deed" aria-label="View title deed" onclick="viewDocument('{{ property.prop_title_deed.url }}', '{{ property.prop_title_deed.name }}', '{{ property.prop_name }}')">
+                <button type="button" class="icon-action-btn icon-view" title="View title deed" aria-label="View title deed" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
                     <i class="fas fa-scroll"></i>
                 </button>
             {% else %}
@@ -62,11 +62,11 @@
         <td data-label="Action" class="desktop-action-cell">
             {% if perms.auth.can_edit_properties %}
                 {% if property.prop_title_deed %}
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 {% else %}
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
                         <i class="fas fa-upload"></i> Upload
                     </button>
                 {% endif %}
@@ -78,7 +78,7 @@
         <!-- Mobile-only action bar (hidden on desktop) -->
         <td class="mobile-action-bar">
             {% if property.prop_title_deed %}
-                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ property.prop_title_deed.url }}', '{{ property.prop_title_deed.name }}', '{{ property.prop_name }}')">
+                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
                     <i class="fas fa-scroll mobile-action-icon icon-color-view"></i>
                     <span class="mobile-action-label">View</span>
                 </button>
@@ -91,12 +91,12 @@
 
             {% if perms.auth.can_edit_properties %}
                 {% if property.prop_title_deed %}
-                    <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                    <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
                         <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                         <span class="mobile-action-label">Delete</span>
                     </button>
                 {% else %}
-                    <button type="button" class="mobile-action-btn" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                    <button type="button" class="mobile-action-btn" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
                         <i class="fas fa-upload mobile-action-icon icon-color-upload"></i>
                         <span class="mobile-action-label">Upload</span>
                     </button>

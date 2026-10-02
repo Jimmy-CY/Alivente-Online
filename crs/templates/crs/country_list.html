@@ -75,7 +75,7 @@
                   <i class="fas fa-pencil-alt"></i>
                 </a>
                 <button type="button" class="icon-action-btn icon-delete" title="Delete Country Configuration"
-                        onclick="confirmCountryDelete({{ country.pk }}, '{{ country.country_code }} — {{ country.country_name|escapejs }}')">
+                        onclick="confirmCountryDelete({{ country.pk }}, '{{ country.country_code|escapejs }} — {{ country.country_name|escapejs }}')">
                   <i class="fas fa-trash"></i>
                 </button>
               {% else %}
@@ -101,7 +101,7 @@
                 <span class="mobile-action-label">Edit</span>
               </a>
               <button type="button" class="mobile-action-btn"
-                      onclick="confirmCountryDelete({{ country.pk }}, '{{ country.country_code }} — {{ country.country_name|escapejs }}')">
+                      onclick="confirmCountryDelete({{ country.pk }}, '{{ country.country_code|escapejs }} — {{ country.country_name|escapejs }}')">
                 <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                 <span class="mobile-action-label">Delete</span>
               </button>

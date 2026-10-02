@@ -186,7 +186,7 @@ Receipts
                 {% if row.is_void and perms.auth.can_edit_receipts %}
                   <form method="post" action="{% url 'cash_receipt_unvoid' row.pk %}"
                         class="rec-inline-form"
-                        onsubmit="return confirm('Bring receipt {{ row.number }} back into use?\n\nThe VOID stamp comes off its PDF.');">
+                        onsubmit="return confirm('Bring receipt {{ row.number|escapejs }} back into use?\n\nThe VOID stamp comes off its PDF.');">
                     {% csrf_token %}
                     <button type="submit" class="icon-action-btn icon-approve" title="Unvoid — bring back into use">
                       <i class="fas fa-rotate-left"></i>
@@ -195,7 +195,7 @@ Receipts
                 {% elif perms.auth.can_edit_receipts %}
                   <form method="post" action="{% url 'cash_receipt_void' row.pk %}"
                         class="rec-inline-form"
-                        onsubmit="return confirm('Void receipt {{ row.number }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
+                        onsubmit="return confirm('Void receipt {{ row.number|escapejs }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
                     {% csrf_token %}
                     <button type="submit" class="icon-action-btn icon-void" title="Void this receipt">
                       <i class="fas fa-ban"></i>
@@ -243,7 +243,7 @@ Receipts
                 {% if row.is_void %}
                   <form method="post" action="{% url 'cash_receipt_unvoid' row.pk %}"
                         class="rec-inline-form-mobile"
-                        onsubmit="return confirm('Bring receipt {{ row.number }} back into use?\n\nThe VOID stamp comes off its PDF.');">
+                        onsubmit="return confirm('Bring receipt {{ row.number|escapejs }} back into use?\n\nThe VOID stamp comes off its PDF.');">
                     {% csrf_token %}
                     <button type="submit" class="mobile-action-btn">
                       <i class="fas fa-rotate-left mobile-action-icon icon-color-approve"></i>
@@ -253,7 +253,7 @@ Receipts
                 {% else %}
                   <form method="post" action="{% url 'cash_receipt_void' row.pk %}"
                         class="rec-inline-form-mobile"
-                        onsubmit="return confirm('Void receipt {{ row.number }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
+                        onsubmit="return confirm('Void receipt {{ row.number|escapejs }}?\n\nIt keeps its number and stays in the list, marked VOID. You can lift it again afterwards.');">
                     {% csrf_token %}
                     <button type="submit" class="mobile-action-btn">
                       <i class="fas fa-ban mobile-action-icon icon-color-delete"></i>

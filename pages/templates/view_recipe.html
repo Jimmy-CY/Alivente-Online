@@ -1655,7 +1655,7 @@ body {
             <i class="fas fa-share-alt"></i> Share
         </button>
         {% if recipe.recipe_document %}
-        <button type="button" class="btn btn-info action-secondary" onclick="viewRecipeDoc('{{ recipe.recipe_document.url }}', '{{ recipe.recipe_document.name }}')">
+        <button type="button" class="btn btn-info action-secondary" onclick="viewRecipeDoc('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
             <i class="fas fa-paperclip"></i> View Document
         </button>
         {% endif %}
@@ -1687,7 +1687,7 @@ body {
                     <i class="fas fa-share-alt"></i> Share
                 </button>
                 {% if recipe.recipe_document %}
-                <button type="button" class="action-more-item" role="menuitem" onclick="viewRecipeDoc('{{ recipe.recipe_document.url }}', '{{ recipe.recipe_document.name }}')">
+                <button type="button" class="action-more-item" role="menuitem" onclick="viewRecipeDoc('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
                     <i class="fas fa-paperclip"></i> View Document
                 </button>
                 {% endif %}

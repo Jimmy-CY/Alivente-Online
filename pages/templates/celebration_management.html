@@ -773,13 +773,13 @@
                 <!-- Desktop contact actions (hidden on mobile via CSS) -->
                 <div class="contact-actions row-actions">
                     {% if perms.auth.can_edit_celebrations %}
-                    <button class="icon-action-btn icon-event" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')" title="Add Event">
+                    <button class="icon-action-btn icon-event" onclick="addEvent({{ contact.id }}, '{{ contact.name|escapejs }}')" title="Add Event">
                         <i class="fas fa-calendar-plus"></i>
                     </button>
-                    <button class="icon-action-btn icon-edit" onclick="editContact({{ contact.id }}, '{{ contact.name }}', '{{ contact.relationship }}', '{{ contact.email }}', '{{ contact.phone }}', `{{ contact.notes|escapejs }}`)" title="Edit Contact">
+                    <button class="icon-action-btn icon-edit" onclick="editContact({{ contact.id }}, '{{ contact.name|escapejs }}', '{{ contact.relationship|escapejs }}', '{{ contact.email|escapejs }}', '{{ contact.phone|escapejs }}', `{{ contact.notes|escapejs }}`)" title="Edit Contact">
                         <i class="fas fa-pencil-alt"></i>
                     </button>
-                    <button class="icon-action-btn icon-delete" onclick="deleteContact({{ contact.id }}, '{{ contact.name }}')" title="Delete Contact">
+                    <button class="icon-action-btn icon-delete" onclick="deleteContact({{ contact.id }}, '{{ contact.name|escapejs }}')" title="Delete Contact">
                         <i class="fas fa-trash"></i>
                     </button>
                     {% else %}
@@ -848,10 +848,10 @@
                         <!-- Desktop event actions (hidden on mobile via CSS) -->
                         <div class="event-actions row-actions">
                             {% if perms.auth.can_edit_celebrations %}
-                            <button class="icon-action-btn icon-edit" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])" title="Edit Event">
+                            <button class="icon-action-btn icon-edit" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name|escapejs }}', '{{ event.event_type|escapejs }}', '{{ event.event_date|date:'Y-m-d'|escapejs }}', '{{ event.priority|escapejs }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])" title="Edit Event">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
-                            <button class="icon-action-btn icon-delete" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')" title="Delete Event">
+                            <button class="icon-action-btn icon-delete" onclick="deleteEvent({{ event.id }}, '{{ contact.name|escapejs }}', '{{ event.get_event_type_display|escapejs }}')" title="Delete Event">
                                 <i class="fas fa-trash"></i>
                             </button>
                             {% else %}
@@ -867,11 +867,11 @@
                         <!-- Mobile-only event action bar (hidden on desktop) -->
                         <div class="mobile-action-bar cols-2" data-actions="event">
                             {% if perms.auth.can_edit_celebrations %}
-                            <button type="button" class="mobile-action-btn" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])">
+                            <button type="button" class="mobile-action-btn" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name|escapejs }}', '{{ event.event_type|escapejs }}', '{{ event.event_date|date:'Y-m-d'|escapejs }}', '{{ event.priority|escapejs }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])">
                                 <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                                 <span>Edit</span>
                             </button>
-                            <button type="button" class="mobile-action-btn" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')">
+                            <button type="button" class="mobile-action-btn" onclick="deleteEvent({{ event.id }}, '{{ contact.name|escapejs }}', '{{ event.get_event_type_display|escapejs }}')">
                                 <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                                 <span>Delete</span>
                             </button>
@@ -898,15 +898,15 @@
             <!-- Mobile-only contact action bar (hidden on desktop) -->
             <div class="mobile-action-bar" data-actions="contact">
                 {% if perms.auth.can_edit_celebrations %}
-                <button type="button" class="mobile-action-btn" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')">
+                <button type="button" class="mobile-action-btn" onclick="addEvent({{ contact.id }}, '{{ contact.name|escapejs }}')">
                     <i class="fas fa-calendar-plus mobile-action-icon icon-color-add"></i>
                     <span>Add Event</span>
                 </button>
-                <button type="button" class="mobile-action-btn" onclick="editContact({{ contact.id }}, '{{ contact.name }}', '{{ contact.relationship }}', '{{ contact.email }}', '{{ contact.phone }}', `{{ contact.notes|escapejs }}`)">
+                <button type="button" class="mobile-action-btn" onclick="editContact({{ contact.id }}, '{{ contact.name|escapejs }}', '{{ contact.relationship|escapejs }}', '{{ contact.email|escapejs }}', '{{ contact.phone|escapejs }}', `{{ contact.notes|escapejs }}`)">
                     <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                     <span>Edit</span>
                 </button>
-                <button type="button" class="mobile-action-btn" onclick="deleteContact({{ contact.id }}, '{{ contact.name }}')">
+                <button type="button" class="mobile-action-btn" onclick="deleteContact({{ contact.id }}, '{{ contact.name|escapejs }}')">
                     <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                     <span>Delete</span>
                 </button>

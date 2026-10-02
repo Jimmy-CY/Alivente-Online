@@ -884,7 +884,7 @@
                     
                     {% for week in calendar_weeks %}
                     <div class="mini-calendar-week"
-                         {% if week.week_start %}onclick="selectWeek('{{ week.week_start|date:'Y-m-d' }}')"{% endif %}
+                         {% if week.week_start %}onclick="selectWeek('{{ week.week_start|date:'Y-m-d'|escapejs }}')"{% endif %}
                          data-week-start="{{ week.week_start|date:'Y-m-d' }}">
                         {% for day in week.days %}
                         <div class="mini-calendar-day {% if not day %}empty{% endif %} {% if day.is_today %}today{% endif %} {% if day.has_meal %}has-meal{% endif %}"
@@ -915,7 +915,7 @@
                 {% if all_meal_plans %}
                     {% for plan in all_meal_plans %}
                     <div class="meal-plan-list-item {% if selected_meal_plan.meal_plan_id == plan.meal_plan_id %}active{% endif %}"
-                         onclick="selectMealPlan('{{ plan.start_date|date:'Y-m-d' }}', {{ plan.start_date|date:'Y' }}, {{ plan.start_date|date:'n' }})">
+                         onclick="selectMealPlan('{{ plan.start_date|date:'Y-m-d'|escapejs }}', {{ plan.start_date|date:'Y' }}, {{ plan.start_date|date:'n' }})">
                         <h4>{{ plan.plan_name }}</h4>
                         <p>
                             <i class="fas fa-calendar"></i> {{ plan.start_date|date:"M d" }} - {{ plan.end_date|date:"M d, Y" }}
@@ -1044,7 +1044,7 @@
                                 {% endfor %}
                                 
                                 {% if perms.auth.can_edit_personal %}
-                                <button class="add-another-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d' }}', '{{ day.day_name }}')">
+                                <button class="add-another-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
                                     <i class="fas fa-plus"></i> Add Another Recipe
                                 </button>
                                 {% else %}
@@ -1057,7 +1057,7 @@
                                     <i class="fas fa-utensils"></i>
                                     <p>No meal planned</p>
                                     {% if perms.auth.can_edit_personal %}
-                                    <button class="add-recipe-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d' }}', '{{ day.day_name }}')">
+                                    <button class="add-recipe-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
                                         <i class="fas fa-plus"></i> Add Recipe
                                     </button>
                                     {% else %}

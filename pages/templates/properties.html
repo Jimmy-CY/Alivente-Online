@@ -189,7 +189,7 @@ Properties
                 </a>
 
                 {% if results.prop_title_deed %}
-                  <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="icon-action-btn icon-view" title="View Title Deed">
+                  <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url|escapejs }}', '{{ results.prop_title_deed.name|escapejs }}', '{{ results.prop_name|escapejs }}'); return false;" class="icon-action-btn icon-view" title="View Title Deed">
                     <i class="fas fa-file-contract"></i>
                   </a>
                 {% else %}
@@ -230,7 +230,7 @@ Properties
               </a>
 
               {% if results.prop_title_deed %}
-                <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="mobile-action-btn">
+                <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url|escapejs }}', '{{ results.prop_title_deed.name|escapejs }}', '{{ results.prop_name|escapejs }}'); return false;" class="mobile-action-btn">
                   <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
                   <span class="mobile-action-label">Deed</span>
                 </a>
