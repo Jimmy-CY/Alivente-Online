@@ -1570,10 +1570,23 @@
              well, for the first time.
 
              B-1b, 2 Oct 2026: THIS NOTE USED TO SIT INSIDE THE TAG BELOW,
-             between the href and the class. HTML has no comment there -
-             the parser read `<!--` as an attribute name and closed the tag
-             on the `>` of `-->`, so the class and the aria-pressed became
-             text and the page printed them. Demetri found it on Live. -->
+             between the href and the class. HTML has no comment there. The
+             parser reads the comment opener as an attribute name and ends
+             the tag on the angle bracket that closes the comment, so the
+             class and the aria-pressed became text and the page printed
+             them. Demetri found it on Live.
+
+             B-1c, 2 Oct 2026: AND THEN THE NOTE ABOVE DID IT AGAIN. It
+             quoted the two sequences it was describing, and an HTML
+             comment is not quoted - the first terminator inside it ends
+             it, wherever it appears. So this note ended mid-sentence and
+             the rest of it printed on the page, exactly like the thing it
+             was explaining.
+
+             The syntax is NAMED here, never written. One letter from the
+             rule C-1 wrote down this morning for Django comments: a
+             comment that writes its own terminator closes early.
+        -->
         <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
            class="btn action-secondary"
            aria-pressed="{% if show_favourites %}true{% else %}false{% endif %}">

@@ -142,6 +142,8 @@ ROUNDS = [
     '.bak_btntone',
     '.bak_sentinels',
     '.bak_mealrow',
+    '.bak_favtag',
+    '.bak_favnote',
 ]
 
 

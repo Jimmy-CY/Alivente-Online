@@ -121,6 +121,8 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1c, 2 Oct 2026: AND THEN THE NOTE ABOVE DID IT AGAIN'; What = 'B-1c: the Favourites note names the comment syntax rather than writing it' },
+    @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1b, 2 Oct 2026: THIS NOTE USED TO SIT INSIDE THE TAG'; What = 'B-1b: the Favourites note sits above its tag, not inside it' },
     @{ File = 'pages\templates\meal_plans.html'; Text = 'icon-action-btn icon-view'; What = 'ML-1: the row is on the house action strip' },
     @{ File = 'pages\templates\base.html'; Text = '.icon-list       { color: var(--alv-view)'; What = 'ML-1: base carries the shopping-list NAME on the view colour' },
     @{ File = 'pages\templates\meal_plans.html'; Text = 'onclick="confirmDelete('; Absent = $true; Code = $true; What = 'ML-1: the plan name is not written into a handler' },
