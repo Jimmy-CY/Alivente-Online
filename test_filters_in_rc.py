@@ -497,15 +497,78 @@ how_set = set(re.findall(r"'([a-z_/.]+\.html)':", how.group(1))) if how \
 ok({'cash_receipts.html', 'customer_list.html'} <= how_set,
    '  and joined the map of which page submits how',
    sorted({'cash_receipts.html', 'customer_list.html'} - how_set))
-# FIVE suites keep their own count of how many pages carry the
-# house filter, and not one of them knows about the others.
-for who in ('test_filter_on_close.py', 'test_recipe_chips.py',
-            'test_recipe_filter.py'):
-    ok(re.sub(r'#.*', '', read(os.path.join(ROOT, who))).count('== 14') >= 1,
-       '%-26s counts fourteen pages with the house filter' % who)
-fb = re.sub(r'#.*', '', read(os.path.join(ROOT, 'test_filter_box.py')))
-ok('== 38' in fb and '== 33' in fb,
-   'test_filter_box counts the five new filter controls')
+# SIX SUITES KEPT THE SAME NUMBER, AND THIS WAS THE SIXTH - IB-1,
+# 2 Oct 2026.
+#
+# This block used to grep the other suites for the literal `== 14`. That
+# made it a sixth copy of one fact, and the weakest of the six: any
+# `== 14` anywhere in the file satisfied a substring search, including a
+# census of something else entirely.
+#
+# It MEASURES now. The tree is counted here, each suite's asserted
+# integer is read out of its own line, and every one of them has to equal
+# the count. One source of truth, five claims checked against it - and it
+# fails the moment one suite is updated and the others are not, which is
+# the half-done state IB-1 itself passed through.
+#
+# The five suites are untouched and keep their exact comparisons. Those
+# are what caught IB-1 in the first place; outstanding item 4 is about
+# where the NUMBER lives, not about loosening any of them.
+
+
+def _house_pages():
+    """Pages carrying the house filter: a Filter button AND the panel.
+    Markup only - a page NAMING .alv-filter in a comment or a stylesheet
+    does not carry one, and a gate reads code, not the record of code."""
+    out = []
+    for p in alv_tree.templates():
+        if os.path.basename(p) == 'base.html':
+            continue
+        t = read(p)
+        t = re.sub(r'<style\b.*?</style>', '', t, flags=re.S)
+        t = re.sub(r'<script\b.*?</script>', '', t, flags=re.S)
+        t = re.sub(r'<!--.*?-->', '', t, flags=re.S)
+        if 'action-filter' in t and 'alv-filter' in t:
+            out.append(alv_tree.rel(p))
+    return sorted(out)
+
+
+_HOUSE = _house_pages()
+_CLAIMS = {
+    'test_filter_on_close.py':
+        r'ok\(len\(auto\) \+ len\(manual\) == (\d+)',
+    'test_recipe_chips.py': r'ok\(len\(house\) == (\d+)',
+    'test_recipe_filter.py': r'ok\(len\(house\) == (\d+)',
+}
+ok(bool(_HOUSE), 'the tree carries the house filter on %d page(s)'
+   % len(_HOUSE))
+for who, pat in sorted(_CLAIMS.items()):
+    src = re.sub(r'(?m)#.*$', '', read(os.path.join(ROOT, who)))
+    found = [int(x) for x in re.findall(pat, src)]
+    if not ok(bool(found), '%-26s states a page count' % who):
+        continue
+    ok(all(n == len(_HOUSE) for n in found),
+       '%-26s says %s, the tree says %d'
+       % (who, '/'.join(str(n) for n in found), len(_HOUSE)))
+
+# test_filter_box counts CONTROLS, not pages - a different quantity, so it
+# is measured on its own terms rather than folded into the number above.
+_fb = re.sub(r'(?m)#.*$', '', read(os.path.join(ROOT, 'test_filter_box.py')))
+_tot = re.search(r'len\(paired\) \+ len\(bare\) == (\d+)', _fb)
+_pair = re.search(r'ok\(len\(paired\) == (\d+)', _fb)
+ok(bool(_tot) and bool(_pair),
+   'test_filter_box states a total and a paired count')
+if _tot and _pair:
+    _uses = sum(len(re.findall(r'\bfilter-(?:select|input)\b',
+                               re.sub(r'<!--.*?-->', '', read(p), flags=re.S)))
+                for p in alv_tree.templates()
+                if os.path.basename(p) != 'base.html')
+    ok(int(_tot.group(1)) >= int(_pair.group(1)),
+       '  and the total is not smaller than the paired half (%s >= %s)'
+       % (_tot.group(1), _pair.group(1)))
+    ok(_uses >= int(_tot.group(1)),
+       '  and the tree carries at least that many uses (%d >= %s)'
+       % (_uses, _tot.group(1)))
 
 # ==========================================================================
 head('7. THE GATE')

@@ -169,7 +169,8 @@ ok(not other,
 # had to move - five suites each keep their own count of how
 # many pages carry the house filter, and none of them knows
 # about the others.
-ok(len(house) == 14, 'fourteen pages have one, all the same', len(house))
+# FIFTEEN SINCE IB-1, 2 Oct 2026 - Ingredient Shopping Units.
+ok(len(house) == 15, 'fifteen pages have one, all the same', len(house))
 
 b = alv_tree.path_of(PAGE) + SUFFIX
 if os.path.isfile(b):

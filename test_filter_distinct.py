@@ -179,6 +179,17 @@ LEFT = {
         'sends prop_id - two options with one label are two choices',
     ('projects/projects.html', 'propertySelect'):
         'sends prop_id - same reason',
+    # IB-1, 2 Oct 2026. Not a new select - a select that came INTO SCOPE.
+    # It looped `categories` and sent an id before this round too; what
+    # changed is that it now carries .filter-select inside a house panel,
+    # so F3's detector can see it. A rule reaching a page it was always
+    # meant to cover is what a shared component is for.
+    #
+    # And the ruling is the one above, twice over: IT SENDS AN ID. Two
+    # categories with the same name are two different categories, and the
+    # view filters on category__ingredient_category_id.
+    ('ingredient_base_units_management.html', 'categoryFilter'):
+        'sends ingredient_category_id - same reason',
 }
 
 ps = read(os.path.join(ROOT, PS1))

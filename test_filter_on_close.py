@@ -182,7 +182,8 @@ for p in alv_tree.templates():
 # is visible, and >= would let a page leave in silence.
 # twelve until 1 Oct 2026; F2 gave Receipts and Invoice
 # Customers one each.
-ok(len(auto) + len(manual) == 14, 'fourteen pages carry the house filter',
+# FIFTEEN SINCE IB-1, 2 Oct 2026 - Ingredient Shopping Units.
+ok(len(auto) + len(manual) == 15, 'fifteen pages carry the house filter',
    len(auto) + len(manual))
 ok(not manual,
    'and NOT ONE of them now waits for an Apply button - which is what '

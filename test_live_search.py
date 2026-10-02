@@ -94,8 +94,19 @@ STYLE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
 # Eligible, and STILL deliberately not opted in - each needs its own
 # answer about which column the server matches, and nobody has walked
 # these two screens.
-CANDIDATES = ('ingredient_base_units_management.html',
-              'unit_conversions_management.html')
+# ingredient_base_units_management LEFT THIS LIST - IB-1, 2 Oct 2026,
+# which is the shape this comment already asks for: "A page leaving this
+# list is a decision taken, and comes off it in the same round." The
+# decision it needed was which column the server matches - name__icontains
+# and nothing else - and IB-1's own suite re-asks the view rather than
+# trusting the markup, so the answer cannot rot quietly.
+#
+# THE TRAILING COMMA IS LOAD-BEARING. Taking the first entry out left one
+# string in brackets, which is a STRING and not a tuple, so the loop below
+# iterated its characters and asked alv_tree for a template named 'u'. The
+# suite crashed rather than failed - and a crash blocks a push exactly as
+# hard as a failure while saying far less about why.
+CANDIDATES = ('unit_conversions_management.html',)
 # Left this list on 1 Oct, round N3 (.bak_searchhint), each naming the
 # column or columns its own view filters on:
 #
@@ -112,6 +123,9 @@ CANDIDATES = ('ingredient_base_units_management.html',
 # opted it in too.
 OPTED_IN_BY_N3 = ('properties.html', 'fsr.html',
                   'tenant_lease_agreement.html', 'act_expense.html')
+# And one since, by a later round. Kept separate from N3's four so the
+# claim stays true about WHO opted each page in.
+OPTED_IN_SINCE = ('ingredient_base_units_management.html',)
 
 passed = failed = skipped = 0
 
@@ -343,6 +357,10 @@ for rel in OPTED_IN_BY_N3:
     p = alv_tree.path_of(rel)
     ok('data-live-search' in read(p),
        '%-40s opted in by N3, 1 Oct' % rel)
+for rel in OPTED_IN_SINCE:
+    p = alv_tree.path_of(rel)
+    ok('data-live-search' in read(p),
+       '%-40s opted in by IB-1, 2 Oct' % rel)
 print('')
 print('  Each of those two renders every row, so each COULD have this.')
 print('  Each also needs its own answer to the question this round turns')

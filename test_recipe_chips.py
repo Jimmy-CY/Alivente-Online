@@ -580,11 +580,15 @@ for p in alv_tree.templates():
 # not >= : this census exists so the set cannot change in silence.
 # twelve until 1 Oct 2026; F2 gave Receipts and Invoice
 # Customers one each.
-ok(len(house) == 14, 'fourteen pages wear the house filter', len(house))
+# FIFTEEN SINCE IB-1, 2 Oct 2026 - Ingredient Shopping Units, which
+# arrived with its chip row in the same round, so both numbers move
+# together. A page wearing the filter WITHOUT a chip row would leave
+# base's badge reading zero for ever, and the gap below is what says so.
+ok(len(house) == 15, 'fifteen pages wear the house filter', len(house))
 ok(PAGE in rows, '%s is one of the rows' % PAGE)
-ok(len(rows) == 14,
-   'and TWELVE of twelve now put their chips on base\'s row - the fourth '
-   'copy was the last one', sorted(set(house) - set(rows)))
+ok(len(rows) == 15,
+   'and all fifteen put their chips on base\'s row - no page keeps its own',
+   sorted(set(house) - set(rows)))
 
 # ==========================================================================
 head('7. THE GATE')

@@ -261,10 +261,12 @@ for p in alv_tree.templates():
 # and a .filter-select on Invoice Customers, two and one on
 # Receipts. All five are paired with .form-control, which is
 # what this suite is about, so the bare count does not move.
-ok(len(paired) + len(bare) == 38,
-   'thirty-eight uses of the two class names across the tree',
+# 39 SINCE IB-1, 2 Oct 2026. Ingredient Shopping Units joined the
+# house panel and its Category select gained .filter-select.
+ok(len(paired) + len(bare) == 39,
+   'thirty-nine uses of the two class names across the tree',
    len(paired) + len(bare))
-ok(len(paired) == 33, '  thirty-three pair it with .form-control, and do '
+ok(len(paired) == 34, '  thirty-four pair it with .form-control, and do '
    'not move', len(paired))
 ins = [b for b in bare if 'filter-input' in b[1]]
 ok(len(ins) == 2,

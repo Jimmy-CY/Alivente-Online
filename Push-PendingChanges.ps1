@@ -121,6 +121,15 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'data-live-search-cell="Ingredient Name"'; What = 'IB-1: the ingredient search narrows as you type' },
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'class="btn action-filter" id="filterBtn"'; What = 'IB-1: the filter folds behind a button' },
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'filter-bar'; Absent = $true; Code = $true; What = 'IB-1: and the always-open card is gone' },
+    # NO APOSTROPHE IN A SENTINEL TEXT. PowerShell escapes one inside a
+    # single-quoted string by DOUBLING it, not with a backslash, and the
+    # first cut of this row wrote THE HEADER\'S - which reached the gate as
+    # a backslash and resolved against nothing. The text below says the
+    # same thing and has no quote in it at all.
+    @{ File = 'pages\templates\base.html'; Text = 'TWO LABELS - IB-1, 2 Oct 2026'; What = 'IB-1: base swaps the panel header labels instead of a fifth local copy' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1c, 2 Oct 2026: AND THEN THE NOTE ABOVE DID IT AGAIN'; What = 'B-1c: the Favourites note names the comment syntax rather than writing it' },
     @{ File = 'pages\views\notifications_dashboard.py'; Text = 'expiring_no_successor'; What = 'DB-8: the button uses the panel rule' },
     @{ File = 'pages\views\notifications_dashboard.py'; Text = '_get_expiring_leases_before_db8'; What = 'DB-8: the old rule is kept, uncalled' },
@@ -1242,6 +1251,11 @@ $suites = @(
     # be tested BEFORE the default, or picking Inactive returns an
     # empty page while showing Inactive as selected.
     'test_tenant_past.py'
+    # The ingredient filter folds away. Its section 2 is the one that
+    # matters: a live search may only promise what the server delivers,
+    # so the suite re-asks the VIEW - name__icontains and nothing else,
+    # no Paginator - rather than trusting the markup that names them.
+    'test_ingredient_filter.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
