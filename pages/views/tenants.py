@@ -114,6 +114,24 @@ def tenant_page(request):
     selected_tenant = request.GET.get('tenantname', '').strip()
     selected_status = request.GET.get('act', '').strip()
 
+    # CURRENT TENANTS BY DEFAULT - TN-1, 2 Oct 2026.
+    #
+    # Demetri: default to current tenants only, with the option to include
+    # past ones. A tenant record is PER LEASE, so one person with three
+    # terms is three rows and the list had no default narrowing at all -
+    # every term anyone has ever held, with the live tenancies scattered
+    # among them.
+    #
+    # The same toggle tenant_lease_agreement already carries, spelled the
+    # same way, because two pages doing one thing should say one thing.
+    show_all = request.GET.get('all') == '1'
+
+    # WHAT THE TOGGLE CARRIES: the query minus `all`, so following the link
+    # keeps the search and the selects already set.
+    _keep = request.GET.copy()
+    _keep.pop('all', None)
+    _keep = _keep.urlencode()
+
     # Start with all properties and tenants
     all_properties = props.objects.all().order_by('prop_country', 'prop_name')
     all_tenants = tenant.objects.all().order_by('tenant_name')
@@ -158,8 +176,18 @@ def tenant_page(request):
         filtered_tenants = filtered_tenants.filter(tenant_name=selected_tenant)
 
     # Apply status filter
+    #
+    # AN EXPLICIT CHOICE BEATS THE DEFAULT - TN-1, 2 Oct 2026. This page
+    # already filters on tenant_current through `act`. If someone picks
+    # Inactive here while the default is narrowing to current, the two
+    # rules contradict each other and the page returns nothing while
+    # showing Inactive as selected. A chosen status is a more specific
+    # instruction than a default, so it wins - and the toggle link is
+    # hidden rather than left to lie about what is on screen.
     if selected_status:
         filtered_tenants = filtered_tenants.filter(tenant_current=selected_status)
+    elif not show_all:
+        filtered_tenants = filtered_tenants.filter(tenant_current='Yes')
 
     # Filter properties based on the selected property
     filtered_properties = all_properties
@@ -207,6 +235,9 @@ def tenant_page(request):
         'selected_property': selected_property,
         'selected_tenant': selected_tenant,
         'selected_status': selected_status,
+        # TN-1: which way the toggle points, and what it must carry.
+        'show_all': show_all,
+        'filter_qs': (_keep + '&') if _keep else '',
     }
 
     return render(request, "tenant.html", context)

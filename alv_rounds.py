@@ -143,6 +143,8 @@ ROUNDS = [
     '.bak_sentinels',
     '.bak_mealrow',
     '.bak_favtag',
+    '.bak_leaserule',
+    '.bak_tenantpast',
     '.bak_favnote',
 ]
 

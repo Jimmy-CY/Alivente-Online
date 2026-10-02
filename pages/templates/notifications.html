@@ -551,8 +551,12 @@ class SimpleNotificationDashboard {
                 <td data-label="Country">${item.prop_country || ''}</td>
                 <td data-label="Tenant">${item.tenant_name || ''}</td>
                 <td data-label="Lease End">${item.lease_end_date || ''}</td>
-                <td data-label="Renewal Due">${item.renewal_date || ''}</td>
-                <td data-label="Status"><span class="status-badge status-warning">PENDING</span></td>
+                <!-- DB-8, 2 Oct 2026. Was "Renewal Due" from item.renewal_date,
+                     which the new rule does not produce, and a hard-coded
+                     PENDING that was only ever true because the OLD query
+                     filtered on it. -->
+                <td data-label="Days to End">${item.days_to_end != null ? item.days_to_end + 'd' : ''}</td>
+                <td data-label="Status"><span class="status-badge status-warning">${(item.renewal_status || 'pending').toUpperCase()}</span></td>
             </tr>
         `).join('');
         
@@ -560,7 +564,7 @@ class SimpleNotificationDashboard {
             <div class="table-container">
                 <table class="data-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th>Renewal Due By</th><th>Status</th></tr>
+                        <tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th>Days to End</th><th>Status</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>

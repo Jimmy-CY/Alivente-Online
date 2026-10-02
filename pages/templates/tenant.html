@@ -86,6 +86,21 @@ Tenants
         </div>
       </div>
 
+      {% if not selected_status %}
+        {# TN-1, 2 Oct 2026. Hidden when a status has been chosen from the  #}
+        {# filter panel: that choice beats the default, so the toggle would #}
+        {# describe something other than what is on screen.                 #}
+        {% if show_all %}
+          <a href="{% url 'tenant' %}?{{ filter_qs }}" class="btn action-secondary" role="button">
+            <i class="fas fa-user-check"></i> Current tenants only
+          </a>
+        {% else %}
+          <a href="{% url 'tenant' %}?{{ filter_qs }}all=1" class="btn action-secondary" role="button">
+            <i class="fas fa-users"></i> Include past tenants
+          </a>
+        {% endif %}
+      {% endif %}
+
       <button type="button" class="btn action-filter" id="filterBtn"
               aria-pressed="false" aria-controls="filterPanel"
               aria-label="Show filters">

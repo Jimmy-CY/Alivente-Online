@@ -122,6 +122,10 @@ Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
     @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1c, 2 Oct 2026: AND THEN THE NOTE ABOVE DID IT AGAIN'; What = 'B-1c: the Favourites note names the comment syntax rather than writing it' },
+    @{ File = 'pages\views\notifications_dashboard.py'; Text = 'expiring_no_successor'; What = 'DB-8: the button uses the panel rule' },
+    @{ File = 'pages\views\notifications_dashboard.py'; Text = '_get_expiring_leases_before_db8'; What = 'DB-8: the old rule is kept, uncalled' },
+    @{ File = 'pages\views\tenants.py'; Text = 'TN-1, 2 Oct 2026'; What = 'TN-1: the tenants list defaults to current' },
+    @{ File = 'pages\templates\tenant.html'; Text = 'Include past tenants'; What = 'TN-1: the toggle is on the Tenants bar' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1b, 2 Oct 2026: THIS NOTE USED TO SIT INSIDE THE TAG'; What = 'B-1b: the Favourites note sits above its tag, not inside it' },
     @{ File = 'pages\templates\meal_plans.html'; Text = 'icon-action-btn icon-view'; What = 'ML-1: the row is on the house action strip' },
     @{ File = 'pages\templates\base.html'; Text = '.icon-list       { color: var(--alv-view)'; What = 'ML-1: base carries the shopping-list NAME on the view colour' },
@@ -1226,6 +1230,18 @@ $suites = @(
     # that merely looks similar is a page that copied the component
     # again. 54 local rules fell to 43 and 24 literals to 13.
     'test_meal_row.py'
+    # ONE DEFINITION OF AN EXPIRING LEASE. The panel asked "ending
+    # within 90 days with no successor" and the button asked "past
+    # the tenant's own renewal lead time and still pending" - two
+    # rules, one name, 3 and 2 on one screen. The button calls the
+    # panel's function now; this suite asserts it CALLS rather than
+    # COPIES, and that nothing calls the old rule it kept.
+    'test_lease_rule.py'
+    # Current tenants by default, past ones on ask. Its section 2 is
+    # the one that matters: a status chosen in the filter panel must
+    # be tested BEFORE the default, or picking Inactive returns an
+    # empty page while showing Inactive as selected.
+    'test_tenant_past.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

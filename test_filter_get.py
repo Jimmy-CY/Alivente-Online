@@ -111,13 +111,27 @@ PATCHER = 'apply_filter_get.py'
 PS1 = 'Push-PendingChanges.ps1'
 
 # page, url path, view module, view function, how many filter reads moved
+# TWO COUNTS, NOT ONE - TN-1, 2 Oct 2026.
+#
+#   n_get   how many filter values the view reads out of request.GET TODAY.
+#           A census. A round that adds a read comes here and says so.
+#   n_lost  how many request.POST reads F1 took away. A claim about what
+#           one round did, in October 2026, and it never moves again.
+#
+# They were ONE column until TN-1, and equal by construction: F1 moved
+# each read from one dictionary to the other, so the number it added to
+# GET was the number it removed from POST. TN-1 added `all` - the Include
+# past tenants toggle - which was never a POST read, and the single column
+# then reported "the module lost EXACTLY 4 request.POST" about a module
+# that lost three. The count was right and the sentence was wrong, which
+# is worse than a plain failure.
 FIVE = [
-    ('fsr.html', '/fsr/', 'issues.py', 'fsr', 4),
-    ('invoices.html', '/invoices/', 'invoices.py', 'invoices_page', 2),
+    ('fsr.html', '/fsr/', 'issues.py', 'fsr', 4, 4),
+    ('invoices.html', '/invoices/', 'invoices.py', 'invoices_page', 2, 2),
     ('properties.html', '/properties/', 'properties.py',
-     'properties_page', 3),
-    ('suppliers.html', '/suppliers/', 'suppliers.py', 'suppliers', 2),
-    ('tenant.html', '/tenant/', 'tenants.py', 'tenant_page', 3),
+     'properties_page', 3, 3),
+    ('suppliers.html', '/suppliers/', 'suppliers.py', 'suppliers', 2, 2),
+    ('tenant.html', '/tenant/', 'tenants.py', 'tenant_page', 4, 3),
 ]
 VIEWS = os.path.join(ROOT, 'pages', 'views')
 
@@ -198,7 +212,7 @@ def fn_source(module, name):
 # ==========================================================================
 head('1. THE FIVE FORMS TRAVEL BY GET, AND CARRY NO TOKEN')
 # ==========================================================================
-for page, _u, _m, _f, _n in FIVE:
+for page, _u, _m, _f, _n, _nl in FIVE:
     p = alv_tree.path_of(page)
     now = read(p)
     seg = panel_of(now)
@@ -229,7 +243,7 @@ for page, _u, _m, _f, _n in FIVE:
 # ==========================================================================
 head('2. THE FIVE VIEWS READ request.GET - AND NOTHING ELSE MOVED')
 # ==========================================================================
-for page, _u, mod, fn, n_reads in FIVE:
+for page, _u, mod, fn, n_reads, n_lost in FIVE:
     src, body = fn_source(mod, fn)
     if not ok(body is not None, '%-16s has %s' % (mod, fn)):
         continue
@@ -251,9 +265,9 @@ for page, _u, mod, fn, n_reads in FIVE:
         skip('%-16s   the rest of the module' % '', 'no backup')
         continue
     was = read(bak)
-    ok(was.count('request.POST') - src.count('request.POST') == n_reads,
+    ok(was.count('request.POST') - src.count('request.POST') == n_lost,
        '%-16s   and the module lost EXACTLY %d request.POST - the other '
-       '%d are untouched' % ('', n_reads, src.count('request.POST')),
+       '%d are untouched' % ('', n_lost, src.count('request.POST')),
        'before %d, after %d' % (was.count('request.POST'),
                                 src.count('request.POST')))
     try:
@@ -314,8 +328,28 @@ if django_up:
                             supplier_country='CY')
     supplier.objects.create(supplier_contact_person='Maria Beta',
                             supplier_country='GR')
-    TenantModel.objects.create(tenant_name='Alpha Tenant', prop=a)
-    TenantModel.objects.create(tenant_name='Beta Tenant', prop=b)
+    # tenant_current='Yes' - TN-1, 2 Oct 2026. The Tenants list now
+    # narrows to current tenants unless ?all=1 is asked for, and
+    # tenant_current is a blank CharField with no default - so a row
+    # created without one is not current, and these two disappeared from
+    # every count in section 3.
+    #
+    # IT ALSO MOVED THE MARKUP DIFF IN 3c, which is the part worth
+    # knowing. That section renders the panel against the .bak_filterget
+    # templates and against the live ones - same view, same rows. The old
+    # template lists its tenant options from `tenant`, the FILTERED set;
+    # F3 moved the live one onto `all_tenant_names`, the whole table. So
+    # with the rows filtered away the OLD panel lost both options and the
+    # new one kept them, and a diff that should have been one line
+    # shorter came out one line longer.
+    #
+    # Giving the rows the status they were always meant to have puts the
+    # filtered set and the whole table back in agreement, which is the
+    # only state in which those two loops are interchangeable.
+    TenantModel.objects.create(tenant_name='Alpha Tenant', prop=a,
+                               tenant_current='Yes')
+    TenantModel.objects.create(tenant_name='Beta Tenant', prop=b,
+                               tenant_current='Yes')
 
     boss = User.objects.create_superuser('f1probe', 'f1@example.test',
                                          'ProbePass!2026x')
@@ -461,11 +495,11 @@ if django_up:
         _got = {}
         for _w in ('before', 'after'):
             _use(_w)
-            for _p, _url, _m, _f, _nn in FIVE:
+            for _p, _url, _m, _f, _nn, _nl in FIVE:
                 _got[(_p, _w)] = _panel_lines(
                     c.get(_url).content.decode('utf-8', 'replace'))
         _use('after')
-        for _p, _url, _m, _f, _nn in FIVE:
+        for _p, _url, _m, _f, _nn, _nl in FIVE:
             _b, _a = _got[(_p, 'before')], _got[(_p, 'after')]
             _extra = []
             _f3 = _p in _F3_PAGES
@@ -574,7 +608,7 @@ if os.path.isfile(ps1):
 else:
     skip('the gate', '%s not on disk' % PS1)
 ok(SUFFIX in ROUNDS, '%s is registered in alv_rounds.ROUNDS' % SUFFIX)
-for page, _u, mod, _f, _n in FIVE:
+for page, _u, mod, _f, _n, _nl in FIVE:
     ok(os.path.isfile(alv_tree.path_of(page) + SUFFIX),
        '%-18s has its backup' % page)
     ok(os.path.isfile(os.path.join(VIEWS, mod) + SUFFIX),

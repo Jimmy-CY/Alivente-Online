@@ -633,11 +633,18 @@ Home
           '<td data-label="Country">' + (item.prop_country || '') + '</td>' +
           '<td data-label="Tenant">' + (item.tenant_name || '') + '</td>' +
           '<td data-label="Lease End">' + (item.lease_end_date || '') + '</td>' +
-          '<td data-label="Renewal Due">' + (item.renewal_date || '') + '</td>' +
-          '<td data-label="Status"><span class="status-badge status-warning">PENDING</span></td></tr>';
+          /* DB-8, 2 Oct 2026. Was "Renewal Due" from item.renewal_date,
+             which the new rule does not produce - there is no renewal
+             period in it. Days to end is what the panel beside this one
+             shows, and it is the same number. */
+          '<td data-label="Days to End">' + (item.days_to_end != null ? item.days_to_end + 'd' : '') + '</td>' +
+          /* And the status was the literal string PENDING - true only
+             because the OLD query filtered on it, so the column was a
+             constant dressed as data. */
+          '<td data-label="Status"><span class="status-badge status-warning">' + ((item.renewal_status || 'pending').toUpperCase()) + '</span></td></tr>';
       }).join('');
       return '<div class="table-container"><table class="data-table">' +
-        '<thead><tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th>Renewal Due By</th><th>Status</th></tr></thead>' +
+        '<thead><tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th>Days to End</th><th>Status</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table></div>';
     }
 

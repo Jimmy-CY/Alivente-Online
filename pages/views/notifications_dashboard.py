@@ -235,7 +235,59 @@ def get_expenses_waiting_payment(cursor):
 
 
 def get_expiring_leases(cursor, today):
-    """Get leases that are expiring and pending renewal"""
+    """Leases ending within 90 days with no successor captured.
+
+    ONE DEFINITION - DB-8, 2 Oct 2026. This used to run its own query:
+    tenant_current = 'Yes' AND today past (lease_end_date minus the
+    tenant's OWN renewal_period) AND renewal_status still 'pending'. The
+    dashboard panel beside it asked a different question - ending within a
+    fixed 90 days with no successor lease on the property - and the two
+    sat six inches apart on one screen, both labelled Expiring Leases,
+    showing 2 and 3.
+
+    Demetri chose the panel's rule. The cost was named first and taken
+    knowingly: THE PER-TENANT RENEWAL LEAD TIME IS GONE. A lease needing
+    six months' notice is now flagged at ninety days like every other one.
+
+    IT CALLS THE PANEL'S FUNCTION RATHER THAN COPYING ITS RULE, because a
+    copied rule is two rules again the first time either is edited - which
+    is the whole reason this round exists. What is left here is a mapping
+    from that function's keys onto the ones the two dashboard tables
+    already read.
+
+    `cursor` IS UNUSED AND KEPT ON PURPOSE. The caller hands it to six
+    helpers in a row and the other five still need it; narrowing this one
+    signature is a different edit with a different risk.
+                                                    [test_lease_rule.py]
+    """
+    del cursor  # see the note above - deliberately unused
+    from pages.services.portfolio_insights import expiring_no_successor
+
+    out = []
+    for row in expiring_no_successor(today=today, within_days=90):
+        end = row['lease_end']
+        out.append({
+            'prop_name': row['prop_name'],
+            'prop_country': row['prop_country'],
+            'tenant_name': row['tenant_name'],
+            'lease_end_date': end.strftime('%Y-%m-%d') if end else '',
+            'days_to_end': row['days_to_end'],
+            'renewal_status': row['renewal_status'],
+        })
+    return out
+
+
+def _get_expiring_leases_before_db8(cursor, today):
+    """THE OLD RULE, KEPT AND UNCALLED - DB-8, 2 Oct 2026.
+
+    Not dead code by accident. The per-tenant renewal lead time this
+    implements is a real idea that the new rule gives up, and if the
+    ninety-day window turns out to be too late for a long-notice lease,
+    this is what it looked like. Deleting it would mean rediscovering it.
+
+    test_lease_rule.py asserts that NOTHING CALLS THIS, so it cannot drift
+    back into service without a round saying so.
+    """
     cursor.execute("""
         SELECT prop.prop_name, prop.prop_country, tenant.tenant_name,
                tenant.tenant_lease_end_date, tenant.tenant_renewal_period,
