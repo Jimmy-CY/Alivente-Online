@@ -141,6 +141,7 @@ ROUNDS = [
     '.bak_jshandlers',
     '.bak_btntone',
     '.bak_sentinels',
+    '.bak_mealrow',
 ]
 
 

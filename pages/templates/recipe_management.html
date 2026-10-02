@@ -1558,17 +1558,23 @@
         </a>
 
         <!-- Favourites Filter -->
-        <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
-           <!-- B-1, 2 Oct 2026. The colour WAS the state here - btn-danger
-                when Favourites is on, btn-outline-danger when it is off -
-                and since .btn.action-secondary is (0,2,0) against
-                btn-danger's (0,1,0), both resolved to the same white
-                secondary. The state has never once been visible.
+        <!-- B-1, 2 Oct 2026. The colour WAS the state here - btn-danger
+             when Favourites is on, btn-outline-danger when it is off - and
+             since .btn.action-secondary is (0,2,0) against btn-danger's
+             (0,1,0), both resolved to the same white secondary. The state
+             had never once been visible.
 
-                aria-pressed instead, which base already answers for
-                .action-filter and already explains there: a toggle with no
-                visible state gets pressed twice. A screen reader is told
-                as well, for the first time. -->
+             aria-pressed instead, which base already answers for
+             .action-filter and already explains there: a toggle with no
+             visible state gets pressed twice. A screen reader is told as
+             well, for the first time.
+
+             B-1b, 2 Oct 2026: THIS NOTE USED TO SIT INSIDE THE TAG BELOW,
+             between the href and the class. HTML has no comment there -
+             the parser read `<!--` as an attribute name and closed the tag
+             on the `>` of `-->`, so the class and the aria-pressed became
+             text and the page printed them. Demetri found it on Live. -->
+        <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
            class="btn action-secondary"
            aria-pressed="{% if show_favourites %}true{% else %}false{% endif %}">
             <i class="fas fa-heart"></i> Favourites

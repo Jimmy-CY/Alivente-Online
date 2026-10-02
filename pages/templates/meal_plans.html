@@ -111,61 +111,6 @@
     font-size: 11px;
 }
 
-.btn-view {
-    background: #007bff;
-    color: white;
-    border: none;
-}
-
-.btn-view:hover {
-    background: #0056b3;
-    color: white;
-}
-
-.btn-edit {
-    background: #ffc107;
-    color: #000;
-    border: none;
-}
-
-.btn-edit:hover {
-    background: #e0a800;
-    color: #000;
-}
-
-.btn-shopping {
-    background: #28a745;
-    color: white;
-    border: none;
-}
-
-.btn-shopping:hover {
-    background: #218838;
-    color: white;
-}
-
-.btn-duplicate {
-    background: #0e7c8b;
-    color: white;
-    border: none;
-}
-
-.btn-duplicate:hover {
-    background: var(--alv-accent-ink);
-    color: white;
-}
-
-.btn-delete {
-    background: #dc3545;
-    color: white;
-    border: none;
-}
-
-.btn-delete:hover {
-    background: #c82333;
-    color: white;
-}
-
 .btn-action-disabled {
     background: var(--alv-surface-deep);
     color: #6c757d;
@@ -275,22 +220,13 @@
         white-space: normal;
     }
 
-    /* Action buttons in card — 3-col grid (2 rows: 3 + 2) */
-    .meal-plan-actions {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-        width: 100%;
-        justify-self: stretch !important;
-    }
-    .meal-plan-actions .btn,
-    .meal-plan-actions .btn-action-disabled {
-        padding: 10px 4px;
-        font-size: 12px;
-        justify-content: center;
-        text-align: center;
-        white-space: nowrap;
-    }
+    /* THE PHONE GRID IS base's NOW - ML-1, 2 Oct 2026. These seven
+       declarations described .mobile-action-bar exactly: a repeat(3, 1fr)
+       grid with a 6px gap, stretched, with its buttons centred. base says
+       all of it, and says the rest of the bar too - the top rule, the icon
+       size, the label, the disabled state. The page keeps one line, below,
+       because base has no opinion about a card that is not a table. */
+    .row-actions { display: none !important; }
 
     /* Empty state */
     .empty-state {
@@ -425,42 +361,86 @@
                 </span>
             </div>
             
-            <!-- Actions -->
-            <div class="meal-plan-actions">
-                <a href="{% url 'view_meal_plan' plan.meal_plan_id %}" class="btn btn-view">
-                    <i class="fas fa-eye"></i> View
+            <!-- Actions - ML-1, 2 Oct 2026. Five filled buttons in five
+                 colours became base's row-action strip: the same five
+                 actions, the same order, on .icon-action-btn. The page's
+                 own btn-view / btn-edit / btn-shopping / btn-duplicate /
+                 btn-delete rules and their ten literal colours went with
+                 them.
+
+                 THE NAME TRAVELS AS AN ATTRIBUTE, NOT IN A HANDLER -
+                 J-2's answer, applied here because the phone bar below
+                 repeats every action and an onclick would mean writing
+                 the plan name into a JS string ten times a row instead
+                 of carrying it once. One delegated listener per action
+                 serves both strips. -->
+            <div class="row-actions">
+                <a href="{% url 'view_meal_plan' plan.meal_plan_id %}" class="icon-action-btn icon-view" title="View"><i class="fas fa-eye"></i></a>
+                {% if perms.auth.can_edit_personal %}
+                <a href="{% url 'edit_meal_plan' plan.meal_plan_id %}" class="icon-action-btn icon-edit" title="Edit"><i class="fas fa-pencil-alt"></i></a>
+                {% else %}
+                <span class="icon-action-btn icon-disabled" title="No permission to edit"><i class="fas fa-pencil-alt"></i></span>
+                {% endif %}
+                <a href="{% url 'meal_plan_shopping_list' plan.meal_plan_id %}" class="icon-action-btn icon-list" title="Shopping List"><i class="fas fa-shopping-cart"></i></a>
+                {% if perms.auth.can_edit_personal %}
+                <button type="button" class="icon-action-btn icon-duplicate js-duplicate-plan"
+                        data-duplicate-url="{% url 'duplicate_meal_plan' plan.meal_plan_id %}"
+                        data-plan-name="{{ plan.plan_name }}" title="Duplicate"><i class="fas fa-copy"></i></button>
+                <button type="button" class="icon-action-btn icon-delete js-delete-plan"
+                        data-delete-url="{% url 'delete_meal_plan' plan.meal_plan_id %}"
+                        data-plan-name="{{ plan.plan_name }}" title="Delete"><i class="fas fa-trash"></i></button>
+                {% else %}
+                <span class="icon-action-btn icon-disabled" title="No permission to duplicate"><i class="fas fa-copy"></i></span>
+                <span class="icon-action-btn icon-disabled" title="No permission to delete"><i class="fas fa-trash"></i></span>
+                {% endif %}
+            </div>
+
+            <!-- And the phone bar, from base. .mobile-action-bar is already
+                 a repeat(3, 1fr) grid with a 6px gap - the exact shape this
+                 page had written for itself in its own 768 block. Five
+                 actions over three columns is 3 + 2, which is what it has
+                 always done. -->
+            <div class="mobile-action-bar">
+                <a href="{% url 'view_meal_plan' plan.meal_plan_id %}" class="mobile-action-btn">
+                    <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                    <span class="mobile-action-label">View</span>
                 </a>
                 {% if perms.auth.can_edit_personal %}
-                <a href="{% url 'edit_meal_plan' plan.meal_plan_id %}" class="btn btn-edit">
-                    <i class="fas fa-edit"></i> Edit
+                <a href="{% url 'edit_meal_plan' plan.meal_plan_id %}" class="mobile-action-btn">
+                    <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                    <span class="mobile-action-label">Edit</span>
                 </a>
                 {% else %}
-                <span class="btn btn-action-disabled" title="No permission to edit">
-                    <i class="fas fa-edit"></i> Edit
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                    <span class="mobile-action-label">Edit</span>
                 </span>
                 {% endif %}
-                <a href="{% url 'meal_plan_shopping_list' plan.meal_plan_id %}" class="btn btn-shopping">
-                    <i class="fas fa-shopping-cart"></i> List
+                <a href="{% url 'meal_plan_shopping_list' plan.meal_plan_id %}" class="mobile-action-btn">
+                    <i class="fas fa-shopping-cart mobile-action-icon icon-color-list"></i>
+                    <span class="mobile-action-label">List</span>
                 </a>
                 {% if perms.auth.can_edit_personal %}
-                <button type="button" 
-                        class="btn btn-duplicate"
+                <button type="button" class="mobile-action-btn js-duplicate-plan"
                         data-duplicate-url="{% url 'duplicate_meal_plan' plan.meal_plan_id %}"
-                        onclick="confirmDuplicate(this, '{{ plan.plan_name|escapejs }}')">
-                    <i class="fas fa-copy"></i> Duplicate
+                        data-plan-name="{{ plan.plan_name }}">
+                    <i class="fas fa-copy mobile-action-icon icon-color-duplicate"></i>
+                    <span class="mobile-action-label">Duplicate</span>
                 </button>
-                <button type="button" 
-                        class="btn btn-delete"
+                <button type="button" class="mobile-action-btn js-delete-plan"
                         data-delete-url="{% url 'delete_meal_plan' plan.meal_plan_id %}"
-                        onclick="confirmDelete(this, '{{ plan.plan_name|escapejs }}')">
-                    <i class="fas fa-trash"></i> Delete
+                        data-plan-name="{{ plan.plan_name }}">
+                    <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                    <span class="mobile-action-label">Delete</span>
                 </button>
                 {% else %}
-                <span class="btn btn-action-disabled" title="No permission to duplicate">
-                    <i class="fas fa-copy"></i> Duplicate
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-copy mobile-action-icon"></i>
+                    <span class="mobile-action-label">Duplicate</span>
                 </span>
-                <span class="btn btn-action-disabled" title="No permission to delete">
-                    <i class="fas fa-trash"></i> Delete
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-trash mobile-action-icon"></i>
+                    <span class="mobile-action-label">Delete</span>
                 </span>
                 {% endif %}
             </div>
@@ -571,6 +551,27 @@
 
 <script>
 // Delete meal plan confirmation
+// THE TWO LISTENERS - ML-1, 2 Oct 2026.
+//
+// Delegated on document, so one of each serves the desktop icon strip AND
+// the phone action bar without the markup repeating a handler. The plan
+// name arrives as an attribute, which the browser's own parser decodes -
+// there is no JS string here to close early on an apostrophe, which is
+// what J-2 was about.
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('.js-duplicate-plan');
+    if (!btn) { return; }
+    e.preventDefault();
+    confirmDuplicate(btn, btn.getAttribute('data-plan-name') || '');
+});
+
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('.js-delete-plan');
+    if (!btn) { return; }
+    e.preventDefault();
+    confirmDelete(btn, btn.getAttribute('data-plan-name') || '');
+});
+
 function confirmDelete(button, mealPlanName) {
     const deleteUrl = button.getAttribute('data-delete-url');
     document.getElementById('deleteForm').action = deleteUrl;

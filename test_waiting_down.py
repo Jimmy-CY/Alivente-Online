@@ -434,7 +434,14 @@ ok(not calls,
    'tree, not from reading itself', ['line %d' % c.lineno for c in calls])
 
 crude = [n for n in scripts()
-         if n.startswith('test_') and 'os.walk(' in read(os.path.join(ROOT, n))]
+         if n.startswith('test_') and 'os.walk(' in code_only(read(os.path.join(ROOT, n)))]
+# CODE, NOT PROSE - ML-1, 2 Oct 2026, and the SECOND half of a repair made
+# on 30 Sep. The line above used to read the whole file, comments
+# included, so a comment that NAMED os.walk was indistinguishable from a
+# call to it. That was fixed in walks_own_root() and not here, in the line
+# that feeds it - and ML-1 tripped it by writing a note in test_js_escape
+# explaining why that suite no longer calls os.walk. The note quoted the
+# call; the grep believed it.
 known = (set(alv_tree.CONVERTED) | set(alv_tree.WAITING)
          | set(alv_tree.WAITING_INDIRECT) | set(alv_tree.ALREADY_WIDE)
          | set(alv_tree.MENTIONS_ONLY) | {X0_SUITE})

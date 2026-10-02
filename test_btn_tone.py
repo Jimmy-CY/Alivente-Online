@@ -382,6 +382,116 @@ ok(not [i for i, line in enumerate(now(RM).split('\n'), 1)
 css = '\n'.join(STYLE.findall(code_only(now(BASE))))
 ok(css.count('{') == css.count('}'), 'and base\'s CSS still balances')
 
+
+# ==========================================================================
+head('5. AND NO COMMENT SITS INSIDE A TAG - B-1b, 2 Oct 2026')
+# ==========================================================================
+# THE CHECK THIS SUITE DID NOT HAVE, and the reason it did not have it.
+#
+# B-1 put its note between the href and the class of the Favourites link -
+# inside the opening tag. HTML has no comment there: the parser reads
+# `<!--` as an attribute name and closes the tag on the `>` of `-->`, so
+# the class and the aria-pressed became TEXT and the live page printed
+# them. Demetri found it on Live.
+#
+# Every gate in this suite passed, and they passed for the same reason the
+# bug existed: all of them read code_only(), which blanks comments before
+# looking. A comment in the wrong place is invisible to an instrument whose
+# first act is to delete the comments. So this one reads the RAW file.
+
+
+def comments_in_tags(text):
+    """[(line, excerpt)] for every <!-- that opens inside an unclosed tag.
+    Walks the raw text in order, tracking quotes, so a `<` inside an
+    attribute value and a tag quoted inside a comment are both ignored."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        lt = text.find('<', i)
+        if lt < 0:
+            break
+        if text.startswith('<!--', lt):
+            end = text.find('-->', lt)
+            i = (end + 3) if end >= 0 else n
+            continue
+        if not re.match(r'</?[a-zA-Z]', text[lt:lt + 3]):
+            i = lt + 1
+            continue
+        j, q = lt + 1, None
+        while j < n:
+            ch = text[j]
+            if q:
+                if ch == q:
+                    q = None
+            elif ch in '"\'':
+                q = ch
+            elif ch == '>':
+                break
+            elif text.startswith('<!--', j):
+                out.append((text.count('\n', 0, j) + 1,
+                            re.sub(r'\s+', ' ', text[lt:j + 60])[:90]))
+                break
+            j += 1
+        i = j + 1
+    return out
+
+
+# THIS SECTION READS THE LIVE FILE, AND NOTHING ELSE IN THIS SUITE DOES.
+#
+# now() is as_left_by(p, '.bak_btntone') - the page AS B-1 LEFT IT - which
+# is right for every other claim here and exactly wrong for this one: the
+# broken tag is something B-1 WROTE, so B-1's own state still contains it.
+# The claim being made is about the tree as it stands after B-1b repaired
+# it, so the state it has to look at is today's. Same exception, same
+# reason, as the one turned over in test_pl_invoice_icon.py this morning.
+
+
+def _live(p):
+    """The file AS IT STANDS NOW. Used by this section only - see above."""
+    return read(p)
+
+
+bad = []
+for p in alv_tree.templates():
+    for ln, ex in comments_in_tags(_live(p)):
+        bad.append('%s line %d  %s' % (alv_tree.rel(p), ln, ex))
+ok(not bad, 'not one of the %d templates in either root has a comment '
+   'inside a tag' % len(alv_tree.templates()), '\n'.join(bad[:8]))
+
+ok(len(comments_in_tags('<a href="x"\n   <!-- note -->\n   class="y">z</a>'))
+   == 1,
+   'CONTROL: the instrument finds the exact shape that broke Favourites')
+for good, why in (
+        ('<!-- a note -->\n<a href="x" class="y">z</a>', 'a note above a tag'),
+        ('<a title="3 < 4" href="x">z</a>', 'a < inside an attribute'),
+        ('<!-- <a href="x"> --><p>ok</p>', 'a tag quoted inside a comment'),
+        ('<a href="x">z</a><!-- after -->', 'a note after a tag')):
+    ok(not comments_in_tags(good), '  and does not fire on %s' % why, good)
+
+# THE CONTROL READS B-1b's BACKUP, NOT B-1's - and the difference is the
+# whole story. was() here is .bak_btntone, the page BEFORE B-1, which did
+# not have the bug because B-1 is what INTRODUCED it. The state that
+# carried the broken tag is the one B-1 LEFT, which is what B-1b backed up.
+# A control pointed at the wrong backup proves the wrong thing, and this
+# one proved nothing until it was moved.
+_b1b = alv_tree.path_of('recipe_management.html') + '.bak_favtag'
+if os.path.isfile(_b1b):
+    ok(len(comments_in_tags(read(_b1b))) == 1,
+       'CONTROL: the page B-1 LEFT carried exactly one comment inside a tag '
+       '- that is the bug Demetri found on Live',
+       len(comments_in_tags(read(_b1b))))
+else:
+    skip('the B-1b control', 'no .bak_favtag backup')
+
+# AND THE TAG ITSELF PARSES. Asked of the raw file, because a
+# comment-stripped read is exactly what could not see this.
+m = re.search(r'<a href="\{% if show_favourites %\}[^>]*?>', _live(RM), re.S)
+ok(bool(m), 'the Favourites tag is findable')
+if m:
+    ok('<!--' not in m.group(0), '  and has no comment in it')
+    ok('class="btn action-secondary"' in m.group(0),
+       '  the class is an ATTRIBUTE, not text')
+    ok('aria-pressed=' in m.group(0), '  and so is aria-pressed')
+
 # ==========================================================================
 head('4. REGISTERED, AND THE PUSH GATE STILL RESOLVES')
 # ==========================================================================

@@ -356,7 +356,14 @@ head('3. EVERY WALKING SUITE IS ACCOUNTED FOR')
 # ==========================================================================
 walking = [n for n in scripts()
            if n.startswith('test_') and n != ME
-           and 'os.walk(' in read(os.path.join(ROOT, n))]
+           and 'os.walk(' in code_only(read(os.path.join(ROOT, n)))]
+# CODE, NOT PROSE - ML-1, 2 Oct 2026, and the SECOND half of a repair made
+# on 30 Sep. The line above used to read the whole file, comments
+# included, so a comment that NAMED os.walk was indistinguishable from a
+# call to it. That was fixed in walks_own_root() and not here, in the line
+# that feeds it - and ML-1 tripped it by writing a note in test_js_escape
+# explaining why that suite no longer calls os.walk. The note quoted the
+# call; the grep believed it.
 known = (set(CONVERT) | set(WAITING) | set(INDIRECT)
          | set(ALREADY_WIDE) | set(MENTIONS))
 orphans = sorted(set(walking) - known)

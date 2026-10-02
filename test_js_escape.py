@@ -89,9 +89,9 @@ except Exception as e:
     sys.exit('! alv_tree could not be imported: %s' % e)
 
 try:
-    from alv_rounds import as_left_by
+    from alv_rounds import as_left_by, as_of
 except Exception:
-    as_left_by = None
+    as_left_by = as_of = None
 
 SUFFIX = '.bak_jsescape'
 ME = 'test_js_escape.py'
@@ -140,12 +140,61 @@ def head(t):
     print('\n' + '=' * 74 + '\n' + t + '\n' + '=' * 74)
 
 
+# WHEN J-1 RAN. The tree still holds it: the mtime of the oldest
+# .bak_jsescape backup. A round writes its backups as it goes, so the
+# first one is the closest thing to the moment it started.
+#
+# AND IT ASKS alv_tree, NOT os.walk. The first draft of this helper wrote
+# `for folder, _sub, names in os.walk(ROOT)` - and test_tree_roots.py
+# promptly reported this suite as "NOT ACCOUNTED FOR", because a census
+# that builds its own walk is the exact mistake X0 exists to stop, and the
+# crude detector that finds them does not care that this one was only
+# looking for backups. It was right to flag it: J-1 touched twenty
+# templates and every one of them is in alv_tree.templates(), so there was
+# never a reason to walk the repo.
+def _when_j1_ran():
+    best = None
+    for p in alv_tree.templates():
+        b = p + SUFFIX
+        if os.path.isfile(b):
+            t = os.path.getmtime(b)
+            if best is None or t < best:
+                best = t
+    return best
+
+
+J1_RAN = _when_j1_ran()
+
+
 def was(p):
-    """BEFORE this round. A backup, or the file itself where the round
-    had nothing to change - as_left_by() is not used here because it
-    returns the file as the round LEFT it, which is the opposite of a
-    control. A1's lesson, and it cost a push."""
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else read(p)
+    """BEFORE this round, and BEFORE means before - not today.
+
+    A BACKUP WHERE J-1 MADE ONE. as_left_by() is deliberately not used
+    here, because it returns the file as the round LEFT it, which is the
+    opposite of a control. A1's lesson, and it cost a push.
+
+    AND as_of() WHERE IT DID NOT. The old second clause read "the file
+    itself where the round had nothing to change", which was true on the
+    day J-1 ran and decayed from then on. ML-1 edited meal_plans.html -
+    a page J-1 never touched, so it carries no .bak_jsescape - and took
+    two |escapejs out of it, so this count moved from 45 to 43 and J-1's
+    own control failed, eight hours after J-2 fixed the same defect on
+    the now() side of this very file.
+
+    as_of() has been in alv_rounds since X0 and does exactly this: the
+    file's first backup written after `when`, or the file itself if
+    nothing has touched it since. A page edited by a later round now
+    resolves to THAT round's backup - the file before it, which is after
+    J-1, which is the state this control names.
+
+    THE RULE, FOR THE FIFTH TIME: a scope or recency claim is measured
+    against the state it names, never against read(path).
+    """
+    if os.path.isfile(p + SUFFIX):
+        return read(p + SUFFIX)
+    if as_of is not None and J1_RAN is not None:
+        return as_of(p, J1_RAN, read)
+    return read(p)
 
 
 def filters_of(expr):

@@ -3943,6 +3943,19 @@ table.alv-matrix {
    Alias the colour, never the name. */
 .icon-manage       { color: var(--alv-view); border-color: var(--alv-accent-line); }
 
+/* List: the FIFTH NAME on --alv-view, added by ML-1 on 2 Oct 2026 for
+   Meal Plans' shopping-list row action (fa-shopping-cart). A shopping list
+   is something the row SHOWS you, which is what --alv-view means here, and
+   there was no name that read correctly on that button - "manage" does not
+   describe a list of what to buy.
+
+   THE RULE base ALREADY STATES, three names above this one: a new NAME on
+   an existing colour, not a sixth colour. Nothing is added to the palette.
+   The name exists so the markup says what the control is. */
+.icon-list       { color: var(--alv-view); border-color: var(--alv-accent-line); }
+.icon-list:hover { background-color: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
+.icon-color-list { color: var(--alv-view); }
+
 /* Event: the fourth NAME on --alv-view, added by Section H round H2 for
    Celebrations' "Add Event" row action (fa-calendar-plus). Adding an event
    to a contact opens that contact's record to write to it, which is the

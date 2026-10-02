@@ -121,6 +121,9 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\meal_plans.html'; Text = 'icon-action-btn icon-view'; What = 'ML-1: the row is on the house action strip' },
+    @{ File = 'pages\templates\base.html'; Text = '.icon-list       { color: var(--alv-view)'; What = 'ML-1: base carries the shopping-list NAME on the view colour' },
+    @{ File = 'pages\templates\meal_plans.html'; Text = 'onclick="confirmDelete('; Absent = $true; Code = $true; What = 'ML-1: the plan name is not written into a handler' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'aria-pressed="{% if show_favourites %}true'; What = 'B-1: Favourites says its state with aria-pressed' },
     @{ File = 'pages\templates\base.html'; Text = '.btn.action-secondary[aria-pressed="true"]'; What = 'B-1: base gives a pressed secondary a visible state' },
     @{ File = 'pages\templates\view_recipe.html'; Text = 'btn btn-danger action-secondary'; Absent = $true; Code = $true; What = 'B-1: no control wears a Bootstrap colour on top of a house role' },
@@ -1215,6 +1218,12 @@ $suites = @(
     # reported a clean census), that every row resolves, and - the
     # claim no round had made - that every row could ever have FAILED.
     'test_sentinels.py'
+    # The Meal Plans row, onto base's row-action strip. Its section
+    # 2 draws the five controls against a PLAIN base page and against
+    # the page's own CSS, and demands they come out identical - a page
+    # that merely looks similar is a page that copied the component
+    # again. 54 local rules fell to 43 and 24 literals to 13.
+    'test_meal_row.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
