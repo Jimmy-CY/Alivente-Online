@@ -527,8 +527,32 @@
             {{ expense.prop.prop_name }}
             {% if expense.act_expense_document %}
                 {% with badge=expense.verify_badge %}
+                {# DATA, NOT A FUNCTION CALL - DB-4, 2 Oct 2026. #}
+                {# #}
+                {# TWO REASONS, AND THE SECOND IS A BUG. #}
+                {# #}
+                {# ONE, AND IT IS A BUG: the filename went into a #}
+                {# JavaScript string literal inside an HTML attribute. #}
+                {# Measured in Chromium - an invoice named with an #}
+                {# apostrophe gives `missing ) after argument list` and #}
+                {# the handler never parses, so that document cannot be #}
+                {# opened at all, here or in the P&L drill-down. #}
+                {# #}
+                {# DJANGO'S AUTOESCAPING DOES NOT COVER IT. It escapes #}
+                {# HTML, so the apostrophe arrives as an entity; the #}
+                {# browser decodes that while parsing the ATTRIBUTE and #}
+                {# hands the JS parser a bare apostrophe inside a quoted #}
+                {# string. Two languages in one attribute, one of them #}
+                {# escaped. A data attribute has no inner language. #}
+                {# #}
+                {# TWO: this table is INJECTED into the P&L Actual #}
+                {# Expense modal, which takes table.table out of a fetch #}
+                {# of this page. finance_pl_act.html has carried a #}
+                {# handler reading these two attributes all along, and #}
+                {# could never use it while the icon had an onclick. #}
                 <i class="fas {{ badge.1 }} verify-icon verify-{{ badge.0 }}"
-                   onclick="viewInvoiceQuick('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
+                   data-invoice-url="{{ expense.act_expense_document.url }}"
+                   data-filename="{{ expense.act_expense_document.name }}"
                    title="{{ badge.2 }} - click to view invoice"></i>
                 {% endwith %}
             {% endif %}
@@ -1515,6 +1539,24 @@ function deleteInvoiceDocument(expenseId) {
 // Manage modal Invoice tab call the same shared pdf_viewer component.
 // The component handles PDF + image preview, mobile Share sheet, page nav,
 // zoom and Download — same UX as title deeds, leases and recipe documents.
+
+// ONE DELEGATED HANDLER, BECAUSE THE ICON NO LONGER CALLS ANYTHING.
+// DB-4 took the onclick off it - see the note on the markup - so this
+// page binds the click itself. Delegated, because the rows are re-drawn
+// by the live-search filter and a handler bound to the elements would
+// go with them.
+//
+// THE SAME TWO ATTRIBUTES finance_pl_act.html's own handler reads, so
+// the icon works in the table AND in the modal that injects the table,
+// with one spelling between them.          [test_pl_invoice_icon.py]
+document.addEventListener('click', function (e) {
+    var icon = e.target.closest && e.target.closest('.verify-icon');
+    if (!icon) { return; }
+    var url = icon.getAttribute('data-invoice-url');
+    if (!url) { return; }
+    e.preventDefault();
+    viewInvoiceQuick(url, icon.getAttribute('data-filename') || 'invoice');
+});
 
 function viewInvoiceQuick(documentUrl, documentName) {
     const cleanName = (documentName || '').split('/').pop() || 'invoice';

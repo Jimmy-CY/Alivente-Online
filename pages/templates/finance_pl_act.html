@@ -1453,11 +1453,27 @@ $(document).ready(function() {
 
     function setupInvoiceIconHandlers() {
         // For any invoice icon that carries its document in data attributes
-        // rather than an onclick. Guarded on the onclick so an icon with both
-        // does not open the viewer twice.
+        // rather than an onclick.
+        //
+        // THE GUARD THAT USED TO BE HERE MADE THIS UNREACHABLE - DB-4,
+        // 2 Oct 2026. It read
+        //
+        //     if ($icon.attr('onclick')) { return; }
+        //
+        // and its reason was sound: an icon carrying BOTH an onclick and
+        // the data attributes would open the viewer twice. But every icon
+        // carried an onclick and none carried the attributes, so this
+        // returned on every row of every drill-down and the handler never
+        // ran once. Worse, the onclick it deferred to named a function
+        // from act_expense.html's script - and this modal injects that
+        // page's TABLE, not its script - so the click reached nothing at
+        // all.
+        //
+        // act_expense.html writes the two attributes and no onclick now,
+        // so there is nothing left to guard against.
+        //                                  [test_pl_invoice_icon.py]
         $(document).off('click', '.verify-icon').on('click', '.verify-icon', function(e) {
             var $icon = $(this);
-            if ($icon.attr('onclick')) { return; }
             var documentUrl = $icon.data('invoice-url') || $icon.data('url');
             if (!documentUrl) { return; }
             e.preventDefault();

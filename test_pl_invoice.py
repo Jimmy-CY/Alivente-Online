@@ -132,8 +132,23 @@ check('  but the glyph survives as the not-a-PDF placeholder, which was always '
 check('the shim is defined', 'window.viewInvoiceQuick' in JS)
 check('  and the delegated fallback binds the class the grid renders',
       ".off('click', '.verify-icon')" in JS)
-check('  guarded, so an icon with BOTH does not open twice',
-      "if ($icon.attr('onclick')) { return; }" in JS)
+# MOVED by DB-4, 2 Oct 2026. This asserted the handler was guarded
+# with `if ($icon.attr('onclick')) { return; }` - correct for the
+# round that wrote it, which left the onclick in place and added the
+# delegated fallback beside it.
+#
+# THE GUARD MEANT THE FALLBACK NEVER RAN. Every icon carried an
+# onclick, so it returned on every row of every drill-down: the
+# onclick did the work and this handler was machinery that described
+# itself and did nothing. DB-4 took the onclick off the icon - it
+# pasted a FILENAME into a JavaScript string literal, and an invoice
+# named O'Brien March.pdf gave `missing ) after argument list` - so
+# there is nothing left to guard against and the handler finally
+# does the job it was written for.
+check('  the guard is GONE, because nothing carries an onclick now',
+      "if ($icon.attr('onclick')) { return; }" not in JS)
+check('    and the delegated handler is what opens the viewer',
+      "data('invoice-url')" in JS)
 if HAVE:
     check('CONTROL: the old code DID test the colour',
           'isGreen' in OLDJS and 'rgb(40, 167, 69)' in OLDJS)
@@ -212,12 +227,30 @@ def row(url, name, glyph='fa-check-circle', tone='success'):
             'background:#ccc}</style>'
             '<div id="expenseDetailsModal"><div class="modal-body">'
             '<table><tbody><tr><td>'
+            # DATA ATTRIBUTES SINCE DB-4, 2 Oct 2026. This function
+            # says it builds the icon "exactly as act_expense.html
+            # renders it", and the page stopped writing an onclick:
+            # it pasted a filename into a JavaScript string literal
+            # inside an HTML attribute, and O'Brien March.pdf gave
+            # `missing ) after argument list`.
             '<i class="fas %s verify-icon verify-%s" '
-            'onclick="viewInvoiceQuick(\'%s\', \'%s\')" '
+            'data-invoice-url="%s" data-filename="%s" '
             'title="Invoice verified - click to view invoice"></i>'
             '</td></tr></tbody></table></div></div>'
             '<div id="invoiceViewerModal"><div id="invoiceViewerContent"></div>'
             '<a id="downloadInvoiceBtn"></a></div>' % (glyph, tone, url, name))
+
+
+def legacy_row(url, name, glyph='fa-check-circle', tone='success'):
+    """The icon as act_expense.html rendered it BEFORE DB-4 - with the
+    inline onclick. Section 4 is a HISTORICAL control: it re-runs the
+    handler of an earlier round, and it has to be given that round's
+    markup or it is reproducing some third state that never existed.
+    """
+    return row(url, name, glyph, tone).replace(
+        'data-invoice-url="%s" data-filename="%s" ' % (url, name),
+        'onclick="viewInvoiceQuick(\'%s\', \'%s\')" '
+        % (url, name))
 
 
 async def click_icon(body, extra_js=''):
@@ -295,7 +328,7 @@ async def main():
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page()
-        await pg.set_content('<body>' + row('/media/x.pdf', 'x.pdf') + '</body>')
+        await pg.set_content('<body>' + legacy_row('/media/x.pdf', 'x.pdf') + '</body>')
         await pg.evaluate("() => { window.__errors = [];"
                           " window.addEventListener('error',"
                           " e => window.__errors.push(String(e.message))); }")

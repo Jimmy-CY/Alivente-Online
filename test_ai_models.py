@@ -688,9 +688,21 @@ ok(os.path.isfile(os.path.join(ROOT, PATCHER)), '%s is on disk' % PATCHER)
 try:
     from alv_rounds import ROUNDS
     ok(SUFFIX in ROUNDS, '%s is in ROUNDS' % SUFFIX)
-    ok(ROUNDS[-1] == SUFFIX or SUFFIX in ROUNDS[-4:],
-       '  near the end of it, which is where a new round belongs',
-       ROUNDS[-3:])
+    # AFTER THE ROUND IT BUILDS ON, not near the end - DB-4, 2 Oct
+    # 2026. This read "near the end of it, which is where a new round
+    # belongs", and ROUNDS is append-only: four rounds later R1 is no
+    # longer near the end, and never will be again. A claim that can
+    # only be true on the day it is written is not a claim.
+    #
+    # What the order is FOR is as_left_by(), which walks forward from a
+    # suffix to find the next backup of a file. So the thing worth
+    # asserting is that this round sits after the one before it.
+    ok(ROUNDS.count(SUFFIX) == 1, '  exactly once', ROUNDS.count(SUFFIX))
+    ok(ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_filtersinrc'),
+       '  and AFTER .bak_filtersinrc, the round it followed - which is '
+       'what as_left_by() walks, and the only thing the order has to say',
+       '%d vs %d' % (ROUNDS.index(SUFFIX),
+                     ROUNDS.index('.bak_filtersinrc')))
 except Exception as e:
     skip('ROUNDS', str(e))
 

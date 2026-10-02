@@ -133,6 +133,7 @@ ROUNDS = [
     '.bak_aeline',
     '.bak_filterdistinct',
     '.bak_tabs',
+    '.bak_plicon',
 ]
 
 

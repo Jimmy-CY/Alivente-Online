@@ -370,6 +370,8 @@ $sentinels = @(
     # replaced, "isGreen" and all. That is the record of the fault, not the
     # fault. See NoComments below.
     @{ File = 'pages\templates\finance_pl_act.html'; Text = 'isGreen'; What = 'and the colour test is gone'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\act_expense.html'; Text = 'data-invoice-url'; What = 'the invoice icon carries its document, so the P&A modal that injects this table can open it' },
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = 'showInvoiceModalLikeExisting('; What = 'and the drill-down handler calls the viewer THIS file has' },
     # The pro-rata anchor deadlock (item 8.2). The screen said "un-tick it"
     # and the anchor's blanket `disabled` would not let you. Two rules
     # collided - the anchor is always in, an inactive property must come out -
@@ -1148,6 +1150,13 @@ $suites = @(
     # highlighted whichever tab rendered first, not the one you
     # opened. Its section 4 clicks a tab and reads the colour back.
     'test_tabs.py'
+    # The invoice icon on the P&L Actual Expense drill-down. It
+    # was on screen and could not fire: the icon called a
+    # function from a script the modal never injects, and the
+    # handler written for it returned early on every row. Its
+    # section 4 clicks the icon in BOTH places and reads back
+    # which document opened.
+    'test_pl_invoice_icon.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
