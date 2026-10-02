@@ -2388,6 +2388,22 @@
         border-color: var(--alv-accent);
         color: var(--alv-paper);
       }
+      /* PRESSED - B-1, 2 Oct 2026.
+
+         The same answer .action-filter has had since the filter round, and
+         for the reason written down there: a toggle with no visible state
+         gets pressed twice. recipe_management's Favourites link was saying
+         it with btn-danger versus btn-outline-danger, and losing, because
+         .btn.action-secondary is (0,2,0) against btn-danger's (0,1,0).
+
+         THE SAME THREE TOKENS as .action-filter[aria-pressed="true"]. This
+         round invents no tone and adds no literal to base. */
+      .btn.action-secondary[aria-pressed="true"] {
+        background: var(--alv-accent-soft);
+        border-color: var(--alv-accent-line);
+        color: var(--alv-accent-ink);
+      }
+
       .action-secondary:hover,
       .action-secondary:focus,
       .btn.action-secondary:hover,

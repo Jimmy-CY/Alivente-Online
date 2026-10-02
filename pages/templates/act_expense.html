@@ -1550,7 +1550,11 @@ function deleteInvoiceDocument(expenseId) {
 // the icon works in the table AND in the modal that injects the table,
 // with one spelling between them.          [test_pl_invoice_icon.py]
 document.addEventListener('click', function (e) {
-    var icon = e.target.closest && e.target.closest('.verify-icon');
+    // WIDENED IN J-2, 2 Oct 2026 to cover the Report drill's icon as
+    // well. One listener, one pair of attributes, two modals - rather
+    // than a second listener that would drift from this one.
+    var icon = e.target.closest
+        && e.target.closest('.verify-icon, .report-invoice-icon');
     if (!icon) { return; }
     var url = icon.getAttribute('data-invoice-url');
     if (!url) { return; }
@@ -1836,8 +1840,16 @@ $('#manageModal').on('hidden.bs.modal', function () {
                                         body.innerHTML = '<tr><td colspan="4" class="report-note-cell">No expenses for this property in the selected year(s).</td></tr>';
                 } else {
                     data.rows.forEach(function(e) {
+                        // THE ICON CARRIES THE VALUES, IT DOES NOT CALL WITH THEM -
+                        // J-2, 2 Oct 2026. This built an onclick by string
+                        // concatenation with no escaping of any kind, so an
+                        // invoice filename containing an apostrophe made the
+                        // handler a syntax error and the icon did nothing at
+                        // all. The two attributes are the ones DB-4 chose for
+                        // the icon in the table below; the listener that reads
+                        // them is the same one.
                         var inv = e.doc_url
-                            ? '<i class="fas fa-file-alt report-invoice-icon" title="View invoice" onclick="reportViewInvoice(\'' + e.doc_url + '\', \'' + (e.doc_name || 'invoice') + '\')"></i>'
+                            ? '<i class="fas fa-file-alt report-invoice-icon" title="View invoice" data-invoice-url="' + escapeHtml(e.doc_url) + '" data-filename="' + escapeHtml(e.doc_name || 'invoice') + '"></i>'
                             : '<span class="report-invoice-none">\u2014</span>';
                         var tr = document.createElement('tr');
                         tr.innerHTML =
@@ -1867,13 +1879,12 @@ $('#manageModal').on('hidden.bs.modal', function () {
         return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    window.reportViewInvoice = function(url, name) {
-        if (typeof openPdfViewer === 'function') {
-            openPdfViewer(url, 'Expense Invoice', (name || '').split('/').pop() || 'invoice');
-        } else {
-            window.open(url, '_blank');
-        }
-    };
+    // reportViewInvoice() WAS HERE, and it is gone in J-2, 2 Oct 2026.
+    // It had one caller, the icon above, which no longer calls anything -
+    // and its body was viewInvoiceQuick() rewritten: the same
+    // openPdfViewer, the same 'Expense Invoice' title, the same
+    // split('/').pop(). Two spellings of one behaviour is one of them
+    // waiting to drift.
 
     document.getElementById('reportDrillBack').addEventListener('click', showOverview);
 

@@ -1648,19 +1648,19 @@ body {
         <button onclick="openShoppingListModal()" class="btn action-secondary">
             <i class="fas fa-shopping-cart"></i> Shopping List
         </button>
-        <button onclick="window.print()" class="btn btn-secondary action-secondary">
+        <button onclick="window.print()" class="btn action-secondary">
             <i class="fas fa-print"></i> Print Recipe
         </button>
-        <button type="button" class="btn btn-info action-secondary" onclick="shareRecipePdf(this)">
+        <button type="button" class="btn action-secondary" onclick="shareRecipePdf(this)">
             <i class="fas fa-share-alt"></i> Share
         </button>
         {% if recipe.recipe_document %}
-        <button type="button" class="btn btn-info action-secondary" onclick="viewRecipeDoc('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
+        <button type="button" class="btn action-secondary" onclick="viewRecipeDoc('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
             <i class="fas fa-paperclip"></i> View Document
         </button>
         {% endif %}
         {% if cooking_calculation %}
-        <button type="button" class="btn btn-danger action-secondary" onclick="openCookingCalcModal()">
+        <button type="button" class="btn action-secondary" onclick="openCookingCalcModal()">
             🔥 Calculate Cooking Times
         </button>
         {% endif %}

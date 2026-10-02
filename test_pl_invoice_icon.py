@@ -393,14 +393,47 @@ for name, txt in (('act_expense.html', A_NOW), ('finance_pl_act.html', P_NOW)):
 ok(A_NOW.count('onclick="viewInvoiceQuick(') == 0,
    'and no onclick calls viewInvoiceQuick anywhere on the Expenses page')
 
-# THE REPORT DRILL IS NAMED, NOT FIXED. It has the same defect and it is
-# a different modal with a different endpoint - said here so it is not
-# mistaken for something nobody noticed.
-ok('reportViewInvoice(' in now(AE) and "+ e.doc_url +" in now(AE).replace(
-       "' + e.doc_url + '", "+ e.doc_url +"),
-   'the Report drill still builds reportViewInvoice by string '
-   'concatenation - SAME defect, different modal, named rather than '
-   'quietly left', 'not found - has it been fixed?')
+def _live(p):
+    """The file AS IT STANDS NOW, not as this round left it. Used by exactly
+    one check - see the note at it."""
+    return read(p)
+
+# THE REPORT DRILL WAS NAMED HERE, AND J-2 FIXED IT - 2 Oct 2026.
+#
+# This check used to assert the FAULT: that the drill still built
+# reportViewInvoice by string concatenation, with a detail line reading
+# "not found - has it been fixed?". That was deliberate. A known defect
+# left behind without a check is a defect nobody is counting, and a check
+# that asserts the fault fails on the day the fault goes, which is exactly
+# when somebody should look.
+#
+# It has gone. J-2 put the drill icon on DB-4's own two attributes and
+# widened DB-4's own listener to read them, so reportViewInvoice had no
+# callers left. The check is turned over rather than deleted: it says the
+# opposite now, and it is still the thing that notices if the drill grows a
+# second way of doing this.                            [test_js_handlers.py]
+#
+# AND IT READS THE LIVE FILE, WHICH NO OTHER CHECK IN THIS SUITE DOES.
+# now() is as_left_by(AE, '.bak_plicon') - the page AS DB-4 LEFT IT - and
+# that is right for every other claim here, because a scope guard that
+# reads the live file measures every round that came after. This claim is
+# the exception on purpose: it is about what a LATER round did to the thing
+# this round named, so the state it has to look at is today's. The four
+# claims below are also made properly, against J-2's own backups, in
+# test_js_handlers.py; these exist so DB-4's suite stops asserting a fault
+# it no longer has.
+_drill = _live(AE)
+_drill_code = re.sub(r'(?m)^\s*//.*$', '', _drill)
+ok('reportViewInvoice' not in _drill_code,
+   'the Report drill no longer hand-builds a handler - J-2 finished what '
+   'this round started')
+ok("closest('.verify-icon, .report-invoice-icon')" in _drill_code,
+   '  and ONE delegated listener now serves both icons, which is what '
+   'these two attributes were for')
+ok('data-invoice-url="\' + escapeHtml(e.doc_url)' in _drill,
+   '  the drill icon carries data-invoice-url, escaped')
+ok('data-filename="\' + escapeHtml(e.doc_name' in _drill,
+   '  and data-filename, the same two names the table icon uses')
 
 # ==========================================================================
 head('6. REGISTERED')

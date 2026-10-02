@@ -199,6 +199,31 @@ ALREADY = int(re.search(r'(?m)^ALREADY_SAFE = (\d+)', _pat).group(1))
 BARE = int(re.search(r'(?m)^BARE_ARGS = (\d+)', _pat).group(1))
 TOTAL = sum(EXPECT.values())
 
+# THE SCOPE GUARD, HOISTED - J-2, 2 Oct 2026.
+#
+# This was defined three hundred lines below, after the checks that were
+# written last, and it was used only by them. The two OLDEST checks in this
+# suite - the census in section 1 and the bare-argument count in section 5 -
+# read the live file instead, and pinned tree-wide totals taken from it.
+#
+# So the day J-2 removed twelve onclick attributes from recipe_management,
+# six of which carried |escapejs with a bare id beside it, both counts moved
+# and this suite failed - complaining about a later round for doing exactly
+# what it was supposed to do.
+#
+# The note that used to sit above this function said it already: J-1 found
+# this defect in test_filter_on_close.py, repaired it there, and wrote it
+# into its own new checks hours later. What it did not do was apply the cure
+# to the checks it had written first. A suite that defines as_left_by() and
+# then does not use it everywhere has the hardest version of the bug - the
+# fix is in the same file as the fault.
+def left_by_j1(path):
+    """The file as J-1 LEFT it. as_left_by() walks forward to the next
+    backup, so the claim stays about J-1 however many rounds land on the
+    file afterwards."""
+    return as_left_by(path, SUFFIX, read) if as_left_by else read(path)
+
+
 print('=' * 74)
 print("%s - J-1, A NAME WITH AN APOSTROPHE IN IT" % ME)
 print('=' * 74)
@@ -209,7 +234,8 @@ head('1. THE GATE - EVERY TEMPLATE IN THE TREE, NOT THE ONES THIS ROUND SAW')
 PATHS = dict((alv_tree.rel(p), p) for p in alv_tree.templates())
 left, safe_now, bad_was, safe_was = [], 0, 0, 0
 for rel, p in sorted(PATHS.items()):
-    b, s = census(read(p))
+    # left_by_j1, NOT read - this is J-1's census and it must stay J-1's.
+    b, s = census(left_by_j1(p))
     safe_now += s
     if b:
         left.append('%s: %d' % (rel, b))
@@ -400,7 +426,8 @@ ok(any(r[0] == 'tenant.html' for r in seen),
 
 now_risky = []
 for rel, p in sorted(PATHS.items()):
-    t = HTML_C.sub('', read(p))
+    # left_by_j1, NOT read - same reason as section 1.
+    t = HTML_C.sub('', left_by_j1(p))
     for m in re.finditer(r'\bon(submit|click)\s*=\s*"([^"]*)"', t):
         if 'confirm(' not in m.group(2):
             continue
@@ -428,8 +455,8 @@ head('5. NOTHING ELSE MOVED, AND THE FILTER IS LAST')
 # diagnosing it there. as_left_by() walks forward to the next backup and
 # returns the file as THIS round left it, so the claim stays about this
 # round however many land on the file afterwards.
-def left_by_j1(path):
-    return as_left_by(path, SUFFIX, read) if as_left_by else read(path)
+# left_by_j1() WAS DEFINED HERE and is now defined above section 1,
+# because section 1 needs it too - see the note there. J-2, 2 Oct 2026.
 
 
 moved = []
@@ -448,7 +475,8 @@ ok(len([r for r in PATHS if os.path.isfile(PATHS[r] + SUFFIX)]) == len(EXPECT),
 
 mid = []
 for rel, p in sorted(PATHS.items()):
-    for h in HANDLER.finditer(HTML_C.sub('', read(p))):
+    # left_by_j1, NOT read - same reason as section 1.
+    for h in HANDLER.finditer(HTML_C.sub('', left_by_j1(p))):
         for lit in INSTR.finditer(h.group(1)):
             for v in VAR.finditer(lit.group(0)):
                 f = filters_of(v.group(1))
@@ -461,7 +489,8 @@ ok(not mid,
 # THE BARE ARGUMENTS ARE UNTOUCHED, AND NAMED.
 bare_n = 0
 for rel, p in sorted(PATHS.items()):
-    t = HTML_C.sub('', read(p))
+    # left_by_j1, NOT read - same reason as section 1.
+    t = HTML_C.sub('', left_by_j1(p))
     for h in HANDLER.finditer(t):
         body = h.group(1)
         spans = [m.span() for m in INSTR.finditer(body)]

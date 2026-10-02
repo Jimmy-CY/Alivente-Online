@@ -121,6 +121,12 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\recipe_management.html'; Text = 'aria-pressed="{% if show_favourites %}true'; What = 'B-1: Favourites says its state with aria-pressed' },
+    @{ File = 'pages\templates\base.html'; Text = '.btn.action-secondary[aria-pressed="true"]'; What = 'B-1: base gives a pressed secondary a visible state' },
+    @{ File = 'pages\templates\view_recipe.html'; Text = 'btn btn-danger action-secondary'; Absent = $true; Code = $true; What = 'B-1: no control wears a Bootstrap colour on top of a house role' },
+    @{ File = 'pages\templates\recipe_management.html'; Text = 'data-recipe-name='; What = 'J-2: the recipe buttons carry the name as an attribute' },
+    @{ File = 'pages\templates\recipe_management.html'; Text = 'onclick="deleteRecipe('; Absent = $true; Code = $true; What = 'J-2: no Delete button builds a handler around the recipe name' },
+    @{ File = 'pages\templates\act_expense.html'; Text = 'reportViewInvoice'; Absent = $true; Code = $true; What = 'J-2: the Report drill icon no longer calls a hand-built handler' },
     @{ File = 'pages\templates\celebration_management.html'; Text = 'span class="contact-name"'; What = 'C-1: the contact name has a span of its own' },
     @{ File = 'pages\templates\celebration_management.html'; Text = 'THE COLLAPSED COMPACT CARD IS A LIST ROW'; What = 'C-1: the compact card rules are on the page' },
     @{ File = 'pages\templates\celebration_management.html'; Text = '}In compact'; Absent = $true; What = 'C-1: the stray close-comment that killed two rules has not come back' },
@@ -207,7 +213,7 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '.row-actions {';               What = 'and one actions cell holds them' },
     @{ File = 'pages\templates\suppliers.html';           Text = '<span class="row-actions">';     What = 'Suppliers has ONE actions column' },
     @{ File = 'pages\templates\base.html';                Text = 'position: sticky;';            What = 'headings stick when you scroll' },
-    @{ File = 'pages\templates\base.html';                Text = 'overflow: clip;';             What = 'and the container lets them' },
+    @{ File = 'pages\templates\base.html';                Text = 'and at top:0 with clip'; What = 'the TABLE container clips rather than hides, so a sticky heading has something to stick to' },
     @{ File = 'pages\templates\base.html';                Text = '--alv-ink-strong:';           What = 'headings have their own ink' },
     @{ File = 'pages\views\suppliers.py';                 Text = '"distinct_countries": distinct_countries,'; What = 'the Country filter finally has options' },
     @{ File = 'pages\templates\properties.html';          Text = 'class="table alv-table properties-table"'; What = 'Properties is on the standard' },
@@ -220,7 +226,7 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '.alv-card-lead';                 What = 'and the first one may be louder' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-tag-slate';                 What = 'categories are off the semantic scale' },
     @{ File = 'pages\templates\base.html';                Text = '--alv-print-std';                What = 'and reports survive a printer' },
-    @{ File = 'pages\templates\base.html';                Text = 'overflow: clip;';                What = 'a card cannot trap a sticky heading' },
+    @{ File = 'pages\templates\base.html';                Text = 'so a sticky heading inside a card has nothing'; What = 'the CARD clips rather than hides, same fault and same fix as the table container' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-tag-plum';                   What = 'a fifth tone for the fifth type' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-tag-sky::before';            What = 'and the dot belongs to the tone' },
     @{ File = 'pages\templates\property_report.html';     Text = 'alv-table assets-table';          What = 'the report tables are on the standard' },
@@ -256,10 +262,10 @@ $sentinels = @(
     @{ File = 'pages\templates\fsr.html';                 Text = 'class="alv-filter-active"'; What = 'the chips sit OUTSIDE the panel, so hiding it stays safe' },
     @{ File = 'pages\templates\base.html';                Text = '.btn.action-danger'; What = 'destructive is a tone, and it outranks a page btn-danger' },
     @{ File = 'pages\templates\base.html';                Text = '.page-action-buttons .action-more-btn'; What = 'and the More button keeps its edge' },
-    @{ File = 'pages\templates\base.html';                Text = 'pointer-events: none';            What = 'a disabled button is not a live link' },
+    @{ File = 'pages\templates\base.html';                Text = 'still a working link'; What = 'a disabled button is not a live link - base says pointer-events twice, so the row names THIS one' },
     @{ File = 'pages\templates\asset_detail.html';        Text = 'btn action-primary';              What = 'Edit is the primary, not yellow' },
     @{ File = 'pages\templates\asset_detail.html';        Text = 'action-secondary action-danger';  What = 'and Delete is outlined, not solid red' },
-    @{ File = 'pages\templates\base.html';                Text = 'display: none !important';        What = 'paper stops printing the furniture' },
+    @{ File = 'pages\templates\base.html';                Text = '.no-print { display: none !important; }'; What = 'paper stops printing the furniture - base says that declaration ten times, so the row names the rule' },
     @{ File = 'pages\templates\base.html';                Text = '.back-button {';                  What = 'and a report Back is quiet too' },
     @{ File = 'pages\templates\property_report.html';     Text = 'class="btn back-button"';          What = 'the Report Back joined' },
     @{ File = 'pages\templates\suppliers_edit.html';      Text = 'class="btn action-primary"';       What = 'Save is the primary on a form' },
@@ -1191,6 +1197,24 @@ $suites = @(
     # tree-wide - two rules on that page had been discarded by the
     # parser since 25 Sep while the braces balanced perfectly.
     'test_compact_card.py'
+    # The handlers JAVASCRIPT writes - the ones J-1's Django filter
+    # could never reach. Its section 2 puts four recipe names through
+    # the real markup in Chromium and records whether the handler RAN,
+    # because whether an onclick is a syntax error is a fact about a
+    # JavaScript parser and nothing else can answer it.
+    'test_js_handlers.py'
+    # Bootstrap colour worn on top of a house role. Its section 2
+    # RENDERS each pair, because "(0,2,0) beats (0,1,0)" is a claim
+    # about what a browser does - twelve of the thirteen classes were
+    # changing nothing, and the thirteenth was the Favourites toggle,
+    # whose ON and OFF states were pixel-identical.
+    'test_btn_tone.py'
+    # THE SENTINEL TABLE ITSELF. 210 rows run before any suite
+    # starts, and until S-1 nothing tested them. It checks that the
+    # reader sees every row (an earlier one saw 183 of 195 and
+    # reported a clean census), that every row resolves, and - the
+    # claim no round had made - that every row could ever have FAILED.
+    'test_sentinels.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

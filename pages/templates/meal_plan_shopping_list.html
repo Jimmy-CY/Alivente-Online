@@ -565,7 +565,7 @@
     <h2 class="page-title-h2">SHOPPING LIST</h2>
 <h4 class="page-subtitle-h4">{{ meal_plan.plan_name }} &mdash; {{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }} &mdash; {% if meal_plan.days.count %}{{ meal_plan.days.count }}{% else %}0{% endif %} day{{ meal_plan.days.count|pluralize }}</h4>
 <div class="page-action-buttons">
-        <button type="button" onclick="window.print()" class="btn btn-info action-primary" aria-label="Print shopping list">
+        <button type="button" onclick="window.print()" class="btn action-primary" aria-label="Print shopping list">
             <i class="fas fa-print"></i> Print
         </button>
         <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn action-back" aria-label="Back to Meal Plan">

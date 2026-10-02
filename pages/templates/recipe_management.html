@@ -1559,7 +1559,18 @@
 
         <!-- Favourites Filter -->
         <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
-           class="btn {% if show_favourites %}btn-danger{% else %}btn-outline-danger{% endif %} action-secondary">
+           <!-- B-1, 2 Oct 2026. The colour WAS the state here - btn-danger
+                when Favourites is on, btn-outline-danger when it is off -
+                and since .btn.action-secondary is (0,2,0) against
+                btn-danger's (0,1,0), both resolved to the same white
+                secondary. The state has never once been visible.
+
+                aria-pressed instead, which base already answers for
+                .action-filter and already explains there: a toggle with no
+                visible state gets pressed twice. A screen reader is told
+                as well, for the first time. -->
+           class="btn action-secondary"
+           aria-pressed="{% if show_favourites %}true{% else %}false{% endif %}">
             <i class="fas fa-heart"></i> Favourites
         </a>
 
@@ -1945,10 +1956,10 @@
                 <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
-                <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
+                <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name }}" title="Duplicate Recipe">
                     <i class="fas fa-copy"></i>
                 </button>
-                <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Delete Recipe">
+                <button type="button" class="recipe-image-action-btn recipe-delete-btn" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name }}" title="Delete Recipe">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 {% else %}
@@ -2049,10 +2060,10 @@
                 <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
-                <button type="button" class="recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
+                <button type="button" class="recipe-duplicate-btn" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name }}" title="Duplicate Recipe">
                     <i class="fas fa-copy"></i>
                 </button>
-                <button type="button" class="recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Delete Recipe">
+                <button type="button" class="recipe-delete-btn" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name }}" title="Delete Recipe">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 {% else %}
@@ -2173,10 +2184,10 @@
             <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
                 <i class="fas fa-pencil-alt"></i>
             </a>
-            <button type="button" class="recipe-list-action-btn recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
+            <button type="button" class="recipe-list-action-btn recipe-duplicate-btn" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name }}" title="Duplicate Recipe">
                 <i class="fas fa-copy"></i>
             </button>
-            <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Delete Recipe">
+            <button type="button" class="recipe-list-action-btn recipe-delete-btn" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name }}" title="Delete Recipe">
                 <i class="fas fa-trash-alt"></i>
             </button>
             {% else %}
@@ -2550,10 +2561,10 @@ function createGridRecipeCard(recipe) {
                     <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
-                    <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" onclick="duplicateRecipe(${recipe.recipe_id}, '${recipe.recipe_name.replace(/'/g, "\\'")}')" title="Duplicate Recipe">
+                    <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" data-recipe-id="${recipe.recipe_id}" data-recipe-name="${escapeHtml(recipe.recipe_name)}" title="Duplicate Recipe">
                         <i class="fas fa-copy"></i>
                     </button>
-                    <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
+                    <button type="button" class="recipe-image-action-btn recipe-delete-btn" data-recipe-id="${recipe.recipe_id}" data-recipe-name="${escapeHtml(recipe.recipe_name)}" title="Delete Recipe">
                         <i class="fas fa-trash-alt"></i>
                     </button>` : `
                     <span class="recipe-image-action-btn disabled-action" title="Edit Recipe (no permission)"><i class="fas fa-pencil-alt"></i></span>
@@ -2562,8 +2573,8 @@ function createGridRecipeCard(recipe) {
 
     const editActionsMobile = USER_CAN_EDIT_PERSONAL ? `
                     <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-edit-btn" title="Edit Recipe"><i class="fas fa-pencil-alt"></i></a>
-                    <button type="button" class="recipe-duplicate-btn" onclick="duplicateRecipe(${recipe.recipe_id}, '${recipe.recipe_name.replace(/'/g, "\\'")}')" title="Duplicate Recipe"><i class="fas fa-copy"></i></button>
-                    <button type="button" class="recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe"><i class="fas fa-trash-alt"></i></button>` : `
+                    <button type="button" class="recipe-duplicate-btn" data-recipe-id="${recipe.recipe_id}" data-recipe-name="${escapeHtml(recipe.recipe_name)}" title="Duplicate Recipe"><i class="fas fa-copy"></i></button>
+                    <button type="button" class="recipe-delete-btn" data-recipe-id="${recipe.recipe_id}" data-recipe-name="${escapeHtml(recipe.recipe_name)}" title="Delete Recipe"><i class="fas fa-trash-alt"></i></button>` : `
                     <span class="disabled-action" title="Edit (no permission)"><i class="fas fa-pencil-alt"></i></span>
                     <span class="disabled-action" title="Duplicate (no permission)"><i class="fas fa-copy"></i></span>
                     <span class="disabled-action" title="Delete (no permission)"><i class="fas fa-trash-alt"></i></span>`;
@@ -2637,8 +2648,8 @@ function createListRecipeItem(recipe) {
 
     const editActionsList = USER_CAN_EDIT_PERSONAL ? `
                 <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe"><i class="fas fa-pencil-alt"></i></a>
-                <button type="button" class="recipe-list-action-btn recipe-duplicate-btn" onclick="duplicateRecipe(${recipe.recipe_id}, '${recipe.recipe_name.replace(/'/g, "\\'")}')" title="Duplicate Recipe"><i class="fas fa-copy"></i></button>
-                <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe"><i class="fas fa-trash-alt"></i></button>` : `
+                <button type="button" class="recipe-list-action-btn recipe-duplicate-btn" data-recipe-id="${recipe.recipe_id}" data-recipe-name="${escapeHtml(recipe.recipe_name)}" title="Duplicate Recipe"><i class="fas fa-copy"></i></button>
+                <button type="button" class="recipe-list-action-btn recipe-delete-btn" data-recipe-id="${recipe.recipe_id}" data-recipe-name="${escapeHtml(recipe.recipe_name)}" title="Delete Recipe"><i class="fas fa-trash-alt"></i></button>` : `
                 <span class="recipe-list-action-btn disabled-action" title="Edit Recipe (no permission)"><i class="fas fa-pencil-alt"></i></span>
                 <span class="recipe-list-action-btn disabled-action" title="Duplicate Recipe (no permission)"><i class="fas fa-copy"></i></span>
                 <span class="recipe-list-action-btn disabled-action" title="Delete Recipe (no permission)"><i class="fas fa-trash-alt"></i></span>`;
@@ -3011,6 +3022,43 @@ document.getElementById('recipeFilterForm').addEventListener('submit', function(
     sessionStorage.setItem('recipeJustAppliedFilters', 'true');
 });
 
+// ESCAPE WHAT GOES INTO AN ATTRIBUTE - J-2, 2 Oct 2026.
+//
+// Spelled exactly as act_expense.html spells it, because a second spelling
+// of the same five replacements is a second thing to get wrong. The data
+// attributes below are built by template literals into innerHTML, so a
+// recipe name carrying " or < or & has to arrive as attribute text and not
+// as markup.
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// AND THE TWO LISTENERS THAT READ THEM BACK.
+//
+// DELEGATED, ON document, FOR THE REASON DB-4 WROTE DOWN ON act_expense:
+// this list is re-rendered from scratch by the live search, the A-Z filter
+// and the favourites toggle, and a handler bound to the buttons themselves
+// would go with them every time. One listener outlives every re-render.
+//
+// THERE IS NO JS STRING HERE TO CLOSE EARLY, which is the whole point. The
+// name is attribute text; the browser's own parser decodes it and hands it
+// over whole, apostrophes, quotes, backslashes and all.
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('.recipe-duplicate-btn');
+    if (!btn) { return; }
+    e.preventDefault();
+    duplicateRecipe(btn.getAttribute('data-recipe-id'),
+                    btn.getAttribute('data-recipe-name') || '', btn);
+});
+
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('.recipe-delete-btn');
+    if (!btn) { return; }
+    e.preventDefault();
+    deleteRecipe(btn.getAttribute('data-recipe-id'),
+                 btn.getAttribute('data-recipe-name') || '');
+});
+
 function deleteRecipe(recipeId, recipeName) {
     document.getElementById('delete_recipe_id').value = recipeId;
     document.getElementById('deleteRecipeName').textContent = recipeName;
@@ -3054,9 +3102,15 @@ function openRecipeInModal(recipeId, recipeName) {
     modal.show();
 }
 
-function duplicateRecipe(recipeId, recipeName) {
+function duplicateRecipe(recipeId, recipeName, sourceBtn) {
     if (confirm(`Duplicate "${recipeName}"?\n\nThis will create a copy with all ingredients and instructions.`)) {
-        const btn = event.target.closest('button, a');
+        // THE BUTTON IS PASSED IN - J-2, 2 Oct 2026. This read it off the
+        // global `event`, which a delegated listener does not reliably
+        // give you. sourceBtn comes from the listener; the fallback keeps
+        // any caller that still arrives the old way working.
+        const btn = sourceBtn || (window.event && window.event.target
+                                  .closest('button, a'));
+        if (!btn) { return; }
         const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btn.style.pointerEvents = 'none';

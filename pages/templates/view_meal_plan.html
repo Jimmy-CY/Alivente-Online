@@ -367,7 +367,7 @@
                 <i class="fas fa-edit"></i> Edit
             </a>
             <button type="button"
-                    class="btn btn-info action-secondary"
+                    class="btn action-secondary"
                     data-duplicate-url="{% url 'duplicate_meal_plan' meal_plan.meal_plan_id %}"
                     onclick="confirmDuplicate(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-copy"></i> Duplicate
@@ -380,12 +380,12 @@
                 <i class="fas fa-copy"></i> Duplicate
             </span>
             {% endif %}
-            <button onclick="window.print()" class="btn btn-secondary action-secondary">
+            <button onclick="window.print()" class="btn action-secondary">
                 <i class="fas fa-print"></i> Print
             </button>
             {% if perms.auth.can_edit_personal %}
             <button type="button"
-                    class="btn btn-danger action-secondary"
+                    class="btn action-secondary"
                     data-delete-url="{% url 'delete_meal_plan' meal_plan.meal_plan_id %}"
                     onclick="confirmDelete(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-trash"></i> Delete

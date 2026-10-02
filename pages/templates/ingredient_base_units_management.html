@@ -913,7 +913,7 @@
     <h2 class="page-title-h2">INGREDIENT SHOPPING UNITS</h2>
 <div class="page-action-buttons">
         {% if unmapped_count > 0 %}
-            <a href="{% url 'map_ingredients_wizard' %}" class="btn btn-info action-primary"
+            <a href="{% url 'map_ingredients_wizard' %}" class="btn action-primary"
                title="{{ unmapped_count }} ingredient{{ unmapped_count|pluralize }} not yet mapped to nutrition data.">
                 <i class="fas fa-leaf"></i>
                 <span class="action-label-full">Map Nutrition Data</span>
@@ -921,7 +921,7 @@
                 <span class="action-count-badge badge-unmapped">{{ unmapped_count }}</span>
             </a>
         {% else %}
-            <span class="btn btn-info action-primary action-disabled"
+            <span class="btn action-primary action-disabled"
                   title="All ingredients are mapped to nutrition data — nothing outstanding.">
                 <i class="fas fa-leaf"></i>
                 <span class="action-label-full">Map Nutrition Data</span>
@@ -931,7 +931,7 @@
         {% endif %}
         
         {% if unconvertible_count > 0 %}
-            <a href="{% url 'unit_conversions_wizard' %}" class="btn btn-info action-primary"
+            <a href="{% url 'unit_conversions_wizard' %}" class="btn action-primary"
                title="{{ unconvertible_count }} mapped ingredient{{ unconvertible_count|pluralize }} cannot fully convert to grams.">
                 <i class="fas fa-exchange-alt"></i>
                 <span class="action-label-full">Manage Unit Conversions</span>
@@ -939,7 +939,7 @@
                 <span class="action-count-badge badge-unconvertible">{{ unconvertible_count }}</span>
             </a>
         {% else %}
-            <span class="btn btn-info action-primary action-disabled"
+            <span class="btn action-primary action-disabled"
                   title="Every mapped ingredient has a path to grams — nothing outstanding.">
                 <i class="fas fa-exchange-alt"></i>
                 <span class="action-label-full">Manage Unit Conversions</span>

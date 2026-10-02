@@ -138,6 +138,9 @@ ROUNDS = [
     '.bak_issuestats',
     '.bak_barorder',
     '.bak_compactcard',
+    '.bak_jshandlers',
+    '.bak_btntone',
+    '.bak_sentinels',
 ]
 
 
