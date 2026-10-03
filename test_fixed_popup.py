@@ -186,10 +186,22 @@ ok(bool(JS), 'base carries the alv-pop script')
 for frag, what in (('getBoundingClientRect', 'it measures the trigger on open'),
                    ("classList.add('alv-pop--below')",
                     'and flips below when there is no room above'),
-                   ("addEventListener('scroll', closeAll, true)",
+                   ("addEventListener('scroll'",
                     'scrolling dismisses it'),
+
                    ("e.key === 'Escape'", 'and Escape does too')):
     ok(frag in JS, what)
+LIVE_JS = '\n'.join(
+    m.group(1) for m in
+    re.finditer(r'<script\b[^>]*>(.*?)</script\s*>',
+                read(alv_tree.path_of('base.html')), re.S)
+    if 'alv-pop' in m.group(1))
+ok("closest('.alv-pop')" in LIVE_JS,
+   'but a scroll that STARTS INSIDE the popup does NOT close it  [PU-1b]')
+ok(', true)' in LIVE_JS,
+   '  and capture is kept, or a page scroll inside a container would not '
+   'dismiss it at all')
+
 ok('clientWidth' in JS,
    'and it is kept on screen horizontally - a trigger in the last column '
    'would otherwise push half the list past the edge')
@@ -303,8 +315,10 @@ if have_pw:
         js = '\n'.join(_clean(m.group(1)) for m in SCRIPT.finditer(src)
                        if 'Popup' in m.group(1))
         if not js:
-            js = '\n'.join(m.group(1) for m in SCRIPT.finditer(now(BASE))
-                           if 'alv-pop' in m.group(1))
+            js = '\n'.join(
+                m.group(1) for m in SCRIPT.finditer(
+                    read(alv_tree.path_of('base.html')), )
+                if 'alv-pop' in m.group(1))
         rows = ''.join('<tr><td>%s</td><td>%s</td></tr>' % (c, cell)
                        for c in ('Dairy', 'Meat', 'Produce', 'Store'))
         boot = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
@@ -360,6 +374,7 @@ if have_pw:
                 return {
                     'position': pg.evaluate(
                         '(e)=>getComputedStyle(e).position', pop),
+                    'open': True,
                     'top': round(box['y']),
                     'cont': round(cb['y']) if cb else 0,
                     'items': len(pg.query_selector_all(
@@ -382,6 +397,31 @@ if have_pw:
                    'the whole of it is inside the viewport')
                 ok(a['items'] == len(ITEMS),
                    'and all %d items are in it' % len(ITEMS), a['items'])
+
+            # PU-1b, 3 Oct 2026. Demetri, on Live: "I can't scroll
+            # down the list. When I scroll the whole page scrolls down."
+            # The listener was registered with CAPTURE, so a scroll inside
+            # the popup - which is overflow-y: auto - counted as a page
+            # scroll and closed it. The scrollbar was visible and unusable.
+            #
+            # Both halves are driven, because fixing one by breaking the
+            # other would pass a suite that only checked one.
+            pop = pg.query_selector('.alv-pop.show')
+            if pop:
+                pg.eval_on_selector(
+                    '.alv-pop.show',
+                    '(e)=>{e.scrollTop=20;e.dispatchEvent('
+                    'new Event("scroll",{bubbles:true}));}')
+                pg.wait_for_timeout(60)
+                ok(bool(pg.query_selector('.alv-pop.show')),
+                   'scrolling the LIST leaves it open  [PU-1b]')
+                pg.evaluate('()=>{window.scrollTo(0,150);'
+                            'window.dispatchEvent(new Event("scroll"));}')
+                pg.wait_for_timeout(60)
+                ok(not pg.query_selector('.alv-pop.show'),
+                   '  CONTROL: and scrolling the PAGE still closes it')
+            else:
+                skip('the scroll behaviour', 'the popup was not open')
 
             if fx_was:
                 b = open_top(fx_was)

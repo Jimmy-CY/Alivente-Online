@@ -79,6 +79,7 @@ from django.views.decorators.http import require_POST
 
 from pages.models import (
     CustomProtein,
+    HouseholdMember,
     MealPlan,
     MealPlanDay,
     MealPlanRecipe,
@@ -1029,8 +1030,29 @@ def meal_plan_shopping_list(request, meal_plan_id):
         # Check for missing conversions or shopping units
         has_issues = len(missing_conversions) > 0 or len(missing_shopping_units) > 0
 
+        # SL-4, 3 Oct 2026. THE ADDRESSES COME FROM THE ROSTER NOW.
+        #
+        # The template carried four <option> elements with four people's
+        # addresses typed into it. HouseholdMember's own docstring says
+        # the table exists to replace exactly this kind of hard-coding -
+        # "Members are an AUDIENCE ... Replaces the hardcoded
+        # notify_demetri / notify_angy / notify_erene / notify_alexandra
+        # flags" - and the flags were replaced while this list was not.
+        #
+        # Active members with an address, by name. A member with no email
+        # is a real row (the table allows blank for people who never sign
+        # in and are only tagged on celebrations), so they are excluded
+        # here rather than offered as an empty option.
+        household_emails = (
+            HouseholdMember.objects.for_user(request.user)
+            .filter(is_active=True)
+            .exclude(email='')
+            .order_by('name')
+        )
+
         context = {
             'meal_plan': meal_plan,
+            'household_emails': household_emails,
             'ingredients': ingredients,
             'total_ingredients': sum(len(items) for items in ingredients.values()),
             'missing_conversions': json.dumps(missing_conversions) if missing_conversions else '[]',

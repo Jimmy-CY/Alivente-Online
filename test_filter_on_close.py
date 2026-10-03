@@ -163,6 +163,29 @@ print('=' * 74)
 # ==========================================================================
 head('1. THE ELEVEN, AND WHY THIS ONE WAS DIFFERENT')
 # ==========================================================================
+def _has_apply_button(src):
+    """A control the reader presses to apply the filter.
+
+    NOT THE WORD "APPLY" ANYWHERE. The first form of this test matched
+    any text beginning "Apply" after any tag, and when
+    unit_conversions_management joined the census it matched a LABEL in
+    that page's Add Conversion modal - "Apply this conversion to:" - and
+    reported a page waiting for a button it does not have.
+
+    A button, a submit input, or a link styled as one. The label has to
+    BE Apply, not merely begin with it, so "Apply this conversion to:"
+    is not one and "Apply Filters" is."""
+    for m in re.finditer(r'<button[^>]*>(.*?)</button>', src, re.S):
+        txt = re.sub(r'<[^>]+>', ' ', m.group(1))
+        if re.match(r'^\s*Apply(\s+Filters?)?\s*$', txt, re.I):
+            return True
+    for m in re.finditer(r'<input[^>]*>', src):
+        if re.search(r'type="submit"', m.group(0)) and re.search(
+                r'value="\s*Apply(\s+Filters?)?\s*"', m.group(0), re.I):
+            return True
+    return False
+
+
 auto, manual = [], []
 for p in alv_tree.templates():
     rel = alv_tree.rel(p)
@@ -172,7 +195,7 @@ for p in alv_tree.templates():
     m = mk_of(t)
     if not ('action-filter' in m and 'alv-filter' in m):
         continue
-    if re.search(r'>\s*(?:<i[^>]*>\s*</i>\s*)?Apply\b', nocom(t)):
+    if _has_apply_button(nocom(t)):
         manual.append(rel)
     else:
         auto.append(rel)
@@ -183,7 +206,8 @@ for p in alv_tree.templates():
 # twelve until 1 Oct 2026; F2 gave Receipts and Invoice
 # Customers one each.
 # FIFTEEN SINCE IB-1, 2 Oct 2026 - Ingredient Shopping Units.
-ok(len(auto) + len(manual) == 15, 'fifteen pages carry the house filter',
+ok(len(auto) + len(manual) == len(alv_tree.house_filter_pages()),
+   'every page carrying the house filter is accounted for',
    len(auto) + len(manual))
 ok(not manual,
    'and NOT ONE of them now waits for an Apply button - which is what '

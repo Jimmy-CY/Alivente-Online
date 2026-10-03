@@ -419,6 +419,10 @@ if django_up:
 
     u = User.objects.create_user('probe_bob', 'bob@example.test',
                                  'OldPass!2026x')
+    # THE INSTANT THE TOKEN WAS MADE - TC-1, 3 Oct 2026, and the whole
+    # of the repair below. Captured once, here, because it is the only
+    # instant the three-day arithmetic is about.
+    t_made = gen._now()
     tok = gen.make_token(u)
     ok(pwr.token_ok(u, tok), 'a fresh token checks out')
     ok(pwr.user_from_uid(pwr.uid_of(u)) == u,
@@ -426,10 +430,28 @@ if django_up:
 
     # THE CLOCK IS OURS. Alive at three days, dead at four - which is the
     # decision ("3 days is fine") proved rather than asserted.
+    #
+    # ANCHORED ON THE TOKEN, NOT ON NOW - TC-1, 3 Oct 2026. This used to
+    # read `real_now() + timedelta(days=d)`, with real_now() called at
+    # CHECK time, so what check_token measured was
+    #
+    #     3 days + (the time between make_token and this check)
+    #
+    # and Django's token stores whole seconds. Run alone that gap is a
+    # few milliseconds and truncates to zero, so the sum is exactly
+    # 259 200 and the timeout lets it through. Run in a six-way parallel
+    # sweep it crosses a second - 259 201, one past the boundary - and
+    # sweep 15 duly reported "after 3 day(s) the link is still good" as
+    # a FAIL against a product that had not changed.
+    #
+    # A fixture that is right about the boundary and wrong about which
+    # clock it is reading is the same shape as nine other instruments
+    # this week. This one needed a machine under load before it would
+    # say so.
     real_now = gen._now
     try:
         for days, want in ((2, True), (3, True), (4, False)):
-            gen._now = (lambda d=days: real_now()
+            gen._now = (lambda d=days: t_made
                         + datetime.timedelta(days=d))
             ok(gen.check_token(u, tok) is want,
                'after %d day(s) the link is %s'

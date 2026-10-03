@@ -168,7 +168,12 @@ KEPT = {
     R: (('.report-container', 3), ('.property-card', 3), ('.section-title', 2),
         ('.detail-row', 2), ('.stats-card', 2), ('.muted', 1),
         ('.no-assets-info', 1)),
-    A: (('.asset-thumb', 1), ('.summary-grid', 1), ('.view-toggle-group', 4),
+    # .view-toggle-group IS GONE - SG-2, 3 Oct 2026, named here because a
+    # removal must be named to be allowed. Its four rules sized a
+    # hand-rolled segmented control; the control is base's .alv-seg now,
+    # which base sizes and spaces itself, so a page rule could only
+    # disagree with it.
+    A: (('.asset-thumb', 1), ('.summary-grid', 1),
         ('.empty-state-card', 4), ('.photo-upload-controls', 2),
         ('.modal-header', 1), ('.asset-name-cell', 1)),
     D: (('.photo-grid', 1), ('.photo-tile', 4), ('.warranty-grid', 2),

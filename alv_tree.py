@@ -39,6 +39,7 @@ ON BASENAMES
     dict silently merging two different pages.
 """
 import os
+import re
 
 # The tree, in the order Django was told about the apps.
 TEMPLATE_ROOTS = [
@@ -337,6 +338,40 @@ def crs_pages(base=None):
 def crs_outstanding(base=None):
     """The CRS pages that have not had their round yet."""
     return [n for n in crs_pages(base) if n not in CRS_HOUSE]
+
+
+def house_filter_pages(base=None):
+    """Every page carrying the house filter: a Filter button AND the panel.
+
+    OUTSTANDING ITEM 4, CLOSED - CN-1, 3 Oct 2026. Four suites each typed
+    this number. FL-1 and UC-2 took the tree from fifteen filtered pages
+    to eighteen and all four went red at once, which is the third time
+    this list has moved and the first time anyone has had to change four
+    files to record it.
+
+    The function itself is lifted unchanged from test_filters_in_rc.py,
+    which has derived it correctly since 2 Oct while the suites beside it
+    went on typing a digit. Its own note said where this belonged:
+    "outstanding item 4 is about where the NUMBER lives, not about
+    loosening any of them."
+
+    MARKUP ONLY. A page NAMING .alv-filter in a comment or a stylesheet
+    does not carry one - a gate reads code, not the record of code - so
+    <style>, <script> and HTML comments come out before looking. base is
+    excluded: it DEFINES the control and wears none.
+    """
+    out = []
+    for p in templates(base):
+        if os.path.basename(p) == 'base.html':
+            continue
+        with open(p, encoding='utf-8', errors='replace') as fh:
+            s = fh.read()
+        s = re.sub(r'<style\b.*?</style>', '', s, flags=re.S)
+        s = re.sub(r'<script\b.*?</script>', '', s, flags=re.S)
+        s = re.sub(r'<!--.*?-->', '', s, flags=re.S)
+        if 'action-filter' in s and 'alv-filter' in s:
+            out.append(rel(p, base))
+    return sorted(out)
 
 
 def rel(path, base=None):

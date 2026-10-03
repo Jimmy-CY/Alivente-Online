@@ -295,6 +295,27 @@
     cursor: not-allowed;
 }
 
+/* THE PANEL - SL-4, 3 Oct 2026. Inline, under the three buttons, by
+   Demetri's choice. [hidden] is given a rule of its own because the
+   attribute's UA default is display:none and a display set by any other
+   rule on this element would silently beat it - a panel that is hidden
+   in the markup and visible on the screen is worse than one that never
+   hides. */
+.email-panel {
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius);
+    background: var(--alv-surface);
+}
+.email-panel[hidden] { display: none; }
+.email-panel h3 { margin-bottom: 12px; }
+.email-panel-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .email-btn-disabled {
     background: var(--alv-ink-faint) !important;
     opacity: 0.6 !important;
@@ -555,14 +576,11 @@
     .email-section h3 {
         font-size: 16px;
     }
-    /* 4-button grid (Print/Copy/Email/WhatsApp) → 2x2 on mobile */
-    .email-section > div[style*="grid-template-columns: repeat(4"] {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-    }
-    .email-section > div[style*="grid-template-columns: repeat(4"] .btn {
-        padding: 12px 8px !important;
-    }
+    /* TWO DEAD RULES, SWEPT - SL-4. They selected a four-column inline
+       grid that SL-2 replaced with .share-grid, so they had matched
+       nothing since. .share-grid is three equal columns and the three
+       buttons fit a phone as they are. */
+    .email-panel-actions .btn { flex: 1 1 auto; justify-content: center; }
 
     /* Empty state */
     .empty-state {
@@ -924,17 +942,15 @@
             {# to the top". Print is NOT here any more - the bar carries  #}
             {# one, guarded by SL-1, and two controls calling one         #}
             {# function is how a page comes to disagree with itself.      #}
+            {# SL-4, 3 Oct 2026, Demetri: "Can we just have the three    #}
+            {# boxes, Copy, Email and Whatsapp. Hide the Email this list  #}
+            {# to as well as the box for the email address. This must     #}
+            {# only appear if the user selects Email Button."             #}
+            {#                                                            #}
+            {# Asked where it should open, he chose INLINE, UNDER THE     #}
+            {# THREE BUTTONS - not a modal, which would cover the list he #}
+            {# is about to send, and not a second page.                   #}
             <div class="email-section">
-                <h3>
-                    <i class="fas fa-envelope"></i> Email this list to:
-                </h3>
-                <select id="emailSelect" {% if not perms.auth.can_edit_personal %}disabled{% endif %}>
-                    <option value="">Select email address...</option>
-                    <option value="demetrimanias@gmail.com">demetrimanias@gmail.com</option>
-                    <option value="angmaniasbakers@gmail.com">angmaniasbakers@gmail.com</option>
-                    <option value="erenemanias@gmail.com">erenemanias@gmail.com</option>
-                    <option value="leximanias@gmail.com">leximanias@gmail.com</option>
-                </select>
                 
                 <div class="share-grid">
                     <button onclick="copyToClipboard()" class="btn action-secondary share-btn">
@@ -943,7 +959,9 @@
                     </button>
                     
                     {% if perms.auth.can_edit_personal %}
-                    <button onclick="sendEmail()" id="sendEmailBtn" class="btn action-primary share-btn">
+                    <button type="button" onclick="toggleEmailPanel()" id="emailToggleBtn"
+                            class="btn action-primary share-btn"
+                            aria-expanded="false" aria-controls="emailPanel">
                         <i class="fas fa-paper-plane"></i>
                         <span>Email</span>
                     </button>
@@ -963,6 +981,37 @@
                         <i class="fab fa-whatsapp"></i>
                         <span>WhatsApp</span>
                     </button>
+                </div>
+                
+                {# THE PANEL. Hidden until the Email button is pressed, and  #}
+                {# the button says so with aria-expanded rather than only    #}
+                {# looking different - a control that changes what is on the #}
+                {# page has to announce it.                                  #}
+                <div id="emailPanel" class="email-panel" hidden>
+                    <h3>
+                        <i class="fas fa-envelope"></i> Email this list to:
+                    </h3>
+                    <select id="emailSelect" {% if not perms.auth.can_edit_personal %}disabled{% endif %}>
+                        <option value="">Select email address...</option>
+                        {% for member in household_emails %}
+                        {# THE NAME, NOT ONLY THE ADDRESS. A person picking a #}
+                        {# recipient is picking a PERSON, and the roster has  #}
+                        {# the name already.                                  #}
+                        <option value="{{ member.email }}">{{ member.name }} - {{ member.email }}</option>
+                        {% empty %}
+                        <option value="" disabled>No household members have an email address yet</option>
+                        {% endfor %}
+                    </select>
+                    <div class="email-panel-actions">
+                        <button type="button" id="emailSendBtn" class="btn action-primary"
+                                onclick="sendEmail()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                        <button type="button" class="btn action-secondary"
+                                onclick="closeEmailPanel()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="emailStatus" style="margin-top: 15px;"></div>
@@ -1213,20 +1262,66 @@
     }
 
     {% if perms.auth.can_edit_personal %}
+    // SL-4, 3 Oct 2026. THE PANEL OPENS AND CLOSES HERE.
+    //
+    // hidden is an attribute, not a class, so there is one source of
+    // truth for whether the panel is open and the button's aria-expanded
+    // is derived from it rather than tracked separately. Two flags for
+    // one state is how a control comes to disagree with itself.
+    function emailPanelParts() {
+        return {
+            panel: document.getElementById('emailPanel'),
+            btn: document.getElementById('emailToggleBtn')
+        };
+    }
+
+    function toggleEmailPanel() {
+        const p = emailPanelParts();
+        if (!p.panel) { return; }
+        const opening = p.panel.hasAttribute('hidden');
+        if (opening) {
+            p.panel.removeAttribute('hidden');
+        } else {
+            p.panel.setAttribute('hidden', '');
+        }
+        if (p.btn) {
+            p.btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        }
+        if (opening) {
+            const sel = document.getElementById('emailSelect');
+            if (sel) { sel.focus(); }
+        }
+    }
+
+    function closeEmailPanel() {
+        const p = emailPanelParts();
+        if (p.panel) { p.panel.setAttribute('hidden', ''); }
+        if (p.btn) {
+            p.btn.setAttribute('aria-expanded', 'false');
+            // FOCUS GOES BACK TO WHAT OPENED IT. Otherwise a keyboard
+            // user who cancels is left at the top of the document.
+            p.btn.focus();
+        }
+    }
+
     function sendEmail() {
         const email = document.getElementById('emailSelect').value;
-        
+        const status = document.getElementById('emailStatus');
+
         if (!email) {
-            alert('Please select an email address');
+            // NOT alert() - SL-4. A browser modal blocks every subsequent
+            // event until a human dismisses it, and no other validation on
+            // this page uses one. The page already has a place to say
+            // things.
+            status.innerHTML = '<div class="alert alert-warning" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> Please choose an email address first.</div>';
             return;
         }
-        
+
         const finalList = window.finalShoppingList || {};
-        const btn = document.getElementById('sendEmailBtn');
-        const status = document.getElementById('emailStatus');
+        const btn = document.getElementById('emailSendBtn');
         
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 20px;"></i><span style="font-size: 13px;">Sending...</span>';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         status.innerHTML = '';
         
         fetch("{% url 'send_meal_plan_shopping_list' %}", {
@@ -1247,6 +1342,10 @@
         .then(data => {
             if (data.success) {
                 status.innerHTML = '<div class="alert alert-success" style="padding: 12px; border-radius: 8px;"><i class="fas fa-check-circle"></i> Email sent successfully to ' + email + '!</div>';
+                // SENT MEANS DONE. The panel closes on success so the
+                // next thing the reader sees is the list and the
+                // confirmation, not a form asking to be filled in again.
+                closeEmailPanel();
             } else {
                 status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> ' + data.error + '</div>';
             }
@@ -1256,7 +1355,11 @@
         })
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane" style="font-size: 20px;"></i><span style="font-size: 13px;">Email</span>';
+            // AND IT IS RESTORED TO WHAT IT ACTUALLY SAYS - SL-4. This
+            // line used to put back two inline font-sizes that SL-2 had
+            // removed from the markup, on a button that now reads "Send".
+            // One send was enough to undo a round.
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
         });
     }
     {% endif %}

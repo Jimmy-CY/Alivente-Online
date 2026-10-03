@@ -305,9 +305,74 @@
             <i class="fas fa-plus"></i> Add Measurement Unit
         </button>
         {% endif %}
+        <button type="button" class="btn action-filter" id="filterBtn"
+                aria-pressed="false" aria-controls="filterPanel"
+                aria-label="Show filters">
+          <i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span>
+        </button>
         <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipe Management">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
+    </div>
+
+    <div class="alv-filter-active" id="activeFilters">
+      <span class="alv-filter-active-label">Active filters:</span>
+      <div class="filter-tags" id="filterTags"></div>
+    </div>
+
+    {# THE PANEL - FL-1, 3 Oct 2026. Search plus Type, Demetri's choice:  #}
+    {# Type is the only column here with a small fixed set of values,     #}
+    {# which is what a dropdown is for, and Usage is a derived count      #}
+    {# rather than something you filter by.                               #}
+    {#                                                                    #}
+    {# NO data-live-search ON THIS PAGE, AND THAT IS DELIBERATE. base's   #}
+    {# live search owns row.style.display outright: it walks every row    #}
+    {# on every keystroke and sets display from its own query alone. The  #}
+    {# Type dropdown sets the same property, so the two would be two      #}
+    {# owners of one fact and the last to run would win - pick a Type,    #}
+    {# then type a letter, and the Type narrowing silently evaporates.    #}
+    {# One function decides from both inputs instead, which is the shape  #}
+    {# unit_conversions_management already uses for its three.            #}
+    {#                                                                    #}
+    {# No <form> either - the view reads no query parameter. See the      #}
+    {# note on categories_management.                                     #}
+    <div class="alv-filter filter-panel" id="filterPanel">
+      <div class="filter-header">
+        <h5 class="filter-title">
+          <i class="fas fa-filter"></i> <span class="filter-title-text">Unit Filters</span><span class="filter-title-text-mobile">Filters</span>
+        </h5>
+        <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
+        </button>
+      </div>
+
+      <div class="filter-content" id="filterContent">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label class="filter-label" for="unitSearch">
+              <i class="fas fa-search"></i> <strong>Search Unit</strong>
+            </label>
+            <div class="search-input-group">
+              <input type="text"
+                     id="unitSearch"
+                     class="form-control search-input"
+                     placeholder="Name or abbreviation...">
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="unitTypeFilter">
+              <i class="fas fa-layer-group"></i> <strong>Type</strong>
+            </label>
+            <select id="unitTypeFilter" class="form-control filter-select">
+              <option value="">All types</option>
+              {% for value, label in unit_types %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
 
 
@@ -330,8 +395,21 @@
                 </tr>
             </thead>
             <tbody id="unitsTableBody">
+                {# A NARROWING THAT FINDS NOTHING HAS TO SAY SO - FL-1.   #}
+                {# An empty table with no message reads as a page that    #}
+                {# failed to load.                                        #}
+                <tr id="unitsNoMatch" style="display: none;">
+                    <td colspan="5" class="alv-empty-title">
+                        No measurement units match these filters.
+                    </td>
+                </tr>
                 {% for item in units_with_count %}
-                <tr id="unit-row-{{ item.unit.measurement_unit_id }}" data-unit-id="{{ item.unit.measurement_unit_id }}">
+                {# data-unit-type - FL-1. The Type CELL cannot be read for this: #}
+                {# it holds the badge AND, for an editor, a <select> carrying   #}
+                {# every type as an <option>, so a text match on the cell would #}
+                {# match every row against every type. The row carries the one  #}
+                {# value instead.                                               #}
+                <tr id="unit-row-{{ item.unit.measurement_unit_id }}" data-unit-id="{{ item.unit.measurement_unit_id }}" data-unit-type="{{ item.unit.unit_type }}">
                     <!-- Unit Name -->
                     <td data-label="Unit Name">
                         <span class="unit-name-display">
@@ -886,6 +964,85 @@ $('#addUnitModal').on('hidden.bs.modal', function () {
     document.getElementById('newUnitType').value = 'other';
 });
 {% endif %}
+</script>
+<script>
+/* FL-1, 3 Oct 2026 - ONE WRITER FOR row.style.display.
+   Search and Type both decide whether a row is shown, so one function
+   decides it from both. Two independent filters each setting display is
+   two owners of one fact, and the last to run wins. */
+(function () {
+    var box = document.getElementById('unitSearch');
+    var type = document.getElementById('unitTypeFilter');
+    var tags = document.getElementById('filterTags');
+    var clear = document.getElementById('clearAllBtn');
+    var body = document.getElementById('unitsTableBody');
+    if (!box || !type || !body) { return; }
+
+    function norm(s) { return (s || '').toLowerCase().trim(); }
+
+    function chip(label, value, reset) {
+        var c = document.createElement('span');
+        c.className = 'filter-tag';
+        c.textContent = label + ': ' + value + ' ';
+        var x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'remove-tag';
+        x.setAttribute('aria-label', 'Remove the ' + label + ' filter');
+        x.innerHTML = '<i class="fas fa-times"></i>';
+        x.addEventListener('click', function () { reset(); apply(); });
+        c.appendChild(x);
+        return c;
+    }
+
+    function apply() {
+        var q = norm(box.value);
+        var want = type.value;
+        var rows = body.querySelectorAll('tr[data-unit-id]');
+        var shown = 0;
+        Array.prototype.forEach.call(rows, function (row) {
+            var name = row.querySelector('[data-label="Unit Name"]');
+            var abbr = row.querySelector('[data-label="Abbreviation"]');
+            /* THE SEARCH MATCHES THE TWO COLUMNS IT SAYS IT MATCHES.
+               Not the whole row: Usage holds every recipe name that uses
+               the unit, so a whole-row match would find "cup" in a
+               recipe called Cupcakes and show a unit that has nothing to
+               do with the word. */
+            var hay = norm((name ? name.textContent : '') + ' '
+                           + (abbr ? abbr.textContent : ''));
+            var hit = (!q || hay.indexOf(q) >= 0)
+                   && (!want || row.getAttribute('data-unit-type') === want);
+            row.style.display = hit ? '' : 'none';
+            if (hit) { shown += 1; }
+        });
+
+        var empty = document.getElementById('unitsNoMatch');
+        if (empty) { empty.style.display = shown ? 'none' : ''; }
+
+        if (tags) {
+            tags.innerHTML = '';
+            if (box.value.trim()) {
+                tags.appendChild(chip('Search', box.value.trim(),
+                    function () { box.value = ''; }));
+            }
+            if (type.value) {
+                tags.appendChild(chip('Type',
+                    type.options[type.selectedIndex].text,
+                    function () { type.value = ''; }));
+            }
+        }
+    }
+
+    box.addEventListener('input', apply);
+    type.addEventListener('change', apply);
+    if (clear) {
+        clear.addEventListener('click', function () {
+            box.value = '';
+            type.value = '';
+            apply();
+        });
+    }
+    apply();
+}());
 </script>
 
 {% endblock %}

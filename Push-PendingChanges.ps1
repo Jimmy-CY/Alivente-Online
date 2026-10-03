@@ -121,6 +121,12 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\base.html'; Text = 'PU-1b, 3 Oct 2026'; What = 'PU-1b: a scroll inside the popup no longer closes it' },
+    @{ File = 'pages\templates\unit_conversions_management.html'; Text = 'UC-1b, 3 Oct 2026'; What = 'UC-1b: the scope toggle uses icons, which CSS can colour' },
+    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'icon-action-btn icon-delete'; What = 'MP-1: the trashcans are on the house row-action strip' },
+    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'btn-add-recipe'; Absent = $true; Code = $true; What = 'MP-1: and the green Add Recipe is gone, script included' },
+    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'form="saveRecipeForm"'; What = 'RE-1: the bar Update owns the form it is outside of' },
+    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'btn btn-secondary btn-lg'; Absent = $true; Code = $true; What = 'RE-1: and the bottom Cancel is gone' },
     @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'function hasPrintableList()'; What = 'SL-1: Print refuses when there is nothing to print' },
     @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'id="printBtn" hidden'; What = 'SL-1: and the button is not there until there is' },
     @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'function setBar(step)'; What = 'SL-2: one bar, and it says which step you are on' },
@@ -452,7 +458,64 @@ $sentinels = @(
     # share at all. It tested what the row IS, not what it HOLDS.
     @{ File = 'pages\views\finance.py'; Text = 'def _expense_has_past'; What = 'one definition of whether a row has a past worth keeping' },
     @{ File = 'pages\views\finance.py'; Text = '_exp_row.is_spent'; What = 'and the list knows which rows hold nothing and never did' },
-    @{ File = 'pages\templates\finance_expense.html'; Text = 'exp-closed-pill'; What = 'a closed row reads CLOSED, not a bare zero' }
+    @{ File = 'pages\templates\finance_expense.html'; Text = 'exp-closed-pill'; What = 'a closed row reads CLOSED, not a bare zero' },
+
+    # ------------------------------------------------- SECTION MC, 3 Oct 2026
+    # The Meal Plans / Calendar programme. The first two rows are the BUG
+    # Demetri reported - he said the toggle was missing from the Calendar
+    # view; it was there, painted white on a white page by a rule written
+    # for a coloured header bar the page no longer has. Both halves of that
+    # are asserted: the control is present, and the ink that hid it is gone.
+    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = 'class="alv-seg"'; What = 'the Calendar page can get back to the list' },
+    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = 'rgba(255, 255, 255, 0.7)'; What = 'and the white ink that hid the List half is gone'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\meal_plans.html'; Text = 'class="alv-seg"'; What = 'the list page wears the same two-segment control' },
+    # Five filled buttons in five colours became the icon strip the list
+    # rows already wore. #007bff is named because it was the loudest.
+    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = 'icon-action-btn icon-duplicate'; What = 'the Calendar week actions are the row-action strip' },
+    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = '#007bff'; What = 'and the five filled colours went with them'; Absent = $true; Code = $true },
+    # A disabled button that rendered as a live one, because .btn.action-primary
+    # outranked the page's own grey. There is no string this adds that proves
+    # it, so the absence of the old class is the assertion.
+    @{ File = 'pages\templates\meal_plans.html'; Text = 'btn-create-disabled'; What = 'the no-permission Create no longer renders as a live button'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\meal_plans.html'; Text = 'action-primary disabled-btn'; What = 'it wears the class base paints grey' },
+
+    # ------------------------------------------------- SECTION SL, 3 Oct 2026
+    # Four people's email addresses were typed into a template, in a product
+    # whose HouseholdMember docstring says the table exists to replace that.
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'demetrimanias@gmail.com'; What = 'no address is typed into the shopping list any more'; Absent = $true; Code = $true },
+    @{ File = 'pages\views\recipes\meal_planning.py'; Text = 'household_emails'; What = 'the roster is where they come from' },
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'id="emailPanel"'; What = 'and the address box opens only when Email is pressed' },
+
+    # ------------------------------------- THE FILTER PROGRAMME, 3 Oct 2026
+    # base's .filter-grid declared a grid and no columns, so the one page
+    # that did not set its own stacked its fields at the full panel width.
+    @{ File = 'pages\templates\base.html'; Text = 'repeat(auto-fit, minmax(200px, 240px))'; What = 'a filter field is capped, and fits on one line' },
+    @{ File = 'pages\templates\categories_management.html'; Text = 'id="filterPanel"'; What = 'Categories has the house filter' },
+    @{ File = 'pages\templates\measurement_units_management.html'; Text = 'data-unit-type'; What = 'and Measurement Units filters on type without reading a cell that holds a select of every type' },
+    # NO data-live-search SENTINEL HERE. The obvious row - Absent = $true
+    # on 'data-live-search' - is one test_sentinels refuses, and rightly:
+    # it tried thirteen historical versions of this file and the string
+    # has never been in any of them, so the row could never have failed
+    # and proves nothing. The claim that these two filters compose
+    # instead of racing lives in test_ref_filters section 6, where a
+    # browser sets a Type, types a letter, and checks the Type survived -
+    # which CAN fail.
+    # The seventh and eighth hand-rolled segmented controls.
+    @{ File = 'pages\templates\unit_conversions_management.html'; Text = 'scope-btn'; What = 'the Conversions scope toggle is base''s segment now'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = 'btn-outline-info'; What = 'Budget/Actuals is no longer half house, half Bootstrap'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\property_assets.html'; Text = 'view-toggle-group'; What = 'and Group by, which every census of btn-info missed for a month'; Absent = $true; Code = $true },
+
+    # --------------------------------------- THE REPAIR ROUNDS, 3 Oct 2026
+    # Outstanding item 4, logged 1 Oct: four suites each typed the number of
+    # filtered pages. Now none of them does.
+    @{ File = 'alv_tree.py'; Text = 'def house_filter_pages'; What = 'one census of the filtered pages, derived from the tree' },
+    # A dropdown toggle does not do anything - it asks which thing you want
+    # to look at - so it is never what the lone-button rule promotes.
+    @{ File = 'Show-ButtonDrift.py'; Text = 'def is_chooser'; What = 'a chooser is not a verb, and a report page may have no primary' },
+    @{ File = 'pages\templates\base.html'; Text = '.page-action-buttons .alv-seg > *'; What = 'a segment in an action bar is the bar''s height, not nearly it' },
+    # A Django comment is not a flex item. RE-1b made this repair to one
+    # fixture three days ago; this is the other one.
+    @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1283,6 +1346,55 @@ $suites = @(
     # section 1 is the functional bug, and it checks the three guards
     # SEPARATELY, because a keyboard Ctrl+P reaches none of the other two.
     'test_shopping_list.py'
+    # The green Add Recipe and the red trashcans. Its section 2 is why it
+    # was a round: four of the ten uses were inside JavaScript template
+    # strings, so the day cards the page builds AFTER load would have kept
+    # the old paint.
+    'test_meal_plan_buttons.py'
+    # Update at the top of Create/Edit Recipe. Its section 2 drives a real
+    # browser, because a submit button outside its form fails SILENTLY -
+    # the page looks right and pressing it does nothing.
+    'test_recipe_bar_top.py'
+    # The List/Calendar switch. Its section 5 measures the CONTRAST of
+    # each half in a browser, and section 6 is the control: the old
+    # Calendar toggle painted its inactive half white on a white page,
+    # which is why Demetri could not get back to the list. Every class
+    # name on that control was correct; only a renderer could see it.
+    'test_view_seg.py'
+    # Five filled buttons in five colours on the Calendar week header,
+    # and a blue View plus a red x on every recipe card, onto the same
+    # icon strip the list rows already wore. Its section 5 is the one
+    # that matters: eleven controls were rewritten by hand, and every
+    # handler and url has to still be the one it was.
+    'test_calendar_actions.py'
+    # The rest of the Meal Plan colours. Its section 3 RENDERS the
+    # no-permission Create button, because that finding cannot be
+    # checked by eye - the bug was that it looked right.
+    'test_calendar_tone.py'
+    # The Shopping List email box, which now opens when you ask for it
+    # and reads its addresses from Household Members instead of four
+    # people typed into the template.
+    'test_email_reveal.py'
+    # base's .filter-grid declared display:grid and no columns, so a
+    # page that set none got ONE column. Its section 3 renders all 13
+    # pages that use it under the old base CSS and the new, and fails
+    # if any page setting its own columns moves by a pixel.
+    'test_filter_grid.py'
+    # Categories and Measurement Units join the house filter. Its
+    # section 6 drives a browser because the claim is a RACE: base's
+    # live search owns row.style.display outright, so a second filter
+    # setting it would evaporate on the next keystroke.
+    'test_ref_filters.py'
+    # The Conversions filter into the house panel, and the seventh
+    # hand-rolled segmented control converted. Its section 2 holds the
+    # narrowing itself unchanged - the premise of the round is that
+    # the logic was already right.
+    'test_conversion_filter.py'
+    # The last two hand-rolled segments. Its section 5 is the one that
+    # matters beyond this round: accept="image/*" puts a /* inside an
+    # attribute, and a code_only that reads it as a comment opener is
+    # blind to 1,385 characters of real markup.
+    'test_pl_seg.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

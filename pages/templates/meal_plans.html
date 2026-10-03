@@ -8,40 +8,14 @@
     max-width: 1400px;
     margin: 0 auto;
 }
-/* View toggle on its own row */
-.view-toggle-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
-}
 
-.btn-create {
-    background: #28a745;
-    color: white;
-    padding: 12px 30px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 8px;
-    border: none;
-}
-
-.btn-create:hover {
-    background: #218838;
-    color: white;
-}
-
-.btn-create-disabled {
-    background: #6c757d;
-    color: white;
-    padding: 12px 30px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 8px;
-    border: none;
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-}
+/* .btn-create AND .btn-create-disabled ARE GONE - MC-3, 3 Oct 2026.
+   Three rules, four literals (#28a745, #218838, #6c757d, white). Two of
+   the three had never applied to the button they were written for,
+   because base's .btn.action-primary outranks a single class; the third
+   applied only to the empty state, which now wears action-primary like
+   everything else. Padding and radius come from the bar rule in base,
+   which is what owns the geometry of a button in an action bar. */
 
 .meal-plan-card {
     background: white;
@@ -64,7 +38,7 @@
 .meal-plan-title {
     font-size: 17px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -74,7 +48,7 @@
 .meal-plan-meta {
     display: flex;
     gap: 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 13px;
     white-space: nowrap;
 }
@@ -90,35 +64,12 @@
     font-size: 12px;
 }
 
-.meal-plan-actions {
-    display: flex;
-    gap: 6px;
-    justify-self: end;
-}
-
-.meal-plan-actions .btn {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-    font-weight: 500;
-}
-
-.meal-plan-actions .btn i {
-    font-size: 11px;
-}
-
-.btn-action-disabled {
-    background: var(--alv-surface-deep);
-    color: #6c757d;
-    border: none;
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-}
+/* FOUR DEAD RULES, SWEPT - MC-3. ML-1 moved this page's row actions
+   onto base's .row-actions on 2 Oct and removed every element that wore
+   .meal-plan-actions or .btn-action-disabled. The rules stayed. They
+   matched nothing for a day, and a rule that matches nothing is worse
+   than no rule: the next reader has to work out whether it is load
+   bearing before they can touch anything near it. */
 
 .empty-state {
     text-align: center;
@@ -127,17 +78,17 @@
 
 .empty-state i {
     font-size: 80px;
-    color: #dee2e6;
+    color: var(--alv-line);
     margin-bottom: 20px;
 }
 
 .empty-state h3 {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 10px;
 }
 
 .empty-state p {
-    color: #adb5bd;
+    color: var(--alv-ink-faint);
     margin-bottom: 30px;
 }
 
@@ -148,43 +99,16 @@
         gap: 15px;
     }
     
-    .meal-plan-actions {
-        justify-self: start;
-    }
 }
 
-/* View Toggle Styles */
-.view-toggle {
-    display: flex;
-    background: var(--alv-surface-deep);
-    border-radius: 8px;
-    padding: 4px;
-}
-
-.view-toggle .toggle-btn {
-    padding: 10px 16px;
-    border-radius: 6px;
-    color: #6c757d;
-    text-decoration: none;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.view-toggle .toggle-btn:hover {
-    color: #495057;
-    background: #dee2e6;
-}
-
-.view-toggle .toggle-btn.active {
-    background: var(--alv-accent);
-    color: white;
-}
-
-.view-toggle .toggle-btn.active:hover {
-    background: #5a6fd6;
-}
+/* VIEW TOGGLE - MC-1, 3 Oct 2026. This page no longer owns the switch.
+   .view-toggle, .view-toggle-row, .toggle-btn and every literal they
+   carried are gone; the control is base's .alv-seg, worn in the action
+   bar, the same two-segment control finance_expense wears. A view
+   switch is a PAGE-level choice, which is what .alv-seg is for, and the
+   current half is marked aria-current rather than class="active" - the
+   standard's hook for the fill and the thing a screen reader needs, in
+   one attribute instead of neither. */
 
 /* ============================================================
    MOBILE RESPONSIVE — max-width: 768px
@@ -192,11 +116,6 @@
 @media screen and (max-width: 768px) {
     .meal-plans-container {
         padding: 0 8px;
-    }  .view-toggle-row {
-        margin-bottom: 18px;
-    }
-    .view-toggle .toggle-btn {
-        padding: 9px 14px;
     }
 
     /* Meal plan cards — tighter, single column */
@@ -238,7 +157,7 @@
     .empty-state h3 {
         font-size: 20px;
     }
-    .empty-state .btn-create {
+    .empty-state .action-primary {
         width: 100%;
         justify-content: center;
         display: inline-flex;
@@ -291,30 +210,36 @@
     <!-- Action Buttons -->
     <div class="page-action-buttons">
         {% if perms.auth.can_edit_personal %}
-        <a href="{% url 'create_meal_plan' %}" class="btn btn-create action-primary">
+        <a href="{% url 'create_meal_plan' %}" class="btn action-primary">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </a>
         {% else %}
-        <span class="btn btn-create-disabled action-primary" title="You don't have permission to create meal plans">
+        {# MC-3. THIS RENDERED AS A WORKING BUTTON. Same specificity    #}
+        {# story: base's .btn.action-primary painted it solid teal, so  #}
+        {# a user with no permission saw a button that looked exactly   #}
+        {# like a live one. base already had the answer and the sibling #}
+        {# calendar page already used it - .disabled-btn, whose own     #}
+        {# note reads "a switched-off primary is grey, not pale teal",  #}
+        {# and which sets pointer-events: none so the span is not a     #}
+        {# working control either.                                      #}
+        <span class="btn action-primary disabled-btn" title="You don't have permission to create meal plans">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </span>
         {% endif %}
 
+        <div class="alv-seg" role="group" aria-label="View">
+            <a href="{% url 'meal_plans' %}" aria-current="page"
+               onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
+                <i class="fas fa-list"></i> List
+            </a>
+            <a href="{% url 'meal_plan_calendar' %}"
+               onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
+                <i class="fas fa-calendar-alt"></i> Calendar
+            </a>
+        </div>
         <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipes">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
-    </div>
-
-    <!-- View Toggle (List vs Calendar) — its own row -->
-    <div class="view-toggle-row">
-        <div class="view-toggle">
-            <a href="{% url 'meal_plans' %}" class="toggle-btn active" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
-                <i class="fas fa-list"></i>
-            </a>
-            <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
-                <i class="fas fa-calendar-alt"></i>
-            </a>
-        </div>
     </div>
 
     {% if messages %}
@@ -453,7 +378,15 @@
             <h3>No Meal Plans Yet</h3>
             {% if perms.auth.can_edit_personal %}
                 <p>Start planning your meals by creating your first meal plan!</p>
-                <a href="{% url 'create_meal_plan' %}" class="btn btn-create btn-lg">
+                {# MC-3, 3 Oct 2026. THE ONLY LIVE GREEN ON THIS PAGE. The    #}
+                {# bar's primary writes "btn btn-create action-primary" and    #}
+                {# base's .btn.action-primary (0,2,0) outranks .btn-create     #}
+                {# (0,1,0), so that one has rendered teal since the day        #}
+                {# action-primary was added. This one carried no               #}
+                {# action-primary at all, so #28a745 was live here and         #}
+                {# nowhere else - one rule with two fates and nothing in the   #}
+                {# file saying so.                                             #}
+                <a href="{% url 'create_meal_plan' %}" class="btn action-primary btn-lg">
                     <i class="fas fa-plus"></i> Create Your First Meal Plan
                 </a>
             {% else %}

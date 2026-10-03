@@ -136,14 +136,30 @@
         </div>
     </div>
 
-    <!-- Budget / Actuals toggle -->
-    <div class="btn-group pl-view-toggle" role="group" aria-label="Budget or Actuals">
-        <a class="btn {% if view_mode == 'budget' %}btn-info{% else %}btn-outline-info{% endif %}"
-           href="?year={{ selected_year }}&view=budget{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+    {# BUDGET / ACTUALS - SG-2, 3 Oct 2026. The last hand-rolled      #}
+    {# segmented control in the tree, and the one longest on the       #}
+    {# outstanding list. base has had ALV-SEG since 2 Sep for exactly  #}
+    {# this: two views of one page, which is a PAGE-level choice and   #}
+    {# not a verb you press.                                           #}
+    {#                                                                 #}
+    {# IT DID NOT LOOK LIKE A HOUSE CONTROL AND IT DID NOT LOOK LIKE A #}
+    {# BOOTSTRAP ONE EITHER. The selected half was teal, from a local  #}
+    {# rule overriding .btn-info; the unselected half had no local     #}
+    {# rule at all, so it was Bootstrap's raw .btn-outline-info -      #}
+    {# Bootstrap's own blue-cyan, in no palette, that nobody chose.    #}
+    {# the stylesheet you would think the whole control was house      #}
+    {# coloured. Half of it was.                                       #}
+    {#                                                                 #}
+    {# aria-current, not a class: these are links, so this is the same #}
+    {# marking MC-1 gave the List/Calendar switch. UC-2's scope        #}
+    {# buttons use aria-pressed because they do not navigate.          #}
+    <div class="alv-seg" role="group" aria-label="Budget or Actuals">
+        <a href="?year={{ selected_year }}&view=budget{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+           {% if view_mode == 'budget' %}aria-current="page"{% endif %}>
             Budget
         </a>
-        <a class="btn {% if view_mode == 'actuals' %}btn-info{% else %}btn-outline-info{% endif %}"
-           href="?year={{ selected_year }}&view=actuals{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+        <a href="?year={{ selected_year }}&view=actuals{% if single_mode %}&single=1{% endif %}{% if selected_properties %}&{% for prop_id in selected_properties %}properties={{ prop_id }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+           {% if view_mode == 'actuals' %}aria-current="page"{% endif %}>
             Actuals
         </a>
     </div>
@@ -487,26 +503,12 @@
 
 <style>
 
-.btn-info {
-    background-color: #0e7c8b;
-    color: white;
-    border: 1px solid #0e7c8b;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-    padding: 8px 16px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .btn-info:hover {
-        background-color: var(--alv-accent-ink);
-        border-color: var(--alv-accent-ink);
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-}
+/* .btn-info AND ITS HOVER ARE GONE - SG-2, 3 Oct 2026. They existed
+   only to repaint the Budget/Actuals pair, and that pair is .alv-seg
+   now, so both rules became dead the moment the markup stopped asking
+   for them. The literal #0e7c8b went with them: the control is
+   var(--alv-accent), which is the same colour said once, in the place
+   that owns it. */
 
 .btn-secondary {
     background-color: #6c757d;

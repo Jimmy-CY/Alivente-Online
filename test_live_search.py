@@ -106,7 +106,29 @@ STYLE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
 # iterated its characters and asked alv_tree for a template named 'u'. The
 # suite crashed rather than failed - and a crash blocks a push exactly as
 # hard as a failure while saying far less about why.
-CANDIDATES = ('unit_conversions_management.html',)
+CANDIDATES = ()
+# EXEMPT, BY NAME AND WITH THE REASON - Demetri, 3 Oct 2026.
+#
+# unit_conversions_management renders every row, so it passes the
+# pagination half of the contract and was listed as a candidate. It will
+# not opt in, and the reason is the other half: base's live search owns
+# row.style.display OUTRIGHT - it walks every row on every keystroke and
+# sets display from its own query alone - and this page composes THREE
+# narrowings, a search, a from-unit and a scope. A second thing setting
+# that property is not a second filter; it is a race, and the last to run
+# wins.
+#
+# The same reason keeps measurement_units_management out, where it is two
+# filters rather than three. FL-1's suite proves it in a browser.
+#
+# `projects` is exempt for the other reason entirely - it paginates - and
+# is checked separately below.
+EXEMPT = {
+    'unit_conversions_management.html':
+        'composes three narrowings; base\'s live search owns display',
+    'measurement_units_management.html':
+        'composes two; same reason',
+}
 # Left this list on 1 Oct, round N3 (.bak_searchhint), each naming the
 # column or columns its own view filters on:
 #
@@ -353,6 +375,18 @@ for rel in CANDIDATES:
     p = alv_tree.path_of(rel)
     ok('data-live-search' not in read(p),
        '%-40s eligible, still not opted in' % rel)
+# AND THE EXEMPT ONES, WHICH ARE A DECISION RATHER THAN A BACKLOG.
+#
+# READ THE CODE, NOT THE RECORD OF THE CODE. This check failed on a
+# COMMENT in unit_conversions_management explaining why that page does
+# not use the feature - the third time in one session a gate in this tree
+# read one of a round's own notes as the thing the note was about. The
+# note is worth keeping and the gate is what was wrong.
+for rel, why in sorted(EXEMPT.items()):
+    src = re.sub(r'\{#.*?#\}', '', read(alv_tree.path_of(rel)), flags=re.S)
+    src = re.sub(r'<!--.*?-->', '', src, flags=re.S)
+    ok('data-live-search' not in src,
+       '%-40s exempt: %s' % (rel, why))
 for rel in OPTED_IN_BY_N3:
     p = alv_tree.path_of(rel)
     ok('data-live-search' in read(p),

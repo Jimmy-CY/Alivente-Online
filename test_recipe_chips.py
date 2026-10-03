@@ -584,10 +584,11 @@ for p in alv_tree.templates():
 # arrived with its chip row in the same round, so both numbers move
 # together. A page wearing the filter WITHOUT a chip row would leave
 # base's badge reading zero for ever, and the gap below is what says so.
-ok(len(house) == 15, 'fifteen pages wear the house filter', len(house))
+ok(len(house) == len(alv_tree.house_filter_pages()),
+   'every page wearing the house filter is accounted for', len(house))
 ok(PAGE in rows, '%s is one of the rows' % PAGE)
-ok(len(rows) == 15,
-   'and all fifteen put their chips on base\'s row - no page keeps its own',
+ok(len(rows) == len(alv_tree.house_filter_pages()),
+   'and every one of them puts its chips on base\'s row - no page keeps its own',
    sorted(set(house) - set(rows)))
 
 # ==========================================================================

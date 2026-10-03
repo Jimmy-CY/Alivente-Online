@@ -349,6 +349,21 @@ def _browser():
 
 TMPL_TAG = re.compile(r'\{%.*?%\}', re.S)
 TMPL_VAR = re.compile(r'\{\{.*?\}\}', re.S)
+# AND THE THIRD SYNTAX - RE-1 part 2, 3 Oct 2026.
+#
+# The note in render() below says a template TAG is not a flex item. A
+# Django COMMENT is not one either, and this stripped two of the three
+# things a template puts between two buttons. RE-1 added a fourteen-line
+# note to preview_imported_recipe's bar explaining its form-owner
+# attribute; it became an anonymous text item hundreds of pixels wide, the
+# bar wrapped, and the secondary measured as hidden on a page that is
+# correct.
+#
+# Eighth instrument this week to read prose as layout or as code. IB-1
+# wrote the rule down two days ago: a template carries Django comments,
+# HTML comments AND CSS block comments, and stripping two of three is not
+# stripping comments.
+TMPL_COMMENT = re.compile(r'\{#.*?#\}', re.S)
 
 
 def render(page_css, bar_html, width, css=None, tail='', js=BAR_JS):
@@ -360,7 +375,8 @@ def render(page_css, bar_html, width, css=None, tail='', js=BAR_JS):
     # here whose {% if %} sits in the markup rather than in an href, so it
     # read as a two-row bar that the full page does not have. Every other
     # rendering fixture in this tree already strips these; this one did not.
-    bar_html = TMPL_VAR.sub('x', TMPL_TAG.sub('', bar_html))
+    bar_html = TMPL_VAR.sub('x', TMPL_TAG.sub(
+        '', TMPL_COMMENT.sub('', bar_html)))
     doc = ('<!doctype html><meta charset=utf-8><style>%s</style>'
            '<style>%s</style><style>%s</style>'
            '<style>body{margin:0;padding:8px}</style><body>'
@@ -474,6 +490,21 @@ head('4. the twenty-two a More menu carries - untouched')
 # THE CONTROL THAT MATTERS. A fix that simply unhid everything would sail
 # through section 3 and put a Help button and a Reports menu on the same
 # 390px row.
+# ONE BAR IS ALLOWED TO HAVE MOVED - PM-1, 3 Oct 2026.
+#
+# PN-1 gave .alv-seg in an action bar the bar's control metrics, so the
+# segment is 34.8px like every .btn beside it instead of 35.5px, and its
+# halves are 16px padded instead of 14. finance_pl_act is the only
+# carried bar holding one, so it is the only width that moves.
+#
+# NAMED, not loosened. The alternative - comparing class lists without
+# widths - would stop noticing a bar whose buttons change size by
+# accident, which is what sections 4 and 5 are for.
+MOVED_BY = {
+    'finance_pl_act.html':
+        'PN-1, 3 Oct 2026 - a segment in a bar takes the bar height',
+}
+
 if sync_playwright is not None and FIX:
     _same = _diff = 0
     for rel, blk in CARRIED:
@@ -482,6 +513,9 @@ if sync_playwright is not None and FIX:
         was = render(pcss, blk, 390, css=WCSS)
         if now and was and now['list'] == was['list']:
             _same += 1
+        elif rel in MOVED_BY:
+            _same += 1
+            print('        MOVED BY DESIGN %s - %s' % (rel, MOVED_BY[rel]))
         else:
             _diff += 1
             print('        CHANGED %s\n          was %s\n          now %s'
@@ -505,7 +539,8 @@ if sync_playwright is not None and FIX:
         now = render(pcss, blk, 1200)
         was = render(pcss, blk, 1200, css=WCSS)
         if not now or not was or now['list'] != was['list']:
-            _moved.append(rel)
+            if rel not in MOVED_BY:
+                _moved.append(rel)
     check('all %d bars render identically on the desktop'
           % len(NEEDY + CARRIED), not _moved, ', '.join(_moved[:4]))
 

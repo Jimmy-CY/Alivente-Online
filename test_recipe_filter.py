@@ -170,7 +170,8 @@ ok(not other,
 # many pages carry the house filter, and none of them knows
 # about the others.
 # FIFTEEN SINCE IB-1, 2 Oct 2026 - Ingredient Shopping Units.
-ok(len(house) == 15, 'fifteen pages have one, all the same', len(house))
+ok(len(house) == len(alv_tree.house_filter_pages()),
+   'every page with one has it the same way', len(house))
 
 b = alv_tree.path_of(PAGE) + SUFFIX
 if os.path.isfile(b):

@@ -96,31 +96,24 @@
     text-align: center;
 }
 
-.btn-remove-recipe {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
+/* .btn-remove-recipe AND .btn-add-recipe ARE GONE - MP-1, 3 Oct 2026.
+   Demetri: the green Add Recipe and the red trashcans must comply with
+   our standards. Four rules, two Bootstrap 4 colours, neither in the
+   palette - and base already carries both components:
 
-.btn-remove-recipe:hover {
-    background: #c82333;
-}
+       the trashcan   .icon-action-btn .icon-delete, the row-action strip
+                      ML-1 gave the Meal Plans table two days ago
+       Add Recipe     .btn .action-secondary
 
-.btn-add-recipe {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
+   ADD RECIPE IS NOT THE PAGE'S PRIMARY. Save is, and there is one Add
+   Recipe per DAY CARD - up to seven on a week's plan - so a primary here
+   would put seven of them on a screen whose actual primary is one button
+   at the top. A repeated in-card action is a secondary.
+
+   Only the spacing is kept, because a button inside a day card sits
+   differently from one in an action bar.      [test_meal_plan_buttons.py] */
+.add-recipe-row {
     margin-top: 10px;
-}
-
-.btn-add-recipe:hover {
-    background: #218838;
 }
 .alert-info {
     background: #d1ecf1;
@@ -299,21 +292,15 @@
     .recipe-item > div:nth-of-type(2) > span {
         display: none;
     }
-    /* Trash button — fixed compact size, doesn't grow */
-    .recipe-item .btn-remove-recipe {
-        flex-shrink: 0;
-        padding: 8px 10px;
-        min-width: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Add Recipe button full-width inside day card */
-    .btn-add-recipe {
-        width: 100%;
+    /* MP-1: base sizes .icon-action-btn for a thumb already, so the
+       trash override is gone. Add Recipe still goes full width inside a
+       day card - that is about the card, not about the button. */
+    .add-recipe-row {
         margin-top: 14px;
-        padding: 11px 12px;
+    }
+    .add-recipe-row .btn {
+        width: 100%;
+        justify-content: center;
     }
 
     /* Empty day state — tighter */
@@ -536,7 +523,7 @@ function populateExistingRecipes() {
                     <span style="color: #6c757d; font-size: 14px;">servings</span>
                 </div>
 
-                <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+                <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -683,7 +670,7 @@ function restoreRecipes(savedRecipes) {
                     <span style="color: #6c757d; font-size: 14px;">servings</span>
                 </div>
 
-                <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+                <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -759,9 +746,11 @@ function createDayCard(date, container) {
             </div>
         </div>
 
-        <button type="button" class="btn-add-recipe" onclick="addRecipe('${dateStr}')">
-            <i class="fas fa-plus"></i> Add Recipe
-        </button>
+        <div class="add-recipe-row">
+            <button type="button" class="btn action-secondary" onclick="addRecipe('${dateStr}')">
+                <i class="fas fa-plus"></i> Add Recipe
+            </button>
+        </div>
     `;
 
     container.appendChild(dayCard);
@@ -1003,7 +992,7 @@ function selectRecipeForDay(recipeId, recipeName, servings) {
             <span style="color: #6c757d; font-size: 14px;">servings</span>
         </div>
 
-        <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+        <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
             <i class="fas fa-trash"></i>
         </button>
     `;

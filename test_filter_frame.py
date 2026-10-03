@@ -209,6 +209,33 @@ AMENDED = {
          'minmax(0, 1.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 170px 170px'),
 }
 
+# AND base's OWN FRAME MAY GAIN A DECLARATION, AND IT HAS.
+#
+# FG-1, 3 Oct 2026. .filter-grid declared display:grid, a gap and
+# align-items and NO grid-template-columns - a grid with no columns is a
+# grid with ONE column, and the first page that did not set its own
+# rendered its fields stacked at the full width of the panel. The columns
+# are base's now, capped so a field cannot stretch into a banner.
+#
+# Recorded the same way AMENDED records AE-1's: by name, with the values,
+# so section 1 goes on comparing declaration by declaration.
+HOUSE_AMENDED = {
+    '.filter-grid': {
+        'grid-template-columns': 'repeat(auto-fit, minmax(200px, 240px))',
+        'justify-content': 'start',
+    },
+}
+# HOUSE ITSELF IS NOT TOUCHED. It is the record of what H1 lifted, and
+# section 2 below asks a question about the PAST with it - whether
+# celebration_management, the one copy that had been through a styling
+# round, already said all three exactly. Amending that record would make
+# a claim about 2 October fail because of something done on the 3rd.
+#
+# So the amendment produces a SECOND table, used only where the present
+# is compared.
+HOUSE_NOW = dict((sel, dict(vals, **HOUSE_AMENDED.get(sel, {})))
+                 for sel, vals in HOUSE.items())
+
 base = read(alv_tree.path_of('base.html'))
 BOOT = ''
 _b = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
@@ -228,7 +255,7 @@ for sel in FRAME:
     ok(len(hits) == 1, 'base declares %-15s exactly once' % sel, len(hits))
     if hits:
         got = decls(hits[0][hits[0].index('{') + 1:-1])
-        ok(got == HOUSE[sel], '  %s' % '; '.join('%s: %s' % kv for kv in
+        ok(got == HOUSE_NOW[sel], '  %s' % '; '.join('%s: %s' % kv for kv in
                                                  sorted(got.items()))[:62],
            got)
 ok(not re.search(r'#[0-9a-fA-F]{3,8}\b',
@@ -396,6 +423,13 @@ if HAVE_PW and BOOT:
                 if (k in ('header.mb', 'header.pb') and v[0] == '0px'
                         and rel in ('invoices.html', 'projects/projects.html')):
                     continue   # the two with no separator gain the house one
+                if k == 'grid.just' and v == ('normal', 'start'):
+                    # FG-1, 3 Oct 2026. The row packs from the left now.
+                    # Without it the slack is shared BETWEEN the tracks
+                    # and two fields sit at opposite ends of the panel
+                    # with a metre of nothing between them. Every panel
+                    # moves, which is the point of putting it in base.
+                    continue
                 if (k == 'grid.cols' and rel == 'act_expense.html'
                         and len(v[1].split()) == 5):
                     # AE-1 PUT FIVE FILTERS ON ONE LINE, 1 Oct 2026. The

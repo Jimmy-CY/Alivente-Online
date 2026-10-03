@@ -115,8 +115,14 @@ TIPS = by_slug.get('pl-tips', '')
 # =========================================== THE STALE STATEMENTS MUST BE GONE
 check('the old "Budget mode vs Year mode" section is gone',
       'Budget mode vs Year mode' not in HELP_SRC)
+# THE CLAIM IS UNCHANGED; THE EVIDENCE MOVED - PM-1, 3 Oct 2026. Budget
+# is still a control of its own rather than an option in the year
+# dropdown, which is what this check is about. It proved that by looking
+# for the class name on the control, and SG-2 renamed the control to
+# base's .alv-seg. It asks for the segment and the Budget link now - the
+# second being the thing the claim is actually about.
 check('  because the year dropdown no longer offers "Budget"',
-      'view=budget' in TPL_SRC and 'pl-view-toggle' in TPL_SRC)
+      'view=budget' in TPL_SRC and 'alv-seg' in TPL_SRC)
 check('Gross ROI no longer documents an ungated divisor',
       'Total Revenue &divide; Total Purchase Price' not in HELP_SRC)
 check('% Value Increase no longer documents Total Current Value',

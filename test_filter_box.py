@@ -263,19 +263,23 @@ for p in alv_tree.templates():
 # what this suite is about, so the bare count does not move.
 # 39 SINCE IB-1, 2 Oct 2026. Ingredient Shopping Units joined the
 # house panel and its Category select gained .filter-select.
+# UC-2, 3 Oct 2026 moved unit_conversions_management's search box off
+# the page's own .filter-input and onto .form-control inside the house
+# panel, so one control crossed from bare to paired. The TOTAL is
+# unchanged, which is the useful half of this check: a control did not
+# appear or vanish, it changed company.
 ok(len(paired) + len(bare) == 39,
    'thirty-nine uses of the two class names across the tree',
    len(paired) + len(bare))
-ok(len(paired) == 34, '  thirty-four pair it with .form-control, and do '
+ok(len(paired) == 36, '  thirty-six pair it with .form-control, and do '
    'not move', len(paired))
 ins = [b for b in bare if 'filter-input' in b[1]]
-ok(len(ins) == 2,
-   '  and exactly two are bare text inputs - the ones that were 68',
+ok(len(ins) == 1,
+   '  and exactly one is a bare text input - UC-2 took the other, on '
+   'unit_conversions_management, into the house panel',
    [b[0] for b in ins])
-ok(sorted(b[0] for b in ins) == ['celebration_management.html',
-                                 'unit_conversions_management.html'],
-   '  on Celebration Management and unit_conversions_management',
-   sorted(b[0] for b in ins))
+ok(sorted(b[0] for b in ins) == ['celebration_management.html'],
+   '  and it is Celebration Management', sorted(b[0] for b in ins))
 
 # ==========================================================================
 head('4. NOTHING ELSE MOVED')

@@ -234,11 +234,26 @@ check('the confirmation page keeps two bars on purpose, and can still submit',
       and _dm.count('</form>') == _dm.count('<form'))
 
 # The sweep must never touch a segmented toggle: its colour IS the state.
+#
+# PINNED BY WHAT IT IS NOW - PM-1, 3 Oct 2026. The claim has not changed
+# and SG-2 did not weaken it. The TOGGLE changed: it was a conditional
+# Bootstrap pair and it is base's .alv-seg now, so pinning the old class
+# names pinned a thing that no longer exists.
+#
+# And the new pin says something the old one could not. An .alv-seg
+# member carries no `btn` at all, and the sweep only ever rewrites `btn`
+# - so this control is not merely untouched, it is UNTOUCHABLE by that
+# instrument. That is a stronger guarantee than the one it replaces.
 tog = load(os.path.join(TPL, 'finance_pl_act.html'))
-check('finance_pl_act keeps its budget/actuals toggle logic',
-      "{% if view_mode == 'budget' %}btn-info{%" in tog)
-check('.. and the actuals half too',
-      "{% if view_mode == 'actuals' %}btn-info{%" in tog)
+_seg = re.search(r'<div class="alv-seg"[^>]*>(.*?)</div>', tog, re.S)
+check('finance_pl_act keeps its budget/actuals toggle, as a segment',
+      bool(_seg))
+check('.. with both halves, each current only in its own view',
+      bool(_seg) and _seg.group(1).count('aria-current="page"') == 2
+      and 'view=budget' in _seg.group(1)
+      and 'view=actuals' in _seg.group(1))
+check('.. and the sweep cannot touch it - no half carries a btn class',
+      bool(_seg) and not re.search(r'class="[^"]*\bbtn\b', _seg.group(1)))
 
 # Permission twins are one decision. Sweeping half splits the pair.
 ad = load(os.path.join(TPL, 'asset_detail.html'))
@@ -428,6 +443,18 @@ try:
                 return None
             _n, a, z = found[0]
             bar = mk[a:z]
+            # THE THIRD SYNTAX - PN-1, 3 Oct 2026. A Django
+            # comment is not a flex item either. This stripped tags and
+            # variables and left {# #}, and the seventeen comments in
+            # finance_pl_act's bar rendered as anonymous text items
+            # 195px tall, so a bar that sits on one line measured as
+            # two. RE-1b made this exact repair to
+            # test_secondary_visible three days ago.
+            #
+            # REMOVED, not blanked: this fixture measures layout, not
+            # line numbers, so the comment goes entirely like the tags
+            # beside it.
+            bar = re.sub(r'\{#.*?#\}', '', bar, flags=re.S)
             bar = re.sub(r'\{%[^%]*%\}', ' ', bar)
             bar = re.sub(r'\{\{[^}]*\}\}', 'x', bar)
             pcss = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', raw,
@@ -885,7 +912,16 @@ for f in FILES:
                 and 'action-filter' not in b.group(2)
                 and 'disabled-btn' not in b.group(2)
                 and not sb.is_cancel(sb.label_of(b.group(3)))
-                and not sb.label_of(b.group(3)).lower().startswith('help')]
+                and not sb.label_of(b.group(3)).lower().startswith('help')
+                # ONE DEFINITION OF "A VERB" - PM-1, 3 Oct 2026. This list
+                # re-implements Show-ButtonDrift's lone-verb rule, and
+                # when PN-1 taught the scanner that a CHOOSER is not a
+                # verb either, this copy went on not knowing and reported
+                # finance_pl_act's year dropdown. Two copies of one rule
+                # is what CN-1 spent a round removing from the filter
+                # census this morning; the rule is asked of the tool now.
+                and not sb.is_chooser(sb.label_of(b.group(3)),
+                                      b.group(2))]
         if len(real) == 1 and 'action-danger' not in real[0].group(2):
             if 'action-primary' not in real[0].group(2):
                 _lone.append((f, sb.label_of(real[0].group(3))))

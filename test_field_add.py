@@ -312,7 +312,16 @@ else:
     # THE NOTE IS A COMMENT, NOT A RULE. A round that changed the
     # tool's behaviour while claiming to annotate it would be hiding an
     # edit in a comment.
-    code = re.sub(r'#.*', '', t)
+    # AS THE FIELD-ADD ROUND LEFT IT - PM-1, 3 Oct 2026. This read the
+    # tool as it stands now, so every later round that touches it breaks
+    # a claim about this one. PN-1 added is_chooser on 3 Oct and did
+    # exactly that. as_left_by walks forward to the next backup and
+    # returns the file as THIS round left it.
+    #
+    # The file's own left() does this for templates; the drift tool is
+    # not a template, so it is spelled out here.
+    left_drift = (as_left_by(d, SUFFIX, read) if as_left_by else read(d))
+    code = re.sub(r'#.*', '', left_drift)
     if os.path.isfile(d + SUFFIX):
         was_code = re.sub(r'#.*', '', read(d + SUFFIX))
         ok(re.sub(r'\s+', '', code) == re.sub(r'\s+', '', was_code),

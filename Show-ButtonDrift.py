@@ -501,6 +501,40 @@ def rebuild(cls, tone):
     return ' '.join(out[:i] + tone.split() + out[i:])
 
 
+def is_chooser(lab, cls):
+    """A control that asks WHICH THING YOU ARE LOOKING AT, not one that
+    does something.
+
+    PN-1, 3 Oct 2026. The lone-button rule below promotes the only real
+    button in a bar on the grounds that it must be the page's verb. After
+    SG-2 that rule proposed promoting finance_pl_act's YEAR DROPDOWN,
+    because SG-2 had correctly taken the Budget/Actuals pair off .btn and
+    onto base's .alv-seg, and the count of real buttons fell from three
+    to one.
+
+    The rule was right and the bar was not a bar with one verb in it. A
+    dropdown toggle does not do anything - it asks which year you want to
+    see. base already draws this line for the control SG-2 put beside it,
+    in ALV-SEG's own note: "it is not a verb you press to make something
+    happen; it is which view you are looking at." A year picker and a
+    Budget/Actuals segment are the same kind of thing.
+
+    NINETEEN templates carry an action bar with no .action-primary -
+    reports, settings pages, landings and one confirmation page. A page
+    whose job is to show or to confirm has no verb, and that is correct
+    rather than drift.
+    """
+    names = cls.split()
+    if 'dropdown-toggle' in names or 'data-toggle="dropdown"' in cls:
+        return True
+    # A segment is already invisible here - .alv-seg members carry no
+    # `btn` - but naming it keeps the two halves of one idea together,
+    # so a future change to .alv-seg does not quietly reintroduce this.
+    if 'alv-seg' in names:
+        return True
+    return False
+
+
 def plan_footer(items):
     """Tone every button in one modal footer.
 
@@ -598,12 +632,17 @@ def plan_bar(items, in_bar=False):
     #    got promoted exactly that way.
     #  - CANCEL IS NEVER THE VERB. edit_asset.html has a bar whose only
     #    non-Back button is Cancel, and the rule made Cancel the primary.
+    #  - AND A CHOOSER IS NEVER THE VERB - PN-1, 3 Oct 2026. See
+    #    is_chooser above. finance_pl_act's bar came down to one real
+    #    button when SG-2 moved Budget/Actuals onto .alv-seg, and the
+    #    rule proposed making a YEAR PICKER the point of the page.
     real = [i for i, (lab, cls, _t) in enumerate(items)
             if not out[i].startswith('action-back')
             and out[i] != ''
             and 'back-button' not in out[i]
             and not lab.lower().startswith('help')
-            and not is_cancel(lab)]
+            and not is_cancel(lab)
+            and not is_chooser(lab, cls)]
     if in_bar and len(real) == 1:
         i = real[0]
         if out[i].startswith('action-secondary') and 'action-danger' not in out[i]:

@@ -989,9 +989,29 @@ tr.sortable-chosen {
     <h2 class="page-title-h2">{% if mode == 'create' %}CREATE NEW RECIPE
             {% elif mode == 'edit' %}EDIT RECIPE
             {% else %}REVIEW IMPORTED RECIPE{% endif %}</h2>
-<div class="page-action-buttons{% if mode != 'edit' %} page-action-buttons-single{% endif %}">
+<div class="page-action-buttons">
+        {# UPDATE AT THE TOP - RE-1, 3 Oct 2026. Demetri: the Update and   #}
+        {# the Cancel/Back must go to the top.                             #}
+        {#                                                                 #}
+        {# form="saveRecipeForm" IS LOAD-BEARING. This bar sits nineteen   #}
+        {# lines ABOVE the <form>, so a submit button here owns no form    #}
+        {# and submits nothing - and it fails SILENTLY: the page looks     #}
+        {# right and the Update does nothing. The form-owner attribute     #}
+        {# associates a control with a form by id from anywhere on the     #}
+        {# page. The alternative was moving the <form> tag above the bar,  #}
+        {# which re-parents the title and the bar into a form with         #}
+        {# hundreds of fields and changes what a stray Enter key does.     #}
+        <button type="submit" form="saveRecipeForm" class="btn action-primary">
+            <i class="fas fa-save"></i>
+            {% if mode == 'create' %}Save Recipe
+            {% elif mode == 'edit' %}Update Recipe
+            {% else %}Save to Collection{% endif %}
+        </button>
         {% if mode == 'edit' %}
-        <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn action-primary">
+        {# A SECONDARY NOW. A page has one primary and on an edit screen   #}
+        {# it is the save. page-action-buttons-single went with it - the   #}
+        {# bar has three controls in every mode.                           #}
+        <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn action-secondary">
             <i class="fas fa-eye"></i> View Recipe
         </a>
         {% endif %}
@@ -1625,18 +1645,11 @@ tr.sortable-chosen {
                 </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div style="display: flex; justify-content: center; gap: 16px; margin-top: 30px; margin-bottom: 50px;">
-            <button type="submit" class="btn action-primary btn-lg">
-                <i class="fas fa-save"></i> 
-                {% if mode == 'create' %}Save Recipe
-                {% elif mode == 'edit' %}Update Recipe
-                {% else %}Save Recipe to Collection{% endif %}
-            </button>
-            <a href="{% if mode == 'import' %}{% url 'import_recipe' %}{% else %}{% url 'recipe_management' %}{% endif %}" class="btn btn-secondary btn-lg">
-                <i class="fas fa-times"></i> Cancel
-            </a>
-        </div>
+        {# THE BOTTOM BLOCK IS GONE - RE-1, 3 Oct 2026. Its Save moved to #}
+        {# the bar above, and its Cancel pointed at recipe_management -    #}
+        {# exactly where the bar's Back already points. The same link      #}
+        {# written twice, one of them wearing btn-secondary. Third time    #}
+        {# this week; SL-2 found three of them yesterday.                  #}
     </form>
 
     <!-- Add New Ingredient Modal -->

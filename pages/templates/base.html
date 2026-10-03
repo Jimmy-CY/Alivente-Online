@@ -3281,6 +3281,36 @@ textarea.form-control { height: auto; }
     display: grid;
     gap: 20px;
     align-items: end;
+    /* COLUMNS - FG-1, 3 Oct 2026, and the reason this round exists.
+       This rule declared display: grid and no columns, which is a grid
+       with ONE column: every field stacks and each one fills the track.
+       It worked anyway for a year because all twelve pages using it set
+       their own grid-template-columns - and then IB-1 shipped a page
+       that did not, and its two fields rendered stacked, 1888px wide
+       each, on a 1920 screen.
+
+       A component that only behaves when its caller remembers to finish
+       it is not finished. So the default is here now, and a page that
+       sets its own still wins - a declaration here is (0,1,0) and a
+       page's copy comes later in the document.
+
+       auto-fit lets the browser count the columns, so a panel that
+       gains a field does not need its track list rewritten. The floor
+       keeps a field usable; the CAP is what Demetri asked for on 3 Oct:
+       "the filter fields must be made less wide, so that they fit on
+       one line". Without justify-content the slack is shared BETWEEN
+       the tracks and two fields sit at opposite ends of the panel. */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 240px));
+    justify-content: start;
+}
+
+/* ONE COLUMN ON A PHONE. A 240px cap on a 358px screen would leave a
+   third of the width empty, and every filter panel in the tree already
+   goes single-column here. */
+@media screen and (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .filter-header {
@@ -3740,6 +3770,28 @@ textarea.form-control { height: auto; }
     color: var(--alv-on-accent);
 }
 .alv-seg > *:focus-visible { outline: 2px solid var(--alv-accent); outline-offset: -2px; }
+
+/* IN AN ACTION BAR, A SEGMENT IS THE BAR'S HEIGHT - PN-1, 3 Oct 2026.
+
+   .alv-seg sets its own 13px type and 7px/14px padding, which is right
+   where it was first used - a view bar of its own on finance_expense. In
+   an ACTION BAR it came to 35.5px against the 34.8px every .btn there is
+   given, and three quarters of a pixel is enough to move a centred
+   sibling: finance_pl_act's year dropdown is a 24px control, and after
+   SG-2 put a segment beside it the dropdown sat a pixel lower than
+   everything else. test_button_sweep measures distinct row positions and
+   said the bar was two rows.
+
+   The fix is not to shave the padding to something that happens to land.
+   It is to say what was always meant: a control in the action bar takes
+   the bar's control metrics - the same font, the same line-height, the
+   same padding as the .btn beside it - so the arithmetic is the same
+   arithmetic and the heights are equal rather than nearly equal. */
+.page-action-buttons .alv-seg > * {
+    font-size: 14px;
+    line-height: 1.2;
+    padding: 8px 16px;
+}
 @media (hover: hover) and (pointer: fine) {
     .alv-seg > *:not([aria-pressed="true"]):not([aria-current="page"]):hover {
         background: var(--alv-accent-soft);
@@ -4896,7 +4948,25 @@ table.alv-matrix {
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeAll(); }
   });
-  window.addEventListener('scroll', closeAll, true);
+  /* SCROLLING THE PAGE CLOSES IT. SCROLLING THE LIST DOES NOT.
+     PU-1b, 3 Oct 2026 - Demetri, on Live: "the ingredients within the
+     Category open correctly, but I can't scroll down the list."
+
+     The `true` below is CAPTURE, and it is deliberate: without it a
+     scroll inside some other container never reaches the window and the
+     popup would hang over a page that had moved underneath it. But
+     .alv-pop is overflow-y: auto, so scrolling the LIST is a scroll event
+     too - and the popup was closing itself the moment anyone tried to
+     read past the eighth item. The scrollbar was visible and unusable.
+
+     So the handler asks where the scroll STARTED. Inside an open popup,
+     it is the reader using the list and nothing should happen. Anywhere
+     else, the page has moved and the popup is dismissed as before. */
+  window.addEventListener('scroll', function (e) {
+    var t = e.target;
+    if (t && t.closest && t.closest('.alv-pop')) { return; }
+    closeAll();
+  }, true);
   window.addEventListener('resize', closeAll);
 })();
 </script>

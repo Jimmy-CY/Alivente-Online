@@ -516,24 +516,22 @@ ok({'cash_receipts.html', 'customer_list.html'} <= how_set,
 # where the NUMBER lives, not about loosening any of them.
 
 
-def _house_pages():
-    """Pages carrying the house filter: a Filter button AND the panel.
-    Markup only - a page NAMING .alv-filter in a comment or a stylesheet
-    does not carry one, and a gate reads code, not the record of code."""
-    out = []
-    for p in alv_tree.templates():
-        if os.path.basename(p) == 'base.html':
-            continue
-        t = read(p)
-        t = re.sub(r'<style\b.*?</style>', '', t, flags=re.S)
-        t = re.sub(r'<script\b.*?</script>', '', t, flags=re.S)
-        t = re.sub(r'<!--.*?-->', '', t, flags=re.S)
-        if 'action-filter' in t and 'alv-filter' in t:
-            out.append(alv_tree.rel(p))
-    return sorted(out)
-
-
-_HOUSE = _house_pages()
+# THIS FUNCTION MOVED - CN-1, 3 Oct 2026. It now lives in alv_tree as
+# house_filter_pages(), which is where the note two paragraphs up said it
+# belonged: "outstanding item 4 is about where the NUMBER lives". The
+# body is unchanged; only its address is.
+_HOUSE = alv_tree.house_filter_pages()
+# AND THE CLAIM IS NOW THE OPPOSITE ONE - CN-1, 3 Oct 2026.
+#
+# This used to pull the digit out of each suite and check the four agreed
+# with the tree. That was the right check for as long as four independent
+# copies existed. Now that none of them types the number, there is
+# nothing to compare - so the claim becomes the stronger one: NO SUITE
+# STATES IT AT ALL, and a digit reappearing in any of them is the defect.
+#
+# The comparisons each suite makes ABOUT those pages are untouched. Those
+# are what caught IB-1 half-done; item 4 was only ever about where the
+# number lived.
 _CLAIMS = {
     'test_filter_on_close.py':
         r'ok\(len\(auto\) \+ len\(manual\) == (\d+)',
@@ -544,12 +542,11 @@ ok(bool(_HOUSE), 'the tree carries the house filter on %d page(s)'
    % len(_HOUSE))
 for who, pat in sorted(_CLAIMS.items()):
     src = re.sub(r'(?m)#.*$', '', read(os.path.join(ROOT, who)))
-    found = [int(x) for x in re.findall(pat, src)]
-    if not ok(bool(found), '%-26s states a page count' % who):
-        continue
-    ok(all(n == len(_HOUSE) for n in found),
-       '%-26s says %s, the tree says %d'
-       % (who, '/'.join(str(n) for n in found), len(_HOUSE)))
+    typed = re.findall(pat, src)
+    ok(not typed, '%-26s types the number nowhere' % who,
+       'found %s' % typed)
+    ok('house_filter_pages' in src,
+       '%-26s asks alv_tree for it instead' % who)
 
 # test_filter_box counts CONTROLS, not pages - a different quantity, so it
 # is measured on its own terms rather than folded into the number above.

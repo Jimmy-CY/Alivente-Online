@@ -212,13 +212,36 @@ ok(was_total >= 35,
 # ==========================================================================
 head('2. EVERY ONE, BY NAME')
 # ==========================================================================
+# A CONTROL A LATER ROUND REMOVED - PU-1b, 3 Oct 2026.
+#
+# This suite records what RE-TONE swapped and checks the NEW class is
+# still there. RE-1 did not re-green the Create/Edit Recipe save - it
+# DELETED it, because the save moved into the action bar. The claim that
+# matters, "nothing wears the old class", is still true; "the new class is
+# still present" never was the point and cannot survive a round that
+# removes the element.
+#
+# So a removal is ALLOWED ONLY WHEN IT IS NAMED, and the old class must
+# still be absent. An element that disappears without a line here still
+# fails, which is what keeps this a gate.
+REMOVED_BY = {
+    ('preview_imported_recipe.html', 'btn action-primary btn-lg'):
+        'RE-1, 3 Oct 2026 - the save moved to the action bar',
+}
+
 total = 0
 for rel in sorted(CLASSES):
     t = read(alv_tree.join(rel.replace('/', os.sep)))
     good = []
     for was, now, n, what in CLASSES[rel]:
         c = t.count('class="%s"' % now)
-        good.append(c >= n)
+        gone = (rel, now) in REMOVED_BY
+        if gone:
+            # Named as removed: the new class may be absent, but the OLD
+            # one must not have come back in its place.
+            good.append(c == 0 and t.count('class="%s"' % was) == 0)
+        else:
+            good.append(c >= n)
         total += n
     ok(all(good), '%-36s %d control(s)'
        % (rel, sum(n for _w, _n, n, _l in CLASSES[rel])),

@@ -71,13 +71,27 @@
 {% if grouped_assets %}
     <div class="view-toggle-row">
         <span class="view-toggle-label">Group by:</span>
-        <div class="btn-group btn-group-sm view-toggle-group" role="group">
+        {# THE EIGHTH HAND-ROLLED SEGMENTED CONTROL - SG-2, 3 Oct 2026.  #}
+        {# The same Budget/Actuals shape finance_pl_act had, and hidden   #}
+        {# from every census of btn-info for a month because the class    #}
+        {# name was ASSEMBLED ACROSS A TEMPLATE TAG: the literal "btn-"  #}
+        {# was followed by a conditional choosing between "info" and     #}
+        {# "outline-info", so the string "btn-info" never appeared in    #}
+        {# this file at all and no search for it could ever match.       #}
+        {# SG-2's own closing gate swept for the CONSTRUCT and found it. #}
+        {#                                                                #}
+        {# The syntax is NAMED here and not written - B-1c's rule. The    #}
+        {# first draft of this note quoted the tags, which put a live     #}
+        {# conditional inside a comment and moved this template's tag     #}
+        {# census by one of each. test_entry_sections counts those to     #}
+        {# notice a round orphaning a branch, and it duly noticed prose.  #}
+        <div class="alv-seg" role="group" aria-label="Group assets by">
             <a href="?group_by=category{% if request.GET.next %}&next={{ request.GET.next }}{% endif %}"
-               class="btn btn-{% if group_by == 'category' %}info{% else %}outline-info{% endif %}">
+               {% if group_by == 'category' %}aria-current="page"{% endif %}>
                 <i class="fas fa-tag"></i> Category
             </a>
             <a href="?group_by=room{% if request.GET.next %}&next={{ request.GET.next }}{% endif %}"
-               class="btn btn-{% if group_by == 'room' %}info{% else %}outline-info{% endif %}">
+               {% if group_by == 'room' %}aria-current="page"{% endif %}>
                 <i class="fas fa-door-open"></i> Location/Room
             </a>
         </div>
@@ -411,12 +425,10 @@
     color: #495057;
     font-size: 14px;
 }
-.view-toggle-group .btn {
-    padding: 6px 14px;
-}
-.view-toggle-group .btn i {
-    margin-right: 4px;
-}
+/* .view-toggle-group's two rules are gone - SG-2. base sizes .alv-seg
+   and spaces its icons, so these could only disagree with it.
+   .view-toggle-row and .view-toggle-label stay: they are the row and
+   its "Group by:" caption, which base has no opinion about. */
 
 /* Asset name cell: thumbnail + name stacked side-by-side */
 .asset-name-cell {
@@ -519,12 +531,6 @@
         color: #6c757d;
         text-transform: uppercase;
         letter-spacing: 0.3px;
-    }
-    .view-toggle-group {
-        width: 100%;
-    }
-    .view-toggle-group .btn {
-        flex: 1;
     }
 
     /* Empty state — less vertical waste */

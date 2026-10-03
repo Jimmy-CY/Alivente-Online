@@ -153,6 +153,40 @@ ROUNDS = [
     '.bak_printguard',
     '.bak_shopbar',
     '.bak_shoptone',
+    '.bak_mealbtn',
+    '.bak_recipebar',
+    '.bak_popscroll',
+    '.bak_seccomment',
+    # Section MC, 3 Oct 2026 - the Meal Plans / Calendar programme.
+    # ORDER IS CHRONOLOGICAL AND LOAD BEARING: MC-1 moved the switch,
+    # MC-2 converted the two action strips, MC-3 swept what was left.
+    # MC-3 reads MC-2's output on the same file, so a swap here would
+    # make as_left_by hand a round the wrong text.
+    '.bak_viewseg',
+    '.bak_calactions',
+    '.bak_caltone',
+    '.bak_emailrev',
+    # TC-1. A FIXTURE REPAIR, NOT A PRODUCT CHANGE - the password
+    # reset boundary was measuring the suite's own runtime, and only
+    # said so with six processes on the machine. No suite of its own:
+    # the fixture it repairs, test_auth_flow.py, is the suite.
+    '.bak_tokclock',
+    # Section FG / FL / UC / SG, 3 Oct 2026 - the filter programme
+    # finished and the last hand-rolled segmented controls taken.
+    # ORDER IS LOAD BEARING: FG-1 puts the capped track list in base
+    # and FL-1 and UC-2 inherit it - a panel built before FG-1 lands
+    # stacks its fields one per row at the full width of the panel.
+    '.bak_filtergrid',
+    '.bak_reffilter',
+    '.bak_convfilter',
+    '.bak_plseg',
+    # The three repair rounds this bundle needed. None has a suite of
+    # its own: each one REPAIRS existing suites, so those suites are
+    # the test. ORDER IS LOAD BEARING - PM-1 moves pins onto what
+    # PN-1 left, and PN-1 reads the classifier CN-1 did not touch.
+    '.bak_filtercensus',
+    '.bak_noprimary',
+    '.bak_movedpins',
 ]
 
 
