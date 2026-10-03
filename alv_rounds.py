@@ -150,6 +150,9 @@ ROUNDS = [
     '.bak_renewalwin',
     '.bak_convpills',
     '.bak_fixedpop',
+    '.bak_printguard',
+    '.bak_shopbar',
+    '.bak_shoptone',
 ]
 
 

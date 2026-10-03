@@ -18,10 +18,11 @@
 .ingredients-card h2 {
     font-size: 24px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 3px solid #28a745;
+    /* SL-3: the system's own rule under a heading, not a green one. */
+    border-bottom: 3px solid var(--alv-accent);
 }
 
 .category-section {
@@ -29,12 +30,12 @@
 }
 
 .category-header {
-    color: #28a745;
+    color: var(--alv-good);
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 2px solid var(--alv-surface-deep);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -48,7 +49,7 @@
 
 .ingredient-item {
     padding: 15px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     display: flex;
     align-items: center;
     gap: 15px;
@@ -56,7 +57,7 @@
 }
 
 .ingredient-item:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 .ingredient-item:last-child {
@@ -72,30 +73,30 @@
 .ingredient-text {
     flex: 1;
     font-size: 16px;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .ingredient-item.checked .ingredient-text {
     text-decoration: line-through;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     opacity: 0.6;
 }
 
 .ingredient-quantity {
     font-weight: 600;
-    color: #28a745;
+    color: var(--alv-good);
     margin-right: 8px;
 }
 
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 
 .empty-state i {
     font-size: 80px;
-    color: #dee2e6;
+    color: var(--alv-line);
     margin-bottom: 20px;
 }
 
@@ -114,18 +115,27 @@
     padding: 10px 20px;
     border-radius: 25px;
     background: var(--alv-surface-deep);
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-weight: 600;
 }
 
+/* A STEP IS NOT A VERDICT - SL-3, 3 Oct 2026.
+   Demetri called these Tabs; they are a progress indicator. They were
+   green for the step you are on and teal for the one behind you, and
+   green reads as GOOD - step 1 being finished is not a judgement about
+   anything, it is simply behind you.
+
+   The accent for the step you are on, and the accent's own tint for the
+   one you have done, which reads as finished without reading as approved.
+   Same distinction UC-1 settled for the Applies To column a day earlier. */
 .step-badge.active {
-    background: #28a745;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
 }
 
 .step-badge.completed {
-    background: #20c997;
-    color: white;
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
 }
 
 .step-number {
@@ -152,7 +162,7 @@
 .review-list {
     max-height: 500px;
     overflow-y: auto;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
@@ -163,11 +173,11 @@
     align-items: center;
     gap: 12px;
     padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--alv-line-soft);
 }
 
 .review-item:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 .review-item:last-child {
@@ -189,64 +199,48 @@
 
 .review-item label.excluded {
     text-decoration: line-through;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 
 .review-category-header {
     font-weight: 600;
-    color: #28a745;
+    color: var(--alv-good);
     margin-top: 20px;
     margin-bottom: 10px;
     padding-bottom: 5px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--alv-line);
 }
 
 .review-category-header:first-child {
     margin-top: 0;
 }
 
-/* Navigation Buttons */
-.step-navigation {
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    margin-top: 25px;
-    padding-top: 25px;
-    border-top: 2px solid #dee2e6;
-}
-
-.step-navigation .btn {
-    padding: 12px 30px;
-    font-size: 16px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
 
 /* Tip Box */
 .tip-box {
-    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    /* SL-3: flat, and the house info tint. A gradient on an advice box
+       was decoration; base paints every other tint in this system flat. */
+    background: var(--alv-info-soft);
     border: none;
     border-radius: 8px;
     padding: 15px 20px;
     margin-top: 20px;
-    color: #0c5460;
+    color: var(--alv-accent-ink);
 }
 
 .tip-box i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 /* Email Section */
 .email-section {
     margin-top: 30px;
     padding-top: 30px;
-    border-top: 2px solid #dee2e6;
+    border-top: 2px solid var(--alv-line);
 }
 
 .email-section h3 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 15px;
@@ -254,26 +248,55 @@
     align-items: center;
     gap: 8px;
 }
+/* THE SHARE ROW - SL-2, 3 Oct 2026. Twelve inline style attributes
+   became these three rules. The buttons are house roles now; only the
+   stacked icon-over-label shape is local, because nothing else in the
+   system stacks a button that way. */
+.share-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+.share-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 12px;
+}
+.share-btn i { font-size: 20px; }
+.share-btn span { font-size: 13px; }
+/* WhatsApp's own green, kept by decision - see the note in the markup.
+   WRITTEN ONCE, as a property on the rule that uses it. The first cut set
+   it as both background and border-color, and an exception written twice
+   is two literals to find and only one of them documented. */
+.share-whatsapp {
+    --wa-green: #25D366;
+    background: var(--wa-green);
+    border-color: var(--wa-green);
+    color: var(--alv-paper);
+}
+
 
 .email-section select {
     width: 100% !important;
     max-width: none !important;
     padding: 12px;
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     border-radius: 8px;
     font-size: 15px;
     margin-bottom: 20px;
 }
 
 .email-section select:disabled {
-    background: #f8f9fa;
-    border-color: #ced4da;
-    color: #6c757d;
+    background: var(--alv-surface);
+    border-color: var(--alv-line);
+    color: var(--alv-ink-soft);
     cursor: not-allowed;
 }
 
 .email-btn-disabled {
-    background: #adb5bd !important;
+    background: var(--alv-ink-faint) !important;
     opacity: 0.6 !important;
     cursor: not-allowed !important;
     pointer-events: none;
@@ -281,15 +304,15 @@
 
 /* Missing Conversions Styles */
 .conversions-needed-card {
-    background: #fff3cd;
-    border: 2px solid #ffc107;
+    background: var(--alv-warn-soft);
+    border: 2px solid var(--alv-warn-line);
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
 }
 
 .conversions-needed-card h2 {
-    color: #856404;
+    color: var(--alv-warn-ink);
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 15px;
@@ -300,8 +323,8 @@
 
 .conversions-needed-card .alert {
     background: white;
-    border: 1px solid #ffc107;
-    color: #856404;
+    border: 1px solid var(--alv-warn-line);
+    color: var(--alv-warn-ink);
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -309,14 +332,14 @@
 
 .conversion-form-group {
     background: white;
-    border: 2px solid #dee2e6;
+    border: 2px solid var(--alv-line);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 15px;
 }
 
 .conversion-form-group h4 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 15px;
@@ -334,7 +357,7 @@
 
 .conversion-input-row input {
     padding: 10px;
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     border-radius: 6px;
     font-size: 15px;
     width: 100%;
@@ -343,23 +366,22 @@
 .conversion-input-row .equals-sign {
     font-size: 20px;
     font-weight: bold;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 
 .conversion-example {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 10px;
     border-radius: 6px;
     margin-top: 10px;
     font-size: 13px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 
 /* Print Styles */
 @media print {
     .page-action-buttons,
     .step-indicator,
-    .step-navigation,
     .email-section,
     .ingredient-checkbox,
     .conversions-needed-card,
@@ -367,8 +389,16 @@
     #step1Content {
         display: none !important;
     }
-    
-    #step2Content {
+
+    /* PRINT WHAT IS ON SCREEN - SL-1, 3 Oct 2026.
+       This used to force #step2Content visible whatever state it was in,
+       which is why Ctrl+P on step 1 produced one sheet headed "Items to
+       Buy" with nothing under it. .step-content is display:none until it
+       gains .active, so SOMETHING has to be forced - but the thing to
+       force is the step that is actually open, not a particular one.
+       This is the only one of SL-1's three guards that also covers the
+       keyboard. */
+    .step-content.active {
         display: block !important;
     }
     
@@ -378,7 +408,7 @@
     
     .ingredients-card {
         box-shadow: none;
-        border: 1px solid #dee2e6;
+        border: 1px solid var(--alv-line);
     }
     
     .ingredient-item {
@@ -447,19 +477,6 @@
         font-size: 14px;
     }
 
-    /* Step navigation — stack column-reverse so primary action lands on top */
-    .step-navigation {
-        flex-direction: column-reverse;
-        gap: 8px;
-        margin-top: 18px;
-        padding-top: 18px;
-    }
-    .step-navigation .btn {
-        width: 100%;
-        padding: 12px 16px;
-        font-size: 15px;
-        justify-content: center;
-    }
 
     /* Tip box */
     .tip-box {
@@ -565,12 +582,38 @@
     <h2 class="page-title-h2">SHOPPING LIST</h2>
 <h4 class="page-subtitle-h4">{{ meal_plan.plan_name }} &mdash; {{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }} &mdash; {% if meal_plan.days.count %}{{ meal_plan.days.count }}{% else %}0{% endif %} day{{ meal_plan.days.count|pluralize }}</h4>
 <div class="page-action-buttons">
-        <button type="button" onclick="window.print()" class="btn action-primary" aria-label="Print shopping list">
+        {# ONE BAR, BOTH STEPS - SL-2, 3 Oct 2026. Demetri: take the       #}
+        {# buttons to the top and make the Cancel a Back. This bar sits    #}
+        {# ABOVE both step contents, so it cannot be written once per      #}
+        {# step - every control lives here with `hidden`, and setBar()     #}
+        {# below decides which are on screen. Same mechanism SL-1 gave     #}
+        {# Print yesterday, so this round adds no new machinery.           #}
+        <button type="button" onclick="generateShoppingList()" class="btn action-primary" id="genBtn">
+            Generate List <i class="fas fa-arrow-right"></i>
+        </button>
+        <button type="button" onclick="window.location.href='{% url 'view_meal_plan' meal_plan.meal_plan_id %}'" class="btn action-primary" id="doneBtn" hidden>
+            <i class="fas fa-check"></i> Done
+        </button>
+        {# HIDDEN UNTIL THERE IS A LIST - SL-1, 3 Oct 2026. Demetri:    #}
+        {# "Print butoon brings up an empty list. Should not appear       #}
+        {# until shopping list has been defined." HIDDEN, not disabled:   #}
+        {# a disabled control still says you may print and then refuses.  #}
+        {# generateShoppingList() removes the attribute, so the server    #}
+        {# never renders a usable Print for a list that cannot exist.     #}
+        <button type="button" onclick="printList()" class="btn action-primary"
+                id="printBtn" hidden aria-label="Print shopping list">
             <i class="fas fa-print"></i> Print
         </button>
-        <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn action-back" aria-label="Back to Meal Plan">
+        {# BACK MEANS TWO DIFFERENT THINGS, AND THAT IS CORRECT.        #}
+        {# On step 1 nothing has been built, so Back leaves the page.    #}
+        {# On step 2 there is a step behind you, so Back is that step    #}
+        {# and Done is how you leave.                                    #}
+        <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn action-back" id="backLink" aria-label="Back to Meal Plan">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
+        <button type="button" onclick="goBackToReview()" class="btn action-back" id="backStep" hidden aria-label="Back to the review step">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </button>
     </div>
 
 
@@ -597,8 +640,8 @@
             <button onclick="saveAllConversions()" id="saveConversionsBtn" class="btn action-primary" style="flex: 1; padding: 15px; font-size: 16px;">
                 <i class="fas fa-save"></i> Save Conversions & Generate List
             </button>
-            <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary" style="padding: 15px;">
-                <i class="fas fa-times"></i> Cancel
+            <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn action-back" style="padding: 15px;">
+                <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
 
@@ -625,7 +668,9 @@
             
             formGroup.innerHTML = `
                 <h4>
-                    <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 4px; font-size: 14px;">
+                    {# SL-3: the house pill, the same tone UC-1 gave the conversion    #}
+                    {# quantities - a number is information, not a verdict.           #}
+                    <span class="alv-pill alv-pill-info">
                         ${index + 1}
                     </span>
                     ${conv.ingredient} (from "${conv.recipe}")
@@ -633,16 +678,16 @@
                 
                 <div class="conversion-input-row">
                     <div>
-                        <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">
+                        <label style="font-size: 13px; color: var(--alv-ink-soft); margin-bottom: 5px; display: block;">
                             Original Unit
                         </label>
-                        <input type="text" value="1 ${conv.from_unit}" readonly style="background: #f8f9fa;">
+                        <input type="text" value="1 ${conv.from_unit}" readonly style="background: var(--alv-surface);">
                     </div>
                     
                     <div class="equals-sign">=</div>
                     
                     <div>
-                        <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">
+                        <label style="font-size: 13px; color: var(--alv-ink-soft); margin-bottom: 5px; display: block;">
                             Conversion to ${conv.to_unit}
                         </label>
                         <input type="number" 
@@ -654,11 +699,11 @@
                                data-to-unit-id="${conv.to_unit_id}"
                                data-from-unit="${conv.from_unit}"
                                data-to-unit="${conv.to_unit}"
-                               style="border-color: #28a745;">
+                               style="border-color: var(--alv-good);">
                     </div>
                     
                     <div>
-                        <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">
+                        <label style="font-size: 13px; color: var(--alv-ink-soft); margin-bottom: 5px; display: block;">
                             &nbsp;
                         </label>
                         <span style="padding: 10px; display: block; font-weight: 600;">${conv.to_unit}</span>
@@ -670,12 +715,12 @@
                     <strong>Example:</strong> If 1 ${conv.from_unit} = 15 ${conv.to_unit}, enter "15"
                 </div>
 
-                <div style="margin-top: 15px; padding: 15px; background: white; border: 2px solid #dee2e6; border-radius: 8px;">
-                    <label style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; display: block;">
+                <div style="margin-top: 15px; padding: 15px; background: white; border: 2px solid var(--alv-line); border-radius: 8px;">
+                    <label style="font-weight: 600; color: var(--alv-ink); margin-bottom: 10px; display: block;">
                         <i class="fas fa-tag"></i> Apply this conversion to:
                     </label>
                     <div style="display: flex; gap: 15px;">
-                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid #dee2e6;">
+                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                             <input type="radio" 
                                    name="conversion_type_${index}" 
                                    value="generic" 
@@ -683,17 +728,17 @@
                                    style="width: 18px; height: 18px;">
                             <div>
                                 <div style="font-weight: 600; font-size: 14px;">Generic</div>
-                                <div style="font-size: 11px; color: #6c757d;">All ingredients</div>
+                                <div style="font-size: 11px; color: var(--alv-ink-soft);">All ingredients</div>
                             </div>
                         </label>
-                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid #dee2e6;">
+                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                             <input type="radio" 
                                    name="conversion_type_${index}" 
                                    value="specific"
                                    style="width: 18px; height: 18px;">
                             <div>
                                 <div style="font-weight: 600; font-size: 14px;">${conv.ingredient}</div>
-                                <div style="font-size: 11px; color: #6c757d;">This ingredient only</div>
+                                <div style="font-size: 11px; color: var(--alv-ink-soft);">This ingredient only</div>
                             </div>
                         </label>
                     </div>
@@ -721,10 +766,10 @@
             const conversionType = document.querySelector(`input[name="conversion_type_${index}"]:checked`).value;
             
             if (!value || parseFloat(value) <= 0) {
-                input.style.borderColor = '#dc3545';
+                input.style.borderColor = 'var(--alv-bad)';
                 hasErrors = true;
             } else {
-                input.style.borderColor = '#28a745';
+                input.style.borderColor = 'var(--alv-good)';
                 
                 const conversionData = {
                     from_unit_id: input.dataset.fromUnitId,
@@ -841,7 +886,7 @@
     <div id="step1Content" class="step-content active">
         <div class="ingredients-card">
             <h2>Review Ingredients</h2>
-            <p style="color: #6c757d; margin-bottom: 20px;">
+            <p style="color: var(--alv-ink-soft); margin-bottom: 20px;">
                 Check the items you already have at home. They will be excluded from the shopping list.
             </p>
             
@@ -869,27 +914,16 @@
                 <strong>Tip:</strong> Checked items will not appear in your final shopping list
             </div>
             
-            <div class="step-navigation">
-                <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Cancel
-                </a>
-                <button onclick="generateShoppingList()" class="btn action-primary">
-                    Generate List <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
         </div>
     </div>
     
     <!-- Step 2: Final Shopping List -->
     <div id="step2Content" class="step-content">
         <div class="ingredients-card">
-            <h2>Items to Buy</h2>
-            
-            <div id="finalShoppingList">
-                <!-- Populated by JavaScript -->
-            </div>
-            
-            <!-- Share Section -->
+            {# ABOVE THE LIST - SL-2, 3 Oct 2026, Demetri's choice: "both #}
+            {# to the top". Print is NOT here any more - the bar carries  #}
+            {# one, guarded by SL-1, and two controls calling one         #}
+            {# function is how a page comes to disagree with itself.      #}
             <div class="email-section">
                 <h3>
                     <i class="fas fa-envelope"></i> Email this list to:
@@ -902,46 +936,45 @@
                     <option value="leximanias@gmail.com">leximanias@gmail.com</option>
                 </select>
                 
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-                    <button onclick="printList()" class="btn" style="background: #6c757d; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
-                        <i class="fas fa-print" style="font-size: 20px;"></i>
-                        <span style="font-size: 13px;">Print</span>
-                    </button>
-                    
-                    <button onclick="copyToClipboard()" class="btn" style="background: #0e7c8b; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
-                        <i class="fas fa-copy" style="font-size: 20px;"></i>
-                        <span style="font-size: 13px;">Copy</span>
+                <div class="share-grid">
+                    <button onclick="copyToClipboard()" class="btn action-secondary share-btn">
+                        <i class="fas fa-copy"></i>
+                        <span>Copy</span>
                     </button>
                     
                     {% if perms.auth.can_edit_personal %}
-                    <button onclick="sendEmail()" id="sendEmailBtn" class="btn" style="background: #28a745; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
-                        <i class="fas fa-paper-plane" style="font-size: 20px;"></i>
-                        <span style="font-size: 13px;">Email</span>
+                    <button onclick="sendEmail()" id="sendEmailBtn" class="btn action-primary share-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Email</span>
                     </button>
                     {% else %}
-                    <button disabled class="btn email-btn-disabled" style="background: #28a745; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;" title="No permission to send email">
-                        <i class="fas fa-paper-plane" style="font-size: 20px;"></i>
-                        <span style="font-size: 13px;">Email</span>
+                    <button disabled class="btn action-primary share-btn email-btn-disabled" title="No permission to send email">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Email</span>
                     </button>
                     {% endif %}
                     
-                    <button onclick="shareToWhatsApp()" class="btn" style="background: #25D366; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
-                        <i class="fab fa-whatsapp" style="font-size: 20px;"></i>
-                        <span style="font-size: 13px;">WhatsApp</span>
+                    {# THE ONE EXCEPTION, BY DEMETRI'S DECISION - 3 Oct 2026.   #}
+                    {# WhatsApp keeps its own brand green because people    #}
+                    {# recognise the button by it. Named here and pinned by #}
+                    {# name in test_shopping_bar.py, so it is a RECORDED    #}
+                    {# exception rather than a literal nobody meant.        #}
+                    <button onclick="shareToWhatsApp()" class="btn share-btn share-whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>WhatsApp</span>
                     </button>
                 </div>
                 
                 <div id="emailStatus" style="margin-top: 15px;"></div>
             </div>
+            <h2>Items to Buy</h2>
             
-            <div class="step-navigation">
-                <button onclick="goBackToReview()" class="btn action-secondary">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-                <button onclick="window.location.href='{% url 'view_meal_plan' meal_plan.meal_plan_id %}'" class="btn action-primary">
-                    <i class="fas fa-check"></i> Done
-                </button>
+            <div id="finalShoppingList">
+                <!-- Populated by JavaScript -->
             </div>
+            
+
+            
         </div>
     </div>
     
@@ -1011,6 +1044,11 @@
         document.getElementById('step1Badge').classList.add('completed');
         document.getElementById('step2Badge').classList.add('active');
         
+        // THE BUTTON APPEARS WITH THE LIST - SL-1, 3 Oct 2026.
+        var _print = document.getElementById('printBtn');
+        if (_print) { _print.removeAttribute('hidden'); }
+        setBar(2);  // SL-2
+
         // Store for sharing functions
         window.finalShoppingList = finalList;
     }
@@ -1024,10 +1062,10 @@
         
         if (totalItems === 0) {
             container.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #28a745;">
+                <div style="text-align: center; padding: 40px; color: var(--alv-good);">
                     <i class="fas fa-check-circle" style="font-size: 60px; margin-bottom: 15px;"></i>
                     <h3>You have all ingredients!</h3>
-                    <p style="color: #6c757d;">No items needed for your shopping list.</p>
+                    <p style="color: var(--alv-ink-soft);">No items needed for your shopping list.</p>
                 </div>
             `;
             return;
@@ -1065,6 +1103,16 @@
     
     // Go back to review step
     function goBackToReview() {
+        // AND IT GOES AWAY AGAIN - SL-1, 3 Oct 2026. Coming back here does
+        // not clear the list, deliberately: pressing Generate again should
+        // not feel like starting over. But a list that is no longer on
+        // screen must not be printable, or Print from step 1 prints a list
+        // for ingredients you have since changed - which is worse than an
+        // empty sheet, because it looks right.
+        var _print = document.getElementById('printBtn');
+        if (_print) { _print.setAttribute('hidden', ''); }
+        setBar(1);  // SL-2
+
         document.getElementById('step2Content').classList.remove('active');
         document.getElementById('step1Content').classList.add('active');
         document.getElementById('step2Badge').classList.remove('active');
@@ -1092,8 +1140,61 @@
         return text;
     }
 
+    // WHICH CONTROLS THE BAR SHOWS - SL-2, 3 Oct 2026.
+    //
+    // One function, called by both step switches, so the bar cannot drift
+    // out of step with the content. It sets EVERY control every time
+    // rather than toggling: a toggle is a second record of which step you
+    // are on, and this page already has one.
+    //
+    // Print is NOT set here. SL-1 owns it, and it depends on whether a
+    // list exists rather than on which step is open - two different
+    // questions, and folding them together is how the empty sheet
+    // happened.
+    function setBar(step) {
+        var on = {
+            genBtn: step === 1,
+            backLink: step === 1,
+            doneBtn: step === 2,
+            backStep: step === 2
+        };
+        Object.keys(on).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) { return; }
+            if (on[id]) { el.removeAttribute('hidden'); }
+            else { el.setAttribute('hidden', ''); }
+        });
+    }
+
     function printList() {
+        // THE SECOND GUARD - SL-1, 3 Oct 2026.
+        //
+        // The button above is hidden until a list exists, which handles
+        // the mouse. This handles everything else: a stale list after
+        // goBackToReview(), and any later round that un-hides the button
+        // without reading this note.
+        //
+        // It asks the DOM rather than a flag. A flag is a second record of
+        // one fact and goes stale the first time anything else empties the
+        // list; what is on the page is what would be printed.
+        if (!hasPrintableList()) {
+            alert('Press Generate List first - there is nothing to print '
+                  + 'yet.');
+            return;
+        }
         window.print();
+    }
+
+    // WHAT WOULD ACTUALLY PRINT. Both conditions, because either alone
+    // lets one of the two cases through: an un-generated list is empty,
+    // and a list left behind by goBackToReview() is full but not on
+    // screen.
+    function hasPrintableList() {
+        var box = document.getElementById('finalShoppingList');
+        var step2 = document.getElementById('step2Content');
+        if (!box || !step2) { return false; }
+        return step2.classList.contains('active')
+            && box.children.length > 0;
     }
 
     function copyToClipboard() {

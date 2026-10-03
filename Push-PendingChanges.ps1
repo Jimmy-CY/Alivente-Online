@@ -121,6 +121,12 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'function hasPrintableList()'; What = 'SL-1: Print refuses when there is nothing to print' },
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'id="printBtn" hidden'; What = 'SL-1: and the button is not there until there is' },
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'function setBar(step)'; What = 'SL-2: one bar, and it says which step you are on' },
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'step-navigation'; Absent = $true; Code = $true; What = 'SL-2: and both bottom bars are gone' },
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'share-whatsapp'; What = 'SL-3: the one kept literal is named, not stray' },
+    @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = '#28a745'; Absent = $true; Code = $true; What = 'SL-3: and the green is gone - a step is not a verdict' },
     @{ File = 'pages\services\portfolio_insights.py'; Text = 'def renewal_due('; What = 'DB-9: one function decides the renewal window' },
     @{ File = 'pages\views\notifications_dashboard.py'; Text = 'renewal_due(today=today, status=''pending'')'; What = 'DB-9: the Expiring Leases tile calls it' },
     @{ File = 'pages\views\notifications_dashboard.py'; Text = 'expiring_no_successor'; Absent = $true; What = 'DB-9: and the dashboard does NOT reach for the cash cliff' },
@@ -1271,6 +1277,12 @@ $suites = @(
     # so it was cut at the container's edge. Its section 3 clicks the
     # trigger in a real browser and measures what was painted.
     'test_fixed_popup.py'
+    # The Shopping List: SL-1 the print guard, SL-2 the bar, SL-3 the
+    # colours. ONE suite for three rounds because they are one programme
+    # on one page - three suites would each read the whole of it. Its
+    # section 1 is the functional bug, and it checks the three guards
+    # SEPARATELY, because a keyboard Ctrl+P reaches none of the other two.
+    'test_shopping_list.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
