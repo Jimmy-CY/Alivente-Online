@@ -297,9 +297,25 @@ for rel in TARGETS:
     if BAK[rel] is None:
         continue
     def _narrow_of(c):
-        return sorted(int(x.group(1)) for x in
-                      re.finditer(r'max-width\s*:\s*(\d+)px', c, re.I)
-                      if int(x.group(1)) < PAPER)
+        # A QUERY, NOT A PROPERTY - PU-1 part 2, 2 Oct 2026.
+        #
+        # This used to match `max-width\s*:\s*(\d+)px` anywhere in the
+        # stylesheet, so every max-width PROPERTY in the tree counted as a
+        # media query. PU-1 moved a popup's `max-width: 280px` into base
+        # with the rest of the component and this reported two pages as
+        # having lost a breakpoint.
+        #
+        # The check's own comment says what it means - "a bare query BELOW
+        # the page box" - so the condition is read from inside @media,
+        # where a condition lives. SYMMETRIC: the same instrument runs on
+        # the before and the after, so nothing is loosened.
+        out = []
+        for q in re.finditer(r'@media([^{]*)\{', c, re.I):
+            for m in re.finditer(r'max-width\s*:\s*(\d+)px', q.group(1),
+                                 re.I):
+                if int(m.group(1)) < PAPER:
+                    out.append(int(m.group(1)))
+        return sorted(out)
     was, now = _narrow_of(css_of(BAK[rel])), _narrow_of(css_of(SRC[rel]))
     _narrow += len(now)
     check('%-44s its narrow queries are untouched' % rel, was == now,

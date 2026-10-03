@@ -11,7 +11,12 @@ Public functions
 - forward_projection    : month-by-month portfolio rent for the next N months,
                           split into contracted / at-risk / vacant.
 - expiring_no_successor : active leases ending within a window that have NO
-                          successor lease captured for the property.
+                          successor lease captured for the property. This is
+                          the CASH CLIFF - when contracted income drops off.
+- renewal_due           : active leases inside their own renewal window - the
+                          tenant's lease end minus that tenant's renewal
+                          period. This is WHO MUST BE CONTACTED NOW, and it
+                          is NOT the same question. [DB-9]
 - arrears               : unpaid invoices past their due date (invoice_date +
                           payment_terms), with days overdue.
 - churn_risk            : a simple, explainable churn score per active lease.
@@ -281,6 +286,80 @@ def expiring_no_successor(today=None, within_days=90):
             "monthly_rent": monthly_rent,
             "monthly_rent_fmt": _money(monthly_rent),
             "renewal_status": cur.tenant_renewal_status or "pending",
+        })
+    out.sort(key=lambda r: r["days_to_end"])
+    return out
+
+
+# ---------------------------------------------------------------------------
+# 2b) Leases inside their own renewal window
+# ---------------------------------------------------------------------------
+
+
+RENEWAL_PERIOD_DEFAULT = 30
+
+
+def renewal_window_opens(lease_end, renewal_period, today=None):
+    """True once `today` has reached the date the tenant must be contacted by.
+
+    THE ONE BOUNDARY - DB-9, 2 Oct 2026. Four screens asked this question
+    and gave four answers; this is the only place it is decided now.
+
+        renewal date = lease end - the tenant's OWN renewal period
+        the window is open once today has REACHED that date
+
+    A missing renewal period means RENEWAL_PERIOD_DEFAULT, which is 30 -
+    the Lease Renewal Report's default, chosen because Demetri confirmed
+    that report is the screen behaving correctly. The dashboard used 0,
+    which flagged such a lease on its last day instead of a month before.
+
+    No lease end date means no renewal date, so the window never opens.
+    """
+    if lease_end is None:
+        return False
+    today = today or date.today()
+    period = renewal_period
+    if period is None:
+        period = RENEWAL_PERIOD_DEFAULT
+    return today >= lease_end - timedelta(days=int(period))
+
+
+def renewal_due(today=None, status='pending'):
+    """Active leases inside their own renewal window, newest deadline first.
+
+    status : 'pending', 'declined', or None for every status.
+
+    WHY THIS IS NOT expiring_no_successor(). That function answers a
+    different question - which leases END SOON WITH NOBODY SIGNED TO FOLLOW,
+    which is the cash cliff the Projections report draws. It takes a fixed
+    horizon because money does not care about notice periods. This one asks
+    WHO MUST BE CONTACTED NOW, which is the tenant's own renewal period and
+    has nothing to do with successors. Both are right; they are not
+    interchangeable, and for one day in October they were.
+                                                   [test_renewal_window.py]
+    """
+    today = today or date.today()
+    out = []
+    qs = (Tenant.objects.filter(tenant_current='Yes')
+          .select_related('prop'))
+    for t in qs:
+        end = t.tenant_lease_end_date
+        period = t.tenant_renewal_period
+        if not renewal_window_opens(end, period, today):
+            continue
+        st = t.tenant_renewal_status or 'pending'
+        if status is not None and st != status:
+            continue
+        eff = RENEWAL_PERIOD_DEFAULT if period is None else int(period)
+        out.append({
+            "tenant_name": t.tenant_name,
+            "prop_name": getattr(t.prop, "prop_name", ""),
+            "prop_country": getattr(t.prop, "prop_country", ""),
+            "lease_end": end,
+            "days_to_end": (end - today).days,
+            "renewal_period": eff,
+            "renewal_date": end - timedelta(days=eff),
+            "renewal_status": st,
         })
     out.sort(key=lambda r: r["days_to_end"])
     return out
@@ -888,11 +967,23 @@ def portfolio_insights(today=None, months=12, within_days=90,
     """
     today = today or date.today()
     projection = forward_projection(today, months=months)
-    expiring = expiring_no_successor(today, within_days=within_days)
+    # TWO QUESTIONS, TWO LISTS - DB-9, 2 Oct 2026.
+    #
+    # `cliff` is the CASH CLIFF: leases ending inside the horizon with
+    # nobody signed to follow. It is what the projection and the brief
+    # reason about, because money does not care about notice periods, and
+    # it is unchanged.
+    #
+    # `expiring` is what the Home panel LISTS, and Demetri's rule for that
+    # is the tenant's own renewal period - the same list the Expiring
+    # Leases tile counts. It used to be the cliff, which is why the panel
+    # said 3 and the tile said 2.
+    cliff = expiring_no_successor(today, within_days=within_days)
+    expiring = renewal_due(today, status='pending')
     arr = arrears(today)
     churn = churn_risk(today, arrears_rows=arr["rows"])
     expenses = expenses_insight(today)
-    brief = build_brief(projection, expiring, arr, churn, today=today,
+    brief = build_brief(projection, cliff, arr, churn, today=today,
                         today_summary=today_summary, use_llm=use_llm,
                         expenses=expenses)
     return {

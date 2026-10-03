@@ -121,6 +121,14 @@ if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 Head 'Are all the changes actually in the tree?'
 
 $sentinels = @(
+    @{ File = 'pages\services\portfolio_insights.py'; Text = 'def renewal_due('; What = 'DB-9: one function decides the renewal window' },
+    @{ File = 'pages\views\notifications_dashboard.py'; Text = 'renewal_due(today=today, status=''pending'')'; What = 'DB-9: the Expiring Leases tile calls it' },
+    @{ File = 'pages\views\notifications_dashboard.py'; Text = 'expiring_no_successor'; Absent = $true; What = 'DB-9: and the dashboard does NOT reach for the cash cliff' },
+    @{ File = 'pages\templates\home.html'; Text = 'Inside their renewal period'; What = 'DB-9: the panel says what it shows' },
+    @{ File = 'pages\templates\unit_conversions_management.html'; Text = 'alv-pill alv-pill-info conversion-number'; What = 'UC-1: the quantity chips are house pills' },
+    @{ File = 'pages\templates\unit_conversions_management.html'; Text = '#ffc107'; Absent = $true; Code = $true; What = 'UC-1: and the amber is gone - a scope is not a verdict' },
+    @{ File = 'pages\templates\base.html'; Text = 'ALV POP v1'; What = 'PU-1: one popup component, in a fixed layer' },
+    @{ File = 'pages\templates\categories_management.html'; Text = 'ingredient-popup'; Absent = $true; Code = $true; What = 'PU-1: and the page keeps no copy of its own' },
     @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'data-live-search-cell="Ingredient Name"'; What = 'IB-1: the ingredient search narrows as you type' },
     @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'class="btn action-filter" id="filterBtn"'; What = 'IB-1: the filter folds behind a button' },
     @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'filter-bar'; Absent = $true; Code = $true; What = 'IB-1: and the always-open card is gone' },
@@ -131,8 +139,6 @@ $sentinels = @(
     # same thing and has no quote in it at all.
     @{ File = 'pages\templates\base.html'; Text = 'TWO LABELS - IB-1, 2 Oct 2026'; What = 'IB-1: base swaps the panel header labels instead of a fifth local copy' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1c, 2 Oct 2026: AND THEN THE NOTE ABOVE DID IT AGAIN'; What = 'B-1c: the Favourites note names the comment syntax rather than writing it' },
-    @{ File = 'pages\views\notifications_dashboard.py'; Text = 'expiring_no_successor'; What = 'DB-8: the button uses the panel rule' },
-    @{ File = 'pages\views\notifications_dashboard.py'; Text = '_get_expiring_leases_before_db8'; What = 'DB-8: the old rule is kept, uncalled' },
     @{ File = 'pages\views\tenants.py'; Text = 'TN-1, 2 Oct 2026'; What = 'TN-1: the tenants list defaults to current' },
     @{ File = 'pages\templates\tenant.html'; Text = 'Include past tenants'; What = 'TN-1: the toggle is on the Tenants bar' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1b, 2 Oct 2026: THIS NOTE USED TO SIT INSIDE THE TAG'; What = 'B-1b: the Favourites note sits above its tag, not inside it' },
@@ -1256,6 +1262,15 @@ $suites = @(
     # so the suite re-asks the VIEW - name__icontains and nothing else,
     # no Paginator - rather than trusting the markup that names them.
     'test_ingredient_filter.py'
+    # A scope is not a verdict. The Applies To column was amber for
+    # one answer and green for the other, and neither is a judgement.
+    # Its section 3 proves a CSS rule never fired, from the siblings
+    # and then again in a browser.
+    'test_conversion_pills.py'
+    # The list popup was absolute inside an overflow: clip container,
+    # so it was cut at the container's edge. Its section 3 clicks the
+    # trigger in a real browser and measures what was painted.
+    'test_fixed_popup.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

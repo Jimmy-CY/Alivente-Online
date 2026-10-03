@@ -1,5 +1,99 @@
 # -*- coding: utf-8 -*-
-"""test_lease_rule.py - Section DB rounds DB-8 and DB-9, 2 Oct 2026.
+"""DB-9, PART 2 - THE SUITE THAT ASSERTED THE REVERSED DECISION
+
+test_lease_rule.py is DB-8's record, and DB-8 chose wrong. Eight of its
+checks now fail, correctly:
+
+    FAIL and it calls expiring_no_successor - the panel's own function
+    FAIL   with the panel's 90-day window
+    FAIL the old rule is kept under its own name
+    FAIL and NOT renewal_date - the new rule cannot compute one
+
+==========================================================================
+ONE SUITE, NOT TWO
+==========================================================================
+The obvious move is a new test_renewal_window.py. It is the wrong one: two
+suites asking one question is exactly the disease DB-9 is treating, and the
+tree already pays that bill five times over for the house filter count.
+
+So this file KEEPS ITS NAME and its place on the gate, and its claims move
+onto DB-9. Its scope suffix moves with them - .bak_renewalwin, not
+.bak_leaserule - so `was()` reads the state DB-8 left and the controls can
+say "it really did call the 90-day function the day before".
+
+DB-8's story stays in the docstring. "We unified two rules and picked the
+wrong one" is worth more written down than quietly overwritten, and it is
+the second time in two days that a round's own note was the thing worth
+keeping.
+
+Backups: .bak_renewalwin, the same suffix as part 1.
+Idempotent. --check writes nothing.
+"""
+import os
+import re
+import sys
+
+CHECK = '--check' in sys.argv
+SUFFIX = '.bak_renewalwin'
+ROOT = os.getcwd()
+CRLF = {}
+SUITE = os.path.join(ROOT, 'test_lease_rule.py')
+
+
+def read(path):
+    with open(path, 'rb') as fh:
+        raw = fh.read()
+    CRLF[path] = b'\r\n' in raw
+    return raw.decode('utf-8'), raw
+
+
+def write(path, text):
+    data = text.encode('utf-8')
+    data = (data.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
+            if CRLF.get(path) else data.replace(b'\r\n', b'\n'))
+    with open(path, 'wb') as fh:
+        fh.write(data)
+
+
+def back_up(path, raw):
+    bak = path + SUFFIX
+    if os.path.exists(bak):
+        return
+    with open(bak, 'wb') as fh:
+        fh.write(raw)
+    with open(bak, 'rb') as fh:
+        if fh.read() != raw:
+            raise SystemExit('DB9S: %s is not a byte copy' % bak)
+
+
+def swap(text, old, new, what, path):
+    o = old.replace('\r\n', '\n')
+    n = new.replace('\r\n', '\n')
+    if CRLF.get(path):
+        o, n = o.replace('\n', '\r\n'), n.replace('\n', '\r\n')
+    c = text.count(o)
+    if c != 1:
+        raise SystemExit('DB9S: %s appears %d times, not once' % (what, c))
+    return text.replace(o, n)
+
+
+print('=' * 74)
+print('DB-9 PART 2 - THE SUITE%s' % (' - CHECK ONLY' if CHECK else ''))
+print('=' * 74)
+
+t, raw = read(SUITE)
+
+if 'DB-9, 2 Oct 2026' in t:
+    print('  test_lease_rule.py       already on DB-9')
+    print('-' * 74)
+    if CHECK:
+        print('=' * 74)
+        raise SystemExit(0)
+else:
+    # ----- the docstring --------------------------------------------------
+    i = t.index('"""')
+    j = t.index('"""', i + 3)
+    DOC = '''"""test_lease_rule.py - Section DB rounds DB-8 and DB-9, 2 Oct 2026.
 
 ONE QUESTION, AND THE TWO ROUNDS IT TOOK TO ANSWER IT.
 
@@ -56,107 +150,29 @@ WHAT THIS SUITE CANNOT DO, SAID FIRST. It cannot tell you the count is 2 on
 Live; that is a fact about the database, not the code. It asserts that ONE
 function decides it, that every screen reads that one, and that the cash
 cliff kept its own.
-"""
-# --- CONSOLE ENCODING ----------------------------------- 16 Sep 2026 --
-# This file prints text it read out of the templates, and some of that
-# text is not ASCII - projects/project_task_list.html carries a Greek
-# heading behind the language switch, and it will not be the last. On
-# Windows, Python writes stdout as cp1252 whenever it is not a UTF-8
-# console, and cp1252 cannot encode Greek: the print itself raises
-# UnicodeEncodeError and the run dies part-way through. A crash blocks a
-# push exactly as hard as a failure and says far less about why.
-#
-# So keep the encoding the console really has - forcing UTF-8 only moves
-# the problem to whoever decodes us - and change the ERROR HANDLER, so a
-# character the console cannot draw arrives as a question mark instead of
-# ending the run. stderr too, because a traceback is a print as well.
-# Guarded, because stdout is not always a stream that can be told.
-# See test_console_encoding.py.
-import sys as _sys
-for _stream in (_sys.stdout, _sys.stderr):
-    try:
-        _stream.reconfigure(errors='replace')
-    except Exception:
-        pass
-# ------------------------------------------------------------------------
-import os
-import re
-import sys
-import ast
-from datetime import date as _date, timedelta as _timedelta
+"""'''
+    t = t[:i] + DOC + t[j + 3:]
 
-ROOT = os.getcwd()
-sys.path.insert(0, ROOT)
-try:
-    from alv_rounds import as_left_by
-except Exception:
-    as_left_by = None
-
-# DB-9, 2 Oct 2026. The scope moves with the claims: `was()` now reads
+    # ----- the scope suffix ----------------------------------------------
+    t = swap(t, "SUFFIX = '.bak_leaserule'",
+             """# DB-9, 2 Oct 2026. The scope moves with the claims: `was()` now reads
 # the state DB-8 LEFT, so the controls below can say the dashboard really
 # did call the 90-day function the day before this round.
-SUFFIX = '.bak_renewalwin'
-ME = 'test_lease_rule.py'
-PATCHER = 'apply_renewal_window.py'
-PS1 = 'Push-PendingChanges.ps1'
+SUFFIX = '.bak_renewalwin'""", 'the suffix', SUITE)
+    t = swap(t, "PATCHER = 'apply_lease_rule.py'",
+             "PATCHER = 'apply_renewal_window.py'", 'the patcher name', SUITE)
 
-VIEW = os.path.join(ROOT, 'pages', 'views', 'notifications_dashboard.py')
-SVC = os.path.join(ROOT, 'pages', 'services', 'portfolio_insights.py')
-HOME = os.path.join(ROOT, 'pages', 'templates', 'home.html')
-NOTI = os.path.join(ROOT, 'pages', 'templates', 'notifications.html')
+    t = swap(t, "print('%s - DB-8, ONE DEFINITION OF AN EXPIRING LEASE' % ME)",
+             "print('%s - DB-9, ONE RENEWAL WINDOW' % ME)", 'the banner',
+             SUITE)
 
-passed = failed = skipped = 0
+    # ----- sections 1 to 3 -----------------------------------------------
+    a = t.index("head('1. ONE RULE, AND THE BUTTON CALLS IT RATHER THAN "
+                "COPYING IT')")
+    b = t.index("head('4. REGISTERED, AND THE PUSH GATE STILL RESOLVES')")
+    a = t.rindex('# ' + '=' * 74, 0, a)
 
-
-def ok(cond, msg, detail=''):
-    global passed, failed
-    if cond:
-        passed += 1
-        print('  ok   %s' % msg)
-    else:
-        failed += 1
-        print('  FAIL %s' % msg)
-        if detail:
-            for line in str(detail).split('\n')[:8]:
-                print('         %s' % line)
-    return cond
-
-
-def skip(msg, why):
-    global skipped
-    skipped += 1
-    print('  --   %s  (%s)' % (msg, why))
-
-
-def read(p):
-    with open(p, encoding='utf-8', errors='replace') as f:
-        return f.read().replace('\r\n', '\n')
-
-
-def head(t):
-    print('\n' + '=' * 74 + '\n' + t + '\n' + '=' * 74)
-
-
-def now(p):
-    return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
-
-
-def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
-
-
-V = now(VIEW)
-TREE = ast.parse(V)
-FNS = dict((n.name, n) for n in ast.walk(TREE)
-           if isinstance(n, ast.FunctionDef))
-SRC = ast.get_source_segment(V, FNS['get_expiring_leases']) \
-    if 'get_expiring_leases' in FNS else ''
-
-print('=' * 74)
-print('%s - DB-9, ONE RENEWAL WINDOW' % ME)
-print('=' * 74)
-
-# ==========================================================================
+    NEW = '''# ==========================================================================
 head('1. ONE BOUNDARY, AND EVERY SCREEN CALLS IT')
 # ==========================================================================
 SVC = os.path.join(ROOT, 'pages', 'services', 'portfolio_insights.py')
@@ -168,14 +184,14 @@ SFNS = dict((n.name, n) for n in ast.walk(STREE)
 
 
 def ssrc(name):
-    return (ast.get_source_segment(SV, SFNS[name]) or '') if name in SFNS \
+    return (ast.get_source_segment(SV, SFNS[name]) or '') if name in SFNS \\
         else ''
 
 
 ok('renewal_window_opens' in SFNS, 'portfolio_insights defines the boundary')
 ok('renewal_due' in SFNS, '  and the list that uses it')
 ok('RENEWAL_PERIOD_DEFAULT = 30' in SV,
-   '  and the default is 30 - the Lease Renewal Report\'s, which is the '
+   '  and the default is 30 - the Lease Renewal Report\\'s, which is the '
    'screen Demetri confirmed is correct')
 ok('RENEWAL_PERIOD_DEFAULT' in ssrc('renewal_window_opens'),
    '  named once and used, not repeated as a literal')
@@ -204,22 +220,22 @@ RP = now(RPT)
 RTREE = ast.parse(RP)
 RFNS = dict((n.name, n) for n in ast.walk(RTREE)
             if isinstance(n, ast.FunctionDef))
-REP = ast.get_source_segment(RP, RFNS['lease_renewal_report']) \
+REP = ast.get_source_segment(RP, RFNS['lease_renewal_report']) \\
     if 'lease_renewal_report' in RFNS else ''
 ok(bool(REP), 'the Lease Renewal Report is still there')
 ok('renewal_window_opens' in REP, '  and shares the boundary')
-ok(not re.search(r'(?m)^(?!\s*#).*today >= warning_date', REP),
+ok(not re.search(r'(?m)^(?!\\s*#).*today >= warning_date', REP),
    '  and no longer makes its own comparison')
 if was(RPT):
     WR = was(RPT)
     WREP = ast.get_source_segment(
         WR, dict((n.name, n) for n in ast.walk(ast.parse(WR))
                  if isinstance(n, ast.FunctionDef))['lease_renewal_report'])
-    _k = lambda s: sorted(set(re.findall(r"'(\w+)':", s)))
+    _k = lambda s: sorted(set(re.findall(r"'(\\w+)':", s)))
     ok(_k(REP) == _k(WREP),
        '  and builds the same %d keys it did before - the screen that was '
        'correct did not move' % len(_k(REP)),
-       'was %s\nnow %s' % (_k(WREP), _k(REP)))
+       'was %s\\nnow %s' % (_k(WREP), _k(REP)))
 else:
     skip('the report control', 'no %s backup' % SUFFIX)
 
@@ -254,7 +270,7 @@ ok('build_brief(projection, cliff' in ORC,
 ok('expiring_no_successor' not in V,
    'the dashboard does not call the cash-cliff function at all')
 ok('_get_expiring_leases_before_db8' not in V,
-   'and DB-8\'s kept-uncalled rule is gone - DB-9 restored what it was '
+   'and DB-8\\'s kept-uncalled rule is gone - DB-9 restored what it was '
    'keeping, so it has nothing left to keep')
 if was(VIEW):
     W = was(VIEW)
@@ -262,7 +278,7 @@ if was(VIEW):
        'CONTROL: the day before, the tile really did call the 90-day '
        'function')
     ok('_get_expiring_leases_before_db8' in W,
-       '  and DB-8\'s kept rule really was there')
+       '  and DB-8\\'s kept rule really was there')
 else:
     skip('the view controls', 'no %s backup' % SUFFIX)
 
@@ -311,13 +327,13 @@ if _f:
     exec(compile(_RW, '<zero-default>', 'exec'), _ns0)
     ok(_ns0['renewal_window_opens'](_date(2026, 11, 1), None,
                                     _date(2026, 10, 2)) is False,
-       'CONTROL: with the dashboard\'s old default of 0 that same lease '
+       'CONTROL: with the dashboard\\'s old default of 0 that same lease '
        'was OUT - a month of warning, lost to a default')
 
 # ==========================================================================
 head('4. NEITHER TABLE READS A KEY THE RULE NO LONGER PRODUCES')
 # ==========================================================================
-produced = set(re.findall(r"'(\w+)':", SRC))
+produced = set(re.findall(r"'(\\w+)':", SRC))
 for k in ('prop_name', 'prop_country', 'tenant_name', 'lease_end_date',
           'days_to_end', 'renewal_status', 'renewal_date'):
     ok(k in produced, 'the mapping produces %s' % k, sorted(produced))
@@ -333,8 +349,8 @@ for path, label in ((HOME, 'home.html'), (NOTI, 'notifications.html')):
     j = body.find('</table>', i)
     seg = body[i:j if j > i else i + 2500]
     seg = re.sub(r'<!--.*?-->', '', seg, flags=re.S)
-    seg = re.sub(r'/\*.*?\*/', '', seg, flags=re.S)
-    used = set(re.findall(r'item\.(\w+)', seg))
+    seg = re.sub(r'/\\*.*?\\*/', '', seg, flags=re.S)
+    used = set(re.findall(r'item\\.(\\w+)', seg))
     ok(not (used - produced), '%-20s reads only keys the rule produces'
        % label, sorted(used - produced))
     ok('days_to_end' in used, '  and shows days_to_end, as the panel does')
@@ -349,71 +365,81 @@ for path, label in ((HOME, 'home.html'), (NOTI, 'notifications.html')):
 _h = now(HOME)
 ok('Inside their renewal period' in _h,
    'the Lease expiries card says what it now shows')
-ok(not re.search(r'ins-card__sub[^\n]*90 days', _h),
+ok(not re.search(r'ins-card__sub[^\\n]*90 days', _h),
    '  and no longer claims the 90-day rule')
 
+'''
+    t = t[:a] + NEW + t[b - len('# ' + '=' * 74 + '\n'):]
+
+    # The arithmetic section needs date objects under names that do not
+    # collide with anything the suite already imports.
+    t = swap(t, 'import ast\n',
+             'import ast\nfrom datetime import date as _date, '
+             'timedelta as _timedelta\n', 'the ast import', SUITE)
+
+    if not CHECK:
+        back_up(SUITE, raw)
+        write(SUITE, t)
+    print('  test_lease_rule.py       docstring and sections 1-4 onto DB-9')
+
+print('-' * 74)
+
+if CHECK:
+    print('  --check: nothing written, gates skipped')
+    print('=' * 74)
+    raise SystemExit(0)
+
 # ==========================================================================
-head('4. REGISTERED, AND THE PUSH GATE STILL RESOLVES')
+# THE GATES.
 # ==========================================================================
-ps = read(os.path.join(ROOT, PS1))
-ok("'%s'" % ME in ps, '%s is in $suites' % ME)
-ok(os.path.isfile(os.path.join(ROOT, PATCHER)), '%s is on disk' % PATCHER)
+import ast
+import subprocess
+
+t = read(SUITE)[0]
 try:
-    from alv_rounds import ROUNDS
-    ok(SUFFIX in ROUNDS, '%s is in ROUNDS' % SUFFIX)
-    ok(ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_mealrow'),
-       '  and AFTER .bak_mealrow, the round it followed')
-except Exception as e:
-    skip('ROUNDS', str(e))
+    ast.parse(t)
+except SyntaxError as e:
+    raise SystemExit('DB9S: test_lease_rule.py no longer parses: %s' % e)
+if "SUFFIX = '.bak_renewalwin'" not in t:
+    raise SystemExit('DB9S: the scope suffix did not move')
+if "SUFFIX = '.bak_leaserule'" in t:
+    raise SystemExit('DB9S: the old suffix survives')
+if 'DB-8 PICKED THE PANEL' not in t:
+    raise SystemExit('DB9S: DB-8\'s story was overwritten rather than kept')
+print('  it parses, its scope is .bak_renewalwin, and DB-8\'s story is kept')
 
-_Q = r"'((?:[^']|'')*)'|\"((?:[^\"]|\"\")*)\""
-SF = re.compile(r"\b(File|Text|What)\s*=\s*(?:%s)" % _Q)
-SG = re.compile(r"\b(Absent|Code)\s*=\s*\$(true|false)")
-rows = []
-for line in ps.split('\n'):
-    if '@{' not in line or 'File' not in line:
+# ONE SUITE, NOT TWO. The point of part 2 - and the check has to be about
+# the QUESTION, not the filename. The first cut matched any suite with
+# "renewal" in its name and found test_lease_renewal.py, which asserts that
+# two pages agree about the COLOUR of a declined renewal. Same word,
+# different question, and a gate that cannot tell those apart is the
+# substring-versus-token mistake this repo has made before.
+import glob
+extra = []
+for p in glob.glob(os.path.join(ROOT, 'test_*.py')):
+    name = os.path.basename(p)
+    if name == 'test_lease_rule.py':
         continue
-    f = {}
-    for k, sq, dq in SF.findall(line):
-        f[k] = sq.replace("''", "'") if sq else dq.replace('""', '"')
-    for k, v in SG.findall(line):
-        f[k] = (v == 'true')
-    if 'File' in f and 'Text' in f:
-        rows.append(f)
-rawrows = len(re.findall(r'@\{ *File *=', ps))
-ok(len(rows) == rawrows,
-   'the sentinel table parses %d of %d rows' % (len(rows), rawrows))
+    with open(p, encoding='utf-8', errors='replace') as fh:
+        body = re.sub(r'(?m)^\s*#.*$', '', fh.read())
+    if 'renewal_window_opens' in body or 'renewal_due' in body:
+        extra.append(name)
+if extra:
+    raise SystemExit('DB9S: a second suite asserts the renewal boundary: %s '
+                     '- one question, one suite' % extra)
+print('  and no other suite asserts the renewal boundary (%d suites read)'
+      % len(glob.glob(os.path.join(ROOT, 'test_*.py'))))
 
+r = subprocess.run([sys.executable, 'test_lease_rule.py'],
+                   capture_output=True, text=True, cwd=ROOT, timeout=1800)
+tail = [ln for ln in r.stdout.split('\n') if 'passed,' in ln]
+if r.returncode != 0:
+    bad = [ln for ln in r.stdout.split('\n') if 'FAIL' in ln][:8]
+    raise SystemExit('DB9S: the suite fails:\n   %s'
+                     % '\n   '.join(bad or [r.stderr[-500:]]))
+print('  test_lease_rule.py%s' % (tail[-1] if tail else ' rc 0'))
 
-def _strip(x):
-    x = re.sub(r'<!--.*?-->', '', x, flags=re.S)
-    x = re.sub(r'\{#.*?#\}', '', x, flags=re.S)
-    x = re.sub(r'/\*.*?\*/', '', x, flags=re.S)
-    x = re.sub(r'(?m)^\s*//.*$', '', x)
-    return re.sub(r'(?m)^\s*#.*$', '', x)
-
-
-stale = []
-for r in rows:
-    p = os.path.join(ROOT, *r['File'].replace('\\', '/').split('/'))
-    if not os.path.isfile(p):
-        stale.append('%s FILE MISSING' % r['File'])
-        continue
-    b = read(p)
-    if r.get('Code'):
-        b = _strip(b)
-    if (r['Text'].lower() in b.lower()) != (not r.get('Absent')):
-        stale.append('%s %s %r' % (r['File'],
-                     'NOT FOUND' if not r.get('Absent') else 'IS BACK',
-                     r['Text'][:46]))
-ok(not stale, 'and all %d of them still resolve' % len(rows),
-   '\n'.join(stale[:6]))
-print('\n    $suites now lists %d suite(s).'
-      % len(re.findall(r"'test_[a-z0-9_]+\.py'", ps)))
-
-print('')
+print('-' * 74)
+print('  The suite that asserted the reversed decision now asserts the')
+print('  corrected one, and records that it took two rounds.')
 print('=' * 74)
-print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
-print('=' * 74)
-sys.exit(1 if failed else 0)
-

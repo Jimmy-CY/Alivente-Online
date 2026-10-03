@@ -1498,17 +1498,31 @@ def lease_renewal_report(request):
 
     # Process each active tenant for renewal logic
     for tenant_obj in active_tenants:
+        # THE MEMBERSHIP TEST COMES FROM ONE PLACE NOW - DB-9, 2 Oct 2026.
+        #
+        # Demetri confirmed this report is the screen behaving correctly, so
+        # NOTHING about what it builds has changed - every field below is as
+        # it was. What moved is the single line that decides whether a
+        # tenant is in the list at all, because three other screens asked
+        # the same question and gave three different answers.
+        #
+        # renewal_window_opens() carries this report's defaults, chosen
+        # because they are this report's: a missing renewal period means 30
+        # days, not 0. The dashboard used 0 and flagged such a lease on its
+        # last day.
+        from pages.services.portfolio_insights import (
+            renewal_window_opens, RENEWAL_PERIOD_DEFAULT)
+
         lease_end_date = tenant_obj.tenant_lease_end_date
-        renewal_period = tenant_obj.tenant_renewal_period or 30  # Default to 30 days if None
+        renewal_period = (tenant_obj.tenant_renewal_period
+                          or RENEWAL_PERIOD_DEFAULT)
 
         if lease_end_date:  # Make sure lease_end_date exists
             renewal_date = lease_end_date - timedelta(days=renewal_period)
-            warning_date = renewal_date
-#           This was for the old notification which was 30 days before the renewal date
-#           warning_date = renewal_date - timedelta(days=30)
             renewal_status = tenant_obj.tenant_renewal_status or 'pending'  # Default to pending
 
-            if today >= warning_date:
+            if renewal_window_opens(lease_end_date,
+                                    tenant_obj.tenant_renewal_period, today):
                 if renewal_status == 'pending':
                     # Normal renewal case - add to tenants list
                     tenants_for_renewal.append({

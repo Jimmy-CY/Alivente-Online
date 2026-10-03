@@ -110,7 +110,12 @@ Home
           <span class="ins-ic ins-ic--exp"><i class="fas fa-calendar-times"></i></span>
           Lease expiries
         </h3>
-        <p class="ins-card__sub">Ending &le;90 days with no successor captured.</p>
+        {# DB-9, 2 Oct 2026. The subtitle described the 90-day rule this  #}
+         {# panel no longer uses. It lists leases inside their own renewal #}
+         {# window now, which is the same list the Expiring Leases tile    #}
+         {# below it counts - the two could not disagree even if someone   #}
+         {# wanted them to.                                                #}
+        <p class="ins-card__sub">Inside their renewal period &mdash; the tenant must be contacted.</p>
 
         {% for e in insights.expiring|slice:":3" %}
           <div class="ins-row">
@@ -123,7 +128,7 @@ Home
             </span>
           </div>
         {% empty %}
-          <p class="ins-empty"><i class="fas fa-check-circle"></i> No expiries within 90 days without a successor.</p>
+          <p class="ins-empty"><i class="fas fa-check-circle"></i> No lease is inside its renewal period.</p>
         {% endfor %}
         {% if insights.expiring|length > 3 %}
           <p class="ins-more">+ {{ insights.expiring|length|add:"-3" }} more</p>

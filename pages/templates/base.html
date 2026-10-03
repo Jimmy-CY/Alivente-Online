@@ -4735,7 +4735,171 @@ table.alv-matrix {
     .page-subtitle-h5 { font-size: 1rem; margin-bottom: 0.75rem; }
 
 }
+/* ===== ALV POP v1 ===== 2 Oct 2026
+   A list that opens from a cell - "12 ingredients", clicked, showing which
+   twelve. Two pages carried this, byte for byte identical, under two
+   names: .ingredient-popup on Categories and .usage-popup on Measurement
+   Units.
+
+   WHY IT IS FIXED AND NOT ABSOLUTE, which is the bug Demetri found. The
+   popup lived inside .table-container, and that container is
+   `overflow: clip` ON PURPOSE - it is what gives a sticky heading
+   something to stick to, and base measured the difference (with `hidden`
+   the heading floated 615px above the viewport; with `clip` it pins at
+   top: 0). An absolutely-positioned child is POSITIONED by its nearest
+   positioned ancestor but CLIPPED by any ancestor that clips, so the list
+   was cut at the container's edge - worst for the rows nearest the top,
+   which is exactly what the screenshots showed.
+
+   Two correct decisions colliding, not a mistake in either. `fixed` is
+   positioned against the viewport, so no ancestor's overflow can reach it.
+
+   THE SCRIPT PLACES IT; THESE RULES ONLY PAINT IT. top/left are written
+   on the element at open time, measured from the trigger, and the arrow
+   flips with .alv-pop--below when there is no room above.
+                                                    [test_fixed_popup.py] */
+.alv-pop-trigger {
+    cursor: pointer;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.alv-pop-trigger:hover { background: var(--alv-surface-deep); }
+
+.alv-pop {
+    display: none;
+    position: fixed;
+    /* TOKENS, NOT LITERALS. The two page copies painted this #2c3e50
+       on #fff. Carrying those into base would have been four new literal
+       colours in the one file whose whole job is to have none -
+       test_meal_row.py counts them and said so: 134 -> 138. --alv-ink is
+       the system's own dark, a shade deeper and less blue, and --alv-paper
+       is the white it already pairs with everywhere else. */
+    background: var(--alv-ink);
+    color: var(--alv-paper);
+    padding: 12px 16px;
+    border-radius: 10px;
+    min-width: 180px;
+    max-width: 280px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1200;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+.alv-pop::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: var(--alv-ink);
+}
+.alv-pop--below::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: var(--alv-ink);
+}
+.alv-pop.show { display: block; animation: alvPopIn .2s ease; }
+@keyframes alvPopIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.alv-pop-list { list-style: none; padding: 0; margin: 0; }
+.alv-pop-list li {
+    padding: 5px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.alv-pop-list li:last-child { border-bottom: none; }
+.alv-pop-empty { font-size: 13px; opacity: .75; }
+@media screen and (max-width: 768px) {
+    .alv-pop { max-width: 90vw; min-width: 200px; }
+}
+/* ===== /ALV POP v1 ===== */
+
 </style>
+
+
+<script>
+/* alv-pop --------------------------------------------------------------
+   Opens a .alv-pop from its .alv-pop-trigger, in a FIXED layer.
+
+   THE MEASUREMENT IS TAKEN ON OPEN, not on load: a table row moves when
+   anything above it changes height, and a position cached at load time is
+   a position that was true once.
+
+   IT FLIPS. Above the trigger when there is room, below when there is
+   not - so the rows nearest the top of the table, which used to lose most
+   of the popup to the container's clip, are now the easy case.
+
+   IT DOES NOT FOLLOW THE PAGE. Scrolling closes it. A fixed element that
+   chases its trigger needs a scroll listener on every scrollable ancestor
+   and still lags; dismissing is one line and is what a reader expects.
+   Resizing closes it for the same reason.
+------------------------------------------------------------------------ */
+(function () {
+  "use strict";
+  var GAP = 10;
+
+  function closeAll() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll('.alv-pop.show'), function (p) {
+        p.classList.remove('show', 'alv-pop--below');
+        var t = p.closest ? p.closest('.alv-pop-trigger') : null;
+        if (t) { t.setAttribute('aria-expanded', 'false'); }
+      });
+  }
+
+  function place(pop, trigger) {
+    /* Cleared first: a popup measured while still carrying last time's
+       top/left measures last time's size on a narrow screen. */
+    pop.style.top = '0px';
+    pop.style.left = '0px';
+    pop.classList.remove('alv-pop--below');
+    pop.classList.add('show');
+
+    var r = trigger.getBoundingClientRect();
+    var box = pop.getBoundingClientRect();
+    var below = r.top < box.height + GAP;
+    var top = below ? r.bottom + GAP : r.top - box.height - GAP;
+    var left = r.left + (r.width / 2) - (box.width / 2);
+
+    /* Kept on screen horizontally - a trigger in the last column would
+       otherwise push half the list past the right edge. */
+    var max = document.documentElement.clientWidth - box.width - 8;
+    if (left > max) { left = max; }
+    if (left < 8) { left = 8; }
+
+    pop.style.top = Math.round(top) + 'px';
+    pop.style.left = Math.round(left) + 'px';
+    if (below) { pop.classList.add('alv-pop--below'); }
+  }
+
+  document.addEventListener('click', function (e) {
+    var trigger = e.target.closest ? e.target.closest('.alv-pop-trigger')
+                                   : null;
+    if (!trigger) { closeAll(); return; }
+    var pop = trigger.querySelector('.alv-pop');
+    if (!pop) { return; }
+    e.stopPropagation();
+    var open = pop.classList.contains('show');
+    closeAll();
+    if (!open) {
+      place(pop, trigger);
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeAll(); }
+  });
+  window.addEventListener('scroll', closeAll, true);
+  window.addEventListener('resize', closeAll);
+})();
+</script>
 
   <script>
   (function () {

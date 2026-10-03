@@ -147,6 +147,9 @@ ROUNDS = [
     '.bak_tenantpast',
     '.bak_favnote',
     '.bak_ingfilter',
+    '.bak_renewalwin',
+    '.bak_convpills',
+    '.bak_fixedpop',
 ]
 
 

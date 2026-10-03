@@ -235,36 +235,33 @@ def get_expenses_waiting_payment(cursor):
 
 
 def get_expiring_leases(cursor, today):
-    """Leases ending within 90 days with no successor captured.
+    """Active leases inside their own renewal window, still pending.
 
-    ONE DEFINITION - DB-8, 2 Oct 2026. This used to run its own query:
-    tenant_current = 'Yes' AND today past (lease_end_date minus the
-    tenant's OWN renewal_period) AND renewal_status still 'pending'. The
-    dashboard panel beside it asked a different question - ending within a
-    fixed 90 days with no successor lease on the property - and the two
-    sat six inches apart on one screen, both labelled Expiring Leases,
-    showing 2 and 3.
+    DB-9, 2 Oct 2026 - AND A CORRECTION TO DB-8. Demetri, on Live: expiring
+    leases are determined by the lease agreement and the tenant's Renewal
+    Period, so the 90-day test must go and only leases inside their renewal
+    period may appear - on the panel, in this tile, and in the modal the
+    tile opens, with the count matching.
 
-    Demetri chose the panel's rule. The cost was named first and taken
-    knowingly: THE PER-TENANT RENEWAL LEAD TIME IS GONE. A lease needing
-    six months' notice is now flagged at ninety days like every other one.
+    DB-8 SAW TWO RULES AND PICKED THE WRONG ONE. The panel said 3 and this
+    tile said 2; DB-8 moved the tile onto the panel's rule. The tile was
+    right. This round moves everything onto the renewal period instead -
+    through ONE function, because the alternative is a copied rule, and a
+    copied rule is two rules again the first time either is edited.
 
-    IT CALLS THE PANEL'S FUNCTION RATHER THAN COPYING ITS RULE, because a
-    copied rule is two rules again the first time either is edited - which
-    is the whole reason this round exists. What is left here is a mapping
-    from that function's keys onto the ones the two dashboard tables
-    already read.
+    IT WAS NEVER TWO. Measured while fixing it: this tile used `period or
+    0`, the report uses `period or 30`, and the Declined tile subtracted a
+    further 30 days. Four answers, three of them on this screen.
 
-    `cursor` IS UNUSED AND KEPT ON PURPOSE. The caller hands it to six
-    helpers in a row and the other five still need it; narrowing this one
-    signature is a different edit with a different risk.
-                                                    [test_lease_rule.py]
+    `cursor` IS UNUSED AND KEPT ON PURPOSE - the caller hands it to six
+    helpers in a row and the other five still need it.
+                                                  [test_renewal_window.py]
     """
     del cursor  # see the note above - deliberately unused
-    from pages.services.portfolio_insights import expiring_no_successor
+    from pages.services.portfolio_insights import renewal_due
 
     out = []
-    for row in expiring_no_successor(today=today, within_days=90):
+    for row in renewal_due(today=today, status='pending'):
         end = row['lease_end']
         out.append({
             'prop_name': row['prop_name'],
@@ -272,104 +269,36 @@ def get_expiring_leases(cursor, today):
             'tenant_name': row['tenant_name'],
             'lease_end_date': end.strftime('%Y-%m-%d') if end else '',
             'days_to_end': row['days_to_end'],
+            'renewal_date': row['renewal_date'].strftime('%Y-%m-%d'),
             'renewal_status': row['renewal_status'],
         })
     return out
 
 
-def _get_expiring_leases_before_db8(cursor, today):
-    """THE OLD RULE, KEPT AND UNCALLED - DB-8, 2 Oct 2026.
-
-    Not dead code by accident. The per-tenant renewal lead time this
-    implements is a real idea that the new rule gives up, and if the
-    ninety-day window turns out to be too late for a long-notice lease,
-    this is what it looked like. Deleting it would mean rediscovering it.
-
-    test_lease_rule.py asserts that NOTHING CALLS THIS, so it cannot drift
-    back into service without a round saying so.
-    """
-    cursor.execute("""
-        SELECT prop.prop_name, prop.prop_country, tenant.tenant_name,
-               tenant.tenant_lease_end_date, tenant.tenant_renewal_period,
-               tenant.tenant_renewal_status
-        FROM railway.tenant
-        JOIN railway.prop ON prop.prop_id = tenant.prop_id
-        WHERE tenant.tenant_current = 'Yes'
-        ORDER BY prop.prop_country ASC, prop.prop_name ASC
-    """)
-    tenant_rows = cursor.fetchall()
-
-    expiring_leases = []
-
-    for row in tenant_rows:
-        prop_name = row[0]
-        prop_country = row[1]
-        tenant_name = row[2]
-        lease_end_date = row[3]
-        renewal_period = int(row[4]) if row[4] is not None else 0
-        renewal_status = row[5] if row[5] else 'pending'
-
-        # Skip tenants with no lease end date - we can't compute a renewal date
-        if lease_end_date is None:
-            continue
-
-        renewal_date = lease_end_date - timedelta(days=renewal_period)
-        # NOTE: no extra buffer here - alerts use the renewal date directly.
-        # (get_declined_renewals subtracts an additional timedelta(days=30).)
-        warning_date = renewal_date
-
-        if today >= warning_date and renewal_status == 'pending':
-            expiring_leases.append({
-                'prop_name': prop_name,
-                'prop_country': prop_country,
-                'tenant_name': tenant_name,
-                'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
-                'renewal_date': renewal_date.strftime('%Y-%m-%d')
-            })
-
-    return expiring_leases
-
-
 def get_declined_renewals(cursor, today):
-    """Get renewals that have been declined"""
-    cursor.execute("""
-        SELECT prop.prop_name, prop.prop_country, tenant.tenant_name,
-               tenant.tenant_lease_end_date, tenant.tenant_renewal_period,
-               tenant.tenant_renewal_status
-        FROM railway.tenant
-        JOIN railway.prop ON prop.prop_id = tenant.prop_id
-        WHERE tenant.tenant_current = 'Yes'
-        ORDER BY prop.prop_country ASC, prop.prop_name ASC
-    """)
-    tenant_rows = cursor.fetchall()
+    """Active leases inside their renewal window whose tenant has declined.
 
-    declined_renewals = []
+    DB-9, 2 Oct 2026. The SAME boundary as the tile above and the Lease
+    Renewal Report - this used to subtract a further 30 days, so a declined
+    renewal appeared a month before the matching pending one would have.
+    Nothing recorded why; the Lease Renewal Report carries the other half of
+    the answer in a comment, where the extra 30 days is struck out and
+    labelled "the old notification".
 
-    for row in tenant_rows:
-        prop_name = row[0]
-        prop_country = row[1]
-        tenant_name = row[2]
-        lease_end_date = row[3]
-        renewal_period = int(row[4]) if row[4] is not None else 0
-        renewal_status = row[5] if row[5] else 'pending'
+    `cursor` IS UNUSED AND KEPT ON PURPOSE, as above.
+                                                  [test_renewal_window.py]
+    """
+    del cursor  # see the note above - deliberately unused
+    from pages.services.portfolio_insights import renewal_due
 
-        # Skip tenants with no lease end date - we can't compute a renewal date
-        if lease_end_date is None:
-            continue
-
-        renewal_date = lease_end_date - timedelta(days=renewal_period)
-        warning_date = renewal_date - timedelta(days=30)
-
-        if today >= warning_date and renewal_status == 'declined':
-            declined_renewals.append({
-                'prop_name': prop_name,
-                'prop_country': prop_country,
-                'tenant_name': tenant_name,
-                'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
-                'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
-            })
-
-    return declined_renewals
+    return [{
+        'prop_name': row['prop_name'],
+        'prop_country': row['prop_country'],
+        'tenant_name': row['tenant_name'],
+        'lease_end_date': (row['lease_end'].strftime('%Y-%m-%d')
+                           if row['lease_end'] else ''),
+        'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT',
+    } for row in renewal_due(today=today, status='declined')]
 
 
 def get_overdue_invoices(cursor, today):

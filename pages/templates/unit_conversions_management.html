@@ -44,24 +44,53 @@
     gap: 12px;
 }
 
+/* THE QUANTITY CHIPS - UC-1, 2 Oct 2026.
+   Demetri: "Can we mellow down the green colour for qty... Do we have any
+   standards??" base has had five pill tones since the contrast work, and
+   this page used none of them.
+
+   INFO, NOT GOOD. A quantity is information; green means healthy, and a
+   multiplier is not in good health. The same distinction decides the
+   Applies To column below - a scope is not a verdict.
+
+   AND THE BLUE RULE THAT NEVER FIRED IS GONE. It read
+
+       .conversion-number:last-of-type { background: ...blue... }
+
+   and was written to paint the SECOND number. :last-of-type matches the
+   last element of its type among its siblings, and the siblings are five
+   SPANS ending in a .conversion-unit - so it never selected a number at
+   all. That is why both numbers rendered the same green in the screenshot.
+   The round does not resurrect it: two numbers in one row are the same
+   KIND of thing, and colouring one of them differently was decoration.
+
+   Only the size is kept local. .alv-pill is 12px, and these are read as
+   values rather than as labels.                   [test_conversion_pills] */
 .conversion-number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 16px;
+    font-size: 15px;
+    padding: 5px 12px;
     min-width: 45px;
-    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+    justify-content: center;
 }
 
-.conversion-number:last-of-type {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+/* THE SCOPE CHOOSER - UC-1, 2 Oct 2026. The modal asks the question the
+   Applies To column answers, and painted it with the same two colours. The
+   layout stays (a two-column grid, not .alv-choice's stacked rail); only
+   the paint moves, onto the tokens the column's pills use. */
+.uc-scope {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 12px 12px 24px;
+    border: 2px solid var(--alv-line);
+    border-radius: 8px;
+    background: var(--alv-paper);
+    cursor: pointer;
 }
+.uc-scope-specific { border-color: var(--alv-accent-line); background: var(--alv-accent-soft); }
+.uc-scope-specific .uc-scope-name { color: var(--alv-accent-ink); }
+.uc-scope-generic  { border-color: var(--alv-line); background: var(--alv-neutral-soft); }
+.uc-scope-generic .uc-scope-name { color: var(--alv-neutral); }
+.uc-scope-name { font-weight: 600; }
 
 .conversion-unit {
     color: #495057;
@@ -70,7 +99,9 @@
 }
 
 .conversion-arrow {
-    color: #28a745;
+    /* UC-1: the arrow took its green from the chips it sits between.
+       It is punctuation, so it reads as soft ink rather than as a tone. */
+    color: var(--alv-ink-faint);
     font-size: 20px;
     font-weight: 700;
 }
@@ -242,8 +273,10 @@
         font-size: 14px;
     }
     .conversion-number {
-        font-size: 14px;
-        padding: 6px 10px;
+        /* UC-1: one step down from the desktop size above, which is now
+           .alv-pill's size plus this page's own two properties. */
+        font-size: 13px;
+        padding: 4px 9px;
         min-width: 38px;
     }
     .conversion-arrow {
@@ -418,22 +451,29 @@
                     <!-- Conversion Display -->
                     <td data-label="Conversion">
                         <div class="conversion-display">
-                            <span class="conversion-number">1</span>
+                            <span class="alv-pill alv-pill-info conversion-number">1</span>
                             <span class="conversion-unit">{{ conversion.from_unit.name }}</span>
                             <span class="conversion-arrow">→</span>
-                            <span class="conversion-number">{{ conversion.multiplier|normalize_decimal }}</span>
+                            <span class="alv-pill alv-pill-info conversion-number">{{ conversion.multiplier|normalize_decimal }}</span>
                             <span class="conversion-unit">{{ conversion.to_unit.name }}</span>
                         </div>
                     </td>
                     
                     <!-- Applies To -->
                     <td data-label="Applies To">
+                        {# A SCOPE IS NOT A VERDICT - UC-1, 2 Oct 2026. This column   #}
+                        {# says which conversions a row governs. It was amber for one #}
+                        {# answer and green for the other, and neither is a judgement #}
+                        {# - a conversion that applies to one ingredient is not in    #}
+                        {# better or worse health than one that applies to all. So    #}
+                        {# info for the narrower scope, neutral for the wider one,    #}
+                        {# and the two icons stay exactly as they were.               #}
                         {% if conversion.specific_ingredient %}
-                            <span style="background: #ffc107; color: #000; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500;">
+                            <span class="alv-pill alv-pill-info">
                                 <i class="fas fa-star"></i> {{ conversion.specific_ingredient.name }}
                             </span>
                         {% else %}
-                            <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500;">
+                            <span class="alv-pill alv-pill-neutral">
                                 <i class="fas fa-globe"></i> Generic (All)
                             </span>
                         {% endif %}
@@ -940,7 +980,7 @@ function openMissingConversionsModal() {
                     </label>
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <label class="d-flex align-items-start" style="padding: 12px 12px 12px 24px; border: 2px solid #28a745; border-radius: 8px; background: #f0fff4; cursor: pointer;">
+                            <label class="uc-scope uc-scope-generic">
                                 <input class="form-check-input mt-1" 
                                        type="radio" 
                                        name="conversion_type_${index}" 
@@ -949,7 +989,7 @@ function openMissingConversionsModal() {
                                        checked
                                        style="cursor: pointer; margin-right: 10px; flex-shrink: 0;">
                                 <div>
-                                    <div style="font-weight: 600; color: #28a745;">
+                                    <div class="uc-scope-name">
                                         <i class="fas fa-globe"></i> Generic
                                     </div>
                                     <small class="text-muted">All ingredients</small>
@@ -957,7 +997,7 @@ function openMissingConversionsModal() {
                             </label>
                         </div>
                         <div class="col-md-6">
-                            <label class="d-flex align-items-start" style="padding: 12px 12px 12px 24px; border: 2px solid #ffc107; border-radius: 8px; background: #fffbf0; cursor: pointer;">
+                            <label class="uc-scope uc-scope-specific">
                                 <input class="form-check-input mt-1" 
                                        type="radio" 
                                        name="conversion_type_${index}" 
@@ -965,7 +1005,7 @@ function openMissingConversionsModal() {
                                        value="specific"
                                        style="cursor: pointer; margin-right: 10px; flex-shrink: 0;">
                                 <div>
-                                    <div style="font-weight: 600; color: #856404;">
+                                    <div class="uc-scope-name">
                                         <i class="fas fa-star"></i> ${item.ingredient}
                                     </div>
                                     <small class="text-muted">This ingredient only</small>
