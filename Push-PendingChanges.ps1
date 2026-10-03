@@ -1441,6 +1441,12 @@ $suites = @(
     # all. Its section 3 refuses a pill tone assembled across a template
     # tag, and proves the check can fail by building one.
     'test_passport_pills.py'
+    # The Holder filter matched nothing. Its section 2 is the gate that
+    # would have caught it: for every filter on the page it reads the
+    # field the narrowed cell renders and the field the options are
+    # derived from, and fails unless they are the same field. Section 3
+    # shows that gate failing on the code that shipped the bug.
+    'test_passport_holders.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

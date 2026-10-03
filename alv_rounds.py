@@ -220,6 +220,13 @@ ROUNDS = [
     # every label from the model. One .row-actions wrapper, six hexes on
     # tokens. The mobile action bar is LEFT ALONE - 23 pages use it.
     '.bak_passpills',
+    # PA-3, 3 Oct 2026 - PA-1's Holder filter matched NOTHING. It joined
+    # HouseholdMember.name to Passport.holder_name, and the two share not
+    # one value: the household uses familiar names (Angy) and a passport
+    # carries the name printed on the document (Angela Manias). The
+    # options are the recorded holders now, so they cannot fail to match
+    # the rows they narrow.
+    '.bak_passholders',
 ]
 
 

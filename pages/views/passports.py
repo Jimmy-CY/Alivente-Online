@@ -36,7 +36,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ..models import HouseholdMember, Passport
+from ..models import Passport
 from ..workspace import ensure_workspace
 
 
@@ -195,8 +195,20 @@ def passport_management(request):
     # the model all along and the template re-typed them; Holder is the
     # Household Members, which is what the register is for; Country has no
     # home, so it is the countries actually recorded.    [PA-1, 3 Oct 2026]
-    household_members = (HouseholdMember.objects.for_user(request.user)
-                         .filter(is_active=True).order_by('name'))
+    # PA-3, 3 Oct 2026 - THE HOLDERS COME FROM THE PASSPORTS, NOT THE
+    # HOUSEHOLD. PA-1 took them from HouseholdMember because the register
+    # is for the household - right instinct, wrong join. The roster holds
+    # first names (Alexandra, Angy, Demetri) and holder_name holds full
+    # ones (Alexandra Manias, Angela Manias, Demetri Manias): not one
+    # value in common, so every choice narrowed the table to nothing.
+    #
+    # Derived from the rows, the options CANNOT not-match, and a holder
+    # with no documents is not offered - which is the same reasoning that
+    # settled Country two rounds ago.
+    holders = sorted(set(
+        Passport.objects.for_user(request.user)
+        .exclude(holder_name='')
+        .values_list('holder_name', flat=True)))
     countries = sorted(set(
         Passport.objects.for_user(request.user)
         .exclude(country_of_issue='')
@@ -204,7 +216,7 @@ def passport_management(request):
 
     context = {
         'passports': passports,
-        'household_members': household_members,
+        'holders': holders,
         'doc_types': Passport.DOCUMENT_TYPE_CHOICES,
         'statuses': Passport.STATUS_CHOICES,
         'countries': countries,

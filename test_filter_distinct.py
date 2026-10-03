@@ -186,15 +186,12 @@ LEFT = {
     # view filters on category__ingredient_category_id.
     ('ingredient_base_units_management.html', 'categoryFilter'):
         'sends ingredient_category_id - same reason',
-    # PA-1, 3 Oct 2026. The opposite reason, and it is worth writing down
-    # rather than waving through. This one sends the NAME, because
-    # Passport.holder_name is a CharField holding a name and not a key to
-    # HouseholdMember. So two members called the same thing are not two
-    # choices here - they are one, and the passports of both would be
-    # found. That is the right answer for this register; the day a
-    # passport points at a member by id, this exemption should go.
-    ('passport_management.html', 'holderSelect'):
-        'sends the holder NAME - Passport.holder_name is a name, not a key',
+    # PA-1 NAMED passport_management holderSelect HERE, because it looped
+    # HouseholdMember rows and sent a name. PA-3 removed that join the same
+    # day - the two models hold different vocabularies, familiar names
+    # against the name printed on a document - and the select now loops a
+    # plain list of recorded values. That is this rule, not an exception to
+    # it, so the exemption is gone rather than relaxed.
 }
 
 ps = read(os.path.join(ROOT, PS1))

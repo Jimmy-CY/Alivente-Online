@@ -105,7 +105,7 @@ def skip(msg, why):
 
 def read(p):
     with open(p, encoding='utf-8', errors='replace') as f:
-        return f.read().replace('\r\n', '\n')
+        return f.read().replace('\n', '\n')
 
 
 def head(t):
@@ -129,7 +129,12 @@ VIEW = os.path.join(ROOT, 'pages', 'views', 'passports.py')
 
 SRC = alv_tree.code_only(now(PAGE))
 OLD = alv_tree.code_only(was(PAGE)) if was(PAGE) else ''
-V = read(VIEW)
+# PA-3, 3 Oct 2026 - THROUGH now(), LIKE THE PAGE. This said read(VIEW),
+# which is the LIVE file, while SRC above is the page AS PA-1 LEFT IT. The
+# moment a later round touched the view - PA-3 did, the same day - this
+# suite was holding one half of PA-1's work against another round's other
+# half, and three true claims about the household started failing.
+V = now(VIEW)
 VW = was(VIEW)
 
 FAMILY = ('Demetri Manias', 'Angela Manias', 'Erene Manias',
