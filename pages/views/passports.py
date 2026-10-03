@@ -36,7 +36,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ..models import Passport
+from ..models import HouseholdMember, Passport
 from ..workspace import ensure_workspace
 
 
@@ -157,21 +157,12 @@ def passport_management(request):
     selected_country = request.GET.get('country', '')
     selected_status = request.GET.get('status', '')
 
-    # Apply holder filter
-    if selected_holder:
-        passports = passports.filter(holder_name=selected_holder)
-
-    # Apply document type filter
-    if selected_doc_type:
-        passports = passports.filter(document_type=selected_doc_type)
-
-    # Apply country filter
-    if selected_country:
-        passports = passports.filter(country_of_issue=selected_country)
-
-    # Apply status filter
-    if selected_status:
-        passports = passports.filter(status=selected_status)
+    # PA-1, 3 Oct 2026 - THE SERVER NO LONGER NARROWS, AND THAT IS THE
+    # POINT. The browser narrows now, from all four fields at once. If
+    # both did it, changing a select would narrow rows the server had
+    # already removed - two owners of one fact, and the second one lying.
+    # The four parameters are still READ, so a bookmarked ?holder=... still
+    # arrives with that filter showing and the browser applies it.
 
     # Order by expiry date, soonest first, with undated documents last.
     #
@@ -200,8 +191,23 @@ def passport_management(request):
         else:
             passport.expiring_soon = False
 
+    # THE FOUR LISTS, FROM WHERE THEY LIVE. Type and Status have been on
+    # the model all along and the template re-typed them; Holder is the
+    # Household Members, which is what the register is for; Country has no
+    # home, so it is the countries actually recorded.    [PA-1, 3 Oct 2026]
+    household_members = (HouseholdMember.objects.for_user(request.user)
+                         .filter(is_active=True).order_by('name'))
+    countries = sorted(set(
+        Passport.objects.for_user(request.user)
+        .exclude(country_of_issue='')
+        .values_list('country_of_issue', flat=True)))
+
     context = {
         'passports': passports,
+        'household_members': household_members,
+        'doc_types': Passport.DOCUMENT_TYPE_CHOICES,
+        'statuses': Passport.STATUS_CHOICES,
+        'countries': countries,
         'selected_holder': selected_holder,
         'selected_doc_type': selected_doc_type,
         'selected_country': selected_country,

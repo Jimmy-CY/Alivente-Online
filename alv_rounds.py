@@ -208,6 +208,18 @@ ROUNDS = [
     '.bak_mealbartop',
     '.bak_fromcal',
     '.bak_escapedrop',
+    # Section PA, 3 Oct 2026 - Passports. Four lists written out twice
+    # each (two of them already on the model, and the two copies had
+    # drifted), and a filter panel that reloaded the page on every
+    # select. Holder is the Household Members now, which is what the
+    # register is for.
+    '.bak_passfilter',
+    # PA-2, 3 Oct 2026 - the Passports row. Ten Bootstrap badges (five of
+    # which drew nothing, because this app never defined badge-primary,
+    # badge-dark or badge-secondary) become two pills and three, with
+    # every label from the model. One .row-actions wrapper, six hexes on
+    # tokens. The mobile action bar is LEFT ALONE - 23 pages use it.
+    '.bak_passpills',
 ]
 
 

@@ -234,6 +234,13 @@ def real_table(text):
             break
     frag = mk[i:j]
     # Resolve the template out of it, then give the tbody enough rows to scroll.
+    # THE THIRD SYNTAX FIRST - PA-1, 3 Oct 2026. The tbody below is
+    # multiplied by FORTY, so a {# #} note left in it renders as forty rows
+    # of text: on passport_management the heading started 928px down
+    # instead of 16 and measured as not sticking, when it sticks fine.
+    # RE-1b and PN-1 made this exact repair to two flex fixtures; this is
+    # the table one.
+    frag = re.sub(r'\{#.*?#\}', ' ', frag, flags=re.S)
     frag = re.sub(r'\{%[^%]*%\}', ' ', frag)
     frag = re.sub(r'\{\{[^}]*\}\}', 'x', frag)
     body = re.search(r'<tbody[^>]*>(.*?)</tbody>', frag, re.S)

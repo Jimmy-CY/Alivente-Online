@@ -202,7 +202,14 @@ moved = sorted(os.path.basename(p) for p in users if p not in own)
 OURS = sorted(['ingredient_base_units_management.html',
                'categories_management.html',
                'measurement_units_management.html',
-               'unit_conversions_management.html'])
+               'unit_conversions_management.html',
+               # PA-1, 3 Oct 2026. Passports joined. It was on the list
+               # below as a page that LOOKS like a user and is not - its
+               # class was .passport-filter-grid, and matching that as
+               # .filter-grid is the error this round was written around.
+               # It is a real user now, and its four fields went from
+               # 285px to the 240px cap.
+               'passport_management.html'])
 ok(moved == OURS,
    'the %d pages relying on base for their columns are the four Recipes '
    'panels, and nothing else' % len(moved),
@@ -213,7 +220,10 @@ ok(THE_ONE in moved,
 
 # The two that LOOK like users and are not. Named, so that a page which
 # genuinely starts using .filter-grid is noticed rather than absorbed.
-for other in ('passport_management.html', 'recipe_management.html'):
+# passport_management.html WAS HERE until PA-1, 3 Oct 2026. The token
+# lesson it was here for still stands and is tested on recipe_management,
+# which keeps .filter-multiselect-menu and friends.
+for other in ('recipe_management.html',):
     src = read(alv_tree.path_of(other))
     ok('filter-grid' not in classes_of(src),
        '%s has its own grid class and is NOT a user of this one' % other)

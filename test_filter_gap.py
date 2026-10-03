@@ -112,6 +112,11 @@ EXE = '/opt/pw-browsers/chromium'
 
 # The page the round is for, and what it had / has.
 FIXED = ('celebration_management.html', 0, 30)
+# AND THE PAGE THAT JOINED IT. PA-1, 3 Oct 2026: passport_management gave
+# up its own panel rule, so under the OLD base it would have had no gap at
+# all and under this one it has 30. Same reading on screen as before the
+# round; a different place for the fact to live.
+JOINED = (('passport_management.html', 0, 30),)
 # NOTE ON THE FIGURES BELOW: they are what this sandbox measured, and
 # they are PRINTED, not asserted. act_expense's include a line box - it
 # has a <br/> between the panel and the table - so its number follows
@@ -124,7 +129,11 @@ KEEP = {
     'act_expense.html': (33, 21),
     'fsr.html': (30, 30),
     'invoices.html': (30, 18),
-    'passport_management.html': (30, 12),
+    # passport_management.html WAS HERE, at (30, 12). PA-1, 3 Oct 2026
+    # deleted its .passport-filter-panel rule along with the rest of its
+    # bespoke panel, so it states no margin of its own and takes base's
+    # 30px - the same 30px on screen, from the place W3 put it. It is
+    # measured below with celebration_management instead.
     'properties.html': (30, 30),
     'suppliers.html': (30, 30),
     'tenant.html': (30, 30),
@@ -364,6 +373,17 @@ else:
     # and compare it with itself. That is stricter about the thing that
     # matters and immune to the thing that does not. The recorded
     # figures stay, printed, as the sandbox reading they always were.
+    for rel, before_gap, after_gap in JOINED:
+        for width in (1280, 390):
+            a = measure(rel, width, bn)
+            b = measure(rel, width, bw)
+            ok(a and a['gap'] == after_gap,
+               '%-30s at %4dpx takes base\'s %dpx gap now'
+               % (rel.replace('.html', ''), width, after_gap), a)
+            ok(b and b['gap'] == before_gap,
+               '  CONTROL: under the OLD base it would have had %dpx - it '
+               'states none of its own' % before_gap, b)
+
     for rel, (wide, narrow) in sorted(KEEP.items()):
         for width, noted in ((1280, wide), (390, narrow)):
             a = measure(rel, width, bn)

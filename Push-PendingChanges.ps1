@@ -1430,6 +1430,17 @@ $suites = @(
     # hidden does. Its section 2 measures the dropdown in a browser: 13 of
     # 159 pixels inside the container before, 159 of 159 after.
     'test_escaping_drop.py'
+    # Passports: four typed-in lists become four derived ones, and the
+    # bespoke filter panel becomes the house one. Its section 4 drives a
+    # browser - four filters narrowing TOGETHER, the chips following, an
+    # empty state when nothing matches, and Clear All putting it back.
+    'test_passport_filter.py'
+    # The Passports row: badges to pills, labels from the model. Its
+    # section 2 renders the backup's badges and the new pills side by
+    # side and finds that three of the ten old ones drew no background at
+    # all. Its section 3 refuses a pill tone assembled across a template
+    # tag, and proves the check can fail by building one.
+    'test_passport_pills.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

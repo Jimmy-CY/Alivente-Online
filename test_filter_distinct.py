@@ -186,6 +186,15 @@ LEFT = {
     # view filters on category__ingredient_category_id.
     ('ingredient_base_units_management.html', 'categoryFilter'):
         'sends ingredient_category_id - same reason',
+    # PA-1, 3 Oct 2026. The opposite reason, and it is worth writing down
+    # rather than waving through. This one sends the NAME, because
+    # Passport.holder_name is a CharField holding a name and not a key to
+    # HouseholdMember. So two members called the same thing are not two
+    # choices here - they are one, and the passports of both would be
+    # found. That is the right answer for this register; the day a
+    # passport points at a member by id, this exemption should go.
+    ('passport_management.html', 'holderSelect'):
+        'sends the holder NAME - Passport.holder_name is a name, not a key',
 }
 
 ps = read(os.path.join(ROOT, PS1))

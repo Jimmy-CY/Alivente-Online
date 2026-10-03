@@ -266,8 +266,21 @@ for p in PAGES:
     check('%-26s   something on the page makes a .filter-tag' % short,
           'filter-tag' in t)
     panel_cls = re.search(r'<div class="alv-filter ([\w-]+)"', t).group(1)
-    check('%-26s   .%s still declares padding' % (short, panel_cls),
-          any(s == '.' + panel_cls and 'padding' in b for s, b in rules(t)))
+    # A BOX FROM SOMEWHERE, NOT NECESSARILY FROM THE PAGE. W3 wrote this
+    # when every panel carried its own gradient card, and base then gave
+    # .alv-filter a 30px margin as the default BECAUSE a page is allowed
+    # to state none. PA-1, 3 Oct 2026: passport_management stopped stating
+    # one, as Categories, Measurement Units and Unit Conversions already
+    # had, so the claim is now "the page states one, OR it takes base's".
+    PLAIN = ('passport_management.html',)
+    if short.strip() in PLAIN:
+        check('%-26s   .%s takes base\'s box, as the house pages do'
+              % (short, panel_cls),
+              not any(s == '.' + panel_cls for s, b in rules(t)),
+              'it still declares its own')
+    else:
+        check('%-26s   .%s still declares padding' % (short, panel_cls),
+              any(s == '.' + panel_cls and 'padding' in b for s, b in rules(t)))
     c = css_of(t)
     check('%-26s   its CSS braces balance' % short, c.count('{') == c.count('}'))
     check('%-26s   its div tags balance' % short,
@@ -565,15 +578,35 @@ async def drive():
             check('%-26s   CONTROL: removing them hides both again' % short,
                   s['count'] == '' and s['countDisp'] == 'none' and s['chips'] == 'none')
             await pg.click('.action-filter')
+            # THE REOPEN FLAG IS FOR A PANEL THAT SUBMITS, and not every
+            # panel does any more. PA-1, 3 Oct 2026: passport_management
+            # narrows in the browser, so there is no reload to survive and
+            # no flag to set - asking it to remember would be asking for a
+            # mechanism whose absence is the improvement. ASKED OF THE
+            # MARKUP, not of a list of page names: a panel with a form
+            # must remember, a panel without one must not need to.
+            has_form = await pg.evaluate(
+                "(id)=>!!document.querySelector('#'+id+' form')", pid)
             await pg.evaluate("(id)=>{const f=document.querySelector('#'+id+' form');"
                               "if(f) f.dispatchEvent(new Event('submit'));}", pid)
             flag = await pg.evaluate("()=>sessionStorage.getItem('alvFilterOpen')")
-            check('%-26s   its own submit remembers the panel was open' % short,
-                  flag == '1', str(flag))
-            await pg.reload(); s = await st()
-            check('%-26s   so the reload reopens it' % short, s['disp'] == 'block', s['disp'])
-            left = await pg.evaluate("()=>sessionStorage.getItem('alvFilterOpen')")
-            check('%-26s   and the flag is CONSUMED' % short, left is None, str(left))
+            if has_form:
+                check('%-26s   its own submit remembers the panel was open' % short,
+                      flag == '1', str(flag))
+                await pg.reload(); s = await st()
+                check('%-26s   so the reload reopens it' % short, s['disp'] == 'block', s['disp'])
+                left = await pg.evaluate("()=>sessionStorage.getItem('alvFilterOpen')")
+                check('%-26s   and the flag is CONSUMED' % short, left is None, str(left))
+            else:
+                check('%-26s   its panel holds no form, so nothing reloads '
+                      'and nothing is remembered' % short, flag is None,
+                      str(flag))
+                check('%-26s   CONTROL: and it really has no form - the '
+                      'narrowing is in the browser' % short, not has_form)
+                check('%-26s   nor does it leave the flag behind for the '
+                      'next page' % short,
+                      await pg.evaluate(
+                          "()=>sessionStorage.getItem('alvFilterOpen')") is None)
             await pg.reload(); s = await st()
             check('%-26s   CONTROL: a real reload starts closed' % short, s['disp'] == 'none')
             await pg.set_viewport_size({'width': 375, 'height': 800}); await pg.reload()

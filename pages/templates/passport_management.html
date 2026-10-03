@@ -45,67 +45,65 @@
 </div>
 
     <div class="alv-filter-active" id="passportActiveFilters">
-                <span class="alv-filter-active-label">Active filters:</span>
-                <div class="filter-tags" id="passportFilterTags"></div>
-            </div>
+      <span class="alv-filter-active-label">Active filters:</span>
+      <div class="filter-tags" id="passportFilterTags"></div>
+    </div>
 
-<!-- Filter Panel -->
-<div class="alv-filter passport-filter-panel" id="passportFilterPanel">
-    <div class="passport-filter-header">
-        <h5 class="passport-filter-title">
-            <i class="fas fa-filter"></i> <span class="filter-title-text">Document Filters</span><span class="filter-title-text-mobile">Filters</span>
-        </h5>
-        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllPassportFilters(event)">
-            <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
-        </button>
+{# PA-1, 3 Oct 2026 - THE HOUSE PANEL. Its own -panel, -header, -title   #}
+{# and -grid are gone, and so is the form: nothing here submits any      #}
+{# more, so the four selects carry no name. base owns the box, the       #}
+{# header, the 240px column cap and the chip count.                      #}
+<div class="alv-filter filter-panel" id="passportFilterPanel">
+  <div class="filter-header">
+    <h5 class="filter-title">
+      <i class="fas fa-filter"></i> <span class="filter-title-text">Document Filters</span><span class="filter-title-text-mobile">Filters</span>
+    </h5>
+    <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
+    </button>
+  </div>
+  <div class="filter-content" id="passportFilterContent">
+    <div class="filter-grid">
+      <div class="filter-group">
+        <label class="filter-label" for="holderSelect"><i class="fas fa-user"></i> <strong>Holder</strong></label>
+        <select class="form-control filter-select" id="holderSelect">
+          <option value="">All Holders</option>
+          {% for member in household_members %}
+          <option value="{{ member.name }}" {% if selected_holder == member.name %}selected{% endif %}>{{ member.name }}</option>
+          {% empty %}
+          <option value="" disabled>No household members yet</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="docTypeSelect"><i class="fas fa-passport"></i> <strong>Type</strong></label>
+        <select class="form-control filter-select" id="docTypeSelect">
+          <option value="">All Types</option>
+          {% for value, label in doc_types %}
+          <option value="{{ value }}" {% if selected_doc_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="countrySelect"><i class="fas fa-globe"></i> <strong>Country</strong></label>
+        <select class="form-control filter-select" id="countrySelect">
+          <option value="">All Countries</option>
+          {% for country in countries %}
+          <option value="{{ country }}" {% if selected_country == country %}selected{% endif %}>{{ country }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="statusSelect"><i class="fas fa-check-circle"></i> <strong>Status</strong></label>
+        <select class="form-control filter-select" id="statusSelect">
+          <option value="">All Statuses</option>
+          {% for value, label in statuses %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
     </div>
-    <div class="passport-filter-content" id="passportFilterContent">
-        <form action="{% url 'passport_management' %}" method="GET" id="passportFilterForm">
-            <div class="passport-filter-grid">
-                <div class="filter-group">
-                    <label class="filter-label"><i class="fas fa-user"></i> <strong>Holder</strong></label>
-                    <select name="holder" class="form-control filter-select" id="holderSelect">
-                        <option value="">All Holders</option>
-                        <option value="Demetri Manias" {% if selected_holder == 'Demetri Manias' %}selected{% endif %}>Demetri Manias</option>
-                        <option value="Angela Manias" {% if selected_holder == 'Angela Manias' %}selected{% endif %}>Angela Manias</option>
-                        <option value="Erene Manias" {% if selected_holder == 'Erene Manias' %}selected{% endif %}>Erene Manias</option>
-                        <option value="Alexandra Manias" {% if selected_holder == 'Alexandra Manias' %}selected{% endif %}>Alexandra Manias</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label"><i class="fas fa-passport"></i> <strong>Type</strong></label>
-                    <select name="doc_type" class="form-control filter-select" id="docTypeSelect">
-                        <option value="">All Types</option>
-                        <option value="passport" {% if selected_doc_type == 'passport' %}selected{% endif %}>Passport</option>
-                        <option value="id" {% if selected_doc_type == 'id' %}selected{% endif %}>ID</option>
-                        <option value="drivers_license" {% if selected_doc_type == 'drivers_license' %}selected{% endif %}>Driver's License</option>
-                        <option value="visa" {% if selected_doc_type == 'visa' %}selected{% endif %}>Visa</option>
-                        <option value="arc" {% if selected_doc_type == 'arc' %}selected{% endif %}>ARC</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label"><i class="fas fa-globe"></i> <strong>Country</strong></label>
-                    <select name="country" class="form-control filter-select" id="countrySelect">
-                        <option value="">All Countries</option>
-                        <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
-                        <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
-                        <option value="South Africa" {% if selected_country == 'South Africa' %}selected{% endif %}>South Africa</option>
-                        <option value="Zimbabwe" {% if selected_country == 'Zimbabwe' %}selected{% endif %}>Zimbabwe</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label"><i class="fas fa-check-circle"></i> <strong>Status</strong></label>
-                    <select name="status" class="form-control filter-select" id="statusSelect">
-                        <option value="">All Statuses</option>
-                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
-                        <option value="renewal" {% if selected_status == 'renewal' %}selected{% endif %}>Applied for Renewal</option>
-                        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
-                    </select>
-                </div>
-            </div>
-            
-        </form>
-    </div>
+  </div>
 </div>
 
 
@@ -130,13 +128,14 @@
     <tr>
         <td data-label="Holder" data-sort-key="holder" data-sort-value="{{ passport.holder_name }}">{{ passport.holder_name }}</td>
         <td data-label="Type" data-sort-key="doc-type" data-sort-value="{{ passport.document_type }}">
-            {% if passport.document_type == 'passport' %}<span class="badge badge-primary">Passport</span>
-            {% elif passport.document_type == 'id' %}<span class="badge badge-info">ID</span>
-            {% elif passport.document_type == 'drivers_license' %}<span class="badge badge-secondary">Driver's License</span>
-            {% elif passport.document_type == 'visa' %}<span class="badge badge-warning">Visa</span>
-            {% elif passport.document_type == 'arc' %}<span class="badge badge-dark">ARC</span>
-            {% else %}<span class="badge badge-secondary">{{ passport.get_document_type_display }}</span>
-            {% endif %}
+            {# PA-2, 3 Oct 2026 - ONE NEUTRAL PILL, and the LABEL from the   #}
+            {# model. This was six branches writing out Passport, ID,        #}
+            {# Driver's License, Visa and ARC beside an else that already    #}
+            {# called get_document_type_display. Five colours for five       #}
+            {# categories is colour spent on decoration - amber on Visa      #}
+            {# reads as a warning when nothing is wrong - so Status keeps    #}
+            {# the colours and on this page colour means STATE.              #}
+            <span class="alv-pill alv-pill-neutral">{{ passport.get_document_type_display }}</span>
         </td>
         <td data-label="Number">{{ passport.document_number|default:"-" }}</td>
         <td data-label="Country" data-sort-key="country" data-sort-value="{{ passport.country_of_issue }}">{{ passport.country_of_issue|default:"-" }}</td>
@@ -158,15 +157,31 @@
             {% endif %}
         </td>
         <td data-label="Status" data-sort-key="status" data-sort-value="{{ passport.status }}">
-            {% if passport.status == 'active' %}<span class="badge badge-success">Active</span>
-            {% elif passport.status == 'renewal' %}<span class="badge badge-warning">Applied for Renewal</span>
-            {% elif passport.status == 'inactive' %}<span class="badge badge-secondary">Inactive</span>
-            {% else %}<span class="badge badge-secondary">-</span>
+            {# PA-2 - THE TONE IS A JUDGEMENT, THE LABEL IS THE MODEL'S.     #}
+            {# Active is good, Applied for Renewal wants attention, and      #}
+            {# anything else is neutral - the model has no opinion on that,  #}
+            {# so the branch stays. What goes is the label: it came from     #}
+            {# get_status_display all along.                                 #}
+            {# AND EACH CLASS IS WRITTEN WHOLE. Assembling alv-pill- plus a  #}
+            {# word would read fine and be invisible to every census: SG-2   #}
+            {# found a segmented control hidden that way for a month,        #}
+            {# because the string btn-info never appeared in its file.       #}
+            {% if passport.status == 'active' %}
+            <span class="alv-pill alv-pill-good">{{ passport.get_status_display }}</span>
+            {% elif passport.status == 'renewal' %}
+            <span class="alv-pill alv-pill-attn">{{ passport.get_status_display }}</span>
+            {% else %}
+            <span class="alv-pill alv-pill-neutral">{{ passport.get_status_display|default:"-" }}</span>
             {% endif %}
         </td>
 
         <!-- Desktop actions cell -->
         <td class="desktop-action-cell cell-actions">
+            {# PA-2, 3 Oct 2026 - the house wrapper. It gives the icons   #}
+            {# their 6px gap and their alignment; without it they take    #}
+            {# whatever the cell gives them. ONE wrapper around all four  #}
+            {# branches, not one per branch.                              #}
+            <div class="row-actions">
             {% if passport.document_file %}
                 <button type="button" class="icon-action-btn icon-view" onclick="viewDocument('{{ passport.document_file.url|escapejs }}', '{{ passport.document_file.name|escapejs }}', '{{ passport.holder_name|escapejs }}')" title="View Document"><i class="fas fa-eye"></i></button>
                 {% if perms.auth.can_edit_personal %}
@@ -185,6 +200,7 @@
                     <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% endif %}
             {% endif %}
+            </div>
         </td>
 
         <!-- Mobile actions bar -->
@@ -234,6 +250,11 @@
         </td>
     </tr>
     {% endfor %}
+    {# PA-1 - a table that narrows to nothing and says nothing reads as a #}
+    {# page that failed to load. colspan 8 is the header's column count.  #}
+    <tr id="passportNoMatch" style="display: none;">
+      <td colspan="8" class="alv-empty-title">Nothing here matches those filters</td>
+    </tr>
 </tbody>
 </table>
 </div>
@@ -257,21 +278,20 @@
             <label for="holder_name"><strong>Passport/ID Holder Name:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="holder_name" name="holder_name" required>
               <option value="">-- Select Holder --</option>
-              <option value="Demetri Manias">Demetri Manias</option>
-              <option value="Angela Manias">Angela Manias</option>
-              <option value="Erene Manias">Erene Manias</option>
-              <option value="Alexandra Manias">Alexandra Manias</option>
+              {% for member in household_members %}
+              <option value="{{ member.name }}">{{ member.name }}</option>
+              {% empty %}
+              <option value="" disabled>No household members yet - add one in Household Members</option>
+              {% endfor %}
             </select>
           </div>
           <div class="form-group">
             <label for="document_type"><strong>Document Type:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="document_type" name="document_type" required>
               <option value="">-- Select Type --</option>
-              <option value="passport">Passport</option>
-              <option value="id">ID</option>
-              <option value="drivers_license">Driver's License</option>
-              <option value="visa">Visa</option>
-              <option value="arc">Alien Registration Card</option>
+              {% for value, label in doc_types %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="form-group">
@@ -280,13 +300,12 @@
           </div>
           <div class="form-group">
             <label for="country_of_issue"><strong>Country of Issue:</strong> <span class="alv-req">*</span></label>
-            <select class="form-control" id="country_of_issue" name="country_of_issue" required>
-              <option value="">-- Select Country --</option>
-              <option value="Cyprus">Cyprus</option>
-              <option value="Greece">Greece</option>
-              <option value="South Africa">South Africa</option>
-              <option value="Zimbabwe">Zimbabwe</option>
-            </select>
+            <input type="text" class="form-control" id="country_of_issue" name="country_of_issue" list="countryList" autocomplete="off" required>
+            <datalist id="countryList">
+              {% for country in countries %}
+              <option value="{{ country }}"></option>
+              {% endfor %}
+            </datalist>
           </div>
           <h3 class="form-section-title"><i class="fas fa-calendar-check"></i> Validity</h3>
           <div class="form-group">
@@ -301,9 +320,9 @@
             <label for="status"><strong>Status:</strong> <span class="alv-req">*</span></label>
             <select class="form-control" id="status" name="status" required>
               <option value="">-- Select Status --</option>
-              <option value="active">Active</option>
-              <option value="renewal">Applied for Renewal</option>
-              <option value="inactive">Inactive</option>
+              {% for value, label in statuses %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
             </select>
           </div>
           <h3 class="form-section-title"><i class="fas fa-file-upload"></i> File</h3>
@@ -406,61 +425,31 @@
 /* ==================== DESKTOP STYLES ==================== */
 
 
-/* Filter panel */
-.passport-filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.passport-filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #dee2e6;
-    cursor: pointer;
-}
-.passport-filter-title {
-    margin: 0;
-    color: #2c3e50;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 18px;
-}
-.passport-filter-title i.fas { color: #0e7c8b; font-size: 16px; }
-.passport-filter-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    align-items: end;
-    margin-bottom: 20px;
-}
+/* PA-1, 3 Oct 2026 - the panel is base's now. This block held
+   .passport-filter-panel, -header, -title and -grid: a gradient card
+   with its own border, 24px of padding and four equal columns that
+   made each field 285px wide at 1280. base gives the box, and FG-1
+   caps the columns at 240. */
 
 .sortable-header {
     cursor: pointer;
     user-select: none;
 }
 .sortable-header:hover {
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
 }
 
 /* Expiry highlights */
 .expiry-expired,
 .expiry-soon {
-    color: #dc3545;
+    color: var(--alv-bad);
     font-weight: bold;
 }
 
 /* Upload-target info banner */
 .upload-target-info {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background-color: var(--alv-surface);
+    border: 1px solid var(--alv-line);
     border-radius: 6px;
     padding: 10px 14px;
     margin-bottom: 16px;
@@ -486,27 +475,9 @@
 @media screen and (max-width: 768px) {
 
 
-    /* Filter panel — tighter */
-    .passport-filter-panel {
-        padding: 8px 12px;
-        margin-bottom: 12px;
-    }
-    .passport-filter-header {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-        min-height: 38px;
-    }
-    .passport-filter-title { font-size: 14px; flex: 1; min-width: 0; }
-    .filter-title-text { display: none; }
-    .filter-title-text-mobile { display: inline; }
-    .clear-all-text { display: none; }
-    .clear-all-text-mobile { display: inline; }
-    .passport-filter-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
+    /* PA-1 - the phone panel is base's too. The two label
+       swaps below stay: base already does them, and stating
+       them again costs nothing and survives a base change. */
     
 
 
@@ -539,10 +510,10 @@
         padding: 8px 4px;
         border-radius: 6px;
         text-decoration: none;
-        color: #495057;
+        color: var(--alv-ink-soft);
         font-size: 11px;
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
+        background: var(--alv-surface);
+        border: 1px solid var(--alv-surface-deep);
         transition: background-color 0.15s ease;
         min-height: 56px;
         cursor: pointer;
@@ -551,7 +522,7 @@
     .mobile-action-btn:active {
         background: var(--alv-surface-deep);
         text-decoration: none;
-        color: #495057;
+        color: var(--alv-ink-soft);
     }
     .mobile-action-icon {
         font-size: 18px;
@@ -573,10 +544,10 @@
     .mobile-action-disabled {
         opacity: 0.4;
         cursor: not-allowed;
-        color: #adb5bd;
+        color: var(--alv-ink-faint);
     }
     .mobile-action-disabled .mobile-action-icon {
-        color: #adb5bd;
+        color: var(--alv-ink-faint);
     }
 
     /* Modal full-screen on mobile */
@@ -635,84 +606,98 @@
 var sortDirections = {};
 
 document.addEventListener('DOMContentLoaded', function() {
-    const filterContent = document.getElementById('passportFilterContent');
-    const toggleIcon = document.getElementById('passportFilterToggleIcon');
-    if (filterContent && toggleIcon) {
-        filterContent.classList.remove('expanded');
-        toggleIcon.style.transform = 'rotate(0deg)';
-    }
-    const filterElements = ['holderSelect', 'docTypeSelect', 'countrySelect', 'statusSelect'];
-    filterElements.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('change', function() {
-                sessionStorage.setItem('passportUserInteracted', 'true');
-                sessionStorage.setItem('passportJustUsedDropdown', 'true');
-                document.getElementById('passportFilterForm').submit();
-            });
-        }
-    });
-    updatePassportActiveFilters();
-    const userHasInteracted = sessionStorage.getItem('passportUserInteracted') === 'true';
-    const hasActiveFilters = checkForPassportActiveFilters();
-    const justClearedFilters = sessionStorage.getItem('passportJustClearedFilters') === 'true';
-    const justUsedDropdown = sessionStorage.getItem('passportJustUsedDropdown') === 'true';
-    if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justUsedDropdown) {
-        setTimeout(() => { false; }, 100);
-    }
-    if (justClearedFilters) setTimeout(() => { sessionStorage.removeItem('passportJustClearedFilters'); }, 200);
-    if (justUsedDropdown) setTimeout(() => { sessionStorage.removeItem('passportJustUsedDropdown'); }, 200);
-
+    /* PA-1, 3 Oct 2026 - base opens and closes this panel. The page used
+       to do it too, with .expanded on the content and a transform on an
+       icon that no longer exists, and the two disagreed. */
 });
 
-function checkForPassportActiveFilters() {
-    return (document.getElementById('holderSelect') && document.getElementById('holderSelect').value) ||
-           (document.getElementById('docTypeSelect') && document.getElementById('docTypeSelect').value) ||
-           (document.getElementById('countrySelect') && document.getElementById('countrySelect').value) ||
-           (document.getElementById('statusSelect') && document.getElementById('statusSelect').value);
-}
+/* PA-1, 3 Oct 2026 - ONE WRITER FOR row.style.display.
+   Four filters each decide whether a row is shown, so ONE function
+   decides it from all four. Four independent filters each setting display
+   is four owners of one fact and the last to run wins - the same lesson
+   FL-1 wrote down on Measurement Units this morning.
 
-
-
-function clearAllPassportFilters(event) {
-    event.stopPropagation();
-    sessionStorage.setItem('passportUserInteracted', 'true');
-    sessionStorage.setItem('passportJustClearedFilters', 'true');
-    document.getElementById('holderSelect').value = '';
-    document.getElementById('docTypeSelect').value = '';
-    document.getElementById('countrySelect').value = '';
-    document.getElementById('statusSelect').value = '';
-    document.getElementById('passportFilterForm').submit();
-}
-
-function clearPassportFilter(filterType) {
-    sessionStorage.setItem('passportUserInteracted', 'true');
-    sessionStorage.setItem('passportJustClearedFilters', 'true');
-    switch(filterType) {
-        case 'holder': document.getElementById('holderSelect').value = ''; break;
-        case 'doc_type': document.getElementById('docTypeSelect').value = ''; break;
-        case 'country': document.getElementById('countrySelect').value = ''; break;
-        case 'status': document.getElementById('statusSelect').value = ''; break;
+   IT READS data-sort-value, NOT THE CELL TEXT. The Type cell renders a
+   badge saying "ARC" while the value is "arc", and the sort attributes
+   already carry the raw value the filter compares against. Reading the
+   text would compare a label with a key and match nothing. */
+(function () {
+    var FIELDS = [
+        {el: 'holderSelect',   key: 'holder',   label: 'Holder'},
+        {el: 'docTypeSelect',  key: 'doc-type', label: 'Type'},
+        {el: 'countrySelect',  key: 'country',  label: 'Country'},
+        {el: 'statusSelect',   key: 'status',   label: 'Status'}
+    ];
+    var tags = document.getElementById('passportFilterTags');
+    var clear = document.getElementById('clearAllBtn');
+    var table = document.getElementById('passportTable');
+    if (!table) { return; }
+    var body = table.tBodies[0];
+    var none = document.getElementById('passportNoMatch');
+    var i;
+    for (i = 0; i < FIELDS.length; i += 1) {
+        FIELDS[i].node = document.getElementById(FIELDS[i].el);
     }
-    document.getElementById('passportFilterForm').submit();
-}
 
-function updatePassportActiveFilters() {
-    const holderSelect = document.getElementById('holderSelect');
-    const docTypeSelect = document.getElementById('docTypeSelect');
-    const countrySelect = document.getElementById('countrySelect');
-    const statusSelect = document.getElementById('statusSelect');
-    const activeFiltersDiv = document.getElementById('passportActiveFilters');
-    const filterTagsDiv = document.getElementById('passportFilterTags');
-    if (!filterTagsDiv) return;
-    filterTagsDiv.innerHTML = '';
-    let hasFilters = false;
-    if (holderSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Holder: ${holderSelect.value} <button class="remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button></span>`; hasFilters = true; }
-    if (docTypeSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Type: ${docTypeSelect.options[docTypeSelect.selectedIndex].text} <button class="remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button></span>`; hasFilters = true; }
-    if (countrySelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${countrySelect.value} <button class="remove-tag" onclick="clearPassportFilter('country')" type="button">×</button></span>`; hasFilters = true; }
-    if (statusSelect.value) { filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${statusSelect.options[statusSelect.selectedIndex].text} <button class="remove-tag" onclick="clearPassportFilter('status')" type="button">×</button></span>`; hasFilters = true; }
-}
+    function chip(label, text, reset) {
+        var c = document.createElement('span');
+        c.className = 'filter-tag';
+        c.textContent = label + ': ' + text + ' ';
+        var x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'remove-tag';
+        x.setAttribute('aria-label', 'Remove the ' + label + ' filter');
+        x.innerHTML = '<i class="fas fa-times"></i>';
+        x.addEventListener('click', function () { reset(); apply(); });
+        c.appendChild(x);
+        return c;
+    }
 
+    function apply() {
+        var rows = body.querySelectorAll('tr');
+        var shown = 0;
+        Array.prototype.forEach.call(rows, function (row) {
+            if (row === none) { return; }
+            var hit = true, k, f, cell;
+            for (k = 0; hit && k < FIELDS.length; k += 1) {
+                f = FIELDS[k];
+                if (!f.node || !f.node.value) { continue; }
+                cell = row.querySelector('[data-sort-key="' + f.key + '"]');
+                /* A row with none of those cells is not a data row - an
+                   empty state, a totals line - and is left alone. */
+                if (!cell) { continue; }
+                hit = cell.getAttribute('data-sort-value') === f.node.value;
+            }
+            row.style.display = hit ? '' : 'none';
+            if (hit) { shown += 1; }
+        });
+        if (none) { none.style.display = shown ? 'none' : ''; }
+
+        if (tags) {
+            tags.innerHTML = '';
+            FIELDS.forEach(function (f) {
+                if (!f.node || !f.node.value) { return; }
+                var opt = f.node.options[f.node.selectedIndex];
+                tags.appendChild(chip(f.label, opt ? opt.text.trim()
+                                      : f.node.value,
+                                      function () { f.node.value = ''; }));
+            });
+        }
+    }
+
+    FIELDS.forEach(function (f) {
+        if (f.node) { f.node.addEventListener('change', apply); }
+    });
+    if (clear) {
+        clear.addEventListener('click', function () {
+            FIELDS.forEach(function (f) { if (f.node) { f.node.value = ''; } });
+            apply();
+        });
+    }
+    /* On load, so a bookmarked ?holder=... arrives narrowed: the view
+       pre-selects the control and this applies what it says. */
+    apply();
+}());
 function addNewDocument() {
     document.getElementById('addEditForm').reset();
     document.getElementById('passport_id').value = '';
