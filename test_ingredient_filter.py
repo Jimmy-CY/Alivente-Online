@@ -124,15 +124,11 @@ def was(p):
     return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
 
 
-def code_only(t):
-    """Comments blanked, LENGTH PRESERVED, in all three syntaxes a template
-    can carry. The third one is IB-1's own: this round's dead-class gate
-    fired on a CSS comment saying ".filter-bar and .filter-row are GONE" -
-    a gate reading its own explanation as the defect, for the seventh time
-    in two days and the first time in a stylesheet."""
-    t = re.sub(r'\{#.*?#\}', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
-    t = re.sub(r'<!--.*?-->', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
-    return re.sub(r'/\*.*?\*/', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only
 
 
 def fn_src(path, name):
@@ -340,8 +336,16 @@ _labels = set(re.findall(r'data-label="([^"]+)"', CODE))
 ok('Nothing Like This' not in _labels,
    'a cell naming a column the table has not would be caught')
 ok(len(re.findall(r'\bfilter-bar\b',
-                  code_only('/* .filter-bar is gone */ <p>x</p>'))) == 0,
+                  code_only('<style>a{/* .filter-bar gone */}</style>'))) == 0,
    'the dead-class gate reads CODE - a CSS comment naming it does not count')
+# CO-1, 3 Oct 2026 - and the other half of the same rule. This control used
+# to feed a bare block comment with no style element around it, and the old
+# local copy stripped it. That was the bug: in a document those two
+# characters are two characters, and accept="image/*" is the case that hid
+# 94 lines of the Add Passport form from every gate in this tree.
+ok(len(re.findall(r'\bfilter-bar\b',
+                  code_only('<p>/* .filter-bar gone */</p>'))) == 1,
+   'and the same comment OUTSIDE a style element is not a comment  [CO-1]')
 ok(len(re.findall(r'\bfilter-bar\b',
                   code_only('<div class="filter-bar"></div>'))) == 1,
    '  but real markup still does')

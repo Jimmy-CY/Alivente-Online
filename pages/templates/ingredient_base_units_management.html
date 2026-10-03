@@ -424,6 +424,25 @@
     }  /* Mobile: show the short label, hide the full one */
     .page-action-buttons .action-primary .action-label-full { display: none; }
     .page-action-buttons .action-primary .action-label-short { display: inline; }
+    /* MB-1, 3 Oct 2026 - A JOB THAT IS DONE IS A TICK.
+       These two controls are a disabled span with a tick when there is
+       nothing outstanding: pressing them does nothing, they report a
+       STATE. At 390px the four-control bar ran off the right edge and the
+       tick on Map Nutrition was cut in half. A state gets the icon and
+       the tick; the words go. WITH A COUNT they are real buttons again
+       and keep the short label, because then there is something to do.
+       The title attribute still says it in full, on both.
+       Specificity: .action-primary.action-disabled beats the rule two
+       lines up, which is why this sits after it and not before. */
+    .page-action-buttons .action-primary.action-disabled .action-label-full,
+    .page-action-buttons .action-primary.action-disabled .action-label-short {
+        display: none;
+    }
+    .page-action-buttons .action-primary.action-disabled {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
     /* Tighten the count badge so it doesn't push the label out */
     .page-action-buttons .btn .action-count-badge {
         min-width: 20px;
@@ -2474,8 +2493,11 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endif %}
 </script>
 
-{% endblock %}
-
+{# IB-2, 3 Oct 2026 - THIS SCRIPT USED TO SIT BELOW THE  #}
+{# endblock, where Django discards it without a word. It #}
+{# took the Category filter, the chip row, Clear All and #}
+{# Enter-to-search down with it. Moved, not rewritten -  #}
+{# the handlers were always right.   [test_stranded.py]  #}
 <script>
 /* IB-1, 2 Oct 2026 - THE CHIPS, AND NOTHING ELSE.
    base opens and closes the panel, counts the chips, writes the badge and
@@ -2544,3 +2566,5 @@ function clearFilter(which) {
   if (form) form.submit();
 }
 </script>
+
+{% endblock %}

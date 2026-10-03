@@ -179,7 +179,7 @@
                 <div class="photo-manage-grid">
                     {% for photo in photos %}
                         <div class="photo-manage-tile">
-                            <img src="{{ photo.image.url }}" alt="">
+                            <img loading="lazy" decoding="async" src="{{ photo.image.url }}" alt="">
                             <div class="photo-manage-actions">
                                 {% if forloop.first %}
                                     <button type="button" class="btn-photo-star btn-photo-star-active" disabled title="Cover photo">

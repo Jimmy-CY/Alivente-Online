@@ -144,18 +144,11 @@ def was(p):
     return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
 
 
-def code_only(text):
-    """Comments blanked, length preserved. This round's notes name
-    btn-view, #007bff and .icon-action-btn, because recording what moved is
-    what a note is for."""
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    text = re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
-    return re.sub(r'(?m)^(\s*)//.*$',
-                  lambda m: m.group(1) + ' ' * (len(m.group(0))
-                                                - len(m.group(1))), text)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only_js
 
 
 def css_of(t):

@@ -152,22 +152,11 @@ def was(p):
     return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
 
 
-def code_only(text):
-    """Comments blanked, length preserved - CSS, HTML, Django AND
-    JavaScript line comments.
-
-    THE JS ONE IS NOT OPTIONAL HERE. The notes this round left behind
-    QUOTE the guard and the onclick they removed, because recording what
-    was taken out is what a note is for. Eight gates across four rounds
-    read their own record as the defect before the instrument was fixed
-    rather than the record reworded. Anchored at the line start, as the
-    push gate's own stripper is, so `https://` in a string survives."""
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    text = re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
-    return re.sub(r'(?m)^[ \t]*//.*$', lambda m: ' ' * len(m.group(0)), text)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only_js
 
 
 A_NOW, A_WAS = code_only(now(AE)), code_only(was(AE)) if was(AE) else ''

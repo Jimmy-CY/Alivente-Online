@@ -575,23 +575,11 @@ print('  both amended suites parse')
 now = read(PAGE)[0]
 
 
-def code_only(text):
-    """The page with every kind of comment blanked out.
-
-    A GATE THAT ASSERTS A NAME IS ABSENT MUST NOT READ PROSE. This round
-    tripped over that four times in one afternoon: a note recording what
-    was removed names the thing it removed, which is the whole point of
-    the note, and a plain substring check then reads the record as the
-    defect. The instrument is what was wrong, not the record. So the
-    comments go before the check - CSS /* */, HTML <!-- -->, and Django
-    {# #} - and each is replaced by spaces of the same length so that
-    offsets, and therefore the ordering gate below, still mean something.
-    """
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    return re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only
 
 
 CODE = code_only(now)

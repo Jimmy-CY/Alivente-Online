@@ -1228,6 +1228,27 @@
                     0 1px 3px rgba(16, 34, 40, .04);
       }
 
+      /* ===== DD-1 ===== 3 Oct 2026 ==================================
+         A TABLE THAT HOLDS A POPUP DOES NOT CLIP IT.
+
+         The `clip` above is deliberate - see the note on it - but it
+         clips ABSOLUTELY-POSITIONED DESCENDANTS exactly as `hidden`
+         does. A dropdown opened from a cell is one of those, and on the
+         recipe capture page the container's bottom edge sits a few
+         pixels under the input: the suggestions came out as a sliver.
+
+         THE POPUP SAYS SO, THE CONTAINER DOES NOT GUESS. Only a
+         container holding .alv-escapes stops clipping, so every other
+         table in the app keeps its corners. Marking the popup rather
+         than the table also means the fact lives next to the thing it
+         is true of.
+
+         A BROWSER WITHOUT :has() DROPS THIS RULE AND BEHAVES AS IT DOES
+         TODAY, which is the only safe way for a fix to fail.
+                                            [test_escaping_drop.py] */
+      .table-container:has(.alv-escapes) { overflow: visible; }
+      /* ===== /DD-1 ===== */
+
       .alv-table {
         font-family: var(--alv-font-ui);
         color: var(--alv-ink);

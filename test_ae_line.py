@@ -154,19 +154,11 @@ def was(p):
     return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
 
 
-def code_only(text):
-    """Every kind of comment blanked, length preserved.
-
-    A CHECK THAT A NAME IS ABSENT MUST NOT READ PROSE. The notes this
-    round left behind name .date-filter-grid, 150px and "Back to
-    overview", because recording what was removed is what a note is for.
-    Four gates in this round's first draft read those notes as the
-    defect. The instrument was wrong, not the record."""
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    return re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only
 
 
 P_NOW, P_WAS = now(PAGE), was(PAGE)
@@ -504,10 +496,13 @@ ok("len(v[1].split()) == 5" in ff,
 
 bb = read(os.path.join(ROOT, 'test_body_backs.py'))
 bt_ = read(os.path.join(ROOT, 'test_bar_top.py'))
-ok('AE-3' in bt_ and 'two Back controls still say something else' in bt_,
-   'test_bar_top.py counts TWO long Back labels now, not three, and '
-   'names both rather than counting them - a bare number is what let '
-   'that ledger go on listing three after one was fixed')
+ok('AE-3' in bt_ and 'MP-2' in bt_
+   and 'one Back control still says something else' in bt_,
+   'test_bar_top.py names its remaining long Back label rather than '
+   'counting it - three became two when AE-3 shortened Actual '
+   'Expenses, and two became one when MP-2 relabelled the meal plan '
+   'form on 3 Oct 2026. A bare number is what let that ledger go on '
+   'listing three after one was fixed, which is why it names them')
 ok('AE-3' in bb and 'Back to overview' in bb,
    'test_body_backs.py\'s ledger records BOTH labels and which round '
    'changed it - a printed ledger that is quietly wrong is worse than '

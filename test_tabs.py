@@ -154,19 +154,11 @@ def was(p):
     return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
 
 
-def code_only(text):
-    """Comments blanked, length preserved.
-
-    A CHECK THAT A NAME IS ABSENT MUST NOT READ PROSE. The notes this
-    round left behind name #007bff, #495057 and the rules they replaced,
-    because recording what was removed is what a note is for. Six gates
-    across two rounds read those notes as the defect before the
-    instrument was fixed rather than the record reworded."""
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    return re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only
 
 
 def css_of(t):

@@ -515,7 +515,17 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html'; Text = '.page-action-buttons .alv-seg > *'; What = 'a segment in an action bar is the bar''s height, not nearly it' },
     # A Django comment is not a flex item. RE-1b made this repair to one
     # fixture three days ago; this is the other one.
-    @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' }
+    @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' },
+    # -------------------------------------------------- SECTION CO, 3 Oct 2026
+    # code_only was written out at module level in 47 files. It has a home.
+    @{ File = 'alv_tree.py'; Text = 'def code_only_js'; What = 'the // variant three suites need and the rest must not have' },
+    # And `/*` is not a comment opener in markup. The guard is the SHAPE of
+    # the helper, not a note about it: the block syntax is only stripped
+    # inside a style or script element, so accept="image/*" survives.
+    @{ File = 'alv_tree.py'; Text = '(<(?:style|script)'; What = 'the block comment syntax is only a comment inside style or script' },
+    # Named rather than merged: a tokenize function that reads PYTHON
+    # source is a different job, and sharing a name hid that for a month.
+    @{ File = 'test_tree_roots.py'; Text = 'def python_code_only'; What = 'the Python-source one has a name of its own now' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1395,6 +1405,31 @@ $suites = @(
     # attribute, and a code_only that reads it as a comment opener is
     # blind to 1,385 characters of real markup.
     'test_pl_seg.py'
+    # code_only gets one home. Its section 2 does not compare the new
+    # helper against a copy of the old one typed out in the suite - it
+    # lifts the old definitions OUT OF THIS ROUND'S OWN BACKUPS, execs
+    # them, and runs both over every template, so "4,892 characters were
+    # hidden" is measured against the code that hid them.
+    'test_code_only.py'
+    # The Calendar hung because its Add Recipe modal rendered every recipe
+    # photograph in the database. Its section 3 drives a browser against a
+    # server that COUNTS requests: hidden and lazy is zero, hidden and
+    # eager is four. display:none does not stop a fetch.
+    'test_lazy_images.py'
+    # Seventy lines of script written after the endblock, which Django
+    # discards without a word. Its section 1 asks every child template in
+    # the tree the same question, every run.
+    'test_stranded.py'
+    # A job that is done is a tick, not a sentence - on a phone.
+    'test_done_badge.py'
+    # The meal plan form's bar to the top, and Cancel becomes Back.
+    'test_meal_bar_top.py'
+    # Back goes where you came from, and the week travels with it.
+    'test_from_calendar.py'
+    # overflow:clip clips an absolutely-positioned descendant exactly as
+    # hidden does. Its section 2 measures the dropdown in a browser: 13 of
+    # 159 pixels inside the container before, 159 of 159 after.
+    'test_escaping_drop.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

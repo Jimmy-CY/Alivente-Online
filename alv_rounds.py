@@ -187,6 +187,27 @@ ROUNDS = [
     '.bak_filtercensus',
     '.bak_noprimary',
     '.bak_movedpins',
+    # Section CO, 3 Oct 2026 - code_only had been written out at module
+    # level in 47 files, and 45 of them read `/*` as a comment opener in
+    # MARKUP. accept="image/*" put one inside an attribute value and the
+    # blanking ran to the next */ anywhere in the file: 94 lines of the
+    # Add Passport form were invisible to every gate in this tree. It
+    # lives in alv_tree now. The two that read PYTHON source are
+    # python_code_only - a different job on a different language that
+    # happened to share a name.
+    '.bak_codeonly',
+    # Section LZ / IB / MB / MP / BK / DD, 3 Oct 2026 - the walkthrough
+    # bundle: the Calendar hang, the Category filter that was never
+    # rendered, the phone action bar, the meal plan form bar, Back to the
+    # Calendar, and the dropdown a table was clipping.
+    # ORDER IS LOAD BEARING: IB-2 moves the script and MB-1 then writes
+    # CSS into the same page; BK-1 edits the Back control MP-2 relabels.
+    '.bak_lazyimg',
+    '.bak_stranded',
+    '.bak_donebadge',
+    '.bak_mealbartop',
+    '.bak_fromcal',
+    '.bak_escapedrop',
 ]
 
 

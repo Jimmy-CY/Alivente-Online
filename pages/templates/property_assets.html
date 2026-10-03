@@ -124,7 +124,7 @@
                         <div class="asset-name-cell">
                             {% with first_photo=asset.photos.all|first %}
                                 {% if first_photo %}
-                                    <img src="{{ first_photo.image.url }}" alt="" class="asset-thumb">
+                                    <img loading="lazy" decoding="async" src="{{ first_photo.image.url }}" alt="" class="asset-thumb">
                                 {% else %}
                                     <div class="asset-thumb asset-thumb-placeholder"><i class="fas fa-box"></i></div>
                                 {% endif %}

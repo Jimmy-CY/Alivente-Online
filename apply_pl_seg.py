@@ -105,37 +105,12 @@ def back_up(path, raw):
             raise SystemExit('SG2: %s is not a byte copy' % bak)
 
 
-def code_only(t):
-    """Blank every comment, preserving length - all three syntaxes, and
-    the CSS/JS one ONLY WHERE IT IS A COMMENT.
-
-    `/*` IS NOT A COMMENT OPENER IN MARKUP. It is two characters, and
-    `accept="image/*"` puts one inside an attribute value. The usual form
-    of this helper blanks from there to the next `*/` anywhere in the
-    file - on property_assets that is 1,385 characters of real markup,
-    swallowed down to a `*/` in a stylesheet far below, which is why
-    this round's gate reported a class as absent while grep found it on
-    line 355.
-
-    FIVE TEMPLATES CARRY ONE: edit_asset, my_profile,
-    passport_management, preview_imported_recipe and property_assets.
-    Every gate in this tree that blanks comments the usual way has had a
-    blind window on all five.
-
-    A block comment only exists inside <style> or <script>, so that is
-    the only place it is looked for.
-    """
-    blank = lambda m: ' ' * len(m.group(0))
-    t = re.sub(r'\{#.*?#\}', blank, t, flags=re.S)
-    t = re.sub(r'<!--.*?-->', blank, t, flags=re.S)
-
-    def inner(m):
-        return (m.group(1)
-                + re.sub(r'/\*.*?\*/', blank, m.group(2), flags=re.S)
-                + m.group(3))
-
-    return re.sub(r'(<(?:style|script)\b[^>]*>)(.*?)(</(?:style|script)>)',
-                  inner, t, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+import alv_tree
+code_only = alv_tree.code_only
 
 
 def swap(text, old, new, what):

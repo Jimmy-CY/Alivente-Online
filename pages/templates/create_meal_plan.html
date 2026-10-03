@@ -370,6 +370,35 @@
 
         {% csrf_token %}
 
+        {# MP-2, 3 Oct 2026 - THE BAR IS AT THE TOP NOW, and it is       #}
+        {# INSIDE the form on purpose. The primary is a submit button and #}
+        {# a submit button submits the form it is IN; put above the form  #}
+        {# it would need form="mealPlanForm" to keep working, which is a  #}
+        {# second way of saying what containment already says. Here it is #}
+        {# directly under the subtitle and still native.                  #}
+        {# CANCEL IS NOW BACK. Cancel is what a modal has. A page that    #}
+        {# leaves without saving goes back, and the label says so on      #}
+        {# every other form in this app.                                  #}
+        <div class="page-action-buttons">
+            {% if edit_mode %}
+            <button type="submit" class="btn action-primary" id="saveBtn">
+                <i class="fas fa-save"></i> Update Meal Plan
+            </button>
+            {% else %}
+            <button type="submit" class="btn action-primary" id="saveBtn" disabled>
+                <i class="fas fa-save"></i> Create Meal Plan
+            </button>
+            {% endif %}
+                        {# BK-1, 3 Oct 2026 - BACK GOES WHERE YOU CAME FROM. The Calendar   #}
+            {# links here with from=calendar and the week it was showing, so    #}
+            {# Back returns to THAT week. Reached any other way there is no     #}
+            {# from= and this is the Meal Plans list, exactly as before.        #}
+            <a href="{% if request.GET.from == 'calendar' %}{% url 'meal_plan_calendar' %}?week={{ request.GET.week }}{% else %}{% url 'meal_plans' %}{% endif %}" class="btn action-back" aria-label="Back to Meal Plans">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+            </a>
+        </div>
+
+
         <!-- Basic Information -->
         <div class="form-card">
             <h3 class="form-section-title">
@@ -422,22 +451,6 @@
             <div id="daysContainer">
                 <!-- Days will be dynamically added here -->
             </div>
-        </div>
-
-        <!-- Action Buttons (Save primary + Cancel-as-Back on mobile) -->
-        <div class="page-action-buttons">
-            {% if edit_mode %}
-            <button type="submit" class="btn action-primary" id="saveBtn">
-                <i class="fas fa-save"></i> Update Meal Plan
-            </button>
-            {% else %}
-            <button type="submit" class="btn action-primary" id="saveBtn" disabled>
-                <i class="fas fa-save"></i> Create Meal Plan
-            </button>
-            {% endif %}
-            <a href="{% url 'meal_plans' %}" class="btn action-back" aria-label="Cancel and go back to Meal Plans">
-                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Cancel</span>
-            </a>
         </div>
 
     </form>
@@ -916,7 +929,7 @@ function createRecipeSelectorCard(recipe) {
 
     let imageHtml;
     if (recipe.recipe_image) {
-        imageHtml = `<img src="${recipe.recipe_image}" class="recipe-selector-card-image" alt="${recipe.recipe_name}">`;
+        imageHtml = `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" class="recipe-selector-card-image" alt="${recipe.recipe_name}">`;
     } else {
         imageHtml = `<div class="recipe-selector-card-placeholder"><i class="fas fa-utensils"></i></div>`;
     }

@@ -1953,7 +1953,7 @@
     <div class="recipe-card">
         <div class="recipe-image-container">
             {% if recipe.recipe_image %}
-            <img src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-image">
+            <img loading="lazy" decoding="async" src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-image">
             {% else %}
             <div class="recipe-image-placeholder">
                 <i class="fas fa-utensils"></i>
@@ -2107,7 +2107,7 @@
     {% for recipe in recipes %}
     <div class="recipe-list-item">
         {% if recipe.recipe_image %}
-        <img src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-list-image">
+        <img loading="lazy" decoding="async" src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-list-image">
         {% else %}
         <div class="recipe-list-image-placeholder">
             <i class="fas fa-utensils"></i>
@@ -2558,7 +2558,7 @@ function appendListRecipes(recipes) {
 
 function createGridRecipeCard(recipe) {
     const imageHtml = recipe.recipe_image
-        ? `<img src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-image">`
+        ? `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-image">`
         : `<div class="recipe-image-placeholder"><i class="fas fa-utensils"></i></div>`;
 
     const prepTime = recipe.prep_time ? `<span class="recipe-meta-item"><i class="fas fa-clock"></i> ${recipe.prep_time}m prep</span>` : '';
@@ -2631,7 +2631,7 @@ function createGridRecipeCard(recipe) {
 
 function createListRecipeItem(recipe) {
     const imageHtml = recipe.recipe_image
-        ? `<img src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-list-image">`
+        ? `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-list-image">`
         : `<div class="recipe-list-image-placeholder"><i class="fas fa-utensils"></i></div>`;
 
     let tagsHtml = '<div class="recipe-list-tags">';
@@ -3414,7 +3414,7 @@ function renderBookRecipeGrid(recipes) {
     let html = `<div class="book-recipe-grid ${getLayoutClass()}">`;
     recipes.forEach(recipe => {
         const imageHtml = recipe.recipe_image
-            ? `<img src="${recipe.recipe_image}" class="book-recipe-card-image" alt="${recipe.recipe_name}">`
+            ? `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" class="book-recipe-card-image" alt="${recipe.recipe_name}">`
             : `<div class="book-recipe-card-placeholder"><i class="fas fa-utensils"></i></div>`;
 
         const tags = [

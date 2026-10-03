@@ -139,15 +139,11 @@ def swap(text, old, new, what, path):
     return text.replace(o, n)
 
 
-def code_only(text):
-    """Comments blanked, length preserved. A check that a name is absent
-    must not read the note recording its removal - six gates across the
-    last two rounds got that wrong before the instrument was fixed."""
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    return re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only
 
 
 print('=' * 74)

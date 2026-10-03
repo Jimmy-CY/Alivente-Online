@@ -441,10 +441,12 @@ if CHECK:
 # ==========================================================================
 
 
-def code_only(x):
-    x = re.sub(r'\{#.*?#\}', lambda m: ' ' * len(m.group(0)), x, flags=re.S)
-    x = re.sub(r'<!--.*?-->', lambda m: ' ' * len(m.group(0)), x, flags=re.S)
-    return re.sub(r'/\*.*?\*/', lambda m: ' ' * len(m.group(0)), x, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+import alv_tree
+code_only = alv_tree.code_only
 
 
 bt = code_only(read(BASE)[0])

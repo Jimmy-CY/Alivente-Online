@@ -175,16 +175,11 @@ def was(p):
     return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
 
 
-def code_only(text):
-    """Comments blanked, length preserved. Every note this round left names
-    btn-info, the old order and the word Help, because recording what moved
-    is what a note is for - and nine gates across five rounds read their own
-    record as the defect before the instrument was fixed."""
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
-    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
-    return re.sub(r'/\*.*?\*/', blank, text, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+code_only = alv_tree.code_only
 
 
 # ==========================================================================

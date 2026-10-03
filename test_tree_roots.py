@@ -146,7 +146,7 @@ def scripts():
     return out
 
 
-def code_only(text):
+def python_code_only(text):
     """Python source with its comments and its docstrings blanked out,
     line for line, so a detector reads CODE and not prose.
 
@@ -217,7 +217,7 @@ def walks_own_root(text):
     # indistinguishable from a call to it. G3a's own patcher was counted
     # that way. Every other gate in this repo strips comments before it
     # reads; this one reads Python, and now does too.
-    text = code_only(text)
+    text = python_code_only(text)
     walked = set(re.findall(r'os\.walk\(\s*([A-Za-z_][\w.]*)\s*\)', text))
     holders = set()
     for v in walked:
@@ -356,7 +356,7 @@ head('3. EVERY WALKING SUITE IS ACCOUNTED FOR')
 # ==========================================================================
 walking = [n for n in scripts()
            if n.startswith('test_') and n != ME
-           and 'os.walk(' in code_only(read(os.path.join(ROOT, n)))]
+           and 'os.walk(' in python_code_only(read(os.path.join(ROOT, n)))]
 # CODE, NOT PROSE - ML-1, 2 Oct 2026, and the SECOND half of a repair made
 # on 30 Sep. The line above used to read the whole file, comments
 # included, so a comment that NAMED os.walk was indistinguishable from a

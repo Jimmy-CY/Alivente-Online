@@ -1918,7 +1918,7 @@ body {
 
                             {% if instruction.step_image %}
                             <div style="margin-top: 12px;">
-                                <img src="{{ instruction.step_image.url }}" alt="Step {{ instruction.step_number }}" style="max-width: 100%; border-radius: 8px;">
+                                <img loading="lazy" decoding="async" src="{{ instruction.step_image.url }}" alt="Step {{ instruction.step_number }}" style="max-width: 100%; border-radius: 8px;">
                             </div>
                             {% endif %}
                         </div>

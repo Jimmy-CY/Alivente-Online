@@ -118,15 +118,12 @@ def back_up(path, raw):
             raise SystemExit('MC1: %s is not a byte copy' % bak)
 
 
-def code_only(t):
-    """Blank every comment, preserving length - all THREE syntaxes. A
-    template carries Django comments, HTML comments and CSS/JS block
-    comments, and an instrument that strips two of the three can still
-    read prose as code. This round's notes NAME .view-toggle, so a gate
-    that searched the raw text would find the thing it just removed."""
-    t = re.sub(r'\{#.*?#\}', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
-    t = re.sub(r'<!--.*?-->', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
-    return re.sub(r'/\*.*?\*/', lambda m: ' ' * len(m.group(0)), t, flags=re.S)
+# CO-1, 3 Oct 2026 - this was written out here, as it was in 46
+# other files. It lives in alv_tree now, with the repair that
+# stops `accept="image/*"` reading as a comment opener and hiding
+# 94 lines of the Add Passport form from every gate in the tree.
+import alv_tree
+code_only = alv_tree.code_only
 
 
 def swap(text, old, new, what, path):

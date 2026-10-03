@@ -437,7 +437,11 @@
                 </div>
             </div>
 
-        <a href="{% url 'meal_plans' %}" class="btn action-back" aria-label="Back to Meal Plans">
+                {# BK-1, 3 Oct 2026 - BACK GOES WHERE YOU CAME FROM. The Calendar   #}
+        {# links here with from=calendar and the week it was showing, so    #}
+        {# Back returns to THAT week. Reached any other way there is no     #}
+        {# from= and this is the Meal Plans list, exactly as before.        #}
+        <a href="{% if request.GET.from == 'calendar' %}{% url 'meal_plan_calendar' %}?week={{ request.GET.week }}{% else %}{% url 'meal_plans' %}{% endif %}" class="btn action-back" aria-label="Back to Meal Plans">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     </div>
@@ -488,7 +492,7 @@
                     </span>
                     {% endif %}
                     {% if meal_recipe.recipe.recipe_image %}
-                    <img src="{{ meal_recipe.recipe.recipe_image.url }}" 
+                    <img loading="lazy" decoding="async" src="{{ meal_recipe.recipe.recipe_image.url }}" 
                          alt="{{ meal_recipe.recipe.recipe_name }}" 
                          class="recipe-image">
                     {% else %}

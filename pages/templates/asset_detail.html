@@ -142,7 +142,7 @@
         <div class="photo-grid">
             {% for photo in photos %}
                 <div class="photo-tile" onclick="viewPhoto('{{ photo.image.url|escapejs }}')">
-                    <img src="{{ photo.image.url }}" alt="Asset photo">
+                    <img loading="lazy" decoding="async" src="{{ photo.image.url }}" alt="Asset photo">
                 </div>
             {% endfor %}
         </div>

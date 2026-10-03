@@ -340,6 +340,75 @@ def crs_outstanding(base=None):
     return [n for n in crs_pages(base) if n not in CRS_HOUSE]
 
 
+def code_only(text):
+    """Markup with every comment blanked, line for line, so a gate reads
+    CODE and not the record of code.
+
+    ALL THREE SYNTAXES, AND THE CSS ONE ONLY WHERE IT IS A COMMENT.
+    A template carries Django comments, HTML comments and CSS/JS block
+    comments. An instrument that strips two of the three reads prose as
+    code - that lesson cost four rounds. This one strips all three, and
+    strips the block syntax ONLY inside <style> and <script>, which is
+    the other half of the same lesson:
+
+        `/*` IS NOT A COMMENT OPENER IN MARKUP.
+
+    accept="image/*" puts one inside an attribute value, and blanking
+    from there to the next `*/` anywhere in the file costs:
+
+        passport_management.html   3,362 characters - 94 lines of the
+                                   Add Passport form, five inputs, the
+                                   Holder field and the file upload
+        edit_asset.html              881
+        property_assets.html         806
+
+    SG-2's gate reported a class as absent on property_assets while grep
+    found it on line 355. That is what this is.
+
+    BLANKED LINE FOR LINE, not merely to the same length. A comment that
+    spans lines must leave its newlines behind, or every line number a
+    gate reports after it is wrong - and gates in this tree report line
+    numbers.
+
+    For PYTHON source see python_code_only in the suites that scan .py
+    files: it is a different job on a different language and it used to
+    share this name.                                 [CO-1, 3 Oct 2026]
+    """
+    def blank(m):
+        return re.sub(r'[^\n]', ' ', m.group(0))
+
+    text = re.sub(r'<!--.*?-->', blank, text, flags=re.S)
+    text = re.sub(r'\{#.*?#\}', blank, text, flags=re.S)
+
+    def inner(m):
+        return (m.group(1)
+                + re.sub(r'/\*.*?\*/', blank, m.group(2), flags=re.S)
+                + m.group(3))
+
+    return re.sub(r'(<(?:style|script)\b[^>]*>)(.*?)(</(?:style|script)>)',
+                  inner, text, flags=re.S)
+
+
+def code_only_js(text):
+    """code_only, plus the // line comments inside a <script>.
+
+    Three suites need this and the rest must not have it: // inside an
+    https:// URL is not a comment, and an href is not a script.
+                                                     [CO-1, 3 Oct 2026]
+    """
+    text = code_only(text)
+
+    def inner(m):
+        body = re.sub(r'(?m)^([ \t]*)//.*$',
+                      lambda x: x.group(1) + ' ' * (len(x.group(0))
+                                                    - len(x.group(1))),
+                      m.group(2))
+        return m.group(1) + body + m.group(3)
+
+    return re.sub(r'(<script\b[^>]*>)(.*?)(</script>)', inner, text,
+                  flags=re.S)
+
+
 def house_filter_pages(base=None):
     """Every page carrying the house filter: a Filter button AND the panel.
 

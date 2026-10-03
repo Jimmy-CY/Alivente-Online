@@ -463,7 +463,11 @@ for name in (X0, X11):
         continue
     t = read(p)
     det[name] = t
-    ok('def code_only(' in t and 'text = code_only(text)' in t,
+    # CO-1, 3 Oct 2026 - python_code_only. The name changed, not
+    # the claim: this one reads PYTHON source, and the forty-five
+    # that read markup used to share its name.
+    ok('def python_code_only(' in t
+       and 'text = python_code_only(text)' in t,
        '%-24s strips comments before it detects' % name)
     ok('import tokenize' in t,
        '  %-22s with tokenize, which knows a # inside a string is not a '

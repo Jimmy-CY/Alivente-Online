@@ -170,7 +170,7 @@
                         <div class="user-info">
                             <div class="alv-avatar alv-avatar--lg">
                                 {% if user.profile.profile_photo %}
-                                    <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}">
+                                    <img loading="lazy" decoding="async" src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}">
                                 {% elif user.first_name and user.last_name %}
                                     {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
                                 {% else %}

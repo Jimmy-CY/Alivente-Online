@@ -125,7 +125,11 @@ BACKS = [
 # What the round did NOT touch, and the reason. Asserted, not asserted away.
 LEFT = {
     ('create_meal_plan.html', 0):
-        'its word is "Cancel" - that is a form, and Cancel may be right',
+        'B2 left it saying "Cancel" because Cancel may be right on a '
+        'form. MP-2 decided it is not, on 3 Oct 2026 - Cancel is what a '
+        'modal has - and moved the bar to the top in the same breath. '
+        'Still left alone BY THIS ROUND; the reason has changed, not the '
+        'exemption',
     ('projects/project_task_list.html', 0):
         'its label is {% if greek %} - a language toggle, not a stray label',
     ('act_expense.html', 3):
@@ -401,11 +405,14 @@ for p in templates():
 # THE REMAINING TWO ARE NAMED, not counted. A bare number is what let the
 # first version of this ledger go on listing three things after one of
 # them had been fixed.
-ok(sorted(long_left) == [('create_meal_plan.html', 'Cancel'),
-                         ('error_pages/connectivity_error.html', 'Go Back')],
-   'two Back controls still say something else - Cancel on a form, where '
-   'Cancel may be right, and Go Back on an error page with no bar - and '
-   'section 5 names each',
+# AND ONE, NOT TWO, SINCE MP-2 (3 Oct 2026). The other was this
+# form's "Cancel", which that round relabelled while moving the bar
+# to the top. NAMED, NOT COUNTED - that is the whole point of this
+# ledger, and this is the second time it has earned it.
+ok(sorted(long_left) == [('error_pages/connectivity_error.html',
+                          'Go Back')],
+   'one Back control still says something else - Go Back on an error '
+   'page that has no action bar at all - and section 5 names it',
    long_left)
 
 # ==========================================================================
