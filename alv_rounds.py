@@ -282,6 +282,23 @@ ROUNDS = [
     # and the drill-down figure stops being the pencil blue on the
     # desktop and a raw #007bff on the phone.
     '.bak_agetone',
+    # Section PD, 4 Oct 2026 - property_detail.html, the last big page the
+    # standard never reached: 1,992 lines, 227 local CSS rules, and the
+    # action bar the only house component on it.
+    # PD-1 takes the palette. SEVEN table headers wore a dark bar - five
+    # in #343a40 on the cell, two in #2c3e50 on the ROW, which is why the
+    # census found five and the render found the other two. And two COUNTS
+    # were drawn as a green pill and a red pill, one of them a hex written
+    # on the element.
+    '.bak_pdpalette',
+    # PD-2, 4 Oct 2026 - the seven tables come to base. The page had
+    # REBUILT base's phone card by hand: 23 of the 35 table rules in its
+    # phone block were declaration-for-declaration what .alv-table says,
+    # and every one of the seven already carried data-label on every
+    # cell, which is the only reason this was a class change rather than
+    # a rewrite. ORDER: after PD-1, whose consolidated header rule this
+    # round deletes outright once base owns the header.
+    '.bak_pdtables',
 ]
 
 

@@ -577,7 +577,17 @@ $sentinels = @(
     # AG-1. One warm neutral deepening, and a figure in the house colour.
     @{ File = 'pages\templates\base.html'; Text = '--alv-age-4:      #3b3733;'; What = 'the ageing scale is one tone, not green to red' },
     @{ File = 'pages\templates\base.html'; Text = '--age: var(--alv-good)'; What = 'and not ageing is no longer a health verdict'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\open_invoices_report.html'; Text = '#007bff'; What = 'the total outstanding figure is one colour on both screens'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\open_invoices_report.html'; Text = '#007bff'; What = 'the total outstanding figure is one colour on both screens'; Absent = $true; Code = $true },
+    # PD-1. Seven dark table headers, in two different colours by two
+    # different selectors, and a green pill beside a red one on two counts.
+    @{ File = 'pages\templates\property_detail.html'; Text = '#343a40 !important'; What = 'property_detail draws its table headers like every other list'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\property_detail.html'; Text = 'background-color: #2c3e50'; What = 'including the two that coloured the ROW rather than the cell'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\property_detail.html'; Text = 'alv-pill alv-pill-neutral">{{ expired_warranties }}'; What = 'and a count reads as a count, not as a failure' },
+    # PD-2. table AND alv-table: base sets the look, Bootstrap's .table
+    # sets width 100%, and dropping it shrank every table to its content.
+    @{ File = 'pages\templates\property_detail.html'; Text = 'class="table alv-table issues-table"'; What = 'property_detail''s tables are base''s, and keep their width' },
+    @{ File = 'pages\templates\property_detail.html'; Text = 'table-striped'; What = 'with no zebra, like every other list in the app'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\base.html'; Text = '.icon-comment'; What = 'and reading an issue comment is a LOOK with a name of its own' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1549,6 +1559,20 @@ $suites = @(
     # the round's own near-miss, where carrying var(--age) over as the
     # pill's text colour would have shipped 2.87 on step 0.
     'test_age_tone.py'
+    # property_detail's palette. Its section 1 PAINTS every table on the
+    # page and reads the computed background off each header, rather than
+    # asking which rules the file contains - which is the only reason the
+    # two headers that colour the ROW instead of the cell were found. Its
+    # section 2 holds the distinction the round rests on: red appears on
+    # the things that are verdicts and nowhere else.
+    'test_pd_palette.py'
+    # property_detail's seven tables. Its section 1 MEASURES every table
+    # before and after and requires the widths unchanged - which is the
+    # only reason the first build of the round was caught dropping
+    # Bootstrap's .table along with the striping and shrinking every
+    # table to fit its content. Section 3 holds the one named exception,
+    # and fails if either half of it goes missing.
+    'test_pd_tables.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

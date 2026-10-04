@@ -1526,6 +1526,19 @@
       .icon-color-pdf,
       .icon-color-assets { color: var(--alv-view); }
 
+      /* Comment: the SEVENTH NAME on --alv-view, added by PD-2 on 4 Oct
+         2026 for the Property Issues row action (fa-comments). Reading
+         what somebody wrote about an issue SHOWS you something and
+         changes nothing, which is what this colour means here.
+
+         Its own name, by the rule three blocks up: a class carries ONE
+         PICTURE, so fa-comments does not go on .icon-view beside the
+         eye. Alias the colour, never the name. Nothing is added to the
+         palette.                            [test_pd_tables.py] */
+      .icon-comment       { color: var(--alv-view); border-color: var(--alv-accent-line); }
+      .icon-comment:hover { background: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
+      .icon-color-comment { color: var(--alv-view); }
+
       /* Save and Cancel - the two halves of an INLINE EDIT, which three
          Personal pages do in the row itself rather than on a screen of
          their own. Same rule as .icon-upload above: a new action takes
