@@ -413,10 +413,36 @@ def section_6():
 
 def section_7():
     print('\n7. the control - a planted collision must FAIL, not crash')
-    victim = page('properties.html')
-    if not ok(victim is not None, 'properties.html found'):
+    # THE VICTIM IS CHOSEN, NOT NAMED. This used to plant into
+    # properties.html, and DR-1 (4 Oct 2026) broke the control without
+    # touching anything CS-1 cares about: DR-1 backed that page up, so
+    # as_left_by - which returns the file as THIS round left it, i.e. the
+    # next round's backup - stopped reading the live file, and the plant
+    # became invisible to section 5. The control reported "found 0" and
+    # the suite failed on a round that changed nothing it tests.
+    #
+    # So the victim must be a page that no LATER round has touched, where
+    # now() really is the file on disk. That is a property to look for,
+    # not a name to hard-code, because the next round will move the name
+    # again.
+    victim = None
+    for q in alv_tree.templates():
+        if alv_tree.rel(q) == BASE:
+            continue
+        if now(q) != read(q):
+            continue                      # a later round owns this file
+        if '<style' not in read(q):
+            continue
+        victim = q
+        break
+    if not ok(victim is not None,
+              'a page no later round has touched was found to plant into',
+              'every template now has a backup from a round after CS-1 - '
+              'the control needs one that does not'):
         return
-    copy = os.path.join(SCRATCH, 'properties.html')
+    print('        planting into %s' % alv_tree.rel(victim))
+    vname = alv_tree.rel(victim)
+    copy = os.path.join(SCRATCH, 'victim.html')
     shutil.copyfile(victim, copy)
     try:
         text = read(victim)
@@ -435,14 +461,14 @@ def section_7():
 
         bad = collisions()
         hit = [b for b in bad
-               if b[0] == 'properties.html' and b[1] == '.form-group label']
+               if b[0] == vname and b[1] == '.form-group label']
         ok(len(hit) == 1,
            'section 5 catches a planted hex literal over a base token',
            'found %d' % len(hit))
     finally:
         shutil.copyfile(copy, victim)
     ok(read(victim) == text, 'the control was put back exactly')
-    ok(not [b for b in collisions() if b[0] == 'properties.html'],
+    ok(not [b for b in collisions() if b[0] == vname],
        'and the tree is clean again')
 
 

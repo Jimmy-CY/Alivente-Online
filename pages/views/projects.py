@@ -43,10 +43,6 @@ holds the signature, the six call sites and the single definition.
 """
 
 import json
-# TR-1 - see translate_to_greek_service for why the translator call needs a
-# pool and a timeout rather than a plain function call.
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FuturesTimeout
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -706,23 +702,8 @@ def translate_text(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
-# TR-1, 4 Oct 2026 - the pool the translator call runs in.
-#
-# deep-translator 1.9.1 calls requests.get() with no timeout. There is no
-# parameter to pass one through, and socket.setdefaulttimeout would reach
-# every other request in the process. So the call goes into a small bounded
-# pool and the caller waits on the future. Four workers, because the worst
-# case has to be a number rather than "however many pile up".
-_TRANSLATE_POOL = ThreadPoolExecutor(max_workers=4,
-                                     thread_name_prefix='alv-translate')
-
-# Long enough for a working service on a slow day, short enough that a user
-# who presses the button gets an answer rather than a spinner.
-TRANSLATE_TIMEOUT = 8
-
-
 def translate_to_greek_service(text):
-    """Translate English to Greek.
+    """Translate English to Greek, via translation_service.
 
     Returns (ok, text, reason).
 
@@ -737,31 +718,12 @@ def translate_to_greek_service(text):
     wants to fall back to the English has to say so in its own code, where
     a reader can see it happening.
     """
-    try:
-        from deep_translator import GoogleTranslator
-    except ImportError as e:
-        print(f"Translation unavailable - deep_translator not installed: {e}")
-        return (False, None, 'The translation service is not available.')
-
-    def run():
-        return GoogleTranslator(source='en', target='el').translate(text)
-
-    try:
-        out = _TRANSLATE_POOL.submit(run).result(timeout=TRANSLATE_TIMEOUT)
-    except FuturesTimeout:
-        print(f"Translation timed out after {TRANSLATE_TIMEOUT}s")
-        return (False, None,
-                'The translation service did not answer in time.')
-    except Exception as e:
-        print(f"Translation service error: {e}")
-        return (False, None, 'The translation service could not be reached.')
-
-    if not out or not str(out).strip():
-        # An empty answer is not a translation. Saying so beats writing a
-        # blank over whatever the user had typed.
-        return (False, None, 'The translation service returned nothing.')
-
-    return (True, str(out), '')
+    # TR-2, 4 Oct 2026. The work moved to translation_service, which is
+    # named for it and had carried the TODO since googletrans was removed.
+    # This stays as the view's entry point so the endpoint and every
+    # caller keep the shape TR-1 gave them.
+    from ..translation_service import translate_to_greek
+    return translate_to_greek(text)
 
 
 @login_required

@@ -266,9 +266,29 @@ def section_3():
 
 # ------------------------------------------------------------- section 4
 
+def requirements_as_tr1_left_it():
+    """THROUGH THE SCOPE HELPER, not off disk.
+
+    This section used to open requirements.txt directly, and TR-2 broke it
+    the same day: TR-2 removed deep-translator again, having replaced the
+    scraper with the Anthropic API, and TR-1's suite started failing on a
+    line TR-1 had correctly added and a later round had correctly removed.
+
+    Every other read in this file goes through now(), which returns the
+    file as THIS round left it - the next round's backup when there is one.
+    This one did not, and that is the whole defect. It is the same mistake
+    as reading the live file against a frozen backup, pointing the other
+    way: a round's suite must judge the tree as that round left it, or
+    every round after it is a false failure waiting to happen.
+    """
+    bak = REQS + '.bak_trapi'
+    path = bak if os.path.exists(bak) else REQS
+    return open(path, 'rb').read()
+
+
 def section_4():
-    print('\n4. requirements.txt')
-    raw = open(REQS, 'rb').read()
+    print('\n4. requirements.txt, as TR-1 left it')
+    raw = requirements_as_tr1_left_it()
     ok(raw.startswith(b'\xff\xfe'),
        'requirements.txt is still UTF-16 LE with its BOM',
        'writing it back as UTF-8 hands Railway a file pip cannot read')
@@ -280,6 +300,13 @@ def section_4():
     added = [l for l in text.split('\r\n') if l not in before.split('\r\n')]
     ok(added == ['deep-translator==1.9.1'],
        'exactly one line was added', added)
+
+    # And say out loud that the line is gone again, so nobody reads this
+    # section as a claim about the tree today.
+    live = open(REQS, 'rb').read().decode('utf-16')
+    if 'deep-translator' not in live:
+        print('        (TR-2 has since removed it again - translation runs')
+        print('         on the Anthropic API now. See test_translate_api.py.)')
 
 
 # ------------------------------------------------------------- section 5

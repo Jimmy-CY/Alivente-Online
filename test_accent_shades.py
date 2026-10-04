@@ -287,10 +287,35 @@ else:
                       o.push(r.style.backgroundColor||'');
                   }}catch(e){}}
                 return o;}""")
-            check('  the LAST matching rule is the one that wins (%d found)'
-                  % len(rules),
-                  bool(rules) and rules[-1] in ('rgb(10, 94, 106)', '#0a5e6a',
-                                                'var(--alv-accent-ink)'))
+            # THE LAST rule that actually DECLARES a background, not the
+            # last rule that matches. DR-1, 4 Oct 2026.
+            #
+            # This used to read rules[-1], and rules[-1] was the page's own
+            # .btn-info:hover, which repeated base's declaration verbatim.
+            # DR-1 deleted 82 such declarations across 22 pages - the page
+            # was not overriding base, it was spelling out the literal that
+            # --alv-accent-ink already resolves to - so the page's rule is
+            # still the last to MATCH and now declares no background at all.
+            # rules[-1] is therefore '' and the old form of this check
+            # failed on a round that changed nothing it could see.
+            #
+            # The claim this check was making is unchanged and still worth
+            # making: the colour that reaches the button is the hover ink
+            # and not the old teal. It is simply declared in one place now.
+            # The three checks above measure the painted result; this one
+            # explains it.
+            declared = [r for r in rules if r]
+            check('  the last rule that DECLARES a background carries the '
+                  'ink (%d matched, %d declare one)'
+                  % (len(rules), len(declared)),
+                  bool(declared) and declared[-1] in (
+                      'rgb(10, 94, 106)', '#0a5e6a', 'var(--alv-accent-ink)'))
+            # NOT a count of how many declare one. The first draft of this
+            # asserted exactly one and failed on two: Bootstrap 4.1.3 in
+            # the fixture declares .btn-info:hover itself, and base
+            # overrides it. Two is correct and will stay correct. What
+            # changed with DR-1 is that the PAGE contributes a third no
+            # longer - which is what `3 matched, 2 declare one` says.
             br.close()
     finally:
         if os.path.exists(tmp):

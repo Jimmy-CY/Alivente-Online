@@ -329,6 +329,27 @@ ROUNDS = [
     # asked about, plus the JS selector that hunted one of them by its old
     # class.
     '.bak_recipebtn',
+    # Section DR, 4 Oct 2026 - the first slice of the drift CS-1's section
+    # 5b surveyed. Twenty-two pages wrote .btn-info in hex where base
+    # writes it in tokens, and --alv-accent IS #0e7c8b: 82 declarations
+    # that spelled out the answer the token already gives. Removed, with
+    # all 22 pages painted before and after to show nothing moved.
+    '.bak_btninfo',
+    # TR-2, 4 Oct 2026 - translation moves onto the Anthropic Messages API.
+    # TR-1 swapped googletrans for deep-translator and Railway could not
+    # reach Google; Demetri got the honest amber bar TR-1 was built for and
+    # asked "Can we not use our AI API for translation?". It is the API
+    # invoice_verification already calls, with a key already set, over
+    # urllib - which takes a timeout, so TR-1's thread pool goes with the
+    # scraper. The (ok, text, reason) contract does not move.
+    '.bak_trapi',
+    # SE-1, 4 Oct 2026 - SECRET_KEY and USDA_API_KEY stop being literals in
+    # mysite/settings.py and read the environment instead. The setting
+    # NAMES survive, because usda_client and Django read them through
+    # settings rather than through os. ANTHROPIC_API_KEY was already an
+    # environment read - I said otherwise once, from my own broken
+    # redaction, and was wrong.
+    '.bak_setenv',
 ]
 
 

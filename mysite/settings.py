@@ -25,7 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-3plz%&tdip9d0vwc6io8y2yk$a9km2-891cbl==n#v1u&3%gy8"
+# SE-1, 4 Oct 2026 - this was a literal, and the literal is in every
+# commit ever pushed. Set in Railway and in the local .env; rotated
+# separately, because moving it does not un-expose the old one.
+# Django refuses to run on an empty SECRET_KEY, which is the right
+# failure and does not need one invented here.
+SECRET_KEY = os.getenv('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
@@ -352,7 +357,10 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 # apply_map_provider.py.
 GEOAPIFY_KEY = os.getenv('GEOAPIFY_KEY', '')
 
-USDA_API_KEY = 'E6ZteWi96O46t6NNHMyGgrKDgIdMr0UP5BG2mGg4'
+# SE-1, 4 Oct 2026 - was a literal. pages/usda_client.py reads it
+# through getattr(settings, ...) and already says so clearly when it
+# is missing, so the name stays and only the source changes.
+USDA_API_KEY = os.getenv('USDA_API_KEY', '')
 
 # Optional: Add connection pooling settings if you want to experiment later
 # (Keep these commented out for now since your middleware works with CONN_MAX_AGE = 0)

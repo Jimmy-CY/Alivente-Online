@@ -70,6 +70,11 @@ import os
 import re
 import sys
 
+# SE-1 - a test run signs with its own throwaway key. SECRET_KEY
+# reads the environment now, and a suite that boots Django must
+# not fall over because a .env is absent. setdefault, so a real
+# key always wins; this one signs nothing that leaves the test.
+os.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

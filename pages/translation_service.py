@@ -18,9 +18,124 @@ pages/views/projects.py with the import commented out above them. The
 view imports this module now. Two copies of one definition is how a
 definition drifts.
 
-TODO: replace googletrans with deep-translator and translate on demand
-when `stored` comes back blank.
+TR-2, 4 Oct 2026 - the TODO above said "replace googletrans with
+deep-translator". TR-1 did that and it could not reach Google from
+Railway. translate_to_greek below uses the Anthropic Messages API
+instead - the same endpoint, key and urllib call that
+pages/services/invoice_verification.py has been making in production,
+and unlike the scraper it can be given a timeout and told what it is
+reading. Demetri: "Can we not use our AI API for translation?"
 """
+import json
+import os
+import urllib.error
+import urllib.request
+
+# The same endpoint and default model invoice_verification uses. A task
+# name is a handful of words, so haiku is the right weight; both are
+# overridable by environment variable for the same reason that one is.
+API_URL = 'https://api.anthropic.com/v1/messages'
+DEFAULT_MODEL = 'claude-haiku-4-5'
+DEFAULT_TIMEOUT = 20.0
+
+# WHY THE PROMPT SAYS WHAT THE TEXT IS. A generic engine reads
+# "Backsplash" as a splash of water and "Snagging" as catching on a nail.
+# Naming the domain in one sentence is the whole difference between a
+# translation a Greek builder would use and one he would laugh at.
+#
+# RETURN ONLY THE TRANSLATION is load-bearing. Anything conversational
+# would be written straight into the Greek field as if it were the
+# answer - the failure TR-1 existed to stop, arriving by a new route.
+_PROMPT = """You are translating short text from English into Greek for a
+property management and maintenance system used in Cyprus.
+
+The text is a task name or a task description from a renovation or
+maintenance project - things like Backsplash, Snagging, Granite Top
+Replacement, Update Kitchen, Replace Unit. Translate them the way a Greek
+builder or property manager would say them, not word by word.
+
+Keep proper nouns, property names, people's names and numbers exactly as
+they are. Keep the same capitalisation style. Do not add anything.
+
+Return ONLY the Greek translation, with no quotes, no explanation and no
+alternatives."""
+
+# Long enough for a description, short enough that a runaway answer
+# cannot be mistaken for a task name.
+MAX_TOKENS = 1000
+
+# Anything longer than this is not a task name and is not what this was
+# built for; refusing is cheaper than a surprise bill.
+MAX_CHARS = 4000
+
+
+def _config():
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    model = os.environ.get('TRANSLATE_MODEL', DEFAULT_MODEL)
+    try:
+        timeout = float(os.environ.get('TRANSLATE_TIMEOUT', DEFAULT_TIMEOUT))
+    except (TypeError, ValueError):
+        timeout = DEFAULT_TIMEOUT
+    return api_key, model, timeout
+
+
+def translate_to_greek(text):
+    """English to Greek. Returns (ok, text, reason).
+
+    THE CONTRACT IS TR-1'S AND IT DOES NOT MOVE. On failure the second
+    element is None - never the input. Returning the English from here
+    is what made a failed translation arrive as a green tick with the
+    English sitting in the Greek box, and the engine changing underneath
+    is not a reason to let that back in.
+    """
+    text = (text or '').strip()
+    if not text:
+        return (False, None, 'There is nothing to translate.')
+    if len(text) > MAX_CHARS:
+        return (False, None,
+                'That text is too long to translate (%d characters).'
+                % len(text))
+
+    api_key, model, timeout = _config()
+    if not api_key:
+        return (False, None, 'Translation is not configured on this server.')
+
+    body = json.dumps({
+        'model': model,
+        'max_tokens': MAX_TOKENS,
+        'system': _PROMPT,
+        'messages': [{'role': 'user', 'content': text}],
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        API_URL,
+        data=body,
+        headers={
+            'x-api-key': api_key,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+        },
+        method='POST',
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        print('Translation API returned HTTP %s' % exc.code)
+        return (False, None,
+                'The translation service refused the request (HTTP %s).'
+                % exc.code)
+    except Exception as exc:                                # noqa: BLE001
+        print('Translation call failed: %s' % exc)
+        return (False, None, 'The translation service could not be reached.')
+
+    blocks = data.get('content') or []
+    out = ''.join(b.get('text', '') for b in blocks
+                  if b.get('type') == 'text').strip()
+    if not out:
+        return (False, None, 'The translation service returned nothing.')
+    return (True, out, '')
 
 
 def ensure_project_translations(project):

@@ -131,6 +131,12 @@ CALL_SITES = {
     'pages/recipe_ai.py': 'AI modification suggestions',
     'pages/services/invoice_verification.py': 'invoice verification',
     'pages/services/portfolio_insights.py': 'the portfolio brief',
+    # TR-2, 4 Oct 2026 - the fifth. Translation of task names and
+    # descriptions into Greek moved onto the Messages API after
+    # deep-translator could not reach Google from Railway. Section 1
+    # caught it joining the list the same hour it was written, which is
+    # exactly what the list is for.
+    'pages/translation_service.py': 'English to Greek translation',
 }
 
 passed = failed = skipped = 0

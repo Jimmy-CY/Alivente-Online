@@ -242,7 +242,17 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '.icon-action-btn {';              What = 'the house icon button has one home' },
     @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar {';            What = 'and so does the mobile action bar' },
     @{ File = 'pages\templates\base.html';                Text = '.sidebar-toggle:hover { background: #0a5e6a;'; What = 'sidebar hover uses the new ink' },
-    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: var(--alv-accent-ink)'; What = 'and so does a page-local btn-info hover' },
+    # WAS: suppliers.html must contain 'border-color: var(--alv-accent-ink)'.
+    # The accent-ink round asserted that Suppliers' own .btn-info:hover had
+    # been moved onto the token, which was true and worth saying at the
+    # time. DR-1, 4 Oct 2026, deleted that declaration outright - base
+    # declares the identical thing and --alv-accent-ink resolves the same
+    # either way, so the page was repeating base rather than overriding it.
+    # The claim the accent-ink round was making still holds; it is just
+    # made in base now, so that is where the row points. Rendered: all 22
+    # pages paint identically before and after - test_btn_info.py.
+    @{ File = 'pages\templates\base.html';                Text = '.btn-info:hover'; What = 'the btn-info hover ink lives in base, and no page repeats it' },
+    @{ File = 'pages\templates\suppliers.html';           Text = 'border-color: var(--alv-accent-ink)'; What = 'and Suppliers no longer carries its own copy'; Absent = $true; Code = $true },
     @{ File = 'pages\templates\suppliers.html';           Text = 'class="table alv-table suppliers-table"'; What = 'Suppliers is on the standard' },
     @{ File = 'pages\templates\suppliers.html';           Text = 'No suppliers to show';            What = 'and finally has an empty state' },
     @{ File = 'pages\templates\base.html';                Text = '.alv-table .desktop-action-cell';  What = 'action columns stay centred' },
@@ -611,7 +621,31 @@ $sentinels = @(
     # RB-1. The button Demetri pointed at, and the selector that hunts it.
     @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'class="btn action-secondary" onclick="spellCheckInstructions()"'; What = 'Check Spelling is a house secondary, not Bootstrap blue' },
     @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'remove-item-btn'; What = 'and the red block delete is the house row action everywhere else uses'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = '.action-danger[onclick*="confirmDeleteRecipeDocument"]'; What = 'with the selector that finds it again moved along with it' }
+    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = '.action-danger[onclick*="confirmDeleteRecipeDocument"]'; What = 'with the selector that finds it again moved along with it' },
+    # DR-1. Absent rows on two of the twenty-two, because the claim is a
+    # removal. NOT an Absent row on the bare literal '#0e7c8b' - these
+    # pages carry 79 of them in other components, and a sentinel has to
+    # say what its own round claims. CR-1 learned that one the hard way.
+    @{ File = 'pages\templates\tenant.html'; Text = 'background-color: #0e7c8b'; What = 'a page no longer spells out the colour the accent token already gives'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\properties.html'; Text = 'background-color: #0e7c8b'; What = 'and neither does Properties'; Absent = $true; Code = $true },
+    # TR-2. The scraper out, the house API in, and the pool that existed
+    # only to contain a library with no timeout.
+    @{ File = 'pages\translation_service.py'; Text = 'api.anthropic.com/v1/messages'; What = 'translation runs on the API this app already talks to' },
+    @{ File = 'pages\translation_service.py'; Text = 'urlopen(req, timeout=timeout)'; What = 'and the call can be told to give up' },
+    @{ File = 'pages\views\projects.py'; Text = 'ThreadPoolExecutor'; What = 'so the thread pool that contained the scraper is gone'; Absent = $true; Code = $true },
+    # NO SENTINEL ON requirements.txt. One was written here and
+    # test_sentinels refused it, rightly: that file is UTF-16 LE, the
+    # sentinel reader opens everything as utf-8-sig with errors='replace',
+    # and the decoded mojibake contains no readable token - so an Absent
+    # row on it is true in every version of the file and can never
+    # discriminate. test_translate_api.py section 5 decodes it properly
+    # and checks deep-translator is gone there instead.
+    # SE-1. Absent rows on the NAMES, never on the values - the whole
+    # lesson of this round is that a secret must not be written down in
+    # order to be checked. The getenv call is the claim.
+    @{ File = 'mysite\settings.py'; Text = "SECRET_KEY = os.getenv('SECRET_KEY', '')"; What = 'the signing key comes from the environment' },
+    @{ File = 'mysite\settings.py'; Text = "USDA_API_KEY = os.getenv('USDA_API_KEY', '')"; What = 'and so does the USDA key' },
+    @{ File = 'mysite\settings.py'; Text = 'django-insecure-'; What = 'and no generated-and-never-changed key is left in the file'; Absent = $true }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1624,6 +1658,27 @@ $suites = @(
     # and left the querySelector that finds it, which would have thrown
     # on the success path after the document was already deleted.
     'test_recipe_buttons.py'
+    # the dead .btn-info declarations. Its section 3 PAINTS all 22 pages
+    # before and after and requires getComputedStyle to return the same
+    # string - a census that resolves two spellings to one colour is an
+    # argument about CSS, not evidence about what a browser draws. Its
+    # section 5 plants #b00020 and requires that to be caught, because a
+    # harness that cannot tell colours apart proves nothing.
+    'test_btn_info.py'
+    # translation on the house API. Its section 3 RUNS every failure path
+    # and requires (False, None, reason) from all of them - the contract
+    # TR-1 established, which is exactly the thing an engine swap breaks
+    # quietly. It makes one real call with a deliberately invalid key; the
+    # assertion is about the contract, not the network, so no route is as
+    # much a pass as a 401, and the printed line says which happened.
+    'test_translate_api.py'
+    # the two secrets leaving settings.py. It asks SHAPE questions and
+    # prints VERDICTS - never a value - and its section 5 is a guard on
+    # the suite and the patcher themselves, failing if either grows a
+    # construct that could print a matched right-hand side. That rule
+    # exists because I leaked two real keys into a conversation by
+    # trusting a regex to mask them.
+    'test_settings_env.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

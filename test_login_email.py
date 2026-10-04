@@ -188,6 +188,11 @@ try:
     import django
     from django.conf import settings as dj
     if not dj.configured:
+        # SE-1 - a test run signs with its own throwaway key. SECRET_KEY
+        # reads the environment now, and a suite that boots Django must
+        # not fall over because a .env is absent. setdefault, so a real
+        # key always wins; this one signs nothing that leaves the test.
+        os.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
         django.setup()
     from django.db import connections
