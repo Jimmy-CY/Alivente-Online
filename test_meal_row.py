@@ -321,7 +321,10 @@ else:
 # ==========================================================================
 head('3. ONE NAME IN base, AND NOT ONE COLOUR')
 # ==========================================================================
-BS = code_only(read(BASE))
+# AG-1, 4 Oct 2026 - now(), not read(). This was the LIVE file
+# compared against a frozen backup, so a later round touching base broke
+# a true claim about ML-1. now() is as_left_by: base as ML-1 left it.
+BS = code_only(now(BASE))
 m = re.search(r'\.icon-list\s*\{([^}]*)\}', BS)
 ok(bool(m), 'base defines .icon-list')
 if m:

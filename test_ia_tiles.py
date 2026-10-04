@@ -355,9 +355,17 @@ if sync_playwright is not None:
 
     # The chips must actually paint - a class resolving to nothing would put
     # the static verdict straight back.
+    # AG-1, 4 Oct 2026 - THE INK IS THE SAME AT EVERY STEP NOW, and
+    # that is the design rather than a regression. A one-tone scale that
+    # also coloured its text would have put #8a979d on #fafaf9 - 2.87,
+    # failing AA on a chip that exists to be read. The STEP moved into
+    # the tint, so the tint is what has to differ.
     _seen = [D['chips'][k]['color'] for k in ('a0', 'a2', 'a3', 'a4')]
-    check('all four ageing chips paint a DIFFERENT colour',
-          len(set(_seen)) == 4, str(_seen))
+    _tint = [D['chips'][k]['bg'] for k in ('a0', 'a2', 'a3', 'a4')]
+    check('all four ageing chips paint a DIFFERENT tint',
+          len(set(_tint)) == 4, str(_tint))
+    check('  and one ink, which is what one tone means',
+          len(set(_seen)) == 1, str(_seen))
     check('  and none of them is transparent or unset',
           all(c not in ('rgba(0, 0, 0, 0)', '') for c in _seen))
     check('  each has a tint behind it too',

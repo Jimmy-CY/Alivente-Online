@@ -170,9 +170,13 @@
              disabled twin when there is nothing attached - so the column
              does not change width from row to row. -->
         <td class="desktop-action-cell cell-actions">
+            {# RA-1, 4 Oct 2026 - the action column is in house order:  #}
+            {# LOOK, CHANGE, COPY, ADVANCE, DESTROY. Delete is last on  #}
+            {# every table in the app. alv_rowactions.py holds the rule #}
+            {# and Show-RowActionDrift reports any row that leaves it.  #}
             <span class="row-actions">
                 {% if tenant.tenant_lease_agreement %}
-                    <button type="button" class="icon-action-btn icon-view" title="View Lease Agreement" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url|escapejs }}', '{{ tenant.tenant_lease_agreement.name|escapejs }}', '{{ tenant.tenant_name|escapejs }}')">
+                    <button type="button" class="icon-action-btn icon-document" title="View Lease Agreement" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url|escapejs }}', '{{ tenant.tenant_lease_agreement.name|escapejs }}', '{{ tenant.tenant_name|escapejs }}')">
                         <i class="fas fa-file-contract"></i>
                     </button>
                 {% else %}

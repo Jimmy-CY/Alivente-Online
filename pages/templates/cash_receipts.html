@@ -156,10 +156,14 @@ Receipts
               <span class="alv-pill {{ row.status_pill }}">{{ row.status_display }}</span>
             </td>
             <td data-label="Actions" class="desktop-action-cell cell-actions">
+              {# RA-1, 4 Oct 2026 - the action column is in house order:  #}
+              {# LOOK, CHANGE, COPY, ADVANCE, DESTROY. Delete is last on  #}
+              {# every table in the app. alv_rowactions.py holds the rule #}
+              {# and Show-RowActionDrift reports any row that leaves it.  #}
               <div class="row-actions">
                 <a href="{% url 'cash_receipt_pdf' row.pk %}"
                    onclick="openPdfViewer('{% url 'cash_receipt_pdf' row.pk %}', 'Receipt {{ row.number|escapejs }} &mdash; {{ row.payer|escapejs }}', '{{ row.number|escapejs }}.pdf'); return false;"
-                   class="icon-action-btn icon-view" title="View receipt">
+                   class="icon-action-btn icon-pdf" title="View receipt">
                   <i class="fas fa-file-pdf"></i>
                 </a>
                 {% if perms.auth.can_edit_receipts %}

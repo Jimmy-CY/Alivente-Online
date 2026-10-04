@@ -500,11 +500,17 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     font-weight: 600;
 }
 
+/* AG-1, 4 Oct 2026 - Demetri: "the total outstanding figures must not
+   be in blue, but fit into our standard." It was --alv-edit, which is
+   #2563eb - the colour of a PENCIL in this app. A figure you press to
+   see a breakdown does not edit anything. --alv-accent measures 4.91 on
+   paper, and the underline below is what says it can be pressed, so the
+   colour is not carrying that on its own. */
 .clickable-amount {
     cursor: pointer;
     transition: background-color 0.2s ease;
     text-decoration: underline;
-    color: var(--alv-edit);
+    color: var(--alv-accent);
 }
 
 .clickable-amount:hover {
@@ -704,7 +710,10 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     .debtor-total {
         font-size: 18px;
         font-weight: 700;
-        color: #007bff;
+        /* AG-1 - raw #007bff, Bootstrap's own, so the same
+           total read in two different blues depending on
+           which screen you held. */
+        color: var(--alv-accent);
         font-family: 'Courier New', monospace;
         white-space: nowrap;
         flex-shrink: 0;

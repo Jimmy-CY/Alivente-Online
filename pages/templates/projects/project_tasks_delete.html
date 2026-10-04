@@ -24,7 +24,11 @@ Delete Task - {{ task.task_name }}
 <!-- Action Buttons: Back only. The delete lives BELOW the warnings,
      where the reader has already seen what it will do. -->
 <div class="page-action-buttons">
-  <a href="{% url 'projects_detail' project.project_id %}" class="btn action-back" title="Back to Project">
+  {# TL-2, 4 Oct 2026 - this page had no origin awareness at all:  #}
+  {# a Back, a Cancel and a confirmed delete, all three hard-wired   #}
+  {# to the Project. Delete follows Edit now. The form below posts   #}
+  {# to the CURRENT url, so the confirmed path needed no change.     #}
+  <a href="{{ back_url }}" class="btn action-back" title="{{ back_title }}">
     <i class="fas fa-arrow-left"></i>
     <span class="action-back-label">Back</span>
   </a>
@@ -131,7 +135,7 @@ Delete Task - {{ task.task_name }}
       <button type="submit" class="btn action-secondary action-danger form-footer-primary">
         <i class="fas fa-trash"></i> Yes, Delete Task
       </button>
-      <a href="{% url 'projects_detail' project.project_id %}" class="btn action-secondary form-footer-cancel">
+      <a href="{{ back_url }}" class="btn action-secondary form-footer-cancel">
         <i class="fas fa-times"></i> Cancel
       </a>
     </div>

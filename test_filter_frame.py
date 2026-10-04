@@ -207,6 +207,13 @@ AMENDED = {
     ('act_expense.html', '.filter-grid', 'grid-template-columns'):
         ('2fr 1fr 1fr',
          'minmax(0, 1.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 170px 170px'),
+    # FA-1, 4 Oct 2026 - GONE, not moved. Demetri, asked whether Search
+    # should stay wider than the two selects beside it: "No - all three
+    # the same." 2fr 1fr 1fr was also why none of the three got FG-1's
+    # 240px cap, since a page's own track list comes later and wins.
+    # None means the declaration is no longer there at all.
+    ('projects/projects.html', '.filter-grid', 'grid-template-columns'):
+        ('2fr 1fr 1fr', None),
 }
 
 # AND base's OWN FRAME MAY GAIN A DECLARATION, AND IT HAS.
@@ -223,6 +230,11 @@ HOUSE_AMENDED = {
     '.filter-grid': {
         'grid-template-columns': 'repeat(auto-fit, minmax(200px, 240px))',
         'justify-content': 'start',
+        # FA-1, 4 Oct 2026 - was `end`. end aligned the BOTTOMS of the
+        # groups, so a select 2px taller than an input parted their tops
+        # by 2px and a search HINT under its control parted Projects' by
+        # 25. Ten of the seventeen panels in this tree were out of line.
+        'align-items': 'start',
     },
 }
 # HOUSE ITSELF IS NOT TOUCHED. It is the record of what H1 lifted, and
@@ -310,7 +322,13 @@ for rel in sorted(PANELS):
                 ok(False, '%s: AMENDED says %s used to be %r and the '
                    'patcher does not agree' % (rel, a_key, a_was),
                    want[a_sel].get(a_key))
-            want[a_sel][a_key] = a_now
+            # FA-1 - None means the page DROPPED the declaration.
+            if a_now is None:
+                want[a_sel].pop(a_key, None)
+                if not want[a_sel]:
+                    want.pop(a_sel)
+            else:
+                want[a_sel][a_key] = a_now
     ok(leftovers == want,
        '%-34s %s' % (rel, ('keeps ' + '; '.join(
            '%s %s' % (s.replace('.filter-', ''),
@@ -423,12 +441,34 @@ if HAVE_PW and BOOT:
                 if (k in ('header.mb', 'header.pb') and v[0] == '0px'
                         and rel in ('invoices.html', 'projects/projects.html')):
                     continue   # the two with no separator gain the house one
+                if k == 'grid.align' and v == ('end', 'start'):
+                    # FA-1, 4 Oct 2026. end aligned the BOTTOMS of the
+                    # groups, so the moment two differed in height their
+                    # tops parted: 2px wherever a select sat beside an
+                    # input, 25px on Projects, where a search HINT under
+                    # the control made the group's bottom the hint's
+                    # bottom. Ten of seventeen panels were out of line.
+                    # EVERY PANEL MOVES, which is again the point of
+                    # putting it in base.
+                    continue
                 if k == 'grid.just' and v == ('normal', 'start'):
                     # FG-1, 3 Oct 2026. The row packs from the left now.
                     # Without it the slack is shared BETWEEN the tracks
                     # and two fields sit at opposite ends of the panel
                     # with a metre of nothing between them. Every panel
                     # moves, which is the point of putting it in base.
+                    continue
+                if (k == 'grid.cols' and rel == 'projects/projects.html'
+                        and set(v[1].split()) <= {'240px', '0px'}):
+                    # FA-1, 4 Oct 2026. Demetri, asked whether Search
+                    # should stay wider than the two selects beside it:
+                    # "No - all three the same." The page dropped its
+                    # 2fr 1fr 1fr and takes base's capped track list, so
+                    # 620/310/310 becomes three tracks of 240 - and two
+                    # empty ones, because auto-fit lays out five slots
+                    # for a 1200px panel and collapses the two nothing
+                    # sits in. MEASURED, not merely "something changed":
+                    # every track is either the cap or nothing.
                     continue
                 if (k == 'grid.cols' and rel == 'act_expense.html'
                         and len(v[1].split()) == 5):

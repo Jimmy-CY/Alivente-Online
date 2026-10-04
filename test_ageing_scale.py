@@ -307,13 +307,28 @@ def _tokval(t):
     return m.group(1).lower() if m else None
 
 
-check('step 2 IS the warn colour, so the scale cannot drift from the '
-      'semantics beside it',
+# AG-1, 4 Oct 2026 - THE ANCHOR IS GONE, DELIBERATELY. These two
+# checks used to hold step 2 to --alv-warn and step 4 to --alv-bad, so a
+# green-to-red scale could not drift away from the meanings beside it.
+# That was the right invariant for a scale made of hues. Demetri: "I have
+# decided that I don't need a green and red scale."
+#
+# A DEPTH HAS A DIFFERENT INVARIANT. The scale no longer says healthy or
+# broken - it says near or far - so what has to hold is that it is ONE
+# TONE and that it only ever goes one way. Anchoring it to warn and bad
+# now would re-introduce the hues by the back door.
+check('step 2 is NOT the warn colour - the scale is a depth, not a verdict',
       _tokval('--alv-age-2') is not None
-      and _tokval('--alv-age-2') == _tokval('--alv-warn'))
-check('step 4 IS the bad colour',
+      and _tokval('--alv-age-2') != _tokval('--alv-warn'))
+check('  nor step 4 the bad one',
       _tokval('--alv-age-4') is not None
-      and _tokval('--alv-age-4') == _tokval('--alv-bad'))
+      and _tokval('--alv-age-4') != _tokval('--alv-bad'))
+_spread = lambda h: (max(int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16))
+                     - min(int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16)))
+check('  and every step is a neutral, which is what replaces the anchor',
+      all(_tokval('--alv-age-%d' % _s) and _spread(_tokval('--alv-age-%d' % _s)) <= 25
+          for _s in (1, 2, 3, 4)),
+      str([_tokval('--alv-age-%d' % _s) for _s in (1, 2, 3, 4)]))
 
 
 def _hex(tok):

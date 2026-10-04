@@ -125,7 +125,7 @@
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  78 design tokens and the component classes below. A page should reach
+  80 design tokens and the component classes below. A page should reach
   for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
@@ -1108,14 +1108,51 @@
            There is deliberately no step for NOT YET DUE. That is the absence
            of ageing, not the first degree of it, and it takes the good token
            like any other healthy state. */
-        --alv-age-1:      #8a7a12;
-        --alv-age-1-soft: #fdf8e6;
-        --alv-age-2:      #8e6207;
-        --alv-age-2-soft: #fbeec9;
-        --alv-age-3:      #a8481a;
-        --alv-age-3-soft: #f8e0cd;
-        --alv-age-4:      #b3261e;
-        --alv-age-4-soft: #f6d5d2;
+        /* AG-1, 4 Oct 2026 - ONE TONE, DEEPENING. Demetri, of the
+           Outstanding Invoices Report: "I don't like these colours any
+           more. They don't fit within our team and grey theme... I have
+           decided that I don't need a green and red scale."
+
+           WHAT THIS REPLACED, named so it is never re-derived: #8a7a12
+           olive, #8e6207 amber, #a8481a rust and #b3261e red, with
+           #fdf8e6 / #fbeec9 / #f8e0cd / #f6d5d2 beneath them, and
+           --alv-good standing in for step 0. Six columns of one report,
+           each a different hue, in an application whose palette is one
+           teal and a run of greys.
+
+           AND THE TRAFFIC LIGHT WAS THE WRONG PICTURE. Green to red
+           says healthy versus broken. Money forty days late is not a
+           different KIND of thing from money ten days late - it is the
+           same thing further along, which is what one deepening tone
+           says, and says to a reader who cannot separate hues too.
+
+           WARM, NOT THE GREY ALREADY HERE. --alv-surface and
+           --alv-surface-deep are this page's own wash; an ageing column
+           has to read AS a tint beside them, and cool grey on cool grey
+           does not. Warm is still the grey theme and still separable.
+
+           MEASURED AGAINST --alv-ink, which is what the figures in
+           these cells are written in:
+               step 0  12.40    step 1  11.47    step 2  10.30
+               step 3   9.03    step 4   7.63
+           The scale this replaced carried coloured ink at 4.05 to 4.78.
+
+           THE SOLID TOKEN STILL DEEPENS because it drives the DOT and
+           the BAR FILL, which are shapes, not text: 3.00 to 11.80
+           against paper, the lowest exactly on the 3:1 non-text needs.
+           It is NOT the pill's text colour any more - see .alv-age-pill,
+           where carrying it over literally would have put #8a8578 on
+           #f2f1ee at 3.26. */
+        --alv-age-0:      #8a979d;
+        --alv-age-0-soft: #fafaf9;
+        --alv-age-1:      #8a8578;
+        --alv-age-1-soft: #f2f1ee;
+        --alv-age-2:      #6f6a5d;
+        --alv-age-2-soft: #e8e5df;
+        --alv-age-3:      #55504a;
+        --alv-age-3-soft: #dcd7cd;
+        --alv-age-4:      #3b3733;
+        --alv-age-4-soft: #cdc6b9;
 
         /* THE GRADING SCALE - five steps, best to worst.
            A sibling of the ageing scale, NOT a member of it: ageing runs
@@ -1452,6 +1489,42 @@
          here rather than a search across every page. */
       .icon-upload   { color: var(--alv-edit); border-color: #c9d8f7; }
       .icon-upload:hover { background: var(--alv-edit); border-color: var(--alv-edit); color: #fff; }
+
+      /* Document: the SIXTH NAME on --alv-view, added by RA-1 on 4 Oct 2026.
+   .icon-view was carrying FOUR pictures - fa-eye eleven times, but also
+   fa-file-contract on View Lease Agreement and View Title Deed, fa-box
+   on View Property Assets and fa-file-pdf on View receipt. base states
+   the rule beside .icon-duplicate, .icon-manage and .icon-list and it
+   was simply not being kept: A CLASS CARRIES ONE PICTURE. Alias the
+   colour, never the name.
+
+   Opening the paper a record refers to is still a LOOK, so it points at
+   --alv-view like the eye. It takes its own name because the row-action
+   ORDER sorts on the NAME: a lease agreement wearing .icon-view sorts as
+   "view this record" and lands in the wrong place inside Look. The split
+   is what makes the standard expressible, not decoration.
+
+   THREE NAMES, ONE PER PICTURE. .icon-pdf and .icon-assets are here for
+   the same reason .icon-document is, and for no other: fa-file-pdf is
+   not fa-file-contract, and a property's assets are not a shopping
+   list. The first build of this round economised - both document
+   glyphs on .icon-document, fa-box on the existing .icon-list - and
+   repaired a class carrying four pictures by making two that carried
+   two. All three point at --alv-view and the palette is unchanged.
+
+   THE ORDER ITSELF - LOOK, CHANGE, COPY, ADVANCE, DESTROY - is in
+   alv_rowactions.py, shared by the patcher, Show-RowActionDrift.py and
+   test_row_action_order.py so that it is written once.
+                                       [test_row_action_order.py] */
+      .icon-document,
+      .icon-pdf,
+      .icon-assets       { color: var(--alv-view); border-color: var(--alv-accent-line); }
+      .icon-document:hover,
+      .icon-pdf:hover,
+      .icon-assets:hover { background: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
+      .icon-color-document,
+      .icon-color-pdf,
+      .icon-color-assets { color: var(--alv-view); }
 
       /* Save and Cancel - the two halves of an INLINE EDIT, which three
          Personal pages do in the row itself rather than on a screen of
@@ -3301,7 +3374,34 @@ textarea.form-control { height: auto; }
 .filter-grid {
     display: grid;
     gap: 20px;
-    align-items: end;
+    /* START, NOT end - FA-1, 4 Oct 2026, and Demetri found it on
+       Projects: "The filters are not in line...."
+
+       end aligns the BOTTOMS of the groups. A group is a label above a
+       control, so its bottom is the bottom of the control - and the
+       moment two groups are not the same height, their TOPS part
+       company. Rendered at 1280, ten of the seventeen panels in this
+       tree were out of line, for two reasons:
+
+         2px, on eight pages: the search field is an <input> and the
+         rest are <select>, and a select is 2px taller.
+
+         25px, on Projects: its Search group carries an
+         .alv-search-hint UNDER the control, so the group's bottom is
+         the bottom of the HINT and the whole group - label, box and
+         all - was lifted 25px to put the hint where the other controls
+         ended.
+
+       The hint was doing what it was told. The instruction was wrong: a
+       filter panel is a row of LABELLED controls and what a reader
+       lines up on is the top of the labels. With start, all seventeen
+       measure label top 0 and control top 27, and a hint hangs below
+       its own control and pushes nothing - which is what a hint is for.
+
+       Every .filter-label in the tree is one line, 21px, which is why
+       aligning the labels aligns the controls too. test_filter_align
+       section 2 fails if one ever wraps. */
+    align-items: start;
     /* COLUMNS - FG-1, 3 Oct 2026, and the reason this round exists.
        This rule declared display: grid and no columns, which is a grid
        with ONE column: every field stacks and each one fills the track.
@@ -3896,7 +3996,10 @@ table.alv-matrix {
    pill without four parallel families of class - which is exactly what the
    Outstanding Invoices report had, three of them, disagreeing.
    Severity: .alv-age-0 (not ageing) .. .alv-age-4 (severe). */
-.alv-age-0 { --age: var(--alv-good);   --age-soft: var(--alv-good-soft); }
+/* AG-1 - step 0 is the TOP OF THIS SCALE now, not the good token. It
+   used to be --alv-good literally, which is how a ledger column came to
+   be green. Not ageing is the absence of ageing, not a health verdict. */
+.alv-age-0 { --age: var(--alv-age-0);  --age-soft: var(--alv-age-0-soft); }
 .alv-age-1 { --age: var(--alv-age-1);  --age-soft: var(--alv-age-1-soft); }
 .alv-age-2 { --age: var(--alv-age-2);  --age-soft: var(--alv-age-2-soft); }
 .alv-age-3 { --age: var(--alv-age-3);  --age-soft: var(--alv-age-3-soft); }
@@ -3915,6 +4018,11 @@ table.alv-matrix {
     background: var(--age, var(--alv-neutral));
 }
 .alv-age-cell { background: var(--age-soft, transparent); }
+/* AG-1, 4 Oct 2026 - THE TEXT IS --alv-ink AT EVERY STEP. It was
+   var(--age), and with a one-tone scale that put #8a979d on #fafaf9 and
+   #8a8578 on #f2f1ee - 2.87 and 3.26, both failing AA on a pill that
+   exists to be read. The STEP shows in the background and in a 1px
+   border of --age, so it is encoded twice and nothing is under 7.6. */
 .alv-age-pill {
     display: inline-block;
     padding: 2px 8px;
@@ -3923,7 +4031,8 @@ table.alv-matrix {
     font-weight: 600;
     white-space: nowrap;
     background: var(--age-soft, var(--alv-neutral-soft));
-    color: var(--age, var(--alv-ink));
+    border: 1px solid var(--age, var(--alv-line));
+    color: var(--alv-ink);
 }
 /* THE GRADING SCALE.
    Same machinery as the ageing scale above - the step class carries the
@@ -4297,6 +4406,76 @@ table.alv-matrix {
     textarea { font-size: 16px !important; }
 }
 /* /ALV SMALL CONTROLS v1 */
+
+/* ALV CUSTOM CONTROL v1 - 4 Oct 2026 ------------------------------------
+   Demetri, of the Generate Task List modal: "I don't like the Blue on the
+   Radio Button. I want something within our theme."
+
+   NOTHING HERE HAD EVER CLAIMED THIS COMPONENT. base.html carried zero
+   rules naming .custom-control, so the dot in a selected radio and the
+   tick in a ticked box were drawn by bootstrap 4.1.3 in #007bff - on
+   thirteen controls across three pages: seven radios on projects_detail
+   (Budget Copy Options, and the English/Greek pair Demetri was looking
+   at), five checkboxes on celebration_management, one on view_meal_plan.
+
+   --alv-accent, AND NOT BY TASTE. Its own definition two thousand lines
+   up reads "the system's own colour: primary actions, selection", and a
+   checked radio is selection. The focus halo is --alv-accent-ring, the
+   same one .form-control:focus draws, so a radio and a text box answer
+   the keyboard the same way.
+
+   BOOTSTRAP WRITES THE CHECKED COLOUR THREE TIMES, AT TWO SPECIFICITIES,
+   and the first version of this block only matched one of them:
+
+       .custom-control-input:checked ~ ... ::before        0,2,1  #007bff
+       .custom-radio    .custom-control-input:checked ~ …  0,3,1  #007bff
+       .custom-checkbox .custom-control-input:checked ~ …  0,3,1  #007bff
+
+   A single 0,2,1 rule beats the first and LOSES to the other two. The
+   browser test in section 2 is what found it: the radio turned and the
+   checkboxes stayed blue, while every text search in the suite passed.
+   So the selectors below are matched one for one, per type, and a
+   comma group keeps each member's own specificity.
+
+   AND IT IS background-color, NOT border. These controls have no border
+   in 4.1.3 - the box is a filled ::before - so a border-color on its own
+   sets a colour on a border that is not drawn. That was the other half
+   of the same mistake.
+
+   IT WINS BY BEING LATER, never by shouting: bootstrap.min.css is linked
+   at the top of this file, above every style block in it, which is the
+   same mechanism the tab component relies on. No !important, so a page
+   that genuinely needs a different control can still write one.
+
+   WHAT IT REPLACED, named so it is never re-derived: #007bff (the
+   checked fill, three times), rgba(0,123,255,.25) (the focus halo),
+   #b3d7ff (the active press), rgba(0,123,255,.5) (disabled but
+   checked, twice), #6c757d (the disabled label) and #e9ecef (the
+   disabled box).
+                                            [test_custom_control.py] */
+.custom-control-input:checked ~ .custom-control-label::before,
+.custom-radio .custom-control-input:checked ~ .custom-control-label::before,
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--alv-accent);
+}
+.custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 1px var(--alv-paper), 0 0 0 3px var(--alv-accent-ring);
+}
+.custom-control-input:active ~ .custom-control-label::before {
+    background-color: var(--alv-accent-soft);
+}
+.custom-control-input:disabled ~ .custom-control-label {
+    color: var(--alv-ink-faint);
+}
+.custom-control-input:disabled ~ .custom-control-label::before {
+    background-color: var(--alv-surface-deep);
+}
+.custom-radio .custom-control-input:disabled:checked ~ .custom-control-label::before,
+.custom-checkbox .custom-control-input:disabled:checked ~ .custom-control-label::before,
+.custom-checkbox .custom-control-input:disabled:indeterminate ~ .custom-control-label::before {
+    background-color: var(--alv-accent-line);
+}
+/* /ALV CUSTOM CONTROL v1 */
 
 /* ALV PRINT BUTTONS v1 - A BUTTON IS FURNITURE ON PAPER.
    base's print block names containers - the action bar, the mobile bar,

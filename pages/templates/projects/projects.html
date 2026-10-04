@@ -405,9 +405,19 @@ Projects
     margin-top: 15px;
 }
 
-.filter-grid {
-    grid-template-columns: 2fr 1fr 1fr;
-}
+/* FA-1, 4 Oct 2026 - THE COLUMN OVERRIDE IS GONE. Demetri, asked
+   whether Search should stay wider than the two selects: "No - all
+   three the same."
+
+   2fr 1fr 1fr is why Search measured 546px beside two 290px selects,
+   and it is also why none of the three got FG-1's cap - the one
+   Demetri asked for on 3 Oct in these words: "the filter fields must
+   be made less wide, so that they fit on one line". A page's own
+   track list comes later in the document and wins.
+
+   Without it the panel takes base's
+   repeat(auto-fit, minmax(200px, 240px)), the same as Passports,
+   Categories and Measurement Units. */
 
 
 

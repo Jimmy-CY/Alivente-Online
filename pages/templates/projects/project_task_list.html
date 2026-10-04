@@ -107,7 +107,11 @@ Task List - {{ project.project_name }}
       </thead>
       <tbody>
         {% for item in task_list %}
-          <tr class="task-row task-type-{{ item.type|lower }}">
+          {# PJ-6, 4 Oct 2026 - THE ROW CARRIES ITS DEPTH. The type   #}
+          {# class happens to agree with it today, but depth is  #}
+          {# the fact the indent is about, and a fourth level     #}
+          {# would need no new class here.                       #}
+          <tr class="task-row task-type-{{ item.type|lower }} task-depth-{{ item.indent_level }}">
             <td class="task-name-cell" data-label="{% if language == 'greek' %}Όνομα{% else %}Name{% endif %}">
               <div class="task-indent-{{ item.indent_level }}">
                 {% if item.type == 'project' %}
@@ -195,15 +199,29 @@ Task List - {{ project.project_name }}
                 <span class="text-muted no-date">{% if language == 'greek' %}Δεν ορίστηκε{% else %}Not set{% endif %}</span>
               {% endif %}
             </td>
+            {# PJ-6 - A PROJECT ROW HAS NO TASK BEHIND IT, so it  #}
+            {# gets no actions rather than two greyed ones titled #}
+            {# "Not available here". The cell stays so the column #}
+            {# still lines up; what goes is its contents.         #}
+            {# ON task_obj, NOT ON PERMISSION - the disabled pair  #}
+            {# below is what a READ-ONLY user sees on a real task. #}
+            {# TL-2, 4 Oct 2026 - THE LINK SAYS WHERE IT CAME FROM. #}
+            {# Demetri: "if I press to Edit a Task or Subtask, and I   #}
+            {# then press the Back Button or the Update Task button,   #}
+            {# then I need to be taken back to the Task List, not the  #}
+            {# Project." origin_query carries this list's assignee and #}
+            {# language too, so Back returns the list that was being   #}
+            {# read and not the project's default one.                 #}
             <td class="desktop-action-cell cell-actions">
+              {% if item.task_obj %}
               <span class="row-actions">
                 {% if item.task_obj and perms.auth.can_edit_projects %}
-                  <a href="{% url 'project_tasks_edit' project.project_id item.task_obj.task_id %}"
+                  <a href="{% url 'project_tasks_edit' project.project_id item.task_obj.task_id %}?{{ origin_query }}"
                      class="icon-action-btn icon-edit"
                      title="{% if language == 'greek' %}Επεξεργασία{% else %}Edit{% endif %}">
                     <i class="fas fa-pencil-alt"></i>
                   </a>
-                  <a href="{% url 'project_tasks_delete' project.project_id item.task_obj.task_id %}"
+                  <a href="{% url 'project_tasks_delete' project.project_id item.task_obj.task_id %}?{{ origin_query }}"
                      class="icon-action-btn icon-delete"
                      title="{% if language == 'greek' %}Διαγραφή{% else %}Delete{% endif %}">
                     <i class="fas fa-trash"></i>
@@ -219,15 +237,17 @@ Task List - {{ project.project_name }}
                   </span>
                 {% endif %}
               </span>
+              {% endif %}
             </td>
 
+            {% if item.task_obj %}
             <td class="mobile-action-bar cols-2">
               {% if item.task_obj and perms.auth.can_edit_projects %}
-                <a href="{% url 'project_tasks_edit' project.project_id item.task_obj.task_id %}" class="mobile-action-btn">
+                <a href="{% url 'project_tasks_edit' project.project_id item.task_obj.task_id %}?{{ origin_query }}" class="mobile-action-btn">
                   <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                   <span class="mobile-action-label">{% if language == 'greek' %}Επεξεργασία{% else %}Edit{% endif %}</span>
                 </a>
-                <a href="{% url 'project_tasks_delete' project.project_id item.task_obj.task_id %}" class="mobile-action-btn">
+                <a href="{% url 'project_tasks_delete' project.project_id item.task_obj.task_id %}?{{ origin_query }}" class="mobile-action-btn">
                   <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                   <span class="mobile-action-label">{% if language == 'greek' %}Διαγραφή{% else %}Delete{% endif %}</span>
                 </a>
@@ -242,6 +262,7 @@ Task List - {{ project.project_name }}
                 </span>
               {% endif %}
             </td>
+            {% endif %}
           </tr>
         {% empty %}
           <tr>
@@ -306,7 +327,7 @@ Task List - {{ project.project_name }}
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover {
-        background: #0e7c8b;
+        background: var(--alv-accent);
         color: white;
         text-decoration: none;
     }
@@ -325,17 +346,17 @@ Task List - {{ project.project_name }}
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .task-list-header h3 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 15px;
     font-weight: 600;
 }
 
 .project-description {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 15px;
     font-style: italic;
     word-wrap: break-word;
@@ -344,13 +365,13 @@ Task List - {{ project.project_name }}
 }
 
 .project-property, .assigned-to-info, .language-info {
-    color: #495057;
+    color: var(--alv-ink-soft);
     margin-bottom: 8px;
     font-size: 14px;
 }
 
 .project-property i, .assigned-to-info i, .language-info i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-right: 8px;
     width: 16px;
 }
@@ -368,7 +389,7 @@ Task List - {{ project.project_name }}
     border-radius: 8px;
     overflow-x: auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
     margin-bottom: 20px;
 }
 
@@ -418,15 +439,15 @@ Task List - {{ project.project_name }}
 
 .task-type-project {
     background-color: rgba(52, 152, 219, 0.03);
-    border-left: 4px solid #3498db;
+    border-left: 4px solid var(--alv-tag-sky-ink);
 }
 .task-type-task {
     background-color: rgba(46, 204, 113, 0.03);
-    border-left: 4px solid #2ecc71;
+    border-left: 4px solid var(--alv-tag-moss-ink);
 }
 .task-type-subtask {
     background-color: rgba(243, 156, 18, 0.03);
-    border-left: 4px solid #f39c12;
+    border-left: 4px solid var(--alv-tag-clay-ink);
 }
 
 .task-name-cell {
@@ -440,7 +461,7 @@ Task List - {{ project.project_name }}
 
 .task-name {
     margin-left: 8px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-size: 14px;
     word-wrap: break-word;
 }
@@ -449,24 +470,24 @@ Task List - {{ project.project_name }}
     margin-top: 4px;
     margin-left: 28px;
     font-size: 12px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-style: italic;
     word-wrap: break-word;
     line-height: 1.3;
 }
 
 /* Icons */
-.project-icon { color: #3498db; font-size: 16px; }
-.task-icon { color: #2ecc71; font-size: 16px; }
-.subtask-icon { color: #f39c12; font-size: 12px; }
-.overdue-icon { color: #e74c3c; font-size: 12px; margin-left: 5px; }
+.project-icon { color: var(--alv-tag-sky-ink); font-size: 16px; }
+.task-icon { color: var(--alv-tag-moss-ink); font-size: 16px; }
+.subtask-icon { color: var(--alv-tag-clay-ink); font-size: 12px; }
+.overdue-icon { color: var(--alv-bad); font-size: 12px; margin-left: 5px; }
 
 .date-value {
     font-family: 'Courier New', monospace;
     font-size: 13px;
-    color: #495057;
+    color: var(--alv-ink-soft);
 }
-.date-value.overdue { color: #e74c3c; font-weight: 600; }
+.date-value.overdue { color: var(--alv-bad); font-weight: 600; }
 .no-date { font-style: italic; font-size: 12px; }
 
 /* Footer */
@@ -475,11 +496,11 @@ Task List - {{ project.project_name }}
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .summary-info h6, .legend h6 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-weight: 600;
     margin-bottom: 10px;
 }
@@ -487,7 +508,7 @@ Task List - {{ project.project_name }}
 .summary-info p, .legend p {
     margin-bottom: 5px;
     font-size: 13px;
-    color: #495057;
+    color: var(--alv-ink-soft);
     line-height: 1.4;
     word-wrap: break-word;
 }
@@ -545,9 +566,42 @@ Task List - {{ project.project_name }}
     .task-name { font-size: 15px; }
 
 
-    .task-indent-0 { padding-left: 0; }
-    .task-indent-1 { padding-left: 12px; }
-    .task-indent-2 { padding-left: 24px; }
+    /* PJ-6, 4 Oct 2026 - THE CARD INDENTS, NOT THE NAME.
+       These three shifted the name inside the cell by 12 and 24px, which
+       on a card reads as a wobble rather than a tree: every card was the
+       same 366px wide and started at the same edge. The CARD steps now,
+       so the hierarchy is in the shape of the list.
+
+       base sets width:100% on the row, so the width is taken back by the
+       same amount - otherwise each level would hang off the right. */
+    .task-indent-0,
+    .task-indent-1,
+    .task-indent-2 { padding-left: 0; }
+
+    .alv-table tbody tr.task-depth-1 {
+        margin-left: 14px;
+        width: calc(100% - 14px);
+    }
+    .alv-table tbody tr.task-depth-2 {
+        margin-left: 28px;
+        width: calc(100% - 28px);
+    }
+
+    /* AND THE COLOURED BAR COMES BACK.
+       base's card rule writes `border: 1px solid var(--alv-line)` - a
+       SHORTHAND, later in the cascade - so the 4px type border the
+       desktop shows was being thrown away here, along with the tint.
+       Restated at (0,2,2) against base's (0,1,2), so it wins on weight
+       and not on order. */
+    .alv-table tbody tr.task-type-project {
+        border-left: 4px solid var(--alv-tag-sky-ink);
+    }
+    .alv-table tbody tr.task-type-task {
+        border-left: 4px solid var(--alv-tag-moss-ink);
+    }
+    .alv-table tbody tr.task-type-subtask {
+        border-left: 4px solid var(--alv-tag-clay-ink);
+    }
 
     /* Empty state row */
     .task-list-table tr td[colspan] {

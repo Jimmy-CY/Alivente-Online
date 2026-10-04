@@ -227,6 +227,61 @@ ROUNDS = [
     # options are the recorded holders now, so they cannot fail to match
     # the rows they narrow.
     '.bak_passholders',
+    # PJ-6, 4 Oct 2026 - the Task List tree on a phone. The depth cue was
+    # not weak there, it was GONE: base's card rule writes `border: 1px
+    # solid` and `background` as SHORTHANDS later in the cascade, so the
+    # 4px type bar and the tint were thrown away and all three cards
+    # measured identical. The card steps 14px a level now, the bar is
+    # back, and the three colours are the house CATEGORY family.
+    '.bak_taskdepth',
+    # Section TL, 4 Oct 2026 - the Task List. TL-1 is a LIVE 500: the
+    # Greek list called a two-argument stub with three arguments, six
+    # times, every one behind `if language == 'greek'` - which is why
+    # English worked 100% and Greek never reached the template. The
+    # module docstring had recorded it as a "known latent issue" that
+    # would "only manifest when re-enabled". It had already manifested.
+    '.bak_greekarity',
+    # TL-2, 4 Oct 2026 - Demetri: "Within the Task List, if I press to
+    # Edit a Task or Subtask, and I then press the Back Button or the
+    # Update Task button, then I need to be taken back to the Task List,
+    # not the Project." The machinery was there with ONE origin in it -
+    # the Gantt chart - and an else branch pointing at the Project, which
+    # every link on the Task List fell down. It carries the assignee and
+    # the language too: the list you left, not that project's default.
+    # ORDER: after PJ-6, which rewrote the same four rows' markup.
+    '.bak_taskorigin',
+    # CR-1, 4 Oct 2026 - Demetri, of the Generate Task List modal: "I
+    # don't like the Blue on the Radio Button." base.html carried ZERO
+    # rules naming .custom-control, so bootstrap 4.1.3 had been drawing
+    # thirteen controls on three pages in #007bff since the day it was
+    # linked. Bootstrap writes that colour THREE times at two
+    # specificities and the first build of this round only beat one of
+    # them - the radio turned and the checkboxes stayed blue.
+    '.bak_customctl',
+    # FA-1, 4 Oct 2026 - Demetri, of the Projects filter panel: "The
+    # filters are not in line...." He saw one page; measured at 1280 it
+    # was TEN of seventeen, and one declaration caused all of them.
+    # `align-items: end` aligns the BOTTOMS of the groups, so a select
+    # 2px taller than an input parted their tops by 2px and a search
+    # HINT under its control parted Projects' by 25. start, and all
+    # seventeen measure label top 0, control top 27.
+    '.bak_filteralign',
+    # RA-1, 4 Oct 2026 - Demetri: "I think that we should put the Delete
+    # Action Item on the right hand side of all the icons. We should
+    # define a standard order that we place all icons in all tables."
+    # LOOK, CHANGE, COPY, ADVANCE, DESTROY - 5 of 21 action columns were
+    # out of it. And .icon-view was carrying FOUR pictures, which
+    # matters because the order sorts on the NAME: a lease agreement
+    # wearing icon-view sorts as "view this record".
+    '.bak_rowactorder',
+    # AG-1, 4 Oct 2026 - Demetri, of the Outstanding Invoices Report: "I
+    # don't like these colours any more. They don't fit within our team
+    # and grey theme... I have decided that I don't need a green and red
+    # scale. Also, the total outstanding figures must not be in blue."
+    # Five hues become one warm neutral deepening through five steps,
+    # and the drill-down figure stops being the pencil blue on the
+    # desktop and a raw #007bff on the phone.
+    '.bak_agetone',
 ]
 
 

@@ -1042,9 +1042,17 @@ Project Details - {{ project.project_name }}
 #newProjectDescription { resize: vertical; min-height: 80px; }
 
 .custom-control-label { cursor: pointer; padding-left: 5px; }
-.custom-control-label strong { color: #2c3e50; }
-.custom-control-input:checked ~ .custom-control-label { color: #0e7c8b; }
-.custom-control-input:checked ~ .custom-control-label strong { color: #0e7c8b; }
+/* CR-1, 4 Oct 2026 - three hexes, all of them tokens typed out:
+   #2c3e50 is --alv-ink and #0e7c8b is --alv-accent, twice. Somebody
+   had the right instinct and nothing to reach for.
+   THESE COLOUR THE LABEL, NOT THE BOX; the box is base's now, and the
+   two do not fight. Left on this page rather than promoted: moving
+   them up would turn the label teal on celebration_management's five
+   checkboxes and view_meal_plan's one as well, which is a visible
+   change to two pages nobody asked about. */
+.custom-control-label strong { color: var(--alv-ink); }
+.custom-control-input:checked ~ .custom-control-label { color: var(--alv-accent); }
+.custom-control-input:checked ~ .custom-control-label strong { color: var(--alv-accent); }
 
 .bg-info.text-white {
     background-color: #0e7c8b !important;

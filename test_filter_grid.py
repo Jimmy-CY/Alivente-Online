@@ -330,6 +330,16 @@ if sync_playwright is not None and FIX and WAS:
                 a = measure(pcss, html, bwas, w)
                 b = measure(pcss, html, bnow, w)
                 if rel in own:
+                    # FA-1, 4 Oct 2026 - Projects is the exception now.
+                    # Demetri, asked whether Search should stay wider
+                    # than the two selects: "No - all three the same."
+                    # It dropped its 2fr 1fr 1fr and takes base's capped
+                    # track list, so it moves at 1920 and 1280 and this
+                    # check would be asserting the opposite of what was
+                    # asked for. NAMED, not loosened: every other page
+                    # on that list is still held to the byte.
+                    if 'projects' in os.path.basename(rel):
+                        continue
                     if a != b:
                         drifted.append('%s @%d  %s -> %s'
                                        % (os.path.basename(rel), w, a, b))

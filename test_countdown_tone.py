@@ -167,8 +167,33 @@ for name, text in ((MGMT, mgmt), (CAL, cal)):
 ok('Severity: .alv-age-0' in base,
    "  and base still says in its own words that that scale is SEVERITY, "
    'which is why', re.findall(r'Severity: [^\n]*', base))
-ok('--alv-age-4:      #b3261e;' in base,
-   '  with #b3261e at the top of it - the same red as a failure')
+# AG-1, 4 Oct 2026 - THE REASON MOVED, THE RULE DID NOT. This used
+# to read `'--alv-age-4:      #b3261e;' in base` - the scale ended in a
+# failure red, so putting a birthday on it said a birthday was a
+# failure. Demetri: "I have decided that I don't need a green and red
+# scale", and the red is gone.
+#
+# A countdown still must not use it, and now for a plainer reason: the
+# scale is a DEPTH, four steps of one tone that only ever get heavier.
+# Days until a birthday do not get heavier - they run out and start
+# again. So what is held here is that the scale is monotonic and
+# one-way, which is exactly what a countdown is not.
+_ages = re.findall(r'--alv-age-([1-4]):\s*(#[0-9a-fA-F]{6})', base)
+ok(len(_ages) == 4, '  and that scale has four steps', _ages)
+
+
+def _lum_ag(h):
+    c = [int(h[i:i + 2], 16) / 255.0 for i in (1, 3, 5)]
+    c = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+         for v in c]
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
+
+_l = [_lum_ag(h) for _, h in sorted(_ages)]
+ok(_l == sorted(_l, reverse=True),
+   '  that only ever gets heavier - which a countdown does not, because '
+   'it runs out and starts again',
+   ['%.3f' % x for x in _l])
 
 # ==========================================================================
 head('2. TWO STEPS, AND THE WORDS STILL CARRY IT')

@@ -232,7 +232,12 @@ ALREADY_WIDE = ['test_banner_pages.py',
                 # site, and one of those can be written in
                 # any file. Pointing it at the template
                 # tree would blind it. [R1]
-                'test_ai_models.py']
+                'test_ai_models.py',
+                # TL-1, 4 Oct 2026 - same shape, same reason. It binds
+                # every call made by bare name under pages/ against the
+                # signature it reaches, so what it needs is every .py
+                # there is. A template root would hide the views.
+                'test_greek_arity.py']
 
 # FAILED with CRS in the tree, against the round that will fix the module
 # and let the suite be widened. Their narrow root is a stated position,

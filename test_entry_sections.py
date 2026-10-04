@@ -1328,7 +1328,19 @@ if ran4:
         if not os.path.isfile(bak):
             skip('%-38s field order' % rel, 'no %s backup' % SUFFIX4)
             continue
-        before, after = read(bak), read(p)
+        # TL-2, 4 Oct 2026 - AS SECTION 4 LEFT IT, not as it is now.
+        # This read the LIVE file, so any later round touching one of
+        # these pages broke a true claim about a round that had done
+        # its job: TL-2 took an {% if from_gantt %} branch out of
+        # project_tasks_edit and the Django-tag census stopped
+        # matching. as_left_by is what answers "as that round left it",
+        # and this file already imports it for its other section.
+        try:
+            from alv_rounds import as_left_by as _alb4
+        except Exception:
+            _alb4 = None
+        after = _alb4(p, SUFFIX4, read) if _alb4 else read(p)
+        before = read(bak)
         a, b = fields(before), fields(after)
         ok(sorted(a) == sorted(b),
            '%-38s %3d control(s), none lost or gained' % (rel, len(b)),

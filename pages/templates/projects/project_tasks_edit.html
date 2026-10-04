@@ -21,22 +21,18 @@ Edit Task - {{ task.task_name }}
   </div>
 {% endfor %}
 
-<!-- Action Buttons: Back+1 (Gantt-aware) -->
+<!-- Action Buttons: Back+1. TL-2, 4 Oct 2026 - the branch that
+     used to stand here knew one origin, the Gantt chart, and sent
+     everybody else to the Project. The view resolves it now, from a
+     map of origins, so a third one is a line there and nothing here. -->
 <div class="page-action-buttons">
   <button type="submit" form="taskForm" class="btn action-primary">
     <i class="fas fa-save"></i> Update Task
   </button>
-  {% if from_gantt %}
-    <a href="{% url 'project_gantt' project.project_id %}" class="btn action-back" title="Back to Gantt Chart">
-      <i class="fas fa-arrow-left"></i>
-      <span class="action-back-label">Back</span>
-    </a>
-  {% else %}
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn action-back" title="Back to Project">
-      <i class="fas fa-arrow-left"></i>
-      <span class="action-back-label">Back</span>
-    </a>
-  {% endif %}
+  <a href="{{ back_url }}" class="btn action-back" title="{{ back_title }}">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
+  </a>
 </div>
 
 <!-- Project Info Card -->
@@ -65,11 +61,10 @@ Edit Task - {{ task.task_name }}
 <!-- Edit Task Form -->
 <form method="post"
       id="taskForm"
-      {% if from_gantt %}
-        action="{% url 'project_tasks_edit' project.project_id task.task_id %}?from_gantt=true"
-      {% else %}
-        action="{% url 'project_tasks_edit' project.project_id task.task_id %}"
-      {% endif %}>
+      {# TL-2 - the origin has to survive a save that fails validation #}
+      {# and re-renders this page, or Back changes meaning halfway      #}
+      {# through an edit.                                               #}
+      action="{{ form_action }}">
 <div class="form-card">
 
   {% csrf_token %}

@@ -13,18 +13,33 @@ Covers:
   - AJAX endpoints (ajax_update_project_status,
     ajax_update_task_status, ajax_duplicate_project, ajax_delete_task,
     project_task_list, get_project_assignees).
-  - Translation utilities - both the temporarily-disabled persistent
-    translation stubs (ensure_project_translations, get_translated_text)
-    and the on-demand Google Translate AJAX endpoint (translate_text +
-    translate_to_greek_service helper).
+  - Translation utilities - the on-demand Google Translate AJAX
+    endpoint (translate_text + translate_to_greek_service helper). The
+    persistent stubs are imported from ..translation_service; they used
+    to be re-declared here as well.
 
-Known latent issues (preserved verbatim - only manifest when the
-disabled persistent-translation path is re-enabled with language='greek'):
-  - get_translated_text stub signature takes 2 args but project_task_list
-    calls it with 3.
-  - ensure_project_translations stub parameter is named 'request' but it
-    is called with a project in project_task_list (harmless while the
-    body is a no-op; matters once implemented).
+TL-1, 4 Oct 2026 - THE TWO "KNOWN LATENT ISSUES" THIS DOCSTRING USED TO
+CARRY WERE NEITHER LATENT NOR PRESERVED FOR A REASON. They were, verbatim:
+
+    - get_translated_text stub signature takes 2 args but
+      project_task_list calls it with 3.
+    - ensure_project_translations stub parameter is named 'request' but
+      it is called with a project in project_task_list.
+
+and the note said they would "only manifest when the disabled
+persistent-translation path is re-enabled with language='greek'".
+
+The first one did not wait. Disabling translation emptied the function
+BODIES; it never touched the CALL SITES, and the call sites are what
+raise. Six of them pass three arguments, each behind `if language ==
+'greek'`, so English skipped every one and ran clean while Greek raised
+TypeError and Live answered Server Error (500) - reported from the
+Projects page with the English list working beside it.
+
+The stubs live in ..translation_service now, declared once, and
+get_translated_text takes the stored translation as its second argument
+because that is what was always being passed to it. test_greek_arity
+holds the signature, the six call sites and the single definition.
 """
 
 import json
@@ -40,7 +55,9 @@ from django.db import transaction
 from django.db.models import F, Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.views.decorators.http import require_http_methods, require_POST
 
 from ..models import Project, ProjectDocument, ProjectTask, props
@@ -49,16 +66,14 @@ logger = logging.getLogger(__name__)
 
 
 # --------------------------------------------------------------------------- #
-# Translation service stubs (translation temporarily disabled)
+# Translation service stubs (translation itself is still disabled)
 # --------------------------------------------------------------------------- #
-# from ..translation_service import ensure_project_translations, get_translated_text
-
-def ensure_project_translations(request):
-    pass
-
-
-def get_translated_text(text, target_language='en'):
-    return text
+# TL-1, 4 Oct 2026 - THE IMPORT IS BACK AND THE LOCAL PAIR IS GONE. These
+# two were declared here as well, with this line commented out above
+# them, so one definition existed in two places and the copy that ran was
+# the one nobody was reading. The signature that raised the 500 -
+# (text, target_language) against a three-argument call - was this copy's.
+from ..translation_service import ensure_project_translations, get_translated_text
 
 
 @login_required
@@ -427,6 +442,79 @@ def project_tasks_add(request, project_id):
     return render(request, 'projects/project_tasks_add.html', context)
 
 
+# --------------------------------------------------------------------------- #
+# TL-2, 4 Oct 2026 - WHERE AN EDIT CAME FROM
+# --------------------------------------------------------------------------- #
+# Demetri: "Within the Task List, if I press to Edit a Task or Subtask,
+# and I then press the Back Button or the Update Task button, then I need
+# to be taken back to the Task List, not the Project."
+#
+# The machinery existed with exactly one origin in it - the Gantt chart
+# sets from_gantt=true and returns to itself, and everything else fell to
+# an else branch pointing at the Project. These three functions are that
+# else branch grown a second entry, and they serve Edit and Delete alike.
+#
+# WHAT TRAVELS IS A KEY, NOT A URL. ?next=/anywhere/ taken at face value
+# is an open redirect; a key chooses from a map written down here, and an
+# unrecognised one falls back to the Project exactly as before.
+TASK_ORIGINS = {
+    'gantt': 'project_gantt',
+    'task_list': 'project_task_list',
+}
+
+TASK_ORIGIN_LABELS = {
+    'gantt': 'Back to Gantt Chart',
+    'task_list': 'Back to Task List',
+}
+
+
+def task_origin(request):
+    """The key naming the page this edit or delete was opened from, or ''.
+
+    from_gantt=true is still read: the Gantt chart has linked that way
+    since long before this round and its links are not being rewritten.
+    """
+    key = request.GET.get('from', '')
+    if key in TASK_ORIGINS:
+        return key
+    return 'gantt' if request.GET.get('from_gantt') else ''
+
+
+def task_origin_query(key, assigned_to='', language=''):
+    """The query string that carries an origin, and the Task List's own
+    state with it.
+
+    Returning someone to a project's DEFAULT task list - everyone,
+    English - would be the same complaint in a second costume: still not
+    the page they left. Both values are REBUILT here rather than passed
+    along, so language can only ever be one of two words.
+    """
+    if key not in TASK_ORIGINS:
+        return ''
+    bits = [('from', key)]
+    if assigned_to:
+        bits.append(('assigned_to', assigned_to))
+    if language == 'greek':
+        bits.append(('language', 'greek'))
+    return urlencode(bits)
+
+
+def task_origin_back(request, project):
+    """(url, title) for the Back control on an edit or a delete page."""
+    key = task_origin(request)
+    if not key:
+        return (reverse('projects_detail', args=[project.project_id]),
+                'Back to Project')
+    url = reverse(TASK_ORIGINS[key], args=[project.project_id])
+    q = task_origin_query(key,
+                          request.GET.get('assigned_to', '').strip(),
+                          request.GET.get('language', ''))
+    # The origin's own key is not needed on the way BACK - the list does
+    # not care where its reader has been - so only the state travels.
+    q = '&'.join(p for p in q.split('&') if not p.startswith('from='))
+    return (url + ('?' + q if q else ''), TASK_ORIGIN_LABELS[key])
+
+
 @login_required
 @permission_required('auth.can_edit_projects', raise_exception=True)
 def project_tasks_edit(request, project_id, task_id):
@@ -438,6 +526,12 @@ def project_tasks_edit(request, project_id, task_id):
 
     # Check if coming from Gantt chart
     from_gantt = request.GET.get('from_gantt', False)
+
+    # TL-2 - and from the Task List, which never had a way to say so.
+    back_url, back_title = task_origin_back(request, project)
+    origin_query = task_origin_query(task_origin(request),
+                                     request.GET.get('assigned_to', '').strip(),
+                                     request.GET.get('language', ''))
 
     if request.method == 'POST':
         try:
@@ -518,11 +612,9 @@ def project_tasks_edit(request, project_id, task_id):
             else:
                 messages.success(request, f'Main task "{task.task_name}" updated successfully!')
 
-            # Redirect based on where we came from
-            if from_gantt:
-                return redirect('project_gantt', project_id=project.project_id)
-            else:
-                return redirect('projects_detail', project_id=project.project_id)
+            # TL-2 - Update Task returns you to the page you opened
+            # the edit from, and to the list you were actually reading.
+            return redirect(task_origin_back(request, project)[0])
 
         except ValidationError as e:
             # Handle Django model validation errors
@@ -558,6 +650,13 @@ def project_tasks_edit(request, project_id, task_id):
         'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
         'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
         'from_gantt': from_gantt,
+        # TL-2 - Back, and the form's own action, which has to keep the
+        # origin across a save that fails validation and re-renders.
+        'back_url': back_url,
+        'back_title': back_title,
+        'form_action': (reverse('project_tasks_edit',
+                                args=[project.project_id, task.task_id])
+                        + ('?' + origin_query if origin_query else '')),
     }
 
     return render(request, 'projects/project_tasks_edit.html', context)
@@ -627,14 +726,23 @@ def project_tasks_delete(request, project_id, task_id):
     task = get_object_or_404(ProjectTask, task_id=task_id, project=project)
     task_name = task.task_name
 
+    # TL-2 - Delete follows Edit. This page had no origin awareness
+    # at all: a Back, a Cancel and a confirmed delete, all three
+    # hard-wired to the Project. Its form posts to the CURRENT url, so
+    # the confirmed path carries the origin without a change to the
+    # markup - only the three links needed one.
+    back_url, back_title = task_origin_back(request, project)
+
     if request.method == 'POST':
         task.delete()
         messages.success(request, f"Task '{task_name}' has been deleted successfully.")
-        return redirect('projects_detail', project_id=project_id)
+        return redirect(back_url)
 
     context = {
         'project': project,
         'task': task,
+        'back_url': back_url,
+        'back_title': back_title,
     }
 
     return render(request, 'projects/project_tasks_delete.html', context)
@@ -1331,6 +1439,10 @@ def project_task_list(request, project_id):
         'pending_tasks': pending_tasks,
         'completion_percentage': completion_percentage,
         'current_date': timezone.now(),
+        # TL-2 - what the four row links append, so an edit opened from
+        # here knows to come back here, to THIS list: same assignee,
+        # same language.
+        'origin_query': task_origin_query('task_list', assigned_to, language),
     }
 
     return render(request, 'projects/project_task_list.html', context)

@@ -342,12 +342,19 @@ LOOK = '''() => {
     const r = e.getBoundingClientRect();
     out.rows[id] = {w: Math.round(r.width), top: Math.round(r.top)};
   });
-  // How many ROWS the five groups occupy: distinct bottom edges, because
-  // align-items: end lines the bottoms up and the groups differ in height.
+  // How many ROWS the five groups occupy: distinct TOP edges.
+  //
+  // FA-1, 4 Oct 2026 - this counted BOTTOMS, and said why: align-items
+  // was `end`, which lined the bottoms up while the groups differed in
+  // height. FA-1 makes it `start` for the ten panels that were out of
+  // line, so the tops are what agree now and the bottoms are not. The
+  // claim is the same one - five groups, one row - and counting the
+  // edge that no longer lines up reported two rows while every control
+  // measured top: 141.
   const groups = [...p.querySelectorAll('.filter-grid > .filter-group, '
                  + '.date-filter-grid > .filter-group')];
   out.lines = new Set(groups.map(e =>
-      Math.round(e.getBoundingClientRect().bottom))).size;
+      Math.round(e.getBoundingClientRect().top))).size;
   // WHAT A DATE INPUT ACTUALLY NEEDS, measured in THIS browser rather
   // than typed in from another one. test_filter_gap's lesson.
   const probe = document.createElement('input');

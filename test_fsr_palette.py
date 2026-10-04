@@ -297,9 +297,17 @@ if sync_playwright is not None:
         pg = _b.new_page(viewport={'width': 1100, 'height': 700})
 
         got = probe(pg, NOW_CSS, now_spans)
+        # AG-1, 4 Oct 2026 - FOUR TINTS, ONE INK. This asked for four
+        # different inks, which was right while the scale was four
+        # hues. One tone puts the step in the background, because the
+        # palest steps cannot carry their own colour as text and clear
+        # AA - 2.87 at step 0.
         inks = [g['color'] for g in got[:4]]
-        check('the four ages render in FOUR different inks',
-              len(set(inks)) == 4, str(inks))
+        tints = [g['bg'] for g in got[:4]]
+        check('the four ages render in FOUR different tints',
+              len(set(tints)) == 4, str(tints))
+        check('  on one ink, which is what one tone means',
+              len(set(inks)) == 1, str(inks))
         check('  and each carries a tint behind it, not bare text',
               all(g['bg'] not in ('rgba(0, 0, 0, 0)', 'transparent')
                   for g in got[:4]))
@@ -317,6 +325,9 @@ if sync_playwright is not None:
         check('  "New Issue" and 12 days share an ink - same band, same thing',
               _same[0]['color'] == _same[1]['color'],
               '%s vs %s' % (_same[0]['color'], _same[1]['color']))
+        # AND THE SAME SUBSTITUTION HERE: the two halves of the defect
+        # are still the two halves, but a band now shows in the tint.
+        _same = [dict(g, color=g['bg']) for g in _same]
         check('  .. and 257 days does NOT, which is the whole point',
               _same[2]['color'] != _same[1]['color'],
               '%s vs %s' % (_same[2]['color'], _same[1]['color']))

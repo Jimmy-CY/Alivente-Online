@@ -248,7 +248,8 @@ check('  and lays its buttons out inline',
       re.search(r'\.row-actions\s*\{[^}]*inline-flex', BASE_SRC) is not None)
 
 # ================================================= WHAT SHOULD HAVE GONE
-for sel in ('.icon-action-btn', '.icon-edit', '.icon-view', '.icon-delete',
+for sel in ('.icon-action-btn', '.icon-edit', '.icon-view', '.icon-document',
+            '.icon-delete',
             '.icon-disabled', '.mobile-action-bar', '.mobile-action-btn',
             '.mobile-action-icon', '.mobile-action-label',
             '.mobile-action-disabled', '.desktop-action-cell',
@@ -453,7 +454,14 @@ else:
                               'Petros Loizou')):
         r = fm.group(1).replace('{{ tenant.tenant_name }}', name)
         if i == 2:
-            r = (r.replace('icon-action-btn icon-view',
+            # RA-1, 4 Oct 2026 - icon-document, not icon-view. This
+            # page's only Look button opens the lease agreement itself,
+            # and .icon-view had been carrying four different pictures.
+            # Switching a class that is no longer in the markup leaves
+            # the probe with no disabled button at all - and then four
+            # checks measure nothing and say so, which is the fixture
+            # working.
+            r = (r.replace('icon-action-btn icon-document',
                            'icon-action-btn icon-disabled', 1)
                   .replace('icon-action-btn icon-delete',
                            'icon-action-btn icon-upload', 1))
@@ -565,9 +573,13 @@ else:
                   up['width'] == '34px')
             check('  CONTROL: it is not simply inheriting the page ink',
                   up['color'] != ed['color'])
-            vw = cs(pg, '.icon-view', ['color'])
-            check('desktop: View is the accent teal (%s)' % vw['color'],
-                  vw['color'] == 'rgb(14, 124, 139)')
+            # RA-1 - the same button, under the name it wears now.
+            # .icon-document is a NAME on --alv-view, so the colour it
+            # has to measure is unchanged: that is the point of aliasing
+            # the colour and never the name.
+            vw = cs(pg, '.icon-document', ['color'])
+            check('desktop: the lease agreement is the accent teal (%s)'
+                  % vw['color'], vw['color'] == 'rgb(14, 124, 139)')
             dis = cs(pg, '.icon-disabled', ['color', 'width'])
             check('desktop: the disabled twin holds the slot (%s wide)'
                   % dis['width'], dis['width'] == '34px')

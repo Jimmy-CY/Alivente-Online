@@ -2013,10 +2013,14 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
     var v = IA_CS.getPropertyValue('--alv-' + name);
     return (v && v.trim()) || fallback;
   }
+  // AG-1, 4 Oct 2026 - the three ageing fallbacks follow the scale.
+  // They were #8e6207 / #a8481a / #b3261e, which IS the green-to-red
+  // ramp written out a second time; a fallback that disagrees with the
+  // token it stands in for is the old design hiding behind the new one.
   var GOOD    = iaTok('good',         '#1e7d4f'),
-      WARN    = iaTok('age-2',        '#8e6207'),
-      SERIOUS = iaTok('age-3',        '#a8481a'),
-      CRIT    = iaTok('age-4',        '#b3261e'),
+      WARN    = iaTok('age-2',        '#6f6a5d'),
+      SERIOUS = iaTok('age-3',        '#55504a'),
+      CRIT    = iaTok('age-4',        '#3b3733'),
       CAT     = iaTok('tag-sky-ink',  '#2b6a86');
   var INK2  = iaTok('ink-soft',  '#5b6b73'),
       MUTED = iaTok('ink-faint', '#8a979d'),

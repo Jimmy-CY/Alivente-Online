@@ -212,7 +212,28 @@ Tenants
                 </td>
                 <!-- Desktop actions: one cell, four buttons -->
                 <td class="desktop-action-cell cell-actions">
+                  {# RA-1, 4 Oct 2026 - the action column is in house order:  #}
+                  {# LOOK, CHANGE, COPY, ADVANCE, DESTROY. Delete is last on  #}
+                  {# every table in the app. alv_rowactions.py holds the rule #}
+                  {# and Show-RowActionDrift reports any row that leaves it.  #}
                   <span class="row-actions">
+                    <a href="{% url 'tenant_report' tresults.tenant_id %}" class="icon-action-btn icon-view" title="View Tenant Report">
+                      <i class="fas fa-eye"></i>
+                    </a>
+
+                    {% if tresults.tenant_lease_agreement %}
+                      <a href="#"
+                         onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url|escapejs }}', '{{ tresults.tenant_lease_agreement.name|escapejs }}', '{{ tresults.tenant_name|escapejs }}'); return false;"
+                         class="icon-action-btn icon-document"
+                         title="View Lease Agreement">
+                        <i class="fas fa-file-contract"></i>
+                      </a>
+                    {% else %}
+                      <span class="icon-action-btn icon-disabled" title="No lease agreement uploaded">
+                        <i class="fas fa-file-contract"></i>
+                      </span>
+                    {% endif %}
+
                     {% if perms.auth.can_edit_tenants %}
                       <a href="{% url 'tenant_edit' tresults.tenant_id %}" class="icon-action-btn icon-edit" title="Edit Tenant">
                         <i class="fas fa-pencil-alt"></i>
@@ -235,23 +256,6 @@ Tenants
                     {% else %}
                       <span class="icon-action-btn icon-disabled" title="No delete permission">
                         <i class="fas fa-trash"></i>
-                      </span>
-                    {% endif %}
-
-                    <a href="{% url 'tenant_report' tresults.tenant_id %}" class="icon-action-btn icon-view" title="View Tenant Report">
-                      <i class="fas fa-eye"></i>
-                    </a>
-
-                    {% if tresults.tenant_lease_agreement %}
-                      <a href="#"
-                         onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url|escapejs }}', '{{ tresults.tenant_lease_agreement.name|escapejs }}', '{{ tresults.tenant_name|escapejs }}'); return false;"
-                         class="icon-action-btn icon-view"
-                         title="View Lease Agreement">
-                        <i class="fas fa-file-contract"></i>
-                      </a>
-                    {% else %}
-                      <span class="icon-action-btn icon-disabled" title="No lease agreement uploaded">
-                        <i class="fas fa-file-contract"></i>
                       </span>
                     {% endif %}
                   </span>

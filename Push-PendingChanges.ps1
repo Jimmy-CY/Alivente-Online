@@ -525,7 +525,59 @@ $sentinels = @(
     @{ File = 'alv_tree.py'; Text = '(<(?:style|script)'; What = 'the block comment syntax is only a comment inside style or script' },
     # Named rather than merged: a tokenize function that reads PYTHON
     # source is a different job, and sharing a name hid that for a month.
-    @{ File = 'test_tree_roots.py'; Text = 'def python_code_only'; What = 'the Python-source one has a name of its own now' }
+    @{ File = 'test_tree_roots.py'; Text = 'def python_code_only'; What = 'the Python-source one has a name of its own now' },
+    # -------------------------------------------------- SECTION TL, 4 Oct 2026
+    # A LIVE 500. The stub declared two parameters; project_task_list
+    # passed three, six times, every one of them behind `if language ==
+    # 'greek'`. English skipped all six and worked; Greek raised TypeError
+    # before the template was reached. The third argument was never spare -
+    # it is the translation stored on the model, and the signature says so.
+    @{ File = 'pages\translation_service.py'; Text = 'def get_translated_text(text, stored='; What = 'the stub takes the stored translation it was always being handed' },
+    # NO SENTINEL ON 'from ..translation_service import'. The obvious row,
+    # and test_sentinels refuses it - rightly. That import line existed
+    # before this round as a COMMENTED-OUT line, so the substring is in
+    # every historical version of the file and the row could never have
+    # failed. The claim that the view uses the shared stubs rather than
+    # a second copy is held by the Absent row below, which CAN fail, and
+    # by test_greek_arity section 3, which asks the parse tree.
+    # DEFINED TWICE is how a definition drifts, and the copy that ran was
+    # the one nobody was reading.
+    @{ File = 'pages\views\projects.py'; Text = 'def get_translated_text'; What = 'rather than declaring a second copy of it'; Absent = $true; Code = $true },
+    # TL-2. The origin is a KEY chosen from a map, never a path: ?next=
+    # read back at face value is an open redirect, and it is the obvious
+    # way to build this.
+    @{ File = 'pages\views\projects.py'; Text = 'def task_origin_back'; What = 'Back resolves the page the edit was opened from' },
+    @{ File = 'pages\templates\projects\project_task_list.html'; Text = '?{{ origin_query }}'; What = 'and the list says so on its links, with its own assignee and language' },
+    @{ File = 'pages\templates\projects\project_tasks_delete.html'; Text = '{{ back_url }}'; What = 'Delete follows Edit, which it did not do at all before' },
+    # CR-1. The house had never claimed .custom-control at all, so a CDN
+    # decided what a selected radio looked like. Both type-scoped
+    # selectors are named: Bootstrap writes the checked colour three
+    # times at two specificities and a single generic rule loses to two
+    # of them.
+    @{ File = 'pages\templates\base.html'; Text = '.custom-checkbox .custom-control-input:checked'; What = 'a ticked box is the house accent, not Bootstrap blue' },
+    @{ File = 'pages\templates\base.html'; Text = '.custom-radio .custom-control-input:checked'; What = 'and so is a selected radio' },
+    # NOT an Absent sentinel on '#0e7c8b'. The first version of this row
+    # was exactly that, and projects_detail carries NINE of them - a
+    # heading icon, a tab underline, a modal header, a button. CR-1 owns
+    # two. A sentinel has to say what its own round claims, or it fails
+    # on work that round never touched and four suites report it.
+    # The nine are real drift and are logged for a round of their own.
+    @{ File = 'pages\templates\projects\projects_detail.html'; Text = '.custom-control-input:checked ~ .custom-control-label { color: var(--alv-accent); }'; What = 'and the one page that styled this control writes the token, not the hex' },
+    # FA-1. end aligned the BOTTOMS of the filter groups, so any group
+    # that was taller - a select beside an input, a search hint under a
+    # control - pushed its own label and box up.
+    @{ File = 'pages\templates\base.html'; Text = 'align-items: start;'; What = 'a filter panel lines up on the top of its labels' },
+    @{ File = 'pages\templates\base.html'; Text = 'align-items: end;'; What = 'and no longer on the bottom of whatever each group happens to end with'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\projects\projects.html'; Text = '2fr 1fr 1fr'; What = 'Projects takes base''s capped columns - all three the same'; Absent = $true; Code = $true },
+    # RA-1. The order lives in alv_rowactions.py and nowhere else -
+    # the patcher, the drift report and the suite all ask it.
+    @{ File = 'alv_rowactions.py'; Text = 'LOOK, CHANGE, COPY, ADVANCE, DESTROY'; What = 'one order for every action column, written down once' },
+    @{ File = 'pages\templates\base.html'; Text = '.icon-document,'; What = 'and a document is not a plain view, so it can be placed' },
+    @{ File = 'pages\templates\tenant.html'; Text = 'icon-action-btn icon-document'; What = 'the Tenants lease agreement is classed by what it is' },
+    # AG-1. One warm neutral deepening, and a figure in the house colour.
+    @{ File = 'pages\templates\base.html'; Text = '--alv-age-4:      #3b3733;'; What = 'the ageing scale is one tone, not green to red' },
+    @{ File = 'pages\templates\base.html'; Text = '--age: var(--alv-good)'; What = 'and not ageing is no longer a health verdict'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\open_invoices_report.html'; Text = '#007bff'; What = 'the total outstanding figure is one colour on both screens'; Absent = $true; Code = $true }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1447,6 +1499,56 @@ $suites = @(
     # derived from, and fails unless they are the same field. Section 3
     # shows that gate failing on the code that shipped the bug.
     'test_passport_holders.py'
+    # The Task List tree on a phone. Its section 2 renders the cards at
+    # 390px before and after: 12/12/12 and three identical greys before,
+    # 12/26/40 with three category inks after. Its section 3 renders the
+    # DESKTOP and fails if anything but the bar colour moved.
+    'test_task_depth.py'
+    # The Greek Task List answered Server Error (500). Its section 1 does
+    # not look for the function that broke: it binds EVERY call made by
+    # bare name under pages/ against the signature it reaches, so the next
+    # signature to drift away from its callers fails the sweep instead of
+    # the deploy. Section 2 lifts the shipped definition out of the backup
+    # and calls it with the argument count read from the backup's own call
+    # sites, and requires the TypeError - the 500 reproduced, not described.
+    'test_greek_arity.py'
+    # Edit a task from the Task List and Back landed you on the Project.
+    # Its section 1 LIFTS the three origin helpers out of the view by
+    # parse and RUNS them against seven requests, two of them forged, so
+    # it judges the answer and not the spelling. Section 2 runs the same
+    # seven against the backup and requires the Task List case to come
+    # back pointing at the Project.
+    'test_task_origin.py'
+    # The radio and the checkbox Bootstrap had been drawing in #007bff
+    # since the stylesheet was linked. Its section 2 renders the real
+    # markup under the real bootstrap 4.1.3, before and after, and reads
+    # the computed colour of the ::before that draws the dot - which is
+    # how it found that Bootstrap writes the checked colour three times
+    # at two specificities, and that the first build of the round had
+    # recoloured the radios and left every checkbox blue.
+    'test_custom_control.py'
+    # The filter fields that were not in line. Its section 1 renders
+    # EVERY filter panel in the tree at 1280, under base as the backup
+    # left it and under base as it is now, and reports the top of every
+    # label and every control: ten panels crooked before, none after,
+    # every control at y=27. Section 2 holds the fact that makes
+    # aligning labels sufficient - that every label is one line.
+    'test_filter_align.py'
+    # The action column's order. Its section 1 judges EVERY .row-actions
+    # wrapper in the tree, not the five the round changed. Its section 2
+    # asks of every icon class whether it carries one picture - which is
+    # what caught the first build of the round repairing .icon-view's
+    # four glyphs by creating two classes with two each. Section 3
+    # renders the Tenants row before and after and reads the order off
+    # the screen.
+    'test_row_action_order.py'
+    # The ageing scale, toned into the theme. Its sections 1-3 RENDER the
+    # five steps and compute contrast off the painted pixels: the tints
+    # must darken monotonically with no reversal, every step must be a
+    # neutral, and the pill must clear AA - which is the gate that caught
+    # the round's own near-miss, where carrying var(--age) over as the
+    # pill's text colour would have shipped 2.87 on step 0.
+    'test_age_tone.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
@@ -1514,6 +1616,28 @@ if (Test-Path $guard) {
     }
 } else {
     Warn 'Show-ButtonDrift.py not present - drift guard skipped'
+}
+
+# RA-1, 4 Oct 2026 - THE SECOND DRIFT GUARD, and for the same reason as the
+# first: a standard that is only in a suite is a standard the next page
+# copied from an old one will quietly leave. Demetri asked for one order
+# for the action column "in all tables ... across the app", and this is
+# what notices the day a table stops keeping it - including a page nobody
+# has written a check for yet.
+$raGuard = Join-Path $root 'Show-RowActionDrift.py'
+if (Test-Path $raGuard) {
+    Say ''
+    Say '  == Show-RowActionDrift.py --strict'
+    & python $raGuard --strict --quiet 2>&1 | ForEach-Object { Say ('     ' + $_) }
+    if ($LASTEXITCODE -ne 0) {
+        Bad ('an action column has left the house order, or an icon class ' +
+             'has picked up a second picture - see the output above')
+        if (-not $Force) { Say ''; Say '  Stopping.  Nothing has been staged.'; exit 1 }
+    } else {
+        Good 'no row action drift'
+    }
+} else {
+    Warn 'Show-RowActionDrift.py not present - row action guard skipped'
 }
 
 # ---------------------------------------------------------------- 4. tidy up

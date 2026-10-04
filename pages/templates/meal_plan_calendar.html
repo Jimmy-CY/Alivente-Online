@@ -864,10 +864,17 @@
             {# at all to a screen reader, and title= is not a substitute - #}
             {# it is a tooltip, read by some assistive tech and not by     #}
             {# others.                                                     #}
+            {# RA-1, 4 Oct 2026 - the action column is in house order:  #}
+            {# LOOK, CHANGE, COPY, ADVANCE, DESTROY. Delete is last on  #}
+            {# every table in the app. alv_rowactions.py holds the rule #}
+            {# and Show-RowActionDrift reports any row that leaves it.  #}
             <div class="row-actions">
                 <a href="{% url 'view_meal_plan' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}"
                    class="icon-action-btn icon-view" title="View"
                    aria-label="View this meal plan"><i class="fas fa-eye"></i></a>
+                <a href="{% url 'meal_plan_shopping_list' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}"
+                   class="icon-action-btn icon-list" title="Shopping List"
+                   aria-label="Shopping list for this meal plan"><i class="fas fa-shopping-cart"></i></a>
                 {% if perms.auth.can_edit_personal %}
                 <a href="{% url 'edit_meal_plan' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}"
                    class="icon-action-btn icon-edit" title="Edit"
@@ -876,9 +883,6 @@
                 <span class="icon-action-btn icon-disabled" title="No permission to edit"
                       aria-label="Edit this meal plan, no permission"><i class="fas fa-pencil-alt"></i></span>
                 {% endif %}
-                <a href="{% url 'meal_plan_shopping_list' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}"
-                   class="icon-action-btn icon-list" title="Shopping List"
-                   aria-label="Shopping list for this meal plan"><i class="fas fa-shopping-cart"></i></a>
                 {% if perms.auth.can_edit_personal %}
                 <button type="button" class="icon-action-btn icon-duplicate" title="Duplicate"
                         aria-label="Duplicate this meal plan"
