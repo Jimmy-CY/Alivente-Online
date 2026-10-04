@@ -43,6 +43,10 @@ holds the signature, the six call sites and the single definition.
 """
 
 import json
+# TR-1 - see translate_to_greek_service for why the translator call needs a
+# pool and a timeout rather than a plain function call.
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -678,9 +682,15 @@ def translate_text(request):
         if not text:
             return JsonResponse({'success': False, 'error': 'No text provided'})
 
-        # Use Google Translate service
+        # TR-1, 4 Oct 2026. The service reports whether it worked, and
+        # this view passes that on instead of stamping success: True over
+        # it. On a failure there is no translated_text at all, so there is
+        # nothing for the browser to write into the Greek field even by
+        # accident - and the field is left exactly as the user left it.
         if target_language == 'greek':
-            translated_text = translate_to_greek_service(text)
+            ok, translated_text, reason = translate_to_greek_service(text)
+            if not ok:
+                return JsonResponse({'success': False, 'error': reason})
         else:
             translated_text = text
 
@@ -696,26 +706,62 @@ def translate_text(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
+# TR-1, 4 Oct 2026 - the pool the translator call runs in.
+#
+# deep-translator 1.9.1 calls requests.get() with no timeout. There is no
+# parameter to pass one through, and socket.setdefaulttimeout would reach
+# every other request in the process. So the call goes into a small bounded
+# pool and the caller waits on the future. Four workers, because the worst
+# case has to be a number rather than "however many pile up".
+_TRANSLATE_POOL = ThreadPoolExecutor(max_workers=4,
+                                     thread_name_prefix='alv-translate')
+
+# Long enough for a working service on a slow day, short enough that a user
+# who presses the button gets an answer rather than a spinner.
+TRANSLATE_TIMEOUT = 8
+
+
 def translate_to_greek_service(text):
-    """
-    Use Google Translate API to translate English text to Greek
+    """Translate English to Greek.
+
+    Returns (ok, text, reason).
+
+    IT RETURNS A RESULT AND NOT A STRING, and that is the round. This used
+    to `return text` from its except clause - the English, unchanged - and
+    the caller had no way to tell that apart from a translation. So the
+    English went into the Greek box under a green tick. Demetri: "it insert
+    the English Name, but it says that it has done the translation
+    successfully."
+
+    On failure the second element is None, not the input. A caller that
+    wants to fall back to the English has to say so in its own code, where
+    a reader can see it happening.
     """
     try:
-        # Lazy import: googletrans is an optional dependency; any failure
-        # (including ImportError) falls back to returning the original text.
-        from googletrans import Translator
+        from deep_translator import GoogleTranslator
+    except ImportError as e:
+        print(f"Translation unavailable - deep_translator not installed: {e}")
+        return (False, None, 'The translation service is not available.')
 
-        # Initialize Google Translator
-        translator = Translator()
+    def run():
+        return GoogleTranslator(source='en', target='el').translate(text)
 
-        # Translate from English to Greek
-        result = translator.translate(text, dest='el', src='en')
-
-        return result.text
-
+    try:
+        out = _TRANSLATE_POOL.submit(run).result(timeout=TRANSLATE_TIMEOUT)
+    except FuturesTimeout:
+        print(f"Translation timed out after {TRANSLATE_TIMEOUT}s")
+        return (False, None,
+                'The translation service did not answer in time.')
     except Exception as e:
-        print(f"Google Translation service error: {e}")
-        return text  # Return original text if translation fails
+        print(f"Translation service error: {e}")
+        return (False, None, 'The translation service could not be reached.')
+
+    if not out or not str(out).strip():
+        # An empty answer is not a translation. Saying so beats writing a
+        # blank over whatever the user had typed.
+        return (False, None, 'The translation service returned nothing.')
+
+    return (True, str(out), '')
 
 
 @login_required

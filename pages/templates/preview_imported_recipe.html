@@ -433,7 +433,7 @@ tr.sortable-chosen {
 }
 
 .add-item-btn {
-    background: #0e7c8b;
+    background: var(--alv-accent);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -446,19 +446,7 @@ tr.sortable-chosen {
     background: var(--alv-accent-ink);
 }
 
-.remove-item-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 12px;
-}
 
-.remove-item-btn:hover {
-    background: #c82333;
-}
 
 .alert-info-custom {
     background: #d1ecf1;
@@ -809,11 +797,6 @@ tr.sortable-chosen {
         padding: 6px 8px;
     }
 
-    /* Remove button — bigger touch target */
-    .remove-item-btn {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
 
     /* Input padding inside cards */
     .ingredient-table input,
@@ -1346,9 +1329,11 @@ tr.sortable-chosen {
                                        placeholder="e.g., For the sauce">
                             </td>
                             <td class="cell-actions">
-                                <button type="button" class="remove-item-btn" onclick="removeIngredientRow(this)">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                                <div class="row-actions">
+                                    <button type="button" class="icon-action-btn icon-delete" title="Remove ingredient" onclick="removeIngredientRow(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -1371,7 +1356,7 @@ tr.sortable-chosen {
 
             <!-- Spell Check Button -->
             <div style="margin-bottom: 15px;">
-                <button type="button" class="btn btn-primary" onclick="spellCheckInstructions()" style="display: inline-flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn action-secondary" onclick="spellCheckInstructions()">
                     <i class="fas fa-spell-check"></i> Check Spelling
                 </button>
             </div>
@@ -1412,9 +1397,11 @@ tr.sortable-chosen {
                                        placeholder="e.g., Preparation">
                             </td>
                             <td style="text-align: center;" class="cell-actions">
-                                <button type="button" class="remove-item-btn" onclick="removeInstructionRow(this)">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                                <div class="row-actions">
+                                    <button type="button" class="icon-action-btn icon-delete" title="Remove step" onclick="removeInstructionRow(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -1443,7 +1430,7 @@ tr.sortable-chosen {
                                 {{ recipe.recipe_document.name }}
                             </a>
                         </div>
-                        <button type="button" class="btn btn-sm btn-info ml-3" onclick="viewRecipeDocument('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
+                        <button type="button" class="btn btn-sm action-secondary ml-3" onclick="viewRecipeDocument('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
                             <i class="fas fa-eye"></i> View
                         </button>
                     </div>
@@ -1476,7 +1463,7 @@ tr.sortable-chosen {
 
                     <!-- Delete document option -->
                     <div class="mt-3">
-                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteRecipeDocument({{ recipe.recipe_id }})">
+                        <button type="button" class="btn btn-sm action-secondary action-danger" onclick="confirmDeleteRecipeDocument({{ recipe.recipe_id }})">
                             <i class="fas fa-trash"></i> Delete Current Document
                         </button>
                     </div>
@@ -1699,7 +1686,7 @@ tr.sortable-chosen {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn action-secondary" onclick="confirmAddIngredient()">
                         <i class="fas fa-check"></i> Add Ingredient
                     </button>
@@ -1793,7 +1780,7 @@ tr.sortable-chosen {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn action-secondary" onclick="confirmAddMeasurement()">
                         <i class="fas fa-check"></i> Add Measurement
                     </button>
@@ -1818,7 +1805,7 @@ tr.sortable-chosen {
                     <!-- Results will be populated here -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1836,10 +1823,10 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-body" id="recipeDocViewerContent"></div>
                 <div class="modal-footer">
-                    <a id="recipeDocDownloadLink" href="#" class="btn btn-info" target="_blank">
+                    <a id="recipeDocDownloadLink" href="#" class="btn action-secondary" target="_blank">
                         <i class="fas fa-download"></i> Download
                     </a>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -3064,9 +3051,11 @@ function addIngredientRow() {
                    placeholder="e.g., For the sauce">
         </td>
         <td class="cell-actions">
-            <button type="button" class="remove-item-btn" onclick="removeIngredientRow(this)">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="row-actions">
+                <button type="button" class="icon-action-btn icon-delete" title="Remove ingredient" onclick="removeIngredientRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </td>
     `;
     tbody.appendChild(newRow);
@@ -3123,9 +3112,11 @@ function addInstructionRow() {
                    placeholder="e.g., Preparation">
         </td>
         <td style="text-align: center;" class="cell-actions">
-            <button type="button" class="remove-item-btn" onclick="removeInstructionRow(this)">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="row-actions">
+                <button type="button" class="icon-action-btn icon-delete" title="Remove step" onclick="removeInstructionRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </td>
     `;
     tbody.appendChild(newRow);
@@ -3521,7 +3512,7 @@ function viewRecipeDocument(url, filename) {
             <div class="text-center">
                 <i class="fas fa-file fa-5x text-muted mb-3"></i>
                 <p>This file type cannot be previewed.</p>
-                <a href="${url}" target="_blank" class="btn btn-info">Open File</a>
+                <a href="${url}" target="_blank" class="btn action-secondary">Open File</a>
             </div>`;
     }
 
@@ -3546,7 +3537,7 @@ function confirmDeleteRecipeDocument(recipeId) {
                 document.querySelector('.alert.alert-info').style.display = 'none';
                 document.querySelector('[name="doc_action_choice"]').closest('div').previousElementSibling.style.display = 'none';
                 document.getElementById('doc_action_hidden').remove();
-                document.querySelector('.btn-danger[onclick*="confirmDeleteRecipeDocument"]').closest('div').style.display = 'none';
+                document.querySelector('.action-danger[onclick*="confirmDeleteRecipeDocument"]').closest('div').style.display = 'none';
                 
                 // Update the section label
                 document.querySelector('#docUploadSection label').innerHTML = '<i class="fas fa-upload"></i> Attach Document (Optional)';

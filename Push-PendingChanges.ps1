@@ -587,7 +587,31 @@ $sentinels = @(
     # sets width 100%, and dropping it shrank every table to its content.
     @{ File = 'pages\templates\property_detail.html'; Text = 'class="table alv-table issues-table"'; What = 'property_detail''s tables are base''s, and keep their width' },
     @{ File = 'pages\templates\property_detail.html'; Text = 'table-striped'; What = 'with no zebra, like every other list in the app'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\base.html'; Text = '.icon-comment'; What = 'and reading an issue comment is a LOOK with a name of its own' }
+    @{ File = 'pages\templates\base.html'; Text = '.icon-comment'; What = 'and reading an issue comment is a LOOK with a name of its own' },
+    # CS-1. The move itself cannot be sentinelled on a string - it is the
+    # same bytes in a different place - so the sentinel is on what the
+    # move was FOR: Actual Expenses keeps its five-column rule, and the
+    # stale page rules that would have woken up are gone.
+    @{ File = 'pages\templates\act_expense.html'; Text = 'minmax(0, 1.6fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 170px 170px'; What = 'the Actual Expenses filter keeps the five columns it was measured for' },
+    @{ File = 'pages\templates\customer_form.html'; Text = 'color: #2c3e50'; What = 'and no page re-imposes a hex literal over a base token'; Absent = $true; Code = $true },
+    # SL-1. On the component, not on the 3-up variant where it used to be.
+    @{ File = 'pages\templates\base.html'; Text = 'overflow-wrap: break-word;'; What = 'a long stat label breaks inside the word rather than leaving its tile' },
+    # TD-1. One page, one class, one line.
+    @{ File = 'pages\templates\projects\project_task_list.html'; Text = 'white-space: nowrap;'; What = 'an overdue date keeps its warning on the same line' },
+    # TR-1. The string that WAS the defect, and the import that replaces it.
+    @{ File = 'pages\views\projects.py'; Text = 'return text  # Return original text if translation fails'; What = 'a failed translation no longer comes back as the English'; Absent = $true; Code = $true },
+    @{ File = 'pages\views\projects.py'; Text = "return JsonResponse({'success': False, 'error': reason})"; What = 'and arrives as a failure the browser can show' },
+    # 'from googletrans import', NOT 'googletrans'. A sentinel matches a
+    # SUBSTRING, case-insensitively, and the class that replaces it is
+    # deep_translator's GoogleTranslator - which contains 'googletrans'.
+    # The bare word could never have passed, and test_sentinels said so.
+    # Same family as 'badge' matching 'renewal-status-badge': a name is a
+    # token, not a run of characters.
+    @{ File = 'pages\views\projects.py'; Text = 'from googletrans import'; What = 'googletrans is gone - it has not been in requirements for weeks'; Absent = $true; Code = $true },
+    # RB-1. The button Demetri pointed at, and the selector that hunts it.
+    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'class="btn action-secondary" onclick="spellCheckInstructions()"'; What = 'Check Spelling is a house secondary, not Bootstrap blue' },
+    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'remove-item-btn'; What = 'and the red block delete is the house row action everywhere else uses'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\preview_imported_recipe.html'; Text = '.action-danger[onclick*="confirmDeleteRecipeDocument"]'; What = 'with the selector that finds it again moved along with it' }
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1573,6 +1597,33 @@ $suites = @(
     # table to fit its content. Section 3 holds the one named exception,
     # and fails if either half of it goes missing.
     'test_pd_tables.py'
+    # base's stylesheet moving into the head. Its section 5 is the gate
+    # that keeps it fixed: no page may redeclare a property of the block
+    # that moved with a different value, or a pasted hex literal silently
+    # un-tokenises a component again. Section 5b counts the older drift
+    # against base's three head stylesheets and reports it WITHOUT
+    # failing, because CS-1 neither caused it nor fixed it.
+    'test_css_order.py'
+    # the Greek stat label. Renders at seven widths, because the defect
+    # lived only where base's 3-up phone rule does not apply and a
+    # phone-only check would have passed in both directions.
+    'test_stat_label.py'
+    # the overdue date and its warning. Measures HEIGHT, not the number
+    # of client rects - a Range returns one rect per text fragment, so
+    # the obvious count reads 2 whether or not the span wrapped.
+    'test_overdue_date.py'
+    # the translation endpoint. Section 3 RUNS the service with the
+    # import broken and requires (False, None, reason) - the old code
+    # returned the English here, which is how a failure reached the user
+    # as a green tick. Section 5 states what it could NOT test: a
+    # successful translation, which has no route out of the sandbox.
+    'test_translate_honest.py'
+    # the recipe capture page's buttons. Section 3 is the one that earns
+    # its keep: it requires that no selector in the file still hunts for
+    # a class the round removed. The first build changed a button's class
+    # and left the querySelector that finds it, which would have thrown
+    # on the success path after the document was already deleted.
+    'test_recipe_buttons.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

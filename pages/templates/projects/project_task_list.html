@@ -486,6 +486,18 @@ Task List - {{ project.project_name }}
     font-family: 'Courier New', monospace;
     font-size: 13px;
     color: var(--alv-ink-soft);
+    /* TD-1, 4 Oct 2026. The overdue warning is written on its own source
+       line after the date, which leaves a space between them, and a space
+       is somewhere to wrap. On a phone card this column is the narrowest
+       thing on the screen and that space was the only break in the span,
+       so the triangle landed on the next line on its own. Demetri: the
+       "!" "should fit ... on the right of the date, and not on the next
+       line."
+
+       A d/m/Y date has no spaces in it and the span holds nothing else,
+       so there is nothing here that should wrap. Measured at 95px for the
+       pair against a 180px card column at 390. */
+    white-space: nowrap;
 }
 .date-value.overdue { color: var(--alv-bad); font-weight: 600; }
 .no-date { font-style: italic; font-size: 12px; }

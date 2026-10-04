@@ -299,6 +299,36 @@ ROUNDS = [
     # a rewrite. ORDER: after PD-1, whose consolidated header rule this
     # round deletes outright once base owns the header.
     '.bak_pdtables',
+    # Section CS, 4 Oct 2026 - base.html's component stylesheet moves out
+    # of the body and into the head. It sat AFTER {% block content %}, so
+    # in the rendered document it came later than every page's own CSS and
+    # beat it at equal specificity. Eleven pages wrote their own
+    # .filter-grid columns and all eleven were dead - which is what
+    # Demetri photographed on Actual Expenses. The move also hands back 57
+    # stale declarations that earlier rounds tokenised in base and left
+    # standing in the pages, so CS-1 prunes those in the same breath.
+    # FIRST IN THIS BUNDLE: it changes which rules win tree-wide, so every
+    # render taken after it is taken under the new order.
+    '.bak_cssorder',
+    # SL-1 - .alv-stat-label gets overflow-wrap. ΟΛΟΚΛΗΡΩΜΕΝΕΣ is one
+    # word with nothing to break on and drew 41px past its own tile.
+    # Demetri: "The Completed Box Cuts off in Greek."
+    '.bak_statlabel',
+    # TD-1 - the overdue date and its warning, kept on one line.
+    # project_task_list only; .date-value is used by no other page.
+    '.bak_overduedate',
+    # TR-1 - translate_to_greek_service returned the English from its
+    # except clause and translate_text stamped success: True on it, so a
+    # failure arrived as a green tick with English in the Greek box.
+    # googletrans out, deep-translator in, and the failure now arrives.
+    # Touches pages/views/projects.py and requirements.txt, not templates.
+    '.bak_translate',
+    # RB-1 - preview_imported_recipe.html, which serves /create_recipe/
+    # too. Eleven buttons off Bootstrap and onto the action standard,
+    # including the Check Spelling blue and the red block deletes Demetri
+    # asked about, plus the JS selector that hunted one of them by its old
+    # class.
+    '.bak_recipebtn',
 ]
 
 
