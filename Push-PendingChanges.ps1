@@ -700,7 +700,19 @@ $sentinels = @(
     @{ File = 'mysite\settings.py'; Text = "LOGIN_URL = '/login/'"; What = 'a view with no session reaches the login page that exists' },
     @{ File = 'mysite\settings.py'; Text = '#LOGIN_URL = "/login/"'; What = 'and the setting is no longer commented out'; Absent = $true },
     @{ File = 'pages\views\auth.py'; Text = 'NO @login_required HERE - LU-1'; What = 'logging out when already logged out is a no-op, not a redirect' },
-    @{ File = 'pages\views\auth.py'; Text = 'from django.contrib.auth.decorators import login_required'; What = 'and the import that view was the only user of has gone'; Absent = $true }
+    @{ File = 'pages\views\auth.py'; Text = 'from django.contrib.auth.decorators import login_required'; What = 'and the import that view was the only user of has gone'; Absent = $true },
+    # PD-3. The compensating rule, the tap floor, and three removals.
+    #
+    # Code = $true ON THE THREE ABSENT ROWS, and it is load-bearing here
+    # rather than habit: #6c757d and #28a745 are each still in the file
+    # ONCE, inside DB-7's and PD-2's comments describing what THEY
+    # removed. Without the comment-stripping those rows would fail on
+    # another round's record of its own finding.
+    @{ File = 'pages\templates\property_detail.html'; Text = '.property-detail-page.container-fluid > .row {'; What = 'the page rows match its tighter wrapper, so it no longer scrolls sideways on a phone' },
+    @{ File = 'pages\templates\property_detail.html'; Text = 'min-height: 44px'; What = 'and its one short select is 44px to tap' },
+    @{ File = 'pages\templates\property_detail.html'; Text = '.issues-table th.text-left'; What = 'and the page no longer restates a Bootstrap utility word for word'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\property_detail.html'; Text = '#6c757d'; What = 'no muted grey is spelt out where base has a name for it'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\property_detail.html'; Text = '#28a745'; What = 'and no Bootstrap green either'; Absent = $true; Code = $true }
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -1769,6 +1781,15 @@ $suites = @(
     # Its section 3 then resolves the target, because a LOGIN_URL that
     # routes nowhere is exactly what the defect was.
     'test_login_url.py'
+    # property_detail's palette and its seven pixels. Section 1 is the
+    # reason this suite exists: it PAINTS the page before and after at
+    # four widths and compares scrollWidth to clientWidth, because the
+    # overflow came from one rule here and one rule in Bootstrap and the
+    # subtraction only happens in a browser - every text check in this
+    # file would have passed on the broken page. Section 5 asserts the 25
+    # surviving !important flags are STILL THERE, so a later round cannot
+    # take them on this one's authority.
+    'test_pd3.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

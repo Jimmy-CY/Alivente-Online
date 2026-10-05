@@ -384,6 +384,20 @@ ROUNDS = [
     # LOGIN_URL is set, and @login_required comes off logout_user, because
     # logging out when you are already out is a no-op, not an error.
     '.bak_loginurl',
+    # PD-3, 5 Oct 2026 - property_detail stops carrying its own palette
+    # and stops scrolling sideways. The page's mobile block narrowed the
+    # wrapper to 8px while Bootstrap's .row still pulled -15px, so every
+    # width from 320 to 768 overflowed by exactly 7px - invisible to the
+    # eye, visible to the scrollbar, and invisible to any text check
+    # because the subtraction happens in the browser. The rows come in to
+    # -8px to meet the wrapper, which keeps the tighter gutters the page
+    # was given on purpose. With it: 90 hex literals onto base's tokens,
+    # one 41px select to 44, and 15 rules that restated Bootstrap's own
+    # .text-* utilities word for word. The other 25 !important flags stay
+    # - 19 of them changed nothing when dropped, but a fixture with a
+    # fraction of the rows cannot prove a negative, and this round does
+    # not claim what it could not check.
+    '.bak_pd3',
 ]
 
 
