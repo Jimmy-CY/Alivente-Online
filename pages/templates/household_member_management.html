@@ -102,7 +102,7 @@
         </td>
         {% endfor %}
         {% if can_edit %}
-        <td class=" hm-actions-cell cell-actions" data-label="Actions" style="white-space:nowrap;">
+        <td class=" hm-actions-cell cell-actions" data-label="Actions" style="white-space:nowrap;"><span class="row-actions">
           <button type="button" class="icon-action-btn icon-edit edit-member-btn"
                   data-id="{{ m.id }}" data-name="{{ m.name }}" data-email="{{ m.email|default:'' }}"
                   data-user="{{ m.user_id|default:'' }}" data-active="{{ m.is_active|yesno:'1,0' }}"
@@ -124,7 +124,7 @@
             <input type="hidden" name="member_id" value="{{ m.id }}">
             <button type="submit" class="icon-action-btn icon-delete" title="Delete"><i class="fas fa-trash"></i></button>
           </form>
-        </td>
+        </span></td>
         {% endif %}
       </tr>
       {% endfor %}

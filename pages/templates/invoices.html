@@ -142,7 +142,7 @@ Invoices
             <td data-label="Invoice Date">{{ row.invoice_date|date:"Y-m-d" }}</td>
             <td data-label="Due Date">{{ row.due_date|date:"Y-m-d" }}</td>
             <td data-label="Days Overdue" class="num overdue-cell{% if row.is_overdue %} is-overdue{% endif %}">{{ row.days_overdue }}</td>
-            <td data-label="Actions" class="desktop-action-cell cell-actions">
+            <td data-label="Actions" class="desktop-action-cell cell-actions"><span class="row-actions">
               {% if perms.auth.can_edit_invoices %}
                 <form method="post" action="{% url 'invoices_commit' row.invoice_id %}" class="inv-inline-form">
                   {% csrf_token %}
@@ -155,7 +155,7 @@ Invoices
                   <i class="fas fa-check"></i>
                 </span>
               {% endif %}
-            </td>
+            </span></td>
             <td class="mobile-action-bar cols-1">
               {% if perms.auth.can_edit_invoices %}
                 <form method="post" action="{% url 'invoices_commit' row.invoice_id %}" class="inv-inline-form-mobile">

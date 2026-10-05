@@ -1022,6 +1022,36 @@ def asset_detail(request, asset_id):
 @login_required
 @permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
+def delete_asset_invoice(request, asset_id):
+    """Remove the asset's purchase invoice. POST only.
+
+    AI-1, 5 Oct 2026. Demetri: "I need to add the functionality to remove
+    an attached file." The field could only ever be REPLACED.
+
+    THE BYTES GO, not just the link. `.delete(save=False)` removes the
+    file from storage and leaves the model alone; the field is then
+    cleared and the row saved in one write. Clearing the field by itself
+    would leave a file nobody can reach still occupying disk, which is
+    hidden rather than removed - act_expense's delete_document learned
+    this first and does the same thing.
+    """
+    asset = get_object_or_404(PropertyAsset, pk=asset_id)
+    if not asset.purchase_invoice:
+        messages.warning(request, 'There is no invoice attached to remove.')
+        return redirect('edit_asset', asset_id=asset_id)
+    try:
+        asset.purchase_invoice.delete(save=False)
+        asset.purchase_invoice = None
+        asset.save(update_fields=['purchase_invoice'])
+        messages.success(request, 'Invoice removed.')
+    except Exception as e:
+        messages.error(request, f'Error removing the invoice: {str(e)}')
+    return redirect('edit_asset', asset_id=asset_id)
+
+
+@login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
+@require_POST
 def delete_asset_photo(request, asset_id, photo_id):
     """Delete a single photo from an asset. POST only. Redirects back to edit_asset."""
     asset = get_object_or_404(PropertyAsset, pk=asset_id)

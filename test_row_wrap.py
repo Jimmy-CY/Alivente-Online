@@ -343,11 +343,32 @@ if m:
     print('      %s wrapper(s) on %s page(s)' % (m.group(1), m.group(2)))
     ok(int(m.group(1)) >= 41,
        '  %s wrappers, up from 30 before RA-3' % m.group(1), m.group(1))
+# RA-3b and AI-1, 5 Oct 2026 - THE NUMBER MOVED TWICE, BY DECISION.
+#
+# This asserted 13, which is what RA-3 left: the four pages it held back,
+# holding 13 loose buttons between them. Two later rounds moved it the
+# same day and neither was drift:
+#
+#     13   as RA-3 left it
+#   - 10   RA-3b wrapped the three form-shaped pages at CELL level, the
+#          unit a run of buttons could not be for them
+#   +  1   AI-1 gave edit_asset a Remove button, and Demetri chose to
+#          leave it named - it is one control beside a file name, not a
+#          row of actions, so it is not in an action column
+#     --
+#      4   create_meal_plan 3, edit_asset 1
+#
+# THERE IS NO SCOPING THIS ONE. The report is a subprocess reading the
+# LIVE tree, so as_left_by cannot reach it: the number has to be written
+# down, and the arithmetic has to be written down beside it, or the next
+# person cannot tell a decision from a regression.
+LOOSE_NOW = 4
 m2 = re.search(r'NOT IN A \.row-actions WRAPPER - (\d+) button', out)
-ok(m2 is not None and int(m2.group(1)) == 13,
-   '  and %s loose button(s) left, down from 37'
+ok(m2 is not None and int(m2.group(1)) == LOOSE_NOW,
+   '  and %s loose button(s) left, from the 34 RA-2 really found'
    % (m2.group(1) if m2 else '?'),
-   'the four held-back pages hold 13 between them')
+   'expected %d - 13 as RA-3 left it, less the 10 RA-3b wrapped, plus '
+   'the 1 AI-1 added by decision' % LOOSE_NOW)
 ok('Every action column is in house order.' in out,
    '  every column, the 16 new ones included, is in house order')
 ok('Nothing drifting' in out, '  and nothing is drifting')
@@ -386,7 +407,10 @@ if FAILS:
     sys.exit(1)
 print('%s: all checks passed' % ME)
 print()
-print('  NOT PROVED HERE: that the 13 buttons still loose are harmless.')
-print('  They are on four pages this round deliberately did not touch -')
+print('  NOT PROVED HERE: that the buttons still loose are harmless.')
+print('  RA-3 left 13 on four pages it deliberately did not touch -')
 print('  three that mix forms with plain markup, and one that builds its')
-print('  buttons inside a JavaScript template literal. RA-3b and RA-3c.')
+print('  buttons inside a JavaScript template literal. RA-3b has since')
+print('  taken the three form-shaped pages, which leaves RA-3c and the')
+print('  JavaScript one. The fourth of the four now showing is AI-1s')
+print('  Remove button on edit_asset, left named by decision.')

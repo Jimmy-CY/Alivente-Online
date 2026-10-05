@@ -140,8 +140,23 @@
     <div class="form-group">
         <label><strong>Purchase Invoice/Receipt</strong></label>
         {% if asset.purchase_invoice %}
+            {# AI-1, 5 Oct 2026 - Demetri: "I need to add the #}
+            {# functionality to remove an attached file." Replace was #}
+            {# the only verb this field had. #}
+            {# #}
+            {# The button names a form that lives OUTSIDE editAssetForm, #}
+            {# because HTML does not allow a form inside a form and this #}
+            {# control has to sit beside the file it removes. The photos #}
+            {# below already do exactly this. #}
             <div class="alert alert-info current-file-info">
-                Current file: <a href="{{ asset.purchase_invoice.url }}" target="_blank">{{ asset.purchase_invoice.name }}</a>
+                <span class="current-file-name">
+                    Current file: <a href="{{ asset.purchase_invoice.url }}" target="_blank">{{ asset.purchase_invoice.name }}</a>
+                </span>
+                <button type="submit" form="deleteInvoiceForm"
+                        class="icon-action-btn icon-delete"
+                        title="Remove this file" aria-label="Remove this file">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         {% endif %}
         <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
@@ -231,6 +246,15 @@
     </div>
 </div>
 
+{% if asset.purchase_invoice %}
+    <!-- AI-1 - the invoice's own hidden form, same reason as the photos'. -->
+    <form method="post" action="{% url 'delete_asset_invoice' asset.id %}"
+          id="deleteInvoiceForm" style="display:none"
+          onsubmit="return confirm('Remove the attached invoice? The file will be deleted.');">
+        {% csrf_token %}
+    </form>
+{% endif %}
+
 <!-- Hidden per-photo action forms — must live OUTSIDE editAssetForm because HTML
      doesn't allow nested forms. Star/delete buttons reference these by ID. -->
 {% for photo in photos %}
@@ -255,6 +279,18 @@
 .current-file-info {
     margin-bottom: 8px;
     padding: 10px 14px;
+}
+/* AI-1 - the name on the left, the Remove action on the right. The
+   banner was a block of text; it is now a row with a control in it. */
+.current-file-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.current-file-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 /* Photo management grid (Edit Asset form) */

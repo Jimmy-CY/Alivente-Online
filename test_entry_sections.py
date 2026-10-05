@@ -1102,7 +1102,22 @@ else:
         if not os.path.isfile(bak):
             skip('%-34s the lifts' % rel, 'no %s backup' % SUFFIX3)
             continue
-        was, now = read(bak), read(p)
+        # AI-1, 5 Oct 2026 - AS PUSH 3 LEFT IT, not as the tree is now.
+        # The same hole section 15 had, and it was fixed there on 4 Oct
+        # with the same two lines: this read the LIVE file, so a later
+        # round touching one of these pages broke a true claim about a
+        # round that had done its job. AI-1 gave edit_asset a hidden
+        # {% if asset.purchase_invoice %} form so the Remove button has
+        # somewhere to post, and the Django-tag census below went 11 -> 12
+        # and failed. The claim here is that PUSH 3's lift did not lose a
+        # conditional; what a later round adds is that round's to prove,
+        # and test_asset_invoice.py proves it.
+        try:
+            from alv_rounds import as_left_by as _alb3
+        except Exception:
+            _alb3 = None
+        was = read(bak)
+        now = _alb3(p, SUFFIX3, read) if _alb3 else read(p)
         a, b = fields(was), fields(now)
         named_ = set(MOVES3[rel])
         ok(sorted(a) == sorted(b),

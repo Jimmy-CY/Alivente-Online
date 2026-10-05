@@ -463,6 +463,40 @@ ROUNDS = [
     # for .verify-icon alone, so it is widened too; without that the
     # new column would have been a button that did nothing.
     '.bak_plinvcol',
+    # AI-1, 5 Oct 2026 - Demetri: "The add file to the Edit Asset works
+    # perfectly. However, I need to add the functionality to remove an
+    # attached file." REPLACE was the only verb the field had. The
+    # Remove button names a hidden form outside editAssetForm, because
+    # HTML does not allow a form inside a form and the control has to sit
+    # beside the file - the photos on that page solved this first, and
+    # SV-1 spent a round on what a submit button with no form owner does,
+    # which is nothing, silently. The view calls .delete(save=False), so
+    # the bytes leave storage rather than the link being cut.
+    '.bak_assetinv',
+    # LA-1, 5 Oct 2026 - Demetri: "Step 3 needs to say click the button
+    # above - since we moved the buttons to the top." One word. The suite
+    # is worth more than the change: it censuses every template for prose
+    # that points at a control by DIRECTION, because a sentence telling
+    # somebody where to look goes stale the moment a layout moves and
+    # nothing here was watching for them.
+    '.bak_leaseabove',
+    # RA-3b, 5 Oct 2026 - the ten buttons RA-3 held back because each
+    # sits in its OWN form. A run of buttons was the wrong unit: between
+    # these there is a </form> and a <form>, so wrapping the buttons
+    # would have put a .row-actions inside each form and left three
+    # groups of one. The unit is the CELL, and all three pages put their
+    # whole action column in a single <td>.
+    '.bak_formwrap',
+    # RA-4, 5 Oct 2026 - the order RA-3b made readable. The report said
+    # physical_invoice_list ran approve, unapprove, send, duplicate,
+    # delete, pdf. Checked against which controls can appear TOGETHER -
+    # a draft shows approve, duplicate, delete, pdf; an approved one
+    # shows unapprove, send, duplicate, pdf - so the PDF really was last
+    # and Delete really did come before it. Five blocks reordered, not
+    # one character rewritten. The first build moved the wrapper's
+    # opening tag along with the block it was glued to and put the PDF
+    # outside the group; every gate passed, because it WAS a permutation.
+    '.bak_invorder',
 ]
 
 

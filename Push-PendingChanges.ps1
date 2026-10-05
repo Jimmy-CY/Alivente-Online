@@ -741,7 +741,21 @@ $sentinels = @(
     # row that is true in every version can never discriminate. The CLASS
     # on the new cell is the thing PL-1 actually added.
     @{ File = 'pages\templates\act_expense.html'; Text = 'class="cell-invoice"'; What = 'the P&L drill-down has a column that says Invoice' },
-    @{ File = 'pages\templates\finance_pl_act.html'; Text = "'.verify-icon, .report-invoice-icon'"; What = 'and its handler listens for the document icon, not only the tick' }
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = "'.verify-icon, .report-invoice-icon'"; What = 'and its handler listens for the document icon, not only the tick' },
+    # AI-1, LA-1, RA-3b and RA-4.
+    @{ File = 'pages\templates\edit_asset.html'; Text = 'form="deleteInvoiceForm"'; What = 'an attached invoice can be taken off again' },
+    @{ File = 'pages\views\properties.py'; Text = 'def delete_asset_invoice'; What = 'and the file leaves storage, not just the record' },
+    @{ File = 'pages\templates\generate_lease_agreement.html'; Text = 'click the button above'; What = 'step 3 points at the button where it actually is' },
+    @{ File = 'pages\templates\generate_lease_agreement.html'; Text = 'click the button below'; What = 'and not where it used to be'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\invoices.html'; Text = '<span class="row-actions">'; What = 'an action column of forms is still one group' }
+    # NO SENTINEL FOR RA-4. Its claim is an ORDER - pdf, then duplicate,
+    # then approve or unapprove, then send, then delete - and a sentinel
+    # matches a SUBSTRING. There is no string that is present when five
+    # blocks are in the right sequence and absent when they are not; the
+    # one tried here was 'icon-pdf', which RA-2 already sentinels on this
+    # same page and which is equally true in either order.
+    # test_invoice_order.py reads the blocks and compares the sequence,
+    # which is the only way to say it.
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -1861,6 +1875,27 @@ $suites = @(
     # button that did nothing when pressed - worse than the
     # unfindable tick, which at least worked.
     'test_pl_invoice_col.py'
+    # the Remove on Edit Asset. Its section 3 checks FORM OWNERSHIP - the
+    # button names a form and that form exists - because SV-1 proved a
+    # submit button with no owner fails silently. Its section 4 reads the
+    # view for .delete(save=False), which is the difference between a
+    # file removed and a file merely unreachable.
+    'test_asset_invoice.py'
+    # one word on the lease page. Its section 2 is the part worth having:
+    # a census of every sentence in the tree that points at a control by
+    # DIRECTION, printed rather than bounded, because two of the three it
+    # finds are comments nobody reads and the point is to put the list in
+    # front of a person.
+    'test_lease_above.py'
+    # the ten form-shaped actions. Its section 2 requires that every form
+    # inside the new wrapper still closes - a wrapper that swallowed a
+    # </form> would read fine to a text census and be invalid markup.
+    'test_form_wrap.py'
+    # the invoice action order. Its section 4 reads the wrapper back and
+    # counts what is inside it, because the first build of that round
+    # moved a tag with a block and every other gate passed - a length
+    # check cannot see a tag that merely moved.
+    'test_invoice_order.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
