@@ -789,7 +789,13 @@ $sentinels = @(
     # discriminate. test_passport_holder section 1 makes the claim
     # properly, by comparing the count before and after.
     @{ File = 'pages\migrations\0097_passport_holder.py'; Text = 'on_delete=django.db.models.deletion.PROTECT'; What = 'the column is nullable and the member cannot be deleted under it' },
-    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'DRY RUN - nothing was written'; What = 'and the backfill writes only when told to' }
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'DRY RUN - nothing was written'; What = 'and the backfill writes only when told to' },
+    # PH-1b, 5 Oct 2026.
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'get_table_description'; What = 'PH-1b: the backfill asks the table what columns it has before querying' },
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = '0097_passport_holder has not been applied'; What = 'and says which migration is missing rather than raising pymysql at the reader' },
+    # PH-1c, 5 Oct 2026.
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = "'angela manias': 'Angy'"; What = 'PH-1c: the one mapping no rule could reach is written down as a decision' },
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'THE MAP POINTS AT A MEMBER WHO IS NOT '; What = 'and a stale map entry is reported rather than silently skipped' }
     # NO SENTINEL FOR OI-1 ON A COLOUR IT KEPT. #0e7c8b was already the
     # accent's own value written out, so a Present row on var(--alv-accent)
     # is true of pages that never went through this round and an Absent row
@@ -2008,6 +2014,16 @@ $suites = @(
     # migration and deciding it looks right - this is the first schema
     # change in a fortnight and deploys run migrations automatically.
     'test_passport_holder.py'
+    # PH-1b. Sections 3 to 5 run the real command against sqlite
+    # databases built from the models' own metadata, through manage.py,
+    # with a settings module that reads nothing from the environment for
+    # its connection and so cannot reach a real database by accident.
+    'test_passport_guard.py'
+    # PH-1c. Section 3 runs the command against the shape production
+    # really has - first-name members, full-name passports - and section
+    # 5 plants a map that gives one member two names, which is how a
+    # backfill quietly hands one person somebody else's documents.
+    'test_passport_alias.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

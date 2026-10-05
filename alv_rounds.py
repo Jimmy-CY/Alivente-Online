@@ -598,6 +598,48 @@ ROUNDS = [
     # --write, and never writes an ambiguous one. PA-3: "no safe
     # automatic mapping for Angy". This round does not invent one.
     '.bak_passholder',
+
+    # PH-1b - a command that explodes is a bad command. PH-1's backfill
+    # walked into a query against a column it had no reason to assume
+    # existed and returned two hundred lines of traceback ending in
+    # pymysql. It now asks the table what columns it has first, and if
+    # holder_id is not there it names the alias and the engine, says the
+    # migration has not been applied to THAT database, points at
+    # showmigrations and tells the local and production cases apart -
+    # then exits non-zero having read and written nothing.
+    #
+    # Introspection, not a caught exception: 1054 is also what a typo in
+    # a field name raises, and a handler that turned every unknown
+    # column into "run your migrations" would be lying half the time.
+    #
+    # Its suite does what PH-1's could not: it builds sqlite databases
+    # from the MODELS' own metadata and runs the real command against
+    # them through manage.py, so the matching logic is proved end to end
+    # - exact, loose, no match, another workspace, the write, and the
+    # second write that finds nothing left to do.
+    '.bak_passguard',
+
+    # PH-1c - four names, written down, because nobody can infer them.
+    # The backfill ran against production and matched NOTHING: 21
+    # passports, four holder names, zero hits. The members were seeded
+    # with first names (migration 0072 - Demetri, Angy, Erene,
+    # Alexandra) and the passports carry full names. Three of the four
+    # are the same person written two ways; Angela Manias against Angy
+    # is a different name, which is what PA-3 meant by "no safe
+    # automatic mapping for Angy".
+    #
+    # Demetri chose an explicit map over a first-word rule - a rule that
+    # catches three of these four and stops looking safe the day a
+    # household holds a Demetri and a Demetris - and confirmed that
+    # Angela and Angy are one person. `named` is a third kind of match
+    # and IS written, because a person decided it rather than a string
+    # comparison landing. A map entry pointing at a member who is not in
+    # that workspace is reported under its own heading, not skipped.
+    #
+    # And the unmatched list now prints the members available beside it:
+    # the first run said "these need a person" and could not be acted on
+    # without reading a migration.
+    '.bak_passalias',
 ]
 
 

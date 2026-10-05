@@ -336,6 +336,20 @@ PINNED = {
     # this round did not break the row. It revealed it.
     'LOOK, CHANGE, COPY, ADVANCE, DESTROY':
         'the house row-action order itself, backed up once by RA-2',
+    # THE SIXTH, 5 Oct 2026, AND THE SAME STORY AS THE FIFTH. PH-1 wrote
+    # this row hours earlier and it discriminated against nothing because
+    # the command had no backup at all - the file sat in the "no backup
+    # to compare against" bucket. PH-1b gave it its first backup, which
+    # made the row checkable, and the string is in that version too
+    # because PH-1b did not touch the dry-run message.
+    #
+    # It is the right shape for a guard against a future deletion: "this
+    # command is dry by default" is the single most important thing about
+    # it, and the day somebody removes that line the row fails. Pinned,
+    # not rewritten. PH-1b did not break it; it revealed it.
+    'DRY RUN - nothing was written':
+        'the backfill is dry by default - the one property of that '
+        'command worth guarding, backed up once by PH-1b',
 }
 unpinned = [b for b in blind
             if not any(k.lower() in b.lower() for k in PINNED)]
