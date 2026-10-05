@@ -645,7 +645,16 @@ $sentinels = @(
     # order to be checked. The getenv call is the claim.
     @{ File = 'mysite\settings.py'; Text = "SECRET_KEY = os.getenv('SECRET_KEY', '')"; What = 'the signing key comes from the environment' },
     @{ File = 'mysite\settings.py'; Text = "USDA_API_KEY = os.getenv('USDA_API_KEY', '')"; What = 'and so does the USDA key' },
-    @{ File = 'mysite\settings.py'; Text = 'django-insecure-'; What = 'and no generated-and-never-changed key is left in the file'; Absent = $true }
+    @{ File = 'mysite\settings.py'; Text = 'django-insecure-'; What = 'and no generated-and-never-changed key is left in the file'; Absent = $true },
+    # DR-1b. The shorthand, gone from the two pages DR-1 sentinelled.
+    @{ File = 'pages\templates\tenant.html'; Text = 'border: 1px solid #0e7c8b'; What = 'and no page sets the accent border by shorthand either'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\properties.html'; Text = 'border: 1px solid #0e7c8b'; What = 'nor does Properties'; Absent = $true; Code = $true }
+    # NO SENTINEL ON 'border-radius: 6px'. One was written and
+    # test_sentinels refused it: the radius is present in all 27 backed-up
+    # versions of that file, so a Present row on it is true in every one
+    # and can never discriminate. The claim worth making - that the radius
+    # survived the shorthand being removed - is a BEFORE AND AFTER
+    # comparison, and test_btn_border.py section 4 makes it properly.
 )
 
 # A sentinel normally asserts a string is PRESENT.  With Absent = $true it
@@ -1679,6 +1688,14 @@ $suites = @(
     # exists because I leaked two real keys into a conversation by
     # trusting a regex to mask them.
     'test_settings_env.py'
+    # the border shorthand. Its section 3 paints all fifteen pages and
+    # includes border WIDTH and STYLE in what it compares, because those
+    # are exactly what the removed shorthand was supplying. Its section 4
+    # guards the hyphen: border and border-radius are one careless regex
+    # apart, every one of these rules carries both, and losing the radius
+    # would not have failed section 3 - the border would be right and the
+    # corners square.
+    'test_btn_border.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

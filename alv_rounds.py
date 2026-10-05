@@ -350,6 +350,13 @@ ROUNDS = [
     # environment read - I said otherwise once, from my own broken
     # redaction, and was wrong.
     '.bak_setenv',
+    # DR-1b, 4 Oct 2026 - the shorthand DR-1 could not touch. base declares
+    # border-color and the page declared `border`, so DR-1's property-for-
+    # property census never saw it and left fifteen rules setting the
+    # accent again by another route. Bootstrap supplies the width and the
+    # style once the shorthand goes; proved by painting all fifteen before
+    # and after, border width and style included.
+    '.bak_btnborder',
 ]
 
 
