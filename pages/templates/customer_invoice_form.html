@@ -315,7 +315,14 @@
   </tr>
 </template>
 
-<style>
+<style>    /* DR-2a, 5 Oct 2026 - 3 declaration(s) removed from this
+       page because base already said them, in its own words.
+       Each resolved to the byte-identical computed value, so
+       nothing here moved; what changes is that the page is on
+       the token again and will follow when the house does.
+       The ones that really DO differ from base are a separate
+       round, because those move a pixel.          [CS-1 5b] */
+
 
 .btn-info { transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -372,9 +379,9 @@ textarea.form-control { resize: vertical; }
 .line-qty, .line-price { text-align: right; }
 .line-remove-cell { text-align: center; vertical-align: middle; }
 
-.icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 6px; border: 2px solid; background: white; text-decoration: none; transition: all 0.2s ease; font-size: 13px; cursor: pointer; }
+.icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;  border: 2px solid;  text-decoration: none; transition: all 0.2s ease; font-size: 13px; cursor: pointer; }
 .icon-delete { color: #dc3545; border-color: #dc3545; }
-.icon-delete:hover { background-color: #dc3545; color: white; }
+.icon-delete:hover { background-color: #dc3545;  }
 
 .add-line-wrap { margin: 14px 0 24px; }
 

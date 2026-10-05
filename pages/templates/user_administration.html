@@ -236,7 +236,7 @@
                             {% else %}
                                 <button type="button" class="icon-action-btn icon-unlock" title="Enable User"
                                         onclick="confirmToggle({{ user.id }}, '{{ user.username|escapejs }}', true)">
-                                    <i class="fas fa-check"></i>
+                                    <i class="fas fa-user-check"></i>
                                 </button>
                                 <button type="button" class="icon-action-btn icon-delete delete-btn" title="Delete User"
                                         onclick="confirmDelete({{ user.id }}, '{{ user.username|escapejs }}')">
@@ -271,7 +271,7 @@
                         {% else %}
                             <button type="button" class="mobile-action-btn"
                                     onclick="confirmToggle({{ user.id }}, '{{ user.username|escapejs }}', true)">
-                                <i class="fas fa-check mobile-action-icon icon-color-unlock"></i>
+                                <i class="fas fa-user-check mobile-action-icon icon-color-unlock"></i>
                                 <span class="mobile-action-label">Enable</span>
                             </button>
                             <button type="button" class="mobile-action-btn"

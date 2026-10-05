@@ -537,6 +537,23 @@ ROUNDS = [
     # invent a column to satisfy a census. The report says NAMED now,
     # with the reason, and refuses a fifth.
     '.bak_rowexempt',
+
+    # IC-2 - the other half of IC-1's pair. fa-check was worn by
+    # icon-approve and icon-unlock; Approve keeps the tick, Enable
+    # becomes fa-user-check. After it, NO glyph in the tree is worn by
+    # two names - the one-picture rule holds in both directions for the
+    # first time. The third use was inside the same split glyph name
+    # IC-1 edited, which is what IC-1's census was built to find.
+    '.bak_usercheck',
+
+    # DR-2a - twelve declarations on five pages that said what base
+    # already said, in different words: 6px for var(--alv-radius-sm),
+    # #f8f9fa for var(--alv-surface), 1fr 1fr 1fr for repeat(3, 1fr).
+    # Every one resolved identically, and the suite paints all five
+    # pages at four widths to prove nothing moved. What it buys is that
+    # five pages are back on the tokens and will follow when the house
+    # moves. The 59 that really differ are not this round.
+    '.bak_dr2spell',
 ]
 
 

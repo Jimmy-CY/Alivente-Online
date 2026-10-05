@@ -767,6 +767,11 @@ $sentinels = @(
     # sentinel about a register breaking the gate it was registered in.
     @{ File = 'alv_rowactions.py'; Text = 'def named(page, hits)'; What = 'RA-5: the order knows which controls are not action columns' },
     @{ File = 'Show-RowActionDrift.py'; Text = 'REGISTERED COUNT HAS MOVED'; What = 'and the register refuses to absorb a new one' }
+    # IC-2 and DR-2a, 5 Oct 2026.
+    @{ File = 'pages\templates\user_administration.html'; Text = 'fa-user-check'; What = 'IC-2: Enable has a picture of its own, the twin of Disable' },
+    @{ File = 'pages\templates\household_member_management.html'; Text = '}user-check{'; What = 'and so does Activate, on the other half of the split name' },
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = 'DR-2a, 5 Oct 2026'; What = 'DR-2a: the page says what it took and why' },
+    @{ File = 'pages\templates\passport_management.html'; Text = 'grid-template-columns: 1fr 1fr 1fr'; What = 'and no longer spells out what base says as repeat(3, 1fr)'; Absent = $true; Code = $true }
     # NO SENTINEL FOR OI-1 ON A COLOUR IT KEPT. #0e7c8b was already the
     # accent's own value written out, so a Present row on var(--alv-accent)
     # is true of pages that never went through this round and an Absent row
@@ -1963,6 +1968,14 @@ $suites = @(
     # button in its element, and section 4 plants a fifth one and
     # requires --strict to refuse it.
     'test_row_exempt.py'
+    # IC-2. Its section 3 makes the claim for the whole tree rather than
+    # for one pair: after it, no picture is worn by two names at all.
+    'test_user_check.py'
+    # DR-2a. Section 3 paints all five pages at four widths and requires
+    # every computed value to come back byte-identical, because a round
+    # whose whole claim is that it cannot move a pixel is worth nothing
+    # unless something looks.
+    'test_dr2_spelling.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
