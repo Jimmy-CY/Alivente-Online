@@ -398,6 +398,29 @@ ROUNDS = [
     # fraction of the rows cannot prove a negative, and this round does
     # not claim what it could not check.
     '.bak_pd3',
+    # SV-1, 5 Oct 2026 - Demetri: "If I edit an asset and I then select an
+    # invoice document and then press Save, nothing happens." Nothing
+    # happened because the button was not in the form: Save sat on line 23
+    # of edit_asset.html and <form id="editAssetForm"> opened on line 37,
+    # so the button belonged to no form and the browser swallowed the
+    # click. It looked like a file bug because of implicit submission -
+    # Enter in a text field always submitted, and every save ever made on
+    # that page went through Enter. Censusing the shape found a second,
+    # unreported one: Generate Lease Agreement, whose form holds no submit
+    # control at all and whose page has no text input to press Enter in.
+    '.bak_submitform',
+    # WS-1, 5 Oct 2026 - the left stripe that means warning, said
+    # eleven ways by hand. PD-3 put property_detail's onto
+    # var(--alv-warn) and printed on every run how many were still
+    # spelt out; this takes them. The first census returned EIGHT,
+    # because it asked for the shorthand only - three pages paint the
+    # same stripe with border-left-color, which is precisely the hole
+    # DR-1 fell into and DR-1b had to exist a day later to fill. The
+    # pattern was widened before the patcher was written this time.
+    # Fifteen stripes now agree. It does NOT claim #ffc107 is gone:
+    # the colour is still used 60 times in other families, and the
+    # suite prints that count so the claim cannot quietly grow.
+    '.bak_warnstripe',
 ]
 
 

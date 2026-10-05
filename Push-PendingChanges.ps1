@@ -712,7 +712,20 @@ $sentinels = @(
     @{ File = 'pages\templates\property_detail.html'; Text = 'min-height: 44px'; What = 'and its one short select is 44px to tap' },
     @{ File = 'pages\templates\property_detail.html'; Text = '.issues-table th.text-left'; What = 'and the page no longer restates a Bootstrap utility word for word'; Absent = $true; Code = $true },
     @{ File = 'pages\templates\property_detail.html'; Text = '#6c757d'; What = 'no muted grey is spelt out where base has a name for it'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\property_detail.html'; Text = '#28a745'; What = 'and no Bootstrap green either'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\property_detail.html'; Text = '#28a745'; What = 'and no Bootstrap green either'; Absent = $true; Code = $true },
+    # SV-1. The attribute itself, on both buttons. There is no Absent
+    # row to write here: the defect was a MISSING attribute, and a
+    # sentinel cannot assert the absence of nothing. The Present rows
+    # are the whole claim, and test_submit_form.py section 4 is what
+    # guards against a third one appearing.
+    @{ File = 'pages\templates\edit_asset.html'; Text = '<button type="submit" form="editAssetForm"'; What = 'Save Changes belongs to the form it saves' },
+    @{ File = 'pages\templates\generate_lease_agreement.html'; Text = 'form="lease-generation-form"'; What = 'and Generate Lease Agreement to the form it generates from' },
+    # WS-1. One page per spelling, so a future round cannot narrow
+    # the pattern back to the shorthand without a row failing.
+    @{ File = 'pages\templates\occupancy_trends.html'; Text = 'border-left: 4px solid var(--alv-warn)'; What = 'a warning stripe is the house warning colour' },
+    @{ File = 'pages\templates\home.html'; Text = 'border-left-color: var(--alv-warn)'; What = 'and so is one written the long way' },
+    @{ File = 'pages\templates\occupancy_trends.html'; Text = 'border-left: 4px solid #ffc107'; What = 'no page spells the stripe out any more'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\home.html'; Text = 'border-left-color: #ffc107'; What = 'in either spelling'; Absent = $true; Code = $true }
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -1790,6 +1803,22 @@ $suites = @(
     # surviving !important flags are STILL THERE, so a later round cannot
     # take them on this one's authority.
     'test_pd3.py'
+    # the two submit buttons that belonged to no form. Its section 3
+    # is a BROWSER check, not an argument about the HTML spec: it
+    # clicks a submit button outside a form and requires NOTHING to
+    # happen, then adds form= to that same button and requires the
+    # form to submit. Section 5 then shows Enter still submitting the
+    # BROKEN markup, which is why this survived for months.
+    'test_submit_form.py'
+    # the warning stripes. It renders TWICE, and the second kind is
+    # the interesting one: three of the ten pages never draw the
+    # element in the flattened fixture, so their page diff is empty -
+    # and an empty diff is not evidence. Section 4 paints the RULE
+    # instead, stylesheet plus one bare element, and answers for all
+    # eleven. Section 6 requires that a border on all FOUR sides is
+    # not caught, because sixteen of those exist and were never this
+    # round's to change.
+    'test_warn_stripe.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
