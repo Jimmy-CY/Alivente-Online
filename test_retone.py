@@ -271,13 +271,27 @@ m = re.search(r'<button[^>]*icon-action-btn[^>]*>.*?</button>', mk, re.S)
 ok(m is not None, '%s: View is a row action now' % DEEDS)
 if m:
     b = ' '.join(m.group(0).split())
-    ok('icon-view' in b, '  wearing .icon-view, which base declares')
+    # .icon-document, NOT .icon-view - RA-2, 5 Oct 2026.
+    #
+    # R2 put this control in the row wearing .icon-view and left it on
+    # fa-scroll, and the two lines here recorded that pair. RA-2 found
+    # .icon-view wearing FOUR different glyphs across the tree - an eye,
+    # an invoice, a PDF and this scroll - and gave each picture its own
+    # name. Opening a title deed is .icon-document on fa-file-contract
+    # now, which is the same colour and the same place in the row.
+    #
+    # The CLAIM of R2's section 3 is untouched by that: View became a
+    # row action, it is named, and it sits in the action cell it was
+    # already in. Only the spelling of the name moved, and this suite
+    # tracks the live tree and records later rounds by name - D3 and
+    # RB-1 are both already in here the same way.
+    ok('icon-document' in b, '  wearing .icon-document, which base declares')
     ok('title=' in b and 'aria-label=' in b,
        '  and named - an icon-only control with no label is a control '
        'nobody can read', b[:90])
-    ok('fa-scroll' in b,
-       '  keeping fa-scroll: seven of the fourteen .icon-view controls in '
-       'the system use a document icon rather than an eye')
+    ok('fa-file-contract' in b,
+       '  drawing fa-file-contract - a document, which is what a title '
+       'deed is, and the glyph .icon-document carries everywhere')
     i_cell = mk.rfind('desktop-action-cell', 0, mk.index('icon-action-btn'))
     ok(i_cell > 0,
        '  in the .desktop-action-cell it was already sitting in')

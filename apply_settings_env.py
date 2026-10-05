@@ -151,7 +151,16 @@ BOOT_NEW = (
     "%(i)sos.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')\n"
     "%(i)s" + BOOT_ANCHOR)
 
-BOOT_COUNT = 7
+# EIGHT, NOT SEVEN, SINCE 5 OCT 2026. LU-1 added test_login_url.py,
+# which boots Django to ask what login_required does with an
+# anonymous request. It was written carrying its own setdefault, so
+# nothing was broken - but this count failed, which is exactly what
+# it is for. An exact number is a tripwire; a floor would have let a
+# suite with no key of its own in silently, and that suite would
+# fail on any machine without a .env.
+#
+# Raise it deliberately, with the suite named, every time.
+BOOT_COUNT = 8
 
 
 def harden_suites(check):

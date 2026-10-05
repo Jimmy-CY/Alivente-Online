@@ -237,7 +237,20 @@ ALREADY_WIDE = ['test_banner_pages.py',
                 # every call made by bare name under pages/ against the
                 # signature it reaches, so what it needs is every .py
                 # there is. A template root would hide the views.
-                'test_greek_arity.py']
+                'test_greek_arity.py',
+                # LU-1, 5 Oct 2026 - it counts @login_required decorators,
+                # which live in .py and in no template at all. A template
+                # root would see none of them.
+                #
+                # AND IT IS NOT REPO-WIDE EITHER, which is the part worth
+                # writing down. Walked over the whole repo the census
+                # returns 307 rather than 282, because nine apply_*.py
+                # patchers carry the decorator inside the text they
+                # INSERT. Those are tooling, not views, and counting them
+                # would overstate the thing the round is about. So it
+                # walks pages/ and crs/ - the two Django apps - and that
+                # narrowing is a stated position, not an oversight.
+                'test_login_url.py']
 
 # FAILED with CRS in the tree, against the round that will fix the module
 # and let the suite be widened. Their narrow root is a stated position,

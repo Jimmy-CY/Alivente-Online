@@ -69,9 +69,35 @@ line()
 
 rows = []
 glyphs = {}
+# RA-2, 5 Oct 2026 - what is NOT in a wrapper.
+#
+# This report has always read the tree through RA.wrappers(), which finds
+# .row-actions on a <span> or a <div>. 83 icon buttons are inside one;
+# THIRTY-SEVEN ARE NOT, across fourteen pages, and the report said nothing
+# about them at all.
+#
+# A report silent about a third of its subject is worse than no report,
+# because it is believed. Inside this blind spot .icon-view carried four
+# pictures, .icon-approve drew an undo arrow, and four passport buttons
+# had no verb in their markup.
+#
+# They are NAMED here rather than failed on: wrapping all 37 is ~21 edits
+# over fourteen pages, ten inside <td> elements where .row-actions'
+# inline-flex would break the cell. That is RA-3.
+loose = {}
 for p in sorted(alv_tree.templates()):
     name = alv_tree.rel(p).replace(os.sep, '/')
     src = alv_tree.code_only(read(p))
+    for names, gl in RA.unwrapped(src):
+        loose.setdefault(name, []).append((names, gl))
+        # AND THE GLYPH CENSUS COUNTS THEM NOW. This is exactly where
+        # .icon-view hid four pictures: the census only ever looked
+        # inside wrappers, so three strays were never compared against
+        # the eleven that were right.
+        for c in names:
+            if c != 'icon-disabled' and gl:
+                glyphs.setdefault(c, set()).add(gl[0])
+
     for s, e, inner in RA.wrappers(src):
         seq = RA.sequence(inner)
         if seq:
@@ -153,6 +179,20 @@ if shared:
     line('   NOTED, NOT DRIFT - one picture worn by two names:')
     for g, cs in sorted(shared.items()):
         line('     %-40s %s' % (g, ', '.join(sorted(cs))))
+    line()
+
+# NOT COUNTED AS DRIFT - named so the blind spot is visible, not so the
+# report fails on work nobody has agreed to do. RA-3 wraps them.
+if loose:
+    n = sum(len(v) for v in loose.values())
+    line('   NOT IN A .row-actions WRAPPER - %d button(s) on %d page(s).'
+         % (n, len(loose)))
+    line('   The ordering standard cannot be read on these. Until RA-2')
+    line('   the glyph census could not see them either.')
+    for pg in sorted(loose):
+        seen = sorted({' '.join(c) or '(no icon class)'
+                       for c, _ in loose[pg]})
+        line('     %-40s %2d  %s' % (pg, len(loose[pg]), ', '.join(seen)))
     line()
 
 line('=' * 74)

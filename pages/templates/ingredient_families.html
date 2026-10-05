@@ -93,14 +93,7 @@
           <input type="hidden" name="action" value="add_to_family">
           <input type="hidden" name="family_id" value="{{ family.family_id }}">
           <div class="d-flex align-items-center" style="gap: 8px;">
-            <select name="ingredient_id" class="form-control form-control-sm family-add-picker" required>
-              <option value="">&mdash; Add an ingredient &mdash;</option>
-              {% for ing in all_ingredients %}
-                <option value="{{ ing.ingredient_id }}">
-                  {{ ing.name }}{% if ing.family %} (currently in: {{ ing.family.name }}){% endif %}
-                </option>
-              {% endfor %}
-            </select>
+            <select name="ingredient_id" class="form-control form-control-sm family-add-picker" required><option value="">&mdash; Add an ingredient &mdash;</option></select>
             <button type="submit" class="btn action-secondary btn-sm" style="white-space: nowrap;">
               <i class="fas fa-plus"></i> Add
             </button>
@@ -259,5 +252,27 @@
       $('#editFamilyModal').modal('show');
     });
   });
+</script>
+
+<!-- PF-1, 5 Oct 2026 - the ingredient picker, rendered ONCE.
+     It used to be rendered inside every family card, each copy listing
+     all 374 ingredients. Filled on first focus, which is
+     indistinguishable from being full: the options are already in the
+     document, so there is no fetch and no wait. -->
+<template id="familyIngredientOptionsTpl">{% for ing in all_ingredients %}<option value="{{ ing.ingredient_id }}">{{ ing.name }}{% if ing.family %} (currently in: {{ ing.family.name }}){% endif %}</option>{% endfor %}</template>
+<script>
+(function () {
+    // One listener, on the document, rather than one per family card -
+    // the same reasoning as the templates themselves.
+    document.addEventListener('focusin', function (e) {
+        var sel = e.target;
+        if (!sel.classList || !sel.classList.contains('family-add-picker')) return;
+        if (sel.dataset.filled) return;
+        var tpl = document.getElementById('familyIngredientOptionsTpl');
+        if (!tpl) return;
+        sel.appendChild(tpl.content.cloneNode(true));
+        sel.dataset.filled = '1';
+    });
+})();
 </script>
 {% endblock %}

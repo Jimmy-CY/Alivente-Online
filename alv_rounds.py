@@ -357,6 +357,33 @@ ROUNDS = [
     # style once the shorthand goes; proved by painting all fifteen before
     # and after, border width and style included.
     '.bak_btnborder',
+    # PF-1, 5 Oct 2026 - Demetri: "the Ingredients page is very sluggish."
+    # Not USDA, which the page never calls on load: 374 rows x two inline
+    # edit selects x 50 options = 18,700 <option> elements, every one of
+    # them hidden behind .edit-mode and only ever wanted one row at a
+    # time. The options move into a <template> rendered once and are
+    # cloned in on first use; the selected value comes back from
+    # data-original-value, which cancelEdit has always relied on.
+    '.bak_pickerlazy',
+    # RA-2, 5 Oct 2026 - the drift report only ever looked inside
+    # .row-actions wrappers, so 37 of the tree's 119 icon buttons - a
+    # third - were never examined. Widening it to every icon button found
+    # three one-picture defects it had been blind to: icon-view wearing
+    # four different glyphs across pages, icon-approve drawing an UNDO
+    # arrow on Cash Receipts, and four bare icon-disabled buttons on
+    # Passports that said they were disabled without saying what they do.
+    '.bak_iconnames',
+    # LU-1, 5 Oct 2026 - Demetri, minutes after rotating SECRET_KEY:
+    # "Logged Out... Got this error." The rotation ended every session at
+    # once, he pressed Logout, @login_required redirected to
+    # settings.LOGIN_URL - and that line was COMMENTED OUT, so Django used
+    # its own default of /accounts/login/, which this project has never
+    # routed. Not a Logout bug: all 282 @login_required views across 34
+    # modules answered a dead session that way, and had for the life of
+    # the project. It never showed because sessions here never died.
+    # LOGIN_URL is set, and @login_required comes off logout_user, because
+    # logging out when you are already out is a no-op, not an error.
+    '.bak_loginurl',
 ]
 
 

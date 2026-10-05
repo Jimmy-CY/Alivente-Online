@@ -387,7 +387,11 @@ ok('icon-action-btn icon-comment' in SRC,
 import alv_rowactions as _RA
 glyphs = {}
 for p in alv_tree.templates():
-    s = alv_tree.code_only(read(p))
+    # now(), NOT read() - RA-2, 5 Oct 2026. These two censuses walked
+    # the LIVE tree, so when RA-2 renamed the loose buttons this suite
+    # failed on work that is not its own. PD-2 asserts the tree as PD-2
+    # left it, which is what now() serves.
+    s = alv_tree.code_only(now(p))
     for a, b, _inner in _RA.wrappers(s):
         for m in re.finditer(r'class="([^"]*icon-action-btn[^"]*)"[^>]*>\s*'
                              r'<i class="[^"]*?(fa-[a-z0-9-]+)',
@@ -414,7 +418,11 @@ ok(pg_glyphs == {'fa-comments'},
 # unnoticed while RA-2 waits.
 loose = []
 for p in alv_tree.templates():
-    s = alv_tree.code_only(read(p))
+    # now(), NOT read() - RA-2, 5 Oct 2026. These two censuses walked
+    # the LIVE tree, so when RA-2 renamed the loose buttons this suite
+    # failed on work that is not its own. PD-2 asserts the tree as PD-2
+    # left it, which is what now() serves.
+    s = alv_tree.code_only(now(p))
     wraps = [(a, b) for a, b, _ in _RA.wrappers(s)]
     for m in re.finditer(r'class="([^"]*icon-action-btn[^"]*)"[^>]*>\s*'
                          r'<i class="[^"]*?(fa-[a-z0-9-]+)', s, re.S):

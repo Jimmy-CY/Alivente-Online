@@ -22,7 +22,10 @@ Functions
                        honours a safe ?next=, and on failure redirects
                        back with a red message - which login.html can now
                        show, because it has a messages loop.
-- logout_user        : Logs out the current user (@login_required).
+- logout_user        : Logs out whoever is logged in, if anyone, and
+                       returns to the public home page. It carries no
+                       login guard at all - see LU-1 at the view for
+                       why that is deliberate.
 - password_forgot    : Ask for a set-password link by email address.
                        Answers identically whether the address exists.
 - password_set       : The link's landing page and its POST. Runs the four
@@ -33,7 +36,6 @@ Functions
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -160,7 +162,18 @@ def login_user(request):
     return render(request, 'login.html', {'next': _safe_next(request)})
 
 
-@login_required
+# NO @login_required HERE - LU-1, 5 Oct 2026.
+#
+# It used to carry one, and that is how a dead session became a 404:
+# @login_required redirected to LOGIN_URL, which was unset. LOGIN_URL is
+# set now, but the decorator would still be wrong here - it would send
+# somebody to the login page carrying ?next=/logout/, so that logging in
+# logged them straight back out.
+#
+# Django's own LogoutView has never required a login either. Logging out
+# when you are already out is a no-op, and logout() is happy to be called
+# on an anonymous request. The view ends at the public home page, which
+# is the right place to be in both cases.
 def logout_user(request):
     logout(request)
     # NO SUCCESS MESSAGE either, same finding. Being back at the public

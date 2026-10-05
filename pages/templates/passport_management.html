@@ -188,16 +188,16 @@
                     <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
                     <button type="button" class="icon-action-btn icon-delete" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}')" title="Delete"><i class="fas fa-trash"></i></button>
                 {% else %}
-                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
-                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Delete"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="icon-action-btn icon-edit icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="icon-action-btn icon-delete icon-disabled" disabled title="Delete"><i class="fas fa-trash"></i></button>
                 {% endif %}
             {% else %}
                 {% if perms.auth.can_edit_personal %}
                     <button type="button" class="icon-action-btn icon-upload" onclick="uploadDocument({{ passport.id }})" title="Upload Document"><i class="fas fa-upload"></i></button>
                     <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% else %}
-                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Upload Document"><i class="fas fa-upload"></i></button>
-                    <button type="button" class="icon-action-btn icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                    <button type="button" class="icon-action-btn icon-upload icon-disabled" disabled title="Upload Document"><i class="fas fa-upload"></i></button>
+                    <button type="button" class="icon-action-btn icon-edit icon-disabled" disabled title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% endif %}
             {% endif %}
             </div>

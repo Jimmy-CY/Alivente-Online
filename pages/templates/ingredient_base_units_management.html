@@ -1058,15 +1058,7 @@
                             {% endif %}
                         </span>
                         {% if perms.auth.can_edit_personal %}
-                        <select class="category-edit category-input" data-original-value="{% if item.ingredient.category %}{{ item.ingredient.category.ingredient_category_id }}{% endif %}">
-                            <option value="">-- Select Category --</option>
-                            {% for cat in categories %}
-                            <option value="{{ cat.ingredient_category_id }}" 
-                                    {% if item.ingredient.category and item.ingredient.category.ingredient_category_id == cat.ingredient_category_id %}selected{% endif %}>
-                                {{ cat.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
+                        <select class="category-edit category-input" data-original-value="{% if item.ingredient.category %}{{ item.ingredient.category.ingredient_category_id }}{% endif %}"></select>
                         {% endif %}
                     </td>
                     
@@ -1080,15 +1072,7 @@
                             {% endif %}
                         </span>
                         {% if perms.auth.can_edit_personal %}
-                        <select class="unit-edit unit-select" data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}">
-                            <option value="">-- Select Unit --</option>
-                            {% for unit in all_units %}
-                            <option value="{{ unit.measurement_unit_id }}" 
-                                    {% if item.ingredient.default_unit and item.ingredient.default_unit.measurement_unit_id == unit.measurement_unit_id %}selected{% endif %}>
-                                {{ unit.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
+                        <select class="unit-edit unit-select" data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}"></select>
                         {% endif %}
                     </td>
                     
@@ -1217,6 +1201,17 @@
 <!-- Shared tooltip element used by Conversion + Nutrition badges on hover.
      Available to all viewers — not gated on edit perms. -->
 <div class="row-tooltip" id="rowTooltip"></div>
+<!-- PF-1, 5 Oct 2026 - the pickers, rendered ONCE.
+     These used to be rendered inside every one of the 374 rows: 19
+     category options and 31 unit options each, 18,700 <option> elements
+     in all, every one of them hidden behind .edit-mode until that row's
+     Edit was pressed. Measured at 941 KB and 24,700 DOM nodes.
+     enterEditMode() clones them into a row the first time it needs them.
+     The row's `selected` option is restored from data-original-value,
+     which cancelEdit has always relied on. -->
+<template id="categoryOptionsTpl"><option value="">-- Select Category --</option>{% for cat in categories %}<option value="{{ cat.ingredient_category_id }}">{{ cat.name }}</option>{% endfor %}</template>
+<template id="unitOptionsTpl"><option value="">-- Select Unit --</option>{% for unit in all_units %}<option value="{{ unit.measurement_unit_id }}">{{ unit.name }}</option>{% endfor %}</template>
+
 
 {% if perms.auth.can_edit_personal %}
 <!-- ============================================================
@@ -1551,8 +1546,28 @@ window._nmUnitTypes = {
 // EXISTING ROW EDIT/DELETE FUNCTIONS
 // ============================================================
 
+// PF-1, 5 Oct 2026 - fill the row's pickers the first time it is edited.
+//
+// They used to be rendered into all 374 rows up front: 18,700 <option>
+// elements that nobody could see until this function ran, and only ever
+// for one row at a time. The options now live in two <template> elements
+// at the end of the page and are cloned in here.
+//
+// The value is restored from data-original-value rather than from a
+// `selected` attribute, because a shared template cannot carry one. That
+// attribute was already on every select - cancelEdit has always used it.
+function fillPicker(select, templateId) {
+    if (!select || select.options.length) return;      // already filled
+    const tpl = document.getElementById(templateId);
+    if (!tpl) return;                                  // nothing to fill from
+    select.appendChild(tpl.content.cloneNode(true));
+    select.value = select.dataset.originalValue || '';
+}
+
 function enterEditMode(ingredientId) {
     const row = document.getElementById(`ingredient-row-${ingredientId}`);
+    fillPicker(row.querySelector('.category-edit'), 'categoryOptionsTpl');
+    fillPicker(row.querySelector('.unit-edit'), 'unitOptionsTpl');
     row.classList.add('edit-mode');
 }
 

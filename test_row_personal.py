@@ -381,7 +381,12 @@ head('3. ONE VERB, ONE PICTURE')
 # ==========================================================================
 seen = {}
 for rel, p in templates():
-    for names, glyphs in house_controls(read(p)):
+    # now(), NOT read() - RA-2, 5 Oct 2026. Both censuses walked the
+    # LIVE tree. RA-2 then gave .icon-view a single picture, which is
+    # correct and is RA-2's claim - but it made THIS suite fail, on a
+    # page RP-1 never touched. A suite asserts the tree as its own
+    # round left it, and that is what now() serves.
+    for names, glyphs in house_controls(now(p)):
         fa = [g for g in glyphs if g.startswith('fa-')]
         for n in names:
             if n in GLYPH and fa:
@@ -398,7 +403,12 @@ for n in sorted(GLYPH):
 # THE EXCEPTIONS, WITH THEIR NUMBERS - not a loophole, a measurement.
 alias = {}
 for rel, p in templates():
-    for names, glyphs in house_controls(read(p)):
+    # now(), NOT read() - RA-2, 5 Oct 2026. Both censuses walked the
+    # LIVE tree. RA-2 then gave .icon-view a single picture, which is
+    # correct and is RA-2's claim - but it made THIS suite fail, on a
+    # page RP-1 never touched. A suite asserts the tree as its own
+    # round left it, and that is what now() serves.
+    for names, glyphs in house_controls(now(p)):
         fa = [g for g in glyphs if g.startswith('fa-')]
         for n in names:
             if n in COLOUR_NOT_VERB and fa:

@@ -648,7 +648,59 @@ $sentinels = @(
     @{ File = 'mysite\settings.py'; Text = 'django-insecure-'; What = 'and no generated-and-never-changed key is left in the file'; Absent = $true },
     # DR-1b. The shorthand, gone from the two pages DR-1 sentinelled.
     @{ File = 'pages\templates\tenant.html'; Text = 'border: 1px solid #0e7c8b'; What = 'and no page sets the accent border by shorthand either'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\properties.html'; Text = 'border: 1px solid #0e7c8b'; What = 'nor does Properties'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\properties.html'; Text = 'border: 1px solid #0e7c8b'; What = 'nor does Properties'; Absent = $true; Code = $true },
+    # PF-1. The templates that hold the options once, the call that clones
+    # them into a row, and - the rows worth the most - the two {% if %}
+    # comparisons that existed ONLY inside the per-row option loops. They
+    # are how a reader knows the 18,700 options really are gone.
+    #
+    # NOT an Absent row on '{% for cat in categories %}'. That loop is
+    # still in the file: it is what fills the <template>, and it is also
+    # what fills the page's own Category FILTER at the top. A sentinel has
+    # to say what its round claims, and the claim is not that the loop
+    # went - it is that it now runs once instead of 374 times.
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'id="categoryOptionsTpl"'; What = 'the category options are rendered once for the whole page' },
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'id="unitOptionsTpl"'; What = 'and so are the unit options' },
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = "fillPicker(row.querySelector('.category-edit'), 'categoryOptionsTpl');"; What = 'a row gets them the first time it is edited' },
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'item.ingredient.category.ingredient_category_id == cat.ingredient_category_id'; What = 'and no row renders nineteen categories of its own'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\ingredient_base_units_management.html'; Text = 'item.ingredient.default_unit.measurement_unit_id == unit.measurement_unit_id'; What = 'nor thirty-one units'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\ingredient_families.html'; Text = 'id="familyIngredientOptionsTpl"'; What = 'and one family picker holds all 374 ingredients for every card' },
+    @{ File = 'pages\templates\ingredient_families.html'; Text = 'sel.dataset.filled'; What = 'filled on first focus, once per select' },
+    # RA-2. The three names that were wrong, and the tooling that can now
+    # see the third of the tree it was missing.
+    #
+    # NOT Absent rows on 'fa-file-invoice', 'fa-scroll' or
+    # 'fa-rotate-left'. Every one of those glyphs is still in its page in
+    # another component - an invoice heading, a deed heading, an undo on a
+    # different control - so an Absent row would fail on a correct tree.
+    # The icon-view row on Physical Invoices is the one removal that IS
+    # the whole file's only occurrence, so it is the only Absent row here.
+    @{ File = 'pages\templates\asset_detail.html'; Text = 'icon-document'; What = 'opening an asset document is the house document action' },
+    @{ File = 'pages\templates\asset_detail.html'; Text = 'fa-file-contract'; What = 'and draws the document glyph, not an invoice' },
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = 'icon-document'; What = 'so is opening a title deed' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'icon-pdf'; What = 'and a PDF is named a PDF' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'icon-view'; What = 'not view, which three other pages use for something else'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\cash_receipts.html'; Text = 'icon-unapprove'; What = 'taking an approval back is its own action, not approve with an undo arrow' },
+    @{ File = 'pages\templates\passport_management.html'; Text = 'icon-edit icon-disabled'; What = 'a disabled button still says what it would have done' },
+    @{ File = 'alv_rowactions.py'; Text = 'def unwrapped('; What = 'and the drift report can see the buttons outside a wrapper' },
+    @{ File = 'Show-RowActionDrift.py'; Text = 'NOT IN A .row-actions WRAPPER'; What = 'and names them without calling them drift' },
+    # LU-1. Two rows that say the setting is SET, and two that say the
+    # decorator and its import are gone.
+    #
+    # NO Code = $true ON EITHER ABSENT ROW. Both name a string that only
+    # ever existed as live code, and the comment-stripper would make the
+    # commented-out LOGIN_URL row absent in every version of the file -
+    # vacuous, and test_sentinels would refuse it.
+    #
+    # NOT an Absent row on '@login_required' in auth.py. The block that
+    # replaces the decorator EXPLAINS why there is no decorator, so it
+    # contains the word. The patcher's own import gate hit that exact
+    # shape and refused the round until it was taught to strip comments
+    # first; a sentinel would have had no such warning.
+    @{ File = 'mysite\settings.py'; Text = "LOGIN_URL = '/login/'"; What = 'a view with no session reaches the login page that exists' },
+    @{ File = 'mysite\settings.py'; Text = '#LOGIN_URL = "/login/"'; What = 'and the setting is no longer commented out'; Absent = $true },
+    @{ File = 'pages\views\auth.py'; Text = 'NO @login_required HERE - LU-1'; What = 'logging out when already logged out is a no-op, not a redirect' },
+    @{ File = 'pages\views\auth.py'; Text = 'from django.contrib.auth.decorators import login_required'; What = 'and the import that view was the only user of has gone'; Absent = $true }
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -1696,6 +1748,27 @@ $suites = @(
     # would not have failed section 3 - the border would be right and the
     # corners square.
     'test_btn_border.py'
+    # the pickers that are built on demand. Its section 4 is the one that
+    # matters: it pulls the REAL fillPicker out of the template, runs it
+    # in a browser against a row with data-original-value set, and
+    # requires the row to come back on its OWN values. A lazy picker that
+    # fills correctly but forgets which option was selected would save
+    # the 18,700 options and silently change what the form submits.
+    'test_picker_lazy.py'
+    # the icon names. Its section 2 censuses EVERY icon button in the
+    # tree, wrapped or not, because the whole defect was that a third of
+    # them were never looked at. Its section 5 plants the stray glyph on
+    # an UNWRAPPED button deliberately - a stray on a wrapped one was
+    # always catchable and would prove nothing about the widening.
+    'test_icon_names.py'
+    # the LOGIN_URL that was never set. Its section 2 does not read the
+    # setting back - it wraps a view in Django's REAL login_required,
+    # hands it an anonymous request, and reads the Location header, then
+    # runs the SAME call with the setting put back as it was and requires
+    # /accounts/login/. The 404 Demetri saw is reproduced, not described.
+    # Its section 3 then resolves the target, because a LOGIN_URL that
+    # routes nowhere is exactly what the defect was.
+    'test_login_url.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

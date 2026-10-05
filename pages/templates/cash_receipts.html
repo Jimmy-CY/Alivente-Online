@@ -192,8 +192,8 @@ Receipts
                         class="rec-inline-form"
                         onsubmit="return confirm('Bring receipt {{ row.number|escapejs }} back into use?\n\nThe VOID stamp comes off its PDF.');">
                     {% csrf_token %}
-                    <button type="submit" class="icon-action-btn icon-approve" title="Unvoid — bring back into use">
-                      <i class="fas fa-rotate-left"></i>
+                    <button type="submit" class="icon-action-btn icon-unapprove" title="Unvoid — bring back into use">
+                      <i class="fas fa-undo"></i>
                     </button>
                   </form>
                 {% elif perms.auth.can_edit_receipts %}

@@ -249,8 +249,8 @@
                         <td data-label="Actions" class="desktop-action-cell cell-actions">
                           <span class="row-actions">
                             {% if record.invoice %}
-                                <button type="button" class="icon-action-btn icon-view" title="View invoice" onclick="viewInvoice('{{ record.invoice.url|escapejs }}', '{{ record.invoice.name|escapejs }}')">
-                                    <i class="fas fa-file-invoice"></i>
+                                <button type="button" class="icon-action-btn icon-document" title="View invoice" onclick="viewInvoice('{{ record.invoice.url|escapejs }}', '{{ record.invoice.name|escapejs }}')">
+                                    <i class="fas fa-file-contract"></i>
                                 </button>
                             {% else %}
                                 <span class="icon-action-btn icon-disabled" title="No invoice attached">

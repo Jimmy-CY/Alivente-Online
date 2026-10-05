@@ -323,6 +323,19 @@ PINNED = {
         'the view behind the receipts commit, backed up twice',
     'showInvoiceModalLikeExisting(':
         'the P&L invoice modal entry point, never removed in 24 versions',
+    # THE FIFTH ARRIVED ON 5 OCT 2026, and not because it was written
+    # then - RA-1 wrote it weeks ago. It was invisible until now because
+    # alv_rowactions.py had never been backed up by any round, so the row
+    # sat in the "no backup to compare against" bucket and was never
+    # examined. RA-2 widened that same file and so gave it its first
+    # backup, which is what made the row checkable - and it does not
+    # discriminate, because the house order has never been removed.
+    #
+    # That is the correct shape for a guard against a future deletion, so
+    # it is pinned rather than rewritten. Worth saying plainly though:
+    # this round did not break the row. It revealed it.
+    'LOOK, CHANGE, COPY, ADVANCE, DESTROY':
+        'the house row-action order itself, backed up once by RA-2',
 }
 unpinned = [b for b in blind
             if not any(k.lower() in b.lower() for k in PINNED)]

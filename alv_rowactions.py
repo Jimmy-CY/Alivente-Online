@@ -95,6 +95,46 @@ IFTAG = re.compile(r'\{%\s*(if|endif)\b[^%]*%\}')
 ELEM = re.compile(r'<(a|form|button|span|div)\b', re.I)
 
 
+# BTN_FULL, not BTN. alv_rowactions already defines a BTN further down -
+# a single-group match on the class attribute alone - and a second
+# module-level BTN simply shadows the first by source order, so
+# unwrapped() called the OTHER one and m.group(2) raised IndexError on
+# the first page it read. Two constants, two names.
+BTN_FULL = re.compile(
+    r'<(?:button|a)[^>]*class="([^"]*\bicon-action-btn\b[^"]*)"[^>]*>'
+    r'(.*?)</(?:button|a)>', re.S)
+
+
+def unwrapped(src):
+    """[(classes, glyphs)] for every icon button NOT inside a wrapper.
+
+    RA-2, 5 Oct 2026. wrappers() answers "what is inside a .row-actions",
+    and every caller has treated that as "every icon button in the file".
+    It is not: 37 of 120 are outside one. This is the other question,
+    asked separately, so that no caller has to assume an answer it was
+    never given.
+    """
+    spans = [(s, e) for s, e, _ in wrappers(src)]
+    out = []
+    for m in BTN_FULL.finditer(src):
+        if any(s <= m.start() < e for s, e in spans):
+            continue
+        # FOUND BY PATTERN, NOT BY SPLITTING ON SPACES. A class attribute
+        # in this tree is not a list of words - household_member writes
+        #     class="icon-action-btn {% if m.is_active %}icon-lock
+        #            {% else %}icon-unlock{% endif %}"
+        # and splitting that yields the Django tags, no icon- token, and
+        # a report that says the button has no icon class when it has
+        # one of two chosen at render. The first build of this helper did
+        # exactly that and named a perfectly correct button as a defect.
+        names = [c for c in re.findall(r'\bicon-[\w-]+', m.group(1))
+                 if c != 'icon-action-btn']
+        glyphs = [g for g in re.findall(r'fa-[a-z-]+', m.group(2))
+                  if g not in ('fa-fw', 'fa-sm', 'fa-lg')]
+        out.append((tuple(names), tuple(glyphs)))
+    return out
+
+
 def blocks(inner):
     """Split a wrapper into [(gap, block)] - balanced top-level units.
 

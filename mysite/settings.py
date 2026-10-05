@@ -162,7 +162,23 @@ DB_FORCE_CLEANUP_INTERVAL = 25      # Force cleanup every 25 requests (reduced f
 #SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 #SESSION_CACHE_ALIAS = 'default'
 #SESSION_COOKIE_AGE = 1209600  # 2 weeks session timeout
-#LOGIN_URL = "/login/"
+# WHERE A GUARDED VIEW SENDS SOMEBODY WITH NO SESSION - LU-1, 5 Oct 2026.
+#
+# This line was commented out, so Django fell back to its own default of
+# /accounts/login/ - a URL this project has never routed. All 282
+# @login_required views therefore answered a dead session with a 404
+# instead of a login page.
+#
+# It never showed, because sessions here effectively never died. Rotating
+# SECRET_KEY on 5 Oct ended every one of them at once, Demetri pressed
+# Logout, and the 404 arrived within the minute.
+#
+# THE LINE BELOW STAYS COMMENTED ON PURPOSE. login_user ends on
+# `redirect(_safe_next(request) or 'home')` and never reads
+# LOGIN_REDIRECT_URL, so setting it would change no behaviour while
+# reading as though it did.
+#                                                  [test_login_url.py]
+LOGIN_URL = '/login/'
 #LOGIN_REDIRECT_URL = "/properties/"
 
 
