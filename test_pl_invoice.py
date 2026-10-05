@@ -130,8 +130,16 @@ check('nothing binds .fa-file-alt any more',
 check('  but the glyph survives as the not-a-PDF placeholder, which was always '
       'a fair use of it', 'fa-file-alt fa-5x' in JS)
 check('the shim is defined', 'window.viewInvoiceQuick' in JS)
-check('  and the delegated fallback binds the class the grid renders',
-      ".off('click', '.verify-icon')" in JS)
+# WIDENED BY PL-1, 5 Oct 2026. This bound '.verify-icon' alone, which
+# was right while the tick was the only way to open a document. Demetri:
+# "to view a copy of a specific invoice I need to click the little black
+# tick. This is not intuitive." PL-1 gives the drill-down an Invoice
+# column carrying .report-invoice-icon, so the delegate has to bind both
+# - without the widening the new column would have been a document icon
+# that did nothing when pressed. The CLAIM here is unchanged: the
+# fallback binds the class the grid renders. There are two of them now.
+check('  and the delegated fallback binds the classes the grid renders',
+      ".off('click', '.verify-icon, .report-invoice-icon')" in JS)
 # MOVED by DB-4, 2 Oct 2026. This asserted the handler was guarded
 # with `if ($icon.attr('onclick')) { return; }` - correct for the
 # round that wrote it, which left the onclick in place and added the

@@ -52,9 +52,9 @@
         </td>
         <td data-label="Title Deed" class="desktop-action-cell">
             {% if property.prop_title_deed %}
-                <button type="button" class="icon-action-btn icon-document" title="View title deed" aria-label="View title deed" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
+                <span class="row-actions"><button type="button" class="icon-action-btn icon-document" title="View title deed" aria-label="View title deed" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
                     <i class="fas fa-file-contract"></i>
-                </button>
+                </button></span>
             {% else %}
                 <span class="text-muted">-</span>
             {% endif %}

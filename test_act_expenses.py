@@ -627,10 +627,20 @@ async def main():
     check('  because the container clips rather than hides',
           now['overflow'] == 'clip', str(now['overflow']))
 
+    # FIVE, NOT FOUR, SINCE PL-1 - 5 Oct 2026. Demetri, of the P&L
+    # drill-down: "to view a copy of a specific invoice I need to click
+    # the little black tick. This is not intuitive." The tick is
+    # verify_badge, a STATUS glyph, and it was the only way in. PL-1
+    # adds an Invoice column to this branch - the one the modal scrapes
+    # - in the shape of the Actual Expenses screen he named.
+    #
+    # Date, Property, Description, Amount, Invoice. Still no ACTION
+    # cell, which is what the line below has always been about and what
+    # the embedded view is still narrower for.
     emb = await paint(draw(PG, embedded=True), css_of(PG))
-    check('the embedded P&L view drops to four columns', emb['cols'] == 4,
+    check('the embedded P&L view drops to five columns', emb['cols'] == 5,
           str(emb['cols']))
-    check('  and its rows have four cells too', emb['bodyCols'] == 4,
+    check('  and its rows have five cells too', emb['bodyCols'] == 5,
           str(emb['bodyCols']))
     check('  with no action cell to be found', emb['manage'] is None)
 

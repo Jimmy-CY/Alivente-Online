@@ -338,22 +338,22 @@
                             {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
-                                <button class="icon-action-btn icon-edit" onclick="enterEditMode({{ item.category.ingredient_category_id }})" title="Edit">
+                                <span class="row-actions"><button class="icon-action-btn icon-edit" onclick="enterEditMode({{ item.category.ingredient_category_id }})" title="Edit">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
                                 <button class="icon-action-btn icon-delete" onclick="deleteCategory({{ item.category.ingredient_category_id }})" title="Delete">
                                     <i class="fas fa-trash"></i>
-                                </button>
+                                </button></span>
                             </div>
                             
                             <!-- Edit Mode Actions -->
                             <div class="edit-actions">
-                                <button class="icon-action-btn icon-save" onclick="saveCategory({{ item.category.ingredient_category_id }})" title="Save">
+                                <span class="row-actions"><button class="icon-action-btn icon-save" onclick="saveCategory({{ item.category.ingredient_category_id }})" title="Save">
                                     <i class="fas fa-save"></i>
                                 </button>
                                 <button class="icon-action-btn icon-cancel" onclick="cancelEdit({{ item.category.ingredient_category_id }})" title="Cancel">
                                     <i class="fas fa-times"></i>
-                                </button>
+                                </button></span>
                             </div>
                             {% else %}
                             <!-- Read-only: disabled icons -->

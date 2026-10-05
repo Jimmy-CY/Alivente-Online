@@ -355,20 +355,12 @@
                     <td>
                         <div class="row-actions">
                             {% if perms.auth.can_edit_financials %}
-                                <a href="{% url 'finance_expense_line_types_edit' exp.expense_line_types_id %}" class="btn-row-edit">
-                                    <i class="fas fa-pencil-alt"></i> Edit
-                                </a>
-                                <button type="button" class="btn-row-delete" 
-                                        onclick="checkAndDelete({{ exp.expense_line_types_id }}, '{{ exp.expense_line_types_name|escapejs }}')">
-                                    <i class="fas fa-trash-alt"></i> Delete
-                                </button>
+                                <a href="{% url 'finance_expense_line_types_edit' exp.expense_line_types_id %}" title="Edit" aria-label="Edit" class="icon-action-btn icon-edit"><i class="fas fa-pencil-alt"></i></a>
+                                <button type="button"  
+                                        onclick="checkAndDelete({{ exp.expense_line_types_id }}, '{{ exp.expense_line_types_name|escapejs }}')" title="Delete" aria-label="Delete" class="icon-action-btn icon-delete"><i class="fas fa-trash"></i></button>
                             {% else %}
-                                <span class="btn-row-edit-disabled" title="No permission to edit">
-                                    <i class="fas fa-pencil-alt"></i> Edit
-                                </span>
-                                <span class="btn-row-delete-disabled" title="No permission to delete">
-                                    <i class="fas fa-trash-alt"></i> Delete
-                                </span>
+                                <span  title="No permission to edit" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
+                                <span  title="No permission to delete" aria-label="Delete" class="icon-action-btn icon-delete icon-disabled"><i class="fas fa-trash"></i></span>
                             {% endif %}
                         </div>
                     </td>

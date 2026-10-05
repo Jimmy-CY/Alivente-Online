@@ -409,8 +409,15 @@ check('  it is on a house token, with no literal',
       and not re.search(r'\.exp-closed-pill\s*\{[^}]*#[0-9a-fA-F]{3,6}', PC))
 check('a SPENT row is offered a real Delete',
       'not exp.is_spent' in PC)
+# icon-delete icon-disabled, not btn-row-delete-disabled - FN-1,
+# 5 Oct 2026. .btn-row-delete and its disabled twin were declared in
+# BASE and worn on exactly these six finance pages; Demetri chose the
+# icon vocabulary the other 32 pages use and the pills were retired.
+# The claim is untouched: a pro-rata row that is not spent still gets a
+# Delete it cannot press, and the line below still requires the tooltip
+# to say which case it is. Only the spelling of "disabled twin" moved.
 check('  and every other pro-rata row still gets the disabled twin',
-      'btn-row-delete-disabled' in PC)
+      'icon-delete icon-disabled' in PC)
 check('  whose tooltip now says which case it is',
       'Already closed' in PG and 'remove this property by editing' in PG)
 check('the live amount is still drawn for a row that carries one',

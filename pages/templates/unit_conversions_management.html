@@ -520,7 +520,7 @@
                     <!-- Actions -->
                     <td class="actions-cell cell-actions" style="text-align: center;">
                         {% if perms.auth.can_edit_personal %}
-                        <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name|escapejs }}', '{{ conversion.to_unit.name|escapejs }}', '{{ conversion.multiplier|escapejs }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name|escapejs }}{% endif %}')" 
+                        <span class="row-actions"><button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name|escapejs }}', '{{ conversion.to_unit.name|escapejs }}', '{{ conversion.multiplier|escapejs }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name|escapejs }}{% endif %}')" 
                                 class="icon-action-btn icon-edit" 
                                 title="Edit">
                             <i class="fas fa-pencil-alt"></i>
@@ -529,7 +529,7 @@
                                 class="icon-action-btn icon-delete" 
                                 title="Delete">
                             <i class="fas fa-trash"></i>
-                        </button>
+                        </button></span>
                         {% else %}
                         <span class="icon-action-btn icon-disabled" title="No permission to edit">
                             <i class="fas fa-edit"></i>

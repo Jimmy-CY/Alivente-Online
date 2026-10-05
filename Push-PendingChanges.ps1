@@ -725,7 +725,23 @@ $sentinels = @(
     @{ File = 'pages\templates\occupancy_trends.html'; Text = 'border-left: 4px solid var(--alv-warn)'; What = 'a warning stripe is the house warning colour' },
     @{ File = 'pages\templates\home.html'; Text = 'border-left-color: var(--alv-warn)'; What = 'and so is one written the long way' },
     @{ File = 'pages\templates\occupancy_trends.html'; Text = 'border-left: 4px solid #ffc107'; What = 'no page spells the stripe out any more'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\home.html'; Text = 'border-left-color: #ffc107'; What = 'in either spelling'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\home.html'; Text = 'border-left-color: #ffc107'; What = 'in either spelling'; Absent = $true; Code = $true },
+    # RA-3 and CW-1.
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = '<span class="row-actions">'; What = 'an action column is a group, so the ordering standard can be read on it' },
+    @{ File = 'crs\templates\crs\fi_form.html'; Text = 'grid-template-columns: 1.2fr 2fr 110px 44px;'; What = 'and the column that was squashing a 34px button is 44px, the tap floor' },
+    @{ File = 'pages\templates\base.html'; Text = 'flex-wrap: wrap;'; What = 'a card cell wraps rather than pushing the page sideways' },
+    # FN-1 and PL-1.
+    @{ File = 'pages\templates\base.html'; Text = '.btn-row-edit'; What = 'the app has ONE row-action vocabulary, not two'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\finance_expense_line_types.html'; Text = 'icon-action-btn icon-delete'; What = 'and the finance screens speak it' },
+    @{ File = 'pages\templates\finance_expense.html'; Text = '#fdecee'; What = 'the Expenses table no longer announces itself in red'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\finance_revenue.html'; Text = '#f0fbf4'; What = 'nor Revenue in green'; Absent = $true; Code = $true },
+    # NOT 'data-label="Invoice"'. test_sentinels refused it, rightly:
+    # that string is in all 34 backed-up versions of the page, because
+    # the Report modal's JavaScript builder has carried one all along. A
+    # row that is true in every version can never discriminate. The CLASS
+    # on the new cell is the thing PL-1 actually added.
+    @{ File = 'pages\templates\act_expense.html'; Text = 'class="cell-invoice"'; What = 'the P&L drill-down has a column that says Invoice' },
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = "'.verify-icon, .report-invoice-icon'"; What = 'and its handler listens for the document icon, not only the tick' }
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -1819,6 +1835,32 @@ $suites = @(
     # not caught, because sixteen of those exist and were never this
     # round's to change.
     'test_warn_stripe.py'
+    # the 24 buttons that got a wrapper. Its section 3 is about a
+    # button that was ALREADY broken: crs/fi_form drew its delete at
+    # 15.5px, and the suite requires that measurement before it will
+    # accept the 44px column as a fix. Section 5 counts the held-back
+    # pages INCLUDING script - the first build reused the patcher's
+    # own helper, which excludes it, and passed a page it was guarding.
+    'test_row_wrap.py'
+    # the card cell that could not wrap. Its section 2 paints eight
+    # card tables and requires that SIX of them do not move - a fix in
+    # base that quietly reflows every table in the app would be worth
+    # knowing about before it ships, not after.
+    'test_card_wrap.py'
+    # the six finance screens. Its section 3 is about WORDS: ten of
+    # the 22 controls had no title while 'Edit' was printed beside
+    # them, and it requires every converted one to carry title AND
+    # aria-label, and the twelve explanatory titles to have survived.
+    # Section 6 counts braces, because the round's first attempt to
+    # retire the component left broken CSS behind and the gate passed
+    # it - the gate counted controls, not whether the sheet parsed.
+    'test_finance_rows.py'
+    # the P&L drill-down's Invoice column. Its section 4 is the check
+    # that earned its keep: the drill-down handler listened for
+    # .verify-icon alone, so the new document icon would have been a
+    # button that did nothing when pressed - worse than the
+    # unfindable tick, which at least worked.
+    'test_pl_invoice_col.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

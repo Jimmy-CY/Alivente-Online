@@ -121,19 +121,19 @@
 
 /* Property header row (clickable accordion) — red-tinted for expenses */
 .property-header td {
-    background: #fdecee;
+    background: var(--alv-surface);
     font-weight: 600;
-    color: #721c24;
+    color: var(--alv-ink);
     cursor: pointer;
     user-select: none;
 }
 .property-header:hover td {
-    background: #f8d7da;
+    background: var(--alv-surface-deep);
 }
 .property-arrow {
     transition: transform 0.2s ease;
     margin-right: 8px;
-    color: #dc3545;
+    color: var(--alv-accent);
 }
 .property-count-badge {
     background: #0e7c8b;
@@ -221,9 +221,9 @@
     }
     .property-header td {
         display: block;
-        background: linear-gradient(135deg, #fdecee 0%, #fbe1e4 100%);
+        background: var(--alv-surface);
         border-radius: 10px 10px 0 0;
-        border: 1px solid #f5c6cb;
+        border: 1px solid var(--alv-line);
         border-bottom: none;
         padding: 14px 16px;
         font-size: 15px;
@@ -233,13 +233,13 @@
     }
     .property-header:not(.expanded) td {
         border-radius: 10px;
-        border-bottom: 1px solid #f5c6cb;
+        border-bottom: 1px solid var(--alv-line);
     }
 
     .property-details {
         display: block;
         background: white;
-        border: 1px solid #f5c6cb;
+        border: 1px solid var(--alv-line);
         border-top: none;
         margin: 0;
         padding: 14px 16px;
@@ -279,7 +279,7 @@
         text-align: left !important;
         font-size: 16px;
         font-weight: 600;
-        color: #dc3545;
+        color: var(--alv-accent);
     }
 
     .property-details td:nth-child(5) {
@@ -475,15 +475,11 @@
                                     <td style="text-align: center;">
                                         <div class="row-actions">
                                             {% if perms.auth.can_edit_financials %}
-                                                <a href="{% url 'finance_expense_edit' exp.expense_id %}" class="btn-row-edit">
-                                                    <i class="fas fa-pencil-alt"></i> Edit
-                                                </a>
+                                                <a href="{% url 'finance_expense_edit' exp.expense_id %}" title="Edit" aria-label="Edit" class="icon-action-btn icon-edit"><i class="fas fa-pencil-alt"></i></a>
                                                 {% if exp.expense_line_types.expense_line_types_prorata == 'Yes' and not exp.is_spent %}
                                                     {# A share of the line type amount - deleting one row would leave the others holding shares of a larger split. #}
                                                     {# Unless it is SPENT: closed, and carrying nothing in its history either. Then it holds no share and anchors no past. #}
-                                                    <span class="btn-row-delete-disabled" title="{% if exp.is_closed %}Already closed &mdash; kept because earlier years still report the share it carried{% else %}Pro-rata expense &mdash; remove this property by editing the line and un-ticking it, so the others take up its share{% endif %}">
-                                                        <i class="fas fa-trash-alt"></i> Delete
-                                                    </span>
+                                                    <span  title="{% if exp.is_closed %}Already closed &mdash; kept because earlier years still report the share it carried{% else %}Pro-rata expense &mdash; remove this property by editing the line and un-ticking it, so the others take up its share{% endif %}" aria-label="Delete" class="icon-action-btn icon-delete icon-disabled"><i class="fas fa-trash"></i></span>
                                                 {% else %}
                                                 <form method="post" action="{% url 'finance_expense_delete' exp.expense_id %}"
                                                       class="row-action-form js-delete-form"
@@ -493,18 +489,12 @@
                                                     {% csrf_token %}
                                                     <input type="hidden" name="delete_mode" value="close">
                                                     <input type="hidden" name="effective_date" value="">
-                                                    <button type="button" class="btn-row-delete js-delete-open">
-                                                        <i class="fas fa-trash-alt"></i> Delete
-                                                    </button>
+                                                    <button type="button" title="Delete" aria-label="Delete" class="icon-action-btn icon-delete js-delete-open"><i class="fas fa-trash"></i></button>
                                                 </form>
                                                 {% endif %}
                                             {% else %}
-                                                <span class="btn-row-edit-disabled" title="No permission to edit">
-                                                    <i class="fas fa-pencil-alt"></i> Edit
-                                                </span>
-                                                <span class="btn-row-delete-disabled" title="No permission to delete">
-                                                    <i class="fas fa-trash-alt"></i> Delete
-                                                </span>
+                                                <span  title="No permission to edit" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
+                                                <span  title="No permission to delete" aria-label="Delete" class="icon-action-btn icon-delete icon-disabled"><i class="fas fa-trash"></i></span>
                                             {% endif %}
                                         </div>
                                     </td>

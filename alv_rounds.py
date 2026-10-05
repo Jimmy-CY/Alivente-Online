@@ -421,6 +421,48 @@ ROUNDS = [
     # the colour is still used 60 times in other families, and the
     # suite prints that count so the claim cannot quietly grow.
     '.bak_warnstripe',
+    # RA-3, 5 Oct 2026 - 24 of the 37 loose icon buttons get the
+    # wrapper the ORDERING standard is read from. Order is a property
+    # of a group and there was no group. SPLIT BY PAGE, NOT BY SHAPE:
+    # three pages mix plain markup with forms, and converting by shape
+    # would have left a .row-actions holding one action while two
+    # siblings stood outside - the report would then check the order
+    # of a fragment and call it clean. Nine pages whole; four held
+    # back whole. It also revealed that crs/fi_form had been drawing
+    # its delete button at 15.5px, squashed by a 40px grid column; the
+    # column goes to 44px, the house tap floor, and it draws at 34.
+    '.bak_rowwrap',
+    # CW-1, 5 Oct 2026 - found while rendering RA-3, not reported. The
+    # Ingredients page overflowed by 128px at 320 and 58px at 390,
+    # because base's card pattern lays each cell out as a flex row
+    # with the label at flex-shrink: 0 and no wrap. A value wider than
+    # the room the label leaves has nowhere to go. One declaration -
+    # flex-wrap: wrap - and six of the eight card tables painted do
+    # not move at all. In base, because the defect is the pattern.
+    '.bak_cardwrap',
+    # FN-1, 5 Oct 2026 - Demetri, of the six finance screens: "The
+    # Action Buttons ... do not conform to our standards. I also don't
+    # want the Revenue table to be Green and the Expense table to be
+    # red." The buttons were NOT drift: .btn-row-edit and
+    # .btn-row-delete were declared in BASE and worn on exactly these
+    # six pages, so the app had two sanctioned row-action
+    # vocabularies and these pages looked different because base said
+    # two things. 22 controls become .icon-action-btn, ten of which
+    # had no title because the word Edit was beside them; the twelve
+    # that did keep their sentences. The header rows go neutral. Yes
+    # and No stay green and red, on tokens, because that colour means
+    # yes and no rather than revenue and expenses.
+    '.bak_finrows',
+    # PL-1, 5 Oct 2026 - Demetri, of the P&L drill-down: "to view a
+    # copy of a specific invoice I need to click the little black
+    # tick. This is not intuitive." The tick is verify_badge, a
+    # STATUS glyph, and it was the only way to open the document. An
+    # Invoice column is added to the branch the modal scrapes, in the
+    # shape of the Actual Expenses screen he named. Nothing is taken
+    # away - the tick still works. The drill-down's handler listened
+    # for .verify-icon alone, so it is widened too; without that the
+    # new column would have been a button that did nothing.
+    '.bak_plinvcol',
 ]
 
 

@@ -143,9 +143,9 @@
         <div class="in-cell in-cell-actions">
           {{ in_form.DELETE }}
           {{ in_form.id }}
-          <button type="button" class="icon-action-btn icon-delete" onclick="removeINRow(this)" title="Remove this IN">
+          <span class="row-actions"><button type="button" class="icon-action-btn icon-delete" onclick="removeINRow(this)" title="Remove this IN">
             <i class="fas fa-trash"></i>
-          </button>
+          </button></span>
         </div>
       </div>
       {% endfor %}
@@ -166,9 +166,9 @@
         <div class="in-cell in-cell-actions">
           {{ formset.empty_form.DELETE }}
           {{ formset.empty_form.id }}
-          <button type="button" class="icon-action-btn icon-delete" onclick="removeINRow(this)" title="Remove this IN">
+          <span class="row-actions"><button type="button" class="icon-action-btn icon-delete" onclick="removeINRow(this)" title="Remove this IN">
             <i class="fas fa-trash"></i>
-          </button>
+          </button></span>
         </div>
       </div>
     </template>
@@ -210,7 +210,7 @@
   .in-list { display: flex; flex-direction: column; gap: 8px; }
   .in-row {
     display: grid;
-    grid-template-columns: 1.2fr 2fr 110px 40px;
+    grid-template-columns: 1.2fr 2fr 110px 44px;
     gap: 10px;
     align-items: start;
   }

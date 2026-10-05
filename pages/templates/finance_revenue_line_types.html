@@ -242,13 +242,9 @@
                     <td class="cell-description">{{ rev.revenue_line_types_description }}</td>
                     <td style="text-align: center;">
                         {% if perms.auth.can_edit_financials %}
-                            <a href="{% url 'finance_revenue_line_types_edit' rev.revenue_line_types_id %}" class="btn-row-edit">
-                                <i class="fas fa-pencil-alt"></i> Edit
-                            </a>
+                            <span class="row-actions"><a href="{% url 'finance_revenue_line_types_edit' rev.revenue_line_types_id %}" title="Edit" aria-label="Edit" class="icon-action-btn icon-edit"><i class="fas fa-pencil-alt"></i></a></span>
                         {% else %}
-                            <span class="btn-row-edit-disabled" title="No permission to edit">
-                                <i class="fas fa-pencil-alt"></i> Edit
-                            </span>
+                            <span  title="No permission to edit" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
                         {% endif %}
                     </td>
                 </tr>

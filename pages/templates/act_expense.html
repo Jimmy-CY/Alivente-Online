@@ -511,7 +511,26 @@
         <th style="width: {% if from_finance_pl_act %}15%{% else %}11%{% endif %}">Date</th>
         <th style="width: {% if from_finance_pl_act %}20%{% else %}20%{% endif %}">Property</th>
         <th style="text-align: left; width: {% if from_finance_pl_act %}45%{% else %}31%{% endif %}">Description</th>
-        <th class="num" style="width: {% if from_finance_pl_act %}20%{% else %}12%{% endif %}">Amount</th>
+        <th class="num" style="width: {% if from_finance_pl_act %}15%{% else %}12%{% endif %}">Amount</th>
+        {% if from_finance_pl_act %}
+            {# PL-1, 5 Oct 2026 - a column that says INVOICE. #}
+            {# #}
+            {# The drill-down's only way to open a document was the #}
+            {# verify badge beside the property name - a STATUS glyph #}
+            {# that draws a tick, or a warning triangle, or a question #}
+            {# mark. Nothing about a tick says document, so nobody #}
+            {# would think to press it. Demetri: "This is not #}
+            {# intuitive. I prefer the option of the Actual Expenses." #}
+            {# Same shape as that screen: a named column, a document #}
+            {# icon, a dash where there is none. #}
+            {# #}
+            {# ONE COMMENT PER LINE, and this is not style. Django's #}
+            {# comment lexer has no DOTALL - one that does not close #}
+            {# on its own line is not a comment, and the rest of it #}
+            {# renders into the page. The first build of this round #}
+            {# wrote a six-line block and three suites caught it. #}
+            <th style="width: 10%">Invoice</th>
+        {% endif %}
         {% if not from_finance_pl_act %}
             <th style="width: 10%">Approved?</th>
             <th style="width: 10%">Paid?</th>
@@ -559,6 +578,24 @@
         </td>
         <td data-label="Description" style="text-align: left">{{ expense.act_expense_description }}</td>
         <td data-label="Amount" class="num cell-amount">&euro;{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
+        {% if from_finance_pl_act %}
+            {# PL-1 - the control property_detail's Actual Expenses #}
+            {# table uses, which is the screen Demetri named: a #}
+            {# fa-file-alt on the data attributes the drill-down's #}
+            {# handler reads. A dash, not an empty cell, so "no #}
+            {# invoice" is stated rather than implied. #}
+            <td data-label="Invoice" class="cell-invoice">
+                {% if expense.act_expense_document %}
+                    <i class="fas fa-file-alt report-invoice-icon"
+                       title="View invoice"
+                       aria-label="View invoice"
+                       data-invoice-url="{{ expense.act_expense_document.url }}"
+                       data-filename="{{ expense.act_expense_document.name }}"></i>
+                {% else %}
+                    <span class="report-invoice-none">&mdash;</span>
+                {% endif %}
+            </td>
+        {% endif %}
         {% if not from_finance_pl_act %}
             <!-- A STATUS IS NOT A CONTROL. Both columns used to draw a disabled
                  button for a fact you cannot change - and coloured it #32CD32 or

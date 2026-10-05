@@ -248,8 +248,18 @@ def section_3():
     ok(m is not None, 'and names the unwrapped ones')
     if m:
         print('      %s buttons on %s pages' % (m.group(1), m.group(2)))
-        ok(int(m.group(1)) >= 30,
-           'which is the third of the tree that was invisible',
+        # WAS >= 30, AND RA-3 MADE THAT FALSE - 5 Oct 2026, and the
+        # round working rather than breaking. RA-2's job was to make the
+        # loose buttons VISIBLE; RA-3's was to wrap them. 37 became 13,
+        # so "a third of the tree" is no longer the sentence to assert.
+        #
+        # The claim that survives is RA-2's own: the report still NAMES
+        # them, and still does not count them as drift. The number is
+        # printed rather than bounded, because bounding it is RA-3b and
+        # RA-3c's business and this suite should not have an opinion on
+        # how fast they land.
+        ok(int(m.group(1)) >= 1,
+           'and there are still some, which RA-3b and RA-3c will take',
            'only %s found - if this has dropped sharply, either RA-3 ran '
            'or the finder stopped finding' % m.group(1))
 

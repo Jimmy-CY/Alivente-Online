@@ -88,13 +88,13 @@
 
 /* Yes/No cell coloring — desktop */
 .month-cell-yes {
-    background: #d4edda;
-    color: #155724;
+    background: var(--alv-good-soft);
+    color: var(--alv-good-ink);
     font-weight: 600;
 }
 .month-cell-no {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--alv-bad-soft);
+    color: var(--alv-bad-ink);
 }
 
 
@@ -247,23 +247,15 @@
         text-transform: uppercase;
     }
     .month-chip-yes {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
+        background: var(--alv-good-soft);
+        color: var(--alv-good-ink);
+        border: 1px solid var(--alv-good-line);
     }
     .month-chip-no {
         background: #f8f9fa;
         color: #adb5bd;
         border: 1px solid #e9ecef;
-    }
-    .rev-type-card .btn-row-edit,
-    .rev-type-card .btn-row-edit-disabled {
-        width: 100%;
-        justify-content: center;
-        padding: 9px 14px;
-        font-size: 14px;
-    }
-}
+    }}
 
 /* ============================================================
    LARGE DESKTOP — explicit reset to ensure desktop view holds
@@ -369,13 +361,9 @@
                     <td class="{% if rev.revenue_types_dec == 'Yes' %}month-cell-yes{% else %}month-cell-no{% endif %}">{{ rev.revenue_types_dec }}</td>
                     <td>
                         {% if perms.auth.can_edit_financials %}
-                            <a href="{% url 'finance_revenue_types_edit' rev.revenue_types_id %}" class="btn-row-edit">
-                                <i class="fas fa-pencil-alt"></i> Edit
-                            </a>
+                            <span class="row-actions"><a href="{% url 'finance_revenue_types_edit' rev.revenue_types_id %}" title="Edit" aria-label="Edit" class="icon-action-btn icon-edit"><i class="fas fa-pencil-alt"></i></a></span>
                         {% else %}
-                            <span class="btn-row-edit-disabled" title="No permission to edit">
-                                <i class="fas fa-pencil-alt"></i> Edit
-                            </span>
+                            <span  title="No permission to edit" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
                         {% endif %}
                     </td>
                 </tr>
@@ -403,13 +391,9 @@
                     <div class="month-chip {% if rev.revenue_types_dec == 'Yes' %}month-chip-yes{% else %}month-chip-no{% endif %}">Dec</div>
                 </div>
                 {% if perms.auth.can_edit_financials %}
-                    <a href="{% url 'finance_revenue_types_edit' rev.revenue_types_id %}" class="btn-row-edit">
-                        <i class="fas fa-pencil-alt"></i> Edit
-                    </a>
+                    <span class="row-actions"><a href="{% url 'finance_revenue_types_edit' rev.revenue_types_id %}" title="Edit" aria-label="Edit" class="icon-action-btn icon-edit"><i class="fas fa-pencil-alt"></i></a></span>
                 {% else %}
-                    <span class="btn-row-edit-disabled" title="No permission to edit">
-                        <i class="fas fa-pencil-alt"></i> Edit
-                    </span>
+                    <span  title="No permission to edit" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
                 {% endif %}
             </div>
             {% endfor %}

@@ -78,19 +78,19 @@
 
 /* Property header row (clickable accordion) */
 .property-header td {
-    background: #f0fbf4;
+    background: var(--alv-surface);
     font-weight: 600;
-    color: #155724;
+    color: var(--alv-ink);
     cursor: pointer;
     user-select: none;
 }
 .property-header:hover td {
-    background: #d4edda;
+    background: var(--alv-surface-deep);
 }
 .property-arrow {
     transition: transform 0.2s ease;
     margin-right: 8px;
-    color: #28a745;
+    color: var(--alv-accent);
 }
 .property-count-badge {
     background: #0e7c8b;
@@ -166,9 +166,9 @@
     }
     .property-header td {
         display: block;
-        background: linear-gradient(135deg, #f0fbf4 0%, #e8f7ee 100%);
+        background: var(--alv-surface);
         border-radius: 10px 10px 0 0;
-        border: 1px solid #c3e6cb;
+        border: 1px solid var(--alv-line);
         border-bottom: none;
         padding: 14px 16px;
         font-size: 15px;
@@ -180,14 +180,14 @@
     /* When collapsed, header is its own rounded card */
     .property-header:not(.expanded) td {
         border-radius: 10px;
-        border-bottom: 1px solid #c3e6cb;
+        border-bottom: 1px solid var(--alv-line);
     }
 
     /* Detail rows become stacked cards */
     .property-details {
         display: block;
         background: white;
-        border: 1px solid #c3e6cb;
+        border: 1px solid var(--alv-line);
         border-top: none;
         margin: 0;
         padding: 14px 16px;
@@ -228,7 +228,7 @@
         text-align: left !important;
         font-size: 16px;
         font-weight: 600;
-        color: #28a745;
+        color: var(--alv-accent);
     }
 
     .property-details td:nth-child(5) {
@@ -318,17 +318,11 @@
                                     <td class="amount-cell">€ {{ rev.amount|default:0|floatformat:0|intcomma }}</td>
                                     <td style="text-align: center;">
                                         {% if rev.editable and perms.auth.can_edit_financials %}
-                                            <a href="{% url 'finance_revenue_edit' rev.revenue_id %}" class="btn-row-edit">
-                                                <i class="fas fa-pencil-alt"></i> Edit
-                                            </a>
+                                            <span class="row-actions"><a href="{% url 'finance_revenue_edit' rev.revenue_id %}" title="Edit" aria-label="Edit" class="icon-action-btn icon-edit"><i class="fas fa-pencil-alt"></i></a></span>
                                         {% elif rev.from_lease %}
-                                            <span class="btn-row-edit-disabled" title="Rent/levies come from the lease — edit the lease to change them">
-                                                <i class="fas fa-lock"></i> Lease
-                                            </span>
+                                            <span  title="Rent/levies come from the lease — edit the lease to change them" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
                                         {% else %}
-                                            <span class="btn-row-edit-disabled" title="No permission to edit">
-                                                <i class="fas fa-pencil-alt"></i> Edit
-                                            </span>
+                                            <span  title="No permission to edit" aria-label="Edit" class="icon-action-btn icon-edit icon-disabled"><i class="fas fa-pencil-alt"></i></span>
                                         {% endif %}
                                     </td>
                                 </tr>

@@ -211,9 +211,9 @@
             </td>
             {% if editable %}
               <td class="line-remove-cell">
-                <button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
+                <span class="row-actions"><button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
                   <i class="fas fa-trash"></i>
-                </button>
+                </button></span>
               </td>
             {% endif %}
           </tr>
@@ -308,9 +308,9 @@
       </select>
     </td>
     <td class="line-remove-cell">
-      <button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
+      <span class="row-actions"><button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
         <i class="fas fa-trash"></i>
-      </button>
+      </button></span>
     </td>
   </tr>
 </template>

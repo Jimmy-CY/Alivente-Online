@@ -566,7 +566,12 @@ else:
     # are the things worth guarding.
     check('expenses list: Delete is greyed out on a pro-rata row',
           "expense_line_types.expense_line_types_prorata == 'Yes'" in s
-          and 'btn-row-delete-disabled' in s
+          # icon-delete icon-disabled, not btn-row-delete-disabled -
+          # FN-1, 5 Oct 2026. The pill vocabulary was retired from base
+          # and these six pages took the icon one. The CLAIM is
+          # untouched: Delete is still greyed out on a pro-rata row and
+          # still says why. Only the spelling of "greyed out" moved.
+          and 'icon-delete icon-disabled' in s
           and 'Pro-rata expense &mdash; remove this property by editing' in s)
     check('  .. unless it is SPENT - closed, and carrying nothing behind it',
           'not exp.is_spent' in s)
