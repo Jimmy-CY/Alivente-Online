@@ -554,6 +554,50 @@ ROUNDS = [
     # five pages are back on the tokens and will follow when the house
     # moves. The 59 that really differ are not this round.
     '.bak_dr2spell',
+
+    # CS-2 - twelve templates do not extend base, so base's stylesheets
+    # are not in the document and they cannot override it. CS-1's census
+    # had been counting six of manual_pdf's declarations as drift; it is
+    # rendered by render_to_string and handed to xhtml2pdf, and has no
+    # choice but to style itself. alv_tree.standalone() reads it off the
+    # {% extends %} tag with comments stripped, so the list cannot go
+    # stale. The gate's verdict does not move - what moves is the number
+    # the survey prints, and that the next drift round does not begin by
+    # rediscovering this.
+    '.bak_standalone',
+
+    # DR-2b - the 51 declarations that beat base with a DIFFERENT value,
+    # across 15 pages. Demetri: base wins. The page declaration is
+    # deleted rather than rewritten as a token, because a page that
+    # stops declaring a property is on base's value by inheritance and
+    # one fewer declaration is better than one more. Four are KEPT and
+    # named: a phone bar with six actions and one with two are not the
+    # three-column bar base describes. Live drift against base's head
+    # stylesheets: 140 -> 4, and the four have reasons.
+    #
+    # The first build cut a grouped rule twice. rule_spans reports
+    # `.a:hover, .a:active { ... }` under both names with the same body
+    # span, so two entries produced one identical cut twice - the second
+    # removed whatever had slid into those offsets. title_deeds went
+    # from 37 rules to 23. The cuts are a set now, overlaps are refused,
+    # and a rule emptied of everything is removed rather than left as
+    # braces with nothing in them.
+    '.bak_dr2val',
+
+    # PH-1 - the passport holder becomes a person. PA-3 logged it on
+    # 4 Oct: holder_name is a CharField, nothing ties it to
+    # HouseholdMember, and the register and the household can drift
+    # apart. A NULLABLE foreign key beside the string, not instead of
+    # it: holder_name keeps every row and every view keeps reading it,
+    # so the migration adds a column that is NULL everywhere and nothing
+    # depends on. on_delete is PROTECT, because a register whose subject
+    # can be deleted out from under it is not a register.
+    #
+    # No data migration. backfill_passport_holder reports who matches
+    # and how - exact, or case-and-space folded - and writes only with
+    # --write, and never writes an ambiguous one. PA-3: "no safe
+    # automatic mapping for Angy". This round does not invent one.
+    '.bak_passholder',
 ]
 
 

@@ -56,7 +56,15 @@ Lease Agreement - {{ property.prop_name }}
 <!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
 {% include 'components/pdf_viewer.html' %}
 
-<style>
+<style>    /* DR-2b, 5 Oct 2026 - 1 declaration(s) removed. Each beat
+       base with a DIFFERENT value, so each was a real local
+       override: Bootstrap red for the house red, a near-miss
+       grey for the token, or a size base already sets. Demetri
+       ruled that base wins. Nothing is rewritten as a token -
+       a page that stops declaring a property is on base value
+       by inheritance, and one fewer declaration is better than
+       one more.                           [CS-1 5b, DR-2a] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 .report-container {
@@ -219,10 +227,6 @@ Lease Agreement - {{ property.prop_name }}
         max-width: 100%;
         padding: 0;
         box-shadow: none;
-    }
-    .back-button,
-    .lease-document-actions {
-        display: none;
     }
     .lease-document-card {
         background: white;

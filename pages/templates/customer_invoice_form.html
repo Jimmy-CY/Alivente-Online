@@ -315,7 +315,15 @@
   </tr>
 </template>
 
-<style>    /* DR-2a, 5 Oct 2026 - 3 declaration(s) removed from this
+<style>    /* DR-2b, 5 Oct 2026 - 5 declaration(s) removed. Each beat
+       base with a DIFFERENT value, so each was a real local
+       override: Bootstrap red for the house red, a near-miss
+       grey for the token, or a size base already sets. Demetri
+       ruled that base wins. Nothing is rewritten as a token -
+       a page that stops declaring a property is on base value
+       by inheritance, and one fewer declaration is better than
+       one more.                           [CS-1 5b, DR-2a] */
+    /* DR-2a, 5 Oct 2026 - 3 declaration(s) removed from this
        page because base already said them, in its own words.
        Each resolved to the byte-identical computed value, so
        nothing here moved; what changes is that the page is on
@@ -379,8 +387,7 @@ textarea.form-control { resize: vertical; }
 .line-qty, .line-price { text-align: right; }
 .line-remove-cell { text-align: center; vertical-align: middle; }
 
-.icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;  border: 2px solid;  text-decoration: none; transition: all 0.2s ease; font-size: 13px; cursor: pointer; }
-.icon-delete { color: #dc3545; border-color: #dc3545; }
+.icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;    text-decoration: none;   cursor: pointer; }
 .icon-delete:hover { background-color: #dc3545;  }
 
 .add-line-wrap { margin: 14px 0 24px; }

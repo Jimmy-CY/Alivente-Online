@@ -5,49 +5,20 @@
 
 {% block content %}
 
-<style>
+<style>    /* DR-2b, 5 Oct 2026 - 1 declaration(s) removed. Each beat
+       base with a DIFFERENT value, so each was a real local
+       override: Bootstrap red for the house red, a near-miss
+       grey for the token, or a size base already sets. Demetri
+       ruled that base wins. Nothing is rewritten as a token -
+       a page that stops declaring a property is on base value
+       by inheritance, and one fewer declaration is better than
+       one more.                           [CS-1 5b, DR-2a] */
+
 .report-container {
     max-width: 1400px;
     margin: 0 auto;
 }
 
-/* THE TEAL BANNER WENT - 7 Sep.
-
-   This page headed itself with a filled teal band:
-   `linear-gradient(135deg, #0e7c8b 0%, #0a5e6a 100%)`, white text,
-   12px radius, a drop shadow. Nineteen such rules were spelled six
-   different ways across twelve files, and every one of them was a
-   local invention: base owns no banner component, and never did.
-
-   Every signed-off page - Properties, Tenants, Suppliers, Invoices -
-   heads itself with a plain title and base's `.page-action-buttons`.
-   The band was the minority, so it goes rather than becoming a
-   component. Modal headers keep their teal; that is its own round.
-
-   Its `.stat-box` went with it: a white 20%%-alpha tile only reads on a
-   dark ground, and base already has the component for a headline figure
-   - `.alv-stat`, which is what tenant_payment_days shows one with.
-
-   AND SO DID ITS PRINT RULE. `background: #0e7c8b !important` with
-   `print-color-adjust: exact` was not this file overriding itself; it
-   was a deliberate flat fallback, because a gradient does not print.
-   With no band there is nothing left to force. */
-/* THE TABLE STANDARD IS base's - .alv-table.
-
-   .report-table lived here and was a full second copy of it: six rules for
-   the thead fill, the th padding/weight/colour, the td padding and rule, the
-   row hover and the :last-child border reset. All six are in base, and this
-   page's copies had drifted from it - an #f8f9fa heading against
-   --alv-surface, #dee2e6 and #e9ecef rules against --alv-line and
-   --alv-line-soft. Deleted rather than renamed.
-
-   TWO rules are genuinely this page's and stay. */
-
-/* base sets vertical-align: middle, which is right when every cell is one
-   line. The Comment column is 35% wide and wraps to three or four; with
-   middle, the date sits halfway down beside it and the row loses its top
-   line. Top is what this table has always done. */
-.alv-table tbody td { vertical-align: top; }
 
 /* Status is centred over a narrow column. base centres headings (.col-center)
    and action cells, but has no rule for a chip column - so it is one rule

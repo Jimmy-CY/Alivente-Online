@@ -315,9 +315,17 @@ def collisions():
     where a page would now beat base with a DIFFERENT value."""
     bd = decls_of('<style>' + moved_block(now(page(BASE))) + '</style>')
     out = []
+    skip = set(alv_tree.standalone())
     for q in alv_tree.templates():
         name = alv_tree.rel(q)
         if name == BASE:
+            continue
+        # CS-2, 5 Oct 2026 - A PAGE THAT DOES NOT EXTEND BASE CANNOT
+        # OVERRIDE IT. manual_pdf is rendered to a PDF by xhtml2pdf and
+        # never sees base's stylesheets at all; twelve templates are
+        # standalone like that. Comparing one against a block that is
+        # not in the document is comparing against nothing.
+        if name.replace(os.sep, '/') in skip:
             continue
         text = now(q)
         spans = rules_of(text)
@@ -360,9 +368,12 @@ def section_5():
                         for a, b in spans[:-1])
     hd = decls_of(head_only)
     older = []
+    skip = set(alv_tree.standalone())
     for q in alv_tree.templates():
         name = alv_tree.rel(q)
         if name == BASE:
+            continue
+        if name.replace(os.sep, '/') in skip:        # CS-2 - see above
             continue
         for sel, props in decls_of(now(q)).items():
             if sel not in hd:
@@ -374,9 +385,14 @@ def section_5():
           'with a different value,' % len(older))
     print('      on %d pages. This predates CS-1 and is unchanged by it:'
           % len({o[0] for o in older}))
-    print('      those three blocks were always in the head. Logged for a')
-    print('      drift round of its own - mostly .btn-info carrying #0e7c8b')
-    print('      and manual_pdf.html\'s print badges.')
+    print('      those three blocks were always in the head.')
+    print('      %d standalone template(s) are not counted - they have no'
+          % len(skip))
+    print('      {% extends %}, so base never reaches them and they cannot')
+    print('      override it. manual_pdf is rendered to a PDF by xhtml2pdf')
+    print('      and had six declarations counted here until CS-2.')
+    print('      DR-2a took the 16 that said what base says in other words;')
+    print('      what is left really does differ.                 [CS-2]')
 
 
 # ------------------------------------------------------------- section 6

@@ -193,7 +193,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>
+<style>    /* DR-2b, 5 Oct 2026 - 3 declaration(s) removed. Each beat
+       base with a DIFFERENT value, so each was a real local
+       override: Bootstrap red for the house red, a near-miss
+       grey for the token, or a size base already sets. Demetri
+       ruled that base wins. Nothing is rewritten as a token -
+       a page that stops declaring a property is on base value
+       by inheritance, and one fewer declaration is better than
+       one more.                           [CS-1 5b, DR-2a] */
+
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
@@ -532,9 +540,9 @@
 }
 
 .alert-danger {
-    border-color: #dc3545;
-    background-color: #f8d7da;
-    color: #721c24;
+    
+    
+    
     border-radius: 8px;
 }
 

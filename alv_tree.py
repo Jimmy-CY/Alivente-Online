@@ -250,7 +250,15 @@ ALREADY_WIDE = ['test_banner_pages.py',
                 # would overstate the thing the round is about. So it
                 # walks pages/ and crs/ - the two Django apps - and that
                 # narrowing is a stated position, not an oversight.
-                'test_login_url.py']
+                'test_login_url.py',
+                # PH-1, 5 Oct 2026 - it asks whether any VIEW or FORM
+                # reads the new .holder key yet, and views and forms are
+                # .py. alv_tree.templates() returns templates, so a
+                # template root would answer "no" by being unable to
+                # look. It walks pages/ and skips migrations and
+                # __pycache__, which is the same stated narrowing
+                # test_login_url makes two entries above.
+                'test_passport_holder.py']
 
 # FAILED with CRS in the tree, against the round that will fix the module
 # and let the suite be widened. Their narrow root is a stated position,
@@ -459,6 +467,48 @@ def house_filter_pages(base=None):
         if 'action-filter' in s and 'alv-filter' in s:
             out.append(rel(p, base))
     return sorted(out)
+
+
+def standalone(base=None):
+    """Templates that do NOT extend base.html, so base cannot reach them.
+
+    CS-2, 5 Oct 2026. Found while measuring DR-2a: CS-1's drift census
+    reported six declarations on manual_pdf.html as a page beating base's
+    stylesheets with a different value. It is not. manual_pdf is rendered
+    by render_to_string and handed straight to xhtml2pdf - it never sees
+    a browser and it never sees base. It has no choice but to style
+    itself, and a census that compares it against a stylesheet which is
+    not in the document is comparing against nothing.
+
+    TWELVE OF THEM, and they are not an accident. PDF bodies, an email
+    body, a modal shell, detail fragments injected into a page that
+    already has base, and the connectivity error page, which has to
+    render when the database is down and so cannot afford a parent
+    template that queries it.
+
+    THE TEST IS THE TAG, NOT A LIST. A list would need editing every time
+    a page is added, and the thing that makes a page standalone is
+    exactly that it has no {% extends %}. Read off the markup with the
+    comments stripped, because a page explaining in a comment that it
+    does not extend base is still not extending base.
+
+    base.html itself is not standalone - it is the thing not extended -
+    and is excluded.
+    """
+    out = []
+    for p in templates(base):
+        if os.path.basename(p) == 'base.html':
+            continue
+        with open(p, encoding='utf-8', errors='replace') as fh:
+            s = code_only(fh.read())
+        if not re.search(r'\{%\s*extends\b', s):
+            out.append(rel(p, base))
+    return sorted(out)
+
+
+def inherits_base(path, base=None):
+    """Does this one template get base's stylesheets at all?"""
+    return rel(path, base) not in standalone(base)
 
 
 def rel(path, base=None):

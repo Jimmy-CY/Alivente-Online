@@ -338,7 +338,17 @@ Physical Invoices
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* DR-2a, 5 Oct 2026 - 3 declaration(s) removed from this
+<style>    /* DR-2b, 5 Oct 2026 - 7 declaration(s) removed. Each beat
+       base with a DIFFERENT value, so each was a real local
+       override: Bootstrap red for the house red, a near-miss
+       grey for the token, or a size base already sets. Demetri
+       ruled that base wins. Nothing is rewritten as a token -
+       a page that stops declaring a property is on base value
+       by inheritance, and one fewer declaration is better than
+       one more.                           [CS-1 5b, DR-2a] */
+    /* AND 3 KEPT, by decision. See apply_dr2_values.KEPT -
+       this page knows something base cannot. */
+    /* DR-2a, 5 Oct 2026 - 3 declaration(s) removed from this
        page because base already said them, in its own words.
        Each resolved to the byte-identical computed value, so
        nothing here moved; what changes is that the page is on
@@ -444,11 +454,11 @@ Physical Invoices
   /* the form is out of the layout in base - .mobile-action-bar > form */
   .mobile-action-btn {
     display: flex; flex-direction: row; align-items: center; justify-content: center;
-    gap: 8px; padding: 10px 4px;  text-decoration: none;
-    color: #495057; font-size: 13px;  border: 1px solid #e9ecef;
+       text-decoration: none;
+       
      cursor: pointer;
   }
-  .mobile-action-btn:hover, .mobile-action-btn:active { background: var(--alv-surface-deep); text-decoration: none; color: #495057; }
+  .mobile-action-btn:hover, .mobile-action-btn:active {  text-decoration: none;  }
   .pi-table td.mobile-action-bar::before { display: none; }
   .pi-empty { display: block; }
 }

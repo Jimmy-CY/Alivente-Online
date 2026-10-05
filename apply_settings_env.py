@@ -160,7 +160,7 @@ BOOT_NEW = (
 # fail on any machine without a .env.
 #
 # Raise it deliberately, with the suite named, every time.
-BOOT_COUNT = 8
+BOOT_COUNT = 9
 
 
 def harden_suites(check):

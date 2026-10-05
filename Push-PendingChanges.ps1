@@ -771,7 +771,25 @@ $sentinels = @(
     @{ File = 'pages\templates\user_administration.html'; Text = 'fa-user-check'; What = 'IC-2: Enable has a picture of its own, the twin of Disable' },
     @{ File = 'pages\templates\household_member_management.html'; Text = '}user-check{'; What = 'and so does Activate, on the other half of the split name' },
     @{ File = 'pages\templates\title_deeds_management.html'; Text = 'DR-2a, 5 Oct 2026'; What = 'DR-2a: the page says what it took and why' },
-    @{ File = 'pages\templates\passport_management.html'; Text = 'grid-template-columns: 1fr 1fr 1fr'; What = 'and no longer spells out what base says as repeat(3, 1fr)'; Absent = $true; Code = $true }
+    @{ File = 'pages\templates\passport_management.html'; Text = 'grid-template-columns: 1fr 1fr 1fr'; What = 'and no longer spells out what base says as repeat(3, 1fr)'; Absent = $true; Code = $true },
+    # CS-2, 5 Oct 2026.
+    @{ File = 'alv_tree.py'; Text = 'def standalone(base=None)'; What = 'CS-2: the tree knows which templates base cannot reach' },
+    @{ File = 'test_css_order.py'; Text = 'alv_tree.standalone()'; What = 'and the drift census asks it rather than counting a PDF body as drift' },
+    # DR-2b, 5 Oct 2026.
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = 'DR-2b, 5 Oct 2026'; What = 'DR-2b: the page records what it gave back to base' },
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = '.icon-color-delete'; What = 'and the rule it emptied is gone, not left as empty braces'; Absent = $true; Code = $true },
+    @{ File = 'apply_dr2_values.py'; Text = 'KEPT = {'; What = 'while four declarations a page can justify are named, not dropped' },
+    # PH-1, 5 Oct 2026.
+    @{ File = 'pages\models.py'; Text = 'holder = models.ForeignKey'; What = 'PH-1: a passport holder is a household member, not a string' },
+    # NO SENTINEL ON models.py / 'holder_name = models.CharField'. One was
+    # written and test_sentinels refused it: the field is in all eighteen
+    # backed-up versions of that file, because PH-1 adds a key BESIDE it
+    # and does not touch it. A Present row on a line this round
+    # deliberately leaves alone is true in every version and can never
+    # discriminate. test_passport_holder section 1 makes the claim
+    # properly, by comparing the count before and after.
+    @{ File = 'pages\migrations\0097_passport_holder.py'; Text = 'on_delete=django.db.models.deletion.PROTECT'; What = 'the column is nullable and the member cannot be deleted under it' },
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'DRY RUN - nothing was written'; What = 'and the backfill writes only when told to' }
     # NO SENTINEL FOR OI-1 ON A COLOUR IT KEPT. #0e7c8b was already the
     # accent's own value written out, so a Present row on var(--alv-accent)
     # is true of pages that never went through this round and an Absent row
@@ -1976,6 +1994,20 @@ $suites = @(
     # whose whole claim is that it cannot move a pixel is worth nothing
     # unless something looks.
     'test_dr2_spelling.py'
+    # CS-2. Section 3 is the one that matters: the test is the extends
+    # TAG, and a tag can be written inside a comment, so the reader has
+    # to be code_only rather than the raw text.
+    'test_css_standalone.py'
+    # DR-2b. Section 3 paints each page's stylesheet against base AND
+    # base with no page at all, and requires the two to agree on every
+    # property the round touched - the claim is not that a declaration
+    # is gone but that the page now computes what base alone computes.
+    'test_dr2_values.py'
+    # PH-1. Section 3 asks Django's own autodetector whether the
+    # hand-written migration matches the model, rather than reading the
+    # migration and deciding it looks right - this is the first schema
+    # change in a fortnight and deploys run migrations automatically.
+    'test_passport_holder.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

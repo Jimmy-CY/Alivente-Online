@@ -1565,6 +1565,24 @@ class Passport(models.Model):
         help_text='The workspace this passport belongs to.',
     )
     holder_name = models.CharField(max_length=200)
+    # PH-1, 5 Oct 2026 - THE HOLDER AS A PERSON, BESIDE THE STRING.
+    #
+    # holder_name stays and keeps every row it has; this is added NULL
+    # everywhere and nothing reads it yet. PA-1's filter still filters on
+    # the string, and will until backfill_passport_holder has run and
+    # somebody has looked at what it could not match.
+    #
+    # PROTECT, not SET_NULL: a register whose subject can be deleted out
+    # from under it is not a register. Deleting a household member who
+    # holds documents is refused until the documents are dealt with.
+    holder = models.ForeignKey(
+        'pages.HouseholdMember',
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name='passports',
+        help_text='The household member this document belongs to. NULL '
+                  'until the backfill has matched it to holder_name.',
+    )
     document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES)
     document_number = models.CharField(max_length=50)
     country_of_issue = models.CharField(max_length=100)
