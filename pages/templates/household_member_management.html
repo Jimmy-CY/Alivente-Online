@@ -115,7 +115,7 @@
             <input type="hidden" name="member_id" value="{{ m.id }}">
             <button type="submit" class="icon-action-btn {% if m.is_active %}icon-lock{% else %}icon-unlock{% endif %}"
                     title="{% if m.is_active %}Deactivate{% else %}Activate{% endif %}">
-              <i class="fas fa-{% if m.is_active %}ban{% else %}check{% endif %}"></i>
+              <i class="fas fa-{% if m.is_active %}user-slash{% else %}check{% endif %}"></i>
             </button>
           </form>
           <form method="post" style="display:inline;" onsubmit="return confirm('Delete {{ m.name|escapejs }}? This cannot be undone.');">

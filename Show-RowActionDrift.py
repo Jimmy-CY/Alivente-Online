@@ -37,6 +37,7 @@ for _stream in (_sys.stdout, _sys.stderr):
         pass
 # ------------------------------------------------------------------------
 import os
+import textwrap
 import re
 import sys
 
@@ -181,18 +182,58 @@ if shared:
         line('     %-40s %s' % (g, ', '.join(sorted(cs))))
     line()
 
+# TWO LISTS, NOT ONE.                              [RA-5, 5 Oct 2026]
+#
+# Four buttons that are deliberately not in an action column, carrying
+# the reason they are not, read differently from four nobody has looked
+# at - and that difference is most of what a drift report is for. The
+# register is in alv_rowactions.NAMED, beside the order itself.
+#
+# A page in the register whose count has MOVED is a problem, not an
+# exemption: the register pins a number so that the next loose button on
+# one of these pages is reported rather than inherited.
+named_pages, bare = {}, {}
+for pg, hits in loose.items():
+    why, exact = RA.named(pg, hits)
+    if why and exact:
+        named_pages[pg] = (hits, why)
+    elif why:
+        problems += 1
+        bare[pg] = hits
+        line('   REGISTERED COUNT HAS MOVED - %s now has %d loose '
+             'button(s).' % (pg, len(hits)))
+        line('   alv_rowactions.NAMED exempts %d. The new one is not '
+             'covered;' % RA.NAMED[pg]['count'])
+        line('   look at it and either wrap it or add it to the register.')
+        line()
+    else:
+        bare[pg] = hits
+
+if named_pages:
+    n = sum(len(v[0]) for v in named_pages.values())
+    line('   NAMED, NOT IN A WRAPPER - %d button(s) on %d page(s).'
+         % (n, len(named_pages)))
+    line('   Single controls beside the thing they act on, by decision.')
+    for pg in sorted(named_pages):
+        hits, why = named_pages[pg]
+        seen = sorted({' '.join(c) or '(no icon class)' for c, _ in hits})
+        line('     %-40s %2d  %s' % (pg, len(hits), ', '.join(seen)))
+        for ln in textwrap.wrap(why, 62):
+            line('       %s' % ln)
+    line()
+
 # NOT COUNTED AS DRIFT - named so the blind spot is visible, not so the
-# report fails on work nobody has agreed to do. RA-3 wraps them.
-if loose:
-    n = sum(len(v) for v in loose.values())
+# report fails on work nobody has agreed to do.
+if bare:
+    n = sum(len(v) for v in bare.values())
     line('   NOT IN A .row-actions WRAPPER - %d button(s) on %d page(s).'
-         % (n, len(loose)))
+         % (n, len(bare)))
     line('   The ordering standard cannot be read on these. Until RA-2')
     line('   the glyph census could not see them either.')
-    for pg in sorted(loose):
+    for pg in sorted(bare):
         seen = sorted({' '.join(c) or '(no icon class)'
-                       for c, _ in loose[pg]})
-        line('     %-40s %2d  %s' % (pg, len(loose[pg]), ', '.join(seen)))
+                       for c, _ in bare[pg]})
+        line('     %-40s %2d  %s' % (pg, len(bare[pg]), ', '.join(seen)))
     line()
 
 line('=' * 74)

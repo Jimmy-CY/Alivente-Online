@@ -243,9 +243,18 @@ def section_3():
     text = out.stdout
     ok('Every icon class carries exactly one picture.' in text,
        'and says every class carries one picture')
-    m = re.search(r'NOT IN A \.row-actions WRAPPER - (\d+) button\(s\) '
-                  r'on (\d+) page\(s\)', text)
-    ok(m is not None, 'and names the unwrapped ones')
+    # RA-5, 5 Oct 2026 - EITHER HEADING. RA-2's claim here is that the
+    # report NAMES the buttons the wrapper census cannot see, and that
+    # is still true; RA-5 split the one list in two. Four controls that
+    # are deliberately not in an action column, each carrying the reason
+    # it is not, print under NAMED, NOT IN A WRAPPER; anything nobody
+    # has looked at still prints under the old heading. Requiring the
+    # old heading specifically would fail the day the last unexamined
+    # button was explained, which is the day the round succeeded.
+    m = re.search(r'(?:NOT IN A \.row-actions WRAPPER|NAMED, NOT IN A '
+                  r'WRAPPER) - (\d+) button\(s\) on (\d+) page\(s\)', text)
+    ok(m is not None, 'and names the unwrapped ones, under either heading',
+       text[-700:])
     if m:
         print('      %s buttons on %s pages' % (m.group(1), m.group(2)))
         # WAS >= 30, AND RA-3 MADE THAT FALSE - 5 Oct 2026, and the

@@ -72,6 +72,57 @@ OPEN = re.compile(r'<(span|div)[^>]*class="[^"]*\brow-actions\b[^"]*"[^>]*>',
                   re.I)
 
 
+# NAMED, NOT UNEXAMINED.                           [RA-5, 5 Oct 2026]
+#
+# A .row-actions wrapper is for a GROUP of actions in a row's action
+# column. These four controls are not that: each is a single Remove
+# button beside the one thing it removes, and wrapping it would tell the
+# drift report there is an action column with one action in it - a column
+# invented to satisfy a census.
+#
+# Demetri ruled on the edit_asset one when AI-1 built it: "Leave it
+# named, it is not an action column." The three on create_meal_plan are
+# the same control on a different page.
+#
+# THE COUNT IS THE POINT. Each entry pins an exact number. A page that
+# grows one more loose button does not inherit the exemption - the count
+# stops matching and the report calls it a problem by name. An exemption
+# that covered whatever turned up next to it would be worse than none.
+NAMED = {
+    'edit_asset.html': {
+        'count': 1,
+        'classes': ('icon-delete',),
+        'why': 'Remove the attached invoice - one control beside the file '
+               'name it removes. AI-1, and Demetri: leave it named.',
+    },
+    'create_meal_plan.html': {
+        'count': 3,
+        'classes': ('icon-delete',),
+        'why': 'Remove this recipe - one control at the end of each recipe '
+               'row, beside the name and the servings box. Built inside a '
+               'JavaScript template literal.',
+    },
+}
+
+
+def named(page, hits):
+    """(reason, exact) for a page's unwrapped buttons, or (None, None).
+
+    `exact` is False when the register knows the page but the number of
+    loose buttons on it has moved, which is the case the register must
+    not quietly absorb.
+    """
+    e = NAMED.get(page)
+    if not e:
+        return None, None
+    if len(hits) != e['count']:
+        return e['why'], False
+    for classes, _ in hits:
+        if not any(c in e['classes'] for c in classes):
+            return e['why'], False
+    return e['why'], True
+
+
 def wrappers(src):
     """[(start, end, inner)] for every .row-actions wrapper.
 

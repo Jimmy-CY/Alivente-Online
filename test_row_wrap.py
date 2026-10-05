@@ -363,12 +363,23 @@ if m:
 # down, and the arithmetic has to be written down beside it, or the next
 # person cannot tell a decision from a regression.
 LOOSE_NOW = 4
-m2 = re.search(r'NOT IN A \.row-actions WRAPPER - (\d+) button', out)
+# AND RA-5 ADDED A THIRD TERM, which is a decision and not a wrap: all
+# four are now registered in alv_rowactions.NAMED as single controls
+# beside the thing they act on, so the report prints them under NAMED,
+# NOT IN A WRAPPER and the old heading has gone. Matching only the old
+# one fails on the day the last unexamined button was explained - the
+# day the programme finished. Either heading, same number.
+m2 = re.search(r'(?:NOT IN A \.row-actions WRAPPER|NAMED, NOT IN A '
+               r'WRAPPER) - (\d+) button', out)
 ok(m2 is not None and int(m2.group(1)) == LOOSE_NOW,
-   '  and %s loose button(s) left, from the 34 RA-2 really found'
+   '  and %s button(s) outside a wrapper, from the 34 RA-2 really found'
    % (m2.group(1) if m2 else '?'),
    'expected %d - 13 as RA-3 left it, less the 10 RA-3b wrapped, plus '
    'the 1 AI-1 added by decision' % LOOSE_NOW)
+ok('NAMED, NOT IN A WRAPPER' in out and
+   'NOT IN A .row-actions WRAPPER' not in out,
+   '  and every one of them is NAMED - none is unexamined any more',
+   out[-700:])
 ok('Every action column is in house order.' in out,
    '  every column, the 16 new ones included, is in house order')
 ok('Nothing drifting' in out, '  and nothing is drifting')
@@ -411,6 +422,9 @@ print('  NOT PROVED HERE: that the buttons still loose are harmless.')
 print('  RA-3 left 13 on four pages it deliberately did not touch -')
 print('  three that mix forms with plain markup, and one that builds its')
 print('  buttons inside a JavaScript template literal. RA-3b has since')
-print('  taken the three form-shaped pages, which leaves RA-3c and the')
-print('  JavaScript one. The fourth of the four now showing is AI-1s')
-print('  Remove button on edit_asset, left named by decision.')
+print('  taken the three form-shaped pages. RA-5 then read the last')
+print('  four and found none of them is an action column at all - each')
+print('  is one Remove button beside the thing it removes - so they are')
+print('  registered in alv_rowactions.NAMED with the reason rather than')
+print('  wrapped. The slot that was called RA-3c is closed by a')
+print('  decision, not by a wrapper.')

@@ -748,6 +748,30 @@ $sentinels = @(
     @{ File = 'pages\templates\generate_lease_agreement.html'; Text = 'click the button above'; What = 'step 3 points at the button where it actually is' },
     @{ File = 'pages\templates\generate_lease_agreement.html'; Text = 'click the button below'; What = 'and not where it used to be'; Absent = $true; Code = $true },
     @{ File = 'pages\templates\invoices.html'; Text = '<span class="row-actions">'; What = 'an action column of forms is still one group' }
+    # CO-2, IC-1, AE-4, OI-1 and RA-5, 5 Oct 2026.
+    @{ File = 'Push-PendingChanges.ps1'; Text = '(?is)<(style|script)'; What = 'CO-2: this script reads block comments only inside style or script' },
+    @{ File = 'pages\templates\user_administration.html'; Text = 'fa-user-slash'; What = 'IC-1: Disable has a picture of its own' },
+    @{ File = 'pages\templates\household_member_management.html'; Text = '}user-slash{'; What = 'and so does Deactivate, where the name is built across a tag' },
+    # NO SENTINEL ON cash_receipts / 'fa-ban'. One was written and
+    # test_sentinels refused it: Void has drawn fa-ban in all eleven
+    # backed-up versions of that page, so a Present row on it is true in
+    # every one and can never discriminate. The claim worth making - that
+    # IC-1 renamed one meaning and left the other alone - is a BEFORE AND
+    # AFTER, and test_user_slash section 3 makes it against the tree.
+    @{ File = 'pages\templates\act_expense.html'; Text = '{% else %}6%{% endif %}">Invoice</th>'; What = 'AE-4: the full page has an Invoice column, at a width that keeps the table at 100%' },
+    @{ File = 'pages\templates\open_invoices_report.html'; Text = 'var(--alv-ink-strong)'; What = 'OI-1: the ageing labels are on a token' },
+    @{ File = 'pages\templates\open_invoices_report.html'; Text = '#155724'; What = 'and the green empty-state panel has left the page'; Absent = $true; Code = $true },
+    # 'def named(page, hits)', NOT 'NAMED = {'. The first spelling of this
+    # row carried an opening brace with no close, which moved this
+    # script's own brace balance by one and failed CO-2's suite - a
+    # sentinel about a register breaking the gate it was registered in.
+    @{ File = 'alv_rowactions.py'; Text = 'def named(page, hits)'; What = 'RA-5: the order knows which controls are not action columns' },
+    @{ File = 'Show-RowActionDrift.py'; Text = 'REGISTERED COUNT HAS MOVED'; What = 'and the register refuses to absorb a new one' }
+    # NO SENTINEL FOR OI-1 ON A COLOUR IT KEPT. #0e7c8b was already the
+    # accent's own value written out, so a Present row on var(--alv-accent)
+    # is true of pages that never went through this round and an Absent row
+    # on the literal is true of most of the tree. The two above are a token
+    # this page did not use before and a literal only this page carried.
     # NO SENTINEL FOR RA-4. Its claim is an ORDER - pdf, then duplicate,
     # then approve or unapprove, then send, then delete - and a sentinel
     # matches a SUBSTRING. There is no string that is present when five
@@ -794,7 +818,29 @@ function NoComments {
     $t = [regex]::Replace($Text, '<!--.*?-->', '', $sl)
     # Django's {# #} is single-line by design - its lexer regex has no DOTALL.
     $t = [regex]::Replace($t, '\{#[^\r\n]*?#\}', '')
-    $t = [regex]::Replace($t, '/\*.*?\*/', '', $sl)
+    # CO-2, 5 Oct 2026 - `/*` IS NOT A COMMENT OPENER IN MARKUP, and
+    # the line that used to stand here said it was.  accept="image/*"
+    # puts one inside an attribute value, and blanking from there to
+    # the next close anywhere in the file destroyed 3,268 characters
+    # of passport_management.html, 1,088 of edit_asset.html and 776
+    # of property_assets.html - the last of which carries a Code
+    # sentinel.  This is CO-1's rule, which alv_tree.code_only has
+    # had since 3 Oct, arriving in the other language: the block
+    # syntax is only a comment INSIDE <style> or <script>.
+    #
+    # Written with [regex]::Matches, .Substring and concatenation
+    # because this script already uses all three.  A MatchEvaluator
+    # scriptblock would be shorter and would be the first in the
+    # file, and a gate that will not start is worse than one that
+    # reads a little too much.
+    $out = ''
+    $last = 0
+    foreach ($m in [regex]::Matches($t, '(?is)<(style|script)\b[^>]*>.*?</\1>')) {
+        $out = $out + $t.Substring($last, $m.Index - $last)
+        $out = $out + [regex]::Replace($m.Value, '/\*.*?\*/', '', $sl)
+        $last = $m.Index + $m.Length
+    }
+    $t = $out + $t.Substring($last)
     # Only a line that BEGINS with // - anything else eats the // in https://.
     $keep = foreach ($l in ($t -split "`n")) {
         if ($l.TrimStart().StartsWith('//')) { '' } else { $l }
@@ -1896,6 +1942,27 @@ $suites = @(
     # moved a tag with a block and every other gate passed - a length
     # check cannot see a tag that merely moved.
     'test_invoice_order.py'
+    # CO-2's suite cannot run PowerShell - there is none in the sandbox -
+    # so it models NoComments in Python and requires the model to agree
+    # with alv_tree.code_only on all 150 templates, then checks the SHAPE
+    # of the lines on disk.
+    'test_ps1_comment.py'
+    # IC-1. Its section 4 censuses for a glyph name split across a
+    # template tag, which is the shape that hid the third fa-ban from the
+    # drift report and nearly let this round break its own rule.
+    'test_user_slash.py'
+    # AE-4. Section 4 is the column widths: revealing the Invoice column
+    # without moving one makes the full page sum to 110 and a browser
+    # normalises rather than refuses.
+    'test_act_invoice_col.py'
+    # OI-1. Its probe paints .age-label at 390 because the rule lives
+    # inside a 768px media query - at 1280 it reads straight through to
+    # Bootstrap's body colour and reports a pass for the wrong reason.
+    'test_oi_report.py'
+    # RA-5. Section 3 proves each registered control is the only icon
+    # button in its element, and section 4 plants a fifth one and
+    # requires --strict to refuse it.
+    'test_row_exempt.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

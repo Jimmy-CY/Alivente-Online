@@ -497,6 +497,46 @@ ROUNDS = [
     # opening tag along with the block it was glued to and put the PDF
     # outside the group; every gate passed, because it WAS a permutation.
     '.bak_invorder',
+
+    # 5 Oct 2026, the A-list rounds. CO-2 first because it changes the
+    # gate itself and nothing else in this bundle depends on it; then
+    # IC-1, AE-4, OI-1 and RA-5 in the order they were applied, which is
+    # the order their backups were taken.
+    #
+    # CO-2 - Push-PendingChanges.ps1's own comment stripper learned
+    # CO-1's rule: `/*` is not a comment opener in markup. It was
+    # destroying 3,268 characters of passport_management and 776 of
+    # property_assets, which carries a Code sentinel. No sentinel was
+    # wrong yet, which is why it was worth doing now.
+    '.bak_ps1comment',
+
+    # IC-1 - fa-ban was worn by Disable and by Void. Demetri: Void keeps
+    # it, Disable becomes fa-user-slash. Three uses on two pages, and the
+    # third was invisible to the drift report because
+    # household_member_management writes the glyph name across a template
+    # tag - fa-{% if %}ban{% else %}check{% endif %}.
+    '.bak_userslash',
+
+    # AE-4 - PL-1 built the Invoice column inside the drill-down branch,
+    # so the full Actual Expenses page - the screen Demetri named as the
+    # intuitive one - never had it. The condition is gone and two widths
+    # moved with it, because revealing a 10% column on a table already
+    # summing to 100 makes a browser normalise every other column down.
+    '.bak_actinvcol',
+
+    # OI-1 - open_invoices_report's 27 hex literals over 10 colours onto
+    # base's tokens, the green empty-state panel included. Mapped by what
+    # each declaration MEANS, not by its value: #6c757d appeared six
+    # times meaning quieter text and #2c3e50 seven meaning the value you
+    # came to read.
+    '.bak_oireport',
+
+    # RA-5 - the register of controls that are not action columns. The
+    # slot was RA-3c, wrap the last four; the markup says each is a lone
+    # Remove button beside the thing it removes and wrapping one would
+    # invent a column to satisfy a census. The report says NAMED now,
+    # with the reason, and refuses a fifth.
+    '.bak_rowexempt',
 ]
 
 

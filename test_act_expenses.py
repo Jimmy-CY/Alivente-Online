@@ -589,8 +589,26 @@ def px(d, key, field=None):
 async def main():
     head('6. what the main table actually paints')
     now = await paint(draw(PG), css_of(PG))
-    check('seven columns in the standalone view', now['cols'] == 7,
-          str(now['cols']))
+    # AE-4, 5 Oct 2026 - EIGHT, AND THE EIGHTH IS NAMED.
+    #
+    # This asserted seven, which is what the AE rounds left. PL-1 built
+    # an Invoice column inside {% if from_finance_pl_act %} and AE-4 took
+    # the condition off, because the full page - the screen Demetri held
+    # up as the intuitive one - was the one without a document column.
+    #
+    #     7   as the AE rounds left it
+    #   + 1   the Invoice column, revealed by AE-4
+    #     --
+    #     8
+    #
+    # NOT SCOPED TO A BACKUP. Section 6 paints the LIVE page on purpose:
+    # the palette checks below it are meant to track later rounds and
+    # fail when one gets a colour wrong. Reading a frozen copy here to
+    # keep one number true would blind the other seven checks, which is
+    # the mistake test_retone nearly made. The number is restated, with
+    # the arithmetic beside it.
+    check('eight columns in the standalone view, the Invoice one included',
+          now['cols'] == 8, str(now['cols']))
     check('Approved is the good pill, on the token',
           px(now, 'good', 'color') == now['T--alv-good'],
           str(px(now, 'good', 'color')))
