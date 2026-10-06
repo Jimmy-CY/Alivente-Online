@@ -315,7 +315,23 @@
   </tr>
 </template>
 
-<style>    /* DR-2b, 5 Oct 2026 - 5 declaration(s) removed. Each beat
+<style>    /* B-2, 6 Oct 2026 - 8 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 9 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+    /* DR-2b, 5 Oct 2026 - 5 declaration(s) removed. Each beat
        base with a DIFFERENT value, so each was a real local
        override: Bootstrap red for the house red, a near-miss
        grey for the token, or a size base already sets. Demetri
@@ -334,18 +350,18 @@
 
 .btn-info { transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
-.btn-outline-secondary:hover { background: #6c757d; color: white; }
+.btn-outline-secondary { border: 2px solid var(--alv-ink-soft); color: var(--alv-ink-soft); background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
+.btn-outline-secondary:hover { background: var(--alv-ink-soft); color: var(--alv-on-accent); }
 .btn-approve { background-color: var(--alv-good); color: var(--alv-on-accent); border: 1px solid var(--alv-good); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-approve:hover { background-color: color-mix(in srgb, var(--alv-good) 78%, #000); border-color: color-mix(in srgb, var(--alv-good) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-unapprove { background-color: var(--alv-warn); color: var(--alv-on-accent); border: 1px solid var(--alv-warn); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-unapprove:hover { background-color: color-mix(in srgb, var(--alv-warn) 78%, #000); border-color: color-mix(in srgb, var(--alv-warn) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-send { background-color: var(--alv-accent); color: var(--alv-on-accent); border: 1px solid var(--alv-accent); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-send:hover { background-color: var(--alv-accent-ink); border-color: var(--alv-accent-ink); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-duplicate { background-color: var(--alv-accent); color: white; border: 1px solid var(--alv-accent); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
-.btn-duplicate:hover { background-color: var(--alv-accent-ink); border-color: var(--alv-accent-ink); color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-delete { background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
-.btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-duplicate { background-color: var(--alv-accent); color: var(--alv-on-accent); border: 1px solid var(--alv-accent); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-duplicate:hover { background-color: var(--alv-accent-ink); border-color: var(--alv-accent-ink); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-delete { background-color: #dc3545; color: var(--alv-on-accent); border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .status-action-form { margin: 0; }
 
@@ -368,7 +384,7 @@ textarea.form-control { resize: vertical; }
 .line-input[readonly], .line-input:disabled {
   background-color: var(--alv-neutral-soft); color: var(--alv-ink-soft); cursor: not-allowed; opacity: 1;
 }
-.save-new-group { background: #ffffff; border: 1px dashed #ced4da; border-radius: 8px; padding: 12px; height: 100%; }
+.save-new-group { background: var(--alv-paper); border: 1px dashed #ced4da; border-radius: 8px; padding: 12px; height: 100%; }
 .save-new-label { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 4px; }
 .save-new-label input { width: 16px; height: 16px; }
 .save-new-label input:disabled { cursor: not-allowed; }
@@ -378,11 +394,11 @@ textarea.form-control { resize: vertical; }
 .settings-row { display: flex; gap: 20px; margin-bottom: 22px; flex-wrap: wrap; }
 .settings-field { flex: 0 0 240px; margin-bottom: 0; }
 .vat-input-wrap { position: relative; }
-.vat-input-wrap .vat-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #6c757d; font-weight: 600; pointer-events: none; }
+.vat-input-wrap .vat-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--alv-ink-soft); font-weight: 600; pointer-events: none; }
 .vat-input-wrap .form-control { padding-right: 32px; }
-.lines-scroll { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.lines-scroll { overflow-x: auto; background: var(--alv-paper); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .lines-table { margin-bottom: 0; min-width: 720px; }
-.lines-table thead th { background-color: #343a40; color: white; font-weight: 600; font-size: 13px; vertical-align: middle; }
+.lines-table thead th { background-color: #343a40; color: var(--alv-on-accent); font-weight: 600; font-size: 13px; vertical-align: middle; }
 .line-input { font-size: 14px; padding: 6px 8px; height: auto; }
 .line-qty, .line-price { text-align: right; }
 .line-remove-cell { text-align: center; vertical-align: middle; }
@@ -392,9 +408,9 @@ textarea.form-control { resize: vertical; }
 
 .add-line-wrap { margin: 14px 0 24px; }
 
-.totals-card { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; max-width: 360px; margin-left: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.totals-row { display: flex; justify-content: space-between; padding: 4px 0; color: #495057; }
-.totals-total { border-top: 2px solid #dee2e6; margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 18px; color: #2c3e50; }
+.totals-card { background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: 8px; padding: 16px 20px; max-width: 360px; margin-left: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.totals-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--alv-ink-strong); }
+.totals-total { border-top: 2px solid var(--alv-line); margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 18px; color: var(--alv-ink); }
 .totals-note { font-size: 12px; color: #adb5bd; text-align: right; margin-top: 8px; font-style: italic; }
 
 .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }

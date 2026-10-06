@@ -174,7 +174,23 @@ Gantt Chart - {{ project.project_name }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 11 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 10 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ============================================================
    ROTATE PROMPT — hidden by default, shown via JS on phone portrait
    ============================================================ */
@@ -197,7 +213,7 @@ Gantt Chart - {{ project.project_name }}
     .action-primary:hover {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -206,8 +222,8 @@ Gantt Chart - {{ project.project_name }}
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover {
-        background: #0e7c8b;
-        color: white;
+        background: var(--alv-accent);
+        color: var(--alv-on-accent);
         text-decoration: none;
     }
 }
@@ -216,33 +232,33 @@ Gantt Chart - {{ project.project_name }}
    GANTT HEADER & STYLES
    ============================================================ */
 .gantt-header {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .gantt-header h3 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 10px;
     font-weight: 600;
 }
 
 .project-description {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 15px;
     font-style: italic;
 }
 
 .project-property {
-    color: #495057;
+    color: var(--alv-ink-strong);
     margin-bottom: 0;
 }
 
 .project-property i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-right: 5px;
 }
 
@@ -268,11 +284,11 @@ Gantt Chart - {{ project.project_name }}
 
 /* Controls */
 .gantt-controls {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 20px;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .controls-row {
@@ -291,7 +307,7 @@ Gantt Chart - {{ project.project_name }}
 .view-controls label {
     margin-bottom: 0;
     font-weight: 500;
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 .view-mode-select {
@@ -317,7 +333,7 @@ Gantt Chart - {{ project.project_name }}
     gap: 6px;
     margin-bottom: 0;
     font-weight: 500;
-    color: #495057;
+    color: var(--alv-ink-strong);
     cursor: pointer;
     user-select: none;
 }
@@ -330,12 +346,12 @@ Gantt Chart - {{ project.project_name }}
 
 /* Gantt Container */
 .gantt-container {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
     overflow: hidden;
 }
 
@@ -375,7 +391,7 @@ Gantt Chart - {{ project.project_name }}
 .gantt_task_text {
     cursor: pointer;
     user-select: none;
-    color: white;
+    color: var(--alv-on-accent);
     font-weight: bold;
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
@@ -384,15 +400,15 @@ Gantt Chart - {{ project.project_name }}
 
 /* Legend */
 .gantt-legend {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .gantt-legend h5 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 15px;
     font-weight: 600;
 }
@@ -416,7 +432,7 @@ Gantt Chart - {{ project.project_name }}
     border: 1px solid rgba(0,0,0,0.1);
 }
 
-.legend-item span { font-size: 14px; color: #495057; }
+.legend-item span { font-size: 14px; color: var(--alv-ink-strong); }
 
 /* Buttons */
 .btn-info {
@@ -432,7 +448,7 @@ Gantt Chart - {{ project.project_name }}
     .btn-info:hover {
         background-color: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);

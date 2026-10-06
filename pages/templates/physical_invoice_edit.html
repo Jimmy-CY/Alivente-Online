@@ -174,7 +174,23 @@ Edit Physical Invoice
   </tr>
 </template>
 
-<style>    /* DR-2b, 5 Oct 2026 - 5 declaration(s) removed. Each beat
+<style>    /* B-2, 6 Oct 2026 - 10 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 8 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+    /* DR-2b, 5 Oct 2026 - 5 declaration(s) removed. Each beat
        base with a DIFFERENT value, so each was a real local
        override: Bootstrap red for the house red, a near-miss
        grey for the token, or a size base already sets. Demetri
@@ -193,15 +209,15 @@ Edit Physical Invoice
 
 .btn-info { transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
-.btn-outline-secondary:hover { background: #6c757d; color: white; }
+.btn-outline-secondary { border: 2px solid var(--alv-ink-soft); color: var(--alv-ink-soft); background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
+.btn-outline-secondary:hover { background: var(--alv-ink-soft); color: var(--alv-on-accent); }
 
 .btn-approve { background-color: var(--alv-good); color: var(--alv-on-accent); border: 1px solid var(--alv-good); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-approve:hover { background-color: color-mix(in srgb, var(--alv-good) 78%, #000); border-color: color-mix(in srgb, var(--alv-good) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-unapprove { background-color: var(--alv-warn); color: var(--alv-on-accent); border: 1px solid var(--alv-warn); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-unapprove:hover { background-color: color-mix(in srgb, var(--alv-warn) 78%, #000); border-color: color-mix(in srgb, var(--alv-warn) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-delete { background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
-.btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-delete { background-color: #dc3545; color: var(--alv-on-accent); border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 .status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .status-action-form { margin: 0; }
@@ -209,22 +225,22 @@ Edit Physical Invoice
 .lock-banner { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-weight: 500; }
 .lock-banner i { margin-right: 6px; }
 
-.summary-card { background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.summary-card { background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%); border: 1px solid var(--alv-line); border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .summary-item { display: flex; flex-direction: column; gap: 2px; }
-.summary-label { font-size: 12px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.03em; }
-.summary-value { font-size: 15px; color: #2c3e50; font-weight: 500; }
+.summary-label { font-size: 12px; font-weight: 600; color: var(--alv-ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+.summary-value { font-size: 15px; color: var(--alv-ink); font-weight: 500; }
 .summary-input { font-size: 14px; padding: 6px 10px; height: auto; max-width: 220px; border: 2px solid #ced4da; border-radius: 6px; }
-.summary-input:focus { border-color: #0e7c8b; box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; }
+.summary-input:focus { border-color: var(--alv-accent); box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; }
 .summary-hint { font-size: 11px; color: #adb5bd; margin-top: 2px; }
 
 .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .status-draft { background: #fff3cd; color: #856404; }
 .status-approved { background: #cce5ff; color: #004085; }
 .status-sent { background: #d4edda; color: #155724; }
-.lines-scroll { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.lines-scroll { overflow-x: auto; background: var(--alv-paper); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .lines-table { margin-bottom: 0; min-width: 720px; }
-.lines-table thead th { background-color: #343a40; color: white; font-weight: 600; font-size: 13px; vertical-align: middle; }
+.lines-table thead th { background-color: #343a40; color: var(--alv-on-accent); font-weight: 600; font-size: 13px; vertical-align: middle; }
 .line-input { font-size: 14px; padding: 6px 8px; height: auto; }
 .line-qty, .line-price { text-align: right; }
 .line-remove-cell { text-align: center; vertical-align: middle; }
@@ -234,9 +250,9 @@ Edit Physical Invoice
 
 .add-line-wrap { margin: 14px 0 24px; }
 
-.totals-card { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; max-width: 360px; margin-left: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.totals-row { display: flex; justify-content: space-between; padding: 4px 0; color: #495057; }
-.totals-total { border-top: 2px solid #dee2e6; margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 18px; color: #2c3e50; }
+.totals-card { background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: 8px; padding: 16px 20px; max-width: 360px; margin-left: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.totals-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--alv-ink-strong); }
+.totals-total { border-top: 2px solid var(--alv-line); margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 18px; color: var(--alv-ink); }
 .totals-note { font-size: 12px; color: #adb5bd; text-align: right; margin-top: 8px; font-style: italic; }
 
 /* ==================== MOBILE ==================== */

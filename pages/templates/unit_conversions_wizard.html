@@ -3,7 +3,23 @@
 {% block title %}Set Unit Conversions{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 14 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 16 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .conversions-wizard {
     max-width: 900px;
     margin: 0 auto;
@@ -11,7 +27,7 @@
 
 /* === Progress bar === */
 .progress-bar-wrap {
-    background: white;
+    background: var(--alv-paper);
     padding: 16px 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -22,7 +38,7 @@
     justify-content: space-between;
     align-items: baseline;
     font-size: 14px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 10px;
     font-weight: 500;
     gap: 10px;
@@ -37,7 +53,7 @@
     font-weight: 700;
 }
 .progress-bar-label .progress-remaining {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 13px;
 }
 .progress-bar-label .progress-percent {
@@ -65,8 +81,8 @@
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    background: #2c3e50;
-    color: white;
+    background: var(--alv-ink);
+    color: var(--alv-on-accent);
     padding: 12px 18px;
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
@@ -90,12 +106,12 @@
     font-size: 18px;
 }
 .undo-toast .toast-text strong {
-    color: white;
+    color: var(--alv-on-accent);
 }
 
 /* === Main wizard card === */
 .wizard-card {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     padding: 26px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -103,23 +119,23 @@
 }
 
 .wizard-current {
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     padding-bottom: 16px;
     margin-bottom: 20px;
 }
 .wizard-current-name {
     font-size: 22px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 6px 0;
 }
 .wizard-current-meta {
     font-size: 13px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 .wizard-current-meta .badge {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 11px;
@@ -161,7 +177,7 @@
 }
 .conv-row-unit {
     background: #fd7e14;
-    color: white;
+    color: var(--alv-on-accent);
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 12px;
@@ -207,7 +223,7 @@
     border-color: #28a745;
 }
 .conv-input-group .conv-suffix {
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-weight: 500;
     font-size: 14px;
 }
@@ -218,7 +234,7 @@
 }
 .conv-preset-btn {
     padding: 5px 12px;
-    background: white;
+    background: var(--alv-paper);
     border: 1px solid #ffc107;
     border-radius: 4px;
     color: #856404;
@@ -230,7 +246,7 @@
 @media (hover: hover) and (pointer: fine) {
     .conv-preset-btn:hover {
         background: #ffc107;
-        color: white;
+        color: var(--alv-on-accent);
     }
 }
 
@@ -287,9 +303,9 @@
     align-items: center;
 }
 .btn-skip {
-    background: white;
-    color: #6c757d;
-    border: 2px solid #dee2e6;
+    background: var(--alv-paper);
+    color: var(--alv-ink-soft);
+    border: 2px solid var(--alv-line);
     padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
@@ -297,12 +313,12 @@
     transition: all 0.15s ease;
 }
 .btn-skip:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 .btn-prev {
-    background: white;
-    color: #6c757d;
-    border: 2px solid #dee2e6;
+    background: var(--alv-paper);
+    color: var(--alv-ink-soft);
+    border: 2px solid var(--alv-line);
     padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
@@ -310,7 +326,7 @@
     transition: all 0.15s ease;
 }
 .btn-prev:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 .btn-prev:disabled,
 .btn-skip:disabled {
@@ -319,7 +335,7 @@
 }
 .btn-save {
     background: #fd7e14;
-    color: white;
+    color: var(--alv-on-accent);
     border: 2px solid #fd7e14;
     padding: 10px 24px;
     border-radius: 8px;
@@ -329,14 +345,14 @@
 }
 .btn-save:hover { background: #e8590c; border-color: #d04e0a; }
 .btn-save:disabled {
-    background: #6c757d;
-    border-color: #6c757d;
+    background: var(--alv-ink-soft);
+    border-color: var(--alv-ink-soft);
     cursor: not-allowed;
 }
 
 /* === Done state === */
 .wizard-done {
-    background: white;
+    background: var(--alv-paper);
     padding: 50px 30px;
     border-radius: 12px;
     text-align: center;
@@ -348,11 +364,11 @@
     margin-bottom: 16px;
 }
 .wizard-done h2 {
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 10px;
 }
 .wizard-done p {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 24px;
 }
 

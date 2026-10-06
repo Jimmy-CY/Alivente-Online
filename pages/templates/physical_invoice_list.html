@@ -338,7 +338,23 @@ Physical Invoices
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* DR-2b, 5 Oct 2026 - 7 declaration(s) removed. Each beat
+<style>    /* B-2, 6 Oct 2026 - 11 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 9 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+    /* DR-2b, 5 Oct 2026 - 7 declaration(s) removed. Each beat
        base with a DIFFERENT value, so each was a real local
        override: Bootstrap red for the house red, a near-miss
        grey for the token, or a size base already sets. Demetri
@@ -361,8 +377,8 @@ Physical Invoices
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 .filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 1px solid var(--alv-line);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 20px;
@@ -371,8 +387,8 @@ Physical Invoices
 .filter-header {
     flex-wrap: wrap;
 }
-.filter-title i { color: #0e7c8b; }
-.period-summary { color: #495057; font-size: 14px; font-weight: 500; }
+.filter-title i { color: var(--alv-accent); }
+.period-summary { color: var(--alv-ink-strong); font-size: 14px; font-weight: 500; }
 .filter-header-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .pi-clear-all { white-space: nowrap; }
 
@@ -381,25 +397,25 @@ Physical Invoices
 }
 
 /* Numbering ("dispenser") panel */
-.numbering-panel { background: #ffffff; border: 1px solid #dee2e6; border-left: 4px solid #0e7c8b; border-radius: 10px; padding: 16px 20px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.numbering-panel { background: var(--alv-paper); border: 1px solid var(--alv-line); border-left: 4px solid var(--alv-accent); border-radius: 10px; padding: 16px 20px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .numbering-main { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.numbering-label { font-weight: 600; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 8px; }
-.numbering-label i { color: #0e7c8b; }
+.numbering-label { font-weight: 600; color: var(--alv-ink); margin: 0; display: flex; align-items: center; gap: 8px; }
+.numbering-label i { color: var(--alv-accent); }
 .numbering-controls { display: flex; align-items: center; gap: 0; }
-.numbering-prefix { background: var(--alv-surface-deep); border: 2px solid #ced4da; border-right: none; border-radius: 6px 0 0 6px; padding: 8px 10px; font-weight: 600; color: #495057; }
+.numbering-prefix { background: var(--alv-surface-deep); border: 2px solid #ced4da; border-right: none; border-radius: 6px 0 0 6px; padding: 8px 10px; font-weight: 600; color: var(--alv-ink-strong); }
 .numbering-input { width: 110px; border: 2px solid #ced4da; border-radius: 0; padding: 8px 10px; font-size: 14px; text-align: center; }
-.numbering-input:focus { border-color: #0e7c8b; box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; z-index: 1; }
+.numbering-input:focus { border-color: var(--alv-accent); box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; z-index: 1; }
 .numbering-controls .btn { border-radius: 0 6px 6px 0; margin-left: -2px; }
-.numbering-hint { font-size: 12px; color: #6c757d; margin-top: 10px; }
-.pi-number { font-weight: 600; color: #2c3e50; }
-.pi-number-link { color: #0e7c8b; text-decoration: none; font-weight: 600; }
+.numbering-hint { font-size: 12px; color: var(--alv-ink-soft); margin-top: 10px; }
+.pi-number { font-weight: 600; color: var(--alv-ink); }
+.pi-number-link { color: var(--alv-accent); text-decoration: none; font-weight: 600; }
 .pi-number-link:hover { text-decoration: underline; }
 
 .pi-actions-cell { white-space: nowrap; }
 .pi-inline-form { display: inline; margin: 0; }
 .pi-actions-cell .icon-action-btn, .pi-actions-cell .pi-inline-form { margin: 0 2px; }
 
-.pi-empty { padding: 48px 16px !important; color: #6c757d; text-align: center !important; }
+.pi-empty { padding: 48px 16px !important; color: var(--alv-ink-soft); text-align: center !important; }
 .pi-empty i { font-size: 2.5rem; color: #adb5bd; margin-bottom: 12px; display: block; }
 .pi-empty-sub { font-size: 13px; color: #adb5bd; margin-top: 4px; }
 
@@ -423,20 +439,20 @@ Physical Invoices
   .pi-table thead { display: none; }
   .pi-table, .pi-table tbody, .pi-table tr, .pi-table td { display: block; width: 100%; }
   .pi-table tbody tr {
-    background: white; border: 1px solid #dee2e6; border-radius: 8px;
+    background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: 8px;
     margin-bottom: 12px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
   }
-  .pi-table tbody tr:nth-of-type(even) { background: white; }
+  .pi-table tbody tr:nth-of-type(even) { background: var(--alv-paper); }
   .pi-table td {
     border: none !important; padding: 6px 0 !important; text-align: left !important;
     display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 28px;
   }
   .pi-table td::before {
-    content: attr(data-label); font-weight: 600; color: #495057; font-size: 13px; flex-shrink: 0;
+    content: attr(data-label); font-weight: 600; color: var(--alv-ink-strong); font-size: 13px; flex-shrink: 0;
   }
   /* Number cell prominent */
   .pi-table td[data-label="Number"] {
-    font-size: 16px; font-weight: 600; color: #2c3e50;
+    font-size: 16px; font-weight: 600; color: var(--alv-ink);
     padding-bottom: 8px !important; margin-bottom: 4px;
     border-bottom: 1px solid var(--alv-line-soft) !important; display: block;
   }

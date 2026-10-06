@@ -31,8 +31,8 @@
 
 /* ==================== FILTER PANEL ==================== */
 .filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 1px solid var(--alv-line);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 30px;
@@ -40,7 +40,7 @@
 }
 
 .filter-title i.fas {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     font-size: 16px;
 }
 
@@ -193,8 +193,8 @@
 
 /* ==================== DOCUMENT LAUNCHER (in Manage modal Invoice tab) ==================== */
 .doc-launcher-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 2px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 2px solid var(--alv-line);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 16px;
@@ -202,18 +202,18 @@
 }
 .doc-launcher-icon {
     font-size: 36px;
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-bottom: 10px;
 }
 .doc-launcher-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 14px;
     word-break: break-all;
 }
 .doc-launcher-btn {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     border: none;
     padding: 10px 22px;
     border-radius: 6px;
@@ -225,7 +225,7 @@
 }
 .doc-launcher-btn:hover {
     background: var(--alv-accent-ink);
-    color: white;
+    color: var(--alv-on-accent);
     text-decoration: none;
 }
 
@@ -770,16 +770,16 @@
 .report-year-bar {
     display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
     padding: 10px 14px; margin-bottom: 16px;
-    background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;
+    background: var(--alv-surface); border: 1px solid var(--alv-line); border-radius: 8px;
 }
-.report-year-label { font-weight: 600; color: #495057; }
-.report-year-label i { color: #0e7c8b; }
+.report-year-label { font-weight: 600; color: var(--alv-ink-strong); }
+.report-year-label i { color: var(--alv-accent); }
 .report-year-chk { margin: 0; font-size: 14px; cursor: pointer; user-select: none; }
 .report-year-chk input { margin-right: 5px; vertical-align: middle; }
 .report-year-list { display: flex; flex-wrap: wrap; gap: 12px; }
 .report-chart-wrap { position: relative; width: 100%; margin-bottom: 18px; }
-.report-grand-total { text-align: right; font-weight: 700; color: #2c3e50; margin-bottom: 12px; font-size: 1.05rem; }
-.report-drill-title { font-weight: 600; color: #2c3e50; margin-bottom: 12px; }
+.report-grand-total { text-align: right; font-weight: 700; color: var(--alv-ink); margin-bottom: 12px; font-size: 1.05rem; }
+.report-drill-title { font-weight: 600; color: var(--alv-ink); margin-bottom: 12px; }
 /* TITLE LEFT, BACK RIGHT - AE-3. The Back used to sit on its own line
    above the title, at the left, and said "Back to overview". It is on
    the title's line now, at the right, which is where every Back in the
@@ -794,7 +794,7 @@
 }
 .report-drill-head .report-drill-title { margin-bottom: 0; min-width: 0; }
 .report-drill-head .btn { flex-shrink: 0; }
-.report-drill-total { text-align: right; font-weight: 700; color: #2c3e50; margin-top: 8px; }
+.report-drill-total { text-align: right; font-weight: 700; color: var(--alv-ink); margin-top: 8px; }
 @media screen and (max-width: 768px) {
     /* Full-screen modal */
     .expense-report-dialog { max-width: 100%; margin: 0; height: 100vh; }
@@ -1950,27 +1950,43 @@ $('#manageModal').on('hidden.bs.modal', function () {
 
 
 <!-- ==================== EXPENSES vs RENT — ANALYSIS MODAL ==================== -->
-<style>
+<style>    /* B-2, 6 Oct 2026 - 13 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 15 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .analysis-dialog { max-width: 900px; }
 .analysis-dialog .modal-body { max-height: 82vh; overflow-y: auto; }
 .an-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
-.an-yearpick { display:flex; align-items:center; gap:8px; font-size:13px; color:#495057; }
-.an-yearpick select { border:1.5px solid #ced4da; border-radius:8px; padding:4px 10px; font-size:14px; font-weight:600; color:#0e7c8b; background:#fff; }
+.an-yearpick { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--alv-ink-strong); }
+.an-yearpick select { border:1.5px solid #ced4da; border-radius:8px; padding:4px 10px; font-size:14px; font-weight:600; color:var(--alv-accent); background:var(--alv-paper); }
 .an-yearpick label { margin:0; }
 .an-switch { display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none; font-size:13.5px; color:#343a40; font-weight:600; }
 .an-switch input { display:none; }
 .an-track { width:42px; height:24px; border-radius:12px; background:#ced4da; position:relative; transition:background .2s; }
-.an-track::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
-.an-switch input:checked + .an-track { background:#0e7c8b; }
+.an-track::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; background:var(--alv-paper); border-radius:50%; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+.an-switch input:checked + .an-track { background:var(--alv-accent); }
 .an-switch input:checked + .an-track::after { left:21px; }
 .an-basisrow { display:flex; align-items:center; gap:10px; margin:6px 0 8px; min-height:22px; flex-wrap:wrap; }
 .an-badge { font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px; }
 .an-badge.ytd { background:#fff3bf; color:#b0810a; border:1px solid #ffe066; }
-.an-badge.full { background:var(--alv-surface-deep); color:#495057; border:1px solid #dee2e6; }
+.an-badge.full { background:var(--alv-surface-deep); color:var(--alv-ink-strong); border:1px solid var(--alv-line); }
 .an-sub { font-size:12.5px; color:#868e96; }
 .an-chart-wrap { position:relative; width:100%; height:42vh; min-height:300px; max-height:430px; margin-bottom:6px; }
-#analysisTip { position:absolute; display:none; pointer-events:none; z-index:5; background:rgba(33,37,41,0.92); color:#fff; font-size:12px; line-height:1.55; padding:7px 10px; border-radius:6px; max-width:280px; box-shadow:0 2px 10px rgba(0,0,0,.25); white-space:nowrap; }
-.an-quad-key { display:grid; grid-template-columns:1fr 1fr; gap:6px 18px; margin:14px 0 4px; font-size:12px; color:#495057; }
+#analysisTip { position:absolute; display:none; pointer-events:none; z-index:5; background:rgba(33,37,41,0.92); color:var(--alv-on-accent); font-size:12px; line-height:1.55; padding:7px 10px; border-radius:6px; max-width:280px; box-shadow:0 2px 10px rgba(0,0,0,.25); white-space:nowrap; }
+.an-quad-key { display:grid; grid-template-columns:1fr 1fr; gap:6px 18px; margin:14px 0 4px; font-size:12px; color:var(--alv-ink-strong); }
 .an-quad-key div { display:flex; gap:8px; align-items:flex-start; }
 .an-dot { width:12px; height:12px; border-radius:3px; margin-top:2px; flex-shrink:0; }
 /* The key says what the bands say, so it takes the same four tokens. */
@@ -1984,7 +2000,7 @@ $('#manageModal').on('hidden.bs.modal', function () {
 .an-quad-key b.is-good { color:var(--alv-good); }
 table.an-table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13.5px; }
 .an-table th, .an-table td { padding:8px 8px; border-bottom:1px solid var(--alv-line-soft); }
-.an-table th { text-align:left; color:#495057; font-weight:600; border-bottom:2px solid #e9ecef; }
+.an-table th { text-align:left; color:var(--alv-ink-strong); font-weight:600; border-bottom:2px solid var(--alv-surface-deep); }
 .an-table td.num, .an-table th.num { text-align:right; font-variant-numeric:tabular-nums; }
 .an-table td.ctr, .an-table th.ctr { text-align:center; }
 .an-table tr.danger td { background:var(--alv-bad-soft); }

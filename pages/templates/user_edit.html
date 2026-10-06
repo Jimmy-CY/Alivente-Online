@@ -3,7 +3,23 @@
 {% block title %}Edit User - {{ target_user.username }}{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 3 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .user-form-container {
     max-width: 700px;
     margin: 0 auto;
@@ -31,7 +47,7 @@ select.form-control {
     line-height: 1.5;
     padding-top: 8px;
     padding-bottom: 8px;
-    background-color: white;
+    background-color: var(--alv-paper);
 }
 
 .role-selector {
@@ -41,7 +57,7 @@ select.form-control {
 }
 
 .role-option {
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--alv-surface-deep);
     border-radius: 8px;
     padding: 14px 10px;
     text-align: center;
@@ -71,12 +87,12 @@ select.form-control {
 .role-option .role-name {
     font-weight: 600;
     font-size: 13px;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .role-option .role-desc {
     font-size: 11px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-top: 3px;
 }
 
@@ -93,11 +109,11 @@ select.form-control {
 }
 
 .user-meta-box {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-radius: 8px;
     padding: 14px 18px;
     font-size: 13px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     display: flex;
     gap: 24px;
     flex-wrap: wrap;

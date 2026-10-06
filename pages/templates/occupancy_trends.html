@@ -7,7 +7,23 @@
 
 {% block content %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 27 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 21 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
         /* THE COLOURED BANNER WENT - 8 Sep.
 
            This page headed itself with a filled teal gradient band and a
@@ -53,8 +69,8 @@
     margin-bottom: 22px;
 }
 .trends-chart-panel {
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -62,12 +78,12 @@
 .trends-chart-header {
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--alv-line);
 }
 .trends-chart-title {
     font-size: 16px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 4px 0;
     display: flex;
     align-items: center;
@@ -75,7 +91,7 @@
 }
 .trends-chart-subtitle {
     font-size: 12px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin: 0;
 }
 .trends-chart-canvas-wrap {
@@ -85,22 +101,22 @@
 
 /* Yearly summary table */
 .yearly-summary-panel {
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     margin-bottom: 22px;
 }
 .yearly-summary-header {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 15px 20px;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--alv-line);
 }
 .yearly-summary-title {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0;
     display: flex;
     align-items: center;
@@ -108,7 +124,7 @@
 }
 .yearly-summary-subtitle {
     font-size: 13px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin: 4px 0 0 0;
 }
 .yearly-summary-table-wrap {
@@ -119,34 +135,34 @@
     border-collapse: collapse;
 }
 .yearly-summary-table thead th {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 12px 14px;
     text-align: center;
     font-weight: 600;
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-size: 13px;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid var(--alv-line);
 }
 .yearly-summary-table tbody td {
     padding: 11px 14px;
     text-align: center;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     font-size: 14px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     cursor: pointer;
     transition: background 0.15s ease;
 }
 .yearly-summary-table tbody tr:hover td {
     background: #e3f2fd;
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 .yearly-summary-table tbody td.year-cell {
     font-weight: 700;
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 .year-ytd-badge {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     font-size: 10px;
     padding: 2px 8px;
     border-radius: 10px;
@@ -163,23 +179,23 @@
     justify-content: center;
     text-align: center;
     padding: 40px 20px;
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 .rotate-prompt .rotate-icon {
     font-size: 64px;
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-bottom: 18px;
     animation: rotate-hint 2.4s ease-in-out infinite;
 }
 .rotate-prompt h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 8px 0;
 }
 .rotate-prompt p {
     font-size: 14px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin: 0;
     max-width: 280px;
     line-height: 1.5;
@@ -202,19 +218,19 @@
     overflow: hidden;
 }
 #yearDetailModal .modal-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, var(--alv-accent-ink) 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--alv-accent) 0%, var(--alv-accent-ink) 100%);
+    color: var(--alv-on-accent);
     border-bottom: none;
     padding: 16px 22px;
 }
 #yearDetailModal .modal-title {
-    color: white;
+    color: var(--alv-on-accent);
     font-weight: 600;
     font-size: 18px;
     margin: 0;
 }
 #yearDetailModal .modal-header .close {
-    color: white;
+    color: var(--alv-on-accent);
     opacity: 0.9;
     text-shadow: none;
 }
@@ -225,11 +241,11 @@
 
 .year-summary-alert {
     background: #e3f2fd;
-    border-left: 4px solid #0e7c8b;
+    border-left: 4px solid var(--alv-accent);
     padding: 14px 18px;
     border-radius: 4px;
     margin-bottom: 22px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-size: 14px;
 }
 
@@ -240,14 +256,14 @@
     margin-bottom: 24px;
 }
 .year-metric-card {
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 18px;
     text-align: center;
 }
 .year-metric-card h6 {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 12px;
     text-transform: uppercase;
     font-weight: 600;
@@ -257,18 +273,18 @@
 .year-metric-card .metric-value {
     font-size: 28px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 4px 0;
 }
 .year-metric-card .metric-detail {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 12px;
 }
 
 .detail-section-title {
     font-size: 14px;
     font-weight: 700;
-    color: #495057;
+    color: var(--alv-ink-strong);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: 0 0 12px 0;
@@ -276,7 +292,7 @@
     align-items: center;
     gap: 8px;
 }
-.detail-section-title i { color: #0e7c8b; }
+.detail-section-title i { color: var(--alv-accent); }
 
 .detail-table {
     width: 100%;
@@ -285,12 +301,12 @@
     font-size: 13px;
 }
 .detail-table thead th {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 10px 12px;
     text-align: center;
     font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
+    color: var(--alv-ink-strong);
+    border-bottom: 2px solid var(--alv-line);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -302,10 +318,10 @@
 .detail-table tbody td {
     padding: 10px 12px;
     text-align: center;
-    border-bottom: 1px solid #e9ecef;
-    color: #2c3e50;
+    border-bottom: 1px solid var(--alv-surface-deep);
+    color: var(--alv-ink);
 }
-.detail-table tbody tr:hover td { background: #f8f9fa; }
+.detail-table tbody tr:hover td { background: var(--alv-surface); }
 
 .detail-badge {
     display: inline-block;
@@ -333,8 +349,8 @@
     display: none;
 }
 .detail-card {
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 12px 14px;
     margin-bottom: 10px;
@@ -342,7 +358,7 @@
 .detail-card-header {
     font-size: 14px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
@@ -355,8 +371,8 @@
     font-size: 13px;
     padding: 2px 0;
 }
-.detail-card-label { color: #6c757d; }
-.detail-card-value { color: #2c3e50; font-weight: 500; }
+.detail-card-label { color: var(--alv-ink-soft); }
+.detail-card-value { color: var(--alv-ink); font-weight: 500; }
 
 /* No data error */
 .alert-no-data {

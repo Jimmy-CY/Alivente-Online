@@ -196,7 +196,23 @@
 
 {% endif %}
 
-<style>    /* DR-2b, 5 Oct 2026 - 11 declaration(s) removed. Each beat
+<style>    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+    /* DR-2b, 5 Oct 2026 - 11 declaration(s) removed. Each beat
        base with a DIFFERENT value, so each was a real local
        override: Bootstrap red for the house red, a near-miss
        grey for the token, or a size base already sets. Demetri
@@ -223,14 +239,14 @@
     font-weight: 600;
 }
 .status-missing {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-style: italic;
 }
 
 /* Upload-target info banner */
 .upload-target-info {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background-color: var(--alv-surface);
+    border: 1px solid var(--alv-line);
     border-radius: 6px;
     padding: 10px 14px;
     margin-bottom: 16px;
@@ -265,15 +281,15 @@
         width: 100%;
     }
     .title-deeds-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
         border-radius: 8px;
         margin-bottom: 12px;
         padding: 12px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
     .title-deeds-table tbody tr:nth-of-type(even) {
-        background: white;
+        background: var(--alv-paper);
     }
     .title-deeds-table td {
         border: none !important;
@@ -288,7 +304,7 @@
     .title-deeds-table td::before {
         content: attr(data-label);
         font-weight: 600;
-        color: #495057;
+        color: var(--alv-ink-strong);
         font-size: 13px;
         flex-shrink: 0;
     }
@@ -296,7 +312,7 @@
     .title-deeds-table td[data-label="Property"] {
         font-size: 16px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--alv-ink);
         padding-bottom: 8px !important;
         margin-bottom: 4px;
         border-bottom: 1px solid var(--alv-line-soft) !important;

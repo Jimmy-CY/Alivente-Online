@@ -3,7 +3,14 @@
 {% block title %}Meal Plans{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 1 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .meal-plans-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -18,7 +25,7 @@
    which is what owns the geometry of a button in an action bar. */
 
 .meal-plan-card {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     padding: 18px 25px;
     margin-bottom: 12px;

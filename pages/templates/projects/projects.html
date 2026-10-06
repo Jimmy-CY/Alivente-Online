@@ -335,21 +335,37 @@ Projects
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 11 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 13 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 
 .action-primary--disabled {
     opacity: 0.6;
     cursor: not-allowed;
     pointer-events: none;
-    background: #6c757d;
-    border-color: #6c757d;
+    background: var(--alv-ink-soft);
+    border-color: var(--alv-ink-soft);
 }
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -360,14 +376,14 @@ Projects
     .action-secondary:hover {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
     }
 }
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover {
-        background: #0e7c8b;
-        color: white;
+        background: var(--alv-accent);
+        color: var(--alv-on-accent);
         text-decoration: none;
     }
 }
@@ -383,8 +399,8 @@ Projects
    FILTER PANEL
    ============================================================ */
 .filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 1px solid var(--alv-line);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 30px;
@@ -397,11 +413,11 @@ Projects
     min-width: 0;
 }
 
-.filter-title i.fa-filter { color: #0e7c8b; }
+.filter-title i.fa-filter { color: var(--alv-accent); }
 
 .filter-content {
     padding-top: 20px;
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--alv-line);
     margin-top: 15px;
 }
 
@@ -430,8 +446,8 @@ Projects
 
 
 .btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
+    border: 2px solid var(--alv-ink-soft);
+    color: var(--alv-ink-soft);
     background: transparent;
     border-radius: 6px;
     font-size: 13px;
@@ -442,14 +458,14 @@ Projects
 
 @media (hover: hover) and (pointer: fine) {
     .btn-outline-secondary:hover {
-        background: #6c757d;
-        color: white;
+        background: var(--alv-ink-soft);
+        color: var(--alv-on-accent);
         transform: translateY(-1px);
     }
 }
 
 .project-name-link {
-    color: #2c3e50;
+    color: var(--alv-ink);
     text-decoration: none;
     display: block;
     padding: 4px 0;
@@ -459,7 +475,7 @@ Projects
 
 @media (hover: hover) and (pointer: fine) {
     .project-name-link:hover {
-        color: #0e7c8b;
+        color: var(--alv-accent);
         text-decoration: none;
         background-color: rgba(14, 124, 139, 0.05);
         padding: 4px 8px;
@@ -527,7 +543,7 @@ Projects
     .btn-info:hover {
         background-color: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -549,12 +565,12 @@ Projects
    PAGINATION
    ============================================================ */
 .pagination .page-link {
-    color: #0e7c8b;
-    border-color: #dee2e6;
+    color: var(--alv-accent);
+    border-color: var(--alv-line);
 }
 .pagination .page-item.active .page-link {
-    background-color: #0e7c8b;
-    border-color: #0e7c8b;
+    background-color: var(--alv-accent);
+    border-color: var(--alv-accent);
 }
 
 /* ============================================================
@@ -623,8 +639,8 @@ Projects
         background: transparent;
     }
     .projects-table tr {
-        background: white;
-        border: 1px solid #dee2e6;
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
         border-radius: 10px;
         margin-bottom: 14px;
         padding: 14px;
@@ -641,7 +657,7 @@ Projects
         content: attr(data-label);
         display: inline-block;
         font-weight: 600;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.4px;

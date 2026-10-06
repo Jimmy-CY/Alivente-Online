@@ -3,7 +3,14 @@
 {% block title %}Add Workspace{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 1 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .workspace-form-container {
     max-width: 700px;
     margin: 0 auto;
@@ -24,7 +31,7 @@ select.form-control {
     line-height: 1.5;
     padding-top: 8px;
     padding-bottom: 8px;
-    background-color: white;
+    background-color: var(--alv-paper);
 }
 
 @media screen and (max-width: 768px) {

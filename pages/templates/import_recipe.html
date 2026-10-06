@@ -3,14 +3,30 @@
 {% block title %}Import Recipe{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 8 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .import-container {
     max-width: 800px;
     margin: 0 auto;
 }
 
 .upload-section {
-    background: white;
+    background: var(--alv-paper);
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -18,11 +34,11 @@
 }
 
 .upload-zone {
-    border: 3px dashed #0e7c8b;
+    border: 3px dashed var(--alv-accent);
     border-radius: 12px;
     padding: 60px 40px;
     text-align: center;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -39,7 +55,7 @@
 
 .upload-icon {
     font-size: 64px;
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-bottom: 20px;
 }
 
@@ -67,7 +83,7 @@
 
 .file-icon {
     font-size: 32px;
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 .supported-formats {
@@ -80,9 +96,9 @@
 .format-card {
     text-align: center;
     padding: 20px;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-radius: 8px;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 .format-icon {
@@ -108,7 +124,7 @@
 }
 
 .processing-content {
-    background: white;
+    background: var(--alv-paper);
     padding: 40px;
     border-radius: 12px;
     text-align: center;
@@ -119,7 +135,7 @@
     width: 64px;
     height: 64px;
     border: 6px solid #f3f3f3;
-    border-top: 6px solid #0e7c8b;
+    border-top: 6px solid var(--alv-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 20px;

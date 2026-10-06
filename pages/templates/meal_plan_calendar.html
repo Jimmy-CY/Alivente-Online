@@ -3,7 +3,14 @@
 {% block title %}Meal Plan Calendar{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 15 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== MAIN LAYOUT ==================== */
 .calendar-container {
     max-width: 1600px;
@@ -27,7 +34,7 @@
 
 /* Mini Calendar */
 .mini-calendar {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -67,7 +74,7 @@
 
 .mini-calendar-nav button:hover {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
 }
 
 .mini-calendar-grid {
@@ -104,7 +111,7 @@
 
 .mini-calendar-week.selected .mini-calendar-day:not(.empty) {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
 }
 
 .mini-calendar-day.empty {
@@ -133,20 +140,20 @@
 
 .mini-calendar-day.in-meal-plan {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
 }
 
 .mini-calendar-day.in-meal-plan.has-meal::after {
-    background: white;
+    background: var(--alv-paper);
 }
 
 .mini-calendar-day.in-meal-plan.today {
-    border-color: white;
+    border-color: var(--alv-paper);
 }
 
 /* Meal Plans List */
 .meal-plans-panel {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -206,7 +213,7 @@
     width: 100%;
     padding: 12px;
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
     border: none;
     border-radius: 8px;
     font-weight: 500;
@@ -227,7 +234,7 @@
 
 /* ==================== RIGHT PANEL - WEEK DETAIL ==================== */
 .week-detail-panel {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
@@ -311,7 +318,7 @@
 
 .day-card.today .day-card-header {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
 }
 
 .day-card-header h4 {
@@ -321,7 +328,7 @@
 }
 
 .day-card-header .today-badge {
-    background: white;
+    background: var(--alv-paper);
     color: var(--alv-accent-ink);
     padding: 3px 10px;
     border-radius: 12px;
@@ -338,7 +345,7 @@
     display: flex;
     gap: 15px;
     padding: 12px;
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     margin-bottom: 10px;
     border: 1px solid var(--alv-line);
@@ -369,7 +376,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--alv-on-accent);
     font-size: 24px;
     flex-shrink: 0;
 }
@@ -427,7 +434,7 @@
     margin-top: 12px;
     padding: 8px 20px;
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
     border: none;
     border-radius: 6px;
     font-size: 13px;
@@ -500,7 +507,7 @@
 
 .legend-dot.today {
     border: 2px solid var(--alv-accent);
-    background: white;
+    background: var(--alv-paper);
 }
 
 /* ==================== RESPONSIVE ==================== */

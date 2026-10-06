@@ -387,7 +387,23 @@
     {% csrf_token %}
 </form>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 9 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 4 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 .summary-grid {
@@ -402,11 +418,11 @@
 }
 .summary-label {
     font-weight: 600;
-    color: #495057;
+    color: var(--alv-ink-strong);
     min-width: 110px;
 }
 .summary-value {
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 /* View toggle row */
@@ -416,13 +432,13 @@
     gap: 12px;
     margin-bottom: 1rem;
     padding: 10px 14px;
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 .view-toggle-label {
     font-weight: 600;
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-size: 14px;
 }
 /* .view-toggle-group's two rules are gone - SG-2. base sizes .alv-seg
@@ -442,8 +458,8 @@
     border-radius: 6px;
     object-fit: cover;
     flex-shrink: 0;
-    border: 1px solid #dee2e6;
-    background: #f8f9fa;
+    border: 1px solid var(--alv-line);
+    background: var(--alv-surface);
 }
 .asset-thumb-placeholder {
     display: flex;
@@ -461,22 +477,22 @@
 .empty-state-card {
     text-align: center;
     padding: 60px 20px;
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 .empty-state-icon i {
     font-size: 4rem;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 20px;
 }
 .empty-state-card h4 {
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-weight: 600;
     margin-bottom: 12px;
 }
 .empty-state-card p {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 0;
 }
 
@@ -495,7 +511,7 @@
 .inline-add-row {
     margin-top: 6px;
     padding: 8px;
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
     border-radius: 4px;
     border: 1px dashed #ced4da;
 }
@@ -511,7 +527,7 @@
     .summary-label {
         min-width: 0;
         font-size: 12px;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         text-transform: uppercase;
         letter-spacing: 0.3px;
     }
@@ -528,7 +544,7 @@
     }
     .view-toggle-label {
         font-size: 12px;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         text-transform: uppercase;
         letter-spacing: 0.3px;
     }

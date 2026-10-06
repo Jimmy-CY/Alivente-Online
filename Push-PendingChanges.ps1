@@ -241,7 +241,12 @@ $sentinels = @(
     @{ File = 'pages\templates\base.html';                Text = '--alv-table-std';                 What = 'table standard hoisted into base' },
     @{ File = 'pages\templates\base.html';                Text = '.icon-action-btn {';              What = 'the house icon button has one home' },
     @{ File = 'pages\templates\base.html';                Text = '.mobile-action-bar {';            What = 'and so does the mobile action bar' },
-    @{ File = 'pages\templates\base.html';                Text = '.sidebar-toggle:hover { background: #0a5e6a;'; What = 'sidebar hover uses the new ink' },
+    # B-1, 5 Oct 2026: this read '... background: #0a5e6a;' until the
+    # literal became the token it was already equal to. The sentinel
+    # pins the SAME FACT in the new words - the sidebar hover is the
+    # accent ink - and it is a stronger pin than before, because a
+    # change to --alv-accent-ink now moves this hover with it.
+    @{ File = 'pages\templates\base.html';                Text = '.sidebar-toggle:hover { background: var(--alv-accent-ink);'; What = 'sidebar hover uses the accent ink, by token' },
     # WAS: suppliers.html must contain 'border-color: var(--alv-accent-ink)'.
     # The accent-ink round asserted that Suppliers' own .btn-info:hover had
     # been moved onto the token, which was true and worth saying at the
@@ -2024,6 +2029,23 @@ $suites = @(
     # 5 plants a map that gives one member two names, which is how a
     # backfill quietly hands one person somebody else's documents.
     'test_passport_alias.py'
+    # B-1, tier A of the Section B colour map. Section 1 reads base's
+    # :root and resolves all thirteen substitutions against the literal
+    # each one replaced; section 5 does the same for all 957 cuts off
+    # the backups. The render in section 6 is smoke and is labelled as
+    # smoke, because the whole claim is that the two pictures are the
+    # same picture. Section 3 follows every non-browser render path in
+    # the tree to its template and requires it to be standalone, which
+    # is what keeps a var() out of a PDF that cannot read one.
+    'test_colour_tokens.py'
+    # B-2, tier B, the four neutrals. Section 2 is the round: every one
+    # of the nine substitutions must move by EXACTLY the distance the
+    # map records, to a tenth of an RGB unit, so a changed token refuses
+    # the round rather than sliding 758 declarations. Section 6 measures
+    # what it bought in contrast ratios and says out loud that the 201
+    # borders went the other way. Section 7 is a real before-and-after,
+    # bounded rather than identical.
+    'test_colour_neutrals.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

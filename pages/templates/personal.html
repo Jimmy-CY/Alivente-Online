@@ -96,7 +96,14 @@
 
 </div>
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 4 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
   /* Colour Variables */
   :root {
     --personal-dark: var(--alv-accent);
@@ -136,7 +143,7 @@
   .admin-tab.personal-tab {
     border-color: var(--personal-dark);
     color: var(--personal-dark);
-    background-color: white;
+    background-color: var(--alv-paper);
     border-bottom-color: var(--personal-dark);
     /* IT DRAWS ITS OWN RIGHT EDGE NOW - 29 Sep, and here is the history.
        This rule said `border-right: none`, because the FUTURE tab sat
@@ -176,7 +183,7 @@
   .admin-tab.future-tab {
     border-color: var(--future-dark);
     color: var(--future-dark);
-    background-color: white;
+    background-color: var(--alv-paper);
     border-bottom-color: var(--future-dark);
     border-radius: 10px 10px 0 0;
     opacity: 0.6;
@@ -238,7 +245,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
-    color: white;
+    color: var(--alv-on-accent);
     padding: 12px;
     text-align: center;
   }
@@ -246,7 +253,7 @@
   .admin-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    color: white;
+    color: var(--alv-on-accent);
     text-decoration: none;
   }
 

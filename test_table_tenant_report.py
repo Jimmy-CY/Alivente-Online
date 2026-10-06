@@ -175,8 +175,17 @@ for hexv, what in (('#28a745', 'the solid green'),
                    ('#dc3545', 'the solid red')):
     check('  CONTROL: %s is no longer used as a BADGE FILL' % what,
           not re.search(r'background(?:-color)?:\s*' + re.escape(hexv), CSS))
+# B-2, 6 Oct 2026 - EITHER SPELLING. This read `color: #6c757d` until
+# B-2 turned that grey into var(--alv-ink-soft) here and on 74 other
+# pages. The control exists to show the four FILL checks above are not
+# vacuous - that the grey really is on this page, as text, so "no fill
+# uses it" is a statement about fills rather than about an absent
+# colour. That remains exactly as true written as a token, and pinning
+# the literal would have made this check a vote against the token
+# system it was never arguing with.
 check('  CONTROL: and the page still uses the grey as ordinary text',
-      re.search(r'color:\s*#6c757d', CSS) is not None)
+      re.search(r'color:\s*(?:#6c757d|var\(--alv-ink-soft\))', CSS)
+      is not None)
 
 # The stylesheet must still be a stylesheet. A rewritten selector that lost
 # its block leaves the style tags balanced, the markup balanced, and the CSS

@@ -194,12 +194,28 @@ Invoices
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 4 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 
 /* ==================== FILTER PANEL ==================== */
 .filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 1px solid var(--alv-line);
     border-radius: 12px;
     padding: 12px 24px;
     margin-bottom: 30px;
@@ -211,7 +227,7 @@ Invoices
 }
 
 .filter-title i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 .filter-content {
@@ -228,8 +244,8 @@ Invoices
 
 
 .btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
+    border: 2px solid var(--alv-ink-soft);
+    color: var(--alv-ink-soft);
     background: transparent;
     border-radius: 6px;
     font-size: 13px;
@@ -238,8 +254,8 @@ Invoices
 }
 
 .btn-outline-secondary:hover {
-    background: #6c757d;
-    color: white;
+    background: var(--alv-ink-soft);
+    color: var(--alv-on-accent);
 }
 
 /* Amount column */

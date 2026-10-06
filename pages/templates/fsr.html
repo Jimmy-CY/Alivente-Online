@@ -558,8 +558,8 @@
 
 /* Enhanced Filter Panel Styles */
 .filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 1px solid var(--alv-line);
     border-radius: 12px;
     padding: 12px 24px;
     margin-bottom: 30px;
@@ -572,7 +572,7 @@
 }
 
 .filter-title i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 .filter-content {
@@ -597,8 +597,8 @@
 
 
 .btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
+    border: 2px solid var(--alv-ink-soft);
+    color: var(--alv-ink-soft);
     background: transparent;
     border-radius: 6px;
     font-size: 13px;
@@ -607,14 +607,14 @@
 }
 
 .btn-outline-secondary:hover {
-    background: #6c757d;
-    color: white;
+    background: var(--alv-ink-soft);
+    color: var(--alv-on-accent);
     transform: translateY(-1px);
 }
 
 /* Date Logged Column Styling */
 .date-logged {
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 .date-logged .text-muted {
@@ -625,7 +625,7 @@
 /* Delete Button Styles */
 /* Delete Modal Styles */
 .issue-details {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 20px;
     border-radius: 8px;
     margin: 15px 0;
@@ -636,7 +636,7 @@
 }
 
 .issue-details strong {
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-weight: 600;
 }
 
@@ -670,27 +670,27 @@
 }
 
 .report-option-card {
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--alv-surface-deep);
     border-radius: 12px;
     padding: 25px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     height: 100%;
     position: relative;
     overflow: hidden;
 }
 
 .report-option-card:hover {
-    border-color: #0e7c8b;
-    background: #ffffff;
+    border-color: var(--alv-accent);
+    background: var(--alv-paper);
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(14, 124, 139, 0.15);
 }
 
 .report-option-card.selected {
-    border-color: #0e7c8b;
+    border-color: var(--alv-accent);
     background: linear-gradient(135deg, #e6f7ff 0%, #b3e5fc 100%);
     box-shadow: 0 5px 15px rgba(14, 124, 139, 0.2);
 }
@@ -700,8 +700,8 @@
     position: absolute;
     top: 15px;
     right: 15px;
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -714,19 +714,19 @@
 
 .option-icon {
     font-size: 2rem;
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-bottom: 15px;
 }
 
 .option-title {
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-weight: 600;
     margin-bottom: 12px;
     font-size: 1.3rem;
 }
 
 .option-description {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-bottom: 20px;
     line-height: 1.5;
 }
@@ -740,7 +740,7 @@
 
 .feature-badge {
     background: var(--alv-surface-deep);
-    color: #495057;
+    color: var(--alv-ink-strong);
     padding: 5px 12px;
     border-radius: 15px;
     font-size: 12px;
@@ -751,16 +751,16 @@
 }
 
 .report-option-card.selected .feature-badge {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
 }
 
 .summarized-options {
     margin-top: 20px;
     padding: 12px 15px;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--alv-surface-deep);
 }
 
 .options-divider {
@@ -808,14 +808,14 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: #dee2e6;
+    background: var(--alv-surface-deep);
     z-index: 1;
 }
 
 .divider-text {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 0 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-weight: 500;
     position: relative;
     z-index: 2;
@@ -823,7 +823,7 @@
 
 .form-label {
     font-weight: 600;
-    color: #495057;
+    color: var(--alv-ink-strong);
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -831,7 +831,7 @@
 }
 
 .form-label i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 /* Responsive Design */
@@ -917,7 +917,7 @@
 
 .time-period-option {
     padding: 14px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--alv-surface-deep);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -927,12 +927,12 @@
 }
 
 .time-period-option:hover {
-    border-color: #0e7c8b;
-    background-color: #f8f9fa;
+    border-color: var(--alv-accent);
+    background-color: var(--alv-surface);
 }
 
 .time-period-option.selected {
-    border-color: #0e7c8b;
+    border-color: var(--alv-accent);
     background-color: #e6f7ff;
 }
 
@@ -952,7 +952,7 @@
 }
 
 .time-period-option label i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-right: 10px;
     width: 18px;
 }
@@ -1872,7 +1872,23 @@ console.log('🚀 === FSR SCRIPT COMPLETE ===');
   </div>
 </div>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 12 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 23 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* THE PALETTE WAS DECLARED FOUR TIMES, and this was copy 1 - twelve
      custom properties scoped to .ia-body.
 

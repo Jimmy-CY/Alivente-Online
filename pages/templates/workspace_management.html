@@ -5,7 +5,16 @@
 {% block title %}Workspace Management{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 3 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+
 .workspace-admin-container {
     max-width: 1100px;
     margin: 0 auto;
@@ -13,7 +22,7 @@
 
 .ws-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -21,8 +30,8 @@
 
 .ws-name i { color: var(--alv-accent); }
 
-.ws-owner-name { font-weight: 500; color: #495057; }
-.ws-owner-username { font-size: 12px; color: #6c757d; margin-top: 2px; }
+.ws-owner-name { font-weight: 500; color: var(--alv-ink-strong); }
+.ws-owner-username { font-size: 12px; color: var(--alv-ink-soft); margin-top: 2px; }
 
 .ws-members {
     display: inline-flex;

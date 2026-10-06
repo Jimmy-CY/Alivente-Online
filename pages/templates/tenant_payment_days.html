@@ -217,7 +217,23 @@
   </div>
 </div>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 2 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== DESKTOP ==================== */
 
 /* Bootstrap sets this globally in base.html, so the page looks right without
@@ -240,7 +256,7 @@
 .report-content {
     width: 95%;
     max-width: 1400px;
-    background: white;
+    background: var(--alv-paper);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -286,8 +302,8 @@
 
 .pd-num { text-align: right; white-space: nowrap; }
 .alv-table thead th.pd-num { text-align: right; }
-.pd-strong { font-weight: 700; color: #2c3e50; }
-.pd-name { font-weight: 600; color: #2c3e50; }
+.pd-strong { font-weight: 700; color: var(--alv-ink); }
+.pd-name { font-weight: 600; color: var(--alv-ink); }
 .pd-muted { color: #95a5a6; }
 .pd-mono { font-family: 'Courier New', monospace; }
 
@@ -331,7 +347,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
 }
-.pd-toggle:hover { background: #ecf0f1; color: #2c3e50; }
+.pd-toggle:hover { background: #ecf0f1; color: var(--alv-ink); }
 .pd-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
 .pd-toggle i { transition: transform 0.2s ease; font-size: 12px; }
 
@@ -379,7 +395,7 @@
 .pd-section { margin-top: 34px; }
 .pd-section-title {
     font-size: 1.05rem;
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-weight: 700;
     border-bottom: 2px solid #ecf0f1;
     padding-bottom: 8px;
@@ -396,11 +412,11 @@
 .pd-note-block {
     margin: 12px 0 0 0;
     padding: 10px 14px;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-left: 3px solid #dfe4e8;
     border-radius: 0 5px 5px 0;
 }
-.pd-note-block strong { color: #2c3e50; }
+.pd-note-block strong { color: var(--alv-ink); }
 
 .pd-empty {
     text-align: center;

@@ -51,7 +51,23 @@
 
 {% if perms.auth.can_access_administration %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 4 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
   /* Colour Variables */
   :root {
     --alivente-dark: var(--alv-accent);
@@ -91,7 +107,7 @@
   .admin-tab.alivente-tab {
     border-color: var(--alivente-dark);
     color: var(--alivente-dark);
-    background-color: white;
+    background-color: var(--alv-paper);
     border-bottom-color: var(--alivente-dark);
     border-right: none;
     border-radius: 10px 10px 0 0;
@@ -115,7 +131,7 @@
   .admin-tab.future-tab {
     border-color: var(--future-dark);
     color: var(--future-dark);
-    background-color: white;
+    background-color: var(--alv-paper);
     border-bottom-color: var(--future-dark);
     border-radius: 10px 10px 0 0;
     cursor: pointer;
@@ -188,13 +204,13 @@
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
-    color: white;
+    color: var(--alv-on-accent);
   }
   
   .admin-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    color: white;
+    color: var(--alv-on-accent);
     text-decoration: none;
   }
   
@@ -219,7 +235,7 @@
   }
 
   .btn-future {
-    background-color: #6c757d;
+    background-color: var(--alv-ink-soft);
     border: none;
   }
 

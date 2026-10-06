@@ -323,8 +323,21 @@ if ran:
         if not os.path.isfile(bak):
             skip('%-26s rules' % rel, 'no %s backup' % SUFFIX)
             continue
-        before, after = css_of(read(bak)), css_of(read(p))
-        mk = markup_only(read(p))
+        # AS THIS ROUND LEFT IT, NOT AS THE TREE STANDS. This read the
+        # live page until 6 Oct 2026, when B-2 wrote a note into two of
+        # these templates and the "every surviving CSS line is
+        # untouched" check reported the note as a rewritten rule. The
+        # claim is about what H9 did to this page; the text to make it
+        # against is the page as H9 left it. A gate reads code, not the
+        # record of code - and not somebody else's later code either.
+        # test_tab_right_edge had the same fault, found the same day.
+        try:
+            from alv_rounds import as_left_by as _alb
+        except Exception:
+            _alb = None
+        mine = _alb(p, SUFFIX, read) if _alb else read(p)
+        before, after = css_of(read(bak)), css_of(mine)
+        mk = markup_only(mine)
         for c in DEAD[rel]:
             ok(not re.search(EDGE % re.escape('.' + c), after),
                '%-26s .%-16s no longer styled here' % (rel, c))
@@ -339,10 +352,20 @@ if ran:
                '%-26s .%-16s survives - it styles content, not the table'
                % (rel, c))
         if rel == 'user_administration.html':
-            ok(re.search(EDGE % re.escape('.action-more-btn'), after)
-               is None,
+            # THIS ONE LINE IS ABOUT A DIFFERENT ROUND, so it reads the
+            # page at that round's scope and not at this one's.
+            # .action-more-btn was still in this page's CSS when the
+            # table migration left it; H9 - apply_more_css, .bak_morecss
+            # - is what took it, a round later. Read at .bak_stagee the
+            # class is still there and the check fails; read live it
+            # passes for the wrong reason, by crediting this round with
+            # H9's work. Scoped to H9, it says what it means.
+            h9 = _alb(p, '.bak_morecss', read) if _alb else read(p)
+            ok(re.search(EDGE % re.escape('.action-more-btn'),
+                         css_of(h9)) is None,
                '%-26s .action-more-btn  GIVEN UP in H9 - base styles the '
                'More menu' % rel)
+
         # A MEDIA BLOCK MAY GO, BUT ONLY BY EMPTYING. test_print_leaks.py
         # promises every media query a page had is still there, and it was
         # right to: deleting a guarded query is the fault it exists to

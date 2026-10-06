@@ -211,9 +211,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 2 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .confirmation-section {
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
     padding: 20px;
     border-radius: 8px;
     border: 2px dashed #dc3545;
@@ -258,11 +274,11 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .list-group-item:nth-child(3) {
-    border-left-color: #0e7c8b;
+    border-left-color: var(--alv-accent);
 }
 
 .list-group-item:nth-child(4) {
-    border-left-color: #6c757d;
+    border-left-color: var(--alv-ink-soft);
 }
 
 /* HEADING STANDARD - shape B, 9 Sep. Same block as properties_add and its

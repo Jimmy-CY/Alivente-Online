@@ -442,7 +442,14 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     </div>
 </div>
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
     /* OI-1, 5 Oct 2026 - ten colours, ten roles, off the
        declarations rather than off the values. #6c757d was
        written six times meaning quieter text and #2c3e50 seven
@@ -465,7 +472,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 .report-content {
     width: 90%;
     max-width: 1400px;
-    background: white;
+    background: var(--alv-paper);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -675,7 +682,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
 
     /* Debtor cards */
     .debtor-card {
-        background: white;
+        background: var(--alv-paper);
         border: 1px solid var(--alv-line);
         border-radius: 8px;
         margin-bottom: 12px;
@@ -846,7 +853,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
     }
 
     .invoice-row {
-        background: white;
+        background: var(--alv-paper);
         border: 1px solid var(--alv-line);
         border-radius: 6px;
         padding: 10px 12px;

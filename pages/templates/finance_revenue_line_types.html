@@ -19,7 +19,23 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 7 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 7 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
         /* THE COLOURED BANNER WENT - 8 Sep.
 
            This page headed itself with a filled green gradient band and a
@@ -46,7 +62,7 @@
 
 
 .rlt-card {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -58,33 +74,33 @@
 }
 
 .rlt-table thead th {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 12px 14px;
     text-align: left;
     font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #dee2e6;
+    color: var(--alv-ink);
+    border-bottom: 2px solid var(--alv-line);
     font-size: 14px;
 }
 
 .rlt-table tbody td {
     padding: 12px 14px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     vertical-align: middle;
     font-size: 14px;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .rlt-table tbody td.cell-name {
     font-weight: 600;
 }
 .rlt-table tbody td.cell-description {
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 @media (hover: hover) and (pointer: fine) {
     .rlt-table tbody tr:hover td {
-        background: #f8f9fa;
+        background: var(--alv-surface);
     }
 }
 
@@ -96,7 +112,7 @@
     font-size: 11px;
     font-weight: 600;
     color: #0c6b3f;
-    background: #e6f4ec;
+    background: var(--alv-good-soft);
     border: 1px solid #b7e0c8;
     border-radius: 10px;
     vertical-align: middle;
@@ -106,7 +122,7 @@
 .empty-state {
     text-align: center;
     padding: 50px 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 .empty-state i {
     font-size: 60px;
@@ -141,14 +157,14 @@
         width: 100%;
     }
     .rlt-table tbody tr {
-        background: white;
-        border: 1px solid #dee2e6;
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
         border-radius: 10px;
         padding: 14px 16px;
         margin-bottom: 10px;
     }
     .rlt-table tbody tr:hover {
-        background: white;
+        background: var(--alv-paper);
     }
     .rlt-table tbody td {
         display: block !important;
@@ -162,7 +178,7 @@
         font-weight: 700;
         font-size: 11px;
         text-transform: uppercase;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         margin-bottom: 2px;
         letter-spacing: 0.5px;
     }

@@ -7,7 +7,23 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 15 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 13 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
         /* THE COLOURED BANNER WENT - 8 Sep.
 
            This page headed itself with a filled red gradient band and a
@@ -69,7 +85,7 @@
 .form-group .form-control[readonly],
 .form-group .form-control:disabled {
     background: var(--alv-surface-deep);
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     cursor: not-allowed;
 }
 .field-error {
@@ -79,7 +95,7 @@
 }
 .field-helper {
     font-size: 12px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-top: 4px;
 }
 
@@ -90,13 +106,13 @@
     overflow: hidden;
 }
 #prorataChangePreviewModal .modal-header {
-    background: linear-gradient(135deg, #0e7c8b 0%, var(--alv-accent-ink) 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--alv-accent) 0%, var(--alv-accent-ink) 100%);
+    color: var(--alv-on-accent);
     border-bottom: none;
     padding: 16px 22px;
 }
 #prorataChangePreviewModal .modal-title {
-    color: white;
+    color: var(--alv-on-accent);
     font-weight: 600;
     font-size: 18px;
     margin: 0;
@@ -108,7 +124,7 @@
     font-size: 13px;
 }
 #prorataChangePreviewModal .modal-header .close {
-    color: white;
+    color: var(--alv-on-accent);
     opacity: 0.9;
     text-shadow: none;
 }
@@ -116,15 +132,15 @@
     padding: 0;
 }
 #prorataChangePreviewModal .modal-footer {
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
+    background: var(--alv-surface);
+    border-top: 1px solid var(--alv-line);
     padding: 14px 22px;
 }
 
 .preview-summary-bar {
     padding: 18px 24px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background: var(--alv-surface);
+    border-bottom: 1px solid var(--alv-line);
 }
 .preview-summary-bar .row {
     display: flex;
@@ -134,7 +150,7 @@
 }
 .preview-summary-bar .ps-label {
     font-size: 12px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -142,22 +158,22 @@
 }
 .preview-summary-bar .ps-value {
     font-size: 16px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-weight: 600;
 }
 .preview-summary-bar .ps-arrow {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin: 0 6px;
 }
 .preview-summary-bar .ps-new {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 .preview-summary-bar .ps-info {
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--alv-line);
     font-size: 12px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     line-height: 1.5;
 }
 
@@ -177,7 +193,7 @@
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    color: #495057;
+    color: var(--alv-ink-strong);
     text-align: left;
     letter-spacing: 0.5px;
     position: sticky;
@@ -188,9 +204,9 @@
 .preview-table thead th.text-right { text-align: right; }
 .preview-table tbody td {
     padding: 10px 12px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     font-size: 14px;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 .preview-table tbody td.text-right {
     text-align: right;
@@ -198,9 +214,9 @@
 }
 .preview-table tfoot td {
     padding: 10px 12px;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     font-weight: 700;
-    border-top: 2px solid #dee2e6;
+    border-top: 2px solid var(--alv-line);
 }
 .preview-table tfoot td.text-right { text-align: right; }
 
@@ -229,7 +245,7 @@
 #preview-loading .spinner-border {
     width: 3rem;
     height: 3rem;
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 #preview-error {
@@ -286,8 +302,8 @@
         padding: 14px 16px;
     }
     .preview-card {
-        background: white;
-        border: 1px solid #dee2e6;
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
         border-radius: 8px;
         padding: 12px 14px;
         margin-bottom: 10px;
@@ -295,7 +311,7 @@
     .preview-card .pc-name {
         font-size: 15px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin-bottom: 8px;
     }
     .preview-card .pc-row {
@@ -306,16 +322,16 @@
         font-size: 13px;
     }
     .preview-card .pc-label {
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         font-weight: 500;
     }
     .preview-card .pc-value {
-        color: #2c3e50;
+        color: var(--alv-ink);
         font-weight: 500;
         font-variant-numeric: tabular-nums;
     }
     .preview-card .pc-row.pc-new .pc-value {
-        color: #0e7c8b;
+        color: var(--alv-accent);
         font-weight: 700;
         font-size: 15px;
     }

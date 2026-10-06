@@ -125,7 +125,23 @@
     </div>
 </div>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 6 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 .report-container {
@@ -139,7 +155,7 @@
 .report-content {
     width: 90%;
     max-width: 1200px;
-    background: white;
+    background: var(--alv-paper);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -192,7 +208,7 @@
 }
 
 .detail-value {
-    color: #495057;
+    color: var(--alv-ink-strong);
     word-break: break-word;
 }
 
@@ -205,7 +221,7 @@
 .tenant-contact-row {
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px dashed #dee2e6;
+    border-top: 1px dashed var(--alv-line);
 }
 
 /* Vacant cards have no body content beyond the property name */
@@ -219,10 +235,10 @@
 .no-renewals {
     text-align: center;
     padding: 40px 20px;
-    color: #6c757d;
-    background-color: #f8f9fa;
+    color: var(--alv-ink-soft);
+    background-color: var(--alv-surface);
     border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--alv-surface-deep);
 }
 .no-renewals-icon {
     font-size: 3rem;
@@ -279,7 +295,7 @@
     }
     .detail-label {
         font-size: 12px;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.3px;
@@ -287,7 +303,7 @@
     }
     .detail-value {
         font-size: 14px;
-        color: #2c3e50;
+        color: var(--alv-ink);
         font-weight: 500;
     }
 
@@ -336,7 +352,7 @@
     }
     .detail-value {
         font-size: 1rem;
-        color: #495057;
+        color: var(--alv-ink-strong);
         font-weight: normal;
     }
 }

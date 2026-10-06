@@ -5,11 +5,27 @@
 
 {% block content %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 7 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* Dropdown hover styles */
 #viewEventsMenu a:hover,
 #viewContactsMenu a:hover {
-    background-color: #f8f9fa !important;
+    background-color: var(--alv-surface) !important;
 }
 
 #viewEventsMenu a:first-child:hover {
@@ -26,8 +42,8 @@
 }
 
 .contact-card {
-    background: white;
-    border: 2px solid #e9ecef;
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-surface-deep);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
@@ -57,7 +73,7 @@
 
 .contact-info h4 {
     margin: 0;
-    color: #2c3e50;
+    color: var(--alv-ink);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -74,7 +90,7 @@
 
 .contact-details {
     font-size: 14px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     margin-top: 8px;
     word-break: break-word;
 }
@@ -90,7 +106,7 @@
 }
 
 .event-item {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-left: 4px solid;
     padding: 12px 15px;
     margin-bottom: 10px;
@@ -140,7 +156,7 @@
 
 .event-date {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 /* PROXIMITY BY EMPHASIS, NOT BY COLOUR - 29 Sep. This line said
@@ -191,7 +207,7 @@
 
 .upcoming-widget {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 30px;
@@ -234,7 +250,7 @@
 .no-contacts {
     text-align: center;
     padding: 60px 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 
 .no-contacts i {
@@ -246,7 +262,7 @@
 .no-events {
     text-align: center;
     padding: 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-style: italic;
 }
 
@@ -258,12 +274,12 @@
 }
 
 .contact-card.compact-view:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     transform: translateY(-2px);
 }
 
 .contact-card.compact-view.expanded {
-    background: white;
+    background: var(--alv-paper);
     padding: 20px;
 }
 

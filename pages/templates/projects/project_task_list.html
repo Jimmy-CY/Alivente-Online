@@ -312,13 +312,20 @@ Task List - {{ project.project_name }}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 5 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover, .action-secondary:hover {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -328,7 +335,7 @@ Task List - {{ project.project_name }}
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover {
         background: var(--alv-accent);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
     }
 }
@@ -341,7 +348,7 @@ Task List - {{ project.project_name }}
    HEADER
    ============================================================ */
 .task-list-header {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     padding: 25px;
     margin-bottom: 20px;
@@ -385,7 +392,7 @@ Task List - {{ project.project_name }}
    TABLE — DESKTOP
    ============================================================ */
 .task-list-container {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     overflow-x: auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -504,7 +511,7 @@ Task List - {{ project.project_name }}
 
 /* Footer */
 .task-list-footer {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);

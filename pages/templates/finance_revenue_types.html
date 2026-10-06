@@ -19,7 +19,23 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 9 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 7 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
         /* THE COLOURED BANNER WENT - 8 Sep.
 
            This page headed itself with a filled green gradient band and a
@@ -46,7 +62,7 @@
 
 
 .rev-types-card {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -59,12 +75,12 @@
 }
 
 .rev-types-table thead th {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 10px 8px;
     text-align: center;
     font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #dee2e6;
+    color: var(--alv-ink);
+    border-bottom: 2px solid var(--alv-line);
     font-size: 13px;
 }
 .rev-types-table thead th.col-name {
@@ -74,7 +90,7 @@
 
 .rev-types-table tbody td {
     padding: 8px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     text-align: center;
     font-size: 13px;
     vertical-align: middle;
@@ -83,7 +99,7 @@
     text-align: left;
     padding-left: 14px;
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 /* Yes/No cell coloring — desktop */
@@ -101,14 +117,14 @@
 /* Hover guard */
 @media (hover: hover) and (pointer: fine) {
     .rev-types-table tbody tr:hover td:not(.month-cell-yes):not(.month-cell-no) {
-        background: #f8f9fa;
+        background: var(--alv-surface);
     }
 }
 
 .empty-state {
     text-align: center;
     padding: 50px 20px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 .empty-state i {
     font-size: 60px;
@@ -162,7 +178,7 @@
         justify-content: center;
         text-align: center;
         padding: 40px 20px;
-        color: #495057;
+        color: var(--alv-ink-strong);
     }
     .rotate-prompt .rotate-icon {
         font-size: 64px;
@@ -173,12 +189,12 @@
     .rotate-prompt h3 {
         font-size: 18px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin: 0 0 8px 0;
     }
     .rotate-prompt p {
         font-size: 14px;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         margin: 0;
         max-width: 280px;
         line-height: 1.5;
@@ -219,8 +235,8 @@
     .rotate-prompt { display: none; }
 
     .rev-type-card {
-        background: white;
-        border: 1px solid #dee2e6;
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
         border-radius: 10px;
         padding: 14px;
         margin-bottom: 10px;
@@ -228,7 +244,7 @@
     .rev-type-card-name {
         font-size: 16px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin-bottom: 10px;
     }
     .month-strip {
@@ -252,9 +268,9 @@
         border: 1px solid var(--alv-good-line);
     }
     .month-chip-no {
-        background: #f8f9fa;
+        background: var(--alv-surface);
         color: #adb5bd;
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--alv-surface-deep);
     }}
 
 /* ============================================================

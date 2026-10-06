@@ -863,7 +863,7 @@
     .notification-bell-link:hover .notification-bell-icon { color: rgba(255,255,255,0.9); }
     .notification-badge {
         position: absolute; top: -8px; right: -10px;
-        background-color: #0e7c8b; color: white; border-radius: 50%;
+        background-color: var(--alv-accent); color: var(--alv-on-accent); border-radius: 50%;
         width: 16px; height: 16px; display: flex; align-items: center;
         justify-content: center; font-size: 10px; font-weight: bold;
         line-height: 1; border: 2px solid #343a40;
@@ -877,12 +877,12 @@
     .notification-bell-link:hover { color: rgba(255,255,255,.75) !important; text-decoration: none; }
 
     /* ==================== TOP NAV DROPDOWNS ==================== */
-    .dropdown-menu { background-color: #495057; border: 1px solid #6c757d; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-top: 0; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease; }
+    .dropdown-menu { background-color: var(--alv-ink-strong); border: 1px solid var(--alv-ink-soft); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-top: 0; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease; }
     .dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
     .dropdown-menu:hover { display: block; opacity: 1; visibility: visible; transform: translateY(0); }
     .dropdown-item { color: rgba(255,255,255,0.8) !important; padding: 10px 20px; transition: all 0.3s ease; }
-    .dropdown-item:hover { background-color: #0e7c8b; color: white !important; }
-    .dropdown-divider { border-color: #6c757d; }
+    .dropdown-item:hover { background-color: var(--alv-accent); color: var(--alv-on-accent) !important; }
+    .dropdown-divider { border-color: var(--alv-ink-soft); }
 
     /* ==================== LAYOUT ==================== */
     body.has-sidebar { margin: 0; padding: 0; }
@@ -911,7 +911,7 @@
     .sidebar-logo { padding: 16px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; text-decoration: none; }
     .sidebar-logo:hover { background: rgba(255,255,255,0.05); text-decoration: none; }
     .sidebar-logo img { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
-    .sidebar-logo-text { color: white; font-weight: 700; font-size: 14px; white-space: nowrap; transition: opacity 0.2s ease; }
+    .sidebar-logo-text { color: var(--alv-on-accent); font-weight: 700; font-size: 14px; white-space: nowrap; transition: opacity 0.2s ease; }
     .sidebar.minimised .sidebar-logo-text { opacity: 0; width: 0; overflow: hidden; }
 
     .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; }
@@ -932,9 +932,9 @@
     .sidebar.minimised .sidebar-section-items { max-height: 500px !important; }
 
     .sidebar-link { display: flex; align-items: center; padding: 9px 16px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; transition: all 0.2s; white-space: nowrap; position: relative; }
-    .sidebar-link:hover { background: rgba(255,255,255,0.08); color: white; text-decoration: none; }
-    .sidebar-link.active { background: #0e7c8b; color: white; }
-    .sidebar-link.active:hover { background: #0a5e6a; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.08); color: var(--alv-on-accent); text-decoration: none; }
+    .sidebar-link.active { background: var(--alv-accent); color: var(--alv-on-accent); }
+    .sidebar-link.active:hover { background: var(--alv-accent-ink); }
     .sidebar-link i { width: 28px; font-size: 14px; flex-shrink: 0; text-align: center; }
     .sidebar-link .link-text { transition: opacity 0.2s; }
     .sidebar.minimised .sidebar-link .link-text { opacity: 0; width: 0; overflow: hidden; }
@@ -944,8 +944,8 @@
         left: 65px;
         top: 50%;
         transform: translateY(-50%);
-        background: #495057;
-        color: white;
+        background: var(--alv-ink-strong);
+        color: var(--alv-on-accent);
         padding: 4px 10px;
         border-radius: 4px;
         font-size: 12px;
@@ -957,16 +957,16 @@
 
     .sidebar-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 4px 0; }
 
-    .sidebar-toggle { position: absolute; top: 50%; right: -12px; transform: translateY(-50%); width: 24px; height: 24px; background: #0e7c8b; border: none; border-radius: 50%; color: white; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: background 0.2s; }
-    .sidebar-toggle:hover { background: #0a5e6a; }
+    .sidebar-toggle { position: absolute; top: 50%; right: -12px; transform: translateY(-50%); width: 24px; height: 24px; background: var(--alv-accent); border: none; border-radius: 50%; color: var(--alv-on-accent); font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1001; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: background 0.2s; }
+    .sidebar-toggle:hover { background: var(--alv-accent-ink); }
 
     .sidebar-user { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; flex-shrink: 0; overflow: hidden; }
     .sidebar-user-info { flex: 1; min-width: 0; transition: opacity 0.2s; }
     .sidebar.minimised .sidebar-user-info { opacity: 0; width: 0; overflow: hidden; }
-    .sidebar-username { color: white; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-username { color: var(--alv-on-accent); font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sidebar-user-role { color: rgba(255,255,255,0.5); font-size: 10px; }
     .sidebar-logout { color: rgba(255,255,255,0.5); font-size: 13px; text-decoration: none; padding: 4px; transition: color 0.2s; flex-shrink: 0; }
-    .sidebar-logout:hover { color: white; text-decoration: none; }
+    .sidebar-logout:hover { color: var(--alv-on-accent); text-decoration: none; }
     .sidebar.minimised .sidebar-logout { display: none; }
 
     /* Content wrapper */
@@ -1475,10 +1475,10 @@
 
       .icon-edit   { color: var(--alv-edit);   border-color: #c9d8f7; }
       .icon-view   { color: var(--alv-view);   border-color: var(--alv-accent-line); }
-      .icon-delete { color: var(--alv-danger); border-color: #f2cecb; }
-      .icon-edit:hover   { background: var(--alv-edit);   border-color: var(--alv-edit);   color: #fff; }
+      .icon-delete { color: var(--alv-danger); border-color: var(--alv-bad-line); }
+      .icon-edit:hover   { background: var(--alv-edit);   border-color: var(--alv-edit);   color: var(--alv-on-accent); }
       .icon-view:hover   { background: var(--alv-view);   border-color: var(--alv-view);   color: var(--alv-on-accent); }
-      .icon-delete:hover { background: var(--alv-danger); border-color: var(--alv-danger); color: #fff; }
+      .icon-delete:hover { background: var(--alv-danger); border-color: var(--alv-danger); color: var(--alv-on-accent); }
 
       /* Upload - a new name on an existing colour, not a seventh colour.
          Aliased to --alv-edit because uploading a document writes to the
@@ -1488,7 +1488,7 @@
          uploads - and so that pointing it somewhere else later is one line
          here rather than a search across every page. */
       .icon-upload   { color: var(--alv-edit); border-color: #c9d8f7; }
-      .icon-upload:hover { background: var(--alv-edit); border-color: var(--alv-edit); color: #fff; }
+      .icon-upload:hover { background: var(--alv-edit); border-color: var(--alv-edit); color: var(--alv-on-accent); }
 
       /* Document: the SIXTH NAME on --alv-view, added by RA-1 on 4 Oct 2026.
    .icon-view was carrying FOUR pictures - fa-eye eleven times, but also
@@ -1553,7 +1553,7 @@
          itself, and if the quiet one ever needs to stop being quiet, that
          is one line here rather than a search across every page. */
       .icon-save   { color: var(--alv-good); border-color: var(--alv-good-line); }
-      .icon-save:hover { background: var(--alv-good); border-color: var(--alv-good); color: #fff; }
+      .icon-save:hover { background: var(--alv-good); border-color: var(--alv-good); color: var(--alv-on-accent); }
       .icon-cancel { color: var(--alv-ink-soft); border-color: var(--alv-line); }
       .icon-cancel:hover { background: var(--alv-neutral); border-color: var(--alv-ink-faint); color: var(--alv-ink-strong); }
 
@@ -1562,14 +1562,14 @@
          and neither the class nor the glyph said what the button does:
          voiding a receipt KEEPS the record. Danger's colour is right;
          Delete's name was not. */
-      .icon-void   { color: var(--alv-danger); border-color: #f2cecb; }
-      .icon-void:hover { background: var(--alv-danger); border-color: var(--alv-danger); color: #fff; }
+      .icon-void   { color: var(--alv-danger); border-color: var(--alv-bad-line); }
+      .icon-void:hover { background: var(--alv-danger); border-color: var(--alv-danger); color: var(--alv-on-accent); }
 
       /* Approve / unapprove / send, used by Physical Invoices. */
-      .icon-approve   { color: var(--alv-good); border-color: #bfe0cd; }
-      .icon-approve:hover { background: var(--alv-good); border-color: var(--alv-good); color: #fff; }
+      .icon-approve   { color: var(--alv-good); border-color: var(--alv-good-line); }
+      .icon-approve:hover { background: var(--alv-good); border-color: var(--alv-good); color: var(--alv-on-accent); }
       .icon-unapprove { color: var(--alv-warn); border-color: #ecd9a8; }
-      .icon-unapprove:hover { background: var(--alv-warn); border-color: var(--alv-warn); color: #fff; }
+      .icon-unapprove:hover { background: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
       .icon-send      { color: var(--alv-accent); border-color: var(--alv-accent-line); }
       .icon-send:hover { background: var(--alv-accent); border-color: var(--alv-accent); color: var(--alv-on-accent); }
 
@@ -1648,9 +1648,9 @@
         white-space: nowrap;
         border: 1px solid transparent;
       }
-      .alv-pill-good    { background: var(--alv-good-soft);    color: var(--alv-good);    border-color: #bfe0cd; }
+      .alv-pill-good    { background: var(--alv-good-soft);    color: var(--alv-good);    border-color: var(--alv-good-line); }
       .alv-pill-attn    { background: var(--alv-warn-soft);    color: var(--alv-warn);    border-color: #ecd9a8; }
-      .alv-pill-bad     { background: var(--alv-bad-soft);     color: var(--alv-bad);     border-color: #f2cecb; }
+      .alv-pill-bad     { background: var(--alv-bad-soft);     color: var(--alv-bad);     border-color: var(--alv-bad-line); }
       .alv-pill-info    { background: var(--alv-info-soft);    color: var(--alv-accent-ink); border-color: var(--alv-accent-line); }
       .alv-pill-neutral { background: var(--alv-neutral-soft); color: var(--alv-neutral); border-color: var(--alv-line); }
 
@@ -2484,7 +2484,7 @@
       .action-danger,
       .btn.action-danger {
         background: var(--alv-paper);
-        border: 1px solid #f2cecb;
+        border: 1px solid var(--alv-bad-line);
         color: var(--alv-danger);
       }
       .action-danger:hover,
@@ -2493,7 +2493,7 @@
       .btn.action-danger:focus {
         background: var(--alv-danger);
         border-color: var(--alv-danger);
-        color: #fff;
+        color: var(--alv-on-accent);
         text-decoration: none;
       }
 
@@ -2733,7 +2733,23 @@
         .action-more-item-danger i { color: var(--alv-danger); }
       }
     </style>
-  <style>
+  <style>    /* B-2, 6 Oct 2026 - 6 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 38 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
   .ui-menu { position: relative; display: inline-block; }
 
   .ui-menu-toggle { white-space: nowrap; }
@@ -2749,8 +2765,8 @@
       top: calc(100% + 6px);
       right: 0;
       min-width: 232px;
-      background: #fff;
-      border: 1px solid #dee2e6;
+      background: var(--alv-paper);
+      border: 1px solid var(--alv-line);
       border-radius: 8px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
       padding: 6px 0;
@@ -2768,7 +2784,7 @@
       border: 0;
       text-align: left;
       font-size: 14px;
-      color: #2c3e50;
+      color: var(--alv-ink);
       text-decoration: none;
       white-space: nowrap;
       cursor: pointer;
@@ -2776,11 +2792,11 @@
   .ui-menu-item:hover,
   .ui-menu-item:focus {
       background: #f1f6f9;
-      color: #0e7c8b;
+      color: var(--alv-accent);
       text-decoration: none;
       outline: none;
   }
-  .ui-menu-item i { width: 16px; text-align: center; color: #0e7c8b; }
+  .ui-menu-item i { width: 16px; text-align: center; color: var(--alv-accent); }
 
   /* Belt and braces. The pages that use it also tag the wrapper with the
      house `.action-secondary` class, but the component should not depend on
@@ -3734,7 +3750,7 @@ table.alv-matrix {
    edits when it duplicates. This is the .icon-upload precedent, and it is now
    the rule for any new action: alias first, add a colour only with a reason. */
 .icon-duplicate       { color: var(--alv-edit); border-color: var(--alv-edit); }
-.icon-duplicate:hover { background-color: var(--alv-edit); color: #fff; }
+.icon-duplicate:hover { background-color: var(--alv-edit); color: var(--alv-on-accent); }
 .icon-color-duplicate { color: var(--alv-edit); }
 
 /* Manage: the third NAME on an existing colour, and for the same reason as
@@ -3796,7 +3812,7 @@ table.alv-matrix {
 .icon-color-permissions { color: var(--alv-view); }
 
 .icon-lock       { color: var(--alv-warn); border-color: #ecd9a8; }
-.icon-lock:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: #fff; }
+.icon-lock:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
 .icon-color-lock { color: var(--alv-warn); }
 
 /* Reset Password: ANOTHER NAME ON AN EXISTING COLOUR, added by Section A
@@ -3816,11 +3832,11 @@ table.alv-matrix {
    test_icon_buttons section 1b exists to catch, and .icon-edit had
    already done it once.                            [test_auth_flow.py] */
 .icon-reset-pw       { color: var(--alv-warn); border-color: #ecd9a8; }
-.icon-reset-pw:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: #fff; }
+.icon-reset-pw:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
 .icon-color-reset-pw { color: var(--alv-warn); }
 
-.icon-unlock       { color: var(--alv-good); border-color: #bfe0cd; }
-.icon-unlock:hover { background-color: var(--alv-good); border-color: var(--alv-good); color: #fff; }
+.icon-unlock       { color: var(--alv-good); border-color: var(--alv-good-line); }
+.icon-unlock:hover { background-color: var(--alv-good); border-color: var(--alv-good); color: var(--alv-on-accent); }
 .icon-color-unlock { color: var(--alv-good); }
 
 /* ===== ALV-MAP-NOKEY v1 ===== */
@@ -4453,7 +4469,7 @@ table.alv-matrix {
 }
 .alv-choice:last-child { margin-bottom: 0; }
 .alv-choice--danger {
-    border-color: color-mix(in srgb, var(--alv-bad) 30%, #fff);
+    border-color: color-mix(in srgb, var(--alv-bad) 30%, var(--alv-paper));
     border-left-color: var(--alv-bad);
 }
 .alv-choice--danger > strong { color: var(--alv-bad); }

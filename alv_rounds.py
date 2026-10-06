@@ -640,6 +640,48 @@ ROUNDS = [
     # the first run said "these need a person" and could not be acted on
     # without reading a migration.
     '.bak_passalias',
+
+    # B-1, 5 Oct 2026 - 957 literals on 102 templates became a var(),
+    # and every one of them was ALREADY the byte-identical value of the
+    # token that replaced it. Tier A of the Section B colour map: the
+    # patcher reads base's :root and refuses the whole round unless each
+    # of the thirteen substitutions resolves to the literal it is
+    # replacing, character for character.
+    #
+    # THE PROOF IS IN THE VALUE, NOT THE PICTURE - the two renders are
+    # the same render - so the suite's render is smoke on the ten
+    # busiest pages and section 5 is the gate.
+    #
+    # The twelve standalone templates are EXEMPT and must stay so: with
+    # no {% extends %} there is no :root in the document, so a var()
+    # there resolves to nothing, and xhtml2pdf - which renders four of
+    # them - does not support var() at all. The suite follows every
+    # non-browser render path in the tree to the template it renders and
+    # requires it to be in that set.
+    #
+    # The census read 981 until the grouped-rule bodies were deduped:
+    # rule_spans reports `.a, .b { ... }` under both names with the same
+    # body span, which is DR-2b's bug counting instead of cutting.
+    '.bak_coltok',
+
+    # B-2, 6 Oct 2026 - the four neutrals. 758 literals on 93 templates
+    # became a var(), and UNLIKE B-1 THESE MOVED: between 9 and 25 RGB
+    # units. #6c757d -> --alv-ink-soft, #dee2e6 -> --alv-line, #2c3e50
+    # -> --alv-ink, #495057 -> --alv-ink-strong.
+    #
+    # THE GATE IS BOUNDED, NOT AN EQUALITY. Every substitution must move
+    # by EXACTLY the distance the map records, to a tenth of a unit -
+    # "within 25" would let a changed token slide 277 declarations
+    # somewhere nobody looked at.
+    #
+    # Demetri looked at all four side by side at phone and desktop width
+    # before this ran. Two read measurably better: the muted grey goes
+    # 4.69:1 to 5.53:1 on paper, and 4.69 cleared the AA floor for
+    # normal text by four hundredths on 229 uses of which a third are
+    # set at 11px or 12px. The 201 borders go the OTHER way, 1.30 to
+    # 1.24, and that was his decision: --alv-line is already what every
+    # base-styled table draws with, so these pages now agree with base.
+    '.bak_coltok2',
 ]
 
 

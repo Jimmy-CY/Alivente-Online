@@ -476,7 +476,23 @@
     {% csrf_token %}
 </form>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 2 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 /* Asset header thumbnail — replaces briefcase icon when a photo exists */
@@ -510,8 +526,8 @@
     border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
-    border: 1px solid #dee2e6;
-    background: #f8f9fa;
+    border: 1px solid var(--alv-line);
+    background: var(--alv-surface);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .photo-tile:hover {
@@ -555,7 +571,7 @@
     min-width: 130px;
 }
 .detail-value {
-    color: #495057;
+    color: var(--alv-ink-strong);
     flex: 1;
 }
 
@@ -563,7 +579,7 @@
 .notes-section {
     margin-top: 18px;
     padding-top: 14px;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--alv-surface-deep);
 }
 
 /* Warranty grid (3 cols on desktop) */
@@ -581,7 +597,7 @@
     margin-bottom: 4px;
 }
 .warranty-value {
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 /* Maintenance total alert */
@@ -626,7 +642,7 @@
     .detail-label {
         min-width: 0;
         font-size: 12px;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         text-transform: uppercase;
         letter-spacing: 0.3px;
     }
@@ -658,7 +674,7 @@
     }
     .warranty-label {
         font-size: 12px;
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         text-transform: uppercase;
         letter-spacing: 0.3px;
         margin-bottom: 2px;

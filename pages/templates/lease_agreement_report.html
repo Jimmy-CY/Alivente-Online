@@ -56,7 +56,23 @@ Lease Agreement - {{ property.prop_name }}
 <!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
 {% include 'components/pdf_viewer.html' %}
 
-<style>    /* DR-2b, 5 Oct 2026 - 1 declaration(s) removed. Each beat
+<style>    /* B-2, 6 Oct 2026 - 3 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 6 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+    /* DR-2b, 5 Oct 2026 - 1 declaration(s) removed. Each beat
        base with a DIFFERENT value, so each was a real local
        override: Bootstrap red for the house red, a near-miss
        grey for the token, or a size base already sets. Demetri
@@ -78,7 +94,7 @@ Lease Agreement - {{ property.prop_name }}
 .report-content {
     width: 90%;
     max-width: 1200px;
-    background: white;
+    background: var(--alv-paper);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -94,8 +110,8 @@ Lease Agreement - {{ property.prop_name }}
 
 /* Lease document card */
 .lease-document-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-    border: 1px solid #dee2e6;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+    border: 1px solid var(--alv-line);
     border-radius: 12px;
     padding: 32px;
     display: flex;
@@ -108,14 +124,14 @@ Lease Agreement - {{ property.prop_name }}
     flex-shrink: 0;
     width: 80px;
     height: 80px;
-    background: white;
-    border: 2px solid #0e7c8b;
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-accent);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 36px;
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 .lease-document-info {
@@ -125,7 +141,7 @@ Lease Agreement - {{ property.prop_name }}
 
 .lease-document-title {
     font-size: 1.4rem;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin: 0 0 12px 0;
     font-weight: 600;
 }
@@ -133,7 +149,7 @@ Lease Agreement - {{ property.prop_name }}
 .lease-document-property,
 .lease-document-tenant {
     margin: 4px 0;
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-size: 1rem;
     word-break: break-word;
 }
@@ -229,7 +245,7 @@ Lease Agreement - {{ property.prop_name }}
         box-shadow: none;
     }
     .lease-document-card {
-        background: white;
+        background: var(--alv-paper);
         border: 1px solid #ccc;
         page-break-inside: avoid;
     }

@@ -8,7 +8,23 @@
 {% endblock %}
 
 {% block extra_css %}
-<style>
+<style>    /* B-2, 6 Oct 2026 - 8 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 18 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .card {
     transition: transform 0.2s ease-in-out;
 }
@@ -22,7 +38,7 @@
 
 /* Profit & Loss Table Styles */
 .profit-loss-table-container {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -38,9 +54,9 @@
 .profit-loss-table thead th {
     position: sticky;
     top: 0;
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
     z-index: 10;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid var(--alv-line);
     padding: 8px 4px;
     font-size: 0.8rem;
 }
@@ -50,7 +66,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 4px 6px;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--alv-line);
 }
 
 /* Column Widths for P&L Table (desktop default) */
@@ -81,8 +97,8 @@
 
 /* Section Headers */
 .profit-loss-table .section-header td {
-    background-color: #0e7c8b !important;
-    color: white !important;
+    background-color: var(--alv-accent) !important;
+    color: var(--alv-on-accent) !important;
     font-weight: bold;
     text-align: center;
 }
@@ -110,20 +126,20 @@
 }
 
 .year-selector .dropdown-item:hover {
-    background-color: #f8f9fa;
-    color: #0e7c8b;
+    background-color: var(--alv-surface);
+    color: var(--alv-accent);
 }
 
 .year-selector .dropdown-item.active {
-    background-color: #0e7c8b !important;
-    color: white !important;
+    background-color: var(--alv-accent) !important;
+    color: var(--alv-on-accent) !important;
 }
 
 /* Financial Indicators Section */
 .roi-section {
     margin-top: 20px;
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: var(--alv-surface);
     border-radius: 8px;
 }
 
@@ -139,10 +155,10 @@
 }
 
 .roi-section > div > div {
-    background-color: white;
+    background-color: var(--alv-paper);
     padding: 10px 15px;
     border-radius: 6px;
-    border: 1.5px solid #dee2e6;
+    border: 1.5px solid var(--alv-line);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
     min-width: 200px;
@@ -158,7 +174,7 @@
 
 .roi-section .font-weight-bold {
     font-size: 0.9rem;
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 /* ====================================================
@@ -179,8 +195,8 @@
 body .rotate-prompt .rotate-prompt-inner,
 .main-content .rotate-prompt-inner {
     text-align: center !important;
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%) !important;
-    border: 1px solid #dee2e6 !important;
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%) !important;
+    border: 1px solid var(--alv-line) !important;
     border-radius: 12px !important;
     padding: 40px 24px !important;
     max-width: 360px !important;
@@ -207,7 +223,7 @@ body .rotate-prompt .rotate-prompt-icon,
 
 body .rotate-prompt .rotate-prompt-title,
 .main-content .rotate-prompt-title {
-    color: #2c3e50 !important;
+    color: var(--alv-ink) !important;
     font-size: 1.4rem !important;
     margin: 0 0 16px 0 !important;
     font-weight: 600 !important;
@@ -216,7 +232,7 @@ body .rotate-prompt .rotate-prompt-title,
 
 body .rotate-prompt .rotate-prompt-message,
 .main-content .rotate-prompt-message {
-    color: #495057 !important;
+    color: var(--alv-ink-strong) !important;
     font-size: 1rem !important;
     line-height: 1.5 !important;
     margin: 0 0 12px 0 !important;
@@ -224,13 +240,13 @@ body .rotate-prompt .rotate-prompt-message,
 
 body .rotate-prompt .rotate-prompt-message strong,
 .main-content .rotate-prompt-message strong {
-    color: #0e7c8b !important;
+    color: var(--alv-accent) !important;
 }
 
 body .rotate-prompt .rotate-prompt-instruction,
 .main-content .rotate-prompt-instruction {
     font-size: 0.95rem !important;
-    color: #6c757d !important;
+    color: var(--alv-ink-soft) !important;
     font-style: italic !important;
     margin: 0 0 24px 0 !important;
 }
@@ -240,8 +256,8 @@ body .rotate-prompt .rotate-prompt-back,
     display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
-    background: #0e7c8b !important;
-    color: white !important;
+    background: var(--alv-accent) !important;
+    color: var(--alv-on-accent) !important;
     padding: 10px 24px !important;
     border-radius: 6px !important;
     text-decoration: none !important;
@@ -256,7 +272,7 @@ body .rotate-prompt .rotate-prompt-back,
 body .rotate-prompt .rotate-prompt-back:hover,
 .main-content .rotate-prompt-back:hover {
     background: var(--alv-accent-ink) !important;
-    color: white !important;
+    color: var(--alv-on-accent) !important;
     text-decoration: none !important;
 }
 
@@ -522,9 +538,9 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
 /* Year selector dropdown styling */
 .year-selector select.form-control.year-dropdown {
-    background-color: #0e7c8b !important;
-    color: white !important;
-    border: 1px solid #0e7c8b !important;
+    background-color: var(--alv-accent) !important;
+    color: var(--alv-on-accent) !important;
+    border: 1px solid var(--alv-accent) !important;
     border-radius: 6px !important;
     padding: 8px 16px !important;
     font-weight: 500 !important;

@@ -214,7 +214,23 @@ Add Subtask - {{ parent_task.task_name }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* DR-2b, 5 Oct 2026 - 1 declaration(s) removed. Each beat
+<style>    /* B-2, 6 Oct 2026 - 2 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 7 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+    /* DR-2b, 5 Oct 2026 - 1 declaration(s) removed. Each beat
        base with a DIFFERENT value, so each was a real local
        override: Bootstrap red for the house red, a near-miss
        grey for the token, or a size base already sets. Demetri
@@ -228,7 +244,7 @@ Add Subtask - {{ parent_task.task_name }}
     .action-primary:hover {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -237,25 +253,25 @@ Add Subtask - {{ parent_task.task_name }}
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover {
-        background: #0e7c8b;
-        color: white;
+        background: var(--alv-accent);
+        color: var(--alv-on-accent);
         text-decoration: none;
     }
 }
 
 .info-card {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 20px;
 }
 .info-card h5 { margin-bottom: 8px; }
-.info-card i { color: #0e7c8b; margin-right: 4px; }
+.info-card i { color: var(--alv-accent); margin-right: 4px; }
 
 
 
-label i { color: #6c757d; margin-right: 4px; }
+label i { color: var(--alv-ink-soft); margin-right: 4px; }
 
 .btn-info {
     
@@ -270,14 +286,14 @@ label i { color: #6c757d; margin-right: 4px; }
     .btn-info:hover {
         background-color: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 }
 
 .alert-info {
-    border-left: 4px solid #0e7c8b;
+    border-left: 4px solid var(--alv-accent);
     
     border-radius: 6px;
 }

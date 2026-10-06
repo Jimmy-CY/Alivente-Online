@@ -3,13 +3,20 @@
 {% block title %}Shopping List - {{ meal_plan.plan_name }}{% endblock %}
 {% block content %}
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .shopping-list-container {
     max-width: 1000px;
     margin: 0 auto;
 }
 .ingredients-card {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -343,7 +350,7 @@
 }
 
 .conversions-needed-card .alert {
-    background: white;
+    background: var(--alv-paper);
     border: 1px solid var(--alv-warn-line);
     color: var(--alv-warn-ink);
     padding: 15px;
@@ -352,7 +359,7 @@
 }
 
 .conversion-form-group {
-    background: white;
+    background: var(--alv-paper);
     border: 2px solid var(--alv-line);
     border-radius: 8px;
     padding: 20px;

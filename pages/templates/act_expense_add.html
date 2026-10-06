@@ -58,7 +58,14 @@
 </div>
 </form>
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 1 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 
 /* ==================== BUTTONS ==================== */
 .btn-info {
@@ -70,7 +77,7 @@
     .btn-info:hover {
         background-color: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);

@@ -258,7 +258,18 @@ ALREADY_WIDE = ['test_banner_pages.py',
                 # look. It walks pages/ and skips migrations and
                 # __pycache__, which is the same stated narrowing
                 # test_login_url makes two entries above.
-                'test_passport_holder.py']
+                'test_passport_holder.py',
+                # B-1, 5 Oct 2026 - its templates come from templates()
+                # like everyone else's. The root it builds is for .py:
+                # section 3 follows every non-browser render path in the
+                # tree - render_to_string, render_to_pdf, get_template -
+                # to the template it renders, and requires that template
+                # to be standalone. Those calls live in views, which are
+                # .py, so a template root would find no render paths at
+                # all and the check that keeps a var() out of a PDF
+                # would pass by being unable to look. It walks pages/,
+                # the same stated narrowing as the three entries above.
+                'test_colour_tokens.py']
 
 # FAILED with CRS in the tree, against the round that will fix the module
 # and let the suite be widened. Their narrow root is a stated position,

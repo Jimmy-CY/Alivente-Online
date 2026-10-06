@@ -6,7 +6,23 @@
 <!-- Add SortableJS for drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 13 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 43 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 .preview-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -14,8 +30,8 @@
 
 .ai-badge {
     display: inline-block;
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     padding: 4px 12px;
     border-radius: 16px;
     font-size: 12px;
@@ -39,7 +55,7 @@
     max-width: 250px;
     max-height: 250px;
     border-radius: 8px;
-    border: 3px solid #dee2e6;
+    border: 3px solid var(--alv-line);
     display: none;
     object-fit: cover;
 }
@@ -61,21 +77,21 @@
 }
 
 .image-info-box {
-    background: #f8f9fa;
-    border-left: 4px solid #0e7c8b;
+    background: var(--alv-surface);
+    border-left: 4px solid var(--alv-accent);
     padding: 12px 15px;
     border-radius: 4px;
     margin-top: 10px;
 }
 
 .image-info-box i {
-    color: #0e7c8b;
+    color: var(--alv-accent);
     margin-right: 8px;
 }
 
 .remove-image-btn {
     background: #dc3545;
-    color: white;
+    color: var(--alv-on-accent);
     border: none;
     padding: 6px 12px;
     border-radius: 4px;
@@ -105,7 +121,7 @@
 
 .ingredient-table input {
     width: 100%;
-    border: 2px solid #dee2e6;
+    border: 2px solid var(--alv-line);
     border-radius: 4px;
     padding: 6px 8px;
 }
@@ -157,13 +173,13 @@
 /* Drag and Drop Styles */
 .drag-handle {
     cursor: grab;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     padding: 0 8px;
     display: inline-block;
 }
 
 .drag-handle:hover {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 .drag-handle:active {
@@ -172,12 +188,12 @@
 
 .sortable-ghost {
     opacity: 0.4;
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 .sortable-drag {
     opacity: 0.8;
-    background: white;
+    background: var(--alv-paper);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
@@ -195,8 +211,8 @@ tr.sortable-chosen {
     position: absolute;
     left: 0;
     right: 0;
-    background: white;
-    border: 2px solid #0e7c8b;
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-accent);
     border-radius: 0 0 8px 8px;
     max-height: 250px;
     overflow-y: auto;
@@ -210,7 +226,7 @@ tr.sortable-chosen {
     top: auto;
     bottom: 100%;
     border-radius: 8px 8px 0 0;
-    border-top: 2px solid #0e7c8b;
+    border-top: 2px solid var(--alv-accent);
     border-bottom: none;
 }
 
@@ -229,7 +245,7 @@ tr.sortable-chosen {
 }
 
 .autocomplete-item:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 .autocomplete-item:last-child {
@@ -264,7 +280,7 @@ tr.sortable-chosen {
 .autocomplete-no-results {
     padding: 15px;
     text-align: center;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-style: italic;
 }
 
@@ -276,8 +292,8 @@ tr.sortable-chosen {
 .multiselect-button {
     width: 100%;
     padding: 10px 16px;
-    background: white;
-    border: 2px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-line);
     border-radius: 8px;
     cursor: pointer;
     display: flex;
@@ -288,12 +304,12 @@ tr.sortable-chosen {
 }
 
 .multiselect-button:hover {
-    border-color: #0e7c8b;
+    border-color: var(--alv-accent);
 }
 
 .multiselect-button.active {
-    border-color: #0e7c8b;
-    background: #f8f9fa;
+    border-color: var(--alv-accent);
+    background: var(--alv-surface);
 }
 
 .multiselect-menu {
@@ -301,8 +317,8 @@ tr.sortable-chosen {
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
-    border: 2px solid #0e7c8b;
+    background: var(--alv-paper);
+    border: 2px solid var(--alv-accent);
     border-radius: 8px;
     margin-top: 4px;
     max-height: 300px;
@@ -325,7 +341,7 @@ tr.sortable-chosen {
 }
 
 .multiselect-item:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 .multiselect-item input[type="checkbox"] {
@@ -351,8 +367,8 @@ tr.sortable-chosen {
 }
 
 .selected-tag {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     padding: 6px 12px;
     border-radius: 16px;
     font-size: 14px;
@@ -364,7 +380,7 @@ tr.sortable-chosen {
 .selected-tag .remove-tag {
     background: rgba(255, 255, 255, 0.3);
     border: none;
-    color: white;
+    color: var(--alv-on-accent);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -384,7 +400,7 @@ tr.sortable-chosen {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #0e7c8b;
+    color: var(--alv-accent);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -402,8 +418,8 @@ tr.sortable-chosen {
 
 /* Step number badge for table */
 .step-number-badge-table {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -417,7 +433,7 @@ tr.sortable-chosen {
 /* Instruction textarea styling */
 .instruction-textarea {
     width: 100%;
-    border: 2px solid #dee2e6;
+    border: 2px solid var(--alv-line);
     border-radius: 4px;
     padding: 6px 8px;
     resize: vertical;
@@ -428,13 +444,13 @@ tr.sortable-chosen {
 
 .instruction-textarea:focus {
     outline: none;
-    border-color: #0e7c8b;
+    border-color: var(--alv-accent);
     box-shadow: 0 0 0 0.2rem rgba(14, 124, 139, 0.25);
 }
 
 .add-item-btn {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -450,7 +466,7 @@ tr.sortable-chosen {
 
 .alert-info-custom {
     background: #d1ecf1;
-    border-left: 4px solid #0e7c8b;
+    border-left: 4px solid var(--alv-accent);
     padding: 15px;
     border-radius: 6px;
     margin-bottom: 20px;
@@ -459,7 +475,7 @@ tr.sortable-chosen {
 /* Drag Handle Styles */
 .drag-handle {
     cursor: move;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 18px;
     padding: 0 8px;
     display: inline-block;
@@ -467,18 +483,18 @@ tr.sortable-chosen {
 }
 
 .drag-handle:hover {
-    color: #0e7c8b;
+    color: var(--alv-accent);
 }
 
 /* Sortable row styles */
 .sortable-ghost {
     opacity: 0.4;
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 .sortable-drag {
     opacity: 1;
-    background: white;
+    background: var(--alv-paper);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
@@ -492,19 +508,19 @@ tr.sortable-chosen {
 }
 
 .ingredient-row:hover, .instruction-row:hover {
-    background: #f8f9fa;
+    background: var(--alv-surface);
 }
 
 /* Keyboard navigation highlight */
 .autocomplete-item.highlighted,
 .autocomplete-add-new.highlighted {
-    background: #0e7c8b !important;
-    color: white !important;
+    background: var(--alv-accent) !important;
+    color: var(--alv-on-accent) !important;
 }
 
 .autocomplete-item.highlighted i,
 .autocomplete-add-new.highlighted i {
-    color: white !important;
+    color: var(--alv-on-accent) !important;
 }
 
 /* Spell Check Styles */
@@ -539,12 +555,12 @@ tr.sortable-chosen {
 }
 
 .spell-error-context {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 10px;
     border-radius: 4px;
     margin: 10px 0;
     font-style: italic;
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 .spell-error-context .highlight-word {
@@ -559,8 +575,8 @@ tr.sortable-chosen {
 }
 
 .spell-suggestion-btn {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     border: none;
     padding: 6px 12px;
     border-radius: 4px;
@@ -578,7 +594,7 @@ tr.sortable-chosen {
 
 .spell-step-badge {
     background: var(--alv-accent);
-    color: white;
+    color: var(--alv-on-accent);
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 12px;
@@ -588,7 +604,7 @@ tr.sortable-chosen {
 }
 
 .spell-error-stats {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     border-left: 4px solid #dc3545;
     padding: 15px;
     margin-bottom: 20px;
@@ -597,7 +613,7 @@ tr.sortable-chosen {
 
 /* Cooking Calculator Section */
 .cooking-calc-section {
-    background: white;
+    background: var(--alv-paper);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -616,13 +632,13 @@ tr.sortable-chosen {
     margin: 0;
     border: none;
     padding: 0;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .cooking-calc-toggle .toggle-chevron {
     margin-left: auto;
     transition: transform 0.3s;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 18px;
 }
 
@@ -642,7 +658,7 @@ tr.sortable-chosen {
 }
 
 .calc-schedule-preview {
-    background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
+    background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
     border-radius: 10px;
     padding: 20px 24px;
     margin-top: 20px;
@@ -656,7 +672,7 @@ tr.sortable-chosen {
 .calc-schedule-title {
     font-size: 15px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--alv-ink);
     margin-bottom: 14px;
     display: flex;
     align-items: center;
@@ -681,12 +697,12 @@ tr.sortable-chosen {
 }
 
 .calc-schedule-row .label {
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 
 .calc-schedule-row .time {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-size: 16px;
     letter-spacing: 1px;
 }

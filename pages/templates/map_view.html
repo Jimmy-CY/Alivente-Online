@@ -43,7 +43,16 @@
     </div>
 </div>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 2 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 .map-page-container {
@@ -71,7 +80,7 @@
 
 .map-page-title {
     margin: 0;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .map-page-subtitle {
@@ -101,7 +110,7 @@
 
 .property-popup h4 {
     margin: 0 0 10px 0;
-    color: #2c3e50;
+    color: var(--alv-ink);
     font-size: 16px;
 }
 

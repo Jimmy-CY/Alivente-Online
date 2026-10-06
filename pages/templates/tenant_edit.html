@@ -360,11 +360,11 @@
   </div>
 
   <style>
-    .pi-divider { margin: 1.5rem 0 1rem; border-top: 2px solid #e9ecef; }
+    .pi-divider { margin: 1.5rem 0 1rem; border-top: 2px solid var(--alv-surface-deep); }
     .pi-check { display: flex; align-items: flex-start; }
     .pi-check-label { font-weight: 400; margin: 0; cursor: pointer; }
     .pi-check-label input { margin-right: 8px; transform: translateY(2px); }
-    .pi-details { border-left: 3px solid #e9ecef; padding-left: 16px; margin-top: 4px; }
+    .pi-details { border-left: 3px solid var(--alv-surface-deep); padding-left: 16px; margin-top: 4px; }
   </style>
 </div>
 
@@ -382,7 +382,14 @@
 
 {% endif %}
 
-<style>
+<style>    /* B-1, 5 Oct 2026 - 2 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 .page-action-buttons-edit .action-back {

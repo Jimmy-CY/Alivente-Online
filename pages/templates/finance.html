@@ -111,13 +111,29 @@ Finance
 
 {% endif %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 8 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
         background: var(--alv-accent-ink);
         border-color: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -126,8 +142,8 @@ Finance
 
 @media (hover: hover) and (pointer: fine) {
     .action-back:hover {
-        background: #0e7c8b;
-        color: white;
+        background: var(--alv-accent);
+        color: var(--alv-on-accent);
         text-decoration: none;
     }
 }
@@ -144,7 +160,7 @@ Finance
 }
 
 .finance-card {
-    background: white;
+    background: var(--alv-paper);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border: none;
@@ -155,7 +171,7 @@ Finance
 
 .finance-card__header {
     padding: 14px 18px;
-    color: white;
+    color: var(--alv-on-accent);
 }
 .finance-card__header h4 {
     margin: 0;
@@ -166,7 +182,7 @@ Finance
     font-size: 1.15rem;
 }
 .finance-card__header--reports { background: #007bff; }
-.finance-card__header--config  { background: #6c757d; }
+.finance-card__header--config  { background: var(--alv-ink-soft); }
 
 .finance-card__body {
     padding: 16px;
@@ -180,8 +196,8 @@ Finance
 }
 
 .finance-btn {
-    background: #0e7c8b;
-    color: white;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
     border: none;
     border-radius: 8px;
     padding: 18px 12px;
@@ -209,7 +225,7 @@ Finance
 @media (hover: hover) and (pointer: fine) {
     .finance-btn:hover {
         background: var(--alv-accent-ink);
-        color: white;
+        color: var(--alv-on-accent);
         text-decoration: none;
         transform: translateY(-2px);
         box-shadow: 0 6px 0 var(--alv-accent-ink), 0 8px 15px rgba(0,0,0,0.2);

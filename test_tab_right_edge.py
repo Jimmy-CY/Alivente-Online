@@ -140,7 +140,20 @@ def markup_of(t):
     return re.sub(r'<!--.*?-->', '', t, flags=re.S)
 
 
-page = read(alv_tree.path_of(PAGE))
+# AS THIS ROUND LEFT IT, NOT AS THE TREE STANDS. This file read the
+# live page until 5 Oct 2026, when B-1 turned `background-color: white`
+# into `background-color: var(--alv-paper)` on it and the diff below
+# reported four added lines for a round that adds none. The round's
+# claim is about what P2a did to this page; the right text to make it
+# against is the page as P2a left it, which is what as_left_by returns.
+# A gate reads code, not the record of code - and not somebody else's
+# later code either.
+try:
+    from alv_rounds import as_left_by as _alb
+except Exception:
+    _alb = None
+page = (_alb(alv_tree.path_of(PAGE), SUFFIX, read) if _alb
+        else read(alv_tree.path_of(PAGE)))
 base = read(alv_tree.path_of('base.html'))
 
 print('=' * 74)

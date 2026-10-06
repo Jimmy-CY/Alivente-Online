@@ -7,7 +7,23 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 17 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 13 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
         /* THE COLOURED BANNER WENT - 8 Sep.
 
            This page headed itself with a filled red gradient band and a
@@ -54,12 +70,12 @@
     color: #721c24;
 }
 .prorata-banner {
-    background: white;
+    background: var(--alv-paper);
     border-left: 4px solid #dc3545;
     padding: 10px 14px;
     margin-bottom: 14px;
     font-size: 13px;
-    color: #495057;
+    color: var(--alv-ink-strong);
     border-radius: 4px;
 }
 .prorata-banner i {
@@ -81,7 +97,7 @@
 }
 .country-filter-wrap label {
     font-weight: 600;
-    color: #495057;
+    color: var(--alv-ink-strong);
     font-size: 13px;
     margin: 0;
 }
@@ -104,7 +120,7 @@
     font-size: 11px;
     font-weight: 700;
     background: var(--alv-surface-deep);
-    color: #6c757d;
+    color: var(--alv-ink-soft);
 }
 .inactive-pill.needs-removal { background: #f8d7da; color: #a71d2a; }
 .prorata-inactive-warning {
@@ -117,8 +133,8 @@
     color: #6c5400;
 }
 .checkbox-list {
-    background: white;
-    border: 1px solid #dee2e6;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
     border-radius: 8px;
     padding: 0;
     max-height: 280px;
@@ -137,7 +153,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
     .property-item:hover {
-        background: #f8f9fa;
+        background: var(--alv-surface);
     }
 }
 .property-item.is-anchor {
@@ -158,14 +174,14 @@
     margin: 0;
     cursor: pointer;
     font-size: 14px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
 .property-item .prop-value {
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -188,7 +204,7 @@
 }
 .btn-calculate {
     background: #dc3545;
-    color: white;
+    color: var(--alv-on-accent);
     border: 2px solid #dc3545;
     padding: 10px 20px;
     border-radius: 7px;
@@ -205,8 +221,8 @@
     border-color: #bd2130;
 }
 .btn-calculate:disabled {
-    background: #6c757d;
-    border-color: #6c757d;
+    background: var(--alv-ink-soft);
+    border-color: var(--alv-ink-soft);
     cursor: not-allowed;
 }
 
@@ -218,17 +234,17 @@
 }
 #prorataPreviewModal .modal-header {
     background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
-    color: white;
+    color: var(--alv-on-accent);
     border-bottom: none;
     padding: 16px 22px;
 }
 #prorataPreviewModal .modal-title {
-    color: white;
+    color: var(--alv-on-accent);
     font-weight: 600;
     font-size: 18px;
 }
 #prorataPreviewModal .modal-header .close {
-    color: white;
+    color: var(--alv-on-accent);
     opacity: 0.9;
     text-shadow: none;
 }
@@ -238,7 +254,7 @@
 .preview-summary {
     display: flex;
     justify-content: space-around;
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 14px;
     border-radius: 8px;
     margin-bottom: 16px;
@@ -248,7 +264,7 @@
 }
 .preview-summary .preview-stat-label {
     font-size: 11px;
-    color: #6c757d;
+    color: var(--alv-ink-soft);
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -257,7 +273,7 @@
 .preview-summary .preview-stat-value {
     font-size: 20px;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 .preview-summary .preview-stat-value.amount {
     color: #dc3545;
@@ -267,23 +283,23 @@
     border-collapse: collapse;
 }
 .preview-table th {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 10px 12px;
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    color: #495057;
+    color: var(--alv-ink-strong);
     text-align: left;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid var(--alv-line);
 }
 .preview-table th.text-right { text-align: right; }
 .preview-table th.text-center { text-align: center; }
 .preview-table td {
     padding: 10px 12px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--alv-surface-deep);
     font-size: 14px;
-    color: #2c3e50;
+    color: var(--alv-ink);
     vertical-align: middle;
 }
 .preview-table td.text-right {
@@ -302,7 +318,7 @@
 }
 
 #prorataPreviewModal .modal-footer {
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--alv-surface-deep);
     padding: 14px 22px;
 }
 
@@ -371,7 +387,7 @@
     #prorataPreviewModal .modal-footer {
         flex-direction: column-reverse;
         gap: 8px;
-        border-top: 1px solid #e9ecef;
+        border-top: 1px solid var(--alv-surface-deep);
     }
     #prorataPreviewModal .modal-footer .btn {
         width: 100%;
@@ -385,8 +401,8 @@
         display: block;
     }
     .preview-card {
-        background: white;
-        border: 1px solid #dee2e6;
+        background: var(--alv-paper);
+        border: 1px solid var(--alv-line);
         border-radius: 8px;
         padding: 12px 14px;
         margin-bottom: 8px;
@@ -394,7 +410,7 @@
     .preview-card .pc-name {
         font-size: 15px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--alv-ink);
         margin-bottom: 8px;
     }
     .preview-card .pc-row {
@@ -405,11 +421,11 @@
         font-size: 13px;
     }
     .preview-card .pc-label {
-        color: #6c757d;
+        color: var(--alv-ink-soft);
         font-weight: 500;
     }
     .preview-card .pc-value {
-        color: #2c3e50;
+        color: var(--alv-ink);
         font-weight: 500;
         font-variant-numeric: tabular-nums;
     }

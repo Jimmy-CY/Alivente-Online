@@ -275,7 +275,23 @@
 
 </div>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 9 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 12 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== TOP ROW: Property Selector + Side Actions ==================== */
 .dashboard-top-row {
   display: flex;
@@ -287,13 +303,13 @@
 /* ==================== PROPERTY SELECTOR CARD ==================== */
 .property-selector-card {
   flex: 1 1 auto;
-  background: linear-gradient(135deg, #0e7c8b 0%, var(--alv-accent-ink) 100%);
+  background: linear-gradient(135deg, var(--alv-accent) 0%, var(--alv-accent-ink) 100%);
   border-radius: 12px;
   padding: 24px 30px;
   box-shadow: 0 4px 12px rgba(14, 124, 139, 0.25);
   cursor: pointer;
   transition: all 0.3s ease;
-  color: white;
+  color: var(--alv-on-accent);
   min-width: 0; /* allow flex item to shrink below content size */
 }
 
@@ -386,8 +402,8 @@
   top: calc(100% + 6px);
   right: 0;
   z-index: 200;
-  background: white;
-  border: 1px solid #dee2e6;
+  background: var(--alv-paper);
+  border: 1px solid var(--alv-line);
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   min-width: 200px;
@@ -404,14 +420,14 @@
   text-align: left;
   padding: 12px 16px;
   font-size: 14px;
-  color: #2c3e50;
+  color: var(--alv-ink);
   cursor: pointer;
   transition: background 0.15s ease;
   text-decoration: none;
 }
 
 .dashboard-side-actions .action-more-item i {
-  color: #0e7c8b;
+  color: var(--alv-accent);
   width: 18px;
   text-align: center;
   flex-shrink: 0;
@@ -422,7 +438,7 @@
 .dashboard-side-actions .action-more-item:focus {
   background: #f0f8ff;
   outline: none;
-  color: #2c3e50;
+  color: var(--alv-ink);
   text-decoration: none;
 }
 
@@ -443,18 +459,18 @@
 }
 
 .section-title {
-  color: #2c3e50;
+  color: var(--alv-ink);
   font-weight: 600;
   margin-bottom: 15px;
   padding-bottom: 8px;
-  border-bottom: 2px solid #0e7c8b;
+  border-bottom: 2px solid var(--alv-accent);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .section-title i {
-  color: #0e7c8b;
+  color: var(--alv-accent);
 }
 
 .dashboard-grid {
@@ -465,8 +481,8 @@
 
 /* ==================== DASHBOARD CARDS ==================== */
 .dash-card {
-  background: white;
-  border: 1px solid #dee2e6;
+  background: var(--alv-paper);
+  border: 1px solid var(--alv-line);
   border-radius: 10px;
   padding: 24px 18px;
   text-align: center;
@@ -483,7 +499,7 @@
 .dash-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(14, 124, 139, 0.15);
-  border-color: #0e7c8b;
+  border-color: var(--alv-accent);
 }
 
 .dash-card:hover .dash-card-icon {
@@ -493,7 +509,7 @@
 
 .dash-card-icon {
   font-size: 32px;
-  color: #0e7c8b;
+  color: var(--alv-accent);
   margin-bottom: 10px;
   transition: all 0.25s ease;
 }
@@ -501,7 +517,7 @@
 .dash-card-label {
   font-size: 15px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--alv-ink);
   letter-spacing: 0.3px;
 }
 
@@ -514,8 +530,8 @@
 
 /* Permission-disabled tile: greyed out, no hover effect, no click */
 .dash-card.dash-card-disabled {
-  background: #f1f3f5;
-  border-color: #dee2e6;
+  background: var(--alv-line-soft);
+  border-color: var(--alv-line);
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -524,7 +540,7 @@
 .dash-card.dash-card-disabled:hover {
   transform: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-  border-color: #dee2e6;
+  border-color: var(--alv-line);
 }
 
 .dash-card.dash-card-disabled .dash-card-icon {
@@ -561,14 +577,14 @@
 }
 
 .property-picker-item > i:first-child {
-  color: #0e7c8b;
+  color: var(--alv-accent);
   font-size: 18px;
 }
 
 .property-picker-item span {
   flex: 1;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--alv-ink);
 }
 
 .picker-chevron {
@@ -578,7 +594,7 @@
 }
 
 .property-picker-item:hover .picker-chevron {
-  color: #0e7c8b;
+  color: var(--alv-accent);
   transform: translateX(4px);
 }
 

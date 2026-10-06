@@ -72,7 +72,23 @@
     </div>
 </div>
 
-<style>
+<style>    /* B-2, 6 Oct 2026 - 10 literal(s) on this page became a var(), and
+       unlike B-1 these MOVED: between 9 and 25 RGB units, which
+       is below what an eye reads as a different colour and above
+       nothing. Demetri looked at all four side by side at phone
+       and desktop width before this ran.
+       Two of them read BETTER: the muted grey goes 4.69:1 to
+       5.53:1 on paper and the heading ink 10.98 to 12.95.
+       The borders go the other way, 1.30 to 1.24, and that was
+       the decision - they now agree with base.   [B-2 tier B] */
+    /* B-1, 5 Oct 2026 - 9 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
 /* ==================== DESKTOP STYLES ==================== */
 
 /* .page-subtitle-h5 WAS DECLARED HERE, and base declares it now - 30 Sep.
@@ -121,7 +137,7 @@
 }
 
 .timeline-control-divider {
-    border-left: 2px solid #dee2e6;
+    border-left: 2px solid var(--alv-line);
     height: 24px;
     margin: 0 4px;
 }
@@ -133,7 +149,7 @@
     margin: 0;
     cursor: pointer;
     font-size: 14px;
-    color: #495057;
+    color: var(--alv-ink-strong);
 }
 .timeline-checkbox-label input[type="checkbox"] {
     cursor: pointer;
@@ -144,7 +160,7 @@
 
 /* Legend */
 .timeline-legend {
-    background: #f8f9fa;
+    background: var(--alv-surface);
     padding: 12px 20px;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -181,23 +197,23 @@
 /* vis-timeline overrides */
 .vis-item {
     border-radius: 4px;
-    border: 2px solid #fff;
+    border: 2px solid var(--alv-paper);
 }
 
 .vis-item .vis-item-content {
     padding: 8px;
-    color: white;
+    color: var(--alv-on-accent);
     font-weight: 500;
 }
 
 .vis-group {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--alv-ink);
 }
 
 .vis-tooltip {
-    background: #2c3e50 !important;
-    color: white !important;
+    background: var(--alv-ink) !important;
+    color: var(--alv-on-accent) !important;
     border-radius: 8px !important;
     padding: 12px !important;
     font-size: 14px !important;
@@ -216,7 +232,7 @@
     display: flex !important;
     align-items: center !important;
     padding-left: 10px !important;
-    background-color: #f8f9fa !important;
+    background-color: var(--alv-surface) !important;
 }
 
 .vis-labelset .vis-label .vis-inner {
@@ -265,18 +281,18 @@
 }
 
 .vis-panel.vis-top {
-    background-color: #f8f9fa !important;
+    background-color: var(--alv-surface) !important;
 }
 
 .vis-time-axis .vis-grid.vis-major,
 .vis-time-axis .vis-grid.vis-minor {
-    border-color: #dee2e6 !important;
+    border-color: var(--alv-line) !important;
 }
 
 .vis-time-axis .vis-text.vis-major,
 .vis-time-axis .vis-text.vis-minor {
     font-weight: 700 !important;
-    color: #2c3e50 !important;
+    color: var(--alv-ink) !important;
 }
 
 /* ==================== MOBILE PORTRAIT — show rotate prompt ==================== */
@@ -303,8 +319,8 @@
 
     .rotate-prompt-content {
         text-align: center;
-        background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%);
-        border: 1px solid #dee2e6;
+        background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%);
+        border: 1px solid var(--alv-line);
         border-radius: 12px;
         padding: 40px 24px;
         max-width: 360px;
@@ -314,7 +330,7 @@
 
     .rotate-icon {
         font-size: 4rem;
-        color: #0e7c8b;
+        color: var(--alv-accent);
         margin-bottom: 20px;
         display: inline-block;
         animation: rotate-hint 2.5s ease-in-out infinite;
@@ -327,26 +343,26 @@
     }
 
     .rotate-prompt-content h3 {
-        color: #2c3e50;
+        color: var(--alv-ink);
         font-size: 1.4rem;
         margin: 0 0 16px 0;
         font-weight: 600;
     }
 
     .rotate-prompt-content p {
-        color: #495057;
+        color: var(--alv-ink-strong);
         font-size: 1rem;
         line-height: 1.5;
         margin: 0 0 12px 0;
     }
 
     .rotate-prompt-content p strong {
-        color: #0e7c8b;
+        color: var(--alv-accent);
     }
 
     .rotate-instruction {
         font-size: 0.95rem !important;
-        color: #6c757d !important;
+        color: var(--alv-ink-soft) !important;
         font-style: italic;
         margin-bottom: 24px !important;
     }

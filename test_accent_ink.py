@@ -649,16 +649,31 @@ if os.path.isfile(p1):
        "the suppliers sentinel now quotes the TOKEN, not the literal")
     ok("Text = 'border-color: %s'" % LITERAL not in ps,
        '  and the stale literal form is gone, not merely forced past')
-    # base's sentinel is LEFT quoting the literal. It still passes, because
-    # base is held back to F2a-B - and it WILL go red on the round that
-    # tokenises base. That is the deferral working (lesson 53), not a break:
-    # F2a-B rewrites it.
-    ok(".sidebar-toggle:hover { background: %s;" % LITERAL in ps,
-       "base's own sentinel still quotes the literal - the marker F2a-B has "
-       'to pay, and it must rewrite it rather than -Force past it')
-    ok(ps.count(LITERAL) == 1,
-       'exactly one sentinel still quotes %s, and it is that one' % LITERAL,
-       ps.count(LITERAL))
+    # base's sentinel QUOTED THE LITERAL, and this round said so:
+    #
+    #   "It still passes, because base is held back to F2a-B - and it
+    #    WILL go red on the round that tokenises base. That is the
+    #    deferral working (lesson 53), not a break: F2a-B rewrites it."
+    #
+    # B-1, 5 Oct 2026, IS the round that tokenises base. It went red on
+    # exactly this line, in the sweep, in the words left for it - which
+    # is the only way a deferral is worth writing down. The marker is
+    # paid: the sentinel now quotes the token, and the stronger claim
+    # that replaces "exactly one is left" is that NONE is.
+    ok(".sidebar-toggle:hover { background: var(--alv-accent-ink);"
+       in ps,
+       "base's own sentinel now quotes the token too - B-1 paid the "
+       'marker F2a-B left, in the words it left')
+    # COUNTED IN THE SENTINELS, NOT IN THE FILE. The literal still
+    # appears once in Push-PendingChanges.ps1 - inside B-1's own comment
+    # recording what the sentinel used to say. A count over the whole
+    # file would read that history as a live sentinel and report a
+    # defect that is a record of the defect being fixed.
+    quoted = [t for t in re.findall(r"Text\s*=\s*'((?:[^']|'')*)'", ps)
+              if LITERAL in t]
+    ok(not quoted,
+       'and not one SENTINEL quotes %s any more - only B-1\'s note '
+       'about the one that used to' % LITERAL, quoted)
 else:
     skip(PS1, 'not on disk')
 
