@@ -160,7 +160,12 @@ BOOT_NEW = (
 # fail on any machine without a .env.
 #
 # Raise it deliberately, with the suite named, every time.
-BOOT_COUNT = 9
+# 11 since 6 Oct 2026: Section E added test_url_names.py, which
+# boots Django to resolve names and compile templates, and
+# test_access_denied.py, which boots it to render one. Both were
+# written carrying their own setdefault - this number is the
+# tripwire that proves it rather than assuming it.
+BOOT_COUNT = 11
 
 
 def harden_suites(check):

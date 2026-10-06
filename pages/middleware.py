@@ -1029,106 +1029,46 @@ class ModuleAccessMiddleware(MiddlewareMixin):
 
         return None
 
+    @staticmethod
+    def _permission_label(required_permission):
+        """'auth.can_access_financials' -> 'Can Access Financials'.
+
+        THE ONE THING THE f-STRING DID THAT A TEMPLATE CANNOT. Django's
+        template language has no split-then-title, and inventing a filter
+        for one page would be a worse trade than four lines here. The
+        wording is byte-for-byte what the old page produced, so nobody
+        reads a different sentence after this round than before it.
+        """
+        return required_permission.split('.')[-1].replace('_', ' ').title()
+
     def _render_access_denied(self, request, required_permission):
-        """Render a user-friendly access denied page"""
+        """Render the house access-denied page.   [E-2b, 6 Oct 2026]
+
+        This used to try access_denied.html inside a BARE `except:`,
+        catch the TemplateDoesNotExist it could not name, and fall
+        through to eighty lines of HTML in an f-string. The template had
+        never been written, so the fallback WAS the page - a purple
+        gradient with two emoji on it, the only screen in the app that
+        was not a template and therefore the only one no standards round
+        could ever see. 172 URL prefixes land here.
+
+        THE OUTER except STAYS, and is not the same thing. A bare
+        `except:` around a render hides a missing template for years; an
+        `except Exception` around the whole method, logging what it
+        caught, is the difference between a 403 and a 500 on the day
+        base itself breaks.            [test_access_denied.py]
+        """
         try:
-            # Try to render a custom template if it exists
-            context = {
+            return render(request, 'access_denied.html', {
                 'required_permission': required_permission,
-                'user': request.user,
+                'permission_label':
+                    self._permission_label(required_permission),
                 'requested_path': request.path,
-            }
-            
-            # Try to use your custom template
-            try:
-                return render(request, 'access_denied.html', context, status=403)
-            except:
-                # Fallback to a simple HTML response if template doesn't exist
-                return self._render_simple_access_denied(request, required_permission)
-                
+            }, status=403)
         except Exception as e:
             logger.error(f"Error rendering access denied page: {e}")
-            return HttpResponseForbidden("Access Denied: Insufficient permissions")
-
-    def _render_simple_access_denied(self, request, required_permission):
-        """Render a simple HTML access denied page"""
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Access Denied - Alivente</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>
-                body {{ 
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
-                    text-align: center; 
-                    padding: 20px;
-                    margin: 0;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }}
-                .error-container {{
-                    background: white;
-                    padding: 40px;
-                    border-radius: 12px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                    max-width: 500px;
-                    width: 90%;
-                }}
-                h1 {{ 
-                    color: #e74c3c; 
-                    margin-top: 0;
-                    font-size: 2em;
-                }}
-                p {{ 
-                    color: #555; 
-                    line-height: 1.6;
-                    margin: 20px 0;
-                }}
-                .btn {{
-                    background: linear-gradient(45deg, #667eea, #764ba2);
-                    color: white;
-                    padding: 12px 24px;
-                    border: none;
-                    border-radius: 6px;
-                    text-decoration: none;
-                    display: inline-block;
-                    margin: 10px;
-                    transition: transform 0.2s;
-                    font-weight: 500;
-                }}
-                .btn:hover {{
-                    transform: translateY(-2px);
-                }}
-                .user-info {{
-                    background: #f8f9fa;
-                    padding: 15px;
-                    border-radius: 6px;
-                    margin: 20px 0;
-                    font-size: 0.9em;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="error-container">
-                <h1>🔒 Access Denied</h1>
-                <p>You don't have permission to access this module.</p>
-                <div class="user-info">
-                    <strong>User:</strong> {request.user.username}<br>
-                    <strong>Required Permission:</strong> {required_permission.split('.')[-1].replace('_', ' ').title()}
-                </div>
-                <p>Please contact your administrator if you believe you should have access to this feature.</p>
-                <a href="/" class="btn">🏠 Go Home</a>
-                <a href="javascript:history.back()" class="btn">← Go Back</a>
-            </div>
-        </body>
-        </html>
-        """
-        
-        return HttpResponseForbidden(html_content)
+            return HttpResponseForbidden(
+                "Access Denied: Insufficient permissions")
 
 
 # Add this function to help create permissions programmatically

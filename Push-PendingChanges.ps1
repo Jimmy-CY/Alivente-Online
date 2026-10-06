@@ -800,7 +800,12 @@ $sentinels = @(
     @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = '0097_passport_holder has not been applied'; What = 'and says which migration is missing rather than raising pymysql at the reader' },
     # PH-1c, 5 Oct 2026.
     @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = "'angela manias': 'Angy'"; What = 'PH-1c: the one mapping no rule could reach is written down as a decision' },
-    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'THE MAP POINTS AT A MEMBER WHO IS NOT '; What = 'and a stale map entry is reported rather than silently skipped' }
+    @{ File = 'pages\management\commands\backfill_passport_holder.py'; Text = 'THE MAP POINTS AT A MEMBER WHO IS NOT '; What = 'and a stale map entry is reported rather than silently skipped' },
+    # E-2b, 6 Oct 2026. Exactly the shape a sentinel is for: a file that
+    # must exist and a string that must NOT. The f-string survived for
+    # the life of the project because nothing asked either question.
+    @{ File = 'pages\templates\access_denied.html'; Text = 'E-2b, 6 Oct 2026'; What = 'E-2b: the 403 page is a template on base, not eighty lines of f-string' },
+    @{ File = 'pages\middleware.py'; Text = 'html_content'; What = 'and the purple gradient 172 URL prefixes used to answer with is gone'; Absent = $true }
     # NO SENTINEL FOR OI-1 ON A COLOUR IT KEPT. #0e7c8b was already the
     # accent's own value written out, so a Present row on var(--alv-accent)
     # is true of pages that never went through this round and an Absent row
@@ -2052,6 +2057,24 @@ $suites = @(
     # overruled, including the one that was dropped rather than fixed:
     # a border painted the page's own colour is invisible on purpose.
     'test_colour_tail.py'
+    # E-2. THE GATE HAS NEVER COMPILED A TEMPLATE NOR REVERSED A NAME -
+    # manage.py check does neither, so a typo in a {% url %}, an unknown
+    # tag or a {% load %} nobody wrote has always shipped and 500'd on
+    # the page that carried it. A census, not a round: no patcher, like
+    # the twelve others on this list that have none. Section 6's control
+    # is built IN MEMORY with Engine.from_string, deliberately - the one
+    # named writer in the E4 flake is a suite that plants into a real
+    # template on disk, and a gate proving the tree is sound must not be
+    # the reason another one is flaky.
+    'test_url_names.py'
+    # E-2b. What E-2 found on its first run: pages/middleware.py named
+    # access_denied.html and that template had never been written. A
+    # bare except: swallowed it, so 172 guarded URL prefixes answered
+    # with eighty lines of f-string instead - a purple gradient, two
+    # emoji, no base. Section 4 renders the page through base at 1280
+    # and 390; section 5 is the control, and it is the old fallback,
+    # which must still fail every house check it ever failed.
+    'test_access_denied.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

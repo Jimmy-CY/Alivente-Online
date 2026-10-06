@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+{# E-2b, 6 Oct 2026. THIS PAGE EXISTED AS AN f-STRING FOR THE LIFE OF    #}
+{# THE PROJECT. pages/middleware.py tried to render 'access_denied.html' #}
+{# inside a bare `except:`, the template had never been written, and so  #}
+{# what 172 guarded URL prefixes actually answered with was eighty lines #}
+{# of HTML inside a Python method - a purple gradient, two emoji, no     #}
+{# base, no nav, no tokens. Because it was a string and not a file, no   #}
+{# standards round we have ever run could see it.                        #}
+{#                                                                       #}
+{# NOT A STANDALONE TEMPLATE. The twelve exempt pages are exempt because #}
+{# base cannot reach them - a PDF body, an email. This one is served to  #}
+{# a logged-in person in a browser while the database is up, so it       #}
+{# extends base like every other page and inherits the nav that is the   #}
+{# whole point: somebody who has been stopped needs a way onward.        #}
+{#                                                                       #}
+{# AND IT CARRIES NO <style> BLOCK AND NO HEX LITERAL. Every colour here #}
+{# comes from base. B-1, B-2 and B-2b would each have to re-measure the  #}
+{# tree if this page arrived with literals in it, and a page added after #}
+{# the colour rounds has no excuse for needing any.                      #}
+<div style="max-width: 560px; margin: 0 auto;">
+
+  <h2 class="page-title-h2">ACCESS DENIED</h2>
+  <br/>
+
+  {# THE BAR AT THE TOP, which is the house rule, and the Back control   #}
+  {# built the house way - the arrow always, the word only where there   #}
+  {# is room for it.                           [test_bar_top, D7]        #}
+  <div class="page-action-buttons">
+    <a href="{% url 'home' %}" class="btn action-primary" role="button">
+      <i class="fas fa-home"></i> Home
+    </a>
+    {# history.back(), not a {% url %}. The house Back means "the screen #}
+    {# you came from", and on this page that screen is whichever one     #}
+    {# carried the link - there is no single URL to name.                #}
+    <a href="javascript:history.back()" class="btn action-back" role="button" aria-label="Back">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-section-title"><i class="fas fa-lock"></i> You do not have access to this module</h3>
+
+    <p>Your account is signed in, but it has not been given the permission
+       this screen requires. Nothing has gone wrong and nothing was
+       changed.</p>
+
+    <p><strong>Signed in as</strong><br/>
+       {{ request.user.get_full_name|default:request.user.username }}</p>
+
+    <p><strong>Permission required</strong><br/>
+       {{ permission_label }}</p>
+
+    <p><strong>Page requested</strong><br/>
+       {{ requested_path }}</p>
+
+    <p>Ask whoever administers your account to add this permission, and
+       quote the two lines above - they are what the change needs.</p>
+  </div>
+
+</div>
+{% endblock %}

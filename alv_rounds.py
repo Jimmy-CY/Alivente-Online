@@ -700,6 +700,33 @@ ROUNDS = [
     # page's own background, a border invisible on purpose, and making
     # it visible is a decision nobody has made.
     '.bak_coltok3',
+
+    # E-2b, 6 Oct 2026 - THE 403 PAGE STOPS BEING AN f-STRING.
+    #
+    # E-2 put the first gate on the tree that compiles templates and
+    # resolves names (test_url_names.py, no patcher - it is a census).
+    # The first question it asked that nobody had asked before was
+    # whether every template a Python module NAMES actually exists, and
+    # the answer was no, once: pages/middleware.py rendered
+    # 'access_denied.html', which had never been written.
+    #
+    # THE BARE except: IS WHY IT SURVIVED. The render sat inside one, so
+    # TemplateDoesNotExist was swallowed and the fallback ran instead -
+    # eighty lines of HTML in an f-string, a purple gradient with two
+    # emoji on it. No 500, ever; and no custom page either. 172 URL
+    # prefixes in ModuleAccessMiddleware's map land there.
+    #
+    # AND BECAUSE IT WAS A STRING, NO ROUND COULD SEE IT. The twelve
+    # standalone templates are at least templates. This round makes it a
+    # file - extending base, built from base's classes, carrying no
+    # <style> block and no hex literal of its own, so the colour rounds
+    # need not re-measure anything.
+    #
+    # The OUTER except Exception stays. A bare except around a render
+    # hides a missing template for years; a logged one around the whole
+    # method is the difference between a 403 and a 500 the day base
+    # itself breaks.
+    '.bak_denied',
 ]
 
 

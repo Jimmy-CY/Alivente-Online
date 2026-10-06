@@ -268,8 +268,10 @@ wearers = [alv_tree.rel(p) for p in alv_tree.templates()
 # the set-password form, the used-or-expired page, the confirmation
 # and Forgot password - and all four wear the house title. The
 # number and base's note move together or one of them is lying.
-ok(len(wearers) == 121,
-   '121 templates now wear the class, which is the number base\'s note '
+# 122 since 6 Oct 2026. Section E round E-2b made the 403 page a
+# template, and it wears the house title like every other page.
+ok(len(wearers) == 122,
+   '122 templates now wear the class, which is the number base\'s note '
    'states', len(wearers))
 
 # WHAT IS DELIBERATELY LEFT: the hand-rolled headers. They are a content
