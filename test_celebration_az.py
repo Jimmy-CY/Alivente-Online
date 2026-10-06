@@ -137,7 +137,19 @@ print('=' * 74)
 # ==========================================================================
 head('1. THE SAME NAMES AS RECIPES, DRIVEN DIFFERENTLY')
 # ==========================================================================
-rec = read(alv_tree.path_of(RECIPES))
+# AS P3 LEFT IT, NOT AS IT STANDS. [B-3, 6 Oct 2026]
+# Section 2 asks how many times the page this strip was modelled on
+# hard-codes the green. B-3 tokenised those, so read live the answer
+# is now one - a comment - and this suite went red for a change that
+# has nothing to do with it. A gate reads the page as its OWN round
+# left it: as_left_by walks to the earliest backup written after
+# .bak_celaz, which is the page as it stood in September.
+try:
+    from alv_rounds import as_left_by as _as_left_by
+except Exception:
+    _as_left_by = None
+rec = (_as_left_by(alv_tree.path_of(RECIPES), SUFFIX, read)
+       if _as_left_by else read(alv_tree.path_of(RECIPES)))
 for cls in ('letter-filter-container', 'letter-filter-wrapper',
             'letter-filter-list', 'letter-filter-item'):
     ok(cls in page and cls in rec,

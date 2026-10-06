@@ -392,7 +392,15 @@ try:
     # first time this was tried.
     dj_settings.DATABASES = {'default': {
         'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}
-    dj_settings.ROOT_URLCONF = 'pages.urls'
+    # THE REAL ROOT URLconf, since E-2c, 6 Oct 2026. This read 'pages.urls'
+    # because the sandbox mirror did not carry crs/forms.py, so
+    # importing mysite.urls died on it - a gap in the mirror, not a
+    # fact about the product; the laptop has always had the file.
+    # Measured both ways before the line moved: under pages.urls
+    # /crs/ answers 404 and crs:index does not reverse at all, so a
+    # suite resolving against it is blind to every URL the project
+    # mounts outside that one include.               [E-2c]
+    dj_settings.ROOT_URLCONF = 'mysite.urls'
     dj_settings.ALLOWED_HOSTS = list(dj_settings.ALLOWED_HOSTS) + ['testserver']
     # MD5 only here, and only to keep 20-odd set_password calls fast. It
     # changes nothing about what is being tested: a validator refuses a

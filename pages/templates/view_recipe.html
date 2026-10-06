@@ -3,7 +3,18 @@
 {% block title %}{{ recipe.recipe_name }}{% endblock %}
 {% block content %}
 
-<style>    /* B-2b, 6 Oct 2026 - 24 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 25 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 24 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -91,7 +102,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
 }ecipe-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
     color: var(--alv-on-accent);
     padding: 40px;
     border-radius: 12px;
@@ -163,7 +174,7 @@ body {
 .tag-course   { background: var(--alv-accent); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-category { background: var(--alv-accent); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-protein  { background: #fd7e14; color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
-.tag-vegetarian { background: #28a745; color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.tag-vegetarian { background: var(--alv-good); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-author   { background: var(--alv-ink-soft); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 
 .recipe-content {
@@ -185,7 +196,7 @@ body {
     font-weight: 600;
     margin-bottom: 20px;
     color: var(--alv-ink);
-    border-bottom: 3px solid #28a745;
+    border-bottom: 3px solid var(--alv-good);
     padding-bottom: 10px;
 }
 
@@ -201,14 +212,14 @@ body {
 
 .ingredient-group-title {
     font-weight: 600;
-    color: #28a745;
+    color: var(--alv-good);
     margin-bottom: 12px;
     font-size: 17px;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--alv-line);
 }
 
-.ingredient-group-title.continued { font-style: italic; color: #28a745; }
+.ingredient-group-title.continued { font-style: italic; color: var(--alv-good); }
 
 .ingredient-item {
     padding: 10px 0;
@@ -244,7 +255,7 @@ body {
 
 .instruction-group-title {
     font-weight: 600;
-    color: #28a745;
+    color: var(--alv-good);
     margin-bottom: 16px;
     font-size: 18px;
 }
@@ -256,11 +267,11 @@ body {
     padding: 16px;
     background: var(--alv-surface);
     border-radius: 8px;
-    border-left: 4px solid #28a745;
+    border-left: 4px solid var(--alv-good);
 }
 
 .step-number {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     width: 36px;
     height: 36px;
@@ -300,8 +311,8 @@ body {
 .btn-edit:hover { background: #e0a800; color: #000; }
 .btn-print { background: var(--alv-ink-soft); color: var(--alv-on-accent); border: none; }
 .btn-print:hover { background: var(--alv-ink-soft); color: var(--alv-on-accent); }
-.btn-shopping { background: #28a745; color: var(--alv-on-accent); border: none; }
-.btn-shopping:hover { background: #218838; color: var(--alv-on-accent); }
+.btn-shopping { background: var(--alv-good); color: var(--alv-on-accent); border: none; }
+.btn-shopping:hover { background: var(--alv-good-ink); color: var(--alv-on-accent); }
 
 .btn-action-disabled {
     background: var(--alv-surface-deep) !important;
@@ -335,12 +346,12 @@ body {
     height: 50px;
     font-size: 24px;
     text-align: center;
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     border-radius: 8px;
 }
 
 .multiplier-display {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     padding: 15px 25px;
     border-radius: 8px;
@@ -384,7 +395,7 @@ body {
     overflow-y: auto;
 }
 
-.final-shopping-list h5 { color: #28a745; margin-bottom: 15px; }
+.final-shopping-list h5 { color: var(--alv-good); margin-bottom: 15px; }
 .final-shopping-list ul { list-style: none; padding-left: 0; }
 
 .final-shopping-list li {
@@ -411,7 +422,7 @@ body {
 .email-selector select {
     width: 100%;
     padding: 12px;
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     border-radius: 8px;
     font-size: 14px;
     height: auto;
@@ -515,7 +526,7 @@ body {
 
     /* The content (title, desc, meta, tags) becomes its own green card */
     .recipe-header-content {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
         color: var(--alv-on-accent);
         padding: 18px;
         border-radius: 12px;
@@ -860,7 +871,7 @@ body {
     body:not(.printing-shopping-list) .recipe-header {
         background: var(--alv-paper) !important;
         color: black !important;
-        border: 2px solid #28a745;
+        border: 2px solid var(--alv-good);
         padding: 12px 16px !important;
         margin-bottom: 16px !important;
         flex-direction: column !important;
@@ -959,7 +970,7 @@ body {
         position: absolute !important;
         left: 4px !important;
         top: 8px !important;
-        color: #28a745 !important;
+        color: var(--alv-good) !important;
         font-size: 18px !important;
         line-height: 1.4 !important;
     }
@@ -1192,8 +1203,8 @@ body {
    ============================================================ */
 #nutritionBreakdownToggle {
     background: var(--alv-paper);
-    color: #28a745;
-    border: 2px solid #28a745;
+    color: var(--alv-good);
+    border: 2px solid var(--alv-good);
     padding: 9px 22px;
     border-radius: 7px;
     font-size: 14px;
@@ -1205,14 +1216,14 @@ body {
 }
 @media (hover: hover) and (pointer: fine) {
     #nutritionBreakdownToggle:hover {
-        background: #28a745;
+        background: var(--alv-good);
         color: var(--alv-on-accent);
     }
 }
 
 .breakdown-intro {
     background: var(--alv-good-soft);
-    border-left: 4px solid #28a745;
+    border-left: 4px solid var(--alv-good);
     color: var(--alv-good-ink);
     padding: 10px 14px;
     border-radius: 4px;
@@ -1390,8 +1401,8 @@ body {
 /* === ERROR (Stage D) === */
 .ai-error {
     background: var(--alv-bad-soft);
-    border-left: 4px solid #dc3545;
-    color: #721c24;
+    border-left: 4px solid var(--alv-bad);
+    color: var(--alv-bad-ink);
     padding: 12px 14px;
     border-radius: 4px;
     margin-bottom: 12px;
@@ -1488,7 +1499,7 @@ body {
 }
 .ai-suggestion-type-icon.substitute { background: var(--ai-accent); }
 .ai-suggestion-type-icon.reduce     { background: #fd7e14; }
-.ai-suggestion-type-icon.remove     { background: #dc3545; }
+.ai-suggestion-type-icon.remove     { background: var(--alv-bad); }
 
 .ai-suggestion-headline { flex: 1; min-width: 0; }
 .ai-suggestion-action {
@@ -1537,7 +1548,7 @@ body {
     font-variant-numeric: tabular-nums;
 }
 .ai-suggestion-impact.positive {
-    background: #d4edda;
+    background: var(--alv-good-soft);
     color: var(--alv-good-ink);
 }
 .ai-suggestion-impact.negative {

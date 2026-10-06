@@ -6,7 +6,18 @@
 <!-- Add SortableJS for drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<style>    /* B-2b, 6 Oct 2026 - 12 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 12 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 12 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -75,7 +86,7 @@
     max-width: 250px;
     max-height: 250px;
     border-radius: 8px;
-    border: 3px solid #28a745;
+    border: 3px solid var(--alv-good);
     object-fit: cover;
 }
 
@@ -97,7 +108,7 @@
 }
 
 .remove-image-btn {
-    background: #dc3545;
+    background: var(--alv-bad);
     color: var(--alv-on-accent);
     border: none;
     padding: 6px 12px;
@@ -111,7 +122,7 @@
 }
 
 .remove-image-btn:hover {
-    background: #c82333;
+    background: var(--alv-bad-ink);
 }
 
 .ingredient-table-wrapper {
@@ -134,16 +145,16 @@
 }
 
 .ingredient-table input.valid {
-    border-color: #28a745;
+    border-color: var(--alv-good);
     background-color: var(--alv-good-soft);
-    color: #28a745;
+    color: var(--alv-good);
     font-weight: 500;
 }
 
 .ingredient-table input.invalid {
-    border-color: #dc3545;
+    border-color: var(--alv-bad);
     background-color: var(--alv-bad-soft);
-    color: #dc3545;
+    color: var(--alv-bad);
     font-weight: 500;
 }
 
@@ -260,7 +271,7 @@ tr.sortable-chosen {
 }
 
 .autocomplete-item i {
-    color: #28a745;
+    color: var(--alv-good);
     font-size: 12px;
 }
 
@@ -539,7 +550,7 @@ tr.sortable-chosen {
 .spell-check-no-errors {
     text-align: center;
     padding: 40px;
-    color: #28a745;
+    color: var(--alv-good);
 }
 
 .spell-check-no-errors i {
@@ -557,7 +568,7 @@ tr.sortable-chosen {
 
 .spell-error-word {
     font-weight: bold;
-    color: #dc3545;
+    color: var(--alv-bad);
     font-size: 16px;
 }
 
@@ -612,7 +623,7 @@ tr.sortable-chosen {
 
 .spell-error-stats {
     background: var(--alv-surface);
-    border-left: 4px solid #dc3545;
+    border-left: 4px solid var(--alv-bad);
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 4px;
@@ -700,7 +711,7 @@ tr.sortable-chosen {
     font-weight: 700;
     font-size: 16px;
     padding-top: 14px;
-    color: #28a745;
+    color: var(--alv-good);
 }
 
 .calc-schedule-row .label {

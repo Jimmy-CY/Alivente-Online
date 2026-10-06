@@ -184,17 +184,19 @@ try:
     # Without this the round's own check dies with DisallowedHost - a
     # crash, which blocks a push as hard as a failure and says far less.
     dj_settings.ALLOWED_HOSTS = list(dj_settings.ALLOWED_HOSTS) + ['testserver']
-    # RESOLVING AGAINST pages.urls, AND SAYING SO. mysite/urls.py also
-    # includes crs.urls, and the sandbox mirror does not carry the crs
-    # view package - importing the project root URLconf here dies on
-    # `from crs.views import main`, which is a gap in the mirror and not
-    # a fact about the product. pages.urls is what mysite/urls.py mounts
-    # at '', and every account URL in the app lives in it.
+    # RESOLVING AGAINST THE PROJECT'S OWN ROOT, since E-2c, 6 Oct 2026.
+    # This read 'pages.urls' until then, and the comment that stood
+    # here gave the reason as `from crs.views import main` failing -
+    # which was true only of the sandbox mirror, which was missing
+    # crs/forms.py. The laptop has always had it. A suite that
+    # records a gap in a copy of the tree as a fact about the tree
+    # is the kind of wrong that outlives whoever wrote it.
     #
-    # What that substitution cannot see is whether some OTHER include
-    # answers /accounts/login/. Section 3 reads mysite/urls.py and checks
-    # the prefixes directly, which settles it without importing anything.
-    dj_settings.ROOT_URLCONF = 'pages.urls'
+    # IT ALSO COST SOMETHING. The old comment said so itself: the
+    # substitution could not see whether some OTHER include answers
+    # /accounts/login/. Section 3 now asks the whole project instead
+    # of reading mysite/urls.py as text for that half.    [E-2c]
+    dj_settings.ROOT_URLCONF = 'mysite.urls'
     from django.contrib.auth.decorators import login_required
     from django.contrib.auth.models import AnonymousUser
     from django.http import HttpResponse
@@ -258,15 +260,20 @@ if django_up:
     hit = routed(WANT)
     ok(hit is not None, '%s resolves, to %s' % (WANT, hit),
        'nothing in mysite/urls.py answers it')
+    # THE WHOLE PROJECT, NOT ONE INCLUDE. Before E-2c this resolved
+    # against pages.urls and could only speak for that mount.
     ok(routed(DJANGO_DEFAULT) is None,
-       '%s resolves to nothing in pages.urls' % DJANGO_DEFAULT,
+       '%s resolves to nothing ANYWHERE in the project'
+       % DJANGO_DEFAULT,
        'something answers it - then the 404 had another cause')
     ok(dj_settings.ROOT_URLCONF == keep_conf, '  the URLconf was not disturbed')
 
-# AND NOTHING ELSE MOUNTED AT THE ROOT COULD ANSWER IT EITHER. This is
-# the half pages.urls cannot speak for, so it is read off mysite/urls.py
-# rather than resolved: every include has a prefix, and a prefix that is
-# not '' and is not a prefix of 'accounts/' can never produce the URL.
+# AND THE SAME THING ASKED A SECOND WAY, off the text of mysite/urls.py.
+# Until E-2c this reading was a STAND-IN for a resolve that could not be
+# run; the resolve above now runs against the real root, so this is a
+# cross-check instead - a different instrument reaching the same answer.
+# Every include has a prefix, and a prefix that is not '' and is not a
+# prefix of 'accounts/' can never produce the URL.
 root_urls = live_lines(now(os.path.join(ROOT, 'mysite', 'urls.py')))
 prefixes = re.findall(r'(?:path|re_path)\(\s*r?[\'"]([^\'"]*)[\'"]', root_urls)
 ok(prefixes.count('') == 1,

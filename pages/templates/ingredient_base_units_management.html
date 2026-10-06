@@ -4,7 +4,18 @@
 {% block title %}Ingredient Shopping Units{% endblock %}
 {% block content %}
 
-<style>    /* B-2b, 6 Oct 2026 - 29 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 31 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 29 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -65,7 +76,7 @@
    Red = unmapped (urgent, blocks nutrition entirely).
    Amber = unconvertible (less urgent, partial-ish problem). */
 .page-action-buttons .btn .action-count-badge.badge-unmapped {
-    background: #dc3545;
+    background: var(--alv-bad);
     color: var(--alv-on-accent);
 }
 .page-action-buttons .btn .action-count-badge.badge-unconvertible {
@@ -123,7 +134,7 @@
     user-select: none;
 }
 .nutrition-mapped {
-    background: #d4edda;
+    background: var(--alv-good-soft);
     color: var(--alv-good-ink);
     border: 1px solid var(--alv-good-line);
 }
@@ -156,7 +167,7 @@
     text-decoration: none;
 }
 .conversion-ready {
-    background: #d4edda;
+    background: var(--alv-good-soft);
     color: var(--alv-good-ink);
     border: 1px solid var(--alv-good-line);
 }
@@ -167,7 +178,7 @@
 }
 .conversion-missing {
     background: var(--alv-bad-soft);
-    color: #721c24;
+    color: var(--alv-bad-ink);
     border: 1px solid var(--alv-bad-line);
 }
 .conversion-na {
@@ -298,7 +309,7 @@
 }
 
 .mode-select:focus, .unit-select:focus {
-    border-color: #28a745;
+    border-color: var(--alv-good);
     outline: none;
 }
 
@@ -308,7 +319,7 @@
 }
 
 .btn-update {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     border: none;
     padding: 6px 12px;
@@ -318,7 +329,7 @@
 }
 
 .btn-update:hover {
-    background: #218838;
+    background: var(--alv-good-ink);
 }
 
 .empty-state {
@@ -421,7 +432,7 @@
 }
 
 .category-input:focus {
-    border-color: #28a745;
+    border-color: var(--alv-good);
     outline: none;
 }
 
@@ -434,7 +445,7 @@
 }
 
 .ingredient-name-input:focus {
-    border-color: #28a745;
+    border-color: var(--alv-good);
     outline: none;
 }
 
@@ -531,7 +542,7 @@
     border: none;
 }
 .nm-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
     color: var(--alv-on-accent);
     padding: 16px 22px;
     border-radius: 12px 12px 0 0;
@@ -583,7 +594,7 @@
     margin-left: 5px;
     font-weight: 500;
 }
-.nm-current-meta .nm-pill-mapped { background: #28a745; }
+.nm-current-meta .nm-pill-mapped { background: var(--alv-good); }
 .nm-current-meta .nm-pill-unmapped { background: #ffc107; color: var(--alv-ink); }
 
 .nm-search-row { display: flex; gap: 10px; margin-bottom: 14px; }
@@ -594,10 +605,10 @@
     border-radius: 8px;
     font-size: 15px;
 }
-.nm-search-row input:focus { border-color: #28a745; outline: none; }
+.nm-search-row input:focus { border-color: var(--alv-good); outline: none; }
 .nm-search-row button {
     padding: 10px 18px;
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     border: none;
     border-radius: 8px;
@@ -605,11 +616,11 @@
     font-weight: 500;
     cursor: pointer;
 }
-.nm-search-row button:hover { background: #218838; }
+.nm-search-row button:hover { background: var(--alv-good-ink); }
 .nm-search-row button:disabled { background: var(--alv-ink-soft); cursor: not-allowed; }
 
 .nm-current-mapping {
-    background: #d4edda;
+    background: var(--alv-good-soft);
     border: 1px solid var(--alv-good-line);
     border-radius: 8px;
     padding: 10px 14px;
@@ -639,7 +650,7 @@
     border-radius: 8px;
     font-size: 14px;
 }
-.nm-results-error { color: #721c24; background: var(--alv-bad-soft); }
+.nm-results-error { color: var(--alv-bad-ink); background: var(--alv-bad-soft); }
 .nm-result {
     border: 2px solid var(--alv-line);
     border-radius: 8px;
@@ -649,10 +660,10 @@
     transition: all 0.15s ease;
     background: var(--alv-paper);
 }
-.nm-result:hover { border-color: #28a745; background: var(--alv-good-soft); }
+.nm-result:hover { border-color: var(--alv-good); background: var(--alv-good-soft); }
 .nm-result.selected {
-    border-color: #28a745;
-    background: #d4edda;
+    border-color: var(--alv-good);
+    background: var(--alv-good-soft);
     box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 .nm-result-line1 {
@@ -663,7 +674,7 @@
     margin-bottom: 3px;
 }
 .nm-result-name { font-weight: 600; color: var(--alv-ink); font-size: 14px; flex: 1; }
-.nm-result-cal { font-size: 12px; color: #28a745; font-weight: 600; white-space: nowrap; }
+.nm-result-cal { font-size: 12px; color: var(--alv-good); font-weight: 600; white-space: nowrap; }
 .nm-result-meta { font-size: 11px; color: var(--alv-ink-soft); }
 .nm-data-type-badge {
     display: inline-block;
@@ -675,10 +686,10 @@
     background: var(--alv-surface-deep);
     color: var(--alv-ink-strong);
 }
-.nm-data-type-badge.foundation { background: #d4edda; color: var(--alv-good-ink); }
+.nm-data-type-badge.foundation { background: var(--alv-good-soft); color: var(--alv-good-ink); }
 .nm-data-type-badge.sr-legacy  { background: #cce5ff; color: #004085; }
 .nm-data-type-badge.survey     { background: var(--alv-warn-soft); color: var(--alv-warn); }
-.nm-data-type-badge.branded    { background: var(--alv-bad-soft); color: #721c24; }
+.nm-data-type-badge.branded    { background: var(--alv-bad-soft); color: var(--alv-bad-ink); }
 
 .nm-manual-toggle {
     text-align: center;
@@ -687,7 +698,7 @@
 .nm-manual-toggle button {
     background: none;
     border: none;
-    color: #28a745;
+    color: var(--alv-good);
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -695,7 +706,7 @@
     text-decoration: underline;
     text-decoration-style: dotted;
 }
-.nm-manual-toggle button:hover { color: #1e7e34; }
+.nm-manual-toggle button:hover { color: var(--alv-good-ink); }
 
 .nm-manual-panel {
     background: var(--alv-accent-soft);
@@ -840,17 +851,17 @@
 .nm-btn-cancel:hover { background: var(--alv-surface); border-color: #adb5bd; }
 .nm-btn-remove {
     background: var(--alv-paper);
-    color: #dc3545;
-    border-color: #dc3545;
+    color: var(--alv-bad);
+    border-color: var(--alv-bad);
 }
-.nm-btn-remove:hover { background: #dc3545; color: var(--alv-on-accent); }
+.nm-btn-remove:hover { background: var(--alv-bad); color: var(--alv-on-accent); }
 .nm-btn-save {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
-    border-color: #28a745;
+    border-color: var(--alv-good);
     font-weight: 600;
 }
-.nm-btn-save:hover { background: #218838; border-color: #1e7e34; }
+.nm-btn-save:hover { background: var(--alv-good-ink); border-color: var(--alv-good-ink); }
 .nm-btn-save:disabled {
     background: var(--alv-ink-soft);
     border-color: var(--alv-ink-soft);

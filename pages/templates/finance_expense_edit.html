@@ -7,7 +7,18 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>    /* B-2b, 6 Oct 2026 - 11 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 10 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 11 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -95,11 +106,11 @@
     border: 2px solid var(--alv-bad-line);
 }
 .prorata-panel .form-section-title {
-    color: #721c24;
+    color: var(--alv-bad-ink);
 }
 .prorata-banner {
     background: var(--alv-paper);
-    border-left: 4px solid #dc3545;
+    border-left: 4px solid var(--alv-bad);
     padding: 10px 14px;
     margin-bottom: 14px;
     font-size: 13px;
@@ -107,7 +118,7 @@
     border-radius: 4px;
 }
 .prorata-banner i {
-    color: #dc3545;
+    color: var(--alv-bad);
     margin-right: 6px;
 }
 
@@ -231,9 +242,9 @@
     margin-top: 14px;
 }
 .btn-calculate {
-    background: #dc3545;
+    background: var(--alv-bad);
     color: var(--alv-on-accent);
-    border: 2px solid #dc3545;
+    border: 2px solid var(--alv-bad);
     padding: 10px 20px;
     border-radius: 7px;
     font-weight: 600;
@@ -245,7 +256,7 @@
     gap: 8px;
 }
 .btn-calculate:hover {
-    background: #c82333;
+    background: var(--alv-bad-ink);
     border-color: var(--alv-bad);
 }
 .btn-calculate:disabled {
@@ -261,7 +272,7 @@
     overflow: hidden;
 }
 #prorataPreviewModal .modal-header {
-    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    background: linear-gradient(135deg, var(--alv-bad) 0%, #e83e8c 100%);
     color: var(--alv-on-accent);
     border-bottom: none;
     padding: 16px 22px;
@@ -304,7 +315,7 @@
     color: var(--alv-ink);
 }
 .preview-summary .preview-stat-value.amount {
-    color: #dc3545;
+    color: var(--alv-bad);
 }
 .preview-table {
     width: 100%;
@@ -337,7 +348,7 @@
 .preview-table td.text-center { text-align: center; }
 .preview-table td.amount-out {
     font-weight: 600;
-    color: #dc3545;
+    color: var(--alv-bad);
 }
 
 .preview-cards {
@@ -426,7 +437,7 @@
         font-variant-numeric: tabular-nums;
     }
     .preview-card .pc-row.pc-amount .pc-value {
-        color: #dc3545;
+        color: var(--alv-bad);
         font-weight: 700;
         font-size: 15px;
     }

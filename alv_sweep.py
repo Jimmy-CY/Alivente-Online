@@ -27,12 +27,41 @@ def suites():
     return re.findall(r"'([^']+\.py)'", m.group(1))
 
 
+def already(path):
+    """Suites a previous run of this log already finished.
+
+    THE SWEEP IS LONG - roughly an hour, most of it in the suites that
+    drive Chromium - and a run that is interrupted for any reason should
+    not start again at the top. The log IS the state: a line that names
+    a suite and says ok or FAIL is a result, and nothing else is.
+    """
+    done = {}
+    if not os.path.isfile(path):
+        return done
+    for line in open(path, encoding='utf-8', errors='replace'):
+        m = re.match(r'\[\d+/\d+\]\s+(\S+\.py)\s+(ok|FAIL)\b', line)
+        if m:
+            done[m.group(1)] = m.group(2)
+    return done
+
+
 def main(argv):
     only = [a for a in argv if not a.startswith('-')]
+    resume = None
+    for a in argv:
+        if a.startswith('--resume='):
+            resume = a.split('=', 1)[1]
     names = suites()
     if only:
         names = [n for n in names if any(o in n for o in only)]
     bad = []
+    done = already(resume) if resume else {}
+    if done:
+        bad = [(n, 'FAIL (earlier in this log)')
+               for n, v in done.items() if v == 'FAIL']
+        print('resuming: %d of %d already recorded, %d of them red'
+              % (len(done), len(names), len(bad)))
+        names = [n for n in names if n not in done]
     for i, n in enumerate(names, 1):
         p = os.path.join(ROOT, n)
         if not os.path.exists(p):

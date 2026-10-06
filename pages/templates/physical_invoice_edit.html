@@ -174,7 +174,18 @@ Edit Physical Invoice
   </tr>
 </template>
 
-<style>    /* B-2b, 6 Oct 2026 - 7 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 5 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 7 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -223,8 +234,8 @@ Edit Physical Invoice
 .btn-approve:hover { background-color: color-mix(in srgb, var(--alv-good) 78%, #000); border-color: color-mix(in srgb, var(--alv-good) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-unapprove { background-color: var(--alv-warn); color: var(--alv-on-accent); border: 1px solid var(--alv-warn); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-unapprove:hover { background-color: color-mix(in srgb, var(--alv-warn) 78%, #000); border-color: color-mix(in srgb, var(--alv-warn) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-delete { background-color: #dc3545; color: var(--alv-on-accent); border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
-.btn-delete:hover { background-color: #c82333; border-color: var(--alv-bad); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-delete { background-color: var(--alv-bad); color: var(--alv-on-accent); border: 1px solid var(--alv-bad); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-delete:hover { background-color: var(--alv-bad-ink); border-color: var(--alv-bad); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 .status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .status-action-form { margin: 0; }
@@ -244,7 +255,7 @@ Edit Physical Invoice
 .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .status-draft { background: var(--alv-warn-soft); color: var(--alv-warn); }
 .status-approved { background: #cce5ff; color: #004085; }
-.status-sent { background: #d4edda; color: var(--alv-good-ink); }
+.status-sent { background: var(--alv-good-soft); color: var(--alv-good-ink); }
 .lines-scroll { overflow-x: auto; background: var(--alv-paper); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .lines-table { margin-bottom: 0; min-width: 720px; }
 .lines-table thead th { background-color: var(--alv-ink); color: var(--alv-on-accent); font-weight: 600; font-size: 13px; vertical-align: middle; }
@@ -253,7 +264,7 @@ Edit Physical Invoice
 .line-remove-cell { text-align: center; vertical-align: middle; }
 
 .icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;    text-decoration: none;   cursor: pointer; }
-.icon-delete:hover { background-color: #dc3545;  }
+.icon-delete:hover { background-color: var(--alv-bad);  }
 
 .add-line-wrap { margin: 14px 0 24px; }
 

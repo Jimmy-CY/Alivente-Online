@@ -3,7 +3,18 @@
 {% block title %}Map Ingredients to Nutrition Data{% endblock %}
 {% block content %}
 
-<style>    /* B-2b, 6 Oct 2026 - 11 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 21 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 11 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -55,7 +66,7 @@
     font-size: 15px;
 }
 .progress-bar-label .progress-main strong {
-    color: #28a745;
+    color: var(--alv-good);
     font-size: 18px;
     font-weight: 700;
 }
@@ -64,7 +75,7 @@
     font-size: 13px;
 }
 .progress-bar-label .progress-percent {
-    color: #28a745;
+    color: var(--alv-good);
     font-weight: 700;
     font-size: 16px;
 }
@@ -76,7 +87,7 @@
 }
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(90deg, var(--alv-good) 0%, #20c997 100%);
     border-radius: 5px;
     transition: width 0.4s ease;
     width: 0%;
@@ -109,7 +120,7 @@
     transform: translateX(-50%) translateY(0);
 }
 .undo-toast .toast-icon {
-    color: #28d168;
+    color: var(--alv-good);
     font-size: 18px;
 }
 .undo-toast .toast-text strong {
@@ -178,12 +189,12 @@
     font-size: 15px;
 }
 .search-row input:focus {
-    border-color: #28a745;
+    border-color: var(--alv-good);
     outline: none;
 }
 .search-row button {
     padding: 10px 18px;
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     border: none;
     border-radius: 8px;
@@ -192,7 +203,7 @@
     cursor: pointer;
     transition: background 0.15s;
 }
-.search-row button:hover { background: #218838; }
+.search-row button:hover { background: var(--alv-good-ink); }
 .search-row button:disabled {
     background: var(--alv-ink-soft);
     cursor: not-allowed;
@@ -213,7 +224,7 @@
     font-size: 14px;
 }
 .usda-results-error {
-    color: #721c24;
+    color: var(--alv-bad-ink);
     background: var(--alv-bad-soft);
 }
 .usda-result {
@@ -226,12 +237,12 @@
     background: var(--alv-paper);
 }
 .usda-result:hover {
-    border-color: #28a745;
+    border-color: var(--alv-good);
     background: var(--alv-good-soft);
 }
 .usda-result.selected {
-    border-color: #28a745;
-    background: #d4edda;
+    border-color: var(--alv-good);
+    background: var(--alv-good-soft);
     box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 .usda-result-line1 {
@@ -249,7 +260,7 @@
 }
 .usda-result-cal {
     font-size: 13px;
-    color: #28a745;
+    color: var(--alv-good);
     font-weight: 600;
     white-space: nowrap;
 }
@@ -267,10 +278,10 @@
     font-weight: 600;
     margin-right: 6px;
 }
-.data-type-badge.foundation { background: #d4edda; color: var(--alv-good-ink); }
+.data-type-badge.foundation { background: var(--alv-good-soft); color: var(--alv-good-ink); }
 .data-type-badge.sr-legacy  { background: #cce5ff; color: #004085; }
 .data-type-badge.survey     { background: var(--alv-warn-soft); color: var(--alv-warn); }
-.data-type-badge.branded    { background: var(--alv-bad-soft); color: #721c24; }
+.data-type-badge.branded    { background: var(--alv-bad-soft); color: var(--alv-bad-ink); }
 
 /* === Manual entry === */
 .manual-entry-toggle {
@@ -280,7 +291,7 @@
 .link-btn {
     background: none;
     border: none;
-    color: #28a745;
+    color: var(--alv-good);
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -292,7 +303,7 @@
     transition: color 0.15s;
 }
 .link-btn:hover {
-    color: #1e7e34;
+    color: var(--alv-good-ink);
 }
 .manual-entry-panel {
     background: var(--alv-accent-soft);
@@ -493,16 +504,16 @@
     cursor: not-allowed;
 }
 .btn-save {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     padding: 10px 24px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
 }
-.btn-save:hover { background: #218838; border-color: #1e7e34; }
+.btn-save:hover { background: var(--alv-good-ink); border-color: var(--alv-good-ink); }
 .btn-save:disabled {
     background: var(--alv-ink-soft);
     border-color: var(--alv-ink-soft);
@@ -519,7 +530,7 @@
 }
 .wizard-done .icon {
     font-size: 64px;
-    color: #28a745;
+    color: var(--alv-good);
     margin-bottom: 16px;
 }
 .wizard-done h2 {

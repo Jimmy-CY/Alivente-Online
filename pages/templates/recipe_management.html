@@ -6,7 +6,18 @@
 {% block title %}Recipe Management{% endblock %}
 {% block content %}
 
-<style>    /* B-2b, 6 Oct 2026 - 26 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 35 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 26 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -60,7 +71,7 @@
 }
 
 .recipe-filter-title i.fas {
-    color: #28a745;
+    color: var(--alv-good);
     font-size: 16px;
 }
 
@@ -107,12 +118,12 @@
     text-align: left;
 }
 
-.filter-multiselect-button:hover { border-color: #28a745; }
-.filter-multiselect-button.active { border-color: #28a745; background: var(--alv-surface); }
+.filter-multiselect-button:hover { border-color: var(--alv-good); }
+.filter-multiselect-button.active { border-color: var(--alv-good); background: var(--alv-surface); }
 .filter-multiselect-placeholder { color: var(--alv-ink-soft); }
 
 .filter-multiselect-count {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     padding: 2px 8px;
     border-radius: 10px;
@@ -126,7 +137,7 @@
     left: 0;
     right: 0;
     background: var(--alv-paper);
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     border-radius: 8px;
     margin-top: 4px;
     max-height: 250px;
@@ -196,7 +207,7 @@
     background-position: right 10px center;
     background-size: 12px;
 }
-.nutrition-sort-row select:focus { border-color: #28a745; outline: none; }
+.nutrition-sort-row select:focus { border-color: var(--alv-good); outline: none; }
 .nutrition-sort-row .order-toggle {
     flex: 0 0 auto;
     height: 44px;
@@ -212,8 +223,8 @@
     justify-content: center;
     transition: all 0.2s;
 }
-.nutrition-sort-row .order-toggle:hover { border-color: #28a745; color: #28a745; }
-.nutrition-sort-row .order-toggle.active { border-color: #28a745; background: var(--alv-good-soft); color: #28a745; }
+.nutrition-sort-row .order-toggle:hover { border-color: var(--alv-good); color: var(--alv-good); }
+.nutrition-sort-row .order-toggle.active { border-color: var(--alv-good); background: var(--alv-good-soft); color: var(--alv-good); }
 
 /* Nudge banner shown above results when nutrition sort hides incomplete recipes */
 .nutrition-nudge {
@@ -230,7 +241,7 @@
 .nutrition-nudge i.fa-info-circle { color: #f57c00; font-size: 18px; flex-shrink: 0; }
 .nutrition-nudge .nudge-text { color: #5d4037; font-size: 14px; flex: 1; min-width: 200px; }
 .nutrition-nudge .nudge-link {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     padding: 6px 14px;
     border-radius: 6px;
@@ -242,7 +253,7 @@
     gap: 6px;
     white-space: nowrap;
 }
-.nutrition-nudge .nudge-link:hover { background: #218838; color: var(--alv-on-accent); text-decoration: none; }
+.nutrition-nudge .nudge-link:hover { background: var(--alv-good-ink); color: var(--alv-on-accent); text-decoration: none; }
 
 /* Inline nutrition badge on each grid/list card when sort is active */
 .nutrition-badge {
@@ -251,7 +262,7 @@
     gap: 6px;
     padding: 4px 10px;
     background: var(--alv-good-soft);
-    color: #2e7d32;
+    color: var(--alv-good);
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
@@ -421,7 +432,7 @@
 .recipe-image-placeholder {
     width: 100%;
     height: 200px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -456,9 +467,9 @@
 }
 
 .recipe-image-action-btn:hover { transform: scale(1.1); }
-.recipe-view-btn { background: #28a745; color: var(--alv-on-accent); }
+.recipe-view-btn { background: var(--alv-good); color: var(--alv-on-accent); }
 .recipe-edit-btn { background: #ffc107; color: var(--alv-on-accent); }
-.recipe-delete-btn { background: #dc3545; color: var(--alv-on-accent); }
+.recipe-delete-btn { background: var(--alv-bad); color: var(--alv-on-accent); }
 
 .recipe-image-action-btn.disabled-action {
     background: var(--alv-surface-deep);
@@ -541,7 +552,7 @@
     width: 50px;
     height: 50px;
     border-radius: 6px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -581,7 +592,7 @@
 .recipe-list-tag.course { background: var(--alv-accent-soft); color: #1976d2; }
 .recipe-list-tag.category { background: var(--alv-accent-soft); color: var(--alv-accent); }
 .recipe-list-tag.protein { background: var(--alv-warn-soft); color: #e65100; }
-.recipe-list-tag.vegetarian { background: var(--alv-good-soft); color: #2e7d32; }
+.recipe-list-tag.vegetarian { background: var(--alv-good-soft); color: var(--alv-good); }
 .recipe-list-tag.author { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 
 .recipe-list-meta-group { display: flex; gap: 16px; align-items: center; }
@@ -665,9 +676,9 @@
 
 .load-more-btn {
     padding: 12px 32px;
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
-    border: 2px solid #28a745;
+    border: 2px solid var(--alv-good);
     border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
@@ -679,8 +690,8 @@
 }
 
 .load-more-btn:hover {
-    background: #218838;
-    border-color: #218838;
+    background: var(--alv-good-ink);
+    border-color: var(--alv-good-ink);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
@@ -724,7 +735,7 @@
 
 .category-header:hover { background: var(--alv-surface-deep); }
 
-.toggle-icon { transition: transform 0.3s; color: #28a745; }
+.toggle-icon { transition: transform 0.3s; color: var(--alv-good); }
 .toggle-icon.rotated { transform: rotate(-90deg); }
 
 .category-ingredients {
@@ -776,7 +787,7 @@
     text-decoration: none;
 }
 
-.recipe-match-card.perfect-match { border-color: #28a745; background: var(--alv-good-soft); }
+.recipe-match-card.perfect-match { border-color: var(--alv-good); background: var(--alv-good-soft); }
 .recipe-match-card.good-match { border-color: #ffc107; background: var(--alv-warn-soft); }
 .recipe-match-card.okay-match { border-color: var(--alv-accent); background: var(--alv-surface); }
 
@@ -784,7 +795,7 @@
     position: absolute;
     top: 12px;
     right: 12px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
     color: var(--alv-on-accent);
     font-size: 16px;
     font-weight: bold;
@@ -856,10 +867,10 @@
     margin-bottom: 4px;
 }
 
-.missing-badge.protein { background: var(--alv-bad-soft); color: #721c24; font-weight: 600; }
+.missing-badge.protein { background: var(--alv-bad-soft); color: var(--alv-bad-ink); font-weight: 600; }
 
 .perfect-match-badge {
-    background: #28a745;
+    background: var(--alv-good);
     color: var(--alv-on-accent);
     padding: 6px 14px;
     border-radius: 12px;
@@ -1150,9 +1161,9 @@
 .book-detail-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
 .book-detail-tag { font-size: 9.5px; padding: 2px 7px; border-radius: 10px; font-family: Georgia, serif; }
 .book-detail-tag.course   { background: var(--alv-accent-soft); color: #1565c0; }
-.book-detail-tag.category { background: var(--alv-good-soft); color: #2e7d32; }
+.book-detail-tag.category { background: var(--alv-good-soft); color: var(--alv-good); }
 .book-detail-tag.protein  { background: var(--alv-warn-soft); color: #e65100; }
-.book-detail-tag.veggie   { background: var(--alv-good-soft); color: #2e7d32; }
+.book-detail-tag.veggie   { background: var(--alv-good-soft); color: var(--alv-good); }
 .book-detail-tag.author   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 .book-detail-image { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 14px; border: 1px solid rgba(180,150,100,0.3); }
 
@@ -1277,7 +1288,7 @@
     z-index: 5;
 }
 
-.recipe-favourite-btn.is-favourite { color: #e74c3c; background: rgba(255, 255, 255, 0.95); }
+.recipe-favourite-btn.is-favourite { color: var(--alv-bad); background: rgba(255, 255, 255, 0.95); }
 
 .recipe-list-favourite-btn {
     width: 28px;
@@ -1295,7 +1306,7 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
-.recipe-list-favourite-btn.is-favourite { color: #e74c3c; }
+.recipe-list-favourite-btn.is-favourite { color: var(--alv-bad); }
 
 /* Hover scale effect — desktop only.
    On touch devices `:hover` sticks after a tap until the user taps
@@ -1304,8 +1315,8 @@
    `(hover: hover)` media query matches only pointers that can actually
    hover (mice/trackpads), so touchscreens skip these rules entirely. */
 @media (hover: hover) and (pointer: fine) {
-    .recipe-favourite-btn:hover { transform: scale(1.15); color: #e74c3c; }
-    .recipe-list-favourite-btn:hover { transform: scale(1.15); color: #e74c3c; }
+    .recipe-favourite-btn:hover { transform: scale(1.15); color: var(--alv-bad); }
+    .recipe-list-favourite-btn:hover { transform: scale(1.15); color: var(--alv-bad); }
 }
 
 /* ============================================================
@@ -1462,10 +1473,10 @@
         cursor: pointer;
         text-decoration: none;
     }
-    .recipe-card-actions-mobile .recipe-view-btn { background: #28a745; color: var(--alv-on-accent); }
+    .recipe-card-actions-mobile .recipe-view-btn { background: var(--alv-good); color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .recipe-edit-btn { background: #ffc107; color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .recipe-duplicate-btn { background: var(--alv-accent); color: var(--alv-on-accent); }
-    .recipe-card-actions-mobile .recipe-delete-btn { background: #dc3545; color: var(--alv-on-accent); }
+    .recipe-card-actions-mobile .recipe-delete-btn { background: var(--alv-bad); color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .disabled-action { background: var(--alv-surface-deep); color: var(--alv-ink-soft); opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
     /* Favourite heart on image: smaller for compact 2-col */

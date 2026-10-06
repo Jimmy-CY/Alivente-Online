@@ -174,7 +174,18 @@ Gantt Chart - {{ project.project_name }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-2b, 6 Oct 2026 - 1 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 4 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 1 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -364,10 +375,10 @@ Gantt Chart - {{ project.project_name }}
 
 /* dhtmlx Gantt task styling */
 .gantt_task_line.project_task { background: #3498db; border: 1px solid #2980b9; }
-.gantt_task_line.main_task { background: #2ecc71; border: 1px solid #27ae60; }
+.gantt_task_line.main_task { background: var(--alv-good); border: 1px solid var(--alv-good); }
 .gantt_task_line.subtask { background: #f39c12; border: 1px solid #e67e22; }
 .gantt_task_line.completed { background: #95a5a6; border: 1px solid var(--alv-ink-faint); }
-.gantt_task_line.overdue { background: #e74c3c; border: 1px solid #c0392b; }
+.gantt_task_line.overdue { background: var(--alv-bad); border: 1px solid var(--alv-bad); }
 
 .gantt_task_line.clickable-task {
     cursor: pointer;

@@ -7,7 +7,18 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>    /* B-2b, 6 Oct 2026 - 6 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 6 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -96,7 +107,7 @@
     cursor: not-allowed;
 }
 .field-error {
-    color: #dc3545;
+    color: var(--alv-bad);
     font-size: 12px;
     margin-top: 4px;
 }

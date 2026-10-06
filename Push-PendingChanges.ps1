@@ -2075,6 +2075,23 @@ $suites = @(
     # and 390; section 5 is the control, and it is the old fallback,
     # which must still fail every house check it ever failed.
     'test_access_denied.py'
+    # E-2c. Seven suites resolved against pages.urls rather than the
+    # project root, because the SANDBOX MIRROR could not import
+    # mysite.urls - a gap in a copy of the tree recorded as a fact
+    # about the tree. Section 3 measures what it cost: under
+    # pages.urls /crs/ answers 404 and crs:index does not reverse.
+    # Nothing in it mutates ROOT_URLCONF - both roots are asked in
+    # one process with urlconf=, so this gate is not a writer.
+    'test_root_urlconf.py'
+    # B-3, tier C. The first colour round that cannot say nothing
+    # moved: up to 88 RGB units. Its defence is contrast, and section
+    # 3 measures it - seven pairs cross the AA line, two lose a
+    # little and are named, none ends below it. Section 4 is the one
+    # a (colour, role) map cannot do: 21 rest/hover pairs, each still
+    # darker on hover after the move. Section 5 asserts the scope the
+    # round left out, because a scope that is only in a comment is a
+    # scope nobody checks.
+    'test_colour_good_bad.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

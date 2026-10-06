@@ -165,7 +165,12 @@ BOOT_NEW = (
 # test_access_denied.py, which boots it to render one. Both were
 # written carrying their own setdefault - this number is the
 # tripwire that proves it rather than assuming it.
-BOOT_COUNT = 11
+# 12 since 6 Oct 2026: Section E round E-2c added
+# test_root_urlconf.py, which boots Django to resolve the same
+# paths through mysite.urls and pages.urls side by side. It
+# carries its own setdefault; this number is what proves that
+# rather than assuming it.
+BOOT_COUNT = 12
 
 
 def harden_suites(check):

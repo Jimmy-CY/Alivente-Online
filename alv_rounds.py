@@ -727,6 +727,55 @@ ROUNDS = [
     # method is the difference between a 403 and a 500 the day base
     # itself breaks.
     '.bak_denied',
+
+    # E-2c, 6 Oct 2026 - SEVEN SUITES GET THE REAL URLconf BACK.
+    #
+    # They resolved against 'pages.urls' instead of mysite.urls,
+    # and the reason was never a fact about the product: the
+    # SANDBOX MIRROR was missing crs/forms.py, which
+    # crs/views/config.py imports, so importing the real root died
+    # there. The laptop has always had the file. E-2's first
+    # measurement reported 260 of 260 URL names as broken on the
+    # strength of that gap and had to be corrected.
+    #
+    # IT WAS NOT A FREE SUBSTITUTION. Measured both ways: under
+    # pages.urls /crs/ answers 404 and crs:index does not reverse
+    # at all. Seven gates were blind to every URL the project
+    # mounts outside that one include, and answered 404 where the
+    # app answers 200.
+    #
+    # Six carried the line with no comment, inside the block that
+    # swaps DATABASES to sqlite. The seventh explained itself and
+    # named the price in its own words - that it could not see
+    # whether some OTHER include answers /accounts/login/ - so
+    # that suite also stops reading mysite/urls.py as a stand-in
+    # and asks the whole project instead.
+    '.bak_rooturl',
+
+    # B-3, 6 Oct 2026 - TIER C BEGINS: THE GREEN AND THE RED.
+    #
+    # B-1 asserted equality, B-2 and B-2b a bounded move of 25 RGB
+    # units. This one moves up to 88, and the defence is not that it
+    # is invisible - it is that the app gets MORE readable. Seven of
+    # the 23 pairs cross the AA line for normal text. Bootstrap's
+    # success green was the worst colour left in the tree at 3.13:1
+    # on paper, where AA wants 4.5; --alv-good reads 5.12.
+    #
+    # THE FAMILIES ARE TAKEN WHOLE, which is not what was first
+    # proposed. 179 was the count of the two solids alone; ten of the
+    # other greens and reds are HOVER STATES of them, and --alv-good
+    # is darker than Bootstrap's hover green - so a button converted
+    # without its hover would get LIGHTER under the pointer. The map
+    # sends every hover-dark to the family's -ink token and the round
+    # refuses unless all 21 rest/hover pairs are still darker after.
+    #
+    # TWO PAIRS LOSE A LITTLE and are named in the patcher rather
+    # than let through by a loosened rule: #0f5132 9.36 -> 8.57 and
+    # #721c24 11.01 -> 8.91, both still near twice what AA asks.
+    #
+    # NOT IN IT, although a hue test sweeps them up: the recipe
+    # browns, a pink, a burnt orange and Bootstrap's teal.
+    '.bak_goodbad',
 ]
 
 

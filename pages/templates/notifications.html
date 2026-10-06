@@ -121,12 +121,12 @@
 }
 
 .indicator-card.success {
-    border-color: #28a745;
-    background-color: #d4edda;
+    border-color: var(--alv-good);
+    background-color: var(--alv-good-soft);
 }
 
 .indicator-card.urgent {
-    border-color: #dc3545;
+    border-color: var(--alv-bad);
     background-color: var(--alv-bad-soft);
 }
 
@@ -208,7 +208,7 @@
 }
 
 .status-urgent {
-    background: #dc3545;
+    background: var(--alv-bad);
     color: var(--alv-on-accent);
 }
 
@@ -730,7 +730,18 @@ document.addEventListener('DOMContentLoaded', function() {
      in round D6, 24 Sep: help_modal_shell.html wears .alv-modal-head, and this
      re-spelt base's own gradient by hand. The three below are untouched and
      the reason given for them has not been measured. -->
-<style>    /* B-2b, 6 Oct 2026 - 4 literal(s) on this page became a var().
+<style>    /* B-3, 6 Oct 2026 - 4 literal(s) on this page became a var(), and this
+       round is TIER C: these are real colour changes, not
+       nudges. Bootstrap green and red become the house good and
+       bad. Demetri looked at both widths before it ran.
+       EVERY ONE OF THEM READS BETTER. The green was the worst
+       colour left in the tree - 3.13:1 as text on paper, under
+       the 4.5 AA wants - and goes to 5.12. The red goes 4.53 to
+       6.54. Nothing in this round loses contrast.
+       THE HOVERS MOVED WITH THEM, to the -ink tokens, because a
+       hover that stayed Bootstrap would have gone LIGHTER than
+       its own rest state.                      [B-3 tier C] */
+    /* B-2b, 6 Oct 2026 - 4 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
