@@ -6,7 +6,14 @@
 <!-- Add SortableJS for drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<style>    /* B-2, 6 Oct 2026 - 13 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 12 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 13 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -128,14 +135,14 @@
 
 .ingredient-table input.valid {
     border-color: #28a745;
-    background-color: #f0fff4;
+    background-color: var(--alv-good-soft);
     color: #28a745;
     font-weight: 500;
 }
 
 .ingredient-table input.invalid {
     border-color: #dc3545;
-    background-color: #fff5f5;
+    background-color: var(--alv-bad-soft);
     color: #dc3545;
     font-weight: 500;
 }
@@ -198,7 +205,7 @@
 }
 
 tr.sortable-chosen {
-    background: #e3f2fd;
+    background: var(--alv-accent-soft);
 }
 
 /* Autocomplete Dropdown Styles */
@@ -238,7 +245,7 @@ tr.sortable-chosen {
     padding: 10px 12px;
     cursor: pointer;
     transition: background 0.2s;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--alv-line-soft);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -259,13 +266,13 @@ tr.sortable-chosen {
 
 .autocomplete-add-new {
     padding: 10px 12px;
-    background: #fff3cd;
+    background: var(--alv-warn-soft);
     border-top: 2px solid #ffc107;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #856404;
+    color: var(--alv-warn);
     font-weight: 500;
 }
 
@@ -465,7 +472,7 @@ tr.sortable-chosen {
 
 
 .alert-info-custom {
-    background: #d1ecf1;
+    background: var(--alv-accent-soft);
     border-left: 4px solid var(--alv-accent);
     padding: 15px;
     border-radius: 6px;
@@ -499,7 +506,7 @@ tr.sortable-chosen {
 }
 
 .sortable-chosen {
-    background: #e3f2fd;
+    background: var(--alv-accent-soft);
 }
 
 /* Row with drag handle */
@@ -541,7 +548,7 @@ tr.sortable-chosen {
 }
 
 .spell-error-item {
-    background: #fff3cd;
+    background: var(--alv-warn-soft);
     border-left: 4px solid var(--alv-warn);
     padding: 15px;
     margin-bottom: 15px;
@@ -650,7 +657,7 @@ tr.sortable-chosen {
     display: none;
     margin-top: 24px;
     padding-top: 24px;
-    border-top: 2px solid #f0f0f0;
+    border-top: 2px solid var(--alv-line-soft);
 }
 
 .cooking-calc-body.show {
@@ -708,13 +715,13 @@ tr.sortable-chosen {
 }
 
 .calc-cooking-info {
-    background: #fff3cd;
+    background: var(--alv-warn-soft);
     border-left: 4px solid var(--alv-warn);
     padding: 10px 14px;
     border-radius: 4px;
     margin-bottom: 16px;
     font-size: 14px;
-    color: #856404;
+    color: var(--alv-warn);
     display: none;
 }
 

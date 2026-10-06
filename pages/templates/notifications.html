@@ -127,12 +127,12 @@
 
 .indicator-card.urgent {
     border-color: #dc3545;
-    background-color: #f8d7da;
+    background-color: var(--alv-bad-soft);
 }
 
 .indicator-card.warning {
     border-color: #ffc107;
-    background-color: #fff3cd;
+    background-color: var(--alv-warn-soft);
 }
 
 .indicator-icon {
@@ -214,7 +214,7 @@
 
 .status-warning {
     background: #ffc107;
-    color: #212529;
+    color: var(--alv-ink);
 }
 
 .status-info {
@@ -330,7 +330,7 @@
         color: var(--alv-ink);
         padding-bottom: 8px !important;
         margin-bottom: 4px;
-        border-bottom: 1px solid #f0f0f0 !important;
+        border-bottom: 1px solid var(--alv-line-soft) !important;
         text-align: left !important;
         display: block !important;
     }
@@ -730,7 +730,14 @@ document.addEventListener('DOMContentLoaded', function() {
      in round D6, 24 Sep: help_modal_shell.html wears .alv-modal-head, and this
      re-spelt base's own gradient by hand. The three below are untouched and
      the reason given for them has not been measured. -->
-<style>    /* B-2, 6 Oct 2026 - 9 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 4 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 9 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone

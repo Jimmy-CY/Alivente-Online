@@ -7,7 +7,14 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>    /* B-2, 6 Oct 2026 - 15 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 6 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 15 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -188,7 +195,7 @@
     margin: 14px 0;
 }
 .preview-table thead th {
-    background: #e7f5f8;
+    background: var(--alv-accent-soft);
     padding: 10px 12px;
     font-size: 12px;
     font-weight: 600;
@@ -199,7 +206,7 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    border-bottom: 2px solid #b8e2ea;
+    border-bottom: 2px solid var(--alv-accent-line);
 }
 .preview-table thead th.text-right { text-align: right; }
 .preview-table tbody td {
@@ -229,9 +236,9 @@
     padding: 0 24px 18px 24px;
 }
 .preview-note-box {
-    background: #fff3cd;
+    background: var(--alv-warn-soft);
     border-left: 4px solid var(--alv-warn);
-    color: #856404;
+    color: var(--alv-warn);
     padding: 12px 16px;
     border-radius: 4px;
     font-size: 13px;
@@ -339,8 +346,8 @@
         font-weight: 600;
     }
     .preview-totals-card {
-        background: #e7f5f8;
-        border: 1px solid #b8e2ea;
+        background: var(--alv-accent-soft);
+        border: 1px solid var(--alv-accent-line);
         border-radius: 8px;
         padding: 12px 14px;
         margin-top: 10px;

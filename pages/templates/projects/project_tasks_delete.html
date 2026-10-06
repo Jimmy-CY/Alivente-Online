@@ -145,7 +145,14 @@ Delete Task - {{ task.task_name }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-2, 6 Oct 2026 - 7 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 1 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 7 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -262,7 +269,7 @@ Delete Task - {{ task.task_name }}
 @media (hover: hover) and (pointer: fine) {
     .btn-danger:hover {
         background-color: #c82333;
-        border-color: #bd2130;
+        border-color: var(--alv-bad);
         color: var(--alv-on-accent);
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(220,53,69,0.3);

@@ -57,31 +57,31 @@
 <div id="dashboardContainer" style="display: none;">
     <!-- FORECASTCF v2 : revenue toggle (top, default ON) -->
     <style id="cfV2Style">
-    .cf-toggle-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;background:#e8f6f5;border:1px solid #b7e0dd;border-radius:10px;margin-bottom:16px;}
+    .cf-toggle-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;background:var(--alv-accent-soft);border:1px solid var(--alv-accent-line);border-radius:10px;margin-bottom:16px;}
     .cf-switch{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--alv-accent);cursor:pointer;margin:0;font-size:.98rem;}
     .cf-switch input{width:17px;height:17px;cursor:pointer;}
-    .cf-hint{color:#555;font-size:.8rem;}
+    .cf-hint{color:var(--alv-ink-strong);font-size:.8rem;}
     #summaryCardsContainer .card-body.cf-compact{padding:8px 12px;}
     .cf-compact .cf-line{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;padding:2px 0;line-height:1.35;}
-    .cf-compact .cf-lbl{color:#666;}
+    .cf-compact .cf-lbl{color:var(--alv-ink-soft);}
     .cf-compact .cf-val{font-weight:700;font-variant-numeric:tabular-nums;}
     .cf-rev .cf-val{color:var(--alv-accent);}
-    .cf-net{border-top:1px solid #eee;margin-top:3px;padding-top:4px !important;}
+    .cf-net{border-top:1px solid var(--alv-surface-deep);margin-top:3px;padding-top:4px !important;}
     .cf-net.cf-neg .cf-val{color:var(--alv-bad);}
     .cf-net.cf-pos .cf-val{color:var(--alv-accent);}
     .cf-net-note{text-align:center;margin:2px 0 16px;color:#444;font-size:.9rem;}
     .cf-net-note .cf-neg{color:var(--alv-bad);font-weight:600;}
     .cf-range{display:block;font-size:10px;font-weight:500;opacity:.9;text-transform:none;letter-spacing:0;margin-top:2px;}
     #cfHoverTip{position:fixed;z-index:9999;display:none;background:var(--alv-paper);border:1px solid var(--alv-accent-line);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:10px 12px;font-size:.82rem;max-width:300px;pointer-events:none;color:var(--alv-ink);}
-    .cf-tip-h{font-weight:700;color:var(--alv-accent);margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;}
+    .cf-tip-h{font-weight:700;color:var(--alv-accent);margin-bottom:6px;border-bottom:1px solid var(--alv-surface-deep);padding-bottom:4px;}
     .cf-tip-t{width:100%;border-collapse:collapse;}
     .cf-tip-t td{padding:2px 0;vertical-align:top;}
     .cf-tip-num{text-align:right;font-variant-numeric:tabular-nums;padding-left:16px;white-space:nowrap;}
-    .cf-tip-tot td{border-top:1px solid #eee;font-weight:700;padding-top:4px;}
+    .cf-tip-tot td{border-top:1px solid var(--alv-surface-deep);font-weight:700;padding-top:4px;}
     .cf-tip-empty{color:#888;}
-    .cf-slider-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:16px;background:#f4fbfa;border:1px solid #d6ece9;border-radius:10px;}
+    .cf-slider-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:16px;background:var(--alv-accent-soft);border:1px solid #d6ece9;border-radius:10px;}
     .cf-slider-cap{font-weight:600;color:var(--alv-accent);font-size:.9rem;}
-    .cf-slider-end{font-size:.8rem;color:#666;}
+    .cf-slider-end{font-size:.8rem;color:var(--alv-ink-soft);}
     .cf-slider-track{position:relative;flex:1;min-width:140px;max-width:340px;display:flex;align-items:center;}
     .cf-slider{flex:1;min-width:0;width:100%;cursor:pointer;}
     .cf-breakeven-mark{position:absolute;top:50%;transform:translate(-50%,-50%);width:3px;height:22px;background:var(--alv-bad);border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.65);display:none;}
@@ -193,7 +193,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-2, 6 Oct 2026 - 7 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 13 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 7 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -499,7 +506,7 @@
 
 @media (hover: hover) and (pointer: fine) {
     .table-hover tbody tr:hover {
-        background-color: #e3f2fd !important;
+        background-color: var(--alv-accent-soft) !important;
     }
 }
 
@@ -510,7 +517,7 @@
 
 @media (hover: hover) and (pointer: fine) {
     .clickable-row:hover {
-        background-color: #e3f2fd !important;
+        background-color: var(--alv-accent-soft) !important;
         border-left-color: var(--alv-accent);
     }
 }
@@ -543,8 +550,8 @@
 
 @media (hover: hover) and (pointer: fine) {
     .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #545b62;
+        background-color: var(--alv-ink-soft);
+        border-color: var(--alv-ink-soft);
         color: var(--alv-on-accent);
     }
 }

@@ -6,7 +6,14 @@
 {% block title %}Recipe Management{% endblock %}
 {% block content %}
 
-<style>    /* B-2, 6 Oct 2026 - 32 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 26 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 32 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -206,11 +213,11 @@
     transition: all 0.2s;
 }
 .nutrition-sort-row .order-toggle:hover { border-color: #28a745; color: #28a745; }
-.nutrition-sort-row .order-toggle.active { border-color: #28a745; background: #f0fff4; color: #28a745; }
+.nutrition-sort-row .order-toggle.active { border-color: #28a745; background: var(--alv-good-soft); color: #28a745; }
 
 /* Nudge banner shown above results when nutrition sort hides incomplete recipes */
 .nutrition-nudge {
-    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    background: linear-gradient(135deg, var(--alv-warn-soft) 0%, #ffecb3 100%);
     border: 1px solid #ffc107;
     border-radius: 8px;
     padding: 12px 16px;
@@ -243,13 +250,13 @@
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    background: #e8f5e9;
+    background: var(--alv-good-soft);
     color: #2e7d32;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 8px;
-    border: 1px solid #c8e6c9;
+    border: 1px solid var(--alv-good-line);
 }
 .nutrition-badge i { font-size: 11px; }
 .recipe-list-nutrition-badge {
@@ -278,7 +285,7 @@
 }
 
 .letter-filter-wrapper::-webkit-scrollbar { height: 6px; }
-.letter-filter-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+.letter-filter-wrapper::-webkit-scrollbar-track { background: var(--alv-line-soft); border-radius: 3px; }
 .letter-filter-wrapper::-webkit-scrollbar-thumb { background: var(--alv-accent); border-radius: 3px; }
 .letter-filter-wrapper::-webkit-scrollbar-thumb:hover { background: var(--alv-accent-ink); }
 
@@ -571,10 +578,10 @@
     font-weight: 500;
 }
 
-.recipe-list-tag.course { background: #e3f2fd; color: #1976d2; }
-.recipe-list-tag.category { background: #e0f7fa; color: #00838f; }
-.recipe-list-tag.protein { background: #fff3e0; color: #e65100; }
-.recipe-list-tag.vegetarian { background: #e8f5e9; color: #2e7d32; }
+.recipe-list-tag.course { background: var(--alv-accent-soft); color: #1976d2; }
+.recipe-list-tag.category { background: var(--alv-accent-soft); color: var(--alv-accent); }
+.recipe-list-tag.protein { background: var(--alv-warn-soft); color: #e65100; }
+.recipe-list-tag.vegetarian { background: var(--alv-good-soft); color: #2e7d32; }
 .recipe-list-tag.author { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 
 .recipe-list-meta-group { display: flex; gap: 16px; align-items: center; }
@@ -769,9 +776,9 @@
     text-decoration: none;
 }
 
-.recipe-match-card.perfect-match { border-color: #28a745; background: #f0fff4; }
-.recipe-match-card.good-match { border-color: #ffc107; background: #fffbf0; }
-.recipe-match-card.okay-match { border-color: var(--alv-accent); background: #f0f9ff; }
+.recipe-match-card.perfect-match { border-color: #28a745; background: var(--alv-good-soft); }
+.recipe-match-card.good-match { border-color: #ffc107; background: var(--alv-warn-soft); }
+.recipe-match-card.okay-match { border-color: var(--alv-accent); background: var(--alv-surface); }
 
 .match-badge {
     position: absolute;
@@ -840,8 +847,8 @@
 
 .missing-badge {
     display: inline-block;
-    background: #fff3cd;
-    color: #856404;
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn);
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
@@ -849,7 +856,7 @@
     margin-bottom: 4px;
 }
 
-.missing-badge.protein { background: #f8d7da; color: #721c24; font-weight: 600; }
+.missing-badge.protein { background: var(--alv-bad-soft); color: #721c24; font-weight: 600; }
 
 .perfect-match-badge {
     background: #28a745;
@@ -969,7 +976,7 @@
 
 .book-page {
     flex: 1;
-    background: #fdf8f0;
+    background: var(--alv-warn-soft);
     position: relative;
     overflow: hidden;
     min-height: 650px;
@@ -1055,7 +1062,7 @@
     inset: 0;
     backface-visibility: hidden;
     overflow: hidden;
-    background: #fdf8f0;
+    background: var(--alv-warn-soft);
     background-image: repeating-linear-gradient(transparent, transparent 31px, rgba(180,160,120,0.12) 31px, rgba(180,160,120,0.12) 32px);
     box-shadow: inset 0 0 30px rgba(120,90,50,0.05);
 }
@@ -1142,10 +1149,10 @@
 .book-detail-meta-item { font-size: 11px; color: #8a7055; display: flex; align-items: center; gap: 4px; font-family: Georgia, serif; }
 .book-detail-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
 .book-detail-tag { font-size: 9.5px; padding: 2px 7px; border-radius: 10px; font-family: Georgia, serif; }
-.book-detail-tag.course   { background: #e3f2fd; color: #1565c0; }
-.book-detail-tag.category { background: #e8f5e9; color: #2e7d32; }
-.book-detail-tag.protein  { background: #fff3e0; color: #e65100; }
-.book-detail-tag.veggie   { background: #e8f5e9; color: #2e7d32; }
+.book-detail-tag.course   { background: var(--alv-accent-soft); color: #1565c0; }
+.book-detail-tag.category { background: var(--alv-good-soft); color: #2e7d32; }
+.book-detail-tag.protein  { background: var(--alv-warn-soft); color: #e65100; }
+.book-detail-tag.veggie   { background: var(--alv-good-soft); color: #2e7d32; }
 .book-detail-tag.author   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 .book-detail-image { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 14px; border: 1px solid rgba(180,150,100,0.3); }
 
@@ -1175,7 +1182,7 @@
     height: 28px;
     border-radius: 50%;
     border: 6px solid #888;
-    background: linear-gradient(135deg, #d0d0d0, #f0f0f0, #a0a0a0);
+    background: linear-gradient(135deg, #d0d0d0, var(--alv-line-soft), #a0a0a0);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), inset 0 -2px 4px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.4);
     position: relative;
     z-index: 15;
@@ -1191,7 +1198,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #b0b0b0, #e8e8e8);
+    background: linear-gradient(135deg, #b0b0b0, var(--alv-surface-deep));
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
 
@@ -1226,7 +1233,7 @@
 .book-layout-buttons { display: flex; gap: 8px; }
 
 .book-layout-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border: 2px solid rgba(180,150,100,0.3); border-radius: 6px; background: var(--alv-paper); cursor: pointer; transition: all 0.2s; color: #8a7055; font-family: Georgia, serif; font-size: 11px; }
-.book-layout-btn:hover { border-color: #5c3a2a; background: #fdf8f0; }
+.book-layout-btn:hover { border-color: #5c3a2a; background: var(--alv-warn-soft); }
 .book-layout-btn.active { border-color: #5c3a2a; background: #5c3a2a; color: var(--alv-on-accent); }
 
 .layout-icon { display: grid; gap: 2px; width: 24px; height: 24px; }
@@ -1440,7 +1447,7 @@
         gap: 4px;
         margin-top: 10px;
         padding-top: 8px;
-        border-top: 1px solid #f0f0f0;
+        border-top: 1px solid var(--alv-line-soft);
     }
     .recipe-card-actions-mobile > a,
     .recipe-card-actions-mobile > button,

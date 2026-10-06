@@ -56,7 +56,14 @@ Lease Agreement - {{ property.prop_name }}
 <!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
 {% include 'components/pdf_viewer.html' %}
 
-<style>    /* B-2, 6 Oct 2026 - 3 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 2 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 3 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -168,9 +175,9 @@ Lease Agreement - {{ property.prop_name }}
 .lease-error-alert {
     margin-top: 20px;
     padding: 20px;
-    background-color: #fff3cd;
+    background-color: var(--alv-warn-soft);
     border-color: #ffeeba;
-    color: #856404;
+    color: var(--alv-warn);
 }
 .lease-error-alert h5 {
     margin-bottom: 12px;

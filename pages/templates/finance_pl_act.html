@@ -242,7 +242,7 @@
     <div class="table-responsive pl-table-wrap">
         {% if projected_cols %}
         <style>
-        {% for c in projected_cols %}.pl-act-table > thead > tr > th:nth-child({{ c }}), .pl-act-table > tbody > tr:not(.section-header) > td:nth-child({{ c }}) {  background-color: #fff3cd !important; }
+        {% for c in projected_cols %}.pl-act-table > thead > tr > th:nth-child({{ c }}), .pl-act-table > tbody > tr:not(.section-header) > td:nth-child({{ c }}) {  background-color: var(--alv-warn-soft) !important; }
         {% endfor %}
         </style>
         <div class="pl-projection-note" style="margin:6px 0;padding:6px 10px;background:#fff3cd;border-left:4px solid #ffc107;border-radius:4px;font-size:0.85rem;color:#7a5b00;">
@@ -501,7 +501,14 @@
 
 {% endif %}
 
-<style>    /* B-2, 6 Oct 2026 - 10 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 7 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 10 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -534,8 +541,8 @@
 
 @media (hover: hover) and (pointer: fine) {
     .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #545b62;
+        background-color: var(--alv-ink-soft);
+        border-color: var(--alv-ink-soft);
         color: var(--alv-on-accent);
     }
 }
@@ -577,16 +584,16 @@
 .roi-basis {
     margin-top: 8px;
     padding: 7px 11px;
-    background: #f4f9fb;
+    background: var(--alv-accent-soft);
     border-left: 3px solid var(--alv-accent);
     border-radius: 3px;
     font-size: 12px;
     line-height: 1.5;
-    color: #4a5560;
+    color: var(--alv-ink-strong);
     max-width: 100%;
 }
-.roi-basis-names { color: #17677a; font-weight: 600; }
-.roi-basis-val { display: block; margin-top: 4px; color: #6b5b12; }
+.roi-basis-names { color: var(--alv-accent-ink); font-weight: 600; }
+.roi-basis-val { display: block; margin-top: 4px; color: var(--alv-warn-ink); }
 .pl-select-all-group { display: inline-flex; }
 .pl-select-all-group .btn:first-child {
     border-top-right-radius: 0; border-bottom-right-radius: 0;

@@ -866,7 +866,7 @@
         background-color: var(--alv-accent); color: var(--alv-on-accent); border-radius: 50%;
         width: 16px; height: 16px; display: flex; align-items: center;
         justify-content: center; font-size: 10px; font-weight: bold;
-        line-height: 1; border: 2px solid #343a40;
+        line-height: 1; border: 2px solid var(--alv-ink);
         box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 1;
     }
     .notification-badge[data-count="0"], .notification-badge[data-count=""] { display: none; }
@@ -890,7 +890,7 @@
     /* Sidebar */
     .sidebar {
         position: fixed; top: 0; left: 0; height: 100vh; width: 240px;
-        background-color: #343a40; z-index: 1000;
+        background-color: var(--alv-ink); z-index: 1000;
         display: flex; flex-direction: column;
         transition: width 0.3s ease; overflow: hidden;
     }
@@ -1568,7 +1568,7 @@
       /* Approve / unapprove / send, used by Physical Invoices. */
       .icon-approve   { color: var(--alv-good); border-color: var(--alv-good-line); }
       .icon-approve:hover { background: var(--alv-good); border-color: var(--alv-good); color: var(--alv-on-accent); }
-      .icon-unapprove { color: var(--alv-warn); border-color: #ecd9a8; }
+      .icon-unapprove { color: var(--alv-warn); border-color: var(--alv-warn-line); }
       .icon-unapprove:hover { background: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
       .icon-send      { color: var(--alv-accent); border-color: var(--alv-accent-line); }
       .icon-send:hover { background: var(--alv-accent); border-color: var(--alv-accent); color: var(--alv-on-accent); }
@@ -1649,7 +1649,7 @@
         border: 1px solid transparent;
       }
       .alv-pill-good    { background: var(--alv-good-soft);    color: var(--alv-good);    border-color: var(--alv-good-line); }
-      .alv-pill-attn    { background: var(--alv-warn-soft);    color: var(--alv-warn);    border-color: #ecd9a8; }
+      .alv-pill-attn    { background: var(--alv-warn-soft);    color: var(--alv-warn);    border-color: var(--alv-warn-line); }
       .alv-pill-bad     { background: var(--alv-bad-soft);     color: var(--alv-bad);     border-color: var(--alv-bad-line); }
       .alv-pill-info    { background: var(--alv-info-soft);    color: var(--alv-accent-ink); border-color: var(--alv-accent-line); }
       .alv-pill-neutral { background: var(--alv-neutral-soft); color: var(--alv-neutral); border-color: var(--alv-line); }
@@ -2282,7 +2282,7 @@
           print-color-adjust: exact;
         }
         .alv-table thead th {
-          border-bottom: 1.5pt solid #55606b !important;
+          border-bottom: 1.5pt solid var(--alv-ink-soft) !important;
           box-shadow: none !important;
           position: static !important;   /* sticky is meaningless on paper */
           color: #000 !important;
@@ -2306,7 +2306,7 @@
            does, and still reads as a chip. */
         .alv-pill,
         .alv-tag {
-          border: 1px solid #55606b !important;
+          border: 1px solid var(--alv-ink-soft) !important;
           color: #000 !important;
           background: transparent !important;
         }
@@ -2357,9 +2357,9 @@
       .btn.action-secondary.disabled-btn,
       .btn.action-secondary:disabled,
       .btn.action-secondary[disabled] {
-        background: var(--alv-disabled-bg, #e8eaec);
-        border-color: var(--alv-disabled-bg, #e8eaec);
-        color: var(--alv-disabled-ink, #8a939b);
+        background: var(--alv-disabled-bg, var(--alv-surface-deep));
+        border-color: var(--alv-disabled-bg, var(--alv-surface-deep));
+        color: var(--alv-disabled-ink, var(--alv-ink-faint));
       }
 
 
@@ -2549,9 +2549,9 @@
       .btn.action-primary:disabled,
       .btn.action-primary[disabled],
       .btn.action-primary[aria-disabled="true"] {
-        background: var(--alv-disabled-bg, #e8eaec);
-        border-color: var(--alv-disabled-bg, #e8eaec);
-        color: var(--alv-disabled-ink, #8a939b);
+        background: var(--alv-disabled-bg, var(--alv-surface-deep));
+        border-color: var(--alv-disabled-bg, var(--alv-surface-deep));
+        color: var(--alv-disabled-ink, var(--alv-ink-faint));
         box-shadow: none;
       }
 
@@ -2733,7 +2733,14 @@
         .action-more-item-danger i { color: var(--alv-danger); }
       }
     </style>
-  <style>    /* B-2, 6 Oct 2026 - 6 literal(s) on this page became a var(), and
+  <style>    /* B-2b, 6 Oct 2026 - 15 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 6 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -2791,7 +2798,7 @@
   }
   .ui-menu-item:hover,
   .ui-menu-item:focus {
-      background: #f1f6f9;
+      background: var(--alv-line-soft);
       color: var(--alv-accent);
       text-decoration: none;
       outline: none;
@@ -3811,7 +3818,7 @@ table.alv-matrix {
 .icon-permissions:hover { background-color: var(--alv-view); border-color: var(--alv-view); color: var(--alv-on-accent); }
 .icon-color-permissions { color: var(--alv-view); }
 
-.icon-lock       { color: var(--alv-warn); border-color: #ecd9a8; }
+.icon-lock       { color: var(--alv-warn); border-color: var(--alv-warn-line); }
 .icon-lock:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
 .icon-color-lock { color: var(--alv-warn); }
 
@@ -3831,7 +3838,7 @@ table.alv-matrix {
    glyph on a class that already has one is precisely the drift
    test_icon_buttons section 1b exists to catch, and .icon-edit had
    already done it once.                            [test_auth_flow.py] */
-.icon-reset-pw       { color: var(--alv-warn); border-color: #ecd9a8; }
+.icon-reset-pw       { color: var(--alv-warn); border-color: var(--alv-warn-line); }
 .icon-reset-pw:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
 .icon-color-reset-pw { color: var(--alv-warn); }
 

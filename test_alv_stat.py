@@ -181,7 +181,30 @@ check('the page defines no tile CSS of its own',
       not [s for s in P if 'pd-stat' in s or 'pd-summary' in s],
       str([s for s in P if 'pd-stat' in s or 'pd-summary' in s]))
 check('  no tile borrows .alv-card', 'alv-card' not in PC)
-check('  and the amber wash is gone from the page', 'alv-warn-soft' not in PC)
+# B-2b, 6 Oct 2026 - THE CLAIM IS ABOUT THE TILES, so it is measured
+# against the tiles. This read `'alv-warn-soft' not in PC` - the whole
+# page as one string - and that stood in for "the stat tiles no longer
+# wear an amber wash" only for as long as nothing ELSE on the page
+# wore one. B-2b turned this page's #fff8e1 into var(--alv-warn-soft)
+# on .pd-terms-warning, which is a warning banner and has never been a
+# tile, and the check went red for a page that is exactly as the stat
+# round left it.
+#
+# A string test over a whole file is a proxy. It is a fine proxy right
+# up until something TRUE makes it false, and then it has to be
+# replaced by the thing it was standing in for.
+#
+# P is selector -> [body, ...], so the bodies are where to look.
+_tile = re.compile(r'\.(pd-)?(stat|summary|tile)')
+_washed = sorted(sel for sel, bodies in P.items()
+                 if _tile.search(sel)
+                 and any('alv-warn-soft' in b for b in bodies))
+check('  and no TILE wears an amber wash any more', not _washed,
+      str(_washed))
+_banner = sorted(sel for sel, bodies in P.items()
+                 if any('alv-warn-soft' in b for b in bodies))
+check('    the only rule that wears one is a banner, not a tile',
+      _banner == ['.pd-terms-warning'] or not _banner, str(_banner))
 
 # ===========================================================================
 head('2. anchored on the system\'s tokens, and a real ordering')

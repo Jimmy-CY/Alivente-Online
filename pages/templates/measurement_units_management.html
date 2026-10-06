@@ -3,7 +3,14 @@
 {% block title %}Measurement Units Management{% endblock %}
 {% block content %}
 
-<style>    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 6 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -42,7 +49,7 @@
 
 
 .edit-mode {
-    background: #fffbf0 !important;
+    background: var(--alv-warn-soft) !important;
 }
 
 .edit-mode td {
@@ -100,8 +107,8 @@
 }
 
 .unit-type-weight {
-    background: #f8d7da;
-    color: #842029;
+    background: var(--alv-bad-soft);
+    color: var(--alv-bad-ink);
 }
 
 .unit-type-count {
@@ -110,8 +117,8 @@
 }
 
 .unit-type-other {
-    background: #e2e3e5;
-    color: #41464b;
+    background: var(--alv-surface-deep);
+    color: var(--alv-ink-strong);
 }
 
 .usage-count {
@@ -235,7 +242,7 @@
 
 
     .units-table tbody tr.edit-mode {
-        background: #fffbf0 !important;
+        background: var(--alv-warn-soft) !important;
         border-color: #ffc107;
     }
 

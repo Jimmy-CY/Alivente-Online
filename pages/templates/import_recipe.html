@@ -3,7 +3,14 @@
 {% block title %}Import Recipe{% endblock %}
 {% block content %}
 
-<style>    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 4 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -49,8 +56,8 @@
 }
 
 .upload-zone.dragover {
-    background: #d1ecf1;
-    border-color: #0c5460;
+    background: var(--alv-accent-soft);
+    border-color: var(--alv-accent-ink);
 }
 
 .upload-icon {
@@ -66,7 +73,7 @@
 .selected-file {
     margin-top: 20px;
     padding: 15px;
-    background: #d1ecf1;
+    background: var(--alv-accent-soft);
     border-radius: 8px;
     display: none;
 }
@@ -134,7 +141,7 @@
 .spinner {
     width: 64px;
     height: 64px;
-    border: 6px solid #f3f3f3;
+    border: 6px solid var(--alv-line-soft);
     border-top: 6px solid var(--alv-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;

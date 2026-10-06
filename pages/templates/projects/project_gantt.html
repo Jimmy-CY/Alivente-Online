@@ -174,7 +174,14 @@ Gantt Chart - {{ project.project_name }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-2, 6 Oct 2026 - 11 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 1 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 11 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -359,7 +366,7 @@ Gantt Chart - {{ project.project_name }}
 .gantt_task_line.project_task { background: #3498db; border: 1px solid #2980b9; }
 .gantt_task_line.main_task { background: #2ecc71; border: 1px solid #27ae60; }
 .gantt_task_line.subtask { background: #f39c12; border: 1px solid #e67e22; }
-.gantt_task_line.completed { background: #95a5a6; border: 1px solid #7f8c8d; }
+.gantt_task_line.completed { background: #95a5a6; border: 1px solid var(--alv-ink-faint); }
 .gantt_task_line.overdue { background: #e74c3c; border: 1px solid #c0392b; }
 
 .gantt_task_line.clickable-task {

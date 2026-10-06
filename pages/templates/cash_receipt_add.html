@@ -193,7 +193,14 @@
   </div>
 </form>
 
-<style>
+<style>    /* B-2b, 6 Oct 2026 - 1 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+
 
 .rec-note {
     background: var(--alv-accent-soft);
@@ -207,7 +214,7 @@
 .rec-number { color: var(--alv-ink-soft); font-weight: 600; font-size: 12.5px; }
 .rec-note-warn {
     background: var(--alv-warn-soft);
-    border-color: #ecd9a8;
+    border-color: var(--alv-warn-line);
     color: var(--alv-warn);
 }
 .rec-optional {

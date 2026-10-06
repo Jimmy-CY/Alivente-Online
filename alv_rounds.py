@@ -682,6 +682,24 @@ ROUNDS = [
     # 1.24, and that was his decision: --alv-line is already what every
     # base-styled table draws with, so these pages now agree with base.
     '.bak_coltok2',
+
+    # B-2b, 6 Oct 2026 - the tail of tier B. 342 literals on 68
+    # templates, 105 pairs in six families, every one inside 25 RGB
+    # units and gated the same way B-2 is: exactly the move the map
+    # records, or the round refuses.
+    #
+    # THE FINDING IS THE SHAPE. Twenty-one ways of writing a pale teal
+    # and fifty-three greys - a long tail is not a programme nobody got
+    # to, it is the same decision made separately by whoever was
+    # writing that page that day.
+    #
+    # FOUR ENTRIES WERE OVERRULED BY HAND. #ecf0f1 is a grey five units
+    # wide that the hue band called a pale teal; #e8f4ff and #e8f4fd
+    # are pale blues the same band called greys. And #f8f9fa as a LINE
+    # was DROPPED rather than corrected - on that one page it is the
+    # page's own background, a border invisible on purpose, and making
+    # it visible is a decision nobody has made.
+    '.bak_coltok3',
 ]
 
 

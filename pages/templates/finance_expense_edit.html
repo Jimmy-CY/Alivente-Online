@@ -7,7 +7,14 @@
 
 {% if perms.auth.can_access_financials %}
 
-<style>    /* B-2, 6 Oct 2026 - 17 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 11 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 17 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -84,8 +91,8 @@
 }
 /* === Pro-rata panel === */
 .prorata-panel {
-    background: #fff5f5;
-    border: 2px solid #fed7d7;
+    background: var(--alv-bad-soft);
+    border: 2px solid var(--alv-bad-line);
 }
 .prorata-panel .form-section-title {
     color: #721c24;
@@ -131,8 +138,8 @@
      .is-inactive-linked  already in it - must stay tickable, so it can be
                           removed, and stays TICKED so nothing is dropped
                           silently during an unrelated edit */
-.property-item.inactive-row { background: #fbfbfc; }
-.property-item.inactive-row label > span:first-child { color: #868e96; }
+.property-item.inactive-row { background: var(--alv-surface); }
+.property-item.inactive-row label > span:first-child { color: var(--alv-ink-faint); }
 .inactive-pill {
     display: inline-block;
     margin-left: 8px;
@@ -143,15 +150,15 @@
     background: var(--alv-surface-deep);
     color: var(--alv-ink-soft);
 }
-.inactive-pill.needs-removal { background: #f8d7da; color: #a71d2a; }
+.inactive-pill.needs-removal { background: var(--alv-bad-soft); color: var(--alv-bad); }
 .prorata-inactive-warning {
-    background: #fff3cd;
+    background: var(--alv-warn-soft);
     border-left: 4px solid var(--alv-warn);
     border-radius: 6px;
     padding: 10px 14px;
     margin-bottom: 12px;
     font-size: 13px;
-    color: #6c5400;
+    color: var(--alv-warn-ink);
 }
 .checkbox-list {
     background: var(--alv-paper);
@@ -178,7 +185,7 @@
     }
 }
 .property-item.is-anchor {
-    background: #fef5e7;
+    background: var(--alv-warn-soft);
 }
 .property-item input[type="checkbox"] {
     margin: 0 12px 0 0;
@@ -209,7 +216,7 @@
 }
 .anchor-pill {
     background: #ffc107;
-    color: #212529;
+    color: var(--alv-ink);
     font-size: 10px;
     padding: 1px 6px;
     border-radius: 8px;
@@ -239,7 +246,7 @@
 }
 .btn-calculate:hover {
     background: #c82333;
-    border-color: #bd2130;
+    border-color: var(--alv-bad);
 }
 .btn-calculate:disabled {
     background: var(--alv-ink-soft);

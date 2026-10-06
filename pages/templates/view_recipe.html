@@ -3,7 +3,14 @@
 {% block title %}{{ recipe.recipe_name }}{% endblock %}
 {% block content %}
 
-<style>    /* B-2, 6 Oct 2026 - 27 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 24 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 27 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -157,7 +164,7 @@ body {
 .tag-category { background: var(--alv-accent); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-protein  { background: #fd7e14; color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-vegetarian { background: #28a745; color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
-.tag-author   { background: #546e7a; color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.tag-author   { background: var(--alv-ink-soft); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 
 .recipe-content {
     display: grid;
@@ -198,14 +205,14 @@ body {
     margin-bottom: 12px;
     font-size: 17px;
     padding-bottom: 6px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--alv-line);
 }
 
 .ingredient-group-title.continued { font-style: italic; color: #28a745; }
 
 .ingredient-item {
     padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--alv-line-soft);
     display: flex;
     align-items: flex-start;
     gap: 10px;
@@ -292,7 +299,7 @@ body {
 .btn-edit { background: #ffc107; color: #000; border: none; }
 .btn-edit:hover { background: #e0a800; color: #000; }
 .btn-print { background: var(--alv-ink-soft); color: var(--alv-on-accent); border: none; }
-.btn-print:hover { background: #5a6268; color: var(--alv-on-accent); }
+.btn-print:hover { background: var(--alv-ink-soft); color: var(--alv-on-accent); }
 .btn-shopping { background: #28a745; color: var(--alv-on-accent); border: none; }
 .btn-shopping:hover { background: #218838; color: var(--alv-on-accent); }
 
@@ -355,7 +362,7 @@ body {
     align-items: center;
     gap: 12px;
     padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--alv-line-soft);
 }
 
 .shopping-item:hover { background: var(--alv-surface); }
@@ -382,7 +389,7 @@ body {
 
 .final-shopping-list li {
     padding: 10px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--alv-line);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -943,7 +950,7 @@ body {
         background: none !important;
         padding: 6px 0 6px 20px !important;
         gap: 8px !important;
-        border-bottom: 1px solid #f0f0f0 !important;
+        border-bottom: 1px solid var(--alv-line-soft) !important;
         position: relative !important;
     }
 
@@ -1073,7 +1080,7 @@ body {
    CONVERSION MINI-MODAL ROWS
    ============================================================ */
 .conv-row {
-    background: #fff8e6;
+    background: var(--alv-warn-soft);
     border: 1px solid #ffc107;
     border-radius: 8px;
     padding: 14px 16px;
@@ -1087,7 +1094,7 @@ body {
 }
 .conv-row-explainer {
     font-size: 13px;
-    color: #856404;
+    color: var(--alv-warn);
     margin-bottom: 10px;
 }
 .conv-input-group {
@@ -1123,7 +1130,7 @@ body {
     background: var(--alv-paper);
     border: 1px solid #ffc107;
     border-radius: 4px;
-    color: #856404;
+    color: var(--alv-warn);
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
@@ -1204,9 +1211,9 @@ body {
 }
 
 .breakdown-intro {
-    background: #e8f5e9;
+    background: var(--alv-good-soft);
     border-left: 4px solid #28a745;
-    color: #155724;
+    color: var(--alv-good-ink);
     padding: 10px 14px;
     border-radius: 4px;
     font-size: 13px;
@@ -1236,13 +1243,13 @@ body {
 }
 .breakdown-table tbody tr.unmapped td.bt-name,
 .breakdown-table tbody tr.unconvertible td.bt-name {
-    color: #856404;
+    color: var(--alv-warn);
 }
 .breakdown-table tbody tr.unmapped .bt-status,
 .breakdown-table tbody tr.unconvertible .bt-status {
     display: inline-block;
-    background: #fff3cd;
-    color: #856404;
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn);
     font-size: 10px;
     padding: 1px 7px;
     border-radius: 8px;
@@ -1382,7 +1389,7 @@ body {
 
 /* === ERROR (Stage D) === */
 .ai-error {
-    background: #fff5f5;
+    background: var(--alv-bad-soft);
     border-left: 4px solid #dc3545;
     color: #721c24;
     padding: 12px 14px;
@@ -1520,8 +1527,8 @@ body {
 /* Impact pill */
 .ai-suggestion-impact {
     display: inline-block;
-    background: #e8f5e9;
-    color: #155724;
+    background: var(--alv-good-soft);
+    color: var(--alv-good-ink);
     font-size: 12px;
     font-weight: 600;
     padding: 2px 10px;
@@ -1531,11 +1538,11 @@ body {
 }
 .ai-suggestion-impact.positive {
     background: #d4edda;
-    color: #155724;
+    color: var(--alv-good-ink);
 }
 .ai-suggestion-impact.negative {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn);
 }
 
 /* Toggle for showing rationale/tradeoffs */
@@ -1552,7 +1559,7 @@ body {
     gap: 6px;
     width: 100%;
     text-align: left;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--alv-line-soft);
 }
 @media (hover: hover) and (pointer: fine) {
     .ai-details-toggle:hover {
@@ -1563,8 +1570,8 @@ body {
 /* Expanded details */
 .ai-suggestion-details {
     padding: 0 16px 14px 16px;
-    border-top: 1px solid #f0f0f0;
-    background: #fafbfc;
+    border-top: 1px solid var(--alv-line-soft);
+    background: var(--alv-surface);
 }
 .ai-suggestion-details-section {
     margin-top: 12px;

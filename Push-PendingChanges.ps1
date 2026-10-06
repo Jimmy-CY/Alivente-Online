@@ -2046,6 +2046,12 @@ $suites = @(
     # borders went the other way. Section 7 is a real before-and-after,
     # bounded rather than identical.
     'test_colour_neutrals.py'
+    # B-2b, the tail of tier B. Section 1 prints the shape - 21
+    # spellings of one pale teal, 53 greys. Section 2 is B-2's gate
+    # unchanged. Section 6 is the four entries where the classifier was
+    # overruled, including the one that was dropped rather than fixed:
+    # a border painted the page's own colour is invisible on purpose.
+    'test_colour_tail.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

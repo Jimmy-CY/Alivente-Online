@@ -160,7 +160,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-2, 6 Oct 2026 - 22 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 3 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 22 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -249,7 +256,7 @@
 @media (hover: hover) and (pointer: fine) {
     .btn-period:hover {
         border-color: var(--alv-accent);
-        background: #e3f2fd;
+        background: var(--alv-accent-soft);
         color: var(--alv-accent);
     }
 }
@@ -326,7 +333,7 @@
 }
 .indicator-card.active {
     border-color: var(--alv-accent);
-    background-color: #e3f2fd;
+    background-color: var(--alv-accent-soft);
     box-shadow: 0 4px 8px rgba(14, 124, 139, 0.2);
 }
 .indicator-icon {
@@ -524,7 +531,7 @@
 }
 .sortable-header.sorted-asc,
 .sortable-header.sorted-desc {
-    background-color: #e3f2fd !important;
+    background-color: var(--alv-accent-soft) !important;
     color: var(--alv-accent);
     font-weight: 700;
 }

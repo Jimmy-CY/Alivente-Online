@@ -3,7 +3,14 @@
 {% block title %}Map Ingredients to Nutrition Data{% endblock %}
 {% block content %}
 
-<style>    /* B-2, 6 Oct 2026 - 28 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 11 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 28 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -207,7 +214,7 @@
 }
 .usda-results-error {
     color: #721c24;
-    background: #f8d7da;
+    background: var(--alv-bad-soft);
 }
 .usda-result {
     border: 2px solid var(--alv-line);
@@ -220,7 +227,7 @@
 }
 .usda-result:hover {
     border-color: #28a745;
-    background: #f0fbf4;
+    background: var(--alv-good-soft);
 }
 .usda-result.selected {
     border-color: #28a745;
@@ -260,10 +267,10 @@
     font-weight: 600;
     margin-right: 6px;
 }
-.data-type-badge.foundation { background: #d4edda; color: #155724; }
+.data-type-badge.foundation { background: #d4edda; color: var(--alv-good-ink); }
 .data-type-badge.sr-legacy  { background: #cce5ff; color: #004085; }
-.data-type-badge.survey     { background: #fff3cd; color: #856404; }
-.data-type-badge.branded    { background: #f8d7da; color: #721c24; }
+.data-type-badge.survey     { background: var(--alv-warn-soft); color: var(--alv-warn); }
+.data-type-badge.branded    { background: var(--alv-bad-soft); color: #721c24; }
 
 /* === Manual entry === */
 .manual-entry-toggle {
@@ -288,7 +295,7 @@
     color: #1e7e34;
 }
 .manual-entry-panel {
-    background: #e8f4ff;
+    background: var(--alv-accent-soft);
     border: 1px solid #b8daff;
     border-radius: 8px;
     padding: 16px;
@@ -377,7 +384,7 @@
 
 /* === Unit conversion prompt === */
 .conversion-panel {
-    background: #fff8e6;
+    background: var(--alv-warn-soft);
     border: 1px solid #ffc107;
     border-radius: 8px;
     padding: 14px 16px;
@@ -387,14 +394,14 @@
 .conversion-panel h6 {
     font-size: 13px;
     font-weight: 700;
-    color: #856404;
+    color: var(--alv-warn);
     margin: 0 0 8px 0;
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
 .conversion-explainer {
     font-size: 13px;
-    color: #856404;
+    color: var(--alv-warn);
     margin-bottom: 10px;
 }
 .conversion-form {
@@ -426,7 +433,7 @@
     background: var(--alv-paper);
     border: 1px solid #ffc107;
     border-radius: 4px;
-    color: #856404;
+    color: var(--alv-warn);
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;

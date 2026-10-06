@@ -3,7 +3,14 @@
 {% block title %}Set Unit Conversions{% endblock %}
 {% block content %}
 
-<style>    /* B-2, 6 Oct 2026 - 14 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 7 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 14 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -148,9 +155,9 @@
 
 /* === Conversion intro === */
 .conversion-intro {
-    background: #fff8e6;
+    background: var(--alv-warn-soft);
     border-left: 4px solid var(--alv-warn);
-    color: #856404;
+    color: var(--alv-warn);
     padding: 12px 16px;
     border-radius: 4px;
     font-size: 14px;
@@ -163,7 +170,7 @@
 
 /* === Conversion rows === */
 .conv-row {
-    background: #fff8e6;
+    background: var(--alv-warn-soft);
     border: 1px solid #ffc107;
     border-radius: 8px;
     padding: 16px 18px;
@@ -186,7 +193,7 @@
     letter-spacing: 0.4px;
 }
 .conv-row-type {
-    color: #856404;
+    color: var(--alv-warn);
     font-size: 12px;
     font-weight: 500;
     text-transform: capitalize;
@@ -217,7 +224,7 @@
 }
 .conv-input-group input[type="number"].invalid {
     border-color: #dc3545;
-    background: #fff5f5;
+    background: var(--alv-bad-soft);
 }
 .conv-input-group input[type="number"].valid {
     border-color: #28a745;
@@ -237,7 +244,7 @@
     background: var(--alv-paper);
     border: 1px solid #ffc107;
     border-radius: 4px;
-    color: #856404;
+    color: var(--alv-warn);
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
@@ -275,7 +282,7 @@
 
 /* === No-units warning === */
 .no-units-notice {
-    background: #f8d7da;
+    background: var(--alv-bad-soft);
     border-left: 4px solid #dc3545;
     color: #721c24;
     padding: 14px 18px;

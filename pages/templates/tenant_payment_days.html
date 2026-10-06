@@ -217,7 +217,14 @@
   </div>
 </div>
 
-<style>    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 16 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 5 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -283,7 +290,7 @@
 .pd-terms-warning {
     font-size: 0.85rem;
     color: #8a6d3b;
-    background: #fcf8e3;
+    background: var(--alv-warn-soft);
     border: 1px solid #faebcc;
     border-radius: 5px;
     padding: 5px 10px;
@@ -304,7 +311,7 @@
 .alv-table thead th.pd-num { text-align: right; }
 .pd-strong { font-weight: 700; color: var(--alv-ink); }
 .pd-name { font-weight: 600; color: var(--alv-ink); }
-.pd-muted { color: #95a5a6; }
+.pd-muted { color: var(--alv-ink-faint); }
 .pd-mono { font-family: 'Courier New', monospace; }
 
 /* Sits under the name, quiet enough to ignore when it says "14 payments" and
@@ -312,7 +319,7 @@
 .pd-count {
     display: block;
     font-size: 0.75rem;
-    color: #95a5a6;
+    color: var(--alv-ink-faint);
     margin-top: 2px;
 }
 
@@ -339,25 +346,25 @@
 .pd-col-toggle { width: 40px; text-align: center; }
 .pd-toggle {
     background: transparent;
-    border: 1px solid #dfe4e8;
+    border: 1px solid var(--alv-line);
     border-radius: 5px;
-    color: #7f8c8d;
+    color: var(--alv-ink-faint);
     width: 28px;
     height: 28px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
-.pd-toggle:hover { background: #ecf0f1; color: var(--alv-ink); }
+.pd-toggle:hover { background: var(--alv-surface-deep); color: var(--alv-ink); }
 .pd-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
 .pd-toggle i { transition: transform 0.2s ease; font-size: 12px; }
 
-.pd-detail td { background: #fafbfc; padding: 0 !important; }
+.pd-detail td { background: var(--alv-surface); padding: 0 !important; }
 .pd-detail-inner { padding: 14px 18px 18px 18px; }
 .pd-detail-title {
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #7f8c8d;
+    color: var(--alv-ink-faint);
     margin-bottom: 8px;
 }
 /* This table is nested INSIDE a .pd-table cell, so every `.pd-table tbody td`
@@ -375,21 +382,21 @@
     font-size: 0.8rem;
     white-space: nowrap;
     text-align: left;
-    color: #7f8c8d;
+    color: var(--alv-ink-faint);
     font-weight: 600;
-    border-bottom: 1px solid #e1e5e9;
+    border-bottom: 1px solid var(--alv-line);
     padding: 5px 10px;
 }
 /* Or "Days" and "Amount" sit left while their figures sit right. */
 .pd-detail .pd-detail-table th.pd-num { text-align: right; }
 .pd-detail .pd-detail-table td {
     padding: 5px 10px;
-    border-bottom: 1px solid #eef0f2;
+    border-bottom: 1px solid var(--alv-line-soft);
     text-align: left;
 }
 .pd-detail .pd-detail-table td.pd-num { text-align: right; }
 
-.pd-legend { font-size: 0.85rem; color: #7f8c8d; margin-top: 12px; }
+.pd-legend { font-size: 0.85rem; color: var(--alv-ink-faint); margin-top: 12px; }
 
 /* ---- sections ---- */
 .pd-section { margin-top: 34px; }
@@ -401,19 +408,19 @@
     padding-bottom: 8px;
     margin-bottom: 14px;
 }
-.pd-section-note { font-weight: 400; color: #7f8c8d; font-size: 0.9rem; }
+.pd-section-note { font-weight: 400; color: var(--alv-ink-faint); font-size: 0.9rem; }
 
 /* Counts for things deliberately not listed. Quiet, but never absent - a
    suppressed row that leaves no trace reads as "there was nothing". */
 .pd-note {
     font-size: 0.85rem;
-    color: #7f8c8d;
+    color: var(--alv-ink-faint);
 }
 .pd-note-block {
     margin: 12px 0 0 0;
     padding: 10px 14px;
     background: var(--alv-surface);
-    border-left: 3px solid #dfe4e8;
+    border-left: 3px solid var(--alv-line);
     border-radius: 0 5px 5px 0;
 }
 .pd-note-block strong { color: var(--alv-ink); }
@@ -421,7 +428,7 @@
 .pd-empty {
     text-align: center;
     padding: 50px 20px;
-    color: #7f8c8d;
+    color: var(--alv-ink-faint);
 }
 .pd-empty i { font-size: 2.4rem; color: #bdc3c7; margin-bottom: 12px; }
 .pd-empty p { margin: 4px 0; }

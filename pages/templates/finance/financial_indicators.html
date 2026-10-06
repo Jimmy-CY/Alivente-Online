@@ -214,7 +214,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-2, 6 Oct 2026 - 32 literal(s) on this page became a var(), and
+<style>    /* B-2b, 6 Oct 2026 - 7 literal(s) on this page became a var().
+       The tail of tier B: everything within 25 RGB units of a
+       token that was not one of B-2 four neutrals. Twenty-one
+       spellings of a pale teal, fifty-three greys, and the
+       Bootstrap alert colours. Same bounded gate as B-2: each
+       one moves by exactly the distance the map records, or
+       the round refuses to run.               [B-2b tier B] */
+    /* B-2, 6 Oct 2026 - 32 literal(s) on this page became a var(), and
        unlike B-1 these MOVED: between 9 and 25 RGB units, which
        is below what an eye reads as a different colour and above
        nothing. Demetri looked at all four side by side at phone
@@ -281,7 +288,7 @@
 
 .indicator-card.active {
     border-color: var(--alv-accent);
-    background-color: #e3f2fd;
+    background-color: var(--alv-accent-soft);
     box-shadow: 0 4px 8px rgba(14, 124, 139, 0.2);
 }
 
@@ -390,7 +397,7 @@
 .fi-collapsible.collapsed .fi-collapse-icon { transform: rotate(-90deg); }
 /* Per-section accent colours */
 .fi-section.s1 { border-left-color: var(--alv-accent); } .fi-section.s1 .fi-ibadge { background: rgba(14, 124, 139, 0.12); color: var(--alv-accent); }
-.fi-section.s2 { border-left-color: #0f766e; } .fi-section.s2 .fi-ibadge { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
+.fi-section.s2 { border-left-color: var(--alv-accent-ink); } .fi-section.s2 .fi-ibadge { background: rgba(15, 118, 110, 0.12); color: var(--alv-accent-ink); }
 .fi-section.s3 { border-left-color: var(--alv-accent); } .fi-section.s3 .fi-ibadge { background: color-mix(in srgb, var(--alv-accent) 12%, transparent); color: var(--alv-accent-ink); }
 .fi-section.s4 { border-left-color: #d97706; } .fi-section.s4 .fi-ibadge { background: rgba(217, 119, 6, 0.12); color: #d97706; }
 @media screen and (max-width: 640px) {
@@ -422,8 +429,8 @@
 }
 .fi-weights-caret { font-size: 11px; color: var(--alv-ink-soft); }
 .fi-weights-panel {
-    margin-top: 10px; padding: 14px 16px; border: 1px solid #e5e7eb;
-    border-radius: 10px; background: #fbfbfc;
+    margin-top: 10px; padding: 14px 16px; border: 1px solid var(--alv-line);
+    border-radius: 10px; background: var(--alv-surface);
 }
 .fi-weights-hint { font-size: 12.5px; color: var(--alv-ink-soft); margin: 0 0 12px; }
 .fi-weights-grid {
@@ -603,7 +610,7 @@
     font-style: normal;
     font-weight: 600;
     color: var(--alv-ink-soft);
-    background: #e2e4e6;
+    background: var(--alv-surface-deep);
     border-radius: 10px;
     vertical-align: middle;
 }
@@ -632,7 +639,7 @@
 
 .sortable-header.sorted-asc,
 .sortable-header.sorted-desc {
-    background-color: #e3f2fd !important;
+    background-color: var(--alv-accent-soft) !important;
     color: var(--alv-accent);
     font-weight: 700;
 }
