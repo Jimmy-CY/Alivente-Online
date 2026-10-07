@@ -819,7 +819,23 @@ ROUNDS = [
     # The same round repoints cs1_census.py, which has measured nothing
     # since CS-1 moved base's stylesheet into the head and reported its
     # own blindness as a clean bill of health.
-    '.bak_impguard',
+    '.bak_impguard',    # DW-1, 7 Oct 2026 - 177 declarations on 36 pages that stated
+    # exactly what base already stated: same selector, same property,
+    # same value. Copies of base sitting in page stylesheets, which is
+    # what happens when a page is built by copying another page.
+    #
+    # 50 of the 227 found were NOT touched, because they carry
+    # !important and an !important may be beating a higher-specificity
+    # rule that base plain declaration would lose to.
+    '.bak_deadweight',    # PM-1, 7 Oct 2026 - found by DW-1 refusing to cut something.
+    # passport_management carried HALF of a base rule: the plain
+    # display:none for the two mobile filter labels, and not the
+    # @media that shows them on a phone. Page CSS renders later, so
+    # the half-copy was the last rule standing and base override
+    # never applied - Filters and Clear showed their icons with no
+    # words, on that page only. Both lines deleted; base supplies
+    # both halves.
+    '.bak_pmlabels',
 ]
 
 

@@ -463,18 +463,18 @@ Physical Invoices
   .mobile-action-bar {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 6px; margin-top: 10px; padding: 10px 0 0 0 !important;
-    border-top: 1px solid var(--alv-line-soft); min-height: auto !important;
+padding: 10px 0 0 0 !important;
+min-height: auto !important;
   }
   .mobile-action-bar::before { display: none !important; }
   /* the form is out of the layout in base - .mobile-action-bar > form */
   .mobile-action-btn {
-    display: flex; flex-direction: row; align-items: center; justify-content: center;
-       text-decoration: none;
+flex-direction: row;justify-content: center;
+
        
-     cursor: pointer;
+
   }
-  .mobile-action-btn:hover, .mobile-action-btn:active {  text-decoration: none;  }
+
   .pi-table td.mobile-action-bar::before { display: none; }
   .pi-empty { display: block; }
 }

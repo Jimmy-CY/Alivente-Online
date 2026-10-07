@@ -2114,7 +2114,17 @@ $suites = @(
     # rounds remove - the 15 drift collisions decisions 12 and 15 carry
     # and the 227 dead declarations DW-1 deletes - so the gate fires if
     # either grows and stays quiet as they come down.
-    'test_important_base.py'
+    'test_important_base.py',
+    # DW-1, 7 Oct 2026 - the 177 copies of base deleted. Section 6
+    # resolves the cascade for every one and shows the winning value
+    # is the same before and after, which is the whole claim: this
+    # round is invisible or it is wrong.
+    'test_dead_weight.py',
+    # PM-1, 7 Oct 2026 - the two mobile filter labels on Passports.
+    # Section 3 drives Chromium at 390 and requires both to compute
+    # `inline`, and at 1280 requires both to stay `none`, because the
+    # round is a phone fix and must not touch the desktop.
+    'test_passport_mobile.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

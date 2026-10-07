@@ -5,6 +5,18 @@
 
 {% block title %}Passport/Document Management{% endblock %}
 {% block content %}
+<!-- PM-1, 7 Oct 2026. This page used to carry
+       .filter-title-text-mobile { display: none }
+       .clear-all-text-mobile    { display: none }
+     which is HALF of what base writes. base hides both plainly and SHOWS
+     both inside @media (max-width: 768px). Page CSS renders after base's,
+     so the half-copy was the last rule standing on a phone and base's
+     media rule never applied: the Filters and Clear buttons showed their
+     icons with no words. Both lines are gone; base supplies both halves.
+     properties, suppliers and tenant carry the SAME two classes and are
+     fine, because they copied BOTH halves - they work by accident of
+     completeness. See test_passport_mobile.py. -->
+
 
 <h2 class="page-title-h2">PASSPORT/DOCUMENT MANAGEMENT</h2>
 <h4 class="page-subtitle-h4">UPLOAD / VIEW / DELETE</h4>
@@ -475,8 +487,6 @@
 }
 
 /* Hide mobile-only elements on desktop */
-.filter-title-text-mobile,
-.clear-all-text-mobile { display: none; }
 .mobile-action-bar { display: none !important; }
 
 /* Desktop actions — compact icon buttons, kept on one row */
@@ -507,60 +517,17 @@
     /* Show and style mobile action bar — 3-column grid (View/Upload + Edit + Delete) */
     .mobile-action-bar {
         display: grid !important;
-        gap: 6px;
-        margin-top: 10px;
-        padding: 10px 0 0 0 !important;
-        border-top: 1px solid var(--alv-line-soft);
-        align-items: stretch !important;
+padding: 10px 0 0 0 !important;
+align-items: stretch !important;
         min-height: auto !important;
         justify-content: stretch !important;
     }
     .mobile-action-bar::before {
         display: none !important;
     }
-    .mobile-action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 6px;
-        padding: 8px 4px;
-        text-decoration: none;
-        color: var(--alv-ink-soft);
-        font-size: 11px;
-        background: var(--alv-surface);
-        min-height: 56px;
-        cursor: pointer;
-    }
-    .mobile-action-btn:hover,
-    .mobile-action-btn:active {
-        text-decoration: none;
-        color: var(--alv-ink-soft);
-    }
-    .mobile-action-icon {
-        font-size: 18px;
-        line-height: 1;
-    }
-    .mobile-action-label {
-        font-size: 11px;
-        font-weight: 500;
-        line-height: 1.2;
-        text-align: center;
-    }
     /* Icon colours */
-    .icon-color-view { color: var(--alv-view); }
-    .icon-color-edit { color: var(--alv-edit); }
-    .icon-color-delete { color: var(--alv-danger); }
-    .icon-color-upload { color: var(--alv-edit); }
 
     /* Disabled state */
-    .mobile-action-disabled {
-        cursor: not-allowed;
-        color: var(--alv-ink-faint);
-    }
-    .mobile-action-disabled .mobile-action-icon {
-        color: var(--alv-ink-faint);
-    }
 
     /* Modal full-screen on mobile */
     .modal-fullscreen-mobile {

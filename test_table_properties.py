@@ -261,7 +261,9 @@ def group(prefix):
 # H1 lowered this floor from 17 to 14 on 30 Sep: the three it
 # counted were .filter-grid, .filter-header and .filter-title, and
 # base owns those now. What is left is this page's own.
-for prefix, floor, why in (('.filter', 14, 'filter panel'),
+# .filter 14 -> 13: DW-1, 7 Oct 2026 removed one rule
+# from this page because it was a copy of base.
+for prefix, floor, why in (('.filter', 13, 'filter panel'),
                            # 23 UNTIL ROUND D4, 23 Sep: base took the
                            # filter field - .filter-group,
                            # .filter-label, .filter-label i,

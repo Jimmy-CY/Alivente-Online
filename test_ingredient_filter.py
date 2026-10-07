@@ -81,7 +81,11 @@ FN = 'ingredient_base_units_management'
 # The four pages that carried the header label swaps locally when base
 # gained them. Pinned by NAME, not counted, so a fifth is reported rather
 # than absorbed.
-LOCAL_LABELS = ('passport_management.html', 'properties.html',
+# PM-1, 7 Oct 2026: passport_management leaves this list. It carried
+# HALF of base rule - the plain display:none and not the media query
+# that shows the labels on a phone - so on a phone NEITHER label
+# showed. Both lines deleted; base owns both halves there now.
+LOCAL_LABELS = ('properties.html',
                 'suppliers.html', 'tenant.html')
 
 passed = failed = skipped = 0
