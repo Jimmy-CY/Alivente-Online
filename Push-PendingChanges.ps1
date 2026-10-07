@@ -2100,7 +2100,21 @@ $suites = @(
     # whether 1000 is stored whole and 1001 is a message rather than a
     # crash. Section 5 asserts the two OTHER 255 columns on the same
     # page were not touched.
-    'test_comment_length.py'
+    'test_comment_length.py',
+    # CR-1, 7 Oct 2026 - the five functions that let a colour round
+    # see outside a <style> block, and the census they produce. The
+    # section that matters is 5: it proves js_colour_context refuses
+    # what it cannot classify rather than guessing, because a canvas
+    # cannot resolve var() and 27 Chart.js colours in this tree would
+    # vanish if it did.
+    'test_cssrules_outside.py',
+    # IM-1, 7 Oct 2026 - the gate that keeps decision 8 closed. Zero
+    # page !important may beat base on the same selector and property.
+    # It also holds CEILINGS, not equalities, on two numbers later
+    # rounds remove - the 15 drift collisions decisions 12 and 15 carry
+    # and the 227 dead declarations DW-1 deletes - so the gate fires if
+    # either grows and stays quiet as they come down.
+    'test_important_base.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

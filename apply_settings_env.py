@@ -151,31 +151,6 @@ BOOT_NEW = (
     "%(i)sos.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')\n"
     "%(i)s" + BOOT_ANCHOR)
 
-# EIGHT, NOT SEVEN, SINCE 5 OCT 2026. LU-1 added test_login_url.py,
-# which boots Django to ask what login_required does with an
-# anonymous request. It was written carrying its own setdefault, so
-# nothing was broken - but this count failed, which is exactly what
-# it is for. An exact number is a tripwire; a floor would have let a
-# suite with no key of its own in silently, and that suite would
-# fail on any machine without a .env.
-#
-# Raise it deliberately, with the suite named, every time.
-# 11 since 6 Oct 2026: Section E added test_url_names.py, which
-# boots Django to resolve names and compile templates, and
-# test_access_denied.py, which boots it to render one. Both were
-# written carrying their own setdefault - this number is the
-# tripwire that proves it rather than assuming it.
-# 12 since 6 Oct 2026: Section E round E-2c added
-# test_root_urlconf.py, which boots Django to resolve the same
-# paths through mysite.urls and pages.urls side by side. It
-# carries its own setdefault; this number is what proves that
-# rather than assuming it.
-# 13 since 6 Oct 2026: Section CM round CM-1 added
-# test_comment_length.py, which boots Django and migrates an
-# in-memory database so it can POST 1000 and 1001 characters at
-# both comment doors. It carries its own setdefault; this
-# number is what proves that rather than assuming it.
-BOOT_COUNT = 13
 
 
 def harden_suites(check):
@@ -254,9 +229,12 @@ def main(argv):
     # exactly what happened when the hardening was added to a round that
     # had already been applied once. The claim worth gating is that
     # neither part is left half-done, and that is what this says.
-    if done not in (0, len(TARGETS)) or hardened not in (0, BOOT_COUNT):
+    # SE-1b, 7 Oct 2026: the suite half no longer has a
+    # target number to be half of, because the count is
+    # gone. Only the settings half is all-or-nothing.
+    if done not in (0, len(TARGETS)):
         print('SE-1  REFUSED: partial application (settings %d/%d, '
-              'suites %d/%d)' % (done, len(TARGETS), hardened, BOOT_COUNT))
+              'suites hardened %d)' % (done, len(TARGETS), hardened))
         return 2
     print('SE-1  ok')
     return 0

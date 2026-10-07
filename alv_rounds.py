@@ -798,6 +798,28 @@ ROUNDS = [
     # own 255 - two different columns, and the patcher refuses if they
     # move.
     '.bak_cmlen',
+    # CR-1, 7 Oct 2026 - alv_cssrules learns to read colour
+    # outside a <style> block, because decision 9 put inline style=
+    # attributes and <script> bodies into the colour programme and B-4
+    # cannot be built to that scope until the tooling can see them.
+    #
+    # IT CONVERTS NOTHING. Five functions, a suite, and a census. The
+    # one that earns the round is js_colour_context: 257 colour
+    # literals live inside <script>, and 118 of them must NOT become
+    # var() - 27 are Chart.js options, where a canvas cannot resolve a
+    # custom property and the series would simply vanish, and 91 cannot
+    # be classified at all. A round refuses what it cannot classify.
+    '.bak_outside',    # IM-1, 7 Oct 2026 - decision 8 closed by measurement, and the
+    # measurement made into a gate. 1,001 !important live in page
+    # stylesheets and NOT ONE beats base on the same selector and the
+    # same property; the other 951 are beating Bootstrap, which is what
+    # !important is for here. An answer that cost an afternoon decays
+    # the moment a round writes one, so the push now watches it.
+    #
+    # The same round repoints cs1_census.py, which has measured nothing
+    # since CS-1 moved base's stylesheet into the head and reported its
+    # own blindness as a clean bill of health.
+    '.bak_impguard',
 ]
 
 

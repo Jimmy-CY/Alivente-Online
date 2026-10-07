@@ -1,201 +1,155 @@
-"""CS-1 CENSUS — what changes hands if base.html's trailing stylesheet moves
-   above {% block content %}.
+# -*- coding: utf-8 -*-
+"""cs1_census.py - what does a page declare that base declares too?
 
-   THE BUG THIS IS ABOUT. base.html keeps a component stylesheet at lines
-   3145-5088. {% block content %} is at line 3015. Every page writes its own
-   CSS inside that content block, so in the rendered document base's rules
-   come LAST and win every tie at equal specificity. Thirteen pages write
-   their own .filter-grid columns and all thirteen are dead; Actual Expenses
-   is the one Demetri photographed.
+REPOINTED BY IM-1, 7 Oct 2026, BECAUSE IT NO LONGER MEASURED ANYTHING.
 
-   Moving base's block into the head fixes that. But it hands the win back to
-   the page for EVERY selector the two share, not just .filter-grid - and some
-   of those page rules may have been written, or left behind, in the knowledge
-   that base would beat them. This script finds every one of them so the move
-   is made with the list in hand rather than hopefully.
+As written for CS-1 it asked: if base.html's TRAILING stylesheet moved
+above {% block content %}, which (selector, property) pairs would change
+hands? CS-1 made that move. There is no trailing block any more, so the
+script found `0 rules, 0 distinct selectors` and reported zero of
+everything - which reads like a clean bill of health rather than a broken
+instrument. That is the worst kind of measurement to leave lying around.
 
-   It reports, per page, each (selector, property) pair that
-     - base's trailing block declares, AND
-     - the page declares too, AND
-     - where the two declare DIFFERENT values,
-   because only those actually change hands. Equal values are listed
-   separately as harmless.
+THE QUESTION THAT EXISTS NOW. base is in the HEAD. Every page writes its
+CSS inside {% block content %}, which renders later. So at equal
+specificity THE PAGE ALREADY WINS - with or without !important - and the
+useful question is simply: where does a page declare the same selector
+and property as base, and what happens there?
 
-   Specificity is computed so pairs where the page already wins on
-   specificity are excluded - those do not change.
-                                                        [test_css_order.py]
+    DIFFERENT value   the page overrules base and the look changes
+    SAME value        a copy of base that does nothing: dead weight
+
+STANDALONE TEMPLATES ARE EXCLUDED, and that exclusion is the difference
+between 23 and 15. manual_pdf.html does not extend base, so base's CSS
+never reaches it and a "collision" there is a comparison against a
+stylesheet that is not in the document. CS-2 learned this once already;
+the census now reads alv_tree.standalone() rather than re-learning it.
+
+ONE PARSER. This used to carry its own rules() and specificity(). Both
+are gone: it reads alv_cssrules, which test_cssrules.py proves and which
+test_important_base.py uses for the same measurement. Two parsers are two
+things that can disagree.
+                                             [test_important_base.py]
 """
+import collections
 import os
-import re
 import sys
 
+import alv_cssrules as R
 import alv_tree as T
 
-BASE = 'pages/templates/base.html'
+
+def read(p):
+    with open(p, encoding='utf-8', errors='replace') as fh:
+        return fh.read()
 
 
-# ---------------------------------------------------------------- parsing
+def declarations(path):
+    """[(selector, property, value, important)] from every <style> body.
 
-def style_blocks(text):
-    """(start, end, body) for every <style>...</style> in document order."""
-    out = []
-    for m in re.finditer(r'<style[^>]*>(.*?)</style>', text, re.S | re.I):
-        out.append((m.start(), m.end(), m.group(1)))
-    return out
-
-
-def strip_comments(css):
-    return re.sub(r'/\*.*?\*/', '', css, flags=re.S)
-
-
-def rules(css):
-    """(selector_list, {prop: value}) for every rule, at-rules included.
-
-    An at-rule's body is walked too, and its prelude is carried onto the
-    selector so `@media ... { .x }` never collides with a bare `.x`.
+    code_only() first, so a declaration inside an HTML comment is not
+    read as live CSS - B-1 wrote a note into the middle of a sentence by
+    forgetting that. And a grouped selector is deduped on (name, body
+    span), or `.a, .b { color: red }` is counted twice: rule_spans
+    reports it under BOTH names with the SAME body, which was DR-2b's
+    bug.
     """
-    css = strip_comments(css)
+    t = T.code_only(read(path))
     out = []
-
-    def walk(block, prefix):
-        i = 0
-        n = len(block)
-        while i < n:
-            brace = block.find('{', i)
-            if brace < 0:
-                break
-            head = block[i:brace].strip()
-            depth = 1
-            j = brace + 1
-            while j < n and depth:
-                if block[j] == '{':
-                    depth += 1
-                elif block[j] == '}':
-                    depth -= 1
-                j += 1
-            body = block[brace + 1:j - 1]
-            if head.startswith('@'):
-                if re.match(r'@(media|supports|layer|container)\b', head):
-                    walk(body, prefix + [head])
-                # @keyframes, @font-face and friends declare nothing a page
-                # rule can collide with by selector, so they are skipped.
-            else:
-                decls = {}
-                for d in body.split(';'):
-                    if '{' in d or '}' in d:
-                        continue
-                    if ':' not in d:
-                        continue
-                    p, _, v = d.partition(':')
-                    p = p.strip().lower()
-                    v = v.strip()
-                    if p and v:
-                        decls[p] = v
-                if decls:
-                    for sel in head.split(','):
-                        sel = ' '.join(sel.split())
-                        if sel:
-                            out.append((' && '.join(prefix + [sel]), decls))
-            i = j
-
-    walk(css, [])
-    return out
-
-
-def specificity(sel):
-    """(ids, classes, types) for the rightmost compound - good enough here,
-    because we only ever compare the SAME selector string against itself."""
-    s = sel.split(' && ')[-1]
-    s = re.sub(r'::[a-zA-Z-]+', ' ', s)
-    ids = len(re.findall(r'#[\w-]+', s))
-    cls = len(re.findall(r'\.[\w-]+', s)) + len(re.findall(r'\[[^\]]+\]', s))
-    cls += len(re.findall(r':(?!:)[a-zA-Z-]+', s))
-    typ = len(re.findall(r'(?:^|[\s>+~])([a-zA-Z][\w-]*)', s))
-    return (ids, cls, typ)
-
-
-# ---------------------------------------------------------------- the census
-
-def base_trailing_rules():
-    text = open(BASE, encoding='utf-8').read()
-    content_at = text.find('{% block content %}')
-    if content_at < 0:
-        raise SystemExit('base.html has no {% block content %}')
-    out = []
-    head_sels = set()
-    for start, end, body in style_blocks(text):
-        for sel, decls in rules(body):
-            if start > content_at:
-                out.append((sel, decls))
-            else:
-                head_sels.add(sel)
-    return out, head_sels, content_at
-
-
-def page_rules(path):
-    text = open(path, encoding='utf-8').read()
-    out = []
-    for _s, _e, body in style_blocks(text):
-        out.extend(rules(body))
-    return out
-
-
-def main():
-    trailing, head_sels, content_at = base_trailing_rules()
-
-    # Later rule wins inside base's own block, so collapse to the last.
-    base_map = {}
-    for sel, decls in trailing:
-        base_map.setdefault(sel, {}).update(decls)
-
-    print('base.html trailing block: %d rules, %d distinct selectors'
-          % (len(trailing), len(base_map)))
-
-    pages = [p for p in T.templates()
-             if os.path.basename(p) != 'base.html' and os.path.exists(p)]
-
-    changes = []     # page wins where values differ
-    harmless = []    # page wins but the value is the same
-    for full in sorted(pages):
-        pmap = {}
-        for sel, decls in page_rules(full):
-            pmap.setdefault(sel, {}).update(decls)
-        for sel, pdecls in pmap.items():
-            bdecls = base_map.get(sel)
-            if not bdecls:
+    for a, b in R.style_spans(t):
+        seen = set()
+        for sel, ba, bb, _ra, _rb in R.rule_spans(t, a, b):
+            if (sel, ba, bb) in seen:
                 continue
-            if specificity(sel) != specificity(sel):
-                continue
-            for prop, pval in pdecls.items():
-                if prop not in bdecls:
+            seen.add((sel, ba, bb))
+            for chunk in t[ba:bb].split(';'):
+                if ':' not in chunk:
                     continue
-                bval = bdecls[prop]
-                row = (T.rel(full) if hasattr(T, 'rel') else full,
-                       sel, prop, bval, pval)
-                if ' '.join(bval.split()) == ' '.join(pval.split()):
-                    harmless.append(row)
-                else:
-                    changes.append(row)
+                prop, _, val = chunk.partition(':')
+                prop = R.norm(prop).lower()
+                if not prop or not prop.replace('-', '').isalnum():
+                    continue
+                imp = '!important' in R.norm(val).replace(' ', '')
+                val = R.norm(val.replace('!important', '')
+                             .replace('! important', ''))
+                out.append((sel, prop, val, imp))
+    return out
 
-    print()
-    print('=' * 78)
-    print('CHANGES HANDS: %d (selector, property) pairs on %d pages'
-          % (len(changes), len({c[0] for c in changes})))
-    print('=' * 78)
-    cur = None
-    for page, sel, prop, bval, pval in sorted(changes):
-        if page != cur:
-            cur = page
-            print('\n--- %s' % page)
-        print('    %s' % sel)
-        print('        %-28s base %s' % (prop, bval))
-        print('        %-28s page %s' % ('', pval))
 
-    print()
-    print('Same value either way (no visible change): %d pairs on %d pages'
-          % (len(harmless), len({h[0] for h in harmless})))
+def count_important(path):
+    """How many !important declarations a file's stylesheets really hold.
+
+    COUNTED BY BODY SPAN, NOT BY SELECTOR. rule_spans reports a grouped
+    selector under BOTH of its names with the SAME body span, so a
+    declaration written once in `.a, .b { color: red !important }` is
+    handed back twice. That is correct for asking "does base declare
+    this for .a", which is what the collision work below needs, and
+    wrong for asking "how many are there", which is this. Counting by
+    selector made base read 122 where the text holds 73.
+    """
+    t = T.code_only(read(path))
+    n = 0
+    for a, b in R.style_spans(t):
+        for span in {(ba, bb) for _s, ba, bb, _ra, _rb
+                     in R.rule_spans(t, a, b)}:
+            n += t[span[0]:span[1]].replace(' ', '').count('!important')
+    return n
+
+
+def measure(base=None):
+    """(beats, drift, dead, imp_total, imp_base) over the whole tree."""
+    BASE = T.path_of('base.html', base)
+    stand = set(T.standalone(base))
+    bmap = {}
+    imp_base = count_important(BASE)
+    for sel, prop, val, imp in declarations(BASE):
+        bmap.setdefault(sel, {})[prop] = val
+
+    beats, drift, dead = [], [], []
+    imp_total = 0
+    for p in T.templates(base):
+        if p == BASE or T.rel(p, base) in stand:
+            continue
+        rel = T.rel(p, base)
+        imp_total += count_important(p)
+        for sel, prop, val, imp in declarations(p):
+            bval = bmap.get(sel, {}).get(prop)
+            if bval is None:
+                continue
+            row = (rel, sel, prop, bval, val)
+            if R.norm(bval).lower() == R.norm(val).lower():
+                dead.append(row)
+            else:
+                drift.append(row)
+                if imp:
+                    beats.append(row)
+    return beats, drift, dead, imp_total, imp_base
+
+
+def main(argv):
+    beats, drift, dead, imp_total, imp_base = measure()
+    print('!important in page stylesheets : %d' % imp_total)
+    print('!important in base             : %d' % imp_base)
+    print('')
+    print('BEATS BASE (same selector and property, different value,')
+    print('            and carrying !important)   : %d' % len(beats))
+    for rel, sel, prop, bval, val in beats:
+        print('    %-32s %s' % (rel, sel))
+        print('        %-22s base %s' % (prop, bval))
+        print('        %-22s page %s' % ('', val))
+    print('')
+    print('DRIFT (the page overrules base, !important or not) : %d on %d'
+          % (len(drift), len({d[0] for d in drift})))
+    for sel, n in collections.Counter(
+            d[1].split(' && ')[-1] for d in drift).most_common():
+        print('    %-34s %d' % (sel, n))
+    print('')
+    print('DEAD WEIGHT (the page states exactly what base states) : %d on %d'
+          % (len(dead), len({d[0] for d in dead})))
+    for rel, n in collections.Counter(d[0] for d in dead).most_common(12):
+        print('    %-40s %d' % (rel, n))
     return 0
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))

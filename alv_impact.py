@@ -106,7 +106,56 @@ def select(changed):
     return sorted(named | set(COUNTERS)), sorted(named), wide
 
 
+def pins(text):
+    """Suites that quote `text` as a whole string - the ONLY ones a copy
+    change can break.
+
+    Demetri, 7 Oct 2026: "I am questioning if changing the label of a
+    field needs a sweep?" Measured across all 811 <label> texts in the
+    tree against every quoted string in all 298 suites: 626 of them -
+    77 per cent - are asserted by NO suite at all. Change one of those
+    and nothing can go red, so the right number of suites to run is
+    nought.
+
+    Where a label IS pinned it is usually one suite and it is exact:
+    "Lease Start Date" only test_label_fit, "Upload Document" only
+    test_manage_modal. Seconds, not an hour.
+
+    A one-word label over-reports, because a generic word like Code or
+    File appears as a quoted string in suites that have nothing to do
+    with it - test_sentinels quotes File because the sentinel table is
+    written @{ File = ... }. Over-reporting is safe; it costs a few
+    seconds of running suites that were never at risk.
+    """
+    out = []
+    for s in suites():
+        with open(os.path.join(ROOT, s), encoding='utf-8',
+                  errors='replace') as fh:
+            src = fh.read()
+        for m in re.finditer(r"'([^'\n]{2,160})'|\"([^\"\n]{2,160})\"",
+                             src):
+            q = (m.group(1) or m.group(2)).strip()
+            if q == text or q == text + ':' or q.endswith('>' + text):
+                out.append(s)
+                break
+    return sorted(out)
+
+
 def main(argv):
+    if argv and argv[0].startswith('--text='):
+        text = argv[0].split('=', 1)[1]
+        hit = pins(text)
+        print('label or copy   : %r' % text)
+        print('suites that pin it: %d of %d' % (len(hit), len(suites())))
+        if not hit:
+            print('')
+            print('  NOTHING asserts this text. A change to it cannot turn')
+            print('  any suite red. Push it.')
+        else:
+            print('')
+            for s in hit:
+                print(s)
+        return 0
     if not argv:
         print(__doc__.strip())
         return 2

@@ -251,14 +251,20 @@ def section_4():
 def section_4b():
     print('\n4b. the trap this round would otherwise have set')
     import glob
-    from apply_settings_env import BOOT_ANCHOR, BOOT_COUNT
+    from apply_settings_env import BOOT_ANCHOR
 
     boots = [p for p in sorted(glob.glob(os.path.join(ROOT, 'test_*.py')))
              if BOOT_ANCHOR in read(p)]
-    ok(len(boots) == BOOT_COUNT,
-       '%d suites boot Django' % BOOT_COUNT,
-       'found %d: %s' % (len(boots),
-                         [os.path.basename(p) for p in boots]))
+    # NO EXACT COUNT ANY MORE.                    [SE-1b, 7 Oct 2026]
+    # This asserted len(boots) == BOOT_COUNT, and the reason given was
+    # that a floor would let a suite with no key of its own in silently.
+    # It would not: the two checks immediately below ask that question
+    # DIRECTLY, by glob, of however many suites exist. The count caught
+    # nothing they miss and fired every time a round added a suite -
+    # three times in two days, 9 to 11 to 12 to 13 - which is a line of
+    # maintenance per round for no information. A tripwire on a door
+    # that is already locked.
+    ok(len(boots) > 0, '%d suite(s) boot Django' % len(boots), len(boots))
 
     missing = [os.path.basename(p) for p in boots
                if "os.environ.setdefault('SECRET_KEY'" not in read(p)]
@@ -279,6 +285,14 @@ def section_4b():
     ok(not late,
        'and supplies it before the settings module is named', late)
 
+    # AND THE COUNT IS GONE, AND HAS NOT COME BACK UNDER ANOTHER
+    # NAME.                                       [SE-1b, 7 Oct 2026]
+    ap = read(os.path.join(ROOT, 'apply_settings_env.py'))
+    ok('BOOT_COUNT' not in ap,
+       'apply_settings_env.py no longer keeps an exact count of them')
+    ok('BOOT_ANCHOR' in ap,
+       '  but it still names what makes a suite one - the anchor the '
+       'glob above looks for')
     ok('setdefault' in read(os.path.join(ROOT, 'apply_settings_env.py')),
        'the test key is a setdefault, so a real key always wins',
        'a plain assignment would override the environment in a real run')
