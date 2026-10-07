@@ -190,7 +190,17 @@ def attr(tag, name):
 
 if not os.path.isfile(FD):
     sys.exit('! %s not found' % FD)
-NOW = read(FD)
+# AS THIS ROUND LEFT IT, NOT AS THE PAGE STANDS. [CM-1, 6 Oct 2026]
+# Section 1 counts attributes on fsr_details.html and compares
+# them with the backup, to show this round changed only its own
+# six blocks. Read live, any LATER round that touches the page
+# breaks it - CM-1 moved one maxlength and the count went 3 to 2.
+# A gate reads the page as ITS OWN round left it.
+try:
+    from alv_rounds import as_left_by as _as_left_by
+except Exception:
+    _as_left_by = None
+NOW = _as_left_by(FD, SUFFIX, read) if _as_left_by else read(FD)
 HAVE_BAK = os.path.isfile(FD + SUFFIX)
 WAS = read(FD + SUFFIX) if HAVE_BAK else None
 

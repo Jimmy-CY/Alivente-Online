@@ -2092,6 +2092,15 @@ $suites = @(
     # round left out, because a scope that is only in a comment is a
     # scope nobody checks.
     'test_colour_good_bad.py'
+    # CM-1. One column had five limits and one of them was nothing:
+    # the add path wrote request.POST straight to the row, with only
+    # a browser maxlength between it and a DataError. Section 4 is the
+    # one that matters and it is a behaviour, not a string - both
+    # views driven with real POSTs against a real database, asked
+    # whether 1000 is stored whole and 1001 is a message rather than a
+    # crash. Section 5 asserts the two OTHER 255 columns on the same
+    # page were not touched.
+    'test_comment_length.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

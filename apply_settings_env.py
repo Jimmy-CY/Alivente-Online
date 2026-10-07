@@ -170,7 +170,12 @@ BOOT_NEW = (
 # paths through mysite.urls and pages.urls side by side. It
 # carries its own setdefault; this number is what proves that
 # rather than assuming it.
-BOOT_COUNT = 12
+# 13 since 6 Oct 2026: Section CM round CM-1 added
+# test_comment_length.py, which boots Django and migrates an
+# in-memory database so it can POST 1000 and 1001 characters at
+# both comment doors. It carries its own setdefault; this
+# number is what proves that rather than assuming it.
+BOOT_COUNT = 13
 
 
 def harden_suites(check):

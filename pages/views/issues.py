@@ -60,6 +60,18 @@ from ..utils import render_to_pdf
 
 logger = logging.getLogger(__name__)
 
+# THE LIMIT, READ FROM THE COLUMN RATHER THAN RETYPED.
+# [CM-1, 6 Oct 2026]
+# Before this round the number 255 was written out by hand in five
+# places and three of them disagreed: the textarea said 250, the edit
+# textarea said 255, the edit view said 255, the column said 255, and
+# the add view said nothing. Reading it off the model field means the
+# checks can never again say something the database does not.
+COMMENT_MAX_LENGTH = issues_details._meta.get_field(
+    'issues_details_comment').max_length
+
+
+
 
 @login_required
 @permission_required('auth.can_access_issues', raise_exception=True)
@@ -309,6 +321,19 @@ def fsr_comment_add(request, issues_id):
             messages.error(request, "Comment cannot be empty")
             return redirect(redirect_url)
 
+        # AND THAT IT FITS. [CM-1, 6 Oct 2026]
+        # This path had no length check at all. maxlength on the textarea
+        # is a browser hint, not a guarantee - a POST from a script, a
+        # stale page or anything that is not the form reached
+        # objects.create() unchecked, and under MySQL strict mode a value
+        # over the column width is a DataError, which is a 500 and not a
+        # message. fsr_comment_edit has always done this properly; this
+        # is the same check, with the same wording, on the other door.
+        if len(comment_text) > COMMENT_MAX_LENGTH:
+            messages.error(request, "Comment must be %d characters or "
+                           "fewer." % COMMENT_MAX_LENGTH)
+            return redirect(redirect_url)
+
         # Get user info if authenticated
         user_initials = ''
         if request.user.is_authenticated:
@@ -458,8 +483,9 @@ def fsr_comment_edit_commit(request):
     if not new_text:
         messages.error(request, "Comment cannot be empty.")
         return redirect(detail_url)
-    if len(new_text) > 255:
-        messages.error(request, "Comment must be 255 characters or fewer.")
+    if len(new_text) > COMMENT_MAX_LENGTH:
+        messages.error(request, "Comment must be %d characters or fewer."
+                       % COMMENT_MAX_LENGTH)
         return redirect(detail_url)
 
     old_text = comment.issues_details_comment or ''

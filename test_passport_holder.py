@@ -209,8 +209,18 @@ try:
        "Django's autodetector finds nothing left to migrate", pending)
 
     names = sorted(n for a, n in loader.disk_migrations if a == 'pages')
-    ok(names[-1] == '0097_passport_holder',
-       '  and 0097_passport_holder is the latest', names[-3:])
+    # ITS OWN MIGRATION, NOT THE LAST ONE. [CM-1, 6 Oct 2026]
+    # This read names[-1] == '0097_passport_holder' - true the day PH-1
+    # shipped and false the moment any later round added a migration,
+    # which CM-1 did. A round can only speak for its own work: that the
+    # migration is on disk, and that the chain up to it is unbroken.
+    ok('0097_passport_holder' in names,
+       '  and 0097_passport_holder is on disk', names[-3:])
+    nums = sorted(int(n.split('_')[0]) for n in names)
+    mine = nums.index(97)
+    ok(nums[:mine + 1] == list(range(nums[0], 97 + 1)),
+       '  with no gap in the chain before it',
+       nums[max(0, mine - 3):mine + 1])
 
     from pages.models import Passport
     f = Passport._meta.get_field('holder')

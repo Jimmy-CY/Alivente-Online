@@ -1100,7 +1100,7 @@ class issues(models.Model):
 class issues_details(models.Model):
     issues_details_id = models.AutoField(primary_key=True)
     issues = models.ForeignKey(issues, on_delete=models.CASCADE)
-    issues_details_comment = models.CharField(max_length=255, blank=True)
+    issues_details_comment = models.CharField(max_length=1000, blank=True)
     issues_details_user = models.CharField(max_length=255, blank=True)
     issues_details_date = models.DateField(blank=True, null=True)
     issues_details_last_notified_at = models.DateTimeField(null=True, blank=True)    

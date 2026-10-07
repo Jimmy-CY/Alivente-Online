@@ -776,6 +776,28 @@ ROUNDS = [
     # NOT IN IT, although a hue test sweeps them up: the recipe
     # browns, a pink, a burnt orange and Bootstrap's teal.
     '.bak_goodbad',
+
+    # CM-1, 6 Oct 2026 - ONE COLUMN, FIVE LIMITS, ONE OF THEM NOTHING.
+    #
+    # Demetri asked for the Enter New Comment field to hold about
+    # three times what it held. Measured first, because length could
+    # have meant three things: the box renders 746x98 at 1280 and the
+    # card caps at 1200, so the widest it can get where it sits is
+    # 830 - a gain of 11 percent, not 300. Characters were the thing.
+    #
+    # WHAT THE MEASUREMENT FOUND. The column was CharField(255), the
+    # new box said maxlength 250, the edit box said 255, the edit view
+    # enforced 255 - and the ADD view enforced NOTHING. maxlength is a
+    # browser hint, so a POST from a script or a stale page reached
+    # objects.create() unchecked, and under MySQL strict mode that is
+    # a DataError: a 500 rather than a message.
+    #
+    # All five now say 1000, and both views read the number off the
+    # model field rather than retyping it, so it cannot drift from the
+    # column again. issues_heading and issues_description keep their
+    # own 255 - two different columns, and the patcher refuses if they
+    # move.
+    '.bak_cmlen',
 ]
 
 

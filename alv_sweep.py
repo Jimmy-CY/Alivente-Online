@@ -47,12 +47,27 @@ def already(path):
 
 def main(argv):
     only = [a for a in argv if not a.startswith('-')]
+    # --impact <changed file> ... : run only the suites a round can
+    # actually break. See alv_impact.py for what that means and for the
+    # evidence that it caught 8 of 8 across the four rounds of 6 Oct.
+    impact = [a.split('=', 1)[1] for a in argv if a.startswith('--impact=')]
     resume = None
     for a in argv:
         if a.startswith('--resume='):
             resume = a.split('=', 1)[1]
     names = suites()
-    if only:
+    if impact:
+        import alv_impact
+        picked, named, wide = alv_impact.select(impact)
+        print('impact selection: %d of %d suite(s) - %d name a changed '
+              'file, %d count the whole repo'
+              % (len(picked), len(names), len(named), len(alv_impact.COUNTERS)))
+        if wide:
+            print('REFUSING: this round touches %s, which most of the tree '
+                  'reads. Run the full sweep.' % ', '.join(wide))
+            return 2
+        names = [n for n in names if n in set(picked)]
+    elif only:
         names = [n for n in names if any(o in n for o in only)]
     bad = []
     done = already(resume) if resume else {}
