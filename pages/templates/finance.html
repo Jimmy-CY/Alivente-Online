@@ -35,80 +35,114 @@ Finance
 
 {% if perms.auth.can_access_financials %}
 
-<div class="finance-grid">
+<!-- Tab Navigation -->
+<div class="admin-tabs">
+  <div class="admin-tab active" id="tab-reports"
+       onclick="switchTab('reports')">
+    <i class="fas fa-chart-bar"></i>
+    <span>REPORTS</span>
+  </div>
+  <!-- SETUP, not CONFIGURATION. His call, 8 Oct 2026. Base gives every
+       landing tab a fixed 200px box, which holds 144px of content at
+       desktop; CONFIGURATION with its icon needs 189.8px and stops
+       2.1px short of a 3px border. It does NOT overlap REPORTS - the
+       box is fixed - and on a phone it fits. A page that wants a longer
+       label widens its own tab and says why; base's own note permits
+       exactly that. test_finance_tabs.py section 5 measures all three
+       labels and runs CONFIGURATION as the control. -->
+  <div class="admin-tab" id="tab-setup"
+       onclick="switchTab('setup')">
+    <i class="fas fa-cog"></i>
+    <span>SETUP</span>
+  </div>
+</div>
 
-  <!-- Reports Card -->
-  <div class="finance-card">
-    <div class="finance-card__header finance-card__header--reports">
-      <h4><i class="fas fa-chart-bar"></i> Reports</h4>
-    </div>
-    <div class="finance-card__body">
-      <div class="finance-buttons-grid">
-        <a href="{% url 'finance_pl_act' %}" class="finance-btn">
+<!-- Tab Content -->
+<div class="tab-content-container">
+
+  <!-- Reports Panel -->
+  <div id="reports-panel" class="tab-panel active">
+    <div class="admin-grid">
+        <a href="{% url 'finance_pl_act' %}" class="admin-btn">
           <i class="fas fa-chart-line"></i>
-          <span>Profit &amp; Loss Statement</span>
+          <h6>Profit &amp; Loss Statement</h6>
         </a>
-        <a href="{% url 'cashflow_forecast' %}" class="finance-btn">
+        <a href="{% url 'cashflow_forecast' %}" class="admin-btn">
           <i class="fas fa-chart-bar"></i>
-          <span>Forecasted Cashflows</span>
+          <h6>Forecasted Cashflows</h6>
         </a>
-        <a href="{% url 'financial_indicators' %}" class="finance-btn">
+        <a href="{% url 'financial_indicators' %}" class="admin-btn">
           <i class="fas fa-chart-bar"></i>
-          <span>Financial Indicators</span>
+          <h6>Financial Indicators</h6>
         </a>
-        <a href="{% url 'finance_valuations' %}" class="finance-btn">
+        <a href="{% url 'finance_valuations' %}" class="admin-btn">
           <i class="fas fa-home"></i>
-          <span>Property Valuations</span>
+          <h6>Property Valuations</h6>
         </a>
-        <a href="{% url 'vacancy_management' %}" class="finance-btn">
+        <a href="{% url 'vacancy_management' %}" class="admin-btn">
           <i class="fas fa-door-open"></i>
-          <span>Vacancy Management</span>
+          <h6>Vacancy Management</h6>
         </a>
-        <a href="{% url 'occupancy_trends' %}" class="finance-btn">
+        <a href="{% url 'occupancy_trends' %}" class="admin-btn">
           <i class="fas fa-chart-area"></i>
-          <span>Performance Trends</span>
+          <h6>Performance Trends</h6>
         </a>
-      </div>
     </div>
   </div>
 
-  <!-- Configuration Card -->
-  <div class="finance-card">
-    <div class="finance-card__header finance-card__header--config">
-      <h4><i class="fas fa-cog"></i> Configuration</h4>
-    </div>
-    <div class="finance-card__body">
-      <div class="finance-buttons-grid">
-        <a href="{% url 'finance_revenue_types' %}" class="finance-btn">
+  <!-- Setup Panel - the module calls this Configuration and the tab
+       says SETUP, for the width reason above. -->
+  <div id="setup-panel" class="tab-panel">
+    <div class="admin-grid">
+        <a href="{% url 'finance_revenue_types' %}" class="admin-btn">
           <i class="fas fa-money-bill-wave"></i>
-          <span>Revenue Types</span>
+          <h6>Revenue Types</h6>
         </a>
-        <a href="{% url 'finance_revenue_line_types' %}" class="finance-btn">
+        <a href="{% url 'finance_revenue_line_types' %}" class="admin-btn">
           <i class="fas fa-list-alt"></i>
-          <span>Revenue Line Types</span>
+          <h6>Revenue Line Types</h6>
         </a>
-        <a href="{% url 'finance_revenue' %}" class="finance-btn">
+        <a href="{% url 'finance_revenue' %}" class="admin-btn">
           <i class="fas fa-cash-register"></i>
-          <span>Revenues</span>
+          <h6>Revenues</h6>
         </a>
-        <a href="{% url 'finance_expense_types' %}" class="finance-btn">
+        <a href="{% url 'finance_expense_types' %}" class="admin-btn">
           <i class="fas fa-receipt"></i>
-          <span>Expense Types</span>
+          <h6>Expense Types</h6>
         </a>
-        <a href="{% url 'finance_expense_line_types' %}" class="finance-btn">
+        <a href="{% url 'finance_expense_line_types' %}" class="admin-btn">
           <i class="fas fa-tasks"></i>
-          <span>Expense Line Types</span>
+          <h6>Expense Line Types</h6>
         </a>
-        <a href="{% url 'finance_expense' %}" class="finance-btn">
+        <a href="{% url 'finance_expense' %}" class="admin-btn">
           <i class="fas fa-file-invoice-dollar"></i>
-          <span>Expenses</span>
+          <h6>Expenses</h6>
         </a>
-      </div>
     </div>
   </div>
 
 </div>
 
+<script>
+// FN-2, 8 Oct 2026. The same shape as admin_apms.html and
+// personal.html, with this page's two names. A second spelling of the
+// same behaviour is a second thing to keep in step.
+function switchTab(tab) {
+    document.getElementById('tab-reports').classList.remove('active');
+    document.getElementById('tab-setup').classList.remove('active');
+
+    document.getElementById('reports-panel').classList.remove('active');
+    document.getElementById('setup-panel').classList.remove('active');
+
+    if (tab === 'reports') {
+        document.getElementById('tab-reports').classList.add('active');
+        document.getElementById('reports-panel').classList.add('active');
+    } else {
+        document.getElementById('tab-setup').classList.add('active');
+        document.getElementById('setup-panel').classList.add('active');
+    }
+}
+</script>
 {% endif %}
 
 <style>    /* B-2, 6 Oct 2026 - 1 literal(s) on this page became a var(), and
@@ -129,6 +163,26 @@ Finance
        are separate rounds.                   [B-1 tier A] */
 
 
+    /* FN-2, 8 Oct 2026 - THE CARDS ARE GONE AND SO IS THEIR CSS.
+       Reports and Configuration are two tabs now, wearing base's
+       ALV LANDING TABS v1 - the same treatment Administration and
+       Personal wear, which TB-1 put there on the same day precisely so
+       this page would not become a third copy of it.
+
+       170 lines went: .finance-grid, .finance-card, its two headers,
+       .finance-card__body, .finance-buttons-grid, .finance-btn and its
+       hover, active and two mobile blocks. Twelve destinations, twelve
+       icons and twelve labels are unchanged - only the container moved.
+
+       AND ONE BOOTSTRAP BRIGHT WENT WITH THEM.
+       .finance-card__header--reports was `background: #007bff`, one of
+       the ten brights test_pair_contrast pins for B-7, so B-7's list is
+       one shorter. .finance-card__header--config was
+       var(--alv-ink-soft), the last grey header in this module.
+
+       What is left here is the action bar's hover, which belongs to
+       this page and not to the tabs. */
+
 @media (hover: hover) and (pointer: fine) {
     .action-primary:hover {
         background: var(--alv-accent-ink);
@@ -148,97 +202,6 @@ Finance
     }
 }
 
-/* ============================================================
-   FINANCE GRID & CARDS
-   ============================================================ */
-.finance-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.finance-card {
-    background: var(--alv-paper);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border: none;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.finance-card__header {
-    padding: 14px 18px;
-    color: var(--alv-on-accent);
-}
-.finance-card__header h4 {
-    margin: 0;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.15rem;
-}
-.finance-card__header--reports { background: #007bff; }
-.finance-card__header--config  { background: var(--alv-ink-soft); }
-
-.finance-card__body {
-    padding: 16px;
-    flex: 1;
-}
-
-.finance-buttons-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.finance-btn {
-    background: var(--alv-accent);
-    color: var(--alv-on-accent);
-    border: none;
-    border-radius: 8px;
-    padding: 18px 12px;
-    text-decoration: none;
-    font-weight: 600;
-    text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 0 var(--alv-accent-ink), 0 5px 10px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 100px;
-}
-.finance-btn i {
-    font-size: 1.6rem;
-}
-.finance-btn span {
-    font-size: 0.92rem;
-    line-height: 1.2;
-    word-break: break-word;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .finance-btn:hover {
-        background: var(--alv-accent-ink);
-        color: var(--alv-on-accent);
-        text-decoration: none;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 0 var(--alv-accent-ink), 0 8px 15px rgba(0,0,0,0.2);
-    }
-    .finance-btn:active {
-        transform: translateY(2px);
-        box-shadow: 0 2px 0 var(--alv-accent-ink), 0 3px 5px rgba(0,0,0,0.2);
-    }
-}
-
-/* ============================================================
-   MOBILE (≤768px)
-   ============================================================ */
 @media screen and (max-width: 768px) {
     .action-primary {
         flex: 1 1 auto;
@@ -252,43 +215,6 @@ Finance
         padding: 12px 14px;
         justify-content: center;
     }
-
-    /* Stack cards vertically */
-    .finance-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .finance-card__header h4 { font-size: 1.05rem; }
-    .finance-card__body { padding: 12px; }
-
-    /* Buttons remain 2-per-row on mobile (compact) */
-    .finance-buttons-grid {
-        gap: 10px;
-    }
-    .finance-btn {
-        padding: 14px 8px;
-        min-height: 90px;
-    }
-    .finance-btn i { font-size: 1.4rem; }
-    .finance-btn span { font-size: 0.82rem; }
-}
-
-/* Very narrow phones — single column for buttons too */
-@media screen and (max-width: 380px) {
-    .finance-buttons-grid {
-        grid-template-columns: 1fr;
-    }
-    .finance-btn {
-        flex-direction: row;
-        gap: 12px;
-        padding: 14px 16px;
-        min-height: 60px;
-        justify-content: flex-start;
-        text-align: left;
-    }
-    .finance-btn i { font-size: 1.3rem; }
-    .finance-btn span { font-size: 0.95rem; }
 }
 </style>
 

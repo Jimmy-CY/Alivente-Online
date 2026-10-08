@@ -975,7 +975,23 @@ ROUNDS = [
     # admin_apms, X5's house panel and tile, and the pair census -
     # where FOUR copies of the same --alv-accent on --alv-accent-soft
     # at 4.31 became ONE, 716 pairs down to 712.
-    '.bak_housetabs',
+    '.bak_housetabs',    # FN-2, 8 Oct 2026 - Finance adopts the house tabs. Reports and
+    # Configuration were two side-by-side cards; they are two tabs
+    # now, Configuration behind Reports, six tiles each, at his ask:
+    # "the only difference will be that the Finance modules Tabs will
+    # have 6 buttons instead of the 4 buttons of Administration."
+    #
+    # THIS IS THE ROUND TB-1 EXISTED FOR. Finance adds no tab CSS at
+    # all - it writes the markup base's block documents and deletes
+    # 170 lines of card styling. Twelve destinations, twelve icons and
+    # twelve labels unchanged; only the container moved.
+    #
+    # AND A BOOTSTRAP BRIGHT RETIRES EARLY. The Reports card header
+    # was background: #007bff, one of the ten test_pair_contrast pins
+    # for B-7, so B-7's list is one shorter and this round owns that
+    # number. The Configuration header was var(--alv-ink-soft), the
+    # last grey header in the module.
+    '.bak_fintabs',
 ]
 
 

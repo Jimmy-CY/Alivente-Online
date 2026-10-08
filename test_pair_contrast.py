@@ -105,7 +105,7 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 712
+EXPECT_PAIRS = 710
 EXPECT_INACTIVE = 21
 
 passed = failed = skipped = 0
@@ -353,7 +353,7 @@ ok(B.contrast('#0a5e6a', '#e4f3f5') >= 4.5,
    'that decision would look like if he takes it'
    % B.contrast('#0a5e6a', '#e4f3f5'))
 bright = [r for r in LIVE if r[3] == 'bright']
-ok(len(bright) >= 7,
+ok(len(bright) >= 10,
    '%d more are Bootstrap brights and the recipe oranges - decision 4, '
    'round B-7, and RC-2' % len(bright))
 

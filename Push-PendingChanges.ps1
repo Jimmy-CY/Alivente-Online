@@ -2164,7 +2164,14 @@ $suites = @(
     # 3 is the derived edge; section 4 names each of the ten drifted
     # rules and which copy won it and why; section 6 is what moved
     # out of the pages and what stayed.
-    'test_house_tabs.py'
+    'test_house_tabs.py',
+    # FN-2, 8 Oct 2026 - Finance in two tabs. Section 2 renders it
+    # beside Administration and asserts the same computed colours,
+    # which is what "mimic Functional and System" means; section 3
+    # proves all twelve destinations moved and none was invented or
+    # lost; section 4 is that the page declares no tab CSS of its
+    # own, which is the whole return on TB-1.
+    'test_finance_tabs.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
