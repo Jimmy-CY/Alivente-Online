@@ -1005,7 +1005,29 @@ ROUNDS = [
     # AND THE SUITES ALL PASSED. Every tab suite adds .active in its own
     # probe and measures the CSS; not one ever called switchTab. A class
     # nobody applies is a class nobody tested. test_tab_switch.py clicks.
-    '.bak_tabswitch',
+    '.bak_tabswitch',    # B-5b, 8 Oct 2026 - the grey tail, read rather than counted.
+    # B-5a logged 81 uses at 56 and 33 RGB units. That is a true
+    # sentence about distance and a useless one about the work: the 81
+    # are muted text, an empty-state watermark, disabled states, input
+    # borders and some chevrons, and they want different answers.
+    #
+    # THIS ROUND TAKES TWO. 18 muted-text uses go to --alv-ink-soft,
+    # 2.07:1 to 5.53:1 - which is not a new decision but the finishing
+    # of B-2, whose own table called #6c757d "muted and small text" and
+    # moved it to the same token. At 11-12px AA is 4.5, so ink-faint at
+    # 3.00 would not have done.
+    #
+    # And the .empty-state i watermark is drawn in TWO greys across
+    # twelve pages; the four strays join the ten. That one stays a
+    # LITERAL on purpose - the house has no token for a watermark, the
+    # nearest is --alv-line which is a line token used as ink, and
+    # inventing one is a base change. The gap is logged.
+    #
+    # LEFT, WITH REASONS: 6 disabled (AD-1 settled that), 19 #ced4da
+    # borders (every neutral line token is LIGHTER, so every move makes
+    # an input border fainter - --alv-line-strong is logged instead),
+    # 4 chevrons, 4 hover border-colours, 8 standalone.
+    '.bak_greytail',
 ]
 
 

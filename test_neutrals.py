@@ -409,11 +409,11 @@ ok("'%s'" % ME in imp,
 # numbers and left them. The suite that owns the number is the right
 # place to assert the round updated it.
 cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
-for want in ('MARKUP_STYLE = 118', 'SCRIPT = 203', 'PAGES = 40',
-             "'style-attr': 61", "'style-prop': 24", 'safe == 85'):
+for want in ('MARKUP_STYLE = 118', 'SCRIPT = 201', 'PAGES = 40',
+             "'style-attr': 59", "'style-prop': 24", 'safe == 83'):
     ok(want in cr, '  CR-1 census now reads %s' % want)
 ok("'canvas': 27" in cr and "'unknown': 91" in cr,
-   '  and canvas 27 / unknown 91 did NOT move - 203 - 85 = 118 = 27 + 91, '
+   '  and canvas 27 / unknown 91 did NOT move - 201 - 83 = 118 = 27 + 91, '
    'which is the arithmetic saying every refusal was honoured')
 
 print('')

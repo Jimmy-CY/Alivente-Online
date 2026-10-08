@@ -331,7 +331,7 @@
     margin-left: 4px;
 }
 .manual-entry-field label em {
-    color: #adb5bd;
+    color: var(--alv-ink-soft);
     font-style: normal;
     font-weight: 400;
     margin-left: 4px;
@@ -389,7 +389,7 @@
     color: var(--alv-ink);
 }
 .nutrient-value.muted {
-    color: #adb5bd;
+    color: var(--alv-ink-soft);
     font-weight: 400;
 }
 
@@ -1073,7 +1073,7 @@ function renderResults() {
     const html = currentMatches.map((m, idx) => {
         const cal = m.calories_per_100g 
             ? `${parseFloat(m.calories_per_100g).toFixed(0)} kcal/100g` 
-            : '<em style="color:#adb5bd;">no kcal data</em>';
+            : '<em style="color:var(--alv-ink-soft);">no kcal data</em>';
         const brand = m.brand_owner ? ` — ${escapeHtml(m.brand_owner)}` : '';
         const dataTypeClass = m.data_type.toLowerCase().replace(/[^a-z]/g, '-').replace(/-+/g, '-');
         return `

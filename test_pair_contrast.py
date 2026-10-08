@@ -26,7 +26,7 @@ pairs read below 4.5:1.
         [disabled], aria-disabled, .is-disabled, placeholders. Named
         in section 4 so the exemption is a claim and not a silence.
 
-    34  LIVE, and PINNED BY NAME rather than counted.
+    32  LIVE, and PINNED BY NAME rather than counted.
 
 A ceiling would let a later round add one while removing another and
 say nothing. The set is asserted EXACTLY: a pair that appears is a
@@ -35,7 +35,7 @@ this table an update. That is the house rule - a round that changes a
 number owns every number that counts it - applied to a set.
 
 =====================================================================
-AND THE 34 ARE NOT ANONYMOUS DEBT
+AND THE 32 ARE NOT ANONYMOUS DEBT
 =====================================================================
 
     22  HOUSE TOKEN ON HOUSE TOKEN. EIGHTEEN are --alv-accent on an
@@ -65,7 +65,7 @@ AND THE 34 ARE NOT ANONYMOUS DEBT
      4  one-offs with no family: #ccc on white, #adb5bd on
         --alv-surface twice, and the accent on a lilac tint.
 
-NOT PROVED HERE: that any of the 34 should be fixed. Each is a change
+NOT PROVED HERE: that any of the 32 should be fixed. Each is a change
 of appearance and the colour map says the render IS that decision.
 They are measured, named and given an owner. His word takes them.
 """
@@ -171,8 +171,6 @@ LIVE = (
     ('recipe_management.html', '.recipe-edit-btn', 1.63, 'bright'),
     ('recipe_management.html', '.recipe-card-actions-mobile .recipe-edit-btn', 1.63, 'bright'),
     ('unit_conversions_wizard.html', '.conv-preset-btn:hover', 1.63, 'bright'),
-    ('finance_expense_types.html', '.month-chip-no', 1.97, 'stray'),
-    ('finance_revenue_types.html', '.month-chip-no', 1.97, 'stray'),
     ('unit_conversions_wizard.html', '.conv-row-unit', 2.57, 'bright'),
     ('unit_conversions_wizard.html', '.btn-save', 2.57, 'bright'),
     ('view_recipe.html', '.tag-protein', 2.57, 'bright'),
@@ -326,7 +324,7 @@ head('5. TWO OF THE 20 ARE NOT A TENTH SHORT')
 # A count hides a range. Nineteen house pairs miss AA, but twelve of
 # them miss it by a tenth and two of them are invisible text.
 sub2 = [r for r in LIVE if r[2] < 2.0]
-ok(len(sub2) >= 9,
+ok(len(sub2) >= 7,
    '%d live pairs read below 2:1 across the tree - that is not low '
    'contrast, it is text you cannot see' % len(sub2),
    ['%s %s %.2f' % (r[0], r[1], r[2]) for r in sub2])
@@ -376,7 +374,7 @@ print('=' * 74)
 print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
 print('=' * 74)
 print('')
-print('  NOT PROVED HERE: that any of the 34 should be fixed. Each is a')
+print('  NOT PROVED HERE: that any of the 32 should be fixed. Each is a')
 print('  change of appearance, and the colour map says the render IS that')
 print('  decision. They are measured, named and given an owner - the')
 print('  accent-on-tint pairing is one decision in base, the brights are')

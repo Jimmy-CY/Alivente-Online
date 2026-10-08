@@ -2175,7 +2175,13 @@ $suites = @(
     # TB-2, 8 Oct 2026 - the tabs are CLICKED, on all three pages, and
     # exactly one carries .active after each click. The control is the
     # two pages as this round found them, where two did.
-    'test_tab_switch.py'
+    'test_tab_switch.py',
+    # B-5b, 8 Oct 2026 - the grey tail. Section 2 measures the pair
+    # contrast of every rule it touched, before and after; section 4
+    # asserts the empty-state watermark is now ONE value on twelve
+    # pages; section 5 names everything the round left and proves it is
+    # still there.
+    'test_grey_tail.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

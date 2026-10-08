@@ -730,7 +730,7 @@
     margin-bottom: 3px;
 }
 .nm-manual-field label em {
-    color: #adb5bd;
+    color: var(--alv-ink-soft);
     font-style: normal;
     font-weight: 400;
     margin-left: 4px;
@@ -783,7 +783,7 @@
     font-weight: 700;
     color: var(--alv-ink);
 }
-.nm-nutrient-value.muted { color: #adb5bd; font-weight: 400; }
+.nm-nutrient-value.muted { color: var(--alv-ink-soft); font-weight: 400; }
 
 .nm-conversion-panel {
     background: var(--alv-warn-soft);
@@ -2010,7 +2010,7 @@ function nmRenderResults() {
     const html = _nmMatches.map((m, idx) => {
         const cal = m.calories_per_100g 
             ? `${parseFloat(m.calories_per_100g).toFixed(0)} kcal/100g` 
-            : '<em style="color:#adb5bd;">no kcal data</em>';
+            : '<em style="color:var(--alv-ink-soft);">no kcal data</em>';
         const brand = m.brand_owner ? ` — ${nmEscapeHtml(m.brand_owner)}` : '';
         const dataTypeClass = m.data_type.toLowerCase().replace(/[^a-z]/g, '-').replace(/-+/g, '-');
         return `

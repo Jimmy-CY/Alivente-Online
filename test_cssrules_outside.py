@@ -85,12 +85,16 @@ RULES = os.path.join(ROOT, 'alv_cssrules.py')
 # down with them. canvas 27 and unknown 91 did NOT - the
 # round converted only what js_colour_context calls
 # var-safe, and 203 - 85 = 118 = 27 + 91 says so.
+# B-5b, 8 Oct 2026: 2 more in <script> became var() - the <em> that
+#   says 'no kcal data' on two pages. SCRIPT, style-attr and the
+#   var-safe total each came down by two; canvas and unknown did
+#   not move, because this round converted only var-safe ones.
 MARKUP_STYLE = 118      # colour literals in inline style= attributes
-SCRIPT = 203            # colour literals inside <script> bodies
+SCRIPT = 201            # colour literals inside <script> bodies
 PRES = 0                # HTML presentation attributes carrying a colour
 PAGES = 40              # real pages carrying any of them
 STANDALONE = 26         # on the twelve exempt templates - correct, and staying
-CTX = {'style-attr': 61, 'style-prop': 24, 'css-text': 0,
+CTX = {'style-attr': 59, 'style-prop': 24, 'css-text': 0,
        'canvas': 27, 'unknown': 91}
 
 passed = failed = skipped = 0
@@ -312,8 +316,8 @@ for k in ('style-attr', 'style-prop', 'css-text', 'canvas', 'unknown'):
     ok(ctx.get(k, 0) == CTX[k], '  <script> context %-11s %4d'
        % (k, CTX[k]), ctx.get(k, 0))
 safe = sum(ctx.get(k, 0) for k in R.VAR_SAFE)
-ok(safe == 85,
-   '85 of the 203 may become var() - and 118 may not, which is the whole '
+ok(safe == 83,
+   '83 of the 201 may become var() - and 118 may not, which is the whole '
    'reason this round exists. B-5a took 50 of the safe ones and not '
    'one of the 118, which is why that number has not moved', safe)
 
