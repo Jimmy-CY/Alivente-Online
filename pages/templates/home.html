@@ -413,7 +413,7 @@ Home
     .ins-card__sub { color: var(--alv-ink-soft); font-size: 12.5px; margin: 0 0 10px; }
     .ins-ic { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; font-size: 12px; flex: none; }
     .ins-ic--rent  { background: var(--alv-accent-soft); color: var(--alv-accent); }
-    .ins-ic--exp   { background: var(--alv-warn-soft); color: #d39e00; }
+    .ins-ic--exp   { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
     .ins-ic--arr   { background: var(--alv-bad-soft); color: var(--alv-bad); }
     .ins-ic--churn { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
     .ins-ic--act   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
@@ -474,10 +474,10 @@ Home
 
     .ins-tag { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
     .ins-tag--red    { background: var(--alv-bad-soft); color: var(--alv-bad); }
-    .ins-tag--amber  { background: var(--alv-warn-soft); color: #d39e00; }
+    .ins-tag--amber  { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
     .ins-tag--grey   { background: var(--alv-line-soft); color: var(--alv-ink-strong); }
     .ins-tag--high   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
-    .ins-tag--medium { background: var(--alv-warn-soft); color: #d39e00; }
+    .ins-tag--medium { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
     .ins-tag--low    { background: var(--alv-line-soft); color: var(--alv-ink-strong); }
 
     .ins-actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -511,7 +511,7 @@ Home
     .today-row--urgent  { background: var(--alv-bad-soft); border-left-color: var(--alv-bad); }
     .today-row--urgent  .today-row__icon { color: var(--alv-bad); }
     .today-row--warning { background: var(--alv-warn-soft); border-left-color: var(--alv-warn); }
-    .today-row--warning .today-row__icon { color: #d39e00; }
+    .today-row--warning .today-row__icon { color: var(--alv-warn-ink); }
     .today-row--info    { background: var(--alv-accent-soft); border-left-color: var(--alv-accent); }
     .today-row--info    .today-row__icon { color: var(--alv-accent-ink); }
     .today-row__icon { font-size: 1.1rem; width: 28px; text-align: center; flex-shrink: 0; }
@@ -544,7 +544,8 @@ Home
     .data-table tbody tr:hover { background: var(--alv-surface); }
     .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
     .status-urgent { background: var(--alv-bad); color: var(--alv-on-accent); }
-    .status-warning { background: #ffc107; color: var(--alv-ink); }
+    .status-warning { border: 1px solid var(--alv-warn-line);
+ background: var(--alv-warn-soft); color: var(--alv-warn); }
     .status-info { background: var(--alv-accent); color: var(--alv-on-accent); }
 
     /* Mobile: table-as-cards. The pop-up's phone rules are base's - see

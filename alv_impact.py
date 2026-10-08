@@ -68,6 +68,11 @@ COUNTERS = [
     'test_stranded.py',          # every template, for stranded markup
     'test_css_order.py',         # every template, for selector collisions
     'test_passport_holder.py',   # the migration chain
+    # B-4, 7 Oct 2026. These two were added by CR-1 and
+    # IM-1 and neither added itself here, so every round
+    # since has been swept against an incomplete list.
+    'test_cssrules_outside.py',  # colour literals, whole tree
+    'test_important_base.py',    # !important, whole tree
 ]
 
 # A round that touches one of these is not a point round, whatever it

@@ -835,7 +835,24 @@ ROUNDS = [
     # never applied - Filters and Clear showed their icons with no
     # words, on that page only. Both lines deleted; base supplies
     # both halves.
-    '.bak_pmlabels',
+    '.bak_pmlabels',    # B-4, 7 Oct 2026 - the amber, at the scope decision 9 set.
+    # 70 conversions on 24 pages: 52 in CSS, 14 in inline style=
+    # attributes and 4 inside <script>. TEN MORE IN <script> ARE
+    # REFUSED, because js_colour_context cannot classify them and a
+    # round refuses what it cannot classify.
+    #
+    # The pills are RESTRUCTURED, not substituted - warn-soft fill,
+    # warn ink, and a border ADDED where four of the six had none.
+    # Their SHAPE is untouched: .alv-pill-attn is a modifier on
+    # .alv-pill, which carries the padding and the radius, so adding
+    # the class would have resized seven pills nobody asked to resize.
+    #
+    # Left alone: the Bootstrap oranges (decision 4), the dashboard
+    # chart series and its legend, the Gantt bar, the spell-check
+    # highlighter - brightness IS its function - and act_expense's
+    # anTok('warn', '#8e6207'), which reads the token and keeps the
+    # literal as its FALLBACK. That is the correct pattern.
+    '.bak_amber',
 ]
 
 

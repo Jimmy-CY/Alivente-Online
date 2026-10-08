@@ -131,7 +131,7 @@
 }
 
 .indicator-card.warning {
-    border-color: #ffc107;
+    border-color: var(--alv-warn);
     background-color: var(--alv-warn-soft);
 }
 
@@ -213,8 +213,9 @@
 }
 
 .status-warning {
-    background: #ffc107;
-    color: var(--alv-ink);
+    border: 1px solid var(--alv-warn-line);
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn);
 }
 
 .status-info {

@@ -307,8 +307,8 @@ body {
     gap: 8px;
 }
 
-.btn-edit { background: #ffc107; color: #000; border: none; }
-.btn-edit:hover { background: #e0a800; color: #000; }
+.btn-edit { background: var(--alv-warn-soft); color: var(--alv-warn); border: none; }
+.btn-edit:hover { background: var(--alv-warn); color: #000; }
 .btn-print { background: var(--alv-ink-soft); color: var(--alv-on-accent); border: none; }
 .btn-print:hover { background: var(--alv-ink-soft); color: var(--alv-on-accent); }
 .btn-shopping { background: var(--alv-good); color: var(--alv-on-accent); border: none; }
@@ -1092,7 +1092,7 @@ body {
    ============================================================ */
 .conv-row {
     background: var(--alv-warn-soft);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-warn);
     border-radius: 8px;
     padding: 14px 16px;
     margin-bottom: 12px;
@@ -1118,7 +1118,7 @@ body {
 .conv-input-group input[type="number"] {
     width: 90px;
     padding: 6px 10px;
-    border: 2px solid #ffc107;
+    border: 2px solid var(--alv-warn);
     border-radius: 6px;
     font-size: 14px;
 }
@@ -1139,7 +1139,7 @@ body {
 .conv-preset-btn {
     padding: 4px 10px;
     background: var(--alv-paper);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-warn);
     border-radius: 4px;
     color: var(--alv-warn);
     cursor: pointer;
@@ -1148,7 +1148,7 @@ body {
     transition: all 0.15s ease;
 }
 .conv-preset-btn:hover {
-    background: #ffc107;
+    background: var(--alv-warn);
     color: var(--alv-on-accent);
 }
 
@@ -2058,10 +2058,10 @@ body {
                     </div>
 
                     <!-- Partial data warning (shown when not complete) -->
-                    <div id="partialDataWarning" style="display:none; padding: 12px 24px; background: #fff8e6; border-bottom: 1px solid #ffc107;">
+                    <div id="partialDataWarning" style="display:none; padding: 12px 24px; background: #fff8e6; border-bottom: 1px solid var(--alv-warn-line);">
                         <div style="display: flex; align-items: flex-start; gap: 10px;">
-                            <i class="fas fa-exclamation-triangle" style="color: #856404; font-size: 16px; margin-top: 2px;"></i>
-                            <div style="flex: 1; font-size: 13px; color: #856404;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--alv-warn-ink); font-size: 16px; margin-top: 2px;"></i>
+                            <div style="flex: 1; font-size: 13px; color: var(--alv-warn-ink);">
                                 <strong>Partial nutrition data</strong>
                                 <div id="partialDataMessage" style="margin-top: 4px;"></div>
                                 <div id="partialDataAction" style="margin-top: 6px;"></div>
@@ -2301,7 +2301,7 @@ body {
                 </div>
 
                 <!-- Cooking time info -->
-                <div id="modal_cooking_info" style="display:none; background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; color: #856404;">
+                <div id="modal_cooking_info" style="display:none; background: var(--alv-warn-soft); border-left: 4px solid var(--alv-warn-line); padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; color: var(--alv-warn-ink);">
                 </div>
 
                 <!-- Schedule table -->
@@ -2471,7 +2471,7 @@ body {
                 </div>
                 <!-- Step 4: Enter Conversions -->
                 <div id="step4" class="modal-step">
-                    <h5 style="color: #856404; margin-bottom: 15px;">
+                    <h5 style="color: var(--alv-warn-ink); margin-bottom: 15px;">
                         <i class="fas fa-exchange-alt"></i> Unit Conversions Needed
                     </h5>
 
@@ -2825,15 +2825,15 @@ function renderNutrition() {
         let linkHtml;
         if (d.unmapped_count > 0 && d.unconvertible_count === 0) {
             // Only mapping issues
-            linkHtml = `<a href="${mapWizardUrl}" style="color: #856404; text-decoration: underline; font-weight: 600;">Map missing ingredients →</a>`;
+            linkHtml = `<a href="${mapWizardUrl}" style="color: var(--alv-warn-ink); text-decoration: underline; font-weight: 600;">Map missing ingredients →</a>`;
         } else if (d.unmapped_count === 0 && d.unconvertible_count > 0) {
             // Only conversion issues — open the mini-modal inline
-            linkHtml = `<a href="javascript:void(0)" onclick="openConversionMiniModal()" style="color: #856404; text-decoration: underline; font-weight: 600;">Set unit conversions →</a>`;
+            linkHtml = `<a href="javascript:void(0)" onclick="openConversionMiniModal()" style="color: var(--alv-warn-ink); text-decoration: underline; font-weight: 600;">Set unit conversions →</a>`;
         } else {
             // Both — show map link first, then conversion mini-modal trigger
             linkHtml = `
-                <a href="${mapWizardUrl}" style="color: #856404; text-decoration: underline; font-weight: 600; margin-right: 16px;">Map missing ingredients →</a>
-                <a href="javascript:void(0)" onclick="openConversionMiniModal()" style="color: #856404; text-decoration: underline; font-weight: 600;">Set unit conversions →</a>
+                <a href="${mapWizardUrl}" style="color: var(--alv-warn-ink); text-decoration: underline; font-weight: 600; margin-right: 16px;">Map missing ingredients →</a>
+                <a href="javascript:void(0)" onclick="openConversionMiniModal()" style="color: var(--alv-warn-ink); text-decoration: underline; font-weight: 600;">Set unit conversions →</a>
             `;
         }
         document.getElementById('partialDataAction').innerHTML = linkHtml;

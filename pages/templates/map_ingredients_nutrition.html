@@ -128,8 +128,8 @@
 }
 .undo-toast .toast-undo-btn {
     background: transparent;
-    color: #ffc107;
-    border: 1px solid #ffc107;
+    color: var(--alv-warn-ink);
+    border: 1px solid var(--alv-warn-line);
     padding: 5px 12px;
     border-radius: 5px;
     font-size: 13px;
@@ -138,7 +138,7 @@
     transition: background 0.15s ease;
 }
 .undo-toast .toast-undo-btn:hover {
-    background: #ffc107;
+    background: var(--alv-warn-soft);
     color: var(--alv-ink);
 }
 
@@ -396,7 +396,7 @@
 /* === Unit conversion prompt === */
 .conversion-panel {
     background: var(--alv-warn-soft);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-warn);
     border-radius: 8px;
     padding: 14px 16px;
     margin-bottom: 16px;
@@ -430,7 +430,7 @@
 .conversion-form input[type="number"] {
     width: 100px;
     padding: 6px 10px;
-    border: 2px solid #ffc107;
+    border: 2px solid var(--alv-warn);
     border-radius: 6px;
     font-size: 14px;
 }
@@ -442,7 +442,7 @@
 .conversion-form .preset-btn {
     padding: 4px 10px;
     background: var(--alv-paper);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-warn);
     border-radius: 4px;
     color: var(--alv-warn);
     cursor: pointer;
@@ -451,7 +451,7 @@
     transition: all 0.15s ease;
 }
 .conversion-form .preset-btn:hover {
-    background: #ffc107;
+    background: var(--alv-warn);
     color: var(--alv-on-accent);
 }
 

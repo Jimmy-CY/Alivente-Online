@@ -2124,7 +2124,14 @@ $suites = @(
     # Section 3 drives Chromium at 390 and requires both to compute
     # `inline`, and at 1280 requires both to stay `none`, because the
     # round is a phone fix and must not touch the desktop.
-    'test_passport_mobile.py'
+    'test_passport_mobile.py',
+    # B-4, 7 Oct 2026 - the amber. Section 4 proves the ink: eight
+    # uses were below AA and now clear it, and not one that passed
+    # drops. Section 5 re-applies B-3's rule that a hover must stay
+    # darker than its rest state. Section 6 asserts the leave list -
+    # the oranges, the chart series, the highlighter and the anTok
+    # fallbacks - is untouched.
+    'test_amber.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
