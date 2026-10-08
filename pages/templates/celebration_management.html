@@ -1567,12 +1567,12 @@ function handleEventTypeChange() {
     } else if (eventType === 'birthday') {
         dateLabel.innerHTML = 'Date <span class="text-danger">*</span>';
         dateHelp.textContent = 'Include birth year if known, or use any year for month/day only';
-        dateHelp.style.color = '#6c757d';
+        dateHelp.style.color = 'var(--alv-neutral)';
         dateHelp.style.fontWeight = 'normal';
     } else {
         dateLabel.innerHTML = 'Date <span class="text-danger">*</span>';
         dateHelp.textContent = 'Event will repeat annually on this date';
-        dateHelp.style.color = '#6c757d';
+        dateHelp.style.color = 'var(--alv-neutral)';
         dateHelp.style.fontWeight = 'normal';
     }
 }

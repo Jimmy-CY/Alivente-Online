@@ -449,7 +449,7 @@
                         <span class="unit-name-display">
                             <strong>{{ item.unit.name }}</strong>
                             {% if item.unit.name_plural %}
-                            <br><small style="color: #6c757d;">Plural: {{ item.unit.name_plural }}</small>
+                            <br><small style="color: var(--alv-neutral);">Plural: {{ item.unit.name_plural }}</small>
                             {% endif %}
                         </span>
                         {% if perms.auth.can_edit_personal %}
@@ -481,7 +481,7 @@
                             / {{ item.unit.abbreviation_plural }}
                             {% endif %}
                             {% else %}
-                            <span style="color: #6c757d; font-style: italic;">-</span>
+                            <span style="color: var(--alv-neutral); font-style: italic;">-</span>
                             {% endif %}
                         </span>
                         {% if perms.auth.can_edit_personal %}
@@ -641,7 +641,7 @@
             </div>
             <div class="modal-body">
                 <!-- Unit Name Section -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="background: var(--alv-surface); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
                         <i class="fas fa-font"></i> Unit Name
                     </h6>
@@ -669,9 +669,9 @@
                 </div>
                 
                 <!-- Abbreviation Section -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="background: var(--alv-surface); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
-                        <i class="fas fa-compress-alt"></i> Abbreviation <span style="font-weight: normal; color: #6c757d;">(Optional)</span>
+                        <i class="fas fa-compress-alt"></i> Abbreviation <span style="font-weight: normal; color: var(--alv-neutral);">(Optional)</span>
                     </h6>
                     <div class="row">
                         <div class="col-md-6">
@@ -793,7 +793,7 @@ async function saveUnit(unitId) {
             // Update name display
             let nameHTML = `<strong>${data.unit.name}</strong>`;
             if (data.unit.name_plural) {
-                nameHTML += `<br><small style="color: #6c757d;">Plural: ${data.unit.name_plural}</small>`;
+                nameHTML += `<br><small style="color: var(--alv-neutral);">Plural: ${data.unit.name_plural}</small>`;
             }
             nameDisplay.innerHTML = nameHTML;
             
@@ -805,7 +805,7 @@ async function saveUnit(unitId) {
                 }
                 abbrDisplay.innerHTML = abbrHTML;
             } else {
-                abbrDisplay.innerHTML = '<span style="color: #6c757d; font-style: italic;">-</span>';
+                abbrDisplay.innerHTML = '<span style="color: var(--alv-neutral); font-style: italic;">-</span>';
             }
             
             // Update type display

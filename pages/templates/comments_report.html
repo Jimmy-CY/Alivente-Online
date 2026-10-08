@@ -579,7 +579,7 @@
             <div class="modal-body" id="modalBody">
                 <div class="text-center" style="padding: 40px;">
                     <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #0e7c8b;"></i>
-                    <p style="margin-top: 20px; color: #6c757d;">Loading issue details...</p>
+                    <p style="margin-top: 20px; color: var(--alv-neutral);">Loading issue details...</p>
                 </div>
             </div>
         </div>
@@ -603,7 +603,7 @@ function showIssueDetails(issueId) {
             document.getElementById('modalBody').innerHTML = `
                 <div class="text-center" style="padding: 40px;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545;"></i>
-                    <p style="margin-top: 20px; color: #6c757d;">Error loading issue details</p>
+                    <p style="margin-top: 20px; color: var(--alv-neutral);">Error loading issue details</p>
                 </div>
             `;
         });
@@ -626,7 +626,7 @@ function displayIssueDetails(data) {
             `;
         });
     } else {
-        commentsHtml = '<p style="color: #6c757d; text-align: center;">No comments yet.</p>';
+        commentsHtml = '<p style="color: var(--alv-neutral); text-align: center;">No comments yet.</p>';
     }
 
     // The same three-way the template makes, and it has to stay the same

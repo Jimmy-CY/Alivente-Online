@@ -63,7 +63,7 @@
                {% if basis == 'actuals' %}aria-current="page"{% endif %}>Actuals</a>
         </div>
         {% if basis == 'actuals' %}
-        <span style="font-size:0.85rem; color:#6c757d;"><i class="fas fa-info-circle"></i> Actuals: Net ROI &amp; Expenses-to-Revenue include {{ selected_year }} actual spend.</span>
+        <span style="font-size:0.85rem; color:var(--alv-neutral);"><i class="fas fa-info-circle"></i> Actuals: Net ROI &amp; Expenses-to-Revenue include {{ selected_year }} actual spend.</span>
         {% endif %}
     </div>
 
@@ -109,7 +109,7 @@
                 </select>
                 <label style="font-weight:600; margin:0;"><strong>Years</strong></label>
                 <select id="fiFromYear" class="form-control" style="width:auto;"></select>
-                <span style="color:#6c757d;">to</span>
+                <span style="color:var(--alv-neutral);">to</span>
                 <select id="fiToYear" class="form-control" style="width:auto;"></select>
                 <label style="font-weight:600; margin:0;">Compare</label>
                 <div id="fiCompareWrap" style="position:relative; display:inline-block;">
@@ -117,8 +117,8 @@
                         <span id="fiCompareLabel">Portfolio only</span>
                         <i class="fas fa-caret-down" style="float:right; margin-top:4px;"></i>
                     </button>
-                    <div id="fiComparePanel" style="display:none; position:absolute; z-index:1000; top:calc(100% + 4px); left:0; min-width:240px; max-height:280px; overflow-y:auto; background:#fff; border:1px solid #ced4da; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.15); padding:8px;">
-                        <div style="display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid #eee; margin-bottom:6px;">
+                    <div id="fiComparePanel" style="display:none; position:absolute; z-index:1000; top:calc(100% + 4px); left:0; min-width:240px; max-height:280px; overflow-y:auto; background:var(--alv-paper); border:1px solid #ced4da; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.15); padding:8px;">
+                        <div style="display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid var(--alv-neutral-soft); margin-bottom:6px;">
                             <button type="button" id="fiTrendAll" class="btn action-secondary" style="flex:1;">All</button>
                             <button type="button" id="fiTrendNone" class="btn action-secondary" style="flex:1;">None</button>
                         </div>
@@ -127,7 +127,7 @@
                 </div>
             </div>
         </div>
-        <p style="font-size:0.85rem; color:#6c757d; margin:0 0 10px;">
+        <p style="font-size:0.85rem; color:var(--alv-neutral); margin:0 0 10px;">
             <i class="fas fa-info-circle"></i> Basis is automatic: completed years use actual spend, the current year is actual-so-far plus budget, and the future outlook year is budget only. Diamond markers = current/projected years.
         </p>
         <div style="position:relative; height:340px;">

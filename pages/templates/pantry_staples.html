@@ -43,7 +43,7 @@
         {% regroup staples by ingredient.category.name as staples_by_category %}
         {% for group in staples_by_category %}
           <h6 class="text-uppercase text-muted mt-3 mb-2"
-              style="font-size: 12px; letter-spacing: 0.05em; border-bottom: 1px solid #e9ecef; padding-bottom: 6px;">
+              style="font-size: 12px; letter-spacing: 0.05em; border-bottom: 1px solid var(--alv-surface-deep); padding-bottom: 6px;">
             <i class="fas fa-folder-open" style="color: #28a745;"></i>
             {{ group.grouper|default:"Uncategorised" }}
             <span class="text-muted" style="font-weight: normal;">&middot; {{ group.list|length }}</span>

@@ -572,7 +572,7 @@ function populateExistingRecipes() {
                            min="1"
                            value="${recipe.servings}"
                            required>
-                    <span style="color: #6c757d; font-size: 14px;">servings</span>
+                    <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
                 </div>
 
                 <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
@@ -719,7 +719,7 @@ function restoreRecipes(savedRecipes) {
                            min="1"
                            value="${recipe.servings}"
                            required>
-                    <span style="color: #6c757d; font-size: 14px;">servings</span>
+                    <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
                 </div>
 
                 <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
@@ -879,8 +879,8 @@ function openRecipeSelector(dateStr, dayName) {
     const favBtn = document.getElementById('favouritesToggleBtn');
     if (favBtn) {
         favBtn.style.background = 'white';
-        favBtn.style.borderColor = '#dee2e6';
-        favBtn.style.color = '#6c757d';
+        favBtn.style.borderColor = 'var(--alv-line)';
+        favBtn.style.color = 'var(--alv-neutral)';
     }
 
     allRecipesForSelector = [...recipes];
@@ -1041,7 +1041,7 @@ function selectRecipeForDay(recipeId, recipeName, servings) {
                    min="1"
                    value="${servings}"
                    required>
-            <span style="color: #6c757d; font-size: 14px;">servings</span>
+            <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
         </div>
 
         <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
@@ -1103,8 +1103,8 @@ function toggleFavouritesFilter() {
         btn.style.color = 'white';
     } else {
         btn.style.background = 'white';
-        btn.style.borderColor = '#dee2e6';
-        btn.style.color = '#6c757d';
+        btn.style.borderColor = 'var(--alv-line)';
+        btn.style.color = 'var(--alv-neutral)';
     }
     searchRecipesInSelector();
 }
@@ -1121,8 +1121,8 @@ function clearRecipeFilters() {
     const btn = document.getElementById('favouritesToggleBtn');
     if (btn) {
         btn.style.background = 'white';
-        btn.style.borderColor = '#dee2e6';
-        btn.style.color = '#6c757d';
+        btn.style.borderColor = 'var(--alv-line)';
+        btn.style.color = 'var(--alv-neutral)';
     }
 
     filteredRecipes = [...allRecipesForSelector];
@@ -1162,7 +1162,7 @@ function loadMoreRecipesInSelector() {
                         </div>
                         <div class="col-md-3">
                             <button class="btn w-100" id="favouritesToggleBtn" onclick="toggleFavouritesFilter()"
-                                    style="border: 2px solid #dee2e6; background: white; color: #6c757d;">
+                                    style="border: 2px solid var(--alv-line); background: white; color: var(--alv-neutral);">
                                 <i class="fas fa-heart"></i> Favourites
                             </button>
                         </div>

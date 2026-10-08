@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (delta < -0.005) {
             return `<span style="color:#28a745;">−€${formatMoney(Math.abs(delta))}</span>`;
         }
-        return `<span style="color:#6c757d;">€0.00</span>`;
+        return `<span style="color:var(--alv-neutral);">€0.00</span>`;
     }
     
     function escapeHtml(s) {

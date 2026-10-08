@@ -244,7 +244,7 @@ select.form-control {
                            onclick="selectRole(this, 'user')">
                         <input type="radio" name="role" value="user"
                                {% if form_data.role == 'user' or not form_data.role %}checked{% endif %}>
-                        <i class="fas fa-user" style="color:#6c757d;"></i>
+                        <i class="fas fa-user" style="color:var(--alv-neutral);"></i>
                         <div class="role-name">User</div>
                         <div class="role-desc">Standard access</div>
                     </label>
@@ -270,7 +270,7 @@ select.form-control {
                 </div>
             </div>
 
-            <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px solid #f0f0f0;">
+            <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--alv-neutral-soft);">
                 <label><strong>Personal-Module Workspace</strong></label>
                 <select name="workspace_id" class="form-control">
                     <option value="">— Unassigned (auto-create on first access) —</option>

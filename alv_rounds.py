@@ -866,7 +866,29 @@ ROUNDS = [
     # pairs tree-wide, 54 below AA - 21 of them inactive controls,
     # which WCAG 1.4.3 exempts, and 32 live ones PINNED BY NAME so a
     # later round cannot add one by swapping a different one out.
-    '.bak_editink',
+    '.bak_editink',    # B-5a, 8 Oct 2026 - the grey neutrals. 158 literals on 32
+    # pages become ink-ramp tokens: 106 in inline style= attributes,
+    # 50 inside <script>, and TWO in a page stylesheet. That split is
+    # the whole argument for decision 9 - B-1, B-2 and B-2b had
+    # already taken the greys out of the CSS, and Section B could not
+    # see the markup or the script at all until CR-1.
+    #
+    # ROLE PICKS THE TOKEN, DISTANCE ONLY BREAKS TIES INSIDE IT. A
+    # distance-only map got twelve wrong: color:#dee2e6 -> --alv-line
+    # is the right colour under a line's name, and the name is the
+    # meaning. #fff as ink takes --alv-on-accent, not --alv-paper.
+    #
+    # AND ONE LITERAL CAN SIT IN TWO TIERS. #6c757d is 16.8 units from
+    # --alv-neutral as ink and 198 from --alv-line as a border, so the
+    # want table is keyed on (literal, role) - a dict keyed on the
+    # literal alone collapses the two and converts the border with the
+    # ink token.
+    #
+    # Refused: 5 canvas literals (a 2D context cannot resolve a custom
+    # property and the chart would vanish) and 9 js_colour_context
+    # cannot classify. Left: the black S-a settled, and 81 tier C uses
+    # that are changes of appearance - B-5b, with renders.
+    '.bak_neutrals',
 ]
 
 

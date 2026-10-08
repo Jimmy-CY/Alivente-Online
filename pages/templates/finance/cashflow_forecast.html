@@ -992,7 +992,7 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         }
 
         monthElement.innerHTML = barsHtml
-            + `<div class="timeline-label" style="position:absolute;bottom:${labelBottom};width:100%;text-align:center;font-size:${labelFontSize};color:#6c757d;font-weight:500;line-height:1.2;white-space:nowrap;">${labelHtml}</div>`;
+            + `<div class="timeline-label" style="position:absolute;bottom:${labelBottom};width:100%;text-align:center;font-size:${labelFontSize};color:var(--alv-neutral);font-weight:500;line-height:1.2;white-space:nowrap;">${labelHtml}</div>`;
 
         monthElement.querySelectorAll('.timeline-bar').forEach(bar => {
             const kind = bar.getAttribute('data-kind');
@@ -1121,11 +1121,11 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
                     <td style="white-space: normal; word-wrap: break-word; padding-right: 10px;">
                         <i class="fas fa-receipt" style="color: var(--alv-accent); margin-right: 8px;"></i>
                         <strong>${expense.lineType}</strong>
-                        <small style="display: block; color: #6c757d; margin-top: 4px;">Tap for property breakdown</small>
+                        <small style="display: block; color: var(--alv-neutral); margin-top: 4px;">Tap for property breakdown</small>
                     </td>
                     <td style="text-align: right; vertical-align: top; padding-top: 12px;">
                         <strong style="color: var(--alv-accent);">€${expense.amount.toFixed(2)}</strong>
-                        <i class="fas fa-chevron-right" style="color: #6c757d; margin-left: 8px; font-size: 12px;"></i>
+                        <i class="fas fa-chevron-right" style="color: var(--alv-neutral); margin-left: 8px; font-size: 12px;"></i>
                     </td>
                 </tr>
             `;

@@ -1998,7 +1998,7 @@ body {
                 
                 <!-- Form -->
                 <div id="conversionMiniForm" style="display:none;">
-                    <p style="font-size: 14px; color: #495057; margin-bottom: 16px;">
+                    <p style="font-size: 14px; color: var(--alv-ink-strong); margin-bottom: 16px;">
                         These ingredients have nutrition data but need a weight conversion so we can calculate per-100g values. Enter weights to enable accurate nutrition.
                     </p>
                     <div id="conversionMiniRows">
@@ -2050,9 +2050,9 @@ body {
                 <!-- Results -->
                 <div id="nutritionResults" style="display:none;">
                     <!-- Recipe info header -->
-                    <div style="padding: 16px 24px; border-bottom: 1px solid #e9ecef; background: #f8f9fa;">
+                    <div style="padding: 16px 24px; border-bottom: 1px solid var(--alv-surface-deep); background: var(--alv-surface);">
                         <strong id="nutritionRecipeName" style="color: #2c3e50; font-size: 17px;"></strong>
-                        <div style="font-size: 13px; color: #6c757d; margin-top: 2px;">
+                        <div style="font-size: 13px; color: var(--alv-neutral); margin-top: 2px;">
                             <span id="nutritionMetaInfo"></span>
                         </div>
                     </div>
@@ -2288,7 +2288,7 @@ body {
                 </div>
 
                 <!-- Saved defaults info -->
-                <div class="alert alert-light" style="border-left: 4px solid #f5576c; font-size: 13px; color: #6c757d;">
+                <div class="alert alert-light" style="border-left: 4px solid #f5576c; font-size: 13px; color: var(--alv-neutral);">
                     <i class="fas fa-info-circle"></i>
                     <span id="modal_fire_label">🔥 Fire Lighting Time (mins)</span>: <strong>{{ cooking_calculation.fire_lighting_duration }} mins</strong> &nbsp;|&nbsp;
                     Resting: <strong>{{ cooking_calculation.resting_duration }} mins</strong> &nbsp;|&nbsp;
@@ -2305,25 +2305,25 @@ body {
                 </div>
 
                 <!-- Schedule table -->
-                <div id="modal_schedule" style="display:none; background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%); border-radius: 10px; padding: 20px 24px;">
+                <div id="modal_schedule" style="display:none; background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%); border-radius: 10px; padding: 20px 24px;">
                     <div style="font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 14px;">
                         <i class="fas fa-calendar-alt" style="color: #f5576c;"></i> Cooking Schedule
                     </div>
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
-                            <td style="padding: 10px 0; color: #495057; font-size: 15px;" id="ms_label_fire">🔥 Light Fire</td>
+                            <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;" id="ms_label_fire">🔥 Light Fire</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_light_fire">—</td>
                         </tr>
                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
-                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">🥩 Start Cooking</td>
+                            <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;">🥩 Start Cooking</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cooking">—</td>
                         </tr>
                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
-                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">✅ Finish Cooking / Start Resting</td>
+                            <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;">✅ Finish Cooking / Start Resting</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_finish_cooking">—</td>
                         </tr>
                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
-                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">🔪 Start Cutting & Making Sauce</td>
+                            <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;">🔪 Start Cutting & Making Sauce</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cutting">—</td>
                         </tr>
                         <tr>
@@ -2349,22 +2349,22 @@ body {
     <h2 style="margin-bottom: 4px;">🔥 Cooking Schedule</h2>
     <h3 style="color: #28a745; margin-bottom: 16px;" id="print_recipe_name">{{ recipe.recipe_name }}</h3>
     <table style="width: 100%; border-collapse: collapse; font-size: 14pt;">
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Serving Time</td><td style="text-align:right; font-weight:600;" id="print_serving_time_top">—</td></tr>
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_fire_label">Fire Lighting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.fire_lighting_duration }} mins</td></tr>
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Resting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.resting_duration }} mins</td></tr>
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Cutting Time & Making Sauce</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.cutting_sauce_duration }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">Serving Time</td><td style="text-align:right; font-weight:600;" id="print_serving_time_top">—</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);" id="print_fire_label">Fire Lighting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.fire_lighting_duration }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">Resting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.resting_duration }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">Cutting Time & Making Sauce</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.cutting_sauce_duration }} mins</td></tr>
         <tr><td colspan="2" style="padding: 10px;">&nbsp;</td></tr>
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_meat_label">Meat Weight</td><td style="text-align:right; font-weight:600;" id="print_meat_weight">—</td></tr>
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_cooking_time_label">Cooking Time</td><td style="text-align:right; font-weight:600;" id="print_cooking_time">—</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);" id="print_meat_label">Meat Weight</td><td style="text-align:right; font-weight:600;" id="print_meat_weight">—</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);" id="print_cooking_time_label">Cooking Time</td><td style="text-align:right; font-weight:600;" id="print_cooking_time">—</td></tr>
         {% if cooking_calculation.additional_cooking_minutes %}
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Additional Time</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.additional_cooking_minutes }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">Additional Time</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.additional_cooking_minutes }} mins</td></tr>
         {% endif %}
         <tr><td colspan="2" style="padding: 10px;">&nbsp;</td></tr>
-        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_light_fire_label">🔥 Light Fire</td><td style="text-align:right; font-weight:600;" id="print_light_fire">—</td></tr>
-        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🥩 Start Cooking on Braai</td><td style="text-align:right; font-weight:600;" id="print_start_cooking">—</td></tr>
-        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">✅ Finish Cooking / Start Resting</td><td style="text-align:right; font-weight:600;" id="print_finish_cooking">—</td></tr>
-        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🔪 Start Cutting & Making Sauce</td><td style="text-align:right; font-weight:600;" id="print_start_cutting">—</td></tr>
-        <tr style="background: #f8f9fa;"><td style="padding: 10px; font-weight:700; color: #28a745;">🍽️ Serving Time</td><td style="text-align:right; font-weight:700; color: #28a745;" id="print_serving">—</td></tr>
+        <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);" id="print_light_fire_label">🔥 Light Fire</td><td style="text-align:right; font-weight:600;" id="print_light_fire">—</td></tr>
+        <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">🥩 Start Cooking on Braai</td><td style="text-align:right; font-weight:600;" id="print_start_cooking">—</td></tr>
+        <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">✅ Finish Cooking / Start Resting</td><td style="text-align:right; font-weight:600;" id="print_finish_cooking">—</td></tr>
+        <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">🔪 Start Cutting & Making Sauce</td><td style="text-align:right; font-weight:600;" id="print_start_cutting">—</td></tr>
+        <tr style="background: var(--alv-surface);"><td style="padding: 10px; font-weight:700; color: #28a745;">🍽️ Serving Time</td><td style="text-align:right; font-weight:700; color: #28a745;" id="print_serving">—</td></tr>
     </table>
 </div>
 {% endif %}
@@ -2546,10 +2546,10 @@ function formatIngredientText(amount, unit, unitPlural, ingredient, preparation,
 
     let text = `<strong>${displayAmount}</strong> ${displayUnit} ${ingredient}`;
     if (weightEquivalent) {
-        text += ` <em style='color: #6c757d; font-size: 0.9em;'>(${weightEquivalent})</em>`;
+        text += ` <em style='color: var(--alv-neutral); font-size: 0.9em;'>(${weightEquivalent})</em>`;
     }
     if (preparation) {
-        text += ` <em style='color: #6c757d;'>(${preparation})</em>`;
+        text += ` <em style='color: var(--alv-neutral);'>(${preparation})</em>`;
     }
     return text;
 }
@@ -3821,15 +3821,15 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
 
             <div style="display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 10px; align-items: center;">
                 <div>
-                    <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">Original Unit</label>
+                    <label style="font-size: 13px; color: var(--alv-neutral); margin-bottom: 5px; display: block;">Original Unit</label>
                     <input type="text" value="1 ${conv.from_unit}" readonly
-                           style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px; background: #f8f9fa;">
+                           style="width: 100%; padding: 10px; border: 2px solid var(--alv-line); border-radius: 6px; background: var(--alv-surface);">
                 </div>
 
-                <div style="font-size: 20px; font-weight: bold; color: #6c757d;">=</div>
+                <div style="font-size: 20px; font-weight: bold; color: var(--alv-neutral);">=</div>
 
                 <div>
-                    <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">Amount</label>
+                    <label style="font-size: 13px; color: var(--alv-neutral); margin-bottom: 5px; display: block;">Amount</label>
                     <input type="number" step="0.001" min="0.001" placeholder="e.g., 15"
                            id="conversion_${index}"
                            data-from-unit-id="${conv.from_unit_id}"
@@ -3838,20 +3838,20 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                 </div>
 
                 <div>
-                    <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">&nbsp;</label>
+                    <label style="font-size: 13px; color: var(--alv-neutral); margin-bottom: 5px; display: block;">&nbsp;</label>
                     <span style="padding: 10px; display: block; font-weight: 600;">${conv.to_unit}</span>
                 </div>
             </div>
 
-            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: #6c757d;">
+            <div style="background: var(--alv-surface); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: var(--alv-neutral);">
                 <i class="fas fa-lightbulb"></i> If 1 ${conv.from_unit} = 15 ${conv.to_unit}, enter "15"
             </div>
-            <div style="margin-top: 15px; padding: 15px; background: white; border: 2px solid #dee2e6; border-radius: 8px;">
+            <div style="margin-top: 15px; padding: 15px; background: white; border: 2px solid var(--alv-line); border-radius: 8px;">
                 <label style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; display: block;">
                     <i class="fas fa-tag"></i> Apply this conversion to:
                 </label>
                 <div style="display: flex; gap: 15px;">
-                    <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid #dee2e6;">
+                    <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                         <input type="radio"
                                name="conversion_type_${index}"
                                value="generic"
@@ -3859,17 +3859,17 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                                style="width: 18px; height: 18px;">
                         <div>
                             <div style="font-weight: 600; font-size: 14px;">Generic</div>
-                            <div style="font-size: 11px; color: #6c757d;">All ingredients</div>
+                            <div style="font-size: 11px; color: var(--alv-neutral);">All ingredients</div>
                         </div>
                     </label>
-                    <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid #dee2e6;">
+                    <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                         <input type="radio"
                                name="conversion_type_${index}"
                                value="specific"
                                style="width: 18px; height: 18px;">
                         <div>
                             <div style="font-weight: 600; font-size: 14px;">${conv.ingredient}</div>
-                            <div style="font-size: 11px; color: #6c757d;">This ingredient only</div>
+                            <div style="font-size: 11px; color: var(--alv-neutral);">This ingredient only</div>
                         </div>
                     </label>
                 </div>

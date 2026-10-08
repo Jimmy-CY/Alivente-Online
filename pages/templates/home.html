@@ -804,7 +804,7 @@ Home
         var bd = row.breakdown || [];
         var body;
         if (!bd.length) {
-          body = '<div style="text-align:center;padding:40px;color:#6c757d;">No income this month.</div>';
+          body = '<div style="text-align:center;padding:40px;color:var(--alv-neutral);">No income this month.</div>';
         } else {
           var trs = bd.map(function(b) {
             return '<tr>' +

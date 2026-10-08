@@ -123,7 +123,7 @@
   .btn-light {
     color: var(--alv-ink);
     background-color: var(--alv-surface);
-    border-color: #f8f9fa;
+    border-color: var(--alv-line-soft);
   }
 
   .btn-light:hover {
@@ -298,7 +298,7 @@
 
   {% if perms.auth.can_edit_tenants %}
   
-  <div class="container mt-4 border rounded p-4 desktop-wizard-container" style="max-width: 800px; border-color: #dee2e6 !important;">
+  <div class="container mt-4 border rounded p-4 desktop-wizard-container" style="max-width: 800px; border-color: var(--alv-line) !important;">
     <form method="post" id="lease-generation-form">
       {% csrf_token %}
       
@@ -312,7 +312,7 @@
               <option value="">Select Country</option>
               <option value="cyprus">Cyprus</option>
               <option value="greece">Greece</option>
-              <option value="spain" disabled style="color: #999;">Spain (Coming Soon)</option>
+              <option value="spain" disabled style="color: var(--alv-ink-faint);">Spain (Coming Soon)</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
@@ -566,7 +566,7 @@
             </div>
             <div class="col-md-6 mb-3">
               <label for="modal-extension-date" class="form-label">Extension Date: <small class="text-muted">(auto-calculated)</small></label>
-              <input type="date" class="form-control" id="modal-extension-date" name="extension_date" readonly style="background-color: #f8f9fa;">
+              <input type="date" class="form-control" id="modal-extension-date" name="extension_date" readonly style="background-color: var(--alv-surface);">
             </div>
             <div class="col-md-6 mb-3">
               <label for="modal-rental-increase" class="form-label"><strong>Rental Increase (%):</strong> <span class="alv-req">*</span></label>

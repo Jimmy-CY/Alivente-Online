@@ -76,6 +76,9 @@ COUNTERS = [
     # B-4b, 8 Oct 2026 - adding itself: it counts the
     # fill/ink pairs of every rule in every template.
     'test_pair_contrast.py',     # fill/ink pairs, whole tree
+    # B-5a, 8 Oct 2026 - adding itself, because its
+    # sections 3 and 5 read every template in the tree.
+    'test_neutrals.py',          # the greys, whole tree
 ]
 
 # A round that touches one of these is not a point round, whatever it

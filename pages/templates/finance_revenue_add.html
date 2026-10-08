@@ -145,7 +145,7 @@ font-weight: 600;
                             <option value="{{ rlt.revenue_line_types_id }}" data-rlt-name="{{ rlt.revenue_line_types_name }}"{% if rlt.lease_role %} data-lease-driven="1"{% endif %}>{{ rlt.revenue_line_types_name }}</option>
                         {% endfor %}
                     </select>
-                    <small id="rlt-lease-hint" style="display:none; color:#6c757d; margin-top:6px;">
+                    <small id="rlt-lease-hint" style="display:none; color:var(--alv-neutral); margin-top:6px;">
                         <i class="fas fa-info-circle"></i> Rent &amp; levies come from the lease for this property &mdash; add or change them on the lease, not here.
                     </small>
                 </div>

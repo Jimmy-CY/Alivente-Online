@@ -590,7 +590,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
      auto-swaps without needing a page refresh.
      ============================================================ -->
 <div class="rotate-prompt" aria-live="polite">
-    <div class="rotate-prompt-inner" style="text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, var(--alv-surface-deep) 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 40px 24px; max-width: 360px; width: 100%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); box-sizing: border-box;">
+    <div class="rotate-prompt-inner" style="text-align: center; background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%); border: 1px solid var(--alv-line); border-radius: 12px; padding: 40px 24px; max-width: 360px; width: 100%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); box-sizing: border-box;">
         <div class="rotate-prompt-icon" aria-hidden="true"
              style="margin-bottom: 20px !important; line-height: 1 !important; display: inline-block !important; animation: plRotateHint 2.5s ease-in-out infinite !important; transform-origin: center center !important; will-change: transform;">
             <i class="fas fa-mobile-alt" style="font-size: 4rem !important; color: #0e7c8b !important;"></i>
@@ -598,10 +598,10 @@ body .rotate-prompt .rotate-prompt-back:hover,
         <div class="rotate-prompt-title" style="color: #2c3e50; font-size: 1.4rem; margin: 0 0 16px 0; font-weight: 600; line-height: 1.3;">
             Please Rotate Your Phone
         </div>
-        <div class="rotate-prompt-message" style="color: #495057; font-size: 1rem; line-height: 1.5; margin: 0 0 12px 0;">
+        <div class="rotate-prompt-message" style="color: var(--alv-ink-strong); font-size: 1rem; line-height: 1.5; margin: 0 0 12px 0;">
             The Profit &amp; Loss report is best viewed in <strong style="color: #0e7c8b;">landscape mode</strong>.
         </div>
-        <div class="rotate-prompt-instruction" style="font-size: 0.95rem; color: #6c757d; font-style: italic; margin: 0 0 24px 0;">
+        <div class="rotate-prompt-instruction" style="font-size: 0.95rem; color: var(--alv-neutral); font-style: italic; margin: 0 0 24px 0;">
             Turn your phone sideways to see all 12 months of data.
         </div>
         <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}"
@@ -722,7 +722,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                         {% endif %}
                                         {% endwith %}
                                         {% endfor %}
-                                        <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                                        <tr class="font-weight-bold" style="background-color: var(--alv-surface)">
                                             <td>TOTAL REVENUE:</td>
                                             <td class="text-right">{{ property_revenue_total.jan|default:0|floatformat:"0"|intcomma }}</td>
                                             <td class="text-right">{{ property_revenue_total.feb|default:0|floatformat:"0"|intcomma }}</td>
@@ -748,7 +748,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
                                         <!-- ACTUAL EXPENSES ROW (only if not Budget view) -->
                                         {% if selected_year != 'budget' and property_actual_expense_total.year > 0 %}
-                                        <tr style="background-color: #f8f9fa;">
+                                        <tr style="background-color: var(--alv-surface);">
                                             <td>Actual Expenses</td>
                                             <td class="text-right">{{ property_actual_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
                                             <td class="text-right">{{ property_actual_expense_total.feb|default:0|floatformat:"0"|intcomma }}</td>
@@ -793,7 +793,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                         {% endfor %}
 
                                         <!-- TOTAL EXPENSES -->
-                                        <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                                        <tr class="font-weight-bold" style="background-color: var(--alv-surface)">
                                             <td>TOTAL EXPENSES:</td>
                                             {% if selected_year != 'budget' %}
                                                 <td class="text-right">{{ property_expense_total.jan|add:property_actual_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
@@ -833,7 +833,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                             <td class="font-weight-bold" style="background-color: #0e7c8b; color: white;">PROFIT</td>
                                             <td colspan="14" style="background-color: #0e7c8b;"></td>
                                         </tr>
-                                        <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                                        <tr class="font-weight-bold" style="background-color: var(--alv-surface)">
                                             <td>NET PROFIT:</td>
                                             {% if selected_year != 'budget' %}
                                                 <td class="text-right">{{ property_revenue_total.jan|subtract:property_expense_total.jan|subtract:property_actual_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
@@ -878,7 +878,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <!-- GROSS ROI -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                <div style="background-color: var(--alv-surface); padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid var(--alv-line);">
                                     <span class="font-weight-bold">Gross ROI:
                                         {% with current_value=property.prop_values_set.first.prop_values_purchase_price %}
                                         {% if current_value %}
@@ -891,7 +891,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                 </div>
 
                                 <!-- NET ROI -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                <div style="background-color: var(--alv-surface); padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid var(--alv-line);">
                                     <span class="font-weight-bold">Net ROI:
                                         {% with current_value=property.prop_values_set.first.prop_values_purchase_price %}
                                         {% if current_value %}
@@ -912,7 +912,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                 </div>
 
                                 <!-- EXPENSE RATIO -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                <div style="background-color: var(--alv-surface); padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid var(--alv-line);">
                                     <span class="font-weight-bold">Expenses to Revenue:
                                         {% if property_revenue_total.year %}
                                             {% if selected_year != 'budget' %}
@@ -929,7 +929,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                 </div>
 
                                 <!-- RENT PER SQ M -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                <div style="background-color: var(--alv-surface); padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid var(--alv-line);">
                                     <span class="font-weight-bold">Rent (€/m<sup>2</sup>):
                                         {% if property_revenue_total.year and property.prop_floor_area %}
                                             {{ property_revenue_total.year|divide:12|divide:property.prop_floor_area|floatformat:"2" }}
@@ -940,7 +940,7 @@ body .rotate-prompt .rotate-prompt-back:hover,
                                 </div>
 
                                 <!-- VALUE INCREASE -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                <div style="background-color: var(--alv-surface); padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid var(--alv-line);">
                                     <span class="font-weight-bold">% Value Increase:
                                         {% with prop_values=property.prop_values_set.first %}
                                         {% if prop_values and prop_values.prop_values_purchase_price and prop_values.prop_values_current_value %}

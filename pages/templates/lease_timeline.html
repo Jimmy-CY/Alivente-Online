@@ -484,7 +484,7 @@ function initTimelineIfNeeded() {
     if (!timelineDataElement) {
         console.error('Timeline data element not found!');
         document.getElementById('leaseTimeline').innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d; padding: 40px 20px;">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: var(--alv-neutral); padding: 40px 20px;">
                 <i class="fas fa-exclamation-triangle fa-4x mb-3"></i>
                 <h4>Error Loading Timeline</h4>
                 <p>Timeline data could not be loaded.</p>
@@ -504,7 +504,7 @@ function initTimelineIfNeeded() {
 
     if (timelineData.length === 0) {
         document.getElementById('leaseTimeline').innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d; padding: 40px 20px;">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: var(--alv-neutral); padding: 40px 20px;">
                 <i class="fas fa-calendar-times fa-4x mb-3"></i>
                 <h4>No Lease Data Available</h4>
                 <p>There are no tenants with lease dates to display on the timeline.</p>

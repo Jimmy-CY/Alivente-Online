@@ -301,7 +301,7 @@
 
             <!-- Select All / None Bar -->
             <div class="select-all-bar">
-                <span style="color:#6c757d;">
+                <span style="color:var(--alv-neutral);">
                     <strong id="grantedCount">0</strong> of {{ all_permissions|length }} modules granted
                 </span>
                 {% if not target_user.is_superuser %}
@@ -407,7 +407,7 @@ function updatePermissionUI(index) {
         }
     } else {
         item.classList.remove('granted');
-        icon.style.background = '#f8f9fa';
+        icon.style.background = 'var(--alv-surface)';
         icon.style.color = 'var(--alv-accent)';
         status.textContent = '✗ No access';
         status.className = 'permission-status denied';

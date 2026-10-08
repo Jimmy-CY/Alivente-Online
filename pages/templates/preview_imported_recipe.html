@@ -1082,7 +1082,7 @@ tr.sortable-chosen {
                     <select class="form-control" 
                             id="author" 
                             name="author" 
-                            style="border: 2px solid #dee2e6; border-radius: 8px; padding: 10px 16px; font-size: 15px; background: white; height: auto;">
+                            style="border: 2px solid var(--alv-line); border-radius: 8px; padding: 10px 16px; font-size: 15px; background: white; height: auto;">
                         <option value="General" {% if extracted_data.author == 'General' %}selected{% endif %}>General</option>
                         <option value="Demetri & Angy" {% if extracted_data.author == 'Demetri & Angy' %}selected{% endif %}>Demetri & Angy</option>
                         <option value="Erene" {% if extracted_data.author == 'Erene' %}selected{% endif %}>Erene</option>
@@ -1508,7 +1508,7 @@ tr.sortable-chosen {
             <div class="cooking-calc-section">
                 <div class="cooking-calc-toggle" onclick="toggleCookingCalc(this)" id="cookingCalcToggle">
                     <h3 class="form-section-title"><i class="fas fa-fire"></i> Cooking Calculator
-                        <span style="font-size: 13px; font-weight: 400; color: #6c757d; margin-left: 10px;">(Optional — for braai/BBQ/roast recipes)</span>
+                        <span style="font-size: 13px; font-weight: 400; color: var(--alv-neutral); margin-left: 10px;">(Optional — for braai/BBQ/roast recipes)</span>
                     </h3>
                     <i class="fas fa-chevron-down toggle-chevron"></i>
                 </div>
@@ -1525,13 +1525,13 @@ tr.sortable-chosen {
                     <div class="form-group mb-4">
                         <label><strong>🔥 Cooking Method</strong></label>
                         <div style="display: flex; gap: 16px; margin-top: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; flex: 1;" id="method-braai-label">
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 2px solid var(--alv-line); border-radius: 8px; cursor: pointer; flex: 1;" id="method-braai-label">
                                 <input type="radio" name="calc_cooking_method" id="calc_method_braai" value="braai"
                                        {% if not cooking_calculation or cooking_calculation.cooking_method == 'braai' %}checked{% endif %}
                                        onchange="updateCookingMethodLabel()">
                                 <span style="font-weight: 600;">🔥 Braai / BBQ</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; flex: 1;" id="method-oven-label">
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 2px solid var(--alv-line); border-radius: 8px; cursor: pointer; flex: 1;" id="method-oven-label">
                                 <input type="radio" name="calc_cooking_method" id="calc_method_oven" value="oven"
                                        {% if cooking_calculation.cooking_method == 'oven' %}checked{% endif %}
                                        onchange="updateCookingMethodLabel()">
@@ -1743,7 +1743,7 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-body">
                     <!-- Unit Name Section -->
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="background: var(--alv-surface); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
                             <i class="fas fa-font"></i> Unit Name
                         </h6>
@@ -1772,9 +1772,9 @@ tr.sortable-chosen {
                     </div>
                     
                     <!-- Abbreviation Section -->
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="background: var(--alv-surface); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
-                            <i class="fas fa-compress-alt"></i> Abbreviation <span style="font-weight: normal; color: #6c757d;">(Optional)</span>
+                            <i class="fas fa-compress-alt"></i> Abbreviation <span style="font-weight: normal; color: var(--alv-neutral);">(Optional)</span>
                         </h6>
                         <div class="row">
                             <div class="col-md-6">
@@ -3428,7 +3428,7 @@ function displaySpellCheckResults(errors, totalErrors, instructions) {
     let html = `
         <div class="spell-error-stats">
             <strong><i class="fas fa-exclamation-circle"></i> Found ${totalErrors} potential spelling error${totalErrors !== 1 ? 's' : ''}</strong>
-            <p style="margin: 8px 0 0 0; color: #6c757d; font-size: 14px;">
+            <p style="margin: 8px 0 0 0; color: var(--alv-neutral); font-size: 14px;">
                 Click on suggestions to replace words in your instructions.
             </p>
         </div>
@@ -3457,7 +3457,7 @@ function displaySpellCheckResults(errors, totalErrors, instructions) {
             
             if (error.suggestions && error.suggestions.length > 0) {
                 html += `<div class="spell-suggestions">
-                    <strong style="font-size: 13px; color: #495057;">Suggestions:</strong><br>`;
+                    <strong style="font-size: 13px; color: var(--alv-ink-strong);">Suggestions:</strong><br>`;
                 
                 error.suggestions.forEach(suggestion => {
                     html += `
@@ -3471,7 +3471,7 @@ function displaySpellCheckResults(errors, totalErrors, instructions) {
                 
                 html += `</div>`;
             } else {
-                html += `<p style="color: #6c757d; font-size: 13px; margin-top: 10px;">
+                html += `<p style="color: var(--alv-neutral); font-size: 13px; margin-top: 10px;">
                     <i class="fas fa-info-circle"></i> No suggestions available
                 </p>`;
             }
@@ -3681,13 +3681,13 @@ function updateCookingMethodLabel() {
     if (isOven) {
         fireLabel.innerHTML = '<i class="fas fa-temperature-high"></i> <strong>Oven Heating Time</strong> (mins)';
         schedFireLabel.textContent = '🫕 Pre-Heat Oven';
-        braaiLabel.style.borderColor = '#dee2e6';
+        braaiLabel.style.borderColor = 'var(--alv-line)';
         ovenLabel.style.borderColor = '#0e7c8b';
     } else {
         fireLabel.innerHTML = '<i class="fas fa-fire"></i> <strong>Fire Lighting Time</strong> (mins)';
         schedFireLabel.textContent = '🔥 Light Fire';
         braaiLabel.style.borderColor = '#0e7c8b';
-        ovenLabel.style.borderColor = '#dee2e6';
+        ovenLabel.style.borderColor = 'var(--alv-line)';
     }
 }
 

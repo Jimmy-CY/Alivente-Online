@@ -188,7 +188,7 @@
         </div>
       </div>
 
-      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+      <div class="modal-footer" style="background:var(--alv-surface); border-top:1px solid var(--alv-line);">
         <button type="button" class="btn action-secondary" data-dismiss="modal" id="val-preview-cancel-btn">
           <i class="fas fa-times"></i> Cancel
         </button>
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (delta < -0.005) {
             return `<span style="color:#28a745;">&minus;&euro;${formatMoney(Math.abs(delta))}</span>`;
         }
-        return `<span style="color:#6c757d;">&euro;0.00</span>`;
+        return `<span style="color:var(--alv-neutral);">&euro;0.00</span>`;
     }
 
     function escapeHtml(s) {

@@ -2137,7 +2137,12 @@ $suites = @(
     # live pairs still below AA by name, each against the round
     # that owns it; section 4 names the 21 inactive ones and says
     # why WCAG exempts them.
-    'test_pair_contrast.py'
+    'test_pair_contrast.py',
+    # B-5a, 8 Oct 2026 - the greys. Section 3 proves role picked
+    # the token and not distance, section 4 is the fill/ink PAIR gate
+    # B-4 did not have - fed B-4's own 9.77 -> 3.90 regression it
+    # objects - and section 5 asserts what the round refused.
+    'test_neutrals.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
