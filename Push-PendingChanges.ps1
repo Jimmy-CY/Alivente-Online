@@ -2131,7 +2131,13 @@ $suites = @(
     # darker than its rest state. Section 6 asserts the leave list -
     # the oranges, the chart series, the highlighter and the anTok
     # fallbacks - is untouched.
-    'test_amber.py'
+    'test_amber.py',
+    # B-4b, 8 Oct 2026 - the fill/ink PAIR census. Section 2 is
+    # the one declaration this round fixed; section 3 pins the 32
+    # live pairs still below AA by name, each against the round
+    # that owns it; section 4 names the 21 inactive ones and says
+    # why WCAG exempts them.
+    'test_pair_contrast.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

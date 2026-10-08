@@ -852,7 +852,21 @@ ROUNDS = [
     # highlighter - brightness IS its function - and act_expense's
     # anTok('warn', '#8e6207'), which reads the token and keeps the
     # literal as its FALLBACK. That is the correct pattern.
-    '.bak_amber',
+    '.bak_amber',    # B-4b, 8 Oct 2026 - one declaration, and the instrument that
+    # should have caught it. B-4 moved .btn-edit:hover's FILL to
+    # --alv-warn and left the #000 ink where it was: 9.77:1 became
+    # 3.90:1 on a hover state that ships. The ink is now
+    # --alv-on-accent at 5.38:1, which is base's own .badge-warning
+    # pairing.
+    #
+    # A rule's colour is a PAIR, and a round that moves half a pair
+    # has changed the pair. B-4's gate checked ink conversions and
+    # never fill conversions against their companion ink, so it could
+    # not see this. test_pair_contrast.py is the census that can: 701
+    # pairs tree-wide, 54 below AA - 21 of them inactive controls,
+    # which WCAG 1.4.3 exempts, and 32 live ones PINNED BY NAME so a
+    # later round cannot add one by swapping a different one out.
+    '.bak_editink',
 ]
 
 

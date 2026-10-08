@@ -73,6 +73,9 @@ COUNTERS = [
     # since has been swept against an incomplete list.
     'test_cssrules_outside.py',  # colour literals, whole tree
     'test_important_base.py',    # !important, whole tree
+    # B-4b, 8 Oct 2026 - adding itself: it counts the
+    # fill/ink pairs of every rule in every template.
+    'test_pair_contrast.py',     # fill/ink pairs, whole tree
 ]
 
 # A round that touches one of these is not a point round, whatever it
