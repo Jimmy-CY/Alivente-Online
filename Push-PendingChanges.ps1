@@ -2171,7 +2171,11 @@ $suites = @(
     # proves all twelve destinations moved and none was invented or
     # lost; section 4 is that the page declares no tab CSS of its
     # own, which is the whole return on TB-1.
-    'test_finance_tabs.py'
+    'test_finance_tabs.py',
+    # TB-2, 8 Oct 2026 - the tabs are CLICKED, on all three pages, and
+    # exactly one carries .active after each click. The control is the
+    # two pages as this round found them, where two did.
+    'test_tab_switch.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

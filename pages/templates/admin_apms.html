@@ -231,7 +231,18 @@
 
 <script>
 function switchTab(tab) {
-    // Update tab buttons
+    // TB-2, 8 Oct 2026 - THESE TWO LINES ARE THE DEFECT TB-1 SHIPPED.
+    // They were here before that round, carrying a cross-class as a
+    // second argument:
+    //     .classList.remove('active', 'future-active');
+    // TB-1 was retiring the cross-classes and removed the whole LINE
+    // instead of the ARGUMENT - and the line was also the only thing
+    // that took `active` OFF a tab. `active` then accumulated: click
+    // the second tab and both carried it. The panels below were
+    // removed correctly, which is why the content was always right.
+    // Demetri found it in the deployed page within the hour.
+    document.getElementById('tab-alivente').classList.remove('active');
+    document.getElementById('tab-future').classList.remove('active');
 
     // Update panels
     document.getElementById('panel-alivente').classList.remove('active');

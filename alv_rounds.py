@@ -991,7 +991,21 @@ ROUNDS = [
     # for B-7, so B-7's list is one shorter and this round owns that
     # number. The Configuration header was var(--alv-ink-soft), the
     # last grey header in the module.
-    '.bak_fintabs',
+    '.bak_fintabs',    # TB-2, 8 Oct 2026 - THE LINES THAT TURN A TAB OFF, PUT BACK.
+    # TB-1 retired the alivente-active / future-active cross-classes by
+    # deleting the two lines that carried them, and those lines also
+    # carried 'active' - the only thing that took it OFF a tab. Click
+    # the second tab and both carried it; click back and both still
+    # did. The panels were removed correctly, so the content was always
+    # right and only the tabs were wrong. Demetri found it in the
+    # deployed page within the hour, on Administration and Personal
+    # both. finance.html was never affected: FN-2 wrote its switchTab
+    # fresh, and this fix takes that shape so all three read alike.
+    #
+    # AND THE SUITES ALL PASSED. Every tab suite adds .active in its own
+    # probe and measures the CSS; not one ever called switchTab. A class
+    # nobody applies is a class nobody tested. test_tab_switch.py clicks.
+    '.bak_tabswitch',
 ]
 
 

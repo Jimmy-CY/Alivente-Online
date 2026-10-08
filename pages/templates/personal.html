@@ -117,6 +117,13 @@
 // the same shape on purpose: a second spelling of the same behaviour is
 // a second thing to keep in step.
 function switchTab(tab) {
+    // TB-2, 8 Oct 2026 - the same defect as admin_apms.html, arrived
+    // the same way: PR-1 wrote this function with the cross-class
+    // removals in it, TB-1 retired the cross-classes by deleting the
+    // lines, and `active` was never taken off a tab again. See
+    // apply_tab_switch_fix.py for the whole account.
+    document.getElementById('tab-personal').classList.remove('active');
+    document.getElementById('tab-compliance').classList.remove('active');
 
     document.getElementById('personal-panel').classList.remove('active');
     document.getElementById('compliance-panel').classList.remove('active');
