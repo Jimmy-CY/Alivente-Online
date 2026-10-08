@@ -123,7 +123,22 @@ GREENS = {'#28a745': 'the tile fill and the tab ink',
 # Asserting them against the wrong file is a check about nothing.
 UNTOUCHED = {
     'personal.html': ('--future-dark: #6c757d',),
-    'admin_apms.html': ('--future-dark: #6c757d', '#5a6268', '#adb5bd'),
+    # AD-1, 8 OCT 2026 - THE ADMIN HALF OF THIS CLAIM IS SPENT,
+    # and Demetri spent it: "I want to change the System Tab to
+    # conform with our Teal colours. It must look and behave
+    # exactly like the Functional Tab with regards to colours."
+    #
+    # PT was right on the day. The FUTURE side WAS grey and the
+    # greens had to go without taking it with them. What PT could
+    # not know is that he would later want the grey gone too.
+    # So the claim is MOVED, not deleted: admin_apms now asserts
+    # the opposite, by name, and personal.html is untouched -
+    # its FUTURE tab is still commented out and still grey.
+    #
+    # B-4 overturned test_fsr_palette's decided #ecd9a8 in
+    # silence and had to be backed out. This is what the other
+    # way round looks like.
+    'admin_apms.html': (),
 }
 
 passed = failed = skipped = 0

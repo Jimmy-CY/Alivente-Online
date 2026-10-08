@@ -888,7 +888,35 @@ ROUNDS = [
     # property and the chart would vanish) and 9 js_colour_context
     # cannot classify. Left: the black S-a settled, and 81 tier C uses
     # that are changes of appearance - B-5b, with renders.
-    '.bak_neutrals',
+    '.bak_neutrals',    # AD-1, 8 Oct 2026 - the System tab, at his ask: "It must look
+    # and behave exactly like the Functional Tab with regards to
+    # colours." Two page-local tokens carry most of it - --future-dark
+    # and --future-light repoint at --alv-accent and
+    # --alv-accent-soft - and three rules that do not read them are
+    # changed by hand, including the inactive hover, which was a
+    # different colour from Functional's and so was false on hover too.
+    #
+    # ONE NUMBER GOES DOWN AND IT IS MEANT TO. The System tile was
+    # white on --alv-ink-soft at 5.53:1 and is now white on
+    # --alv-accent at 4.91:1, which is what Functional has always
+    # read. Matching it is the instruction.
+    #
+    # THIS OVERTURNS test_personal_teal.py, WHICH DECIDED THE GREY.
+    # PT's claim is moved rather than deleted, with his words and the
+    # date beside it. B-4 overturned a decision in silence and had to
+    # be backed out.
+    #
+    # The two Coming Soon tiles become RESERVED CELLS - no fill, no
+    # border, no shadow, no hover, aria-hidden, pointer-events off -
+    # so the panel keeps its height and growth lands in a space
+    # already drawn. .btn-future-disabled goes with them, and with it
+    # the last #adb5bd on the page that was not a live permission
+    # state.
+    #
+    # And the pair census learns page-local :root tokens, because
+    # every tab rule in the tree is written in one and not a single
+    # one of them was being counted. 701 pairs became 714.
+    '.bak_systeal',
 ]
 
 

@@ -156,18 +156,37 @@ def contrast(a, b):
     return (hi + .05) / (lo + .05)
 
 
-def base_tokens():
-    """Every --alv-* base declares on :root. Base carries them in TWO
-    separate rules and a map built from the first alone is six short."""
-    code = T.code_only(read(T.path_of('base.html')))
+def base_tokens(code=None):
+    """Every --alv-* declared on a :root rule, name -> value.
+
+    Base's own, plus - when `code` is a page's markup - that page's,
+    which override base's for that page.
+
+    AD-1, 8 Oct 2026: THIS USED TO READ BASE ONLY, AND THAT MADE IT
+    BLIND TO THE TABS. admin_apms.html and personal.html write their
+    tabs through page-local tokens (--alivente-dark, --future-light and
+    the rest), so every tab rule resolved to None and was not counted.
+    The System tab's active state was 3.95:1 and no instrument in the
+    tree could see it. Measured when this was fixed: 701 pairs became
+    714 and four more read below AA, three of them the same
+    --alv-accent on --alv-accent-soft at 4.31 that section 5 already
+    calls one base decision. They were always there.
+
+    A page token that resolves to another token is chased by resolve(),
+    so --alivente-dark: var(--alv-accent) lands on #0e7c8b.
+    """
     out = {}
-    for a, b in R.style_spans(code):
-        for sel, ba, bb, _x, _y in R.rule_spans(code, a, b):
-            if ':root' not in sel:
-                continue
-            for k, v in re.findall(r'(--alv-[\w-]+)\s*:\s*([^;}]+)',
-                                   code[ba:bb]):
-                out[k] = v.strip()
+    srcs = [T.code_only(read(T.path_of('base.html')))]
+    if code is not None:
+        srcs.append(code)
+    for src in srcs:
+        for a, b in R.style_spans(src):
+            for sel, ba, bb, _x, _y in R.rule_spans(src, a, b):
+                if ':root' not in sel:
+                    continue
+                for k, v in re.findall(r'(--[\w-]+)\s*:\s*([^;}]+)',
+                                       src[ba:bb]):
+                    out[k] = v.strip()
     return out
 
 
@@ -223,13 +242,14 @@ def census(override=None):
     measure what it is ABOUT to write before it writes it. A patcher
     verifies, then writes.
     """
-    tok = base_tokens()
     override = override or {}
     n = 0
     live, dead = [], []
     for p in sorted(T.templates()):
         code = T.code_only(override.get(p) or read(p))
-        for sel, (bg, ink) in pair_table(code, tok).items():
+        # AD-1: the page's OWN :root as well as base's, or every rule
+        # written in a page-local token goes uncounted.
+        for sel, (bg, ink) in pair_table(code, base_tokens(code)).items():
             cr = contrast(bg, ink)
             if cr is None:
                 continue

@@ -79,8 +79,8 @@
   :root {
     --alivente-dark: var(--alv-accent);
     --alivente-light: var(--alv-accent-soft);
-    --future-dark: #6c757d;
-    --future-light: var(--alv-surface-deep);
+    --future-dark: var(--alv-accent);
+    --future-light: var(--alv-accent-soft);
   }
 
 
@@ -158,7 +158,7 @@
   }
 
   .admin-tab.future-tab:not(.active):hover {
-    background-color: var(--alv-line-soft);
+    background-color: var(--alv-accent-soft);
   }
   
   /* Tab Content */
@@ -242,19 +242,33 @@
   }
 
   .btn-future {
-    background-color: var(--alv-ink-soft);
+    background-color: var(--alv-accent);
     border: none;
   }
 
   .btn-future:hover {
-    background-color: var(--alv-ink-soft);
+    background-color: var(--alv-accent-ink);
   }
 
-  .btn-future-disabled {
-    background-color: #adb5bd;
+  /* AD-1, 8 Oct 2026 - A RESERVED CELL IS NOT A DISABLED BUTTON.
+     Demetri asked for the two Coming Soon tiles to go and for blank
+     space to be left for future growth, so the panel keeps its height
+     and whatever lands here next lands in a space already drawn.
+     Nothing to see, nothing to click, nothing read out: no fill, no
+     border, no shadow, no hover, aria-hidden in the markup and
+     pointer-events off here. It is NOT .btn-future-disabled with the
+     label taken out - that rule has gone, and with it the last
+     #adb5bd on this page that was not a live permission state. */
+  .admin-btn--reserved {
+    background: none;
     border: none;
-    opacity: 0.6;
-    cursor: default;
+    box-shadow: none;
+    pointer-events: none;
+  }
+
+  .admin-btn--reserved:hover {
+    transform: none;
+    box-shadow: none;
   }
 
   /* Permission-disabled button: greyed out, no hover effect, no pointer */
@@ -314,6 +328,14 @@
     .admin-btn h6 {
       font-size: 0.95rem;
       line-height: 1.2;
+    }
+
+    /* AD-1, 8 Oct 2026 - at one column a reserved cell is a screenful
+       of nothing, so the panel ends just below the last button. The
+       cells are still there at two columns, where they cost no height
+       at all. */
+    .admin-btn--reserved {
+      display: none;
     }
   }
 </style>
@@ -402,17 +424,11 @@
         <h6>Menu Preference</h6>
       </a>
 
-      <!-- Placeholder 3 -->
-      <div class="admin-btn btn-future-disabled">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
-
-      <!-- Placeholder 4 -->
-      <div class="admin-btn btn-future-disabled">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
+      <!-- Reserved for growth, AD-1 8 Oct 2026. Empty on purpose:
+           it holds the second row so the panel keeps its height.
+           aria-hidden because there is nothing here to announce. -->
+      <div class="admin-btn admin-btn--reserved" aria-hidden="true"></div>
+      <div class="admin-btn admin-btn--reserved" aria-hidden="true"></div>
 
     </div>
   </div>

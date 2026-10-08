@@ -2142,7 +2142,15 @@ $suites = @(
     # the token and not distance, section 4 is the fill/ink PAIR gate
     # B-4 did not have - fed B-4's own 9.77 -> 3.90 regression it
     # objects - and section 5 asserts what the round refused.
-    'test_neutrals.py'
+    'test_neutrals.py',
+    # AD-1, 8 Oct 2026 - the System tab in teal. Section 2 renders
+    # both tabs in Chromium and asserts they compute the SAME
+    # colours, which is the instruction word for word; section 3 is
+    # the tile contrast, including the one number that went down on
+    # purpose; section 4 is the reserved cells, which are not
+    # disabled buttons; section 5 is the decision this round
+    # overturned, and who overturned it.
+    'test_system_teal.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
