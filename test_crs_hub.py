@@ -236,7 +236,27 @@ hc = '\n'.join(STYLE.findall(read(HOUSE)))
 
 
 def rule(css, sel):
-    return [m.group(2) for m in RULE.finditer(css) if bare(m.group(1)) == sel]
+    """The bodies of the rules whose selector list CONTAINS `sel`.
+
+    PR-1, 8 Oct 2026: this was an equality, and personal.html's panel
+    rule became a list of two when the Compliance tab joined it -
+    .tab-panel.personal-panel, .tab-panel.compliance-panel - so the
+    lookup found nothing and a true claim went red on the SHAPE of a
+    rule rather than its content.
+
+    A selector list is a shared surface. Asking whether a rule is
+    written for exactly one name is a question that only holds until
+    somebody else needs the same treatment, and `.btn` would match
+    `.btn-edit` if this split on anything but the comma.
+    """
+    # STRIP THE COMMENTS FIRST, THEN SPLIT. bare() exists because of
+    # lesson 21, and splitting on a comma before calling it splits
+    # inside any comment banner that holds one - which is how the
+    # first version of this change returned the mobile copy of
+    # .crs-panel and lost the real one.
+    return [m.group(2) for m in RULE.finditer(css)
+            if sel in [' '.join(x.split())
+                       for x in bare(m.group(1)).split(',')]]
 
 
 def decl(body_, prop):

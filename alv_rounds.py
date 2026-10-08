@@ -916,7 +916,34 @@ ROUNDS = [
     # And the pair census learns page-local :root tokens, because
     # every tab rule in the tree is written in one and not a single
     # one of them was being counted. 701 pairs became 714.
-    '.bak_systeal',
+    '.bak_systeal',    # PR-1, 8 Oct 2026 - a COMPLIANCE tab on Personal, at his ask,
+    # and CRS Reporting moved onto it. The tile, its markup and its
+    # perms_map.crs gate travel together and are not copied: the page
+    # holds exactly one CRS link before and after.
+    #
+    # IT INVERTS P6. P2 commented out the FUTURE tab on 29 Sep, which
+    # took the shared right edge with it and left the Personal tab
+    # open on one side; P6 removed `border-right: none` so the tab
+    # drew its own. Compliance puts a neighbour back, so the
+    # declaration comes back and the Compliance tab draws the line
+    # through border-left-color. P6's own note on the page said the
+    # rule follows the NEIGHBOUR COUNT - this round is the other half
+    # of what that note anticipated.
+    #
+    # P6's suite is RE-POINTED, not edited into agreement: its claim
+    # was "the Personal tab has a right border" and is now "the shared
+    # edge is there and is drawn once", measured the same way at the
+    # same two widths. That claim is true of both arrangements.
+    # test_future_tab_off.py's "exactly ONE panel" becomes "no FUTURE
+    # panel", which is what it meant.
+    #
+    # SAME LOOK AND FEEL MEANS THE SAME RULES. Compliance cannot reuse
+    # .future-tab - that is grey on this page and test_personal_teal
+    # still says so - and it does not get its own copy of the accent
+    # rules either, because two copies drift. The four .personal-tab
+    # selectors each gain .compliance-tab, so the tabs match by
+    # construction.
+    '.bak_compliance',
 ]
 
 

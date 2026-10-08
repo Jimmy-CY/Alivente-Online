@@ -2150,7 +2150,14 @@ $suites = @(
     # purpose; section 4 is the reserved cells, which are not
     # disabled buttons; section 5 is the decision this round
     # overturned, and who overturned it.
-    'test_system_teal.py'
+    'test_system_teal.py',
+    # PR-1, 8 Oct 2026 - the Compliance tab. Section 2 renders both
+    # tabs and asserts they compute the SAME colours, the way AD-1
+    # does for Administration; section 3 measures the shared edge as
+    # one 3px line; section 4 proves CRS Reporting MOVED rather than
+    # being copied, gate and all; section 5 drives switchTab and
+    # checks each panel actually shows.
+    'test_compliance_tab.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

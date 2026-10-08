@@ -592,10 +592,21 @@ ps = read(os.path.join(ROOT, PS1))
 ok("'%s'" % ME in ps, '%s is in the $suites list' % ME)
 ok(os.path.isfile(os.path.join(ROOT, PATCHER)), '%s is on disk' % PATCHER)
 pc = read(os.path.join(ROOT, 'test_pair_contrast.py'))
-ok('EXPECT_PAIRS = 714' in pc,
-   'and the pair census went 701 -> 714, because this round taught it to '
-   'read a page own :root - every tab rule in the tree is written in one '
-   'and not a single one of them was being counted')
+# PR-1, 8 Oct 2026: A FLOOR, NOT AN EQUALITY. This read
+# `'EXPECT_PAIRS = 714' in pc` - the census's value on the day - and PR-1
+# added a tab, which is a pair, so it read 716 and AD-1 went red for a
+# change that was none of its business. What AD-1 proved is that the
+# census GREW when it learnt to read a page's own :root; 701 is the
+# number that cannot come back.
+_pairs = int(re.search(r'EXPECT_PAIRS = (\d+)', pc).group(1))
+ok(_pairs >= 714,
+   'and the pair census went 701 -> 714 and is now %d, because this round '
+   'taught it to read a page own :root - every tab rule in the tree is '
+   'written in one and not a single one of them was being counted'
+   % _pairs)
+ok(_pairs > 701,
+   '  which is the claim that survives: 701 was what it could see before, '
+   'and no later round can take it back there')
 
 print('')
 print('=' * 74)

@@ -119,8 +119,13 @@ if HAVE_DJANGO:
     # strip's own 'admin-tabs', so counting the word said two when there
     # was one.
     _tabs = out.count('class="admin-tab ')
-    ok('PERSONAL' in out and _tabs == 1,
-       '  while PERSONAL is the one tab that remains',
+    # PR-1, 8 Oct 2026. This counted tabs to say the FUTURE one had
+    # gone. Compliance is a second tab and a THIRD THING - not that tab
+    # brought back - so the count moved and the claim did not. What P2
+    # proved is that the strip carries no FUTURE, which the two checks
+    # above measure on the rendered output and which is still true.
+    ok('PERSONAL' in out and 'FUTURE' not in out,
+       '  while PERSONAL remains and no tab in the strip says FUTURE',
        '%d admin-tab(s)' % _tabs)
 
     b = alv_tree.path_of(PAGE) + SUFFIX
@@ -178,9 +183,18 @@ ok('var(--alv-surface-deep)' in css,
 head('4. IT LED NOWHERE, WHICH IS WHY THIS IS SAFE')
 # ==========================================================================
 panels = re.findall(r'class="tab-panel ([\w\- ]+)"', page)
-ok(len(panels) == 1 and 'personal-panel' in panels[0],
-   'the page holds exactly ONE panel, and it is the Personal one - the '
-   'tab that was switched off had nothing behind it', panels)
+# PR-1, 8 Oct 2026. THIS SAID "EXACTLY ONE PANEL", AND MEANT "NO FUTURE
+# PANEL". The FUTURE tab led nowhere - that is what made switching it off
+# safe, and it is the claim worth keeping. Compliance is a third thing
+# with a panel of its own behind it, so the count moved and the meaning
+# did not. The FUTURE tab is still commented out and its CSS is still
+# unused on purpose, which sections 1 to 3 above still prove.
+ok(not any('future' in p for p in panels),
+   'NO panel on this page is a Future one - the tab that was switched off '
+   'had nothing behind it, which is what made switching it off safe',
+   panels)
+ok(any('personal-panel' in p for p in panels),
+   '  the Personal panel is still here', panels)
 ok('id="personal-panel"' in page,
    '  which is the panel the remaining tab shows')
 # STRIP THE STYLES **AND THE DJANGO COMMENT**. The first version stripped

@@ -29,9 +29,15 @@
 
 <!-- Tab Navigation -->
 <div class="admin-tabs">
-  <div class="admin-tab personal-tab active">
+  <div class="admin-tab personal-tab active" id="tab-personal"
+       onclick="switchTab('personal')">
     <i class="fas fa-user"></i>
     <span>PERSONAL</span>
+  </div>
+  <div class="admin-tab compliance-tab personal-active" id="tab-compliance"
+       onclick="switchTab('compliance')">
+    <i class="fas fa-landmark"></i>
+    <span>COMPLIANCE</span>
   </div>
   {% comment %}
     THE FUTURE TAB, OFF SINCE 29 SEP 2026, AT DEMETRI'S ASK.
@@ -83,6 +89,15 @@
       </a>
       {% endif %}
 
+    </div>
+  </div>
+
+  <!-- Compliance Panel - PR-1, 8 Oct 2026. CRS Reporting moved here
+       from the Personal panel, markup and permission gate unchanged;
+       it is the same tile on a different panel. -->
+  <div id="compliance-panel" class="tab-panel compliance-panel">
+    <div class="admin-grid">
+
       {% if perms_map.crs %}
       <!-- CRS Reporting -->
       <a href="{% url 'crs:index' %}" class="admin-btn btn-personal">
@@ -95,6 +110,30 @@
   </div>
 
 </div>
+
+<script>
+// PR-1, 8 Oct 2026. This page had no switchTab at all - one tab never
+// needed one. This is admin_apms.html's, with its two names, and it is
+// the same shape on purpose: a second spelling of the same behaviour is
+// a second thing to keep in step.
+function switchTab(tab) {
+    document.getElementById('tab-personal').classList.remove('active', 'compliance-active');
+    document.getElementById('tab-compliance').classList.remove('active', 'personal-active');
+
+    document.getElementById('personal-panel').classList.remove('active');
+    document.getElementById('compliance-panel').classList.remove('active');
+
+    if (tab === 'personal') {
+        document.getElementById('tab-personal').classList.add('active');
+        document.getElementById('tab-compliance').classList.add('personal-active');
+        document.getElementById('personal-panel').classList.add('active');
+    } else {
+        document.getElementById('tab-compliance').classList.add('active');
+        document.getElementById('tab-personal').classList.add('compliance-active');
+        document.getElementById('compliance-panel').classList.add('active');
+    }
+}
+</script>
 
 <style>    /* B-1, 5 Oct 2026 - 4 literal(s) on this page became a var().
        Each one was already the byte-identical value of the
@@ -140,43 +179,83 @@
     z-index: 1;
   }
 
-  .admin-tab.personal-tab {
+  .admin-tab.personal-tab,
+  .admin-tab.compliance-tab {
     border-color: var(--personal-dark);
     color: var(--personal-dark);
     background-color: var(--alv-paper);
     border-bottom-color: var(--personal-dark);
-    /* IT DRAWS ITS OWN RIGHT EDGE NOW - 29 Sep, and here is the history.
+    /* IT SHARES ITS RIGHT EDGE AGAIN - PR-1, 8 Oct 2026, and the whole
+       history is the point.
+
        This rule said `border-right: none`, because the FUTURE tab sat
-       hard against it and drew the shared line itself, through
-       .admin-tab.future-tab.personal-active's border-left-color. Two
-       tabs, one edge, drawn once.
+       hard against it and drew the shared line itself through its own
+       border-left-color. Two tabs, one edge, drawn once.
 
-       P2 commented the Future tab out, and the line went with it: the
-       tab was left open on its right and the panel's border began in
-       mid-air. Nothing butts against this tab any more, so it draws all
-       four of its own sides.
+       P2 commented the FUTURE tab out on 29 Sep and the line went with
+       it: the tab was left open on its right and the panel's border
+       began in mid-air. Demetri saw it within minutes. P6 removed the
+       declaration so the tab drew all four of its own sides, and wrote
+       here that the rule follows the NEIGHBOUR COUNT and not the page.
 
-       admin_apms.html carries the same `border-right: none` and KEEPS
-       it - both of its tabs are still there, so its shared edge still
-       has somebody drawing it. If its Future tab is ever switched off
-       too, it needs this same line removed; apply_tab_right_edge.py
-       refuses to run while that page's Future tab is missing, so the
-       question cannot be forgotten. */
+       COMPLIANCE PUTS A NEIGHBOUR BACK, so the declaration comes back
+       with it and .admin-tab.compliance-tab.personal-active draws the
+       shared line. P6's suite is re-pointed, not deleted: its claim was
+       "the Personal tab has a right border", and it is now "the shared
+       edge is there and is drawn once" - the same measurement in the
+       same browser, and true of both arrangements.
+
+       THE NEXT PERSON TO ADD OR REMOVE A TAB HERE OWES THIS LINE A
+       THOUGHT. One tab: no neighbour, so the tab draws its own right
+       edge. Two or more: every tab BUT THE LAST has `border-right:
+       none` and its right-hand neighbour draws the line; the LAST tab
+       always draws its own, because nothing is standing there to do
+       it. See the rule below. */
     border-radius: 10px 10px 0 0;
   }
 
-  .admin-tab.personal-tab.active {
+  .admin-tab.personal-tab.active,
+  .admin-tab.compliance-tab.active {
     background-color: var(--personal-light);
     color: var(--personal-dark);
     border-bottom-color: var(--personal-light);
     z-index: 10;
   }
 
+  /* PR-1, 8 Oct 2026 - THE LEFT-HAND TAB ONLY.
+     `border-right: none` says "my right-hand neighbour draws this
+     line", so it belongs to the tab that HAS one and to no other.
+
+     The first cut of this round put it in the rule both tabs share,
+     and the result was the P6 defect on the new tab: COMPLIANCE's top
+     border curved round its corner and stopped in mid-air, with the
+     page running straight out to its right. Demetri spotted it in the
+     render inside a minute, which is twice now on this page.
+     admin_apms.html has always had it right - only .alivente-tab
+     carries the declaration, and .future-tab draws its own right edge
+     because nothing stands to the right of it. */
+  .admin-tab.personal-tab {
+    border-right: none;
+  }
+
+  /* And the one on the right draws the line between them, exactly as
+     admin_apms.html's SYSTEM tab does. Two tabs, one edge, drawn
+     once. */
+  .admin-tab.compliance-tab.personal-active {
+    border-left-color: var(--personal-dark);
+    border-bottom-color: var(--personal-dark);
+  }
+
+  .admin-tab.personal-tab.compliance-active {
+    border-bottom-color: var(--personal-dark);
+  }
+
   .admin-tab.personal-tab.future-active {
     border-bottom-color: var(--future-dark);
   }
 
-  .admin-tab.personal-tab:not(.active):hover {
+  .admin-tab.personal-tab:not(.active):hover,
+  .admin-tab.compliance-tab:not(.active):hover {
     background-color: var(--alv-accent-soft);
   }
 
@@ -213,7 +292,8 @@
     display: block;
   }
 
-  .tab-panel.personal-panel {
+  .tab-panel.personal-panel,
+  .tab-panel.compliance-panel {
     border-color: var(--personal-dark);
     background-color: var(--personal-light);
   }
