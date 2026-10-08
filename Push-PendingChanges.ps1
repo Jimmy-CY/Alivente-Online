@@ -2157,7 +2157,14 @@ $suites = @(
     # one 3px line; section 4 proves CRS Reporting MOVED rather than
     # being copied, gate and all; section 5 drives switchTab and
     # checks each panel actually shows.
-    'test_compliance_tab.py'
+    'test_compliance_tab.py',
+    # TB-1, 8 Oct 2026 - the house tab treatment. Section 2 renders
+    # BOTH landing pages and asserts every tab, panel and tile
+    # computes the same, because one treatment is the claim; section
+    # 3 is the derived edge; section 4 names each of the ten drifted
+    # rules and which copy won it and why; section 6 is what moved
+    # out of the pages and what stayed.
+    'test_house_tabs.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

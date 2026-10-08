@@ -276,7 +276,11 @@ was_p = rule(cw, '.crs-panel')
 ok(was_p and 'var(--crs-dark)' in was_p[0],
    '  and painted its panel from it', was_p)
 
-house_p = rule(hc, '.tab-panel')
+# TB-1, 8 Oct 2026: THE HOUSE HUB'S PANEL IS BASE'S NOW. X5 read it
+# off personal.html because that is where it lived; one treatment in
+# base is what X5's own closing note asked for.
+hc_base = '\n'.join(STYLE.findall(read(alv_tree.path_of('base.html'))))
+house_p = rule(hc_base, '.tab-panel')
 ok(house_p, 'personal.html - the house hub - HAS a panel', house_p)
 ok(house_p and decl(house_p[0], 'padding') == '30px'
    and decl(house_p[0], 'border') == '3px solid',
@@ -288,10 +292,15 @@ ok(now_p and decl(now_p[0], 'padding') == '30px'
    'ever wrong', now_p)
 ok(now_p and 'var(--alv-accent-soft)' in now_p[0],
    '  it now takes the accent pair, as personal.html does')
-hp = rule(hc, '.tab-panel.personal-panel')
-ok(hp and 'var(--personal-dark)' in hp[0],
-   '  CONTROL: which personal.html reaches through a local alias onto '
-   '--alv-accent; this page uses the token directly', hp)
+# TB-1: THE LOCAL ALIAS IS GONE. --personal-dark named the accent and
+# nothing else; base names the accent. The control that mattered - that
+# the CRS hub and the house hub land on the SAME colour - now reads
+# better, because there is only one place either of them can get it.
+ok(house_p and 'var(--alv-accent)' in house_p[0],
+   '  CONTROL: and the house panel takes --alv-accent directly, with no '
+   'page-local alias in between - there is one treatment and one name',
+   house_p)
+hp = house_p
 
 # THE DISTINCTION, MADE EXECUTABLE.
 for page, want in (('country_list.html', False), ('fi_list.html', False),
@@ -319,9 +328,12 @@ now_t = rule(cn, '.crs-btn')
 ok(now_t and decl(now_t[0], 'background-color') == 'var(--alv-accent)',
    '  and now take the house accent',
    decl(now_t[0], 'background-color') if now_t else '')
-hb = rule(hc, '.btn-personal')
+# TB-1, 8 Oct 2026: THE HOUSE TILE IS BASE'S NOW, and .btn-personal
+# is a class the markup still carries with no rule behind it. The
+# control reads where the colour actually comes from.
+hb = rule(hc_base, '.admin-btn')
 ok(hb and decl(hb[0], 'background-color') == 'var(--alv-accent)',
-   '  CONTROL: which is exactly what personal.html\'s tiles use', hb)
+   '  CONTROL: which is exactly what the house tile uses, in base', hb)
 hov = rule(cn, '.crs-btn:not(.coming-soon):hover')
 ok(hov and 'var(--alv-accent-ink)' in hov[0],
    '  and the hover follows onto --alv-accent-ink, as the house hover does',
@@ -463,9 +475,19 @@ for p in alv_tree.templates():
         if rule(c, sel):
             copies.append('%s: %s' % (alv_tree.rel(p), sel))
             break
-ok(len(copies) == 3,
-   'the hub TILE component is defined %d times, under two names for the '
-   'same thing, and base owns none of it' % len(copies), copies)
+# TB-1, 8 Oct 2026: X5 COUNTED THREE AND SAID BASE OWNED NONE OF THEM.
+# Two of the three were admin_apms.html and personal.html, and base owns
+# those now. What is left is crs/index.html's .crs-btn - the same
+# component under a second name, which is the half of X5's complaint
+# this round does not answer. Hoisting it is a round of its own, as X5
+# said, and the count is the measure of the debt.
+ok(len(copies) == 2,
+   'the hub TILE component is defined %d time(s) - base owns one of them '
+   'now, and crs/index.html .crs-btn is the copy that remains'
+   % len(copies), copies)
+ok(any('base.html' in c for c in copies),
+   '  and base is one of them, which it was not when X5 wrote this',
+   copies)
 print('')
 print('     That is the shape the More-menu rounds had before H8 and H9')
 print('     hoisted them. It wants the same treatment, as a round of its')

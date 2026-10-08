@@ -34,7 +34,7 @@
     <i class="fas fa-user"></i>
     <span>PERSONAL</span>
   </div>
-  <div class="admin-tab compliance-tab personal-active" id="tab-compliance"
+  <div class="admin-tab compliance-tab" id="tab-compliance"
        onclick="switchTab('compliance')">
     <i class="fas fa-landmark"></i>
     <span>COMPLIANCE</span>
@@ -51,7 +51,7 @@
     --future-* tokens - left there unused on purpose, so reinstating is
     two deletions and not a rebuild. A sweep for unused rules should
     find this note before it finds them.
-  <div class="admin-tab future-tab personal-active">
+  <div class="admin-tab future-tab">
     <i class="fas fa-clock"></i>
     <span>FUTURE</span>
   </div>
@@ -117,19 +117,15 @@
 // the same shape on purpose: a second spelling of the same behaviour is
 // a second thing to keep in step.
 function switchTab(tab) {
-    document.getElementById('tab-personal').classList.remove('active', 'compliance-active');
-    document.getElementById('tab-compliance').classList.remove('active', 'personal-active');
 
     document.getElementById('personal-panel').classList.remove('active');
     document.getElementById('compliance-panel').classList.remove('active');
 
     if (tab === 'personal') {
         document.getElementById('tab-personal').classList.add('active');
-        document.getElementById('tab-compliance').classList.add('personal-active');
         document.getElementById('personal-panel').classList.add('active');
     } else {
         document.getElementById('tab-compliance').classList.add('active');
-        document.getElementById('tab-personal').classList.add('compliance-active');
         document.getElementById('compliance-panel').classList.add('active');
     }
 }
@@ -143,120 +139,31 @@ function switchTab(tab) {
        Tier A of the Section B map; B and C move a pixel and
        are separate rounds.                   [B-1 tier A] */
 
-  /* Colour Variables */
+  /* TB-1, 8 Oct 2026 - THE TAB TREATMENT MOVED TO BASE.
+     Everything that was here - .admin-tabs, .admin-tab, .tab-panel,
+     .admin-grid, .admin-btn and the whole mobile block - now lives in
+     base.html under ALV LANDING TABS v1, because admin_apms.html had a
+     copy of it and Finance was about to be the third.
+
+     THE SHARED EDGE WENT WITH IT, AND IS NOW DERIVED RATHER THAN
+     DECLARED: base says `.admin-tab:not(:last-child) { border-right:
+     none }`, so the browser works out which tab has a neighbour. That
+     one line is here in spirit - it cost this page two defects ten days
+     apart, P6 on 29 Sep and PR-1 on 8 Oct, both of them somebody
+     writing the rule out by hand and getting the count wrong.
+
+     --personal-dark and --personal-light went too. They aliased the
+     accent, and base names the accent.
+
+     WHAT IS LEFT IS WHAT IS GENUINELY THIS PAGE'S: THE GREY FUTURE
+     SIDE. test_personal_teal.py decided that on 5 Oct - "the FUTURE
+     side is grey, not green" - and AD-1 spent that claim for
+     admin_apms ONLY. This page's FUTURE tab is still commented out in
+     the markup above and its rules are still here, unused on purpose,
+     so reinstating it is two deletions and not a rebuild. */
   :root {
-    --personal-dark: var(--alv-accent);
-    --personal-light: var(--alv-accent-soft);
     --future-dark: #6c757d;
     --future-light: var(--alv-surface-deep);
-  }
-
-
-  /* ==================== TAB NAVIGATION ==================== */
-  .admin-tabs {
-    display: flex;
-    max-width: 900px;
-    margin: 0 auto;
-    justify-content: flex-start;
-  }
-
-  .admin-tab {
-    flex: 0 0 auto;
-    width: 200px;
-    padding: 15px 25px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-    cursor: pointer;
-    border: 3px solid;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    position: relative;
-    margin-bottom: -3px;
-    z-index: 1;
-  }
-
-  .admin-tab.personal-tab,
-  .admin-tab.compliance-tab {
-    border-color: var(--personal-dark);
-    color: var(--personal-dark);
-    background-color: var(--alv-paper);
-    border-bottom-color: var(--personal-dark);
-    /* IT SHARES ITS RIGHT EDGE AGAIN - PR-1, 8 Oct 2026, and the whole
-       history is the point.
-
-       This rule said `border-right: none`, because the FUTURE tab sat
-       hard against it and drew the shared line itself through its own
-       border-left-color. Two tabs, one edge, drawn once.
-
-       P2 commented the FUTURE tab out on 29 Sep and the line went with
-       it: the tab was left open on its right and the panel's border
-       began in mid-air. Demetri saw it within minutes. P6 removed the
-       declaration so the tab drew all four of its own sides, and wrote
-       here that the rule follows the NEIGHBOUR COUNT and not the page.
-
-       COMPLIANCE PUTS A NEIGHBOUR BACK, so the declaration comes back
-       with it and .admin-tab.compliance-tab.personal-active draws the
-       shared line. P6's suite is re-pointed, not deleted: its claim was
-       "the Personal tab has a right border", and it is now "the shared
-       edge is there and is drawn once" - the same measurement in the
-       same browser, and true of both arrangements.
-
-       THE NEXT PERSON TO ADD OR REMOVE A TAB HERE OWES THIS LINE A
-       THOUGHT. One tab: no neighbour, so the tab draws its own right
-       edge. Two or more: every tab BUT THE LAST has `border-right:
-       none` and its right-hand neighbour draws the line; the LAST tab
-       always draws its own, because nothing is standing there to do
-       it. See the rule below. */
-    border-radius: 10px 10px 0 0;
-  }
-
-  .admin-tab.personal-tab.active,
-  .admin-tab.compliance-tab.active {
-    background-color: var(--personal-light);
-    color: var(--personal-dark);
-    border-bottom-color: var(--personal-light);
-    z-index: 10;
-  }
-
-  /* PR-1, 8 Oct 2026 - THE LEFT-HAND TAB ONLY.
-     `border-right: none` says "my right-hand neighbour draws this
-     line", so it belongs to the tab that HAS one and to no other.
-
-     The first cut of this round put it in the rule both tabs share,
-     and the result was the P6 defect on the new tab: COMPLIANCE's top
-     border curved round its corner and stopped in mid-air, with the
-     page running straight out to its right. Demetri spotted it in the
-     render inside a minute, which is twice now on this page.
-     admin_apms.html has always had it right - only .alivente-tab
-     carries the declaration, and .future-tab draws its own right edge
-     because nothing stands to the right of it. */
-  .admin-tab.personal-tab {
-    border-right: none;
-  }
-
-  /* And the one on the right draws the line between them, exactly as
-     admin_apms.html's SYSTEM tab does. Two tabs, one edge, drawn
-     once. */
-  .admin-tab.compliance-tab.personal-active {
-    border-left-color: var(--personal-dark);
-    border-bottom-color: var(--personal-dark);
-  }
-
-  .admin-tab.personal-tab.compliance-active {
-    border-bottom-color: var(--personal-dark);
-  }
-
-  .admin-tab.personal-tab.future-active {
-    border-bottom-color: var(--future-dark);
-  }
-
-  .admin-tab.personal-tab:not(.active):hover,
-  .admin-tab.compliance-tab:not(.active):hover {
-    background-color: var(--alv-accent-soft);
   }
 
   .admin-tab.future-tab {
@@ -269,93 +176,9 @@ function switchTab(tab) {
     cursor: not-allowed;
   }
 
-  .admin-tab.future-tab.personal-active {
-    border-left-color: var(--personal-dark);
-    border-bottom-color: var(--personal-dark);
-  }
-
-  /* ==================== TAB CONTENT ==================== */
-  .tab-content-container {
-    max-width: 900px;
-    margin: 0 auto;
-  }
-
-  .tab-panel {
-    display: none;
-    padding: 30px;
-    border: 3px solid;
-    border-radius: 0 10px 10px 10px;
-    animation: fadeIn 0.3s ease;
-  }
-
-  .tab-panel.active {
-    display: block;
-  }
-
-  .tab-panel.personal-panel,
-  .tab-panel.compliance-panel {
-    border-color: var(--personal-dark);
-    background-color: var(--personal-light);
-  }
-
   .tab-panel.future-panel {
     border-color: var(--future-dark);
     background-color: var(--future-light);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ==================== BUTTON GRID ==================== */
-  .admin-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  .admin-btn {
-    height: 140px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    color: var(--alv-on-accent);
-    padding: 12px;
-    text-align: center;
-  }
-
-  .admin-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    color: var(--alv-on-accent);
-    text-decoration: none;
-  }
-
-  .admin-btn i {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-  }
-
-  .admin-btn h6 {
-    margin: 0;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.2;
-  }
-
-  .btn-personal {
-    background-color: var(--alv-accent);
-    border: none;
-  }
-
-  .btn-personal:hover {
-    background-color: var(--alv-accent-ink);
   }
 
   /* Coming-soon tile is non-interactive */
@@ -363,49 +186,6 @@ function switchTab(tab) {
     opacity: 0.5;
     cursor: default;
     pointer-events: none;
-  }
-
-  /* ==================== MOBILE STYLES (≤768px) ==================== */
-  @media screen and (max-width: 768px) {
-
-
-    /* Tabs — full width, smaller text */
-    .admin-tabs {
-      max-width: 100%;
-    }
-    .admin-tab {
-      flex: 1 1 auto;
-      width: auto;
-      padding: 10px 8px;
-      font-size: 0.9rem;
-      gap: 6px;
-    }
-    .admin-tab i {
-      font-size: 0.9rem;
-    }
-
-    /* Panel — tighter padding */
-    .tab-panel {
-      padding: 16px;
-    }
-
-    /* Button grid — single column */
-    .admin-grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    /* Tiles slightly shorter for less scrolling */
-    .admin-btn {
-      height: 110px;
-    }
-    .admin-btn i {
-      font-size: 2rem;
-      margin-bottom: 8px;
-    }
-    .admin-btn h6 {
-      font-size: 0.95rem;
-    }
   }
 </style>
 

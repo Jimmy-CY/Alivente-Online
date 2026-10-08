@@ -75,190 +75,26 @@
        Tier A of the Section B map; B and C move a pixel and
        are separate rounds.                   [B-1 tier A] */
 
-  /* Colour Variables */
-  :root {
-    --alivente-dark: var(--alv-accent);
-    --alivente-light: var(--alv-accent-soft);
-    --future-dark: var(--alv-accent);
-    --future-light: var(--alv-accent-soft);
-  }
+  /* TB-1, 8 Oct 2026 - THE TAB TREATMENT MOVED TO BASE.
+     Everything that was here - .admin-tabs, .admin-tab, .tab-panel,
+     .admin-grid, .admin-btn and the whole mobile block - now lives in
+     base.html under ALV LANDING TABS v1, because personal.html had a
+     copy of it and Finance was about to be the third. The two copies
+     had already drifted in ten rules, eight of them in the mobile
+     block, and nobody had chosen any of the differences.
 
+     The --alivente-* and --future-* tokens went with them. There is no
+     separate future side to colour any more: AD-1 pointed both at the
+     accent on 8 Oct, at Demetri's ask, and one treatment has no use for
+     two names for the same colour.
 
-  /* Tab Navigation */
-  .admin-tabs {
-    display: flex;
-    max-width: 900px;
-    margin: 0 auto;
-    justify-content: flex-start;
-  }
-  
-  .admin-tab {
-    flex: 0 0 auto;
-    width: 200px;
-    padding: 15px 25px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-    cursor: pointer;
-    border: 3px solid;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    position: relative;
-    margin-bottom: -3px;
-    z-index: 1;
-  }
-  
-  .admin-tab.alivente-tab {
-    border-color: var(--alivente-dark);
-    color: var(--alivente-dark);
-    background-color: var(--alv-paper);
-    border-bottom-color: var(--alivente-dark);
-    border-right: none;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .admin-tab.alivente-tab.active {
-    background-color: var(--alivente-light);
-    color: var(--alivente-dark);
-    border-bottom-color: var(--alivente-light);
-    z-index: 10;
-  }
-
-  .admin-tab.alivente-tab.future-active {
-    border-bottom-color: var(--future-dark);
-  }
-  
-  .admin-tab.alivente-tab:not(.active):hover {
-    background-color: var(--alv-accent-soft);
-  }
-  
-  .admin-tab.future-tab {
-    border-color: var(--future-dark);
-    color: var(--future-dark);
-    background-color: var(--alv-paper);
-    border-bottom-color: var(--future-dark);
-    border-radius: 10px 10px 0 0;
-    cursor: pointer;
-    opacity: 1;
-  }
-
-  .admin-tab.future-tab.alivente-active {
-    border-left-color: var(--alivente-dark);
-    border-bottom-color: var(--alivente-dark);
-  }
-
-  .admin-tab.future-tab.active {
-    background-color: var(--future-light);
-    color: var(--future-dark);
-    border-bottom-color: var(--future-light);
-    z-index: 10;
-  }
-
-  .admin-tab.future-tab:not(.active):hover {
-    background-color: var(--alv-accent-soft);
-  }
-  
-  /* Tab Content */
-  .tab-content-container {
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  
-  .tab-panel {
-    display: none;
-    padding: 30px;
-    border: 3px solid;
-    border-radius: 0 10px 10px 10px;
-    animation: fadeIn 0.3s ease;
-  }
-  
-  .tab-panel.active {
-    display: block;
-  }
-  
-  .tab-panel.alivente-panel {
-    border-color: var(--alivente-dark);
-    background-color: var(--alivente-light);
-  }
-  
-  .tab-panel.future-panel {
-    border-color: var(--future-dark);
-    background-color: var(--future-light);
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  /* Button Grid */
-  .admin-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-  
-  .admin-btn {
-    height: 140px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    color: var(--alv-on-accent);
-  }
-  
-  .admin-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    color: var(--alv-on-accent);
-    text-decoration: none;
-  }
-  
-  .admin-btn i {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-  }
-  
-  .admin-btn h6 {
-    margin: 0;
-    font-weight: 600;
-    text-align: center;
-  }
-  
-  .btn-alivente {
-    background-color: var(--alv-accent);
-    border: none;
-  }
-  
-  .btn-alivente:hover {
-    background-color: var(--alv-accent-ink);
-  }
-
-  .btn-future {
-    background-color: var(--alv-accent);
-    border: none;
-  }
-
-  .btn-future:hover {
-    background-color: var(--alv-accent-ink);
-  }
+     WHAT IS LEFT IS WHAT IS GENUINELY THIS PAGE'S. */
 
   /* AD-1, 8 Oct 2026 - A RESERVED CELL IS NOT A DISABLED BUTTON.
      Demetri asked for the two Coming Soon tiles to go and for blank
      space to be left for future growth, so the panel keeps its height
      and whatever lands here next lands in a space already drawn.
-     Nothing to see, nothing to click, nothing read out: no fill, no
-     border, no shadow, no hover, aria-hidden in the markup and
-     pointer-events off here. It is NOT .btn-future-disabled with the
-     label taken out - that rule has gone, and with it the last
-     #adb5bd on this page that was not a live permission state. */
+     Nothing to see, nothing to click, nothing read out. */
   .admin-btn--reserved {
     background: none;
     border: none;
@@ -271,7 +107,9 @@
     box-shadow: none;
   }
 
-  /* Permission-disabled button: greyed out, no hover effect, no pointer */
+  /* Permission-disabled button: greyed out, no hover effect, no pointer.
+     This one keeps its #adb5bd - a user without the right genuinely
+     cannot click it, and that is a state and not a placeholder. */
   .admin-btn.btn-perm-disabled {
     background-color: #adb5bd;
     border: none;
@@ -284,52 +122,8 @@
     transform: none;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
-  
-  /* ============================================================
-     MOBILE RESPONSIVE — max-width: 768px
-     ============================================================ */
+
   @media screen and (max-width: 768px) {
-
-    /* Tabs — keep side-by-side but size for narrow viewports.
-       Each tab takes equal width via flex:1; reduce padding/font; tighten icon gap. */
-    .admin-tabs {
-      padding: 0 4px;
-    }
-    .admin-tab {
-      flex: 1 1 0;
-      width: auto;
-      padding: 11px 8px;
-      font-size: 0.9rem;
-      gap: 6px;
-    }
-    .admin-tab i {
-      font-size: 1rem;
-    }
-
-    /* Tab panel — tighter padding */
-    .tab-panel {
-      padding: 16px;
-      border-radius: 0 8px 8px 8px;
-    }
-
-    /* Tile grid — single column on mobile (matches Personal landing pattern) */
-    .admin-grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .admin-btn {
-      height: 110px;
-      padding: 12px;
-    }
-    .admin-btn i {
-      font-size: 2rem;
-      margin-bottom: 8px;
-    }
-    .admin-btn h6 {
-      font-size: 0.95rem;
-      line-height: 1.2;
-    }
-
     /* AD-1, 8 Oct 2026 - at one column a reserved cell is a screenful
        of nothing, so the panel ends just below the last button. The
        cells are still there at two columns, where they cost no height
@@ -346,7 +140,7 @@
     <i class="fas fa-building"></i>
     <span>FUNCTIONAL</span>
   </div>
-  <div class="admin-tab future-tab alivente-active" id="tab-future" onclick="switchTab('future')">
+  <div class="admin-tab future-tab" id="tab-future" onclick="switchTab('future')">
     <i class="fas fa-cogs"></i>
     <span>SYSTEM</span>
   </div>
@@ -438,8 +232,6 @@
 <script>
 function switchTab(tab) {
     // Update tab buttons
-    document.getElementById('tab-alivente').classList.remove('active', 'future-active');
-    document.getElementById('tab-future').classList.remove('active', 'alivente-active');
 
     // Update panels
     document.getElementById('panel-alivente').classList.remove('active');
@@ -447,11 +239,9 @@ function switchTab(tab) {
 
     if (tab === 'alivente') {
         document.getElementById('tab-alivente').classList.add('active');
-        document.getElementById('tab-future').classList.add('alivente-active');
         document.getElementById('panel-alivente').classList.add('active');
     } else {
         document.getElementById('tab-future').classList.add('active');
-        document.getElementById('tab-alivente').classList.add('future-active');
         document.getElementById('panel-future').classList.add('active');
     }
 }

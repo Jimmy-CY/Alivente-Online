@@ -26,7 +26,7 @@ pairs read below 4.5:1.
         [disabled], aria-disabled, .is-disabled, placeholders. Named
         in section 4 so the exemption is a claim and not a silence.
 
-    37  LIVE, and PINNED BY NAME rather than counted.
+    34  LIVE, and PINNED BY NAME rather than counted.
 
 A ceiling would let a later round add one while removing another and
 say nothing. The set is asserted EXACTLY: a pair that appears is a
@@ -35,7 +35,7 @@ this table an update. That is the house rule - a round that changes a
 number owns every number that counts it - applied to a set.
 
 =====================================================================
-AND THE 37 ARE NOT ANONYMOUS DEBT
+AND THE 34 ARE NOT ANONYMOUS DEBT
 =====================================================================
 
     22  HOUSE TOKEN ON HOUSE TOKEN. EIGHTEEN are --alv-accent on an
@@ -65,7 +65,7 @@ AND THE 37 ARE NOT ANONYMOUS DEBT
      4  one-offs with no family: #ccc on white, #adb5bd on
         --alv-surface twice, and the accent on a lilac tint.
 
-NOT PROVED HERE: that any of the 37 should be fixed. Each is a change
+NOT PROVED HERE: that any of the 34 should be fixed. Each is a change
 of appearance and the colour map says the render IS that decision.
 They are measured, named and given an owner. His word takes them.
 """
@@ -105,7 +105,7 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 716
+EXPECT_PAIRS = 712
 EXPECT_INACTIVE = 21
 
 passed = failed = skipped = 0
@@ -184,8 +184,7 @@ LIVE = (
     ('finance/vacancy_management.html', '.sortable-header:hover', 4.14, 'house'),
     ('view_recipe.html', '.ai-goal-card-icon', 4.20, 'stray'),
     ('crs/submission_detail.html', '.xml-file-icon', 4.31, 'house'),
-    ('admin_apms.html', '.admin-tab.alivente-tab.active', 4.31, 'house'),
-    ('admin_apms.html', '.admin-tab.future-tab.active', 4.31, 'house'),
+    ('base.html', '.admin-tab.active', 4.31, 'house'),
     ('finance/financial_indicators.html', '.sortable-header.sorted-asc', 4.31, 'house'),
     ('finance/financial_indicators.html', '.sortable-header.sorted-desc', 4.31, 'house'),
     ('finance/vacancy_management.html', '.btn-period:hover', 4.31, 'house'),
@@ -194,8 +193,6 @@ LIVE = (
     ('home.html', '.ins-ic--rent', 4.31, 'house'),
     ('occupancy_trends.html', '.yearly-summary-table tbody tr:hover td', 4.31, 'house'),
     ('open_invoices_report.html', '.clickable-amount:hover', 4.31, 'house'),
-    ('personal.html', '.admin-tab.personal-tab.active', 4.31, 'house'),
-    ('personal.html', '.admin-tab.compliance-tab.active', 4.31, 'house'),
     ('recipe_management.html', '.recipe-list-tag.category', 4.31, 'house'),
     ('base.html', '.ui-menu-item:hover', 4.42, 'house'),
     ('base.html', '.ui-menu-item:focus', 4.42, 'house'),
@@ -324,7 +321,7 @@ ok(not B.INACTIVE.search('.status-inactive'),
 
 
 # ==========================================================================
-head('5. TWO OF THE 23 ARE NOT A TENTH SHORT')
+head('5. TWO OF THE 20 ARE NOT A TENTH SHORT')
 # ==========================================================================
 # A count hides a range. Nineteen house pairs miss AA, but twelve of
 # them miss it by a tenth and two of them are invisible text.
@@ -343,14 +340,14 @@ ok(any(r[0] == 'base.html' and r[1] == '.icon-cancel:hover' for r in worst),
    'on --alv-neutral at 1.49:1')
 house = [r for r in LIVE if r[3] == 'house']
 band = [r for r in house if 4.0 <= r[2] < 4.5]
-ok(len(band) == 20,
+ok(len(band) == 17,
    '%d of the %d house pairs sit in the 4.0-4.5 band - EIGHTEEN of '
    'them are --alv-accent on an --alv-accent-soft / --alv-line-soft '
    '/ --alv-surface-deep ground - THREE of those added by AD-1, which '
    'did not create them, it taught the census to see a page own token. '
    'THAT IS ONE BASE DECISION, not eighteen page fixes'
    % (len(band), len(house)))
-ok(len(house) == 23, '  %d house pairs in all' % len(house))
+ok(len(house) == 20, '  %d house pairs in all' % len(house))
 ok(B.contrast('#0a5e6a', '#e4f3f5') >= 4.5,
    '  --alv-accent-ink on --alv-accent-soft reads %.2f:1, which is what '
    'that decision would look like if he takes it'
@@ -379,7 +376,7 @@ print('=' * 74)
 print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
 print('=' * 74)
 print('')
-print('  NOT PROVED HERE: that any of the 37 should be fixed. Each is a')
+print('  NOT PROVED HERE: that any of the 34 should be fixed. Each is a')
 print('  change of appearance, and the colour map says the render IS that')
 print('  decision. They are measured, named and given an owner - the')
 print('  accent-on-tint pairing is one decision in base, the brights are')

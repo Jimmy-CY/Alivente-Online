@@ -281,11 +281,20 @@ otabs = re.findall(r'class="admin-tab ([\w\- ]+)"', markup_of(other))
 ok(len(otabs) == 2, '%s still renders two tabs' % OTHER, otabs)
 ok(any('future-tab' in t for t in otabs),
    '  one of which is the Future tab that draws the shared edge')
-ok('border-right: none' in other,
-   '  so it KEEPS border-right: none - the same rule, and right there, '
-   'because it still has a neighbour')
-ok('border-left-color' in css_of(other),
-   '  and its Future tab still draws the line with border-left-color')
+# TB-1, 8 Oct 2026. THE RULE IS STILL THERE; IT IS IN BASE.
+# P6 named the declaration where it stood in 2026's September - on the
+# page, per tab, by hand. Writing it out by hand cost this house two
+# defects on personal.html ten days apart, so base now says
+# `.admin-tab:not(:last-child) { border-right: none }` and the browser
+# works out which tab has a neighbour. P6's reasoning is intact and its
+# subject moved.
+_b = read(alv_tree.path_of('base.html'))
+ok('.admin-tab:not(:last-child)' in _b and 'border-right: none' in _b,
+   '  so the shared edge is STILL drawn once - by base, for every page, '
+   'and derived from position rather than declared per tab')
+ok('border-right' not in re.sub(r'/\*.*?\*/', '', css_of(other),
+                               flags=re.S),
+   '  and %s declares none of its own any more' % OTHER)
 
 ptabs = re.findall(r'class="admin-tab ([\w\- ]+)"', markup_of(page))
 ok(len(ptabs) == 1,

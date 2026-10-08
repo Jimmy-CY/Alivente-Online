@@ -599,11 +599,18 @@ pc = read(os.path.join(ROOT, 'test_pair_contrast.py'))
 # census GREW when it learnt to read a page's own :root; 701 is the
 # number that cannot come back.
 _pairs = int(re.search(r'EXPECT_PAIRS = (\d+)', pc).group(1))
-ok(_pairs >= 714,
-   'and the pair census went 701 -> 714 and is now %d, because this round '
-   'taught it to read a page own :root - every tab rule in the tree is '
+ok(_pairs > 701,
+   'and the pair census is at %d against the 701 it could see before AD-1 '
+   'taught it to read a page own :root - every tab rule in the tree was '
    'written in one and not a single one of them was being counted'
    % _pairs)
+# AND NOT A FLOOR EITHER. AD-1 wrote an equality here, PR-1 caught it
+# and made it `>= 714`, and TB-1 broke that too by moving four copies of
+# one rule into base - consolidation REMOVES pairs, and a floor assumes
+# the number only grows. What is worth asserting is not a count at all.
+ok('.admin-tab.active' in pc,
+   '  and the tab pairing is IN that table - once, in base, where four '
+   'copies across two pages used to be')
 ok(_pairs > 701,
    '  which is the claim that survives: 701 was what it could see before, '
    'and no later round can take it back there')

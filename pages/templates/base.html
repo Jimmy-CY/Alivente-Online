@@ -4699,6 +4699,203 @@ table.alv-matrix {
     .alv-pop { max-width: 90vw; min-width: 200px; }
 }
 /* ===== /ALV POP v1 ===== */
+/* ===== ALV LANDING TABS v1 - TB-1, 8 Oct 2026 =================================
+   ONE TAB TREATMENT, FOR EVERY LANDING PAGE THAT WEARS ONE.
+
+   NOT TO BE CONFUSED WITH ALV TABS v1 ABOVE. That one is .alv-tab and
+   .nav-tabs .nav-link - panel-level tabs, several views of ONE panel,
+   the bar sitting directly above the thing it controls. This one is
+   .admin-tab: the big folder tabs on a module landing page, each with
+   a grid of tiles behind it. Two different components, both called
+   tabs, and the only thing that keeps them apart is that somebody
+   wrote this paragraph.
+
+   Administration and Personal each carried a copy of this, and the two
+   had already drifted in ten rules - eight of them in the mobile block,
+   none of them chosen by anybody. Finance was about to be the third.
+
+   A PAGE SUPPLIES TABS AND PANELS; THIS SUPPLIES THE LOOK. The markup
+   a page needs is:
+
+     <div class="admin-tabs">
+       <div class="admin-tab active" id="tab-x" onclick="...">..</div>
+       <div class="admin-tab"        id="tab-y" onclick="...">..</div>
+     </div>
+     <div class="tab-content-container">
+       <div id="x-panel" class="tab-panel active"> .admin-grid of
+                                                   .admin-btn </div>
+       <div id="y-panel" class="tab-panel">        ..          </div>
+     </div>
+
+   There is no family class and no per-page token. A page that wants a
+   tab a different colour overrides these rules on the page, and should
+   write down why - the System tab was grey for nine days because
+   somebody did that and the reason outlived the decision.
+   ====================================================================== */
+
+.admin-tabs {
+    display: flex;
+    max-width: 900px;
+    margin: 0 auto;
+    justify-content: flex-start;
+}
+
+.admin-tab {
+    flex: 0 0 auto;
+    width: 200px;
+    padding: 15px 25px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    border: 3px solid;
+    border-radius: 10px 10px 0 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    margin-bottom: -3px;
+    z-index: 1;
+    border-color: var(--alv-accent);
+    border-bottom-color: var(--alv-accent);
+    color: var(--alv-accent);
+    background-color: var(--alv-paper);
+}
+
+/* THE SHARED EDGE, DERIVED RATHER THAN DECLARED.
+   `border-right: none` says "my right-hand neighbour draws this line",
+   so it belongs to every tab that HAS one - which is every tab but the
+   last. Written out by name it cost two defects on the same page ten
+   days apart: P6 on 29 Sep, when P2 removed the neighbour and left the
+   tab open on its right, and PR-1 this morning, when a new tab
+   inherited the declaration and had no neighbour of its own.
+   The browser can count. Let it. */
+.admin-tab:not(:last-child) {
+    border-right: none;
+}
+
+.admin-tab.active {
+    background-color: var(--alv-accent-soft);
+    border-bottom-color: var(--alv-accent-soft);
+    color: var(--alv-accent);
+    z-index: 10;
+}
+
+.admin-tab:not(.active):hover {
+    background-color: var(--alv-accent-soft);
+}
+
+.tab-content-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.tab-panel {
+    display: none;
+    padding: 30px;
+    border: 3px solid;
+    border-radius: 0 10px 10px 10px;
+    animation: fadeIn 0.3s ease;
+    border-color: var(--alv-accent);
+    background-color: var(--alv-accent-soft);
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.admin-btn {
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: var(--alv-on-accent);
+    background-color: var(--alv-accent);
+    border: none;
+    /* THE SAFER OF THE TWO, NOT BLINDLY ADMINISTRATION'S. personal.html
+       had `padding: 12px; text-align: center` here and admin_apms had
+       neither; the h6 line-height was the same story. Nothing wraps
+       today on either page, so taking Administration's would have cost
+       nothing visible - and the first long label somebody adds would
+       have touched the tile edge. Where one copy is more defensive than
+       the other, the drift is resolved toward the defensive one and
+       said out loud. */
+    padding: 12px;
+    text-align: center;
+}
+
+.admin-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    color: var(--alv-on-accent);
+    background-color: var(--alv-accent-ink);
+    text-decoration: none;
+}
+
+.admin-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.admin-btn h6 {
+    margin: 0;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+}
+
+@media screen and (max-width: 768px) {
+    .admin-tabs { padding: 0 4px; }
+    .admin-tab {
+        flex: 1 1 0;
+        width: auto;
+        padding: 11px 8px;
+        font-size: 0.9rem;
+        gap: 6px;
+    }
+    .admin-tab i { font-size: 1rem; }
+    .tab-panel {
+        padding: 16px;
+        border-radius: 0 8px 8px 8px;
+    }
+    .admin-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .admin-btn {
+        height: 110px;
+        padding: 12px;
+    }
+    .admin-btn i {
+        font-size: 2rem;
+        margin-bottom: 8px;
+    }
+    .admin-btn h6 {
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+}
+/* ===== /ALV LANDING TABS v1 ===== */
+
+
 
 </style>
 

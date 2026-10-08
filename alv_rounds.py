@@ -943,7 +943,39 @@ ROUNDS = [
     # rules either, because two copies drift. The four .personal-tab
     # selectors each gain .compliance-tab, so the tabs match by
     # construction.
-    '.bak_compliance',
+    '.bak_compliance',    # TB-1, 8 Oct 2026 - ONE TAB TREATMENT, IN BASE, FOR EVERY
+    # LANDING PAGE THAT WEARS ONE. admin_apms.html and personal.html
+    # each had a copy and Finance was about to be the third; B-4b's
+    # note set the rule that a third use is the signal to promote.
+    #
+    # THE TWO COPIES HAD ALREADY DRIFTED IN TEN RULES, eight of them
+    # in the mobile block - padding 11px against 10px, icon 1rem
+    # against 0.9rem, a panel radius on one and not the other. Nobody
+    # chose any of it. Administration's mobile tuning wins because it
+    # was deliberate; where one copy was more DEFENSIVE than the other
+    # - personal's tile padding and h6 line-height - the defensive one
+    # wins instead, and that is said out loud in base.
+    #
+    # THE SHARED EDGE IS NOW DERIVED:
+    #     .admin-tab:not(:last-child) { border-right: none; }
+    # Written out by hand it cost two defects on the same page ten
+    # days apart - P6 on 29 Sep when P2 removed the neighbour, PR-1 on
+    # 8 Oct when a new tab inherited the declaration and had none. The
+    # browser can count. The cross-classes alivente-active,
+    # future-active, personal-active and compliance-active went with
+    # it: they only ever coloured the OTHER tab's edges, which one
+    # treatment has no use for.
+    #
+    # NOT TO BE CONFUSED WITH ALV TABS v1, which base already had -
+    # .alv-tab and .nav-tabs .nav-link, panel-level tabs. This round
+    # nearly appended over it and its own marker guard caught it.
+    #
+    # Four suites re-pointed, each a claim about an arrangement this
+    # round replaces: AD-1's --future-* tokens, P6's border-right on
+    # admin_apms, X5's house panel and tile, and the pair census -
+    # where FOUR copies of the same --alv-accent on --alv-accent-soft
+    # at 4.31 became ONE, 716 pairs down to 712.
+    '.bak_housetabs',
 ]
 
 
