@@ -35,29 +35,18 @@ from ..services.portfolio_insights import portfolio_insights
 from .notifications_dashboard import get_notification_data
 
 
-def _build_today_items(notification_data):
-    """
-    Build the ordered list of non-zero Today items for the home page panel.
 
-    Each item is a dict with:
-      - label:      singular/plural human heading
-      - count:      integer count
-      - icon:       Font Awesome class
-      - severity:   'urgent' | 'warning' | 'info' (drives the colour)
-      - category:   matches the data-category strings used by the modal JS
-                    (so we can look up the right detail rows on tap)
-      - permission: perms_map key gating visibility
-
-    Returns items in priority order: urgent first, then warning, then info.
-    Zero-count items are filtered out so the Today panel only shows
-    things the user can act on.
-    """
-    summary = (notification_data or {}).get('summary', {}) or {}
-
-    # `category` strings MUST match the categories used in the
-    # SimpleNotificationDashboard JS class (see home.html / notifications.html):
-    # 'vacant', 'expiring', 'declined', 'overdue', 'approval', 'payment'
-    candidates = [
+# ONE TABLE, TWO USES - HM-1, 8 Oct 2026.
+#
+# This list lived inside _build_today_items, where it decided which ROWS
+# a user may see. The PAYLOAD underneath those rows was serialised whole,
+# for every user with dashboard access, amounts and all, and
+# buildOverdueContent() in home.html reads item.tenant_rent straight out
+# of it. The filter below closes that, and it reads THIS list rather than
+# a second one of its own: a category added here is filtered there
+# without anybody remembering to, which is the only way two lists stay in
+# step. This repo has paid for the other kind more than once.
+_TODAY_CANDIDATES = [
         # URGENT (red)
         {
             'key': 'overdueInvoices',
@@ -116,6 +105,71 @@ def _build_today_items(notification_data):
             'permission': 'expenses',
         },
     ]
+
+# Keys of get_notification_data()'s payload that are not categories and
+# are not gated: the counts block (filtered on its own, key by key) and
+# the timestamp.
+_PAYLOAD_ALWAYS = ('summary', 'lastUpdated')
+
+
+def _filter_notification_data(data, perms):
+    """The embedded payload, cut to what this user may actually open.
+
+    FAIL-CLOSED, DELIBERATELY. Anything that is neither in
+    _PAYLOAD_ALWAYS nor a category this user has the permission for is
+    dropped - including a category nobody has added to _TODAY_CANDIDATES
+    yet. Such a category has no button either, so the page loses nothing
+    it was drawing; and a detail list added to get_notification_data()
+    without a table entry is then invisible by default rather than
+    public by default. That is the right way round for a payload with
+    money in it.
+    """
+    if not data:
+        return {}
+    allowed = set()
+    known = set()
+    for c in _TODAY_CANDIDATES:
+        known.add(c['key'])
+        if perms.get(c['permission'], False):
+            allowed.add(c['key'])
+
+    out = {}
+    for key, value in data.items():
+        if key == 'summary':
+            out['summary'] = dict(
+                (k, v) for k, v in (value or {}).items() if k in allowed)
+            continue
+        if key in _PAYLOAD_ALWAYS:
+            out[key] = value
+            continue
+        if key in allowed:
+            out[key] = value
+    return out
+
+
+def _build_today_items(notification_data):
+    """
+    Build the ordered list of non-zero Today items for the home page panel.
+
+    Each item is a dict with:
+      - label:      singular/plural human heading
+      - count:      integer count
+      - icon:       Font Awesome class
+      - severity:   'urgent' | 'warning' | 'info' (drives the colour)
+      - category:   matches the data-category strings used by the modal JS
+                    (so we can look up the right detail rows on tap)
+      - permission: perms_map key gating visibility
+
+    Returns items in priority order: urgent first, then warning, then info.
+    Zero-count items are filtered out so the Today panel only shows
+    things the user can act on.
+    """
+    summary = (notification_data or {}).get('summary', {}) or {}
+
+    # `category` strings MUST match the categories used in the
+    # SimpleNotificationDashboard JS class (see home.html / notifications.html):
+    # 'vacant', 'expiring', 'declined', 'overdue', 'approval', 'payment'
+    candidates = _TODAY_CANDIDATES
 
     items = []
     for c in candidates:
@@ -212,8 +266,22 @@ def home(request):
             today_by_category = {item['category']: item for item in today_items}
             # Embed full data (counts + detail rows) so modals open instantly
             # without a second round-trip. ~few KB of JSON.
+            # FILTERED BY THE SAME TABLE THAT FILTERS THE BUTTONS -
+            # HM-1, 8 Oct 2026. This embedded the WHOLE payload for every
+            # user with dashboard access: overdueInvoices,
+            # expensesWaitingApproval and expensesWaitingPayment WITH
+            # THEIR AMOUNTS, while the rows above were permission-filtered.
+            # buildOverdueContent() reads item.tenant_rent straight out of
+            # it. A user with dashboard and no expenses permission had
+            # every expense amount in their page source.
+            #
+            # The filter reads _TODAY_CANDIDATES, not a second list of its
+            # own: a category added there is filtered here without anybody
+            # remembering to, which is the only way two lists stay in step.
             try:
-                notification_data_json = json.dumps(notification_data, default=str)
+                notification_data_json = json.dumps(
+                    _filter_notification_data(notification_data, perms),
+                    default=str)
             except Exception:
                 notification_data_json = '{}'
 
@@ -221,9 +289,20 @@ def home(request):
         # AI/templated brief). Read-only; the metrics compute fresh each load
         # while the AI prose is fingerprint-cached inside the service. Wrapped
         # so a briefing hiccup can never take the Home page down.
+        # THE AUDIENCE IS can_access_financials - his call, HM-1,
+        # 8 Oct 2026, and not is_superuser: the tree already governs
+        # income with that permission, and keying Home on superuser alone
+        # would have meant a non-superuser with finance access losing the
+        # rent roll here while reading every figure in the Finance module.
+        # Superusers get the flag unconditionally in the perms map above.
+        #
+        # The summary handed to the service is the UNFILTERED one: it is
+        # read server-side for the vacancy count and never serialised.
+        # The page gets the filtered copy, built separately above.
         summary = (notification_data or {}).get('summary', {}) or {}
         try:
-            insights = portfolio_insights(today_summary=summary)
+            insights = portfolio_insights(today_summary=summary,
+                                          income=bool(perms.get('financials')))
         except Exception:
             insights = None
 

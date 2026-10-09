@@ -2181,7 +2181,13 @@ $suites = @(
     # asserts the empty-state watermark is now ONE value on twelve
     # pages; section 5 names everything the round left and proves it is
     # still there.
-    'test_grey_tail.py'
+    'test_grey_tail.py',
+    # HM-1, 8 Oct 2026 - the Home split. Section 2 renders both
+    # audiences and asserts no income figure reaches the standard
+    # user's page - the SOURCE, not the screen, because the defect
+    # this round exists for was a card that was not drawn and a
+    # payload that was still shipped.
+    'test_home_split.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

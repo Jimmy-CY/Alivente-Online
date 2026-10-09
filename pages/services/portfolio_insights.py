@@ -670,12 +670,17 @@ _COOLDOWN_KEY = "portfolio_brief_cooldown"
 
 
 def _templated_brief(projection, expiring, arr, churn, today=None,
-                     today_summary=None, expenses=None):
-    """Deterministic rule-based summary from the metrics (the fallback)."""
+                     today_summary=None, expenses=None, income=True):
+    """Deterministic rule-based summary from the metrics (the fallback).
+
+    income=False drops the projected-rent sentence and nothing else. The
+    arrears total stays: his rule is that the rent roll and the
+    projection go, and money that is the SUBJECT of an arrears or churn
+    flag stays, because that is a flag and not income."""
     today = today or date.today()
     lines = []
 
-    if projection["next3_total"]:
+    if income and projection.get("next3_total"):
         s = "Projected rent for the next 3 months is {}".format(
             _money(projection["next3_total"]))
         if projection["next3_at_risk"]:
@@ -748,14 +753,21 @@ def _templated_brief(projection, expiring, arr, churn, today=None,
 
 
 def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None,
-                       expenses=None):
+                       expenses=None, income=True):
     """A stable short hash of the material figures. When any of these change,
-    the fingerprint changes and the cached AI prose is regenerated."""
+    the fingerprint changes and the cached AI prose is regenerated.
+
+    AND OF THE AUDIENCE - HM-1, 8 Oct 2026. This hashed the figures only.
+    Two audiences on a figures-only key means whichever brief is written
+    first is served to both, so a standard user would have been handed
+    the superuser brief, income and all, out of cache, with no code path
+    to blame. The audience is the first thing in the payload."""
     vac = (today_summary or {}).get("vacantProperties")
     if vac is None:
         vac = projection.get("current_vacancies") or 0
     exp = expenses or {}
     payload = {
+        "audience": "full" if income else "ops",
         "exp_top3": (exp.get("top3") or {}).get("prop_name"),
         "exp_top3_amt": (exp.get("top3") or {}).get("amount"),
         "exp_cur3": exp.get("cur3"),
@@ -779,16 +791,24 @@ def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None,
 
 
 def _metrics_context(projection, expiring, arr, churn, today, today_summary,
-                     expenses=None):
+                     expenses=None, income=True):
     """Compact, factual figure list handed to the model. The model is told to
-    use ONLY these — no invented names or numbers."""
+    use ONLY these - no invented names or numbers.
+
+    WHICH IS WHY income=False REMOVES THE FIGURES RATHER THAN ASKING FOR
+    DISCRETION - HM-1, 8 Oct 2026. The model is already instructed to use
+    only what it is given, so withholding the rent lines is enforced by
+    the same rule that makes the brief trustworthy. Telling it not to
+    mention income while handing it the income is a request; this is not.
+    """
     parts = []
-    parts.append("Projected rent, next 3 months: {} (of which {} depends on "
-                 "renewals not yet signed).".format(
-                     _money(projection.get("next3_total")),
-                     _money(projection.get("next3_at_risk"))))
-    parts.append("Projected rent, next 12 months: {}.".format(
-        _money(projection.get("grand_total"))))
+    if income:
+        parts.append("Projected rent, next 3 months: {} (of which {} depends on "
+                     "renewals not yet signed).".format(
+                         _money(projection.get("next3_total")),
+                         _money(projection.get("next3_at_risk"))))
+        parts.append("Projected rent, next 12 months: {}.".format(
+            _money(projection.get("grand_total"))))
 
     vac = (today_summary or {}).get("vacantProperties")
     if vac is None:
@@ -822,15 +842,21 @@ def _metrics_context(projection, expiring, arr, churn, today, today_summary,
 
     if expenses and expenses.get("top3"):
         t = expenses["top3"]
+        # THE WATCH LINE IS NOT THE PERCENTAGE - HM-1, 8 Oct 2026. These
+        # were one branch, so scrubbing the percentage for an audience
+        # without income would have taken the watch flag with it, and
+        # the flag is the whole operational signal. They are two facts
+        # now: the ratio (withheld) and whether it crossed the line
+        # (kept, because it only BOUNDS the rent rather than giving it).
+        bits = []
         if t.get("pct_of_rent") is not None:
-            pct = " ({}% of its rent{})".format(
-                t["pct_of_rent"],
-                "; above the {}%-of-rent watch line".format(int(expenses.get("danger_pct", 10)))
-                if t["danger"] else "")
+            bits.append("{}% of its rent".format(t["pct_of_rent"]))
         elif t.get("low_rent"):
-            pct = " (little/no rental income in that period)"
-        else:
-            pct = ""
+            bits.append("little/no rental income in that period")
+        if t.get("danger"):
+            bits.append("above the {}%-of-rent watch line".format(
+                int(expenses.get("danger_pct", 10))))
+        pct = " ({})".format("; ".join(bits)) if bits else ""
         parts.append("Non-budgeted (approved+paid) expenses, last 3 months — "
                      "highest: {} at {}{}.".format(t["prop_name"], _money(t["amount"]), pct))
         if expenses.get("top6"):
@@ -852,7 +878,7 @@ def _metrics_context(projection, expiring, arr, churn, today, today_summary,
     return "\n".join(parts)
 
 
-def _llm_brief(metrics_text, today):
+def _llm_brief(metrics_text, today, income=True):
     """Call the Anthropic Messages API for the prose. Returns the text, or None
     on any problem (no key, bad model, timeout, network) — the caller then falls
     back to the templated brief. Uses only the stdlib, so no new dependency."""
@@ -868,20 +894,38 @@ def _llm_brief(metrics_text, today):
     except (TypeError, ValueError):
         timeout = 10.0
 
+    # TWO BRIEFS, AND THE SECOND IS NOT THE FIRST WITH A SENTENCE
+    # REMOVED - HM-1, 8 Oct 2026. The income brief leads with the
+    # outlook because that is what a reader with the figures wants
+    # first. The operations brief has no outlook to lead with, so it
+    # leads with what needs attention, and covers the four he named:
+    # lease expiries, arrears, churn risk, expense analysis.
+    if income:
+        task = (
+            "Write 3 to 5 sentences of plain-English prose that summarise the "
+            "near-term income position and flag what needs attention (lease "
+            "expiries with no successor, arrears, churn risk, vacancies, and "
+            "non-budgeted expense hot-spots). Lead with the income outlook and "
+            "include a sentence on non-budgeted (ad-hoc) expenses when a "
+            "property stands out or spend is notably up or down. ")
+    else:
+        task = (
+            "Write 3 to 5 sentences of plain-English prose on what needs "
+            "attention across the portfolio: lease expiries with no successor, "
+            "arrears, churn risk, vacancies, and non-budgeted expense "
+            "hot-spots. Lead with whatever is most urgent. Include a sentence "
+            "on non-budgeted (ad-hoc) expenses when a property stands out or "
+            "spend is notably up or down. ")
     prompt = (
         "You are writing a short executive briefing for the manager of a property "
         "rental portfolio. Today is {today}. Below are the current portfolio figures.\n\n"
-        "Write 3 to 5 sentences of plain-English prose that summarise the near-term "
-        "income position and flag what needs attention (lease expiries with no successor, "
-        "arrears, churn risk, vacancies, and non-budgeted expense hot-spots). Lead with the "
-        "income outlook and include a sentence on non-budgeted (ad-hoc) expenses when a "
-        "property stands out or spend is notably up or down. Refer to specific tenants or "
+        "{task}Refer to specific tenants or "
         "properties by the exact names given where it helps.\n\n"
         "Rules: use ONLY the figures below — never invent names, numbers or facts. "
         "Use the euro sign for money. No bullet points, no headings, no preamble such as "
         "\"Here is\" — return only the briefing prose.\n\n"
         "FIGURES:\n{figures}"
-    ).format(today=today.strftime("%d %b %Y"), figures=metrics_text)
+    ).format(today=today.strftime("%d %b %Y"), task=task, figures=metrics_text)
 
     body = json.dumps({
         "model": model,
@@ -912,7 +956,7 @@ def _llm_brief(metrics_text, today):
 
 
 def build_brief(projection, expiring, arr, churn, today=None,
-                today_summary=None, use_llm=True, expenses=None):
+                today_summary=None, use_llm=True, expenses=None, *, income):
     """Return {'lines', 'text', 'source', ...}. 'source' is 'ai' or 'template'.
 
     AI prose is cached against a fingerprint of the numbers, so it regenerates
@@ -920,14 +964,19 @@ def build_brief(projection, expiring, arr, churn, today=None,
     failure (or missing key) degrades cleanly to the templated summary, and a
     short cooldown after a failure keeps Home from hanging on repeated retries.
     """
+    # `income` IS KEYWORD-ONLY AND HAS NO DEFAULT - HM-1, 8 Oct 2026.
+    # There is one caller today. A future one that forgets gets a
+    # TypeError at the call site, not a page quietly full of rent. A
+    # default either way is a decision taken by whoever types nothing.
     today = today or date.today()
     templated = _templated_brief(projection, expiring, arr, churn, today,
-                                 today_summary, expenses)
+                                 today_summary, expenses, income=income)
 
     if not use_llm or not os.environ.get("ANTHROPIC_API_KEY"):
         return {"lines": templated["lines"], "text": templated["text"], "source": "template"}
 
-    fp = _brief_fingerprint(projection, expiring, arr, churn, today_summary, expenses)
+    fp = _brief_fingerprint(projection, expiring, arr, churn, today_summary,
+                            expenses, income=income)
     ai_key = "portfolio_brief_ai_" + fp
 
     cached = cache.get(ai_key)
@@ -941,8 +990,9 @@ def build_brief(projection, expiring, arr, churn, today=None,
                 "source": "template"}
 
     prose = _llm_brief(
-        _metrics_context(projection, expiring, arr, churn, today, today_summary, expenses),
-        today)
+        _metrics_context(projection, expiring, arr, churn, today, today_summary,
+                         expenses, income=income),
+        today, income=income)
     if prose:
         cache.set(ai_key, prose, _BRIEF_TTL)
         return {"lines": templated["lines"], "text": prose,
@@ -957,16 +1007,62 @@ def build_brief(projection, expiring, arr, churn, today=None,
 # ---------------------------------------------------------------------------
 
 
+def _scrub_rent_ratio(expenses):
+    """The expense rows without the one number that inverts to a rent.
+
+    HM-1, 8 Oct 2026. `pct_of_rent` is round(amount / period_rent * 100, 1).
+    One decimal: EUR 900 at 12.3% gives 900 / 0.123 = EUR 7,317, which is
+    the named property's rent for that window to about forty euro - and
+    the card prints it for two windows, so a reader who may not see
+    income gets the 3-month and the 6-month figure by division.
+
+    WHAT STAYS. The amount, the trend, `low_rent`, and `danger` - the
+    watch flag. `danger` is `pct > 10`, so it says only that the rent is
+    UNDER amount/0.10. A bound is not a value, and the flag is the whole
+    reason the card is worth reading. His call, both halves.
+
+    A COPY, NOT A MUTATION. expenses_insight() builds fresh on every
+    call today, so mutating would be safe today - which is exactly the
+    kind of safety that stops being true without anyone noticing.
+    """
+    if not expenses:
+        return expenses
+    out = dict(expenses)
+    for key in ("top3", "top6"):
+        row = out.get(key)
+        if row and row.get("pct_of_rent") is not None:
+            row = dict(row)
+            row["pct_of_rent"] = None
+            out[key] = row
+    return out
+
+
 def portfolio_insights(today=None, months=12, within_days=90,
-                       today_summary=None, use_llm=True):
+                       today_summary=None, use_llm=True, *, income):
     """Everything the Home briefing panel and the Projections report need.
 
     today_summary : the Notifications summary dict (optional) — lets the brief's
                     vacancy count match the Today drill-down exactly.
     use_llm       : set False to force the templated brief (e.g. tests, cron).
+    income        : REQUIRED, keyword-only. True for an audience with
+                    can_access_financials. False means the forward
+                    projection IS NOT BUILT - not built and hidden, not
+                    built at all - because a template that declines to
+                    draw a card still ships the figures it was given, and
+                    home.html serialised every month's rent into the page
+                    for the chart's hover.
     """
     today = today or date.today()
-    projection = forward_projection(today, months=months)
+    if income:
+        projection = forward_projection(today, months=months)
+    else:
+        # The vacancy count is the only thing the rest of the brief wants
+        # from the projection, and the Today summary already carries it.
+        # When that summary could not be built, the brief says nothing
+        # about vacancies rather than guessing - deliberate, and cheaper
+        # than a full revenue scan for one integer.
+        projection = {"current_vacancies":
+                      (today_summary or {}).get("vacantProperties") or 0}
     # TWO QUESTIONS, TWO LISTS - DB-9, 2 Oct 2026.
     #
     # `cliff` is the CASH CLIFF: leases ending inside the horizon with
@@ -983,11 +1079,26 @@ def portfolio_insights(today=None, months=12, within_days=90,
     arr = arrears(today)
     churn = churn_risk(today, arrears_rows=arr["rows"])
     expenses = expenses_insight(today)
+    # ONE RATIO INVERTS TO A RENT - HM-1, 8 Oct 2026. The expense card
+    # prints the property, the amount and `pct_of_rent`, which is
+    # rounded to ONE DECIMAL: EUR 900 at 12.3% gives 900/0.123 = EUR
+    # 7,317, the named property's rent for that window to about forty
+    # euro - and it is printed for two windows. His call: the ratio
+    # goes for an audience without income, the WATCH flag stays,
+    # because `danger` only says the rent is UNDER amount/0.10. A bound
+    # is not a value.
+    if not income:
+        expenses = _scrub_rent_ratio(expenses)
     brief = build_brief(projection, cliff, arr, churn, today=today,
                         today_summary=today_summary, use_llm=use_llm,
-                        expenses=expenses)
+                        expenses=expenses, income=income)
     return {
         "generated_at": today,
+        # THE TEMPLATE ASKS THE QUESTION BY NAME. It could test whether
+        # projection.rows happens to be empty, and then a month with no
+        # income anywhere would read as a standard user. A decision is
+        # not a side effect of one.
+        "income": bool(income),
         "projection": projection,
         "expiring": expiring,
         "arrears": arr,

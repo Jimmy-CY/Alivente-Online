@@ -41,6 +41,7 @@ it decides WHAT it measures:
 HM-2 needs the live numbers. The local run is still worth having: if
 the two vocabularies differ, that difference is itself the finding.
 """
+import datetime
 import os
 import sys
 
@@ -59,6 +60,19 @@ from pages.models import issues                            # noqa: E402
 # open. Anything outside this set got there some other way.
 KNOWN = ('Resolved', 'Unresolved', 'Issue')
 OPEN_PER_DASHBOARD = ('Unresolved', 'Issue')
+
+# AND 1900-01-01 IS "NO DATE" - the first run of this file did not know
+# that, and reported all 154 rows as carrying a resolution date,
+# including the ten that are open. Eleven places in the tree compare
+# against `date(1900, 1, 1)` before using the field, so the column is
+# never NULL and NULL is the wrong question to ask of it. A reader that
+# tests whether a field is POPULATED, where the codebase tests what it
+# MEANS, gets a true answer to a question nobody asked.
+SENTINEL = datetime.date(1900, 1, 1)
+
+
+def has_resolution(row_date):
+    return row_date is not None and row_date != SENTINEL
 
 total = issues.objects.count()
 print('')
@@ -106,11 +120,12 @@ if missing:
 print('')
 print('  RESOLUTION DATE vs STATUS')
 print('  ' + '-' * 66)
-print('  %-34s %10s %10s' % ('status', 'has date', 'no date'))
+print('  %-34s %10s %10s' % ('status', 'real date', 'none/1900'))
 for r in rows:
     s = r['issues_status']
     q = issues.objects.filter(issues_status=s)
-    has = q.exclude(issues_resolution_date=None).count()
+    has = len([d for d in q.values_list('issues_resolution_date', flat=True)
+               if has_resolution(d)])
     print('  %-34s %10d %10d' % (repr(s), has, r['n'] - has))
 print('')
 print('  A row counted open BY STATUS that carries a resolution date, or')
@@ -121,8 +136,16 @@ openq = issues.objects.filter(issues_status__in=OPEN_PER_DASHBOARD)
 print('')
 print("  Open by dashboard.py's rule (%s): %d of %d"
       % (' or '.join(OPEN_PER_DASHBOARD), openq.count(), total))
-print('  Open by "no resolution date"                 : %d of %d'
-      % (issues.objects.filter(issues_resolution_date=None).count(), total))
+no_res = len([d for d in issues.objects.values_list('issues_resolution_date',
+                                                    flat=True)
+              if not has_resolution(d)])
+print('  Open by "no resolution date" (1900-01-01 counts as none): %d of %d'
+      % (no_res, total))
+print('')
+print('  If those two agree, the status and the date tell the same story')
+print('  and either can date a resolution. If they do not, the STATUS is')
+print('  the state - it is what the app sets - and the date is only ever')
+print('  the WHEN of one that is already Resolved.')
 
 # ---- the span, which sets the period length -------------------------
 span = issues.objects.aggregate(lo=Min('issues_date_logged'),

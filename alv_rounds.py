@@ -1027,7 +1027,31 @@ ROUNDS = [
     # borders (every neutral line token is LIGHTER, so every move makes
     # an input border fainter - --alv-line-strong is logged instead),
     # 4 chevrons, 4 hover border-colours, 8 standalone.
-    '.bak_greytail',
+    '.bak_greytail',    # HM-1, 8 Oct 2026 - two Home pages, and the one without income
+    # never has it built. The audience is can_access_financials, his
+    # call: the tree already governs income with that permission.
+    #
+    # THE CACHE WOULD HAVE SERVED ONE BRIEF TO BOTH. _brief_fingerprint
+    # hashed the figures only, so whichever brief was written first
+    # would have been served to both audiences out of cache. The
+    # audience is the first thing in that payload now.
+    #
+    # AND REMOVING THE CARD IS NOT REMOVING THE DATA. home.html put
+    # every month's rent into the page source for the chart's hover, so
+    # the SERVICE takes the audience and forward_projection is not
+    # called at all when it may not be shown. `income` is keyword-only
+    # with NO default: a caller who forgets gets a TypeError.
+    #
+    # IT ALSO CLOSES A WIDER HOLE, at his ask. The view filtered the
+    # Today BUTTONS by permission and then embedded the WHOLE payload -
+    # overdue invoices and both expense lists, amounts and all - for
+    # every user with dashboard access. The filter reads the same
+    # _TODAY_CANDIDATES table the buttons do, and fails closed.
+    #
+    # The vacancy drill-down moved from the rent-roll card to Lease
+    # expiries, for both audiences: it is occupancy, not income, and it
+    # would have left with the card.
+    '.bak_homesplit',
 ]
 
 

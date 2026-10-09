@@ -49,7 +49,18 @@ Home
 
     <div class="brief-grid">
 
-      <!-- Forward rent-roll + vacancies drill-down -->
+      {# HM-1, 8 Oct 2026 - THE CARD ASKS THE QUESTION BY NAME.    #}
+      {# `insights.income` is the audience decision, set in the view   #}
+      {# from can_access_financials. It could have tested whether      #}
+      {# projection.rows happens to be empty - and then a month with   #}
+      {# no income anywhere would read as a standard user. A decision  #}
+      {# is not a side effect of one.                                  #}
+      {# The vacancy drill-down that used to live in here has MOVED to #}
+      {# the Lease expiries card, for both audiences: a vacancy is an  #}
+      {# occupancy fact, not income, and it would have left with this  #}
+      {# card. His call.                                               #}
+      {% if insights.income %}
+      <!-- Forward rent-roll -->
       <section class="ins-card ins-card--wide">
         <h3 class="ins-card__title">
           <span class="ins-ic ins-ic--rent"><i class="fas fa-chart-line"></i></span>
@@ -92,17 +103,8 @@ Home
           <span><i class="ins-legend__sw ins-legend__sw--a"></i>At-risk (renewal assumed, not yet signed)</span>
         </div>
 
-        {% with it=today_by_category.vacant %}{% if it %}
-        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
-                data-category="{{ it.category }}"
-                aria-label="{{ it.count }} {{ it.label }}, tap for details">
-          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
-          <span class="today-row__count">{{ it.count }}</span>
-          <span class="today-row__label">{{ it.label }}</span>
-          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-        </button>
-        {% endif %}{% endwith %}
       </section>
+      {% endif %}
 
       <!-- Lease expiries (no successor) + expiring / declined drill-downs -->
       <section class="ins-card">
@@ -133,6 +135,17 @@ Home
         {% if insights.expiring|length > 3 %}
           <p class="ins-more">+ {{ insights.expiring|length|add:"-3" }} more</p>
         {% endif %}
+
+        {% with it=today_by_category.vacant %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
 
         {% with it=today_by_category.expiring %}{% if it %}
         <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
@@ -313,7 +326,15 @@ Home
     <!-- Embedded notification data — read by the drill-down modal JS -->
     <script id="notificationData" type="application/json">{{ notification_data_json|safe }}</script>
     <!-- Per-month rent-roll breakdown — read by the chart hover/tap -->
+    {# REMOVING THE CARD IS NOT REMOVING THE DATA - HM-1, 8 Oct  #}
+    {# 2026. This put every month's rent into the page source for  #}
+    {# the chart's hover, and it would have stayed there behind a  #}
+    {# card that was merely not drawn. The service does not BUILD  #}
+    {# projection.rows for an audience without income, so for that #}
+    {# audience there is nothing here to withhold.                 #}
+    {% if insights.income %}
     {{ insights.projection.rows|json_script:"rentRollBreakdown" }}
+    {% endif %}
     <div id="chartTip" aria-hidden="true"></div>
 
   {% elif perms_map.dashboard %}
