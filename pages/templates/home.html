@@ -140,16 +140,10 @@ Home
             <i>Today</i></span>
           <span class="iss-sep">&middot;</span>
           <span class="iss-pt"><b>{{ insights.issues.open_prev }}</b>
-            <i>at {{ insights.issues.prev_date|date:"j M" }}</i>
-            {% if insights.issues.open_prev_fmt %}<span
-              class="iss-chg iss-chg--{{ insights.issues.open_prev_dir }}"
-              >{% if insights.issues.open_prev_arrow %}<i class="fas fa-arrow-{{ insights.issues.open_prev_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.open_prev_fmt }}</span>{% endif %}</span>
+            <i>at {{ insights.issues.prev_date|date:"j M" }}</i></span>
           <span class="iss-sep">&middot;</span>
           <span class="iss-pt"><b>{{ insights.issues.open_year }}</b>
-            <i>at {{ insights.issues.year_date|date:"j M Y" }}</i>
-            {% if insights.issues.open_year_fmt %}<span
-              class="iss-chg iss-chg--{{ insights.issues.open_year_dir }}"
-              >{% if insights.issues.open_year_arrow %}<i class="fas fa-arrow-{{ insights.issues.open_year_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.open_year_fmt }}</span>{% endif %}</span>
+            <i>at {{ insights.issues.year_date|date:"j M Y" }}</i></span>
         </div>
 
         <!-- HM-3, 9 Oct 2026 - Open is a LEVEL at three moments and Logged and Closed are RATES over three periods, so they no longer share a header. The direction of each change comes from the service - see apply_issue_card.py. -->
@@ -161,26 +155,14 @@ Home
           <tr>
             <td>Logged</td>
             <td class="iss-n">{{ insights.issues.logged3 }}</td>
-            <td class="iss-n">{{ insights.issues.logged_prev3 }}
-              {% if insights.issues.logged_prev_fmt %}<span
-                class="iss-chg iss-chg--{{ insights.issues.logged_prev_dir }}"
-              >{% if insights.issues.logged_prev_arrow %}<i class="fas fa-arrow-{{ insights.issues.logged_prev_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.logged_prev_fmt }}</span>{% endif %}</td>
-            <td class="iss-n">{{ insights.issues.logged_yoy3 }}
-              {% if insights.issues.logged_yoy_fmt %}<span
-                class="iss-chg iss-chg--{{ insights.issues.logged_yoy_dir }}"
-              >{% if insights.issues.logged_yoy_arrow %}<i class="fas fa-arrow-{{ insights.issues.logged_yoy_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.logged_yoy_fmt }}</span>{% endif %}</td>
+            <td class="iss-n">{{ insights.issues.logged_prev3 }}</td>
+            <td class="iss-n">{{ insights.issues.logged_yoy3 }}</td>
           </tr>
           <tr>
             <td>Closed</td>
             <td class="iss-n">{{ insights.issues.closed3 }}</td>
-            <td class="iss-n">{{ insights.issues.closed_prev3 }}
-              {% if insights.issues.closed_prev_fmt %}<span
-                class="iss-chg iss-chg--{{ insights.issues.closed_prev_dir }}"
-              >{% if insights.issues.closed_prev_arrow %}<i class="fas fa-arrow-{{ insights.issues.closed_prev_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.closed_prev_fmt }}</span>{% endif %}</td>
-            <td class="iss-n">{{ insights.issues.closed_yoy3 }}
-              {% if insights.issues.closed_yoy_fmt %}<span
-                class="iss-chg iss-chg--{{ insights.issues.closed_yoy_dir }}"
-              >{% if insights.issues.closed_yoy_arrow %}<i class="fas fa-arrow-{{ insights.issues.closed_yoy_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.closed_yoy_fmt }}</span>{% endif %}</td>
+            <td class="iss-n">{{ insights.issues.closed_prev3 }}</td>
+            <td class="iss-n">{{ insights.issues.closed_yoy3 }}</td>
           </tr>
         </table>
 
@@ -522,27 +504,22 @@ Home
     .ins-ic--iss { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
     .iss-tbl { width: 100%; border-collapse: collapse; margin: 10px 0 4px;
                font-size: 13px; }
-    .iss-tbl th { text-align: right; font-weight: 600; font-size: 11px;
+    /* HM-4 - the headers follow the figures. A right-aligned
+       header over a centred column reads as an oversight. */
+    .iss-tbl th { text-align: center; font-weight: 600; font-size: 11px;
                   text-transform: uppercase; letter-spacing: 0.03em;
                   color: var(--alv-ink-soft); padding: 0 0 4px; }
     .iss-tbl th:first-child { text-align: left; }
     .iss-tbl td { padding: 4px 0; border-top: 1px solid var(--alv-line); }
-    .iss-tbl td.iss-n { text-align: right; font-variant-numeric: tabular-nums;
+    /* HM-4 - centred, which GIVES UP the shared right edge that
+       lets an eye read down a column. There is no column to read
+       on two data rows. It would be the wrong call on ten. */
+    .iss-tbl td.iss-n { text-align: center; font-variant-numeric: tabular-nums;
                         font-weight: 700; }
     .iss-chg { font-weight: 600; font-size: 11px; margin-left: 4px; }
-
-    /* HM-3, 9 Oct 2026 - the direction comes from the SERVICE.
-       .iss-up and .iss-down stay: the ageing line below still uses
-       .iss-up for the over-90-days count, where up really is bad.
-       These three are for a comparison whose good direction depends
-       on what is being compared - a rise in Closed is good news and
-       was being painted in warning red. */
-    .iss-chg--worse  { color: var(--alv-bad); }
-    .iss-chg--better { color: var(--alv-good-ink); }
-    .iss-chg--flat   { color: var(--alv-ink-soft); }
     /* the arrow inherits the chip's colour, so the two can never
        disagree about which comparison they belong to */
-    .iss-arw { font-size: 9px; margin-right: 2px; vertical-align: 1px; }
+    
 
     .iss-head { font-size: 11px; font-weight: 600; text-transform: uppercase;
       letter-spacing: 0.05em; color: var(--alv-ink-soft); margin: 8px 0 3px; }
@@ -605,7 +582,12 @@ Home
     .ins-ic--act   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 
     .ins-kpis { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
-    .ins-kpi { display: flex; flex-direction: column; }
+    /* HM-4, 9 Oct 2026 - the value centres over its own label.
+       align-items on the column axis is what centres the two
+       lines against each other; text-align would only centre
+       each line inside a box already shrunk to its content. */
+    .ins-kpi { display: flex; flex-direction: column;
+      align-items: center; }
     .ins-kpi__n { font-size: 22px; font-weight: 800; line-height: 1.1; color: var(--alv-ink); }
     .ins-kpi__n--risk { color: #c2410c; }
     .ins-kpi__n--red { color: var(--alv-bad); }

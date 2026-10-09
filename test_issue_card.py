@@ -106,10 +106,11 @@ import alv_tree as T                                         # noqa: E402
 page_path = T.path_of('home.html')
 psrc = RD.as_left_by(page_path, SUFFIX, read)
 
-svc_ok = 'def direction(' in ssrc and '"prev_date"' in ssrc
-page_ok = 'iss-strip' in psrc and 'iss-chg--' in psrc
-ok(svc_ok, 'the service has direction() and returns the window dates')
-ok(page_ok, 'the page has the Open strip and the direction classes')
+svc_ok = '"prev_date"' in ssrc
+page_ok = 'iss-strip' in psrc
+ok(svc_ok, 'the service returns the window dates - HM-4 took direction() '
+   'out with the chips it was for')
+ok(page_ok, 'the page has the Open strip')
 
 if not (svc_ok and page_ok):
     skip('every later section',
@@ -224,65 +225,26 @@ if up:
 
     ok(r['open'] > r['open_prev'],
        'open rose from %d to %d' % (r['open_prev'], r['open']))
-    ok(r['open_prev_dir'] == 'worse',
-       '  and a RISE IN OPEN reads "worse"', r['open_prev_dir'])
-    ok(r['closed3'] > r['closed_prev3'],
-       'closures rose from %d to %d' % (r['closed_prev3'], r['closed3']))
-    ok(r['closed_prev_dir'] == 'better',
-       '  and a RISE IN CLOSED reads "better" - THIS IS THE ROUND. The '
-       'same arithmetic, the opposite meaning', r['closed_prev_dir'])
-    ok(r['logged_prev_dir'] == 'flat',
-       'and logged is FLAT whichever way it moves - more reports can '
-       'mean people stopped ignoring things, and a card that paints it '
-       'red is making a claim nobody has taken', r['logged_prev_dir'])
-
-    # THE CONTROL: the rule the page used to apply, on the same numbers.
-    # The old rule took the sign of the change directly; only the Open
-    # row had a _chg key in the context at all, which is itself a sign
-    # that nothing else was ever meant to render one.
-    old = 'iss-up' if r['closed3'] > r['closed_prev3'] else 'iss-down'
-    ok(old == 'iss-up' and r['closed_prev_dir'] == 'better',
-       'CONTROL: the old page rule gives %r for that same rise in '
-       'closures - and .iss-up is var(--alv-bad). A third more issues '
-       'closed, in warning red' % old)
-
-    for k in ('open_prev', 'open_year', 'logged_prev', 'logged_yoy',
-              'closed_prev', 'closed_yoy'):
-        ok(r.get(k + '_dir') in ('worse', 'better', 'flat'),
-           '  %-12s has a direction' % k, r.get(k + '_dir'))
-
-    # THE ARROW IS THE SIGN, AND IT IS NOT THE COLOUR. They disagree
-    # on the Open row by design. A rule of "green gets an up arrow"
-    # would point UP beside a falling number on the one row where
-    # the backlog is improving, and the arrow would contradict the
-    # figure next to it.
-    ok(r['open_prev_arrow'] == 'up' and r['open_prev_dir'] == 'worse',
-       'open rose: arrow %r, colour %r - they AGREE here'
-       % (r['open_prev_arrow'], r['open_prev_dir']))
-    ok(r['closed_prev_arrow'] == 'up' and r['closed_prev_dir'] == 'better',
-       'closures rose: arrow %r, colour %r - the same arrow, the '
-       'opposite colour' % (r['closed_prev_arrow'],
-                            r['closed_prev_dir']))
-
-    # AND THE PAIR THAT PROVES THEY ARE SEPARATE FACTS. If a falling
-    # number ever carried an up arrow, the card would contradict
-    # itself in the one place a glance is supposed to settle.
-    for k in ('open_prev', 'open_year', 'logged_prev', 'logged_yoy',
-              'closed_prev', 'closed_yoy'):
-        fmt, arw = r.get(k + '_fmt'), r.get(k + '_arrow')
-        if fmt is None:
-            continue
-        want = 'up' if fmt.startswith('+') else 'down'
-        ok(arw == want,
-           '  %-12s %-8s carries a %r arrow' % (k, fmt, arw), arw)
+    # HM-4, 9 Oct 2026 - THE CHIPS ARE GONE. He asked for
+    # the numbers alone after seeing +266.7% off a base of
+    # nine on the live card. What this section proved -
+    # that a rise in Open and a rise in Closed are coloured
+    # oppositely - is no longer rendered anywhere, so it is
+    # no longer true of the page and is not asserted of it.
+    ok('_dir' not in str(sorted(r)),
+       'the service no longer returns a direction for anything')
+    ok('_arrow' not in str(sorted(r)),
+       '  nor an arrow - HM-3 added both to render six chips, and\n'
+       '  a service returning what nothing renders is the fault HM-3\n'
+       '  was built to remove')
 
 
 # ==========================================================================
 head('5. SIX CHIPS, AND THE PAGE DECIDES NONE OF THEM')
 # ==========================================================================
 ok(psrc.count('iss-chg iss-chg--') == 6,
-   'the card renders %d change chips - two that existed and four that '
-   'HM-2 computed and nothing ever printed'
+   'the card HM-3 left renders %d change chips - HM-4 took them off '
+   'the live page on the same day, and this still judges HM-3'
    % psrc.count('iss-chg iss-chg--'))
 card = psrc[psrc.index('ins-ic--iss'):]
 card = card[:card.index('</section>')]
@@ -292,13 +254,11 @@ ok('_chg > 0' not in card and '_chg >' not in card,
    'render it')
 for cls in ('.iss-chg--worse', '.iss-chg--better', '.iss-chg--flat'):
     ok(cls in psrc, '  %s is defined' % cls)
-ok(psrc.count('fa-arrow-{{ insights.issues.') == 6,
-   'six arrows, one per chip, each named by the service - %d found'
-   % psrc.count('fa-arrow-{{ insights.issues.'))
-ok('fa-arrow-up' not in psrc.replace('fa-arrow-{{', ''),
-   '  and no direction is written into the markup: the page prints '
-   'fa-arrow-{{ ... }} and never decides up or down itself')
-ok('.iss-arw' in psrc, '  the arrow has a rule of its own')
+# HM-4, 9 Oct 2026 - the six chips and their arrows were
+# removed from the card. Counting them here would be
+# counting them on the page HM-3 left, which still has
+# them; their absence is asserted in test_issue_centre,
+# against the page HM-4 left.
 ok('.iss-up' in psrc,
    '  and .iss-up survives - the ageing line still uses it for the '
    'over-90-days count, where up really is bad')

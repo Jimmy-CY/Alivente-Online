@@ -1084,6 +1084,9 @@ ROUNDS = [
     # HM-3, 9 Oct 2026 - the Issues card stops using one
     # header for a level and a rate.
     '.bak_isscard',
+    # HM-4, 9 Oct 2026 - the chips come off and the
+    # figures centre.
+    '.bak_isscentre',
 ]
 
 
