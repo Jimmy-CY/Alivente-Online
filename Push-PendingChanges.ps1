@@ -2187,7 +2187,13 @@ $suites = @(
     # user's page - the SOURCE, not the screen, because the defect
     # this round exists for was a card that was not drawn and a
     # payload that was still shipped.
-    'test_home_split.py'
+    'test_home_split.py',
+    # HM-2, 9 Oct 2026 - the Issues panel. Section 2 runs
+    # issues_insight over a fixture whose answers are known by hand;
+    # section 3 is the sentinel, with the control that asking IS NOT
+    # NULL gets the wrong answer; section 4 is that the panel is
+    # outside the income gate, because it is for both audiences.
+    'test_issue_panel.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -414,7 +414,13 @@ else:
                       ('renewal_due', []),
                       ('arrears', ARR),
                       ('churn_risk', CHURN),
-                      ('expenses_insight', EXPENSES)):
+                      ('expenses_insight', EXPENSES),
+                      # HM-2, 9 Oct 2026 - the orchestrator calls this
+                      # one too now, and an unstubbed call here is a
+                      # real query against a database this suite does
+                      # not migrate.
+                      ('issues_insight', {'total': 0, 'open': 0,
+                                          'statuses': []})):
         saved[n] = getattr(P, n)
         setattr(P, n, fake(n, result))
     try:

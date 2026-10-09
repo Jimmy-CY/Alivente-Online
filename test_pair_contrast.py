@@ -105,7 +105,7 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 710
+EXPECT_PAIRS = 713
 EXPECT_INACTIVE = 21
 
 passed = failed = skipped = 0

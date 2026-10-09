@@ -44,6 +44,7 @@ from pages.models import (
     invoices as Invoices,
     revenue as Revenue,
     act_expense as Actual,
+    issues as Issue,
     property_annual_lease_revenue,
     _lease_month,
 )
@@ -670,7 +671,8 @@ _COOLDOWN_KEY = "portfolio_brief_cooldown"
 
 
 def _templated_brief(projection, expiring, arr, churn, today=None,
-                     today_summary=None, expenses=None, income=True):
+                     today_summary=None, expenses=None, income=True,
+                     issues=None):
     """Deterministic rule-based summary from the metrics (the fallback).
 
     income=False drops the projected-rent sentence and nothing else. The
@@ -714,6 +716,26 @@ def _templated_brief(projection, expiring, arr, churn, today=None,
             "{} tenant{} flagged high churn-risk (e.g. {}).".format(
                 len(high), "" if len(high) == 1 else "s", high[0]["tenant_name"]))
 
+    # HM-2, 9 Oct 2026 - issues, and whether they are going the right
+    # way. The direction is the point: a count on its own does not
+    # answer "are we doing better or worse".
+    iss = issues or {}
+    if iss.get("open"):
+        s = "{} issue{} open".format(
+            iss["open"], "" if iss["open"] == 1 else "s")
+        prev = iss.get("open_prev")
+        if prev is not None and prev != iss["open"]:
+            s += ", {} from {} three months ago".format(
+                "up" if iss["open"] > prev else "down", prev)
+        if iss.get("problem"):
+            s += "; {} flagged as a problem".format(iss["problem"])
+        if iss.get("oldest_days"):
+            s += "; the oldest has been open {} days".format(
+                iss["oldest_days"])
+        lines.append(s + ".")
+    elif iss.get("total"):
+        lines.append("No issues open.")
+
     # Vacancies — prefer the same count the Today drill-down shows, so the
     # brief and the "Vacant properties" bar never disagree.
     vac = (today_summary or {}).get("vacantProperties")
@@ -753,7 +775,7 @@ def _templated_brief(projection, expiring, arr, churn, today=None,
 
 
 def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None,
-                       expenses=None, income=True):
+                       expenses=None, income=True, issues=None):
     """A stable short hash of the material figures. When any of these change,
     the fingerprint changes and the cached AI prose is regenerated.
 
@@ -766,8 +788,17 @@ def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None,
     if vac is None:
         vac = projection.get("current_vacancies") or 0
     exp = expenses or {}
+    iss = issues or {}
     payload = {
         "audience": "full" if income else "ops",
+        # HM-2, 9 Oct 2026 - the brief talks about these now, so they
+        # belong in the key that decides whether it is rewritten.
+        "iss_open": iss.get("open"),
+        "iss_open_prev": iss.get("open_prev"),
+        "iss_problem": iss.get("problem"),
+        "iss_logged3": iss.get("logged3"),
+        "iss_closed3": iss.get("closed3"),
+        "iss_oldest": iss.get("oldest_days"),
         "exp_top3": (exp.get("top3") or {}).get("prop_name"),
         "exp_top3_amt": (exp.get("top3") or {}).get("amount"),
         "exp_cur3": exp.get("cur3"),
@@ -791,7 +822,7 @@ def _brief_fingerprint(projection, expiring, arr, churn, today_summary=None,
 
 
 def _metrics_context(projection, expiring, arr, churn, today, today_summary,
-                     expenses=None, income=True):
+                     expenses=None, income=True, issues=None):
     """Compact, factual figure list handed to the model. The model is told to
     use ONLY these - no invented names or numbers.
 
@@ -839,6 +870,23 @@ def _metrics_context(projection, expiring, arr, churn, today, today_summary,
             "{} ({})".format(c["tenant_name"], ", ".join(c["reasons"])) for c in high[:5]) + ".")
     else:
         parts.append("No high churn-risk tenants.")
+
+    # HM-2, 9 Oct 2026 - issues, with the comparisons rather than a
+    # bare count, because the question he asked was "are we doing
+    # better or worse".
+    iss = issues or {}
+    if iss.get("total"):
+        parts.append(
+            "Issues: {} open now, against {} three months ago and {} a year "
+            "ago. {} logged and {} closed in the last 3 months.".format(
+                iss.get("open"), iss.get("open_prev"), iss.get("open_year"),
+                iss.get("logged3"), iss.get("closed3")))
+        if iss.get("open"):
+            parts.append(
+                "Oldest open issue: {} days; median {} days{}.".format(
+                    iss.get("oldest_days"), iss.get("median_days"),
+                    "; {} flagged as a problem".format(iss["problem"])
+                    if iss.get("problem") else ""))
 
     if expenses and expenses.get("top3"):
         t = expenses["top3"]
@@ -904,7 +952,8 @@ def _llm_brief(metrics_text, today, income=True):
         task = (
             "Write 3 to 5 sentences of plain-English prose that summarise the "
             "near-term income position and flag what needs attention (lease "
-            "expiries with no successor, arrears, churn risk, vacancies, and "
+            "expiries with no successor, arrears, churn risk, vacancies, "
+            "open maintenance issues and how they are trending, and "
             "non-budgeted expense hot-spots). Lead with the income outlook and "
             "include a sentence on non-budgeted (ad-hoc) expenses when a "
             "property stands out or spend is notably up or down. ")
@@ -912,7 +961,8 @@ def _llm_brief(metrics_text, today, income=True):
         task = (
             "Write 3 to 5 sentences of plain-English prose on what needs "
             "attention across the portfolio: lease expiries with no successor, "
-            "arrears, churn risk, vacancies, and non-budgeted expense "
+            "arrears, churn risk, vacancies, open maintenance issues and "
+            "how they are trending, and non-budgeted expense "
             "hot-spots. Lead with whatever is most urgent. Include a sentence "
             "on non-budgeted (ad-hoc) expenses when a property stands out or "
             "spend is notably up or down. ")
@@ -956,7 +1006,8 @@ def _llm_brief(metrics_text, today, income=True):
 
 
 def build_brief(projection, expiring, arr, churn, today=None,
-                today_summary=None, use_llm=True, expenses=None, *, income):
+                today_summary=None, use_llm=True, expenses=None, *, income,
+                issues=None):
     """Return {'lines', 'text', 'source', ...}. 'source' is 'ai' or 'template'.
 
     AI prose is cached against a fingerprint of the numbers, so it regenerates
@@ -970,13 +1021,14 @@ def build_brief(projection, expiring, arr, churn, today=None,
     # default either way is a decision taken by whoever types nothing.
     today = today or date.today()
     templated = _templated_brief(projection, expiring, arr, churn, today,
-                                 today_summary, expenses, income=income)
+                                 today_summary, expenses, income=income,
+                                 issues=issues)
 
     if not use_llm or not os.environ.get("ANTHROPIC_API_KEY"):
         return {"lines": templated["lines"], "text": templated["text"], "source": "template"}
 
     fp = _brief_fingerprint(projection, expiring, arr, churn, today_summary,
-                            expenses, income=income)
+                            expenses, income=income, issues=issues)
     ai_key = "portfolio_brief_ai_" + fp
 
     cached = cache.get(ai_key)
@@ -991,7 +1043,7 @@ def build_brief(projection, expiring, arr, churn, today=None,
 
     prose = _llm_brief(
         _metrics_context(projection, expiring, arr, churn, today, today_summary,
-                         expenses, income=income),
+                         expenses, income=income, issues=issues),
         today, income=income)
     if prose:
         cache.set(ai_key, prose, _BRIEF_TTL)
@@ -1000,6 +1052,172 @@ def build_brief(projection, expiring, arr, churn, today=None,
 
     cache.set(_COOLDOWN_KEY, 1, _COOLDOWN_TTL)
     return {"lines": templated["lines"], "text": templated["text"], "source": "template"}
+
+
+
+
+# ---------------------------------------------------------------------------
+# Issues - counts by status, open and logged over time, and ageing
+# ---------------------------------------------------------------------------
+
+# 1900-01-01 IS "NO DATE" - HM-2, 9 Oct 2026. Eleven places in the tree
+# compare against date(1900, 1, 1) before using issues_resolution_date,
+# because the column is never NULL. The first run of the status census
+# asked `IS NOT NULL` and reported all 154 rows as resolved-dated,
+# including the ten that are open. A reader that asks whether a field is
+# POPULATED, where the codebase asks what it MEANS, gets a true answer
+# to a question nobody asked. This is the one place that knows.
+ISSUE_NO_DATE = date(1900, 1, 1)
+
+# His words, 8 Oct 2026: "Issues are either Unresolved (unresolved and
+# open - still working on them), Resolved (resolved and solved / sorted
+# out), or they are an Issue (unresolved, and a problem)."
+#
+# So the STATUS is the state and `Issue` is a SEVERITY on an open one -
+# not a third state. Everything that is not Resolved is open, which is
+# dashboard.py's rule written so that a spelling nobody has thought of
+# lands on the safe side: an unrecognised status reads as OPEN, because
+# an issue wrongly shown as outstanding is a glance wasted and one
+# wrongly shown as closed is a thing forgotten.
+ISSUE_RESOLVED = "Resolved"
+ISSUE_PROBLEM = "Issue"
+ISSUE_STALE_DAYS = 90
+
+
+def _issue_status(row):
+    return (row.issues_status or "").strip()
+
+
+def _resolved_on(row):
+    """The date an issue was resolved, or None - sentinel included."""
+    d = row.issues_resolution_date
+    return d if (d and d != ISSUE_NO_DATE) else None
+
+
+def issues_insight(today=None):
+    """Counts by status, open and logged over time, and the ageing line.
+
+    One query. The windows are expenses_insight()'s - rolling three
+    months from _months_before, never calendar quarters, so being
+    mid-quarter never compares a partial period against full ones.
+    """
+    today = today or date.today()
+    m3 = _months_before(today, 3)
+    m6 = _months_before(today, 6)
+    m12 = _months_before(today, 12)
+    m15 = _months_before(today, 15)
+
+    rows = list(Issue.objects.all())
+    total = len(rows)
+
+    # ---- a count per status, EVERY status that occurs ---------------
+    # Not a fixed list. The census found three spellings the app can
+    # write and only two in use; a fourth would be invisible to a panel
+    # built on an assumed vocabulary, which is the whole reason the
+    # vocabulary was counted before this was designed.
+    by_status = {}
+    for r in rows:
+        s = _issue_status(r) or "(blank)"
+        by_status[s] = by_status.get(s, 0) + 1
+    statuses = sorted(by_status.items(), key=lambda kv: (-kv[1], kv[0]))
+
+    def is_open(r):
+        return _issue_status(r) != ISSUE_RESOLVED
+
+    open_rows = [r for r in rows if is_open(r)]
+    problem_rows = [r for r in open_rows
+                    if _issue_status(r) == ISSUE_PROBLEM]
+
+    # ---- open at a past date, RECONSTRUCTED --------------------------
+    # There is no history of status changes to read, so this is derived:
+    #     open at D = logged <= D AND (not Resolved OR resolved after D)
+    # Exact for every row that is open now, or Resolved with a real
+    # date. A Resolved row with NO date cannot be placed in time; it is
+    # counted in the status totals and left OUT of this series, and the
+    # panel says how many rather than leaving a total that does not add
+    # up.
+    unplaceable = [r for r in rows
+                   if not is_open(r) and _resolved_on(r) is None]
+    placeable = [r for r in rows if r not in unplaceable]
+
+    def open_at(d):
+        n = 0
+        for r in placeable:
+            lg = r.issues_date_logged
+            if not lg or lg > d:
+                continue
+            if is_open(r):
+                n += 1
+            else:
+                res = _resolved_on(r)
+                if res and res > d:
+                    n += 1
+        return n
+
+    open_now = len(open_rows)
+    open_prev = open_at(m3)
+    open_year = open_at(m12)
+
+    # ---- logged and resolved in each window --------------------------
+    def logged_in(lo, hi):
+        return len([r for r in rows if r.issues_date_logged
+                    and lo < r.issues_date_logged <= hi])
+
+    def resolved_in(lo, hi):
+        n = 0
+        for r in rows:
+            res = _resolved_on(r)
+            if res and lo < res <= hi:
+                n += 1
+        return n
+
+    logged3, logged_prev3 = logged_in(m3, today), logged_in(m6, m3)
+    logged_yoy3 = logged_in(m15, m12)
+    closed3, closed_prev3 = resolved_in(m3, today), resolved_in(m6, m3)
+    closed_yoy3 = resolved_in(m15, m12)
+
+    def chg(cur, base):
+        return round((cur - base) / base * 100, 1) if base else None
+
+    def fmt(p):
+        return None if p is None else "{:+g}%".format(p)
+
+    # ---- the ageing line ---------------------------------------------
+    # `Issue` - his severity for "unresolved AND a problem" - has never
+    # been used on the live data, so the warning this panel carries
+    # cannot be the problem count today. It is age: of the ones that are
+    # open, how long have they been open. The problem count is still
+    # computed and will appear the moment somebody uses it.
+    ages = sorted((today - r.issues_date_logged).days
+                  for r in open_rows if r.issues_date_logged)
+    oldest = ages[-1] if ages else 0
+    median_age = int(statistics.median(ages)) if ages else 0
+    stale = len([a for a in ages if a >= ISSUE_STALE_DAYS])
+
+    return {
+        "total": total,
+        "statuses": [{"name": s, "count": n,
+                      "open": s != ISSUE_RESOLVED} for s, n in statuses],
+        "open": open_now,
+        "open_prev": open_prev, "open_prev_chg": chg(open_now, open_prev),
+        "open_prev_fmt": fmt(chg(open_now, open_prev)),
+        "open_year": open_year, "open_year_chg": chg(open_now, open_year),
+        "open_year_fmt": fmt(chg(open_now, open_year)),
+        "problem": len(problem_rows),
+        "resolved": total - open_now,
+        "logged3": logged3, "logged_prev3": logged_prev3,
+        "logged_yoy3": logged_yoy3,
+        "logged_prev_fmt": fmt(chg(logged3, logged_prev3)),
+        "logged_yoy_fmt": fmt(chg(logged3, logged_yoy3)),
+        "closed3": closed3, "closed_prev3": closed_prev3,
+        "closed_yoy3": closed_yoy3,
+        "closed_prev_fmt": fmt(chg(closed3, closed_prev3)),
+        "closed_yoy_fmt": fmt(chg(closed3, closed_yoy3)),
+        "oldest_days": oldest, "median_days": median_age,
+        "stale": stale, "stale_days": ISSUE_STALE_DAYS,
+        "unplaceable": len(unplaceable),
+        "net3": logged3 - closed3,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1079,6 +1297,10 @@ def portfolio_insights(today=None, months=12, within_days=90,
     arr = arrears(today)
     churn = churn_risk(today, arrears_rows=arr["rows"])
     expenses = expenses_insight(today)
+    # FOR BOTH AUDIENCES, at his ask - "This part can be for users and
+    # superusers." Nothing in it is income: a count of issues is a count
+    # of issues whoever is reading.
+    issues_panel = issues_insight(today)
     # ONE RATIO INVERTS TO A RENT - HM-1, 8 Oct 2026. The expense card
     # prints the property, the amount and `pct_of_rent`, which is
     # rounded to ONE DECIMAL: EUR 900 at 12.3% gives 900/0.123 = EUR
@@ -1091,7 +1313,8 @@ def portfolio_insights(today=None, months=12, within_days=90,
         expenses = _scrub_rent_ratio(expenses)
     brief = build_brief(projection, cliff, arr, churn, today=today,
                         today_summary=today_summary, use_llm=use_llm,
-                        expenses=expenses, income=income)
+                        expenses=expenses, income=income,
+                        issues=issues_panel)
     return {
         "generated_at": today,
         # THE TEMPLATE ASKS THE QUESTION BY NAME. It could test whether
@@ -1104,6 +1327,7 @@ def portfolio_insights(today=None, months=12, within_days=90,
         "arrears": arr,
         "churn": churn,
         "expenses": expenses,
+        "issues": issues_panel,
         "brief": brief,
     }
 

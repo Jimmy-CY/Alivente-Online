@@ -61,7 +61,7 @@ Home
       {# card. His call.                                               #}
       {% if insights.income %}
       <!-- Forward rent-roll -->
-      <section class="ins-card ins-card--wide">
+      <section class="ins-card ins-card--full">
         <h3 class="ins-card__title">
           <span class="ins-ic ins-ic--rent"><i class="fas fa-chart-line"></i></span>
           Forward rent-roll &mdash; next 12 months
@@ -106,8 +106,144 @@ Home
       </section>
       {% endif %}
 
+      {# HM-2, 9 Oct 2026 - THE ISSUES PANEL, FOR BOTH AUDIENCES.     #}
+      {# It sits here, immediately after the rent-roll card, so that  #}
+      {# a reader WITH income sees the rent roll first and this       #}
+      {# second, and a reader without it sees this in the cell the    #}
+      {# rent-roll card left. One block, two pages, no second layout. #}
+      <section class="ins-card ins-card--half">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--iss"><i class="fas fa-clipboard-list"></i></span>
+          Issues
+        </h3>
+        <p class="ins-card__sub">Open, logged and closed &mdash; against the
+          previous 3 months and the same 3 months last year.</p>
+
+        <div class="ins-kpis">
+          <div class="ins-kpi">
+            <span class="ins-kpi__n{% if insights.issues.open %} ins-kpi__n--red{% endif %}">{{ insights.issues.open }}</span>
+            <span class="ins-kpi__k">Open now</span>
+          </div>
+          <div class="ins-kpi">
+            <span class="ins-kpi__n">{{ insights.issues.logged3 }}</span>
+            <span class="ins-kpi__k">Logged &middot; 3 mo</span>
+          </div>
+          <div class="ins-kpi">
+            <span class="ins-kpi__n">{{ insights.issues.closed3 }}</span>
+            <span class="ins-kpi__k">Closed &middot; 3 mo</span>
+          </div>
+        </div>
+
+        <table class="iss-tbl">
+          <tr>
+            <th></th><th>now</th><th>prev 3 mo</th><th>last year</th>
+          </tr>
+          <tr>
+            <td>Open</td>
+            <td class="iss-n">{{ insights.issues.open }}</td>
+            <td class="iss-n">{{ insights.issues.open_prev }}
+              {% if insights.issues.open_prev_fmt %}<span class="iss-chg {% if insights.issues.open_prev_chg > 0 %}iss-up{% else %}iss-down{% endif %}">{{ insights.issues.open_prev_fmt }}</span>{% endif %}</td>
+            <td class="iss-n">{{ insights.issues.open_year }}
+              {% if insights.issues.open_year_fmt %}<span class="iss-chg {% if insights.issues.open_year_chg > 0 %}iss-up{% else %}iss-down{% endif %}">{{ insights.issues.open_year_fmt }}</span>{% endif %}</td>
+          </tr>
+          <tr>
+            <td>Logged</td>
+            <td class="iss-n">{{ insights.issues.logged3 }}</td>
+            <td class="iss-n">{{ insights.issues.logged_prev3 }}</td>
+            <td class="iss-n">{{ insights.issues.logged_yoy3 }}</td>
+          </tr>
+          <tr>
+            <td>Closed</td>
+            <td class="iss-n">{{ insights.issues.closed3 }}</td>
+            <td class="iss-n">{{ insights.issues.closed_prev3 }}</td>
+            <td class="iss-n">{{ insights.issues.closed_yoy3 }}</td>
+          </tr>
+        </table>
+
+        {# THE WARNING LINE IS AGE, NOT SEVERITY - the `Issue` status   #}
+        {# his description calls "unresolved and a problem" has never  #}
+        {# been used on the live data. It is counted, and it appears   #}
+        {# the moment somebody uses it; until then the thing worth     #}
+        {# looking out for is how long the open ones have been open.   #}
+        {% if insights.issues.problem %}
+        <p class="ins-more ins-warn"><i class="fas fa-exclamation-triangle"></i>
+          {{ insights.issues.problem }} flagged as a problem</p>
+        {% endif %}
+        {% if insights.issues.open %}
+        <p class="ins-more">Oldest open: {{ insights.issues.oldest_days }} days
+          &middot; median {{ insights.issues.median_days }}
+          {% if insights.issues.stale %}&middot;
+            <span class="iss-up">{{ insights.issues.stale }} over
+            {{ insights.issues.stale_days }} days</span>{% endif %}</p>
+        {% else %}
+        <p class="ins-empty"><i class="fas fa-check-circle"></i> Nothing open.</p>
+        {% endif %}
+
+        <p class="ins-more iss-mix">
+          {% for s in insights.issues.statuses %}<span class="iss-pill{% if s.open %} iss-pill--open{% endif %}">{{ s.name }} {{ s.count }}</span>{% endfor %}
+        </p>
+        {% if insights.issues.unplaceable %}
+        <p class="ins-more">{{ insights.issues.unplaceable }} resolved without a
+          date &mdash; counted above, left out of the comparisons.</p>
+        {% endif %}
+      </section>
+
+      <!-- Arrears (= overdue invoices) -->
+      <section class="ins-card ins-card--half">
+        <h3 class="ins-card__title">
+          <span class="ins-ic ins-ic--arr"><i class="fas fa-triangle-exclamation"></i></span>
+          Arrears &mdash; overdue rent
+        </h3>
+        <p class="ins-card__sub">Unpaid invoices past their payment terms.</p>
+
+        <div class="ins-kpis">
+          <div class="ins-kpi">
+            <span class="ins-kpi__n ins-kpi__n--red">{{ insights.arrears.total_fmt }}</span>
+            <span class="ins-kpi__k">Total overdue</span>
+          </div>
+          <div class="ins-kpi">
+            <span class="ins-kpi__n">{{ insights.arrears.tenant_count }}</span>
+            <span class="ins-kpi__k">Tenant{{ insights.arrears.tenant_count|pluralize }}</span>
+          </div>
+        </div>
+        {% if insights.arrears.invoice_count %}
+          <p class="ins-more">across {{ insights.arrears.invoice_count }} invoice{{ insights.arrears.invoice_count|pluralize }}</p>
+          {% if insights.arrears.late_total %}
+            <p class="ins-late"><i class="fas fa-hourglass-half"></i>
+              {{ insights.arrears.late_total_fmt }} more than {{ insights.arrears.grace_days }} days late
+              ({{ insights.arrears.late_count }} tenant{{ insights.arrears.late_count|pluralize }})</p>
+          {% else %}
+            <p class="ins-late ins-late--ok"><i class="fas fa-check-circle"></i>
+              None more than {{ insights.arrears.grace_days }} days late</p>
+          {% endif %}
+        {% endif %}
+
+        {% for r in insights.arrears.rows|slice:":3" %}
+          <div class="ins-row">
+            <div>
+              <div class="ins-who">{{ r.tenant_name }}</div>
+              <div class="ins-meta">{{ r.prop_name }}{% if r.invoice_count > 1 %} &middot; {{ r.invoice_count }} invoices{% else %} &middot; due {{ r.due_date|date:"j M" }}{% endif %}</div>
+            </div>
+            <span class="ins-amt ins-amt--red">{{ r.amount_fmt }} &middot; {{ r.days_overdue }}d</span>
+          </div>
+        {% empty %}
+          <p class="ins-empty"><i class="fas fa-check-circle"></i> No overdue rent.</p>
+        {% endfor %}
+
+        {% with it=today_by_category.overdue %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">View all overdue invoices</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+      </section>
+
       <!-- Lease expiries (no successor) + expiring / declined drill-downs -->
-      <section class="ins-card">
+      <section class="ins-card ins-card--half">
         <h3 class="ins-card__title">
           <span class="ins-ic ins-ic--exp"><i class="fas fa-calendar-times"></i></span>
           Lease expiries
@@ -165,60 +301,6 @@ Home
           <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
           <span class="today-row__count">{{ it.count }}</span>
           <span class="today-row__label">{{ it.label }}</span>
-          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-        </button>
-        {% endif %}{% endwith %}
-      </section>
-
-      <!-- Arrears (= overdue invoices) -->
-      <section class="ins-card ins-card--half">
-        <h3 class="ins-card__title">
-          <span class="ins-ic ins-ic--arr"><i class="fas fa-triangle-exclamation"></i></span>
-          Arrears &mdash; overdue rent
-        </h3>
-        <p class="ins-card__sub">Unpaid invoices past their payment terms.</p>
-
-        <div class="ins-kpis">
-          <div class="ins-kpi">
-            <span class="ins-kpi__n ins-kpi__n--red">{{ insights.arrears.total_fmt }}</span>
-            <span class="ins-kpi__k">Total overdue</span>
-          </div>
-          <div class="ins-kpi">
-            <span class="ins-kpi__n">{{ insights.arrears.tenant_count }}</span>
-            <span class="ins-kpi__k">Tenant{{ insights.arrears.tenant_count|pluralize }}</span>
-          </div>
-        </div>
-        {% if insights.arrears.invoice_count %}
-          <p class="ins-more">across {{ insights.arrears.invoice_count }} invoice{{ insights.arrears.invoice_count|pluralize }}</p>
-          {% if insights.arrears.late_total %}
-            <p class="ins-late"><i class="fas fa-hourglass-half"></i>
-              {{ insights.arrears.late_total_fmt }} more than {{ insights.arrears.grace_days }} days late
-              ({{ insights.arrears.late_count }} tenant{{ insights.arrears.late_count|pluralize }})</p>
-          {% else %}
-            <p class="ins-late ins-late--ok"><i class="fas fa-check-circle"></i>
-              None more than {{ insights.arrears.grace_days }} days late</p>
-          {% endif %}
-        {% endif %}
-
-        {% for r in insights.arrears.rows|slice:":3" %}
-          <div class="ins-row">
-            <div>
-              <div class="ins-who">{{ r.tenant_name }}</div>
-              <div class="ins-meta">{{ r.prop_name }}{% if r.invoice_count > 1 %} &middot; {{ r.invoice_count }} invoices{% else %} &middot; due {{ r.due_date|date:"j M" }}{% endif %}</div>
-            </div>
-            <span class="ins-amt ins-amt--red">{{ r.amount_fmt }} &middot; {{ r.days_overdue }}d</span>
-          </div>
-        {% empty %}
-          <p class="ins-empty"><i class="fas fa-check-circle"></i> No overdue rent.</p>
-        {% endfor %}
-
-        {% with it=today_by_category.overdue %}{% if it %}
-        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
-                data-category="{{ it.category }}"
-                aria-label="{{ it.count }} {{ it.label }}, tap for details">
-          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
-          <span class="today-row__count">{{ it.count }}</span>
-          <span class="today-row__label">View all overdue invoices</span>
           <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
         </button>
         {% endif %}{% endwith %}
@@ -398,6 +480,35 @@ Home
     }
     .section-heading i { color: var(--alv-accent); font-size: 0.9rem; }
     .brief-heading { margin-top: 4px; }
+    /* HM-2, 9 Oct 2026 - the Issues panel. */
+    /* THE SIBLING THAT PASSES, NOT THE ONE THAT DOES NOT.
+       Five .ins-ic--* badges share this shape. --rent uses plain
+       --alv-accent on --alv-accent-soft and sits in
+       test_pair_contrast's below-AA table at 4.31; --churn and
+       --act use --alv-accent-ink and clear it. The first cut of
+       this panel copied --rent and the pair census caught it:
+       a new card reproducing a known defect because it copied
+       its neighbour without reading the table that names it. */
+    .ins-ic--iss { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
+    .iss-tbl { width: 100%; border-collapse: collapse; margin: 10px 0 4px;
+               font-size: 13px; }
+    .iss-tbl th { text-align: right; font-weight: 600; font-size: 11px;
+                  text-transform: uppercase; letter-spacing: 0.03em;
+                  color: var(--alv-ink-soft); padding: 0 0 4px; }
+    .iss-tbl th:first-child { text-align: left; }
+    .iss-tbl td { padding: 4px 0; border-top: 1px solid var(--alv-line); }
+    .iss-tbl td.iss-n { text-align: right; font-variant-numeric: tabular-nums;
+                        font-weight: 700; }
+    .iss-chg { font-weight: 600; font-size: 11px; margin-left: 4px; }
+    .iss-up { color: var(--alv-bad); }
+    .iss-down { color: var(--alv-good-ink); }
+    .iss-mix { display: flex; flex-wrap: wrap; gap: 5px; }
+    .iss-pill { font-size: 11px; font-weight: 600; padding: 2px 7px;
+                border-radius: 10px; background: var(--alv-surface-deep);
+                color: var(--alv-ink-soft); }
+    .iss-pill--open { background: var(--alv-bad-soft); color: var(--alv-bad); }
+    .ins-warn { color: var(--alv-bad); font-weight: 600; }
+
 
     /* ==================== EXECUTIVE BRIEF ==================== */
     .brief {

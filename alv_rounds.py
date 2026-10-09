@@ -1051,7 +1051,27 @@ ROUNDS = [
     # The vacancy drill-down moved from the rent-roll card to Lease
     # expiries, for both audiences: it is occupancy, not income, and it
     # would have left with the card.
-    '.bak_homesplit',
+    '.bak_homesplit',    # HM-2, 9 Oct 2026 - the Issues panel, for both audiences, in the
+    # grid cell HM-1's rent-roll card leaves for a reader without
+    # income. Counts by status, open and logged and closed against the
+    # previous 3 months and the same 3 months last year, and an ageing
+    # line.
+    #
+    # THE CENSUS CHANGED THE DESIGN TWICE. `Issue` - his severity for
+    # "unresolved AND a problem" - has NEVER been used on the live
+    # data, so the warning line is AGE rather than severity; the
+    # problem count is still computed and appears the moment somebody
+    # uses it. And 1900-01-01 is "no date": the column is never NULL,
+    # eleven places in the tree compare against the sentinel, and the
+    # first census run asked the wrong question and reported all 154
+    # rows as resolved-dated, the ten open ones included.
+    #
+    # The open count over time is RECONSTRUCTED - logged <= D and (not
+    # Resolved or resolved after D) - because no status history exists
+    # to read. A Resolved row with no date cannot be placed in time: it
+    # is in the status totals and out of the series, and the panel says
+    # how many.
+    '.bak_issuepanel',
 ]
 
 
