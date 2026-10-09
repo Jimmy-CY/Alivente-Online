@@ -4,6 +4,12 @@
 {% block content %}
 
 <style>
+    /* B-7, 9 Oct 2026 - 20 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */
     /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
        the two families its own rules already declared: --alv-spice
        where warm is this module's identity (an Edit button, a Save
@@ -524,9 +530,9 @@ body {
         width: 100% !important;
         height: 200px !important;
         background: var(--alv-paper) !important;
-        border: 3px solid #20c997 !important;
+        border: 3px solid var(--alv-accent) !important;
         border-radius: 12px !important;
-        color: #20c997 !important;
+        color: var(--alv-accent) !important;
         font-size: 64px !important;
         margin: 0 !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -534,7 +540,7 @@ body {
 
     /* The content (title, desc, meta, tags) becomes its own green card */
     .recipe-header-content {
-        background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
+        background: linear-gradient(135deg, var(--alv-good) 0%, var(--alv-accent) 100%);
         color: var(--alv-on-accent);
         padding: 18px;
         border-radius: 12px;
@@ -2335,8 +2341,8 @@ body {
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cutting">—</td>
                         </tr>
                         <tr>
-                            <td style="padding: 14px 0 10px 0; font-weight: 700; font-size: 16px; color: #28a745;">🍽️ Serving Time</td>
-                            <td style="text-align: right; font-weight: 700; font-size: 16px; color: #28a745; letter-spacing: 1px;" id="ms_serving">—</td>
+                            <td style="padding: 14px 0 10px 0; font-weight: 700; font-size: 16px; color: var(--alv-good);">🍽️ Serving Time</td>
+                            <td style="text-align: right; font-weight: 700; font-size: 16px; color: var(--alv-good); letter-spacing: 1px;" id="ms_serving">—</td>
                         </tr>
                     </table>
                 </div>
@@ -2355,7 +2361,7 @@ body {
 <!-- Hidden print area for cooking schedule -->
 <div id="cookingSchedulePrintArea" style="display:none;">
     <h2 style="margin-bottom: 4px;">🔥 Cooking Schedule</h2>
-    <h3 style="color: #28a745; margin-bottom: 16px;" id="print_recipe_name">{{ recipe.recipe_name }}</h3>
+    <h3 style="color: var(--alv-good); margin-bottom: 16px;" id="print_recipe_name">{{ recipe.recipe_name }}</h3>
     <table style="width: 100%; border-collapse: collapse; font-size: 14pt;">
         <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">Serving Time</td><td style="text-align:right; font-weight:600;" id="print_serving_time_top">—</td></tr>
         <tr><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);" id="print_fire_label">Fire Lighting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.fire_lighting_duration }} mins</td></tr>
@@ -2372,7 +2378,7 @@ body {
         <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">🥩 Start Cooking on Braai</td><td style="text-align:right; font-weight:600;" id="print_start_cooking">—</td></tr>
         <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">✅ Finish Cooking / Start Resting</td><td style="text-align:right; font-weight:600;" id="print_finish_cooking">—</td></tr>
         <tr style="background: var(--alv-surface);"><td style="padding: 10px; border-bottom: 1px solid var(--alv-line);">🔪 Start Cutting & Making Sauce</td><td style="text-align:right; font-weight:600;" id="print_start_cutting">—</td></tr>
-        <tr style="background: var(--alv-surface);"><td style="padding: 10px; font-weight:700; color: #28a745;">🍽️ Serving Time</td><td style="text-align:right; font-weight:700; color: #28a745;" id="print_serving">—</td></tr>
+        <tr style="background: var(--alv-surface);"><td style="padding: 10px; font-weight:700; color: var(--alv-good);">🍽️ Serving Time</td><td style="text-align:right; font-weight:700; color: var(--alv-good);" id="print_serving">—</td></tr>
     </table>
 </div>
 {% endif %}
@@ -3118,7 +3124,7 @@ function renderMiniModalForm(items) {
         row.className = 'conv-row';
         row.innerHTML = `
             <div class="conv-row-name">
-                <i class="fas fa-utensils" style="color: #fd7e14; margin-right: 6px;"></i>
+                <i class="fas fa-utensils" style="color: var(--alv-spice-ink); margin-right: 6px;"></i>
                 ${escapeHtmlNutrition(item.ingredient_name)}
             </div>
             <div class="conv-row-explainer">${explainer}</div>
@@ -3144,7 +3150,7 @@ function renderMiniModalForm(items) {
             const input = document.getElementById(`convInput_${idx}`);
             if (input) {
                 input.value = val;
-                input.style.borderColor = '#28a745';
+                input.style.borderColor = 'var(--alv-good)';
             }
         });
     });
@@ -3172,10 +3178,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let hasError = false;
         rows.forEach(r => {
             if (isNaN(r.multiplier) || r.multiplier <= 0) {
-                r.input.style.borderColor = '#dc3545';
+                r.input.style.borderColor = 'var(--alv-bad)';
                 hasError = true;
             } else {
-                r.input.style.borderColor = '#28a745';
+                r.input.style.borderColor = 'var(--alv-good)';
             }
         });
         
@@ -3711,7 +3717,7 @@ function generateFinalList() {
 
         sortedCategories.forEach(category => {
             const categoryHeader = document.createElement('h6');
-            categoryHeader.style.cssText = 'color: #28a745; font-weight: 600; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
+            categoryHeader.style.cssText = 'color: var(--alv-good); font-weight: 600; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
             categoryHeader.innerHTML = `<i class="fas fa-tag"></i> ${category}`;
             container.appendChild(categoryHeader);
 
@@ -3721,7 +3727,7 @@ function generateFinalList() {
             categorizedItems[category].forEach(item => {
                 const li = document.createElement('li');
                 li.style.cssText = 'padding: 10px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px;';
-                li.innerHTML = `<span style="color: #28a745;">☐</span> ${item}`;
+                li.innerHTML = `<span style="color: var(--alv-good);">☐</span> ${item}`;
                 list.appendChild(li);
             });
 
@@ -3821,7 +3827,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
 
         formGroup.innerHTML = `
             <h4 style="color: #2c3e50; font-size: 16px; font-weight: 600; margin-bottom: 15px;">
-                <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 4px; font-size: 14px;">
+                <span style="background: var(--alv-good); color: white; padding: 4px 10px; border-radius: 4px; font-size: 14px;">
                     ${index + 1}
                 </span>
                 ${conv.ingredient}
@@ -3842,7 +3848,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                            id="conversion_${index}"
                            data-from-unit-id="${conv.from_unit_id}"
                            data-to-unit-id="${conv.to_unit_id}"
-                           style="width: 100%; padding: 10px; border: 2px solid #28a745; border-radius: 6px;">
+                           style="width: 100%; padding: 10px; border: 2px solid var(--alv-good); border-radius: 6px;">
                 </div>
 
                 <div>
@@ -3908,10 +3914,10 @@ async function saveConversionsAndRetry() {
         const conversionType = document.querySelector(`input[name="conversion_type_${index}"]:checked`).value;
 
         if (!value || parseFloat(value) <= 0) {
-            input.style.borderColor = '#dc3545';
+            input.style.borderColor = 'var(--alv-bad)';
             hasErrors = true;
         } else {
-            input.style.borderColor = '#28a745';
+            input.style.borderColor = 'var(--alv-good)';
 
             const conversionData = {
                 from_unit_id: input.dataset.fromUnitId,
@@ -3990,7 +3996,7 @@ function displayFinalShoppingList(categorizedItems) {
 
     Object.keys(categorizedItems).sort().forEach(category => {
         const categoryHeader = document.createElement('h6');
-        categoryHeader.style.cssText = 'color: #28a745; font-weight: 600; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
+        categoryHeader.style.cssText = 'color: var(--alv-good); font-weight: 600; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
         categoryHeader.innerHTML = `<i class="fas fa-tag"></i> ${category}`;
         container.appendChild(categoryHeader);
 
@@ -4003,7 +4009,7 @@ function displayFinalShoppingList(categorizedItems) {
             const convertedItem = item.replace(/^(\d+\.?\d*)/, (match) => {
                 return decimalToFraction(parseFloat(match));
             });
-            li.innerHTML = `<span style="color: #28a745;">☐</span> ${convertedItem}`;
+            li.innerHTML = `<span style="color: var(--alv-good);">☐</span> ${convertedItem}`;
             list.appendChild(li);
         });
 

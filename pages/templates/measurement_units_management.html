@@ -3,7 +3,13 @@
 {% block title %}Measurement Units Management{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 2 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -565,7 +571,7 @@
                                 {% endif %}
                             </div>
                             {% else %}
-                            <span style="color: #28a745;"><i class="fas fa-check"></i> Not used</span>
+                            <span style="color: var(--alv-good);"><i class="fas fa-check"></i> Not used</span>
                             {% endif %}
                         </div>
                     </td>
@@ -823,7 +829,7 @@ async function saveUnit(unitId) {
             
             // Show success
             saveBtn.innerHTML = '<i class="fas fa-check"></i>';
-            saveBtn.style.color = '#28a745';
+            saveBtn.style.color = 'var(--alv-good)';
             
             setTimeout(() => {
                 saveBtn.innerHTML = originalHTML;

@@ -5,6 +5,12 @@
 {% block content %}
 
 <style>
+    /* B-7, 9 Oct 2026 - 7 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */
     /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
        the two families its own rules already declared: --alv-spice
        where warm is this module's identity (an Edit button, a Save
@@ -550,7 +556,7 @@
     border: none;
 }
 .nm-header {
-    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, var(--alv-accent) 100%);
     color: var(--alv-on-accent);
     padding: 16px 22px;
     border-radius: 12px 12px 0 0;
@@ -750,7 +756,7 @@
     border-radius: 6px;
     font-size: 13px;
 }
-.nm-manual-field input:focus { border-color: #007bff; outline: none; }
+.nm-manual-field input:focus { border-color: var(--alv-accent); outline: none; }
 
 .nm-preview-panel {
     background: var(--alv-surface);
@@ -1270,7 +1276,7 @@
             <div class="nm-body">
                 <!-- Loading state -->
                 <div id="nmLoading" style="text-align: center; padding: 40px;">
-                    <i class="fas fa-spinner fa-spin fa-2x" style="color: #28a745;"></i>
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--alv-good);"></i>
                     <p style="margin-top: 14px; color: #6c757d;">Loading ingredient details…</p>
                 </div>
                 
@@ -1694,7 +1700,7 @@ async function saveIngredient(ingredientId) {
             row.classList.remove('edit-mode');
             
             saveBtn.innerHTML = '<i class="fas fa-check"></i>';
-            saveBtn.style.color = '#28a745';
+            saveBtn.style.color = 'var(--alv-good)';
             
             setTimeout(() => {
                 saveBtn.innerHTML = originalHTML;
@@ -1849,7 +1855,7 @@ function openNutritionMappingModal(ingredientId) {
 function loadIngredientFromRow(ingredientId) {
     const row = document.getElementById(`ingredient-row-${ingredientId}`);
     if (!row) {
-        document.getElementById('nmLoading').innerHTML = '<div style="color: #dc3545;">Could not find ingredient row.</div>';
+        document.getElementById('nmLoading').innerHTML = '<div style="color: var(--alv-bad);">Could not find ingredient row.</div>';
         return;
     }
     
@@ -2062,7 +2068,7 @@ async function nmSelectMatch(idx) {
         const data = await res.json();
         
         if (!data.success) {
-            grid.innerHTML = `<div style="grid-column: 1 / -1; padding:8px; color:#721c24; background:#f8d7da; border-radius:6px;">${nmEscapeHtml(data.error || 'Could not fetch details')}</div>`;
+            grid.innerHTML = `<div style="grid-column: 1 / -1; padding:8px; color:var(--alv-bad-ink); background:#f8d7da; border-radius:6px;">${nmEscapeHtml(data.error || 'Could not fetch details')}</div>`;
             return;
         }
         
@@ -2071,7 +2077,7 @@ async function nmSelectMatch(idx) {
         nmRenderPreview(data);
         document.getElementById('nmSaveBtn').disabled = false;
     } catch (err) {
-        grid.innerHTML = `<div style="grid-column: 1 / -1; padding:8px; color:#721c24;">Network error: ${nmEscapeHtml(err.message)}</div>`;
+        grid.innerHTML = `<div style="grid-column: 1 / -1; padding:8px; color:var(--alv-bad-ink);">Network error: ${nmEscapeHtml(err.message)}</div>`;
     }
 }
 

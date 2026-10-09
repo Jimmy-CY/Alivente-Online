@@ -5,7 +5,13 @@
 
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 2 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 1 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 2 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -602,7 +608,7 @@ function showIssueDetails(issueId) {
             console.error('Error fetching issue details:', error);
             document.getElementById('modalBody').innerHTML = `
                 <div class="text-center" style="padding: 40px;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545;"></i>
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--alv-bad);"></i>
                     <p style="margin-top: 20px; color: var(--alv-neutral);">Error loading issue details</p>
                 </div>
             `;

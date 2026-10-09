@@ -89,12 +89,12 @@ RULES = os.path.join(ROOT, 'alv_cssrules.py')
 #   says 'no kcal data' on two pages. SCRIPT, style-attr and the
 #   var-safe total each came down by two; canvas and unknown did
 #   not move, because this round converted only var-safe ones.
-MARKUP_STYLE = 118      # colour literals in inline style= attributes
-SCRIPT = 201            # colour literals inside <script> bodies
+MARKUP_STYLE = 88      # colour literals in inline style= attributes
+SCRIPT = 149            # colour literals inside <script> bodies
 PRES = 0                # HTML presentation attributes carrying a colour
-PAGES = 40              # real pages carrying any of them
+PAGES = 36              # real pages carrying any of them
 STANDALONE = 26         # on the twelve exempt templates - correct, and staying
-CTX = {'style-attr': 59, 'style-prop': 24, 'css-text': 0,
+CTX = {'style-attr': 22, 'style-prop': 9, 'css-text': 0,
        'canvas': 27, 'unknown': 91}
 
 passed = failed = skipped = 0
@@ -316,10 +316,13 @@ for k in ('style-attr', 'style-prop', 'css-text', 'canvas', 'unknown'):
     ok(ctx.get(k, 0) == CTX[k], '  <script> context %-11s %4d'
        % (k, CTX[k]), ctx.get(k, 0))
 safe = sum(ctx.get(k, 0) for k in R.VAR_SAFE)
-ok(safe == 83,
-   '83 of the 201 may become var() - and 118 may not, which is the whole '
-   'reason this round exists. B-5a took 50 of the safe ones and not '
-   'one of the 118, which is why that number has not moved', safe)
+ok(safe == 31,
+   '31 of the 149 may become var() - and 118 may not, which is '
+   'the whole reason this round exists. B-7 took 52 of the safe '
+   'ones on 9 Oct 2026 and not one of the 118: a colour handed '
+   'to a chart library as DATA is painted onto a canvas with '
+   'no CSS step, so var() there is a meaningless string. That '
+   'is why canvas and unknown did not move.', safe)
 
 
 # ==========================================================================

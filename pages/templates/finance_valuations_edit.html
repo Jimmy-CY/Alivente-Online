@@ -205,7 +205,13 @@
 
 {% endif %}
 
-<style>    /* B-2b, 6 Oct 2026 - 3 literal(s) on this page became a var().
+<style>
+    /* B-7, 9 Oct 2026 - 2 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-2b, 6 Oct 2026 - 3 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -526,9 +532,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function formatDelta(delta) {
         if (delta > 0.005) {
-            return `<span style="color:#dc3545;">+&euro;${formatMoney(delta)}</span>`;
+            return `<span style="color:var(--alv-bad);">+&euro;${formatMoney(delta)}</span>`;
         } else if (delta < -0.005) {
-            return `<span style="color:#28a745;">&minus;&euro;${formatMoney(Math.abs(delta))}</span>`;
+            return `<span style="color:var(--alv-good);">&minus;&euro;${formatMoney(Math.abs(delta))}</span>`;
         }
         return `<span style="color:var(--alv-neutral);">&euro;0.00</span>`;
     }

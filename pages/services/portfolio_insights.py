@@ -1197,6 +1197,34 @@ def issues_insight(today=None):
     def fmt(p):
         return None if p is None else "{:+g}%".format(p)
 
+    # HM-3, 9 Oct 2026 - WHICH WAY IS GOOD IS A PROPERTY OF THE
+    # MEASURE, NOT OF THE PAGE. More open issues is worse; more
+    # closed is better; more logged is neither, and a card that
+    # colours it would be making a claim nobody has taken.
+    #
+    # Before this, every renderer decided for itself with
+    # `{% if chg > 0 %}` and the only one that existed happened to be
+    # the Open row, so the one rule in the tree was "up is bad" - and
+    # the moment the Closed row rendered its chips it showed a third
+    # more issues closed in warning red.
+    def direction(p, up_is):
+        if p is None or p == 0:
+            return "flat"
+        if up_is == "flat":
+            return "flat"
+        good = (p < 0) if up_is == "worse" else (p > 0)
+        return "better" if good else "worse"
+
+    # AND THE SIGN, WHICH IS A DIFFERENT FACT. The arrow says which
+    # way the number moved; the colour says whether that is good. On
+    # the Open row they disagree on purpose - 15 down to 10 is a down
+    # arrow in green - and anything that derives one from the other
+    # eventually points an arrow the wrong way.
+    def arrow(p):
+        if p is None or p == 0:
+            return None
+        return "up" if p > 0 else "down"
+
     # ---- the ageing line ---------------------------------------------
     # `Issue` - his severity for "unresolved AND a problem" - has never
     # been used on the live data, so the warning this panel carries
@@ -1211,23 +1239,41 @@ def issues_insight(today=None):
 
     return {
         "total": total,
+        # HM-3 - the strip labels its own three moments, so the card
+        # cannot drift from the arithmetic behind it. A date written
+        # into the template is true until tomorrow.
+        "today": today,
+        "prev_date": m3,
+        "year_date": m12,
         "statuses": [{"name": s, "count": n,
                       "open": s != ISSUE_RESOLVED} for s, n in statuses],
         "open": open_now,
         "open_prev": open_prev, "open_prev_chg": chg(open_now, open_prev),
         "open_prev_fmt": fmt(chg(open_now, open_prev)),
+        "open_prev_dir": direction(chg(open_now, open_prev), "worse"),
+        "open_prev_arrow": arrow(chg(open_now, open_prev)),
         "open_year": open_year, "open_year_chg": chg(open_now, open_year),
         "open_year_fmt": fmt(chg(open_now, open_year)),
+        "open_year_dir": direction(chg(open_now, open_year), "worse"),
+        "open_year_arrow": arrow(chg(open_now, open_year)),
         "problem": len(problem_rows),
         "resolved": total - open_now,
         "logged3": logged3, "logged_prev3": logged_prev3,
         "logged_yoy3": logged_yoy3,
         "logged_prev_fmt": fmt(chg(logged3, logged_prev3)),
         "logged_yoy_fmt": fmt(chg(logged3, logged_yoy3)),
+        "logged_prev_dir": direction(chg(logged3, logged_prev3), "flat"),
+        "logged_prev_arrow": arrow(chg(logged3, logged_prev3)),
+        "logged_yoy_dir": direction(chg(logged3, logged_yoy3), "flat"),
+        "logged_yoy_arrow": arrow(chg(logged3, logged_yoy3)),
         "closed3": closed3, "closed_prev3": closed_prev3,
         "closed_yoy3": closed_yoy3,
         "closed_prev_fmt": fmt(chg(closed3, closed_prev3)),
         "closed_yoy_fmt": fmt(chg(closed3, closed_yoy3)),
+        "closed_prev_dir": direction(chg(closed3, closed_prev3), "better"),
+        "closed_prev_arrow": arrow(chg(closed3, closed_prev3)),
+        "closed_yoy_dir": direction(chg(closed3, closed_yoy3), "better"),
+        "closed_yoy_arrow": arrow(chg(closed3, closed_yoy3)),
         "oldest_days": oldest, "median_days": median_age,
         "stale": stale, "stale_days": ISSUE_STALE_DAYS,
         "unplaceable": len(unplaceable),

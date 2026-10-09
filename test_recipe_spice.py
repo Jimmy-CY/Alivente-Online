@@ -327,8 +327,8 @@ ok('var(--alv-spice)' in icon,
    '#fd7e14 at 2.57 that the census cannot see, because the colour is '
    'on the base selector and the fill on this modifier', icon)
 
-ok(len(live) == 23,
-   'the tree has %d live pairs below AA, down from 32' % len(live))
+ok(len(live) == 22,
+   'the tree has %d live pairs below AA, down from 32 before RC-2' % len(live))
 ok(n == 713,
    'and still %d pairs in all - NOT ONE LEFT THE CENSUS, which is the '
    'whole point of section 7' % n)

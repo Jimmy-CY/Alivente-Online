@@ -2195,7 +2195,9 @@ $suites = @(
     # NULL gets the wrong answer; section 4 is that the panel is
     # outside the income gate, because it is for both audiences.
     'test_issue_panel.py',
-    'test_issue_dates.py'
+    'test_issue_dates.py',
+    'test_brights.py',
+    'test_issue_card.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

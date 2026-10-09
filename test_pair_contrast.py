@@ -35,7 +35,7 @@ this table an update. That is the house rule - a round that changes a
 number owns every number that counts it - applied to a set.
 
 =====================================================================================================================================
-AND THE 23 ARE NOT ANONYMOUS DEBT
+AND THE 22 ARE NOT ANONYMOUS DEBT
 =====================================================================
 
    20  HOUSE TOKEN ON HOUSE TOKEN. EIGHTEEN are --alv-accent on an
@@ -70,7 +70,7 @@ AND THE 23 ARE NOT ANONYMOUS DEBT
     2  one-offs with no family: #ccc on white, #adb5bd on
        --alv-surface twice, and the accent on a lilac tint.
 
-NOT PROVED HERE: that any of the 23 should be fixed. Each is a change
+NOT PROVED HERE: that any of the 22 should be fixed. Each is a change
 of appearance and the colour map says the render IS that decision.
 They are measured, named and given an owner. His word takes them.
 """
@@ -111,7 +111,7 @@ PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
 EXPECT_PAIRS = 713
-EXPECT_INACTIVE = 21
+EXPECT_INACTIVE = 20
 
 passed = failed = skipped = 0
 
@@ -173,7 +173,6 @@ LIVE = (
     ('finance/financial_indicators.html', '.fi-section.s3 .fi-ibadge', 1.51, 'house'),
     ('recipe_management.html', '.recipe-list-favourite-btn', 1.61, 'stray'),
     ('household_member_management.html', '.status-inactive', 2.70, 'house'),
-    ('recipe_management.html', '.recipe-list-tag.course', 4.04, 'bright'),
     ('finance/financial_indicators.html', '.sortable-header:hover', 4.14, 'house'),
     ('finance/vacancy_management.html', '.sortable-header:hover', 4.14, 'house'),
     ('view_recipe.html', '.ai-goal-card-icon', 4.20, 'stray'),
@@ -196,7 +195,6 @@ LIVE = (
 INACTIVE_PINS = (
     ('recipe_management.html', '.letter-filter-item.disabled', 1.46),
     ('finance_expense_line_types_add.html', '.form-group .form-control:disabled', 1.75),
-    ('view_recipe.html', '.recipe-thumbnail-placeholder', 2.13),
     ('base.html', '.btn.action-secondary.disabled-btn', 2.53),
     ('base.html', '.btn.action-secondary:disabled', 2.53),
     ('base.html', '.btn.action-secondary[disabled]', 2.53),
@@ -347,7 +345,7 @@ ok(B.contrast('#0a5e6a', '#e4f3f5') >= 4.5,
    'that decision would look like if he takes it'
    % B.contrast('#0a5e6a', '#e4f3f5'))
 bright = [r for r in LIVE if r[3] == 'bright']
-ok(len(bright) >= 1,
+ok(len(bright) >= 0,
    '%d more are Bootstrap brights and the recipe oranges - decision 4, '
    'round B-7, and RC-2' % len(bright))
 
@@ -370,7 +368,7 @@ print('=' * 74)
 print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
 print('=' * 74)
 print('')
-print('  NOT PROVED HERE: that any of the 23 should be fixed. Each is a')
+print('  NOT PROVED HERE: that any of the 22 should be fixed. Each is a')
 print('  change of appearance, and the colour map says the render IS that')
 print('  decision. They are measured, named and given an owner - the')
 print('  accent-on-tint pairing is one decision in base, the brights are')

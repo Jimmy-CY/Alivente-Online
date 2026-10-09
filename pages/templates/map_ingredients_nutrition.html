@@ -3,7 +3,13 @@
 {% block title %}Map Ingredients to Nutrition Data{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 21 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 4 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 21 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -87,7 +93,7 @@
 }
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--alv-good) 0%, #20c997 100%);
+    background: linear-gradient(90deg, var(--alv-good) 0%, var(--alv-accent) 100%);
     border-radius: 5px;
     transition: width 0.4s ease;
     width: 0%;
@@ -344,7 +350,7 @@
     font-size: 14px;
 }
 .manual-entry-field input:focus {
-    border-color: #007bff;
+    border-color: var(--alv-accent);
     outline: none;
 }
 
@@ -1119,7 +1125,7 @@ async function selectMatch(idx) {
         const data = await res.json();
         
         if (!data.success) {
-            els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:#721c24; background:#f8d7da; border-radius:6px;">${escapeHtml(data.error || 'Could not fetch details')}</div>`;
+            els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:var(--alv-bad-ink); background:#f8d7da; border-radius:6px;">${escapeHtml(data.error || 'Could not fetch details')}</div>`;
             return;
         }
         
@@ -1128,7 +1134,7 @@ async function selectMatch(idx) {
         els.saveBtn.disabled = false;
         
     } catch (err) {
-        els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:#721c24;">Network error: ${escapeHtml(err.message)}</div>`;
+        els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:var(--alv-bad-ink);">Network error: ${escapeHtml(err.message)}</div>`;
     }
 }
 

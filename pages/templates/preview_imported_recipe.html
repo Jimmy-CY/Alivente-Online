@@ -6,7 +6,13 @@
 <!-- Add SortableJS for drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<style>    /* B-3, 6 Oct 2026 - 12 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 7 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 12 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -1043,7 +1049,7 @@ tr.sortable-chosen {
 
     <div class="alert-info-custom">
         <strong><i class="fas fa-info-circle"></i> Instructions:</strong>
-        Click or type in measurement/ingredient/preparation fields. <span style="color: #28a745; font-weight: bold;">Green</span> means valid, <span style="color: #dc3545; font-weight: bold;">Red</span> means new. Select from dropdown or add new item.
+        Click or type in measurement/ingredient/preparation fields. <span style="color: var(--alv-good); font-weight: bold;">Green</span> means valid, <span style="color: var(--alv-bad); font-weight: bold;">Red</span> means new. Select from dropdown or add new item.
     </div>
 
     <form method="post" enctype="multipart/form-data" id="saveRecipeForm">
@@ -1062,7 +1068,7 @@ tr.sortable-chosen {
                 <label for="recipe_name"><strong>Recipe Name</strong> <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="recipe_name" name="recipe_name" value="{{ extracted_data.recipe_name }}" required
                        oninput="checkRecipeNameDuplicate(this)">
-                <small id="recipe_name_feedback" style="display:none; color: #dc3545; font-weight: 500; margin-top: 4px;">
+                <small id="recipe_name_feedback" style="display:none; color: var(--alv-bad); font-weight: 500; margin-top: 4px;">
                     <i class="fas fa-exclamation-circle"></i> A recipe with this name already exists.
                 </small>
             </div>
@@ -1698,7 +1704,7 @@ tr.sortable-chosen {
                                 ✨ Smart Suggestion
                             </span>
                         </div>
-                        <select class="form-control" id="newIngredientCategory" style="border: 2px solid #28a745; font-size: 15px;" onchange="suggestShoppingUnit()">
+                        <select class="form-control" id="newIngredientCategory" style="border: 2px solid var(--alv-good); font-size: 15px;" onchange="suggestShoppingUnit()">
                             <!-- Populated dynamically -->
                         </select>
                         <small class="form-text text-muted" style="margin-top: 8px;">
@@ -1708,7 +1714,7 @@ tr.sortable-chosen {
 
                     <div class="form-group">
                         <label for="newIngredientShoppingUnit"><strong>Shopping Unit</strong> <span class="text-danger">*</span></label>
-                        <select class="form-control" id="newIngredientShoppingUnit" style="border: 2px solid #28a745; font-size: 15px;" required>
+                        <select class="form-control" id="newIngredientShoppingUnit" style="border: 2px solid var(--alv-good); font-size: 15px;" required>
                             <option value="">-- Select Shopping Unit --</option>
                             {% for unit in all_units %}
                             <option value="{{ unit.measurement_unit_id }}">{{ unit.name }}</option>
@@ -3503,7 +3509,7 @@ function replaceMisspelledWord(stepIndex, oldWord, newWord) {
         autoResize(textarea);
         
         // Highlight the textarea briefly to show the change
-        textarea.style.background = '#d4edda';
+        textarea.style.background = 'var(--alv-good-soft)';
         setTimeout(() => {
             textarea.style.background = '';
         }, 1000);
@@ -3512,7 +3518,7 @@ function replaceMisspelledWord(stepIndex, oldWord, newWord) {
         const button = event.target;
         const originalText = button.textContent;
         button.textContent = '✓ Replaced';
-        button.style.background = '#28a745';
+        button.style.background = 'var(--alv-good)';
         
         setTimeout(() => {
             button.textContent = originalText;

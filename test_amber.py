@@ -116,6 +116,7 @@ print(__doc__.strip().splitlines()[0])
 import alv_tree as T                                       # noqa: E402
 import alv_cssrules as R                                   # noqa: E402
 import apply_amber as B                                    # noqa: E402
+import alv_rounds as RD                                    # noqa: E402
 
 TOUCHED = sorted(p for p in T.templates() if os.path.isfile(p + SUFFIX))
 
@@ -286,21 +287,34 @@ ok(pairs >= 4, '  and there are pairs to check', pairs)
 # ==========================================================================
 head('6. THE LEAVE LIST - EVERY ONE UNTOUCHED, WITH ITS REASON')
 # ==========================================================================
-# RC-2, 9 Oct 2026 - the share of B-4's leave list that a later
-# round has taken, with the owner named. Subtracted from the live
-# count so this section still asserts B-4's decision and not the
-# tree's accidental total.
-RC2_TOOK = {'#fd7e14': 4}
-
+# B-7, 9 Oct 2026 - THIS ASKS ABOUT B-4, NOT ABOUT TODAY.
+#
+# It used to compare the tree NOW against a "before" that
+# read the live file for every page B-4 had not touched.
+# That figure falls whenever a later round legitimately
+# converts one of these literals on such a page, so RC-2
+# added a dict of what it had taken and B-7 needed another
+# - and the number each had to contain was not what the
+# round took but what it took on pages B-4 happened to
+# touch, which nothing can derive. Two rounds, two wrong
+# answers.
+#
+# What this section means is that B-4 LEFT THESE ALONE.
+# That is a fact about B-4 and permanently true, so it is
+# asserted against B-4's own before and after, and no
+# later round has to compensate for it ever again.
 for lit, why in sorted(B.LEAVE.items()):
-    here = sum(T.code_only(read(p)).lower().count(lit)
-               for p in T.templates()) + RC2_TOOK.get(lit, 0)
-    there = sum(T.code_only(read(p + SUFFIX)).lower().count(lit)
-                for p in TOUCHED)
-    was = sum(T.code_only(read(p)).lower().count(lit)
-              for p in T.templates() if p not in TOUCHED) + there
-    ok(here == was, '%-9s unchanged - %s' % (lit, why[:52]),
-       '%d now, %d before' % (here, was))
+    b4_before = b4_after = 0
+    for p in T.templates():
+        after = T.code_only(RD.as_left_by(p, SUFFIX, read)).lower()
+        before = (T.code_only(read(p + SUFFIX)).lower()
+                  if p in TOUCHED else after)
+        b4_after += after.count(lit)
+        b4_before += before.count(lit)
+    ok(b4_before == b4_after,
+       '%-9s B-4 left it alone - %s' % (lit, why[:48]),
+       '%d after B-4, %d before it' % (b4_after, b4_before))
+
 for (pg, tail), why in B.LEAVE_RULES.items():
     path = T.path_of(pg)
     now = rule(path, tail) or ''

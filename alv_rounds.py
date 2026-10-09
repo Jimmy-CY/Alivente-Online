@@ -1078,6 +1078,12 @@ ROUNDS = [
     # IS-1, 9 Oct 2026 - a re-opened issue stops carrying
     # the date it was closed on.
     '.bak_issuedates',
+    # B-7, 9 Oct 2026 - the Bootstrap brights that survived
+    # B-3 by living outside a stylesheet.
+    '.bak_brights',
+    # HM-3, 9 Oct 2026 - the Issues card stops using one
+    # header for a level and a rate.
+    '.bak_isscard',
 ]
 
 

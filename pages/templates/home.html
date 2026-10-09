@@ -134,29 +134,53 @@ Home
           </div>
         </div>
 
+        <p class="iss-head">Open</p>
+        <div class="iss-strip">
+          <span class="iss-pt"><b>{{ insights.issues.open }}</b>
+            <i>Today</i></span>
+          <span class="iss-sep">&middot;</span>
+          <span class="iss-pt"><b>{{ insights.issues.open_prev }}</b>
+            <i>at {{ insights.issues.prev_date|date:"j M" }}</i>
+            {% if insights.issues.open_prev_fmt %}<span
+              class="iss-chg iss-chg--{{ insights.issues.open_prev_dir }}"
+              >{% if insights.issues.open_prev_arrow %}<i class="fas fa-arrow-{{ insights.issues.open_prev_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.open_prev_fmt }}</span>{% endif %}</span>
+          <span class="iss-sep">&middot;</span>
+          <span class="iss-pt"><b>{{ insights.issues.open_year }}</b>
+            <i>at {{ insights.issues.year_date|date:"j M Y" }}</i>
+            {% if insights.issues.open_year_fmt %}<span
+              class="iss-chg iss-chg--{{ insights.issues.open_year_dir }}"
+              >{% if insights.issues.open_year_arrow %}<i class="fas fa-arrow-{{ insights.issues.open_year_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.open_year_fmt }}</span>{% endif %}</span>
+        </div>
+
+        <!-- HM-3, 9 Oct 2026 - Open is a LEVEL at three moments and Logged and Closed are RATES over three periods, so they no longer share a header. The direction of each change comes from the service - see apply_issue_card.py. -->
         <table class="iss-tbl">
           <tr>
-            <th></th><th>now</th><th>prev 3 mo</th><th>last year</th>
-          </tr>
-          <tr>
-            <td>Open</td>
-            <td class="iss-n">{{ insights.issues.open }}</td>
-            <td class="iss-n">{{ insights.issues.open_prev }}
-              {% if insights.issues.open_prev_fmt %}<span class="iss-chg {% if insights.issues.open_prev_chg > 0 %}iss-up{% else %}iss-down{% endif %}">{{ insights.issues.open_prev_fmt }}</span>{% endif %}</td>
-            <td class="iss-n">{{ insights.issues.open_year }}
-              {% if insights.issues.open_year_fmt %}<span class="iss-chg {% if insights.issues.open_year_chg > 0 %}iss-up{% else %}iss-down{% endif %}">{{ insights.issues.open_year_fmt }}</span>{% endif %}</td>
+            <th></th><th>Latest 3 months</th><th>Prior 3 months</th>
+            <th>Same 3 months last year</th>
           </tr>
           <tr>
             <td>Logged</td>
             <td class="iss-n">{{ insights.issues.logged3 }}</td>
-            <td class="iss-n">{{ insights.issues.logged_prev3 }}</td>
-            <td class="iss-n">{{ insights.issues.logged_yoy3 }}</td>
+            <td class="iss-n">{{ insights.issues.logged_prev3 }}
+              {% if insights.issues.logged_prev_fmt %}<span
+                class="iss-chg iss-chg--{{ insights.issues.logged_prev_dir }}"
+              >{% if insights.issues.logged_prev_arrow %}<i class="fas fa-arrow-{{ insights.issues.logged_prev_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.logged_prev_fmt }}</span>{% endif %}</td>
+            <td class="iss-n">{{ insights.issues.logged_yoy3 }}
+              {% if insights.issues.logged_yoy_fmt %}<span
+                class="iss-chg iss-chg--{{ insights.issues.logged_yoy_dir }}"
+              >{% if insights.issues.logged_yoy_arrow %}<i class="fas fa-arrow-{{ insights.issues.logged_yoy_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.logged_yoy_fmt }}</span>{% endif %}</td>
           </tr>
           <tr>
             <td>Closed</td>
             <td class="iss-n">{{ insights.issues.closed3 }}</td>
-            <td class="iss-n">{{ insights.issues.closed_prev3 }}</td>
-            <td class="iss-n">{{ insights.issues.closed_yoy3 }}</td>
+            <td class="iss-n">{{ insights.issues.closed_prev3 }}
+              {% if insights.issues.closed_prev_fmt %}<span
+                class="iss-chg iss-chg--{{ insights.issues.closed_prev_dir }}"
+              >{% if insights.issues.closed_prev_arrow %}<i class="fas fa-arrow-{{ insights.issues.closed_prev_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.closed_prev_fmt }}</span>{% endif %}</td>
+            <td class="iss-n">{{ insights.issues.closed_yoy3 }}
+              {% if insights.issues.closed_yoy_fmt %}<span
+                class="iss-chg iss-chg--{{ insights.issues.closed_yoy_dir }}"
+              >{% if insights.issues.closed_yoy_arrow %}<i class="fas fa-arrow-{{ insights.issues.closed_yoy_arrow }} iss-arw"></i>{% endif %}{{ insights.issues.closed_yoy_fmt }}</span>{% endif %}</td>
           </tr>
         </table>
 
@@ -435,7 +459,13 @@ Home
 
   </div>
 
-  <style>    /* B-3, 6 Oct 2026 - 10 literal(s) on this page became a var(), and this
+  <style>
+    /* B-7, 9 Oct 2026 - 2 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 10 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -500,6 +530,30 @@ Home
     .iss-tbl td.iss-n { text-align: right; font-variant-numeric: tabular-nums;
                         font-weight: 700; }
     .iss-chg { font-weight: 600; font-size: 11px; margin-left: 4px; }
+
+    /* HM-3, 9 Oct 2026 - the direction comes from the SERVICE.
+       .iss-up and .iss-down stay: the ageing line below still uses
+       .iss-up for the over-90-days count, where up really is bad.
+       These three are for a comparison whose good direction depends
+       on what is being compared - a rise in Closed is good news and
+       was being painted in warning red. */
+    .iss-chg--worse  { color: var(--alv-bad); }
+    .iss-chg--better { color: var(--alv-good-ink); }
+    .iss-chg--flat   { color: var(--alv-ink-soft); }
+    /* the arrow inherits the chip's colour, so the two can never
+       disagree about which comparison they belong to */
+    .iss-arw { font-size: 9px; margin-right: 2px; vertical-align: 1px; }
+
+    .iss-head { font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--alv-ink-soft); margin: 8px 0 3px; }
+    .iss-strip { display: flex; flex-wrap: wrap; align-items: baseline;
+      gap: 8px; padding: 7px 10px; background: var(--alv-surface);
+      border-radius: 7px; border: 1px solid var(--alv-line); }
+    .iss-pt b { font-size: 17px; font-weight: 800;
+      font-variant-numeric: tabular-nums; }
+    .iss-pt i { font-style: normal; font-size: 11.5px;
+      color: var(--alv-ink-soft); }
+    .iss-sep { color: var(--alv-ink-faint); }
     .iss-up { color: var(--alv-bad); }
     .iss-down { color: var(--alv-good-ink); }
     .iss-mix { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -779,8 +833,8 @@ Home
 
     function emptyState(label) {
       return '<div style="text-align: center; padding: 40px;">' +
-        '<i class="fas fa-check-circle" style="color: #28a745; font-size: 48px; margin-bottom: 20px;"></i>' +
-        '<h4 style="color: #28a745;">No ' + label + '</h4></div>';
+        '<i class="fas fa-check-circle" style="color: var(--alv-good); font-size: 48px; margin-bottom: 20px;"></i>' +
+        '<h4 style="color: var(--alv-good);">No ' + label + '</h4></div>';
     }
 
     function buildVacantContent(items) {

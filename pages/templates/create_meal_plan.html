@@ -3,7 +3,13 @@
 {% block title %}Create Meal Plan{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 4 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -992,10 +998,10 @@ function createRecipeSelectorCard(recipe) {
     });
 
     if (recipe.is_vegetarian) {
-        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #28a745; color: white;"><i class="fas fa-leaf"></i> Vegetarian</span>`;
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-good); color: white;"><i class="fas fa-leaf"></i> Vegetarian</span>`;
     } else {
         recipe.proteins.forEach(protein => {
-            tagsHtml += `<span class="recipe-selector-card-badge" style="background: #fd7e14; color: white;">${protein}</span>`;
+            tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-spice); color: white;">${protein}</span>`;
         });
     }
 
@@ -1003,7 +1009,7 @@ function createRecipeSelectorCard(recipe) {
     card.innerHTML = `
         <div style="position:relative;">
             ${imageHtml}
-            ${isFav ? '<span style="position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.9);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#e74c3c;"><i class="fas fa-heart"></i></span>' : ''}
+            ${isFav ? '<span style="position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.9);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--alv-bad);"><i class="fas fa-heart"></i></span>' : ''}
         </div>
         <div class="recipe-selector-card-body">
             <div class="recipe-selector-card-title">${recipe.recipe_name}</div>
@@ -1098,7 +1104,7 @@ function toggleFavouritesFilter() {
     showFavouritesOnly = !showFavouritesOnly;
     const btn = document.getElementById('favouritesToggleBtn');
     if (showFavouritesOnly) {
-        btn.style.background = '#e74c3c';
+        btn.style.background = 'var(--alv-bad)';
         btn.style.borderColor = '#e74c3c';
         btn.style.color = 'white';
     } else {

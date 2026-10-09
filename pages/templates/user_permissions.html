@@ -3,7 +3,13 @@
 {% block title %}Permissions - {{ target_user.username }}{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 5 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 1 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -278,7 +284,7 @@
             {% if target_user.is_superuser %}Superuser{% elif target_user.is_staff %}Staff{% else %}User{% endif %}
         </span>
         <span>
-            <i class="fas fa-circle" style="font-size:8px; color:{% if target_user.is_active %}#28a745{% else %}#dc3545{% endif %};"></i>
+            <i class="fas fa-circle" style="font-size:8px; color:{% if target_user.is_active %}var(--alv-good){% else %}var(--alv-bad){% endif %};"></i>
             {% if target_user.is_active %}Active{% else %}Disabled{% endif %}
         </span>
     </div>
@@ -314,7 +320,7 @@
                     </button>
                 </div>
                 {% else %}
-                <span style="font-size:12px; color:#28a745;">
+                <span style="font-size:12px; color:var(--alv-good);">
                     <i class="fas fa-crown"></i> Superuser has full access to all modules
                 </span>
                 {% endif %}
@@ -336,7 +342,7 @@
                            onclick="event.stopPropagation();"
                            onchange="updatePermissionUI({{ forloop.counter }})">
                     <div class="permission-icon" id="perm-icon-{{ forloop.counter }}"
-                         style="{% if perm.granted or target_user.is_superuser %}background:#28a745;color:white;{% endif %}">
+                         style="{% if perm.granted or target_user.is_superuser %}background:var(--alv-good);color:white;{% endif %}">
                         <i class="fas {{ perm.icon }}"></i>
                     </div>
                     <div class="permission-info">
@@ -398,7 +404,7 @@ function updatePermissionUI(index) {
 
     if (checkbox.checked) {
         item.classList.add('granted');
-        icon.style.background = '#28a745';
+        icon.style.background = 'var(--alv-good)';
         icon.style.color = 'white';
         status.textContent = '✓ Access granted';
         status.className = 'permission-status granted';

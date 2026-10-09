@@ -222,7 +222,7 @@ Project Details - {{ project.project_name }}
                 {% if task.get_calculated_status == 'Completed' and task.get_calculated_actual_completion %}
                   <span class="detail-item">
                     <strong>Actual End:</strong>
-                    <span style="color: #28a745;">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
+                    <span style="color: var(--alv-good);">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
                   </span>
                 {% endif %}
                 <span class="detail-item">
@@ -344,7 +344,7 @@ Project Details - {{ project.project_name }}
                       {% if subtask.task_status == 'Completed' and subtask.task_actual_completion_date %}
                         <span class="detail-item">
                           <strong>Actual End:</strong>
-                          <span style="color: #28a745;">{{ subtask.task_actual_completion_date|date:"M d, Y" }}</span>
+                          <span style="color: var(--alv-good);">{{ subtask.task_actual_completion_date|date:"M d, Y" }}</span>
                         </span>
                       {% endif %}
                       <span class="detail-item">
@@ -651,7 +651,13 @@ Project Details - {{ project.project_name }}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<style>    /* B-3, 6 Oct 2026 - 4 literal(s) on this page became a var(), and this
+<style>
+    /* B-7, 9 Oct 2026 - 2 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */    /* B-3, 6 Oct 2026 - 4 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.

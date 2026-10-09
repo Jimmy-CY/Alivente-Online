@@ -7,6 +7,12 @@
 {% block content %}
 
 <style>
+    /* B-7, 9 Oct 2026 - 12 Bootstrap literal(s) on this page
+       became a var(). The ones in script blocks and in style
+       attributes are converted because the browser reads them
+       as CSS in the end; a colour handed to a chart library as
+       DATA is not converted and never will be by a round of
+       this shape - see apply_brights.py. */
     /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
        the two families its own rules already declared: --alv-spice
        where warm is this module's identity (an Edit button, a Save
@@ -440,7 +446,7 @@
 .recipe-image-placeholder {
     width: 100%;
     height: 200px;
-    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, var(--alv-accent) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -560,7 +566,7 @@
     width: 50px;
     height: 50px;
     border-radius: 6px;
-    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, var(--alv-accent) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -597,7 +603,7 @@
     font-weight: 500;
 }
 
-.recipe-list-tag.course { background: var(--alv-accent-soft); color: #1976d2; }
+.recipe-list-tag.course { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 .recipe-list-tag.category { background: var(--alv-accent-soft); color: var(--alv-accent); }
 .recipe-list-tag.protein { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
 .recipe-list-tag.vegetarian { background: var(--alv-good-soft); color: var(--alv-good); }
@@ -803,7 +809,7 @@
     position: absolute;
     top: 12px;
     right: 12px;
-    background: linear-gradient(135deg, var(--alv-good) 0%, #20c997 100%);
+    background: linear-gradient(135deg, var(--alv-good) 0%, var(--alv-accent) 100%);
     color: var(--alv-on-accent);
     font-size: 16px;
     font-weight: bold;
@@ -1168,7 +1174,7 @@
 .book-detail-meta-item { font-size: 11px; color: #8a7055; display: flex; align-items: center; gap: 4px; font-family: Georgia, serif; }
 .book-detail-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
 .book-detail-tag { font-size: 9.5px; padding: 2px 7px; border-radius: 10px; font-family: Georgia, serif; }
-.book-detail-tag.course   { background: var(--alv-accent-soft); color: #1565c0; }
+.book-detail-tag.course   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 .book-detail-tag.category { background: var(--alv-good-soft); color: var(--alv-good); }
 .book-detail-tag.protein  { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
 .book-detail-tag.veggie   { background: var(--alv-good-soft); color: var(--alv-good); }
@@ -2218,11 +2224,11 @@
                     <span class="recipe-list-meta-label">Difficulty</span>
                     <span class="recipe-list-meta-value recipe-list-difficulty">
                         {% if recipe.difficulty_level == 'Easy' %}
-                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: #28a745;"></i>
+                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: var(--alv-good);"></i>
                         {% elif recipe.difficulty_level == 'Medium' %}
-                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: #ffc107;"></i>
+                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: var(--alv-warn);"></i>
                         {% elif recipe.difficulty_level == 'Hard' %}
-                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: #dc3545;"></i>
+                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: var(--alv-bad);"></i>
                         {% endif %}
                         {{ recipe.difficulty_level }}
                     </span>
@@ -2701,9 +2707,9 @@ function createListRecipeItem(recipe) {
     let difficultyHtml = '';
     if (recipe.difficulty_level) {
         let difficultyIcon = '';
-        if (recipe.difficulty_level === 'Easy') difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: #28a745;"></i>';
-        else if (recipe.difficulty_level === 'Medium') difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: #ffc107;"></i>';
-        else if (recipe.difficulty_level === 'Hard') difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: #dc3545;"></i>';
+        if (recipe.difficulty_level === 'Easy') difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: var(--alv-good);"></i>';
+        else if (recipe.difficulty_level === 'Medium') difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: var(--alv-warn);"></i>';
+        else if (recipe.difficulty_level === 'Hard') difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: var(--alv-bad);"></i>';
         difficultyHtml = `<div class="recipe-list-meta-item"><span class="recipe-list-meta-label">Difficulty</span><span class="recipe-list-meta-value recipe-list-difficulty">${difficultyIcon} ${recipe.difficulty_level}</span></div>`;
     }
 
@@ -3505,7 +3511,7 @@ function openBookDetail(recipeId) {
         .then(data => renderBookDetail(data, recipeId))
         .catch(() => {
             document.getElementById('bookPageLeftContent').innerHTML =
-                '<div style="color:#dc3545; font-family: Georgia, serif; padding: 20px;">Error loading recipe.</div>';
+                '<div style="color:var(--alv-bad); font-family: Georgia, serif; padding: 20px;">Error loading recipe.</div>';
         });
 }
 
