@@ -74,7 +74,7 @@ PATCHER = 'apply_waiting_down.py'
 X0_SUITE = 'test_tree_roots.py'
 PS1 = 'Push-PendingChanges.ps1'
 
-CONVERTED_N = 46
+CONVERTED_N = 47      # 46 + test_required_promise.py, D-2, 9 Oct 2026
 WAITING_N = 14
 INDIRECT_N = 1
 CEILING = 51

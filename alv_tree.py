@@ -220,6 +220,12 @@ CONVERTED = [
     'test_save_and_cancel.py', 'test_secondary_visible.py',
     'test_small_controls.py', 'test_table_admin.py', 'test_tap_target.py',
     'test_zoom_guards.py',
+    # D-2, 9 Oct 2026 - written walking wide from the
+    # start rather than converted to it. It belongs here
+    # because it walks templates through walk3() and
+    # builds no root of its own, which is what this list
+    # means - not because any round widened it.
+    'test_required_promise.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
