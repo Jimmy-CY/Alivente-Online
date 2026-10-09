@@ -34,38 +34,43 @@ failure, and a pair that disappears is a round doing its job and owing
 this table an update. That is the house rule - a round that changes a
 number owns every number that counts it - applied to a set.
 
+=====================================================================================================================================
+AND THE 23 ARE NOT ANONYMOUS DEBT
 =====================================================================
-AND THE 32 ARE NOT ANONYMOUS DEBT
-=====================================================================
 
-    22  HOUSE TOKEN ON HOUSE TOKEN. EIGHTEEN are --alv-accent on an
-        --alv-accent-soft / --alv-line-soft / --alv-surface-deep
-        ground, 4.14 to 4.42 - the house pairing its own accent with
-        its own tint and missing AA by a tenth. That is ONE BASE
-        DECISION, not eighteen page fixes. --alv-accent-ink on
-        --alv-accent-soft reads 6.53:1.
+   20  HOUSE TOKEN ON HOUSE TOKEN. EIGHTEEN are --alv-accent on an
+       --alv-accent-soft / --alv-line-soft / --alv-surface-deep
+       ground, 4.14 to 4.42 - the house pairing its own accent with
+       its own tint and missing AA by a tenth. That is ONE BASE
+       DECISION, not eighteen page fixes. --alv-accent-ink on
+       --alv-accent-soft reads 6.53:1.
 
-        THREE OF THE EIGHTEEN WERE ADDED BY AD-1, 8 Oct 2026, AND IT
-        DID NOT CREATE THEM. The tabs on admin_apms and personal are
-        written in page-local :root tokens and this census resolved
-        var() against base alone, so not one tab rule in the tree was
-        being counted. AD-1 taught it to read the page's own :root and
-        701 pairs became 714. They were always there.
+       THREE OF THE EIGHTEEN WERE ADDED BY AD-1, 8 Oct 2026, AND IT
+       DID NOT CREATE THEM. The tabs on admin_apms and personal are
+       written in page-local :root tokens and this census resolved
+       var() against base alone, so not one tab rule in the tree was
+       being counted. AD-1 taught it to read the page's own :root and
+       701 pairs became 714. They were always there.
 
-        TWO OF THE 22 ARE NOT A TENTH. base's .icon-cancel:hover
-        is --alv-ink-strong on --alv-neutral at 1.49:1 and
-        .fi-ibadge is --alv-accent-ink on --alv-accent at 1.51:1.
-        Those are not low contrast, they are invisible text, and
-        section 5 says so separately so they cannot hide inside a
-        count of 22.
+       TWO OF THE 20 ARE NOT A TENTH. base's .icon-cancel:hover
+       is --alv-ink-strong on --alv-neutral at 1.49:1 and
+       .fi-ibadge is --alv-accent-ink on --alv-accent at 1.51:1.
+       Those are not low contrast, they are invisible text, and
+       section 5 says so separately so they cannot hide inside a
+       count of 20.
 
-    10  Bootstrap brights under white, plus the recipe oranges.
-        Decision 4 / round B-7, and RC-2.
+    1  Bootstrap brights under white, plus the recipe oranges.
+       Decision 4 / round B-7. RC-2 took the recipe module's share
+       on 9 Oct 2026: forty-three declarations on five pages, sorted
+       into --alv-spice where warm is that module's identity and
+       --alv-warn where the rule's own ground already said warn.
+       Nine of these pairs rose above AA with it, four of them from
+       under 2:1.
 
-     4  one-offs with no family: #ccc on white, #adb5bd on
-        --alv-surface twice, and the accent on a lilac tint.
+    2  one-offs with no family: #ccc on white, #adb5bd on
+       --alv-surface twice, and the accent on a lilac tint.
 
-NOT PROVED HERE: that any of the 32 should be fixed. Each is a change
+NOT PROVED HERE: that any of the 23 should be fixed. Each is a change
 of appearance and the colour map says the render IS that decision.
 They are measured, named and given an owner. His word takes them.
 """
@@ -167,16 +172,7 @@ LIVE = (
     ('base.html', '.icon-cancel:hover', 1.49, 'house'),
     ('finance/financial_indicators.html', '.fi-section.s3 .fi-ibadge', 1.51, 'house'),
     ('recipe_management.html', '.recipe-list-favourite-btn', 1.61, 'stray'),
-    ('ingredient_base_units_management.html', '.nm-conversion-form .nm-preset-btn:hover', 1.63, 'bright'),
-    ('recipe_management.html', '.recipe-edit-btn', 1.63, 'bright'),
-    ('recipe_management.html', '.recipe-card-actions-mobile .recipe-edit-btn', 1.63, 'bright'),
-    ('unit_conversions_wizard.html', '.conv-preset-btn:hover', 1.63, 'bright'),
-    ('unit_conversions_wizard.html', '.conv-row-unit', 2.57, 'bright'),
-    ('unit_conversions_wizard.html', '.btn-save', 2.57, 'bright'),
-    ('view_recipe.html', '.tag-protein', 2.57, 'bright'),
     ('household_member_management.html', '.status-inactive', 2.70, 'house'),
-    ('recipe_management.html', '.recipe-list-tag.protein', 3.44, 'bright'),
-    ('recipe_management.html', '.book-detail-tag.protein', 3.44, 'bright'),
     ('recipe_management.html', '.recipe-list-tag.course', 4.04, 'bright'),
     ('finance/financial_indicators.html', '.sortable-header:hover', 4.14, 'house'),
     ('finance/vacancy_management.html', '.sortable-header:hover', 4.14, 'house'),
@@ -324,7 +320,7 @@ head('5. TWO OF THE 20 ARE NOT A TENTH SHORT')
 # A count hides a range. Nineteen house pairs miss AA, but twelve of
 # them miss it by a tenth and two of them are invisible text.
 sub2 = [r for r in LIVE if r[2] < 2.0]
-ok(len(sub2) >= 7,
+ok(len(sub2) >= 3,
    '%d live pairs read below 2:1 across the tree - that is not low '
    'contrast, it is text you cannot see' % len(sub2),
    ['%s %s %.2f' % (r[0], r[1], r[2]) for r in sub2])
@@ -351,7 +347,7 @@ ok(B.contrast('#0a5e6a', '#e4f3f5') >= 4.5,
    'that decision would look like if he takes it'
    % B.contrast('#0a5e6a', '#e4f3f5'))
 bright = [r for r in LIVE if r[3] == 'bright']
-ok(len(bright) >= 10,
+ok(len(bright) >= 1,
    '%d more are Bootstrap brights and the recipe oranges - decision 4, '
    'round B-7, and RC-2' % len(bright))
 
@@ -374,7 +370,7 @@ print('=' * 74)
 print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
 print('=' * 74)
 print('')
-print('  NOT PROVED HERE: that any of the 32 should be fixed. Each is a')
+print('  NOT PROVED HERE: that any of the 23 should be fixed. Each is a')
 print('  change of appearance, and the colour map says the render IS that')
 print('  decision. They are measured, named and given an owner - the')
 print('  accent-on-tint pairing is one decision in base, the brights are')

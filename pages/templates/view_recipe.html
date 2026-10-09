@@ -3,7 +3,15 @@
 {% block title %}{{ recipe.recipe_name }}{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 25 literal(s) on this page became a var(), and this
+<style>
+    /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
+       the two families its own rules already declared: --alv-spice
+       where warm is this module's identity (an Edit button, a Save
+       button, a unit chip, the conversion controls) and --alv-warn
+       where the rule's own ground was already a warn tint. The
+       cookbook browns on recipe_management are deliberate and were
+       left alone - see apply_recipe_spice.py for the list and the
+       reasons. */    /* B-3, 6 Oct 2026 - 25 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -173,7 +181,7 @@ body {
 
 .tag-course   { background: var(--alv-accent); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-category { background: var(--alv-accent); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
-.tag-protein  { background: #fd7e14; color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.tag-protein  { background: var(--alv-spice); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-vegetarian { background: var(--alv-good); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .tag-author   { background: var(--alv-ink-soft); color: var(--alv-on-accent); font-size: 14px; padding: 8px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 
@@ -1123,7 +1131,7 @@ body {
     font-size: 14px;
 }
 .conv-input-group input[type="number"]:focus {
-    border-color: #fd7e14;
+    border-color: var(--alv-spice);
     outline: none;
 }
 .conv-input-group .conv-suffix {
@@ -1498,7 +1506,7 @@ body {
     margin-top: 2px;
 }
 .ai-suggestion-type-icon.substitute { background: var(--ai-accent); }
-.ai-suggestion-type-icon.reduce     { background: #fd7e14; }
+.ai-suggestion-type-icon.reduce     { background: var(--alv-spice); }
 .ai-suggestion-type-icon.remove     { background: var(--alv-bad); }
 
 .ai-suggestion-headline { flex: 1; min-width: 0; }
@@ -1531,7 +1539,7 @@ body {
 }
 .ai-suggestion-change .reduction-note {
     font-style: italic;
-    color: #fd7e14;
+    color: var(--alv-spice-ink);
     font-weight: 500;
 }
 

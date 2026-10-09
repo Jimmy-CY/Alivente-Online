@@ -6,7 +6,15 @@
 {% block title %}Recipe Management{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 35 literal(s) on this page became a var(), and this
+<style>
+    /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
+       the two families its own rules already declared: --alv-spice
+       where warm is this module's identity (an Edit button, a Save
+       button, a unit chip, the conversion controls) and --alv-warn
+       where the rule's own ground was already a warn tint. The
+       cookbook browns on recipe_management are deliberate and were
+       left alone - see apply_recipe_spice.py for the list and the
+       reasons. */    /* B-3, 6 Oct 2026 - 35 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -228,8 +236,8 @@
 
 /* Nudge banner shown above results when nutrition sort hides incomplete recipes */
 .nutrition-nudge {
-    background: linear-gradient(135deg, var(--alv-warn-soft) 0%, #ffecb3 100%);
-    border: 1px solid #ffc107;
+    background: linear-gradient(135deg, var(--alv-warn-soft) 0%, var(--alv-warn-line) 100%);
+    border: 1px solid var(--alv-warn);
     border-radius: 8px;
     padding: 12px 16px;
     margin-bottom: 16px;
@@ -238,7 +246,7 @@
     gap: 12px;
     flex-wrap: wrap;
 }
-.nutrition-nudge i.fa-info-circle { color: #f57c00; font-size: 18px; flex-shrink: 0; }
+.nutrition-nudge i.fa-info-circle { color: var(--alv-warn-ink); font-size: 18px; flex-shrink: 0; }
 .nutrition-nudge .nudge-text { color: #5d4037; font-size: 14px; flex: 1; min-width: 200px; }
 .nutrition-nudge .nudge-link {
     background: var(--alv-good);
@@ -468,7 +476,7 @@
 
 .recipe-image-action-btn:hover { transform: scale(1.1); }
 .recipe-view-btn { background: var(--alv-good); color: var(--alv-on-accent); }
-.recipe-edit-btn { background: #ffc107; color: var(--alv-on-accent); }
+.recipe-edit-btn { background: var(--alv-spice); color: var(--alv-on-accent); }
 .recipe-delete-btn { background: var(--alv-bad); color: var(--alv-on-accent); }
 
 .recipe-image-action-btn.disabled-action {
@@ -591,7 +599,7 @@
 
 .recipe-list-tag.course { background: var(--alv-accent-soft); color: #1976d2; }
 .recipe-list-tag.category { background: var(--alv-accent-soft); color: var(--alv-accent); }
-.recipe-list-tag.protein { background: var(--alv-warn-soft); color: #e65100; }
+.recipe-list-tag.protein { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
 .recipe-list-tag.vegetarian { background: var(--alv-good-soft); color: var(--alv-good); }
 .recipe-list-tag.author { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 
@@ -788,7 +796,7 @@
 }
 
 .recipe-match-card.perfect-match { border-color: var(--alv-good); background: var(--alv-good-soft); }
-.recipe-match-card.good-match { border-color: #ffc107; background: var(--alv-warn-soft); }
+.recipe-match-card.good-match { border-color: var(--alv-warn); background: var(--alv-warn-soft); }
 .recipe-match-card.okay-match { border-color: var(--alv-accent); background: var(--alv-surface); }
 
 .match-badge {
@@ -1162,7 +1170,7 @@
 .book-detail-tag { font-size: 9.5px; padding: 2px 7px; border-radius: 10px; font-family: Georgia, serif; }
 .book-detail-tag.course   { background: var(--alv-accent-soft); color: #1565c0; }
 .book-detail-tag.category { background: var(--alv-good-soft); color: var(--alv-good); }
-.book-detail-tag.protein  { background: var(--alv-warn-soft); color: #e65100; }
+.book-detail-tag.protein  { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
 .book-detail-tag.veggie   { background: var(--alv-good-soft); color: var(--alv-good); }
 .book-detail-tag.author   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 .book-detail-image { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 14px; border: 1px solid rgba(180,150,100,0.3); }
@@ -1474,7 +1482,7 @@
         text-decoration: none;
     }
     .recipe-card-actions-mobile .recipe-view-btn { background: var(--alv-good); color: var(--alv-on-accent); }
-    .recipe-card-actions-mobile .recipe-edit-btn { background: #ffc107; color: var(--alv-on-accent); }
+    .recipe-card-actions-mobile .recipe-edit-btn { background: var(--alv-spice); color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .recipe-duplicate-btn { background: var(--alv-accent); color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .recipe-delete-btn { background: var(--alv-bad); color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .disabled-action { background: var(--alv-surface-deep); color: var(--alv-ink-soft); opacity: 0.5; cursor: not-allowed; pointer-events: none; }

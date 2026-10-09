@@ -125,7 +125,7 @@
   2. WHAT base OWNS
 -------------------------------------------------------------------------------
 
-  80 design tokens and the component classes below. A page should reach
+  84 design tokens and the component classes below. A page should reach
   for these and define almost nothing of its own.
 
   COLOUR TOKENS - never write a hex in a page.               [CONVENTION]
@@ -1048,6 +1048,22 @@
         --alv-warn-soft:  #fdf3dd;
         --alv-warn-ink:   #6a4a05;   /* ink on the tint - measures 7.34  */
         --alv-warn-line:  #ecd39e;   /* the tint's own edge              */
+
+        /* RC-2, 9 Oct 2026 - the recipe module's warm identity.
+           NOT --alv-warn, which means caution: these carry an Edit
+           button, a Save button and a unit chip. --alv-warn would
+           hold white at 5.38 and was refused on meaning, not ratio.
+           --alv-spice SHARES --alv-grade-4's value deliberately.
+           Ten candidates were measured: every orange light enough to
+           read as orange rather than brown falls under 5.0 against
+           white, and every one clearing 5.2 lands on this colour.
+           Orange at the ratio this house holds its solids to IS
+           burnt sienna, so the two tokens share a value on purpose
+           and a later change to one must not be copied to the other. */
+        --alv-spice:      #a8481a;   /* white on it - measures 5.82      */
+        --alv-spice-ink:  #8a3f08;   /* text, and the hover partner 7.51 */
+        --alv-spice-soft: #fdf0e4;   /* the tint - 6.71 with spice-ink   */
+        --alv-spice-line: #f0d7bd;   /* edges, and pale warm on dark ink */
         --alv-bad:        #b3261e;
         --alv-bad-soft:   #fbeae9;
         --alv-bad-ink:    #8f1d17;   /* ink on the tint - measures 7.66  */

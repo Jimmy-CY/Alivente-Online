@@ -3,7 +3,15 @@
 {% block title %}Set Unit Conversions{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 7 literal(s) on this page became a var(), and this
+<style>
+    /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
+       the two families its own rules already declared: --alv-spice
+       where warm is this module's identity (an Edit button, a Save
+       button, a unit chip, the conversion controls) and --alv-warn
+       where the rule's own ground was already a warn tint. The
+       cookbook browns on recipe_management are deliberate and were
+       left alone - see apply_recipe_spice.py for the list and the
+       reasons. */    /* B-3, 6 Oct 2026 - 7 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -66,7 +74,7 @@
     font-size: 15px;
 }
 .progress-bar-label .progress-main strong {
-    color: #fd7e14;
+    color: var(--alv-spice-ink);
     font-size: 18px;
     font-weight: 700;
 }
@@ -75,7 +83,7 @@
     font-size: 13px;
 }
 .progress-bar-label .progress-percent {
-    color: #fd7e14;
+    color: var(--alv-spice-ink);
     font-weight: 700;
     font-size: 16px;
 }
@@ -87,7 +95,7 @@
 }
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+    background: linear-gradient(90deg, var(--alv-spice-ink) 0%, var(--alv-spice) 100%);
     border-radius: 5px;
     transition: width 0.4s ease;
     width: 0%;
@@ -160,7 +168,7 @@
     margin-left: 6px;
 }
 .wizard-current-meta .fdc-link {
-    color: #fd7e14;
+    color: var(--alv-spice-ink);
     margin-left: 6px;
 }
 
@@ -182,7 +190,7 @@
 /* === Conversion rows === */
 .conv-row {
     background: var(--alv-warn-soft);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-spice-line);
     border-radius: 8px;
     padding: 16px 18px;
     margin-bottom: 14px;
@@ -194,7 +202,7 @@
     margin-bottom: 6px;
 }
 .conv-row-unit {
-    background: #fd7e14;
+    background: var(--alv-spice);
     color: var(--alv-on-accent);
     padding: 3px 10px;
     border-radius: 12px;
@@ -225,12 +233,12 @@
 .conv-input-group input[type="number"] {
     width: 110px;
     padding: 8px 12px;
-    border: 2px solid #ffc107;
+    border: 2px solid var(--alv-spice);
     border-radius: 6px;
     font-size: 15px;
 }
 .conv-input-group input[type="number"]:focus {
-    border-color: #fd7e14;
+    border-color: var(--alv-spice-ink);
     outline: none;
 }
 .conv-input-group input[type="number"].invalid {
@@ -253,7 +261,7 @@
 .conv-preset-btn {
     padding: 5px 12px;
     background: var(--alv-paper);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-spice);
     border-radius: 4px;
     color: var(--alv-warn);
     cursor: pointer;
@@ -263,7 +271,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
     .conv-preset-btn:hover {
-        background: #ffc107;
+        background: var(--alv-spice);
         color: var(--alv-on-accent);
     }
 }
@@ -272,7 +280,7 @@
 .conv-apply-to {
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px dashed #ffc107;
+    border-top: 1px dashed var(--alv-spice-line);
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
@@ -352,16 +360,16 @@
     cursor: not-allowed;
 }
 .btn-save {
-    background: #fd7e14;
+    background: var(--alv-spice);
     color: var(--alv-on-accent);
-    border: 2px solid #fd7e14;
+    border: 2px solid var(--alv-spice);
     padding: 10px 24px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
 }
-.btn-save:hover { background: #e8590c; border-color: #d04e0a; }
+.btn-save:hover { background: var(--alv-spice-ink); border-color: var(--alv-spice-ink); }
 .btn-save:disabled {
     background: var(--alv-ink-soft);
     border-color: var(--alv-ink-soft);

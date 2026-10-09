@@ -2138,6 +2138,7 @@ $suites = @(
     # that owns it; section 4 names the 21 inactive ones and says
     # why WCAG exempts them.
     'test_pair_contrast.py',
+    'test_recipe_spice.py',
     # B-5a, 8 Oct 2026 - the greys. Section 3 proves role picked
     # the token and not distance, section 4 is the fill/ink PAIR gate
     # B-4 did not have - fed B-4's own 9.77 -> 3.90 regression it
@@ -2193,7 +2194,8 @@ $suites = @(
     # section 3 is the sentinel, with the control that asking IS NOT
     # NULL gets the wrong answer; section 4 is that the panel is
     # outside the income gate, because it is for both audiences.
-    'test_issue_panel.py'
+    'test_issue_panel.py',
+    'test_issue_dates.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

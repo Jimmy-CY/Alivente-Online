@@ -275,6 +275,27 @@ def fsr_commit_status_change(request):
         issue.issues_status = new_status
         if new_status == "Resolved":
             issue.issues_resolution_date = date.today()
+        else:
+            # IS-1, 9 Oct 2026 - AND CLEAR IT ON THE WAY BACK OUT.
+            # Without this an issue moved off Resolved keeps the date it
+            # was closed on, so the row is open by status and closed by
+            # date at once. One live row was in that state on 9 Oct
+            # 2026: issues_id 125, "Parking Bay", logged 2026-02-05,
+            # resolved 2026-03-16, re-opened and still carrying it.
+            #
+            # IT WAS NOT DISTORTING ANY FIGURE ON THE DAY IT WAS FOUND.
+            # 2026-03-16 falls outside all three windows the panel
+            # reports - last 3 months, the 3 before, the same 3 a year
+            # ago - so closed3, closed_prev3 and closed_yoy3 were all
+            # correct. Measured, not assumed; an earlier note here
+            # claimed the opposite and was wrong. The row would have
+            # been double-counted the moment it aged into a window, or
+            # if the re-opened issue had been a recent one.
+            #
+            # The sentinel, not None: issues.py:627 compares this field
+            # to date(1900, 1, 1) with no None guard and would raise on
+            # a NULL. 1900-01-01 is what "no date" is spelled as here.
+            issue.issues_resolution_date = date(1900, 1, 1)
         issue.save()
 
         # Handle property_detail navigation

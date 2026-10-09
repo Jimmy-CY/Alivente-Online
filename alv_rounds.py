@@ -1072,6 +1072,12 @@ ROUNDS = [
     # is in the status totals and out of the series, and the panel says
     # how many.
     '.bak_issuepanel',
+    # RC-2, 9 Oct 2026 - the recipe module's warm literals
+    # sorted into the two families their own grounds declare.
+    '.bak_spice',
+    # IS-1, 9 Oct 2026 - a re-opened issue stops carrying
+    # the date it was closed on.
+    '.bak_issuedates',
 ]
 
 

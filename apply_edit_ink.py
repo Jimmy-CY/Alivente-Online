@@ -156,7 +156,7 @@ def contrast(a, b):
     return (hi + .05) / (lo + .05)
 
 
-def base_tokens(code=None):
+def base_tokens(code=None, base_code=None):
     """Every --alv-* declared on a :root rule, name -> value.
 
     Base's own, plus - when `code` is a page's markup - that page's,
@@ -174,9 +174,23 @@ def base_tokens(code=None):
 
     A page token that resolves to another token is chased by resolve(),
     so --alivente-dark: var(--alv-accent) lands on #0e7c8b.
+
+    RC-2, 9 Oct 2026: `base_code` IS NOT OPTIONAL DECORATION. This used
+    to read base.html off the DISK unconditionally, including when
+    census() was handed an override to measure a tree that had not been
+    written yet. Any pair a round converted to a token base did not yet
+    carry resolved to None, and pair_table drops a pair it cannot
+    resolve - so the pair did not get worse, did not get better, it
+    SILENTLY LEFT THE CENSUS. RC-2 converts 42 declarations to a family
+    it adds in the same round, and its first gate reported nine pairs
+    rising above AA and nothing getting worse while measuring none of
+    them. Every colour round that introduces a token has had that same
+    vacuous gate; RC-2 is the first since this census was built to add
+    one, so it is the first to hit it.
     """
     out = {}
-    srcs = [T.code_only(read(T.path_of('base.html')))]
+    bt = base_code if base_code is not None else read(T.path_of('base.html'))
+    srcs = [T.code_only(bt)]
     if code is not None:
         srcs.append(code)
     for src in srcs:
@@ -245,11 +259,18 @@ def census(override=None):
     override = override or {}
     n = 0
     live, dead = [], []
+    # RC-2: base as the OVERRIDE leaves it, so a round adding a token
+    # is measured against the base.html it is about to write and not
+    # against the one on disk. Without this every converted pair
+    # resolves to None and leaves the census instead of being judged.
+    bpath = T.path_of('base.html')
+    base_code = override.get(bpath) or read(bpath)
     for p in sorted(T.templates()):
         code = T.code_only(override.get(p) or read(p))
         # AD-1: the page's OWN :root as well as base's, or every rule
         # written in a page-local token goes uncounted.
-        for sel, (bg, ink) in pair_table(code, base_tokens(code)).items():
+        for sel, (bg, ink) in pair_table(
+                code, base_tokens(code, base_code)).items():
             cr = contrast(bg, ink)
             if cr is None:
                 continue

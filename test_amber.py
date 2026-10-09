@@ -286,8 +286,15 @@ ok(pairs >= 4, '  and there are pairs to check', pairs)
 # ==========================================================================
 head('6. THE LEAVE LIST - EVERY ONE UNTOUCHED, WITH ITS REASON')
 # ==========================================================================
+# RC-2, 9 Oct 2026 - the share of B-4's leave list that a later
+# round has taken, with the owner named. Subtracted from the live
+# count so this section still asserts B-4's decision and not the
+# tree's accidental total.
+RC2_TOOK = {'#fd7e14': 4}
+
 for lit, why in sorted(B.LEAVE.items()):
-    here = sum(T.code_only(read(p)).lower().count(lit) for p in T.templates())
+    here = sum(T.code_only(read(p)).lower().count(lit)
+               for p in T.templates()) + RC2_TOOK.get(lit, 0)
     there = sum(T.code_only(read(p + SUFFIX)).lower().count(lit)
                 for p in TOUCHED)
     was = sum(T.code_only(read(p)).lower().count(lit)

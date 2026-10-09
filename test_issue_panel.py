@@ -353,8 +353,26 @@ else:
        '  and _resolved_on reads every one of them as NO DATE')
     real = [i for i in Issue.objects.all()
             if i.issues_resolution_date not in (None, D(1900, 1, 1))]
-    ok(all(P._resolved_on(i) is not None for i in real),
-       '  while a real date comes back as itself')
+    ok(all(P._resolved_on(i) is not None for i in real
+           if (i.issues_status or '').strip() == 'Resolved'),
+       '  while a real date on a RESOLVED row comes back as itself')
+
+    # IS-1, 9 Oct 2026 - AND THE STATUS HALF, which this suite could
+    # not see. Every row in the fixture carrying a real date is
+    # Resolved, so the assertion above passed for want of a
+    # counter-example rather than because the rule held. The live
+    # census then found one: status Unresolved, a real resolution
+    # date, counted open AND counted as a closure in the same window.
+    # A stand-in object reads the two attributes _resolved_on looks
+    # at, so the fixture and its counts stay exactly as HM-2 left them.
+    class _ReopenedRow(object):
+        issues_status = 'Unresolved'
+        issues_resolution_date = D(2026, 9, 10)
+
+    ok(P._resolved_on(_ReopenedRow()) is None,
+       '  and a row that is NOT Resolved has no resolution date, '
+       'whatever its date column says - the status is the state, the '
+       'date is only the WHEN of one already Resolved')
     # THE CONTROL IS THE QUESTION THE CENSUS ASKED FIRST.
     wrong = Issue.objects.exclude(issues_resolution_date=None).count()
     ok(wrong == Issue.objects.count(),
@@ -681,12 +699,18 @@ print('=' * 74)
 print('  %d passed, %d failed, %d skipped' % (passed, failed, skipped))
 print('=' * 74)
 print('')
-print('  NOT PROVED HERE: that the resolution date is TRUE. Re-opening a')
-print('  resolved issue does not clear it - fsr_commit_status_change sets')
-print('  the date when the status becomes Resolved and never unsets it -')
-print('  so a re-opened issue still reads as closed on its old date, and')
-print('  this panel would count that closure. Measured on the live data')
-print('  on 9 Oct and left alone deliberately: the module works, and a')
-print('  migration to fix it would make issues.py:626 raise on NULL.')
-print('  Logged, not taken.')
+print('  TAKEN, 9 Oct 2026, by IS-1. This suite used to warn that')
+print('  re-opening an issue did not clear its resolution date and')
+print('  that the panel would count that closure. Both are fixed:')
+print('  fsr_commit_status_change now writes the sentinel on the way')
+print('  out of Resolved, and _resolved_on asks the status first, so')
+print('  a row that is not Resolved has no resolution date whatever')
+print('  its date column says. The live census found one row in the')
+print('  old state - id 125, Parking Bay - and it was corrected by')
+print('  hand. issue_date_check.py re-asks the question any day.')
+print('')
+print('  NOT PROVED HERE: that issues.py:627 is safe. It compares the')
+print('  resolution date to the sentinel with no None guard and would')
+print('  raise on a NULL. Nothing writes NULL today, so it is latent -')
+print('  and it is the concrete reason the sentinel stays.')
 sys.exit(1 if failed else 0)

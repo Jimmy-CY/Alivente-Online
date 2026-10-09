@@ -1089,7 +1089,22 @@ def _issue_status(row):
 
 
 def _resolved_on(row):
-    """The date an issue was resolved, or None - sentinel included."""
+    """The date an issue was resolved, or None.
+
+    THE STATUS IS THE STATE; THE DATE IS ONLY THE WHEN. A row that is
+    not Resolved has no resolution date however its date column reads -
+    IS-1, 9 Oct 2026, after the live census found one row open by
+    status and carrying a real date. Before this, resolved_in() counted
+    that row as a closure while open_rows counted it as open, so one
+    issue appeared on both sides of the same three-month window and the
+    Executive brief said so in prose.
+
+    HM-2 closed the sentinel half of this (1900-01-01 is no date) and
+    left the status half open, because its fixture had no such row.
+    IS-1 adds one.
+    """
+    if _issue_status(row) != ISSUE_RESOLVED:
+        return None
     d = row.issues_resolution_date
     return d if (d and d != ISSUE_NO_DATE) else None
 

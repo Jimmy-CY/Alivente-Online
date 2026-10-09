@@ -4,7 +4,15 @@
 {% block title %}Ingredient Shopping Units{% endblock %}
 {% block content %}
 
-<style>    /* B-3, 6 Oct 2026 - 31 literal(s) on this page became a var(), and this
+<style>
+    /* RC-2, 9 Oct 2026 - this page's warm literals were sorted into
+       the two families its own rules already declared: --alv-spice
+       where warm is this module's identity (an Edit button, a Save
+       button, a unit chip, the conversion controls) and --alv-warn
+       where the rule's own ground was already a warn tint. The
+       cookbook browns on recipe_management are deliberate and were
+       left alone - see apply_recipe_spice.py for the list and the
+       reasons. */    /* B-3, 6 Oct 2026 - 31 literal(s) on this page became a var(), and this
        round is TIER C: these are real colour changes, not
        nudges. Bootstrap green and red become the house good and
        bad. Demetri looked at both widths before it ran.
@@ -80,8 +88,8 @@
     color: var(--alv-on-accent);
 }
 .page-action-buttons .btn .action-count-badge.badge-unconvertible {
-    background: #ffc107;
-    color: #2c1810;
+    background: var(--alv-warn);
+    color: var(--alv-on-accent);
 }
 
 /* Action button labels: full version on desktop, short version on mobile.
@@ -141,7 +149,7 @@
 .nutrition-unmapped {
     background: var(--alv-warn-soft);
     color: var(--alv-warn);
-    border: 1px solid #ffeaa7;
+    border: 1px solid var(--alv-warn-line);
 }
 .nutrition-badge:hover {
     transform: scale(1.04);
@@ -174,7 +182,7 @@
 .conversion-partial {
     background: var(--alv-warn-soft);
     color: var(--alv-warn);
-    border: 1px solid #ffeaa7;
+    border: 1px solid var(--alv-warn-line);
 }
 .conversion-missing {
     background: var(--alv-bad-soft);
@@ -242,7 +250,7 @@
     margin: 0 0 6px 0;
     font-size: 13px;
     font-weight: 700;
-    color: #ffd166;
+    color: var(--alv-warn-line);
     border-bottom: 1px solid #374151;
     padding-bottom: 4px;
 }
@@ -295,8 +303,8 @@
     background: rgba(255, 255, 255, 0.4);
 }
 .nutrition-source-pill.source-manual {
-    background: #fde68a;
-    color: #78350f;
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn-ink);
 }
 
 .mode-select, .unit-select {
@@ -360,7 +368,7 @@
 }
 
 .edit-mode td {
-    border-bottom: 1px solid #ffc107 !important;
+    border-bottom: 1px solid var(--alv-spice) !important;
 }
 
 .ingredient-name-display,
@@ -511,7 +519,7 @@
 
     .ingredients-table tbody tr.edit-mode {
         background: var(--alv-warn-soft) !important;
-        border-color: #ffc107;
+        border-color: var(--alv-spice);
     }
 
 
@@ -595,7 +603,7 @@
     font-weight: 500;
 }
 .nm-current-meta .nm-pill-mapped { background: var(--alv-good); }
-.nm-current-meta .nm-pill-unmapped { background: #ffc107; color: var(--alv-ink); }
+.nm-current-meta .nm-pill-unmapped { background: var(--alv-warn-soft); color: var(--alv-ink); }
 
 .nm-search-row { display: flex; gap: 10px; margin-bottom: 14px; }
 .nm-search-row input {
@@ -787,7 +795,7 @@
 
 .nm-conversion-panel {
     background: var(--alv-warn-soft);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-spice);
     border-radius: 8px;
     padding: 12px 14px;
     margin-bottom: 14px;
@@ -811,21 +819,21 @@
 .nm-conversion-form input[type="number"] {
     width: 90px;
     padding: 6px 9px;
-    border: 2px solid #ffc107;
+    border: 2px solid var(--alv-spice);
     border-radius: 6px;
     font-size: 13px;
 }
 .nm-conversion-form .nm-preset-btn {
     padding: 3px 9px;
     background: var(--alv-paper);
-    border: 1px solid #ffc107;
+    border: 1px solid var(--alv-spice);
     border-radius: 4px;
     color: var(--alv-warn);
     cursor: pointer;
     font-size: 11px;
     font-weight: 500;
 }
-.nm-conversion-form .nm-preset-btn:hover { background: #ffc107; color: var(--alv-on-accent); }
+.nm-conversion-form .nm-preset-btn:hover { background: var(--alv-spice); color: var(--alv-on-accent); }
 
 .nm-footer {
     display: flex;
