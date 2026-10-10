@@ -148,7 +148,7 @@
     color: var(--alv-on-accent);
     border: none;
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-weight: 500;
     transition: all 0.2s ease;
 }
@@ -164,7 +164,7 @@
     color: var(--alv-on-accent);
     border: none;
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-weight: 500;
     transition: all 0.2s ease;
 }
@@ -534,7 +534,7 @@
                         {% endif %}
                     </td>
                     <td class="user-cell" data-label="User">
-                        <span class="alv-tag comment-author">{{ item.user }}</span>
+                        <span class="alv-tag">{{ item.user }}</span>
                     </td>
                     {% if request.user.is_superuser %}
                     <td class="desktop-action-cell cell-actions" data-label="">
@@ -624,7 +624,7 @@ function displayIssueDetails(data) {
             commentsHtml += `
                 <div class="comment-item">
                     <div class="comment-meta">
-                        <span class="alv-tag comment-author">${comment.user}</span>
+                        <span class="alv-tag">${comment.user}</span>
                         <span class="comment-date">${comment.date}</span>
                     </div>
                     <div class="comment-text">${comment.comment}</div>

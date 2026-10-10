@@ -41,7 +41,7 @@
                         {% for comment in issue.comments %}
                         <div class="comment-row">
                             <span class="comment-date">{{ comment.comment_date|date:"Y-m-d" }}</span>
-                            <span class="alv-tag comment-author">{{ comment.user }}</span>
+                            <span class="alv-tag">{{ comment.user }}</span>
                             <span class="comment-text">{{ comment.comment }}</span>
                         </div>
                         {% endfor %}
@@ -85,7 +85,7 @@
         margin-bottom: 25px;
         padding: 20px;
         background-color: var(--alv-paper);
-        border-radius: 6px;
+        border-radius: var(--alv-radius-sm);
         border-left: 4px solid var(--alv-accent);
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -217,7 +217,7 @@
         .report-content {
             width: 100%;
             padding: 14px;
-            border-radius: 6px;
+            border-radius: var(--alv-radius-sm);
         }
 
         /* Header — stack title and Back button */

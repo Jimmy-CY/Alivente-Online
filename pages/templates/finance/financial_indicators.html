@@ -117,7 +117,7 @@
                         <span id="fiCompareLabel">Portfolio only</span>
                         <i class="fas fa-caret-down" style="float:right; margin-top:4px;"></i>
                     </button>
-                    <div id="fiComparePanel" style="display:none; position:absolute; z-index:1000; top:calc(100% + 4px); left:0; min-width:240px; max-height:280px; overflow-y:auto; background:var(--alv-paper); border:1px solid #ced4da; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.15); padding:8px;">
+                    <div id="fiComparePanel" style="display:none; position:absolute; z-index:1000; top:calc(100% + 4px); left:0; min-width:240px; max-height:280px; overflow-y:auto; background:var(--alv-paper); border:1px solid #ced4da; border-radius: var(--alv-radius-sm); box-shadow:0 6px 18px rgba(0,0,0,0.15); padding:8px;">
                         <div style="display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid var(--alv-neutral-soft); margin-bottom:6px;">
                             <button type="button" id="fiTrendAll" class="btn action-secondary" style="flex:1;">All</button>
                             <button type="button" id="fiTrendNone" class="btn action-secondary" style="flex:1;">None</button>
@@ -440,7 +440,7 @@
 .fi-weight-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; font-weight: 500; }
 .fi-weight-name { font-size: 13px; color: var(--alv-ink); }
 .fi-weight-input {
-    width: 64px; text-align: center; border: 1px solid #ced4da; border-radius: 6px;
+    width: 64px; text-align: center; border: 1px solid #ced4da; border-radius: var(--alv-radius-sm);
     padding: 5px 6px; font-size: 14px;
 }
 .fi-weight-input:focus { border-color: var(--alv-accent); outline: none; box-shadow: 0 0 0 2px rgba(14, 124, 139,.18); }
@@ -473,7 +473,7 @@
     gap: 8px;
     padding: 8px 12px;
     border: 1px solid var(--alv-surface-deep);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     background: var(--alv-surface);
     transition: all 0.2s ease;
 }

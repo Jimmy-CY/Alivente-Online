@@ -803,7 +803,7 @@
   .xml-current {
     display: flex; align-items: center; gap: 14px;
     background: var(--alv-surface); border: 1px solid var(--alv-line);
-    border-radius: 6px; padding: 12px 14px;
+    border-radius: var(--alv-radius-sm); padding: 12px 14px;
     flex-wrap: wrap;
   }
   .excel-current > i.fa-file-excel { font-size: 1.8rem; color: var(--alv-tag-moss-ink); }
@@ -823,7 +823,7 @@
   .xml-empty {
     display: flex; align-items: center; gap: 12px;
     background: var(--alv-surface); border: 1px dashed var(--alv-line);
-    border-radius: 6px; padding: 16px;
+    border-radius: var(--alv-radius-sm); padding: 16px;
     color: var(--alv-ink-soft); font-style: italic;
   }
   .excel-empty i,
@@ -860,7 +860,7 @@
   /* Validation results */
   .validation-banner {
     display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 6px; margin-bottom: 14px;
+    padding: 14px 16px; border-radius: var(--alv-radius-sm); margin-bottom: 14px;
     font-size: 14px;
   }
   .validation-banner i { font-size: 1.3rem; flex-shrink: 0; }
@@ -899,7 +899,7 @@
     display: flex; align-items: center; gap: 10px;
     background: var(--alv-surface); padding: 8px 12px;
     border: 1px solid var(--alv-line); border-bottom: none;
-    border-radius: 6px 6px 0 0;
+    border-radius: var(--alv-radius-sm) 6px 0 0;
     font-size: 12px; color: var(--alv-ink-strong);
   }
   .validation-group-header code {

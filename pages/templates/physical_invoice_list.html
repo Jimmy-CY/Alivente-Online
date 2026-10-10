@@ -373,7 +373,7 @@ Physical Invoices
        round, because those move a pixel.          [CS-1 5b] */
 
 
-.btn-info { transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
+.btn-info { transition: all 0.3s ease; border-radius: var(--alv-radius-sm); font-weight: 500; }
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 .filter-panel {
@@ -402,7 +402,7 @@ Physical Invoices
 .numbering-label { font-weight: 600; color: var(--alv-ink); margin: 0; display: flex; align-items: center; gap: 8px; }
 .numbering-label i { color: var(--alv-accent); }
 .numbering-controls { display: flex; align-items: center; gap: 0; }
-.numbering-prefix { background: var(--alv-surface-deep); border: 2px solid #ced4da; border-right: none; border-radius: 6px 0 0 6px; padding: 8px 10px; font-weight: 600; color: var(--alv-ink-strong); }
+.numbering-prefix { background: var(--alv-surface-deep); border: 2px solid #ced4da; border-right: none; border-radius: var(--alv-radius-sm) 0 0 6px; padding: 8px 10px; font-weight: 600; color: var(--alv-ink-strong); }
 .numbering-input { width: 110px; border: 2px solid #ced4da; border-radius: 0; padding: 8px 10px; font-size: 14px; text-align: center; }
 .numbering-input:focus { border-color: var(--alv-accent); box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; z-index: 1; }
 .numbering-controls .btn { border-radius: 0 6px 6px 0; margin-left: -2px; }

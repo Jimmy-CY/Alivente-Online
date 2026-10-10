@@ -64,7 +64,7 @@
     border: none;
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -95,7 +95,7 @@
     text-align: center;
     padding: 8px 4px;
     font-size: 13px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     position: relative;
     transition: all 0.2s;
 }
@@ -436,7 +436,7 @@
     background: var(--alv-accent);
     color: var(--alv-on-accent);
     border: none;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
@@ -458,7 +458,7 @@
     padding: 10px;
     background: transparent;
     border: 2px dashed var(--alv-line);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     color: var(--alv-ink-soft);
     font-size: 13px;
     cursor: pointer;
@@ -1125,9 +1125,9 @@
                         <div class="recipe-option" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name|lower }}" onclick="selectRecipeOption(this)">
                             <div style="display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--alv-line-soft);">
                                 {% if recipe.recipe_image %}
-                                <img loading="lazy" decoding="async" src="{{ recipe.recipe_image.url }}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                                <img loading="lazy" decoding="async" src="{{ recipe.recipe_image.url }}" style="width: 50px; height: 50px; border-radius: var(--alv-radius-sm); object-fit: cover;">
                                 {% else %}
-                                <div style="width: 50px; height: 50px; border-radius: 6px; background: var(--alv-accent); display: flex; align-items: center; justify-content: center; color: white;">
+                                <div style="width: 50px; height: 50px; border-radius: var(--alv-radius-sm); background: var(--alv-accent); display: flex; align-items: center; justify-content: center; color: white;">
                                     <i class="fas fa-utensils"></i>
                                 </div>
                                 {% endif %}

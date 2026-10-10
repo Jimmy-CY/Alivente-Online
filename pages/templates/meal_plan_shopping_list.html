@@ -386,7 +386,7 @@
 .conversion-input-row input {
     padding: 10px;
     border: 2px solid var(--alv-good);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 15px;
     width: 100%;
 }
@@ -400,7 +400,7 @@
 .conversion-example {
     background: var(--alv-surface);
     padding: 10px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     margin-top: 10px;
     font-size: 13px;
     color: var(--alv-ink-soft);
@@ -745,7 +745,7 @@
                         <i class="fas fa-tag"></i> Apply this conversion to:
                     </label>
                     <div style="display: flex; gap: 15px;">
-                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
+                        <label style="cursor: pointer; padding: 10px; border-radius: var(--alv-radius-sm); display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                             <input type="radio" 
                                    name="conversion_type_${index}" 
                                    value="generic" 
@@ -756,7 +756,7 @@
                                 <div style="font-size: 11px; color: var(--alv-ink-soft);">All ingredients</div>
                             </div>
                         </label>
-                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
+                        <label style="cursor: pointer; padding: 10px; border-radius: var(--alv-radius-sm); display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                             <input type="radio" 
                                    name="conversion_type_${index}" 
                                    value="specific"

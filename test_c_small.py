@@ -328,7 +328,7 @@ ok('{{ comment.user }}' in row and '|upper' not in row,
 ok(re.search(r'<span class="comment-date">\{\{ comment.comment_date\|date:'
              r'"Y-m-d" \}\}</span>', row) is not None,
    'the date span holds the date and nothing else - no "(DM):"')
-_fsr = markup_of(read(FSRD)) if os.path.isfile(FSRD) else ''
+_fsr = markup_of(now(FSRD)) if os.path.isfile(FSRD) else ''   # D-7
 ok(re.search(r'class="comment-date">[^<]*</span>\s*<span class="alv-tag '
              r'comment-author">', _fsr) is not None,
    'CONTROL: that IS the order FSR details uses')

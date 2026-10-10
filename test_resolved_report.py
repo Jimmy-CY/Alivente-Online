@@ -303,7 +303,7 @@ check('the comment authors still showed as text, which was left open on '
       'comment-date' in _M1 and 'alv-tag' not in _M1)
 if _F1 is not F:
     check('  and round C1 has since made them the house chip',
-          'alv-tag comment-author' in FMK)
+          'alv-tag' in FMK)   # D-7: the chip, not the dead hook
 
 # ===========================================================================
 head('5. it is a report, so it gets printed')

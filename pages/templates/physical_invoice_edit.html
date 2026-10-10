@@ -225,16 +225,16 @@ Edit Physical Invoice
        round, because those move a pixel.          [CS-1 5b] */
 
 
-.btn-info { transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
+.btn-info { transition: all 0.3s ease; border-radius: var(--alv-radius-sm); font-weight: 500; }
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-outline-secondary { border: 2px solid var(--alv-ink-soft); color: var(--alv-ink-soft); background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
+.btn-outline-secondary { border: 2px solid var(--alv-ink-soft); color: var(--alv-ink-soft); background: transparent; border-radius: var(--alv-radius-sm); font-weight: 500; transition: all 0.2s ease; }
 .btn-outline-secondary:hover { background: var(--alv-ink-soft); color: var(--alv-on-accent); }
 
-.btn-approve { background-color: var(--alv-good); color: var(--alv-on-accent); border: 1px solid var(--alv-good); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-approve { background-color: var(--alv-good); color: var(--alv-on-accent); border: 1px solid var(--alv-good); border-radius: var(--alv-radius-sm); font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-approve:hover { background-color: color-mix(in srgb, var(--alv-good) 78%, #000); border-color: color-mix(in srgb, var(--alv-good) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-unapprove { background-color: var(--alv-warn); color: var(--alv-on-accent); border: 1px solid var(--alv-warn); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-unapprove { background-color: var(--alv-warn); color: var(--alv-on-accent); border: 1px solid var(--alv-warn); border-radius: var(--alv-radius-sm); font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-unapprove:hover { background-color: color-mix(in srgb, var(--alv-warn) 78%, #000); border-color: color-mix(in srgb, var(--alv-warn) 70%, #000); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-.btn-delete { background-color: var(--alv-bad); color: var(--alv-on-accent); border: 1px solid var(--alv-bad); border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-delete { background-color: var(--alv-bad); color: var(--alv-on-accent); border: 1px solid var(--alv-bad); border-radius: var(--alv-radius-sm); font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-delete:hover { background-color: var(--alv-bad-ink); border-color: var(--alv-bad); color: var(--alv-on-accent); transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 .status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
@@ -248,7 +248,7 @@ Edit Physical Invoice
 .summary-item { display: flex; flex-direction: column; gap: 2px; }
 .summary-label { font-size: 12px; font-weight: 600; color: var(--alv-ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
 .summary-value { font-size: 15px; color: var(--alv-ink); font-weight: 500; }
-.summary-input { font-size: 14px; padding: 6px 10px; height: auto; max-width: 220px; border: 2px solid #ced4da; border-radius: 6px; }
+.summary-input { font-size: 14px; padding: 6px 10px; height: auto; max-width: 220px; border: 2px solid #ced4da; border-radius: var(--alv-radius-sm); }
 .summary-input:focus { border-color: var(--alv-accent); box-shadow: 0 0 0 3px rgba(14, 124, 139,0.1); outline: none; }
 .summary-hint { font-size: 11px; color: var(--alv-ink-soft); margin-top: 2px; }
 

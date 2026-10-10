@@ -316,7 +316,7 @@
 .mode-select, .unit-select {
     padding: 6px 10px;
     border: 2px solid var(--alv-line);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 13px;
     width: 100%;
     max-width: 150px;
@@ -337,7 +337,7 @@
     color: var(--alv-on-accent);
     border: none;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     cursor: pointer;
     font-size: 12px;
 }
@@ -440,7 +440,7 @@
 .category-input {
     padding: 6px 10px;
     border: 2px solid var(--alv-line);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 13px;
     width: 100%;
 }
@@ -453,7 +453,7 @@
 .ingredient-name-input {
     padding: 6px 10px;
     border: 2px solid var(--alv-line);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 14px;
     width: 100%;
 }
@@ -753,7 +753,7 @@
     width: 100%;
     padding: 7px 9px;
     border: 2px solid #b8daff;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 13px;
 }
 .nm-manual-field input:focus { border-color: var(--alv-accent); outline: none; }
@@ -782,7 +782,7 @@
 .nm-nutrient-item {
     background: var(--alv-paper);
     padding: 7px 9px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     border: 1px solid var(--alv-surface-deep);
 }
 .nm-nutrient-label {
@@ -826,7 +826,7 @@
     width: 90px;
     padding: 6px 9px;
     border: 2px solid var(--alv-spice);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 13px;
 }
 .nm-conversion-form .nm-preset-btn {
@@ -2068,7 +2068,7 @@ async function nmSelectMatch(idx) {
         const data = await res.json();
         
         if (!data.success) {
-            grid.innerHTML = `<div style="grid-column: 1 / -1; padding:8px; color:var(--alv-bad-ink); background:#f8d7da; border-radius:6px;">${nmEscapeHtml(data.error || 'Could not fetch details')}</div>`;
+            grid.innerHTML = `<div style="grid-column: 1 / -1; padding:8px; color:var(--alv-bad-ink); background:#f8d7da; border-radius: var(--alv-radius-sm);">${nmEscapeHtml(data.error || 'Could not fetch details')}</div>`;
             return;
         }
         

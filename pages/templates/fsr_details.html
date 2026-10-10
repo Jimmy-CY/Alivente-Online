@@ -127,7 +127,7 @@ Issues (Comments)
                                     <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                                         <span class="detail-comment" style="flex: 1;">
                                             <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
-                                            <span class="alv-tag comment-author">{{ idresults.issues_details_user }}</span>
+                                            <span class="alv-tag">{{ idresults.issues_details_user }}</span>
                                             <span class="comment-text">{{ idresults.issues_details_comment }}</span>
                                             {% if idresults.issues_details_id in edited_comment_ids %}<span class="comment-edited-tag">(edited)</span>{% endif %}
                                         </span>
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', function() {
     margin: 20px 0;
     padding: 15px;
     background: var(--alv-paper);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     border: 1px solid var(--alv-line);
 }
 
@@ -667,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .report-content {
         width: 100%;
         padding: 14px;
-        border-radius: 6px;
+        border-radius: var(--alv-radius-sm);
     }
 
     /* Issue header — tighter, less indentation */

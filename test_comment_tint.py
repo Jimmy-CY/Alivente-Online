@@ -105,7 +105,23 @@ def nocomment_html(text):
 for p in (BASE, CR, FS, FD):
     if not os.path.exists(p):
         sys.exit('! %s not found - run from the repo root' % p)
-BS, C, F, D = read(BASE), read(CR), read(FS), read(FD)
+# D-7, 9 Oct 2026 - AS THAT ROUND LEFT THEM, not as they are.
+# This suite is older than alv_rounds and read the live files,
+# so the day a later round touched the chip it announced that
+# its own round was unapplied. A suite asserts what ITS round
+# guarantees; alv_rounds.as_left_by is how every suite since
+# says so.
+try:
+    from alv_rounds import as_left_by as _alb
+except Exception:                             # pragma: no cover
+    _alb = None
+
+
+def _own(p):
+    return _alb(p, '.bak_cmttint', read) if _alb else read(p)
+
+
+BS, C, F, D = _own(BASE), _own(CR), _own(FS), _own(FD)
 if 'alv-tag comment-author' not in C:
     print('\n! not patched - run apply_comment_tint.py first.')
     sys.exit(1)

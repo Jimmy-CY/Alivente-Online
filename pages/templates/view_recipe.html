@@ -1133,7 +1133,7 @@ body {
     width: 90px;
     padding: 6px 10px;
     border: 2px solid var(--alv-warn);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 14px;
 }
 .conv-input-group input[type="number"]:focus {
@@ -1627,7 +1627,7 @@ body {
     color: var(--ai-accent);
     border: 1.5px solid var(--ai-accent);
     padding: 8px 18px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -3837,7 +3837,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                 <div>
                     <label style="font-size: 13px; color: var(--alv-neutral); margin-bottom: 5px; display: block;">Original Unit</label>
                     <input type="text" value="1 ${conv.from_unit}" readonly
-                           style="width: 100%; padding: 10px; border: 2px solid var(--alv-line); border-radius: 6px; background: var(--alv-surface);">
+                           style="width: 100%; padding: 10px; border: 2px solid var(--alv-line); border-radius: var(--alv-radius-sm); background: var(--alv-surface);">
                 </div>
 
                 <div style="font-size: 20px; font-weight: bold; color: var(--alv-neutral);">=</div>
@@ -3848,7 +3848,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                            id="conversion_${index}"
                            data-from-unit-id="${conv.from_unit_id}"
                            data-to-unit-id="${conv.to_unit_id}"
-                           style="width: 100%; padding: 10px; border: 2px solid var(--alv-good); border-radius: 6px;">
+                           style="width: 100%; padding: 10px; border: 2px solid var(--alv-good); border-radius: var(--alv-radius-sm);">
                 </div>
 
                 <div>
@@ -3857,7 +3857,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                 </div>
             </div>
 
-            <div style="background: var(--alv-surface); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: var(--alv-neutral);">
+            <div style="background: var(--alv-surface); padding: 10px; border-radius: var(--alv-radius-sm); margin-top: 10px; font-size: 13px; color: var(--alv-neutral);">
                 <i class="fas fa-lightbulb"></i> If 1 ${conv.from_unit} = 15 ${conv.to_unit}, enter "15"
             </div>
             <div style="margin-top: 15px; padding: 15px; background: white; border: 2px solid var(--alv-line); border-radius: 8px;">
@@ -3865,7 +3865,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                     <i class="fas fa-tag"></i> Apply this conversion to:
                 </label>
                 <div style="display: flex; gap: 15px;">
-                    <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
+                    <label style="cursor: pointer; padding: 10px; border-radius: var(--alv-radius-sm); display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                         <input type="radio"
                                name="conversion_type_${index}"
                                value="generic"
@@ -3876,7 +3876,7 @@ function showConversionForm(missingConversions, missingShoppingUnits) {
                             <div style="font-size: 11px; color: var(--alv-neutral);">All ingredients</div>
                         </div>
                     </label>
-                    <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
+                    <label style="cursor: pointer; padding: 10px; border-radius: var(--alv-radius-sm); display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid var(--alv-line);">
                         <input type="radio"
                                name="conversion_type_${index}"
                                value="specific"

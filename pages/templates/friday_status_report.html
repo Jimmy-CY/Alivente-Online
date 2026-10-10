@@ -65,7 +65,7 @@
                                     <div class="detail-row">
                                         <span class="detail-comment">
                                             <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
-                                            <span class="alv-tag comment-author">{{ detail.issues_details_user }}</span>
+                                            <span class="alv-tag">{{ detail.issues_details_user }}</span>
                                             <span class="comment-text">{{ detail.issues_details_comment }}</span>
                                         </span>
                                     </div>
@@ -163,7 +163,7 @@
         margin-bottom: 20px;
         padding: 20px;
         background-color: var(--alv-paper);
-        border-radius: 6px;
+        border-radius: var(--alv-radius-sm);
         border-left: 4px solid var(--alv-accent);
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
@@ -336,7 +336,7 @@
         .report-content {
             width: 100%;
             padding: 14px;
-            border-radius: 6px;
+            border-radius: var(--alv-radius-sm);
         }
 
         /* Header — stack title block and action buttons */

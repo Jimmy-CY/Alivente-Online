@@ -44,7 +44,7 @@ Gantt Chart - {{ project.project_name }}
         </div>
         <a href="{% url 'projects_detail' project.project_id %}"
            class="rotate-prompt-back"
-           style="display: inline-flex; align-items: center; gap: 8px; background: #0e7c8b; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; border: none; cursor: pointer; margin-top: 12px;">
+           style="display: inline-flex; align-items: center; gap: 8px; background: #0e7c8b; color: white; padding: 10px 24px; border-radius: var(--alv-radius-sm); text-decoration: none; font-weight: 500; font-size: 14px; border: none; cursor: pointer; margin-top: 12px;">
             <i class="fas fa-arrow-left"></i> Back to Project
         </a>
     </div>
@@ -464,7 +464,7 @@ Gantt Chart - {{ project.project_name }}
     
     
     transition: all 0.3s ease;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-weight: 500;
 }
 

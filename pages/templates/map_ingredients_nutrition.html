@@ -346,7 +346,7 @@
     width: 100%;
     padding: 8px 10px;
     border: 2px solid #b8daff;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 14px;
 }
 .manual-entry-field input:focus {
@@ -379,7 +379,7 @@
 .nutrient-item {
     background: var(--alv-paper);
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     border: 1px solid var(--alv-surface-deep);
 }
 .nutrient-label {
@@ -437,7 +437,7 @@
     width: 100px;
     padding: 6px 10px;
     border: 2px solid var(--alv-warn);
-    border-radius: 6px;
+    border-radius: var(--alv-radius-sm);
     font-size: 14px;
 }
 .conversion-form .preset-buttons {
@@ -1125,7 +1125,7 @@ async function selectMatch(idx) {
         const data = await res.json();
         
         if (!data.success) {
-            els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:var(--alv-bad-ink); background:#f8d7da; border-radius:6px;">${escapeHtml(data.error || 'Could not fetch details')}</div>`;
+            els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:var(--alv-bad-ink); background:#f8d7da; border-radius: var(--alv-radius-sm);">${escapeHtml(data.error || 'Could not fetch details')}</div>`;
             return;
         }
         

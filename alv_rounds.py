@@ -1087,6 +1087,9 @@ ROUNDS = [
     # HM-4, 9 Oct 2026 - the chips come off and the
     # figures centre.
     '.bak_isscentre',
+    # D-12 and D-7, 9 Oct 2026 - the 6px radius becomes
+    # a token, and the dead comment-author class goes.
+    '.bak_radtoken',
 ]
 
 
