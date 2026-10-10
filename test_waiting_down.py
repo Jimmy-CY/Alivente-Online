@@ -74,10 +74,10 @@ PATCHER = 'apply_waiting_down.py'
 X0_SUITE = 'test_tree_roots.py'
 PS1 = 'Push-PendingChanges.ps1'
 
-CONVERTED_N = 47      # 46 + test_required_promise.py, D-2, 9 Oct 2026
-WAITING_N = 14
+CONVERTED_N = 49   # PQ-1, 10 Oct 2026      # 46 + test_required_promise.py, D-2, 9 Oct 2026
+WAITING_N = 13   # PQ-1, 10 Oct 2026
 INDIRECT_N = 1
-CEILING = 51
+CEILING = 50   # PQ-1, 10 Oct 2026
 JOINS_IN_X0 = 155      # dormant in the 26 X0 had already widened
 JOINS_IN_FREED = 38    # in the thirteen this round widens
 JOINS_CLOSED = JOINS_IN_X0 + JOINS_IN_FREED

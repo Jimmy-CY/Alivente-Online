@@ -1093,6 +1093,9 @@ ROUNDS = [
     # D-4, 10 Oct 2026 - base grows the two-column
     # field row that twelve pages had written out.
     '.bak_formgrid',
+    # PQ-1, 10 Oct 2026 - six CRS pages stop printing
+    # the phone layout, and the guard can see them.
+    '.bak_crsprint',
 ]
 
 

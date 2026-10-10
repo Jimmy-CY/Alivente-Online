@@ -220,6 +220,13 @@ CONVERTED = [
     'test_save_and_cancel.py', 'test_secondary_visible.py',
     'test_small_controls.py', 'test_table_admin.py', 'test_tap_target.py',
     'test_zoom_guards.py',
+    # PQ-1, 10 Oct 2026 - off WAITING: the bare clause
+    # it was waiting on is fixed, and it walks the whole
+    # tree now.
+    'test_print_queries.py',
+    # PQ-1 - and this round's own suite, which walks
+    # through alv_tree from the day it was written.
+    'test_crs_print.py',
     # D-2, 9 Oct 2026 - written walking wide from the
     # start rather than converted to it. It belongs here
     # because it walks templates through walk3() and
@@ -294,8 +301,7 @@ WAITING = {
         'pages  the six literals it counts are a pages-side figure',
     'test_modal_heads.py':
         'pages  the Recipe View close strip, recorded but unresolved',
-    'test_print_queries.py': 'pages  a bare max-width clause outside base',
-    'test_req_marker.py':
+        'test_req_marker.py':
         'pages  a selector dereferenced with no markup behind it',
     'test_required_marker.py':
         'pages  a .req RULE survives somewhere, though the markup went',

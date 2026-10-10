@@ -447,8 +447,24 @@ def section_7():
             continue
         if now(q) != read(q):
             continue                      # a later round owns this file
-        if '<style' not in read(q):
-            continue
+        # PQ-1, 10 Oct 2026 - ASK FOR THE PROPERTY THE
+        # CONTROL NEEDS, which is a page section 5 actually
+        # SCANS. Two guesses were wrong before this one:
+        #   `'<style' in read(q)` is TEXT, and matched a
+        #   Django comment on access_denied.html saying the
+        #   page carries no style block - it does not, so the
+        #   plant went into the comment and section 5 rightly
+        #   saw nothing;
+        #   then `decls_of(read(q))` alone, which picked
+        #   components/pdf_viewer.html - real rules, but a
+        #   STANDALONE page, and collisions() skips those
+        #   because a page that never sees base cannot
+        #   override it.
+        if alv_tree.rel(q).replace(os.sep, '/') in \
+                set(alv_tree.standalone()):
+            continue              # collisions() skips these
+        if not decls_of(read(q)):
+            continue              # nothing real to plant beside
         victim = q
         break
     if not ok(victim is not None,

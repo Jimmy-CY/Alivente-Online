@@ -117,6 +117,7 @@ import os
 import re
 import sys
 
+import alv_tree
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
 if not os.path.isdir(ROOT):
     sys.exit('! pages/templates not found - run from the repo root')
@@ -187,12 +188,17 @@ def bare_clauses(t):
 
 
 def templates():
+    # PQ-1, 10 Oct 2026 - THE WHOLE TREE, not one root. This walked
+    # pages/templates only, so the eight CRS pages were invisible to
+    # it and six of them carried a bare max-width clause that fires on
+    # paper. alv_tree.walk3() is the house walk and knows every root.
     out = []
-    for d, _, fs in os.walk(ROOT):
+    for d, _, fs in alv_tree.walk3():
         for f in fs:
-            if f.endswith('.html') and 'OLD DO NOT USE' not in f:
-                p = os.path.join(d, f)
-                out.append((os.path.relpath(p, ROOT).replace('\\', '/'), p))
+            if f.endswith('.html') and 'OLD DO NOT USE' not in f \
+                    and '.bak_' not in f:
+                q = os.path.join(d, f)
+                out.append((alv_tree.rel(q).replace('\\', '/'), q))
     return sorted(out)
 
 
@@ -209,7 +215,7 @@ ok(len(ALL) > 100, 'CONTROL: %d template(s) read, subfolders included'
    % len(ALL))
 ok(not left, 'no template but base has a bare max-width clause',
    '\n'.join('%s: %s' % x for x in left[:8]))
-bb = bare_clauses(read(os.path.join(ROOT, 'base.html')))
+bb = bare_clauses(read(alv_tree.path_of('base.html')))
 ok(any('991' in c for c in bb),
    'base keeps its bare <=991px block - on paper it hides the sidebar, '
    'which the print-leak round decided is right')
@@ -350,7 +356,7 @@ elif not TOUCHED:
         skip(s, 'no %s backups - round not applied here' % SUFFIX)
 else:
     boot = read(BOOT)
-    base_css = '\n'.join(styles_of(read(os.path.join(ROOT, 'base.html'))))
+    base_css = '\n'.join(styles_of(read(alv_tree.path_of('base.html'))))
     exe = '/opt/pw-browsers/chromium'
     n = [0]
 
@@ -433,7 +439,7 @@ else:
              '.rotate-prompt'),
         )
         for rel, content, prompt in CASES:
-            p = os.path.join(ROOT, rel)
+            p = dict(ALL).get(rel, os.path.join(ROOT, rel))
             if not os.path.isfile(p + SUFFIX):
                 skip(rel, 'no backup')
                 continue
