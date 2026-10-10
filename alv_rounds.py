@@ -1090,6 +1090,9 @@ ROUNDS = [
     # D-12 and D-7, 9 Oct 2026 - the 6px radius becomes
     # a token, and the dead comment-author class goes.
     '.bak_radtoken',
+    # D-4, 10 Oct 2026 - base grows the two-column
+    # field row that twelve pages had written out.
+    '.bak_formgrid',
 ]
 
 

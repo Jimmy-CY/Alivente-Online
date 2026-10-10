@@ -320,13 +320,15 @@ head('4. KEPT, AND WHY THAT IS NOT A DEVIATION')
 for k in ('.form-grid', '.form-group-full', '.check-label', '.field-error',
           '.form-section-note'):
     ok(k in sels(cn), '  KEPT: %s' % k)
-grids = [alv_tree.rel(p) for p in alv_tree.templates()
-         if 'form-card' in read(p)
-         and re.search(r'\.form-(?:grid|row-2)\s*\{[^}]*grid-template-columns',
-                       read(p))]
-ok(len(grids) >= 9,
-   '  .form-grid is a house convention base has not hoisted yet - %d other '
-   'form pages already do exactly this' % len(grids), grids[:6])
+# D-4, 10 Oct 2026 - base HAS hoisted it now, so counting the
+# pages that write it out is counting the wrong thing. The
+# claim was always that this page follows the house; base
+# declaring the component is a stronger way of saying so.
+_bg = read(alv_tree.path_of('base.html'))
+ok(re.search(r'\.form-grid\s*\{[^}]*grid-template-columns',
+             _bg) is not None,
+   '  .form-grid is the house component, declared in base since D-4 '
+   '- this page uses it rather than inventing one')
 ge = [m.group(2) for m in RULE.finditer(cn) if bare(m.group(1)) == '.form-grid']
 ok(ge and '1fr 1fr' in ge[0] and '18px 22px' in ge[0],
    '  and it now says it the way finance_expense_add says it', ge)

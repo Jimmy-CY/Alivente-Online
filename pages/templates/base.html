@@ -447,8 +447,13 @@
       .form-card and its heading .form-section-title; the field is
       .form-group, its label and .form-text; the control is
       .form-control, focused in the accent token. 34 pages wrote those
-      rules out in two dialects before base said them once. Rows are
-      still Bootstrap's grid and base does not touch them.
+      rules out in two dialects before base said them once. The two-column field row is
+      base's too since D-4, 10 Oct: .form-grid, collapsing to one
+      column on a phone, with .form-group-full for a field that
+      spans both. Twelve pages had written it out and eleven agreed
+      exactly; the twelfth adopted the majority gap. Bootstrap's own
+      row and column classes are untouched and remain the way to lay
+      out anything that is not a pair of fields.
 
       EVERY REQUIRED FIELD IS MARKED, in one spelling, in a colour base
       owns - the .alv-req class, coloured from the bad token, and no brace
@@ -3992,6 +3997,29 @@ table.alv-matrix {
     font-weight: 400;
     font-size: 0.8rem;
     color: var(--alv-ink-soft);
+}
+
+/* D-4, 10 Oct 2026 - THE TWO-COLUMN FIELD ROW, said once.
+   Twelve pages had written this out and eleven of them agreed
+   character for character, down to the 18px/22px gap. The twelfth,
+   crs/submission_detail, spelled the columns repeat(2, 1fr) and used
+   a 14px gap; it adopts these values here, which is the only visible
+   change in the round and was taken from a render.
+   .form-group-full is the escape hatch the four CRS forms already
+   used: one field spanning both columns. */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 22px;
+}
+
+.form-group-full { grid-column: 1 / -1; }
+
+/* THE KEYWORD IS NOT OPTIONAL. A4 portrait is about 718 CSS px, so a
+   bare max-width query fires on paper and prints the phone layout.
+   Eight CRS pages do exactly that today; this one does not. */
+@media screen and (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
 }
 
 .form-group { margin-bottom: 16px; }

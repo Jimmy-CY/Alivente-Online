@@ -185,10 +185,8 @@
 
   /* Two columns, one on a phone - a house convention twelve form pages
      already share, with finance_expense_add's gap. */
-  .form-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 18px 22px;
-  }
-  .form-group-full { grid-column: 1 / -1; }
+  
+  
   /* base has no field-error component, so this stays - on the token
      that means the thing it means. */
   .field-error {
@@ -237,7 +235,7 @@
 
   /* Mobile */
   @media (max-width: 768px) {
-    .form-grid { grid-template-columns: 1fr; gap: 14px; }
+    
 
     /* INs collapse to single-column with labels */
     .in-row-header { display: none; }
