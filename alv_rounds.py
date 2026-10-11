@@ -1096,6 +1096,7 @@ ROUNDS = [
     # PQ-1, 10 Oct 2026 - six CRS pages stop printing
     # the phone layout, and the guard can see them.
     '.bak_crsprint',
+    '.bak_lblwt',
 ]
 
 

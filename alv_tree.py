@@ -233,6 +233,13 @@ CONVERTED = [
     # builds no root of its own, which is what this list
     # means - not because any round widened it.
     'test_required_promise.py',
+    # LB-1, 10 Oct 2026 - off WAITING. It was held because the
+    # CRS forms carried plain field labels it had never seen,
+    # being on a root it did not walk. The labels are bold now
+    # and the walk is wide.
+    'test_label_bold.py',
+    # LB-1 - and this round's own suite, wide from birth.
+    'test_label_weight.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -296,7 +303,6 @@ WAITING = {
     'test_contrast.py': 'pages  colour pairs on the pages side never measured',
     'test_disabled_state.py':
         'pages  12 buttons the classifier disagrees with',
-    'test_label_bold.py': 'pages  plain field labels the sweep has not named',
     'test_line_soft.py':
         'pages  the six literals it counts are a pages-side figure',
     'test_modal_heads.py':

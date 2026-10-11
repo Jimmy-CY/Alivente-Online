@@ -4031,6 +4031,18 @@ table.alv-matrix {
     margin-bottom: 6px;
 }
 
+/* LB-1, 10 Oct 2026 - THE BOLD IS ABSOLUTE, NOT RELATIVE.
+   <strong> carries the browser's font-weight: bolder, and bolder is
+   measured FROM THE LABEL: 400 gives 700, but 600 gives 900. Eighteen
+   pages set 600 on the label and pushed their own labels two steps
+   past the house without asking for it. Pinning the value here ends
+   that class of accident - and it is on the strong rather than on the
+   label because 67 labels in the corpus bold only their NAME and keep
+   a hint beside it in normal weight. A weight on the label would
+   flatten all 67. */
+.form-group label strong,
+.form-group label b { font-weight: 700; }
+
 .form-control {
     width: 100%;
     background: var(--alv-paper);

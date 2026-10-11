@@ -57,9 +57,15 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+# LB-1 - through alv_tree, not through the one root this file
+# used to know about. base.html happens to live under
+# pages/templates, so the old join worked - which is exactly
+# what made it a DORMANT lookup rather than a broken one.
+BASE = alv_tree.path_of('base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 ME = os.path.basename(__file__)
 
@@ -118,8 +124,12 @@ def read(p):
 
 
 def templates():
+    # LB-1, 10 Oct 2026 - WIDENED. This walked pages/templates
+    # alone, and the CRS module is a root of its own at
+    # crs/templates/crs. Eight files, four of them forms, were
+    # outside every count this suite printed.
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in names:
             if n.endswith('.html'):
                 out.append(os.path.join(dirpath, n))
@@ -127,7 +137,9 @@ def templates():
 
 
 def rel_of(p):
-    return os.path.relpath(p, T).replace(os.sep, '/')
+    # LB-1 - alv_tree knows which root a path came from; relpath
+    # against one of them turns every CRS file into ../../crs/...
+    return alv_tree.rel(p)
 
 
 def is_recipe(rel):
@@ -147,11 +159,56 @@ def control_of(scan, m):
         if c:
             return c.group(0)
     after = scan[m.end():m.end() + 400]
+    # LB-1 - A TEMPLATE IS NOT THE PAGE. On the CRS forms the
+    # control is {{ form.x }} and its class is set in
+    # crs/forms.py, so reading the markup alone found four of
+    # twenty-four field labels and called the other twenty
+    # something else. widget_class() asks the form.
+    dj = re.search(r'\{\{\s*form\.(\w+)\s*\}\}', after)
+    _l = re.search(r'<label\b', after)
+    _n = re.search(CTRL, after)
+    if dj and (not _l or dj.start() < _l.start()) \
+            and (not _n or dj.start() < _n.start()):
+        return '<input class="%s">' % widget_class(dj.group(1))
     nxt = re.search(CTRL, after)
     lbl = re.search(r'<label\b', after)
     if nxt and (not lbl or nxt.start() < lbl.start()):
         return nxt.group(0)
     return None
+
+
+_WIDGETS = None
+
+
+def widget_class(field):
+    """The class a Django widget really renders with.
+
+    Read from the form classes, not guessed from the template.
+    Returns '' when the form cannot be loaded at all, which makes
+    the label fall out of the census rather than into it - a
+    missing answer must never read as a passing one.
+    """
+    global _WIDGETS
+    if _WIDGETS is None:
+        _WIDGETS = {}
+        try:
+            import django
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                                  'mysite.settings')
+            django.setup()
+            from crs import forms as _f
+            for _n in dir(_f):
+                _o = getattr(_f, _n)
+                _bf = getattr(_o, 'base_fields', None)
+                if not isinstance(_o, type) or not _bf:
+                    continue
+                for _k, _v in _bf.items():
+                    _c = str(_v.widget.attrs.get('class', ''))
+                    if _c:
+                        _WIDGETS[_k] = _c
+        except Exception:
+            _WIDGETS = {}
+    return _WIDGETS.get(field, '')
 
 
 def fields_of(text):
@@ -260,7 +317,10 @@ BOLDCLS = re.compile(r'\b(font-weight-bold|fw-bold|text-bold)\b')
 weighted = []
 for p in templates():
     rel = rel_of(p)
-    if is_recipe(rel):
+    # LB-1 - and not base, which is not a page. A label rule in
+    # base is the house saying it once, which is the opposite of
+    # the thing this report is for.
+    if is_recipe(rel) or rel == 'base.html':
         continue
     for css in re.findall(r'<style[^>]*>(.*?)</style>', read(p), re.S):
         css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)

@@ -48,19 +48,19 @@
 
     <div class="form-grid">
       <div class="form-group form-group-full">
-        <label for="id_fi">Reporting FI <span class="alv-req">*</span></label>
+        <label for="id_fi"><strong>Reporting FI</strong> <span class="alv-req">*</span></label>
         {{ form.reporting_fi }}
         {% if form.reporting_fi.errors %}<div class="field-error">{{ form.reporting_fi.errors|join:" " }}</div>{% endif %}
       </div>
 
       <div class="form-group">
-        <label for="{{ form.country_config.id_for_label }}">Country <span class="alv-req">*</span></label>
+        <label for="{{ form.country_config.id_for_label }}"><strong>Country</strong> <span class="alv-req">*</span></label>
         {{ form.country_config }}
         {% if form.country_config.errors %}<div class="field-error">{{ form.country_config.errors|join:" " }}</div>{% endif %}
       </div>
 
       <div class="form-group">
-        <label for="id_year_select">Reporting Year <span class="alv-req">*</span></label>
+        <label for="id_year_select"><strong>Reporting Year</strong> <span class="alv-req">*</span></label>
         <select id="id_year_select" class="form-control">
           {% for y in year_choices %}
             <option value="{{ y }}" {% if y == default_year %}selected{% endif %}>{{ y }}</option>
@@ -76,7 +76,7 @@
       </div>
 
       <div class="form-group form-group-full">
-        <label for="id_sending_in">Sending Company IN — TIN <span class="alv-req">*</span></label>
+        <label for="id_sending_in"><strong>Sending Company IN — TIN</strong> <span class="alv-req">*</span></label>
         {{ form.sending_company_in }}
         {% if form.sending_company_in.errors %}<div class="field-error">{{ form.sending_company_in.errors|join:" " }}</div>{% endif %}
         <small class="form-text" id="in-help">

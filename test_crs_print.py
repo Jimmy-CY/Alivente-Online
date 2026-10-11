@@ -366,16 +366,36 @@ wd = read(os.path.join(ROOT, 'test_waiting_down.py'))
 # 49, not 48: the guard joins CONVERTED and so does THIS suite,
 # which walks the tree too. I pinned 48 having counted only the
 # arrival I was thinking about.
-for name, val in (('CONVERTED_N', 49), ('WAITING_N', 13),
-                  ('CEILING', 50)):
-    ok(re.search(r'%s = %d\b' % (name, val), wd) is not None,
-       '  test_waiting_down %s is %d' % (name, val),
-       re.search(r'%s = \d+' % name, wd).group(0) if
-       re.search(r'%s = \d+' % name, wd) else '?')
+# LB-1, 10 Oct 2026 - THESE WERE PINNED AS LITERALS AND THE CLAIM WAS
+# NEVER THE LITERAL. 49, 13 and 50 were true the day PQ-1 shipped and
+# false the moment any later round converted a census - which LB-1 did,
+# one round later, and this section failed on a system that was working
+# exactly as intended.
+#
+# What PQ-1 meant is that test_waiting_down's constants are NOT STALE.
+# Read against the live register that is what it says, and no round
+# after this one has to come back and edit the number.
 tr = read(os.path.join(ROOT, 'test_tree_roots.py'))
-ok('WALKERS_OWN_ROOT_MAX = 50' in tr,
-   '  and the walkers ceiling is 50 - that file says it may only FALL and '
-   'invites the round that converts a census to lower it')
+
+
+def _pinned(text, name):
+    m = re.search(r'%s = (\d+)' % name, text)
+    return int(m.group(1)) if m else None
+
+
+for name, live, what in (('CONVERTED_N', len(T.CONVERTED), 'CONVERTED'),
+                         ('WAITING_N', len(T.WAITING), 'WAITING')):
+    ok(_pinned(wd, name) == live,
+       '  test_waiting_down %s agrees with alv_tree.%s, which holds %d'
+       % (name, what, live), _pinned(wd, name))
+ok(_pinned(wd, 'CEILING') == _pinned(tr, 'WALKERS_OWN_ROOT_MAX'),
+   '  and its CEILING agrees with test_tree_roots WALKERS_OWN_ROOT_MAX',
+   '%s vs %s' % (_pinned(wd, 'CEILING'),
+                 _pinned(tr, 'WALKERS_OWN_ROOT_MAX')))
+ok(_pinned(tr, 'WALKERS_OWN_ROOT_MAX') <= 50,
+   '  and the walkers ceiling is at most the 50 PQ-1 left - that file '
+   'says it may only FALL, and LB-1 took it to %d'
+   % _pinned(tr, 'WALKERS_OWN_ROOT_MAX'))
 
 
 # ==========================================================================

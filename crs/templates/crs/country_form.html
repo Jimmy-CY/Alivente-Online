@@ -44,13 +44,13 @@
     <h3 class="form-section-title">Identity</h3>
     <div class="form-grid">
       <div class="form-group">
-        <label for="{{ form.country_code.id_for_label }}">Country Code <span class="alv-req">*</span></label>
+        <label for="{{ form.country_code.id_for_label }}"><strong>Country Code</strong> <span class="alv-req">*</span></label>
         {{ form.country_code }}
         {% if form.country_code.errors %}<div class="field-error">{{ form.country_code.errors|join:" " }}</div>{% endif %}
         <small class="form-text">{{ form.country_code.help_text }}</small>
       </div>
       <div class="form-group">
-        <label for="{{ form.country_name.id_for_label }}">Country Name <span class="alv-req">*</span></label>
+        <label for="{{ form.country_name.id_for_label }}"><strong>Country Name</strong> <span class="alv-req">*</span></label>
         {{ form.country_name }}
         {% if form.country_name.errors %}<div class="field-error">{{ form.country_name.errors|join:" " }}</div>{% endif %}
       </div>
@@ -69,19 +69,19 @@
     <h3 class="form-section-title">Schema</h3>
     <div class="form-grid">
       <div class="form-group">
-        <label for="{{ form.oecd_version.id_for_label }}">OECD Version <span class="alv-req">*</span></label>
+        <label for="{{ form.oecd_version.id_for_label }}"><strong>OECD Version</strong> <span class="alv-req">*</span></label>
         {{ form.oecd_version }}
         {% if form.oecd_version.errors %}<div class="field-error">{{ form.oecd_version.errors|join:" " }}</div>{% endif %}
         <small class="form-text">{{ form.oecd_version.help_text }}</small>
       </div>
       <div class="form-group">
-        <label for="{{ form.default_currency.id_for_label }}">Default Currency <span class="alv-req">*</span></label>
+        <label for="{{ form.default_currency.id_for_label }}"><strong>Default Currency</strong> <span class="alv-req">*</span></label>
         {{ form.default_currency }}
         {% if form.default_currency.errors %}<div class="field-error">{{ form.default_currency.errors|join:" " }}</div>{% endif %}
         <small class="form-text">{{ form.default_currency.help_text }}</small>
       </div>
       <div class="form-group form-group-full">
-        <label for="{{ form.receiving_country_strategy.id_for_label }}">Receiving Country Strategy <span class="alv-req">*</span></label>
+        <label for="{{ form.receiving_country_strategy.id_for_label }}"><strong>Receiving Country Strategy</strong> <span class="alv-req">*</span></label>
         {{ form.receiving_country_strategy }}
         {% if form.receiving_country_strategy.errors %}<div class="field-error">{{ form.receiving_country_strategy.errors|join:" " }}</div>{% endif %}
         <small class="form-text">{{ form.receiving_country_strategy.help_text }}</small>
@@ -99,22 +99,22 @@
     </div>
 
     <div class="form-group form-group-full">
-      <label for="{{ form.message_ref_id_template.id_for_label }}">Message Ref ID Template</label>
+      <label for="{{ form.message_ref_id_template.id_for_label }}"><strong>Message Ref ID Template</strong></label>
       {{ form.message_ref_id_template }}
       {% if form.message_ref_id_template.errors %}<div class="field-error">{{ form.message_ref_id_template.errors|join:" " }}</div>{% endif %}
     </div>
     <div class="form-group form-group-full">
-      <label for="{{ form.fi_doc_ref_id_template.id_for_label }}">FI Doc Ref ID Template</label>
+      <label for="{{ form.fi_doc_ref_id_template.id_for_label }}"><strong>FI Doc Ref ID Template</strong></label>
       {{ form.fi_doc_ref_id_template }}
       {% if form.fi_doc_ref_id_template.errors %}<div class="field-error">{{ form.fi_doc_ref_id_template.errors|join:" " }}</div>{% endif %}
     </div>
     <div class="form-group form-group-full">
-      <label for="{{ form.account_doc_ref_id_template.id_for_label }}">Account Doc Ref ID Template</label>
+      <label for="{{ form.account_doc_ref_id_template.id_for_label }}"><strong>Account Doc Ref ID Template</strong></label>
       {{ form.account_doc_ref_id_template }}
       {% if form.account_doc_ref_id_template.errors %}<div class="field-error">{{ form.account_doc_ref_id_template.errors|join:" " }}</div>{% endif %}
     </div>
     <div class="form-group form-group-full">
-      <label for="{{ form.output_filename_template.id_for_label }}">Output Filename Template</label>
+      <label for="{{ form.output_filename_template.id_for_label }}"><strong>Output Filename Template</strong></label>
       {{ form.output_filename_template }}
       {% if form.output_filename_template.errors %}<div class="field-error">{{ form.output_filename_template.errors|join:" " }}</div>{% endif %}
     </div>
@@ -124,7 +124,7 @@
   <div class="form-card">
     <h3 class="form-section-title">Validation</h3>
     <div class="form-group form-group-full">
-      <label for="{{ form.tin_regex.id_for_label }}">TIN Regex</label>
+      <label for="{{ form.tin_regex.id_for_label }}"><strong>TIN Regex</strong></label>
       {{ form.tin_regex }}
       {% if form.tin_regex.errors %}<div class="field-error">{{ form.tin_regex.errors|join:" " }}</div>{% endif %}
       <small class="form-text">{{ form.tin_regex.help_text }}</small>

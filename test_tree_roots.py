@@ -110,7 +110,10 @@ CRS_PAGES = [
 #
 #     So it is measured with the gate's own detector, after the round, and
 #     it may only FALL. Each later round that converts a census lowers it.
-WALKERS_OWN_ROOT_MAX = 50   # PQ-1, 10 Oct 2026 - the file says
+WALKERS_OWN_ROOT_MAX = 49   # LB-1, 10 Oct 2026 - PQ-1 left it
+# at 50 and said it may only FALL. test_label_bold is the census
+# this round converts, so it falls by one and the gain is locked
+# in.  (was 50)   # PQ-1, 10 Oct 2026 - the file says
 # this may only FALL, and invites the round that converts a census to
 # lower it and lock the gain in. test_print_queries is that census.
 
