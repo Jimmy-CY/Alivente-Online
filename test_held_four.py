@@ -320,10 +320,15 @@ print('        A DORMANT NARROW LOOKUP IS INVISIBLE UNTIL THE TREE WIDENS')
 print('        UNDER IT. test_required_marker carried three, in three')
 print('        different shapes, and each was found by the one after it.')
 
-check('WAITING now holds %d' % WAITING_AFTER,
-      len(alv_tree.WAITING) == WAITING_AFTER, '%d' % len(alv_tree.WAITING))
-check('  CONTROL: and is not empty - eight are still held',
-      len(alv_tree.WAITING) > 0)
+# E-1b, 11 Oct 2026 - WAS `len(WAITING) == WAITING_AFTER`, which
+# was true for one round. What E-1a claims is that the FOUR IT RELEASED
+# are off, and that is checked one by one above. The size of the
+# register is not E-1a's to assert.
+check('none of the four this round released is still held',
+      not [n for n in RELEASED if n in alv_tree.WAITING],
+      '%s' % [n for n in RELEASED if n in alv_tree.WAITING])
+check('  CONTROL: and WAITING is not empty - %d still held'
+      % len(alv_tree.WAITING), len(alv_tree.WAITING) > 0)
 
 # ---------------------------------------------------------------------- 7
 head('7. REGISTERED, ON THE GATE')

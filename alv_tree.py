@@ -254,6 +254,16 @@ CONVERTED = [
     'test_subtree_tones.py',
     # E-1a - and this round's own suite.
     'test_held_four.py',
+    # E-1b, 11 Oct 2026 - two more off WAITING. One needed no
+    # application change at all; the other needed half of one
+    # selector removed. test_modal_heads is not here - widened,
+    # it still fails on the Recipe View close strip its entry
+    # records - and nor is test_button_sweep, whose narrow root
+    # rebuilds a pre-sweep tree and is a stated position.
+    'test_contrast.py',
+    'test_compound_rules.py',
+    # E-1b - and this round's own suite.
+    'test_held_contrast.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -312,9 +322,6 @@ WAITING = {
     'test_back_label.py': 'pages  no page defines .action-back-label any more',
     'test_button_sweep.py':
         'pages  its own census says 120 templates, not 146',
-    'test_compound_rules.py':
-        'pages  one page still wraps its fields in a third name',
-    'test_contrast.py': 'pages  colour pairs on the pages side never measured',
     'test_disabled_state.py':
         'pages  12 buttons the classifier disagrees with',
     'test_modal_heads.py':

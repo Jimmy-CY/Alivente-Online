@@ -80,6 +80,8 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
@@ -95,7 +97,7 @@ SUFFIX = '.bak_contrast'
 ME = 'test_contrast.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.path_of('base.html')
 PERSONAL = ('recipe', 'meal_plan', 'ingredient', 'wcim', 'celebration',
             'pantry', 'unit_conversions', 'measurement_units',
             'household_member', 'map_ingredients', 'import_recipe',
@@ -159,6 +161,26 @@ def now(p):
     if not os.path.isfile(p):
         return ''
     return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
+
+def scoped(p):
+    """as_left_by for a page THIS round touched; the live file
+    for one it did not.
+
+    E-1b, 11 Oct 2026. as_left_by answers "the file as this
+    round left it", which for a page the round never opened is
+    the backup taken by the first LATER round that touched it -
+    an arbitrary moment belonging to somebody else. Widened,
+    this suite read the CRS pages at PQ-1's moment and reported
+    seven white-on-colour failures that the CRS colour rounds
+    had already fixed. One of them scored 1.63, which is not a
+    number the colour involved can produce.
+
+    THE ROUND'S OWN BACKUPS DEFINE ITS SCOPE. Where there is
+    no backup there is no claim, and the live file is what the
+    check below means by LIVE - it says so itself.
+    """
+    return now(p) if os.path.exists(p + SUFFIX) else read(p)
+
 
 
 def was(p):
@@ -303,7 +325,7 @@ else:
         print('      %-32s %-26s %6s %6s' % ('file', 'rule', 'before', 'after'))
         worse, still_bad, measured = [], [], 0
         for rel, cls, hover in PROBES:
-            p = os.path.join(T, rel.replace('/', os.sep))
+            p = alv_tree.path_of(rel)
             if not os.path.isfile(p + SUFFIX):
                 skip('%s .%s' % (rel, cls), 'no %s backup' % SUFFIX)
                 continue
@@ -338,15 +360,15 @@ else:
         HEX = re.compile(r'#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b')
         LIGHT = {'white', '#fff', '#ffffff', '#fefefe'}
         found, unreadable = [], []
-        for d, dirs, fs in os.walk(T):
+        for d, dirs, fs in alv_tree.walk3():
             dirs[:] = [x for x in dirs if x != '__pycache__']
             for f in sorted(fs):
                 if not f.endswith('.html') or '.bak' in f:
                     continue
-                rel = os.path.relpath(os.path.join(d, f), T).replace('\\', '/')
+                rel = alv_tree.rel(os.path.join(d, f)).replace('\\', '/')
                 if any(k in rel for k in PERSONAL) or rel == 'base.html':
                     continue
-                css = nocomment('\n'.join(styles_of(now(os.path.join(d, f)))))
+                css = nocomment('\n'.join(styles_of(scoped(os.path.join(d, f)))))
                 for m in re.finditer(r'([^{}]+)\{([^{}]*)\}', css):
                     body = m.group(2)
                     c = re.search(r'(?:^|;)\s*color:\s*([^;]+)', body)
@@ -382,12 +404,18 @@ else:
         ok(not live,
            'no LIVE rule on the property side still puts white text on a '
            'colour below 4.5:1', '\n'.join(live[:8]))
-        ok(len(found) == 3,
-           '  and exactly three remain, every one of them dead (%d)'
-           % len(found), '\n'.join(found[:6]))
+        # E-1b, 11 Oct 2026 - WAS `len(found) == 3`. The three it
+        # named have all been converted by later rounds, so the live
+        # figure is ZERO and the pin failed on a system working exactly
+        # as intended. The claim was never the number - it was that
+        # nothing UNNAMED survives. Derived, it cannot rot again.
+        ok(not [f for f in found
+                if not any(f.startswith(k) for k in DEAD)],
+           '  and the %d that remain are all named dead' % len(found),
+           '\n'.join(found[:6]))
         # .btn-print: worn by nothing, in markup, in a script, or built by
         # the template - which is the spelling that nearly fooled this round.
-        cr = now(os.path.join(T, 'comments_report.html'))
+        cr = now(alv_tree.path_of('comments_report.html'))
         mk = re.sub(r'<style[^>]*>.*?</style>', '', cr, flags=re.S | re.I)
         ok(not re.search(r'class="[^"]*\bbtn-print\b', mk)
            and 'btn-print' not in '\n'.join(
@@ -396,7 +424,7 @@ else:
            '  .btn-print is worn by nothing - no attribute, no script, and '
            'no {{ }} building the name')
         for f in ('finance_expense_add.html', 'finance_expense_edit.html'):
-            t = now(os.path.join(T, f))
+            t = now(alv_tree.path_of(f))
             ok('class="modal-header alv-modal-head"' in t,
                '  %s: the prorata markup wears .alv-modal-head' % f[:22])
         ok('!important' in re.search(
@@ -409,7 +437,7 @@ else:
            '\n'.join(unreadable[:5]))
         was_found = 0
         for rel, cls, hover in PROBES:
-            p = os.path.join(T, rel.replace('/', os.sep))
+            p = alv_tree.path_of(rel)
             if os.path.isfile(p + SUFFIX):
                 was_found += 1
         ok(was_found >= 15,
@@ -425,7 +453,7 @@ head('3. NOTHING WAS DELETED')
 # `class="priority-badge priority-{{ item.priority|lower }}"` - and
 # deleting it would have taken the paint off every High badge in Projects.
 for rel in ('projects/project_task_list.html', 'projects/projects_detail.html'):
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.path_of(rel)
     src = now(p)
     ok(re.search(r'priority-\{\{\s*\w+[\w.]*\.\w*priority\w*\|lower\s*\}\}',
                  src) is not None,
@@ -434,7 +462,7 @@ for rel in ('projects/project_task_list.html', 'projects/projects_detail.html'):
        '  so .priority-high is LIVE, and it is still here')
     ok('var(--alv-warn)' in src, '  repainted, not removed')
 for rel, _c, _h in PROBES:
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p + SUFFIX):
         continue
     a, b = now(p), was(p)
@@ -446,7 +474,7 @@ for rel, _c, _h in PROBES:
 head('4. SCOPE, THEN REGISTERED AND ON THE GATE')
 # ==========================================================================
 for rel in sorted(set(r for r, _c, _h in PROBES)):
-    p = os.path.join(T, rel.replace('/', os.sep))
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p + SUFFIX):
         continue
     a, b = now(p), was(p)

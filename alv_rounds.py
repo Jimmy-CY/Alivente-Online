@@ -1100,6 +1100,7 @@ ROUNDS = [
     '.bak_lines',
     '.bak_fcard',
     '.bak_held4',
+    '.bak_heldcon',
 ]
 
 
