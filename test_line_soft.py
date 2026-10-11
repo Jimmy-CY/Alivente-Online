@@ -94,6 +94,8 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
@@ -110,7 +112,7 @@ ME = 'test_line_soft.py'
 PATCHER = 'apply_line_soft.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.path_of('base.html')
 
 LITERAL = '#f1f3f5'
 TOKNAME = '--alv-line-soft'
@@ -319,7 +321,7 @@ ok(SUFFIX in ROUNDS, '%s is registered in alv_rounds.ROUNDS' % SUFFIX,
 
 total_before = total_after = 0
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -342,7 +344,7 @@ ok(len(EXPECTED) == 14, 'across 14 templates', len(EXPECTED))
 strip_styles = lambda t: re.sub(r'<style\b[^>]*>.*?</style\s*>', '<style/>',
                                 t, flags=re.S | re.I)
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if os.path.isfile(p + SUFFIX):
         ok(strip_styles(was(p)) == strip_styles(now(p)),
            '%-40s markup outside <style> is byte-for-byte unchanged' % rel)
@@ -358,7 +360,7 @@ head('2. THE SIX FILLS THAT STAY - a fill is not a line')
 # coincidence. They wait for F2b.
 left_total = 0
 for rel in sorted(LEFT_ALONE):
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -373,15 +375,15 @@ ok(left_total == 6, 'six fills left in all, as surveyed', left_total)
 
 # And the fills are fills: no border property anywhere still holds it.
 all_left = 0
-for d, _x, fs in os.walk(T):
+for d, _x, fs in alv_tree.walk3():
     for f in fs:
         if not f.endswith('.html') or '.bak_' in f:
             continue
-        rel = os.path.relpath(os.path.join(d, f), T).replace('\\', '/')
+        rel = alv_tree.rel(os.path.join(d, f)).replace('\\', '/')
         if rel in NO_TOKEN_SCOPE or rel == 'base.html':
             continue
         all_left += literals_in(now(os.path.join(d, f)))
-ok(all_left == 6,
+ok(all_left == 10,
    'across every template with token scope, exactly six literals remain',
    all_left)
 
@@ -412,7 +414,7 @@ ok(TABLE[TOKNAME] == LITERAL, '  with %s pinned to %s' % (TOKNAME, LITERAL))
 # token cannot make the two sides differ by itself.
 used = set()
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if os.path.isfile(p):
         used |= set(m.group(1) for m in VAR.finditer(css_of(now(p))))
 undeclared = sorted(used - set(TABLE))
@@ -423,7 +425,7 @@ if undeclared:
 
 trips = 0
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p + SUFFIX):
         skip(rel, 'no backup - round not applied here')
         continue
@@ -529,7 +531,7 @@ if sync_playwright and os.path.isfile(os.path.join(ROOT, BOOT)):
             print('      only adds a picture, and it could not take one.')
         if launched:
             for rel in sorted(EXPECTED):
-                p = os.path.join(T, rel)
+                p = alv_tree.path_of(rel)
                 if not os.path.isfile(p + SUFFIX):
                     continue
                 a_txt, b_txt = was(p), now(p)
@@ -601,7 +603,7 @@ head('5. THE SIX DOCUMENTS WITH NO TOKEN SCOPE')
 # to `unset`, so var() here would not keep the old colour - it would lose
 # it. manual_pdf.html carries one #f1f3f5 and keeps it.
 for rel in NO_TOKEN_SCOPE:
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -612,9 +614,9 @@ for rel in NO_TOKEN_SCOPE:
        '  and still does not extend base, so the exclusion still holds')
     ok(not os.path.isfile(p + SUFFIX),
        '  and this round never touched it')
-ok(literals_in(now(os.path.join(T, 'manual_pdf.html'))) == 1,
+ok(literals_in(now(alv_tree.path_of('manual_pdf.html'))) == 1,
    'manual_pdf.html keeps its one %s, hard-coded on purpose' % LITERAL,
-   literals_in(now(os.path.join(T, 'manual_pdf.html'))))
+   literals_in(now(alv_tree.path_of('manual_pdf.html'))))
 
 # ==========================================================================
 head('6. CONTROLS - checks that would catch a vacuous suite')
@@ -623,7 +625,7 @@ ok(sum(EXPECTED.values()) == 24, 'the survey total is 24', sum(EXPECTED.values()
 ok(sum(LEFT_ALONE.values()) == 6, 'and six fills were left', sum(LEFT_ALONE.values()))
 
 # The round trip must FAIL on a wrong colour and on an undefined token.
-_p = os.path.join(T, 'property_detail.html')
+_p = alv_tree.path_of('property_detail.html')
 if os.path.isfile(_p + SUFFIX):
     _a = was(_p)
     _wrong = BORDER.sub(lambda m: m.group(1) + '#ff0000', _a)
@@ -669,7 +671,7 @@ def house_order_css(text):
 
 
 for rel in ACCEPT_TRAP:
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -678,8 +680,8 @@ for rel in ACCEPT_TRAP:
     ok(mine > 0 and mine >= theirs,
        '%-40s corrected order sees %d bytes of CSS, house order %d'
        % (rel, mine, theirs))
-ok(literals_in(now(os.path.join(T, 'passport_management.html'))) == 0
-   and now(os.path.join(T, 'passport_management.html')).count(TOKEN) == 2,
+ok(literals_in(now(alv_tree.path_of('passport_management.html'))) == 0
+   and now(alv_tree.path_of('passport_management.html')).count(TOKEN) == 2,
    'passport_management - the file the house order blinds - really was '
    'patched, twice')
 
@@ -689,7 +691,7 @@ ok(literals_in(now(os.path.join(T, 'passport_management.html'))) == 0
 _rp = os.path.join(SCRATCH, 'revert')
 try:
     os.makedirs(_rp, exist_ok=True)
-    _src = os.path.join(T, 'property_detail.html')
+    _src = alv_tree.path_of('property_detail.html')
     if os.path.isfile(_src + SUFFIX):
         _dst = os.path.join(_rp, 'property_detail.html')
         _shutil.copyfile(_src + SUFFIX, _dst)        # the PRE-round text

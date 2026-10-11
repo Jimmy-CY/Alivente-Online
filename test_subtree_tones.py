@@ -91,6 +91,8 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
@@ -106,7 +108,7 @@ SUFFIX = '.bak_subtree'
 ME = 'test_subtree_tones.py'
 PATCHER = 'apply_subtree_tones.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.path_of('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -207,10 +209,10 @@ def js_of(t):
 def walked():
     """Every template, at any depth."""
     out = []
-    for folder, _, names in os.walk(T):
+    for folder, _, names in alv_tree.walk3():
         for n in sorted(names):
             if n.endswith('.html'):
-                rel = os.path.relpath(os.path.join(folder, n), T)
+                rel = alv_tree.rel(os.path.join(folder, n))
                 out.append((rel.replace(os.sep, '/'),
                             os.path.join(folder, n)))
     return sorted(out)
@@ -250,13 +252,13 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # pages/templates, so both numbers move by four and the eighteen
 # that live in subdirectories - the whole point of this section -
 # is still eighteen.
-ok(len(tree) == 143, 'a WALK finds 143 templates', len(tree))
+ok(len(tree) == 151, 'a WALK finds 151 templates', len(tree))
 ok(len(top) == 125, '  a flat listing finds 125 - 120 was what H7 counted',
    len(top))
-ok(len(sub) == 18, '  so 18 live in subdirectories and H7 never saw them',
+ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',
    len(sub))
 folders = sorted({rel.split('/')[0] for rel, _ in sub})
-ok(len(folders) == 6, '  across %d folders: %s' % (len(folders),
+ok(len(folders) == 7, '  across %d folders: %s' % (len(folders),
                                                    ', '.join(folders)),
    folders)
 ok(sum(1 for rel, _ in sub if rel.startswith('projects/')) == 11,
@@ -269,7 +271,7 @@ ok(len(tree) > len(top),
 head('2. THE FOUR HEXES AND THE ONE KEYWORD ARE GONE')
 # ==========================================================================
 for rel, hexes in sorted(GONE.items()):
-    p = os.path.join(T, *rel.split('/'))
+    p = alv_tree.path_of(rel)
     css_now, css_was = css_of(now(p)), css_of(was(p))
     for h in hexes:
         here = [m for m in RULE.finditer(css_now)
@@ -280,7 +282,7 @@ for rel, hexes in sorted(GONE.items()):
            '%-38s no longer writes %s in a %s rule'
            % (rel, h, 'success/warning'),
            '%d now, %d before' % (len(here), len(there)))
-p = os.path.join(T, 'projects', 'projects_detail.html')
+p = alv_tree.path_of('projects/projects_detail.html')
 fam_now = [m.group(2) for m in RULE.finditer(css_of(now(p)))
            if re.search(FAMILY, m.group(1))]
 fam_was = [m.group(2) for m in RULE.finditer(css_of(was(p)))
@@ -326,7 +328,7 @@ ok(len(layout_only) == 2,
 for line in layout_only:
     print('        %s' % line)
 for rel, why in sorted(LEAVE.items()):
-    p = os.path.join(T, rel)
+    p = alv_tree.path_of(rel)
     n = sum(1 for m in RULE.finditer(css_of(now(p)))
             if re.search(FAMILY, m.group(1)))
     ok(n >= 1, '  and %s is the one named exception, keeping %d - %s'
@@ -336,7 +338,7 @@ for rel, why in sorted(LEAVE.items()):
 head('4. TWO WERE DEAD BEFORE THE ROUND, AND ARE PROVED SO')
 # ==========================================================================
 for rel, cls in DEAD:
-    p = os.path.join(T, *rel.split('/'))
+    p = alv_tree.path_of(rel)
     w = was(p)
     ok(len(re.findall(r'\b%s\b' % cls, markup(w))) == 0
        and len(re.findall(r'\b%s\b' % cls, js_of(w))) == 0,
@@ -349,19 +351,18 @@ for rel, cls in DEAD:
 head('5. THREE WERE LIVE - AND TWO OF THEM ONLY IN A SCRIPT')
 # ==========================================================================
 for rel, cls in LIVE:
-    p = os.path.join(T, *rel.split('/'))
+    p = alv_tree.path_of(rel)
     n = now(p)
     mk = len(re.findall(r'\b%s\b' % cls, markup(n)))
     js = len(re.findall(r'\b%s\b' % cls, js_of(n)))
     ok(mk + js >= 1,
        '%-38s .%s is worn (markup %d, script %d)' % (rel, cls, mk, js))
 ok(len(re.findall(r'\balert-success\b',
-                  js_of(now(os.path.join(T, 'projects',
-                                         'project_tasks_edit.html'))))) >= 1,
+                  js_of(now(alv_tree.path_of('projects/project_tasks_edit.html'))))) >= 1,
    '  an alert built inside a script wears the same class a template '
    'would, which is why base owning the family reaches it')
 
-dp = os.path.join(T, 'projects', 'project_tasks_delete.html')
+dp = alv_tree.path_of('projects/project_tasks_delete.html')
 rule = [m.group(2) for m in RULE.finditer(css_of(now(dp)))
         if 'subtasks-warning' in m.group(1) and 'text-warning' in m.group(1)]
 ok(rule and 'font-weight' in rule[0] and 'margin-bottom' in rule[0]
@@ -439,7 +440,7 @@ def paint(page_css, tag):
 if not HAVE:
     skip('the rendered probe', 'playwright is not installed')
 else:
-    ep = os.path.join(T, 'projects', 'project_tasks_edit.html')
+    ep = alv_tree.path_of('projects/project_tasks_edit.html')
     before = paint(css_of(was(ep)) + css_of(was(dp)), 'before')
     after = paint(css_of(now(ep)) + css_of(now(dp)), 'after')
     ok(before['s'][0] == 'rgb(40, 167, 69)',
@@ -473,7 +474,7 @@ ok(ratio('#ffffff', '#ffc107') == 1.63,
    '  the contrast maths agrees with the published value for #ffc107')
 
 for rel in sorted(GONE):
-    p = os.path.join(T, *rel.split('/'))
+    p = alv_tree.path_of(rel)
     ok(any(h in css_of(was(p)) for h in GONE[rel]),
        'reverting %s puts its hex back, so section 2 would FAIL' % rel)
 

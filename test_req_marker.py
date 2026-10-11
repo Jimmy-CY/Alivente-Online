@@ -87,6 +87,8 @@ import os
 import re
 import sys
 
+import alv_tree
+
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -107,7 +109,7 @@ BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
 REL = 'passport_management.html'
-P = os.path.join(T, REL)
+P = alv_tree.path_of(REL)
 OLD_SEL = "#file_upload_group .required-marker"
 NEW_SEL = "#file_upload_group .alv-req"
 HANDLERS = ('addNewDocument', 'editDocument')
@@ -339,13 +341,19 @@ FALSE_POSITIVE = {
     'physical_invoice_edit.html':
         '#pi-suggest-data is emitted by Django\'s json_script filter at '
         'render time, and the read is inside a try/catch',
+    # E-1a, 11 Oct 2026 - FOUND BY WIDENING, AND NOT A DEFECT.
+    'crs/submission_start.html':
+        '#fi-tins-data IS in the markup - as a script tag of type '
+        'application/json, a data island - and markup_of strips '
+        'script blocks by design, so the reader cannot see what is '
+        'really there. One step on from the entry above it.',
 }
 suspects = []
-for d, _s, fs in os.walk(T):
+for d, _s, fs in alv_tree.walk3():
     for f in sorted(fs):
         if not f.endswith('.html'):
             continue
-        rel = os.path.relpath(os.path.join(d, f), T).replace(os.sep, '/')
+        rel = alv_tree.rel(os.path.join(d, f)).replace(os.sep, '/')
         t = read(os.path.join(d, f))
         js = '\n'.join(re.findall(r'<script\b[^>]*>(.*?)</script\s*>', t,
                                   re.S | re.I))

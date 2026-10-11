@@ -245,6 +245,15 @@ CONVERTED = [
     'test_lines_table.py',
     # FC-1, 11 Oct 2026 - wide from birth.
     'test_form_card_radius.py',
+    # E-1a, 11 Oct 2026 - four off WAITING at once. Two were held
+    # by a single dead .req rule on a CRS page; two by numbers
+    # measured before the CRS module was in view.
+    'test_req_marker.py',
+    'test_required_marker.py',
+    'test_line_soft.py',
+    'test_subtree_tones.py',
+    # E-1a - and this round's own suite.
+    'test_held_four.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -308,18 +317,10 @@ WAITING = {
     'test_contrast.py': 'pages  colour pairs on the pages side never measured',
     'test_disabled_state.py':
         'pages  12 buttons the classifier disagrees with',
-    'test_line_soft.py':
-        'pages  the six literals it counts are a pages-side figure',
     'test_modal_heads.py':
         'pages  the Recipe View close strip, recorded but unresolved',
-        'test_req_marker.py':
-        'pages  a selector dereferenced with no markup behind it',
-    'test_required_marker.py':
-        'pages  a .req RULE survives somewhere, though the markup went',
     'test_small_three.py':
         'pages  a non-Back control still labelled as a Back',
-    'test_subtree_tones.py':
-        'count  it asserts a walk finds 138; it now finds 146',
     'test_surface_deep.py':
         'pages  background literals survive, and its 93 border uses wait on F2b',
 }

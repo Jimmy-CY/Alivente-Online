@@ -110,7 +110,8 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 712   # IN-2, 11 Oct 2026 - .lines-table thead th
+EXPECT_PAIRS = 711   # E-1a, 11 Oct 2026 - the ecipe-header corpse
+# set a background and a colour, and it is gone.   # (was 712)   # IN-2, 11 Oct 2026 - .lines-table thead th
 # sets a background AND a colour. It came off two pages and went
 # into base once, so the census FALLS by one.   # (was 713)
 EXPECT_INACTIVE = 20

@@ -59,11 +59,13 @@ for _stream in (_sys.stdout, _sys.stderr):
 import os
 import re
 import sys
+
+import alv_tree
 import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.path_of('base.html')
 FIXTURE = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 MARKER = 'alv-req'
 
@@ -123,14 +125,13 @@ def tag_fault(src):
 
 
 ALL = []
-for d, _s, fs in os.walk(T):
+for d, _s, fs in alv_tree.walk3():
     for fn in sorted(fs):
         if fn.endswith('.html') and '.bak_' not in fn:
-            ALL.append(os.path.relpath(os.path.join(d, fn),
-                                       T).replace(os.sep, '/'))
+            ALL.append(alv_tree.rel(os.path.join(d, fn)).replace(os.sep, '/'))
 ALL.sort()
 TOUCHED = [r for r in ALL
-           if os.path.exists(os.path.join(T, *r.split('/')) + '.bak_alvreq')]
+           if os.path.exists(alv_tree.path_of(r) + '.bak_alvreq')]
 if not TOUCHED:
     sys.exit('! no .bak_alvreq backups - run apply_required_marker.py first.')
 
@@ -153,7 +154,7 @@ check('CONTROL: base did NOT declare it before',
 
 _sites = 0
 for rel in ALL:
-    _sites += markup_of(read(os.path.join(T, *rel.split('/')))).count(
+    _sites += markup_of(read(alv_tree.path_of(rel))).count(
         'class="%s"' % MARKER)
 # SCOPE GUARD #20 - 9 Sep. A COUNT IS NOT A CLAIM.
 #
@@ -170,8 +171,7 @@ for rel in ALL:
 # markers wholesale would still show.
 print('        %d marker site(s) across %d template(s).'
       % (_sites, len([r for r in ALL
-                      if MARKER in markup_of(read(os.path.join(
-                          T, *r.split('/'))))])))
+                      if MARKER in markup_of(read(alv_tree.path_of(r)))])))
 check('the markers are still there, and there are more than the first '
       'round left', _sites >= 112, '%d' % _sites)
 check('  CONTROL: and the count is real, not an empty corpus', _sites > 0)
@@ -180,7 +180,7 @@ check('  CONTROL: and the count is real, not an empty corpus', _sites > 0)
 for cls in ('required-mark', 'required', 'req'):
     live = [r for r in ALL
             if re.search(r'\.' + cls + r'(?![\w-])',
-                         css_of(read(os.path.join(T, *r.split('/')))))]
+                         css_of(read(alv_tree.path_of(r))))]
     check('no page still styles .%-14s' % cls, not live, str(live[:4]))
 # THE HISTORICAL CONTROL, WHICH DEPENDS ON FILES THAT ARE GITIGNORED.
 #
@@ -190,7 +190,7 @@ for cls in ('required-mark', 'required', 'req'):
 # must assert what is true NOW, not re-litigate history against artefacts
 # that may not exist.
 _missing = [r for r in TOUCHED
-            if not os.path.exists(os.path.join(T, *r.split('/'))
+            if not os.path.exists(alv_tree.path_of(r)
                                   + '.bak_alvreq')]
 if _missing:
     print('        SKIP  %d of the round\'s snapshots are absent, so the '
@@ -199,7 +199,7 @@ if _missing:
 else:
     _was = 0
     for rel in TOUCHED:
-        b = os.path.join(T, *rel.split('/')) + '.bak_alvreq'
+        b = alv_tree.path_of(rel) + '.bak_alvreq'
         for cls in ('required-mark', 'required', 'req'):
             _was += len(re.findall(r'(?m)^[ \t]*[^{}\n]*\.' + cls
                                    + r'(?![\w-])[^{}\n]*\{', css_of(read(b))))
@@ -213,14 +213,14 @@ head('2. the defect this round shipped once, and must never ship again')
 # matched it and the patcher wrapped it in a span, breaking the attribute.
 _inattr = []
 for rel in ALL:
-    src = read(os.path.join(T, *rel.split('/')))
+    src = read(alv_tree.path_of(rel))
     for m in re.finditer(r'=\s*"[^"]*<span[^"]*"', src):
         _inattr.append((rel, ' '.join(m.group(0).split())[:44]))
 check('no <span> appears inside any attribute value, anywhere',
       not _inattr, str(_inattr[:3]))
 
 _accept = [r for r in ALL
-           if 'accept="image/' in read(os.path.join(T, *r.split('/')))]
+           if 'accept="image/' in read(alv_tree.path_of(r))]
 check('CONTROL: there ARE accept="image/..." attributes to break',
       len(_accept) >= 3, '%d file(s)' % len(_accept))
 # NOT a literal `accept="image/*"`: passport_management carries
@@ -228,7 +228,7 @@ check('CONTROL: there ARE accept="image/..." attributes to break',
 # a correct file. Compare the attribute to what it WAS - which is the claim
 # anyway, and works whatever the value.
 for rel in _accept:
-    p_ = os.path.join(T, *rel.split('/'))
+    p_ = alv_tree.path_of(rel)
     now = re.findall(r'accept="[^"]*"', read(p_))
     old = (re.findall(r'accept="[^"]*"', read(p_ + '.bak_alvreq'))
            if os.path.exists(p_ + '.bak_alvreq') else now)
@@ -236,7 +236,7 @@ for rel in _accept:
           '%s vs %s' % (now[:1], old[:1]))
 
 # The one genuinely bare asterisk DID get an element.
-_cat = os.path.join(T, 'categories_management.html')
+_cat = alv_tree.path_of('categories_management.html')
 if os.path.exists(_cat):
     check('the one真 bare asterisk got an element'.replace('真', ' genuinely '),
           'Category Name <span class="%s">*</span>' % MARKER
@@ -265,7 +265,7 @@ def _prose_free(t):
 
 _loose, _fat = [], []
 for rel in ALL:
-    mk = _prose_free(read(os.path.join(T, *rel.split('/'))))
+    mk = _prose_free(read(alv_tree.path_of(rel)))
     outside = re.sub(r'<label\b.*?</label>', ' ', mk, flags=re.S)
     if MARKER in outside:
         _loose.append(rel)
@@ -308,7 +308,7 @@ if sync_playwright is not None and SAMPLE:
     def inks(new):
         parts = []
         for rel in SAMPLE:
-            p = os.path.join(T, *rel.split('/'))
+            p = alv_tree.path_of(rel)
             src = read(p if new else p + '.bak_alvreq')
             parts.append('<style>%s</style>%s'
                          % (css_of(src), ''.join(labels_with_star(src))))
@@ -349,7 +349,7 @@ if sync_playwright is not None and SAMPLE:
         # for a reason that has nothing to do with the system.
         print('        (the before-picture was built from %d snapshot(s))'
               % len([r for r in TOUCHED
-                     if os.path.exists(os.path.join(T, *r.split('/'))
+                     if os.path.exists(alv_tree.path_of(r)
                                        + '.bak_alvreq')]))
         check('CONTROL: before the round they were more than one colour',
               len(set(was)) >= 2, str(sorted(set(was))))
@@ -386,16 +386,16 @@ check('CONTROL: the recipe side really is excluded, and is not empty',
       len(ALL) - len(PROPERTY) >= 5,
       '%d recipe-side of %d' % (len(ALL) - len(PROPERTY), len(ALL)))
 _td = [r for r in PROPERTY
-       if 'text-danger' in markup_of(read(os.path.join(T, *r.split('/'))))]
+       if 'text-danger' in markup_of(read(alv_tree.path_of(r)))]
 check('text-danger survives where it is NOT a required marker',
       len(_td) >= 3, '%d file(s) still use it' % len(_td))
 for rel in _td[:4]:
-    mk = markup_of(read(os.path.join(T, *rel.split('/'))))
+    mk = markup_of(read(alv_tree.path_of(rel)))
     check('  %-32s .. and none of them is an asterisk span' % rel,
           not re.search(r'<span[^>]*text-danger[^>]*>\s*\*\s*</span>', mk))
 
 for rel in TOUCHED:
-    f = tag_fault(read(os.path.join(T, *rel.split('/'))))
+    f = tag_fault(read(alv_tree.path_of(rel)))
     if f:
         check('%-34s still parses' % rel, False, f)
 check('every touched template still parses (%d)' % len(TOUCHED), True)
