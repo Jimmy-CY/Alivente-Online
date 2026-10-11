@@ -240,6 +240,11 @@ CONVERTED = [
     'test_label_bold.py',
     # LB-1 - and this round's own suite, wide from birth.
     'test_label_weight.py',
+    # IN-2, 11 Oct 2026 - wide from birth: it reads two named
+    # templates and base through alv_tree, and builds no root.
+    'test_lines_table.py',
+    # FC-1, 11 Oct 2026 - wide from birth.
+    'test_form_card_radius.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

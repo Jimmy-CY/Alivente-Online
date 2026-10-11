@@ -197,12 +197,12 @@
       <tbody id="linesBody">
         {% for ln in lines %}
           <tr class="line-row">
-            <td><input type="text" name="line_service" value="{{ ln.service }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
-            <td><input type="text" name="line_uom" value="{{ ln.unit_of_measure }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
-            <td><input type="text" name="line_description" value="{{ ln.description }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
-            <td><input type="number" step="0.01" name="line_qty" value="{{ ln.qty }}" class="form-control line-input line-qty" {% if not editable %}readonly{% endif %}></td>
-            <td><input type="number" step="0.01" name="line_unit_price" value="{{ ln.unit_price }}" class="form-control line-input line-price" {% if not editable %}readonly{% endif %}></td>
-            <td>
+            <td data-label="Service"><input type="text" name="line_service" value="{{ ln.service }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
+            <td data-label="Unit"><input type="text" name="line_uom" value="{{ ln.unit_of_measure }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
+            <td data-label="Description"><input type="text" name="line_description" value="{{ ln.description }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
+            <td data-label="Qty"><input type="number" step="0.01" name="line_qty" value="{{ ln.qty }}" class="form-control line-input line-qty" {% if not editable %}readonly{% endif %}></td>
+            <td data-label="Unit Price"><input type="number" step="0.01" name="line_unit_price" value="{{ ln.unit_price }}" class="form-control line-input line-price" {% if not editable %}readonly{% endif %}></td>
+            <td data-label="VAT">
               <select name="line_vatable" class="form-control line-input line-vat" {% if not editable %}disabled{% endif %}>
                 <option value="1" {% if ln.vatable %}selected{% endif %}>Yes</option>
                 <option value="0" {% if not ln.vatable %}selected{% endif %}>No</option>
@@ -296,12 +296,12 @@
 <!-- Template row for "Add Line" -->
 <template id="lineTemplate">
   <tr class="line-row">
-    <td><input type="text" name="line_service" value="" class="form-control line-input"></td>
-    <td><input type="text" name="line_uom" value="" class="form-control line-input"></td>
-    <td><input type="text" name="line_description" value="" class="form-control line-input"></td>
-    <td><input type="number" step="0.01" name="line_qty" value="1" class="form-control line-input line-qty"></td>
-    <td><input type="number" step="0.01" name="line_unit_price" value="0.00" class="form-control line-input line-price"></td>
-    <td>
+    <td data-label="Service"><input type="text" name="line_service" value="" class="form-control line-input"></td>
+    <td data-label="Unit"><input type="text" name="line_uom" value="" class="form-control line-input"></td>
+    <td data-label="Description"><input type="text" name="line_description" value="" class="form-control line-input"></td>
+    <td data-label="Qty"><input type="number" step="0.01" name="line_qty" value="1" class="form-control line-input line-qty"></td>
+    <td data-label="Unit Price"><input type="number" step="0.01" name="line_unit_price" value="0.00" class="form-control line-input line-price"></td>
+    <td data-label="VAT">
       <select name="line_vatable" class="form-control line-input line-vat">
         <option value="1" selected>Yes</option>
         <option value="0">No</option>
@@ -413,9 +413,6 @@ textarea.form-control { resize: vertical; }
 .vat-input-wrap { position: relative; }
 .vat-input-wrap .vat-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--alv-ink-soft); font-weight: 600; pointer-events: none; }
 .vat-input-wrap .form-control { padding-right: 32px; }
-.lines-scroll { overflow-x: auto; background: var(--alv-paper); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.lines-table { margin-bottom: 0; min-width: 720px; }
-.lines-table thead th { background-color: var(--alv-ink); color: var(--alv-on-accent); font-weight: 600; font-size: 13px; vertical-align: middle; }
 .line-input { font-size: 14px; padding: 6px 8px; height: auto; }
 .line-qty, .line-price { text-align: right; }
 .line-remove-cell { text-align: center; vertical-align: middle; }

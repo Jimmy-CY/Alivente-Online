@@ -302,7 +302,13 @@ def decls(text):
     return out
 
 
-bsrc = read(alv_tree.path_of('base.html'))
+# IN-2, 11 Oct 2026 - THROUGH now(), LIKE THE PAGES.
+# This read base LIVE while reading every page as DR-2 left it,
+# so a later round lifting a declaration INTO base made this
+# check fail on drift that the lift had just removed. One side
+# frozen and the other moving is not a comparison. Judged at
+# DR-2's own moment, both sides agree again.
+bsrc = now(alv_tree.path_of('base.html'))
 spans = R.style_spans(bsrc)
 hd = decls(''.join('<style>%s</style>' % bsrc[a:b] for a, b in spans[:-1]))
 

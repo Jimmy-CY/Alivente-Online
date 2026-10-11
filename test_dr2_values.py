@@ -279,7 +279,12 @@ def tokens():
 
 
 TOK = tokens()
-bsrc = read(alv_tree.path_of('base.html'))
+# IN-2, 11 Oct 2026 - THROUGH now(), LIKE THE PAGES. Section 4
+# compared live base against pages frozen at DR-2, so a later
+# round LIFTING a declaration into base was reported here as
+# drift - on pages that had just stopped declaring it. The same
+# one-sided comparison as test_dr2_spelling, two suites apart.
+bsrc = now(alv_tree.path_of('base.html'))
 spans = R.style_spans(bsrc)
 hd = decls(''.join('<style>%s</style>' % bsrc[a:b] for a, b in spans[:-1]))
 bad = []

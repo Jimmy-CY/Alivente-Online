@@ -1097,6 +1097,8 @@ ROUNDS = [
     # the phone layout, and the guard can see them.
     '.bak_crsprint',
     '.bak_lblwt',
+    '.bak_lines',
+    '.bak_fcard',
 ]
 
 

@@ -347,7 +347,13 @@ except Exception as e:
     skip('the computed-style comparison', 'playwright not importable (%s)' % e)
 
 if sync_playwright is not None:
-    base_css = css_of(braw)
+    # FC-1, 11 Oct 2026 - AS DW-1 LEFT IT, like the pages beside
+    # it. This was live base against a frozen page, so any later
+    # round that changed a base value was reported here as a move
+    # DW-1 had made. One side frozen and the other moving is not
+    # a comparison. The other four uses of braw stay live - they
+    # ask different questions.
+    base_css = css_of(as_dw1_left(T.path_of('base.html')))
     pairs_by_page = []
     for p in TOUCHED:
         was = T.code_only(read(p + SUFFIX))

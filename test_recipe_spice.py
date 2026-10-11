@@ -329,9 +329,19 @@ ok('var(--alv-spice)' in icon,
 
 ok(len(live) == 22,
    'the tree has %d live pairs below AA, down from 32 before RC-2' % len(live))
-ok(n == 713,
-   'and still %d pairs in all - NOT ONE LEFT THE CENSUS, which is the '
-   'whole point of section 7' % n)
+# IN-2, 11 Oct 2026 - READ FROM THE SUITE THAT OWNS THE CENSUS,
+# not copied. This said `n == 713`, and 713 was true until a
+# later round legitimately moved it - IN-2 took .lines-table
+# thead th off two pages and put it in base once, so the census
+# FELL by one. RC-2's claim was that RC-2 left the census where
+# it found it, which is still true; the literal was what made it
+# read as a claim about the number.
+_pc = re.search(r'EXPECT_PAIRS = (\d+)',
+                read(os.path.join(ROOT, 'test_pair_contrast.py')))
+_pc = int(_pc.group(1)) if _pc else -1
+ok(n == _pc,
+   'and the census still reads %d, the same number test_pair_contrast '
+   'pins - RC-2 took nothing out of it' % n, '%s vs %s' % (n, _pc))
 
 
 # ==========================================================================

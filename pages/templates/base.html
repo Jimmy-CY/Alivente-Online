@@ -1319,6 +1319,80 @@
       .table-container:has(.alv-escapes) { overflow: visible; }
       /* ===== /DD-1 ===== */
 
+      /* ===== IN-2 ===== 11 Oct 2026 ==================================
+         THE INVOICE LINE GRID, SAID ONCE.
+
+         customer_invoice_form and physical_invoice_edit both wrote
+         these three rules and wrote them identically, character for
+         character. Two callers is what D-3 and D-5 were waiting for.
+
+         ON A PHONE IT STOPS BEING A TABLE. The grid is 720px wide and
+         a phone is 390: measured, 362px of it sat outside the box with
+         nothing on screen to say so, and what was outside was Qty,
+         Unit Price and VAT. A scroll you cannot see is worse on a form
+         you fill in than on one you read.
+
+         So each line becomes a labelled block. It costs height - 980px
+         for two lines against 151 - and that was chosen from the two
+         renders, against pinning a column and adding a swipe cue.
+
+         EVERY CELL CARRIES data-label, INCLUDING THE TEMPLATE'S. Both
+         pages add lines by cloning <template id="lineTemplate">, so a
+         row added after load comes from there. Labelling only the
+         server-rendered rows would leave every line the user adds as a
+         column of unnamed boxes - a defect that appears only after an
+         interaction.
+                                            [test_lines_table.py] */
+      .lines-scroll {
+        overflow-x: auto;
+        background: var(--alv-paper);
+        border-radius: var(--alv-radius);
+        /* A literal, and deliberately. base writes its own shadows as
+           literals - there is no shadow token to move this to, and a
+           shadow scale is a decision of its own. */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      }
+      .lines-table { margin-bottom: 0; min-width: 720px; }
+      .lines-table thead th {
+        background-color: var(--alv-ink);
+        color: var(--alv-on-accent);
+        font-weight: 600;
+        font-size: 13px;
+        vertical-align: middle;
+      }
+
+      @media screen and (max-width: 768px) {
+        .lines-scroll {
+          overflow-x: visible;
+          background: transparent;
+          box-shadow: none;
+          border-radius: 0;
+        }
+        .lines-table,
+        .lines-table tbody,
+        .lines-table tr,
+        .lines-table td { display: block; width: 100%; }
+        .lines-table { min-width: 0; border: 0; }
+        .lines-table thead { display: none; }
+        .lines-table tr {
+          border: 1px solid var(--alv-line);
+          border-radius: var(--alv-radius);
+          padding: 12px 14px;
+          margin-bottom: 12px;
+          background: var(--alv-paper);
+        }
+        .lines-table td { border: 0; padding: 0 0 10px; }
+        .lines-table td:last-child { padding: 0; text-align: right; }
+        .lines-table td[data-label]::before {
+          content: attr(data-label);
+          display: block;
+          font-size: 12px;
+          color: var(--alv-ink-soft);
+          margin-bottom: 4px;
+        }
+      }
+      /* ===== /IN-2 ===== */
+
       .alv-table {
         font-family: var(--alv-font-ui);
         color: var(--alv-ink);
@@ -3980,7 +4054,17 @@ table.alv-matrix {
    of them were not: they guard controls with no .form-control class, which
    this rule never reaches. See Show-ZoomGuards.py. */
 @media screen and (max-width: 768px) {
-    .form-card    { padding: 16px 14px; }
+    /* FC-1, 11 Oct 2026 - AND THE RADIUS, SAID HERE RATHER
+       than on twenty-one pages. base says 12px at every
+       width above this; measured, 21 pages overrode that on
+       a phone with 10px, 8px or 6px, so one component wore
+       four corners. 8px is var(--alv-radius) and six of the
+       twenty-one already said exactly it. The plurality was
+       10px and was refused - it is not a token, and minting
+       a third radius for one component is the case D-12
+       closed.                   [test_form_card_radius.py] */
+    .form-card    { padding: 16px 14px;
+                    border-radius: var(--alv-radius); }
     .form-section-title small { display: block; font-size: 0.75rem; }
 }
 
