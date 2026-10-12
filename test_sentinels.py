@@ -350,6 +350,26 @@ PINNED = {
     'DRY RUN - nothing was written':
         'the backfill is dry by default - the one property of that '
         'command worth guarding, backed up once by PH-1b',
+    # SEVEN, EIGHT AND NINE, 12 Oct 2026 - PI-1, and the same story as
+    # the fifth and the sixth, three at a time. operational.html had
+    # never been backed up by any round, so every sentinel standing on
+    # it sat in the "no backup to compare against" bucket and was never
+    # examined. PI-1 rewrote the paragraph describing which tenants get
+    # a draft, which gave the file its first backup and made these three
+    # checkable. They do not discriminate because PI-1 did not touch
+    # these three paragraphs.
+    #
+    # The day a round edits the Payment Behaviour section, the worked
+    # month or the tenant-name ordering, the matching row starts
+    # discriminating and comes off this list. Until then they are guards
+    # against a future deletion that has not happened - which is the
+    # right shape, and the reason the five above are pinned too.
+    'Payment Behaviour':
+        'the payment-behaviour help section, backed up once by PI-1',
+    'A worked month':
+        'the worked-month walkthrough in the help, backed up once by PI-1',
+    'tenant-name order':
+        'the ordering the reminder lists drafts in, backed up once by PI-1',
 }
 unpinned = [b for b in blind
             if not any(k.lower() in b.lower() for k in PINNED)]

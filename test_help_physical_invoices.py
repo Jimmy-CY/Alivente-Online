@@ -178,14 +178,60 @@ check('  the help spells out that approving early does not send early',
       'Approving early does not send early' in TEN)
 
 # --- who gets a draft
+# PI-1, 12 Oct 2026 - the second condition CHANGED. It was
+# `tenant_current="Yes"`, which refresh_tenant_active sets from whether
+# the lease covers TODAY - and this cron runs five days before the month
+# it bills. The help said so too, and said it as a feature: "a lease
+# that has ended stops being invoiced without you having to remember" is
+# true on the day the lease ends and the draft was written five days
+# earlier. Both moved together, and this check is what keeps them in
+# step.
 check('the help says two conditions decide it',
       'flagged as <strong>needing a physical invoice</strong>' in TEN
-      and 'current' in TEN)
-check('  and the command filters on exactly those two',
-      'tenant_physical_invoice_required=True' in PREP_SRC
-      and 'tenant_current="Yes"' in PREP_SRC)
-check('  the help says the current flag is refreshed first',
-      'refreshed from the lease dates' in TEN)
+      and 'the month being billed' in TEN)
+# A GATE READS CODE, NOT THE RECORD OF CODE - AND THE RECORD COMES IN
+# TWO SPELLINGS. The first draft of these two checks read PREP_SRC raw
+# and both failed: the new function's docstring NAMES the old query it
+# replaced, and names _lease_month to say why it is not used. Both
+# mentions are deliberate and worth keeping; neither is code.
+#
+# FOURTH TIME THIS WEEK. E-1b stripped comments and not docstrings,
+# E-10 the reverse, PI-1's own patcher made it a third time, and this is
+# the fourth - in the checks written to guard the round that found it.
+# There are now five private copies of this function across the repo.
+# Logged as E15: it belongs in alv_tree beside code_only, whose
+# docstring already points at "python_code_only in the suites that scan
+# .py" as though it were one thing.
+def _py_code_only(text):
+    # The triple quote is built rather than written, because this
+    # function is itself delivered inside a triple-quoted string and a
+    # literal one closes the patcher's own constant. The first attempt
+    # did exactly that and Python refused the patcher.
+    q3 = chr(34) * 3
+    out = re.sub(r'(?m)^([ \t]*)#.*$', lambda m: m.group(1), text)
+    return re.sub(q3 + r'[\s\S]*?' + q3 + r"|'''[\s\S]*?'''",
+                  lambda m: re.sub(r'[^\n]', ' ', m.group(0)), out)
+
+
+PREP_CODE = _py_code_only(PREP_SRC)
+
+check('  and the command selects by the PERIOD, not by today',
+      'tenant_physical_invoice_required=True' in PREP_CODE
+      and 'def leases_for_period(' in PREP_CODE
+      and 'tenant_current' not in PREP_CODE)
+check('    CONTROL: while the docstring still explains what it replaced',
+      'tenant_current' in PREP_SRC)
+check('  the help says no lease means no invoice, and that the gap is '
+      'named', 'no lease covers the month' in TEN
+      and 'named in the approval e-mail' in TEN)
+check('  and the command really raises nothing without a lease - a blank '
+      'renewal is excluded, not guessed at',
+      'tenant_lease_start_date__isnull=False' in PREP_SRC)
+check('  CONTROL: and it does NOT reach for _lease_month, whose assumed '
+      'branch continues a tenancy at the most recent rent',
+      '_lease_month' not in PREP_CODE)
+check('    CONTROL: while the docstring says why it does not',
+      '_lease_month' in PREP_SRC)
 check('  and refresh_tenant_active really runs before prepare',
       RUN_SRC.index("call_command('refresh_tenant_active')")
       < RUN_SRC.index("call_command('prepare_physical_invoices')"))

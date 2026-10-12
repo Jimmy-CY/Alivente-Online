@@ -1993,7 +1993,8 @@
     <p>Two conditions, both required:</p>
     <ul>
       <li>The tenant is flagged as <strong>needing a physical invoice</strong> &mdash; a per-tenant setting on the Tenants module. A tenant who simply pays rent does <em>not</em> get a VAT invoice unless flagged.</li>
-      <li>The tenant is <strong>current</strong>. That flag is refreshed from the lease dates immediately before drafting, so a lease that has ended stops being invoiced without you having to remember.</li>
+      <li>A lease covers <strong>the month being billed</strong> &mdash; not the month the draft is written in. You invoice in advance, so on the 26th of November the question is who has a lease for <em>December</em>. A renewal starting on the 1st is used even though it is still Inactive; a lease ending on the 30th raises nothing; a new tenant starting on the 1st is included.</li>
+      <li>If <strong>no lease covers the month</strong>, nothing is raised &mdash; no draft and no guess. Anyone invoiced last month who has no lease this month is named in the approval e-mail, so the gap tells you rather than waiting to be found.</li>
     </ul>
     <p>So a missing draft is nearly always the flag rather than a fault. Check the tenant first.</p>
 
