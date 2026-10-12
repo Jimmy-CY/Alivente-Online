@@ -1101,6 +1101,7 @@ ROUNDS = [
     '.bak_fcard',
     '.bak_held4',
     '.bak_heldcon',
+    '.bak_driftroot',
 ]
 
 

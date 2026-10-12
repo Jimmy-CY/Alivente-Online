@@ -72,14 +72,25 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.path_of('base.html')
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 SBD = os.path.join(ROOT, 'Show-ButtonDrift.py')
 ME = os.path.basename(__file__)
 
-TONES = ('action-primary', 'action-secondary')
+# E-10, 11 Oct 2026 - action-danger joins. WIDENING THE WALK WAS
+# HALF THE FIX. Section 3 skips any button whose class list
+# carries none of these, and crs/submission_detail.html's
+# switched-off Close carried `btn action-danger` - neither of the
+# two. So the one control in the tree that this suite exists to
+# notice was invisible to it twice over, and its closing
+# paragraph said so was nothing. Measured: the danger tone adds
+# exactly ONE control to section 3's census - 10 static to 11 -
+# and it is that button.
+TONES = ('action-primary', 'action-secondary', 'action-danger')
 ACCENT = 'rgb(14, 124, 139)'
 
 PASS = FAIL = SKIP = 0
@@ -124,12 +135,11 @@ def templates(include_recipes=True):
     left them drifting.
     """
     out = []
-    for dirpath, _d, names in os.walk(T):
+    for dirpath, _d, names in alv_tree.walk3():
         for n in sorted(names):
             if not n.endswith('.html') or '.bak' in n:
                 continue
-            rel = os.path.relpath(os.path.join(dirpath, n), T)
-            rel = rel.replace(os.sep, '/')
+            rel = alv_tree.rel(os.path.join(dirpath, n))
             if not include_recipes and sb.is_recipe_side(rel):
                 continue
             out.append((rel, os.path.join(dirpath, n)))
@@ -175,9 +185,14 @@ for sel in ('.btn.action-primary[disabled]',
             '.btn.action-secondary:disabled'):
     check('  base declares %s' % sel, re.escape(sel).replace('\\', '') in B
           or sel in B, '')
+# E-10, 11 Oct 2026 - WAS the danger tone. Base now greys a
+# switched-off danger, so this control went false on the round that
+# fixed what it was leaning on. action-back is the tone base really
+# does not cover, and section 7 counts what is in that position
+# instead of asserting it.
 check('  CONTROL: and the search would notice one missing',
-      '.btn.action-danger[disabled]' not in B,
-      'danger has no attribute rule - so this is not vacuous')
+      '.btn.action-back[disabled]' not in B,
+      'action-back has no attribute rule - so this is not vacuous')
 
 # ---------------------------------------------------------------------- 2
 head('2. THE RULE ITSELF, ON LITERALS')
@@ -367,8 +382,16 @@ if SKIP:
     print('')
     print('  %d check(s) DID NOT RUN. That is not the same as passing.' % SKIP)
 print('')
-print('  base has no [disabled] rule for .action-danger or .action-back, so')
-print('  a disabled button in either tone still needs the class. Nothing in')
-print('  the tree is in that position today; section 1 says so out loud.')
+# E-10, 11 Oct 2026 - THIS PARAGRAPH WAS FALSE, and had been since
+# the CRS app arrived. crs/submission_detail.html's Close button was
+# exactly that position - `btn action-danger` with the disabled
+# attribute and no class - and this suite could not see the page,
+# could not see the tone, and printed a reassurance instead. Base now
+# carries the rule. What is still true is said below, and COUNTED.
+print('  base greys a switched-off primary, secondary and - since E-10 -')
+print('  danger. It has no [disabled] rule for .action-back, and section 7')
+print('  counts how many switched-off action-back controls exist rather')
+print('  than asserting there are none: that sentence is what hid a real')
+print('  button for a fortnight.')
 print('=' * 72)
 sys.exit(1 if FAIL else 0)

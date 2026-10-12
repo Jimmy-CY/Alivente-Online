@@ -110,11 +110,15 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 711   # E-1a, 11 Oct 2026 - the ecipe-header corpse
+EXPECT_PAIRS = 716   # E-10, 11 Oct 2026 - base switched-off
+# danger sets a background AND a colour, under five selectors.
+#   # (was 711)   # E-1a, 11 Oct 2026 - the ecipe-header corpse
 # set a background and a colour, and it is gone.   # (was 712)   # IN-2, 11 Oct 2026 - .lines-table thead th
 # sets a background AND a colour. It came off two pages and went
 # into base once, so the census FALLS by one.   # (was 713)
-EXPECT_INACTIVE = 20
+EXPECT_INACTIVE = 25   # E-10 - the same five. WCAG 1.4.3
+# exempts text that is part of an inactive user interface
+# component, which is what a switched-off danger is.   # (was 20)
 
 passed = failed = skipped = 0
 
@@ -202,6 +206,11 @@ INACTIVE_PINS = (
     ('base.html', '.btn.action-secondary:disabled', 2.53),
     ('base.html', '.btn.action-secondary[disabled]', 2.53),
     ('base.html', '.action-primary.disabled-btn', 2.53),
+    ('base.html', '.action-danger.disabled-btn', 2.53),
+    ('base.html', '.btn.action-danger.disabled-btn', 2.53),
+    ('base.html', '.btn.action-danger:disabled', 2.53),
+    ('base.html', '.btn.action-danger[disabled]', 2.53),
+    ('base.html', '.btn.action-danger[aria-disabled="true"]', 2.53),
     ('base.html', '.btn.action-primary.disabled-btn', 2.53),
     ('base.html', '.btn.action-primary:disabled', 2.53),
     ('base.html', '.btn.action-primary[disabled]', 2.53),

@@ -574,7 +574,11 @@ try:
         elif _f.endswith('.html') and '.bak' not in _f:
             if not os.path.exists(os.path.join(_dst, _f)):
                 shutil.copy2(os.path.join(TPL, _f), os.path.join(_dst, _f))
-    for _n in ('Show-ButtonDrift.py', 'apply_button_sweep.py'):
+    # E-10, 11 Oct 2026 - alv_tree.py joins: the tool imports
+    # it now, and a tool that cannot import reports NOTHING
+    # rather than failing, which is how this was found.
+    for _n in ('Show-ButtonDrift.py', 'apply_button_sweep.py',
+               'alv_tree.py'):
         shutil.copy2(os.path.join(ROOT, _n), _tmp)
 
     check('the pre-sweep tree could be rebuilt from backups (%d file(s))'
@@ -783,7 +787,8 @@ head('8. the guard itself')
 tmp = tempfile.mkdtemp(prefix='btnsweep_')
 try:
     shutil.copytree(TPL, os.path.join(tmp, 'pages', 'templates'))
-    shutil.copy2(os.path.join(ROOT, 'Show-ButtonDrift.py'), tmp)
+    for _dep in ('Show-ButtonDrift.py', 'alv_tree.py'):
+        shutil.copy2(os.path.join(ROOT, _dep), tmp)
     victim = os.path.join(tmp, 'pages', 'templates', 'suppliers.html')
     t = load(victim)
     t = t.replace('class="btn action-secondary"',
@@ -1003,7 +1008,8 @@ try:
             if not os.path.isdir(os.path.dirname(_dest)):
                 os.makedirs(os.path.dirname(_dest))
             shutil.copy2(_src, _dest)
-    for _f in ('Show-ButtonDrift.py', 'apply_button_sweep.py'):
+    for _f in ('Show-ButtonDrift.py', 'apply_button_sweep.py',
+               'alv_tree.py'):
         shutil.copy2(os.path.join(ROOT, _f), _tmp9)
     check('rebuilt a pre-sweep tree from %d backup(s)' % _n9, _n9 > 0)
 

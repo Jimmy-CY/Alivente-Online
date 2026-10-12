@@ -264,6 +264,14 @@ CONVERTED = [
     'test_compound_rules.py',
     # E-1b - and this round's own suite.
     'test_held_contrast.py',
+    # E-10, 11 Oct 2026 - it was never held by its own walk. Its
+    # walk was fine; Show-ButtonDrift could not RESOLVE the names
+    # the walk handed it, so eight CRS pages came back as
+    # FileNotFoundError and the suite read eight crashes as eight
+    # drifting buttons. Twelve really did drift, behind them.
+    'test_disabled_state.py',
+    # E-10 - and this round's own suite.
+    'test_drift_root.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -321,9 +329,13 @@ ALREADY_WIDE = ['test_banner_pages.py',
 WAITING = {
     'test_back_label.py': 'pages  no page defines .action-back-label any more',
     'test_button_sweep.py':
-        'pages  its own census says 120 templates, not 146',
-    'test_disabled_state.py':
-        'pages  12 buttons the classifier disagrees with',
+        'pages  narrow BY DESIGN - its walk rebuilds a pre-sweep '
+        'tree from .bak_btnsweep, so widening it would copy the '
+        'second template root into a tree the sweep never '
+        'covered. 117 in the tool census against 151 in the '
+        'tree, and that gap is a stated position. [reason '
+        'replaced E-10, 11 Oct 2026 - it said 120 and 146, and '
+        'both numbers had moved]',
     'test_modal_heads.py':
         'pages  the Recipe View close strip, recorded but unresolved',
     'test_small_three.py':

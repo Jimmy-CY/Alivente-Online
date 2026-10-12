@@ -78,6 +78,16 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ROOT)
+import alv_tree                                       # noqa: E402
+
+# pages/templates ONLY, and deliberately. templates() below is
+# this tool's own SCOPE, and two callers read it as such:
+# apply_button_sweep.py takes `sb.TPL` and test_button_sweep.py
+# takes `sb.templates(False)`, whose narrow root rebuilds a
+# pre-sweep tree from that round's own backups. Widening a scope
+# somebody is standing on is a different round. What E-10 widens
+# is resolve(), below - the way back from a NAME to a file.
 TPL = os.path.join(ROOT, 'pages', 'templates')
 
 # ---------------------------------------------------------------------------
@@ -230,6 +240,29 @@ CANCELS = ('cancel', 'close', 'dismiss', 'not now', 'never mind')
 DESTRUCTIVE = ('delete', 'remove', 'permanently', 'discard', 'revoke')
 
 
+def resolve(name):
+    """The file a NAME means, under whichever template root holds it.
+
+    E-10, 11 Oct 2026. Every one of these used to be
+    `os.path.join(TPL, name)`, and TPL is pages/templates alone. Handed
+    'crs/submission_detail.html' - which is what alv_tree.rel() calls
+    the CRS app's pages, and what every widened census hands back - that
+    named a file which has never existed, and scan() died with a
+    FileNotFoundError rather than a verdict.
+
+    THIS WIDENS RESOLUTION, NOT SCOPE. templates() below still walks TPL
+    and only TPL, because apply_button_sweep.py reads `sb.TPL` and
+    test_button_sweep.py reads `sb.templates(False)` - and that suite's
+    narrow root is a decision: it rebuilds a pre-sweep tree from its own
+    backups. The tool keeps its scope and stops lying about a name it
+    was given.
+
+    base= is pinned to this file's directory rather than left to the cwd,
+    so the resolver and TPL cannot disagree about which repo they are in.
+    """
+    return alv_tree.join(name, base=ROOT)
+
+
 def read(p):
     return open(p, encoding='utf-8-sig', errors='replace').read().replace(
         '\r\n', '\n')
@@ -348,10 +381,28 @@ def rejected_wrappers(m):
     return out
 
 
+# A CLASS IS A TOKEN, NOT A SUBSTRING - E-10, 11 Oct 2026.
+#
+# This matched `[^"]*modal-footer[^"]*`, so it caught
+# `<div class="xml-modal-footer">` - the XML Viewer's own footer on
+# crs/submission_detail.html - and plan_footer then read Close as the
+# cancel and promoted Download to action-primary: a solid teal Download
+# link, asked for by a substring.
+#
+# COUNTED BEFORE CHANGING IT, because the same loose match is what lets
+# this function see `class="modal-footer mt-3"` and every other spelling
+# with a second class. `xml-modal-footer` is the ONLY wrapper in 151
+# templates whose name contains `modal-footer` without being it; the
+# tree-wide wrapper census goes 89 -> 88 and exactly ONE page of 150
+# changes its plan. The docstring at the top of this file is about a
+# matcher that could not see two thirds of the bars. This is the other
+# direction of the same error, and it is one instance wide.
+FOOTER_DIV = (r'<div[^>]*class="[^"]*(?<![-\w])modal-footer(?![-\w])'
+              r'[^"]*"[^>]*>')
+
+
 def footers(m):
-    return [('modal footer', a, z)
-            for a, z in spans(m, r'<div[^>]*class="[^"]*modal-footer[^"]*"'
-                                 r'[^>]*>')]
+    return [('modal footer', a, z) for a, z in spans(m, FOOTER_DIV)]
 
 
 def is_cancel(lab):
@@ -723,7 +774,7 @@ def scan(name):
               start, end_of_open_tag)] - offsets so a patcher can rewrite
         the exact occurrence rather than a string that may mean two things.
     """
-    raw = read(os.path.join(TPL, name))
+    raw = read(resolve(name))
     globals()['JS_REENABLED'] = js_reenabled_ids(raw)
     return _scan(name, markup_of(raw))
 
@@ -1065,7 +1116,7 @@ def main():
 
     dbl = []
     for _f in files:
-        _m = markup_of(read(os.path.join(TPL, _f)))
+        _m = markup_of(read(resolve(_f)))
         _std = [(a, z) for n, a, z in bars(_m) if n == STANDARD_BAR]
         if len([1 for a, z in _std if _verbs(_m[a:z])]) > 1:
             dbl.append((_f, [[label_of(b.group(3))
@@ -1077,7 +1128,7 @@ def main():
     # ---------------------------------------------------------------------
     js_rows = []
     for _f in files:
-        for _hit in js_buttons(read(os.path.join(TPL, _f))):
+        for _hit in js_buttons(read(resolve(_f))):
             js_rows.append((_f,) + _hit)
 
     if '--js' in argv:
@@ -1113,13 +1164,13 @@ def main():
 
 
     if full:
-        if not os.path.exists(os.path.join(TPL, full)):
+        if not os.path.exists(resolve(full)):
             sys.exit('! %s not found' % full)
         print('')
         print('=' * 74)
         print(' %s' % full)
         print('=' * 74)
-        m = markup_of(read(os.path.join(TPL, full)))
+        m = markup_of(read(resolve(full)))
         for n, a, _z in bars(m):
             print('')
             print('  bar wrapper : .%s%s' % (n, '' if n == STANDARD_BAR
@@ -1243,7 +1294,7 @@ def main():
         print('')
         names, off = {}, []
         for f in files:
-            m = markup_of(read(os.path.join(TPL, f)))
+            m = markup_of(read(resolve(f)))
             for n, _a, _z in bars(m):
                 names.setdefault(n, []).append(f)
                 if n != STANDARD_BAR:

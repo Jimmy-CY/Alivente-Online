@@ -2662,6 +2662,42 @@
         box-shadow: none;
       }
 
+      /* AND A SWITCHED-OFF DANGER. E-10, 11 Oct 2026.
+         The two blocks above name action-primary and action-secondary and
+         no danger tone, so `btn action-danger` carrying the disabled
+         attribute kept its soft red border and its red text and took the
+         whole of its dimming from Bootstrap's .btn:disabled{opacity:.65}.
+
+         Measured on crs/submission_detail.html's Close button - off until
+         XSD validation passes on every file:
+
+             btn action-danger      + disabled   text rgb(179, 38, 30)
+             btn action-secondary   + disabled   text rgb(138, 151, 157)
+             btn action-primary     + disabled   text rgb(138, 151, 157)
+
+         It was the only switched-off button in the application that was
+         not grey. The colour is half of "disabled"; it belongs where the
+         other two tones keep it, not in a class list on one page.
+
+         test_disabled_state.py printed "nothing in the tree is in that
+         position today" on every run while that button existed - its
+         census could not open the CRS app, and its own tone list named
+         only primary and secondary, so neither half of it could see.
+
+         NOT action-back. Measured the same day: ZERO switched-off
+         action-back controls exist in the tree, and a rule for nothing
+         is a control that cannot fail. */
+      .action-danger.disabled-btn,
+      .btn.action-danger.disabled-btn,
+      .btn.action-danger:disabled,
+      .btn.action-danger[disabled],
+      .btn.action-danger[aria-disabled="true"] {
+        background: var(--alv-disabled-bg, var(--alv-surface-deep));
+        border-color: var(--alv-disabled-bg, var(--alv-surface-deep));
+        color: var(--alv-disabled-ink, var(--alv-ink-faint));
+        box-shadow: none;
+      }
+
       .action-more-wrapper { display: none; }
 
       @media screen and (max-width: 768px) {

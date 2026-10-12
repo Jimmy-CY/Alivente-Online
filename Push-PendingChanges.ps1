@@ -819,6 +819,18 @@ $sentinels = @(
     # same page and which is equally true in either order.
     # test_invoice_order.py reads the blocks and compares the sequence,
     # which is the only way to say it.
+    # ------------------------------------------- E-10, 11 Oct 2026
+    # The colour of a switched-off button belongs where the other
+    # two tones keep it. Before this, `btn action-danger` with the
+    # disabled attribute rendered faint RED - the only switched-off
+    # button in the application that was not grey.
+    @{ File = 'pages\templates\base.html'; Text = '.btn.action-danger[disabled]'; What = 'a switched-off danger greys, like a primary and a secondary' },
+    # And the three CRS delete modals, which the button sweep never
+    # saw because the tool could not resolve a name under the
+    # second template root. Solid Bootstrap grey beside solid
+    # Bootstrap red, measured, on three screens.
+    @{ File = 'crs\templates\crs\country_list.html'; Text = 'btn btn-danger'; What = 'the CRS delete modals wear house tones, not Bootstrap'; Absent = $true; Code = $true },
+    @{ File = 'crs\templates\crs\submission_list.html'; Text = 'btn btn-secondary'; What = 'and their Cancel is paper, not solid grey'; Absent = $true; Code = $true }
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -2209,7 +2221,8 @@ $suites = @(
     'test_lines_table.py',
     'test_form_card_radius.py',
     'test_held_four.py',
-    'test_held_contrast.py'
+    'test_held_contrast.py',
+    'test_drift_root.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

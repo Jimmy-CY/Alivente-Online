@@ -118,8 +118,13 @@ LENDER = 'test_tap_target.py'
 BOOT = 'test_fixture_bootstrap413.css'
 
 BAR, ROW, MODAL = 35, 34, 38
-N_BAR, N_ROW, N_MODAL = 265, 110, 91
-N_LOOSE, N_LOOSE_H = 78, 12   # 12, not the 11 I first said:
+N_BAR, N_ROW, N_MODAL = 265, 110, 98   # E-10, 11 Oct 2026 - the
+# seven buttons this round paired in CRS modals become visible to
+# a census that selects the two position tones and not the danger
+# tone.   # (was 91)
+N_LOOSE, N_LOOSE_H = 82, 12   # E-10 - and the four loose in
+# cards on crs/submission_detail.html, for the same reason. The
+# twelve distinct heights are unchanged.   # (was 78)   # 12, not the 11 I first said:
 # the earlier figure added a card's six heights to a page's ten
 # and counted the union by hand. The union is twelve. A number
 # arrived at by adding two others is a number nobody measured.

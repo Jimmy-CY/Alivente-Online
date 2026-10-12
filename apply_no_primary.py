@@ -351,8 +351,14 @@ for p in sorted(alv_tree.templates()):
                 continue
             if cls.split() != want.split():
                 drift.append('%s: %s -> %s' % (rel, cls[:34], want[:34]))
-    except Exception:
-        continue
+    # E-10, 11 Oct 2026 - WAS a bare `except Exception: continue`.
+    # This gate walks the WHOLE tree, and sbd.scan() could not open the
+    # eight CRS pages, so it crashed on eight of 125 and then printed
+    # that nothing disagrees with the classifier. It printed that for a
+    # fortnight while twelve buttons did. A control that cannot fail is
+    # worse than no control, so a crash is now reported as what it is.
+    except Exception as _e:
+        drift.append('%s: the scan raised %s' % (rel, str(_e)[:48]))
 for d in drift[:8]:
     print('    DRIFT %s' % d)
 if drift:

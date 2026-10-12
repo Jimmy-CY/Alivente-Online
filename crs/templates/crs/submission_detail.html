@@ -177,7 +177,7 @@
                     style="display: inline;"
                     onsubmit="return confirm('Remove the uploaded Excel? You can upload a different file afterwards.');">
                 {% csrf_token %}
-                <button type="submit" class="btn action-danger" title="Remove">
+                <button type="submit" class="btn action-secondary action-danger" title="Remove">
                   <i class="fas fa-times"></i> Remove
                 </button>
               </form>
@@ -489,7 +489,7 @@
             onsubmit="return confirm('Close this submission?\n\nThis will PERMANENTLY DELETE:\n  • the uploaded Excel\n  • the generated XML — make sure you have downloaded it first\n\nAfter close, the submission becomes read-only. Only metadata and lifecycle history are retained.\n\nThis cannot be undone — proceed?');"
             style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn action-danger">
+        <button type="submit" class="btn action-secondary action-danger">
           <i class="fas fa-lock"></i> Close Submission
         </button>
       </form>
@@ -499,7 +499,7 @@
         metadata + lifecycle history are retained.
       </small>
       {% else %}
-      <button type="button" class="btn action-danger" disabled>
+      <button type="button" class="btn action-secondary action-danger disabled-btn" disabled>
         <i class="fas fa-lock"></i> Close
       </button>
       <small class="form-text" style="display: block; margin-top: 10px;">
@@ -624,7 +624,7 @@
 
     {% if perms.auth.can_edit_crs %}
     <div class="detail-actions">
-      <button type="button" class="btn action-danger"
+      <button type="button" class="btn action-secondary action-danger"
               onclick="confirmSubmissionDelete({{ submission.pk }}, '{{ submission.message_ref_id|escapejs }}')">
         <i class="fas fa-trash"></i> Delete Submission
       </button>
@@ -655,7 +655,7 @@
         <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
         <form id="deleteSubmissionForm" method="POST">
           {% csrf_token %}
-          <button type="submit" class="btn action-danger">
+          <button type="submit" class="btn action-secondary action-danger">
             <i class="fas fa-trash"></i> Delete
           </button>
         </form>

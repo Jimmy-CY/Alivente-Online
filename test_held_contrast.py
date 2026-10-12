@@ -263,9 +263,16 @@ print('        backups. Widening it would copy CRS files into a tree the')
 print('        sweep never covered. A narrow root that is a stated')
 print('        position is not debt, and X0 said so before I did.')
 
-check('WAITING now holds %d' % WAITING_AFTER,
-      len(alv_tree.WAITING) == WAITING_AFTER, '%d' % len(alv_tree.WAITING))
-check('  CONTROL: and is not empty', len(alv_tree.WAITING) > 0)
+# E-10, 11 Oct 2026 - WAS `len(WAITING) == WAITING_AFTER`. E-1b
+# repaired this exact shape in test_held_four and wrote the rule down
+# in the same round: a pinned AGGREGATE was never a count or a
+# decision. What E-1b claims is that ITS TWO came off, checked one by
+# one above, and that claim is true forever.
+check('neither of the two this round released is still held',
+      not [n for n in RELEASED if n in alv_tree.WAITING],
+      '%s' % [n for n in RELEASED if n in alv_tree.WAITING])
+check('  CONTROL: and WAITING is not empty - %d still held'
+      % len(alv_tree.WAITING), len(alv_tree.WAITING) > 0)
 
 # ---------------------------------------------------------------------- 5
 head('5. THE CEILING FELL, AND BOTH PLACES THAT PIN IT AGREE')
@@ -279,8 +286,13 @@ def pin(text, name):
     return int(m2.group(1)) if m2 else None
 
 
-check('the walker ceiling is %d' % CEILING_AFTER,
-      pin(x0, 'WALKERS_OWN_ROOT_MAX') == CEILING_AFTER,
+# E-10, 11 Oct 2026 - WAS `== CEILING_AFTER`, pinned at 43. The
+# ceiling is the whole programme's number and it falls every time any
+# round converts a census. What matters here - that the two files
+# agree, and that E-1b's conversion made it FALL - is checked below
+# and against this round's own backup, and both hold forever.
+check('the walker ceiling is a real number in both places',
+      pin(x0, 'WALKERS_OWN_ROOT_MAX') is not None,
       '%s' % pin(x0, 'WALKERS_OWN_ROOT_MAX'))
 check('  and test_waiting_down agrees',
       pin(wd, 'CEILING') == pin(x0, 'WALKERS_OWN_ROOT_MAX'),
