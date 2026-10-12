@@ -213,8 +213,8 @@ aliased = [n for n in py_files()
            if n not in (TREE, PATCHER)
            and re.search(r'(?m)^code_only = alv_tree\.', read(
                os.path.join(ROOT, n)))]
-ok(len(aliased) == 45,
-   '%d file(s) alias it - 22 patchers and 23 suites' % len(aliased),
+ok(len(aliased) == 47,
+   '%d file(s) alias it - 23 patchers and 24 suites' % len(aliased),   # DB-5, 12 Oct 2026 - two more, and both were a DEFINITION first: this suite caught them, which is what it is for.   # (was 45, 22 and 23)
    '\n'.join(aliased[:6]))
 
 # EVERY FILE THAT USED TO DEFINE IT NOW ALIASES IT. Asked of the backups,

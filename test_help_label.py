@@ -121,8 +121,8 @@ PRECEDENT = 'workspace_management.html'
 SPAN = ('<i class="fas fa-question-circle"></i>'
         '<span class="action-back-label"> Help</span>')
 BARE = '<i class="fas fa-question-circle"></i> Help'
-LABELS_TOTAL = 129   # AFTER this round. 130 before - the Help one.
-HELP_TOTAL = 40
+LABELS_TOTAL = 130   # DB-5, 12 Oct 2026 - the dashboard Back gains the house label   # (was 129)   # AFTER this round. 130 before - the Help one.
+HELP_TOTAL = 41   # DB-5, 12 Oct 2026 - and a Help secondary joins the bar   # (was 40)
 # The shape 77 pages carried before D7 removed every one of them.
 UNSCOPED = '.action-back-label { display: none; }'
 

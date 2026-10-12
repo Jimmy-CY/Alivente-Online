@@ -110,7 +110,9 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 716   # E-10, 11 Oct 2026 - base switched-off
+EXPECT_PAIRS = 712   # DB-5, 12 Oct 2026 - four rules that set
+# both a background and a colour went with the teal slab and the
+# side menu   # (was 716)   # E-10, 11 Oct 2026 - base switched-off
 # danger sets a background AND a colour, under five selectors.
 #   # (was 711)   # E-1a, 11 Oct 2026 - the ecipe-header corpse
 # set a background and a colour, and it is gone.   # (was 712)   # IN-2, 11 Oct 2026 - .lines-table thead th

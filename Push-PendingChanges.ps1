@@ -856,6 +856,21 @@ $sentinels = @(
     # Bootstrap red, measured, on three screens.
     @{ File = 'crs\templates\crs\country_list.html'; Text = 'btn btn-danger'; What = 'the CRS delete modals wear house tones, not Bootstrap'; Absent = $true; Code = $true },
     @{ File = 'crs\templates\crs\submission_list.html'; Text = 'btn btn-secondary'; What = 'and their Cancel is paper, not solid grey'; Absent = $true; Code = $true }
+    # -------------------------------------------- DB-5, 12 Oct 2026
+    # The landing dim. 0.45 put the tile label at 2.54:1 and the
+    # accent icon at 1.91:1 on the page you arrive at, and no
+    # contrast gate in this system reads opacity, so it passed
+    # every sweep. 0.75 is the lowest dim at which the icon still
+    # clears 3.0:1. Its return is the regression.
+    #
+    # IT DOES NOT SAY 'pointer-events: none'. The first version of
+    # this row did, and the TWIN keeps that declaration on purpose
+    # - so the sentinel asserted the absence of a string that must
+    # be present, and took ten suites down with it. A control that
+    # cannot pass is as bad as one that cannot fail. The grid's own
+    # pointer-events is guarded in test_dash_std section 4, where
+    # the CSS can be split and the two rules told apart.
+    @{ File = 'pages\templates\property_management_dashboard.html'; Text = 'opacity: 0.45'; What = 'the landing dim stays at the measured 0.75'; Absent = $true; Code = $true }
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2255,7 +2270,8 @@ $suites = @(
     'test_held_contrast.py',
     'test_drift_root.py',
     'test_help_label.py',
-    'test_pi_leases.py'
+    'test_pi_leases.py',
+    'test_dash_std.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

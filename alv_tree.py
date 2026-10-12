@@ -285,6 +285,10 @@ CONVERTED = [
     'test_back_label.py',
     # HL-1 - and this round's own suite.
     'test_help_label.py',
+    # DB-5, 12 Oct 2026 - the Property Dashboard onto house
+    # standards, and the round that found the page could not be
+    # used from a keyboard at all.
+    'test_dash_std.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

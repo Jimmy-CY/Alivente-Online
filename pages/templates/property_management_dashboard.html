@@ -5,7 +5,11 @@
 {% block title %}Property Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+{# DB-5 - WAS container-fluid. 8 of 151 templates use it, 96 use #}
+{# plain container. On a 1920 screen a tile goes from ~457px to #}
+{# ~265px wide; the column count does not change at any width, #}
+{# so no row reflows - measured, not assumed. #}
+<div class="container">
 
         {# HEADING STANDARD - 8 Sep. Title in capitals, no brand prefix - the brand is in the browser tab. Subtitle in sentence case. See the standards block at the top of base.html. #}
   <h2 class="page-title-h2">PROPERTY DASHBOARD</h2>
@@ -21,39 +25,58 @@
     </div>
   {% endfor %}
 
-  <!-- Top Row: Property Selector (left) + Side Actions (right column with hamburger + back stacked) -->
-  <div class="dashboard-top-row">
-    <!-- Property Selector Card -->
-    <div class="property-selector-card" id="propertySelectorCard">
-      <div class="selector-inner">
-        <div class="selector-label">
-          <i class="fas fa-building"></i> Current Property
-        </div>
-        <div class="selector-value" id="propertyDisplayText">Click to select a property</div>
-        <div class="selector-hint">
-          <i class="fas fa-mouse-pointer"></i> Click to choose
-        </div>
+{# DB-5, 12 Oct 2026 - the house action bar, the shape properties.html #}
+  {# has. WAS a 56px side column holding a hamburger above a Back arrow, #}
+  {# drawn by ten local rules, outside any .page-action-buttons. Of 33 #}
+  {# pages carrying an action-more-wrapper, 32 put it in the bar; this #}
+  {# was the one that did not, and the only page in the app with a local #}
+  {# rule naming that class - because base hides the wrapper OUTSIDE any #}
+  {# media query and styles the rest of the component only below 768px. #}
+  {# Base's More menu is a PHONE component. Help is a desktop secondary #}
+  {# and a phone menu item, which is why both appear below. #}
+  <div class="page-action-buttons">
+    <button type="button" class="btn action-primary" id="choosePropertyBtn">
+      <i class="fas fa-building"></i> Choose Property
+    </button>
+
+    <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via "More" menu) -->
+    <button type="button" class="btn action-secondary"
+            data-toggle="modal" data-target="#dashboardHelpModal">
+      <i class="fas fa-question-circle"></i> Help
+    </button>
+
+    <!-- Mobile-only "More" dropdown -->
+    <div class="action-more-wrapper" data-menu>
+      <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
+              aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
+        <button type="button" class="action-more-item" role="menuitem"
+                data-toggle="modal" data-target="#dashboardHelpModal">
+          <i class="fas fa-question-circle"></i> Help
+        </button>
       </div>
     </div>
 
-    <!-- Side actions: hamburger (More menu — currently just Help) on top, Back below -->
-    <div class="dashboard-side-actions">
-      <div class="action-more-wrapper" data-menu>
-        <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
-                aria-label="More actions" aria-expanded="false" aria-haspopup="true">
-          <i class="fas fa-ellipsis-v"></i>
-        </button>
-        <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
-          <button type="button" class="action-more-item" role="menuitem"
-                  data-toggle="modal" data-target="#dashboardHelpModal">
-            <i class="fas fa-question-circle"></i> Help
-          </button>
-        </div>
-      </div>
-      <a href="{% url 'home' %}" class="btn action-back action-back-stacked"
-         role="button" aria-label="Back to home">
-        <i class="fas fa-arrow-left"></i>
-      </a>
+    <a href="{% url 'home' %}" class="btn action-back" aria-label="Back to home">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+  </div>
+
+{# The chosen property, on base's own card. WAS a teal gradient slab #}
+  {# whose own 13px label read 4.01:1 at opacity .85 and whose hint read #}
+  {# 3.75:1 at .80 - and the hint said "Click to choose", an instruction #}
+  {# standing in for the button that now sits above. The teal has not #}
+  {# gone from the page; it stays in the twelve tile icons and the three #}
+  {# section underlines, where it carries information. DB-8's rule. #}
+  <div class="alv-card alv-chosen-property">
+    <div class="alv-card-head">
+      <i class="fas fa-building"></i>
+      <span class="alv-card-title">Current Property</span>
+    </div>
+    <div class="alv-card-body">
+      <div class="chosen-property-name" id="propertyDisplayText">No property chosen yet</div>
     </div>
   </div>
 
@@ -62,15 +85,15 @@
 
     <!-- Property Section -->
     <div class="dashboard-section">
-      <h5 class="section-title"><i class="fas fa-home"></i> Property</h5>
+      <h5 class="form-section-title"><i class="fas fa-home"></i> Property</h5>
       <div class="dashboard-grid">
 
         {# Property Report - Properties module #}
         {% if perms.auth.can_access_properties %}
-          <div class="dash-card" data-box-type="property-report">
+          <a class="dash-card" data-box-type="property-report">
             <div class="dash-card-icon"><i class="fas fa-chart-line"></i></div>
             <div class="dash-card-label">Property Report</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Properties">
             <div class="dash-card-icon"><i class="fas fa-chart-line"></i></div>
@@ -80,10 +103,10 @@
 
         {# Title Deed - Properties module #}
         {% if perms.auth.can_access_properties %}
-          <div class="dash-card" data-box-type="title-deed">
+          <a class="dash-card" data-box-type="title-deed">
             <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
             <div class="dash-card-label">Title Deed</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Properties">
             <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
@@ -93,10 +116,10 @@
 
         {# Valuation - Financials module #}
         {% if perms.auth.can_access_financials %}
-          <div class="dash-card" data-box-type="valuation">
+          <a class="dash-card" data-box-type="valuation">
             <div class="dash-card-icon"><i class="fas fa-home"></i></div>
             <div class="dash-card-label">Valuation</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
             <div class="dash-card-icon"><i class="fas fa-home"></i></div>
@@ -106,10 +129,10 @@
 
         {# Issues - Issues module #}
         {% if perms.auth.can_access_issues %}
-          <div class="dash-card" data-box-type="issues">
+          <a class="dash-card" data-box-type="issues">
             <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
             <div class="dash-card-label">Issues</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Issues">
             <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
@@ -122,15 +145,15 @@
 
     <!-- Tenant Section -->
     <div class="dashboard-section">
-      <h5 class="section-title"><i class="fas fa-users"></i> Tenant</h5>
+      <h5 class="form-section-title"><i class="fas fa-users"></i> Tenant</h5>
       <div class="dashboard-grid">
 
         {# Tenant Report - Tenants module #}
         {% if perms.auth.can_access_tenants %}
-          <div class="dash-card" data-box-type="tenant">
+          <a class="dash-card" data-box-type="tenant">
             <div class="dash-card-icon"><i class="fas fa-users"></i></div>
             <div class="dash-card-label">Tenant Report</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Tenants">
             <div class="dash-card-icon"><i class="fas fa-users"></i></div>
@@ -140,10 +163,10 @@
 
         {# Lease - Tenants module #}
         {% if perms.auth.can_access_tenants %}
-          <div class="dash-card" data-box-type="lease">
+          <a class="dash-card" data-box-type="lease">
             <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
             <div class="dash-card-label">Lease</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Tenants">
             <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
@@ -153,10 +176,10 @@
 
         {# Invoices - Invoices module #}
         {% if perms.auth.can_access_invoices %}
-          <div class="dash-card" data-box-type="open-invoices">
+          <a class="dash-card" data-box-type="open-invoices">
             <div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
             <div class="dash-card-label">Invoices</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Invoices">
             <div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
@@ -166,10 +189,10 @@
 
         {# Lease Renewals - Tenants module #}
         {% if perms.auth.can_access_tenants %}
-          <div class="dash-card" data-box-type="lease-renewals">
+          <a class="dash-card" data-box-type="lease-renewals">
             <div class="dash-card-icon"><i class="fas fa-sync-alt"></i></div>
             <div class="dash-card-label">Lease Renewals</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Tenants">
             <div class="dash-card-icon"><i class="fas fa-sync-alt"></i></div>
@@ -182,15 +205,15 @@
 
     <!-- Financials Section -->
     <div class="dashboard-section">
-      <h5 class="section-title"><i class="fas fa-coins"></i> Financials</h5>
+      <h5 class="form-section-title"><i class="fas fa-coins"></i> Financials</h5>
       <div class="dashboard-grid">
 
         {# Revenues - Financials module #}
         {% if perms.auth.can_access_financials %}
-          <div class="dash-card" data-box-type="revenues">
+          <a class="dash-card" data-box-type="revenues">
             <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
             <div class="dash-card-label">Revenues</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
             <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
@@ -200,10 +223,10 @@
 
         {# Actual Expenses - Expenses module #}
         {% if perms.auth.can_access_expenses %}
-          <div class="dash-card" data-box-type="actual-expenses">
+          <a class="dash-card" data-box-type="actual-expenses">
             <div class="dash-card-icon"><i class="fas fa-receipt"></i></div>
             <div class="dash-card-label">Actual Expenses</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Expenses">
             <div class="dash-card-icon"><i class="fas fa-receipt"></i></div>
@@ -213,10 +236,10 @@
 
         {# Budgeted Expenses - Financials module #}
         {% if perms.auth.can_access_financials %}
-          <div class="dash-card" data-box-type="budgeted-expenses">
+          <a class="dash-card" data-box-type="budgeted-expenses">
             <div class="dash-card-icon"><i class="fas fa-clipboard-list"></i></div>
             <div class="dash-card-label">Budgeted Expenses</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
             <div class="dash-card-icon"><i class="fas fa-clipboard-list"></i></div>
@@ -226,10 +249,10 @@
 
         {# Profit & Loss - Financials module #}
         {% if perms.auth.can_access_financials %}
-          <div class="dash-card" data-box-type="profit-loss">
+          <a class="dash-card" data-box-type="profit-loss">
             <div class="dash-card-icon"><i class="fas fa-chart-pie"></i></div>
             <div class="dash-card-label">Profit &amp; Loss</div>
-          </div>
+          </a>
         {% else %}
           <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
             <div class="dash-card-icon"><i class="fas fa-chart-pie"></i></div>
@@ -257,13 +280,18 @@
         <div class="modal-body" style="padding:0;">
           <div class="property-picker-list">
             {% for property in properties %}
-              <div class="property-picker-item"
-                   data-property-id="{{ property.prop_id }}"
-                   data-property-name="{{ property.prop_name }}">
+{# DB-5 - a button, not a div. These rows had a click #}
+              {# listener and nothing else: no role, no tabindex, no key #}
+              {# handler, so the property could not be chosen from a #}
+              {# keyboard at all. They act and close the modal rather #}
+              {# than navigate, which is what a button is. #}
+              <button type="button" class="property-picker-item"
+                      data-property-id="{{ property.prop_id }}"
+                      data-property-name="{{ property.prop_name }}">
                 <i class="fas fa-home"></i>
                 <span>{{ property.prop_name }}</span>
                 <i class="fas fa-chevron-right picker-chevron"></i>
-              </div>
+              </button>
             {% endfor %}
           </div>
         </div>
@@ -299,160 +327,38 @@
        Tier A of the Section B map; B and C move a pixel and
        are separate rounds.                   [B-1 tier A] */
 
-/* ==================== TOP ROW: Property Selector + Side Actions ==================== */
-.dashboard-top-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 30px;
-  align-items: stretch;
-}
-
-/* ==================== PROPERTY SELECTOR CARD ==================== */
-.property-selector-card {
-  flex: 1 1 auto;
-  background: linear-gradient(135deg, var(--alv-accent) 0%, var(--alv-accent-ink) 100%);
-  border-radius: 12px;
-  padding: 24px 30px;
-  box-shadow: 0 4px 12px rgba(14, 124, 139, 0.25);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--alv-on-accent);
-  min-width: 0; /* allow flex item to shrink below content size */
-}
-
-.property-selector-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(14, 124, 139, 0.35);
-}
-
-.property-selector-card.property-selected {
-  background: linear-gradient(135deg, var(--alv-accent-ink) 0%, var(--alv-accent-ink) 100%);
-}
-
-.selector-inner {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.selector-label {
-  font-size: 13px;
-  font-weight: 500;
-  opacity: 0.85;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.selector-value {
+/* ==================== THE CHOSEN PROPERTY ==================== */
+/* DB-5, 12 Oct 2026 - what used to be here:
+     .dashboard-top-row               the two-column shell
+     .property-selector-card  x3      a teal gradient slab, clickable
+     .selector-inner / -label / -value / -hint
+     .dashboard-side-actions  x8      a 56px column: hamburger + Back
+   Twenty-one declarations of a More menu that base already owns, and a
+   100px teal slab whose 13px label read 4.01:1 and whose hint read
+   3.75:1 because both were dimmed with opacity - which no contrast gate
+   in this system can see. The bar above is base's. The card is base's.
+   What is left here is the one thing base has no name for: how big the
+   property's name should be. */
+.chosen-property-name {
   font-size: 22px;
   font-weight: 700;
-  flex: 1;
-  min-width: 200px;
+  color: var(--alv-ink);
   word-break: break-word;
-}
-
-.selector-hint {
-  font-size: 13px;
-  opacity: 0.8;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-/* ==================== SIDE ACTIONS (hamburger + back, stacked) ==================== */
-.dashboard-side-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-  width: 56px;
-}
-
-.dashboard-side-actions .action-more-wrapper {
-  position: relative;
-  flex: 1 1 50%;
-  display: flex;
-}
-
-.dashboard-side-actions .action-more-btn {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  margin: 0;
-}
-
-.dashboard-side-actions .action-back-stacked {
-  flex: 1 1 50%;
-  width: 100%;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  text-decoration: none;
-  margin: 0;
-}
-
-/* More dropdown menu (Help is the only item for now) */
-.dashboard-side-actions .action-more-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 200;
-  background: var(--alv-paper);
-  border: 1px solid var(--alv-line);
-  border-radius: 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  padding: 6px 0;
-}
-
-.dashboard-side-actions .action-more-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 12px 16px;
-  font-size: 14px;
-  color: var(--alv-ink);
-  cursor: pointer;
-  transition: background 0.15s ease;
-  text-decoration: none;
-}
-
-.dashboard-side-actions .action-more-item i {
-  color: var(--alv-accent);
-  width: 18px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.dashboard-side-actions .action-more-item:hover,
-.dashboard-side-actions .action-more-item:active,
-.dashboard-side-actions .action-more-item:focus {
-  background: var(--alv-surface);
-  outline: none;
-  color: var(--alv-ink);
-  text-decoration: none;
 }
 
 /* ==================== DASHBOARD SECTIONS ==================== */
 .dashboard-grids {
-  opacity: 0.45;
-  pointer-events: none;
+  /* DB-5 - WAS 0.45 with pointer-events: none.
+     0.45 put the tile label at 2.54:1 and the accent icon at 1.91:1,
+     and that is the state you LAND in. Measured at every step: the icon
+     clears 3.0 at .75 (3.14:1) and fails at .70 (2.90:1); the label is
+     5.87:1 at .75. So .75 is the LOWEST dim that keeps the signal and
+     meets the floor - it is a measurement, not a taste.
+     pointer-events is gone because it is no longer what locks the page.
+     The tiles are anchors now and carry no href until a property is
+     chosen, and an <a> with no href is neither focusable nor clickable.
+     THE ABSENCE OF AN HREF IS THE LOCK; this is only the signal. */
+  opacity: 0.75;
   transition: opacity 0.3s ease;
 }
 
@@ -465,20 +371,11 @@
   margin-bottom: 30px;
 }
 
-.section-title {
-  color: var(--alv-ink);
-  font-weight: 600;
-  margin-bottom: 15px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--alv-accent);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-title i {
-  color: var(--alv-accent);
-}
+/* DB-5 - .section-title and .section-title i are GONE. They were a
+   private copy of base's .form-section-title, which declares the same
+   --alv-ink, the same weight 600, the same 2px solid var(--alv-accent)
+   bottom border and the same accent icon. Measured identical, so the
+   markup joins the component instead of restating it. */
 
 .dashboard-grid {
   display: grid;
@@ -490,10 +387,16 @@
 .dash-card {
   background: var(--alv-paper);
   border: 1px solid var(--alv-line);
-  border-radius: 10px;
+  /* DB-5 - WAS a 10px literal. Base has no tile component at all, so
+     this is not a drift from one; of 151 templates six draw an
+     icon-over-label grid and all six use private names. What the tile
+     IS is a card, so it takes the radius every house card takes.
+     D-12 converted only the 6px literals and left every other value
+     alone, which is why this one survived that round. */
+  border-radius: var(--alv-radius-sm);
+  text-decoration: none;
   padding: 24px 18px;
   text-align: center;
-  cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -503,15 +406,30 @@
   min-height: 130px;
 }
 
-.dash-card:hover {
+/* DB-5 - scoped to [href]. An unarmed tile is an <a> with no href: it
+   must not offer a pointer, a lift or a focus ring for something that
+   cannot be opened yet. */
+a.dash-card[href] {
+  cursor: pointer;
+}
+
+a.dash-card[href]:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(14, 124, 139, 0.15);
   border-color: var(--alv-accent);
 }
 
-.dash-card:hover .dash-card-icon {
+a.dash-card[href]:hover .dash-card-icon {
   color: var(--alv-accent-ink);
   transform: scale(1.1);
+}
+
+/* The ring base gives every control in an action bar. These tiles were
+   unreachable by keyboard until this round, so they had never needed
+   one. Same declaration as base's .page-action-buttons .btn. */
+a.dash-card[href]:focus-visible {
+  outline: 2px solid var(--alv-accent);
+  outline-offset: 2px;
 }
 
 .dash-card-icon {
@@ -528,18 +446,22 @@
   letter-spacing: 0.3px;
 }
 
-/* Active/clicked state */
-.dash-card.clicked {
-  transform: scale(0.97);
-  box-shadow: 0 2px 6px rgba(14, 124, 139, 0.3);
-  background: var(--alv-accent-soft);
-}
+/* DB-5 - .dash-card.clicked is GONE, with the nine lines of script that
+   drove it. A real link navigates on click and the browser's own
+   feedback is the feedback; keeping a 300ms scale and a 200ms timer
+   would mean preventDefault, which puts back the JavaScript dependence
+   this round removed and breaks middle-click and open-in-new-tab. */
 
 /* Permission-disabled tile: greyed out, no hover effect, no click */
 .dash-card.dash-card-disabled {
+  /* DB-5 - the opacity is GONE. This tile was dimmed TWICE: #adb5bd
+     text AND opacity 0.5, which composited to #d6dade on #f8f9fa =
+     1.33:1. A user without the permission could not read what they were
+     being denied. The house's own switched-off recipe carries no opacity
+     at all, and the ground, the border and the two locks below are what
+     say "off". E-10's lesson from the other side. */
   background: var(--alv-line-soft);
   border-color: var(--alv-line);
-  opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -550,12 +472,19 @@
   border-color: var(--alv-line);
 }
 
+/* DB-5 - WAS #adb5bd, which is 35 RGB units off --alv-ink-faint and so
+   sat above B-2b's 25-unit bound: a visible move, which is exactly why
+   the colour rounds left it alone rather than sweeping it.
+   Chosen on the numbers between the two candidate tokens:
+     --alv-ink-faint on --alv-line-soft   2.70:1
+     --alv-ink-soft  on --alv-line-soft   4.97:1
+   up from 1.33:1 as the tile actually rendered. */
 .dash-card.dash-card-disabled .dash-card-icon {
-  color: #adb5bd;
+  color: var(--alv-ink-soft);
 }
 
 .dash-card.dash-card-disabled .dash-card-label {
-  color: #adb5bd;
+  color: var(--alv-ink-soft);
 }
 
 /* ==================== PROPERTY PICKER LIST ==================== */
@@ -565,13 +494,26 @@
 }
 
 .property-picker-item {
+  /* DB-5 - a <button> now, so the four declarations a button brings of
+     its own have to be answered: the UA border, the UA background, the
+     centred text and the UA font. Nothing else about the row moves. */
+  width: 100%;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--alv-line-soft);
+  font: inherit;
+  text-align: left;
   padding: 16px 24px;
   display: flex;
   align-items: center;
   gap: 14px;
   cursor: pointer;
-  border-bottom: 1px solid var(--alv-line-soft);
   transition: all 0.2s ease;
+}
+
+.property-picker-item:focus-visible {
+  outline: 2px solid var(--alv-accent);
+  outline-offset: -2px;
 }
 
 .property-picker-item:last-child {
@@ -595,7 +537,8 @@
 }
 
 .picker-chevron {
-  color: #adb5bd;
+  /* DB-5 - 2.07:1 on paper as a literal, 3.00:1 on the token. */
+  color: var(--alv-ink-faint);
   font-size: 12px;
   transition: transform 0.2s ease;
 }
@@ -608,43 +551,11 @@
 /* ==================== RESPONSIVE ==================== */
 @media screen and (max-width: 768px) {
 
-  .dashboard-top-row {
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .property-selector-card {
-    padding: 16px 18px;
-  }
-
-  .selector-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .selector-label {
-    font-size: 11px;
-    letter-spacing: 0.6px;
-  }
-
-  .selector-value {
-    font-size: 16px;
-    min-width: 0;
-  }
-
-  .selector-hint {
-    font-size: 11px;
-  }
-
-  /* Side actions — narrower column on mobile */
-  .dashboard-side-actions {
-    width: 44px;
-    gap: 6px;
-  }
-
-  .dashboard-side-actions .action-more-btn,
-  .dashboard-side-actions .action-back-stacked {
+  /* DB-5 - eight rules went from here with the slab and the side
+     column. Base already shrinks the bar to one row on a phone, hides
+     the secondaries, opens the More menu and gives Back a 44px square,
+     so there is nothing left for this page to say about any of it. */
+  .chosen-property-name {
     font-size: 16px;
   }
 
@@ -673,15 +584,19 @@ document.addEventListener('DOMContentLoaded', function() {
   var selectedProperty = null;
   var selectedPropertyName = null;
 
-  var selectorCard = document.getElementById('propertySelectorCard');
+  var chooseBtn = document.getElementById('choosePropertyBtn');
   var propertyDisplayText = document.getElementById('propertyDisplayText');
   var dashboardGrids = document.getElementById('dashboardGrids');
   var pickerItems = document.querySelectorAll('.property-picker-item');
-  // Only bind click handlers to ACTIVE cards - disabled cards have no data-box-type
-  var dashCards = document.querySelectorAll('.dash-card[data-box-type]');
+  // The twelve live tiles. The permission-denied twins stay <div>s and
+  // carry no data-box-type, so they are not in this list and never gain
+  // an href.
+  var dashCards = document.querySelectorAll('a.dash-card[data-box-type]');
 
-  // Open picker modal when selector card is clicked
-  selectorCard.addEventListener('click', function() {
+  // DB-5 - a real button in the action bar. WAS a click listener on a
+  // <div> with no role, no tabindex and no key handler, which is why
+  // the property could not be chosen from a keyboard at all.
+  chooseBtn.addEventListener('click', function() {
     $('#propertyPickerModal').modal('show');
   });
 
@@ -695,36 +610,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Handle card clicks (navigation)
-  dashCards.forEach(function(card) {
-    card.addEventListener('click', function() {
-      if (!selectedProperty) {
-        return; // Cards are pointer-events:none when no property, but safety check
-      }
-
-      var boxType = card.getAttribute('data-box-type');
-
-      // Visual feedback
-      card.classList.add('clicked');
-      setTimeout(function() { card.classList.remove('clicked'); }, 300);
-
-      // Navigate
-      setTimeout(function() {
-        if (boxType === 'profit-loss') {
-          window.location.href = '/property/' + selectedProperty + '/profit-loss/';
-        } else {
-          window.location.href = '/property_detail/' + selectedProperty + '/' + boxType + '/';
-        }
-      }, 200);
-    });
-  });
+  // DB-5 - THE TILES HAVE NO CLICK HANDLER. They are links, and the
+  // browser opens a link. What the script does instead is fill in the
+  // href once a property is chosen - the destination cannot be in the
+  // markup because the property id is not known at render time.
+  //
+  // The two URL shapes are the ones this page already computed, moved
+  // from the click handler to here unchanged.
+  function hrefFor(boxType, propId) {
+    if (boxType === 'profit-loss') {
+      return '/property/' + propId + '/profit-loss/';
+    }
+    return '/property_detail/' + propId + '/' + boxType + '/';
+  }
 
   // Selection handler
   function selectProperty(propId, propName) {
     selectedProperty = propId;
     selectedPropertyName = propName;
     propertyDisplayText.textContent = propName;
-    selectorCard.classList.add('property-selected');
+    // DB-5 - this is the moment the twelve tiles become openable, and
+    // giving them an href is the whole of it: focusable, Enter-
+    // activated, middle-clickable, and no longer held shut by a
+    // pointer-events rule that a keyboard never consulted anyway.
+    dashCards.forEach(function(card) {
+      card.setAttribute('href',
+        hrefFor(card.getAttribute('data-box-type'), propId));
+    });
     dashboardGrids.classList.add('armed');
   }
 

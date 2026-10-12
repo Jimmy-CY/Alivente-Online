@@ -118,11 +118,14 @@ LENDER = 'test_tap_target.py'
 BOOT = 'test_fixture_bootstrap413.css'
 
 BAR, ROW, MODAL = 35, 34, 38
-N_BAR, N_ROW, N_MODAL = 265, 110, 98   # E-10, 11 Oct 2026 - the
+N_BAR, N_ROW, N_MODAL = 268, 110, 98   # DB-5, 12 Oct 2026 - the
+# dashboard four joined the bar   # (was 265)   # E-10, 11 Oct 2026 - the
 # seven buttons this round paired in CRS modals become visible to
 # a census that selects the two position tones and not the danger
 # tone.   # (was 91)
-N_LOOSE, N_LOOSE_H = 82, 12   # E-10 - and the four loose in
+N_LOOSE, N_LOOSE_H = 80, 10   # DB-5 - the side column left the
+# loose set, and the two heights it invented went with it
+# (was 82 and 12)   # E-10 - and the four loose in
 # cards on crs/submission_detail.html, for the same reason. The
 # twelve distinct heights are unchanged.   # (was 78)   # 12, not the 11 I first said:
 # the earlier figure added a card's six heights to a page's ten

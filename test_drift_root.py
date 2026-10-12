@@ -665,8 +665,16 @@ check('  CONTROL: and it FELL - the file says it may only fall',
 check('    and Show-ButtonDrift is STILL on that list, deliberately',
       'os.walk(TPL)' in code_lines(src))
 # AND THE TWO CENSUSES THE TWELVE WALK INTO, found by the sweep.
-bh = read(os.path.join(ROOT, 'test_bar_height.py'))
-pc = read(os.path.join(ROOT, 'test_pair_contrast.py'))
+# DB-5, 12 Oct 2026 - AS E-10 LEFT THEM, not as they stand today.
+# These two lines read the live files, so the first later round to
+# re-pin either census made this suite report that E-10 had done
+# something it had not. DB-5 was that round. A suite asking about
+# its OWN round must never read the live file - lesson 40, and the
+# three checks below now pass for every round after this one too.
+bh = alv_rounds.as_left_by(
+    os.path.join(ROOT, 'test_bar_height.py'), SUFFIX, read)
+pc = alv_rounds.as_left_by(
+    os.path.join(ROOT, 'test_pair_contrast.py'), SUFFIX, read)
 check('D-1 heights re-pinned - 7 into modals, 4 into cards',
       pin(bh, 'N_MODAL') == 98 and pin(bh, 'N_LOOSE') == 82,
       '%s, %s' % (pin(bh, 'N_MODAL'), pin(bh, 'N_LOOSE')))

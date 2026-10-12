@@ -1104,6 +1104,7 @@ ROUNDS = [
     '.bak_driftroot',
     '.bak_helplabel',
     '.bak_pileases',
+    '.bak_dashstd',
 ]
 
 
