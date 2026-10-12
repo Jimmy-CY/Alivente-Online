@@ -117,6 +117,8 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
@@ -132,17 +134,17 @@ SUFFIX = '.bak_three'
 ME = 'test_small_three.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
-WSM = os.path.join(T, 'workspace_management.html')
-PROPS_HTML = os.path.join(T, 'properties.html')
+BASE = alv_tree.join('base.html')
+WSM = alv_tree.join('workspace_management.html')
+PROPS_HTML = alv_tree.join('properties.html')
 PROPS_VIEW = os.path.join(ROOT, 'pages', 'views', 'properties.py')
-FSR_HTML = os.path.join(T, 'fsr.html')
+FSR_HTML = alv_tree.join('fsr.html')
 FSR_VIEW = os.path.join(ROOT, 'pages', 'views', 'issues.py')
 FIN_VIEW = os.path.join(ROOT, 'pages', 'views', 'finance.py')
-VAC = os.path.join(T, 'finance', 'vacancy_management.html')
-TWIN = os.path.join(T, 'finance', 'financial_indicators.html')
-ENTRY = [os.path.join(T, 'properties_add.html'),
-         os.path.join(T, 'properties_edit.html')]
+VAC = alv_tree.join('finance/vacancy_management.html')
+TWIN = alv_tree.join('finance/financial_indicators.html')
+ENTRY = [alv_tree.join('properties_add.html'),
+         alv_tree.join('properties_edit.html')]
 
 # The one line finance_expense_add/_edit already use. If this round wrote
 # a different one, the two filters could drift apart later.
@@ -234,7 +236,7 @@ if _help:
 # How every OTHER Help button in an action bar is written. Read, not
 # assumed: the shape this one now has must be the common one.
 shapes = {}
-for base_, dirs, files in os.walk(T):
+for base_, dirs, files in alv_tree.walk3():
     dirs[:] = [d for d in dirs if d != '__pycache__']
     for f in sorted(files):
         if not f.endswith('.html') or '.bak_' in f:
@@ -246,8 +248,7 @@ for base_, dirs, files in os.walk(T):
                 continue          # the menu copy, not the bar button
             inner = ' '.join(m.group(1).split())
             shapes.setdefault('span' if '<span' in inner else 'bare',
-                              []).append(os.path.relpath(
-                                  os.path.join(base_, f), T))
+                              []).append(alv_tree.rel(os.path.join(base_, f)))
 bare = shapes.get('bare', [])
 ok('workspace_management.html' in bare,
    'it is now one of the %d Help buttons written as bare text' % len(bare))
@@ -259,7 +260,7 @@ ok(len(bare) > len(shapes.get('span', [])),
 # unscoped copy of the hide rule. Someone else's page is the proof that
 # it is not a theory.
 _unscoped, _was_unscoped = [], []
-for base_, dirs, files in os.walk(T):
+for base_, dirs, files in alv_tree.walk3():
     dirs[:] = [d for d in dirs if d != '__pycache__']
     for f in files:
         if not f.endswith('.html') or '.bak_' in f:
@@ -308,12 +309,12 @@ ok(_back is not None and 'action-back-label' in _back.group(0),
 
 # And nothing else in the system puts a Back label on a non-Back word.
 liars = []
-for base_, dirs, files in os.walk(T):
+for base_, dirs, files in alv_tree.walk3():
     dirs[:] = [d for d in dirs if d != '__pycache__']
     for f in sorted(files):
         if not f.endswith('.html') or '.bak_' in f:
             continue
-        rel = os.path.relpath(os.path.join(base_, f), T)
+        rel = alv_tree.rel(os.path.join(base_, f))
         src = read(os.path.join(base_, f))
         for m in re.finditer(r'<span class="action-back-label"[^>]*>(.*?)'
                              r'</span>', src, re.S):
@@ -323,8 +324,8 @@ for base_, dirs, files in os.walk(T):
                 liars.append('%s: %r' % (rel, txt))
 ok(not liars, 'no page labels a non-Back, non-Cancel control as a Back',
    '\n'.join(liars))
-_cml = read(os.path.join(T, 'create_meal_plan.html')) \
-    if os.path.isfile(os.path.join(T, 'create_meal_plan.html')) else ''
+_cml = read(alv_tree.join('create_meal_plan.html')) \
+    if os.path.isfile(alv_tree.join('create_meal_plan.html')) else ''
 ok('class="action-back-label"> Cancel' in _cml
    or 'action-back-label' in _cml,
    "CONTROL: create_meal_plan's Cancel keeps the class - it IS an "

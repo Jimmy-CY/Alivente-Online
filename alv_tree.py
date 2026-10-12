@@ -272,6 +272,19 @@ CONVERTED = [
     'test_disabled_state.py',
     # E-10 - and this round's own suite.
     'test_drift_root.py',
+    # HL-1, 12 Oct 2026 - its one failure was a Help button on a
+    # page in the second root, wearing the Back label class. D-2
+    # fixed the identical span on workspace_management in
+    # September and could not see this one.
+    'test_small_three.py',
+    # BL-2, same round - and not one application file changed for
+    # it. All five of its failures were its reader: it asked
+    # as_left_by for pages BL-1 never touched and got whichever
+    # later round had opened them. Live, no page in either root
+    # carries the rule it reported on seven.
+    'test_back_label.py',
+    # HL-1 - and this round's own suite.
+    'test_help_label.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -327,7 +340,6 @@ ALREADY_WIDE = ['test_banner_pages.py',
 # and let the suite be widened. Their narrow root is a stated position,
 # not an oversight. Each entry comes off this list in the round it names.
 WAITING = {
-    'test_back_label.py': 'pages  no page defines .action-back-label any more',
     'test_button_sweep.py':
         'pages  narrow BY DESIGN - its walk rebuilds a pre-sweep '
         'tree from .bak_btnsweep, so widening it would copy the '
@@ -338,8 +350,6 @@ WAITING = {
         'both numbers had moved]',
     'test_modal_heads.py':
         'pages  the Recipe View close strip, recorded but unresolved',
-    'test_small_three.py':
-        'pages  a non-Back control still labelled as a Back',
     'test_surface_deep.py':
         'pages  background literals survive, and its 93 border uses wait on F2b',
 }

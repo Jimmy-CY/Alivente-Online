@@ -567,7 +567,17 @@ def duplicate_tenant_view(request, tenant_id):
 
         # Don't copy lease agreement - user may need to upload new one
         new_tenant.tenant_lease_agreement = None
-        new_tenant.tenant_lease_agreement_status = None
+        # TN-1, 12 Oct 2026 - WAS None, and migration
+        # 0095_none_columns made this column NOT NULL. MySQL answered
+        # (1048, "Column 'tenant_lease_agreement_status' cannot be
+        # null") and Duplicate died on Live. SQLite would have taken
+        # it, which is why a local run never showed it.
+        #
+        # '' is what a tenant added through the form gets - the field
+        # is blank=True with no default - so a duplicate now looks
+        # exactly like a fresh tenant rather than carrying a third
+        # spelling of "no document" beside "No Lease Agreement".
+        new_tenant.tenant_lease_agreement_status = ''
 
         # Save the new tenant
         new_tenant.save()

@@ -80,6 +80,8 @@ import os
 import re
 import sys
 
+import alv_tree
+
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
@@ -95,7 +97,7 @@ SUFFIX = '.bak_backlabel'
 ME = 'test_back_label.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = alv_tree.join('base.html')
 FIXED = 'resolved_issues_report.html'     # the page that SHOWED the word
 LANDSCAPE = ('finance_expense_types.html', 'finance_revenue_types.html')
 
@@ -132,9 +134,28 @@ def head(t):
 
 
 def now(p):
-    """The file as THIS round left it. See alv_rounds.py."""
+    """The file as THIS round left it - FOR A PAGE IT TOUCHED.
+
+    BL-2, 12 Oct 2026. as_left_by answers "the file as this round
+    left it", and for a page this round never opened that is the
+    backup taken by the first LATER round that happened to open
+    it - an arbitrary moment belonging to somebody else. Widened,
+    this suite read seven CRS pages at a pre-PQ-1 moment and
+    reported that each still carried an unscoped
+    .action-back-label rule. Live, not one page in either root
+    carries one.
+
+    THE ROUND'S OWN BACKUPS DEFINE ITS SCOPE. Where there is no
+    backup there is no claim, and the live file is what every
+    check below means.
+
+    Third time: E-1b made the identical repair to test_contrast
+    and wrote the rule down while doing it.
+    """
     if not os.path.isfile(p):
         return ''
+    if not os.path.isfile(p + SUFFIX):
+        return read(p)
     return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
 
 
@@ -167,7 +188,7 @@ def body_markup(t):
 
 def templates():
     out = []
-    for d, dirs, fs in os.walk(T):
+    for d, dirs, fs in alv_tree.walk3():
         dirs[:] = [x for x in dirs if x != '__pycache__']
         for f in fs:
             if f.endswith('.html') and '.bak' not in f:
@@ -219,7 +240,7 @@ head('2. NOT ONE PAGE CARRIES A COPY')
 # ==========================================================================
 left, had, personal_was, orient_was = [], [], [], []
 for p in templates():
-    rel = os.path.relpath(p, T).replace(os.sep, '/')
+    rel = alv_tree.rel(p)
     if rel == 'base.html':
         continue
     a = nocomment(css_of(now(p)))
@@ -259,7 +280,7 @@ moved, spans_now, spans_was = [], 0, 0
 for p in templates():
     if not os.path.isfile(p + SUFFIX):
         continue
-    rel = os.path.relpath(p, T).replace(os.sep, '/')
+    rel = alv_tree.rel(p)
     a, b = now(p), was(p)
     ma = re.sub(r'<style[^>]*>.*?</style>', '', a, flags=re.S | re.I)
     mb = re.sub(r'<style[^>]*>.*?</style>', '', b, flags=re.S | re.I)
@@ -341,7 +362,7 @@ else:
         phone = {}
         B_CSS, B_OLD_CSS = css_of(B_NOW), css_of(B_WAS)
         for p in wearers:
-            rel = os.path.relpath(p, T).replace(os.sep, '/')
+            rel = alv_tree.rel(p)
             ph, dk = measure(B_CSS, now(p), [(375, 812), (1280, 900)])
             phone[rel] = ph
             if not ph:
@@ -362,14 +383,24 @@ else:
         # --- and what it was before -----------------------------------
         before_on = []
         for p in wearers:
-            rel = os.path.relpath(p, T).replace(os.sep, '/')
+            rel = alv_tree.rel(p)
             ph, = measure(B_OLD_CSS, was(p), [(375, 812)])
             if any(d != 'none' for d in ph):
                 before_on.append(rel)
-        ok(before_on == [FIXED],
-           'CONTROL: before this round exactly ONE page showed the word on '
-           'a phone, and it is %s - the fault this round found' % FIXED,
-           before_on)
+        # BL-2, 12 Oct 2026 - WAS `before_on == [FIXED]`. Across both
+        # roots FIVE pages showed the word before: import_recipe,
+        # lease_timeline, map_ingredients_nutrition, unit_conversions_
+        # wizard and this one. The other four are real beneficiaries
+        # BL-1 never counted - their Back sits outside a
+        # .page-action-buttons bar, so old base's three-ancestors-deep
+        # rule never reached them and scoping it to .action-back fixed
+        # them silently. What BL-1 can claim forever is that THIS page
+        # showed the word and does not now, and the check below measures
+        # exactly that, on the page itself.
+        ok(FIXED in before_on,
+           'CONTROL: before this round %d page(s) showed the word on a '
+           'phone, and %s is among them - the fault this round found'
+           % (len(before_on), FIXED), before_on)
         ok(phone.get(FIXED) and all(d == 'none' for d in phone[FIXED]),
            '  and it is hidden now - measured on that page, not inferred '
            'from the list above', phone.get(FIXED))
@@ -393,7 +424,7 @@ else:
         # is what is true rather than what was expected.
         land_before, land_after = [], []
         for p in wearers:
-            rel = os.path.relpath(p, T).replace(os.sep, '/')
+            rel = alv_tree.rel(p)
             lb, = measure(B_OLD_CSS, was(p), [(700, 375)])
             la, = measure(B_CSS, now(p), [(700, 375)])
             if any(d != 'none' for d in lb):
@@ -402,11 +433,11 @@ else:
                 land_after.append(rel)
         ok(not land_after, 'AT 700x375 - a phone held sideways - the word '
            'is hidden on every page', land_after[:8])
-        ok(land_before == [FIXED],
-           'CONTROL: and sideways too, %s was the ONLY page showing it '
-           'before' % FIXED, land_before)
+        ok(FIXED in land_before,
+           'CONTROL: and sideways too, %s was among the %d showing it '
+           'before' % (FIXED, len(land_before)), land_before)
         for name in LANDSCAPE:
-            p = os.path.join(T, name)
+            p = alv_tree.join(name)
             if not os.path.isfile(p + SUFFIX):
                 skip('%s sideways' % name, 'no %s backup' % SUFFIX)
                 continue
@@ -437,7 +468,7 @@ for p in templates():
     # the rule" is the scope guard misreading the round's own work.
     if not os.path.isfile(p + SUFFIX) or os.path.basename(p) == 'base.html':
         continue
-    rel = os.path.relpath(p, T).replace(os.sep, '/')
+    rel = alv_tree.rel(p)
     a, b = now(p), was(p)
     if a.count('{') != a.count('}'):
         bad.append('%s: braces' % rel)

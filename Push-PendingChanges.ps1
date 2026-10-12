@@ -79,6 +79,31 @@ param(
 $ErrorActionPreference = 'Continue'
 if ($Push) { $Apply = $true }
 
+# GT-1, 12 Oct 2026 - THE SAME REFUSAL, ASKED EARLY.
+#
+# The real check is beside `Head 'Commit'` at the bottom of this
+# file and is unchanged; it is what actually guards the commit.
+# This is a pre-flight with the same words, because the bottom of
+# this file is 330 suites, two drift guards, makemigrations and a
+# Django check away from the top. E-10 paid all of that and was
+# then refused for want of a one-line subject.
+#
+# A dry run is not blocked: it has no subject to want.
+if ($Apply -and -not $Message) {
+    Write-Host ''
+    Write-Host '  ! No commit subject, and this run would commit.'
+    Write-Host ''
+    Write-Host '    There is no default on purpose - a default describes the'
+    Write-Host '    previous change, not this one. Pass one:'
+    Write-Host ''
+    Write-Host '       .\Push-PendingChanges.ps1 -Push -Message <what changed>'
+    Write-Host ''
+    Write-Host '    Asked here rather than after the suites, which is where'
+    Write-Host '    it used to be asked. See GT-1.'
+    Write-Host ''
+    exit 1
+}
+
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
 
@@ -831,6 +856,12 @@ $sentinels = @(
     # Bootstrap red, measured, on three screens.
     @{ File = 'crs\templates\crs\country_list.html'; Text = 'btn btn-danger'; What = 'the CRS delete modals wear house tones, not Bootstrap'; Absent = $true; Code = $true },
     @{ File = 'crs\templates\crs\submission_list.html'; Text = 'btn btn-secondary'; What = 'and their Cancel is paper, not solid grey'; Absent = $true; Code = $true }
+    # -------------------------------------------- HL-1, 12 Oct 2026
+    # A Help button is not a Back button. Base hides the back
+    # label below 768px, and 77 pages once carried their own
+    # unscoped copy of that rule; the day one comes back here,
+    # the word Help becomes a bare question mark.
+    @{ File = 'crs\templates\crs\submission_detail.html'; Text = '<span class="action-back-label"> Help</span>'; What = 'the CRS Help button writes bare text, like the other 39'; Absent = $true; Code = $true }
     # NO SENTINEL ON 'border-radius: 6px'. One was written and
     # test_sentinels refused it: the radius is present in all 27 backed-up
     # versions of that file, so a Present row on it is true in every one
@@ -2222,7 +2253,8 @@ $suites = @(
     'test_form_card_radius.py',
     'test_held_four.py',
     'test_held_contrast.py',
-    'test_drift_root.py'
+    'test_drift_root.py',
+    'test_help_label.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
