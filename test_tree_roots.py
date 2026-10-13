@@ -61,11 +61,17 @@ _atexit.register(_shutil.rmtree, SCRATCH, True)
 # ------------------------------------------------------------------------
 
 import glob
+import functools
 import os
 import io
 import re
 import tokenize
 import sys
+
+# E15, 13 Oct 2026 - this file kept its own Python stripper
+# because it had never imported the module that should have
+# owned one.
+import alv_tree                                             # noqa: E402
 
 ROOT = os.getcwd()
 sys.path.insert(0, ROOT)
@@ -110,7 +116,12 @@ CRS_PAGES = [
 #
 #     So it is measured with the gate's own detector, after the round, and
 #     it may only FALL. Each later round that converts a census lowers it.
-WALKERS_OWN_ROOT_MAX = 39   # MH-2, 13 Oct 2026 - one more
+WALKERS_OWN_ROOT_MAX = 38   # E15, 13 Oct 2026 - it FELL, and
+# this file says a fall should be locked in. apply_print_media
+# drops out: its only narrow walk is inside a triple-quoted
+# payload - code it writes into another file, counted twice.
+# The old stripper could not tell a payload from a statement.
+# (was 39)   # MH-2, 13 Oct 2026 - one more
 # census converted, and it may only FALL.   # (was 40)   # HL-1, 12 Oct 2026 - one more
 # census converted, and it may only FALL.   # (was 42)   # E-10, 11 Oct 2026 - one more
 # census converted, and it may only FALL. Show-ButtonDrift.py is
@@ -160,50 +171,13 @@ def scripts():
     return out
 
 
-def python_code_only(text):
-    """Python source with its comments and its docstrings blanked out,
-    line for line, so a detector reads CODE and not prose.
-
-    LESSON 21, INSIDE THE INSTRUMENT - 30 Sep 2026. G3a's patcher carried
-    a comment explaining that it used alv_tree and not a walk of its own
-    root, and it NAMED the call it was avoiding. walks_own_root read the
-    words, found a template root assigned two lines above, and counted
-    the file. The debt rose by one, two suites failed, and nothing was
-    wrong.
-
-    Every gate in this repo strips comments before it reads markup or
-    CSS. This one reads PYTHON, and did not. tokenize is exact where a
-    regex would not be: it knows a # inside a string is not a comment,
-    which matters in a repo whose scripts are full of hexes.
-
-    Spans are blanked rather than removed, so every row and column stays
-    where it was and the assignment-reader below still sees a statement
-    per line. Unparsable source is returned untouched: measuring it as it
-    stands is honest, and refusing to measure it is not.
-    """
-    lines = text.split('\n')
-    try:
-        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
-    except Exception:
-        return text
-    STARTS = (tokenize.NEWLINE, tokenize.NL, tokenize.INDENT,
-              tokenize.DEDENT, tokenize.ENCODING)
-    kill, prev = [], None
-    for tok in toks:
-        drop = tok.type == tokenize.COMMENT
-        if tok.type == tokenize.STRING and (prev is None or prev in STARTS):
-            drop = True          # a string opening a statement: a docstring
-        if drop:
-            (r1, c1), (r2, c2) = tok.start, tok.end
-            for r in range(r1, r2 + 1):
-                a = c1 if r == r1 else 0
-                b = c2 if r == r2 else len(lines[r - 1])
-                kill.append((r - 1, a, b))
-        prev = tok.type
-    for r, a, b in kill:
-        ln = lines[r]
-        lines[r] = ln[:a] + ' ' * (b - a) + ln[b:]
-    return '\n'.join(lines)
+# E15, 13 Oct 2026 - WAS a private copy, and this file asks
+# the OTHER question: does THIS FILE walk a narrow root? A
+# walk written into a string is not this file walking, so the
+# payload must not count. Measured: payloads=False reproduces
+# the old regex file for file, minus one false positive.
+python_code_only = functools.partial(alv_tree.python_code_only,
+                       payloads=False)
 
 
 def walks_own_root(text):

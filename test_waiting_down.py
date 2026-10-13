@@ -55,11 +55,17 @@ for _stream in (_sys.stdout, _sys.stderr):
 # ------------------------------------------------------------------------
 import ast
 import glob
+import functools
 import os
 import io
 import re
 import tokenize
 import sys
+
+# E15, 13 Oct 2026 - this file kept its own Python stripper
+# because it had never imported the module that should have
+# owned one.
+import alv_tree                                             # noqa: E402
 
 ROOT = os.getcwd()
 sys.path.insert(0, ROOT)
@@ -74,13 +80,13 @@ PATCHER = 'apply_waiting_down.py'
 X0_SUITE = 'test_tree_roots.py'
 PS1 = 'Push-PendingChanges.ps1'
 
-CONVERTED_N = 69   # MH-2, 13 Oct 2026 - test_modal_heads released,
+CONVERTED_N = 70   # E15, 13 Oct 2026 - this round own suite   # (was 69)   # MH-2, 13 Oct 2026 - test_modal_heads released,
 # plus this round own suite   # (was 67)   # DB-5, 12 Oct 2026 - this round own suite; no existing
 # suite was converted, so the ceiling does not move   # (was 66)   # HL-1, 12 Oct 2026 - one released plus this round own suite   # (was 63)   # E-10, 11 Oct 2026 - one released plus this round own suite   # (was 61)   # E-1b, 11 Oct 2026 - four released plus this round own suite   # (was 58)   # E-1a, 11 Oct 2026 - four released plus this round own suite   # (was 53)   # FC-1, 11 Oct 2026 - test_form_card_radius joins   # (was 52)   # IN-2, 11 Oct 2026 - test_lines_table joins   # (was 51)   # LB-1, 10 Oct 2026 - 49 + test_label_bold, freed here, plus this round own suite   # PQ-1, 10 Oct 2026      # 46 + test_required_promise.py, D-2, 9 Oct 2026
 WAITING_N = 2   # MH-2 - the last held suite that was work comes off.
 # The two left are a parked decision and a deliberate narrowness.   # (was 3)   # HL-1, 12 Oct 2026 - one off   # (was 5)   # E-10, 11 Oct 2026 - one off   # (was 6)   # E-1b, 11 Oct 2026 - four off   # (was 8)   # E-1a, 11 Oct 2026 - four off   # (was 12)   # LB-1, 10 Oct 2026 - test_label_bold came off   # PQ-1, 10 Oct 2026
 INDIRECT_N = 1
-CEILING = 39   # MH-2 - one more census   # (was 40)   # HL-1, 12 Oct 2026 - one more census   # (was 42)   # E-10, 11 Oct 2026 - one more census   # (was 43)   # E-1b, 11 Oct 2026 - four more censuses   # (was 45)   # E-1a, 11 Oct 2026 - four censuses converted   # (was 49)   # LB-1, 10 Oct 2026 - one census converted   # PQ-1, 10 Oct 2026
+CEILING = 38   # E15 - the census fell by one false positive   # (was 39)   # MH-2 - one more census   # (was 40)   # HL-1, 12 Oct 2026 - one more census   # (was 42)   # E-10, 11 Oct 2026 - one more census   # (was 43)   # E-1b, 11 Oct 2026 - four more censuses   # (was 45)   # E-1a, 11 Oct 2026 - four censuses converted   # (was 49)   # LB-1, 10 Oct 2026 - one census converted   # PQ-1, 10 Oct 2026
 JOINS_IN_X0 = 155      # dormant in the 26 X0 had already widened
 JOINS_IN_FREED = 38    # in the thirteen this round widens
 JOINS_CLOSED = JOINS_IN_X0 + JOINS_IN_FREED
@@ -134,50 +140,13 @@ def joins_T(text):
     return len(re.findall(r'os\.path\.join\(\s*T\s*,', text))
 
 
-def python_code_only(text):
-    """Python source with its comments and its docstrings blanked out,
-    line for line, so a detector reads CODE and not prose.
-
-    LESSON 21, INSIDE THE INSTRUMENT - 30 Sep 2026. G3a's patcher carried
-    a comment explaining that it used alv_tree and not a walk of its own
-    root, and it NAMED the call it was avoiding. walks_own_root read the
-    words, found a template root assigned two lines above, and counted
-    the file. The debt rose by one, two suites failed, and nothing was
-    wrong.
-
-    Every gate in this repo strips comments before it reads markup or
-    CSS. This one reads PYTHON, and did not. tokenize is exact where a
-    regex would not be: it knows a # inside a string is not a comment,
-    which matters in a repo whose scripts are full of hexes.
-
-    Spans are blanked rather than removed, so every row and column stays
-    where it was and the assignment-reader below still sees a statement
-    per line. Unparsable source is returned untouched: measuring it as it
-    stands is honest, and refusing to measure it is not.
-    """
-    lines = text.split('\n')
-    try:
-        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
-    except Exception:
-        return text
-    STARTS = (tokenize.NEWLINE, tokenize.NL, tokenize.INDENT,
-              tokenize.DEDENT, tokenize.ENCODING)
-    kill, prev = [], None
-    for tok in toks:
-        drop = tok.type == tokenize.COMMENT
-        if tok.type == tokenize.STRING and (prev is None or prev in STARTS):
-            drop = True          # a string opening a statement: a docstring
-        if drop:
-            (r1, c1), (r2, c2) = tok.start, tok.end
-            for r in range(r1, r2 + 1):
-                a = c1 if r == r1 else 0
-                b = c2 if r == r2 else len(lines[r - 1])
-                kill.append((r - 1, a, b))
-        prev = tok.type
-    for r, a, b in kill:
-        ln = lines[r]
-        lines[r] = ln[:a] + ' ' * (b - a) + ln[b:]
-    return '\n'.join(lines)
+# E15, 13 Oct 2026 - WAS a private copy, and this file asks
+# the OTHER question: does THIS FILE walk a narrow root? A
+# walk written into a string is not this file walking, so the
+# payload must not count. Measured: payloads=False reproduces
+# the old regex file for file, minus one false positive.
+python_code_only = functools.partial(alv_tree.python_code_only,
+                       payloads=False)
 
 
 def walks_own_root(text):

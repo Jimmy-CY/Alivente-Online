@@ -178,29 +178,12 @@ def css_of(text):
                      for a, b in alv_cssrules.style_spans(text))
 
 
-def code_lines(src):
-    """Python with its comments AND its docstrings blanked, line for line.
-
-    A GATE READS CODE, NOT THE RECORD OF CODE. This round leaves prose
-    behind that QUOTES the code it replaced, in both syntaxes: comments
-    that say `WAS a bare except Exception: continue`, and the resolver's
-    own docstring, which has to name `os.path.join(TPL, name)` to explain
-    what it is for. A reader that strips one of the two finds the
-    obituary and calls it the corpse - which is exactly what the first
-    draft of section 2 did, reporting one narrow site left when the
-    narrow site was a sentence.
-
-    E-1b's suite made the comment half of this mistake. test_tree_roots
-    made the docstring half of it on 30 Sep, inside the instrument built
-    to catch it. Line for line, because a gate that reports a line
-    number must not move them.
-    """
-    out = re.sub(r'(?m)^([ \t]*)#.*$', lambda m: m.group(1), src)
-
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-
-    return re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'', blank, out)
+# E15, 13 Oct 2026 - WAS a private copy. Nine had grown
+# under four names and three algorithms, and all three
+# algorithms were wrong. alv_tree owns it now.
+# payloads=True, the default: this file asks what the code
+# DOES, so a triple-quoted payload is code and survives.
+code_lines = alv_tree.python_code_only
 
 
 print(__doc__.strip().split('\n')[0])

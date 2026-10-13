@@ -229,9 +229,12 @@ print('        1.63 - a number the colour involved cannot produce.')
 # that string finds the obituary and calls it the corpse. This is the
 # rule this project keeps relearning, and the first draft of this very
 # check broke it.
-def code_lines(src):
-    return '\n'.join(l for l in src.split('\n')
-                     if not l.lstrip().startswith('#'))
+# E15, 13 Oct 2026 - WAS a private copy. Nine had grown
+# under four names and three algorithms, and all three
+# algorithms were wrong. alv_tree owns it now.
+# payloads=True, the default: this file asks what the code
+# DOES, so a triple-quoted payload is code and survives.
+code_lines = alv_tree.python_code_only
 
 
 check('  and the count of what remains is derived, not pinned',

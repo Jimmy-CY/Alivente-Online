@@ -38,8 +38,10 @@ ON BASENAMES
     so that the day it stops holding, the programme is told, rather than a
     dict silently merging two different pages.
 """
+import io
 import os
 import re
+import tokenize
 
 # The tree, in the order Django was told about the apps.
 TEMPLATE_ROOTS = [
@@ -296,6 +298,8 @@ CONVERTED = [
     'test_modal_heads.py',
     # MH-2's own suite.
     'test_modal_heads2.py',
+    # E15, 13 Oct 2026 - the Python stripper gets an owner.
+    'test_py_code.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -507,6 +511,84 @@ def code_only_js(text):
     return re.sub(r'(<script\b[^>]*>)(.*?)(</script>)', inner, text,
                   flags=re.S)
 
+
+
+def python_code_only(text, payloads=True):
+    """Python with its comments AND its docstrings blanked, line for line.
+
+    THE PYTHON TWIN OF code_only, and it arrives late: nine private
+    copies under four names and three algorithms had accumulated by
+    13 Oct, and every one of the three was wrong.
+
+        the regex one      blanked EVERY triple-quoted string, so a
+                           patcher's payload - 1,540 lines in
+                           apply_auth_flow - read as prose; and it
+                           missed trailing comments entirely, because
+                           `^[ \t]*#.*$` only matches a comment that
+                           owns its line
+        the tokeniser one  dropped a STRING whenever the previous token
+                           was a line break, so every key in a
+                           multi-line dict literal vanished
+        the third          did not touch docstrings at all
+
+    A STRING IS A DOCSTRING WHEN IT IS THE WHOLE STATEMENT: bracket
+    depth 0, preceded by a statement boundary, and followed by NEWLINE.
+    All three conditions are load-bearing. Requiring NEWLINE alone fixes
+    the dict keys and breaks the module docstring of every file that
+    opens with a coding comment, because that STRING is then preceded by
+    NL. Depth is what tells an NL inside brackets from one between
+    statements.
+
+    `payloads` is not a bug fix, it is a second question. A gate asking
+    "what does this code DO" needs a triple-quoted payload to survive; a
+    census asking "does THIS FILE walk a narrow root" must not count a
+    walk written into a string. With payloads=False the census
+    reproduces, file for file, what the old regex reported - minus one
+    false positive it had been carrying.
+
+    For MARKUP see code_only and code_only_js above. This is a different
+    job on a different language, and it used to share their name.
+                                                      [E15, 13 Oct 2026]
+    """
+    lines = text.split('\n')
+    try:
+        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except Exception:
+        # A file that will not tokenise is returned whole rather than
+        # half-blanked. A stripper that silently mangles unparsable
+        # source is worse than one that declines.
+        return text
+    opens, closes = {'(', '[', '{'}, {')', ']', '}'}
+    bound = (tokenize.NEWLINE, tokenize.NL, tokenize.COMMENT,
+             tokenize.INDENT, tokenize.DEDENT, tokenize.ENCODING)
+    kill, depth, prev = [], 0, None
+    for i, tok in enumerate(toks):
+        if tok.type == tokenize.OP:
+            if tok.string in opens:
+                depth += 1
+            elif tok.string in closes:
+                depth -= 1
+        drop = tok.type == tokenize.COMMENT
+        if tok.type == tokenize.STRING:
+            nxt = toks[i + 1].type if i + 1 < len(toks) else None
+            doc = (depth == 0 and (prev is None or prev in bound)
+                   and nxt == tokenize.NEWLINE)
+            triple = tok.string.lstrip('rbufRBUF')[:3] in ('"""', "'''")
+            drop = doc or (not payloads and triple)
+        if drop:
+            (r1, c1), (r2, c2) = tok.start, tok.end
+            for r in range(r1, r2 + 1):
+                a = c1 if r == r1 else 0
+                b = c2 if r == r2 else len(lines[r - 1])
+                kill.append((r - 1, a, b))
+        prev = tok.type
+    # BLANKED LINE FOR LINE, not merely to the same length - the same
+    # rule code_only follows, and for the same reason: gates in this
+    # tree report line numbers.
+    for r, a, b in kill:
+        ln = lines[r]
+        lines[r] = ln[:a] + ' ' * (b - a) + ln[b:]
+    return '\n'.join(lines)
 
 def house_filter_pages(base=None):
     """Every page carrying the house filter: a Filter button AND the panel.

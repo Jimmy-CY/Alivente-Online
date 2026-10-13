@@ -209,12 +209,46 @@ elsewhere = [n for n in py_files() if n != TREE and defines(read(
 ok(not elsewhere, 'no other file in the tree defines code_only',
    ', '.join(elsewhere[:8]))
 
+# ===================================================== E15, 13 Oct
+# THE PYTHON TWIN OF THE GUARD ABOVE. alv_tree has owned the markup
+# stripper since CO-1 and this suite has refused a private copy of
+# it ever since. The PYTHON stripper had no owner and no guard, and
+# by 13 Oct there were NINE copies under FOUR names running THREE
+# algorithms - all three wrong, in different directions.
+#
+# THE GUARD READS payloads=False, AND THAT IS THE WHOLE POINT.
+# apply_pi_leases carries `def _py_code_only(` at column zero
+# INSIDE a triple-quoted payload - it is the copy PI-1 writes into
+# its help suite, and PI-1 is a shipped round whose payload must
+# keep reproducing what it shipped. A def inside a payload is not
+# this file defining anything. The new function is what lets this
+# guard tell the difference, so the guard demonstrates it.
+PY_NAMES = ('python_code_only', '_py_code_only', 'code_lines')
+py_elsewhere = []
+for n in py_files():
+    if n == TREE:
+        continue
+    src = alv_tree.python_code_only(
+        read(os.path.join(ROOT, n)), payloads=False)
+    for nm in PY_NAMES:
+        if re.search(r'(?m)^def %s\(' % nm, src):
+            py_elsewhere.append('%s: %s' % (n, nm))
+ok(not py_elsewhere,
+   'no file in the tree defines its own Python stripper',
+   ', '.join(py_elsewhere[:8]))
+ok(hasattr(alv_tree, 'python_code_only'),
+   '  because alv_tree owns it, beside code_only and code_only_js')
+ok(re.search(r'(?m)^def _py_code_only\(',
+             read(os.path.join(ROOT, 'apply_pi_leases.py'))) is not None,
+   '  CONTROL: and apply_pi_leases DOES carry one at column zero - '
+   'inside the payload PI-1 writes, which the guard must not count')
+
 aliased = [n for n in py_files()
            if n not in (TREE, PATCHER)
            and re.search(r'(?m)^code_only = alv_tree\.', read(
                os.path.join(ROOT, n)))]
-ok(len(aliased) == 49,
-   '%d file(s) alias it - 24 patchers and 25 suites' % len(aliased),   # MH-2, 13 Oct 2026 - two more   # (was 47, 23 and 24)   # DB-5, 12 Oct 2026 - two more, and both were a DEFINITION first: this suite caught them, which is what it is for.   # (was 45, 22 and 23)
+ok(len(aliased) == 51,
+   '%d file(s) alias it - 25 patchers and 26 suites' % len(aliased),   # E15, 13 Oct 2026 - this round own patcher and suite   # (was 49, 24 and 25)   # MH-2, 13 Oct 2026 - two more   # (was 47, 23 and 24)   # DB-5, 12 Oct 2026 - two more, and both were a DEFINITION first: this suite caught them, which is what it is for.   # (was 45, 22 and 23)
    '\n'.join(aliased[:6]))
 
 # EVERY FILE THAT USED TO DEFINE IT NOW ALIASES IT. Asked of the backups,
@@ -406,25 +440,29 @@ ok(len(bleed) >= 20,
 # ==========================================================================
 head('6. THE RENAME - ONE NAME HAD MEANT TWO JOBS')
 # ==========================================================================
+# E15, 13 Oct 2026 - THIS SECTION USED TO ASSERT THE OPPOSITE, and it
+# was right to. CO-1 renamed the Python stripper so one name stopped
+# meaning two jobs, and pinned that these two files DEFINE it and keep a
+# tokenizer of their own. A file keeping its own tokenizer is a file that
+# can drift, and by 13 Oct nine copies under four names were running
+# three different algorithms. So the rename is still recorded here; what
+# changed is that the definition went home.
 for name in PYTHON_SIDE:
     src = read(os.path.join(ROOT, name))
-    ok(defines(src, 'python_code_only') is not None,
-       '%s defines python_code_only' % name)
+    ok(defines(src, 'python_code_only') is None,
+       '%s no longer defines python_code_only' % name)
+    ok(re.search(r'(?m)^python_code_only = ', src) is not None,
+       '  it aliases alv_tree instead')
     ok(not re.search(r'(?<![\w.])code_only\(', src),
-       '  and no longer calls the old name')
-    ok('tokenize' in src,
-       '  and keeps its tokenizer - it reads PYTHON')
-    f = lift(src, 'python_code_only')
-    if f is None:
-        skip('  and a # inside a string is not a comment', 'did not exec')
-        continue
-    try:
-        got = f('s = "a # b"\nx = 1  # gone\n')
-    except Exception as exc:
-        got = 'RAISED %s' % exc
-    ok('a # b' in str(got) and 'gone' not in str(got),
-       '  and a # inside a string is not a comment, where a # at the end '
-       'of a line is')
+       '  and still does not call the old name - CO-1 rename holds')
+    ok('payloads=False' in src,
+       '  asking whether THIS FILE walks a root, so a payload does not '
+       'count')
+ok(alv_tree.python_code_only('s = "a # b"\nx = 1  # gone\n')
+   .find('a # b') >= 0
+   and 'gone' not in alv_tree.python_code_only('s = "a # b"\nx = 1  # gone\n'),
+   'and the house one keeps a # inside a string and drops one at the end '
+   'of a line - the property CO-1 pinned, now asked of the owner')
 
 # ==========================================================================
 head('7. THE ALIAS CANNOT RUN BEFORE THE IMPORT')

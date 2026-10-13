@@ -565,7 +565,7 @@ $sentinels = @(
     @{ File = 'alv_tree.py'; Text = '(<(?:style|script)'; What = 'the block comment syntax is only a comment inside style or script' },
     # Named rather than merged: a tokenize function that reads PYTHON
     # source is a different job, and sharing a name hid that for a month.
-    @{ File = 'test_tree_roots.py'; Text = 'def python_code_only'; What = 'the Python-source one has a name of its own now' },
+    @{ File = 'test_tree_roots.py'; Text = 'python_code_only = functools.partial'; What = 'the Python-source one is alv_tree now, asking payloads=False' },
     # -------------------------------------------------- SECTION TL, 4 Oct 2026
     # A LIVE 500. The stub declared two parameters; project_task_list
     # passed three, six times, every one of them behind `if language ==
@@ -856,6 +856,11 @@ $sentinels = @(
     # Bootstrap red, measured, on three screens.
     @{ File = 'crs\templates\crs\country_list.html'; Text = 'btn btn-danger'; What = 'the CRS delete modals wear house tones, not Bootstrap'; Absent = $true; Code = $true },
     @{ File = 'crs\templates\crs\submission_list.html'; Text = 'btn btn-secondary'; What = 'and their Cancel is paper, not solid grey'; Absent = $true; Code = $true }
+    # -------------------------------------------- E15, 13 Oct 2026
+    # alv_tree owns the Python stripper now. A file defining its
+    # own again is how nine copies and three algorithms happened
+    # the first time.
+    @{ File = 'test_tree_roots.py'; Text = 'alv_tree.python_code_only'; What = 'the census calls the house stripper, not a copy'; Code = $true }
     # -------------------------------------------- MH-2, 13 Oct 2026
     # The CRS delete confirmations are the house danger header
     # now, like the sixteen in the first root. Bootstrap's
@@ -2277,7 +2282,8 @@ $suites = @(
     'test_help_label.py',
     'test_pi_leases.py',
     'test_dash_std.py',
-    'test_modal_heads2.py'
+    'test_modal_heads2.py',
+    'test_py_code.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

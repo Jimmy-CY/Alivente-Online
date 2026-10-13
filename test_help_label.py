@@ -176,22 +176,12 @@ def css_of(text):
                      for a, b in alv_cssrules.style_spans(text))
 
 
-def code_lines(src):
-    """Python with its comments AND its docstrings blanked, line for line.
-
-    A GATE READS CODE, NOT THE RECORD OF CODE, in BOTH syntaxes. This
-    round leaves behind a patcher whose docstring quotes the very span it
-    removes and a comment naming the call it replaced; a reader that
-    strips one of the two finds the obituary and calls it the corpse.
-    E-1b made the comment half of this mistake and E-10 the docstring
-    half, one round apart.
-    """
-    out = re.sub(r'(?m)^([ \t]*)#.*$', lambda m: m.group(1), src)
-
-    def blank(m):
-        return re.sub(r'[^\n]', ' ', m.group(0))
-
-    return re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'', blank, out)
+# E15, 13 Oct 2026 - WAS a private copy. Nine had grown
+# under four names and three algorithms, and all three
+# algorithms were wrong. alv_tree owns it now.
+# payloads=True, the default: this file asks what the code
+# DOES, so a triple-quoted payload is code and survives.
+code_lines = alv_tree.python_code_only
 
 
 print(__doc__.strip().split('\n')[0])

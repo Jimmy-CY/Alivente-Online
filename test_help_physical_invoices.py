@@ -45,6 +45,11 @@ import os
 import re
 import sys
 
+# E15, 13 Oct 2026 - this file kept its own Python stripper
+# because it had never imported the module that should have
+# owned one.
+import alv_tree                                             # noqa: E402
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 HELP = os.path.join(ROOT, 'pages', 'help_content', 'operational.html')
 CMDS = os.path.join(ROOT, 'pages', 'management', 'commands')
@@ -202,15 +207,12 @@ check('the help says two conditions decide it',
 # Logged as E15: it belongs in alv_tree beside code_only, whose
 # docstring already points at "python_code_only in the suites that scan
 # .py" as though it were one thing.
-def _py_code_only(text):
-    # The triple quote is built rather than written, because this
-    # function is itself delivered inside a triple-quoted string and a
-    # literal one closes the patcher's own constant. The first attempt
-    # did exactly that and Python refused the patcher.
-    q3 = chr(34) * 3
-    out = re.sub(r'(?m)^([ \t]*)#.*$', lambda m: m.group(1), text)
-    return re.sub(q3 + r'[\s\S]*?' + q3 + r"|'''[\s\S]*?'''",
-                  lambda m: re.sub(r'[^\n]', ' ', m.group(0)), out)
+# E15, 13 Oct 2026 - WAS a private copy. Nine had grown
+# under four names and three algorithms, and all three
+# algorithms were wrong. alv_tree owns it now.
+# payloads=True, the default: this file asks what the code
+# DOES, so a triple-quoted payload is code and survives.
+_py_code_only = alv_tree.python_code_only
 
 
 PREP_CODE = _py_code_only(PREP_SRC)

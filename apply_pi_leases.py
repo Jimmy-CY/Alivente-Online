@@ -115,6 +115,11 @@ import os
 import re
 import sys
 
+# E15, 13 Oct 2026 - this file kept its own Python stripper
+# because it had never imported the module that should have
+# owned one.
+import alv_tree                                             # noqa: E402
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 SUFFIX = '.bak_pileases'
@@ -147,27 +152,12 @@ def refuse(msg):
     raise SystemExit('PI-1 REFUSED: %s' % msg)
 
 
-def python_code_only(text):
-    """Python with its comments AND its docstrings blanked, line for line.
-
-    A GATE READS CODE, NOT THE RECORD OF CODE, AND THE RECORD COMES IN
-    TWO SPELLINGS. E-1b made the comment half of this mistake, E-10 the
-    docstring half a day later - and this round made it a THIRD time,
-    inside a gate written twenty lines below a stripper that would have
-    caught it. The refusal read:
-
-        PI-1 REFUSED: prepare_physical_invoices.py still selects by
-        tenant_current
-
-    on a file where the only surviving `tenant_current` was in the new
-    function's own docstring, explaining what the old query used to ask.
-    The gate was quoting the obituary and calling it the corpse.
-
-    So there is exactly one of these now and both gates call it.
-    """
-    out = re.sub(r'(?m)^([ \t]*)#.*$', lambda m: m.group(1), text)
-    return re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'',
-                  lambda m: re.sub(r'[^\n]', ' ', m.group(0)), out)
+# E15, 13 Oct 2026 - WAS a private copy. Nine had grown
+# under four names and three algorithms, and all three
+# algorithms were wrong. alv_tree owns it now.
+# payloads=True, the default: this file asks what the code
+# DOES, so a triple-quoted payload is code and survives.
+python_code_only = alv_tree.python_code_only
 
 
 def once(text, lit, where):

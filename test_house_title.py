@@ -92,6 +92,7 @@ def _goto(pg, path):
     return True
 # ------------------------------------------------------------------------
 import difflib
+import functools
 import os
 import re
 import sys
@@ -468,7 +469,11 @@ for name in (X0, X11):
     # CO-1, 3 Oct 2026 - python_code_only. The name changed, not
     # the claim: this one reads PYTHON source, and the forty-five
     # that read markup used to share its name.
-    ok('def python_code_only(' in t
+    # E15, 13 Oct 2026 - WAS `'def python_code_only(' in t`. The
+    # claim has not changed - this detector strips comments before
+    # it reads - but the definition went home to alv_tree, so the
+    # evidence is an alias and a call rather than a def.
+    ok(re.search(r'(?m)^python_code_only = ', t) is not None
        and 'text = python_code_only(text)' in t,
        '%-24s strips comments before it detects' % name)
     ok('import tokenize' in t,
@@ -499,9 +504,15 @@ if len(det) == 2:
 if X0 in det:
     ns = {}
     src = det[X0]
+    # E15, 13 Oct 2026 - lift ONE def, and hand it the stripper
+    # from alv_tree. It used to lift two, because the detector
+    # and its stripper both lived in that file. The stripper went
+    # home; the detector did not, and this control still runs it.
     grabs = [re.search(r'^def %s\(.*?\n(?=^\S)' % f, src, re.M | re.S)
-             for f in ('code_only', 'walks_own_root')]
+             for f in ('walks_own_root',)]
     if all(grabs):
+        ns['python_code_only'] = functools.partial(
+            alv_tree.python_code_only, payloads=False)
         exec('import io, os, re, tokenize\n'
              + '\n'.join(g.group(0) for g in grabs), ns)
         w = ns['walks_own_root']

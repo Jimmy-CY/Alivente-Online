@@ -105,6 +105,11 @@ import os
 import re
 import sys
 
+# E15, 13 Oct 2026 - this file kept its own Python stripper
+# because it had never imported the module that should have
+# owned one.
+import alv_tree                                             # noqa: E402
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 import alv_rounds                                               # noqa: E402
@@ -163,17 +168,12 @@ def before(p):
     return read(b)
 
 
-def python_code_only(text):
-    """Python with its comments AND its docstrings blanked, line for line.
-
-    A GATE READS CODE, NOT THE RECORD OF CODE, AND THE RECORD COMES IN
-    TWO SPELLINGS. This round's own patcher refused on its own docstring
-    - the new function explains what the old query used to ask, and the
-    gate read the explanation as the thing. Third time in three rounds.
-    """
-    out = re.sub(r'(?m)^([ \t]*)#.*$', lambda m: m.group(1), text)
-    return re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'',
-                  lambda m: re.sub(r'[^\n]', ' ', m.group(0)), out)
+# E15, 13 Oct 2026 - WAS a private copy. Nine had grown
+# under four names and three algorithms, and all three
+# algorithms were wrong. alv_tree owns it now.
+# payloads=True, the default: this file asks what the code
+# DOES, so a triple-quoted payload is code and survives.
+python_code_only = alv_tree.python_code_only
 
 
 print(__doc__.strip().split('\n')[0])
@@ -557,7 +557,14 @@ check('  and it asserts the command does NOT reach for _lease_month',
 # why it is not used. Fourth time this week; there are now five private
 # copies of this stripper in the repo, logged as E15.
 check('    reading CODE, not the docstring that explains the old rule',
-      'def _py_code_only(' in hs and 'PREP_CODE = _py_code_only(' in hs)
+      # E15, 13 Oct 2026 - WAS `'def _py_code_only(' in hs`. The
+      # comment above says five private copies were logged as E15;
+      # this is that round, and the help suite aliases alv_tree
+      # now instead of carrying a sixth. What is asked has not
+      # changed - the suite reads CODE - only where the code
+      # comes from.
+      '_py_code_only = alv_tree.python_code_only' in hs
+      and 'PREP_CODE = _py_code_only(' in hs)
 check('    CONTROL: and it requires the explanation to SURVIVE - the '
       'record of why is worth keeping',
       "'tenant_current' in PREP_SRC" in hs

@@ -1106,6 +1106,7 @@ ROUNDS = [
     '.bak_pileases',
     '.bak_dashstd',
     '.bak_modalhead2',
+    '.bak_pycode',
 ]
 
 

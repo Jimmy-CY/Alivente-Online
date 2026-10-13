@@ -584,12 +584,21 @@ rows = [ln.rstrip() for ln in blk.split('\n')
 ok(not rows[-1].endswith(','),
    '  and $sentinels does not end in a comma', rows[-1][-46:])
 
-wd = read(os.path.join(ROOT, 'test_waiting_down.py'))
+# E15, 13 Oct 2026 - AS MH-2 LEFT IT, not as it stands today.
+# Third round running to need this repair, and the first one
+# where the suite being repaired was written by the round that
+# wrote the lesson down. A suite asking about its OWN round must
+# read the file as its own round left it.
+wd = (as_left_by(os.path.join(ROOT, 'test_waiting_down.py'),
+                 SUFFIX, read) if as_left_by
+      else read(os.path.join(ROOT, 'test_waiting_down.py')))
 for lit, what in (('CONVERTED_N = 69', 'CONVERTED is 69'),
                   ('WAITING_N = 2', 'WAITING is 2'),
                   ('CEILING = 39', 'the walker ceiling is 39')):
     ok(lit in wd, '  %s' % what)
-x0 = read(os.path.join(ROOT, 'test_tree_roots.py'))
+x0 = (as_left_by(os.path.join(ROOT, 'test_tree_roots.py'),
+                 SUFFIX, read) if as_left_by
+      else read(os.path.join(ROOT, 'test_tree_roots.py')))
 ok('WALKERS_OWN_ROOT_MAX = 39' in x0,
    '  and test_tree_roots agrees - it may only FALL')
 
