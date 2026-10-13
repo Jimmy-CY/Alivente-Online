@@ -295,7 +295,14 @@ for prefix, floor, why in (('.filter', 13, 'filter panel'),
                            # counted were the More menu's, and base owns
                            # those now. What is left is this page's own.
                            ('.action-', 2, 'page-header buttons'),
-                           ('.modal', 10, 'delete modal')):
+                           # MH-2, 13 Oct 2026 - 10 to 9. The rule
+                           # that went was .modal-header.bg-danger,
+                           # which carried !important and pointed at
+                           # an element no longer wearing bg-danger.
+                           # A rule with no target. The floor moves
+                           # by exactly one, the way H9 moved it
+                           # from 7 to 2.
+                           ('.modal', 9, 'delete modal')):
     check('  %-10s still has %d rules (>= %d expected: %s)'
           % (prefix, group(prefix), floor, why), group(prefix) >= floor)
 

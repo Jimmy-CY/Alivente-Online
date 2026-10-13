@@ -289,6 +289,13 @@ CONVERTED = [
     # standards, and the round that found the page could not be
     # used from a keyboard at all.
     'test_dash_std.py',
+    # MH-2, 13 Oct 2026 - the last held suite that was work. It
+    # passed 13/0 while saying EVERY modal header in the system
+    # wears the class, which was true of one root. Widened it
+    # sees five more, four of them the round.
+    'test_modal_heads.py',
+    # MH-2's own suite.
+    'test_modal_heads2.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -352,8 +359,6 @@ WAITING = {
         'tree, and that gap is a stated position. [reason '
         'replaced E-10, 11 Oct 2026 - it said 120 and 146, and '
         'both numbers had moved]',
-    'test_modal_heads.py':
-        'pages  the Recipe View close strip, recorded but unresolved',
     'test_surface_deep.py':
         'pages  background literals survive, and its 93 border uses wait on F2b',
 }

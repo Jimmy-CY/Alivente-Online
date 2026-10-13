@@ -465,9 +465,11 @@
     border: 1px solid var(--alv-line);
 }
 
+/* MH-2 - the background and the border were outranked by base,
+   which is !important. The radius is not: base owns the header
+   and does not own its corners. 8px here, 4px on help_page and
+   Bootstrap 4.8px everywhere else - recorded, not fixed. */
 .modal-header {
-    background: var(--alv-surface);
-    border-bottom: 1px solid var(--alv-line);
     border-radius: 8px 8px 0 0;
 }
 

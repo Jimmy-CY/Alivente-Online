@@ -241,12 +241,10 @@
     border: none;
     overflow: hidden;
 }
-#prorataPreviewModal .modal-header {
-    background: linear-gradient(135deg, var(--alv-bad) 0%, #e83e8c 100%);
-    color: var(--alv-on-accent);
-    border-bottom: none;
-    padding: 16px 22px;
-}
+/* MH-2 - WAS a red-to-pink gradient on the Pro-Rata Preview
+   header. It has not painted since base took the component: an
+   id selector loses to !important however specific it is. The
+   header has worn .alv-modal-head the whole time. */
 #prorataPreviewModal .modal-title {
     color: var(--alv-on-accent);
     font-weight: 600;

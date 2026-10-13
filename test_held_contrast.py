@@ -110,7 +110,14 @@ RELEASED = ('test_contrast.py', 'test_compound_rules.py')
 # against it. test_button_sweep PASSES widened and is still held, for a
 # better reason: its narrow root rebuilds a pre-sweep tree from that
 # round's own backups, so it is a stated position and not debt.
-STILL_HELD = ('test_modal_heads.py', 'test_button_sweep.py')
+# MH-2, 13 Oct 2026 - test_modal_heads comes off this list. E-1b
+# wrote that it STILL FAILED WIDENED, on the reason recorded
+# against it, and that was true: widened it found the Recipe View
+# close strip. What E-1b could not see is that widening it also
+# found four Bootstrap danger headers in the second root. MH-2
+# converted those and left the close strip on the LEAVE list with
+# its reason, which is what E-1b was waiting for.
+STILL_HELD = ('test_button_sweep.py',)
 DEAD_PAGE = 'crs/submission_detail.html'
 WAITING_AFTER = 6
 CEILING_AFTER = 43
@@ -251,9 +258,18 @@ for n in RELEASED:
 
 for n in STILL_HELD:
     check('%s is STILL held' % n, n in alv_tree.WAITING)
-check('  and modal_heads for the reason recorded against it',
-      'Recipe View' in alv_tree.WAITING.get('test_modal_heads.py', ''),
-      alv_tree.WAITING.get('test_modal_heads.py', 'not held at all'))
+# MH-2, 13 Oct 2026 - the reason did not go away, it MOVED. It
+# used to be a line on alv_tree.WAITING explaining why the suite
+# could not be widened; it is now a named entry on that suite's
+# own LEAVE list, which is a stronger place for it - a reader of
+# the suite finds it, where a reader of alv_tree never would.
+# Asking the live WAITING for it after the suite is released is
+# asking the wrong object.
+check('  and the Recipe View reason moved onto the suite LEAVE '
+      'list, where a reader of the suite will find it',
+      'Recipe View' in read(os.path.join(ROOT,
+                                        'test_modal_heads.py')),
+      'not on the LEAVE list either')
 print('        modal_heads, widened against ROOT - which is what IT calls')
 print('        the template directory - still fails on the Recipe View')
 print('        close strip. That reason is not stale.')

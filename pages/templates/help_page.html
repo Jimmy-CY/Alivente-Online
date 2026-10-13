@@ -377,9 +377,9 @@
   .manual-modal .modal-dialog {
     max-width: 780px;
   }
+  /* MH-2 - background and colour were outranked by base. The
+     4px radius is live and is left alone. */
   .manual-modal .modal-header {
-    background: linear-gradient(135deg, var(--alv-accent), var(--alv-accent-ink));
-    color: var(--alv-on-accent);
     border-radius: 4px 4px 0 0;
   }
   .manual-modal .modal-header .close {
@@ -628,9 +628,9 @@
     display: flex;
     flex-direction: column;
   }
+  /* MH-2 - same, and the flex-shrink is live too. It took three
+     widenings of the probe to find that one. */
   .manual-preview-modal .modal-header {
-    background: linear-gradient(135deg, var(--alv-accent), var(--alv-accent-ink));
-    color: var(--alv-on-accent);
     border-radius: 4px 4px 0 0;
     flex-shrink: 0;
   }

@@ -111,6 +111,8 @@ import re
 import sys
 from collections import Counter
 
+import alv_tree
+
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
 if not os.path.isdir(ROOT):
     sys.exit('! pages/templates not found - run from the repo root')
@@ -190,8 +192,17 @@ def mask(t):
     return re.sub(r'\{#.*?#\}', blank, t, flags=re.S)
 
 
-OPEN = re.compile(r'<div\s+class="([^"]*\b(?:modal-header|ei-modal-header)'
-                  r'\b[^"]*)"([^>]*)>')
+# MH-2, 13 Oct 2026 - AN EXACT CLASS TOKEN, not \b. `-` is not a
+# word character, so `\bmodal-header\b` matched inside
+# `xml-modal-header` - the CRS XML viewer's own chrome, which is not
+# a pop-up header at all and is already fully on house tokens. It
+# never mattered while this walk could not reach the second root.
+# E-10 made exactly this fix on the FOOTER side in
+# Show-ButtonDrift.py three days ago; this is its twin. Measured:
+# 97 headers seen loose, 96 with the token, and the one that goes
+# is the XML Viewer.
+OPEN = re.compile(r'<div\s+class="([^"]*(?<![-\w])(?:modal-header|ei-modal-header)'
+                  r'(?![-\w])[^"]*)"([^>]*)>')
 
 
 def heads(text):
@@ -260,12 +271,23 @@ LEAVE = {'recipe_management.html':
          'close strip - no border, 8px padding, and a title a script '
          'fills in that is never shown. A pop-up header by markup, not '
          'by intent. [E1]'}
+# NOT ON THE LIST ABOVE, AND NOT COUNTED - because mask() blanks
+# <script> before this walk ever sees them. home.html twice and
+# notifications.html once BUILD their modal header inside a
+# JavaScript string, so no header gate in this system can see
+# them. E11 logs twenty BUTTONS built the same way and prices
+# none; nobody had logged that the blind spot covers headers too.
+# Demetri's decision, 13 Oct 2026: it is ONE blind spot, not two,
+# and the whole script-built set gets priced in a single round
+# rather than chipped at. Recorded here so the next person reading
+# 'EVERY modal header in the system' knows what every means.
+SCRIPT_BUILT = {'home.html': 2, 'notifications.html': 1}
 naked = []
-for d, _, fs in os.walk(ROOT):
+for d, _, fs in alv_tree.walk3():
     for f in sorted(fs):
         if not f.endswith('.html') or '.bak' in f:
             continue
-        rel = os.path.relpath(os.path.join(d, f), ROOT).replace('\\', '/')
+        rel = alv_tree.rel(os.path.join(d, f))
         if rel == 'base.html':
             continue
         for cls, _rest, title in heads(read(os.path.join(d, f))):

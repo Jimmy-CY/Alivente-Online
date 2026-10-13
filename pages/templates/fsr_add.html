@@ -52,9 +52,12 @@
       <label for="issues_description"><strong>Issue Description</strong> <span class="alv-req">*</span></label>
       <input placeholder="Issue Description" type="text" id="issues_description" class="form-control" name="issues_description" maxlength="50" required>
     </div>
-    <div class="form-group col-md-1">
-      <input type="hidden" id="issues_resolution_date" name="issues_resolution_date" value="1900-01-01">
-    </div>
+    {# MH-2, 13 Oct 2026 - WAS a hidden input seeding #}
+    {# issues_resolution_date with 1900-01-01. The four other #}
+    {# spellings of that date, on fsr.html, are JavaScript #}
+    {# sort fallbacks - a.dataset.date || 1900-01-01 - in two #}
+    {# comparators, so a row with no date sorts oldest. They #}
+    {# stay. This one was the item. #}
   </div>
 
 </div>

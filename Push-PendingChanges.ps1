@@ -856,6 +856,11 @@ $sentinels = @(
     # Bootstrap red, measured, on three screens.
     @{ File = 'crs\templates\crs\country_list.html'; Text = 'btn btn-danger'; What = 'the CRS delete modals wear house tones, not Bootstrap'; Absent = $true; Code = $true },
     @{ File = 'crs\templates\crs\submission_list.html'; Text = 'btn btn-secondary'; What = 'and their Cancel is paper, not solid grey'; Absent = $true; Code = $true }
+    # -------------------------------------------- MH-2, 13 Oct 2026
+    # The CRS delete confirmations are the house danger header
+    # now, like the sixteen in the first root. Bootstrap's
+    # bg-danger coming back here is the regression.
+    @{ File = 'crs\templates\crs\submission_list.html'; Text = 'modal-header bg-danger'; What = 'the CRS delete header is base .alv-modal-head--danger'; Absent = $true; Code = $true }
     # -------------------------------------------- DB-5, 12 Oct 2026
     # The landing dim. 0.45 put the tile label at 2.54:1 and the
     # accent icon at 1.91:1 on the page you arrive at, and no
@@ -2271,7 +2276,8 @@ $suites = @(
     'test_drift_root.py',
     'test_help_label.py',
     'test_pi_leases.py',
-    'test_dash_std.py'
+    'test_dash_std.py',
+    'test_modal_heads2.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

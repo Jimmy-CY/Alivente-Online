@@ -255,14 +255,22 @@ check('  in %d different values, which with base made four'
       ', '.join('%s x%d' % (k, len(v)) for k, v in sorted(was.items())))
 
 # ---------------------------------------------------------------------- 4
-head('4. THE THREE THAT KEPT THEIR MARGIN')
+head('4. THE THREE MARGINS FC-1 LEFT, AND MH-2 TOOK')
 
 for rel in KEPT_MARGIN:
     p = alv_tree.path_of(rel)
     t = read(p)
     m2 = re.search(r'(?<![-\w])\.form-card\s*\{([^{}]*)\}', css_of(t))
-    check('  %s still sets margin-bottom: 14px' % rel,
-          m2 is not None and 'margin-bottom: 14px' in m2.group(1),
+    # MH-2, 13 Oct 2026 - WAS 'still sets margin-bottom: 14px'.
+    # FC-1 left these three on purpose and said why: a round that
+    # changes two things cannot say which one moved, so the
+    # margin was named as a second question about the same
+    # component. MH-2 asked it. The rules were empty but for
+    # that one declaration - an earlier round had already taken
+    # everything else out - so the declaration and the rule went
+    # together, and all three pages take base's 22px.
+    check('  %s has given its margin up to base 22px' % rel,
+          m2 is None or 'margin-bottom: 14px' not in m2.group(1),
           '' if m2 is None else ' '.join(m2.group(1).split())[:40])
     check('    CONTROL: and its backup carried the radius beside it',
           'border-radius' in ' '.join(

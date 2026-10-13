@@ -84,7 +84,10 @@ DRIFT_MAX = 15          # decisions 12 and 15 bring this down
 DEAD_MAX = 227          # DW-1 brings this to nought
 IMP_PAGES = 784         # excluding base and the twelve standalone
 IMP_BASE = 73
-IMP_TREE = 858          # every <style> body in all 151 templates
+IMP_TREE = 857   # MH-2, 13 Oct 2026 - suppliers' one
+# !important left the tree with the rule that carried it: it beat
+# base, and pointed at an element that no longer wears bg-danger.
+# (was 858)          # every <style> body in all 151 templates
 
 passed = failed = skipped = 0
 

@@ -347,7 +347,13 @@ Suppliers
 .btn-info:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 /* Modal Enhancements */
-.modal-header.bg-danger { background-color: var(--alv-bad) !important; }
+/* MH-2 - dead for a DIFFERENT reason from the other ten. This one
+   carries !important itself, so it would win - but no element on
+   the page wears bg-danger any more. A rule with no target.
+   It is also the one that reported LIVE with no differing
+   property: 518 computed properties each side, the two sets
+   identical, the joined strings different. Removing a rule
+   changes the order the browser walks its own property list. */
 .modal-header .close { color: var(--alv-on-accent); opacity: 0.8; }
 .modal-header .close:hover { opacity: 1; }
 

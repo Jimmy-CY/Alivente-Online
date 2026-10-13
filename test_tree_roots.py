@@ -110,7 +110,8 @@ CRS_PAGES = [
 #
 #     So it is measured with the gate's own detector, after the round, and
 #     it may only FALL. Each later round that converts a census lowers it.
-WALKERS_OWN_ROOT_MAX = 40   # HL-1, 12 Oct 2026 - one more
+WALKERS_OWN_ROOT_MAX = 39   # MH-2, 13 Oct 2026 - one more
+# census converted, and it may only FALL.   # (was 40)   # HL-1, 12 Oct 2026 - one more
 # census converted, and it may only FALL.   # (was 42)   # E-10, 11 Oct 2026 - one more
 # census converted, and it may only FALL. Show-ButtonDrift.py is
 # still on this list and stays there: E-10 widened the way it

@@ -995,9 +995,17 @@ rows = [ln.rstrip() for ln in blk.split('\n')
 ok(not rows[-1].endswith(','),
    '  and $sentinels does not end in a comma', rows[-1][-46:])
 
+# MH-2, 13 Oct 2026 - AS DB-5 LEFT IT, not as it stands today.
+# These two numbers moved the moment the next round touched the
+# census, and this suite then reported that DB-5 had done
+# something it had not. DB-5 made this very repair to
+# test_drift_root and wrote the lesson into its own prose - and
+# made the same mistake, the same day, in the suite beside it.
+# A suite asking about its OWN round must read the file as its
+# own round left it. Lesson 40, for the third time this week.
 wd = os.path.join(ROOT, 'test_waiting_down.py')
 if os.path.isfile(wd):
-    w = read(wd)
+    w = as_left_by(wd, SUFFIX, read) if as_left_by else read(wd)
     ok('CONVERTED_N = 67' in w,
        'CONVERTED_N is 67 - this round\'s own suite joined')
     ok('CEILING = 40' in w,

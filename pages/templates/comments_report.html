@@ -204,13 +204,11 @@
     overflow: hidden;
 }
 
+/* MH-2, 13 Oct 2026 - every declaration here but the gap was
+   outranked by base .alv-modal-head, which is !important.
+   Measured by rendering with and without, over the whole
+   computed style: only the gap moves. */
 .modal-header {
-    background: linear-gradient(135deg, var(--alv-accent) 0%, var(--alv-accent-ink) 100%);
-    color: var(--alv-on-accent);
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     gap: 12px;
 }
 
