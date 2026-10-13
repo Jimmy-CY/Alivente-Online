@@ -164,6 +164,23 @@ def was(p):
     return read(b) if os.path.isfile(b) else read(p)
 
 
+# ADDED BY RS-1a, 13 Oct 2026 - THE PAGE AS F2b LEFT IT, which is not
+# the same as the page today. was() above is the before side and was
+# always right. The AFTER side of the render was read LIVE, so this
+# suite compared F2b's backup against whatever the page looks like now
+# - and the first later round to touch any of the six rendered pages
+# had its change reported as F2b's. RS-1a converted one Cancel on
+# recipe_management and this suite duly failed with a background-color
+# and two text-fill colours that F2b never moved.
+#
+# FIFTH occurrence of the as_left_by lesson. This file documents the
+# fourth, in its own section 6.
+def as_f2b_left_it(p):
+    if as_left_by is None:
+        return read(p)
+    return as_left_by(p, SUFFIX, read)
+
+
 def touched():
     return [p for p in alv_tree.templates() if os.path.isfile(p + SUFFIX)]
 
@@ -363,7 +380,9 @@ else:
         for p in sample:
             rel = alv_tree.rel(p)
             shots = {}
-            for tag, text in (('before', was(p)), ('after', read(p))):
+            # REPAIRED BY RS-1a: the after side was read(p), live.
+            for tag, text in (('before', was(p)),
+                              ('after', as_f2b_left_it(p))):
                 fx = os.path.join(SCRATCH, '%s_%s.html'
                                   % (rel.replace('/', '_'), tag))
                 with open(fx, 'w', encoding='utf-8') as fh:

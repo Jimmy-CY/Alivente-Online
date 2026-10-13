@@ -304,6 +304,8 @@ CONVERTED = [
     'test_surface_border.py',
     # E11, 13 Oct 2026 - the script census gets an owner.
     'test_js_buttons.py',
+    # RS-1a, 13 Oct 2026 - the recipe side starts catching up.
+    'test_recipe_tones.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

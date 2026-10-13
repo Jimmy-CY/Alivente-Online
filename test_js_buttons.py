@@ -188,6 +188,16 @@ def was(p):
     return read(b) if os.path.isfile(b) else read(p)
 
 
+def left_page(rel):
+    """A TEMPLATE as E11 left it. left() above is for repo-root files;
+    a page needs alv_tree.path_of first, and RS-1a is the round that
+    found out this suite needed it at all."""
+    p = alv_tree.path_of(rel)
+    if as_left_by is None:
+        return read(p)
+    return as_left_by(p, SUFFIX, read)
+
+
 def left(name):
     """Another suite's file AS E11 LEFT IT. Fifth round running: a
     snapshot claim about a counter has to read the counter through the
@@ -278,17 +288,29 @@ ok(mb.count('style="height: 38px;"') == 1
 # AND THE FOUR IN THAT PAGE'S MARKUP ARE STILL THERE. "I only touched
 # the script ones" is a claim until something checks it. These four are
 # the recipe-side sweep's, not E11's.
-n_markup = (ma.count('class="btn btn-secondary"')
-            + ma.count('class="btn btn-primary"'))
+# REPAIRED BY RS-1a, 13 Oct 2026. THIS WAS READ LIVE AND IT IS A
+# SNAPSHOT. The claim is "E11 did not touch this page's markup", which
+# is a fact about the day E11 ran - and RS-1a then converted all four of
+# those buttons, because they were four of its thirty-five. Read live,
+# E11's own suite reported that E11 had done something it did not.
+#
+# Sixth time this distinction has bitten in this project, and the first
+# where the round that made the mistake had the rule written in its own
+# docstring. It did not fail E11's sweep because nothing had moved yet;
+# it failed the moment the next round landed, which is the sweep working
+# and the round not.
+ml = left_page(MGT)
+n_markup = (ml.count('class="btn btn-secondary"')
+            + ml.count('class="btn btn-primary"'))
 ok(n_markup == MGT_MARKUP_BOOT,
-   '%s keeps its %d Bootstrap-toned button(s) IN MARKUP - they belong to '
-   'the recipe-side sweep' % (MGT[:28], MGT_MARKUP_BOOT),
+   '%s kept its %d Bootstrap-toned button(s) IN MARKUP - read as E11 '
+   'left it; RS-1a took them later' % (MGT[:28], MGT_MARKUP_BOOT),
    '%d found' % n_markup)
-ok(mb.count('class="btn btn-secondary"') == ma.count(
+ok(mb.count('class="btn btn-secondary"') == ml.count(
        'class="btn btn-secondary"')
-   and mb.count('class="btn btn-primary"') == ma.count(
+   and mb.count('class="btn btn-primary"') == ml.count(
        'class="btn btn-primary"'),
-   '  and not one of them moved')
+   '  and E11 moved none of them')
 
 # CONTROL: the scripts are still scripts. A round that deleted the block
 # would pass every count above.
@@ -671,8 +693,13 @@ else:
 head('5. THE REGISTERS, AND THE CLAIM THIS ROUND IS REALLY ABOUT')
 # ==========================================================================
 ok(ME in alv_tree.CONVERTED, '%s is in alv_tree.CONVERTED' % ME)
-ok(len(alv_tree.CONVERTED) == CONVERTED_NOW,
-   'CONVERTED holds %d' % CONVERTED_NOW, len(alv_tree.CONVERTED))
+# REPAIRED BY RS-1a: this was `==`, which is a snapshot dressed as an
+# invariant - every later round moves the register. What is true for
+# ever is that E11 ADDED one and the register never shrinks past it; the
+# exact number E11 left is asked of the pin below, through as_left_by.
+ok(len(alv_tree.CONVERTED) >= CONVERTED_NOW,
+   'CONVERTED holds at least the %d E11 left' % CONVERTED_NOW,
+   len(alv_tree.CONVERTED))
 wd = left(WD)
 ok('CONVERTED_N = %d' % CONVERTED_NOW in wd,
    '  and %s says %d, read as E11 left it' % (WD, CONVERTED_NOW))
@@ -707,9 +734,13 @@ ok(re.search(r'(?m)^def code_only\(',
                  read(os.path.join(ROOT, ME))) is None,
    '  CONTROL: and this suite defines neither of them')
 
-ok(ROUNDS and ROUNDS[-1] == SUFFIX,
-   '%s is last in alv_rounds.ROUNDS' % SUFFIX,
-   ROUNDS[-3:] if ROUNDS else 'empty')
+# REPAIRED BY RS-1a: "last" is true until the next round appends. What
+# the order has to say is that this round comes AFTER the one before it,
+# which is what as_left_by walks.
+ok(SUFFIX in ROUNDS and '.bak_surfborder' in ROUNDS
+   and ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_surfborder'),
+   '%s sits after .bak_surfborder in alv_rounds.ROUNDS' % SUFFIX,
+   ROUNDS[-4:] if ROUNDS else 'empty')
 ps1 = read(os.path.join(ROOT, PS1))
 for n in (ME,):
     ok("'%s'" % n in ps1, '%s is on the push gate' % n)

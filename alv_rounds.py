@@ -1109,6 +1109,7 @@ ROUNDS = [
     '.bak_pycode',
     '.bak_surfborder',
     '.bak_jsbtn',
+    '.bak_rstones',
 ]
 
 
