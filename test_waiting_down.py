@@ -80,10 +80,13 @@ PATCHER = 'apply_waiting_down.py'
 X0_SUITE = 'test_tree_roots.py'
 PS1 = 'Push-PendingChanges.ps1'
 
-CONVERTED_N = 70   # E15, 13 Oct 2026 - this round own suite   # (was 69)   # MH-2, 13 Oct 2026 - test_modal_heads released,
+CONVERTED_N = 71   # F2b, 13 Oct 2026 - this round own suite.
+# test_surface_deep is NOT released: its borders were the
+# decision, widening is a separate round.   # (was 70)   # E15, 13 Oct 2026 - this round own suite   # (was 69)   # MH-2, 13 Oct 2026 - test_modal_heads released,
 # plus this round own suite   # (was 67)   # DB-5, 12 Oct 2026 - this round own suite; no existing
 # suite was converted, so the ceiling does not move   # (was 66)   # HL-1, 12 Oct 2026 - one released plus this round own suite   # (was 63)   # E-10, 11 Oct 2026 - one released plus this round own suite   # (was 61)   # E-1b, 11 Oct 2026 - four released plus this round own suite   # (was 58)   # E-1a, 11 Oct 2026 - four released plus this round own suite   # (was 53)   # FC-1, 11 Oct 2026 - test_form_card_radius joins   # (was 52)   # IN-2, 11 Oct 2026 - test_lines_table joins   # (was 51)   # LB-1, 10 Oct 2026 - 49 + test_label_bold, freed here, plus this round own suite   # PQ-1, 10 Oct 2026      # 46 + test_required_promise.py, D-2, 9 Oct 2026
-WAITING_N = 2   # MH-2 - the last held suite that was work comes off.
+WAITING_N = 2   # F2b, 13 Oct 2026 - unchanged. The border decision
+# is taken, but widening the suite is its own round.   # (still 2)   # MH-2 - the last held suite that was work comes off.
 # The two left are a parked decision and a deliberate narrowness.   # (was 3)   # HL-1, 12 Oct 2026 - one off   # (was 5)   # E-10, 11 Oct 2026 - one off   # (was 6)   # E-1b, 11 Oct 2026 - four off   # (was 8)   # E-1a, 11 Oct 2026 - four off   # (was 12)   # LB-1, 10 Oct 2026 - test_label_bold came off   # PQ-1, 10 Oct 2026
 INDIRECT_N = 1
 CEILING = 38   # E15 - the census fell by one false positive   # (was 39)   # MH-2 - one more census   # (was 40)   # HL-1, 12 Oct 2026 - one more census   # (was 42)   # E-10, 11 Oct 2026 - one more census   # (was 43)   # E-1b, 11 Oct 2026 - four more censuses   # (was 45)   # E-1a, 11 Oct 2026 - four censuses converted   # (was 49)   # LB-1, 10 Oct 2026 - one census converted   # PQ-1, 10 Oct 2026

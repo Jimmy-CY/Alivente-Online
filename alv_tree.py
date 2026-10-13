@@ -300,6 +300,8 @@ CONVERTED = [
     'test_modal_heads2.py',
     # E15, 13 Oct 2026 - the Python stripper gets an owner.
     'test_py_code.py',
+    # F2b's own suite.
+    'test_surface_border.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -364,7 +366,12 @@ WAITING = {
         'replaced E-10, 11 Oct 2026 - it said 120 and 146, and '
         'both numbers had moved]',
     'test_surface_deep.py':
-        'pages  background literals survive, and its 93 border uses wait on F2b',
+        'pages  F2b took the 78 border uses on 13 Oct, so the DECISION is '
+        'no longer what holds it. WIDENING is: as_left_by hands it second-root '
+        'backups F2a never had a claim on - 6 phantom backgrounds and '
+        '15 phantom borders - and BL-2 scoped reader fixes those but '
+        'moves LEFT_BORDERS 93 to 56 and LEFT_CUSTOM 3 to 1. Both pins '
+        'need re-deriving. [reason replaced F2b, 13 Oct 2026]',
 }
 
 # FAILED the experiment WITHOUT walking a template root of its own - so
