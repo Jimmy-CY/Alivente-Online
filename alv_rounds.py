@@ -1108,6 +1108,7 @@ ROUNDS = [
     '.bak_modalhead2',
     '.bak_pycode',
     '.bak_surfborder',
+    '.bak_jsbtn',
 ]
 
 

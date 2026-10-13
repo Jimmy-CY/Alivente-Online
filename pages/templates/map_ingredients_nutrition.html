@@ -1449,7 +1449,7 @@ function renderDoneState() {
                 <button type="button" onclick="goBackToRecipe()" class="btn action-secondary" style="margin-right:10px;">
                     <i class="fas fa-arrow-left"></i> ${SCOPED_RETURN_LABEL}
                 </button>
-                ${stillToGo > 0 ? `<a href="?recipe_id={{ scoped_recipe.recipe_id|default:'' }}&return_to=recipe" class="btn btn-info"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}
+                ${stillToGo > 0 ? `<a href="?recipe_id={{ scoped_recipe.recipe_id|default:'' }}&return_to=recipe" class="btn action-primary"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}
             </div>
         `;
     } else {
@@ -1458,8 +1458,8 @@ function renderDoneState() {
                 <div class="icon"><i class="fas fa-check-circle"></i></div>
                 <h2>${headline}</h2>
                 <p>${sub}</p>
-                ${stillToGo > 0 ? `<a href="?" class="btn btn-info" style="margin-right:10px;"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}
-                <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary">
+                ${stillToGo > 0 ? `<a href="?" class="btn action-primary" style="margin-right:10px;"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}
+                <a href="{% url 'ingredient_base_units_management' %}" class="btn action-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Ingredients
                 </a>
             </div>

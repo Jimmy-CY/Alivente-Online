@@ -316,7 +316,33 @@ def spans(text, opening_re):
 # (0,1,0) rather than the paired `.btn.action-primary` (0,2,0) - and that
 # page defines its own `.action-primary`, later in the document. So base
 # loses, silently, on exactly the pages that look most converted.
-BTN = re.compile(r'<(a|button|span)\b[^>]*class="([^"]*(?:\bbtn\b|\baction-'
+# E11, 13 Oct 2026 - \bbtn\b WAS NOT THE TOKEN `btn`. A hyphen is not
+# a word character, so it also matched the btn ENDING icon-action-btn,
+# the btn OPENING btn-trends, and the btn in the MIDDLE of
+# add-new-btn-link. Measured over all 142 pages: 433 elements matched
+# on nothing but that, across 59 pages, and 36 more inside <script>.
+# Not one of them is a class base.html owns.
+#
+# NOTHING WAS WRONG, and that is the part worth writing down. They are
+# dropped one function later, by `if not boot and not has_house:
+# continue` in _scan, and the only two that DO sit inside a confirmed
+# bar are both action-more-item, which skip_reason() names. The one
+# thing between a page-local icon-action-btn and rebuild() prepending
+# `btn action-secondary` to it was whether somebody put that button
+# inside a .page-action-buttons.
+#
+# Priced before it was agreed: 706 scanner hits over the whole
+# application become 704, and exactly TWO pages change - asset_detail
+# and celebration_management, each losing a row that was already
+# `skipped` with a reason. bars() decides what a bar IS from this same
+# regex; had bar detection moved, far more than two pages would differ.
+#
+# NOT FIXED, AND RECORDED: finditer does not overlap, so a control
+# nested inside another control is invisible here. lease_timeline.html
+# writes btn-label-full / btn-label-short spans inside its nav buttons
+# and the outer match swallows all eight. They are labels today.
+BTN = re.compile(r'<(a|button|span)\b[^>]*class="([^"]*(?:(?<![-\w])btn(?![-\w])'
+                 r'|\baction-'
                  r'(?:primary|secondary|danger|back|add-new|btn-back)\b|'
                  r'\bback-button\b)[^"]*)"[^>]*>(.*?)</\1>', re.S)
 
@@ -1126,8 +1152,21 @@ def main():
     # ---------------------------------------------------------------------
     # buttons that only exist once JavaScript has run
     # ---------------------------------------------------------------------
+    # E11, 13 Oct 2026 - THE CENSUS IS NOT SCOPED BY THE FLAG.
+    # `files` is templates(recipes), so without --recipes this loop
+    # asked 117 of the application's 142 pages - and the five
+    # Bootstrap-toned script buttons left in this codebase were all on
+    # the other 25. The report said 0 in 0 and meant 0 in 0 OF A
+    # SUBSET. A markup sweep can have a scope, because rewriting is
+    # scoped work and the recipe side was deferred by name. A CENSUS
+    # cannot: it exists to say what is left, and it has to be asked of
+    # everything or it says nothing.
+    #
+    # templates(True) stays inside pages/templates - test_drift_root
+    # already asserts no crs/ page appears in it, so this widens the
+    # census and still does not reach the second root.
     js_rows = []
-    for _f in files:
+    for _f in templates(True):
         for _hit in js_buttons(read(resolve(_f))):
             js_rows.append((_f,) + _hit)
 
@@ -1223,6 +1262,11 @@ def main():
     print('  scope: %s' % ('the whole application'
                            if recipes else 'property management '
                            '(--recipes adds the recipe/meal-plan side)'))
+    # The line above is the MARKUP scope and the flag still sets it.
+    # The census below has no scope, and saying so here is what stops
+    # the next reader taking one number for the other. [E11]
+    print('  the <script> census is always all %d page(s), whatever '
+          'this scope says' % len(templates(True)))
     print('')
     if not rows and not unclassified:
         print('  Nothing drifting, and nothing undecided.')

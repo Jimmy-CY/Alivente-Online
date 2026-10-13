@@ -1177,8 +1177,23 @@ head('10. the fourth blind spot - buttons built inside <script>')
 # What changes is only the arithmetic: eight remain, in two pages, and
 # act_expense's twelve are now asserted DECIDED rather than untouched.
 
+# E11, 13 Oct 2026 - THE CORPUS WAS THE FAULT, NOT THE SCANNER.
+#
+# FILES is sb.templates(False): 117 of the application's 142 pages,
+# with the recipe/meal-plan side excluded by name. The check below
+# says nothing is left - its own comment says so out loud - and it
+# said it over 117 pages while five Bootstrap-toned script buttons
+# sat on the other 25. Same scanner, flag flipped: len(_all) 0 -> 5.
+#
+# THE CENSUS GETS ITS OWN CORPUS, AND FILES IS NOT WIDENED. The
+# markup walk above rebuilds a pre-sweep tree from .bak_btnsweep and
+# the recipe side has no such backup - widening FILES would hand this
+# suite live text in place of a snapshot, which is the as_left_by
+# mistake with the roles reversed. That narrowness is a stated
+# position on alv_tree.WAITING and E11 leaves it exactly where it is.
+JS_FILES = sb.templates(True)
 _js = {}
-for f in FILES:
+for f in JS_FILES:
     hits = sb.js_buttons(load(os.path.join(TPL, f)))
     if hits:
         _js[f] = hits
@@ -1248,6 +1263,18 @@ check('and the scan still sees into <script> on live pages (%d in %d, %d '
       # statement that nothing is left. The scanner-level CONTROL below
       # is what still guards the scan itself.
       len(_all) == 0 and len(_js) == 0 and len(_open) == 0)
+# E11's CONTROL, and the reason this round is not just five class
+# lists. The widening above is one identifier, and an identifier is
+# easy to put back. Without this check, the claim overhead can be
+# satisfied for ever by narrowing what it asks - which is precisely
+# how it came to be true over 117 pages and false over 142.
+#
+# check() in this suite takes a name and a boolean - no detail arm -
+# so the numbers go in the NAME, where they print either way.
+check('CONTROL: .. asked of all %d page(s), not the sweep scope of %d'
+      % (len(JS_FILES), len(FILES)),
+      len(JS_FILES) == len(sb.templates(True)) > len(FILES)
+      and bool([f for f in JS_FILES if sb.is_recipe_side(f)]))
 # THE INVARIANT, asked of the scanner rather than counted off the corpus, so
 # that finishing the last page is a pass and not a failure.
 check('CONTROL: .. and would still see one on the day no page has any',

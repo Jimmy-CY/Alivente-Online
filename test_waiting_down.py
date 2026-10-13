@@ -80,7 +80,7 @@ PATCHER = 'apply_waiting_down.py'
 X0_SUITE = 'test_tree_roots.py'
 PS1 = 'Push-PendingChanges.ps1'
 
-CONVERTED_N = 71   # F2b, 13 Oct 2026 - this round own suite.
+CONVERTED_N = 72   # E11, 13 Oct 2026 - this round own suite. test_button_sweep is NOT released: its markup walk is narrow by design and E11 widened only its census.   # (was 71)   # F2b, 13 Oct 2026 - this round own suite.
 # test_surface_deep is NOT released: its borders were the
 # decision, widening is a separate round.   # (was 70)   # E15, 13 Oct 2026 - this round own suite   # (was 69)   # MH-2, 13 Oct 2026 - test_modal_heads released,
 # plus this round own suite   # (was 67)   # DB-5, 12 Oct 2026 - this round own suite; no existing

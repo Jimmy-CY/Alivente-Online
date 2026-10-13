@@ -302,6 +302,8 @@ CONVERTED = [
     'test_py_code.py',
     # F2b's own suite.
     'test_surface_border.py',
+    # E11, 13 Oct 2026 - the script census gets an owner.
+    'test_js_buttons.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
@@ -358,13 +360,17 @@ ALREADY_WIDE = ['test_banner_pages.py',
 # not an oversight. Each entry comes off this list in the round it names.
 WAITING = {
     'test_button_sweep.py':
-        'pages  narrow BY DESIGN - its walk rebuilds a pre-sweep '
-        'tree from .bak_btnsweep, so widening it would copy the '
-        'second template root into a tree the sweep never '
-        'covered. 117 in the tool census against 151 in the '
-        'tree, and that gap is a stated position. [reason '
-        'replaced E-10, 11 Oct 2026 - it said 120 and 146, and '
-        'both numbers had moved]',
+        'pages  narrow BY DESIGN - its MARKUP walk rebuilds a '
+        'pre-sweep tree from .bak_btnsweep, so widening it would '
+        'copy the second template root into a tree the sweep never '
+        'covered. 117 in the markup scope against 151 in the '
+        'tree, and that gap is a stated position. Its <script> '
+        'census is NOT narrow: E11 gave that its own corpus of 142 '
+        'pages, because a census that reports what is LEFT cannot '
+        'have a scope. [reason replaced E11, 13 Oct 2026 - the 117 '
+        'has not moved, but it was called the tool census and there '
+        'are now two censuses with two numbers. Replaced E-10, 11 '
+        'Oct 2026 - it said 120 and 146, and both numbers had moved]',
     'test_surface_deep.py':
         'pages  F2b took the 78 border uses on 13 Oct, so the DECISION is '
         'no longer what holds it. WIDENING is: as_left_by hands it second-root '
