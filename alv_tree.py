@@ -315,6 +315,10 @@ CONVERTED = [
     # VC-1, 14 Oct 2026 - the gate's VOCABULARY, after RS-1b widened
     # its page scope. Wide from birth, same shape as RS-1b's.
     'test_vocabulary.py',
+    # PH-2, 14 Oct 2026 - the panel heads. Demetri asked why three
+    # recipe screens were green; the answer was a status token used
+    # as decoration. Wide from birth.
+    'test_panel_heads.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

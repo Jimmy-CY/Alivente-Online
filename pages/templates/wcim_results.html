@@ -106,14 +106,13 @@
 
   <!-- WORTH SHOPPING FOR tier -->
   {% if tier_groups.worth_shopping %}
-    <div class="card mb-4">
-      <div class="card-header bg-info text-white">
-        <h5 class="mb-0">
-          <i class="fas fa-shopping-cart"></i> Worth Shopping For
-          <span class="badge badge-light ml-2">{{ tier_groups.worth_shopping|length }}</span>
-        </h5>
+    <div class="alv-card mb-4">
+      <div class="alv-card-head">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="alv-card-title">Worth Shopping For</span>
+        <span class="alv-card-aside alv-tag">{{ tier_groups.worth_shopping|length }}</span>
       </div>
-      <div class="card-body">
+      <div class="alv-card-body">
         <div class="row">
           {% for r in tier_groups.worth_shopping %}
             <div class="col-md-4 mb-3">

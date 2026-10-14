@@ -1118,6 +1118,9 @@ ROUNDS = [
     # POSITION one house name, and _scan asks the register before
     # it gives up on a button.
     '.bak_vocab',
+    # PH-2, 14 Oct 2026 - six panel heads off the status palette
+    # and onto the house card, and .bg-light onto --alv-surface.
+    '.bak_panelheads',
 ]
 
 

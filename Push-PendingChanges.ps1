@@ -574,6 +574,21 @@ $sentinels = @(
     @{ File = 'pages\templates\ingredient_families.html'; Text = 'icon-action-btn icon-delete'; What = 'and the family icons stop being a near-white glyph on green at 2.97 to 1' },
     @{ File = 'pages\templates\create_meal_plan.html'; Text = 'aria-pressed'; What = 'the Favourites toggle carries its state in aria-pressed, not an inline style'; },
     @{ File = 'pages\templates\create_meal_plan.html'; Text = 'btn.style.background'; What = 'and no JavaScript paints it any more'; Absent = $true; Code = $true },
+    # ------------------------------------------------- PH-2, 14 Oct 2026
+    # Demetri asked why three recipe screens were green. Because a STATUS
+    # token was being used as decoration - base already mapped bg-success
+    # onto --alv-good, so they were house-coloured and semantically wrong.
+    @{ File = 'pages\templates\base.html'; Text = '.bg-light { background-color: var(--alv-surface)'; What = 'the last Bootstrap background utility is house-owned - a rename, not a recolour' },
+    @{ File = 'pages\templates\ingredient_families.html'; Text = 'alv-card-head'; What = 'and 28 family cards stop wearing the success colour as chrome' },
+    @{ File = 'pages\templates\wcim_results.html'; Text = 'bg-info'; What = 'the least-ready tier stops being the loudest thing on the page'; Absent = $true; Code = $true },
+    # AND NOT A SENTINEL FOR "Almost There KEEPS the amber". It was
+    # written as one and test_sentinels refused it, correctly: bg-warning
+    # is in all eight backed-up versions of that file, so the row could
+    # never fail and therefore asserted nothing. A sentinel catches a
+    # REGRESSION in something this round changed. "I deliberately did not
+    # touch this" belongs in the round's own suite, and section 2 of
+    # test_panel_heads.py says it there, with the reason attached.
+    @{ File = 'pages\templates\pantry_staples.html'; Text = 'var(--alv-good-soft)'; What = 'and 92 pantry chips leave a hex literal no colour census could see' },
     # A Django comment is not a flex item. RE-1b made this repair to one
     # fixture three days ago; this is the other one.
     @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' },
@@ -2316,7 +2331,8 @@ $suites = @(
     'test_recipe_tones.py',
     'test_recipe_photos.py',
     'test_recipe_side_b.py',
-    'test_vocabulary.py'
+    'test_vocabulary.py',
+    'test_panel_heads.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

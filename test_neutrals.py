@@ -415,7 +415,9 @@ cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
 # style-prop literal left the application and the var-safe subset lost it
 # too. A pin that only ever loosens asserts nothing, which is why these
 # are rewritten rather than relaxed.
-for want in ('MARKUP_STYLE = 88', 'SCRIPT = 148', 'PAGES = 36',
+# PH-2, 14 Oct 2026 - two more of the six move, and down. The pantry
+# chips were the last inline colour literal on their page.
+for want in ('MARKUP_STYLE = 87', 'SCRIPT = 148', 'PAGES = 35',
              "'style-attr': 22", "'style-prop': 8",
              'safe == 30'):
     ok(want in cr, '  CR-1 census now reads %s' % want)

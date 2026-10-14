@@ -89,10 +89,10 @@ RULES = os.path.join(ROOT, 'alv_cssrules.py')
 #   says 'no kcal data' on two pages. SCRIPT, style-attr and the
 #   var-safe total each came down by two; canvas and unknown did
 #   not move, because this round converted only var-safe ones.
-MARKUP_STYLE = 88      # colour literals in inline style= attributes
+MARKUP_STYLE = 87      # colour literals in inline style= attributes   # PH-2, 14 Oct 2026 - pantry_staples' 92 staple chips carried #f0fff4 inline; they carry var(--alv-good-soft) now, and that page has no hex literal left at all.   # (was 88)
 SCRIPT = 148            # colour literals inside <script> bodies   # VC-1, 14 Oct 2026 - create_meal_plan's Favourites toggle no longer writes #e74c3c from JavaScript; it carries aria-pressed and base paints it.   # (was 149)
 PRES = 0                # HTML presentation attributes carrying a colour
-PAGES = 36              # real pages carrying any of them
+PAGES = 35              # real pages carrying any of them   # PH-2 - and it was pantry_staples' ONLY one, so the page leaves this census   # (was 36)
 STANDALONE = 26         # on the twelve exempt templates - correct, and staying
 CTX = {'style-attr': 22, 'style-prop': 8, 'css-text': 0,   # VC-1 - the hex above was a style-prop write, the var-safe kind   # (style-prop was 9)
        'canvas': 27, 'unknown': 91}

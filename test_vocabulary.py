@@ -431,7 +431,23 @@ if sb_before is not None:
 head('6. THREE CONTROLS THAT BECAME ROW ACTIONS')
 # ==========================================================================
 _if = read(alv_tree.path_of('ingredient_families.html'))
-ok('class="row-actions"' in _if and 'display: flex; gap: 6px;' not in _if,
+# THE TOKEN, NOT THE ATTRIBUTE - repaired by PH-2, 14 Oct 2026. This read
+# `class="row-actions"` exactly, and PH-2 made the wrapper
+# `class="alv-card-aside row-actions"`: the pair is still in .row-actions
+# and the inline style is still gone, so the claim held and only the match
+# broke. Splitting the class list is also stricter than either - a page
+# that renamed the wrapper to `row-actions-wide` still fails here, which a
+# substring match would not notice.
+#
+# AND NO BACKSLASH IN THE NEEDLE, WHICH IS NOT STYLE. The first repair
+# wrote a word-boundary regex, and this text is a PAYLOAD inside a
+# non-raw triple-quoted string in apply_panel_heads.py: the two
+# characters backslash-b became a literal BACKSPACE in the file it wrote,
+# and the check failed against a page it was sitting in. Same family as
+# the docstring escaping that broke test_surface_border.py on 13 Oct.
+ok([c for _cl in re.findall('class="([^"]*)"', _if)
+    for c in _cl.split() if c == 'row-actions']
+   and 'display: flex; gap: 6px;' not in _if,
    'ingredient_families wraps its pair in .row-actions, and the inline '
    'style is gone')
 _base = read(alv_tree.path_of('base.html'))
@@ -588,10 +604,16 @@ ok(not _again,
 head('10. THE REGISTERS')
 # ==========================================================================
 ok(ME in alv_tree.CONVERTED, '%s is on alv_tree.CONVERTED' % ME)
-ok(len(alv_tree.CONVERTED) == CONVERTED_NOW,
-   '  CONVERTED holds %d' % CONVERTED_NOW, len(alv_tree.CONVERTED))
-ok(SUFFIX in ROUNDS and ROUNDS[-1] == SUFFIX,
-   '%s is the newest entry in alv_rounds.ROUNDS' % SUFFIX, ROUNDS[-3:])
+# A FLOOR, NOT AN EQUALITY - PH-2, 14 Oct 2026, and this is the third
+# round to make this repair in six days.
+ok(len(alv_tree.CONVERTED) >= CONVERTED_NOW,
+   '  CONVERTED holds at least %d' % CONVERTED_NOW,
+   len(alv_tree.CONVERTED))
+# AN ORDER, NOT "NEWEST" - PH-2, 14 Oct 2026. "Newest" is true for one
+# day. RS-1a repaired this exact check inside E11's suite, RS-1b inside
+# its own, and VC-1 was written with it the same afternoon.
+ok(SUFFIX in ROUNDS and ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_rsb'),
+   '%s is in alv_rounds.ROUNDS, after RS-1b' % SUFFIX, ROUNDS[-3:])
 _ps1 = read(os.path.join(ROOT, PS1))
 ok("'test_vocabulary.py'" in _ps1, 'the push script runs this suite')
 ok('--strict --recipes' in _ps1,

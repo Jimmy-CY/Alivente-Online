@@ -852,6 +852,14 @@
       a.text-success:hover, a.text-success:focus { color: var(--alv-good-ink) !important; }
 
       .bg-warning { background-color: var(--alv-warn) !important; }
+      /* AND .bg-light, PH-2, 14 Oct 2026 - A RENAME, NOT A RECOLOUR.
+         Bootstrap's value is #f8f9fa and --alv-surface is #f8f9fa, so this
+         declaration moves no pixel anywhere. What it moves is OWNERSHIP:
+         seven sites across five pages were using a Bootstrap utility whose
+         value happened to match the house token, and a value that matches
+         by coincidence stops matching the day the token is tuned.
+         The same move this file already made for its three siblings above. */
+      .bg-light { background-color: var(--alv-surface) !important; }
       .text-warning { color: var(--alv-warn) !important; }
       .border-warning { border-color: var(--alv-warn) !important; }
       .badge-warning { background-color: var(--alv-warn); color: var(--alv-on-accent); }

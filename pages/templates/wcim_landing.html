@@ -14,11 +14,12 @@
     {% csrf_token %}
 
     <!-- Anchor picker -->
-    <div class="card mb-3">
-      <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="fas fa-bullseye"></i> Pick your anchor(s)</h5>
+    <div class="alv-card mb-3">
+      <div class="alv-card-head">
+        <i class="fas fa-bullseye"></i>
+        <span class="alv-card-title">Pick your anchor(s)</span>
       </div>
-      <div class="card-body">
+      <div class="alv-card-body">
         <div class="anchor-grid">
           {% for anchor in anchors %}
             <label class="anchor-btn {% if anchor.slug in selected_anchors %}selected{% endif %}"

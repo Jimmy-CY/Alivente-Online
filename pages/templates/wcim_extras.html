@@ -15,11 +15,12 @@
     {% csrf_token %}
 
     <!-- Extras picker -->
-    <div class="card mb-3">
-      <div class="card-header bg-info text-white">
-        <h5 class="mb-0"><i class="fas fa-list-ul"></i> Optional extras</h5>
+    <div class="alv-card mb-3">
+      <div class="alv-card-head">
+        <i class="fas fa-list-ul"></i>
+        <span class="alv-card-title">Optional extras</span>
       </div>
-      <div class="card-body">
+      <div class="alv-card-body">
         {% if extras %}
           <p class="text-muted small mb-3">
             Ingredients commonly used in recipes that match your anchor.

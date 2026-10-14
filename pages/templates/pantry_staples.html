@@ -34,11 +34,12 @@
   </div>
 
   <!-- Current staples, grouped by category -->
-  <div class="card mb-4">
-    <div class="card-header bg-success text-white">
-      <h5 class="mb-0"><i class="fas fa-check-circle"></i> Your Staples</h5>
+  <div class="alv-card mb-4">
+    <div class="alv-card-head">
+      <i class="fas fa-check-circle"></i>
+      <span class="alv-card-title">Your Staples</span>
     </div>
-    <div class="card-body">
+    <div class="alv-card-body">
       {% if staples %}
         {% regroup staples by ingredient.category.name as staples_by_category %}
         {% for group in staples_by_category %}
@@ -56,7 +57,7 @@
                   <input type="hidden" name="action" value="remove">
                   <input type="hidden" name="staple_id" value="{{ staple.pk }}">
                   <div class="border rounded px-3 py-2 d-flex justify-content-between align-items-center"
-                       style="background: #f0fff4;">
+                       style="background: var(--alv-good-soft);">
                     <span style="font-size: 14px;">{{ staple.ingredient.name }}</span>
                     <button type="submit" class="icon-action-btn icon-delete" title="Remove">
                       <i class="fas fa-trash"></i>
@@ -74,11 +75,12 @@
   </div>
 
   <!-- Add an ingredient -->
-  <div class="card mb-4">
-    <div class="card-header bg-info text-white">
-      <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Add an Ingredient</h5>
+  <div class="alv-card mb-4">
+    <div class="alv-card-head">
+      <i class="fas fa-plus-circle"></i>
+      <span class="alv-card-title">Add an Ingredient</span>
     </div>
-    <div class="card-body">
+    <div class="alv-card-body">
       <form method="post">
         {% csrf_token %}
         <input type="hidden" name="action" value="add">
