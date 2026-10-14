@@ -1110,6 +1110,7 @@ ROUNDS = [
     '.bak_surfborder',
     '.bak_jsbtn',
     '.bak_rstones',
+    '.bak_pxphotos',
 ]
 
 

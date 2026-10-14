@@ -1861,6 +1861,75 @@ def recipe_image_upload_path(instance, filename):
     new_filename = f"recipe-{recipe_id}-{recipe_name_slug}-{timestamp}.{ext}"
     return os.path.join('recipe_images', new_filename)
 
+def recipe_display_upload_path(instance, filename):
+    """Where a derived display copy lives. PX-1, 13 Oct 2026.
+
+    Beside the masters, not among them: recipe_images_display/ rather
+    than recipe_images/. A later round that wants to count, archive or
+    rebuild the originals can do it with a directory listing instead of
+    a filename rule.
+    """
+    return os.path.join('recipe_images_display', filename)
+
+
+def make_display_jpeg(field_file, quality=85):
+    """The ONE place that knows how a display copy is made.
+
+    PX-1, 13 Oct 2026. Called from Recipe.save() for new uploads and
+    from the convert_recipe_photos command for the 324 already on the
+    volume, so a photo converted today and one converted next year are
+    the same photo. Returns JPEG bytes, or None if the source cannot be
+    read - a recipe with an unreadable image is not a reason to refuse a
+    save.
+
+    NO RESIZING. Measured 13 Oct: nothing in the library is over 1000px
+    on the long edge, and the sizes the app draws want up to about 1170.
+    Shrinking these would make a soft picture softer to save bytes that
+    the encoder gives up for nothing.
+
+    THE FLATTEN IS DEFENCE, NOT NEED. Measured the same day: 0 of 324
+    images have a single non-opaque pixel, though 322 carry an alpha
+    channel. If one ever does, white is what it lands on, chosen here
+    rather than discovered later as a black rectangle.
+    """
+    import io
+    from PIL import Image
+
+    if not field_file:
+        return None
+    try:
+        field_file.open('rb')
+        im = Image.open(field_file)
+        im.load()
+    except Exception:
+        return None
+    finally:
+        try:
+            field_file.close()
+        except Exception:
+            pass
+
+    rgba = im.convert('RGBA')
+    flat = Image.new('RGB', im.size, (255, 255, 255))
+    flat.paste(rgba, mask=rgba.split()[3])
+    out = io.BytesIO()
+    flat.save(out, 'JPEG', quality=quality, optimize=True,
+              progressive=True)
+    return out.getvalue()
+
+
+def display_name_for(original_name):
+    """The display copy's filename for a given original. PX-1.
+
+    The stem is the original's, so the two are obviously a pair on a
+    directory listing AND so staleness is decidable without a database
+    column: the original's name already carries a timestamp, so a
+    re-upload produces a new stem and the old display copy stops
+    matching.
+    """
+    return os.path.splitext(os.path.basename(original_name))[0] + '.jpg'
+
+
 def recipe_document_upload_path(instance, filename):
     """Generate upload path for recipe documents"""
     ext = filename.split('.')[-1]
@@ -1899,6 +1968,15 @@ class Recipe(models.Model):
     # Additional fields
     difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True)
     recipe_image = models.ImageField(upload_to=recipe_image_upload_path, blank=True, null=True)
+    # PX-1, 13 Oct 2026 - THE DERIVED DISPLAY COPY, never uploaded
+    # to directly. editable=False keeps it out of every ModelForm in
+    # the application, because a field nobody may set by hand cannot
+    # drift from the original it is derived from.
+    recipe_image_display = models.ImageField(
+        upload_to=recipe_display_upload_path, blank=True, null=True,
+        editable=False,
+        help_text='Derived JPEG of recipe_image. Rebuilt by '
+                  'manage.py convert_recipe_photos --write.')
     recipe_document = models.FileField(
         upload_to=recipe_document_upload_path,
         null=True,
@@ -1939,11 +2017,64 @@ class Recipe(models.Model):
         help_text='Sum of IDF for all ingredients in this recipe. Used as the denominator in WCIM match scoring. Recomputed by rebuild_recipe_stats.'
     )
     
+    @property
+    def photo_url(self):
+        """The URL to DRAW this recipe with. PX-1, 13 Oct 2026.
+
+        Display copy, else the original, else None. Fifteen call sites
+        ask this instead of reaching for recipe_image.url themselves -
+        eight Python serialisers and seven templates - so the question
+        of which file to serve is answered once.
+
+        The fallback is load-bearing while the batch runs: a recipe
+        whose display copy does not exist yet draws from its original
+        and looks exactly as it does today.
+        """
+        if self.recipe_image_display:
+            return self.recipe_image_display.url
+        if self.recipe_image:
+            return self.recipe_image.url
+        return None
+
+    def display_copy_is_stale(self):
+        """True when a display copy should be built. PX-1.
+
+        Asked of the NAMES, not of a flag: the original's filename
+        carries a timestamp, so a re-upload gives a new stem and the old
+        display copy stops matching. No column to forget to clear.
+        """
+        if not self.recipe_image:
+            return False
+        if not self.recipe_image_display:
+            return True
+        want = display_name_for(self.recipe_image.name)
+        return os.path.basename(self.recipe_image_display.name) != want
+
     def save(self, *args, **kwargs):
         # Auto-calculate total_time if not provided
         if not self.total_time and self.prep_time and self.cook_time:
             self.total_time = self.prep_time + self.cook_time
         super().save(*args, **kwargs)
+        # PX-1, 13 Oct 2026 - BUILD THE DISPLAY COPY ON UPLOAD, so the
+        # library cannot drift back. A one-time batch alone regresses the
+        # moment somebody adds a recipe.
+        #
+        # AFTER super().save(), because on a fresh upload recipe_image is
+        # still an in-memory file until Django has stored it. The second
+        # write names its one field, and a failure here must never lose
+        # the recipe the person just saved - the picture is worth less
+        # than the recipe.
+        if self.display_copy_is_stale():
+            try:
+                from django.core.files.base import ContentFile
+                data = make_display_jpeg(self.recipe_image)
+                if data is not None:
+                    self.recipe_image_display.save(
+                        display_name_for(self.recipe_image.name),
+                        ContentFile(data), save=False)
+                    super().save(update_fields=['recipe_image_display'])
+            except Exception:
+                pass
     
     def get_total_time_display(self):
         """Return formatted total time"""

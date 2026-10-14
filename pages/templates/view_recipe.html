@@ -1879,7 +1879,7 @@ body {
         <!-- Thumbnail Image in Header -->
         <div class="recipe-header-image">
             {% if recipe.recipe_image %}
-            <img src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-thumbnail">
+            <img src="{{ recipe.photo_url }}" alt="{{ recipe.recipe_name }}" class="recipe-thumbnail">
             {% else %}
             <div class="recipe-thumbnail-placeholder">
                 <i class="fas fa-utensils"></i>

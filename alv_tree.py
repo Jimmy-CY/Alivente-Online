@@ -306,6 +306,8 @@ CONVERTED = [
     'test_js_buttons.py',
     # RS-1a, 13 Oct 2026 - the recipe side starts catching up.
     'test_recipe_tones.py',
+    # PX-1, 13 Oct 2026 - the recipe photos get an owner.
+    'test_recipe_photos.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

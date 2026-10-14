@@ -152,7 +152,7 @@ def recipe_book_detail(request, recipe_id):
         'difficulty_level': recipe.difficulty_level,
         'author': recipe.author,
         'is_vegetarian': recipe.is_vegetarian,
-        'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+        'recipe_image': recipe.photo_url,
         'courses': [c.name for c in recipe.courses.all()],
         'categories': [c.name for c in recipe.categories.all()],
         'proteins': [p.name for p in recipe.proteins.all()],
@@ -345,7 +345,7 @@ def recipe_management(request):
             recipes_data.append({
                 'recipe_id': recipe.recipe_id,
                 'recipe_name': recipe.recipe_name,
-                'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+                'recipe_image': recipe.photo_url,
                 'prep_time': recipe.prep_time,
                 'cook_time': recipe.cook_time,
                 'servings': recipe.servings,
@@ -394,7 +394,7 @@ def recipe_management(request):
         all_recipes_for_book.append({
             'recipe_id': r.recipe_id,
             'recipe_name': r.recipe_name,
-            'recipe_image': r.recipe_image.url if r.recipe_image else None,
+            'recipe_image': r.photo_url,
             'prep_time': r.prep_time,
             'cook_time': r.cook_time,
             'servings': r.servings,
@@ -1315,7 +1315,7 @@ def edit_recipe(request, recipe_id):
         'servings': recipe.servings or 1,
         'difficulty_level': recipe.difficulty_level or '',
         'is_vegetarian': recipe.is_vegetarian,
-        'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+        'recipe_image': recipe.photo_url,
         'ingredients': existing_ingredients,
         'instructions': existing_instructions,
     }

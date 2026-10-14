@@ -2001,7 +2001,7 @@
     <div class="recipe-card">
         <div class="recipe-image-container">
             {% if recipe.recipe_image %}
-            <img loading="lazy" decoding="async" src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-image">
+            <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}" alt="{{ recipe.recipe_name }}" class="recipe-image">
             {% else %}
             <div class="recipe-image-placeholder">
                 <i class="fas fa-utensils"></i>
@@ -2155,7 +2155,7 @@
     {% for recipe in recipes %}
     <div class="recipe-list-item">
         {% if recipe.recipe_image %}
-        <img loading="lazy" decoding="async" src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-list-image">
+        <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}" alt="{{ recipe.recipe_name }}" class="recipe-list-image">
         {% else %}
         <div class="recipe-list-image-placeholder">
             <i class="fas fa-utensils"></i>

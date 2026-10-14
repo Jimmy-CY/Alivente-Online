@@ -9,7 +9,7 @@
 <div class="modal-body">
 
   {% if recipe.recipe_image %}
-    <img src="{{ recipe.recipe_image.url }}" class="img-fluid mb-3 rounded"
+    <img src="{{ recipe.photo_url }}" class="img-fluid mb-3 rounded"
          alt="{{ recipe.recipe_name }}" style="max-height: 280px; object-fit: cover; width: 100%;">
   {% endif %}
 
