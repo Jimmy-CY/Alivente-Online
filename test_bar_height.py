@@ -118,12 +118,12 @@ LENDER = 'test_tap_target.py'
 BOOT = 'test_fixture_bootstrap413.css'
 
 BAR, ROW, MODAL = 35, 34, 38
-N_BAR, N_ROW, N_MODAL = 268, 110, 98   # DB-5, 12 Oct 2026 - the
+N_BAR, N_ROW, N_MODAL = 268, 110, 99   # VC-1, 14 Oct 2026 - property_assets Take Photo is a <label> that had no house class until this round, so this census could not see it. 35px, in a modal, and named in STRAYS below.   # (was 98)   # DB-5, 12 Oct 2026 - the
 # dashboard four joined the bar   # (was 265)   # E-10, 11 Oct 2026 - the
 # seven buttons this round paired in CRS modals become visible to
 # a census that selects the two position tones and not the danger
 # tone.   # (was 91)
-N_LOOSE, N_LOOSE_H = 80, 10   # DB-5 - the side column left the
+N_LOOSE, N_LOOSE_H = 81, 11   # VC-1, 14 Oct 2026 - edit_asset Take Photo at 35px and my_profile Upload Photo at 31px, both <label> file pickers that had no house class until this round. 35 is a height this set did not hold before.   # (was 80 and 10)   # DB-5 - the side column left the
 # loose set, and the two heights it invented went with it
 # (was 82 and 12)   # E-10 - and the four loose in
 # cards on crs/submission_detail.html, for the same reason. The
@@ -139,6 +139,19 @@ STRAYS = {
     ('a table row', 'crs/submission_detail.html'): 1,
     ('a modal', 'finance_valuations_edit.html'): 1,
     ('a modal', 'help_page.html'): 3,
+    # VC-1, 14 Oct 2026 - THE SIXTH, AND IT IS A PHONE CONTROL.
+    #
+    # property_assets' Take Photo is the <label> wrapping a hidden file
+    # input, revealed only by that page's mobile media query. It had no
+    # house class until VC-1 gave it action-secondary, so this census
+    # could not see it at all; now it can, and at 1280px it renders
+    # 35px rather than the modal's 38.
+    #
+    # NAMED, NOT LEVELLED. The note above says a stray wants a
+    # page-by-page look rather than one number, and levelling a control
+    # that only exists on a phone, from a measurement taken at desktop
+    # width, is the worse of the two answers available.
+    ('a modal', 'property_assets.html'): 1,
 }
 
 passed = failed = skipped = 0

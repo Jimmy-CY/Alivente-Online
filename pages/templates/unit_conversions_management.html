@@ -322,7 +322,7 @@
             <i class="fas fa-plus"></i> Add New Conversion
         </button>
         {% else %}
-        <button class="btn action-primary" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+        <button class="btn action-primary disabled-btn" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
             <i class="fas fa-plus"></i> Add New Conversion
         </button>
         {% endif %}
@@ -334,7 +334,7 @@
                 <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
             </button>
             {% else %}
-            <button class="btn action-secondary" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+            <button class="btn action-secondary disabled-btn" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
                 <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
             </button>
             {% endif %}

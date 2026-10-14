@@ -395,10 +395,10 @@
                 <i class="fas fa-copy"></i> Duplicate
             </button>
             {% else %}
-            <span class="btn btn-action-disabled action-secondary" title="No permission to edit">
+            <span class="btn action-secondary btn-action-disabled" title="No permission to edit">
                 <i class="fas fa-edit"></i> Edit
             </span>
-            <span class="btn btn-action-disabled action-secondary" title="No permission to duplicate">
+            <span class="btn action-secondary btn-action-disabled" title="No permission to duplicate">
                 <i class="fas fa-copy"></i> Duplicate
             </span>
             {% endif %}
@@ -407,13 +407,13 @@
             </button>
             {% if perms.auth.can_edit_personal %}
             <button type="button"
-                    class="btn action-secondary"
+                    class="btn action-secondary action-danger"
                     data-delete-url="{% url 'delete_meal_plan' meal_plan.meal_plan_id %}"
                     onclick="confirmDelete(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-trash"></i> Delete
             </button>
             {% else %}
-            <span class="btn btn-action-disabled action-secondary" title="No permission to delete">
+            <span class="btn action-secondary action-danger btn-action-disabled" title="No permission to delete">
                 <i class="fas fa-trash"></i> Delete
             </span>
             {% endif %}

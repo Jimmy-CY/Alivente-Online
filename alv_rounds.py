@@ -1111,6 +1111,13 @@ ROUNDS = [
     '.bak_jsbtn',
     '.bak_rstones',
     '.bak_pxphotos',
+    # RS-1b, 14 Oct 2026 - the 31 that were left on the recipe
+    # side, and the gate goes to --recipes.
+    '.bak_rsb',
+    # VC-1, 14 Oct 2026 - BTN gains a tag, BOOTSTRAP two colours,
+    # POSITION one house name, and _scan asks the register before
+    # it gives up on a button.
+    '.bak_vocab',
 ]
 
 

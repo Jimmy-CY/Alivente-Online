@@ -973,7 +973,7 @@
                         <span>Email</span>
                     </button>
                     {% else %}
-                    <button disabled class="btn action-primary share-btn email-btn-disabled" title="No permission to send email">
+                    <button disabled class="btn action-primary disabled-btn share-btn email-btn-disabled" title="No permission to send email">
                         <i class="fas fa-paper-plane"></i>
                         <span>Email</span>
                     </button>
@@ -984,7 +984,7 @@
                     {# recognise the button by it. Named here and pinned by #}
                     {# name in test_shopping_bar.py, so it is a RECORDED    #}
                     {# exception rather than a literal nobody meant.        #}
-                    <button onclick="shareToWhatsApp()" class="btn share-btn share-whatsapp">
+                    <button onclick="shareToWhatsApp()" class="btn action-secondary share-btn share-whatsapp">
                         <i class="fab fa-whatsapp"></i>
                         <span>WhatsApp</span>
                     </button>

@@ -2241,7 +2241,7 @@ body {
                                     <button type="button" class="btn action-secondary" onclick="aiResetToPicker()">
                                         <i class="fas fa-arrow-left"></i> Back to goals
                                     </button>
-                                    <button type="button" class="btn btn-outline-primary" onclick="aiRetry()">
+                                    <button type="button" class="btn action-primary" onclick="aiRetry()">
                                         <i class="fas fa-redo"></i> Try again
                                     </button>
                                 </div>
@@ -2394,7 +2394,7 @@ body {
                         <p class="text-muted">This recipe serves: <strong>{{ recipe.servings }} people</strong></p>
 
                         <div class="servings-input-group">
-                            <button class="btn btn-outline-secondary" onclick="adjustServings(-1)">
+                            <button class="btn action-secondary" onclick="adjustServings(-1)">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <input type="number"
@@ -2403,7 +2403,7 @@ body {
                                    value="{{ recipe.servings }}"
                                    min="1"
                                    oninput="updateMultiplier()">
-                            <button class="btn btn-outline-secondary" onclick="adjustServings(1)">
+                            <button class="btn action-secondary" onclick="adjustServings(1)">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
@@ -2454,10 +2454,10 @@ body {
                     </div>
 
                     <div class="share-buttons">
-                        <button class="btn btn-secondary" onclick="printShoppingList()">
+                        <button class="btn action-secondary" onclick="printShoppingList()">
                             <i class="fas fa-print"></i> Print
                         </button>
-                        <button class="btn btn-info" onclick="copyToClipboard()">
+                        <button class="btn action-secondary" onclick="copyToClipboard()">
                             <i class="fas fa-copy"></i> Copy
                         </button>
                         {% if perms.auth.can_edit_personal %}
@@ -2465,7 +2465,7 @@ body {
                             <i class="fas fa-envelope"></i> Email
                         </button>
                         {% else %}
-                        <button class="btn action-secondary share-btn-disabled" disabled title="No permission to send email">
+                        <button class="btn action-secondary disabled-btn share-btn-disabled" disabled title="No permission to send email">
                             <i class="fas fa-envelope"></i> Email
                         </button>
                         {% endif %}

@@ -102,7 +102,22 @@ BOOTSTRAP = ('btn-info', 'btn-primary', 'btn-secondary', 'btn-success',
              # a scanner that cannot see either.
              'btn-outline-secondary', 'btn-outline-primary',
              'btn-outline-info', 'btn-outline-danger',
-             'btn-outline-success', 'btn-outline-warning')
+             'btn-outline-success', 'btn-outline-warning',
+             # VC-1, 14 Oct 2026 - SIX OF BOOTSTRAP'S EIGHT IS NOT THE
+             # LIST. The note above says exactly why this matters and it
+             # happened again two shades along: ingredient_families
+             # carried two btn-outline-light icons, at 2.97:1 on a green
+             # card header, and no census in this project could see
+             # them. btn-outline-dark is unused today and is listed
+             # anyway - an unused name on this list costs nothing, and
+             # leaving it off is what reopens the hole.
+             'btn-outline-light', 'btn-outline-dark',
+             # AND btn-link IS A COLOUR HERE, which Demetri decided. It
+             # sets Bootstrap blue text as well as removing the border,
+             # so a page using it is choosing a colour whatever else it
+             # is doing. One button today, on pantry_staples, and VC-1
+             # gives it to the row-action guard.
+             'btn-link')
 
 # Tones set COLOUR. Exactly one .action-primary belongs on a bar.
 TONES = ('action-primary', 'action-secondary', 'action-danger',
@@ -119,7 +134,23 @@ POSITION = ('action-add-new', 'action-more-btn', 'action-more-item',
             # those at 768px, and filtering matters more on a phone, not
             # less - so it needs its own name here or --strict reports eight
             # perfectly correct buttons as drift. It did, before this line.
-            'action-filter')
+            'action-filter',
+            # VC-1, 14 Oct 2026 - AND action-field-add, WHICH WAS ON NO
+            # LIST AT ALL. base.html styles it directly: paper fill,
+            # teal border, teal ink, filling on hover. It is Demetri's
+            # own decision of 30 Sep - "why are these + buttons in
+            # green, they should be in teal" - and because the name was
+            # in neither TONES nor POSITION, HOUSE did not contain it
+            # and property_assets' three correct buttons were invisible
+            # to this report for a fortnight.
+            #
+            # IT NEEDS THE skip_reason BELOW AS WELL AS THIS LINE, and
+            # that was measured rather than assumed: with only the name,
+            # plan_bar hands it action-secondary and rebuild writes
+            # `btn action-secondary action-field-add` - three correct
+            # buttons reported as drift, which is precisely what
+            # action-filter's note above describes happening to eight.
+            'action-field-add')
 
 # Names that MEAN a house class but are spelt wrong. Two pages copied
 # `action-btn-back` from somewhere; nothing defines it in base.
@@ -171,6 +202,39 @@ LEAVE = {
     'subtask-actions': 'row actions',
     'project-status-container': 'row actions',
     'zoom-controls': 'a zoom widget',
+    # VC-1, 14 Oct 2026 - NAMED, NOT RETONED.
+    #
+    # Eight buttons across customer_invoice_form and physical_invoice_edit:
+    # btn-delete, btn-duplicate, btn-approve, btn-send, btn-unapprove, each
+    # defined by the page itself and each already on HOUSE TOKENS -
+    # --alv-bad, --alv-accent, --alv-good, --alv-warn, --alv-on-accent,
+    # with a 44px min-height. Measured, not assumed. They are not drift and
+    # VC-1 does not touch their colour; they were simply invisible, because
+    # a page-local class is neither a Bootstrap colour nor a house one.
+    #
+    # WHETHER A STATUS ROW SHOULD BE FIVE SOLID FILLS is a design question
+    # for its own round. This entry is what stops it being an invisible one.
+    #
+    # AND share-grid IS DELIBERATELY NOT HERE. It was, in the first build
+    # of this round, and it was wrong: that wrapper holds FOUR buttons and
+    # three of them already carry house tones - including the disabled
+    # Email that RS-1b fixed the day before, `action-primary disabled-btn
+    # share-btn email-btn-disabled`. A LEAVE entry short-circuits every
+    # button in its wrapper, so registering it would have silenced
+    # yesterday's own fix. The one undecided button there gets a house
+    # class in the markup instead, which is what RS-1b did with all
+    # thirteen of its own.
+    #
+    # THAT IS NOT A HYPOTHETICAL. Measured across all 142 pages, EIGHT
+    # buttons already wearing a house tone sit inside a LEAVE wrapper and
+    # are therefore never checked: three Clear Alls under .filter-header
+    # and five under .input-group-append, of which THREE are
+    # `action-primary btn-sm` Save buttons on property_assets. Change one
+    # of those to a secondary and no gate in this project would notice.
+    # test_vocabulary.py pins the number at eight so it cannot grow, and
+    # LEAVE-as-a-silencer is the next thing in this line of work.
+    'status-action-form': 'the invoice status row - page classes on house '
+                          'tokens',
 }
 
 # Buttons outside any bar whose tone was decided one at a time, from rendered
@@ -211,7 +275,28 @@ DECIDED = {
     'task-title-section':      [('*', S)],
     'numbering-controls':      [('*', S)],
     'header-actions':          [('*', S)],
-    'd-flex':                  [('*', S)],
+    # 'd-flex' WAS HERE. It came off in RS-1b, 14 Oct 2026.
+    #
+    # It is a Bootstrap LAYOUT utility sitting on a register of ROLES.
+    # Measured across all 142 pages it contains six buttons; two of
+    # those are invisible to this scan for other reasons, and of the
+    # four it actually spoke for, FOUR are recipe-side and ZERO are on
+    # the property side. Its only live effect was demoting
+    # pantry_staples' Add Staple, because everything under a d-flex was
+    # declared a secondary by a map that cannot tell a card from a
+    # header row.
+    #
+    # All four reach their tone the ordinary way now: each carries a
+    # house class, so plan_bar() re-derives it, and plan_bar is a fixed
+    # point on its own output. Drift 22 -> 21 on this line alone and
+    # nothing else in the application moved.
+    #
+    # STILL ON THIS REGISTER AND STILL LAYOUT NAMES: text-center (6
+    # buttons), alert (8), col-md-6 (1), detail-row (1), col-12 (0).
+    # None is misbehaving today. col-md-3 nearly joined them in this
+    # round and did not - which is why no wrapper was named for
+    # create_meal_plan's filter row and the decision went into the
+    # markup instead.
     # A section title that carries its own control - round C5,
     # 23 Sep. The control belongs to the section, not to the
     # pop-up around it, so it is a secondary like the d-flex
@@ -232,6 +317,67 @@ DECIDED = {
     'desktop-only-content':    [('back', B)],
     'rotate-prompt-content':   [('*', B)],
 }
+
+# ---------------------------------------------------------------------------
+# Bar buttons that are NOT the page's verb - named ONE AT A TIME
+# ---------------------------------------------------------------------------
+# page -> [(label fragment, the reason)]. Consulted only by the lone-verb
+# rule in plan_bar(), and only ever to STOP a promotion: nothing here can
+# give a button a tone, so a wrong entry costs a missing primary and can
+# never cause a wrong one.
+#
+# WHY A MAP AND NOT A RULE. RS-1b proposed one - "a bar whose only non-Back
+# item is a link to another page is navigation, not the page's verb" - and
+# Demetri approved it on my say-so. Tested afterwards against all 142 pages
+# it matches ELEVEN bars, and six of those are correct primaries: Add
+# Country, Add Reporting FI, Start Submission, Add Workspace, Go to Login,
+# and friday_status_report's SUBMIT FSR, which is a fault Demetri reported
+# and this programme fixed. The rule was withdrawn.
+#
+# The second candidate was "a label built from a template conditional is a
+# chooser", for celebration_calendar's view toggle - which carries no marker
+# of any kind: `btn action-secondary`, id="viewToggleBtn",
+# onclick="toggleCalendarView()", and a human comment above it. Ten bar
+# buttons have a conditional label and NINE are real Save buttons. It would
+# have demoted every Save in the application, and plan_bar's own note below
+# already names customer_form.html as this exact shape AND as the page's
+# verb.
+#
+# So: an explicit map with a reason each. The precedent is
+# backfill_passport_holder's ALIASES, where an explicit map was chosen over
+# a first-word rule that "stops looking safe the day a household holds a
+# Demetri and a Demetris".
+#
+# THE PRINCIPLED FIX EXISTS and is a larger decision: a house marker class
+# for a view toggle, the way .alv-seg marks a segment. That touches
+# base.html, so it is left for its own round - and when it lands, the
+# celebration_calendar entry here comes out.
+NOT_THE_VERB = {
+    'pantry_staples.html': [
+        ('families', 'a link to the Families list - another page, not '
+                     'this one\'s verb')],
+    'wcim_results.html': [
+        ('start over', 'returns to the start of the search')],
+    'celebration_calendar.html': [
+        ('calendar view', 'the Calendar/Timeline toggle - it asks which '
+                          'view you are looking at')],
+}
+
+
+def not_the_verb(page, label):
+    """The recorded reason this bar button is not the page's verb, or None.
+
+    ASKED OF THE TOOL rather than re-implemented. The lone-verb rule has
+    two copies - here and in test_button_sweep.py section 9 - and the
+    last time one of them learned something the other did not, the other
+    reported finance_pl_act's YEAR DROPDOWN as a missing primary. [PM-1]
+    """
+    low = (label or '').lower()
+    for frag, why in NOT_THE_VERB.get(page or '', ()):
+        if frag in low:
+            return why
+    return None
+
 
 # Modal-footer vocabulary. Replaces the verb whitelist v1 used, which
 # mis-called five confirms (Upload Document, Upload Lease Agreement,
@@ -341,7 +487,25 @@ def spans(text, opening_re):
 # nested inside another control is invisible here. lease_timeline.html
 # writes btn-label-full / btn-label-short spans inside its nav buttons
 # and the outer match swallows all eight. They are labels today.
-BTN = re.compile(r'<(a|button|span)\b[^>]*class="([^"]*(?:(?<![-\w])btn(?![-\w])'
+# AND <label>, SINCE VC-1, 14 Oct 2026 - AND IT IS A TAG, NOT A CLASS.
+#
+# Three controls in this application are a <label> wrapping a hidden
+# <input type="file">, which is how a file picker is styled, and every
+# census here has been blind to them since the first one:
+#
+#     property_assets   Take Photo    btn btn-outline-info
+#     edit_asset        Take Photo    btn btn-outline-info
+#     my_profile        Upload Photo  btn btn-sm btn-outline-primary  3.98:1
+#
+# TWO OF THE THREE ARE PROPERTY-SIDE, so this was not a recipe-side
+# leftover; and btn-camera-capture is display:none on desktop, revealed
+# by a mobile media query, which is why they never caught an eye at a
+# laptop. Measured before widening: `label` surfaces exactly these three
+# and nothing else, across both template roots.
+#
+# <input type="submit"> would be the next tag to ask about and there are
+# none carrying a btn token - measured, not assumed.
+BTN = re.compile(r'<(a|button|span|label)\b[^>]*class="([^"]*(?:(?<![-\w])btn(?![-\w])'
                  r'|\baction-'
                  r'(?:primary|secondary|danger|back|add-new|btn-back)\b|'
                  r'\bback-button\b)[^"]*)"[^>]*>(.*?)</\1>', re.S)
@@ -551,6 +715,14 @@ def skip_reason(cls):
         # hands it a tone and rebuild() adds one - and eight correct buttons
         # get reported as drift. They were.
         return 'the filter toggle - base styles .action-filter directly'
+    if 'action-field-add' in cls.split():
+        # VC-1, 14 Oct 2026. Third time, same shape: base.html styles
+        # this one directly too - a small add control welded to a field,
+        # paper fill and a teal edge - so it takes no tone and must not
+        # be handed one. Without this line the three property_assets
+        # buttons go from invisible to wrongly reported, which is a
+        # different fault and not an improvement.
+        return 'a small add control welded to a field - base styles it'
     return None
 
 
@@ -647,7 +819,7 @@ def plan_footer(items):
     return out
 
 
-def plan_bar(items, in_bar=False):
+def plan_bar(items, in_bar=False, page=None):
     """Tone every button in one page-action bar.
 
     Order of reading - position class, then Back, then existing tone, then
@@ -719,7 +891,13 @@ def plan_bar(items, in_bar=False):
             and 'back-button' not in out[i]
             and not lab.lower().startswith('help')
             and not is_cancel(lab)
-            and not is_chooser(lab, cls)]
+            and not is_chooser(lab, cls)
+            # AND A NAMED EXCEPTION IS NEVER THE VERB - RS-1b, 14 Oct
+            # 2026. Three recipe-side bars hold exactly one real button
+            # and it is navigation or a view toggle. See NOT_THE_VERB
+            # above for why that is a map and not a rule, and for the
+            # rule I proposed that would have demoted Submit FSR.
+            and not not_the_verb(page, lab)]
     if in_bar and len(real) == 1:
         i = real[0]
         if out[i].startswith('action-secondary') and 'action-danger' not in out[i]:
@@ -818,7 +996,7 @@ def _scan(name, m):
             items.append((label_of(b.group(3)), b.group(2), open_tag))
             spots.append((a + b.start(), a + b.start() + len(open_tag)))
         tones = (plan_footer(items) if kind == 'modal footer'
-                 else plan_bar(items, in_bar=True))
+                 else plan_bar(items, in_bar=True, page=name))
         for (lab, cls, _t), tone, (s, e) in zip(items, tones, spots):
             claimed.add(s)
             boot = [c for c in cls.split() if c in BOOTSTRAP]
@@ -839,8 +1017,6 @@ def _scan(name, m):
         names = cls.split()
         boot = [c for c in names if c in BOOTSTRAP]
         has_house = any(c in HOUSE for c in names)
-        if not boot and not has_house:
-            continue
         open_tag = b.group(0)[:b.group(0).index('>') + 1]
         lab = label_of(b.group(3))
         wrap = innermost_wrapper(m, b.start())
@@ -852,13 +1028,36 @@ def _scan(name, m):
         if leave_why:
             why = why or leave_why
 
+        # ASK THE REGISTER BEFORE GIVING UP - VC-1, 14 Oct 2026.
+        #
+        # The drop below used to sit ABOVE these four lines, so a button
+        # with no Bootstrap colour and no house class was gone before
+        # anyone asked whether its wrapper had a decision on it.
+        # connectivity_error's TRY AGAIN is `class="btn"` inside
+        # .button-group, and DECIDED['button-group'] says the non-Back
+        # control there is the primary. It should have been a solid
+        # primary and this report has never once mentioned it.
+        #
+        # AND WHAT IS STILL LEFT IS COUNTED, NOT DROPPED. A button whose
+        # colour comes from page CSS, an inline style or JavaScript is
+        # not drift - base.html owns nothing on it, so there is nothing
+        # for it to disagree with - but silently skipping a whole
+        # category is how every blind spot in this file began. It gets a
+        # bucket and a printed count; it does not fire --strict, because
+        # a button with no colour class is not what the gate's sentence
+        # is about. test_vocabulary.py pins the number instead.
+        if not boot and not has_house and tone is None and not why:
+            hits.append(('PAINTED', lab, boot, cls, cls,
+                         b.start(), b.start() + len(open_tag), None))
+            continue
+
         if why:
             hits.append(('skipped', lab, boot, cls, cls,
                          b.start(), b.start() + len(open_tag), why))
             continue
 
         if tone is None and has_house:
-            tone = plan_bar([(lab, cls, open_tag)])[0]
+            tone = plan_bar([(lab, cls, open_tag)], page=name)[0]
         if tone is None:
             # Nobody has decided this one. That is a finding, not a no-op.
             hits.append(('UNCLASSIFIED', lab, boot, cls, cls,
@@ -1093,6 +1292,36 @@ def print_js(js_rows):
     print('  Run --js for the full list, with what context was visible.')
 
 
+def print_painted(rows):
+    """Buttons whose colour comes from somewhere this tool cannot name.
+
+    VC-1, 14 Oct 2026. NOT DRIFT: base.html owns nothing on a button
+    with no Bootstrap colour and no house class, so there is nothing for
+    it to disagree with. But seventeen of these existed when VC-1 was
+    written and every one of them was dropped in silence - three were
+    CORRECT house buttons whose class was on no list, one was a toggle
+    painted by JavaScript, and one should have been a solid primary by a
+    decision already on the register.
+
+    Printed with a count, and not gated: --strict firing on this would
+    fail a push over a button nobody has claimed base owns. The suite
+    pins the number, which is where a count belongs.
+    """
+    print('')
+    if not rows:
+        print('  No button takes its colour from page CSS, an inline style')
+        print('  or JavaScript. [VC-1]')
+        return
+    print('  %d BUTTON(S) PAINTED SOMEWHERE THIS TOOL CANNOT NAME'
+          % len(rows))
+    print('  No Bootstrap colour and no house class, so nothing here is')
+    print('  drift - but nothing here is on record either.')
+    for f, lab, cls in rows[:14]:
+        print('     %-40s %-22s %s' % (f[:40], lab[:22], cls[:30]))
+    if len(rows) > 14:
+        print('     ... and %d more' % (len(rows) - 14))
+
+
 def print_double_bars(rows):
     if not rows:
         return
@@ -1235,6 +1464,7 @@ def main():
     rows = []
     skipped_n = collections.Counter()
     unclassified = []
+    painted = []            # VC-1: colour from page CSS, inline style or JS
     for f in files:
         found = scan(f)
         h = [x for x in found if drifting(x)]
@@ -1251,6 +1481,10 @@ def main():
             # spot. x[7] is the reason; if there is one, it is on record.
             if x[7]:
                 skipped_n[x[7]] += 1
+            elif x[0] == 'PAINTED':
+                # VC-1, 14 Oct 2026. Not drift, not a decision, and no
+                # longer dropped on the floor either.
+                painted.append((f, x[1], x[3]))
             elif x[0] == 'UNCLASSIFIED':
                 unclassified.append((f, x[1], x[3]))
 
@@ -1273,6 +1507,7 @@ def main():
         print('  %d button(s) are deliberately left alone:' % sum(skipped_n.values()))
         for why, n in skipped_n.most_common():
             print('     %-52s %3d' % (why, n))
+        print_painted(painted)
         print_double_bars(dbl)
         print_js(js_rows)
         print('')
@@ -1308,6 +1543,8 @@ def main():
     print('  deliberately left alone, with a reason on record:')
     for why, n in skipped_n.most_common():
         print('     %-52s %3d' % (why, n))
+
+    print_painted(painted)
 
     if unclassified:
         print('')

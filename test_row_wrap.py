@@ -362,7 +362,7 @@ if m:
 # LIVE tree, so as_left_by cannot reach it: the number has to be written
 # down, and the arithmetic has to be written down beside it, or the next
 # person cannot tell a decision from a regression.
-LOOSE_NOW = 4
+LOOSE_NOW = 5   # VC-1, 14 Oct 2026 - a FOURTH term, and the same kind as AI-1's: pantry_staples' Remove, one control inside the chip that names the staple it removes. It reached this census from the BUTTON one, because btn-link was not on Show-ButtonDrift's colour list and nothing here could see it.   # (was 4)
 # AND RA-5 ADDED A THIRD TERM, which is a decision and not a wrap: all
 # four are now registered in alv_rowactions.NAMED as single controls
 # beside the thing they act on, so the report prints them under NAMED,

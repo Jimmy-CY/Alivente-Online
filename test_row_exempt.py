@@ -170,7 +170,7 @@ ok(hasattr(RA, 'NAMED') and isinstance(RA.NAMED, dict),
    'alv_rowactions carries a NAMED register')
 ok(hasattr(RA, 'named'), '  and a named() that reads it')
 total = sum(e['count'] for e in RA.NAMED.values())
-ok(total == 4, 'it names %d control(s) on %d page(s)'
+ok(total == 5, 'it names %d control(s) on %d page(s)'
    % (total, len(RA.NAMED)), total)
 for pg, e in sorted(RA.NAMED.items()):
     ok(e['why'] and len(e['why']) > 40,
@@ -188,8 +188,13 @@ head('2. and the report reads it')
 
 out = subprocess.run([sys.executable, REPORT], capture_output=True,
                      text=True, cwd=ROOT).stdout
-ok('NAMED, NOT IN A WRAPPER - 4 button(s) on 2 page(s)' in out,
-   'the report names all four', out[-500:])
+# FIVE ON THREE SINCE VC-1, 14 Oct 2026 - pantry_staples' Remove, which
+# arrived from the BUTTON census rather than this one: it was
+# `btn btn-sm btn-link text-danger p-0`, and btn-link was not on
+# Show-ButtonDrift's list of Bootstrap colours, so no census in this
+# project could see it.
+ok('NAMED, NOT IN A WRAPPER - 5 button(s) on 3 page(s)' in out,
+   'the report names all five', out[-500:])
 for pg, e in sorted(RA.NAMED.items()):
     ok(pg in out, '  %s appears in it' % pg)
     ok(e['why'].split(' - ')[0][:28] in out,
@@ -203,8 +208,16 @@ ok('Nothing drifting' in out, '  the report is still clean')
 # ==========================================================================
 head('3. each one really is alone where it sits')
 
+# AS THE ROUND THAT NAMED IT LEFT IT - VC-1, 14 Oct 2026. now() reads
+# from RA-5 forward, which is right for RA-5's own four entries and wrong
+# for any entry a later round adds: the control VC-1 named does not exist
+# in any snapshot older than .bak_vocab, so this loop found nothing where
+# the register promised one. An entry may now carry `since`.
 for pg, e in sorted(RA.NAMED.items()):
-    src = alv_tree.code_only(now(alv_tree.path_of(pg)))
+    _suf = e.get('since', SUFFIX)
+    _p = alv_tree.path_of(pg)
+    src = alv_tree.code_only(
+        as_left_by(_p, _suf, read) if as_left_by else read(_p))
     hits = [m for m in RA.BTN_FULL.finditer(src)
             if not any(s <= m.start() < en
                        for s, en, _ in RA.wrappers(src))]

@@ -102,6 +102,23 @@ NAMED = {
                'row, beside the name and the servings box. Built inside a '
                'JavaScript template literal.',
     },
+    # VC-1, 14 Oct 2026. The fifth of this shape, and it arrived from the
+    # BUTTON census rather than this one: it was `btn btn-sm btn-link
+    # text-danger p-0`, and btn-link was not on Show-ButtonDrift's list of
+    # Bootstrap colours, so no census in this project could see it. Demetri
+    # ruled it belongs here, with the four above.
+    'pantry_staples.html': {
+        'count': 1,
+        'classes': ('icon-delete',),
+        # THE ROUND THAT ADDED THIS ENTRY. test_row_exempt reads a named
+        # page as the round that named it left it; without this it read
+        # pantry_staples from a snapshot older than the control and found
+        # nothing where the register promised one.
+        'since': '.bak_vocab',
+        'why': 'Remove this staple - one control inside the chip that names '
+               'it, beside the ingredient it removes. VC-1, and the same '
+               'ruling as edit_asset.',
+    },
 }
 
 

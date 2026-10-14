@@ -1470,7 +1470,7 @@ tr.sortable-chosen {
                                 {{ recipe.recipe_document.name }}
                             </a>
                         </div>
-                        <button type="button" class="btn btn-sm action-secondary ml-3" onclick="viewRecipeDocument('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
+                        <button type="button" class="btn action-secondary btn-sm ml-3" onclick="viewRecipeDocument('{{ recipe.recipe_document.url|escapejs }}', '{{ recipe.recipe_document.name|escapejs }}')">
                             <i class="fas fa-eye"></i> View
                         </button>
                     </div>
@@ -1503,7 +1503,7 @@ tr.sortable-chosen {
 
                     <!-- Delete document option -->
                     <div class="mt-3">
-                        <button type="button" class="btn btn-sm action-secondary action-danger" onclick="confirmDeleteRecipeDocument({{ recipe.recipe_id }})">
+                        <button type="button" class="btn action-secondary action-danger btn-sm" onclick="confirmDeleteRecipeDocument({{ recipe.recipe_id }})">
                             <i class="fas fa-trash"></i> Delete Current Document
                         </button>
                     </div>
@@ -1727,7 +1727,7 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn action-secondary" onclick="confirmAddIngredient()">
+                    <button type="button" class="btn action-primary" onclick="confirmAddIngredient()">
                         <i class="fas fa-check"></i> Add Ingredient
                     </button>
                 </div>
@@ -1821,7 +1821,7 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn action-secondary" onclick="confirmAddMeasurement()">
+                    <button type="button" class="btn action-primary" onclick="confirmAddMeasurement()">
                         <i class="fas fa-check"></i> Add Measurement
                     </button>
                 </div>
@@ -1863,7 +1863,7 @@ tr.sortable-chosen {
                 </div>
                 <div class="modal-body" id="recipeDocViewerContent"></div>
                 <div class="modal-footer">
-                    <a id="recipeDocDownloadLink" href="#" class="btn action-secondary" target="_blank">
+                    <a id="recipeDocDownloadLink" href="#" class="btn action-primary" target="_blank">
                         <i class="fas fa-download"></i> Download
                     </a>
                     <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>

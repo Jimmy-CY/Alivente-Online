@@ -308,6 +308,13 @@ CONVERTED = [
     'test_recipe_tones.py',
     # PX-1, 13 Oct 2026 - the recipe photos get an owner.
     'test_recipe_photos.py',
+    # RS-1b, 14 Oct 2026 - the recipe side finishes and the drift
+    # gate widens to all 142 pages. Wide from birth: it reads named
+    # templates through alv_tree and builds no root of its own.
+    'test_recipe_side_b.py',
+    # VC-1, 14 Oct 2026 - the gate's VOCABULARY, after RS-1b widened
+    # its page scope. Wide from birth, same shape as RS-1b's.
+    'test_vocabulary.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

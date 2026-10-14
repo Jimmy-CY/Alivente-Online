@@ -408,7 +408,42 @@ def btn_of(text):
                       re.S)
 
 
-tight = btn_of(read(os.path.join(ROOT, DRIFT)))
+# REPAIRED BY VC-1, 14 Oct 2026 - AND IT WAS READ LIVE.
+#
+# `tight` is E11's pattern, and E11's pattern is a SNAPSHOT. Read live it
+# became VC-1's - which put <label> in the tag list - so this section
+# priced two rounds in one number: 706 and 704 came back as 1119 and
+# 721, and "exactly 2 pages change" came back as 58.
+#
+# AND THE PATTERN WAS NOT THE WHOLE OF IT, which the first repair here
+# got wrong. Swapping only `tight` back still failed, because the
+# numbers below are a snapshot of the TOOL and not just of its regex:
+# VC-1 also added two LEAVE entries, a POSITION name and a PAINTED row
+# where _scan used to drop a button in silence. Every one of those
+# changes the LENGTH of what _scan returns.
+#
+# So the whole comparison is run against Show-ButtonDrift AS E11 LEFT
+# IT, loaded beside the live one out of this process's own SCRATCH
+# directory, and handed back the repo's ROOT and TPL because a module
+# that finds the templates from its own __file__ would look for them
+# next to the copy.
+#
+# NINTH OCCURRENCE OF THE as_left_by LESSON, and the SECOND about the
+# INSTRUMENT rather than the pages - RS-1b made the first, for RS-1a,
+# the day before.
+def _tool_as_e11_left_it():
+    q = os.path.join(SCRATCH, 'show_buttondrift_as_e11_left_it.py')
+    with open(q, 'w', encoding='utf-8') as fh:
+        fh.write(left(DRIFT))
+    sp = importlib.util.spec_from_file_location('_sb_e11', q)
+    mod = importlib.util.module_from_spec(sp)
+    sp.loader.exec_module(mod)
+    mod.ROOT, mod.TPL = sb.ROOT, sb.TPL
+    return mod
+
+
+sb_then = _tool_as_e11_left_it()
+tight = btn_of(left(DRIFT))
 loose = btn_of(was(os.path.join(ROOT, DRIFT)))
 if not ok(tight is not None and loose is not None,
           'both BTN patterns read out of the code, not retyped'):
@@ -437,18 +472,25 @@ else:
     ok(all(hits(loose, c) for c in REAL),
        '  CONTROL: .. and the real shapes too, so nothing real was lost')
 
-    # PRICED, over the whole application, both ways.
+    # PRICED, over the whole application, both ways - AND WITH THE TOOL
+    # E11 LEFT, not the live one. See the note beside sb_then above: the
+    # count is a property of the whole scanner, and VC-1 changed three
+    # other things in it.
     def scan_hits(rx):
-        keep, n = sb.BTN, 0
-        sb.BTN = rx
+        keep, n = sb_then.BTN, 0
+        sb_then.BTN = rx
         try:
             for f in wide:
-                p = alv_tree.path_of(f)
-                raw = read(p)
-                sb.JS_REENABLED = sb.js_reenabled_ids(raw)
-                n += len(sb._scan(f, sb.markup_of(raw)))
+                # AND THE PAGES AS E11 LEFT THEM. left_page() is three
+                # hundred lines up and this was the one place in the
+                # file still reading them live - which is why the count
+                # came back 709 and 707 once VC-1 moved three buttons
+                # onto .icon-action-btn and off .btn.
+                raw = left_page(f)
+                sb_then.JS_REENABLED = sb_then.js_reenabled_ids(raw)
+                n += len(sb_then._scan(f, sb_then.markup_of(raw)))
         finally:
-            sb.BTN = keep
+            sb_then.BTN = keep
         return n
 
     n_t, n_l = scan_hits(tight), scan_hits(loose)
@@ -459,14 +501,14 @@ else:
     # The two that go were ALREADY skipped rows with a reason. A row that
     # was being acted on would be a different round.
     def rows(rx, f):
-        keep = sb.BTN
-        sb.BTN = rx
+        keep = sb_then.BTN
+        sb_then.BTN = rx
         try:
-            raw = read(alv_tree.path_of(f))
-            sb.JS_REENABLED = sb.js_reenabled_ids(raw)
-            return sb._scan(f, sb.markup_of(raw))
+            raw = left_page(f)
+            sb_then.JS_REENABLED = sb_then.js_reenabled_ids(raw)
+            return sb_then._scan(f, sb_then.markup_of(raw))
         finally:
-            sb.BTN = keep
+            sb_then.BTN = keep
 
     moved, why_all = [], []
     for f in wide:

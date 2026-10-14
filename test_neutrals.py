@@ -409,9 +409,15 @@ ok("'%s'" % ME in imp,
 # numbers and left them. The suite that owns the number is the right
 # place to assert the round updated it.
 cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
-for want in ('MARKUP_STYLE = 88', 'SCRIPT = 149', 'PAGES = 36',
-             "'style-attr': 22", "'style-prop': 9",
-             'safe == 31'):
+# VC-1, 14 Oct 2026 - three of the six moved DOWN by one. The
+# Favourites toggle on create_meal_plan was writing #e74c3c from
+# JavaScript; it carries aria-pressed now and base.html paints it, so one
+# style-prop literal left the application and the var-safe subset lost it
+# too. A pin that only ever loosens asserts nothing, which is why these
+# are rewritten rather than relaxed.
+for want in ('MARKUP_STYLE = 88', 'SCRIPT = 148', 'PAGES = 36',
+             "'style-attr': 22", "'style-prop': 8",
+             'safe == 30'):
     ok(want in cr, '  CR-1 census now reads %s' % want)
 ok("'canvas': 27" in cr and "'unknown': 91" in cr,
    '  and canvas 27 / unknown 91 did NOT move - 201 - 83 = 118 = 27 + 91, '

@@ -926,7 +926,16 @@ for f in FILES:
                 # is what CN-1 spent a round removing from the filter
                 # census this morning; the rule is asked of the tool now.
                 and not sb.is_chooser(sb.label_of(b.group(3)),
-                                      b.group(2))]
+                                      b.group(2))
+                # RS-1b, 14 Oct 2026 - AND THE SAME FOR A NAMED
+                # EXCEPTION, for exactly the reason PM-1 gives three
+                # lines up. FILES is the 117-page sweep scope, so none
+                # of the three pages in sb.NOT_THE_VERB is in this
+                # corpus TODAY and this clause changes no result. It is
+                # here because the rule has two copies and they have to
+                # learn together - the alternative is finding out on the
+                # day the corpus widens.
+                and not sb.not_the_verb(f, sb.label_of(b.group(3)))]
         if len(real) == 1 and 'action-danger' not in real[0].group(2):
             if 'action-primary' not in real[0].group(2):
                 _lone.append((f, sb.label_of(real[0].group(3))))

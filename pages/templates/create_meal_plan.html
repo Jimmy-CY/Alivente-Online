@@ -880,11 +880,7 @@ function openRecipeSelector(dateStr, dayName) {
     // Reset favourites toggle on each open
     showFavouritesOnly = false;
     const favBtn = document.getElementById('favouritesToggleBtn');
-    if (favBtn) {
-        favBtn.style.background = 'white';
-        favBtn.style.borderColor = 'var(--alv-line)';
-        favBtn.style.color = 'var(--alv-neutral)';
-    }
+    if (favBtn) { favBtn.setAttribute('aria-pressed', 'false'); }
 
     allRecipesForSelector = [...recipes];
     filteredRecipes = [...recipes];
@@ -1098,17 +1094,20 @@ function filterRecipesInSelector() {
 }
 
 function toggleFavouritesFilter() {
+    // VC-1, 14 Oct 2026 - THE STATE IS aria-pressed, NOT A STYLE.
+    //
+    // This used to write background, borderColor and color onto the
+    // element, which is why no button census in this project could see
+    // the control at all: no Bootstrap colour, no house class, its whole
+    // appearance in an inline style and its state in JavaScript.
+    //
+    // B-1 fixed the identical control on recipe_management on 2 Oct and
+    // base.html already answers it - the same three tokens as
+    // .action-filter when pressed - so nothing is invented here, and a
+    // screen reader is told as well.
     showFavouritesOnly = !showFavouritesOnly;
     const btn = document.getElementById('favouritesToggleBtn');
-    if (showFavouritesOnly) {
-        btn.style.background = 'var(--alv-bad)';
-        btn.style.borderColor = '#e74c3c';
-        btn.style.color = 'white';
-    } else {
-        btn.style.background = 'white';
-        btn.style.borderColor = 'var(--alv-line)';
-        btn.style.color = 'var(--alv-neutral)';
-    }
+    if (btn) { btn.setAttribute('aria-pressed', showFavouritesOnly ? 'true' : 'false'); }
     searchRecipesInSelector();
 }
 
@@ -1122,11 +1121,7 @@ function clearRecipeFilters() {
     // Reset favourites toggle
     showFavouritesOnly = false;
     const btn = document.getElementById('favouritesToggleBtn');
-    if (btn) {
-        btn.style.background = 'white';
-        btn.style.borderColor = 'var(--alv-line)';
-        btn.style.color = 'var(--alv-neutral)';
-    }
+    if (btn) { btn.setAttribute('aria-pressed', 'false'); }
 
     filteredRecipes = [...allRecipesForSelector];
     displayedRecipesInSelector = 0;
@@ -1158,19 +1153,20 @@ function loadMoreRecipesInSelector() {
                         <div class="col-md-6">
                             <div class="input-group">
                                 <input type="text" id="recipeSelectorSearch" class="form-control" placeholder="🔎 Search recipes by name...">
-                                <button class="btn btn-primary" onclick="searchRecipesInSelector()">
+                                <button class="btn action-secondary" onclick="searchRecipesInSelector()">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <button class="btn w-100" id="favouritesToggleBtn" onclick="toggleFavouritesFilter()"
-                                    style="border: 2px solid var(--alv-line); background: white; color: var(--alv-neutral);">
+                            <button class="btn action-secondary w-100" id="favouritesToggleBtn"
+                                    onclick="toggleFavouritesFilter()"
+                                    aria-pressed="false">
                                 <i class="fas fa-heart"></i> Favourites
                             </button>
                         </div>
                         <div class="col-md-3">
-                            <button class="btn btn-outline-danger w-100" onclick="clearRecipeFilters()">
+                            <button class="btn action-secondary w-100" onclick="clearRecipeFilters()">
                                 <i class="fas fa-times-circle"></i> Clear Filters
                             </button>
                         </div>

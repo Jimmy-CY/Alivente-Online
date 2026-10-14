@@ -90,11 +90,11 @@ RULES = os.path.join(ROOT, 'alv_cssrules.py')
 #   var-safe total each came down by two; canvas and unknown did
 #   not move, because this round converted only var-safe ones.
 MARKUP_STYLE = 88      # colour literals in inline style= attributes
-SCRIPT = 149            # colour literals inside <script> bodies
+SCRIPT = 148            # colour literals inside <script> bodies   # VC-1, 14 Oct 2026 - create_meal_plan's Favourites toggle no longer writes #e74c3c from JavaScript; it carries aria-pressed and base paints it.   # (was 149)
 PRES = 0                # HTML presentation attributes carrying a colour
 PAGES = 36              # real pages carrying any of them
 STANDALONE = 26         # on the twelve exempt templates - correct, and staying
-CTX = {'style-attr': 22, 'style-prop': 9, 'css-text': 0,
+CTX = {'style-attr': 22, 'style-prop': 8, 'css-text': 0,   # VC-1 - the hex above was a style-prop write, the var-safe kind   # (style-prop was 9)
        'canvas': 27, 'unknown': 91}
 
 passed = failed = skipped = 0
@@ -316,8 +316,8 @@ for k in ('style-attr', 'style-prop', 'css-text', 'canvas', 'unknown'):
     ok(ctx.get(k, 0) == CTX[k], '  <script> context %-11s %4d'
        % (k, CTX[k]), ctx.get(k, 0))
 safe = sum(ctx.get(k, 0) for k in R.VAR_SAFE)
-ok(safe == 31,
-   '31 of the 149 may become var() - and 118 may not, which is '
+ok(safe == 30,
+   '30 of the 148 may become var() - and 118 may not, which is '
    'the whole reason this round exists. B-7 took 52 of the safe '
    'ones on 9 Oct 2026 and not one of the 118: a colour handed '
    'to a chart library as DATA is painted onto a canvas with '

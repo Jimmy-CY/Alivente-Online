@@ -553,6 +553,27 @@ $sentinels = @(
     # to look at - so it is never what the lone-button rule promotes.
     @{ File = 'Show-ButtonDrift.py'; Text = 'def is_chooser'; What = 'a chooser is not a verb, and a report page may have no primary' },
     @{ File = 'pages\templates\base.html'; Text = '.page-action-buttons .alv-seg > *'; What = 'a segment in an action bar is the bar''s height, not nearly it' },
+    # ------------------------------------------------ RS-1b, 14 Oct 2026
+    # The recipe side finishes, and the drift gate above runs --recipes.
+    # Its own comment claimed it walked every template while it asked 117
+    # of 142.
+    @{ File = 'Show-ButtonDrift.py'; Text = 'def not_the_verb'; What = 'a named exception is not the page''s verb - a map, because the rule I proposed would have demoted Submit FSR' },
+    @{ File = 'Show-ButtonDrift.py'; Text = "'d-flex':"; What = 'and d-flex is off the role register - a layout utility that only ever got one button wrong'; Absent = $true; Code = $true },
+    @{ File = 'pages\templates\view_recipe.html'; Text = 'btn action-secondary" onclick="printShoppingList()'; What = 'Print and Copy join the three house siblings in the same share row' },
+    @{ File = 'pages\templates\import_recipe.html'; Text = 'btn action-primary btn-lg'; What = 'and Extract Recipe with AI is the page it sits on' },
+    @{ File = 'pages\templates\view_meal_plan.html'; Text = 'action-secondary action-danger btn-action-disabled'; What = 'a Delete reads destructive even with no permission to press it' },
+    # ------------------------------------------------- VC-1, 14 Oct 2026
+    # The gate asked every PAGE after RS-1b and still not every BUTTON.
+    # Three controls were a <label>, two Bootstrap colours were off the
+    # list, one HOUSE name was off every list, and a decided wrapper
+    # could not reach a button with no colour at all.
+    @{ File = 'Show-ButtonDrift.py'; Text = '<(a|button|span|label)'; What = 'the button scanner can see a <label>, which three file pickers are' },
+    @{ File = 'Show-ButtonDrift.py'; Text = 'btn-outline-light'; What = 'and six of Bootstrap''s eight outline colours is not the list' },
+    @{ File = 'Show-ButtonDrift.py'; Text = 'def print_painted'; What = 'and a button painted by page CSS or JavaScript is counted, not dropped' },
+    @{ File = 'pages\templates\my_profile.html'; Text = 'btn action-secondary btn-sm'; What = 'Upload Photo stops being Bootstrap blue at 3.98 to 1' },
+    @{ File = 'pages\templates\ingredient_families.html'; Text = 'icon-action-btn icon-delete'; What = 'and the family icons stop being a near-white glyph on green at 2.97 to 1' },
+    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'aria-pressed'; What = 'the Favourites toggle carries its state in aria-pressed, not an inline style'; },
+    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'btn.style.background'; What = 'and no JavaScript paints it any more'; Absent = $true; Code = $true },
     # A Django comment is not a flex item. RE-1b made this repair to one
     # fixture three days ago; this is the other one.
     @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' },
@@ -2293,7 +2314,9 @@ $suites = @(
     'test_surface_border.py',
     'test_js_buttons.py',
     'test_recipe_tones.py',
-    'test_recipe_photos.py'
+    'test_recipe_photos.py',
+    'test_recipe_side_b.py',
+    'test_vocabulary.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
@@ -2342,16 +2365,33 @@ if ($skipped.Count -gt 0) {
     Good ('all ' + $suites.Count + ' suite(s) ran')
 }
 
-# A suite proves the pages it was written about.  Show-ButtonDrift --strict
-# proves the ones nobody thought to write a check for: it walks every
-# template and exits non-zero while ANY button still carries a Bootstrap
-# colour class in a place base.html owns.  Cheap, and it is the thing that
+# A suite proves the pages it was written about.  Show-ButtonDrift
+# --strict --recipes proves the ones nobody thought to write a check for:
+# it exits non-zero while ANY button still carries a Bootstrap colour
+# class in a place base.html owns.  Cheap, and it is the thing that
 # catches the next page somebody adds by copying an old one.
+#
+# --recipes SINCE RS-1b, 14 Oct 2026, AND THE FLAG IS THE POINT.  Without
+# it this gate asked 117 of the application's 142 pages: the recipe and
+# meal-plan side was deferred by name in August, and the sentence above
+# said "walks every template" for the whole two months in between.  RS-1a
+# took that side's 35 decided buttons and RS-1b the 31 that were left, so
+# the flag can go on and the claim can be true.
+#
+# WHAT IT STILL DOES NOT SEE, written here rather than discovered later:
+# seventeen buttons across eight pages carry neither a Bootstrap colour
+# this tool LISTS nor a house class, so every census in this project
+# passes over them.  Two are `btn-outline-light` on ingredient_families -
+# a Bootstrap colour that BOOTSTRAP does not list, which is the blind
+# spot the note beside the outline variants warns about, one shade
+# further on.  The rest are inline style, btn-link, or a page's own
+# class.  Widening the page SCOPE does not widen the VOCABULARY, and
+# that is the next thing in this line of work.
 $guard = Join-Path $root 'Show-ButtonDrift.py'
 if (Test-Path $guard) {
     Say ''
-    Say '  == Show-ButtonDrift.py --strict'
-    & python $guard --strict 2>&1 | ForEach-Object { Say ('     ' + $_) }
+    Say '  == Show-ButtonDrift.py --strict --recipes'
+    & python $guard --strict --recipes 2>&1 | ForEach-Object { Say ('     ' + $_) }
     if ($LASTEXITCODE -ne 0) {
         Bad ('button drift, an undecided button, or a page rendering its ' +
              'actions twice - see the output above')

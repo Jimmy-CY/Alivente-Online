@@ -229,6 +229,26 @@ REMOVED_BY = {
         'RE-1, 3 Oct 2026 - the save moved to the action bar',
 }
 
+# AND A CONTROL A LATER ROUND EXTENDED - RS-1b, 14 Oct 2026.
+#
+# Not removed and not retinted: RS-1b added `disabled-btn` to this element,
+# because it is an Email button that is permanently off without the
+# permission and base.html styles .disabled-btn directly. So the exact
+# class string RE-TONE recorded is no longer a substring of the page, while
+# every word of RE-TONE's own decision is still on the element.
+#
+# SAME RULE AS REMOVED_BY - allowed only when it is NAMED - and a stricter
+# test than that one: the old Bootstrap class must still be absent, the
+# named successor must be present, and every class RE-TONE put there must
+# still be among its names. A round that quietly drops action-secondary
+# fails here even with a line in this map.
+EXTENDED_BY = {
+    ('view_recipe.html', 'btn action-secondary share-btn-disabled'):
+        ('btn action-secondary disabled-btn share-btn-disabled',
+         'RS-1b, 14 Oct 2026 - .disabled-btn, which base styles '
+         'directly, on a button that is off for good'),
+}
+
 total = 0
 for rel in sorted(CLASSES):
     t = read(alv_tree.join(rel.replace('/', os.sep)))
@@ -236,10 +256,20 @@ for rel in sorted(CLASSES):
     for was, now, n, what in CLASSES[rel]:
         c = t.count('class="%s"' % now)
         gone = (rel, now) in REMOVED_BY
+        ext = EXTENDED_BY.get((rel, now))
         if gone:
             # Named as removed: the new class may be absent, but the OLD
             # one must not have come back in its place.
             good.append(c == 0 and t.count('class="%s"' % was) == 0)
+        elif ext:
+            # Named as extended - RS-1b, 14 Oct 2026. Three things, not
+            # one: the successor is there, the Bootstrap class has not
+            # come back, and the successor still carries every name this
+            # suite recorded.
+            succ = ext[0]
+            good.append(t.count('class="%s"' % succ) >= n
+                        and t.count('class="%s"' % was) == 0
+                        and set(now.split()) <= set(succ.split()))
         else:
             good.append(c >= n)
         total += n

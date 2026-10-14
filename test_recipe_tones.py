@@ -175,10 +175,51 @@ def left(name):
     return as_left_by(p, SUFFIX, read)
 
 
+# ADDED BY RS-1b, 14 Oct 2026 - THE RECIPE SIDE AS RS-1a LEFT IT.
+#
+# Section 2 below counts what RS-1a handed over. That is a snapshot and has
+# to be read as one: RS-1b took all 22 disagreements and all 13 undecided
+# controls, so a LIVE read of those counters returns zero and RS-1a's own
+# suite reports that RS-1a did nothing.
+def as_rs1a_left_it(p):
+    if as_left_by is None:
+        return read(p)
+    return as_left_by(p, SUFFIX, read)
+
+
+def before_rs1a(p):
+    # And the state BEFORE RS-1a: its own backup where it made one, else
+    # the page as it left it - which, for a page RS-1a never touched, is
+    # the same thing. was() could not say that. It fell back to the LIVE
+    # file, so two of the thirty-five came back as thirty-three the
+    # moment RS-1b edited those two pages.
+    b = p + SUFFIX
+    return read(b) if os.path.isfile(b) else as_rs1a_left_it(p)
+
+
 _spec = importlib.util.spec_from_file_location('_sb_rs1a',
                                                os.path.join(ROOT, DRIFT))
 sb = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(sb)
+
+
+# ADDED BY RS-1b, 14 Oct 2026 - THE TOOL AS RS-1a LEFT IT, loaded beside
+# the live one. Written into this process's own SCRATCH directory, which
+# mkdtemp named for this process alone, and handed back the repo's ROOT and
+# TPL because a module that works out where the templates are from its own
+# __file__ would otherwise look for them next to the copy.
+def _tool_as_rs1a_left_it():
+    p = os.path.join(SCRATCH, 'show_buttondrift_as_rs1a_left_it.py')
+    with open(p, 'w', encoding='utf-8') as f:
+        f.write(left(DRIFT))
+    s = importlib.util.spec_from_file_location('_sb_then', p)
+    mod = importlib.util.module_from_spec(s)
+    s.loader.exec_module(mod)
+    mod.ROOT, mod.TPL = sb.ROOT, sb.TPL
+    return mod
+
+
+sb_then = _tool_as_rs1a_left_it()
 
 TONES = {'action-primary', 'action-secondary', 'action-danger',
          'action-back', 'action-add-new'}
@@ -195,15 +236,20 @@ def pages_of(side):
     return out
 
 
-def buckets(side, text_of):
+def buckets(side, text_of, tool=None):
     """Every classified disagreement, sorted into the six kinds RS-1b
-    owns plus the one RS-1a takes. Asked of the scanner, not of a list."""
+    owns plus the one RS-1a takes. Asked of the scanner, not of a list.
+
+    `tool` ADDED BY RS-1b: which Show-ButtonDrift to ask. A count ABOUT
+    the handover asks sb_then, the one RS-1a left; a count about today
+    asks the live one, which is the default."""
+    s_ = tool or sb
     b = collections.Counter()
     for r in pages_of(side):
         raw = text_of(alv_tree.path_of(r))
-        sb.JS_REENABLED = sb.js_reenabled_ids(raw)
-        m = sb.markup_of(raw)
-        for h in sb._scan(r, m):
+        s_.JS_REENABLED = s_.js_reenabled_ids(raw)
+        m = s_.markup_of(raw)
+        for h in s_._scan(r, m):
             kind, _lab, boot, cls, want, _s, _e, why = h
             if kind == 'UNCLASSIFIED':
                 b['unclassified'] += 1
@@ -318,26 +364,52 @@ ok(now['bootstrap'] == 0,
    'not one Bootstrap-toned button is left on the recipe side',
    now['bootstrap'])
 
+# AS RS-1a LEFT IT - REPAIRED BY RS-1b, 14 Oct 2026. Every count below is a
+# statement about the handover, so every one of them reads the snapshot.
+# The invariant above stays live. See as_rs1a_left_it near the top.
+asleft = buckets('recipe', as_rs1a_left_it, sb_then)
+
 # THE FORWARD HALF, read from the backups: it was 35, so the zero above
 # is a round that happened and not a scanner that went quiet.
-before = buckets('recipe', was)
+before = buckets('recipe', before_rs1a, sb_then)
 ok(before['bootstrap'] == N_ELEMENTS,
    '  and there were %d before, read from the backups' % N_ELEMENTS,
    before['bootstrap'])
 
 for k, n in sorted(LEFT.items()):
-    ok(now[k] == n,
-       '%-12s still %2d - RS-1b owns it and RS-1a did not touch it'
-       % (k, n), '%d' % now[k])
-ok(now['other'] == 0, 'and nothing fell into a bucket nobody named',
-   now['other'])
-ok(sum(now[k] for k in LEFT if k != 'unclassified') == 22,
-   'the recipe side is down to 22 disagreement(s) from 57',
-   sum(now[k] for k in LEFT if k != 'unclassified'))
+    ok(asleft[k] == n,
+       '%-12s was %2d when RS-1a finished - RS-1b owns it'
+       % (k, n), '%d' % asleft[k])
+ok(asleft['other'] == 0, 'and nothing fell into a bucket nobody named',
+   asleft['other'])
+ok(sum(asleft[k] for k in LEFT if k != 'unclassified') == 22,
+   'the recipe side came down to 22 disagreement(s) from 57',
+   sum(asleft[k] for k in LEFT if k != 'unclassified'))
+# AND THE HALF ONLY RS-1b CAN SAY: all 22 and all 13 are gone now, which is
+# the thing that let the push gate widen. Read LIVE, because that is what
+# has to be true today.
+ok(sum(now[k] for k in LEFT) == 0,
+   '  and RS-1b took every one of them - 22 + 13 -> 0, live',
+   '%s' % {k: now[k] for k in LEFT if now[k]})
 
 # THE SWEPT SIDE DID NOT MOVE AT ALL. A round that widened its own scope
 # would still pass a count of 35.
-swept_now, swept_was = buckets('other', read), buckets('other', was)
+# AND BOTH HALVES WITH THE TOOL RS-1a LEFT - VC-1, 14 Oct 2026.
+# RS-1b pointed these at the live reader so the check would isolate the
+# PAGES, and that holds only while the tool stands still. VC-1 taught the
+# scanner to see a <label>, and three of those are property-side, so the
+# comparison started reporting a difference the pages do not have.
+swept_now, swept_was = (buckets('other', read, sb_then),
+                        buckets('other', before_rs1a, sb_then))
+# AND BOTH TOOLS AGREE ABOUT THE PROPERTY SIDE - RS-1b, 14 Oct 2026.
+# The two reads above use the LIVE reader on purpose, so that check
+# isolates the PAGES. This one isolates the TOOL: d-flex reached four
+# buttons and all four are recipe-side, and NOT_THE_VERB names three
+# recipe pages, so RS-1b's changes to the scanner must be invisible
+# over the 117.
+ok(buckets('other', read) == buckets('other', read, sb_then),
+   '  and the scanner RS-1b changed reads them identically to the '
+   'one RS-1a left')
 ok(swept_now == swept_was,
    'the 117 pages the sweep has always covered are unchanged',
    '%s vs %s' % (dict(swept_now), dict(swept_was)))
@@ -577,12 +649,14 @@ ok('FIFTH occurrence of the as_left_by lesson' in fb,
    '  and the file counts the occurrence, as its own section 6 counts '
    'the fourth')
 
-# THE GATE IS STILL NARROW, ON PURPOSE, AND SAYS SO HERE RATHER THAN
-# BEING DISCOVERED AGAIN. RS-1b widens it.
+# THE GATE WAS NARROW ON PURPOSE AND RS-1b WIDENED IT. RS-1a wrote this
+# check the other way round - as the thing RS-1b owed it - and RS-1b turned
+# it over rather than deleting it. A claim allowed to disappear on the day
+# it comes true leaves no record that it was ever owed.
 ps1 = read(os.path.join(ROOT, PS1))
-ok('--strict' in ps1 and '--strict --recipes' not in ps1,
-   'the push gate still runs --strict WITHOUT --recipes - 117 of 142 '
-   'pages, and RS-1b is what widens it')
+ok('--strict --recipes' in ps1,
+   'the push gate runs --strict --recipes now - all 142 pages, which is '
+   'what RS-1a said RS-1b owed it')
 ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 142,
    '  which is %d of %d' % (117, 142),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
