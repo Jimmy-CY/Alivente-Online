@@ -23,22 +23,17 @@ Edit Project - {{ project.project_name }}
 
 <!-- Action Buttons: Back+1 standard
      Save action mirrors the bottom Update button.
-     Back link is context-aware (Gantt vs project detail). -->
+     Back goes where the edit was opened from - PJ-1, 15 Oct 2026. The
+     view decides and hands over back_url, so this template has ONE Back
+     control instead of a branch with two copies of it. -->
 <div class="page-action-buttons">
   <button type="submit" form="projectForm" class="btn action-primary">
     <i class="fas fa-save"></i> Update Project
   </button>
-  {% if from_gantt %}
-    <a href="{% url 'project_gantt' project.project_id %}" class="btn action-back" title="Back to Gantt Chart">
-      <i class="fas fa-arrow-left"></i>
-      <span class="action-back-label">Back</span>
-    </a>
-  {% else %}
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn action-back" title="Back to Project">
-      <i class="fas fa-arrow-left"></i>
-      <span class="action-back-label">Back</span>
-    </a>
-  {% endif %}
+  <a href="{{ back_url }}" class="btn action-back" title="{{ back_title }}">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
+  </a>
 </div>
 
 {% with project.get_total_main_tasks as total_tasks %}
@@ -60,11 +55,7 @@ Edit Project - {{ project.project_name }}
 <!-- Project Edit Form -->
 <form method="post"
       id="projectForm"
-      {% if from_gantt %}
-        action="{% url 'projects_edit' project.project_id %}?from_gantt=true"
-      {% else %}
-        action="{% url 'projects_edit' project.project_id %}"
-      {% endif %}>
+      action="{{ form_action }}">
 <div class="form-card">
 
   {% csrf_token %}
@@ -476,9 +467,6 @@ label i { color: var(--alv-ink-soft); margin-right: 4px; }
 
 <script>
 console.log('=== EDIT PROJECT FORM LOADED ===');
-
-const fromGantt = {{ from_gantt|yesno:"true,false" }};
-console.log('From Gantt Chart:', fromGantt);
 
 $(document).ready(function() {
     console.log('Setting up project edit form');

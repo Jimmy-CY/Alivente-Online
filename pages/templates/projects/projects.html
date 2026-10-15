@@ -233,7 +233,7 @@ Projects
                   <i class="fas fa-eye"></i>
                 </a>
                 {% if perms.auth.can_edit_projects %}
-                  <a href="{% url 'projects_edit' project.project_id %}"
+                  <a href="{% url 'projects_edit' project.project_id %}?from=list"
                      class="icon-action-btn icon-edit" title="Edit Project">
                     <i class="fas fa-pencil-alt"></i>
                   </a>
@@ -258,7 +258,7 @@ Projects
                 <span class="mobile-action-label">View</span>
               </a>
               {% if perms.auth.can_edit_projects %}
-                <a href="{% url 'projects_edit' project.project_id %}" class="mobile-action-btn">
+                <a href="{% url 'projects_edit' project.project_id %}?from=list" class="mobile-action-btn">
                   <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                   <span class="mobile-action-label">Edit</span>
                 </a>

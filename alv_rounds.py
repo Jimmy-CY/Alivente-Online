@@ -1133,6 +1133,14 @@ ROUNDS = [
     # table layout, clamped day cells with a +N more sheet, the key above
     # the grid, and one timeline box per date.
     '.bak_calgrid',
+    # PJ-1, 15 Oct 2026 - PROJECT_ORIGINS beside TL-2's TASK_ORIGINS, so
+    # Back from the Project Edit screen returns to the page the edit was
+    # opened from, and the save beside it follows the same rule.
+    '.bak_prjorigin',
+    # PJ-2, 15 Oct 2026 - the Task List's three stat tiles stack into one
+    # column, so a label that had a 28px box for an 82px word stops
+    # wrapping inside itself. One character; the phone is untouched.
+    '.bak_statcols',
 ]
 
 

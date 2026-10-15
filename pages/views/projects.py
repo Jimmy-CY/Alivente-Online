@@ -241,11 +241,20 @@ def projects_add(request):
 @login_required
 @permission_required('auth.can_edit_projects', raise_exception=True)
 def projects_edit(request, project_id):
-    """Edit existing project - enhanced to handle Gantt chart returns"""
+    """Edit existing project, returning you to the page it was opened from.
+
+    PJ-1, 15 Oct 2026 - this said "enhanced to handle Gantt chart
+    returns", which was true and was the whole defect: the Gantt chart
+    was the ONE origin it handled, and the other two links fell to an
+    else arm.
+    """
     project = get_object_or_404(Project, project_id=project_id)
 
-    # Check if coming from Gantt chart
-    from_gantt = request.GET.get('from_gantt', 'false') == 'true'
+    # PJ-1 - and from the Projects list and from the Project itself,
+    # neither of which had a way to say so. Back and the save below now
+    # read the same answer.
+    back_url, back_title = project_origin_back(request, project)
+    origin_query = project_origin_query(project_origin(request))
 
     if request.method == 'POST':
         project.project_name = request.POST.get('project_name')
@@ -269,11 +278,11 @@ def projects_edit(request, project_id):
 
             messages.success(request, f"Project '{project.project_name}' has been updated successfully.")
 
-            # Redirect based on where user came from
-            if from_gantt:
-                return redirect('project_gantt', project_id=project_id)
-            else:
-                return redirect('projects')
+            # PJ-1 - Update Project returns you to the page you opened
+            # the edit from, which is the rule the Back button beside it
+            # follows. It went to the Projects list from every origin but
+            # the Gantt chart, however you had arrived.
+            return redirect(back_url)
 
         except Exception as e:
             messages.error(request, f"Error updating project: {str(e)}")
@@ -285,7 +294,12 @@ def projects_edit(request, project_id):
         'project': project,
         'properties': properties,
         'status_choices': Project.PROJECT_STATUS_CHOICES,
-        'from_gantt': from_gantt,  # Pass this to template for form action
+        # PJ-1 - Back, and the form's own action, which has to keep the
+        # origin across a save that fails validation and re-renders.
+        'back_url': back_url,
+        'back_title': back_title,
+        'form_action': (reverse('projects_edit', args=[project.project_id])
+                        + ('?' + origin_query if origin_query else '')),
     }
 
     return render(request, 'projects/projects_edit.html', context)
@@ -513,6 +527,79 @@ def task_origin_back(request, project):
     # not care where its reader has been - so only the state travels.
     q = '&'.join(p for p in q.split('&') if not p.startswith('from='))
     return (url + ('?' + q if q else ''), TASK_ORIGIN_LABELS[key])
+
+
+# --------------------------------------------------------------------------- #
+# PJ-1, 15 Oct 2026 - WHERE A PROJECT EDIT CAME FROM
+# --------------------------------------------------------------------------- #
+# Demetri: "If I edit a Project from the Projects page, it takes me to the
+# Edit screen which is correct, however, when I press the Back button it
+# takes me to the Project Details screen."
+#
+# Three links reach projects_edit and only one of them ever said so - the
+# Gantt chart, with from_gantt=true. The other two fell to the same else
+# arm, so Back went to the Project whichever page you left. This is the
+# block above, grown for the project itself.
+#
+# AND BACK DISAGREED WITH SAVE. On the same screen Back went to the
+# Project Details page and Update Project went to the Projects LIST.
+# Both follow one rule now, which is the answer Demetri chose when the
+# two were put side by side - including the one case nobody reported:
+# an edit opened from Project Details and saved used to land on the list.
+#
+# NOT MERGED WITH TASK_ORIGINS. Every task origin takes a project_id and
+# 'projects' takes none, so the arity travels WITH the key rather than
+# being assumed - reverse() is otherwise the only thing that would notice
+# the day a fourth origin is added.
+PROJECT_ORIGINS = {
+    'list': ('projects', False),
+    'detail': ('projects_detail', True),
+    'gantt': ('project_gantt', True),
+}
+
+PROJECT_ORIGIN_LABELS = {
+    'list': 'Back to Projects',
+    'detail': 'Back to Project',
+    'gantt': 'Back to Gantt Chart',
+}
+
+
+def project_origin(request):
+    """The key naming the page this project edit was opened from, or ''.
+
+    from_gantt=true is still read: the Gantt chart has linked that way
+    since long before this round and its link is not being rewritten.
+    """
+    key = request.GET.get('from', '')
+    if key in PROJECT_ORIGINS:
+        return key
+    return 'gantt' if request.GET.get('from_gantt') else ''
+
+
+def project_origin_query(key):
+    """The query string that carries an origin through a re-render.
+
+    A save that fails validation re-renders the form, and a form whose
+    action has lost the origin sends the next save somewhere else.
+    """
+    return urlencode([('from', key)]) if key in PROJECT_ORIGINS else ''
+
+
+def project_origin_back(request, project):
+    """(url, title) for Back - and for the redirect after a save.
+
+    An unrecognised key falls back to the Project exactly as the Back
+    button did before this round. Every in-app link names its origin, so
+    that arm is reached by a bookmark or a hand-typed URL.
+    """
+    key = project_origin(request)
+    if not key:
+        return (reverse('projects_detail', args=[project.project_id]),
+                'Back to Project')
+    name, takes_id = PROJECT_ORIGINS[key]
+    url = (reverse(name, args=[project.project_id]) if takes_id
+           else reverse(name))
+    return (url, PROJECT_ORIGIN_LABELS[key])
 
 
 @login_required

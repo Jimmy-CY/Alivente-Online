@@ -959,6 +959,24 @@ $sentinels = @(
     # pointer-events is guarded in test_dash_std section 4, where
     # the CSS can be split and the two rules told apart.
     @{ File = 'pages\templates\property_management_dashboard.html'; Text = 'opacity: 0.45'; What = 'the landing dim stays at the measured 0.75'; Absent = $true; Code = $true }
+    # ------------------------------------------------- PJ-1, 15 Oct 2026
+    # Demetri: Back from the Project Edit screen went to the Project
+    # Details page whichever page the edit was opened from. Two of the
+    # three links that reach it had no way to say where they were.
+    @{ File = 'pages\views\projects.py'; Text = 'PROJECT_ORIGINS'; What = 'a project edit knows which of three pages it was opened from' },
+    # NO APOSTROPHE IN THE TEXT. PowerShell escapes one inside a
+    # single-quoted string by DOUBLING it, and the gate's own table says
+    # not to rely on that. The query is enough on its own and appears in
+    # no backup of this page.
+    @{ File = 'pages\templates\projects\projects.html'; Text = '?from=list'; What = 'and the Projects list says so, on the desktop link and the phone one' },
+    @{ File = 'pages\templates\projects\projects_edit.html'; Text = 'from_gantt'; Absent = $true; Code = $true; What = 'the edit screen has one Back control instead of a branch with two' },
+    # ------------------------------------------------- PJ-2, 15 Oct 2026
+    # Demetri: "I do not like it when COMPLETED cuts off in the box. The
+    # same happens with Greek." Three tiles in a col-md-4 gave the label
+    # a 28px box for an 82px word, and SL-1's break-word made the wrap
+    # land mid-word. One column, measured: one line at every width in
+    # both languages.
+    @{ File = 'pages\templates\projects\project_task_list.html'; Text = '--alv-stats-cols: 1'; What = 'the three task tiles stack, so COMPLETED stops breaking in half' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2371,7 +2389,9 @@ $suites = @(
     'test_panel_heads.py',
     'test_verb_colours.py',
     'test_pdf_viewer.py',
-    'test_calendar_grid.py'
+    'test_calendar_grid.py',
+    'test_project_origin.py',
+    'test_stat_cols.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

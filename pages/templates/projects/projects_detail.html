@@ -87,7 +87,7 @@ Project Details - {{ project.project_name }}
 
         <span class="row-actions">
           {% if perms.auth.can_edit_projects %}
-            <a href="{% url 'projects_edit' project.project_id %}"
+            <a href="{% url 'projects_edit' project.project_id %}?from=detail"
                class="icon-action-btn icon-edit" title="Edit Project">
               <i class="fas fa-pencil-alt"></i>
             </a>

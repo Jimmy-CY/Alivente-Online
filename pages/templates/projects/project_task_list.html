@@ -383,10 +383,39 @@ Task List - {{ project.project_name }}
     width: 16px;
 }
 
-/* Three stats, so three columns - fsr sets 5 and the two finance pages
-   set 3 the same way. base takes it to 2 on a phone by itself.
-                                            [test_task_table.py] */
-.task-summary { --alv-stats-cols: 3; }
+/* ONE COLUMN, NOT THREE - PJ-2, 15 Oct 2026. Demetri: "I do not like it
+   when COMPLETED cuts off in the box. The same happens with Greek."
+
+   It is not cut off, and since SL-1 it does not spill either. It WRAPS,
+   and because the lever SL-1 reached for is overflow-wrap: break-word,
+   the wrap lands inside the word: COMPLETE / D.
+
+   THE STRIP LIVES IN A col-md-4, so three tiles share one third of the
+   content column. Measured in Chromium inside the real
+   .task-list-header > .row > .col-md-4, with base's CSS and this page's:
+
+       width   tile    label box   COMPLETED needs   EN lines  GR lines
+       1024     62px      28px          82px            4         6
+       1280     91px      57px          82px            2         3
+       1440    108px      74px          82px            2         2
+       1920    162px     128px          82px            1         2
+
+   A 28px box and an 82px word. One column gives a 177px label box at
+   1024, which holds the longest Greek label - OLOKLIROMENES, 142px
+   uppercase - on ONE line with 35px to spare, at every width in both
+   languages. The cost is height: this header goes from 188px to 344px
+   at 1280.
+
+   THE PHONE IS NOT TOUCHED. base's .alv-stats.is-3up declares
+   grid-template-columns directly, at 0-2-0, inside its max-width: 768px
+   block, so a custom property on this page cannot reach past it. 320,
+   360, 390 and 414 measure identical before and after.
+
+   AND NOTHING ELSE MOVES. 10px of padding instead of base's 14 would
+   save 24px of header, and is not taken: the house tile's padding is
+   base's, and this rule has exactly one job.
+                                 [test_stat_cols.py, test_task_table.py] */
+.task-summary { --alv-stats-cols: 1; }
 
 /* ============================================================
    TABLE — DESKTOP

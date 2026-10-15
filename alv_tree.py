@@ -333,6 +333,14 @@ CONVERTED = [
     # event once, a table that clipped its own Saturday, cells that grew
     # with their content, and a key below the thing it explains.
     'test_calendar_grid.py',
+    # PJ-1, 15 Oct 2026 - a project edit learns which of three pages it
+    # was opened from, and Back and Save stop disagreeing about it.
+    # Wide from birth.
+    'test_project_origin.py',
+    # PJ-2, 15 Oct 2026 - three stat tiles in a third of a column. The
+    # label had a 28px box for an 82px word, and SL-1's break-word made
+    # the wrap land mid-word. Wide from birth.
+    'test_stat_cols.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
