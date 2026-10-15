@@ -126,7 +126,11 @@
     transform: translateX(-50%) translateY(0);
 }
 .undo-toast .toast-icon {
-    color: var(--alv-good);
+    /* VB-1: was var(--alv-good) - 2.53:1 on this toast, under even the
+       3:1 a non-text glyph is held to. --alv-good is a status token for
+       a LIGHT surface. --alv-good-line reads 9.10:1 here, and base
+       calls the -line tokens pale-on-dark-ink in its own words. */
+    color: var(--alv-good-line);
     font-size: 18px;
 }
 .undo-toast .toast-text strong {
@@ -134,7 +138,13 @@
 }
 .undo-toast .toast-undo-btn {
     background: transparent;
-    color: var(--alv-warn-ink);
+    /* VB-1: was var(--alv-warn-ink) - 1.60:1 on this toast. B-4 put it
+       here measuring amber against WHITE PAPER (1.63:1) when the ground
+       four declarations up is var(--alv-ink): the control read 7.95:1
+       before that round and 1.60:1 after. --alv-warn-line reads 8.87:1,
+       and is already the border on the next line - which is exactly why
+       the outline was visible and the word was not. */
+    color: var(--alv-warn-line);
     border: 1px solid var(--alv-warn-line);
     padding: 5px 12px;
     border-radius: 5px;

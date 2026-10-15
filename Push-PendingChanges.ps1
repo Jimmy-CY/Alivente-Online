@@ -589,6 +589,26 @@ $sentinels = @(
     # touch this" belongs in the round's own suite, and section 2 of
     # test_panel_heads.py says it there, with the reason attached.
     @{ File = 'pages\templates\pantry_staples.html'; Text = 'var(--alv-good-soft)'; What = 'and 92 pantry chips leave a hex literal no colour census could see' },
+    # ------------------------------------------------- VB-1, 15 Oct 2026
+    # Three questions from the live site and one answer: a colour that
+    # names a verb in one module and a different verb in another names
+    # nothing. No sentinel below claims a thing was LEFT alone - that
+    # belongs in the round's suite, which is where test_sentinels sent
+    # the last one I wrote.
+    @{ File = 'pages\templates\wcim_landing.html'; Text = 'rgba(14, 124, 139, 0.3)'; What = 'the chooser chip stops wearing a Bootstrap green no census could see' },
+    @{ File = 'pages\templates\wcim_extras.html'; Text = 'var(--alv-accent-soft)'; What = 'and a selection stops being reported as a positive status' },
+    @{ File = 'pages\templates\map_ingredients_nutrition.html'; Text = 'var(--alv-warn-line)'; What = 'the Undo on the confirmation bar is readable again - 1.60:1 to 8.87:1' },
+    @{ File = 'pages\templates\unit_conversions_wizard.html'; Text = 'var(--alv-good-line)'; What = 'and the tick beside it clears the glyph floor it was under' },
+    @{ File = 'pages\templates\recipe_management.html'; Text = 'var(--alv-edit)'; What = 'the recipe Edit button is the same blue as every other module' },
+    # NO `Absent` ROW FOR THE DUPLICATE HOVER. The obvious one was
+    # var(--alv-accent-ink) marked Absent, and test_bar_order refused it:
+    # that token has FIVE other legitimate uses on the page - the letter
+    # filter's scrollbar thumb and four tag inks - so the claim was simply
+    # false. Second sentinel in two rounds to assert something about what
+    # a round REMOVED. The removal is checked in test_verb_colours section
+    # 5, where it can name the selector instead of a substring, and that
+    # is where it belongs.
+    @{ File = 'alv_rowactions.py'; Text = 'VERNACULAR'; What = 'four controls no drift census could see are registered by verb' },
     # A Django comment is not a flex item. RE-1b made this repair to one
     # fixture three days ago; this is the other one.
     @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' },
@@ -2332,7 +2352,8 @@ $suites = @(
     'test_recipe_photos.py',
     'test_recipe_side_b.py',
     'test_vocabulary.py',
-    'test_panel_heads.py'
+    'test_panel_heads.py',
+    'test_verb_colours.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

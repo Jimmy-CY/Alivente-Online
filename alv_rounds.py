@@ -1121,6 +1121,10 @@ ROUNDS = [
     # PH-2, 14 Oct 2026 - six panel heads off the status palette
     # and onto the house card, and .bg-light onto --alv-surface.
     '.bak_panelheads',
+    # VB-1, 15 Oct 2026 - the chips onto the accent, the toast onto the
+    # -line tokens, and the recipe overlay onto the four verb tokens.
+    # alv_rowactions gains VERNACULAR so the overlay stops being invisible.
+    '.bak_verbs',
 ]
 
 

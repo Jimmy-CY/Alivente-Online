@@ -480,10 +480,25 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+/* VB-1, 15 Oct 2026 - THE VERBS, NOT THE MODULE.
+   Demetri: "Why is the Edit Button this colour, but in other modules it
+   is Blue?" Because these four were a private vocabulary: View on the
+   positive-status token, Edit on the recipe module's spice, Duplicate on
+   --alv-accent - which IS --alv-view, so Copy was wearing View's colour -
+   and only Delete agreeing with the house.
+
+   The shape stays. They are filled circles because they sit on a
+   photograph and an outlined row action does not read there; Demetri
+   chose to keep that and give up only the private meanings.
+
+   Contrast was never the argument: white reads 5.82 on spice, 5.12 on
+   good, 4.91 on accent and 5.17 on edit. All of them pass. This is
+   vocabulary. --alv-danger IS var(--alv-bad), so Delete moves name only
+   and no pixel at all. */
 .recipe-image-action-btn:hover { transform: scale(1.1); }
-.recipe-view-btn { background: var(--alv-good); color: var(--alv-on-accent); }
-.recipe-edit-btn { background: var(--alv-spice); color: var(--alv-on-accent); }
-.recipe-delete-btn { background: var(--alv-bad); color: var(--alv-on-accent); }
+.recipe-view-btn { background: var(--alv-view); color: var(--alv-on-accent); }
+.recipe-edit-btn { background: var(--alv-edit); color: var(--alv-on-accent); }
+.recipe-delete-btn { background: var(--alv-danger); color: var(--alv-on-accent); }
 
 .recipe-image-action-btn.disabled-action {
     background: var(--alv-surface-deep);
@@ -957,11 +972,20 @@
 .dropdown-menu-custom a:hover { background: var(--alv-surface); padding-left: 20px; }
 .dropdown-menu-custom a i { margin-right: 8px; width: 16px; text-align: center; }
 
-/* Duplicate button styling */
-.recipe-duplicate-btn { background-color: var(--alv-accent); color: var(--alv-on-accent); }
-.recipe-duplicate-btn:hover { background-color: var(--alv-accent-ink); }
-.recipe-list-action-btn.recipe-duplicate-btn { background-color: var(--alv-accent); }
-.recipe-list-action-btn.recipe-duplicate-btn:hover { background-color: var(--alv-accent-ink); }
+/* Duplicate button styling - VB-1, 15 Oct 2026.
+   WAS var(--alv-accent), which IS var(--alv-view): the Copy button was
+   wearing the View colour, next to a View button that was not. The house
+   gives COPY the same token as CHANGE - base's own .icon-duplicate reads
+   var(--alv-edit) - so Duplicate and Edit share a colour here too and are
+   told apart by their glyph, exactly as they are everywhere else.
+
+   AND THE HOVER COLOUR GOES. This was the only one of the four with a
+   darkening hover. --alv-edit has no -ink partner, and minting one for a
+   single hover on a single page is worse than letting all four controls
+   behave the same way: scale(1.1), which is what the other three already
+   did. Demetri decided it. */
+.recipe-duplicate-btn { background-color: var(--alv-edit); color: var(--alv-on-accent); }
+.recipe-list-action-btn.recipe-duplicate-btn { background-color: var(--alv-edit); }
 
 /* ==================== BOOK VIEW STYLES ==================== */
 .recipe-book-container {
@@ -1487,10 +1511,13 @@
         cursor: pointer;
         text-decoration: none;
     }
-    .recipe-card-actions-mobile .recipe-view-btn { background: var(--alv-good); color: var(--alv-on-accent); }
-    .recipe-card-actions-mobile .recipe-edit-btn { background: var(--alv-spice); color: var(--alv-on-accent); }
-    .recipe-card-actions-mobile .recipe-duplicate-btn { background: var(--alv-accent); color: var(--alv-on-accent); }
-    .recipe-card-actions-mobile .recipe-delete-btn { background: var(--alv-bad); color: var(--alv-on-accent); }
+    /* VB-1: the same four verbs, on the phone. Every Add/Edit screen
+       in this application has to work on a phone, so a vocabulary
+       fixed only at 1180 is fixed nowhere. */
+    .recipe-card-actions-mobile .recipe-view-btn { background: var(--alv-view); color: var(--alv-on-accent); }
+    .recipe-card-actions-mobile .recipe-edit-btn { background: var(--alv-edit); color: var(--alv-on-accent); }
+    .recipe-card-actions-mobile .recipe-duplicate-btn { background: var(--alv-edit); color: var(--alv-on-accent); }
+    .recipe-card-actions-mobile .recipe-delete-btn { background: var(--alv-danger); color: var(--alv-on-accent); }
     .recipe-card-actions-mobile .disabled-action { background: var(--alv-surface-deep); color: var(--alv-ink-soft); opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
     /* Favourite heart on image: smaller for compact 2-col */

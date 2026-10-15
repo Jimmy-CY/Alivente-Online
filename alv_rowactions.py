@@ -122,6 +122,71 @@ NAMED = {
 }
 
 
+# A PAGE-LOCAL VOCABULARY, TRANSLATED ONCE.            [VB-1, 15 Oct 2026]
+#
+# Demetri: "Why is the Edit Button this colour, but in other modules it is
+# Blue?" Because recipe_management does not draw its row actions the way
+# the rest of the application does. They are filled 32px circles in three
+# wrappers - the card overlay, the phone bar, the list row - and they
+# carry no `icon-action-btn`, so NOTHING in this project could see them.
+# Show-ButtonDrift finds 13 buttons on that page and not one of these
+# four. That is how a quartet sat three-quarters wrong with every gate
+# green, and it is why the colours alone were not the fix.
+#
+# This is the same bargain the module already strikes for the ORDER: the
+# rule is written down ONCE, here, rather than three times in three
+# callers. VERNACULAR writes down the TRANSLATION - private class to house
+# verb - and the verb is then enough to say both what colour it must wear
+# and where it must sit in the row.
+#
+# A PAGE EARNS AN ENTRY BY BEING LOOKED AT, NOT BY BEING FOUND. Adding one
+# is a decision that a page may keep its own shape. recipe_management kept
+# its filled circles because they sit on a photograph and an outlined
+# control does not read there - Demetri chose that over moving the markup
+# onto .icon-action-btn. What it did not get to keep is its own meaning
+# for a colour.
+VERNACULAR = {
+    'recipe_management.html': {
+        'since': '.bak_verbs',
+        'wrappers': ('recipe-image-actions', 'recipe-card-actions-mobile',
+                     'recipe-list-actions'),
+        # private class -> the house verb it means. The verb decides the
+        # token through TONE below, and the FAMILY order above.
+        'controls': (('recipe-view-btn', 'view'),
+                     ('recipe-edit-btn', 'edit'),
+                     ('recipe-duplicate-btn', 'duplicate'),
+                     ('recipe-delete-btn', 'delete')),
+        'why': 'The recipe card overlay. Filled circles on a photograph '
+               'rather than outlined row actions, which Demetri kept - '
+               'but on the house verb tokens, which it did not have.',
+    },
+}
+
+# The verb decides the colour. These are base.html's names, not values:
+# --alv-view is var(--alv-accent) and --alv-danger is var(--alv-bad), and
+# a register that held the VALUES would stop being true the day a token is
+# tuned. COPY shares CHANGE's token because base's own .icon-duplicate
+# does - the two are told apart by their glyph, not their colour.
+TONE = {
+    'view': '--alv-view',
+    'edit': '--alv-edit',
+    'duplicate': '--alv-edit',
+    'delete': '--alv-danger',
+}
+
+
+def vernacular(page):
+    """The page's private action vocabulary, or None."""
+    return VERNACULAR.get(page)
+
+
+def tone_of(verb):
+    """The house token a verb must wear, or None if the verb has no
+    settled colour. Not every FAMILY member does: ADVANCE covers send,
+    approve, void and lock, and those are not one colour."""
+    return TONE.get(verb)
+
+
 def named(page, hits):
     """(reason, exact) for a page's unwrapped buttons, or (None, None).
 

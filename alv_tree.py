@@ -319,6 +319,11 @@ CONVERTED = [
     # recipe screens were green; the answer was a status token used
     # as decoration. Wide from birth.
     'test_panel_heads.py',
+    # VB-1, 15 Oct 2026 - the verb colours. Demetri asked why a selection
+    # was green, why a confirmation bar was brown on brown, and why the
+    # Edit button is one colour here and blue everywhere else. Three
+    # questions, one answer. Wide from birth.
+    'test_verb_colours.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -113,14 +113,17 @@
     min-height: 56px;
   }
   .anchor-btn:hover {
-    border-color: var(--alv-good);
-    background: var(--alv-good-soft);
+    border-color: var(--alv-accent);
+    background: var(--alv-accent-soft);
   }
   .anchor-btn.selected {
-    background: var(--alv-good);
+    background: var(--alv-accent);
     color: var(--alv-on-accent);
-    border-color: var(--alv-good);
-    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+    border-color: var(--alv-accent);
+    /* VB-1: was rgba(40, 167, 69, 0.3) - BOOTSTRAP's green, as an rgba
+       triple. Not a hex and not a token, so no census in this project
+       could see it. The accent triple is #0e7c8b. */
+    box-shadow: 0 2px 6px rgba(14, 124, 139, 0.3);
   }
   .anchor-btn input[type="checkbox"] {
     display: none;

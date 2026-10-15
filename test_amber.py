@@ -212,6 +212,71 @@ for pg, tail in PILLS:
                '%s -> %s' % (a and a.group(1), b and b.group(1)))
 
 
+def _value(code, ba, bb, prop):
+    d = R.decl_span(code, ba, bb, prop)
+    if d is None:
+        return None
+    return R.norm(code[d[0]:d[1]].partition(':')[2]).rstrip(';').strip()
+
+
+def _on_its_real_ground(path, tail):
+    """(ink, ground, where) for a rule, resolving its ground the way a
+    BROWSER does rather than the way a pair census does.
+
+    A rule that sets no background of its own - or sets `transparent` -
+    does not sit on paper. It sits on whatever its nearest ANCESTOR
+    paints. VB-1 added this because this suite had been asserting a token
+    NAME where it meant to assert a ratio, and the one control it most
+    wanted to protect was sitting at 1.60:1 underneath it.
+
+    It reads through alv_cssrules and apply_edit_ink rather than a fourth
+    regex of its own. RC-2 counted eight occasions in one week where a
+    count of mine fired on prose because it was read with a pattern
+    instead of with the instrument that already existed.
+    """
+    # Imported here and not at the top: this helper is the only caller,
+    # and B (apply_amber) owns contrast while EI owns the token chase.
+    import apply_edit_ink as EI
+    code = T.code_only(read(path))
+    tok = EI.base_tokens()
+    want = tail.strip()
+    grounds, own_bg, ink = {}, None, None
+    for a, b in R.style_spans(code):
+        for sel, ba, bb, _r, _s in R.rule_spans(code, a, b):
+            name = sel.split(' && ')[-1].strip()
+            bg = _value(code, ba, bb, 'background')
+            if bg is None:
+                bg = _value(code, ba, bb, 'background-color')
+            if bg is not None:
+                grounds.setdefault(name.split(':')[0].strip(),
+                                   bg.split()[0])
+            if name != want:
+                continue
+            if bg is not None:
+                own_bg = bg.split()[0]
+            fg = _value(code, ba, bb, 'color')
+            if fg is not None:
+                ink = fg
+    if ink is None:
+        return None, None, None
+
+    ground, where = own_bg, want
+    if ground is None or ground in ('transparent', 'none'):
+        # Walk OUT one descendant step at a time, nearest first, exactly
+        # as the cascade does. `.undo-toast .toast-undo-btn` asks
+        # `.undo-toast`, which paints var(--alv-ink).
+        parts = want.split(':')[0].strip().split()
+        ground, where = '#ffffff', 'the page'
+        while len(parts) > 1:
+            parts = parts[:-1]
+            anc = ' '.join(parts)
+            g = grounds.get(anc)
+            if g and g not in ('transparent', 'none'):
+                ground, where = g, anc
+                break
+    return EI.resolve(ink, tok), EI.resolve(ground, tok), where
+
+
 # ==========================================================================
 head('4. THE INK - AND WHAT HE CHOSE KNOWING THE COST')
 # ==========================================================================
@@ -220,6 +285,28 @@ head('4. THE INK - AND WHAT HE CHOSE KNOWING THE COST')
 FIXED = (('map_ingredients_nutrition.html', '.undo-toast .toast-undo-btn'),
          ('home.html', '.ins-tag--amber'),
          ('my_profile.html', '.coming-soon-badge'))
+# --------------------------------------------------- VB-1, 15 Oct 2026
+# THIS CHECK USED TO READ
+#
+#     ok('var(--alv-warn' in now, '... now reads a warn token')
+#
+# which asserts the rule NAMES a warn token. It passes at 8.87:1 and it
+# passes at 1.60:1, and .undo-toast .toast-undo-btn was sitting at 1.60
+# for six days underneath it.
+#
+# B-4 moved that control here measuring amber against WHITE PAPER - the
+# 1.63 in this suite's own FIXED table. The toast's ground is not paper;
+# `.undo-toast` sets background: var(--alv-ink) four declarations up, and
+# the button sets `background: transparent`, so its ground belongs to its
+# ANCESTOR. Against the real ground the control read 7.95:1 BEFORE this
+# round touched it and 1.60:1 after. B-4 did not lower a passing control
+# through carelessness; it measured against paper because paper is what
+# the census knows.
+#
+# So the check now resolves the ground the way a browser does - nearest
+# ancestor that paints one, paper if none - and MEASURES. It fails if any
+# of these three ever drops below AA again, for any reason, including a
+# future round swapping one warn token for another.
 for pg, tail in FIXED:
     path = T.path_of(pg)
     if not path:
@@ -228,6 +315,14 @@ for pg, tail in FIXED:
     now = rule(path, tail) or ''
     ok('var(--alv-warn' in now,
        '%-30s %s now reads a warn token' % (pg, tail), now[:90])
+    ink, ground, where = _on_its_real_ground(path, tail)
+    if ink is None or ground is None:
+        skip('%s %s' % (pg, tail), 'the pair does not resolve to two hexes')
+        continue
+    c = B.contrast(ink, ground)
+    ok(c >= 4.5,
+       '  and reads %.2f:1 on %s, which is the ground it SITS on'
+       % (c, where), '%s on %s' % (ink, ground))
 ok(B.contrast('#ffc107', '#ffffff') < 4.5,
    'amber text on paper was %.2f:1 - below AA'
    % B.contrast('#ffc107', '#ffffff'))
