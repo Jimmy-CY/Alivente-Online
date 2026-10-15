@@ -1129,6 +1129,10 @@ ROUNDS = [
     # components/pdf_viewer.html, and each page's blanket phone footer
     # rule is excluded from it rather than overruled.
     '.bak_pdfview',
+    # CC-1, 15 Oct 2026 - occurrences for the month displayed, a fixed
+    # table layout, clamped day cells with a +N more sheet, the key above
+    # the grid, and one timeline box per date.
+    '.bak_calgrid',
 ]
 
 

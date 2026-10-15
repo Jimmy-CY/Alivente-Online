@@ -265,6 +265,13 @@ def celebration_management(request):
     })
 
 
+# CC-1, 15 Oct 2026 - how many chips a day cell shows before it says
+# "+N more". Three is what fits the clamped cell at the house chip size,
+# measured; it lives here rather than in the template so the suite can
+# read one number and the cell height can be tuned against it.
+CALENDAR_CHIP_CAP = 3
+
+
 @login_required
 @permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_calendar(request):
@@ -301,17 +308,56 @@ def celebration_calendar(request):
     # Build calendar
     cal = monthcalendar(year, month)
 
-    # Map events to calendar days
+    # ---------------------------------------------------------------- CC-1
+    # OCCURRENCES FOR THE MONTH ON SCREEN, not one "next occurrence" each.
+    #
+    # This loop used to ask every event for its single next occurrence and
+    # keep it only if it landed in the displayed month. A recurring
+    # birthday therefore appeared in exactly ONE November for all time,
+    # and - because "next" is measured from today - the days already past
+    # in the current month resolved to next year and left the current
+    # month looking half empty.
+    #
+    # Demetri: "Why is November 2027 blank? If we only display 1 year of
+    # celebrations going ahead, then we need to state this and not show a
+    # blank calendar." It was never a one-year limit.
     events_by_day = {}
     for event in events:
-        next_occurrence = event.get_next_occurrence()
-        if next_occurrence and next_occurrence.month == month and next_occurrence.year == year:
-            day = next_occurrence.day
-            if day not in events_by_day:
-                events_by_day[day] = []
-            events_by_day[day].append(event)
+        for occ in event.occurrences_in(year, month):
+            events_by_day.setdefault(occ.day, []).append({
+                'event': event,
+                'contact': event.contact,
+                'date': occ,
+                # AGE AT THIS OCCURRENCE. get_age() reads
+                # get_next_occurrence() and would print the same number in
+                # every year the grid can now reach.
+                'age': event.age_at(occ),
+                'years': event.years_at(occ),
+            })
 
-    # Get all upcoming events for timeline view (next 365 days) — workspace-scoped
+    # A STABLE ORDER INSIDE A DAY, so the three chips a cell shows are the
+    # same three on every render: type first, then the person.
+    for day in events_by_day:
+        events_by_day[day].sort(
+            key=lambda r: (r['event'].event_type, r['contact'].name or ''))
+
+    # The day sheets the +N more chip opens - an ordered list, because a
+    # dict's order is not a promise a template should rely on.
+    day_sheets = [(d, events_by_day[d]) for d in sorted(events_by_day)]
+
+    # HOW MANY A CELL IS NOT SHOWING, COUNTED HERE. Django's template
+    # language has no subtraction - `add` takes a literal - and a chain
+    # of filters pretending otherwise is the kind of thing that returns
+    # an empty string and prints "+" with nothing after it.
+    day_more = {d: len(rows) - CALENDAR_CHIP_CAP
+                for d, rows in events_by_day.items()
+                if len(rows) > CALENDAR_CHIP_CAP}
+
+    # ---------------------------------------------------------------- CC-1
+    # The timeline is still "what is coming", so it still asks
+    # get_next_occurrence - that IS its question. What changes is the
+    # shape: one box per DATE with the people grouped inside, rather than
+    # one card per event each repeating the same date.
     all_events = []
     contacts = Contact.objects.for_user(request.user).prefetch_related('celebration_events')
 
@@ -325,11 +371,31 @@ def celebration_calendar(request):
                         'contact': contact,
                         'event': event,
                         'next_date': next_date,
-                        'days_until': days_until
+                        'days_until': days_until,
+                        'age': event.age_at(next_date),
+                        'years': event.years_at(next_date),
                     })
 
     # Sort by next occurrence date
-    all_events.sort(key=lambda x: x['next_date'])
+    all_events.sort(key=lambda x: (x['next_date'],
+                                   x['event'].event_type,
+                                   x['contact'].name or ''))
+
+    # Grouped month -> date -> people. Built here rather than with two
+    # nested {% regroup %} tags, because the month header needs a count of
+    # EVENTS while the boxes under it are counted in DATES.
+    timeline_months = []
+    for row in all_events:
+        d = row['next_date']
+        if not timeline_months or timeline_months[-1]['key'] != (d.year, d.month):
+            timeline_months.append({'key': (d.year, d.month), 'label': d,
+                                    'count': 0, 'dates': []})
+        mg = timeline_months[-1]
+        mg['count'] += 1
+        if not mg['dates'] or mg['dates'][-1]['date'] != d:
+            mg['dates'].append({'date': d, 'days_until': row['days_until'],
+                                'rows': []})
+        mg['dates'][-1]['rows'].append(row)
 
     # Previous and next month/year
     if month == 1:
@@ -348,7 +414,11 @@ def celebration_calendar(request):
         'year': year,
         'month_name': month_name[month],
         'events_by_day': events_by_day,
+        'day_sheets': day_sheets,
+        'day_more': day_more,
         'all_events': all_events,
+        'timeline_months': timeline_months,
+        'cap': CALENDAR_CHIP_CAP,
         'prev_month': prev_month,
         'prev_year': prev_year,
         'next_month': next_month,

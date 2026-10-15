@@ -2840,6 +2840,51 @@ class CelebrationEvent(models.Model):
                 # Handle Feb 29
                 return self.event_date.replace(year=current_year + 1, day=28)
     
+    # ---------------------------------------------------------------
+    # CC-1, 15 Oct 2026 - A CALENDAR ASKS A DIFFERENT QUESTION.
+    #
+    # get_next_occurrence() answers "when is this next?" and returns ONE
+    # date. A month grid needs "does this fall in THIS month?", and the
+    # two are not the same question: asked the first way, a birthday on
+    # 20 November exists in November 2026 and in no other November ever,
+    # and the 1st to the 14th of the current month vanish the moment the
+    # 15th arrives. Demetri found the first half of that as a blank
+    # November 2027; the second half nobody had noticed.
+    #
+    # get_next_occurrence is LEFT ALONE. The dashboard, the timeline
+    # countdown and the notification scheduler all want "when is this
+    # next?" and are right to.
+    def occurrences_in(self, year, month):
+        """Every occurrence of this event inside the given month."""
+        if not self.is_recurring:
+            d = self.event_date
+            return [d] if (d.year == year and d.month == month) else []
+        if self.event_date.month != month:
+            return []
+        try:
+            return [self.event_date.replace(year=year)]
+        except ValueError:
+            # 29 February in a non-leap year, handled the same way
+            # get_next_occurrence handles it - on the 28th.
+            return [self.event_date.replace(year=year, day=28)]
+
+    # AND THE AGE HAS TO BE TAKEN AT THE OCCURRENCE BEING DRAWN.
+    # get_age() derives from get_next_occurrence(), so once a grid can
+    # show any year it would print November 2026's ages in November 2027.
+    def age_at(self, when):
+        """Age at a given occurrence, for birthdays with a known year."""
+        if self.event_type == 'birthday' and self.event_date.year != 1900 \
+                and when:
+            return when.year - self.event_date.year
+        return None
+
+    def years_at(self, when):
+        """Years at a given occurrence, for anniversaries."""
+        if self.event_type == 'anniversary' and self.event_date.year != 1900 \
+                and when:
+            return when.year - self.event_date.year
+        return None
+
     def days_until(self):
         """Days until next occurrence"""
         next_date = self.get_next_occurrence()

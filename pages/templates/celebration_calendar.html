@@ -53,14 +53,30 @@
 .calendar-container {
     background: var(--alv-paper);
     border-radius: 12px;
-    overflow: hidden;
+    /* CC-1, 15 Oct 2026 - WAS overflow: hidden, which does not hide a
+       scrollbar, it hides the CONTENT. Measured inside
+       .main-content.with-sidebar, the table had a min-content floor of
+       1021px and this container clipped everything past it: +21px at a
+       1280 viewport, +121 at 1180, +277 at 1024. Demetri saw the
+       Saturday column cut off and reasonably read it as a November
+       problem; it was any month below roughly 1300px. */
+    overflow-x: auto;
+    overflow-y: visible;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .calendar-table {
     width: 100%;
     border-collapse: collapse;
+    /* THE FLOOR IS GONE. Seven equal columns that never consult their
+       content: +0 overflow at every width tested, 992px to 1440px. It
+       also makes the text-overflow: ellipsis already on .event-dot
+       finally engage - with an auto layout the cell simply grew. */
+    table-layout: fixed;
 }
+
+.calendar-table th,
+.calendar-table td { width: 14.2857%; }
 
 .calendar-table th {
     background: var(--alv-accent);
@@ -72,12 +88,129 @@
 }
 
 .calendar-table td {
-    height: 120px;
+    /* CC-1: height on a <td> is a MINIMUM, not a height - the row takes
+       its tallest cell, which is why 25 December (7 chips) and 15 August
+       2027 (15) ballooned. The cell is fixed now and .day-events is
+       clamped to three chips plus the +N more chip. */
+    height: 150px;
     vertical-align: top;
     padding: 8px;
     border: 1px solid var(--alv-line);
     position: relative;
 }
+
+/* THE CLAMP IS ARITHMETIC, NOT A GUESS. Measured in Chromium at the
+   house sizes:
+
+       day number        21px + 5px margin
+       a chip            23px, and three of them 76px
+       the +N more chip  23px + 2px margin
+       cell padding      8px top and bottom
+
+   so the worst case a cell must hold is 26 + 76 + 2 + 23 + 16 = 143,
+   and the cell is 150 rather than 146 because the day number rounds to
+   21.5 and a cell that is exactly its content is a cell that grows by a
+   pixel the first time a font does.
+   The first draft clamped at 92px, which was between the two cases: tall
+   enough to push the cell from 128 to 135 when the button appeared, and
+   short enough to clip the button if it had not. A clamp has to be
+   larger than the content it is clamping or it is a crop. */
+.calendar-table td .day-events {
+    max-height: 104px;
+    overflow: hidden;
+}
+
+/* The chip that says there is more, and opens the day. Deliberately not
+   a .btn: it sits inside a 14% column at 11px and the house button sizes
+   do not belong in a calendar cell. It is a real <button> so it is
+   focusable and reachable from the keyboard. */
+.day-more {
+    all: unset;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 2px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px dashed var(--alv-accent-line);
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+}
+.day-more:hover { background: var(--alv-accent); color: var(--alv-on-accent); }
+.day-more:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: 2px;
+}
+
+/* THE KEY, ABOVE THE GRID. Demetri: "Is there somewhere else that we
+   could put the key ... so that it always shows, without scrolling?
+   Maybe under the month, but much smaller?" It was after the table, so a
+   700px calendar had to be scrolled past to reach the key to it. */
+.event-legend.cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin: 0 0 10px 0;
+    padding: 7px 12px;
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
+    border-radius: 8px;
+    font-size: 12px;
+}
+.cal-legend .legend-color { width: 11px; height: 11px; border-radius: 3px; }
+
+/* One box per DATE in the timeline, with the people inside it. */
+.timeline-date-card {
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius);
+    background: var(--alv-paper);
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+.timeline-date-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--alv-surface);
+    border-bottom: 1px solid var(--alv-line);
+}
+.timeline-date-people {
+    display: flex;
+    flex-direction: column;
+}
+.timeline-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 14px;
+    border-left: 4px solid transparent;
+}
+.timeline-person + .timeline-person { border-top: 1px solid var(--alv-line); }
+.timeline-person.birthday    { border-left-color: var(--alv-tag-sky-ink); }
+.timeline-person.nameday     { border-left-color: var(--alv-tag-moss-ink); }
+.timeline-person.anniversary { border-left-color: var(--alv-tag-clay-ink); }
+.timeline-person.custom      { border-left-color: var(--alv-tag-plum-ink); }
+
+/* The day sheet inside the pop-up - one per day, rendered as markup and
+   unhidden by id. Nothing here is built in a script. */
+.day-sheet-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 2px;
+}
+.day-sheet-row + .day-sheet-row { border-top: 1px solid var(--alv-line); }
 
 .calendar-table td.empty {
     background: var(--alv-surface);
@@ -228,48 +361,9 @@
     gap: 12px;
 }
 
-.timeline-event-item {
-    background: var(--alv-paper);
-    border: 2px solid var(--alv-line);
-    border-left: 4px solid;
-    border-radius: 8px;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.3s ease;
-    gap: 12px;
-}
-
-.timeline-event-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.timeline-event-item.birthday {
-    border-left-color: var(--alv-tag-sky-ink);
-    background: var(--alv-tag-sky-soft);
-}
-
-.timeline-event-item.nameday {
-    border-left-color: var(--alv-tag-moss-ink);
-    background: var(--alv-tag-moss-soft);
-}
-
-.timeline-event-item.anniversary {
-    border-left-color: var(--alv-tag-clay-ink);
-    background: var(--alv-tag-clay-soft);
-}
-
-.timeline-event-item.custom {
-    border-left-color: var(--alv-tag-plum-ink);
-    background: var(--alv-tag-plum-soft);
-}
-
-.timeline-event-info {
-    flex: 1;
-    min-width: 0;
-}
+/* CC-1: .timeline-event-item and .timeline-event-info went with the
+   per-event card they styled. The four tone variants live on
+   .timeline-person now - one level in, inside the date box. */
 
 .timeline-event-date {
     font-size: 18px;
@@ -299,12 +393,6 @@
     font-weight: 600;
 }
 
-.timeline-event-meta {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-shrink: 0;
-}
 
 /* THE SAME DECISION AS THE LINE ON CELEBRATION MANAGEMENT - 29 Sep.
    This chip filled #ffc107 for today and #dc3545 for this week: the
@@ -405,16 +493,6 @@
         padding: 3px 10px;
     }
 
-    /* Timeline event items stack info above countdown */
-    .timeline-event-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 12px 14px;
-    }
-    .timeline-event-item:hover {
-        transform: none;
-    }
     .timeline-event-date {
         font-size: 15px;
         margin-bottom: 4px;
@@ -425,11 +503,6 @@
     .timeline-event-badge {
         font-size: 11px;
         padding: 3px 8px;
-    }
-    .timeline-event-meta {
-        width: 100%;
-        justify-content: flex-start;
-        gap: 8px;
     }
     .timeline-event-countdown {
         font-size: 13px;
@@ -490,6 +563,27 @@
 
 <!-- Calendar Grid View -->
 <div class="calendar-view-container active" id="calendarView">
+
+    <!-- CC-1: the key, between the month bar and the grid it explains. -->
+    <div class="event-legend cal-legend">
+        <div class="legend-item">
+            <div class="legend-color birthday"></div>
+            <span>Birthday</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color nameday"></div>
+            <span>Nameday</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color anniversary"></div>
+            <span>Anniversary</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color custom"></div>
+            <span>Custom</span>
+        </div>
+    </div>
+
     <div class="calendar-container">
         <table class="calendar-table">
             <thead>
@@ -512,13 +606,31 @@
                             <div class="day-number">{{ day }}</div>
 
                             {% if day in events_by_day %}
+                            {% comment %}
+                               CC-1: the cell shows `cap` chips and then
+                               says how many it is not showing. The
+                               number comes from the view so the suite
+                               can read one value and the cell height can
+                               be tuned against it.
+                            {% endcomment %}
                             <div class="day-events">
-                                {% for event in events_by_day|dict_get:day %}
-                                <div class="event-dot {{ event.event_type }}"
-                                     title="{{ event.contact.name }} - {{ event.get_event_type_display }}">
-                                    <i class="fas {{ event.get_icon }}"></i> {{ event.contact.name }}
+                                {% for row in events_by_day|dict_get:day %}
+                                {% if forloop.counter <= cap %}
+                                <div class="event-dot {{ row.event.event_type }}"
+                                     title="{{ row.contact.name }} - {{ row.event.get_event_type_display }}">
+                                    <i class="fas {{ row.event.get_icon }}"></i> {{ row.contact.name }}
                                 </div>
+                                {% endif %}
                                 {% endfor %}
+                                {% with more=day_more|dict_get:day %}
+                                {% if more %}
+                                <button type="button" class="day-more"
+                                        data-day="{{ day }}"
+                                        data-label="{{ month_name }} {{ day }}, {{ year }}">
+                                    +{{ more }} more
+                                </button>
+                                {% endif %}
+                                {% endwith %}
                             </div>
                             {% endif %}
                         {% endif %}
@@ -530,76 +642,135 @@
         </table>
     </div>
 
-    <!-- Legend -->
-    <div class="event-legend">
-        <div class="legend-item">
-            <div class="legend-color birthday"></div>
-            <span>Birthday</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color nameday"></div>
-            <span>Nameday</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color anniversary"></div>
-            <span>Anniversary</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color custom"></div>
-            <span>Custom</span>
+</div>
+
+<!-- CC-1, 15 Oct 2026 - THE DAY SHEET.
+     Demetri: "On days where there are multiple celebrations, the user
+     must be able to see that there are many celebrations, and must be
+     able to click to open up a list of all the celebrations for that
+     day."
+
+     ONE HIDDEN DIV PER DAY, RENDERED AS MARKUP. base offers two pop-up
+     patterns; the other one - .modal-overlay, used by home and
+     notifications - is a div built as a STRING in JavaScript. This takes
+     the Bootstrap one on purpose. VB-1 spent a round on four controls
+     that sat three-quarters wrong for weeks because they carried no
+     house class and no census could see them; markup a gate can read is
+     worth more than markup that is convenient to generate. The script
+     below unhides one div and writes a title. That is all it does. -->
+<div class="modal fade" id="dayModal" tabindex="-1" role="dialog"
+     aria-labelledby="dayModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="dayModalLabel">Celebrations</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dayModalBody">
+                {% for day, rows in day_sheets %}
+                <div class="day-sheet" id="day-sheet-{{ day }}" hidden>
+                    {% for row in rows %}
+                    <div class="day-sheet-row">
+                        <span class="timeline-event-name">
+                            <i class="fas {{ row.event.get_icon }}"></i>
+                            {{ row.contact.name }}
+                        </span>
+                        <span class="alv-tag {{ row.event.tone_class }} timeline-event-badge">
+                            {{ row.event.get_event_type_display }}
+                        </span>
+                        {% if row.age %}
+                            <span class="text-muted">(Turning {{ row.age }})</span>
+                        {% elif row.years %}
+                            <span class="text-muted">({{ row.years }} years)</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn action-secondary"
+                        data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Timeline/List View -->
 <div class="timeline-container" id="timelineView">
-    {% regroup all_events by next_date.month as events_by_month %}
+    {% comment %}
+       CC-1, 15 Oct 2026 - Demetri: "In the Timeline view, would it not
+       make sense to Show one box per date, and then group all the
+       members in that box?" It did. 25 December rendered as seven
+       near-identical cards each repeating "Thursday, December 25, 2026"
+       and its own countdown.
 
-    {% if all_events %}
-        {% for month_group in events_by_month %}
+       The grouping is built in the VIEW, because the month header counts
+       EVENTS while the boxes under it are counted in DATES, and two
+       nested regroup tags cannot say that.
+
+       AND THIS IS A comment TAG, NOT A {-# #-} ONE. Django's hash
+       comment is single-line; written across several lines it stops
+       being a comment, and the regroup named above was parsed as a real
+       tag - "regroup tag takes five arguments" - which is how this was
+       found.
+    {% endcomment %}
+    {% if timeline_months %}
+        {% for month_group in timeline_months %}
         <div class="timeline-month">
             <div class="timeline-month-header">
                 <h4>
                     <i class="fas fa-calendar"></i>
-                    {{ month_group.list.0.next_date|date:"F Y" }}
+                    {{ month_group.label|date:"F Y" }}
                 </h4>
-                <span class="timeline-event-count">{{ month_group.list|length }} event{{ month_group.list|length|pluralize }}</span>
+                <span class="timeline-event-count">{{ month_group.count }} event{{ month_group.count|pluralize }}</span>
             </div>
 
             <div class="timeline-events">
-                {% for event_data in month_group.list %}
-                <div class="timeline-event-item {{ event_data.event.event_type }}">
-                    <div class="timeline-event-info">
+                {% for date_group in month_group.dates %}
+                <div class="timeline-date-card">
+                    <div class="timeline-date-head">
                         <div class="timeline-event-date">
-                            {{ event_data.next_date|date:"l, F j, Y" }}
+                            {{ date_group.date|date:"l, F j, Y" }}
                         </div>
-                        <div class="timeline-event-details">
-                            <span class="timeline-event-name">
-                                <i class="fas fa-user-circle"></i> {{ event_data.contact.name }}
-                            </span>
-                            <span class="alv-tag {{ event_data.event.tone_class }} timeline-event-badge">
-                                {{ event_data.event.get_event_type_display }}
-                            </span>
-                            {% if event_data.event.get_age %}
-                                <span class="text-muted">(Turning {{ event_data.event.get_age }})</span>
-                            {% elif event_data.event.get_years %}
-                                <span class="text-muted">({{ event_data.event.get_years }} years)</span>
+                        {% comment %}
+                           THE COUNTDOWN LOSES ITS EMOJI. It read
+                           party-popper Today, calendar Tomorrow,
+                           lightning N days. Nothing else in this
+                           application puts an emoji in its chrome, and
+                           the imminent and soon tones already say the
+                           same thing in the house palette.
+                        {% endcomment %}
+                        <div class="timeline-event-countdown {% if date_group.days_until <= 1 %}imminent{% elif date_group.days_until <= 7 %}soon{% endif %}">
+                            {% if date_group.days_until == 0 %}
+                                Today
+                            {% elif date_group.days_until == 1 %}
+                                Tomorrow
+                            {% else %}
+                                {{ date_group.days_until }} days
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="timeline-event-meta">
-                        <div class="timeline-event-countdown {% if event_data.days_until <= 1 %}imminent{% elif event_data.days_until <= 7 %}soon{% endif %}">
-                            {% if event_data.days_until == 0 %}
-                                🎉 Today!
-                            {% elif event_data.days_until == 1 %}
-                                📅 Tomorrow
-                            {% elif event_data.days_until <= 7 %}
-                                ⚡ {{ event_data.days_until }} days
-                            {% else %}
-                                📆 {{ event_data.days_until }} days
+                    <div class="timeline-date-people">
+                        {% for row in date_group.rows %}
+                        <div class="timeline-person {{ row.event.event_type }}">
+                            <span class="timeline-event-name">
+                                <i class="fas {{ row.event.get_icon }}"></i> {{ row.contact.name }}
+                            </span>
+                            <span class="alv-tag {{ row.event.tone_class }} timeline-event-badge">
+                                {{ row.event.get_event_type_display }}
+                            </span>
+                            {% if row.age %}
+                                <span class="text-muted">(Turning {{ row.age }})</span>
+                            {% elif row.years %}
+                                <span class="text-muted">({{ row.years }} years)</span>
                             {% endif %}
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
                 {% endfor %}
@@ -641,6 +812,22 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('timelineView').classList.remove('active');
         document.getElementById('calendarNavigation').style.display = 'flex';
     }
+});
+
+// CC-1, 15 Oct 2026 - the day sheet. Every sheet is already in the page
+// as markup; this shows the one that was asked for and hides it again on
+// close, so the pop-up never holds two days at once.
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.day-more') : null;
+    if (!btn) { return; }
+    var sheet = document.getElementById('day-sheet-' + btn.dataset.day);
+    if (!sheet) { return; }
+    var sheets = document.querySelectorAll('.day-sheet');
+    for (var i = 0; i < sheets.length; i++) { sheets[i].hidden = true; }
+    sheet.hidden = false;
+    document.getElementById('dayModalLabel').textContent =
+        btn.dataset.label || 'Celebrations';
+    $('#dayModal').modal('show');
 });
 
 function toggleCalendarView() {

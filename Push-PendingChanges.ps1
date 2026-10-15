@@ -616,6 +616,15 @@ $sentinels = @(
     @{ File = 'pages\templates\asset_detail.html'; Text = "include 'components/pdf_viewer.html'"; What = 'and so does asset_detail, whose markup apologised for its iframe' },
     @{ File = 'pages\templates\finance_pl_act.html'; Text = ':not(.pdf-viewer-footer)'; What = 'the page phone footer rule stops reaching a component it never knew about' },
     @{ File = 'pages\templates\asset_detail.html'; Text = ':not(.pdf-viewer-modal-dialog)'; What = 'and 963px of buttons stop being laid out on a 390px screen' },
+    # ------------------------------------------------- CC-1, 15 Oct 2026
+    # Five findings from a full check of the Celebrations module. The
+    # blank November was never a one-year limit - every event was drawn
+    # exactly once, so a birthday existed in one November for all time.
+    @{ File = 'pages\models.py'; Text = 'def occurrences_in'; What = 'an event can be asked which days it falls on in a given month' },
+    @{ File = 'pages\models.py'; Text = 'def age_at'; What = 'and the age is taken at the occurrence being drawn, not the next one' },
+    @{ File = 'pages\templates\celebration_calendar.html'; Text = 'table-layout: fixed'; What = 'the calendar stops clipping its own Saturday column below 1300px' },
+    @{ File = 'pages\templates\celebration_calendar.html'; Text = 'class="day-more"'; What = 'a busy day says how many it is not showing, and opens a sheet' },
+    @{ File = 'pages\templates\celebration_calendar.html'; Text = 'cal-legend'; What = 'and the key sits above the grid it explains' },
     # A Django comment is not a flex item. RE-1b made this repair to one
     # fixture three days ago; this is the other one.
     @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' },
@@ -2361,7 +2370,8 @@ $suites = @(
     'test_vocabulary.py',
     'test_panel_heads.py',
     'test_verb_colours.py',
-    'test_pdf_viewer.py'
+    'test_pdf_viewer.py',
+    'test_calendar_grid.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

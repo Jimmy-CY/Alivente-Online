@@ -191,9 +191,15 @@ left = [alv_tree.rel(p) for p in alv_tree.templates()
 ok(not left,
    'NO TEMPLATE still calls get_color_class - a page that did would '
    'render an empty class and say nothing about it', left)
+# CC-1, 15 Oct 2026 - RE-POINTED, NOT RETIRED. This pinned the loop
+# variable `event_data`, which the timeline regroup renamed to `row`, and
+# the calendar now draws the badge twice: the day sheet and the timeline
+# person. Asked of the token instead of the name.
 ok(mgmt.count('{{ event.tone_class }}') == 1
-   and cal.count('{{ event_data.event.tone_class }}') == 1,
-   'both badges read tone_class, once each')
+   and cal.count('tone_class') == 2
+   and 'get_color_class' not in cal,
+   'every badge reads tone_class - once on management, twice on the '
+   'calendar since CC-1 gave it a day sheet')
 
 # ==========================================================================
 head('2. THE TWO THAT WERE THE SAME COLOUR')

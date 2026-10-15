@@ -329,6 +329,10 @@ CONVERTED = [
     # P&L viewer had no Share button; the answer was that it was a second
     # implementation. Wide from birth.
     'test_pdf_viewer.py',
+    # CC-1, 15 Oct 2026 - the celebration grid. A month that showed each
+    # event once, a table that clipped its own Saturday, cells that grew
+    # with their content, and a key below the thing it explains.
+    'test_calendar_grid.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

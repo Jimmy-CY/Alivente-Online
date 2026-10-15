@@ -120,7 +120,14 @@ SD_HEX, LINE_HEX = '#e9ecef', '#e3e8ea'
 BORDER = re.compile(r'border[\w-]*\s*:\s*[^;}]*' + re.escape(OLD) + r'[^;}]*;')
 NEWB = re.compile(r'border[\w-]*\s*:\s*[^;}]*' + re.escape(NEW) + r'[^;}]*;')
 FALLBACK = 'var(--alv-disabled-bg, ' + OLD + ')'
+# CC-1, 15 Oct 2026 - N_GAINED SPLIT OFF FROM N_CONVERT. The first
+# is what the backups carry and can never move; the second is what
+# the live tree has gained and moves whenever a later round adds a
+# border to one of these 43 pages. CC-1 adds four to
+# celebration_calendar: the key edge, the timeline date box, and the
+# hairlines between people and between day-sheet rows.
 N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 96
+N_GAINED = 82
 
 passed = failed = skipped = 0
 
@@ -232,8 +239,8 @@ for p in alv_tree.templates():
 ok(not left, 'not one plain border draws on it now', left[:4])
 gained = sum(len(NEWB.findall(read(p))) - len(NEWB.findall(was(p)))
              for p in pages)
-ok(gained == N_CONVERT,
-   '  and exactly %d gained the border token' % N_CONVERT, gained)
+ok(gained == N_GAINED,
+   '  and exactly %d gained the border token' % N_GAINED, gained)
 
 b = alv_tree.join('base.html')
 ok(not os.path.isfile(b + SUFFIX), 'base.html was NOT touched')
