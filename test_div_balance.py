@@ -306,7 +306,13 @@ except Exception as e:
 
 ENGINE = None
 if Engine is not None:
-    ENGINE = Engine(libraries={
+    # PV-1, 15 Oct 2026 - dirs, so {% include %} resolves.
+    # ROOT is the template directory. Without it this engine renders a
+    # page's content block with every include missing, which is not the
+    # markup a browser receives - and from 15 Oct two of this suite's own
+    # CASES include components/pdf_viewer.html, so it raised
+    # TemplateDoesNotExist rather than reporting anything at all.
+    ENGINE = Engine(dirs=[ROOT], libraries={
         'humanize': 'django.contrib.humanize.templatetags.humanize'})
 
 

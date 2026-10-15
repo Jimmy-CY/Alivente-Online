@@ -125,7 +125,7 @@ LEFT = dict(disabled=8, reorder=4, danger_add=2, promote=7, demote=1,
 # more footer carries action-danger beside a page hook and five more
 # carry action-primary the same way. A count keyed on the exact class
 # string undercounts every page that added a hook of its own.
-SWEPT_CANCELS, SWEPT_DANGER, SWEPT_PRIMARY = 57, 14, 32
+SWEPT_CANCELS, SWEPT_DANGER, SWEPT_PRIMARY = 55, 14, 30   # PV-1, 15 Oct 2026 - two hand-rolled invoice viewers retired, each with a Close and a Download. The danger count is unchanged: neither had a destructive button in it.   # (was 57, 14, 32)
 CONVERTED_NOW, WAITING_NOW, CEILING_NOW, ALIAS_NOW = 73, 2, 38, 57
 
 passed = failed = skipped = 0

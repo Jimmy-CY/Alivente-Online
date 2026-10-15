@@ -252,7 +252,11 @@ for rel in BUSINESS:
             danger_wrong.append('%s: "%s"' % (rel, title))
 # 51 until A1, which added the Reset Password dialog to the user
 # list and to the edit screen.
-ok(total == 53 and not bad, '%d header(s) on %d business template(s) carry '
+# PV-1, 15 Oct 2026 - 53 until this round, which retired two
+# hand-rolled invoice viewers and their .alv-modal-head headers with
+# them. components/pdf_viewer.html wears the class too and was already
+# counted here, so the fall is exactly the two that left.
+ok(total == 51 and not bad, '%d header(s) on %d business template(s) carry '
    'the class and nothing that fights it' % (total, len(BUSINESS)),
    '\n'.join(bad[:8]))
 ok(n_danger == 9 and not danger_wrong,
@@ -411,7 +415,10 @@ else:
                                           styles_of(o), body_markup(o))):
                     was_looks[(h['bg'][:40], h['ink'], h['size'],
                                h['weight'])] += 1
-        ok(sum(now_looks.values()) == 53 and not off,
+        # PV-1, 15 Oct 2026 - 53 until the two hand-rolled invoice
+        # viewers went. Same two headers as section 2 above, counted
+        # here by what they RENDER rather than by the class they carry.
+        ok(sum(now_looks.values()) == 51 and not off,
            '%d header(s): teal banner, red exactly where it deletes, white '
            '20px/600 title, white close, 16px 20px'
            % sum(now_looks.values()), '\n'.join(off[:8]))

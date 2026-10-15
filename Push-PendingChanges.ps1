@@ -609,6 +609,13 @@ $sentinels = @(
     # 5, where it can name the selector instead of a substring, and that
     # is where it belongs.
     @{ File = 'alv_rowactions.py'; Text = 'VERNACULAR'; What = 'four controls no drift census could see are registered by verb' },
+    # ------------------------------------------------- PV-1, 15 Oct 2026
+    # Demetri asked why the P&L's invoice viewer has no Share button. It
+    # was a second implementation of a component eleven pages share.
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = "include 'components/pdf_viewer.html'"; What = 'the P&L drops its own invoice viewer for the one eleven pages share' },
+    @{ File = 'pages\templates\asset_detail.html'; Text = "include 'components/pdf_viewer.html'"; What = 'and so does asset_detail, whose markup apologised for its iframe' },
+    @{ File = 'pages\templates\finance_pl_act.html'; Text = ':not(.pdf-viewer-footer)'; What = 'the page phone footer rule stops reaching a component it never knew about' },
+    @{ File = 'pages\templates\asset_detail.html'; Text = ':not(.pdf-viewer-modal-dialog)'; What = 'and 963px of buttons stop being laid out on a 390px screen' },
     # A Django comment is not a flex item. RE-1b made this repair to one
     # fixture three days ago; this is the other one.
     @{ File = 'test_button_sweep.py'; Text = 'the seventeen comments in'; What = 'the bar fixture strips Django comments before measuring rows' },
@@ -2353,7 +2360,8 @@ $suites = @(
     'test_recipe_side_b.py',
     'test_vocabulary.py',
     'test_panel_heads.py',
-    'test_verb_colours.py'
+    'test_verb_colours.py',
+    'test_pdf_viewer.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

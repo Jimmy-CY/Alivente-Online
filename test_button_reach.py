@@ -227,8 +227,16 @@ check('property_assets: the small quick-adds stayed small',
       read('property_assets.html').count('action-primary btn-sm') == 3)
 check('suppliers: Delete Permanently is a danger TONE, not a fill',
       'action-secondary action-danger' in read('suppliers.html'))
+# PV-1, 15 Oct 2026 - RE-POINTED, NOT RETIRED.
+# This pinned the exact markup of asset_detail's own Download link. That
+# control is gone: the page now includes components/pdf_viewer.html, and
+# the Download lives there. The CLAIM is unchanged - Download is still the
+# primary of that dialog - so it is asked of the component, and of the page
+# including it, rather than deleted because the markup moved.
 check('asset_detail: Download is the primary of its dialog',
-      'id="invoiceDownloadLink" href="#" class="btn action-primary"'
+      "class=\"btn action-primary pdf-action-download\""
+      in read('components/pdf_viewer.html')
+      and "include 'components/pdf_viewer.html'"
       in read('asset_detail.html'))
 for name in BACKS:
     t = read(name)

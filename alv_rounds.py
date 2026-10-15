@@ -1125,6 +1125,10 @@ ROUNDS = [
     # -line tokens, and the recipe overlay onto the four verb tokens.
     # alv_rowactions gains VERNACULAR so the overlay stops being invisible.
     '.bak_verbs',
+    # PV-1, 15 Oct 2026 - finance_pl_act and asset_detail include
+    # components/pdf_viewer.html, and each page's blanket phone footer
+    # rule is excluded from it rather than overruled.
+    '.bak_pdfview',
 ]
 
 

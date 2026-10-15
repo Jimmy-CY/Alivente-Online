@@ -120,6 +120,16 @@ HAVE = os.path.exists(BAK)
 OLD = read(BAK) if HAVE else ''
 OLDJS = uncomment_js(scripts_of(OLD))
 
+# PV-1, 15 Oct 2026 - the component's source, read once. Two claims below
+# moved into it rather than out of existence: the viewer no longer renders
+# an iframe because PDF.js draws to a canvas, and the not-a-PDF
+# placeholder this page used to draw is the component's now. A suite that
+# only asserted those ABSENCES would be asserting nothing; these assert
+# what took their place.
+_COMP = os.path.join(os.getcwd(), 'pages', 'templates', 'components',
+                     'pdf_viewer.html')
+COMPONENT_SRC = read(_COMP) if os.path.isfile(_COMP) else ''
+
 # =========================================================================
 head('1. the colour test is gone, and so is the selector that never matched')
 # =========================================================================
@@ -127,8 +137,16 @@ for gone in ('isGreen', 'rgb(40, 167, 69)', '#28a745', "hasClass('text-success')
     check('  %-26s is gone from live script code' % gone, gone not in JS)
 check('nothing binds .fa-file-alt any more',
       not re.search(r"\.fa-file-alt['\"]", JS))
-check('  but the glyph survives as the not-a-PDF placeholder, which was always '
-      'a fair use of it', 'fa-file-alt fa-5x' in JS)
+# PV-1, 15 Oct 2026 - THE PLACEHOLDER MOVED, IT DID NOT GO.
+# This page used to draw its own "cannot preview this" panel, a
+# fa-file-alt fa-5x with a Download prompt. The shared component has that
+# job now and does it better: an image gets shown rather than refused, and
+# what cannot be shown at all gets an error state with a Download Instead
+# button, which this page never offered. So the claim is asked of the
+# component - the glyph survives, one layer over.
+check('  but the not-a-PDF placeholder survives, in the component',
+      'pdfViewerImageWrap' in COMPONENT_SRC
+      and 'pdfViewerErrorDownload' in COMPONENT_SRC)
 check('the shim is defined', 'window.viewInvoiceQuick' in JS)
 # WIDENED BY PL-1, 5 Oct 2026. This bound '.verify-icon' alone, which
 # was right while the tick was the only way to open a document. Demetri:
@@ -215,12 +233,24 @@ window.$ = function (sel) {
   };
 };
 window.firstModalScrollTop = 0;
+
+// PV-1, 15 Oct 2026 - the component, stubbed. The page under test no
+// longer builds a viewer; it calls openPdfViewer(url, title, filename).
+// Recording the call is how this suite now asks whether the document was
+// handed over, and WITH WHAT - which is a stronger question than the
+// innerHTML of a div the page used to fill in itself.
+window.__pdf = null;
+window.openPdfViewer = function (url, title, filename) {
+  window.__pdf = {url: url, title: title, filename: filename};
+  $('#pdfViewerModal').modal('show');
+};
 """
 
 PROBE = """() => ({
   viewer: document.getElementById('invoiceViewerContent').innerHTML,
   href: document.getElementById('downloadInvoiceBtn').getAttribute('href'),
   download: document.getElementById('downloadInvoiceBtn').getAttribute('download'),
+  pdf: window.__pdf,
   stub: window.__stub,
   errors: window.__errors})"""
 
@@ -245,8 +275,13 @@ def row(url, name, glyph='fa-check-circle', tone='success'):
             'data-invoice-url="%s" data-filename="%s" '
             'title="Invoice verified - click to view invoice"></i>'
             '</td></tr></tbody></table></div></div>'
+            # BOTH ERAS. The first three ids are what the page built
+            # for itself before PV-1 and are kept for section 4, which
+            # re-runs the old handler and needs the old markup.
+            # #pdfViewerModal is the shared component's.
             '<div id="invoiceViewerModal"><div id="invoiceViewerContent"></div>'
-            '<a id="downloadInvoiceBtn"></a></div>' % (glyph, tone, url, name))
+            '<a id="downloadInvoiceBtn"></a></div>'
+            '<div id="pdfViewerModal"></div>' % (glyph, tone, url, name))
 
 
 def legacy_row(url, name, glyph='fa-check-circle', tone='success'):
@@ -291,22 +326,35 @@ async def main():
     r = await click_icon(row('/media/invoices/2026/ATOM_304156.pdf',
                              'invoices/2026/ATOM_304156.pdf'))
     check('the click threw nothing', not r['errors'], str(r['errors'][:2]))
+    # PV-1, 15 Oct 2026 - THE SAME CLAIMS, ASKED OF THE HANDOFF.
     check('THE VIEWER IS SHOWING THE DOCUMENT',
-          '/media/invoices/2026/ATOM_304156.pdf' in (r['viewer'] or ''),
-          (r['viewer'] or '')[:70])
-    check('  in an iframe, because it is a PDF', '<iframe' in (r['viewer'] or ''))
-    check('  and the modal was actually opened',
-          any('invoiceViewerModal' in s for s in r['stub']['modalShown']),
+          bool(r['pdf']) and r['pdf']['url']
+          == '/media/invoices/2026/ATOM_304156.pdf', str(r['pdf']))
+    # WAS: "in an iframe, because it is a PDF". That was true and is now
+    # false BY DESIGN - PDF.js draws to a canvas precisely so a PDF
+    # renders where an iframe cannot, which is why the component exists.
+    check('  on the shared viewer, which draws a PDF rather than handing '
+          'it to the browser',
+          'pdfjsLib' in COMPONENT_SRC and 'pdfViewerCanvas' in COMPONENT_SRC)
+    check('  and the viewer was actually opened',
+          any('pdfViewerModal' in s for s in r['stub']['modalShown']),
           str(r['stub']['modalShown']))
     check('  the scroll position was remembered first',
           r['stub']['scrollRead'] >= 1, str(r['stub']['scrollRead']))
     check('  CONTROL: the stub really was exercised, so this is not passing on '
           'a stub nobody called', r['stub']['scrollRead'] >= 1
           and len(r['stub']['modalShown']) >= 1)
+    # THE SAME CLAIM, AND A BETTER TEST OF IT. This used to read the
+    # download attribute off a link the page wrote. It now reads the third
+    # argument the page HANDS the component - the page's actual
+    # responsibility - and a stored path arriving here would fail just as
+    # loudly.
     check('the download offers the FILE NAME, not the stored path',
-          r['download'] == 'ATOM_304156.pdf', str(r['download']))
-    check('  and points at the document', r['href'] and r['href'].endswith('.pdf'),
-          str(r['href']))
+          bool(r['pdf']) and r['pdf']['filename'] == 'ATOM_304156.pdf',
+          str(r['pdf']))
+    check('  and points at the document',
+          bool(r['pdf']) and r['pdf']['url'].endswith('.pdf'),
+          str(r['pdf']))
 
     head('3b. every glyph verify_badge can emit, not just the green one')
     for glyph, tone in (('fa-exclamation-triangle', 'danger'),
@@ -315,7 +363,8 @@ async def main():
                         ('fa-file-invoice', 'secondary')):
         r = await click_icon(row('/media/x.pdf', 'x.pdf', glyph, tone))
         check('  %-24s opens too' % glyph,
-              '/media/x.pdf' in (r['viewer'] or ''), (r['viewer'] or '')[:40])
+              bool(r['pdf']) and r['pdf']['url'] == '/media/x.pdf',
+              str(r['pdf']))
     # This is the whole point: a mismatched invoice is not green, and the old
     # code would only ever have opened a green one.
     check('  so a MISMATCHED invoice can be opened - the old code could not '

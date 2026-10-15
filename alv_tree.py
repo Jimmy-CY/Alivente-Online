@@ -324,6 +324,11 @@ CONVERTED = [
     # Edit button is one colour here and blue everywhere else. Three
     # questions, one answer. Wide from birth.
     'test_verb_colours.py',
+    # PV-1, 15 Oct 2026 - two hand-rolled invoice viewers retired onto the
+    # component eleven other pages already share. Demetri asked why the
+    # P&L viewer had no Share button; the answer was that it was a second
+    # implementation. Wide from birth.
+    'test_pdf_viewer.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

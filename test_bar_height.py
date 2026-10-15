@@ -118,7 +118,7 @@ LENDER = 'test_tap_target.py'
 BOOT = 'test_fixture_bootstrap413.css'
 
 BAR, ROW, MODAL = 35, 34, 38
-N_BAR, N_ROW, N_MODAL = 268, 110, 99   # VC-1, 14 Oct 2026 - property_assets Take Photo is a <label> that had no house class until this round, so this census could not see it. 35px, in a modal, and named in STRAYS below.   # (was 98)   # DB-5, 12 Oct 2026 - the
+N_BAR, N_ROW, N_MODAL = 268, 110, 95   # PV-1, 15 Oct 2026 - the four footer buttons of two hand-rolled invoice viewers. The shared component they moved onto was already in this census, so the count falls by exactly the four that went.   # (was 99)   # VC-1, 14 Oct 2026 - property_assets Take Photo is a <label> that had no house class until this round, so this census could not see it. 35px, in a modal, and named in STRAYS below.   # (was 98)   # DB-5, 12 Oct 2026 - the
 # dashboard four joined the bar   # (was 265)   # E-10, 11 Oct 2026 - the
 # seven buttons this round paired in CRS modals become visible to
 # a census that selects the two position tones and not the danger

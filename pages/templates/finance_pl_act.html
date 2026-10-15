@@ -54,24 +54,19 @@
     </div>
 </div>
 
-<!-- Invoice Viewer Modal -->
-<div class="modal fade" id="invoiceViewerModal" tabindex="-1" aria-labelledby="invoiceViewerModalLabel" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header alv-modal-head">
-                <h5 class="modal-title" id="invoiceViewerModalLabel">Invoice Document</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="invoiceViewerContent" style="height: 75vh; overflow: hidden; padding: 10px;"></div>
-            <div class="modal-footer">
-                <a id="downloadInvoiceBtn" href="#" target="_blank" class="btn action-primary">Download</a>
-                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Invoice Viewer - PV-1, 15 Oct 2026.
+     WAS a hand-rolled iframe modal. The application already had a document
+     viewer on eleven other pages; this page and asset_detail each wrote
+     their own, and the component exists precisely because an iframe cannot
+     render a PDF inline on Android Chrome.
+
+     THIS INCLUDE SITS WHERE THAT MODAL SAT, AND THAT MATTERS. The viewer
+     opens from inside #expenseDetailsModal. Measured: both modals compute
+     to z-index 1050 and the LATER ONE IN THE DOCUMENT wins, so the include
+     must stay after the drill-down. The old `#invoiceViewerModal {
+     z-index: 1060 }` forced it and hid that. test_pdf_viewer pins the
+     order. -->
+{% include 'components/pdf_viewer.html' %}
 
 <!-- Revenue Details Modal -->
 <div class="modal fade" id="revenueDetailsModal" tabindex="-1" aria-labelledby="revenueDetailsModalLabel" aria-hidden="true">
@@ -829,22 +824,11 @@ body { overflow-x: hidden; }
     overflow-y: auto;
 }
 
-#invoiceViewerContent { background-color: var(--alv-surface); border-radius: 4px; }
-#invoiceViewerContent iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    border-radius: 4px;
-}
-#invoiceViewerContent img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-}
-
+/* PV-1: the #invoiceViewerContent rules and #invoiceViewerModal's
+   z-index went with the hand-rolled modal. The shared component brings its
+   own, and the stacking is settled by document order - the include sits
+   after #expenseDetailsModal. */
 #expenseDetailsModal { z-index: 1050; }
-#invoiceViewerModal { z-index: 1060; }
 
 /* ============================================================
    ROTATE-TO-LANDSCAPE PROMPT
@@ -991,23 +975,25 @@ body { overflow-x: hidden; }
     #budgetExpenseDetailsContent {
         max-height: none !important;
     }
-    .modal-footer {
+    /* PV-1: EXCLUDED FROM THE SHARED VIEWER, not overruled for it.
+       This page's footer rule is written for its own stacked modals. The
+       shared viewer's footer is one row - a wide Share, a 44px Download
+       and a 44px Close - and these two rules overrule all three widths.
+       Rendered at 390px: share 26px, download 364, close 364, which is
+       754px of controls on a 390px screen. Excluded: 260 / 44 / 44. */
+    .modal-footer:not(.pdf-viewer-footer) {
         flex-shrink: 0;
         flex-direction: column-reverse;
         gap: 8px;
         padding: 12px 16px;
     }
-    .modal-footer .btn {
+    .modal-footer:not(.pdf-viewer-footer) .btn {
         width: 100%;
         padding: 12px;
         margin: 0 !important;
         font-size: 15px;
         justify-content: center;
         display: flex;
-    }
-
-    #invoiceViewerContent {
-        height: 100% !important;
     }
 }
 
@@ -1507,31 +1493,32 @@ $(document).ready(function() {
         });
     }
 
+    // PV-1, 15 Oct 2026 - the component decides how a document is shown.
+    // The extension sniffing, the iframe, the image branch and the
+    // cannot-preview branch all lived here AND in asset_detail AND in the
+    // component, three copies of one decision. The component's is the one
+    // that handles a PDF on Android.
     function showInvoiceModalLikeExisting(documentUrl, documentName) {
-        const invoiceViewer = document.getElementById('invoiceViewerContent');
-        const downloadLink = document.getElementById('downloadInvoiceBtn');
-        downloadLink.href = documentUrl;
-        downloadLink.download = documentName;
-        const extension = documentName.split('.').pop().toLowerCase();
-        if (extension === 'pdf') {
-            invoiceViewer.innerHTML = `
-                <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="100%" style="border: none; display: block;"></iframe>
-            `;
-        } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-            invoiceViewer.innerHTML = `<img src="${documentUrl}" alt="Invoice" class="img-fluid">`;
-        } else {
-            invoiceViewer.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-file-alt fa-5x text-muted mb-3"></i>
-                    <p>File: <strong>${documentName}</strong></p>
-                    <p>Click Download to view.</p>
-                </div>
-            `;
+        if (typeof openPdfViewer !== 'function') {
+            window.open(documentUrl, '_blank');
+            return;
         }
-        $('#invoiceViewerModal').modal('show');
+        openPdfViewer(documentUrl,
+                      'Expense Invoice \u2014 ' + documentName,
+                      documentName);
     }
 
-    $('#invoiceViewerModal').on('hidden.bs.modal', function() {
+    // PV-1: AND THE DRILL-DOWN STAYS A MODAL WHEN THE VIEWER CLOSES.
+    // Bootstrap 4 strips modal-open from <body> when the INNER modal of a
+    // stacked pair closes, so the page behind scrolls while a modal is
+    // still open. Measured before: body "", overflow visible, page
+    // scrolls. After: modal-open, overflow hidden, does not. This is not
+    // new in this round - the hand-rolled viewer had it too, and the
+    // scroll restore below is a partial workaround for the same thing.
+    $('#pdfViewerModal').on('hidden.bs.modal', function() {
+        if ($('.modal.show, .modal.in').length) {
+            $('body').addClass('modal-open');
+        }
         setTimeout(function() {
             $('#expenseDetailsModal .modal-body').scrollTop(firstModalScrollTop);
         }, 100);

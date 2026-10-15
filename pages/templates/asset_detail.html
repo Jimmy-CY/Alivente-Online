@@ -426,26 +426,12 @@
 </div>
 
 <!-- Invoice Viewer Modal -->
-<div class="modal fade" id="invoiceViewerModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
-        <div class="modal-content">
-            <div class="modal-header alv-modal-head">
-                <h5 class="modal-title">Invoice / Receipt</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="invoiceViewerContent">
-            </div>
-            <div class="modal-footer">
-                <a id="invoiceDownloadLink" href="#" class="btn action-primary" target="_blank">
-                    <i class="fas fa-download"></i> Download
-                </a>
-                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Invoice Viewer - PV-1, 15 Oct 2026. Was a hand-rolled iframe modal
+     whose own markup apologised for it: "If the PDF does not display,
+     click here to open it in a new tab." That sentence is the Android
+     inline-PDF problem, written as an excuse rather than fixed, and it is
+     the reason components/pdf_viewer.html exists. -->
+{% include 'components/pdf_viewer.html' %}
 
 <!-- Photo Viewer Modal -->
 <div class="modal fade" id="photoViewerModal" tabindex="-1" role="dialog">
@@ -701,7 +687,7 @@
         min-height: 100vh;
     }
     .modal-fullscreen-mobile .modal-header,
-    .modal-fullscreen-mobile .modal-footer {
+    .modal-fullscreen-mobile:not(.pdf-viewer-modal-dialog) .modal-footer {
         padding: 12px 14px;
     }
     .modal-fullscreen-mobile .modal-body {
@@ -729,25 +715,25 @@
         font-size: 14px;
     }
 
-    /* Modal footer — stack buttons full-width with primary on top */
-    .modal-fullscreen-mobile .modal-footer {
+    /* Modal footer — stack buttons full-width with primary on top.
+       PV-1: EXCLUDED FROM THE SHARED VIEWER. Its dialog also carries
+       .modal-fullscreen-mobile, so an override at equal weight would have
+       been decided by where the include happens to sit. Rendered at 390px
+       unexcluded: column-reverse, three 321px buttons stacked, 963px of
+       controls. Excluded: one row, 221 / 44 / 44. */
+    .modal-fullscreen-mobile:not(.pdf-viewer-modal-dialog) .modal-footer {
         flex-direction: column-reverse;
         gap: 8px;
         align-items: stretch;
     }
-    .modal-fullscreen-mobile .modal-footer .btn {
+    .modal-fullscreen-mobile:not(.pdf-viewer-modal-dialog) .modal-footer .btn {
         width: 100%;
         margin: 0 !important;
         padding: 12px;
     }
 
-    /* Invoice viewer modal — iframe goes 70vh */
-    #invoiceViewerModal .modal-fullscreen-mobile iframe {
-        height: 70vh !important;
-    }
-    #invoiceViewerModal .modal-fullscreen-mobile img {
-        max-height: 70vh !important;
-    }
+    /* PV-1: the #invoiceViewerModal iframe and img rules went with the
+       hand-rolled modal. The shared component sizes its own body. */
     /* Photo viewer modal — image scales to viewport on mobile */
     #photoViewerModal .modal-body img {
         max-height: 70vh !important;
@@ -759,34 +745,18 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
-// View invoice in modal
+// View invoice in modal - PV-1, 15 Oct 2026.
+// The three branches below (pdf / image / anything else) were the third
+// copy of a decision the shared component already makes, and the only
+// copy that told the user to open the file in another tab when the
+// iframe failed. The component renders the PDF instead.
 function viewInvoice(url, filename) {
-    const content = document.getElementById('invoiceViewerContent');
-    const downloadLink = document.getElementById('invoiceDownloadLink');
-    const ext = filename.split('.').pop().toLowerCase();
-
-    downloadLink.href = url;
-
-    if (ext === 'pdf') {
-        content.innerHTML = `
-            <iframe src="${url}#toolbar=0&navpanes=0&scrollbar=1"
-                    width="100%" height="500px" style="border: none;">
-            </iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF does not display, <a href="${url}" target="_blank">click here to open it in a new tab</a></small>
-            </p>`;
-    } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
-        content.innerHTML = `<img src="${url}" alt="Invoice" class="img-fluid mx-auto d-block" style="max-height: 70vh;">`;
-    } else {
-        content.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-file fa-5x text-muted mb-3"></i>
-                <p>This file type cannot be previewed.</p>
-                <a href="${url}" target="_blank" class="btn action-primary">Open File</a>
-            </div>`;
+    if (typeof openPdfViewer !== 'function') {
+        window.open(url, '_blank');
+        return;
     }
-
-    $('#invoiceViewerModal').modal('show');
+    const name = String(filename || '').split('/').pop() || 'invoice.pdf';
+    openPdfViewer(url, 'Invoice / Receipt \u2014 ' + name, name);
 }
 
 // View photo in modal — opens the lightbox at full size
