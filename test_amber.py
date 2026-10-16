@@ -184,9 +184,15 @@ ok(used == {WARN, SOFT, INK, LINE},
 # ==========================================================================
 head('3. THE PILLS - RESTRUCTURED, AND THEIR SHAPE UNTOUCHED')
 # ==========================================================================
-PILLS = (('home.html', '.status-warning'),
-         ('notifications.html', '.status-warning'),
-         ('finance_expense_add.html', '.anchor-pill'),
+# DT-1, 16 Oct 2026 - HOME AND NOTIFICATIONS DECLARE NO PILL AT ALL NOW.
+# B-4 wrote the house warn tokens into each page's OWN .status-warning
+# rule and kept its shape, because adding .alv-pill-attn as a class would
+# have resized seven pills nobody asked to resize. On these two pages the
+# shape was asked about: Demetri saw the chips rendered three ways and
+# chose the house pill over the solid fills they sat beside. So the rule
+# is gone and base's draws them. The claim is made below the loop
+# instead, because a rule that does not exist carries no tokens.
+PILLS = (('finance_expense_add.html', '.anchor-pill'),
          ('finance_expense_edit.html', '.anchor-pill'),
          ('my_profile.html', '.coming-soon-badge'),
          ('act_expense.html', '.an-badge.ytd'))
@@ -210,6 +216,23 @@ for pg, tail in PILLS:
                                        R.norm(a.group(1)) == R.norm(b.group(1))),
                '  %s is exactly as it was' % prop,
                '%s -> %s' % (a and a.group(1), b and b.group(1)))
+
+# DT-1, 16 Oct 2026 - THE TWO THAT LEFT THAT LIST, ASKED PROPERLY.
+# B-4's claim was that the amber on these pages is on house tokens. That
+# is MORE true now, not less: the tokens are in base and the pages carry
+# no copy. Asserted here so the substance of the claim survives the rule
+# it used to be attached to.
+for _pg in ('home.html', 'notifications.html'):
+    _body = T.code_only(read(T.path_of(_pg)))
+    ok('.status-warning' not in _body,
+       '%-26s declares no pill of its own any more' % _pg)
+    ok('alv-pill-attn' in _body,
+       '  and wears base .alv-pill-attn instead')
+_attn = rule(T.path_of('base.html'), '.alv-pill-attn') or ''
+ok('var(%s)' % SOFT in _attn,
+   '%-26s .alv-pill-attn has the soft fill' % 'base.html', _attn)
+ok('var(%s)' % WARN in _attn, '  and the warn ink')
+ok('var(%s)' % LINE in _attn, '  and a warn-line border')
 
 
 def _value(code, ba, bb, prop):

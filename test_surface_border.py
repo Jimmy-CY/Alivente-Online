@@ -127,7 +127,7 @@ FALLBACK = 'var(--alv-disabled-bg, ' + OLD + ')'
 # celebration_calendar: the key edge, the timeline date box, and the
 # hairlines between people and between day-sheet rows.
 N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 96
-N_GAINED = 82
+N_GAINED = 76   # DT-1, 16 Oct 2026 - six of the rules this round deletes carried the border token. base draws those borders now, so the count falls by exactly the copies that went.   # (was 82)
 
 passed = failed = skipped = 0
 

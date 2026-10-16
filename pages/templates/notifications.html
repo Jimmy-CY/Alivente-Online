@@ -166,68 +166,15 @@
 
 
 
-.table-container {
-    overflow-x: auto;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0;
-}
-
-.data-table th {
-    background: var(--alv-surface);
-    padding: 12px 15px;
-    text-align: center;
-    border-bottom: 2px solid var(--alv-line);
-    font-weight: 600;
-    color: var(--alv-ink-strong);
-    font-size: 14px;
-}
-
-.data-table th:first-child {
-    text-align: left;
-}
-
-.data-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid var(--alv-line);
-    text-align: center;
-    font-size: 14px;
-}
-
-.data-table td:first-child {
-    text-align: left;
-    font-weight: 500;
-}
-
-.data-table tbody tr:hover {
-    background: var(--alv-surface);
-}
-
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-urgent {
-    background: var(--alv-bad);
-    color: var(--alv-on-accent);
-}
-
-.status-warning {
-    border: 1px solid var(--alv-warn-line);
-    background: var(--alv-warn-soft);
-    color: var(--alv-warn);
-}
-
-.status-info {
-    background: var(--alv-accent);
-    color: var(--alv-on-accent);
-}
+/* DT-1, 16 Oct 2026 - THE RULE OPENINGS THAT WERE HERE ARE BASE'S.
+   This page drew its tables against a .data-table stylesheet of its own -
+   a hand-rolled copy of the house table standard, living beside it - and
+   the .table-container line above them OVERRODE base's card shell on
+   source order, so these panels scrolled sideways instead of sitting in
+   it. The tables wear `table alv-table` now and base owns every line that
+   stood here. The four status tones went with them: two of the three were
+   SOLID FILLS, which no other status in this application is, and they are
+   house pills now. See test_data_table.py. */
 
 .btn-info {
     
@@ -301,59 +248,9 @@
     }
 
                 
-    /* Tables → card layout */
-    .data-table thead {
-        display: none;
-    }
-    .data-table,
-    .data-table tbody,
-    .data-table tr {
-        display: block;
-        width: 100%;
-    }
-    .data-table tr {
-        background: var(--alv-paper);
-        border: 1px solid var(--alv-line);
-        border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    .data-table tr:hover {
-        background: var(--alv-paper);
-    }
-    .data-table td {
-        display: flex !important;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 0 !important;
-        border-bottom: none;
-        text-align: right !important;
-        font-size: 13px;
-    }
-    .data-table td:first-child {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--alv-ink);
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid var(--alv-line-soft) !important;
-        text-align: left !important;
-        display: block !important;
-    }
-    .data-table td:not(:first-child)::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--alv-ink-soft);
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        text-align: left;
-        flex-shrink: 0;
-    }
-    .status-badge {
-        font-size: 11px;
-    }
+    /* DT-1, 16 Oct 2026 - and the phone card with it. This page built its
+       own table-as-cards block: a good copy of base's, and still a copy. Base
+       owns the card, the labels and the first cell. */
 }
 
 @media screen and (max-width: 576px) {
@@ -529,16 +426,16 @@ class SimpleNotificationDashboard {
             <tr>
                 <td>${item.prop_name || ''}</td>
                 <td data-label="Country">${item.prop_country || ''}</td>
-                <td data-label="Status"><span class="status-badge status-urgent">VACANT</span></td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-bad">Vacant</span></td>
                 <td data-label="Action">Contact estate agents ASAP</td>
             </tr>
         `).join('');
         
         return `
             <div class="table-container">
-                <table class="data-table">
+                <table class="table alv-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Country</th><th>Status</th><th>Action Required</th></tr>
+                        <tr><th>Property Name</th><th>Country</th><th class="col-center">Status</th><th>Action Required</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
@@ -562,16 +459,16 @@ class SimpleNotificationDashboard {
                      which the new rule does not produce, and a hard-coded
                      PENDING that was only ever true because the OLD query
                      filtered on it. -->
-                <td data-label="Days to End">${item.days_to_end != null ? item.days_to_end + 'd' : ''}</td>
-                <td data-label="Status"><span class="status-badge status-warning">${(item.renewal_status || 'pending').toUpperCase()}</span></td>
+                <td data-label="Days to End" class="num">${item.days_to_end != null ? item.days_to_end + 'd' : ''}</td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-attn">${(item.renewal_status || 'pending').replace(/^./, c => c.toUpperCase())}</span></td>
             </tr>
         `).join('');
         
         return `
             <div class="table-container">
-                <table class="data-table">
+                <table class="table alv-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th>Days to End</th><th>Status</th></tr>
+                        <tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Lease End Date</th><th class="num">Days to End</th><th class="col-center">Status</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
@@ -591,15 +488,15 @@ class SimpleNotificationDashboard {
                 <td data-label="Country">${item.prop_country || ''}</td>
                 <td data-label="Current Tenant">${item.tenant_name || ''}</td>
                 <td data-label="Lease End">${item.lease_end_date || ''}</td>
-                <td data-label="Status"><span class="status-badge status-urgent">NEED NEW TENANT</span></td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-bad">Need new tenant</span></td>
             </tr>
         `).join('');
         
         return `
             <div class="table-container">
-                <table class="data-table">
+                <table class="table alv-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Country</th><th>Current Tenant</th><th>Lease End Date</th><th>Status</th></tr>
+                        <tr><th>Property Name</th><th>Country</th><th>Current Tenant</th><th>Lease End Date</th><th class="col-center">Status</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
@@ -621,18 +518,18 @@ class SimpleNotificationDashboard {
                     <td>${item.prop_name || ''}</td>
                     <td data-label="Country">${item.prop_country || ''}</td>
                     <td data-label="Tenant">${item.tenant_name || ''}</td>
-                    <td data-label="Amount">€${formattedAmount}</td>
+                    <td data-label="Amount" class="num">€${formattedAmount}</td>
                     <td data-label="Due Date">${item.due_date || ''}</td>
-                    <td data-label="Days Overdue">${item.days_overdue || 0}</td>
+                    <td data-label="Days Overdue" class="num">${item.days_overdue || 0}</td>
                 </tr>
             `;
         }).join('');
         
         return `
             <div class="table-container">
-                <table class="data-table">
+                <table class="table alv-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Country</th><th>Tenant</th><th>Amount</th><th>Due Date</th><th>Days Overdue</th></tr>
+                        <tr><th>Property Name</th><th>Country</th><th>Tenant</th><th class="num">Amount</th><th>Due Date</th><th class="num">Days Overdue</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
@@ -651,17 +548,17 @@ class SimpleNotificationDashboard {
                 <td>${item.property_name || 'N/A'}</td>
                 <td data-label="Type">${item.expense_type || 'General'}</td>
                 <td data-label="Description">${item.description || ''}</td>
-                <td data-label="Amount">€${parseFloat(item.amount || 0).toFixed(2)}</td>
+                <td data-label="Amount" class="num">€${parseFloat(item.amount || 0).toFixed(2)}</td>
                 <td data-label="Submitted">${item.submitted_date || item.expense_date || ''}</td>
-                <td data-label="Status"><span class="status-badge status-warning">PENDING APPROVAL</span></td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-attn">Pending approval</span></td>
             </tr>
         `).join('');
         
         return `
             <div class="table-container">
-                <table class="data-table">
+                <table class="table alv-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th>Amount</th><th>Submitted Date</th><th>Status</th></tr>
+                        <tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th class="num">Amount</th><th>Submitted Date</th><th class="col-center">Status</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
@@ -680,17 +577,17 @@ class SimpleNotificationDashboard {
                 <td>${item.property_name || 'N/A'}</td>
                 <td data-label="Type">${item.expense_type || 'General'}</td>
                 <td data-label="Description">${item.description || ''}</td>
-                <td data-label="Amount">€${parseFloat(item.amount || 0).toFixed(2)}</td>
+                <td data-label="Amount" class="num">€${parseFloat(item.amount || 0).toFixed(2)}</td>
                 <td data-label="Approved">${item.approved_date || item.expense_date || ''}</td>
-                <td data-label="Status"><span class="status-badge status-info">APPROVED - AWAITING PAYMENT</span></td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-info">Approved - awaiting payment</span></td>
             </tr>
         `).join('');
         
         return `
             <div class="table-container">
-                <table class="data-table">
+                <table class="table alv-table">
                     <thead>
-                        <tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th>Amount</th><th>Approved Date</th><th>Status</th></tr>
+                        <tr><th>Property Name</th><th>Expense Type</th><th>Description</th><th class="num">Amount</th><th>Approved Date</th><th class="col-center">Status</th></tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>

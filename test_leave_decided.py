@@ -520,15 +520,29 @@ ok("'%s'" % ME in ps1,
    '%s runs this suite' % PS1)
 ok(os.path.isfile(os.path.join(ROOT, PATCHER)),
    '%s is on disk beside its suite' % PATCHER)
-wd = read(os.path.join(ROOT, 'test_waiting_down.py'))
+# DT-1, 16 Oct 2026 - AS THIS ROUND LEFT THEM, NOT AS THEY STAND.
+# These three read the live files until DT-1 bumped both an hour later
+# and every one of them failed. A shared counter is read through
+# as_left_by, which walks ROUNDS forward and hands back the next round's
+# backup - the text LV-1 actually wrote. TD-2's suite was written this
+# way; this one was not, and that is the whole difference.
+
+
+def as_lv_left(name):
+    p = os.path.join(ROOT, name)
+    return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
+
+
+wd = as_lv_left('test_waiting_down.py')
 ok('CONVERTED_N = %d' % CONVERTED_NOW in wd,
-   'test_waiting_down counts %d converted suites' % CONVERTED_NOW)
-co = read(os.path.join(ROOT, 'test_code_only.py'))
+   'test_waiting_down counted %d converted suites when LV-1 left it'
+   % CONVERTED_NOW)
+co = as_lv_left('test_code_only.py')
 ok('ok(len(aliased) == %d,' % ALIAS_NOW in co,
-   'test_code_only counts %d files aliasing code_only' % ALIAS_NOW)
+   'test_code_only counted %d files aliasing code_only' % ALIAS_NOW)
 ok('45 patchers and 46 suites' in co,
    '  split 45 patchers and 46 suites - TD-2 made it 44 and 45, and this '
-   'round is one of each on top')
+   'round was one of each on top')
 
 
 # ==========================================================================

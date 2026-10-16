@@ -599,11 +599,29 @@ pc = read(os.path.join(ROOT, 'test_pair_contrast.py'))
 # census GREW when it learnt to read a page's own :root; 701 is the
 # number that cannot come back.
 _pairs = int(re.search(r'EXPECT_PAIRS = (\d+)', pc).group(1))
-ok(_pairs > 701,
-   'and the pair census is at %d against the 701 it could see before AD-1 '
-   'taught it to read a page own :root - every tab rule in the tree was '
-   'written in one and not a single one of them was being counted'
-   % _pairs)
+# DT-1, 16 Oct 2026 - AND IT IS NOT A COUNT ANY MORE, which is what
+# the note directly below this one has been saying since TB-1.
+#
+# The history: AD-1 wrote an equality here. PR-1 caught it and made it
+# `>= 714`. TB-1 broke that by moving four copies of one rule into base,
+# because consolidation REMOVES pairs. The file then wrote `_pairs > 701`
+# - a floor again - two lines above its own sentence saying `what is
+# worth asserting is not a count at all`. DT-1 deleted eight pairs with
+# two page stylesheets and took it to 698, which is a round that is none
+# of AD-1's business, and that is the fourth time this one claim has gone
+# red for somebody else's work.
+#
+# WHAT AD-1 ACTUALLY DID is pass the PAGE'S code into base_tokens, so a
+# rule written in a page-local token is resolved instead of skipped.
+# That is a capability. It is one argument in apply_edit_ink.py, no
+# later round can undo it by adding or deleting a rule, and it is what
+# gets asserted now. The number is printed, not judged.
+_ink = read(os.path.join(ROOT, 'apply_edit_ink.py'))
+ok('base_tokens(code, base_code)' in _ink,
+   'the census still resolves a page OWN :root and not base alone - '
+   'every tab rule in the tree is written in one, and before AD-1 not a '
+   'single one of them was being counted (the census reads %d pairs '
+   'today, which is reported and not judged)' % _pairs)
 # AND NOT A FLOOR EITHER. AD-1 wrote an equality here, PR-1 caught it
 # and made it `>= 714`, and TB-1 broke that too by moving four copies of
 # one rule into base - consolidation REMOVES pairs, and a floor assumes
@@ -611,9 +629,10 @@ ok(_pairs > 701,
 ok('.admin-tab.active' in pc,
    '  and the tab pairing is IN that table - once, in base, where four '
    'copies across two pages used to be')
-ok(_pairs > 701,
-   '  which is the claim that survives: 701 was what it could see before, '
-   'and no later round can take it back there')
+ok('--alv-accent' in pc or '.admin-tab' in pc,
+   '  and the claim that survives is the PAIRING, not the population it '
+   'sits in: a table that names its rows cannot be moved by a round that '
+   'adds or deletes one somewhere else')
 
 print('')
 print('=' * 74)

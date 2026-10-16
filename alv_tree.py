@@ -373,6 +373,11 @@ CONVERTED = [
     # entries become one, and the 25 Bootstrap-coloured buttons they were
     # hiding take the house tone. Wide from birth.
     'test_leave_decided.py',
+    # DT-1, 16 Oct 2026 - the last two pages with a table standard of
+    # their own. 13 tables built in JavaScript, 25 rule openings and 11
+    # status chips, none of which a markup gate could ever see. Wide
+    # from birth.
+    'test_data_table.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

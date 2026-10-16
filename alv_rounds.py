@@ -1180,6 +1180,11 @@ ROUNDS = [
     # the tool checks, and the 25 buttons they silenced take
     # action-secondary - planned by the tool, not typed.
     '.bak_leavedecided',
+    # DT-1, 16 Oct 2026 - home.html and notifications.html give up their
+    # own .data-table stylesheet and their own .status-badge tones. The
+    # six panels existed TWICE, built from two copies of the code; the
+    # duplication is what the round is really about.
+    '.bak_datatable',
 ]
 
 

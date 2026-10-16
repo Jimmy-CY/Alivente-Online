@@ -451,7 +451,7 @@ check('  and none of them is base.html', 'base.html' not in TARGETS)
 # taken off this list in the same round; a page JOINING it is drift and
 # fails here, which the floor could not do.
 QUEUE = [
-    'home.html', 'notifications.html', 'cash_receipts.html',
+    'cash_receipts.html',
     'finance_expense.html', 'finance_expense_line_types.html',
     'finance_revenue.html', 'finance_revenue_line_types.html',
     'finance_valuations.html', 'physical_invoice_list.html',
@@ -480,6 +480,15 @@ MIGRATED_P2 = ['projects/project_task_list.html']
 # wears .alv-table now, and its two Bootstrap buttons are
 # icon-action-btns inside .row-actions.
 MIGRATED_NV1B = ['title_deeds_management.html']
+# Left the queue: 16 Oct 2026 round DT-1 (.bak_datatable), after Demetri
+# asked for the Home and Notifications tables to match the rest of the
+# application. These two were the hardest entries on this list to see:
+# their tables are BUILT IN JAVASCRIPT, as strings, so no table suite in
+# this project could report them and this census found them only by the
+# `content: attr(data-label)` their own phone block declared. Both wear
+# .alv-table now and base draws the card, so the declaration this census
+# looks for is gone with it.
+MIGRATED_DT1 = ['home.html', 'notifications.html']
 _cards = []
 for rel in TARGETS:
     c = css_of(SRC[rel])
@@ -490,11 +499,11 @@ check('the hand-rolled card views left are exactly the ones queued',
       sorted(_cards) == sorted(QUEUE),
       'joined: %s\nleft  : %s'
       % (sorted(set(_cards) - set(QUEUE)), sorted(set(QUEUE) - set(_cards))))
-check('  and the nine migrated so far are off it',
-      not (set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2)
-                          | set(MIGRATED_NV1B))),
-      sorted(set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2)
-                            | set(MIGRATED_NV1B))))
+_MIGRATED = (set(MIGRATED_H4) | set(MIGRATED_P2) | set(MIGRATED_NV1B)
+             | set(MIGRATED_DT1))
+check('  and the %d migrated so far are off it' % len(_MIGRATED),
+      not (set(_cards) & _MIGRATED),
+      sorted(set(_cards) & _MIGRATED))
 check('  CONTROL: all six were on it before that round, so this check '
       'can be seen to move',
       all(rel in TARGETS

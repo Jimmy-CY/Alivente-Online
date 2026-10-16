@@ -1044,6 +1044,14 @@ $sentinels = @(
     @{ File = 'Show-ButtonDrift.py'; Text = "'input-group-append':      [('save', P), ('*', S)]"; What = 'and Save is named FIRST, so the three property_assets Saves keep their tone' },
     @{ File = 'pages\templates\property_assets.html'; Text = 'btn-secondary btn-sm'; Absent = $true; Code = $true; What = 'the Cancels beside them are house secondary' },
     @{ File = 'pages\templates\projects\project_gantt.html'; Text = 'btn-outline-primary'; Absent = $true; Code = $true; What = 'and Fit to Screen stops being the only Bootstrap blue in a zoom control' },
+    # ------------------------------------------------- DT-1, 16 Oct 2026
+    # Demetri: make the Home and Notifications tables match the rest of
+    # the application. They could not be reported by any table suite,
+    # because they are built in JavaScript as strings.
+    @{ File = 'pages\\templates\\home.html'; Text = 'table alv-table'; What = 'DT-1: the Home tables are on the house table standard' },
+    @{ File = 'pages\\templates\\home.html'; Text = 'data-table'; Absent = $true; Code = $true; What = 'DT-1: and the page keeps no table stylesheet of its own' },
+    @{ File = 'pages\\templates\\notifications.html'; Text = 'alv-pill alv-pill-attn'; What = 'DT-1: the Notifications status chips are house pills' },
+    @{ File = 'pages\\templates\\notifications.html'; Text = 'status-badge'; Absent = $true; Code = $true; What = 'DT-1: and the solid-fill status tones are gone' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2466,7 +2474,8 @@ $suites = @(
     'test_notify_icon.py',
     'test_customer_view.py',
     'test_deed_one_column.py',
-    'test_leave_decided.py'
+    'test_leave_decided.py',
+    'test_data_table.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not
