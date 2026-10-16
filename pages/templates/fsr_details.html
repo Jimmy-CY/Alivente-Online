@@ -131,21 +131,24 @@ Issues (Comments)
                                             <span class="comment-text">{{ idresults.issues_details_comment }}</span>
                                             {% if idresults.issues_details_id in edited_comment_ids %}<span class="comment-edited-tag">(edited)</span>{% endif %}
                                         </span>
+                                        <span class="row-actions">
                                         {% if idresults.issues_details_user == user_initials and not idresults.issues_details_last_notified_at %}
-                                        <button type="button" class="comment-edit-btn status-btn"
+                                        <button type="button" class="comment-edit-btn icon-action-btn icon-edit"
                                                 data-comment-id="{{ idresults.issues_details_id }}"
                                                 data-comment-text="{{ idresults.issues_details_comment|default:'' }}"
                                                 onclick="openEditCommentModal(this)"
-                                                title="Edit your comment">
-                                            <i class="fas fa-pencil-alt"></i> Edit
+                                                title="Edit your comment"
+                                                aria-label="Edit your comment">
+                                            <i class="fas fa-pencil-alt"></i>
                                         </button>
                                         {% endif %}
                                         <span class="notify-urgent-cell" data-comment-id="{{ idresults.issues_details_id }}">
                                             {% if idresults.is_in_urgent_cooldown %}
                                                 <span class="notified-badge alv-pill alv-pill-neutral">Notified {{ idresults.urgent_cooldown_minutes_ago }} min ago</span>
                                             {% else %}
-                                                <button type="button" class="notify-urgent-btn status-btn" data-comment-id="{{ idresults.issues_details_id }}"><i class="fas fa-bell"></i> Notify Now</button>
+                                                <button type="button" class="notify-urgent-btn icon-action-btn icon-notify" data-comment-id="{{ idresults.issues_details_id }}" title="Notify Now" aria-label="Notify Now"><i class="fas fa-bell"></i></button>
                                             {% endif %}
+                                        </span>
                                         </span>
                                     </div>
                                     {% endif %}
@@ -786,28 +789,34 @@ document.addEventListener('DOMContentLoaded', function() {
    once a comment has been sent. Base's .status-btn and .alv-pill do the
    looking; these names do the finding.
 
-   ONE RULE STAYS, and it is a TONE rather than a component. Notify Now
-   sends a notification, so it should not look identical to a button that
-   opens a text box - but it was a SOLID slab of #ffc107, written inline on
-   the element, and amber means "needs attention" in five other places
-   here: --alv-warn, .alv-pill-attn, .alv-age-2, .alv-grade-4 and the
-   flagged stat tile. #ffc107 is not even base's warn, which is #8e6207.
-   Amber INK on a quiet outlined button says "this one has consequences"
-   while leaving the colour's meaning intact.
+   NV-1c, 16 Oct 2026 - AND NOW NO RULE STAYS. The page declares no
+   colour at all any more, and no appearance for either control.
 
-   PAGE-LOCAL BECAUSE THERE IS ONE ASKER. base has twice declined to build
-   on one, most recently two days ago when a compact stat density was
-   proposed, approved, built and then dropped after measuring. If a second
+   The rule that used to sit here was right about the TONE and wrong
+   about the place. It said: amber ink on a quiet outline, because this
+   one has consequences - and it said PAGE-LOCAL BECAUSE THERE IS ONE
+   ASKER, with the condition for promoting it written down: "if a second
    page wants a cautioning inline button, that is when this becomes
-   .status-btn-warn in base. Written in base's tokens either way. */
-.notify-urgent-btn.status-btn {
-    color: var(--alv-warn);
-    border-color: #ecd9a8;
-}
-.notify-urgent-btn.status-btn:hover {
-    background: var(--alv-warn-soft);
-    color: var(--alv-warn);
-}
+   .status-btn-warn in base."
+
+   That condition has not happened, and this round does not pretend it
+   has. What changed is the SHAPE. Demetri asked for these two to be
+   icon-only, inline with our standards, and a ROW-ACTION ICON is not an
+   inline button variant: all forty-one .icon-* classes live in base, and
+   Show-RowActionDrift and alv_rowactions read those names as the shared
+   vocabulary. A forty-second living on this page would be exactly the
+   drift that vocabulary exists to prevent.
+
+   So the tone went to base as .icon-notify - .icon-lock's rule under
+   its own name, because a class carries one picture - and #ecd9a8 went
+   with it. This page now spells NO hex by hand, which test_amber and
+   test_fsr_palette both recorded as a standing exception and are
+   re-pointed by this round's patcher.
+
+   .comment-edit-btn, .notify-urgent-btn, .notified-badge and
+   .notify-urgent-cell carry NO appearance - they are JS hooks and
+   nothing else, and they are kept on the elements beside the house
+   classes. The classes that find are not the classes that paint. */
 .comment-edited-tag { color: var(--alv-ink-soft); font-style: italic; font-size: 12px; margin-left: 6px; }
 .report-container { padding-top: 8px; min-height: auto; }
 .issue-header-section { margin-bottom: 12px; padding: 16px 20px; }
@@ -851,7 +860,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!csrfToken) { alert('CSRF token not found.'); return; }
         btn.disabled = true;
         var originalLabel = btn.innerHTML;
-        btn.innerHTML = 'Sending...';
+        // NV-1c, 16 Oct 2026 - a spinning glyph, not a nine-character
+        // word: the button is a 44px square now. originalLabel is read
+        // on the line above, so it is the bell, and the three failure
+        // paths below restore it unchanged.
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         fetch('/issues/comments/' + commentId + '/notify-urgent/', {
             method: 'POST',
             headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }

@@ -438,13 +438,23 @@ ok('canvas' not in R.VAR_SAFE,
 
 
 # ==========================================================================
-head('8. ANOTHER ROUND DECIDED #ecd9a8, AND B-4 DOES NOT OVERTURN IT')
+head('8. B-4 LEFT #ecd9a8 ALONE, AND NV-1C RETIRED IT')
 # ==========================================================================
 fsr = T.path_of('fsr_details.html')
 if fsr:
-    ok('#ecd9a8' in T.code_only(read(fsr)),
-       "fsr_details.html still spells #ecd9a8 by hand - the Notify round's "
-       'page-local warn tint, decided deliberately')
+    # NV-1c, 16 Oct 2026 - THE ROUND THAT OWNED THAT DECISION RETIRED
+    # IT. B-4's restraint is still the point of this section and still
+    # asserted below: it did not touch the page, and it named the
+    # literal on its leave list with the reason. What changed is that
+    # the Notify round came back, moved its tone into base as
+    # .icon-notify - because a row-action icon is not an inline button
+    # variant - and took #ecd9a8 with it. fsr_details now spells NO hex
+    # by hand at all, which is strictly better than the exception this
+    # section was written to protect.
+    ok('#ecd9a8' not in T.code_only(read(fsr)),
+       'fsr_details.html spells no hex by hand at all - NV-1c moved the '
+       "Notify tone into base as .icon-notify and took the page's tint "
+       'with it')
     ok(not os.path.isfile(fsr + SUFFIX),
        '  and B-4 did not touch that page at all')
     ok('#ecd9a8' in B.LEAVE,

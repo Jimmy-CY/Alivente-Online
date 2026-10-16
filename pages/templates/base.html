@@ -3997,6 +3997,32 @@ table.alv-matrix {
 .icon-unlock:hover { background-color: var(--alv-good); border-color: var(--alv-good); color: var(--alv-on-accent); }
 .icon-color-unlock { color: var(--alv-good); }
 
+/* Notify: THE ADVANCE FAMILY SPLITS BY CONSEQUENCE, added by NV-1c on
+   16 Oct 2026 after Demetri asked for a standard for Notify - "maybe
+   just a bell with a Notify Now hover".
+
+   WHY --alv-warn AND NOT THE ACCENT. The three tones above are not
+   decoration: .icon-send is accent because the thing goes out,
+   .icon-approve and .icon-unlock are good because something becomes
+   allowed, and .icon-unapprove, .icon-lock and .icon-reset-pw are warn
+   because SOMEBODY WILL NOTICE. Notify Now emails everyone configured
+   except the clicker, immediately, with a five-minute cooldown per
+   comment. It is the third group.
+
+   And fsr_details had already reached that reading on its own, in a
+   page-local rule, in as many words: amber ink on a quiet outline
+   because this one has consequences. This is that decision moved to
+   where the other forty-one live, not a new one.
+
+   WHY ITS OWN NAME AND NOT .icon-lock, whose rule this is byte for
+   byte: A CLASS CARRIES ONE PICTURE. .icon-lock is fa-user-slash; this
+   is fa-bell. base states that rule beside .icon-upload,
+   .icon-document, .icon-reset-pw and .icon-permissions, and .icon-edit
+   had already broken it once.         [test_icon_buttons.py 1b] */
+.icon-notify       { color: var(--alv-warn); border-color: var(--alv-warn-line); }
+.icon-notify:hover { background-color: var(--alv-warn); border-color: var(--alv-warn); color: var(--alv-on-accent); }
+.icon-color-notify { color: var(--alv-warn); }
+
 /* ===== ALV-MAP-NOKEY v1 ===== */
 /* The map draws from a keyed provider, and the key arrives from the
    environment. When it is absent the tile layer is not added at all and this

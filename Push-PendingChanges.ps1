@@ -371,7 +371,7 @@ $sentinels = @(
     # no-permission Paid tick wore `is-disabled`, which base defines only for
     # .status-btn, so it rendered exactly like the live one.
     @{ File = 'pages\templates\customer_list.html';       Text = 'alv-empty-title'; What = 'Invoice Customers uses base empty state, not its own' },
-    @{ File = 'pages\templates\customer_list.html';       Text = 'mobile-action-bar cols-2'; What = 'and its two mobile actions say so' },
+    @{ File = 'pages\templates\customer_list.html';       Text = '{% if not perms.auth.can_edit_invoices %} cols-2'; What = 'and the mobile bar asks for as many columns as it draws controls - three being base own default, so unnamed' },
     @{ File = 'pages\templates\invoices.html';            Text = 'icon-approve icon-disabled'; What = 'a disabled Paid tick wears a class base actually defines' },
     # Cash Receipts - a new module. The MIGRATION is not sentinelled here
     # because its filename is whatever makemigrations chose; test_cash_receipts.py
@@ -991,6 +991,44 @@ $sentinels = @(
     @{ File = 'pages\\services\\landing_tabs.py'; Text = 'def landing_tab'; What = 'a landing page opens on the tab it was asked for, by key' },
     @{ File = 'pages\\templates\\finance_revenue_types.html'; Text = '?tab=setup'; What = 'and the six Finance Setup pages ask for Setup by name' },
     @{ File = 'pages\\templates\\my_profile.html'; Text = 'url ''home'' %}" class="btn action-back"'; Absent = $true; Code = $true; What = 'My Profile stops sending you to the Home page' },
+    # ------------------------------------------------ NV-1a, 16 Oct 2026
+    # Demetri: why are the Modules on the User Permission Page Green,
+    # they should be teal. Green is a verdict here and a ticked box is a
+    # selection. The active/inactive dot is the one real verdict on the
+    # page and it keeps the good token.
+    # THE STRING HAS TO BE ONE THIS ROUND INTRODUCED. The first cut of
+    # this row named '.permission-item.granted', which is the SELECTOR -
+    # present long before this round, so the claim could never have
+    # failed. test_sentinels section 4 names a row like that within one
+    # run, and it is right to: a row that cannot fail is not a test.
+    @{ File = 'pages\templates\user_permissions.html'; Text = 'font-size:12px; color:var(--alv-accent-ink)'; What = 'a granted module is a selection, so the page reads in the accent' },
+    @{ File = 'pages\templates\user_permissions.html'; Text = 'icon.style.background'; Absent = $true; Code = $true; What = 'and the colour is declared once, in the stylesheet, not three times' },
+    # ------------------------------------------------ NV-1b, 16 Oct 2026
+    # Demetri: why does the Upload Title Deeds table not resemble our
+    # standards. It wore no house class and re-declared base's whole
+    # phone card block - fifteen rule openings, twelve of them base's.
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = 'class="table alv-table"'; What = 'the title deeds table wears the house table class' },
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = 'mobile-action-bar cols-2'; What = 'and asks base for the two columns it draws' },
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = '.mobile-action-bar'; Absent = $true; Code = $true; What = 'while declaring the bar NOWHERE itself - a page copy of that rule hid the bar on every phone' },
+    # ------------------------------------------------ NV-1c, 16 Oct 2026
+    # Demetri asked for Edit and Notify Now in the Issues comments to be
+    # icon-only, and for a standard for Notify - a bell with a Notify
+    # Now hover. ADVANCE splits by consequence, so the bell is warn.
+    @{ File = 'pages\templates\base.html'; Text = '.icon-notify'; What = 'Notify is in the shared icon vocabulary, not on one page' },
+    @{ File = 'alv_rowactions.py'; Text = "'notify': ADVANCE"; What = 'and the vocabulary sorts it after Edit without the markup saying so' },
+    @{ File = 'pages\templates\fsr_details.html'; Text = 'status-btn'; Absent = $true; Code = $true; What = 'the two comment controls are icon-only at every width' },
+    @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'Duplicate is for customer invoices only'; What = 'and a tenant invoice says on screen why it has no copy' },
+    # ------------------------------------------------ NV-1d, 16 Oct 2026
+    # Demetri asked for a View button beside Edit and Delete on
+    # Customers. There is no customer detail route, so View opens a
+    # read-only sheet - the shape he described for receipts in the same
+    # batch - carrying the four fields the table has no room for.
+    @{ File = 'pages\templates\customer_list.html'; Text = 'js-cust-view'; What = 'Customers has a View, and it needs no edit permission' },
+    @{ File = 'pages\templates\customer_list.html'; Text = 'cust-sheet-row'; What = 'and what it shows is MARKUP a gate can read, not a built string' },
+    # NAMED AS THE ROW BUILDS IT. `billing_address` alone is in this
+    # file three times already - a profile read, an edit POST and a
+    # create - so the bare word could never have failed.
+    @{ File = 'pages\views\physical_invoices.py'; Text = '"billing_address": c.billing_address'; What = 'the four hidden fields reach the template without a new query' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2407,7 +2445,11 @@ $suites = @(
     'test_project_origin.py',
     'test_stat_cols.py',
     'test_tab_names.py',
-    'test_landing_tab.py'
+    'test_landing_tab.py',
+    'test_perm_select.py',
+    'test_deed_table.py',
+    'test_notify_icon.py',
+    'test_customer_view.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -232,6 +232,12 @@ async def align(page_txt, page_name):
                       r'((?:(?!\{%\s*(?:if|else|endif)).)*?)\{%\s*endif\s*%\}', r'\1', frag, flags=re.S)
         frag = re.sub(r'\{%\s*if[^%]*%\}((?:(?!\{%\s*(?:if|else|endif)).)*?)\{%\s*endif\s*%\}',
                       r'\1', frag, flags=re.S)
+    # NV-1d, 16 Oct 2026 - AND {# #} COMMENTS, which Django strips
+    # before anything renders and this stripper did not. A comment left
+    # in the fragment is rendered as text, and it moved the buttons
+    # 1050px right of the heading this section measures. First, because
+    # a comment can contain a {% %} tag.
+    frag = re.sub(r'\{#.*?#\}', '', frag, flags=re.S)
     frag = re.sub(r'\{\{[^}]*\}\}', 'x', re.sub(r'\{%[^%]*%\}', '', frag))
     async with async_playwright() as pw:
         br = await pw.chromium.launch()

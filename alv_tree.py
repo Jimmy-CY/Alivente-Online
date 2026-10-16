@@ -349,6 +349,22 @@ CONVERTED = [
     # want, the view resolves the key and the markup paints it on the
     # first frame. Wide from birth.
     'test_landing_tab.py',
+    # NV-1a, 16 Oct 2026 - a granted permission module is a selection and
+    # not a verdict, so it leaves --alv-good for the accent. The
+    # active/inactive dot keeps the verdict token. Wide from birth.
+    'test_perm_select.py',
+    # NV-1b, 16 Oct 2026 - the title deeds table onto .alv-table, and
+    # fifteen rule openings out of the page's own stylesheet. Wide from
+    # birth.
+    'test_deed_table.py',
+    # NV-1c, 16 Oct 2026 - Notify joins the icon vocabulary as an ADVANCE
+    # that someone will notice, and the two comment controls go
+    # icon-only. Wide from birth.
+    'test_notify_icon.py',
+    # NV-1d, 16 Oct 2026 - Customers gains a View, and because there is
+    # no detail route it opens a read-only sheet built as markup. Wide
+    # from birth.
+    'test_customer_view.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

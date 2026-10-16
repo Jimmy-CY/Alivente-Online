@@ -456,7 +456,6 @@ QUEUE = [
     'finance_revenue.html', 'finance_revenue_line_types.html',
     'finance_valuations.html', 'physical_invoice_list.html',
     'projects/projects.html', 'property_detail.html',
-    'title_deeds_management.html',
 ]
 # Left the queue: 27 Sep round H4 (.bak_tablepersonal), then 28 Sep round
 # H5a (.bak_tablepreview). A page leaving is a migration and comes off
@@ -474,6 +473,13 @@ MIGRATED_H4 = [
 # td[data-label]::before that had drifted to 11px UPPERCASE #6c757d while
 # base drew 12.5px sentence case. It wears .alv-table now.
 MIGRATED_P2 = ['projects/project_task_list.html']
+# Left the queue: 16 Oct 2026 round NV-1b (.bak_deedtable), after
+# Demetri asked why the Upload Title Deeds table does not resemble our
+# standards. It wore no house class at all and re-declared base's whole
+# phone card block - fifteen rule openings, twelve of them base's. It
+# wears .alv-table now, and its two Bootstrap buttons are
+# icon-action-btns inside .row-actions.
+MIGRATED_NV1B = ['title_deeds_management.html']
 _cards = []
 for rel in TARGETS:
     c = css_of(SRC[rel])
@@ -484,13 +490,17 @@ check('the hand-rolled card views left are exactly the ones queued',
       sorted(_cards) == sorted(QUEUE),
       'joined: %s\nleft  : %s'
       % (sorted(set(_cards) - set(QUEUE)), sorted(set(QUEUE) - set(_cards))))
-check('  and the eight migrated so far are off it',
-      not (set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2))),
-      sorted(set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2))))
+check('  and the nine migrated so far are off it',
+      not (set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2)
+                          | set(MIGRATED_NV1B))),
+      sorted(set(_cards) & (set(MIGRATED_H4) | set(MIGRATED_P2)
+                            | set(MIGRATED_NV1B))))
 check('  CONTROL: all six were on it before that round, so this check '
       'can be seen to move',
-      all(rel in TARGETS for rel in MIGRATED_H4 + MIGRATED_P2),
-      [r for r in MIGRATED_H4 + MIGRATED_P2 if r not in TARGETS])
+      all(rel in TARGETS
+          for rel in MIGRATED_H4 + MIGRATED_P2 + MIGRATED_NV1B),
+      [r for r in MIGRATED_H4 + MIGRATED_P2 + MIGRATED_NV1B
+       if r not in TARGETS])
 
 print('\n' + '=' * 72)
 print('  %d passed, %d failed' % (PASS, FAIL))

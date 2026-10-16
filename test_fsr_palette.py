@@ -133,7 +133,11 @@ for name, now, was in (('friday_status_report.html', SNC, nocomment(S_WAS)),
     # fsr_details keeps ONE: the Notify round's page-local warn tint, decided
     # last night with a single asker. A check wider than its round reports the
     # rest of the file as a defect.
-    allowed = ['#ecd9a8'] if 'details' in name else []
+    # NV-1c, 16 Oct 2026 - NO EXCEPTION ANY MORE. fsr_details kept
+    # ONE literal, the Notify round's page-local warn tint. That round
+    # came back on 16 Oct, moved its tone into base as .icon-notify and
+    # took #ecd9a8 with it, so both pages now spell nothing by hand.
+    allowed = []
     check('%-26s spells %s by hand' % (name, allowed or 'nothing'),
           hexes_now == allowed, str(hexes_now))
     check('  CONTROL: it spelled %d before the round' % len(hexes_was),
@@ -449,9 +453,14 @@ for name, path, txt in (('friday_status_report.html', FSR, S),
               and '@media screen and (max-width: 768px)' in txt)
 
 # The Notify round's page-local tint, decided last night with one asker.
-check('the Notify round\'s warn tint is untouched', '#ecd9a8' in DNC)
-check('  and its buttons still carry base\'s inline button',
-      DNC.count('status-btn') >= 2)
+# NV-1c, 16 Oct 2026 - the Notify round retired its own tint when
+# Demetri asked for its two controls to be icon-only. B-4 never touched
+# it; the round that owned it did.
+check('the Notify round retired its own page-local tint',
+      '#ecd9a8' not in DNC)
+check('  and its two controls are row-action icons now, not inline '
+      'buttons', DNC.count('icon-action-btn') >= 2
+      and 'status-btn' not in DNC)
 
 # THE SWEEP MUST NOT HAVE ENTERED A COMMENT. friday_status_report carries the
 # comment-tint round's note, which says the old wash set text to "#ff8c00 or

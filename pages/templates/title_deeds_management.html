@@ -28,26 +28,26 @@
 
 <!-- Title Deeds Table (desktop) / Card list (mobile) -->
 <div class="table-container">
-<table class="table table-bordered table-striped text-center title-deeds-table">
+<table class="table alv-table">
 <thead>
     <tr>
-        <th style="text-align: left; width: 35%">Property Name</th>
-        <th style="text-align: left; width: 25%">Country</th>
-        <th style="width: 15%">Status</th>
-        <th style="width: 15%">Title Deed</th>
-        <th style="width: 10%">Actions</th>
+        <th style="width: 35%">Property Name</th>
+        <th style="width: 25%">Country</th>
+        <th class="col-center" style="width: 15%">Status</th>
+        <th class="col-center" style="width: 15%">Title Deed</th>
+        <th class="col-center" style="width: 10%">Actions</th>
     </tr>
 </thead>
 <tbody>
     {% for property in properties %}
     <tr>
-        <td data-label="Property" style="text-align: left">{{ property.prop_name }}</td>
-        <td data-label="Country" style="text-align: left">{{ property.prop_country|default:"-" }}</td>
-        <td data-label="Status">
+        <td data-label="Property">{{ property.prop_name }}</td>
+        <td data-label="Country">{{ property.prop_country|default:"-" }}</td>
+        <td data-label="Status" class="text-center">
             {% if property.prop_title_deed %}
-                <span class="status-uploaded">Available</span>
+                <span class="alv-pill alv-pill-good">Available</span>
             {% else %}
-                <span class="status-missing">Not Uploaded</span>
+                <span class="alv-pill alv-pill-neutral">Not Uploaded</span>
             {% endif %}
         </td>
         <td data-label="Title Deed" class="desktop-action-cell">
@@ -62,13 +62,13 @@
         <td data-label="Action" class="desktop-action-cell">
             {% if perms.auth.can_edit_properties %}
                 {% if property.prop_title_deed %}
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                    <span class="row-actions"><button type="button" class="icon-action-btn icon-delete" title="Delete title deed" aria-label="Delete title deed" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
+                        <i class="fas fa-trash"></i>
+                    </button></span>
                 {% else %}
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
-                        <i class="fas fa-upload"></i> Upload
-                    </button>
+                    <span class="row-actions"><button type="button" class="icon-action-btn icon-upload" title="Upload title deed" aria-label="Upload title deed" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
+                        <i class="fas fa-upload"></i>
+                    </button></span>
                 {% endif %}
             {% else %}
                 <span class="text-muted">-</span>
@@ -76,7 +76,7 @@
         </td>
 
         <!-- Mobile-only action bar (hidden on desktop) -->
-        <td class="mobile-action-bar">
+        <td class="mobile-action-bar cols-2">
             {% if property.prop_title_deed %}
                 <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
                     <i class="fas fa-scroll mobile-action-icon icon-color-view"></i>
@@ -245,14 +245,31 @@
 
 
 /* Status pills */
-.status-uploaded {
-    color: var(--alv-good);
-    font-weight: 600;
-}
-.status-missing {
-    color: var(--alv-ink-soft);
-    font-style: italic;
-}
+/* NV-1b, 16 Oct 2026 - THE PHONE CARD BLOCK IS BASE'S, NOT THIS PAGE'S.
+   Demetri: why does the Upload Title Deeds table not resemble our
+   standards. Because it did not wear them - no .alv-table at all, and
+   fifteen rule openings in this stylesheet re-declaring what base has
+   owned since the table standard landed.
+
+   TWELVE WERE BASE'S JOB and are gone. Three of those twelve were not
+   byte-identical and the house value wins: the card shadow is
+   0 1px 2px rgba(16,34,40,.05) rather than 0 2px 4px rgba(0,0,0,.04),
+   the cell label is --alv-ink-soft at 12.5px rather than
+   --alv-ink-strong at 13px, and the cell gains flex-wrap. The radius
+   was the same 8px under two spellings.
+
+   .mobile-action-bar IS NOT DECLARED HERE ANY MORE, in either place,
+   and the patcher refuses if it comes back. This page's top-level
+   `display: none !important` loads after base and beats base's phone
+   `display: grid !important` on source order - so deleting only the
+   phone copy hid the action bar on every phone. Nothing but the render
+   said so.
+
+   The bar asks for its two columns with base's `cols-2` opt-in. A rule
+   written by hand where an opt-in exists is the same defect as one
+   written by hand where base has the default. */
+
+
 
 /* Upload-target info banner */
 .upload-target-info {
@@ -265,7 +282,7 @@
 }
 
 /* Mobile action bar — hidden on desktop */
-.mobile-action-bar { display: none !important; }
+
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media screen and (max-width: 768px) {
@@ -277,82 +294,23 @@
         text-align: center;
         padding: 10px 12px;
     }
-    .title-deeds-table {
-        border: none;
-        background: transparent;
-    }
-    .title-deeds-table thead {
-        display: none;
-    }
-    .title-deeds-table,
-    .title-deeds-table tbody,
-    .title-deeds-table tr,
-    .title-deeds-table td {
-        display: block;
-        width: 100%;
-    }
-    .title-deeds-table tbody tr {
-        background: var(--alv-paper);
-        border: 1px solid var(--alv-line);
-        border-radius: 8px;
-        margin-bottom: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .title-deeds-table tbody tr:nth-of-type(even) {
-        background: var(--alv-paper);
-    }
-    .title-deeds-table td {
-        border: none !important;
-        padding: 6px 0 !important;
-        text-align: left !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        min-height: 28px;
-    }
-    .title-deeds-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--alv-ink-strong);
-        font-size: 13px;
-        flex-shrink: 0;
-    }
+
+
+
+
+
+
+
     /* Property Name (first cell) gets prominence */
-    .title-deeds-table td[data-label="Property"] {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--alv-ink);
-        padding-bottom: 8px !important;
-        margin-bottom: 4px;
-        border-bottom: 1px solid var(--alv-line-soft) !important;
-        display: block;
-    }
-    .title-deeds-table td[data-label="Property"]::before {
-        display: none;
-    }
+
+
 
     /* Hide desktop action cells on mobile */
-    .desktop-action-cell {
-        display: none !important;
-    }
+
 
     /* Show and style mobile action bar — 2-column grid */
-    .mobile-action-bar {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        
 
-        padding: 10px 0 0 0 !important;
 
-        align-items: stretch !important;
-        min-height: auto !important;
-        justify-content: stretch !important;
-    }
-    .mobile-action-bar::before {
-        display: none !important;
-    }
 
 
 

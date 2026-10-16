@@ -1150,6 +1150,26 @@ ROUNDS = [
     # controls, nineteen of them derived from the panel that links to
     # them.
     '.bak_landingtab',
+    # NV-1a, 16 Oct 2026 - user_permissions' granted rows, icon tiles and
+    # status lines move from --alv-good to the accent, and the three
+    # spellings of the icon colour become one. The active dot stays
+    # green because it is the page's only verdict.
+    '.bak_permselect',
+    # NV-1b, 16 Oct 2026 - title_deeds_management's table takes
+    # .alv-table and gives up its hand-rolled phone card block. The
+    # status spans become alv-pills and the two Bootstrap buttons become
+    # icon-action-btns inside .row-actions.
+    '.bak_deedtable',
+    # NV-1c, 16 Oct 2026 - .icon-notify in base, 'notify': ADVANCE in the
+    # vocabulary, the two fsr_details comment controls icon-only, the
+    # page's last hand-spelled colour retired, and a tenant invoice row
+    # that says why it cannot be duplicated.
+    '.bak_notifyicon',
+    # NV-1d, 16 Oct 2026 - a View button on Customers, opening a
+    # read-only sheet with the four fields the table has no room for.
+    # The mobile bar's column count becomes conditional, because a LOOK
+    # needs no permission.
+    '.bak_custview',
 ]
 
 

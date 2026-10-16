@@ -153,6 +153,16 @@ Invoice Customers
             <td data-label="Invoices">{{ row.invoice_count }}</td>
             <td data-label="Actions" class="desktop-action-cell cell-actions">
               <div class="row-actions">
+              {# NV-1d, 16 Oct 2026 - View is a LOOK, so it sorts FIRST, #}
+              {# and alv_rowactions is what says that rather than this #}
+              {# markup. It is OUTSIDE the permission test: reading a #}
+              {# record you can already see every other column of needs #}
+              {# no permission to edit invoices. #}
+                <button type="button" class="icon-action-btn icon-view js-cust-view"
+                        data-cust="{{ row.pk }}" data-name="{{ row.name }}"
+                        title="View Customer" aria-label="View Customer">
+                  <i class="fas fa-eye"></i>
+                </button>
               {% if perms.auth.can_edit_invoices %}
                 <a href="{% url 'customer_edit' row.pk %}" class="icon-action-btn icon-edit" title="Edit Customer">
                   <i class="fas fa-pencil-alt"></i>
@@ -179,7 +189,26 @@ Invoice Customers
             </td>
 
             <!-- Mobile-only action bar -->
-            <td class="mobile-action-bar cols-2">
+            {# NV-1d - THE COLUMN COUNT IS CHOSEN WHERE THE COUNT IS #}
+            {# KNOWN. View needs no permission, so the bar draws three #}
+            {# controls for an editor and two for a reader. Before this #}
+            {# round the read-only branch put ONE control in a #}
+            {# two-column grid. #}
+
+            {# AND THREE IS THE DEFAULT, SO IT IS NOT NAMED. base #}
+            {# declares cols-1, cols-2 and cols-4 and deliberately no #}
+            {# cols-3, because .mobile-action-bar is already #}
+            {# repeat(3, 1fr) - ten pages wear the bare class for #}
+            {# exactly that reason. The first cut of this round asked #}
+            {# for `cols-3`, which styles nothing: a dead class name, #}
+            {# which is what CC-1 and TB-1a both deleted rather than #}
+            {# respell. #}
+            <td class="mobile-action-bar{% if not perms.auth.can_edit_invoices %} cols-2{% endif %}">
+              <button type="button" class="mobile-action-btn js-cust-view"
+                      data-cust="{{ row.pk }}" data-name="{{ row.name }}">
+                <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                <span class="mobile-action-label">View</span>
+              </button>
               {% if perms.auth.can_edit_invoices %}
                 <a href="{% url 'customer_edit' row.pk %}" class="mobile-action-btn">
                   <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
@@ -218,6 +247,44 @@ Invoice Customers
   </div>
 
 
+<!-- NV-1d, 16 Oct 2026 - THE CUSTOMER SHEET, AS MARKUP.
+
+     One hidden div per customer. The script unhides the one that was
+     asked for and writes a title; that is the whole of the script.
+
+     CC-1 took this decision on 15 Oct and wrote down why: base offers
+     two pop-up patterns and the other one builds its div as a STRING in
+     JavaScript. VB-1 had just spent a round on four controls that sat
+     three-quarters wrong for weeks because no census could see them -
+     markup a gate can read is worth more than markup that is
+     convenient to generate. -->
+<div class="modal fade" id="customerModal" tabindex="-1" role="dialog"
+     aria-labelledby="customerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="customerModalLabel">Customer</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="customerModalBody">
+                {% for row in rows %}
+                <div class="cust-sheet" id="cust-sheet-{{ row.pk }}" hidden>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Customer</span><span class="cust-sheet-val">{{ row.name }}</span></div>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Customer ID</span><span class="cust-sheet-val">{{ row.customer_id_label|default:"-" }}</span></div>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Billing address</span><span class="cust-sheet-val">{{ row.billing_address|default:"-"|linebreaksbr }}</span></div>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Telephone</span><span class="cust-sheet-val">{{ row.billing_tel|default:"-" }}</span></div>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Email to</span><span class="cust-sheet-val">{{ row.email_to|default:"-" }}</span></div>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Email CC</span><span class="cust-sheet-val">{{ row.email_cc|default:"-" }}</span></div>
+                    <div class="cust-sheet-row"><span class="cust-sheet-key">Invoices</span><span class="cust-sheet-val">{{ row.invoice_count }}</span></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -231,6 +298,32 @@ Invoice Customers
     text-align: center; padding: 0 12px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;
   }
   /* the form is out of the layout in base - .mobile-action-bar > form */
+}
+
+/* NV-1d, 16 Oct 2026 - the customer sheet's rows. A key and a value per
+   line, which is the shape base already draws on a phone card: the
+   label on the left, the value on the right, and the value wrapping
+   under it when there is no room. Written in base's tokens. */
+.cust-sheet-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--alv-line-soft);
+}
+.cust-sheet-row:last-child { border-bottom: 0; }
+.cust-sheet-key {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--alv-ink-soft);
+  flex-shrink: 0;
+}
+.cust-sheet-val {
+  color: var(--alv-ink);
+  text-align: right;
+  word-break: break-word;
 }
 </style>
 <script>
@@ -308,6 +401,42 @@ Invoice Customers
     span.appendChild(x);
     return span;
   }
+})();
+
+/* NV-1d, 16 Oct 2026 - THE VIEW BUTTON, IN ITS OWN IIFE AND WITHOUT `$`.
+
+   Line 240 above, inside the filter IIFE, is
+
+       function $(id) { return document.getElementById(id); }
+
+   which is where every piece of DOM wiring on this page lives and so is
+   the obvious place to put a click handler. Written there,
+   `$(document).on('click', ...)` throws on load - getElementById of a
+   document is null and null has no .on. The first draft of this round
+   did exactly that, and a browser control printed back
+   `TypeError: Cannot read properties of null (reading 'on')`.
+
+   So: plain DOM, and Bootstrap by its real name. A page-local helper
+   that borrows a global name is invisible to every text check and fatal
+   at runtime. */
+(function () {
+  "use strict";
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.js-cust-view') : null;
+    if (!btn) { return; }
+    var sheet = document.getElementById('cust-sheet-' + btn.dataset.cust);
+    if (!sheet) { return; }
+    var sheets = document.querySelectorAll('.cust-sheet');
+    for (var i = 0; i < sheets.length; i++) { sheets[i].hidden = true; }
+    sheet.hidden = false;
+    /* textContent, not innerHTML: a customer name is data somebody
+       typed, which is the rule the chip builder below already keeps. */
+    document.getElementById('customerModalLabel').textContent =
+        btn.dataset.name || 'Customer';
+    if (window.jQuery) {
+      window.jQuery('#customerModal').modal('show');
+    }
+  });
 })();
 </script>
 

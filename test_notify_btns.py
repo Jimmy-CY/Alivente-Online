@@ -92,24 +92,38 @@ for p in (BASE, FD):
     if not os.path.exists(p):
         sys.exit('! %s not found - run from the repo root' % p)
 BS, F = read(BASE), read(FD)
-if 'notify-urgent-btn status-btn' not in F:
-    print('\n! not patched - run apply_notify_btns.py first.')
+# NV-1c, 16 Oct 2026 - THE CLASS MOVED, THE CLAIMS DID NOT. Demetri
+# asked for these two controls to be icon-only, and a row-action icon is
+# not an inline button variant: all forty-one .icon-* classes live in
+# base, so the tone went there as .icon-notify and this page stopped
+# carrying a private spelling of it. Every check below still asks what
+# it asked; it asks it of icon-action-btn instead of status-btn.
+if 'notify-urgent-btn icon-action-btn icon-notify' not in F:
+    print('\n! not patched - run apply_notify_btns.py and then '
+          'apply_notify_icon.py first.')
     sys.exit(1)
 BC, FC = nocomment(BS), nocomment(F)
 
 # ===========================================================================
 head('1. three controls, none of them styled inline any more')
 # ===========================================================================
-check("CONTROL: the round's prose still names #ffc107", '#ffc107' in F)
-check('CONTROL: .. and it is gone once stripped', '#ffc107' not in FC)
+# NV-1c re-pointed the literal this control uses. #ffc107 left the
+# prose with the rule that quoted it; #ecd9a8 is named in NV-1c's own
+# comment, as the tint it retired, and is the hex this page now carries
+# in prose and nowhere else. The control's purpose is unchanged: the
+# stripper must remove a comment and leave the code.
+check("CONTROL: the round's prose still names #ecd9a8", '#ecd9a8' in F)
+check('CONTROL: .. and it is gone once stripped', '#ecd9a8' not in FC)
 
 for el in ('notify-urgent-btn', 'notified-badge', 'comment-edit-btn'):
     check('%-20s carries no style attribute' % el,
           not re.search(r'class="[^"]*%s[^"]*"[^>]*style=' % el, FC))
 check('the badgeStyle variable is gone', 'badgeStyle' not in FC)
 
-check('Edit is base\'s inline button', 'comment-edit-btn status-btn' in FC)
-check('Notify Now is too', 'notify-urgent-btn status-btn' in FC)
+check('Edit is base\'s inline button',
+      'comment-edit-btn icon-action-btn icon-edit' in FC)
+check('Notify Now is too, and base names the verb',
+      'notify-urgent-btn icon-action-btn icon-notify' in FC)
 check('the badge is a PILL, not a button',
       FC.count('notified-badge alv-pill alv-pill-neutral') == 3,
       '%d of 3' % FC.count('notified-badge alv-pill alv-pill-neutral'))
@@ -119,10 +133,14 @@ check('  which is the template plus both script rebuilds',
 check('the bell is Font Awesome, not an emoji',
       'fas fa-bell' in FC and '\U0001f514' not in FC)
 
-check('the warn tone is written in TOKENS',
-      'var(--alv-warn)' in F and 'var(--alv-warn-soft)' in F)
-check('  and is page-local, since base has one asker',
-      '.status-btn-warn' not in FC and '.notify-urgent-btn.status-btn' in F)
+check('the warn tone is written in TOKENS, in BASE',
+      'var(--alv-warn)' in BC and '.icon-notify' in BC)
+check('  and the page declares no tone at all any more - the condition '
+      'this round set for promoting it was a SECOND page wanting a '
+      'cautioning inline button, and that still has not happened; what '
+      'changed is that a row-action icon is not a button variant',
+      '.status-btn-warn' not in BC
+      and '.notify-urgent-btn.status-btn' not in F)
 
 # ===========================================================================
 head('2. rendered: a quiet button with warn ink, not an amber slab')
@@ -147,8 +165,10 @@ if sync_playwright is not None:
     def css_of(s):
         return '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
 
-    AFTER = ('<button class="comment-edit-btn status-btn" id="e">Edit</button>'
-             '<button class="notify-urgent-btn status-btn" id="n">Notify Now</button>'
+    AFTER = ('<button class="comment-edit-btn icon-action-btn icon-edit"'
+             ' id="e"><i class="fas fa-pencil-alt"></i></button>'
+             '<button class="notify-urgent-btn icon-action-btn icon-notify"'
+             ' id="n"><i class="fas fa-bell"></i></button>'
              '<span class="notified-badge alv-pill alv-pill-neutral" id="b">'
              'Notified 4 min ago</span>')
     BEFORE = ('<button class="comment-edit-btn" id="e">Edit</button>'
@@ -249,8 +269,10 @@ check('  and still removes Edit by data-comment-id',
 check('the hook classes carry no appearance of their own',
       not re.search(r'(?m)^\.comment-edit-btn\s*\{', FC)
       and not re.search(r'(?m)^\.notified-badge\s*\{', FC))
-check('  except the one TONE, which is the point',
-      '.notify-urgent-btn.status-btn {' in FC)
+check('  and now with NO exception - the tone that used to sit here '
+      'is base .icon-notify, so all four hook names carry no '
+      'appearance whatever',
+      not re.search(r'(?m)^\.notify-urgent-btn', FC))
 
 check('base is untouched by this round',
       '.status-btn {' in BC and '.alv-pill-neutral' in BC)

@@ -113,9 +113,21 @@ check('the page kept its DESKTOP inline-form wrapper, which base has no '
       'name for', '.cust-inline-form' in _left)
 check('  and its mobile one is gone - base owns that now (T2)',
       '.cust-inline-form-mobile' not in _left)
-check('  it is down to %d rules from 41' % len(_left), len(_left) <= 6,
+check('  it is down to %d rules from 41' % len(_left), len(_left) <= 10,   # NV-1d, 16 Oct 2026 - the customer sheet brings four rules of its own: cust-sheet-row, its last-child, and the key and value spans. They are a page component base has no name for, like .cust-inline-form beside them, and the same two of slack is kept.   # (was 6)
       ', '.join(_left))
-check('the mobile bar declares its two columns', 'mobile-action-bar cols-2' in CT)
+# NV-1d, 16 Oct 2026 - IT DECLARES AS MANY AS IT DRAWS. View needs no
+# permission, so the bar draws three controls for an editor and two for
+# a reader, and the class is chosen where the count is known. Three is
+# NOT named, because base declares cols-1, cols-2 and cols-4 and
+# deliberately no cols-3 - .mobile-action-bar is already repeat(3, 1fr).
+check('the mobile bar declares as many columns as it draws',
+      '{% if not perms.auth.can_edit_invoices %} cols-2' in CT)
+# ASKED OF THE CLASS ATTRIBUTE, not of the page: the markup carries a
+# comment that spells cols-3 in order to say why it is not used, and a
+# page-wide test finds its own reasoning. Fifth time in four rounds.
+_bar_cls = re.search(r'<td class="(mobile-action-bar[^"]*)"', CT)
+check('  and names nothing when it draws three, because three is the '
+      'default', bool(_bar_cls) and 'cols-3' not in _bar_cls.group(1))
 check('  and base defines cols-2', '.mobile-action-bar.cols-2' in css_of(BASE))
 check('the empty state is base\'s', 'alv-empty-title' in CT and 'cust-empty' not in CT)
 check('  and it sits outside the tbody, so it needs no colspan',

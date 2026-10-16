@@ -811,6 +811,21 @@ def customer_list(request):
             "customer_id_label": c.customer_id_label,
             "email_to": c.email_to,
             "invoice_count": c.n_invoices,
+            # NV-1d, 16 Oct 2026 - THE HALF OF THE RECORD THE TABLE HAS
+            # NO ROOM FOR. Demetri asked for a View button beside Edit
+            # and Delete, and there is no customer detail route in this
+            # application - list, add, edit, delete - so View opens a
+            # read-only sheet, the shape he described for receipts in
+            # the same batch of findings.
+            #
+            # NO NEW QUERY AND NO NEW ROUTE. The loop already holds the
+            # object; it was building five keys out of it. These four
+            # are every remaining field on the model a reader would
+            # recognise.
+            "billing_address": c.billing_address,
+            "billing_tel": c.billing_tel,
+            "email_cc": c.email_cc,
+            "email_body": c.email_body,
         })
     return render(request, "customer_list.html", {
         "rows": rows,

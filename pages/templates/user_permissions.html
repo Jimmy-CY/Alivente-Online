@@ -102,9 +102,23 @@
     background: var(--alv-surface);
 }
 
+/* NV-1a, 16 Oct 2026 - A TICKED BOX IS A SELECTION, NOT A VERDICT.
+   Demetri: why are the Modules on the User Permission Page Green, they
+   should be teal. Green is a verdict in this system - paid, passing,
+   healthy - and a granted module is not a verdict, it is a selection,
+   which is what the accent says everywhere else: the hovered row, the
+   chosen chip, the active tab.
+
+   The active/inactive dot beside the user's name KEEPS --alv-good, and
+   is the only thing on this page that still has it. That one IS a
+   verdict: the account either is active or it is not, and nothing the
+   reader does on this screen changes it.
+
+   --alv-ink on --alv-accent-soft is 11.37:1, against 11.42:1 on
+   --alv-good-soft. The wash is the same to the eye. */
 .permission-item.granted {
-    border-color: var(--alv-good);
-    background: var(--alv-good-soft);
+    border-color: var(--alv-accent);
+    background: var(--alv-accent-soft);
 }
 
 .permission-item input[type="checkbox"] {
@@ -128,8 +142,16 @@
     transition: all 0.2s;
 }
 
+/* NV-1a - and this rule is now the ONLY thing that paints the tile.
+   The inline style attribute and the script's four assignments are
+   gone: the element already carries `granted` server-side, the script
+   already toggles that class, and an inline style BEAT this rule, so
+   the two redundant copies were the ones actually painting.
+
+   white on --alv-accent is 4.91:1 for a 15px glyph, against 5.12:1 on
+   --alv-good. Both clear AA at that size. */
 .permission-item.granted .permission-icon {
-    background: var(--alv-good);
+    background: var(--alv-accent);
     color: var(--alv-on-accent);
 }
 
@@ -144,8 +166,12 @@
     margin-top: 2px;
 }
 
+/* NV-1a - 11px takes the INK token, not the accent itself.
+   --alv-accent-ink on paper is 7.44:1, --alv-accent 4.91:1 and
+   --alv-good 5.12:1. This is the smallest type on the page and it is
+   the one number that moves materially - upward. */
 .permission-status.granted {
-    color: var(--alv-good);
+    color: var(--alv-accent-ink);
 }
 
 .permission-status.denied {
@@ -317,7 +343,9 @@
                     </button>
                 </div>
                 {% else %}
-                <span style="font-size:12px; color:var(--alv-good);">
+                <!-- NV-1a - 12px on paper, so the ink token, which also
+                     makes this read as part of .superuser-notice above. -->
+                <span style="font-size:12px; color:var(--alv-accent-ink);">
                     <i class="fas fa-crown"></i> Superuser has full access to all modules
                 </span>
                 {% endif %}
@@ -338,8 +366,10 @@
                            {% if target_user.is_superuser %}disabled{% endif %}
                            onclick="event.stopPropagation();"
                            onchange="updatePermissionUI({{ forloop.counter }})">
-                    <div class="permission-icon" id="perm-icon-{{ forloop.counter }}"
-                         style="{% if perm.granted or target_user.is_superuser %}background:var(--alv-good);color:white;{% endif %}">
+                    <!-- NV-1a - the inline style is gone. The label above
+                         already carries `granted`, so the stylesheet
+                         paints this, and an inline copy would beat it. -->
+                    <div class="permission-icon" id="perm-icon-{{ forloop.counter }}">
                         <i class="fas {{ perm.icon }}"></i>
                     </div>
                     <div class="permission-info">
@@ -400,18 +430,21 @@ function updatePermissionUI(index) {
     const editCheckbox = document.getElementById(`perm-edit-${index}`);
 
     if (checkbox.checked) {
+        // NV-1a - the class is the whole of it. The two assignments
+        // that stood here beat the stylesheet, which is how the colour
+        // came to be declared in three places.
         item.classList.add('granted');
-        icon.style.background = 'var(--alv-good)';
-        icon.style.color = 'white';
         status.textContent = '✓ Access granted';
         status.className = 'permission-status granted';
         if (editCheckbox) {
             editCheckbox.disabled = false;
         }
     } else {
+        // NV-1a - and these two go WITH them, not after them. Left
+        // behind, they would put an inline background on the element
+        // that .permission-item.granted .permission-icon cannot beat,
+        // so the tile would never colour again after one toggle off.
         item.classList.remove('granted');
-        icon.style.background = 'var(--alv-surface)';
-        icon.style.color = 'var(--alv-accent)';
         status.textContent = '✗ No access';
         status.className = 'permission-status denied';
         if (editCheckbox) {

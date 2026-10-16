@@ -54,6 +54,11 @@ FAMILY = {
     'upload': ADVANCE, 'send': ADVANCE, 'approve': ADVANCE,
     'unapprove': ADVANCE, 'void': ADVANCE, 'lock': ADVANCE,
     'unlock': ADVANCE, 'permissions': ADVANCE, 'reset-pw': ADVANCE,
+    # NV-1c, 16 Oct 2026 - Notify Now emails everyone configured except
+    # the clicker. The record moves on, so ADVANCE, beside send - and
+    # Edit is CHANGE, so the comment strip reads edit-then-notify
+    # without the markup being told that.
+    'notify': ADVANCE,
     # DESTROY - last, always.
     'delete': DESTROY,
 }

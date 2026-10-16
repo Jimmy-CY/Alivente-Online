@@ -214,6 +214,21 @@ Physical Invoices
                     <i class="fas fa-copy"></i>
                   </button>
                 </form>
+              {% elif perms.auth.can_edit_invoices %}
+                {# NV-1c, 16 Oct 2026 - Demetri asked why a physical invoice #}
+                {# cannot be duplicated like a receipt. A CUSTOMER one can, #}
+                {# and has since it shipped. A TENANT one cannot: #}
+                {# unique_together on (tenant, period_year, period_month) #}
+                {# makes it one per tenant per month, so a copy dated today #}
+                {# collides with the month the prepare cron already bills. #}
+                {# Customer invoices have tenant = NULL and NULLs are never #}
+                {# equal, which is the one case the constraint permits. #}
+                {# The house disabled mirror, so the column reads one width #}
+                {# on every row and the asymmetry reads as deliberate. #}
+                <span class="icon-action-btn icon-disabled"
+                      title="Duplicate is for customer invoices only - a tenant invoice is one per tenant per month">
+                  <i class="fas fa-copy"></i>
+                </span>
               {% endif %}{% if perms.auth.can_edit_invoices %}
                 {% if row.status == 'draft' %}
                   <form method="post" action="{% url 'physical_invoice_approve' row.pk %}" class="pi-inline-form">
