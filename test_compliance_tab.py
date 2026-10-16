@@ -513,8 +513,20 @@ ok("'border-right: none'" in p6 or 'border-right: none' in p6,
    '  and it still reads the page as P6 left it')
 # P2 - test_future_tab_off.py - WAS.
 p2 = read(os.path.join(ROOT, 'test_future_tab_off.py'))
-ok('page = read(' in p2,
-   'test_future_tab_off.py reads the LIVE page, so it did go red')
+# TB-1b, 15 Oct 2026 - IT DOES NOT ANY MORE, AND THAT IS WHY THIS LINE
+# MOVED. PR-1 recorded here that P2 read the live page, which was true
+# and was the reason P2 went red when Compliance arrived. TB-1b moved
+# `active` out of that page's markup and into the view, so the class
+# attribute carries a {% if %} and P2's word-list regex matched nothing
+# - the same breakage a third time, from the same cause.
+#
+# So P2 now reads the page AS P2 LEFT IT, like P6 three checks above,
+# and the claim here becomes the one worth keeping: both of them judge
+# the tree their own round produced, and neither can be broken by a
+# later one.
+ok('as_left_by' in p2 and 'TB-1b, 15 Oct 2026' in p2,
+   'test_future_tab_off.py read the LIVE page - which is why it went red '
+   'twice - and reads it as P2 left it now, like P6 above')
 ok('PR-1, 8 Oct 2026' in p2,
    '  and this round re-pointed it, with the reason written in')
 ok('no tab in the strip says FUTURE' in p2

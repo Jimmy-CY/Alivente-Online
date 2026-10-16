@@ -341,6 +341,14 @@ CONVERTED = [
     # label had a 28px box for an 82px word, and SL-1's break-word made
     # the wrap land mid-word. Wide from birth.
     'test_stat_cols.py',
+    # TB-1a, 15 Oct 2026 - the Administration tabs are called what their
+    # labels say, and six class names that styled nothing are gone.
+    # Wide from birth.
+    'test_tab_names.py',
+    # TB-1b, 15 Oct 2026 - twenty-four Back controls name the tab they
+    # want, the view resolves the key and the markup paints it on the
+    # first frame. Wide from birth.
+    'test_landing_tab.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

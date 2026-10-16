@@ -1141,6 +1141,15 @@ ROUNDS = [
     # column, so a label that had a 28px box for an 82px word stops
     # wrapping inside itself. One character; the phone is untouched.
     '.bak_statcols',
+    # TB-1a, 15 Oct 2026 - admin_apms' two tabs renamed from alivente and
+    # future to functional and system, so TB-1b never has to write down
+    # that the key system means the id future. Six dead class names go.
+    '.bak_tabnames',
+    # TB-1b, 15 Oct 2026 - ?tab=<key> read in the view against the page's
+    # own list, so a Back button lands on the tab it means. Twenty-four
+    # controls, nineteen of them derived from the panel that links to
+    # them.
+    '.bak_landingtab',
 ]
 
 

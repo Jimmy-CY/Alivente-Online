@@ -29,12 +29,12 @@
 
 <!-- Tab Navigation -->
 <div class="admin-tabs">
-  <div class="admin-tab personal-tab active" id="tab-personal"
+  <div class="admin-tab personal-tab{% if tab|default:'personal' == 'personal' %} active{% endif %}" id="tab-personal"
        onclick="switchTab('personal')">
     <i class="fas fa-user"></i>
     <span>PERSONAL</span>
   </div>
-  <div class="admin-tab compliance-tab" id="tab-compliance"
+  <div class="admin-tab compliance-tab{% if tab == 'compliance' %} active{% endif %}" id="tab-compliance"
        onclick="switchTab('compliance')">
     <i class="fas fa-landmark"></i>
     <span>COMPLIANCE</span>
@@ -62,7 +62,7 @@
 <div class="tab-content-container">
 
   <!-- Personal Panel -->
-  <div id="personal-panel" class="tab-panel personal-panel active">
+  <div id="personal-panel" class="tab-panel personal-panel{% if tab|default:'personal' == 'personal' %} active{% endif %}">
     <div class="admin-grid">
 
       {% if perms_map.passports %}
@@ -95,7 +95,7 @@
   <!-- Compliance Panel - PR-1, 8 Oct 2026. CRS Reporting moved here
        from the Personal panel, markup and permission gate unchanged;
        it is the same tile on a different panel. -->
-  <div id="compliance-panel" class="tab-panel compliance-panel">
+  <div id="compliance-panel" class="tab-panel compliance-panel{% if tab == 'compliance' %} active{% endif %}">
     <div class="admin-grid">
 
       {% if perms_map.crs %}

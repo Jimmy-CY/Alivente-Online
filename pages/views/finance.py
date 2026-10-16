@@ -289,10 +289,24 @@ def _fh_close_expense(exp):
 # Finance landing
 # ============================================================================
 
+from ..services.landing_tabs import landing_tab
+
+# TB-1b - the tabs this landing page has, and the one it arrives on when
+# nothing asks. Beside the view that renders it, as a constant, so the
+# template and the view can be checked against each other.
+FINANCE_TABS = ('reports', 'setup')
+FINANCE_TAB_DEFAULT = 'reports'
+
+
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
 def finance(request):
-    return render(request, "finance.html", {})
+    # TB-1b - the six Setup pages' Back buttons ask for the Setup tab,
+    # and the Reports pages say Reports rather than relying on it being
+    # the default.
+    return render(request, "finance.html", {
+        "tab": landing_tab(request, FINANCE_TABS, FINANCE_TAB_DEFAULT),
+    })
 
 
 # ============================================================================

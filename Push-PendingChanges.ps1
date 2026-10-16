@@ -977,6 +977,20 @@ $sentinels = @(
     # land mid-word. One column, measured: one line at every width in
     # both languages.
     @{ File = 'pages\templates\projects\project_task_list.html'; Text = '--alv-stats-cols: 1'; What = 'the three task tiles stack, so COMPLETED stops breaking in half' },
+    # ------------------------------------------------ TB-1a, 15 Oct 2026
+    # Demetri named the destination as he reads it - "the System Tab".
+    # There was no system tab: the label said SYSTEM and six places
+    # underneath said future, and the tab beside it said FUNCTIONAL over
+    # six that said alivente.
+    @{ File = 'pages\templates\admin_apms.html'; Text = 'id="tab-system"'; What = 'the tab labelled SYSTEM is called system in the code as well' },
+    @{ File = 'pages\templates\admin_apms.html'; Text = 'btn-future'; Absent = $true; Code = $true; What = 'and six class names that styled nothing are gone, not respelled' },
+    # ------------------------------------------------ TB-1b, 15 Oct 2026
+    # Nine Back buttons reported, twenty-three found, and my_profile a
+    # twenty-fourth that landed on Home. The tab is derived from the
+    # panel that links to the page, and the view paints it.
+    @{ File = 'pages\\services\\landing_tabs.py'; Text = 'def landing_tab'; What = 'a landing page opens on the tab it was asked for, by key' },
+    @{ File = 'pages\\templates\\finance_revenue_types.html'; Text = '?tab=setup'; What = 'and the six Finance Setup pages ask for Setup by name' },
+    @{ File = 'pages\\templates\\my_profile.html'; Text = 'url ''home'' %}" class="btn action-back"'; Absent = $true; Code = $true; What = 'My Profile stops sending you to the Home page' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2391,7 +2405,9 @@ $suites = @(
     'test_pdf_viewer.py',
     'test_calendar_grid.py',
     'test_project_origin.py',
-    'test_stat_cols.py'
+    'test_stat_cols.py',
+    'test_tab_names.py',
+    'test_landing_tab.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

@@ -276,11 +276,40 @@ else:
 # ==========================================================================
 head('3. THE PAGE THAT KEEPS THE SHARED EDGE')
 # ==========================================================================
+# TB-1a, 15 Oct 2026 - TWO VARIABLES, BECAUSE THIS SECTION ASKS TWO
+# DIFFERENT QUESTIONS, and reading one file for both is what made a
+# correct round look like a regression.
+#
+# WHAT THIS PAGE RENDERED is a claim about P2a's tree: two tabs, one of
+# them wearing the class that drew the shared edge. It is a SNAPSHOT,
+# and it is read the way PAGE is read three lines above - the comment
+# there already says why, and it held for one of the two files.
+#
+# WHAT THIS PAGE DECLARES is a claim about the tree as it stands: that
+# the edge is base's now and this page keeps no copy. It is an
+# INVARIANT and stays live.
+#
+# TB-1a renamed this page's tabs - alivente and future became functional
+# and system - and deleted six class names that styled nothing, so a
+# live read of the old class attribute finds no tabs and reports that
+# the page stopped rendering them. It renders two, then and now.
+other_then = (_alb(alv_tree.path_of(OTHER), SUFFIX, read) if _alb
+              else read(alv_tree.path_of(OTHER)))
 other = read(alv_tree.path_of(OTHER))
-otabs = re.findall(r'class="admin-tab ([\w\- ]+)"', markup_of(other))
-ok(len(otabs) == 2, '%s still renders two tabs' % OTHER, otabs)
+otabs = re.findall(r'class="admin-tab ([\w\- ]+)"', markup_of(other_then))
+ok(len(otabs) == 2, '%s rendered two tabs when P2a measured it' % OTHER,
+   otabs)
 ok(any('future-tab' in t for t in otabs),
-   '  one of which is the Future tab that draws the shared edge')
+   '  one of which wore the class that drew the shared edge')
+# AND IT STILL RENDERS TWO, asked of the live page without depending on
+# a class name a later round was free to retire.
+# THE BOUNDARY IS QUOTE, SPACE OR BRACE. class="admin-tabs" is the
+# CONTAINER, so a plain substring count makes it a third tab - and
+# TB-1b puts a {% if %} straight after the class, so a boundary of
+# quote-or-space finds none at all. Both of those were written here
+# before this line was right.
+_live = len(re.findall(r'class="admin-tab(?=["\s{])', markup_of(other)))
+ok(_live == 2, '  and it still renders two today', _live)
 # TB-1, 8 Oct 2026. THE RULE IS STILL THERE; IT IS IN BASE.
 # P6 named the declaration where it stood in 2026's September - on the
 # page, per tab, by hand. Writing it out by hand cost this house two

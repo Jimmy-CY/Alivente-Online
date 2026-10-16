@@ -51,6 +51,17 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..models import UserProfile, props, tenant
+# TB-1b - which tab a Back button asked this page to open on.
+from ..services.landing_tabs import landing_tab
+
+# The tabs each landing page has, and the one it arrives on when nothing
+# asks. BESIDE THE VIEW THAT RENDERS THE PAGE, as a constant, so the
+# template and the view can be checked against each other rather than
+# both being trusted. test_landing_tab reads these.
+ADMIN_TABS = ('functional', 'system')
+ADMIN_TAB_DEFAULT = 'functional'
+PERSONAL_TABS = ('personal', 'compliance')
+PERSONAL_TAB_DEFAULT = 'personal'
 
 
 @login_required
@@ -60,7 +71,10 @@ def admin_apms(request):
     tresults = tenant.objects.select_related('prop').all().order_by('tenant_name')
     return render(request, "admin_apms.html", {
         "props": results,
-        "tenant": tresults
+        "tenant": tresults,
+        # TB-1b - the tab this page was asked for, painted on the first
+        # frame rather than switched to after it.
+        "tab": landing_tab(request, ADMIN_TABS, ADMIN_TAB_DEFAULT),
     })
 
 
@@ -80,7 +94,12 @@ def personal_page(request):
         'celebrations': request.user.has_perm('auth.can_access_celebrations'),
         'crs':          request.user.has_perm('auth.can_access_crs'),
     }
-    return render(request, "personal.html", {'perms_map': perms_map})
+    return render(request, "personal.html", {
+        'perms_map': perms_map,
+        # TB-1b - Compliance is where CRS Reporting lives, and its Back
+        # button now says so.
+        'tab': landing_tab(request, PERSONAL_TABS, PERSONAL_TAB_DEFAULT),
+    })
 
 
 @login_required

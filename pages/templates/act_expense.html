@@ -395,7 +395,7 @@
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% elif came_from == 'finance' %}
-        <a href="{% url 'finance' %}" class="btn action-back" role="button" aria-label="Back">
+        <a href="{% url 'finance' %}?tab=reports" class="btn action-back" role="button" aria-label="Back">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% else %}

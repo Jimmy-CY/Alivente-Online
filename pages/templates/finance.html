@@ -37,7 +37,7 @@ Finance
 
 <!-- Tab Navigation -->
 <div class="admin-tabs">
-  <div class="admin-tab active" id="tab-reports"
+  <div class="admin-tab{% if tab|default:'reports' == 'reports' %} active{% endif %}" id="tab-reports"
        onclick="switchTab('reports')">
     <i class="fas fa-chart-bar"></i>
     <span>REPORTS</span>
@@ -50,7 +50,7 @@ Finance
        label widens its own tab and says why; base's own note permits
        exactly that. test_finance_tabs.py section 5 measures all three
        labels and runs CONFIGURATION as the control. -->
-  <div class="admin-tab" id="tab-setup"
+  <div class="admin-tab{% if tab == 'setup' %} active{% endif %}" id="tab-setup"
        onclick="switchTab('setup')">
     <i class="fas fa-cog"></i>
     <span>SETUP</span>
@@ -61,7 +61,7 @@ Finance
 <div class="tab-content-container">
 
   <!-- Reports Panel -->
-  <div id="reports-panel" class="tab-panel active">
+  <div id="reports-panel" class="tab-panel{% if tab|default:'reports' == 'reports' %} active{% endif %}">
     <div class="admin-grid">
         <a href="{% url 'finance_pl_act' %}" class="admin-btn">
           <i class="fas fa-chart-line"></i>
@@ -92,7 +92,7 @@ Finance
 
   <!-- Setup Panel - the module calls this Configuration and the tab
        says SETUP, for the width reason above. -->
-  <div id="setup-panel" class="tab-panel">
+  <div id="setup-panel" class="tab-panel{% if tab == 'setup' %} active{% endif %}">
     <div class="admin-grid">
         <a href="{% url 'finance_revenue_types' %}" class="admin-btn">
           <i class="fas fa-money-bill-wave"></i>

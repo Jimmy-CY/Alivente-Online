@@ -83,7 +83,22 @@ def head(t):
     print('\n' + '=' * 74 + '\n' + t + '\n' + '=' * 74)
 
 
-page = read(alv_tree.path_of(PAGE))
+# TB-1b, 15 Oct 2026 - AS P2 LEFT IT, not as it stands today. This
+# suite had no as_left_by at all and read the page live, which is the
+# one thing a round's own suite must not do with the file it changed:
+# every claim here is about the state P2 produced when it switched the
+# FUTURE tab off on 29 Sep.
+#
+# TB-1b moved this page's `active` out of the markup and into the view,
+# so the class attribute now carries a {% if %} and section 4's
+# `class="tab-panel ([\w\- ]+)"` matches nothing. The panels are all
+# still there; the attribute stopped being a plain list of words.
+try:
+    from alv_rounds import as_left_by as _alb
+except Exception:
+    _alb = None
+page = (_alb(alv_tree.path_of(PAGE), SUFFIX, read) if _alb
+        else read(alv_tree.path_of(PAGE)))
 
 print('=' * 74)
 print('%s - P2, THE FUTURE TAB GOES QUIET' % ME)
