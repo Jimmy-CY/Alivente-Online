@@ -365,6 +365,14 @@ CONVERTED = [
     # no detail route it opens a read-only sheet built as markup. Wide
     # from birth.
     'test_customer_view.py',
+    # TD-2, 16 Oct 2026 - the title deeds table reads like the lease
+    # agreements table: one action column, View always drawn, and the
+    # two text-muted dashes become disabled twins. Wide from birth.
+    'test_deed_one_column.py',
+    # LV-1, 16 Oct 2026 - LEAVE stops being a silencer: ten register
+    # entries become one, and the 25 Bootstrap-coloured buttons they were
+    # hiding take the house tone. Wide from birth.
+    'test_leave_decided.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

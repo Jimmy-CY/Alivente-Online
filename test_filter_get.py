@@ -458,7 +458,9 @@ if django_up:
     import tempfile as _tf
     _scr = _tf.mkdtemp(prefix='f1_dom_')
     _before = os.path.join(_scr, 'before')
+    _after = os.path.join(_scr, 'after')
     os.makedirs(_before)
+    os.makedirs(_after)
     _tpl = os.path.join(ROOT, 'pages', 'templates')
     _have = True
     for _n in ('fsr.html', 'invoices.html', 'properties.html',
@@ -468,14 +470,28 @@ if django_up:
             _sh.copyfile(_src, os.path.join(_before, _n))
         else:
             _have = False
+        # LV-1, 16 Oct 2026 - AND THE AFTER SIDE IS A SNAPSHOT TOO.
+        # It was the LIVE page until LV-1 retoned five Clear All
+        # buttons inside these very panels, and a claim about what F-1
+        # changed must not be falsified by what a later round changed.
+        # as_left_by hands back the page as F-1 left it: the next
+        # round's backup, or the live file when no later round has
+        # touched it - which is what made this read correctly for two
+        # months and then stop.
+        _dst = os.path.join(_after, _n)
+        _live = os.path.join(_tpl, _n)
+        if as_left_by:
+            with open(_dst, 'w', encoding='utf-8', newline='') as _fh:
+                _fh.write(as_left_by(_live, SUFFIX, read))
+        else:
+            _sh.copyfile(_live, _dst)
     if not _have:
         skip('the markup diff', 'a backup is missing')
     else:
         _eng = dj.TEMPLATES[0]
 
         def _use(which):
-            _eng['DIRS'] = ([_before] if which == 'before'
-                            else [os.path.join(ROOT, 'templates')])
+            _eng['DIRS'] = [_before if which == 'before' else _after]
             from django.template import engines
             engines._engines = {}
             engines.__dict__.pop('templates', None)

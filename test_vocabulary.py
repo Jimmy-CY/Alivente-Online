@@ -134,7 +134,7 @@ N_ROW_ACTIONS = 3
 N_REGISTER = 8
 N_FIELD_ADD = 3
 N_PAINTED = 0
-N_SILENCED, N_SILENCED_ENTRIES = 8, 2
+N_SILENCED, N_SILENCED_ENTRIES = 0, 0   # LV-1, 16 Oct 2026 - five wrappers moved to DECIDED and four dead ones were deleted, so no wrapper silences a decided button any more, and no entry holds one.   # (was 8, 2)
 CONVERTED_NOW, ALIAS_NOW = 76, 63
 
 passed = failed = skipped = 0
@@ -521,6 +521,12 @@ ok('btn action-secondary share-btn share-whatsapp' in _wa,
    '  and that button is the WhatsApp tile, now action-secondary like '
    'its three siblings')
 
+# LV-1, 16 Oct 2026 - THE PIN IS ZERO NOW, and the census below is
+# unchanged so it can say so in the same words it used to say eight.
+# .filter-header, .filter-header-right, .input-group-append,
+# .pdf-viewer-controls and .zoom-controls moved to DECIDED, where the
+# tool CHECKS them; four dead entries were deleted; status-action-form
+# is the one that stays, and VC-1's own measurement below is why.
 silenced = collections.defaultdict(list)
 for r in GATE:
     m = sb.markup_of(read(alv_tree.path_of(r)))
@@ -537,13 +543,14 @@ ok(_n == N_SILENCED and len(silenced) == N_SILENCED_ENTRIES,
    '%d entries' % (N_SILENCED, N_SILENCED_ENTRIES),
    '%d on %d: %s' % (_n, len(silenced),
                      {k: len(v) for k, v in silenced.items()}))
-ok(sorted(silenced) == ['filter-header', 'input-group-append'],
-   '  and they are .filter-header and .input-group-append, both older '
-   'than this round', sorted(silenced))
+ok(sorted(silenced) == [],
+   '  there is no wrapper left that silences a decided button - '
+   '.filter-header and .input-group-append both went to DECIDED in LV-1',
+   sorted(silenced))
 ok(len([1 for v in silenced.values() for _r, _l, c in v
-        if 'action-primary' in c]) == 3,
-   '  THREE of them are action-primary Save buttons on property_assets - '
-   'change one to a secondary and no gate here would notice')
+        if 'action-primary' in c]) == 0,
+   '  and in particular NOT the three action-primary Save buttons on '
+   'property_assets, which were the sharp end of this for three rounds')
 for k in sorted(silenced):
     for r, lab, c in silenced[k][:5]:
         print('         .%-20s %-28s %-16s %s'

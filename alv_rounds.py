@@ -1170,6 +1170,16 @@ ROUNDS = [
     # The mobile bar's column count becomes conditional, because a LOOK
     # needs no permission.
     '.bak_custview',
+    # TD-2, 16 Oct 2026 - title_deeds_management's Title Deed and Actions
+    # columns become one, the way tenant_lease_agreement already draws
+    # it. Finishes what NV-1b left: that round wore the house table and
+    # kept the two-column split.
+    '.bak_deedonecol',
+    # LV-1, 16 Oct 2026 - Show-ButtonDrift's LEAVE register goes from
+    # ten entries to one. Four were dead, five become DECIDED tones
+    # the tool checks, and the 25 buttons they silenced take
+    # action-secondary - planned by the tool, not typed.
+    '.bak_leavedecided',
 ]
 
 

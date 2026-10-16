@@ -31,11 +31,10 @@
 <table class="table alv-table">
 <thead>
     <tr>
-        <th style="width: 35%">Property Name</th>
+        <th style="width: 40%">Property Name</th>
         <th style="width: 25%">Country</th>
-        <th class="col-center" style="width: 15%">Status</th>
-        <th class="col-center" style="width: 15%">Title Deed</th>
-        <th class="col-center" style="width: 10%">Actions</th>
+        <th class="col-center" style="width: 20%">Status</th>
+        <th class="desktop-action-cell cell-actions" style="width: 15%">Actions</th>
     </tr>
 </thead>
 <tbody>
@@ -50,29 +49,46 @@
                 <span class="alv-pill alv-pill-neutral">Not Uploaded</span>
             {% endif %}
         </td>
-        <td data-label="Title Deed" class="desktop-action-cell">
-            {% if property.prop_title_deed %}
-                <span class="row-actions"><button type="button" class="icon-action-btn icon-document" title="View title deed" aria-label="View title deed" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
-                    <i class="fas fa-file-contract"></i>
-                </button></span>
-            {% else %}
-                <span class="text-muted">-</span>
-            {% endif %}
-        </td>
-        <td data-label="Action" class="desktop-action-cell">
-            {% if perms.auth.can_edit_properties %}
+        {# TD-2, 16 Oct 2026 - ONE ACTION CELL, like the lease agreements #}
+        {# table beside it. Demetri: there should only be one Action #}
+        {# Column, no separate Title Deed column. #}
+        {# #}
+        {# View is ALWAYS DRAWN - a disabled twin when there is nothing #}
+        {# attached - so that the column that holds it #}
+        {# does not change width from row to row. That is the reason #}
+        {# tenant_lease_agreement.html gives for the same shape, in the #}
+        {# same words, and it is why the two #}
+        {# text-muted dashes are gone: the house pattern for an action #}
+        {# the reader does not have is the twin, not a dash, which reads #}
+        {# as missing DATA rather than as a missing ACTION. #}
+        <td data-label="Actions" class="desktop-action-cell cell-actions">
+            <span class="row-actions">
                 {% if property.prop_title_deed %}
-                    <span class="row-actions"><button type="button" class="icon-action-btn icon-delete" title="Delete title deed" aria-label="Delete title deed" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
-                        <i class="fas fa-trash"></i>
-                    </button></span>
+                    <button type="button" class="icon-action-btn icon-document" title="View title deed" aria-label="View title deed" onclick="viewDocument('{{ property.prop_title_deed.url|escapejs }}', '{{ property.prop_title_deed.name|escapejs }}', '{{ property.prop_name|escapejs }}')">
+                        <i class="fas fa-file-contract"></i>
+                    </button>
                 {% else %}
-                    <span class="row-actions"><button type="button" class="icon-action-btn icon-upload" title="Upload title deed" aria-label="Upload title deed" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
-                        <i class="fas fa-upload"></i>
-                    </button></span>
+                    <span class="icon-action-btn icon-disabled" title="No title deed uploaded">
+                        <i class="fas fa-file-contract"></i>
+                    </span>
                 {% endif %}
-            {% else %}
-                <span class="text-muted">-</span>
-            {% endif %}
+
+                {% if perms.auth.can_edit_properties %}
+                    {% if property.prop_title_deed %}
+                        <button type="button" class="icon-action-btn icon-delete" title="Delete title deed" aria-label="Delete title deed" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    {% else %}
+                        <button type="button" class="icon-action-btn icon-upload" title="Upload title deed" aria-label="Upload title deed" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name|escapejs }}')">
+                            <i class="fas fa-upload"></i>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <span class="icon-action-btn icon-disabled" title="No edit permission">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                {% endif %}
+            </span>
         </td>
 
         <!-- Mobile-only action bar (hidden on desktop) -->

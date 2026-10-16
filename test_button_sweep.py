@@ -682,9 +682,17 @@ _bar = BASE.find('\n      .page-action-buttons {')
 check('the shape rule sits BEFORE the bar layout (%d < %d)' % (_shape, _bar),
       0 < _shape < _bar)
 
-# Nothing on the LEAVE list was touched.
-_fh = load(os.path.join(TPL, 'act_expense.html'))
-check('filter chrome untouched - Clear All is still btn-outline-secondary',
+# Nothing on the LEAVE list was touched BY THE SWEEP - and that is a
+# claim about August, so it is read from the sweep's own copy. LV-1,
+# 16 Oct 2026: this was asked of the LIVE page until LEAVE stopped
+# being a silencer and that Clear All took action-secondary. A
+# historical claim read from a live file is a claim with an expiry
+# date on it, and this one reached it.
+_fhp = os.path.join(TPL, 'act_expense.html')
+_fh = load(_fhp + '.bak_btnsweep') if os.path.exists(_fhp + '.bak_btnsweep') \
+    else load(_fhp)
+check('filter chrome untouched BY THE SWEEP - Clear All was still '
+      'btn-outline-secondary when it finished',
       'btn-outline-secondary' in _fh)
 # D3, 23 Sep: `pd-toolbar` was never a segmented toggle - it holds ONE
 # link at a time in an {% if %}/{% else %}, and both branches wrote the
@@ -1348,12 +1356,20 @@ check('every reason still reported is the one its wrapper gives',
       all(h[5] == _LEAVE_REASON for h in _all if h[5]))
 # Asked with a wrapper that is STILL on the LEAVE list, since the one
 # this used before is not any more. The claim is unchanged.
+#
+# LV-1, 16 Oct 2026 - AND THE NAME IS READ FROM THE REGISTER NOW. This
+# control has been re-pointed twice by hand at whichever wrapper
+# happened to survive; btn-group was the last of them and this round
+# deleted it as dead. Taking the name and the reason from LEAVE itself
+# means the next round to change the register re-points this control by
+# changing nothing.
+_ctrl_wrap, _ctrl_why = sorted(sb.LEAVE.items())[0]
 check('CONTROL: a LEAVE wrapper carries its reason into a script-built '
       'button, whether or not a live page still has one',
       [h[5] for h in sb.js_buttons(
-          '<script>var h = `<div class="btn-group">'
+          '<script>var h = `<div class="%s">'
           '<button class="btn btn-info btn-sm">Edit</button>'
-          '</div>`;</script>')] == [_LEAVE_REASON])
+          '</div>`;</script>' % _ctrl_wrap)] == [_ctrl_why])
 # THE DIVERGENCE THIS ROUND OPENED. .selection-buttons is built identically
 # on two pages; Financials' pair is now two quiet house buttons and
 # vacancy_management's is still a filled teal block beside a grey one - the

@@ -1029,6 +1029,21 @@ $sentinels = @(
     # file three times already - a profile read, an edit POST and a
     # create - so the bare word could never have failed.
     @{ File = 'pages\views\physical_invoices.py'; Text = '"billing_address": c.billing_address'; What = 'the four hidden fields reach the template without a new query' },
+    # ------------------------------------------------- TD-2, 16 Oct 2026
+    # Demetri, with the two screens side by side: should the Title Deed
+    # table not match the Lease Agreement table - there should only be
+    # one Action column. NV-1b put that table on .alv-table and left its
+    # two action columns alone.
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = 'data-label="Actions" class="desktop-action-cell cell-actions"'; What = 'the title deeds table has ONE action column, like the lease agreements table' },
+    @{ File = 'pages\templates\title_deeds_management.html'; Text = '<span class="text-muted">-</span>'; Absent = $true; Code = $true; What = 'and a disabled twin where it used to draw a dash - a dash reads as missing DATA, not as a missing action' },
+    # ------------------------------------------------- LV-1, 16 Oct 2026
+    # A LEAVE entry short-circuited every button in its wrapper. Eleven
+    # entries hid 33 buttons; 25 of them wore a raw Bootstrap colour and
+    # three of the rest were action-primary Saves nobody was checking.
+    @{ File = 'Show-ButtonDrift.py'; Text = "'zoom-controls':           [('*', S)]"; What = 'widget chrome is a DECIDED tone now, not a silence' },
+    @{ File = 'Show-ButtonDrift.py'; Text = "'input-group-append':      [('save', P), ('*', S)]"; What = 'and Save is named FIRST, so the three property_assets Saves keep their tone' },
+    @{ File = 'pages\templates\property_assets.html'; Text = 'btn-secondary btn-sm'; Absent = $true; Code = $true; What = 'the Cancels beside them are house secondary' },
+    @{ File = 'pages\templates\projects\project_gantt.html'; Text = 'btn-outline-primary'; Absent = $true; Code = $true; What = 'and Fit to Screen stops being the only Bootstrap blue in a zoom control' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2449,7 +2464,9 @@ $suites = @(
     'test_perm_select.py',
     'test_deed_table.py',
     'test_notify_icon.py',
-    'test_customer_view.py'
+    'test_customer_view.py',
+    'test_deed_one_column.py',
+    'test_leave_decided.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

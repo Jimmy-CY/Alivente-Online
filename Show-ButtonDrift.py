@@ -185,23 +185,27 @@ STANDARD_BAR = 'page-action-buttons'
 # and this round does not touch them. Listed by name so `--strict` can tell
 # "decided to leave" apart from "nobody has looked at this yet" - which is the
 # distinction v2 lacked, and why it reported zero over 199 buttons.
+# LV-1, 16 Oct 2026 - TEN ENTRIES BECAME ONE.
+#
+# A LEAVE entry short-circuits EVERY button in its wrapper, and the
+# ten covered 33 buttons across the 142 gate pages. 25 of them wore a
+# raw Bootstrap colour this report has never once mentioned, and 8 wore
+# a house tone and were simply never checked - three of those being
+# action-primary Save buttons on property_assets.
+#
+# FOUR WERE DEAD. btn-group, subtask-actions, project-status-container
+# and passport-filter-header hold no button on any gate page. Measured,
+# then deleted - a register entry with no element is dead weight exactly
+# as a rule with no element is.
+#
+# FIVE WERE DECISIONS NOBODY HAD WRITTEN DOWN, and they are in DECIDED
+# now, which is the register whose own header says it holds the tones
+# "decided one at a time, from rendered before/after pictures". D3 made
+# this same journey with three entries on 23 Sep, for the same reason:
+# moved there so the tool CHECKS them rather than staying silent.
+#
+# ONE IS LEFT, and it is a real one.
 LEAVE = {
-    'filter-header': 'filter panel chrome',
-    'passport-filter-header': 'filter panel chrome',
-    'filter-header-right': 'filter panel chrome',
-    'pdf-viewer-controls': "the PDF viewer's own icon toolbar",
-    # 30 Sep 2026: this still covers the buttons welded to an input
-    # whose GEOMETRY is Bootstrap's, which is what the note meant. It
-    # no longer covers their COLOUR. property_assets carried three
-    # btn-outline-success + buttons under this entry, and the report
-    # said "nothing drifting" over them for weeks - Demetri saw the
-    # green. base now has .action-field-add and they wear it, so they
-    # are not in this count any more. See test_field_add.py.
-    'input-group-append': 'welded to an input; Bootstrap owns the geometry',
-    'btn-group': 'row actions',
-    'subtask-actions': 'row actions',
-    'project-status-container': 'row actions',
-    'zoom-controls': 'a zoom widget',
     # VC-1, 14 Oct 2026 - NAMED, NOT RETONED.
     #
     # Eight buttons across customer_invoice_form and physical_invoice_edit:
@@ -225,14 +229,24 @@ LEAVE = {
     # class in the markup instead, which is what RS-1b did with all
     # thirteen of its own.
     #
-    # THAT IS NOT A HYPOTHETICAL. Measured across all 142 pages, EIGHT
-    # buttons already wearing a house tone sit inside a LEAVE wrapper and
-    # are therefore never checked: three Clear Alls under .filter-header
-    # and five under .input-group-append, of which THREE are
-    # `action-primary btn-sm` Save buttons on property_assets. Change one
-    # of those to a secondary and no gate in this project would notice.
-    # test_vocabulary.py pins the number at eight so it cannot grow, and
-    # LEAVE-as-a-silencer is the next thing in this line of work.
+    # THAT WAS NOT A HYPOTHETICAL, AND LV-1 CLOSED IT. Eight buttons
+    # already wearing a house tone sat inside a LEAVE wrapper and were
+    # therefore never checked - three Clear Alls under .filter-header and
+    # five under .input-group-append, of which THREE were
+    # `action-primary btn-sm` Save buttons on property_assets.
+    # test_vocabulary.py pinned the number at eight so it could not grow
+    # quietly; it now pins it at ZERO, and keeps the share-grid control
+    # that explains why the pin exists at all.
+    #
+    # WHY THIS ONE STAYS. VC-1 measured the eight invoice status buttons
+    # on 14 Oct: btn-delete, btn-duplicate, btn-approve, btn-send and
+    # btn-unapprove, each DEFINED BY THE PAGE and each already on house
+    # tokens - --alv-bad, --alv-accent, --alv-good, --alv-warn,
+    # --alv-on-accent - with a 44px min-height. They are not drift, and
+    # not one of them carries a house CLASS, so this entry silences
+    # nothing that was being checked. Whether a status row should be five
+    # solid fills is a design question for its own round, and this entry
+    # is what stops it being an invisible one.
     'status-action-form': 'the invoice status row - page classes on house '
                           'tokens',
 }
@@ -260,6 +274,41 @@ DECIDED = {
     # tones; and pd-toolbar holds ONE link at a time in an if/else,
     # with both branches writing the same class. Moved here so the
     # tool CHECKS them rather than staying silent about them.
+    # LV-1, 16 Oct 2026 - THE FIVE THAT CAME OFF LEAVE.
+    #
+    # .filter-header and .filter-header-right hold ONE control between
+    # them, repeated: Clear All, seventeen times. THREE already wore
+    # `btn action-secondary btn-sm` - cash_receipts, celebration_
+    # management, customer_list - and fourteen wore btn-outline-secondary.
+    # The same control, in the same wrapper, spelled two ways across
+    # seventeen pages, with the silencer hiding both spellings. That is
+    # unfinished work, not a design question.
+    'filter-header':           [('*', S)],
+    'filter-header-right':     [('*', S)],
+    #
+    # .input-group-append TAKES A LABEL, NOT A BLANKET, and this is the
+    # one place this round had to think. The wrapper holds the three
+    # action-primary Save buttons on property_assets as well as three
+    # btn-secondary Cancels and three action-field-add plus buttons. A
+    # blanket ('*', S) plans SECONDARY FOR THE SAVES - the exact buttons
+    # this whole item exists to protect - and the first cut of this round
+    # did precisely that. First match wins, so Save is named first.
+    #
+    # The Cancels become secondary, which is the pair base already draws
+    # beside a primary. The plus buttons keep .action-field-add, which
+    # the 30 Sep round gave them when it found them green under this very
+    # entry and amended the note to say it no longer covers their COLOUR.
+    # That amendment was right and this is the rest of it.
+    'input-group-append':      [('save', P), ('*', S)],
+    #
+    # .pdf-viewer-controls and .zoom-controls ARE WIDGET CHROME, and
+    # their tone was decided from pictures: all three options rendered at
+    # 1280 and 390, and the quiet one chosen. Fit to Screen stops being
+    # btn-outline-primary - it was the only non-house colour in either
+    # toolbar and it sat on a zoom control, which neither sends anything
+    # nor commits anything. Nothing here becomes a primary.
+    'pdf-viewer-controls':     [('*', S)],
+    'zoom-controls':           [('*', S)],
     'selection-buttons':       [('*', S)],
     'fi-trend-controls':       [('*', S)],
     'pd-toolbar':              [('*', S)],

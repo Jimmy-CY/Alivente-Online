@@ -237,9 +237,14 @@ ok(re.search(r'\.alv-table\.table-striped[^{]*\{[^}]*transparent', C_BASE)
    'desktop zebra goes and every converted table reads the same way')
 
 # THE THREE CENTRED COLUMNS ASK BY NAME.
-ok(B_NOW.count('class="col-center"') == 3,
-   'three heads ask for centring with base col-center - Status, Title '
-   'Deed and Actions', B_NOW.count('class="col-center"'))
+# TD-2, 16 Oct 2026 - ONE head asks now, because Demetri asked for one
+# Action column and the Title Deed column went into it. The Actions head
+# wears `desktop-action-cell cell-actions`, which base centres already,
+# so col-center on it would be a second rule saying one thing.
+ok(B_NOW.count('class="col-center"') == 1,
+   'ONE head asks for centring with base col-center - Status. Actions is '
+   'centred by base as a .desktop-action-cell, the way the lease '
+   'agreements table spells it', B_NOW.count('class="col-center"'))
 ok('.alv-table thead th.col-center' in C_BASE,
    '  and base is what declares it')
 ok(B_WAS.count('col-center') == 0,
@@ -250,9 +255,10 @@ ok(len(re.findall(r'<td\b[^>]*style="text-align: left"', B_NOW)) == 0,
    'nothing left to override')
 ok(len(re.findall(r'<td\b[^>]*style="text-align: left"', B_WAS)) == 2,
    '  CONTROL: two cells carried that override before')
-ok(len(re.findall(r'<th\b[^>]*width:\s*\d+%', B_NOW)) == 5,
-   'and all five column widths are still inline on the heads - they are '
-   "this table's, not the house's",
+ok(len(re.findall(r'<th\b[^>]*width:\s*\d+%', B_NOW)) == 4,
+   'and all FOUR column widths are still inline on the heads - they are '
+   "this table's, not the house's. TD-2 merged the fifth into Actions "
+   'and gave its ten points to the two columns holding text',
    len(re.findall(r'<th\b[^>]*width:\s*\d+%', B_NOW)))
 
 
@@ -320,8 +326,11 @@ for gone in ('status-uploaded', 'status-missing',
     ok(gone not in B_NOW, '  %s is gone from the code' % gone)
     ok(gone in B_WAS, '  CONTROL: and %s was there' % gone)
 
-ok(len(re.findall(r'class="row-actions"', B_NOW)) == 3,
-   'three row-action strips - View, Delete and Upload',
+# TD-2, 16 Oct 2026 - ONE strip holds all of them now. Three strips was
+# the two-column shape: one in the Title Deed cell and one in each arm
+# of the Actions cell.
+ok(len(re.findall(r'class="row-actions"', B_NOW)) == 1,
+   'ONE row-action strip, holding View and Delete-or-Upload',
    len(re.findall(r'class="row-actions"', B_NOW)))
 ok(len(re.findall(r'class="row-actions"', B_WAS)) == 1,
    'CONTROL: one before, because only View was an icon action')
@@ -401,11 +410,20 @@ ok(_n and int(_n.group(1)) >= ROW_N,
 ok(len(re.findall(r'class="btn btn-sm', B_WAS)) == 2,
    '  CONTROL: and the two it could not see were `btn btn-sm` buttons',
    len(re.findall(r'class="btn btn-sm', B_WAS)))
-ok(len(re.findall(r'class="icon-action-btn', B_NOW))
+# TD-2, 16 Oct 2026 - THIS ONE IS A DELTA, SO IT READS THE SNAPSHOT.
+# It asks what NV-1b added, and B_NOW is the LIVE page - so every later
+# round on this page is counted into NV-1b's delta. TD-2 added two
+# disabled twins and the claim went from two to four without NV-1b
+# doing anything. as_left_by walks ROUNDS forward from .bak_deedtable
+# and returns the next round's backup, which IS the page as NV-1b left
+# it, falling back to live when no later round exists.
+_LEFT = code_only(as_left_by(PATH, SUFFIX, read)) if as_left_by else B_NOW
+ok(len(re.findall(r'class="icon-action-btn', _LEFT))
    - len(re.findall(r'class="icon-action-btn', B_WAS)) == 2,
-   '  and the page gained exactly two icon-action-btns, no more',
+   '  and the page gained exactly two icon-action-btns, no more - asked '
+   'of the page AS THIS ROUND LEFT IT, not of the live one',
    (len(re.findall(r'class="icon-action-btn', B_WAS)),
-    len(re.findall(r'class="icon-action-btn', B_NOW))))
+    len(re.findall(r'class="icon-action-btn', _LEFT))))
 
 
 # ==========================================================================
@@ -421,10 +439,7 @@ ROW = ('<tr>'
        '<td data-label="Property"@P>Villa Mon Repos</td>'
        '<td data-label="Country"@C>Cyprus</td>'
        '<td data-label="Status"@S>@PILL</td>'
-       '<td data-label="Title Deed" class="desktop-action-cell">'
-       '<span class="row-actions"><button class="icon-action-btn '
-       'icon-document"><i></i></button></span></td>'
-       '<td data-label="Action" class="desktop-action-cell">@ACT</td>'
+       '@ACTCELLS'
        '<td class="mobile-action-bar@BAR">'
        '<button class="mobile-action-btn"><i class="fas '
        'mobile-action-icon icon-color-view"></i><span '
@@ -438,11 +453,14 @@ THEAD_WAS = ('<tr><th style="text-align:left;width:35%">Property Name</th>'
              '<th style="width:15%">Status</th>'
              '<th style="width:15%">Title Deed</th>'
              '<th style="width:10%">Actions</th></tr>')
-THEAD_NOW = ('<tr><th style="width:35%">Property Name</th>'
+# TD-2, 16 Oct 2026 - four heads, and Actions is centred by base as a
+# .desktop-action-cell rather than by col-center, which is how the lease
+# agreements table spells it.
+THEAD_NOW = ('<tr><th style="width:40%">Property Name</th>'
              '<th style="width:25%">Country</th>'
-             '<th class="col-center" style="width:15%">Status</th>'
-             '<th class="col-center" style="width:15%">Title Deed</th>'
-             '<th class="col-center" style="width:10%">Actions</th></tr>')
+             '<th class="col-center" style="width:20%">Status</th>'
+             '<th class="desktop-action-cell cell-actions" '
+             'style="width:15%">Actions</th></tr>')
 
 
 def table(before):
@@ -452,8 +470,16 @@ def table(before):
               .replace('@C', ' style="text-align: left"').replace('@S', '')
               .replace('@PILL',
                        '<span class="status-uploaded">Available</span>')
-              .replace('@ACT', '<button class="btn btn-sm btn-danger">'
-                               '<i class="fas fa-trash"></i> Delete</button>')
+              .replace('@ACTCELLS',
+                       '<td data-label="Title Deed" '
+                       'class="desktop-action-cell">'
+                       '<span class="row-actions"><button '
+                       'class="icon-action-btn icon-document">'
+                       '<i></i></button></span></td>'
+                       '<td data-label="Action" '
+                       'class="desktop-action-cell">'
+                       '<button class="btn btn-sm btn-danger">'
+                       '<i class="fas fa-trash"></i> Delete</button></td>')
               .replace('@BAR', ''))
         tag = ('<table class="table table-bordered table-striped '
                'text-center title-deeds-table">')
@@ -463,9 +489,17 @@ def table(before):
               .replace('@S', ' class="text-center"')
               .replace('@PILL', '<span class="alv-pill alv-pill-good">'
                                 'Available</span>')
-              .replace('@ACT', '<span class="row-actions"><button '
-                               'class="icon-action-btn icon-delete">'
-                               '<i class="fas fa-trash"></i></button></span>')
+              # TD-2, 16 Oct 2026 - ONE action cell now, holding the
+              # whole strip, which is what Demetri asked for.
+              .replace('@ACTCELLS',
+                       '<td data-label="Actions" '
+                       'class="desktop-action-cell cell-actions">'
+                       '<span class="row-actions">'
+                       '<button class="icon-action-btn icon-document">'
+                       '<i></i></button>'
+                       '<button class="icon-action-btn icon-delete">'
+                       '<i class="fas fa-trash"></i></button>'
+                       '</span></td>')
               .replace('@BAR', ' cols-2'))
         tag = '<table class="table alv-table">'
         th = THEAD_NOW
@@ -628,13 +662,22 @@ else:
             ok(a['align'][:2] == b['align'][:2] == ['left', 'left'],
                'desktop    Property and Country read left, before and '
                'after', (b['align'], a['align']))
-            ok(a['align'][2:5] == b['align'][2:5]
-               == ['center', 'center', 'center'],
-               'desktop    and the three centred columns are still '
-               'centred - col-center on the heads, and base centres the '
-               'two action cells', (b['align'], a['align']))
-            ok(a['shown'] == b['shown'] == 5,
-               'desktop    five cells shown, before and after',
+            # TD-2, 16 Oct 2026 - THE COLUMN COUNT MOVED, so these two
+            # ask about what each table actually has. Before: five
+            # cells, three of them centred. After: four, with Status
+            # centred by col-center and Actions centred by base as a
+            # .desktop-action-cell. The claim is unchanged - every
+            # column that should be centred is - and the numbers are
+            # the ones each shape really holds.
+            ok(a['align'][2:4] == ['center', 'center'],
+               'desktop    Status and Actions read centred after the '
+               'merge', a['align'])
+            ok(b['align'][2:5] == ['center', 'center', 'center'],
+               'desktop    CONTROL: and all three were centred before it',
+               b['align'])
+            ok(b['shown'] == 5 and a['shown'] == 4,
+               'desktop    five cells shown before, FOUR after - the '
+               'Title Deed column went into Actions',
                (b['shown'], a['shown']))
             ok(a['card_bg'] != b['card_bg'],
                'desktop    and the zebra stripe goes: %s, from %s - '
