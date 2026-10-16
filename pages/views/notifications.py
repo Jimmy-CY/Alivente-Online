@@ -30,6 +30,8 @@ personal_notification_settings -> login only (the redirect target enforces
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from urllib.parse import quote
 
 from ..models import NotificationRecipient
 
@@ -54,6 +56,26 @@ def notification_settings(request):
         recipient.save()
 
         messages.success(request, f'{recipient.get_notification_type_display()} email addresses updated successfully!')
+        # AB-1, 16 Oct 2026 - SAY WHICH CARD WAS SAVED.
+        #
+        # Demetri asked for every card collapsed when the page opens, and
+        # the page used to get that wrong in the other direction: it kept
+        # the open set in sessionStorage, so the cards you opened last
+        # visit were still open on the next one.
+        #
+        # That cache was doing two jobs. The one worth keeping is the one
+        # its own comment names - "a save reloads the page, reopen
+        # whatever was open" - because landing on a fully collapsed list
+        # after saving gives you no sign your change took. So the state
+        # stops being remembered and the SAVE says what to open, which
+        # this view is the only place that knows.
+        #
+        # ?open= is not new: the template has honoured it since the
+        # collapsing was built, for links like ?open=expense_mismatch.
+        if notification_type:
+            return redirect(
+                f"{reverse('notification_settings')}"
+                f"?open={quote(notification_type)}")
         return redirect('notification_settings')
 
     # Get only administration notification types

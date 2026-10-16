@@ -378,6 +378,19 @@ CONVERTED = [
     # status chips, none of which a markup gate could ever see. Wide
     # from birth.
     'test_data_table.py',
+    # AB-1, 16 Oct 2026 - the three Administration behaviours Demetri
+    # asked for while testing: notification cards collapsed on arrival,
+    # the list alphabetical, and the permissions action bar at the top
+    # where every other screen puts it. Wide from birth.
+    'test_admin_behaviour.py',
+    # HM-4, 16 Oct 2026 - the Open label moves inside its own strip, so
+    # the figures and the word they belong to read as one line. Wide
+    # from birth.
+    'test_home_open.py',
+    # WM-1, 16 Oct 2026 - the Workspace member count becomes a control
+    # on ALV POP v1, instead of a title= tooltip that a phone cannot
+    # show. Wide from birth.
+    'test_ws_members.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

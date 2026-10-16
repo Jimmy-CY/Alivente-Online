@@ -130,9 +130,48 @@
                         <div class="ws-owner-username">{{ ws.owner.username }}</div>
                         {% endif %}
                     </td>
+                    {# WM-1, 16 Oct 2026 - the count is a CONTROL now, not a #}
+                    {# hover. Demetri: the member count should be clickable #}
+                    {# and show the names. #}
+                    {# #}
+                    {# The names were already here, as a title= tooltip - a #}
+                    {# hover does not exist on a phone, which is where this #}
+                    {# cell is hardest to read. ALV POP v1 in base is the #}
+                    {# component for exactly this, and its own note says so: #}
+                    {# a list that opens from a cell, 12 ingredients clicked #}
+                    {# showing which twelve. Categories and Measurement Units #}
+                    {# are the other two. No new query: ws.member_list is #}
+                    {# already select_related and already ordered. #}
+                    {# #}
+                    {# ONE PILL, NOT A BOX IN A BOX. The model page wraps a #}
+                    {# plain text count, so there the trigger IS the whole #}
+                    {# affordance. Here .ws-members is already a pill with #}
+                    {# its own background, padding and radius - a trigger #}
+                    {# wrapped round it would draw a second rounded box on #}
+                    {# hover, 8px outside the first. So the two classes sit #}
+                    {# on ONE span: the page wins padding and radius (its #}
+                    {# style block is in the body, after base), base gives #}
+                    {# the cursor, and .alv-pop-trigger:hover outranks #}
+                    {# .ws-members on specificity, so the pill itself is #}
+                    {# what darkens. .alv-pop is position: fixed, so it is #}
+                    {# not a flex item of the pill it now sits inside. #}
                     <td data-label="Members">
-                        <span class="ws-members" title="{% for m in ws.member_list %}{{ m.user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                        <span class="ws-members alv-pop-trigger" aria-expanded="false">
                             <i class="fas fa-users"></i> {{ ws.member_count }}
+
+                            <div class="alv-pop">
+                                {% if ws.member_list %}
+                                <ul class="alv-pop-list">
+                                    {% for m in ws.member_list %}
+                                    <li>{{ m.user.get_full_name|default:m.user.username }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <div class="alv-pop-empty">
+                                    No members
+                                </div>
+                                {% endif %}
+                            </div>
                         </span>
                     </td>
                     <td data-label="Updated">{{ ws.updated_at|date:"d M Y H:i" }}</td>

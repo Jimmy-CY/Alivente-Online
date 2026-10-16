@@ -226,11 +226,33 @@ if shots:
     a, b = shots[390]
     small_was = {k: v for k, v in a['ctrl'].items() if v < 43.5}
     small_now = {k: v for k, v in b['ctrl'].items() if v < 43.5}
-    ok(bool(small_was),
-       'at 390px the page really did have a control under 44px',
-       'it did not - then this half of the round is aimed at nothing')
-    for k, v in sorted(small_was.items()):
+    # THE HISTORICAL CLAIM IS A TEXT FACT, NOT A RE-RENDER.
+    #
+    # WM-1, 16 Oct 2026. This used to assert bool(small_was) - that the
+    # BACKUP's markup still measures under 44px today. It does not any
+    # more, and the reason is not a fault: LV-1 gave .btn.action-secondary
+    # a 44px floor below 768px this morning, so the old launcher button
+    # now renders 50px, and base's own control floor puts the old select
+    # at exactly 44.0. The old page is being measured in a house it never
+    # lived in. A control that re-renders old text against today's base
+    # measures today's base; see E19 and E21.
+    #
+    # So the before is asked of the BACKUP'S BYTES, which cannot move:
+    # the page carried no 44px floor of its own, and the round gave it
+    # one. The live half below is untouched - nothing under 44px NOW is a
+    # claim about today, and a render is the right instrument for that.
+    old_css = css_of(OLDRAW) if OLDRAW else ''
+    ok(bool(old_css) and re.search(r'min-height:\s*44px', old_css) is None,
+       'the page carried NO 44px floor of its own before this round',
+       'it already had one - then this half of the round was aimed at '
+       'nothing')
+    print('      the before render measures, lowest first:')
+    for k, v in sorted(a['ctrl'].items(), key=lambda kv: kv[1])[:4]:
         print('      was  %-52s %.1f' % (k[:52], v))
+    print('      (44.0 and up today because LV-1 floored '
+          '.btn.action-secondary')
+    print('       at 44px below 768px - which is base moving, not this '
+          'page)')
     ok(not small_now, 'and now it does not',
        '\n'.join('%s %.1f' % (k[:52], v) for k, v in sorted(small_now.items())))
     ok(re.search(r'min-height:\s*44px', CSS) is not None,

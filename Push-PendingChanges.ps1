@@ -1052,6 +1052,23 @@ $sentinels = @(
     @{ File = 'pages\\templates\\home.html'; Text = 'data-table'; Absent = $true; Code = $true; What = 'DT-1: and the page keeps no table stylesheet of its own' },
     @{ File = 'pages\\templates\\notifications.html'; Text = 'alv-pill alv-pill-attn'; What = 'DT-1: the Notifications status chips are house pills' },
     @{ File = 'pages\\templates\\notifications.html'; Text = 'status-badge'; Absent = $true; Code = $true; What = 'DT-1: and the solid-fill status tones are gone' },
+    # ------------------------------------------------- AB-1, 16 Oct 2026
+    # Demetri, testing Administration: every notification card collapsed
+    # when the page opens, the list alphabetical, and Save Permissions at
+    # the top of the page rather than the foot.
+    @{ File = 'pages\templates\notification_settings.html'; Text = 'sessionStorage'; Absent = $true; Code = $true; What = 'AB-1: the notification cards remember nothing - every arrival is collapsed' },
+    @{ File = 'pages\templates\notification_settings.html'; Text = 'localeCompare'; What = 'AB-1: and the list is alphabetical by what each card says it is' },
+    @{ File = 'pages\views\notifications.py'; Text = 'f"?open={quote(notification_type)}"'; What = 'AB-1: a save says which card it saved, so that one reopens' },
+    @{ File = 'pages\templates\user_permissions.html'; Text = 'MOVED UP FROM THE FOOT OF THE PAGE'; What = 'AB-1: Save Permissions and Back are at the top, like every other screen' },
+    # ------------------------------------------------- HM-4, 16 Oct 2026
+    # Demetri, testing Home: can we put the OPEN in the box.
+    @{ File = 'pages\templates\home.html'; Text = '<span class="iss-head">Open</span>'; What = 'HM-4: the Open label is a term inside its strip' },
+    @{ File = 'pages\templates\home.html'; Text = '<p class="iss-head">'; Absent = $true; Code = $true; What = 'HM-4: and is no longer a block on a line of its own' },
+    # ------------------------------------------------- WM-1, 16 Oct 2026
+    # Demetri, testing Administration: the member count should be
+    # clickable and show the names.
+    @{ File = 'pages\templates\workspace_management.html'; Text = 'alv-pop-trigger'; What = 'WM-1: the member count opens the names' },
+    @{ File = 'pages\templates\workspace_management.html'; Text = 'ws-members" title='; Absent = $true; Code = $true; What = 'WM-1: and the hover-only tooltip is gone with it' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2475,7 +2492,10 @@ $suites = @(
     'test_customer_view.py',
     'test_deed_one_column.py',
     'test_leave_decided.py',
-    'test_data_table.py'
+    'test_data_table.py',
+    'test_admin_behaviour.py',
+    'test_home_open.py',
+    'test_ws_members.py'
 )
 # A suite listed here but not on disk currently prints an amber line and
 # carries on. That is the right behaviour for a repo where a suite may not

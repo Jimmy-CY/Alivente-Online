@@ -697,15 +697,23 @@
 // and any card added later is picked up automatically.
 // ---------------------------------------------------------------------
 (function () {
-    var KEY = 'notifSettingsOpen';
+    // AB-1, 16 Oct 2026 - NOTHING IS REMEMBERED ANY MORE.
+    //
+    // Demetri: every card collapsed when the page opens. This used to
+    // keep the open set in sessionStorage under 'notifSettingsOpen', so
+    // whatever you opened last visit was still open on the next one.
+    //
+    // The one job that cache did worth keeping - reopening the card you
+    // just saved - is done by the SAVE now: the view redirects with
+    // ?open=<notification_type>, which the block at the bottom of this
+    // script has always honoured. State that belongs to one action is
+    // carried by that action, not cached for every later visit.
 
-    function openSet() {
-        try { return new Set(JSON.parse(sessionStorage.getItem(KEY) || '[]')); }
-        catch (e) { return new Set(); }
-    }
-    function persist(set) {
-        try { sessionStorage.setItem(KEY, JSON.stringify(Array.from(set))); }
-        catch (e) { /* private mode - collapsing still works, just not remembered */ }
+    function titleOf(card) {
+        var h = card.querySelector('.form-section-title');
+        // The heading carries an icon before its words, so the TEXT is
+        // what gets compared and not the markup.
+        return h ? (h.textContent || '').trim().toLowerCase() : '';
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -713,7 +721,22 @@
             document.querySelectorAll('.notification-card'));
         if (!cards.length) { return; }
 
-        var open = openSet();
+        // AB-1 - ALPHABETICAL, BY WHAT THE CARD SAYS IT IS.
+        //
+        // Demetri: the list has grown long enough that its order is no
+        // longer findable. Sorted HERE rather than by reordering twelve
+        // blocks of markup, because the comment at the top of this
+        // script states the design: any card added later is picked up
+        // automatically. Reordering the markup would honour the request
+        // and break that promise for card thirteen.
+        //
+        // localeCompare, not <, so a title that starts with an accented
+        // letter sorts where a reader expects rather than after z.
+        cards.sort(function (a, b) {
+            return titleOf(a).localeCompare(titleOf(b));
+        });
+        var anchor = cards[0].parentNode;
+        cards.forEach(function (card) { anchor.appendChild(card); });
 
         cards.forEach(function (card, index) {
             var head = card.querySelector('.form-section-title');
@@ -736,14 +759,10 @@
             head.appendChild(chevron);
 
             card.classList.add('is-collapsible');
-            if (open.has(id)) { card.classList.add('is-open'); }
+            // AB-1 - and it starts closed. Every card, every arrival.
 
             head.addEventListener('click', function () {
                 card.classList.toggle('is-open');
-                var set = openSet();
-                if (card.classList.contains('is-open')) { set.add(id); }
-                else { set.delete(id); }
-                persist(set);
             });
         });
 
@@ -759,12 +778,9 @@
             var btn = e.target.closest('button');
             if (!btn) { return; }
             var wantOpen = btn.dataset.act === 'all';
-            var set = new Set();
             cards.forEach(function (card) {
                 card.classList.toggle('is-open', wantOpen);
-                if (wantOpen) { set.add(card.dataset.notifId); }
             });
-            persist(set);
         });
 
         // A save reloads the page - reopen whatever was open, and if the URL
@@ -774,7 +790,6 @@
             var target = cards.filter(function (c) { return c.dataset.notifId === wanted; })[0];
             if (target) {
                 target.classList.add('is-open');
-                var set = openSet(); set.add(wanted); persist(set);
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }

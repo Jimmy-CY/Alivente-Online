@@ -325,6 +325,23 @@
     <form method="POST" action="{% url 'user_permissions' target_user.id %}">
         {% csrf_token %}
 
+        <!-- Action Buttons (Save + Back) -->
+        <!-- AB-1, 16 Oct 2026 - MOVED UP FROM THE FOOT OF THE PAGE.
+             Demetri: Save Permissions and Back sit at the bottom of a long
+             page and should be at the top, where every other screen puts
+             its action bar. Measured before moving: this bar was 81% down
+             the file, against 3% on properties_edit, 4% on tenant_add and
+             10% on suppliers_edit. It stays INSIDE the form, directly
+             after the csrf token, which is where those three put theirs -
+             so the submit button needs no form= attribute to reach the
+             form it belongs to. -->
+        <div class="page-action-buttons">
+            <button type="submit" class="btn action-primary">
+                <i class="fas fa-save"></i> Save Permissions
+            </button>
+            <a href="{% url 'user_administration' %}" class="btn action-back" aria-label="Back"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+        </div>
+
         <div class="form-card">
             <h3 class="form-section-title"><i class="fas fa-lock"></i> Module Access</h3>
 
@@ -397,14 +414,6 @@
                 </label>
                 {% endfor %}
             </div>
-
-        <!-- Action Buttons -->
-        <div class="page-action-buttons">
-            <button type="submit" class="btn action-primary">
-                <i class="fas fa-save"></i> Save Permissions
-            </button>
-            <a href="{% url 'user_administration' %}" class="btn action-back" aria-label="Back"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
-        </div>
 
     </div>
     </form>

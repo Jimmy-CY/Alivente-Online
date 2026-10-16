@@ -1185,6 +1185,20 @@ ROUNDS = [
     # six panels existed TWICE, built from two copies of the code; the
     # duplication is what the round is really about.
     '.bak_datatable',
+    # AB-1, 16 Oct 2026 - notification_settings stops remembering which
+    # cards were open and starts sorting them; the save says which card
+    # to reopen instead. user_permissions moves its action bar from 81%
+    # down the file to directly under the csrf token.
+    '.bak_adminbehav',
+    # HM-4, 16 Oct 2026 - home.html's Open label becomes the first term
+    # inside .iss-strip instead of a block above it. HM-3's decision -
+    # that Open has a header of its OWN - is untouched; only the line
+    # break goes.
+    '.bak_homeopen',
+    # WM-1, 16 Oct 2026 - workspace_management's Members cell opens the
+    # names it already carried in a tooltip. Third consumer of ALV POP
+    # v1, no new query and no new component.
+    '.bak_wsmembers',
 ]
 
 

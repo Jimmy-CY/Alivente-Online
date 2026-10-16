@@ -134,8 +134,18 @@ Home
           </div>
         </div>
 
-        <p class="iss-head">Open</p>
+        {# HM-4, 16 Oct 2026 - the label is the first term in the strip #}
+        {# now, not a line above it. Demetri: can we put the OPEN in the #}
+        {# box. It keeps its own type, so it still reads as a label and #}
+        {# not as another figure. #}
+        {# #}
+        {# AND THIS DOES NOT UNDO HM-3. That round gave Open its own #}
+        {# header rather than sharing one with the table below, because #}
+        {# Open is a LEVEL at three moments while Logged and Closed are #}
+        {# RATES over three periods. It still has its own header. Only #}
+        {# the line break is gone. #}
         <div class="iss-strip">
+          <span class="iss-head">Open</span>
           <span class="iss-pt"><b>{{ insights.issues.open }}</b>
             <i>Today</i></span>
           <span class="iss-sep">&middot;</span>
@@ -521,8 +531,14 @@ Home
        disagree about which comparison they belong to */
     
 
+    /* HM-4, 16 Oct 2026 - a term inside the strip, not a block above
+       it. The type is untouched - 11px, 600, uppercase, the same
+       tracking and ink - because that is what makes it read as a label.
+       The block margin goes, because a flex child does not need one,
+       and align-self keeps it on the baseline the figures sit on. */
     .iss-head { font-size: 11px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.05em; color: var(--alv-ink-soft); margin: 8px 0 3px; }
+      letter-spacing: 0.05em; color: var(--alv-ink-soft); margin: 0;
+      align-self: baseline; }
     .iss-strip { display: flex; flex-wrap: wrap; align-items: baseline;
       gap: 8px; padding: 7px 10px; background: var(--alv-surface);
       border-radius: 7px; border: 1px solid var(--alv-line); }

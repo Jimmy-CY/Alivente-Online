@@ -414,12 +414,26 @@ ok("Text = 'status-badge'; Absent = $true" in ps1,
    'must stay gone')
 _patp = os.path.join(ROOT, PATCHER)
 ok(os.path.isfile(_patp), '%s is on disk beside its suite' % PATCHER)
-wd = read(os.path.join(ROOT, 'test_waiting_down.py'))
+# THE SHARED COUNTERS ARE READ AS DT-1 LEFT THEM, NOT LIVE.
+#
+# WM-1, 16 Oct 2026. These two files hold a hand-kept number that EVERY
+# converted round bumps, so a suite that reads them live asserts its own
+# number against whatever the NEWEST round wrote. AS-1's census measured
+# this fault across 249 suites this morning; this is one of them, and it
+# broke within three hours of DT-1 deploying, when AB-1, HM-4 and WM-1
+# rode in together. See claude/as1_frozen_after_census_16_oct.md.
+def as_dt1_left(name):
+    p = os.path.join(ROOT, name)
+    return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
+
+
+wd = as_dt1_left('test_waiting_down.py')
 ok('CONVERTED_N = %d' % CONVERTED_NOW in wd,
-   'test_waiting_down counts %d converted suites' % CONVERTED_NOW)
-co = read(os.path.join(ROOT, 'test_code_only.py'))
+   'test_waiting_down counted %d converted suites when DT-1 left it'
+   % CONVERTED_NOW)
+co = as_dt1_left('test_code_only.py')
 ok('ok(len(aliased) == %d,' % ALIAS_NOW in co,
-   'test_code_only counts %d files aliasing code_only' % ALIAS_NOW)
+   'test_code_only counted %d files aliasing code_only' % ALIAS_NOW)
 
 # LINE ENDINGS ARE PART OF THE FILE. notifications.html is CRLF with a
 # handful of bare LFs in it, and a round that normalises them rewrites
@@ -432,9 +446,18 @@ for p in PAGES:
         was_raw = raw_read(PATH[p] + SUFFIX)
         w_crlf = was_raw.count('\r\n')
         w_lf = was_raw.count('\n') - w_crlf
-        ok(lf <= w_lf,
-           '%-19s bare LF count did not grow: %d -> %d (CRLF %d -> %d)'
-           % (p, w_lf, lf, w_crlf, crlf))
+        # THE STYLE, NOT THE COUNT. WM-1, 16 Oct 2026: this asserted
+        # `lf <= w_lf`, and HM-4 broke it by legitimately adding eight
+        # lines to home.html - a pure LF file, where every added line
+        # raises the LF count. A count cannot tell a round that ADDED
+        # lines from one that CONVERTED them. A CRLF file must not gain
+        # bare LFs; an LF file must not gain CRLFs.
+        was_crlf_file = w_crlf > w_lf
+        held = (lf <= w_lf) if was_crlf_file else (crlf <= w_crlf)
+        ok(held,
+           '%-19s kept its %s line endings: CRLF %d -> %d, bare LF %d -> %d'
+           % (p, 'CRLF' if was_crlf_file else 'LF',
+              w_crlf, crlf, w_lf, lf))
     else:
         skip('%s line endings' % p, 'not applied')
 

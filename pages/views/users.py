@@ -495,7 +495,10 @@ def workspace_management(request):
         .order_by('name')
     )
 
-    # Pre-fetch members for the count tooltip and edit-page reuse.
+    # Pre-fetch members for the count POPUP and edit-page reuse.
+    # WM-1, 16 Oct 2026 - it was a title= tooltip until this round; the
+    # popup reads the same list, so no query changed. One query per row
+    # is pre-existing and still here: a prefetch is its own round.
     for ws in workspaces:
         ws.member_list = list(ws.members.select_related('user').order_by('user__username'))
 
