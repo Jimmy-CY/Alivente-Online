@@ -1113,6 +1113,18 @@ $sentinels = @(
     # ------------------------------------------------- CC-2, 17 Oct 2026
     @{ File = 'pages\templates\celebration_management.html'; Text = 'contactDetailModal'; What = 'CC-2: the contact opens in a modal' },
     @{ File = 'pages\templates\celebration_management.html'; Text = 'toggleCardExpand'; Absent = $true; Code = $true; What = 'CC-2: and no longer grows the card in place' },
+    # ------------------------------------------------- SB-1, 17 Oct 2026
+    @{ File = 'pages\templates\property_detail.html'; Text = 'report-invoice-icon'; What = 'SB-1: one invoice icon on both routes' },
+    @{ File = 'pages\templates\property_detail.html'; Text = 'font-size: 1.2em'; Absent = $true; Code = $true; What = 'SB-1: and it is not sized inline any more' },
+    # ------------------------------------------------- DG-1, 17 Oct 2026
+    @{ File = 'pages\templates\act_expense.html'; Text = 'action-secondary action-danger btn-sm'; What = 'DG-1: the Delete button wears the house pair' },
+    # ------------------------------------------------- RI-1, 17 Oct 2026
+    @{ File = 'pages\views\recipes\ai_extract.py'; Text = 'IMAGE_WIRE_MEDIA_TYPE'; What = 'RI-1: the encoder says what it produced' },
+    @{ File = 'pages\views\recipes\ai_extract.py'; Text = 'MEDIA_TYPES[file_type]'; Absent = $true; What = 'RI-1: and the extension no longer picks the media type' },
+    # ------------------------------------------------- AR-1, 17 Oct 2026
+    @{ File = 'alv_run.py'; Text = 'died.append'; What = 'AR-1: a suite that printed no tally is re-run once, alone' },
+    # ------------------------------------------------- CC-3, 17 Oct 2026
+    @{ File = 'pages\templates\celebration_management.html'; Text = 'copyInto'; What = 'CC-3: the copy is shown and its controls are wired' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2543,7 +2555,10 @@ $suites = @(
     'test_ae_probe.py',
     'test_label_law.py',
     'test_gate_speed.py',
-    'test_contact_modal.py'
+    'test_contact_modal.py',
+    'test_invoice_icon.py',
+    'test_danger_pair.py',
+    'test_image_wire.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

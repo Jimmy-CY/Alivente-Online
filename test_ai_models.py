@@ -509,7 +509,8 @@ class _Catch(object):
 LOGGED = []
 
 
-def drive(reply, content='5 tablespoons Smoked Paprika', ftype='docx'):
+def drive(reply, content='5 tablespoons Smoked Paprika', ftype='docx',
+          media_type=None):
     """Run the real extractor against a fake client. Returns
     (result, error, calls); what it logged lands in LOGGED."""
     client = _FakeClient(reply)
@@ -520,7 +521,8 @@ def drive(reply, content='5 tablespoons Smoked Paprika', ftype='docx'):
     try:
         with _Catch() as c:
             try:
-                return (mod.extract_recipe_with_ai(content, ftype), None,
+                return (mod.extract_recipe_with_ai(content, ftype,
+                                                   media_type), None,
                         client.calls)
             except Exception as e:
                 return None, e, client.calls
@@ -640,11 +642,27 @@ if HAVE_MOD:
        'keys: %s' % ', '.join(sorted(view_exts)),
        'view %s\nmap  %s' % (sorted(view_exts), sorted(mod.MEDIA_TYPES)))
     # AND THE IMAGE PATH REALLY SENDS IT.
-    r, e, calls = drive(json.dumps(GOOD), content='QUJD', ftype='jpg')
+    # RI-1, 17 Oct 2026 - THE EXTENSION NO LONGER DECIDES.
+    #
+    # This drove a .jpg and asserted the wire said image/jpeg, which
+    # was true and was the bug: the reader re-encodes every upload to
+    # PNG, so a .jpg announced JPEG while carrying PNG bytes and the
+    # API refused it. The media type is passed in by the encoder now,
+    # so what is asserted is that the wire carries WHAT IT WAS GIVEN
+    # rather than what the filename implied.
+    r, e, calls = drive(json.dumps(GOOD), content='QUJD', ftype='jpg',
+                        media_type=mod.IMAGE_WIRE_MEDIA_TYPE)
     src = calls[0]['messages'][0]['content'][0]['source'] if calls else {}
-    ok(src.get('media_type') == 'image/jpeg',
-       '  MEASURED: a .jpg upload sends media_type image/jpeg',
-       src.get('media_type'))
+    ok(src.get('media_type') == mod.IMAGE_WIRE_MEDIA_TYPE,
+       '  MEASURED: a .jpg upload sends the media type the ENCODER '
+       'produced, %s - not the one its name implies'
+       % mod.IMAGE_WIRE_MEDIA_TYPE, src.get('media_type'))
+    # AND IT REFUSES AN IMAGE WITH NO MEDIA TYPE rather than falling
+    # back to the extension, which is the fault RI-1 removed.
+    r2, e2, calls2 = drive(json.dumps(GOOD), content='QUJD', ftype='jpg')
+    ok(r2 is None and e2 is not None and not calls2,
+       '  and an image with no media type never reaches the API',
+       (r2, e2, len(calls2)))
 else:
     skipped += 4
 

@@ -608,14 +608,30 @@
                                                     <td data-label="Amount" class="text-right">
                                                         <span class="amount-display">€{{ expense.act_expense_amount|floatformat:"2"|intcomma }}</span>
                                                     </td>
+                                                    {# SB-1, 17 Oct 2026 - THE SAME ICON AS THE OTHER ROUTE. #}
+                                                    {# #}
+                                                    {# Demetri reached this table from Property #}
+                                                    {# Operations and from Financial Management and #}
+                                                    {# got two different icons. This is act_expense's #}
+                                                    {# spelling, unchanged: the class it uses, the #}
+                                                    {# attributes its listener reads, and the em dash #}
+                                                    {# it draws when there is no document. #}
+                                                    {# #}
+                                                    {# The colour was --alv-good, which base reserves #}
+                                                    {# for on time, healthy, active. An icon that #}
+                                                    {# opens a file is not a health report; viewing #}
+                                                    {# is the VIEW verb and base has a colour for it. #}
+                                                    {# act_expense made that correction already and #}
+                                                    {# says so in its own stylesheet. #}
                                                     <td data-label="Invoice" class="text-center">
                                                         {% if expense.act_expense_document %}
-                                                            <i class="fas fa-file-alt invoice-icon"
-                                                               style="cursor: pointer; color: var(--alv-good); font-size: 1.2em;"
-                                                               onclick="viewActualExpenseInvoice('{{ expense.act_expense_document.url|escapejs }}', '{{ expense.act_expense_document.name|escapejs }}')"
-                                                               title="Click to view invoice"></i>
+                                                            <i class="fas fa-file-alt report-invoice-icon"
+                                                               title="View invoice"
+                                                               aria-label="View invoice"
+                                                               data-invoice-url="{{ expense.act_expense_document.url }}"
+                                                               data-filename="{{ expense.act_expense_document.name }}"></i>
                                                         {% else %}
-                                                            <span class="text-muted">-</span>
+                                                            <span class="report-invoice-none">&mdash;</span>
                                                         {% endif %}
                                                     </td>
                                                 </tr>
@@ -1457,8 +1473,21 @@
 .actual-expenses-table-container { background: var(--alv-paper); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
 .actual-expenses-table { font-size: 0.95rem; margin-bottom: 0; }
 .actual-expenses-table td { vertical-align: middle; padding: 12px 15px; border-top: 1px solid var(--alv-line); }
-.invoice-icon { transition: all 0.2s ease; }
-.invoice-icon:hover { transform: scale(1.2); color: var(--alv-good-ink) !important; }
+/* SB-1, 17 Oct 2026 - act_expense.html's two rules, verbatim, so the
+   same column drawn from either route is the same column.
+
+   Viewing a document is the VIEW verb, and base has a colour for it.
+   This page painted it --alv-good, which base 3.1 reserves for "on
+   time, healthy, active" - a claim an icon that opens a file cannot
+   make. act_expense carried the same fault as #28a745 and corrected
+   it; this is where that correction finishes.
+
+   THE HOVER GOES TOO. It scaled the glyph 1.2x and forced
+   --alv-good-ink with !important: nothing else in this application
+   grows an icon on hover, and the ink it forced is the green being
+   removed. */
+.report-invoice-icon { cursor: pointer; color: var(--alv-view); }
+.report-invoice-none { color: var(--alv-ink-faint); }
 .year-filter { display: flex; align-items: center; }
 .year-filter label { color: var(--alv-ink-strong); font-weight: 500; margin-right: 8px; }
 .actual-expenses-summary { background-color: var(--alv-surface) !important; border: 1px solid var(--alv-line) !important; }
@@ -1802,9 +1831,32 @@ function launchDocViewer(btn) {
 
 // Called by the file icon in the Actual Expenses table.
 // Thin wrapper around openPdfViewer so the existing onclick handlers still work.
+/* SB-1, 17 Oct 2026 - ONE PAIR OF ATTRIBUTES, ONE LISTENER.
+   The icon carried an inline onclick, which is half of why the two
+   routes drew different markup for one column. act_expense reads
+   data-invoice-url and data-filename from a single delegated listener
+   that serves its table AND the modal that injects it; this is the
+   same listener, for the same attributes, on the same class. */
+document.addEventListener('click', function (e) {
+    var icon = e.target.closest && e.target.closest('.report-invoice-icon');
+    if (!icon) { return; }
+    var url = icon.getAttribute('data-invoice-url');
+    if (!url) { return; }
+    e.preventDefault();
+    viewActualExpenseInvoice(url,
+                             icon.getAttribute('data-filename') || 'invoice');
+});
+
 function viewActualExpenseInvoice(documentUrl, documentName) {
     if (typeof openPdfViewer !== 'function') {
-        console.error('PDF viewer component not loaded');
+        /* SB-1 - AND IT OPENS SOMETHING RATHER THAN NOTHING.
+           This wrote to the console and returned, so a viewer that had
+           not loaded left a clickable icon that did nothing at all.
+           act_expense falls back to a new tab, and PL-1 made this
+           argument about this very column on 5 Oct: an icon that does
+           nothing when pressed is worse than the unfindable tick it
+           replaced, which at least worked. */
+        window.open(documentUrl, '_blank');
         return;
     }
     // documentName from Django can include the upload path (e.g. "expenses/invoice.pdf");

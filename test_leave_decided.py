@@ -380,7 +380,22 @@ BOOTWORDS = ('btn-secondary', 'btn-outline-secondary', 'btn-light',
 n_edits = n_kept_local = 0
 still = []
 for p in pages:
-    a, b = code_only(read(p)), code_only(read(p + SUFFIX))
+    # DG-1, 17 Oct 2026 - AS LV-1 LEFT IT, NOT LIVE.
+    #
+    # This compared the LIVE file against LV-1's backup and counted the
+    # class attributes that differ, which is a question about 16
+    # October asked of today's tree. Any later round that touches a
+    # button on one of these seventeen templates is counted as LV-1's
+    # work: DG-1 added action-secondary to one and the figure went 25
+    # -> 26.
+    #
+    # as_left_by walks ROUNDS forward and hands back the next round's
+    # backup - the file as THIS round left it. It is imported at the
+    # top of this suite and used further down it; this was the one
+    # place it was not. AS-1's census measured this fault across 249
+    # suites on 16 Oct.
+    a = code_only(as_left_by(p, SUFFIX, read) if as_left_by else read(p))
+    b = code_only(read(p + SUFFIX))
 
     def classes(t):
         return [m.group(1) for m in

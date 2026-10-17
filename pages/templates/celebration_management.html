@@ -192,8 +192,16 @@
 /* CC-2, 17 Oct 2026 - THE CONTACT DETAIL MODAL.
    The body holds clones of the card's own .contact-details and
    .event-list, so nothing here restyles them - they are the same
-   elements the card draws, outside .compact-view, which is why the
-   rules that hide them in a compact card do not reach them. */
+   elements the card draws.
+
+   CC-3, 17 Oct 2026 - AND THE SENTENCE THAT USED TO FINISH THAT
+   PARAGRAPH WAS WRONG, which is why the modal shipped empty. It said
+   the rules hiding a compact card's details do not reach the clone.
+   True of the CLASS rule below, which stops matching once the node is
+   outside .contact-card.compact-view. FALSE of the INLINE style
+   toggleView() writes on the event list, which cloneNode copies onto
+   the copy, and which no rule here can beat. The copy has that style
+   cleared in script now; nothing below tries to out-specify it. */
 #contactDetailModal .modal-body .contact-details {
     display: block;
     margin-bottom: 10px;
@@ -1466,6 +1474,68 @@ function contactDetailEl() {
     return document.getElementById('contactDetailModal');
 }
 
+// CC-3, 17 Oct 2026 - A COPY THAT CAN BE SEEN, AND WHOSE CONTROLS ARE
+// NOT DEAD.
+//
+// toggleView() hides the event list with an INLINE style, and
+// cloneNode(true) copies inline styles, so CC-2's clone arrived still
+// carrying display:none and the modal opened empty on the live site.
+// The copy gets that one property cleared - on the copy, never on the
+// card, which still needs it to stay compact behind the modal.
+//
+// AND EVERY CONTROL IN THE COPY IS A COPY. A copied pencil still
+// carries its inline onclick, which would open the event editor on top
+// of this modal - CC-2 forbids two modals at once in writing. A copied
+// checkbox would post to the server and leave the card's own checkbox
+// showing the opposite. So each one is paired with the original it was
+// copied from. The pairing is BY INDEX over the same selector run on
+// the source node and on its own deep clone, which is the one case
+// where index pairing is exact rather than hopeful: the clone has the
+// same elements in the same order by definition.
+//
+// THE SELECTOR NAMES THE PROPERTY, NOT THE CLASSES. The first spelling
+// listed the two classes the event row uses - and missed the MOBILE
+// action bar inside the same row, whose buttons carry the same two
+// inline handlers under a third class. A list of classes goes stale
+// the first time somebody adds a fourth. What actually makes a copied
+// control dangerous is that it carries an inline handler, so that is
+// what is asked for.
+const CLONE_WIRE = '[onclick], [onchange]';
+
+function wireCopy(copy, real) {
+    copy.removeAttribute('onclick');
+    copy.removeAttribute('onchange');
+    copy.onclick = null;
+    copy.onchange = null;
+    if (copy.tagName === 'INPUT') {
+        copy.addEventListener('change', function () {
+            // THE CARD'S CHECKBOX IS THE REAL ONE. Its own onchange
+            // calls updateNotification, so the save happens once, from
+            // the control that will still be on the page afterwards.
+            real.checked = copy.checked;
+            real.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+    } else {
+        copy.addEventListener('click', function (e) {
+            e.preventDefault();
+            contactDetailPending = real;
+            $(contactDetailEl()).modal('hide');
+        });
+    }
+}
+
+function copyInto(node, body) {
+    const copy = node.cloneNode(true);
+    copy.style.display = '';
+    const mine = copy.querySelectorAll(CLONE_WIRE);
+    const real = node.querySelectorAll(CLONE_WIRE);
+    for (let i = 0; i < mine.length && i < real.length; i++) {
+        wireCopy(mine[i], real[i]);
+    }
+    body.appendChild(copy);
+    return copy;
+}
+
 function openContactDetail(card) {
     const el = contactDetailEl();
     if (!el) { return; }
@@ -1480,10 +1550,10 @@ function openContactDetail(card) {
     const body = el.querySelector('.modal-body');
     while (body.firstChild) { body.removeChild(body.firstChild); }
     card.querySelectorAll('.contact-details').forEach(function (n) {
-        body.appendChild(n.cloneNode(true));
+        copyInto(n, body);
     });
     const events = card.querySelector('.event-list');
-    if (events) { body.appendChild(events.cloneNode(true)); }
+    if (events) { copyInto(events, body); }
 
     // A CONTROL IS ENABLED ONLY WHEN THE CARD REALLY HAS THE BUTTON.
     // Without can_edit_celebrations the card draws disabled spans

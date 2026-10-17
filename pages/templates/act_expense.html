@@ -1458,7 +1458,14 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                 <button type="button" class="btn action-secondary btn-sm" onclick="showReplaceUpload()">
                     <i class="fas fa-sync"></i> Replace
                 </button>
-                <button type="button" class="btn action-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
+                {# DG-1, 17 Oct 2026 - the pair, not the modifier alone. #}
+                {# base draws .action-danger outlined at rest and filled #}
+                {# only on hover, so it modifies a secondary button #}
+                {# rather than being a tone of its own. The Replace #}
+                {# button two lines up is already action-secondary, and #}
+                {# both recipe pages carry the pair. This row was #}
+                {# written one button at a time. #}
+                <button type="button" class="btn action-secondary action-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
                     <i class="fas fa-trash"></i> Delete Document
                 </button>
             </div>

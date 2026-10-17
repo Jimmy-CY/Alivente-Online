@@ -352,8 +352,40 @@ ok(m is not None and int(m.group(1)) >= N_TEMPLATES_MIN,
    '  and reading it reports %s template(s), up from the 143 it saw '
    'before' % (m.group(1) if m else '?'),
    'pinned at >= %d' % N_TEMPLATES_MIN)
-ok(r.returncode == 0, '  and it passes on this tree',
-   out.strip().split('\n')[-1][:70])
+# CP-1, 17 Oct 2026 - THE VERDICT IS NOT THIS SUITE'S TO GIVE.
+#
+# This line used to assert, on the nested return code, that
+# test_print_queries.py passes - which the gate asserts every push, by
+# running it as one of its 366 suites. The duplicate flaked twice in
+# one day (suite 365 of 366, then 223 of 366) and passed every time it
+# was run alone: a browser suite launched from inside a browser suite
+# inside a pool of six is the seventh Chromium, and that says nothing
+# about the tree.
+#
+# So the nested run is a READING now, not a verdict, and whatever it
+# says is printed in full rather than compressed into a tally.
+print('')
+print('  the guard, run here to be READ - its verdict belongs to the')
+print('  gate, which runs it as a suite of its own every push:')
+_tally = [l.strip() for l in out.split('\n') if 'passed,' in l]
+print('     %s' % (_tally[-1] if _tally else '(no tally printed)'))
+if r.returncode != 0:
+    print('     IT DID NOT PASS WHEN RUN FROM HERE. Its own words:')
+    for _l in out.split('\n'):
+        if _l.strip().startswith('FAIL'):
+            print('       %s' % _l.strip()[:150])
+    print('     The gate runs it by name; believe that run, not this')
+    print('     one. If the gate agrees, it is a real failure.')
+
+# AND THE CLAIM THAT REPLACES IT. Dropping an assertion because
+# something else makes it is only honest if the something else is
+# checked - so this asks whether the guard is still on the gate. The
+# old line would have gone on passing while the guard quietly stopped
+# being run on every push; this one will not.
+_ps1 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+ok("'%s'" % GUARD in _ps1,
+   '  and the gate runs %s by name, every push - which is where its '
+   'verdict is given' % GUARD)
 
 
 # ==========================================================================

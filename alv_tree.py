@@ -409,6 +409,18 @@ CONVERTED = [
     # instead of growing the card in place, and the emoji countdowns
     # take CC-1's wording. Wide from birth.
     'test_contact_modal.py',
+    # SB-1, 17 Oct 2026 - the Actual Expenses Invoice icon is the same
+    # icon whichever route reaches it. Wide from birth.
+    'test_invoice_icon.py',
+    # DG-1, 17 Oct 2026 - one script-built Delete button joins the
+    # action-secondary action-danger pair, and the suite that counts
+    # LV-1's work stops counting later rounds as LV-1's. Wide from
+    # birth.
+    'test_danger_pair.py',
+    # RI-1, 17 Oct 2026 - every JPEG recipe upload failed, because the
+    # reader re-encodes to PNG and then announced the media type from
+    # the filename. Wide from birth.
+    'test_image_wire.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

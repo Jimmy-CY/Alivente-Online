@@ -264,7 +264,7 @@ def main(argv=None):
     FILES = file_table()
     wide = len(str(total))
     no = [len(done)]
-    failed, skipped = [], []
+    failed, skipped, died, rescued = [], [], [], []
     t0 = time.time()
 
     def report(r):
@@ -292,7 +292,47 @@ def main(argv=None):
                 print('     %s' % line)
         if r['rc'] != 0:
             failed.append(r['name'])
-            print('  !! %s %s FAILED' % (label, r['name']))
+            # THE RETURN CODE, ALWAYS. 17 Oct: a suite failed on his
+            # laptop having printed no FAIL line and no traceback -
+            # stdout stopped mid-section and stderr held only a
+            # deprecation warning. The one fact that would have said
+            # what happened was the exit code, and the gate did not
+            # print it. On Windows a silent kill IS the code: 3221225477
+            # is an access violation, 3221225725 a blown stack, 1 an
+            # ordinary failed check. Four characters of output.
+            print('  !! %s %s FAILED  rc=%s' % (label, r['name'], r['rc']))
+            if r['rc'] not in (0, 1) and '\n' in r['out']:
+                print('     last line of its output: %r'
+                      % r['out'].rstrip().split('\n')[-1][:100])
+            # A VERDICT THAT DEPENDS ON HOW MANY BROWSERS WERE OPEN
+            # IS NOT A VERDICT ABOUT THE TREE.
+            #
+            # The tree is a fixed thing and the gate's whole job is to
+            # say whether it is right. Three suites disagreed with it
+            # on 17 Oct and agreed with it when run by themselves, and
+            # the only difference was load:
+            #
+            #   test_filter_get.py     killed mid-section on his laptop
+            #                          at 305 of 363 - no tally, no
+            #                          traceback. Passed on the resume.
+            #   test_crs_print.py      failed at 365 of 366, then at
+            #                          223 of 366. Passed alone, twice.
+            #   test_print_queries.py  took 504s in a pool of six and
+            #                          reported a failed check. 19 of
+            #                          19 alone, in a fraction of that.
+            #
+            # The first spelling retried only the ones that printed NO
+            # tally, reasoning that a suite saying "1 failed" had made
+            # a claim. That is right about BELIEVING a verdict and
+            # wrong about WHICH verdict to believe: between a contended
+            # run and an uncontended one, the uncontended one is the
+            # one that is about the tree.
+            #
+            # IT IS LOUD. Every rescue is named in the summary, so a
+            # suite that needs one on every push is visible rather than
+            # quietly absorbed, and a suite that fails alone as well
+            # fails the gate with its whole output printed.
+            died.append(r['name'])
             return bool(a.force)
         done[r['name']] = True
         _save(done)
@@ -338,11 +378,44 @@ def main(argv=None):
                     for f2 in futures:
                         f2.cancel()
 
+    # ---- phase 3: every failure, once each, alone
+    #
+    # ONE AT A TIME, WITH NOTHING ELSE RUNNING - the condition the
+    # first run did not have, and the only one under which a verdict
+    # is about the tree rather than about the machine.
+    if died:
+        print('')
+        print('  -- %d suite(s) failed in the pool. Re-running each '
+              'ONCE, alone, where nothing competes with it.' % len(died))
+        for n in died:
+            r = run_one(n)
+            if r['rc'] == 0:
+                rescued.append((n, r['secs']))
+                print('  == %s PASSED alone in %.1fs - the pool was the '
+                      'cause, not the tree' % (n, r['secs']))
+                failed.remove(n)
+                done[n] = True
+                _save(done)
+            else:
+                print('  !! %s FAILED alone too  rc=%s - this one is real'
+                      % (n, r['rc']))
+                if not a.quiet:
+                    for line in r['out'].rstrip().split('\n'):
+                        print('     %s' % line)
+
     # ------------------------------------------------------------- log
     _save(done)
 
     secs = time.time() - t0
     print('')
+    if rescued:
+        print('  ** %d suite(s) failed in the pool and PASSED when '
+              'run alone. The tree is not what was wrong with them:'
+              % len(rescued))
+        for n, sec in rescued:
+            print('       %-34s %.1fs alone' % (n, sec))
+        print('     If the same name keeps appearing here, that '
+              'suite is too heavy to share a machine.')
     if skipped:
         print('  !! %d of %d suite(s) were not on disk and did not run:'
               % (len(skipped), total))
@@ -353,6 +426,21 @@ def main(argv=None):
                                                ', '.join(failed)))
         print('     Re-run with --resume once fixed; only the suites that '
               'could be affected will run again.')
+    # A RESCUE IS NOT A GREEN SWEEP. Without --force the pool stops at
+    # the first failure and cancels the rest, so when phase 3 clears
+    # that failure there are still suites that never ran. Reporting
+    # that as "all passed" would hand the gate a green light over an
+    # unswept tree - the exact shape of the 16 Oct deploy that deployed
+    # nothing. So the count is checked, and the resume is cheap because
+    # the rescued suite is already written into the log as passed.
+    elif no[0] - len(skipped) < total - len(skipped):
+        print('  !! the sweep stopped early: %d of %d suite(s) ran. The '
+              'one that failed passed when run alone, so nothing is '
+              'known to be wrong - but nothing is known to be right '
+              'either.' % (no[0], total))
+        print('     Re-run with --resume; it will start from where this '
+              'stopped.')
+        return 1
     else:
         print('  OK  all %d suite(s) ran and passed' % (total - len(skipped)))
     print('      %.0fs wall clock, %d worker(s)' % (secs, a.workers))

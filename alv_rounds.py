@@ -1209,6 +1209,22 @@ ROUNDS = [
     '.bak_gatespeed',
     # CC-2, 17 Oct 2026 - decided 15 Oct, built now.
     '.bak_contactmodal',
+    # SB-1, 17 Oct 2026 - a correction act_expense made and
+    # property_detail never received.
+    '.bak_invoiceicon',
+    # DG-1, 17 Oct 2026 - E12, re-measured and sharper than banked.
+    '.bak_dangerpair',
+    # RI-1, 17 Oct 2026 - a live fault, found by uploading a recipe.
+    '.bak_imagewire',
+    # AR-1, 17 Oct 2026 - a suite that died is not a suite that
+    # disagreed; the first is re-run alone, the second is not.
+    '.bak_autoretry',
+    # CC-3, 17 Oct 2026 - CC-2's modal opened empty on the live site:
+    # cloneNode copies the inline style toggleView writes.
+    '.bak_contactwire',
+    # CP-1, 17 Oct 2026 - a browser suite run from inside a browser
+    # suite; the verdict was a duplicate and it was the half that flaked.
+    '.bak_crsnest',
 ]
 
 

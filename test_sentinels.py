@@ -370,6 +370,15 @@ PINNED = {
         'the worked-month walkthrough in the help, backed up once by PI-1',
     'tenant-name order':
         'the ordering the reminder lists drafts in, backed up once by PI-1',
+    # THE SEVENTH, 17 Oct 2026, AND THE SAME STORY AGAIN. GT-2 wrote
+    # this row on a file it had just created, so there was no earlier
+    # version to compare against and the row was never examined. AR-1
+    # gave alv_run.py its first backup and made the row checkable; it
+    # does not discriminate because AR-1 changed the retry and left the
+    # planter list alone. Revealed, not broken.
+    'PLANTERS':
+        'the fifteen suites that must not share a tree, backed up once '
+        'by AR-1',
 }
 unpinned = [b for b in blind
             if not any(k.lower() in b.lower() for k in PINNED)]

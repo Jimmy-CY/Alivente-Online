@@ -370,7 +370,11 @@ def fixture(src, name):
         grid += one
     mods = (flatten(modal_block(src, 'contactDetailModal'))
             + flatten(modal_block(src, 'contactModal')))
+    # THE TOGGLE BUTTON, because toggleView() reads it unguarded and
+    # the fixture is now required to call toggleView() rather than
+    # imitate it. CC-3, 17 Oct 2026.
     body = ('<div class="main-content with-sidebar"><div class="container">'
+            '<button id="viewToggleBtn"></button>'
             '<div class="contacts-container">%s</div></div>%s</div>'
             % (grid, mods))
     html = ('<!doctype html><html><head><meta charset="utf-8">'
@@ -413,7 +417,23 @@ LOOK = """() => {
                    : '',
           bodyEvents: m ? m.querySelectorAll('.event-item').length : 0,
           bodyDetails: m ? m.querySelectorAll('.contact-details').length
-                         : 0};
+                         : 0,
+          // CC-3: PIXELS, NOT NODES. The defect that shipped was an
+          // event list present and invisible, which a count cannot
+          // tell from one that works.
+          bodyEventH: (() => {
+              const e = m && m.querySelector('.modal-body .event-list');
+              return e ? Math.round(e.getBoundingClientRect().height) : 0;
+          })(),
+          cardEventH: (() => {
+              const e = cards[0] && cards[0].querySelector('.event-list');
+              return e ? Math.round(e.getBoundingClientRect().height) : 0;
+          })(),
+          bodyCtl: m ? m.querySelectorAll(
+              '.modal-body button.icon-action-btn,'
+              + ' .modal-body input.notify-checkbox').length : 0,
+          bodyInline: m ? m.querySelectorAll(
+              '.modal-body [onclick], .modal-body [onchange]').length : 0};
 }"""
 
 if not have_pw or not all(os.path.isfile(f) for f in (BOOT, JQ, BSJS)):
@@ -432,10 +452,26 @@ else:
             _goto(pg, fixture(src, name))
             pg.wait_for_timeout(150)
             if compact:
-                pg.evaluate("""() => {
+                # THE PAGE'S OWN FUNCTION, NOT AN IMITATION OF IT.
+                # CC-3, 17 Oct 2026. Adding the class is half of what
+                # toggleView does; the other half is an inline
+                # display:none on the event list, and that is the half
+                # cloneNode copied into an empty modal on the live
+                # site. A fixture that simulates a state can only find
+                # faults in the part it simulated.
+                _toggled = pg.evaluate("""() => {
+                    if (typeof toggleView === 'function') {
+                        toggleView();
+                        return true;
+                    }
                     document.querySelectorAll('.contact-card').forEach(
                         c => c.classList.add('compact-view'));
+                    return false;
                 }""")
+                if not _toggled:
+                    print('     !! toggleView was not callable - the '
+                          'fixture fell back to adding the class, and '
+                          'the inline hide is NOT in play')
                 pg.wait_for_timeout(60)
             before = pg.evaluate(LOOK)
             if click:
@@ -456,6 +492,28 @@ else:
             ctx.close()
             return before, after
 
+        # CC-3's CONTROL - CC-2's PAGE, MEASURED THE SAME WAY.
+        # A round that fixes an invisible body has to show the body
+        # invisible before it. This reads the page as CC-2 left it,
+        # which is CC-3's own backup, and renders it in the same
+        # fixture. 0px there and a positive number below is the whole
+        # defect and the whole fix, in two numbers.
+        _c3 = PATH + '.bak_contactwire'
+        if os.path.isfile(_c3):
+            _, c3 = shot(read(_c3), 'cc3_was.html')
+            ok(c3['modalShown'],
+               'CONTROL: CC-2 opened the modal correctly')
+            ok(c3['bodyEvents'] >= 1,
+               '  CONTROL: and the event list really was in the body')
+            ok(c3['bodyEventH'] == 0,
+               '  CONTROL: and it was 0px tall - present, and invisible, '
+               'which is what he saw', '%dpx' % c3['bodyEventH'])
+            ok(c3['bodyInline'] > 0,
+               '  CONTROL: and every copied control still carried its '
+               'inline handler', c3['bodyInline'])
+        else:
+            skip('CC-2 measured the same way', 'CC-3 is not applied')
+
         n_before, n_after = shot(NOW, 'cc2_now.html')
         ok(len(n_before['tops']) == 3,
            'three contact cards are drawn', n_before['tops'])
@@ -467,6 +525,75 @@ else:
            '  carrying the contact details', n_after['bodyDetails'])
         ok(n_after['bodyEvents'] >= 1,
            '  and the event list', n_after['bodyEvents'])
+        # ---- CC-3, 17 Oct 2026 - MEASURED, NOT COUNTED ---------------
+        # He opened a contact on alivente.online and got a header, a
+        # footer and nothing between them. The list was in the body the
+        # whole time, carrying the inline display:none that
+        # toggleView() had written on the card's copy of it.
+        ok(n_after['bodyEventH'] > 0,
+           '  and it is VISIBLE, not merely present - %dpx of event '
+           'list in the body' % n_after['bodyEventH'],
+           '%dpx' % n_after['bodyEventH'])
+        ok(n_after['cardEventH'] == 0,
+           '  while the card behind it stays compact - the inline hide '
+           'was cleared on the COPY, not on the card',
+           '%dpx' % n_after['cardEventH'])
+        ok(n_after['bodyCtl'] > 0,
+           '  the copy brings the event controls with it',
+           n_after['bodyCtl'])
+        ok(n_after['bodyInline'] == 0,
+           '  and not one of them kept an inline handler, so no copied '
+           'pencil opens a second modal and no copied checkbox posts '
+           'on its own', n_after['bodyInline'])
+        # ---- AND IT DRIVES THE CARD'S OWN CONTROL --------------------
+        # The check above is the inverse of the implementation - it
+        # would pass just as well against a copy whose controls do
+        # NOTHING. So the copy is clicked for real, and the questions
+        # are whether the CARD's button fired and whether this modal
+        # got out of the way first, which is the whole contract CC-2
+        # wrote down and never tested.
+        _ctx = br.new_context(viewport={'width': 1280, 'height': 900})
+        _ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
+        _pg = _ctx.new_page()
+        _goto(_pg, fixture(NOW, 'cc3_drive.html'))
+        _pg.wait_for_timeout(150)
+        _pg.evaluate("() => { if (typeof toggleView === 'function') "
+                     "{ toggleView(); } }")
+        _pg.wait_for_timeout(60)
+        _pg.evaluate("""() => {
+            const c = document.querySelectorAll('.contact-card')[0];
+            window.__hit = 0;
+            c.querySelectorAll('.event-list button').forEach(
+                b => b.addEventListener('click',
+                                        () => { window.__hit++; }));
+            if (typeof openContactDetail === 'function') {
+                openContactDetail(c);
+            }
+        }""")
+        _pg.wait_for_timeout(500)
+        _drive = _pg.evaluate("""() => {
+            const b = document.querySelector(
+                '#contactDetailModal .modal-body .event-list button');
+            if (!b) { return {found: false}; }
+            try { b.click(); } catch (e) { }
+            return {found: true};
+        }""")
+        _pg.wait_for_timeout(900)
+        _out = _pg.evaluate("""() => {
+            const m = document.getElementById('contactDetailModal');
+            return {hit: window.__hit || 0,
+                    shown: !!(m && m.classList.contains('show')
+                              && getComputedStyle(m).display === 'block')};
+        }""")
+        _ctx.close()
+        ok(_drive.get('found'),
+           '  a copied event control is there to be clicked')
+        ok(_out['hit'] == 1,
+           '  and clicking it fires the CARD own button exactly once, '
+           'not a dead handler on the copy', _out['hit'])
+        ok(not _out['shown'],
+           '  with this modal closed first, so two are never open at '
+           'once', _out['shown'])
         # THE GAPS, NOT THE TOPS.
         #
         # Opening a Bootstrap modal puts `modal-open` on the body, which
@@ -503,17 +630,39 @@ else:
         ok(max(n_after['heights']) - min(n_after['heights']) <= 2,
            '  because the clicked card is no taller than its '
            'neighbours: %s' % n_after['heights'])
+        # CC-3: AND NOT TALLER THAN IT WAS, EITHER. In the real compact
+        # grid the three cards share a row, so "the one below" is a
+        # card that does not exist and every gap is 0 whatever happens.
+        # The claim that survives the grid is that the click changed no
+        # card's height at all.
+        _grew = [a - b for a, b in zip(n_after['heights'],
+                                       n_before['heights'])]
+        ok(max(_grew) <= 2,
+           '  and no taller than it was BEFORE the click either - the '
+           'row did not move: %s' % n_after['heights'], _grew)
 
         if APPLIED:
             w_before, w_after = shot(WAS, 'cc2_was.html')
-            ok(max(gaps(w_after)) - min(gaps(w_after)) > 2,
-               'CONTROL: before this round the gaps were NOT the same - '
-               '%s - because the clicked card pushed the next one down'
-               % gaps(w_after),
-               'if they were, this round is aimed at nothing')
-            ok(w_after['heights'][0] > w_after['heights'][1],
-               '  and it grew past its neighbours: %d against %d'
-               % (w_after['heights'][0], w_after['heights'][1]))
+            # CC-3, 17 Oct 2026 - RE-STATED FOR THE ROW.
+            # These two asked whether the clicked card pushed the card
+            # BELOW it down, which was the right question against a
+            # fixture that stacked the cards in a column. The fixture
+            # calls the page's own toggleView now, so the container is
+            # the three-across .compact-grid the page really draws, and
+            # there is no card below - the clicked card grew the whole
+            # ROW. Measured: 48px each before the click, 611px each
+            # after. That is the defect, and it is worse than the one
+            # the old wording described.
+            _was_grew = [a - b for a, b in zip(w_after['heights'],
+                                               w_before['heights'])]
+            ok(min(_was_grew) > 20,
+               'CONTROL: before this round the click grew the card from '
+               '%dpx to %dpx' % (w_before['heights'][0],
+                                 w_after['heights'][0]),
+               'if it did not, this round is aimed at nothing')
+            ok(len(_was_grew) > 1 and min(_was_grew[1:]) > 20,
+               '  AND DRAGGED ITS NEIGHBOURS WITH IT - nobody clicked '
+               'those two, and they grew by %s' % _was_grew[1:])
             ok(max(gaps(w_before)) - min(gaps(w_before)) <= 2,
                '  while before the click they WERE the same: %s'
                % gaps(w_before))

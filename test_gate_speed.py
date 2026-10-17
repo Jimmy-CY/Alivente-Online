@@ -394,7 +394,114 @@ else:
 
 
 # ==========================================================================
-head('6. REGISTERED, ON THE GATE')
+head('6. A VERDICT THAT DEPENDS ON THE LOAD IS NOT A VERDICT')   # AR-1
+# ==========================================================================
+# AR-1, 17 Oct 2026. His gate lost test_filter_get.py at 305 of 363
+# with no tally, no traceback and no exit code printed; it passed on
+# the resume against a tree nobody had touched. test_crs_print.py and
+# test_print_queries.py did the same thing in this sandbox the same
+# day. Six workers mean six browsers and several Django boots at
+# once, and a verdict reached under that load is about the machine.
+RUN_NOW = read(os.path.join(ROOT, RUNNER))
+RUN_WAS = as_gt2_left(RUNNER)
+ok('died.append' in RUN_NOW,
+   'a failure in the pool is remembered, not just reported')
+ok('Re-running each' in RUN_NOW,
+   '  and EVERY failure is re-run alone, not only the silent ones')
+ok('rescued.append' in RUN_NOW,
+   '  and a rescue is named in the summary, never absorbed quietly')
+ok('failed.remove(' in RUN_NOW,
+   '  and a suite that passes alone stops counting as failed')
+ok('FAILED  rc=%s' in RUN_NOW,
+   'and the exit code is printed on every failure - the one fact his '
+   'gate did not give')
+ok('the sweep stopped early' in RUN_NOW,
+   'but a rescue over a stopped sweep is NOT called green')
+ok(RUN_NOW.count('return 1') >= 2,
+   '  it exits 1 and asks for --resume', RUN_NOW.count('return 1'))
+ok(not APPLIED or 'died.append' not in RUN_WAS,
+   'CONTROL: before this round a killed suite was simply a failure')
+
+# ---- AND RUN, against two suites built to be the two cases ----------
+# A suite that exits 1 having printed NO tally, and passes the second
+# time; and a suite that exits 1 having printed one. The first must be
+# rescued. The second must not be run twice - a suite that has made a
+# claim about the tree is not asked again.
+DIED = 'test_ar1_probe_died.py'
+TOLD = 'test_ar1_probe_told.py'
+DIED_SRC = """import os, sys
+m = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.ar1_died')
+if not os.path.isfile(m):
+    open(m, 'w').write('x')
+    print('  3a  the rows')
+    sys.exit(1)
+print('  2 passed, 0 failed, 0 skipped')
+"""
+TOLD_SRC = """import os, sys
+m = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.ar1_told')
+open(m, 'a').write('x')
+print('  FAIL   the thing really is wrong')
+print('  3 passed, 1 failed, 0 skipped')
+sys.exit(1)
+"""
+log = os.path.join(ROOT, '.alv_run_log.json')
+keep = open(log, 'rb').read() if os.path.isfile(log) else None
+made = []
+try:
+    for n, s in ((DIED, DIED_SRC), (TOLD, TOLD_SRC)):
+        p = os.path.join(ROOT, n)
+        with open(p, 'w', encoding='utf-8', newline='\n') as f:
+            f.write(s)
+        made.append(p)
+    for mk in ('.ar1_died', '.ar1_told'):
+        if os.path.isfile(os.path.join(ROOT, mk)):
+            os.remove(os.path.join(ROOT, mk))
+
+    r1 = subprocess.run([sys.executable, RUNNER, '--quiet', '--force',
+                         '--only', DIED], cwd=ROOT, capture_output=True,
+                        text=True, timeout=300)
+    ok(r1.returncode == 0,
+       'the one that printed no tally was re-run alone and RESCUED',
+       'rc=%s' % r1.returncode)
+    ok('Re-running each' in r1.stdout,
+       '  and the gate said it was running it again, alone')
+    ok('PASSED alone' in r1.stdout,
+       '  and said the pool was the cause, not the tree')
+
+    if os.path.isfile(log):
+        os.remove(log)
+    r2 = subprocess.run([sys.executable, RUNNER, '--quiet', '--force',
+                         '--only', TOLD], cwd=ROOT, capture_output=True,
+                        text=True, timeout=300)
+    n_told = len(open(os.path.join(ROOT, '.ar1_told'),
+                      encoding='utf-8').read())
+    ok(r2.returncode == 1,
+       'CONTROL: the one that really is wrong FAILED and STAYED failed',
+       'rc=%s' % r2.returncode)
+    ok(n_told == 2,
+       '  having been given its second chance and refused it - twice '
+       'run, twice wrong', '%d run(s)' % n_told)
+    ok('FAILED alone too' in r2.stdout,
+       '  and the gate says so in those words - this one is real')
+    ok('PASSED alone' not in r2.stdout,
+       '  and does not appear among the rescues')
+finally:
+    for p in made:
+        if os.path.isfile(p):
+            os.remove(p)
+    for mk in ('.ar1_died', '.ar1_told'):
+        p = os.path.join(ROOT, mk)
+        if os.path.isfile(p):
+            os.remove(p)
+    if keep is None:
+        if os.path.isfile(log):
+            os.remove(log)
+    else:
+        open(log, 'wb').write(keep)
+
+
+# ==========================================================================
+head('7. REGISTERED, ON THE GATE')
 # ==========================================================================
 ok(ME in alv_tree.CONVERTED, '%s is in alv_tree.CONVERTED' % ME)
 try:

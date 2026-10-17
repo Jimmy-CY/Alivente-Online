@@ -31,6 +31,25 @@ WHAT IT DOES
     sentinel row out of a patcher, then reports any gate string that
     also appears in what the round writes.
 
+AND, ON A SUITE (any path whose name starts with test_), TWO MORE
+    Both of these cost a failed gate on his laptop after a green sweep
+    here, which is the most expensive kind of mistake we make.
+
+    THE 11% RULE.  The sandbox renders text about 11% wider than his
+        Chromium. So a rendered TEXT WIDTH is only assertable as a
+        relation that survives an 11% change - never against a number.
+        AE-4 asserted `probe < twin`, which was `150 < 154` here and
+        `150 < 149` there: green on this machine, red on his, twice.
+        Heights are not in scope: a 44px floor comes from CSS, not from
+        the font.
+
+    THE as_left_by RULE.  A claim that NOTHING ELSE CHANGED must read
+        the file as the round LEFT it - `as_left_by(p, SUFFIX, read)` -
+        never live. Read live and the claim fails the moment a LATER
+        round touches that file, which is AE-4 again: its "no live CSS
+        changed" half saw DG-1's edit to act_expense.html and refused a
+        tree that was right.
+
 WHAT IT CANNOT DO
     It reads literals, so a gate built from a variable is invisible to
     it, and it cannot tell a deliberate overlap from an accidental one.
@@ -113,10 +132,177 @@ def sentinels(src):
     return out
 
 
+# --------------------------------------------------------------------------
+# THE TWO SUITE CHECKS
+# --------------------------------------------------------------------------
+# A width read, in every spelling the suites use. HEIGHTS ARE ABSENT ON
+# PURPOSE - a height usually comes from a CSS floor, which the font does
+# not move.
+WIDTH_READ = re.compile(
+    r'\b(?:offsetWidth|scrollWidth|clientWidth'
+    r'|getBoundingClientRect\(\)\s*\.\s*width'
+    r'|bounding_box\(\)\s*\[\s*[\'"]width[\'"]\s*\]'
+    r'|\[\s*[\'"](?:width|w|need|box|lw)[\'"]\s*\])')
+
+# `name = <something with a width read in it>` - including the JS side,
+# where the suite builds the measuring script as a string.
+WIDTH_BIND = re.compile(
+    r'^\s*(?:const\s+|let\s+|var\s+)?([A-Za-z_]\w*)\s*=\s*([^=].*)$')
+
+# A comparison against a bare number. 20 is the floor: below it the
+# number is a count, an index or a tolerance band, and a tolerance IS a
+# relation - PJ-2's `abs(box - need) <= 4` scales with both sides.
+#
+# AND THE DIRECTION IS THE WHOLE CHECK. The sandbox renders text about
+# 11% WIDER than his Chromium, so the two directions are not alike:
+#
+#     width <= K   harder HERE than there.  Green here means green on
+#                  his machine, with room to spare.  CONSERVATIVE.
+#     width >= K   easier HERE.  Green here says nothing about there,
+#                  and that is exactly how AE-4 shipped twice.
+#
+# So only the >= / > / == shapes are raised. Flagging `<=` as well is
+# what made the first run of this check print fourteen lines, thirteen
+# of them conservative, which is how a reading aid gets ignored.
+ABS_CMP = re.compile(
+    r'(?P<lop>[<>]=?|[=!]=)\s*(?P<lnum>\d{2,})\b'
+    r'|\b(?P<rnum>\d{2,})\s*(?P<rop>[<>]=?|[=!]=)')
+# measured OP number  ->  exposed when the number is a FLOOR
+EXPOSED_RIGHT = ('>', '>=', '==', '!=')
+# number OP measured  ->  the same floor, written the other way round
+EXPOSED_LEFT = ('<', '<=', '==', '!=')
+
+NO_CHANGE = re.compile(
+    r'nothing else|no other .{0,20}chang|unchanged|untouched'
+    r'|left alone|no live .{0,20}chang|only .{0,24}changed', re.I)
+
+
+def width_names(src):
+    """Names that hold a RENDERED TEXT WIDTH."""
+    names = set()
+    for line in src.split('\n'):
+        if not WIDTH_READ.search(line):
+            continue
+        m = WIDTH_BIND.match(line.split('#')[0])
+        if m and m.group(1).isidentifier():
+            names.add(m.group(1))
+    return names
+
+
+def suite_widths(src, path):
+    """THE 11% RULE - a rendered text width asserted against a number."""
+    out = []
+    if not WIDTH_READ.search(src):
+        return out
+    names = width_names(src)
+    nm = (re.compile(r'\b(?:%s)\b' % '|'.join(sorted(map(re.escape, names))))
+          if names else None)
+    for n, line in enumerate(src.split('\n'), 1):
+        s = line.split('#')[0]
+        if not re.search(r'\b(?:ok|bad|assert)\s*\(|\bif\b', s):
+            continue
+        touches = bool(WIDTH_READ.search(s)) or bool(nm and nm.search(s))
+        if not touches:
+            continue
+        for m in ABS_CMP.finditer(s):
+            d = m.groupdict()
+            if d['lnum'] is not None:
+                num, op, exposed = d['lnum'], d['lop'], EXPOSED_RIGHT
+            else:
+                num, op, exposed = d['rnum'], d['rop'], EXPOSED_LEFT
+            if op not in exposed:
+                continue       # conservative: harder here than on his
+            out.append((n, num, op, line.strip()[:72]))
+            break
+    return out
+
+
+def suite_as_left(src):
+    """THE as_left_by RULE - a no-change claim that reads LIVE.
+
+    THE SHAPE, EXACTLY. Two reads of the same file - one LIVE, one from
+    a BACKUP - compared, and the verdict called "unchanged". That is
+    AE-4's second half, and it refuses a right tree the moment a LATER
+    round edits that file for a reason of its own.
+
+    Both halves are required before anything is raised:
+
+        a backup read   .bak_, + SUFFIX, before(), as_left_by()
+        a live read     read(p) with none of those
+
+    A claim with only a live read beside it is not this fault - it is a
+    standing invariant about the tree as it is now, and live is where
+    it should be read. Prose is excluded too: `head(...)` and `print()`
+    say "nothing else moved" in a section title all the time, and four
+    of the first nine findings were exactly that.
+    """
+    claims, lines = [], src.split('\n')
+    has = 'as_left_by' in src
+    for n, line in enumerate(lines, 1):
+        s = line.strip()
+        if not NO_CHANGE.search(line) or s.startswith('#'):
+            continue
+        if re.match(r'(?:print|head|skip)\s*\(', s):
+            continue           # prose, not a claim
+        # The reads this claim stands on: the dozen lines above it.
+        near = [l for l in lines[max(0, n - 13):n]
+                if re.search(r'=\s*(?:\w+\()*(?:read|before)\s*\(', l)
+                and not l.strip().startswith('#')]
+        kept = re.compile(r'SUFFIX|as_left_by|\.bak_|\bbefore\s*\(|\bBAK\b')
+        backup = [l for l in near if kept.search(l)]
+        raw = [l.strip()[:60] for l in near if not kept.search(l)]
+        if not (backup and raw):
+            continue           # not the two-read comparison
+        claims.append((n, s[:72], raw))
+    return has, claims
+
+
+def audit_suite(path, src):
+    bad = 0
+    widths = suite_widths(src, path)
+    for n, num, op, line in widths:
+        bad += 1
+        print('  !! A RENDERED WIDTH GIVEN A FLOOR OF %s  (%s)' % (num, op))
+        print('     line %-5d %s' % (n, line))
+        print('     This is the direction that is EASIER here than on')
+        print('     his machine: 11% wider text clears a floor the')
+        print('     narrower font would not. State it as a relation')
+        print('     between two measurements, or print it.')
+    has, claims = suite_as_left(src)
+    for n, line, raw in claims:
+        if not raw:
+            continue
+        if not has:
+            bad += 1
+            print('  !! A NO-CHANGE CLAIM THAT READS LIVE')
+        else:
+            print('  ?  a no-change claim, and a live read above it')
+        print('     line %-5d %s' % (n, line))
+        for r in raw[:4]:
+            print('     reads     : %s' % r)
+        if not has:
+            print('     as_left_by is not in this file. A later round')
+            print('     touching the same file will refuse a right tree.')
+    if not widths and not claims:
+        print('  ok   no rendered width pinned to a number, no no-change '
+              'claim')
+    elif not bad:
+        print('  ok   nothing that an 11% font or a later round would '
+              'break')
+    return bad
+
+
 def main(paths):
     bad = 0
     for p in paths:
         src = open(p, encoding='utf-8', errors='replace').read()
+        if p.replace('\\', '/').split('/')[-1].startswith('test_'):
+            print('')
+            print('=' * 74)
+            print('%s   SUITE' % p)
+            print('=' * 74)
+            bad += audit_suite(p, src)
+            continue
         writes = literals(src)
         blob = '\n'.join(writes.values())
         print('')

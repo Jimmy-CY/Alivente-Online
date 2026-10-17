@@ -266,6 +266,9 @@ def import_recipe(request):
         try:
             file_name = uploaded_file.name
             file_ext = file_name.split('.')[-1].lower()
+            # The extension still decides WHETHER this is an image. It
+            # no longer decides what the bytes are - see RI-1 below.
+            image_media_type = None
 
             # Extract text based on file type
             if file_ext == 'pdf':
@@ -273,7 +276,12 @@ def import_recipe(request):
             elif file_ext in ['doc', 'docx']:
                 text_content = extract_text_from_docx(uploaded_file)
             elif file_ext in ['jpg', 'jpeg', 'png']:
-                text_content = extract_text_from_image(uploaded_file)
+                # RI-1, 17 Oct 2026 - THE ENCODER SAYS WHAT IT MADE.
+                # This took the bytes and left the media type to be
+                # worked out from file_ext, which is how a genuine JPEG
+                # came to be announced as JPEG while carrying PNG.
+                text_content, image_media_type = \
+                    extract_text_from_image(uploaded_file)
             else:
                 messages.error(request, 'Unsupported file format.')
                 return redirect('import_recipe')
@@ -292,7 +300,8 @@ def import_recipe(request):
             # the same thing - a record of a string is not the place to
             # write the string. apply_import_model.py carries the exact
             # wording.
-            extracted_data = extract_recipe_with_ai(text_content, file_ext)
+            extracted_data = extract_recipe_with_ai(
+                text_content, file_ext, image_media_type)
 
             # Store in session
             temp_id = str(uuid.uuid4())

@@ -103,6 +103,21 @@ MEDIA_TYPES = {
     'png': 'image/png',
 }
 
+# WHAT ACTUALLY GOES ON THE WIRE, named once. RI-1, 17 Oct 2026.
+#
+# extract_text_from_image re-encodes every upload through PIL, so the
+# bytes the API receives are this format whatever the file was called.
+# The save and the media type are both derived from the one name, so a
+# round that changes the format cannot change only half of it.
+#
+# This is the other half of the fault the note above describes. That
+# round took `image/{ext}` out - a spelling no registry has - and left
+# the EXTENSION choosing the media type, so a genuine .jpg announced
+# JPEG while carrying PNG and the API refused it. Every photographed
+# recipe failed; a screenshot worked, because a screenshot is a PNG.
+IMAGE_WIRE_FORMAT = 'PNG'
+IMAGE_WIRE_MEDIA_TYPE = 'image/' + IMAGE_WIRE_FORMAT.lower()
+
 
 class RecipeExtractionError(Exception):
     """A reason the import failed, fit to show the person who uploaded.
@@ -146,14 +161,21 @@ def extract_text_from_docx(file):
 
 
 def extract_text_from_image(file):
-    """For images, we'll pass directly to Claude's vision API"""
-    # Convert to base64 for Claude API
+    """Re-encode an upload for the vision API.
+
+    RETURNS (base64, media_type). RI-1, 17 Oct 2026 - it returned the
+    bytes alone, and the caller worked out the media type from the
+    FILENAME. This function is the only thing that knows what it
+    produced, so it is the only thing entitled to say so; a .jpg
+    announced as JPEG while carrying PNG is what the API refused, and
+    it refused every photographed recipe.
+    """
     try:
         image = Image.open(file)
         buffered = BytesIO()
-        image.save(buffered, format="PNG")
+        image.save(buffered, format=IMAGE_WIRE_FORMAT)
         img_base64 = base64.b64encode(buffered.getvalue()).decode()
-        return img_base64
+        return img_base64, IMAGE_WIRE_MEDIA_TYPE
     except Exception as e:
         raise Exception(f"Error processing image: {str(e)}")
 
@@ -162,7 +184,7 @@ def extract_text_from_image(file):
 # AI EXTRACTION FUNCTION
 # ============================================
 
-def extract_recipe_with_ai(content, file_type):
+def extract_recipe_with_ai(content, file_type, media_type=None):
     """Use Claude AI to extract recipe data with structured ingredients"""
 
     # NOTHING TO SEND IS THE ONE CASE WHERE THE FILE IS AT FAULT.
@@ -220,6 +242,27 @@ Example: "1 teaspoon minced fresh garlic" should be:
 
 Return ONLY valid JSON with these fields. If a field is not found, use null for numbers or empty string/array for text."""
 
+    # RI-1, 17 Oct 2026 - IT REFUSES RATHER THAN GUESSES.
+    #
+    # The media type is whatever extract_text_from_image produced, and
+    # it is passed in. There is deliberately NO fallback to the map
+    # keyed on the extension: that fallback is the fault this round
+    # removes, and one that can be wrong is worse than none because it
+    # fails at the API rather than here.
+    #
+    # The value is still checked against the map, so every registered
+    # name in it stays live and a typo cannot reach the wire.
+    if file_type in ('jpg', 'jpeg', 'png'):
+        if not media_type:
+            raise RecipeExtractionError(
+                'The recipe reader was handed an image with no media '
+                'type. Your file is fine - this is a fault on our side.')
+        if media_type not in set(MEDIA_TYPES.values()):
+            raise RecipeExtractionError(
+                'The recipe reader produced an image format the API does '
+                'not accept. Your file is fine - this is a fault on our '
+                'side.')
+
     last = None
     for attempt in range(ATTEMPTS):
         try:
@@ -235,7 +278,7 @@ Return ONLY valid JSON with these fields. If a field is not found, use null for 
                                     "type": "image",
                                     "source": {
                                         "type": "base64",
-                                        "media_type": MEDIA_TYPES[file_type],
+                                        "media_type": media_type,
                                         "data": content,
                                     },
                                 },
