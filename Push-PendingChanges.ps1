@@ -69,7 +69,12 @@ param(
     [switch]$Force,
     [string]$Message,
     [string[]]$Body = @(),
-    [string[]]$Checks = @()
+    [string[]]$Checks = @(),
+    # GT-2, 17 Oct 2026 - E17. A failure at suite 300 should restart at
+    # 300, not at 1. alv_run.py decides what may be skipped: a suite is
+    # only skipped when NOTHING IT COULD READ has changed since the run
+    # that passed it, which alv_impact answers. Everything else re-runs.
+    [switch]$Resume
 )
 
 # Deliberately NOT 'Stop'.  Under 'Stop', anything a native command writes to
@@ -1069,6 +1074,45 @@ $sentinels = @(
     # clickable and show the names.
     @{ File = 'pages\templates\workspace_management.html'; Text = 'alv-pop-trigger'; What = 'WM-1: the member count opens the names' },
     @{ File = 'pages\templates\workspace_management.html'; Text = 'ws-members" title='; Absent = $true; Code = $true; What = 'WM-1: and the hover-only tooltip is gone with it' },
+    # ------------------------------------------------- AE-4, 16 Oct 2026
+    # The suite clones the control instead of imitating it.
+    @{ File = 'test_ae_line.py'; Text = 'const twin = model.cloneNode(true)'; What = 'AE-4: the probe is a clone of the real control' },
+    # ABSENT ON THE CONSTRUCT, NOT ON THE PROSE. The replacement NAMES
+    # the old padding in its own comment, explaining what went wrong, so
+    # a sentinel on that spelling would refuse the round's own output -
+    # which it did, in seven suites at once. createElement is the thing
+    # that must not come back, and it is gone.
+    @{ File = 'test_ae_line.py'; Text = 'createElement'; Absent = $true; What = 'AE-4: and the suite builds no control of its own' },
+    # NOT Code = $true. The note lives in a CSS comment, and code_only
+    # BLANKS those - so a Code sentinel would be absent in every version
+    # ever written, including the ones where the sentence was there. It
+    # would pass for ever and discriminate never, which test_sentinels
+    # catches by trying each row against 45 older copies of the file.
+    # A sentinel that cannot fail is not a sentinel - the same lesson
+    # as the scrollWidth check this round threw away.
+    @{ File = 'pages\templates\act_expense.html'; Text = 'A date input needs 165'; Absent = $true; What = 'AE-4: the page no longer quotes an imitation as a measurement' },
+    # ------------------------------------------------- LF-1, 17 Oct 2026
+    @{ File = 'test_label_fit.py'; Text = 'PJ-2'; What = 'LF-1: the narrowest width asks the wrap law' },
+    @{ File = 'test_label_fit.py'; Text = 'white-space:nowrap'; What = 'LF-1: and measures what each label needs by cloning it' },
+    # ------------------------------------------------- GT-2, 17 Oct 2026
+    @{ File = 'Push-PendingChanges.ps1'; Text = 'alv_run.py'; What = 'GT-2: the gate runs its suites through alv_run' },
+    # NO ABSENT SENTINEL ON THIS FILE, AND IT IS NOT AN OVERSIGHT.
+    #
+    # A sentinel row lives IN Push-PendingChanges.ps1. An ABSENT row
+    # naming a string therefore PUTS that string into the very file it
+    # declares the string missing from, and the check fails the moment
+    # it is written. Three spellings were tried before the shape of the
+    # problem was clear - the loop header, then a variable, then the
+    # padding expression - and every one of them failed the same way,
+    # because the fault is structural and not a choice of words.
+    #
+    # The claim is kept where it can be made: test_gate_speed.py asserts
+    # by the SHAPE of the statement that no suite loop survives, which a
+    # file checking itself cannot do.
+    @{ File = 'alv_run.py'; Text = 'PLANTERS'; What = 'GT-2: the fourteen that must stay serial are named, not guessed' },
+    # ------------------------------------------------- CC-2, 17 Oct 2026
+    @{ File = 'pages\templates\celebration_management.html'; Text = 'contactDetailModal'; What = 'CC-2: the contact opens in a modal' },
+    @{ File = 'pages\templates\celebration_management.html'; Text = 'toggleCardExpand'; Absent = $true; Code = $true; What = 'CC-2: and no longer grows the card in place' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2495,53 +2539,46 @@ $suites = @(
     'test_data_table.py',
     'test_admin_behaviour.py',
     'test_home_open.py',
-    'test_ws_members.py'
+    'test_ws_members.py',
+    'test_ae_probe.py',
+    'test_label_law.py',
+    'test_gate_speed.py',
+    'test_contact_modal.py'
 )
-# A suite listed here but not on disk currently prints an amber line and
-# carries on. That is the right behaviour for a repo where a suite may not
-# have been written yet - but the COUNT of skips is the thing worth seeing,
-# because "23 passed" reads identically whether 23 ran or 23 were skipped.
-$skipped = @()
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
 # monitor progress and manage my time better."
 #
-# THE TOTAL IS $suites.Count, NOT A NUMBER TYPED HERE. The list grows by a
-# line every round - 197 three weeks ago, 203 today - and a hardcoded total
-# would be wrong the first time somebody appends to it and would go on
-# being wrong silently. The width is computed from the count too, so the
-# numbers stay in a straight column whether there are 99 or 1,099.
+# Still true, and alv_run.py still does it - the numbering, the total taken
+# from the list rather than typed, and the count of suites that were not on
+# disk. What moved is where the loop lives.
 #
-# The three names carry a suite prefix because this script is 1,200 lines
-# and $label already belongs to the manifest loop five hundred lines up.
-$suiteNo = 0
-$suiteWide = ('' + $suites.Count).Length
-foreach ($t in $suites) {
-    $suiteNo++
-    $suiteLabel = ('[' + ('' + $suiteNo).PadLeft($suiteWide) + '/' + $suites.Count + ']')
-    if (-not (Test-Path (Join-Path $root $t))) {
-        Warn ($suiteLabel + ' ' + $t + ' not present - skipped')
-        $skipped += $t
-        continue
-    }
-    Say ''
-    Say ('  == ' + $suiteLabel + ' ' + $t)
-    & python $t 2>&1 | ForEach-Object { Say ('     ' + $_) }
-    if ($LASTEXITCODE -ne 0) {
-        # THE NUMBER ON THE FAILURE LINE TOO. In a 203-suite run the failure
-        # scrolls past the banner that said which suite was starting, and
-        # "test_x FAILED" alone does not say how far in it was.
-        Bad ($suiteLabel + ' ' + $t + ' FAILED')
-        if (-not $Force) { Say ''; Say '  Stopping.  Nothing has been staged.'; exit 1 }
-    }
-}
-
-Say ''
-if ($skipped.Count -gt 0) {
-    Warn ('' + $skipped.Count + ' of ' + $suites.Count + ' suite(s) were not on disk and did not run:')
-    foreach ($t in $skipped) { Warn ('     ' + $t) }
+# GT-2, 17 Oct 2026 - THE LOOP LIVES IN alv_run.py NOW.
+#
+# It ran one suite at a time, which is where most of the hour went. The
+# replacement runs them in a pool, with the fourteen suites that plant
+# into real files pinned to a serial phase first, and the browser suites
+# before the rest so a bad environment shows early. It reads $suites out
+# of THIS FILE, so the list above stays the only place it is kept.
+#
+# WHY IT IS PYTHON. There is no PowerShell in the sandbox these rounds
+# are built in, so nothing written here can be run before it is
+# delivered. alv_run.py was run against all 360 suites before this round
+# existed: 359 pass through it, and the one that does not fails alone
+# too. Everything that can be got wrong is in the file that was tested;
+# what is left here is a call.
+#
+# The numbering, the skip report and the stop-on-failure all moved with
+# the loop - see alv_run.py, which prints them in the same shape.
+$runArgs = @((Join-Path $root 'alv_run.py'))
+if ($Force)  { $runArgs += '--force' }
+if ($Resume) { $runArgs += '--resume' }
+& python @runArgs 2>&1 | ForEach-Object { Say $_ }
+if ($LASTEXITCODE -ne 0) {
+    Bad 'one or more suites FAILED - see the lines above'
+    if (-not $Force) { Say ''; Say '  Stopping.  Nothing has been staged.'; exit 1 }
 } else {
-    Good ('all ' + $suites.Count + ' suite(s) ran')
+    Good ('all ' + $suites.Count + ' suite(s) accounted for')
 }
 
 # A suite proves the pages it was written about.  Show-ButtonDrift

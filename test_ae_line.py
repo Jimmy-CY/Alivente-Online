@@ -357,13 +357,36 @@ LOOK = '''() => {
       Math.round(e.getBoundingClientRect().top))).size;
   // WHAT A DATE INPUT ACTUALLY NEEDS, measured in THIS browser rather
   // than typed in from another one. test_filter_gap's lesson.
-  const probe = document.createElement('input');
-  probe.type = 'date'; probe.value = '2026-12-31';
-  probe.style.cssText = 'position:absolute;left:-9999px;width:auto;'
-    + 'font:inherit;padding:10px 14px;border:2px solid;box-sizing:border-box';
-  p.appendChild(probe);
-  out.need = Math.ceil(probe.getBoundingClientRect().width);
-  probe.remove();
+  //
+  // AE-4, 16 Oct 2026 - AND MEASURED ON THE CONTROL, NOT ON A COPY OF
+  // IT. This built a fresh <input type=date> and dressed it by hand:
+  // padding:10px 14px typed in, and `font:inherit` appended to
+  // .filter-grid, which inherits the GRID's 16px rather than the
+  // input's 14px. The real control has 12px of padding and a 14px
+  // font, so the stand-in came out 21px WIDER than the thing it stood
+  // for - 175 against 154 - and those 21 pixels were six failures.
+  //
+  // A CLONE CANNOT DRIFT FROM THE ORIGINAL. It carries the same
+  // element, the same classes and the same cascade; only the width is
+  // released. This is the instrument PJ-2's wrap law already uses.
+  const model = document.getElementById('fromDateInput');
+  const twin = model.cloneNode(true);
+  twin.removeAttribute('id');
+  twin.value = '2026-12-31';
+  twin.style.cssText = 'position:absolute;left:-9999px;width:auto';
+  model.parentNode.appendChild(twin);
+  out.need = Math.ceil(twin.getBoundingClientRect().width);
+  twin.remove();
+  // AND NOT BY scrollWidth, WHICH CANNOT ANSWER THIS. The obvious
+  // check - does the control overflow its own box - was written, drawn
+  // and thrown away: <input type=date> NEVER reports a scrollWidth
+  // larger than its clientWidth, because the date widget compresses
+  // its own fields instead of overflowing. Measured at 150px, at 170
+  // and at 171: scrollWidth equals clientWidth every time. A check
+  // that cannot fail is not a check, so it is not here.
+  //
+  // What a date needs is therefore what the control ASKS FOR when its
+  // width is released, which is what the clone above measures.
   return out;
 }''' % str([c[0] for c in CONTROLS]).replace("'", '"')
 
@@ -437,13 +460,27 @@ if HAVE_PW and os.path.isfile(BOOT):
                 ok(r['lines'] >= 2,
                    'CONTROL: at %4dpx the five used to take %d rows'
                    % (w, r['lines']), r['lines'])
-                clipped = [c for c in ('fromDateInput', 'toDateInput')
-                           if got[c] is not None and got[c] < r['need']]
-                ok(len(clipped) == 2,
-                   '  and BOTH dates were narrower than a date needs: '
-                   '%d and %d against %d'
-                   % (got['fromDateInput'] or -1, got['toDateInput'] or -1,
-                      r['need']), clipped)
+                # AE-4, 16 Oct 2026 - CORRECTED 17 Oct, BY HIS GATE.
+                #
+                # THE WIDTH HALF OF THIS CONTROL IS NOT ASSERTABLE, and
+                # it took two passes to see it.
+                #
+                # It began by comparing both widths against a stand-in
+                # 21px too wide, and held for the wrong reason. Swapping
+                # the stand-in for a clone was right and NOT ENOUGH: the
+                # old page gave each date 150px, and what a date needs
+                # is 154 in this sandbox and 149 on his Chromium. "Both
+                # dates were short" is therefore TRUE here and FALSE
+                # there, by one pixel, and his gate is where that showed.
+                #
+                # AE-1's defect is asserted by the CONTROL above, which
+                # holds in any font: at 1280 the five controls took TWO
+                # ROWS. The widths are PRINTED, because a margin of one
+                # pixel either way is information and not a claim.
+                for _c in ('fromDateInput', 'toDateInput'):
+                    print('         %-13s was %3dpx, and a clone of it '
+                          'asks for %3d here'
+                          % (_c, got[_c] or -1, r['need']))
         else:
             skip('the before-and-after render', 'no %s backup' % SUFFIX)
         br.close()

@@ -123,7 +123,7 @@ DANGER_PAGE = 'crs/submission_detail.html'
 BOOTSTRAP_PAGES = ('crs/country_list.html', 'crs/fi_list.html',
                    'crs/submission_list.html')
 CRS_N = 8
-N_FOOTER_SUBSTRING, N_FOOTER_TOKEN = 88, 87   # CC-1, 15 Oct 2026 - the celebration day sheet adds one .modal-footer. Both matchers rise by the same one.   # (was 87, 86)   # PV-1, 15 Oct 2026 - two hand-rolled invoice viewers went, and each took one .modal-footer wrapper with it. Both matchers fall by the same two, which is itself the point: the wrappers that left were ordinary ones.   # (was 89, 88)
+N_FOOTER_SUBSTRING, N_FOOTER_TOKEN = 89, 88   # CC-2, 17 Oct 2026 - the contact detail modal adds one .modal-footer. Both matchers rise by the same one.   # (was 88, 87)   # CC-1, 15 Oct 2026 - the celebration day sheet adds one .modal-footer. Both matchers rise by the same one.   # (was 87, 86)   # PV-1, 15 Oct 2026 - two hand-rolled invoice viewers went, and each took one .modal-footer wrapper with it. Both matchers fall by the same two, which is itself the point: the wrappers that left were ordinary ones.   # (was 89, 88)
 GREY = 'rgb(233, 236, 239)'
 GREY_INK = 'rgb(138, 151, 157)'
 DANGER_INK = 'rgb(179, 38, 30)'

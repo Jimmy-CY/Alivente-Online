@@ -189,6 +189,22 @@
     color: var(--alv-accent);
     font-weight: 600;
 }
+/* CC-2, 17 Oct 2026 - THE CONTACT DETAIL MODAL.
+   The body holds clones of the card's own .contact-details and
+   .event-list, so nothing here restyles them - they are the same
+   elements the card draws, outside .compact-view, which is why the
+   rules that hide them in a compact card do not reach them. */
+#contactDetailModal .modal-body .contact-details {
+    display: block;
+    margin-bottom: 10px;
+}
+#contactDetailModal .modal-body .event-list {
+    max-height: 48vh;
+    overflow-y: auto;
+}
+#contactDetailModal .relationship-badge {
+    margin-left: 8px;
+}
 
 .event-actions {
     display: flex;
@@ -285,19 +301,12 @@
     transform: translateY(-2px);
 }
 
-.contact-card.compact-view.expanded {
-    background: var(--alv-paper);
-    padding: 20px;
-}
 
 /* Hide details in compact view */
 .contact-card.compact-view .contact-details {
     display: none !important;
 }
 
-.contact-card.compact-view.expanded .contact-details {
-    display: block !important;
-}
 
 /* 2-column grid for compact view */
 .contacts-container.compact-grid {
@@ -340,17 +349,21 @@
    row three lines tall is not compact, and a grid whose row heights depend
    on the length of a name does not scan.
 
-   EVERY SELECTOR HERE CARRIES :not(.expanded). Clicking the card brings
-   back the pill, the icon and the heading size, which is exactly what he
-   asked for - the pill is wanted, just not forty times at once. */
-.contact-card.compact-view:not(.expanded) .contact-info h4 {
+   THE SELECTORS USED TO CARRY :not(.expanded), because clicking the
+   card brought the pill, the icon and the heading size back in place.
+   CC-2, 17 Oct 2026 - clicking opens a modal instead, so a compact card
+   is compact for as long as the compact view is on, and the qualifier
+   has nothing left to exclude. The pill and the icon are in the modal,
+   which is where he asked for them: wanted, just not forty times at
+   once. */
+.contact-card.compact-view .contact-info h4 {
     font-size: 1.05rem;
     flex-wrap: nowrap;
     gap: 0;
 }
 
-.contact-card.compact-view:not(.expanded) .contact-info h4 > i,
-.contact-card.compact-view:not(.expanded) .relationship-badge {
+.contact-card.compact-view .contact-info h4 > i,
+.contact-card.compact-view .relationship-badge {
     display: none;
 }
 
@@ -360,7 +373,7 @@
    row appearing under it. min-width:0 is required: a flex item will not
    shrink below its content without it, and the ellipsis would never
    trigger. */
-.contact-card.compact-view:not(.expanded) .contact-name {
+.contact-card.compact-view .contact-name {
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -374,11 +387,6 @@
     border-bottom: none;
 }
 
-.contact-card.compact-view.expanded .contact-header {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--alv-line-soft);
-}
 
 /* Search highlight */
 #contactSearch {
@@ -406,9 +414,6 @@
     .contact-card.compact-view {
         padding: 10px 14px;
     }
-    .contact-card.compact-view.expanded {
-        padding: 14px;
-    }
 
     /* Contact header — name at top, action icons hide here on mobile */
     .contact-header {
@@ -435,7 +440,7 @@
        star in E3b on 25 Sep, so the prose read as the start of a selector,
        ran on to the next brace, and took this rule down with it. Repaired
        C-1, 2 Oct 2026. */
-    .contact-card.compact-view:not(.expanded) .mobile-action-bar {
+    .contact-card.compact-view .mobile-action-bar {
         display: none;
     }
 
@@ -496,6 +501,12 @@
     }
 
     /* Modal full-screen on mobile */
+    /* CC-2, 17 Oct 2026 - the contact detail modal on a phone gets the
+       same full-screen treatment the Add/Edit modal already has. */
+    #contactDetailModal .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
     .modal-fullscreen-mobile {
         max-width: 100%;
         margin: 0;
@@ -890,15 +901,28 @@
                                 {% endif %}
                             </div>
                             <div class="event-countdown {% if event.days_until <= 1 %}imminent{% elif event.days_until <= 7 %}soon{% endif %}">
+                                {% comment %}
+                                   THE COUNTDOWN LOSES ITS EMOJI. CC-2,
+                                   17 Oct 2026. It read party-popper
+                                   Today, calendar Tomorrow, lightning N
+                                   days. Nothing else in this
+                                   application puts an emoji in its
+                                   chrome, and the imminent and soon
+                                   tones already say the same thing in
+                                   the house palette.
+
+                                   The wording is CC-1's, taken from the
+                                   calendar on the same decision two
+                                   days ago, so the two celebration
+                                   pages count down in one voice.
+                                {% endcomment %}
                                 {% with days=event.days_until %}
                                     {% if days == 0 %}
-                                        🎉 Today!
+                                        Today
                                     {% elif days == 1 %}
-                                        📅 Tomorrow
-                                    {% elif days <= 7 %}
-                                        ⚡ {{ days }} days away
+                                        Tomorrow
                                     {% else %}
-                                        📆 {{ days }} days away
+                                        {{ days }} days
                                     {% endif %}
                                 {% endwith %}
                             </div>
@@ -1016,6 +1040,76 @@
 
 {% if perms.auth.can_edit_celebrations %}
 <!-- Add/Edit Contact Modal -->
+{# CC-2, 17 Oct 2026 - THE CONTACT OPENS HERE, not in place. #}
+{# #}
+{# The body is filled with CLONES of the card's own .contact-details #}
+{# and .event-list - markup this template owns, copied, rather than #}
+{# markup built in script. CC-1 refused the script route on the #}
+{# sibling page and wrote down why: markup a gate can read is worth #}
+{# more than markup that is convenient to generate. #}
+{# #}
+{# The three footer controls do not re-declare what the card's #}
+{# buttons already carry - Edit alone takes six escaped arguments. #}
+{# They CLICK THE CARD'S OWN BUTTON once this modal has closed, so #}
+{# there is one source for the call and never two modals open at #}
+{# once. A contact the user may not edit has disabled spans instead #}
+{# of buttons, so the control here is disabled too. #}
+<div class="modal fade" id="contactDetailModal" tabindex="-1" role="dialog"
+     aria-labelledby="contactDetailModalLabel">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="contactDetailModalLabel">Contact</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"></div>
+            {# THE TONES ARE THE DRIFT TOOL'S, NOT MINE. The footer #}
+            {# was written with four action-secondary buttons, and #}
+            {# Show-ButtonDrift - which test_recipe_tones runs over #}
+            {# every template - reported two: it wants action-danger #}
+            {# on Delete and action-primary on Add Event. #}
+            {# #}
+            {# AND THE PAIR, NOT THE TONE ALONE. action-danger by #}
+            {# itself made the button GATE call the page drifting - #}
+            {# the two instruments disagreed, and the page settled it #}
+            {# two modals below: Delete Contact and Delete Event are #}
+            {# both `action-secondary action-danger`. base says why - #}
+            {# action-danger is outlined at rest and filled only on #}
+            {# hover, so it is a modifier on a secondary button and #}
+            {# not a tone of its own. Add Event takes action-primary, #}
+            {# like Save Contact in the modal beside this one. #}
+            {# #}
+            {# THE ORDER IS THE HOUSE'S, WHICH READS BACKWARDS HERE. #}
+            {# .modal-footer-stack-mobile is flex-direction: #}
+            {# column-reverse below 768px, so the LAST control in the #}
+            {# markup is the TOP one on a phone. The Add/Edit modal #}
+            {# beside this one puts Cancel first and Save last for #}
+            {# exactly that reason. Written the other way round, Add #}
+            {# Event - the thing somebody opens a contact to do - #}
+            {# landed at the bottom of the phone stack, under Close. #}
+            <div class="modal-footer modal-footer-stack-mobile">
+                <button type="button" class="btn action-secondary"
+                        data-dismiss="modal">Close</button>
+                <button type="button" class="btn action-secondary action-danger"
+                        data-act="delete" disabled>
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+                <button type="button" class="btn action-secondary"
+                        data-act="edit" disabled>
+                    <i class="fas fa-pencil-alt"></i> Edit Contact
+                </button>
+                <button type="button" class="btn action-primary"
+                        data-act="event" disabled>
+                    <i class="fas fa-calendar-plus"></i> Add Event
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="contactModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-fullscreen-mobile" role="document">
         <div class="modal-content">
@@ -1302,10 +1396,14 @@ function toggleView() {
             card.style.cursor = 'pointer';
             card.classList.add('compact-view');
 
-            // Add click handler for compact view
+            // CC-2, 17 Oct 2026 - a click OPENS THE CONTACT, it does
+            // not grow the card. The old handler toggled a state class
+            // on the card, which revealed the details, the whole event
+            // list and the action strip in place and pushed every card
+            // after it down the grid.
             card.onclick = function(e) {
                 if (!e.target.closest('button')) {
-                    toggleCardExpand(card);
+                    openContactDetail(card);
                 }
             };
         } else {
@@ -1318,7 +1416,7 @@ function toggleView() {
             if (contactActions) contactActions.style.display = '';
             if (contactActionBarMobile) contactActionBarMobile.style.display = '';
             card.style.cursor = '';
-            card.classList.remove('compact-view', 'expanded');
+            card.classList.remove('compact-view');
             card.onclick = null;
         }
     });
@@ -1345,27 +1443,78 @@ function toggleView() {
     }
 }
 
-function toggleCardExpand(card) {
-    const eventList = card.querySelector('.event-list');
-    const contactActions = card.querySelector('.contact-actions');
-    const contactActionBarMobile = card.querySelector('[data-actions="contact"]');
+/* CC-2, 17 Oct 2026 - THE CONTACT DETAIL MODAL.
+   Replaces the in-place expand, which grew the card and
+   pushed every card after it down the grid.
 
-    if (card.classList.contains('expanded')) {
-        // Collapse — hide everything
-        card.classList.remove('expanded');
-        eventList.style.display = 'none';
-        if (contactActions) contactActions.style.display = 'none';
-        if (contactActionBarMobile) contactActionBarMobile.style.display = 'none';
-    } else {
-        // Expand — clear inline styles so CSS (incl. mobile @media) decides
-        // visibility. Forcing 'flex' here would override the mobile rule
-        // and leak desktop icons onto the mobile layout.
-        card.classList.add('expanded');
-        eventList.style.display = '';
-        if (contactActions) contactActions.style.display = '';
-        if (contactActionBarMobile) contactActionBarMobile.style.display = '';
-    }
+   THE BODY IS FILLED WITH CLONES. Not built in script - CC-1 refused
+   that on the sibling page, because markup a gate can read is worth
+   more than markup that is convenient to generate. Not moved either -
+   a node moved out of a card is a node that can be orphaned by a
+   dismissal nobody anticipated. A clone is markup the template owns,
+   copied, and thrown away on close.
+
+   THE FOOTER CLICKS THE CARD'S OWN BUTTONS, once this modal is shut.
+   The card's edit button already carries six escaped arguments; this
+   does not re-declare them, and two modals are never open at once. */
+const CONTACT_ACTS = {event: '.icon-event', edit: '.icon-edit',
+                      delete: '.icon-delete'};
+let contactDetailCard = null;
+let contactDetailPending = null;
+
+function contactDetailEl() {
+    return document.getElementById('contactDetailModal');
 }
+
+function openContactDetail(card) {
+    const el = contactDetailEl();
+    if (!el) { return; }
+    contactDetailCard = card;
+
+    const title = el.querySelector('.modal-title');
+    const name = card.querySelector('.contact-name');
+    title.textContent = name ? name.textContent.trim() : 'Contact';
+    const badge = card.querySelector('.relationship-badge');
+    if (badge) { title.appendChild(badge.cloneNode(true)); }
+
+    const body = el.querySelector('.modal-body');
+    while (body.firstChild) { body.removeChild(body.firstChild); }
+    card.querySelectorAll('.contact-details').forEach(function (n) {
+        body.appendChild(n.cloneNode(true));
+    });
+    const events = card.querySelector('.event-list');
+    if (events) { body.appendChild(events.cloneNode(true)); }
+
+    // A CONTROL IS ENABLED ONLY WHEN THE CARD REALLY HAS THE BUTTON.
+    // Without can_edit_celebrations the card draws disabled spans
+    // instead, and there is nothing behind the footer control to click.
+    Object.keys(CONTACT_ACTS).forEach(function (act) {
+        const btn = el.querySelector('[data-act="' + act + '"]');
+        const src = card.querySelector('button' + CONTACT_ACTS[act]);
+        if (btn) { btn.disabled = !src; }
+    });
+
+    $(el).modal('show');
+}
+
+$(function () {
+    const el = contactDetailEl();
+    if (!el) { return; }
+    el.querySelector('.modal-footer').addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-act]');
+        if (!btn || btn.disabled || !contactDetailCard) { return; }
+        contactDetailPending =
+            contactDetailCard.querySelector('button' + CONTACT_ACTS[btn.dataset.act]);
+        $(el).modal('hide');
+    });
+    $(el).on('hidden.bs.modal', function () {
+        const body = el.querySelector('.modal-body');
+        while (body.firstChild) { body.removeChild(body.firstChild); }
+        const next = contactDetailPending;
+        contactDetailPending = null;
+        if (next) { next.click(); }
+    });
+});
 
 // ===== FILTERING =====
 // Search narrows CONTACTS. Type and Month narrow EVENTS, and a contact

@@ -1199,6 +1199,16 @@ ROUNDS = [
     # names it already carried in a tooltip. Third consumer of ALV POP
     # v1, no new query and no new component.
     '.bak_wsmembers',
+    # AE-4, 16 Oct 2026 - the probe becomes a clone, and the page stops
+    # quoting an imitation's number as a measurement.
+    '.bak_aeprobe',
+    # LF-1, 17 Oct 2026 - the wrap law at 992, the absolute claim above
+    # it. The second of the three font-register suites.
+    '.bak_labellaw',
+    # GT-2, 17 Oct 2026 - one loop out of the PS1, one call in.
+    '.bak_gatespeed',
+    # CC-2, 17 Oct 2026 - decided 15 Oct, built now.
+    '.bak_contactmodal',
 ]
 
 

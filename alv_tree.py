@@ -391,6 +391,24 @@ CONVERTED = [
     # on ALV POP v1, instead of a title= tooltip that a phone cannot
     # show. Wide from birth.
     'test_ws_members.py',
+    # AE-4, 16 Oct 2026 - test_ae_line was measuring a date input it
+    # built itself, 21px wider than the control it stood for. It clones
+    # the control now, and asks it directly whether it clips. Wide from
+    # birth.
+    'test_ae_probe.py',
+    # LF-1, 17 Oct 2026 - test_label_fit asserted an absolute text width
+    # at the one viewport where this sandbox and his Chromium disagree.
+    # PJ-2's wrap law replaces it there and nowhere else. Wide from
+    # birth.
+    'test_label_law.py',
+    # GT-2, 17 Oct 2026 - the gate's suite loop moves into alv_run.py,
+    # where it can be tested: parallel, planters serial, renders first,
+    # and --Resume. Wide from birth.
+    'test_gate_speed.py',
+    # CC-2, 17 Oct 2026 - the contacts compact view opens a modal
+    # instead of growing the card in place, and the emoji countdowns
+    # take CC-1's wording. Wide from birth.
+    'test_contact_modal.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

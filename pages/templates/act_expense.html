@@ -52,13 +52,25 @@
    150px each and is deleted. Its two groups are children of this one
    now, so there are five.
 
-   AND 150px WAS NEVER ENOUGH. A date input needs 165 - measured, not
-   guessed: a date input carrying 31/12/2026 at width:auto reports 165px
-   in Chromium, which is the text plus the picker icon plus this
-   component's own 14px padding and 2px border. So From and To have been
-   clipping their own value at every desktop width for as long as that
-   rule existed, and at 162px on a phone. A truncated date still looks
-   like a date, which is why nobody reported it. 170px leaves 5px.
+   AND 150px WAS NEVER ENOUGH. From and To were clipping their own
+   value - at 150px the control has 146px inside its 2px borders and
+   needs 150, so the last characters of the date were cut. A truncated
+   date still looks like a date, which is why nobody reported it.
+
+   THE 165 THIS NOTE USED TO QUOTE WAS AN IMITATION'S NUMBER, and AE-4
+   took it out on 16 Oct 2026. It came from a probe test_ae_line built
+   by hand - a fresh input dressed in typed padding and a font it
+   inherited from the grid instead of from the control - which measures
+   21px wider than the control it stood for. A CLONE of the real control
+   asks for 154. 170px clears that at every width the suite draws, and
+   the pin does not move: narrowing the column to an intrinsic 154 would
+   make the dates smaller for nothing. Every intrinsic candidate was
+   drawn before this was written - max-content, min-content, auto and
+   fit-content all give 154, minmax(max-content, 1fr) gives 163.
+
+   The number is not the claim anyway. The claim is that the control
+   does not clip the date it is holding, and test_ae_line now asks the
+   control that directly.
 
    THREE BANDS, because five columns do not fit in every panel. Bootstrap
    caps the container, so the panel is 1110px wide on any screen from

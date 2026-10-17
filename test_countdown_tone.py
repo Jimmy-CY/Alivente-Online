@@ -220,10 +220,20 @@ for name, text in ((MGMT, mgmt), (CAL, cal)):
     ok('urgent' not in bare(css_of(text)) and 'urgent' not in mk,
        '  and the word urgent is gone from the page')
 
-ok('Today!' in mgmt and 'Tomorrow' in mgmt,
-   'the words still say Today! and Tomorrow in as many letters - the '
+# CC-2, 17 Oct 2026 - the exclamation mark went with the emoji.
+# It arrived as part of "party-popper Today!", and CC-1 took the whole
+# phrase off the calendar on 15 Oct. This asked for the old spelling on
+# the page that had not been converted yet.
+#
+# The claim is unchanged and is now stronger: the colour was never the
+# only carrier, so the WORDS must still say which day it is - and BOTH
+# celebration pages must say it the same way.
+ok('Today' in mgmt and 'Tomorrow' in mgmt,
+   'the words still say Today and Tomorrow in as many letters - the '
    'colour was never the only carrier, and now it is not a carrier of '
    'anything alarming')
+ok('Today!' not in mgmt,
+   '  and the exclamation mark went with the emoji it arrived with')
 
 # ==========================================================================
 head('3. CHROMIUM MEASURES BOTH SCREENS')

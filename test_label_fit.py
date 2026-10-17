@@ -388,8 +388,28 @@ ROWJS = r"""(per) => {
   const tops = c.map(x => Math.round(r(x).top));
   const lines = [];
   for (let i = 0; i < tops.length; i += per) lines.push(tops.slice(i, i+per));
+  // WHAT EACH LABEL NEEDS, measured in THIS browser on THE LABEL.
+  //
+  // LF-1, 17 Oct 2026. PJ-2's wrap law needs a `need` beside every
+  // `box`, and the only honest way to get one is to clone the label
+  // itself and let it size to its own content - same element, same
+  // classes, same cascade, width released. A hand-built stand-in is
+  // what test_ae_line was doing wrong until AE-4; this does not repeat
+  // it.
+  const need = g.map(x => {
+    const lab = x.querySelector('label');
+    const twin = lab.cloneNode(true);
+    twin.style.cssText = 'position:absolute;left:-9999px;width:auto;'
+      + 'white-space:nowrap';
+    lab.parentNode.appendChild(twin);
+    const w = Math.ceil(r(twin).width);
+    twin.remove();
+    return w;
+  });
   return {aligned: lines.every(x => new Set(x).size === 1),
           labH: g.map(x => Math.round(r(x.querySelector('label')).height)),
+          labW: g.map(x => Math.round(r(x.querySelector('label')).width)),
+          need: need,
           col: Math.round(r(g[0].parentElement).width),
           content: Math.round(
               r(document.querySelector('.main-content')).width)};
@@ -467,10 +487,67 @@ if _pw_ok:
                 MEASURED[(name, vw)] = m
                 wrapped = [labels[i] for i, h in enumerate(m['labH'])
                            if h > ONE_LINE]
-                ok(not wrapped and m['aligned'],
-                   '%-32s %4d wide  col=%3dpx  one line, aligned'
-                   % (name, vw, m['col']),
-                   'wraps: %s   labH=%s' % (', '.join(wrapped), m['labH']))
+                if vw > NARROWEST:
+                    # ABOVE THE NARROWEST POINT the claim is absolute and
+                    # it is true on both machines: every label on one
+                    # line, every control aligned.
+                    ok(not wrapped and m['aligned'],
+                       '%-32s %4d wide  col=%3dpx  one line, aligned'
+                       % (name, vw, m['col']),
+                       'wraps: %s   labH=%s'
+                       % (', '.join(wrapped), m['labH']))
+                else:
+                    # AT 992 IT IS PJ-2's WRAP LAW. LF-1, 17 Oct 2026.
+                    #
+                    # A col-md-3 is 168px here, and `Include in
+                    # Occupancy` needs more than that in THIS browser
+                    # and less than it in Demetri's, which renders text
+                    # about 11% narrower. An absolute claim at this
+                    # width is a claim about one machine.
+                    #
+                    # So: a label may wrap only when its column really
+                    # is narrower than the label needs, measured by
+                    # cloning that label here. A wrap with room to
+                    # spare is a defect. One line in a column too narrow
+                    # for it is a defect. A row that stops lining up is
+                    # a defect. Those all still fail.
+                    broke, near = [], 0
+                    for i, lab in enumerate(labels):
+                        box, want = m['labW'][i], m['need'][i]
+                        wraps = m['labH'][i] > ONE_LINE
+                        if abs(box - want) <= 4:
+                            near += 1          # on the boundary; no claim
+                        elif wraps != (box < want):
+                            broke.append('%s box=%d need=%d wraps=%s'
+                                         % (lab, box, want, wraps))
+                    ok(not broke,
+                       '%-32s %4d wide  col=%3dpx  every wrap has a '
+                       'reason (%d on the boundary)'
+                       % (name, vw, m['col'], near),
+                       'broke: %s' % ' | '.join(broke))
+                    # ALIGNMENT IS ASSERTED ONLY WHERE NOTHING WRAPPED.
+                    #
+                    # A wrapped label is TALLER, so the control under it
+                    # starts lower and the row stops lining up. That is
+                    # the CONSEQUENCE of a lawful wrap, not a second
+                    # defect - asserting both would fail the row twice
+                    # for one cause, and on his machine, where nothing
+                    # wraps at this width, it lines up.
+                    if not wrapped:
+                        ok(m['aligned'],
+                           '%-32s %4d wide  and the controls line up'
+                           % (name, vw), m['labH'])
+                    else:
+                        print('           (%d label(s) wrapped lawfully '
+                              'here, so the row does not line up at this '
+                              'width - on a narrower font it does)'
+                              % len(wrapped))
+                    # AND THE MARGIN IS PRINTED, not asserted away.
+                    for i, lab in enumerate(labels):
+                        print('           %-28s box %3d  needs %3d  %s'
+                              % (lab, m['labW'][i], m['need'][i],
+                                 'WRAPS' if m['labH'][i] > ONE_LINE
+                                 else 'one line'))
 
         print('\n' + '=' * 74)
         print('5. THE CONTROL - the old labels still fail at the same width')
@@ -556,9 +633,17 @@ if _pw_ok:
         SWEEPJS = r"""() => {
           const r = e => e.getBoundingClientRect(), o = {};
           document.querySelectorAll('label[data-k]').forEach(l => {
+            // LF-1, 17 Oct 2026 - what the label NEEDS, by cloning it.
+            const twin = l.cloneNode(true);
+            twin.style.cssText = 'position:absolute;left:-9999px;'
+              + 'width:auto;white-space:nowrap';
+            l.parentNode.appendChild(twin);
+            const need = Math.ceil(r(twin).width);
+            twin.remove();
             o[l.dataset.k] = [Math.round(r(l).height),
                               Math.round(r(l.parentElement.parentElement)
-                                         .width)];
+                                         .width),
+                              Math.round(r(l).width), need];
           });
           return o;
         }"""
@@ -572,9 +657,39 @@ if _pw_ok:
         for vw in (1280, NARROWEST):
             got = render(br, html, SWEEPJS, width=vw)
             bad, other = [], []
+            lawful, clipped = 0, []
             for i, (cls, plain) in enumerate(keys):
-                h, w = got[str(i)]
+                h, w, lw, need = got[str(i)]
                 if h <= ONE_LINE:
+                    # LF-1 - AND THE OTHER HALF OF THE LAW, which is the
+                    # half that can actually fail here.
+                    #
+                    # A label on ONE line whose box is well below what it
+                    # needs is not fitting - it is being CLIPPED, or
+                    # overflowing its column silently. That is a defect at
+                    # any width and on any machine, and nothing in this
+                    # suite looked for it before.
+                    if lw < need - 4 and re.search(
+                            r'col-md-3(?![-\w])', cls):
+                        clipped.append(
+                            '%-10s col=%3d  %-40s box %3d needs %3d - ONE '
+                            'LINE but too narrow: clipped, not wrapped'
+                            % (cls[:10], w, plain[:40], lw, need))
+                    continue
+                # AT THE NARROWEST WIDTH, A WRAP WITH A REASON IS NOT A
+                # DEFECT. The label really is wider than the box here; on
+                # Demetri's Chromium, which renders text about 11%
+                # narrower, it is not.
+                #
+                # NOTE WHAT THIS DOES AND DOES NOT CLAIM. A label that
+                # wrapped is a label whose box was narrower than it
+                # needs - that is WHY it wrapped - so exempting every
+                # such wrap would leave nothing able to fail. What is
+                # still asserted here is the OTHER direction: a label
+                # that wrapped although its box was WIDE ENOUGH, which
+                # means something other than width broke the line.
+                if vw <= NARROWEST and lw < need:
+                    lawful += 1
                     continue
                 files = sorted(bykey[(cls, plain)][1])
                 stripped = plain.rstrip(' *').strip()
@@ -584,8 +699,12 @@ if _pw_ok:
                 (bad if mine else other).append(
                     '%-10s col=%3d  %-44s %s'
                     % (cls[:10], w, stripped[:44], ', '.join(files[:2])))
-            ok(not bad,
-               '%4d wide  no label in a rebuilt four-across row wraps' % vw,
+            ok(not bad and not clipped,
+               '%4d wide  no label wraps with room to spare, and none is'
+               ' clipped%s'
+               % (vw, ('  (%d wrapped because the box really is'
+                       ' narrower than the label needs)' % lawful)
+                  if lawful else ''),
                '\n'.join(bad))
             notes.append('SWEEP at %d wide: %d label(s) take two lines, none '
                          'of them in a row this round owns.%s'
