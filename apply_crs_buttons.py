@@ -136,11 +136,17 @@ _spec.loader.exec_module(sb)
 # hold, and only the tree can answer that.
 import alv_tree                                             # noqa: E402"""
 
-REG_WAS = """    # PF-1, 18 Oct 2026 - E24. A subject naming a round the tree does
+# MP-1, 18 Oct 2026. BOTH NAMES HERE SAID PF-1, which is the 5 October
+# picker-lazy round, not the pre-flight. This anchor stopped matching
+# alv_rounds.py the moment the register was corrected to PG-1 - so this
+# patcher, which has already been applied, would REFUSE if it were ever
+# re-run, and the message would blame a missing anchor rather than a
+# renamed round.
+REG_WAS = """    # PG-1, 18 Oct 2026 - E24. A subject naming a round the tree does
     # not have is refused before the sweep rather than after it.
     '.bak_preflight',
 ]"""
-REG_NOW = """    # PF-1, 18 Oct 2026 - E24. A subject naming a round the tree does
+REG_NOW = """    # PG-1, 18 Oct 2026 - E24. A subject naming a round the tree does
     # not have is refused before the sweep rather than after it.
     '.bak_preflight',
     # BG-1, 18 Oct 2026 - eight CRS pages in the other template root

@@ -490,6 +490,13 @@
                 <i class="fas fa-utensils"></i> Assign Recipes to Days
             </h3>
 
+            {# MP-1, 18 Oct 2026 - C13. A PLACE FOR THE PAGE TO SAY     #}
+            {# WHAT CHANGING THE DATES WILL COST. Shortening a plan, or  #}
+            {# moving its start, drops the meals on the days that fall   #}
+            {# outside the new range - and the only trace of it was a    #}
+            {# console.log. Empty unless there is something to say.      #}
+            <div id="dateChangeNote" role="status" aria-live="polite"></div>
+
             <div id="daysContainer">
                 <!-- Days will be dynamically added here -->
             </div>
@@ -500,6 +507,27 @@
 </div>
 
 <script>
+
+// MP-1, 18 Oct 2026 - B10. EVERY PIECE OF DATABASE TEXT THAT REACHES
+// innerHTML ON THIS PAGE GOES THROUGH HERE.
+//
+// Nine sites: the recipe row on Create, on Edit and on restore, the
+// selector card's title, image src and alt, its difficulty, course,
+// category and protein badges, and five filter <option> lists. All of
+// it is recipe text somebody typed.
+//
+// NOT the textContent/innerHTML trick the house uses elsewhere
+// (nmEscapeHtml, in ingredient_base_units_management.html). That is
+// correct for a text node and wrong here: three of these sites sit
+// inside a double-quoted attribute and it does not touch `"`.
+function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 // Parse JSON data from Django
 const recipes = JSON.parse('{{ recipes_json|escapejs }}');
@@ -565,7 +593,7 @@ function populateExistingRecipes() {
             recipeItem.innerHTML = `
                 <input type="hidden" name="recipes_${day.date}[]" value="${recipe.recipe_id}">
                 <div style="flex: 1;">
-                    <strong>${recipe.recipe_name}</strong>
+                    <strong>${esc(recipe.recipe_name)}</strong>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 5px;">
@@ -651,8 +679,24 @@ function updateDateRange() {
     generateDays(start, end);
 
     // In edit mode, restore recipes for days that still exist
+    const note = document.getElementById('dateChangeNote');
+    if (note) { note.innerHTML = ''; }
     if (editMode && Object.keys(savedRecipes).length > 0) {
-        restoreRecipes(savedRecipes);
+        // MP-1, 18 Oct 2026 - C13. SAY SO BEFORE THE SAVE. The dropped
+        // meals used to go to the console. The save button is left
+        // enabled: shortening a plan on purpose is a normal thing to
+        // do, and this is a warning, not a refusal.
+        const dropped = restoreRecipes(savedRecipes);
+        if (note && dropped && dropped.meals > 0) {
+            note.innerHTML = '<div class="alert alert-warning">'
+                + '<i class="fas fa-exclamation-triangle"></i> '
+                + '<strong>' + dropped.meals + ' meal'
+                + (dropped.meals === 1 ? '' : 's')
+                + '</strong> on ' + dropped.dates + ' day'
+                + (dropped.dates === 1 ? '' : 's')
+                + ' fall outside the new dates and will be removed when you '
+                + 'save.</div>';
+        }
     }
 }
 
@@ -690,11 +734,19 @@ function saveExistingRecipes() {
 function restoreRecipes(savedRecipes) {
     console.log('Restoring recipes...');
 
+    // MP-1, 18 Oct 2026 - C13. Returns what it could not put back.
+    let droppedDates = 0;
+    let droppedMeals = 0;
+
     Object.keys(savedRecipes).forEach(dateStr => {
         const recipeList = document.getElementById(`recipes-${dateStr}`);
 
         if (!recipeList) {
-            console.log(`Date ${dateStr} no longer exists in range - recipes discarded`);
+            // MP-1, 18 Oct 2026 - C13. COUNTED, NOT LOGGED. This used
+            // to be a console.log, so meals left the plan with nothing
+            // on the screen to say they had.
+            droppedDates += 1;
+            droppedMeals += (savedRecipes[dateStr] || []).length;
             return;
         }
 
@@ -712,7 +764,7 @@ function restoreRecipes(savedRecipes) {
             recipeItem.innerHTML = `
                 <input type="hidden" name="recipes_${dateStr}[]" value="${recipe.recipeId}">
                 <div style="flex: 1;">
-                    <strong>${recipe.recipeName}</strong>
+                    <strong>${esc(recipe.recipeName)}</strong>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 5px;">
@@ -735,6 +787,8 @@ function restoreRecipes(savedRecipes) {
 
         console.log(`Restored ${savedRecipes[dateStr].length} recipes for ${dateStr}`);
     });
+
+    return { dates: droppedDates, meals: droppedMeals };
 }
 
 function generateDays(startDate, endDate) {
@@ -890,8 +944,11 @@ function openRecipeSelector(dateStr, dayName) {
     displayedRecipesInSelector = 0;
     displayRecipesInSelector();
 
-    const modal = new bootstrap.Modal(document.getElementById('recipeSelectorModal'));
-    modal.show();
+    // MP-1, 18 Oct 2026 - A4. base.html loads bootstrap@4.1.3, where
+    // there is no window.bootstrap: the modal is a jQuery plugin. This
+    // was `new bootstrap.Modal(...)`, a Bootstrap 5 call, so it threw
+    // a TypeError and the selector never opened.
+    $('#recipeSelectorModal').modal('show');
 }
 
 function displayRecipesInSelector() {
@@ -937,26 +994,26 @@ function populateFilterDropdowns() {
     const courseSelect = document.getElementById('recipeSelectorCourse');
     courseSelect.innerHTML = '<option value="">🍽️ All Courses</option>';
     allCourses.forEach(course => {
-        courseSelect.innerHTML += `<option value="${course.name}">${course.name}</option>`;
+        courseSelect.innerHTML += `<option value="${esc(course.name)}">${esc(course.name)}</option>`;
     });
 
     const categorySelect = document.getElementById('recipeSelectorCategory');
     categorySelect.innerHTML = '<option value="">🏷️ All Categories</option>';
     allCategories.forEach(cat => {
-        categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+        categorySelect.innerHTML += `<option value="${esc(cat.name)}">${esc(cat.name)}</option>`;
     });
 
     const proteinSelect = document.getElementById('recipeSelectorProtein');
     proteinSelect.innerHTML = '<option value="">🥩 All Proteins</option>';
     allProteins.forEach(protein => {
-        proteinSelect.innerHTML += `<option value="${protein.name}">${protein.name}</option>`;
+        proteinSelect.innerHTML += `<option value="${esc(protein.name)}">${esc(protein.name)}</option>`;
     });
     proteinSelect.innerHTML += '<option value="vegetarian">🌱 Vegetarian</option>';
 
     const authorSelect = document.getElementById('recipeSelectorAuthor');
     authorSelect.innerHTML = '<option value="">👤 All Authors</option>';
     allAuthors.forEach(author => {
-        authorSelect.innerHTML += `<option value="${author.value}">${author.name}</option>`;
+        authorSelect.innerHTML += `<option value="${esc(author.value)}">${esc(author.name)}</option>`;
     });
 }
 
@@ -967,7 +1024,7 @@ function createRecipeSelectorCard(recipe) {
 
     let imageHtml;
     if (recipe.recipe_image) {
-        imageHtml = `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" class="recipe-selector-card-image" alt="${recipe.recipe_name}">`;
+        imageHtml = `<img loading="lazy" decoding="async" src="${esc(recipe.recipe_image)}" class="recipe-selector-card-image" alt="${esc(recipe.recipe_name)}">`;
     } else {
         imageHtml = `<div class="recipe-selector-card-placeholder"><i class="fas fa-utensils"></i></div>`;
     }
@@ -979,22 +1036,22 @@ function createRecipeSelectorCard(recipe) {
     }
 
     if (recipe.difficulty_level) {
-        metaHtml += `<span class="recipe-selector-card-badge"><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>`;
+        metaHtml += `<span class="recipe-selector-card-badge"><i class="fas fa-signal"></i> ${esc(recipe.difficulty_level)}</span>`;
     }
 
     let tagsHtml = '';
     recipe.courses.forEach(course => {
-        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #0e7c8b; color: white;">${course}</span>`;
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #0e7c8b; color: white;">${esc(course)}</span>`;
     });
     recipe.categories.forEach(cat => {
-        tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-accent); color: white;">${cat}</span>`;
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-accent); color: white;">${esc(cat)}</span>`;
     });
 
     if (recipe.is_vegetarian) {
         tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-good); color: white;"><i class="fas fa-leaf"></i> Vegetarian</span>`;
     } else {
         recipe.proteins.forEach(protein => {
-            tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-spice); color: white;">${protein}</span>`;
+            tagsHtml += `<span class="recipe-selector-card-badge" style="background: var(--alv-spice); color: white;">${esc(protein)}</span>`;
         });
     }
 
@@ -1005,7 +1062,7 @@ function createRecipeSelectorCard(recipe) {
             ${isFav ? '<span style="position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.9);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--alv-bad);"><i class="fas fa-heart"></i></span>' : ''}
         </div>
         <div class="recipe-selector-card-body">
-            <div class="recipe-selector-card-title">${recipe.recipe_name}</div>
+            <div class="recipe-selector-card-title">${esc(recipe.recipe_name)}</div>
             <div class="recipe-selector-card-meta">
                 ${metaHtml}
                 ${tagsHtml}
@@ -1030,7 +1087,7 @@ function selectRecipeForDay(recipeId, recipeName, servings) {
     recipeItem.innerHTML = `
         <input type="hidden" name="recipes_${currentMealPlanDate}[]" value="${recipeId}">
         <div style="flex: 1;">
-            <strong>${recipeName}</strong>
+            <strong>${esc(recipeName)}</strong>
         </div>
 
         <div style="display: flex; align-items: center; gap: 5px;">
@@ -1050,8 +1107,8 @@ function selectRecipeForDay(recipeId, recipeName, servings) {
 
     recipeList.appendChild(recipeItem);
 
-    const modal = bootstrap.Modal.getInstance(document.getElementById('recipeSelectorModal'));
-    modal.hide();
+    // MP-1, 18 Oct 2026 - A4, the same fault on the way out.
+    $('#recipeSelectorModal').modal('hide');
 }
 
 function searchRecipesInSelector() {

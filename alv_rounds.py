@@ -1237,6 +1237,9 @@ ROUNDS = [
     # CU-1, 18 Oct 2026 - three places decided what a receipt's currency
     # looks like and they disagreed. One helper now, three callers.
     '.bak_recsymbol',
+    # MP-1, 18 Oct 2026 - Meal Plans release 1. The nineteen items from
+    # the design record that break, expose or lose data.
+    '.bak_mealfix',
 ]
 
 

@@ -730,7 +730,7 @@
     
     <!-- Header -->
     <h2 class="page-title-h2">MEAL PLAN CALENDAR</h2>
-<div class="page-action-buttons">{% if perms.auth.can_edit_personal %}
+<div class="page-action-buttons">{% if perms.auth.can_edit_recipes %}
             <a href="{% url 'create_meal_plan' %}" class="btn action-primary">
                 <i class="fas fa-plus"></i> New Meal Plan
             </a>
@@ -832,7 +832,7 @@
                     </p>
                 {% endif %}
                 
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_recipes %}
                 <button class="create-plan-btn" onclick="window.location.href='{% url 'create_meal_plan' %}'">
                     <i class="fas fa-plus"></i> Create New Meal Plan
                 </button>
@@ -882,7 +882,7 @@
                 <a href="{% url 'meal_plan_shopping_list' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}"
                    class="icon-action-btn icon-list" title="Shopping List"
                    aria-label="Shopping list for this meal plan"><i class="fas fa-shopping-cart"></i></a>
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_recipes %}
                 <a href="{% url 'edit_meal_plan' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}"
                    class="icon-action-btn icon-edit" title="Edit"
                    aria-label="Edit this meal plan"><i class="fas fa-pencil-alt"></i></a>
@@ -890,7 +890,7 @@
                 <span class="icon-action-btn icon-disabled" title="No permission to edit"
                       aria-label="Edit this meal plan, no permission"><i class="fas fa-pencil-alt"></i></span>
                 {% endif %}
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_recipes %}
                 <button type="button" class="icon-action-btn icon-duplicate" title="Duplicate"
                         aria-label="Duplicate this meal plan"
                         onclick="confirmDuplicate('{% url 'duplicate_meal_plan' selected_meal_plan.meal_plan_id %}', '{{ selected_meal_plan.plan_name|escapejs }}')"><i class="fas fa-copy"></i></button>
@@ -948,7 +948,7 @@
                                             <a href="{% url 'view_recipe' recipe.recipe_id %}"
                                                class="icon-action-btn icon-view" title="View recipe"
                                                aria-label="View the recipe {{ recipe.name }}"><i class="fas fa-eye"></i></a>
-                                            {% if perms.auth.can_edit_personal %}
+                                            {% if perms.auth.can_edit_recipes %}
                                             <button type="button" class="icon-action-btn icon-delete"
                                                     title="Remove from this day"
                                                     aria-label="Remove {{ recipe.name }} from this day"
@@ -962,7 +962,12 @@
                                 </div>
                                 {% endfor %}
                                 
-                                {% if perms.auth.can_edit_personal %}
+                                {# MP-1, 18 Oct 2026 - A3, the second call site. This one #}
+                                {# renders only inside {% if day.recipes %}, and a day     #}
+                                {# with recipes always has a MealPlanDay row - so it       #}
+                                {# cannot pass None today. Guarded regardless: that is a   #}
+                                {# fact about the view's shape, not about this template.   #}
+                                {% if perms.auth.can_edit_recipes and day.meal_plan_day_id %}
                                 <button class="add-another-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
                                     <i class="fas fa-plus"></i> Add Another Recipe
                                 </button>
@@ -975,7 +980,20 @@
                                 <div class="empty-day">
                                     <i class="fas fa-utensils"></i>
                                     <p>No meal planned</p>
-                                    {% if perms.auth.can_edit_personal %}
+                                    {# MP-1, 18 Oct 2026 - A3. THE BUTTON NEEDS A DAY TO    #}
+                                    {# ADD TO. A week shows seven days; a plan shorter      #}
+                                    {# than seven has no MealPlanDay row for the rest, and  #}
+                                    {# day.meal_plan_day_id rendered the literal `None`     #}
+                                    {# into the onclick - a ReferenceError on click, before #}
+                                    {# the function was even entered. A three-day plan put  #}
+                                    {# four of them on the page.                            #}
+                                    {#                                                      #}
+                                    {# Release 3 lets any day take meals. Until then the    #}
+                                    {# reader is pointed at the thing that would actually   #}
+                                    {# work - lengthening the plan - instead of at a        #}
+                                    {# control that cannot.                                 #}
+                                    {% if day.meal_plan_day_id %}
+                                    {% if perms.auth.can_edit_recipes %}
                                     <button class="add-recipe-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
                                         <i class="fas fa-plus"></i> Add Recipe
                                     </button>
@@ -983,6 +1001,15 @@
                                     <button class="add-recipe-btn add-recipe-btn-disabled" disabled title="No permission to add recipes">
                                         <i class="fas fa-plus"></i> Add Recipe
                                     </button>
+                                    {% endif %}
+                                    {% else %}
+                                    <p class="text-muted">This date is outside
+                                    {% if selected_meal_plan %}&ldquo;{{ selected_meal_plan.plan_name }}&rdquo;{% else %}the plan{% endif %}.
+                                    {% if perms.auth.can_edit_recipes and selected_meal_plan %}
+                                    <a href="{% url 'edit_meal_plan' selected_meal_plan.meal_plan_id %}?from=calendar&amp;week={{ selected_week_start|date:'Y-m-d' }}">Change the dates</a>
+                                    to plan a meal for it.
+                                    {% endif %}
+                                    </p>
                                     {% endif %}
                                 </div>
                             {% endif %}
@@ -995,7 +1022,7 @@
                     <div class="no-meal-plan">
                         <i class="fas fa-calendar-times"></i>
                         <h3>No Meal Plan for This Week</h3>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <p>Create a meal plan to start adding recipes to this week.</p>
                         <a href="{% url 'create_meal_plan' %}?start_date={{ selected_week_start|date:'Y-m-d' }}" class="btn action-primary btn-lg">
                             <i class="fas fa-plus"></i> Create Meal Plan for This Week
@@ -1010,7 +1037,7 @@
         
     </div>
 
-    {% if perms.auth.can_edit_personal %}
+    {% if perms.auth.can_edit_recipes %}
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -1096,7 +1123,7 @@
 
 </div>
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 <!-- Add Recipe Modal -->
 <div class="modal fade" id="addRecipeModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -1122,7 +1149,9 @@
                     <label><strong>Select Recipe</strong></label>
                     <div id="recipeList" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--alv-line); border-radius: 8px;">
                         {% for recipe in all_recipes %}
-                        <div class="recipe-option" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name|lower }}" onclick="selectRecipeOption(this)">
+                        {# MP-1, 18 Oct 2026 - C19. The recipe's own yield, carried #}
+                        {# on the option so the servings box can read it.            #}
+                        <div class="recipe-option" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-servings="{{ recipe.servings|default:4 }}" data-recipe-name="{{ recipe.recipe_name|lower }}" onclick="selectRecipeOption(this)">
                             <div style="display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--alv-line-soft);">
                                 {% if recipe.recipe_image %}
                                 <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}" style="width: 50px; height: 50px; border-radius: var(--alv-radius-sm); object-fit: cover;">
@@ -1144,7 +1173,11 @@
                 
                 <div class="form-group">
                     <label><strong>Servings</strong></label>
-                    <input type="number" class="form-control" id="recipeServings" value="4" min="1" style="max-width: 100px;">
+                    {# MP-1, 18 Oct 2026 - C19. No value="4". The box is filled #}
+                    {# from the recipe that gets picked, and emptied when the   #}
+                    {# modal opens - it used to arrive carrying whatever the    #}
+                    {# last recipe was set to.                                  #}
+                    <input type="number" class="form-control" id="recipeServings" min="1" placeholder="4" style="max-width: 100px;">
                 </div>
             </div>
             <div class="modal-footer">
@@ -1184,6 +1217,10 @@ function addRecipeToDay(dayId, date, dayName) {
     document.getElementById('addRecipeDate').value = date;
     document.getElementById('addRecipeDayName').textContent = dayName;
     selectedRecipeId = null;
+    // MP-1, 18 Oct 2026 - C19. RESET ON EVERY OPEN. The box kept the
+    // number the last recipe put there, so the second recipe of the
+    // evening was planned for the first one's household.
+    document.getElementById('recipeServings').value = '';
     document.getElementById('confirmAddRecipeBtn').disabled = true;
     
     // Reset selection
@@ -1215,6 +1252,14 @@ function selectRecipeOption(element) {
        only enters <style>, so this one had to be named. */
     element.style.background = 'var(--alv-accent-soft)';
     selectedRecipeId = element.dataset.recipeId;
+    // MP-1, 18 Oct 2026 - C19. THE RECIPE'S OWN YIELD. The box was
+    // hard-coded to 4 in the markup and the server fell back to 4 as
+    // well, so a recipe for six was planned for four at both ends.
+    // Household size takes over in release 2.
+    const servingsBox = document.getElementById('recipeServings');
+    if (servingsBox && !servingsBox.value) {
+        servingsBox.value = element.dataset.recipeServings || '';
+    }
     document.getElementById('confirmAddRecipeBtn').disabled = false;
 }
 

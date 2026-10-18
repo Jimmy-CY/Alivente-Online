@@ -370,7 +370,16 @@ js = 0
 for page in ('create_meal_plan.html', 'recipe_management.html',
              'meal_plan_calendar.html'):
     t = read(alv_tree.path_of(page))
-    js += len(re.findall(r'\$\{[\w.]*recipe_image\}', t))
+    # MP-1, 18 Oct 2026 - ANYTHING INSIDE THE BRACES, not a bare
+    # dotted name. B10 wrapped one of these six in esc(), because the
+    # same page inserts recipe text with innerHTML, and this regex went
+    # from six matches to five - reporting a site as "left behind" when
+    # what had actually happened was that it had been made safe.
+    #
+    # The claim PX-1 makes is that the JS READS recipe_image and so took
+    # the new URL for free. That is still exactly true. The shape of the
+    # expression around the read was never the point.
+    js += len(re.findall(r'\$\{[^}]*recipe_image[^}]*\}', t))
     js += len(re.findall(r'\{\{\s*recipe\.image\s*\}\}', t))
 ok(js == N_JS_FREE,
    '%d JavaScript site(s) still read recipe_image - they take the new URL '

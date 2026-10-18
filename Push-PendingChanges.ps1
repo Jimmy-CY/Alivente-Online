@@ -1161,6 +1161,17 @@ $sentinels = @(
     @{ File = 'alv_offline.py'; Text = 'LOOPBACK'; What = 'NW-1: the network guard spares a suite own loopback server' },
     # ------------------------------------------------- PG-1, 18 Oct 2026
     @{ File = 'alv_preflight.py'; Text = 'as_left_by'; What = 'PG-1: the pre-flight says what missing backups cost' },
+    # ------------------------------------------------- MP-1, 18 Oct 2026
+    #
+    # 'missing_units.append' AND NOT 'missing_units'. test_sentinels.py
+    # asks of every row whether there is ANY historical version of the
+    # file in which its text is absent - a row that cannot fail is a row
+    # that watches nothing - and it refused the shorter text, because
+    # `seen_missing_units` has carried `missing_units` as a SUBSTRING
+    # since the aggregator was written. Three backups tried, present in
+    # all three.
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'missing_units.append'; What = 'MP-1: the shopping list names the ingredients it dropped' },
+    @{ File = 'pages/templates/create_meal_plan.html'; Text = 'function esc('; What = 'MP-1: recipe names are escaped before they reach innerHTML' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2598,7 +2609,9 @@ $suites = @(
     # NW-1, 17 Oct 2026 - E20, the network guard and its 87 suites.
     'test_offline.py',
     # PG-1, 18 Oct 2026 - E24, the subject read against the tree.
-    'test_preflight.py'
+    'test_preflight.py',
+    # MP-1, 18 Oct 2026 - Meal Plans release 1, groups A, B and C.
+    'test_meal_fixes.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

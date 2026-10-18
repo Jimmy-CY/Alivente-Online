@@ -425,9 +425,17 @@ CONVERTED = [
     # Font Awesome and jQuery from three CDNs on every page they
     # opened. Wide from birth.
     'test_offline.py',
-    # PF-1, 18 Oct 2026 - E24. The gate reads the subject line and asks
+    # PG-1, 18 Oct 2026 - E24. The gate reads the subject line and asks
     # the tree whether it has the rounds it names. Wide from birth.
+    #
+    # MP-1, 18 Oct 2026: this comment said PF-1, which is the 5 October
+    # picker-lazy round. The pre-flight carried that name for an hour
+    # before the collision was found; the register was corrected and
+    # this was missed.
     'test_preflight.py',
+    # MP-1, 18 Oct 2026 - Meal Plans release 1, groups A, B and C.
+    # Nineteen items that break, expose or lose data. Wide from birth.
+    'test_meal_fixes.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

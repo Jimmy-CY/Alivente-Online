@@ -3358,12 +3358,27 @@ class AssetMaintenance(models.Model):
 
 
 class Workspace(models.Model):
-    """A tenancy boundary for Personal-module data (Passports, Celebrations,
-    Recipes).
+    """A tenancy boundary for Personal-module data (Passports,
+    Celebrations).
 
-    Every tenanted record (passport, celebration, recipe, ingredient, etc.)
-    references exactly one Workspace; users belong to exactly one Workspace
-    (via UserProfile.workspace) and see only the data within it.
+    Every tenanted record references exactly one Workspace; users belong to
+    exactly one Workspace (via UserProfile.workspace) and see only the data
+    within it.
+
+    MP-1, 18 Oct 2026. THIS DOCSTRING USED TO NAME RECIPES among the
+    tenanted records, twice - "(Passports, Celebrations, Recipes)" and
+    "(passport, celebration, recipe, ingredient, etc.)". Only Passports and
+    Celebrations actually carry the field. `Recipe` has no workspace at all -
+    its `created_by` is a plain CharField, not even a user link - so recipes,
+    ingredients and meal plans are global across the installation.
+
+    It cost a session: this text sent MP-1 looking for meal-plan scoping that
+    does not exist. It is a recorded position now rather than an oversight.
+    Demetri decided on 18 Oct that all users see all meal plans, and the code
+    already agreed with him - plans built from global recipes being global
+    follows the module around them. The cost is nil while there is one
+    household. If a second one ever uses the system, recipes and meal plans
+    are the two things that would not separate.
 
     Lifecycle:
       - Created either explicitly via User Administration, or auto-created

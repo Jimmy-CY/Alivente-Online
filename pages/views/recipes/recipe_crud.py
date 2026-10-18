@@ -371,12 +371,11 @@ def recipe_management(request):
     categories = RecipeCategory.objects.all().order_by('name')
     proteins = CustomProtein.objects.all().order_by('name')
 
-    authors = [
-        {'value': 'General', 'name': 'General'},
-        {'value': 'Demetri & Angy', 'name': 'Demetri & Angy'},
-        {'value': 'Erene', 'name': 'Erene'},
-        {'value': 'Alexandra', 'name': 'Alexandra'},
-    ]
+    # MP-1, 18 Oct 2026 - B12. The third copy of the hand-typed author
+    # list. It is outside the meal-plans module and is fixed here
+    # anyway: the fault B12 names is that the pickers can disagree with
+    # the model, and leaving one copy behind leaves that true.
+    authors = [{'value': v, 'name': n} for v, n in Recipe.AUTHOR_CHOICES]
 
     # Serialize filtered recipes for book view (use already-filtered queryset)
     all_recipes_for_book = []

@@ -642,8 +642,52 @@
     </div>
 
 
+    {# MP-1, 18 Oct 2026 - C16. THE INGREDIENTS THAT ARE NOT ON THE   #}
+    {# LIST. Two kinds, and two different fixes, so two sentences:     #}
+    {#                                                                 #}
+    {#   no unit on the recipe line  -> the RECIPE needs correcting    #}
+    {#   no shopping unit on the     -> the INGREDIENT needs a base    #}
+    {#   ingredient                     unit configured                #}
+    {#                                                                 #}
+    {# The second list has been in this page's context since the page  #}
+    {# was written and nothing ever read it; the first was not even    #}
+    {# counted - MP-1 added the counting. Above both branches, because #}
+    {# an ingredient is missing from the list either way.              #}
+    {% if has_missing_units or has_missing_shopping_units %}
+    <div class="conversions-needed-card">
+        <h2>
+            <i class="fas fa-exclamation-triangle"></i>
+            NOT ON THIS LIST
+        </h2>
+        {% if has_missing_units %}
+        <p>These recipe lines have no unit, so there is no quantity to add up:</p>
+        <ul>
+            {% for miss in missing_units_list %}
+            <li><strong>{{ miss.ingredient_name }}</strong> in {{ miss.recipe }}</li>
+            {% endfor %}
+        </ul>
+        <p>Give the ingredient a unit on the recipe and it will appear here.</p>
+        {% endif %}
+        {% if has_missing_shopping_units %}
+        <p>These ingredients have no shopping unit, so there is nothing to convert to:</p>
+        <ul>
+            {% for miss in missing_shopping_units_list %}
+            <li><strong>{{ miss.ingredient_name }}</strong> in {{ miss.recipe }}</li>
+            {% endfor %}
+        </ul>
+        {% if perms.auth.can_edit_recipes %}
+        <p>
+            <a href="{% url 'ingredient_base_units_management' %}" class="btn action-secondary">
+                <i class="fas fa-balance-scale"></i> Set base units
+            </a>
+        </p>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% if has_missing_conversions %}
-    {% if perms.auth.can_edit_personal %}
+    {% if perms.auth.can_edit_recipes %}
     <!-- Missing Conversions Card (Edit users see the form) -->
     <div class="conversions-needed-card">
         <h2>
@@ -965,7 +1009,7 @@
                         <span>Copy</span>
                     </button>
                     
-                    {% if perms.auth.can_edit_personal %}
+                    {% if perms.auth.can_edit_recipes %}
                     <button type="button" onclick="toggleEmailPanel()" id="emailToggleBtn"
                             class="btn action-primary share-btn"
                             aria-expanded="false" aria-controls="emailPanel">
@@ -998,7 +1042,7 @@
                     <h3>
                         <i class="fas fa-envelope"></i> Email this list to:
                     </h3>
-                    <select id="emailSelect" {% if not perms.auth.can_edit_personal %}disabled{% endif %}>
+                    <select id="emailSelect" {% if not perms.auth.can_edit_recipes %}disabled{% endif %}>
                         <option value="">Select email address...</option>
                         {% for member in household_emails %}
                         {# THE NAME, NOT ONLY THE ADDRESS. A person picking a #}
@@ -1268,7 +1312,7 @@
         window.open(url, '_blank');
     }
 
-    {% if perms.auth.can_edit_personal %}
+    {% if perms.auth.can_edit_recipes %}
     // SL-4, 3 Oct 2026. THE PANEL OPENS AND CLOSES HERE.
     //
     // hidden is an attribute, not a class, so there is one source of
@@ -1337,11 +1381,27 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
+            {# MP-1, 18 Oct 2026 - A6, B9 and C18 are one change here.   #}
+            {#                                                           #}
+            {# A6: the plan name went up inside a single-quoted JS string #}
+            {# with no |escapejs, so "Yiayia's week" closed the string    #}
+            {# and broke every script after it.                          #}
+            {#                                                           #}
+            {# B9: the name, the dates and the count are not sent any    #}
+            {# more. The server reads them off the plan it looks up -    #}
+            {# sending them was what let anyone email arbitrary content  #}
+            {# from this application's address.                          #}
+            {#                                                           #}
+            {# C18: the count sent was days.count, so a seven-day plan's #}
+            {# email said "7 recipes". The server counts the meals.      #}
+            {#                                                           #}
+            {# The LIST still goes up, on purpose: it is what the reader #}
+            {# resolved conversions for and ticked items off, and        #}
+            {# re-deriving it on the server would email a different list #}
+            {# from the one on the screen.                               #}
             body: JSON.stringify({
                 email: email,
-                meal_plan_name: '{{ meal_plan.plan_name }}',
-                date_range: '{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}',
-                total_recipes: {{ meal_plan.days.count }},
+                meal_plan_id: {{ meal_plan.meal_plan_id }},
                 ingredients: finalList
             })
         })
