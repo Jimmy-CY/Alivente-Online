@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{# MH-1, 18 Oct 2026 - the Meal Plans guide. One module across all five #}
+{# meal-plan screens: list, calendar, build, plan, shopping list. The   #}
+{# first module in the tree rendered by more than one page, by          #}
+{# Demetri's decision on 18 Oct - the meal plan module is one journey,  #}
+{# and five separate guides would repeat each other and then drift.     #}
+{% load help_modal_tags %}
 {% block title %}Create Meal Plan{% endblock %}
 {% block content %}
 
@@ -435,6 +441,11 @@
             {# links here with from=calendar and the week it was showing, so    #}
             {# Back returns to THAT week. Reached any other way there is no     #}
             {# from= and this is the Meal Plans list, exactly as before.        #}
+            {# MH-1, 18 Oct 2026 - Help, before Back because Back is last in #}
+            {# every bar in the tree. The same guide on all five screens.     #}
+            <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
             <a href="{% if request.GET.from == 'calendar' %}{% url 'meal_plan_calendar' %}?week={{ request.GET.week }}{% else %}{% url 'meal_plans' %}{% endif %}" class="btn action-back" aria-label="Back to Meal Plans">
                 <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
@@ -462,13 +473,29 @@
             </div>
 
             <div class="date-range-inputs">
+                {# MD-1, 18 Oct 2026 - D27. NO min ON EITHER DATE BELOW.    #}
+                {#                                                           #}
+                {# One template serves Create and Edit, and `today` is only  #}
+                {# in the Create context - so min="{{ today }}" rendered a   #}
+                {# real date on Create and min="" on Edit. Past dates were   #}
+                {# blocked on one screen and allowed on the other, from the  #}
+                {# same line of markup.                                      #}
+                {#                                                           #}
+                {# Both allow them now, per the design record: a meal plan   #}
+                {# is also a record of what you ate. The 1-to-7 day rule is  #}
+                {# unchanged and still checked in the browser and on the     #}
+                {# server.                                                   #}
+                {#                                                           #}
+                {# This note is ABOVE the form-group and not between the     #}
+                {# label and its input: test_label_weight pairs the two      #}
+                {# within 400 characters, and an explanation written in      #}
+                {# between is enough to break the pairing.                   #}
                 <div class="form-group">
                     <label for="start_date">Start Date *</label>
                     <input type="date"
                            class="date-input form-control"
                            id="start_date"
                            name="start_date"
-                           min="{{ today|date:'Y-m-d' }}"
                            required>
                 </div>
 
@@ -478,7 +505,6 @@
                            class="date-input form-control"
                            id="end_date"
                            name="end_date"
-                           min="{{ today|date:'Y-m-d' }}"
                            required>
                 </div>
             </div>
@@ -507,6 +533,40 @@
 </div>
 
 <script>
+
+// MD-1, 18 Oct 2026 - E33. ONE RECIPE ROW, NOT THREE.
+//
+// This markup was written out three times on this page: once for the
+// rows an Edit loads (populateExistingRecipes), once for the rows a
+// date change puts back (restoreRecipes), and once for the row the
+// picker adds (selectRecipeForDay). The three differed only in which
+// variable held the name, the id and the servings.
+//
+// It is also B10's surface. MP-1 wrapped the same recipe name in esc()
+// three times yesterday; one function is one place for the next person
+// to get that right.
+function recipeRowHtml(dateKey, recipeId, recipeName, servings) {
+    return `
+                <input type="hidden" name="recipes_${dateKey}[]" value="${recipeId}">
+                <div style="flex: 1;">
+                    <strong>${esc(recipeName)}</strong>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number"
+                           name="servings_${dateKey}[]"
+                           class="servings-input"
+                           min="1"
+                           value="${servings}"
+                           required>
+                    <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
+                </div>
+
+                <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+}
 
 // MP-1, 18 Oct 2026 - B10. EVERY PIECE OF DATABASE TEXT THAT REACHES
 // innerHTML ON THIS PAGE GOES THROUGH HERE.
@@ -539,8 +599,6 @@ const userFavouriteIds = new Set(JSON.parse('{{ user_favourite_ids_json|escapejs
 let showFavouritesOnly = false;
 
 // Debug
-console.log('Total recipes loaded:', recipes.length);
-console.log('Sample recipe:', recipes[0]);
 
 // Check if we're in edit mode and load existing meal plan data
 const editMode = {{ edit_mode|yesno:"true,false" }};
@@ -548,7 +606,6 @@ let mealPlanData = null;
 
 if (editMode) {
     mealPlanData = JSON.parse('{{ meal_plan_json|escapejs }}');
-    console.log('Edit mode detected. Loading meal plan:', mealPlanData);
 
     // Pre-populate basic fields
     document.addEventListener('DOMContentLoaded', function() {
@@ -569,7 +626,6 @@ if (editMode) {
 function populateExistingRecipes() {
     if (!editMode || !mealPlanData) return;
 
-    console.log('Populating existing recipes...');
 
     mealPlanData.days.forEach(day => {
         const recipeList = document.getElementById(`recipes-${day.date}`);
@@ -590,32 +646,15 @@ function populateExistingRecipes() {
             const recipeItem = document.createElement('div');
             recipeItem.className = 'recipe-item';
 
-            recipeItem.innerHTML = `
-                <input type="hidden" name="recipes_${day.date}[]" value="${recipe.recipe_id}">
-                <div style="flex: 1;">
-                    <strong>${esc(recipe.recipe_name)}</strong>
-                </div>
-
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="number"
-                           name="servings_${day.date}[]"
-                           class="servings-input"
-                           min="1"
-                           value="${recipe.servings}"
-                           required>
-                    <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
-                </div>
-
-                <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
+            // MD-1, 18 Oct 2026 - E33, one of three.
+            recipeItem.innerHTML = recipeRowHtml(
+                day.date, recipe.recipe_id, recipe.recipe_name,
+                recipe.servings);
 
             recipeList.appendChild(recipeItem);
         });
     });
 
-    console.log('✓ Existing recipes populated');
 }
 
 // State
@@ -629,11 +668,8 @@ function updateDateRange() {
     const startDateStr = document.getElementById('start_date').value;
     const endDateStr = document.getElementById('end_date').value;
 
-    console.log('Start date value:', startDateStr);
-    console.log('End date value:', endDateStr);
 
     if (!startDateStr || !endDateStr) {
-        console.log('Missing date values');
         return;
     }
 
@@ -641,8 +677,6 @@ function updateDateRange() {
     const start = new Date(startDateStr + 'T00:00:00');
     const end = new Date(endDateStr + 'T00:00:00');
 
-    console.log('Parsed start:', start);
-    console.log('Parsed end:', end);
 
     // Check if dates are valid
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
@@ -659,7 +693,6 @@ function updateDateRange() {
     }
 
     const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    console.log('Days difference:', daysDiff);
 
     if (daysDiff > 7) {
         alert('Meal plan cannot exceed 7 days');
@@ -667,7 +700,6 @@ function updateDateRange() {
         return;
     }
 
-    console.log('✓ Valid date range - generating', daysDiff, 'days');
 
     // In edit mode, save existing recipes before regenerating days
     let savedRecipes = {};
@@ -727,12 +759,10 @@ function saveExistingRecipes() {
         });
     });
 
-    console.log('Saved recipes:', savedRecipes);
     return savedRecipes;
 }
 
 function restoreRecipes(savedRecipes) {
-    console.log('Restoring recipes...');
 
     // MP-1, 18 Oct 2026 - C13. Returns what it could not put back.
     let droppedDates = 0;
@@ -761,49 +791,30 @@ function restoreRecipes(savedRecipes) {
             const recipeItem = document.createElement('div');
             recipeItem.className = 'recipe-item';
 
-            recipeItem.innerHTML = `
-                <input type="hidden" name="recipes_${dateStr}[]" value="${recipe.recipeId}">
-                <div style="flex: 1;">
-                    <strong>${esc(recipe.recipeName)}</strong>
-                </div>
-
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="number"
-                           name="servings_${dateStr}[]"
-                           class="servings-input"
-                           min="1"
-                           value="${recipe.servings}"
-                           required>
-                    <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
-                </div>
-
-                <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
+            // MD-1, 18 Oct 2026 - E33, two of three.
+            recipeItem.innerHTML = recipeRowHtml(
+                dateStr, recipe.recipeId, recipe.recipeName,
+                recipe.servings);
 
             recipeList.appendChild(recipeItem);
         });
 
-        console.log(`Restored ${savedRecipes[dateStr].length} recipes for ${dateStr}`);
     });
 
     return { dates: droppedDates, meals: droppedMeals };
 }
 
 function generateDays(startDate, endDate) {
-    console.log('generateDays called with:', startDate, endDate);
 
     const container = document.getElementById('daysContainer');
     const section = document.getElementById('daysSection');
     const saveBtn = document.getElementById('saveBtn');
 
     if (!container || !section || !saveBtn) {
-        console.error('Required elements not found:', {
-            container: !!container,
-            section: !!section,
-            saveBtn: !!saveBtn
-        });
+        // MD-1, 18 Oct 2026 - E32. This dumped three booleans to the
+        // console. It wears console.error but it is tracing, not a
+        // failure anybody can act on - and the function returns here
+        // anyway, so the form simply does not open its day section.
         return;
     }
 
@@ -820,12 +831,10 @@ function generateDays(startDate, endDate) {
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    console.log('Created', dayCount, 'day cards');
 
     section.style.display = 'block';
     saveBtn.disabled = false;
 
-    console.log('✓ Days section shown, save button enabled');
 }
 
 function createDayCard(date, container) {
@@ -1084,26 +1093,9 @@ function selectRecipeForDay(recipeId, recipeName, servings) {
     const recipeItem = document.createElement('div');
     recipeItem.className = 'recipe-item';
 
-    recipeItem.innerHTML = `
-        <input type="hidden" name="recipes_${currentMealPlanDate}[]" value="${recipeId}">
-        <div style="flex: 1;">
-            <strong>${esc(recipeName)}</strong>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <input type="number"
-                   name="servings_${currentMealPlanDate}[]"
-                   class="servings-input"
-                   min="1"
-                   value="${servings}"
-                   required>
-            <span style="color: var(--alv-neutral); font-size: 14px;">servings</span>
-        </div>
-
-        <button type="button" class="icon-action-btn icon-delete" onclick="removeRecipe(this)" aria-label="Remove this recipe">
-            <i class="fas fa-trash"></i>
-        </button>
-    `;
+    // MD-1, 18 Oct 2026 - E33, three of three.
+    recipeItem.innerHTML = recipeRowHtml(
+        currentMealPlanDate, recipeId, recipeName, servings);
 
     recipeList.appendChild(recipeItem);
 
@@ -1275,4 +1267,5 @@ function loadMoreRecipesInSelector() {
     </div>
 </div>
 
+{% render_help_modal "meal_plans" %}
 {% endblock %}

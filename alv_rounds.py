@@ -1240,6 +1240,13 @@ ROUNDS = [
     # MP-1, 18 Oct 2026 - Meal Plans release 1. The nineteen items from
     # the design record that break, expose or lose data.
     '.bak_mealfix',
+    # MD-1, 18 Oct 2026 - Meal Plans release 1, groups D and E. Named
+    # MD-1 and not MP-2, which has been a shipped round since 3 October.
+    '.bak_mealdisplay',
+    # MH-1, 18 Oct 2026 - the Meal Plans user guide. Five screens had no
+    # Help button at all, and the only meal-plan help in the application
+    # described a calendar feature that was a server error.
+    '.bak_mealhelp',
 ]
 
 

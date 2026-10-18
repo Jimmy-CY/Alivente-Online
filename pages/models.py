@@ -2551,8 +2551,26 @@ class MealPlanRecipe(models.Model):
     
     @property
     def servings_multiplier(self):
-        """Calculate multiplier for scaling ingredients"""
-        return self.servings / self.recipe.servings
+        """How far to scale this recipe's ingredients for this meal.
+
+        MD-1, 18 Oct 2026 - E33. This property had no caller. It read
+
+            return self.servings / self.recipe.servings
+
+        - float division with no guard, so a recipe whose servings are 0
+        or None raised ZeroDivisionError or TypeError. The design record
+        asks for the shopping list to use it; the shopping list's own
+        inline expression was already the safe one, and THAT is what is
+        here now:
+
+            Decimal(self.servings) / Decimal(self.recipe.servings or 1)
+
+        Decimal because every quantity downstream is a Decimal and
+        mixing the two raises, and `or 1` because a recipe with no yield
+        recorded should scale by one rather than refuse to be shopped
+        for.
+        """
+        return Decimal(self.servings) / Decimal(self.recipe.servings or 1)
 
 class UnitConversion(models.Model):
     """Conversion rates between different measurement units"""

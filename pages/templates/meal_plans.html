@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{# MH-1, 18 Oct 2026 - the Meal Plans guide. One module across all five #}
+{# meal-plan screens: list, calendar, build, plan, shopping list. The   #}
+{# first module in the tree rendered by more than one page, by          #}
+{# Demetri's decision on 18 Oct - the meal plan module is one journey,  #}
+{# and five separate guides would repeat each other and then drift.     #}
+{% load help_modal_tags %}
 {% block title %}Meal Plans{% endblock %}
 {% block content %}
 
@@ -217,7 +223,11 @@
     <!-- Action Buttons -->
     <div class="page-action-buttons">
         {% if perms.auth.can_edit_recipes %}
-        <a href="{% url 'create_meal_plan' %}" class="btn action-primary">
+        {# MD-1, 18 Oct 2026 - D23. Next Monday, so the form opens on a #}
+        {# week rather than mid-week on today. The calendar sends the    #}
+        {# week it is showing; the list has no week, so it sends the     #}
+        {# next one.                                                     #}
+        <a href="{% url 'create_meal_plan' %}?start_date={{ next_monday|date:'Y-m-d' }}" class="btn action-primary">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </a>
         {% else %}
@@ -244,6 +254,11 @@
                 <i class="fas fa-calendar-alt"></i> Calendar
             </a>
         </div>
+        {# MH-1, 18 Oct 2026 - Help, before Back because Back is last in #}
+        {# every bar in the tree. The same guide on all five screens.     #}
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
         <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipes">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -397,7 +412,8 @@
                 {# action-primary at all, so #28a745 was live here and         #}
                 {# nowhere else - one rule with two fates and nothing in the   #}
                 {# file saying so.                                             #}
-                <a href="{% url 'create_meal_plan' %}" class="btn action-primary btn-lg">
+                {# MD-1, 18 Oct 2026 - D23, the empty state's copy of it. #}
+                <a href="{% url 'create_meal_plan' %}?start_date={{ next_monday|date:'Y-m-d' }}" class="btn action-primary btn-lg">
                     <i class="fas fa-plus"></i> Create Your First Meal Plan
                 </a>
             {% else %}
@@ -480,6 +496,24 @@
                             The plan will maintain the same duration as the original.
                         </small>
                     </div>
+
+                    {# MD-1, 18 Oct 2026 - D28, the list page's copy. #}
+                    <hr>
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox"
+                                   class="custom-control-input"
+                                   id="delete_original"
+                                   name="delete_original"
+                                   value="yes">
+                            <label class="custom-control-label" for="delete_original">
+                                <strong>Delete original meal plan after duplicating</strong>
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> If checked, this will shift the meal plan to new dates (original will be deleted)
+                        </small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
@@ -539,8 +573,19 @@ function confirmDuplicate(button, mealPlanName) {
     $('#duplicateModal').modal('show');
 }
 
-// Store view preference when on list view
-sessionStorage.setItem('meal_plan_view_preference', 'list');
+// MD-1, 18 Oct 2026 - D25. THIS LINE IS GONE, and it is the whole fix.
+//
+// It read:
+//     sessionStorage.setItem('meal_plan_view_preference', 'list');
+//
+// at script top level, FOUR LINES ABOVE the handler that reads the same
+// key - so the read could only ever see 'list', and the redirect to the
+// calendar below has never once fired. The calendar carried the mirror
+// image of this line and stamped 'calendar' over it.
+//
+// Nothing replaces it. The two view toggles up at lines 239 and 243
+// already write the preference on click, which is the only moment a
+// person expresses one.
 
 // Check if user should be redirected to calendar (on page load)
 document.addEventListener('DOMContentLoaded', function() {
@@ -555,4 +600,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+{% render_help_modal "meal_plans" %}
 {% endblock %}

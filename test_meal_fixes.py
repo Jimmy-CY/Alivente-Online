@@ -360,7 +360,6 @@ def claims_create(raw, code):
     # EVERY interpolation of database text, named one at a time. A count
     # would pass on nine wrong sites as happily as nine right ones.
     for frag in ('${esc(recipe.recipe_name)}',
-                 '${esc(recipe.recipeName)}',
                  '${esc(recipeName)}',
                  '${esc(course.name)}',
                  '${esc(cat.name)}',
@@ -372,6 +371,14 @@ def claims_create(raw, code):
                  '${esc(cat)}',
                  '${esc(protein)}'):
         c['B10 %s' % frag] = frag in code
+    # MD-1, 18 Oct 2026 - ONE OF THE NINE NAMES IS GONE, and the claim
+    # is stronger for it. E33 collapsed the three copies of the recipe
+    # row into recipeRowHtml(), so the restore path's
+    # `${esc(recipe.recipeName)}` no longer exists - all three paths
+    # call one function, and that function escapes the name once.
+    c['B10 the row is built in one place, and it escapes there'] = (
+        'function recipeRowHtml(' in code
+        and '${esc(recipeName)}' in code)
     # AND NOTHING BARE LEFT. The positive checks above would all pass on
     # a page that also still carried an unescaped copy.
     for frag in ('<strong>${recipe.recipe_name}</strong>',

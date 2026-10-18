@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{# MH-1, 18 Oct 2026 - the Meal Plans guide. One module across all five #}
+{# meal-plan screens: list, calendar, build, plan, shopping list. The   #}
+{# first module in the tree rendered by more than one page, by          #}
+{# Demetri's decision on 18 Oct - the meal plan module is one journey,  #}
+{# and five separate guides would repeat each other and then drift.     #}
+{% load help_modal_tags %}
 {% block title %}{{ meal_plan.plan_name }}{% endblock %}
 {% block content %}
 
@@ -59,7 +65,19 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-}tn-action-disabled {
+}
+
+/* MD-1, 18 Oct 2026 - D22. This selector read `}tn-action-disabled {`:
+   the `.b` had been eaten, so the brace closed the rule above and
+   `tn-action-disabled` was an invalid type selector. Everything below
+   it was dead, and the three spans on this page that wear
+   .btn-action-disabled rendered as live action-secondary buttons that
+   do nothing when pressed.
+
+   REPAIRED rather than deleted, because nothing anywhere else in the
+   tree defines this class - unlike .action-more-menu below, which base
+   owns. */
+.btn-action-disabled {
     background: var(--alv-surface-deep) !important;
     color: var(--alv-ink-soft) !important;
     border: none;
@@ -225,18 +243,20 @@
 @media screen and (max-width: 768px) {
     .days-grid {
         grid-template-columns: 1fr;
-    }ction-more-menu {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 200;
-        background: var(--alv-paper);
-        border: 1px solid var(--alv-line);
-        border-radius: 8px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        min-width: 240px;
-        padding: 6px 0;
     }
+
+    /* MD-1, 18 Oct 2026 - D22, the second swallowed selector. This read
+       `}ction-more-menu {`, the `.a` eaten exactly as the `.b` was
+       above - and the rule it opened is DELETED rather than repaired.
+
+       base.html defines .action-more-menu itself, with the house radius
+       and shadow tokens and z-index 1030. The block that was here used
+       raw 8px, a raw rgba shadow and z-index 200, and it sat inside a
+       max-width 768px query, so repairing it would have given the phone
+       a worse version of a component the desktop already gets right.
+
+       AE-2's own note in base says it: "two pages wrote the rule out
+       locally rather than lean on that". This was one of the two. */
 
     .page-header {
         flex-direction: column;
@@ -442,7 +462,13 @@
                         <i class="fas fa-copy"></i> Duplicate
                     </span>
                     {% endif %}
-                    <button type="button" class="action-more-item" role="menuitem" onclick="window.print()">
+                    {# MH-1, 18 Oct 2026 - Help in the More menu as well as the  #}
+                {# bar, the way recipe_management does it. This is the only   #}
+                {# one of the five pages with a More menu.                    #}
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#meal_plansHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                <button type="button" class="action-more-item" role="menuitem" onclick="window.print()">
                         <i class="fas fa-print"></i> Print
                     </button>
                     {% if perms.auth.can_edit_recipes %}
@@ -463,6 +489,11 @@
         {# links here with from=calendar and the week it was showing, so    #}
         {# Back returns to THAT week. Reached any other way there is no     #}
         {# from= and this is the Meal Plans list, exactly as before.        #}
+        {# MH-1, 18 Oct 2026 - Help, before Back because Back is last in #}
+        {# every bar in the tree. The same guide on all five screens.     #}
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
         <a href="{% if request.GET.from == 'calendar' %}{% url 'meal_plan_calendar' %}?week={{ request.GET.week }}{% else %}{% url 'meal_plans' %}{% endif %}" class="btn action-back" aria-label="Back to Meal Plans">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -495,8 +526,15 @@
             <div class="day-header">
                 <div class="day-header-left">
                     <h2>
+                        {# MD-1, 18 Oct 2026 - D21. This was                        #}
+                        {# `day.day_name|slice:":3"` and                            #}
+                        {# `day.formatted_date|date:"M d"`, and MealPlanDay has      #}
+                        {# NEITHER attribute - it carries meal_plan_day_id,          #}
+                        {# meal_plan and date. Both halves resolved to the empty     #}
+                        {# string, so the heading was the icon and nothing else.     #}
+                        {# One field, one filter: Mon 19 Oct.                        #}
                         <i class="fas fa-calendar-day"></i> 
-                        {{ day.day_name|slice:":3" }} {{ day.formatted_date|date:"M d" }}
+                        {{ day.date|date:"D j M" }}
                     </h2>
                 </div>
                 <div class="day-header-right">
@@ -697,4 +735,5 @@ function confirmDuplicate(button, mealPlanName) {
 }
 </script>
 
+{% render_help_modal "meal_plans" %}
 {% endblock %}

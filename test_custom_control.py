@@ -313,9 +313,14 @@ for p in alv_tree.templates():
         owns.append(alv_tree.rel(p).replace(os.sep, '/'))
 for name, n in sorted(users.items()):
     print('   %-44s %d' % (name, n))
-ok(len(users) == 3, 'the component is used on %d pages, base aside'
+# MD-1, 18 Oct 2026 - 3 PAGES BECAME 5, AND 13 CONTROLS 15. D28 put
+# "Delete original after duplicating" on the Duplicate dialogs of the
+# Meal Plans list and the calendar; it had been on the plan page only,
+# so a plan could be SHIFTED from one screen out of three. Same markup
+# as the one that was already there, and base serves all of them.
+ok(len(users) == 5, 'the component is used on %d pages, base aside'
    % len(users))
-ok(sum(users.values()) == 13,
+ok(sum(users.values()) == 15,
    '  %d controls in all, every one of them served by base'
    % sum(users.values()))
 ok(not owns,

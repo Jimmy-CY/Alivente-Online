@@ -476,9 +476,11 @@ ok('pantry_staples.html' in ra.NAMED
    and ra.NAMED['pantry_staples.html']['classes'] == ('icon-delete',),
    '  and it is on alv_rowactions.NAMED, with the four of its shape',
    ra.NAMED.get('pantry_staples.html'))
+# MD-1, 18 Oct 2026 - still three pages, three controls now. E33 wrote
+# create_meal_plan's recipe row once instead of three times.
 ok(len(ra.NAMED) == 3
-   and sum(v['count'] for v in ra.NAMED.values()) == 5,
-   '  which makes five such controls on three pages',
+   and sum(v['count'] for v in ra.NAMED.values()) == 3,
+   '  which makes three such controls on three pages',
    {k: v['count'] for k, v in ra.NAMED.items()})
 ok(ra.FAMILY.get('edit') < ra.FAMILY.get('delete'),
    '  CONTROL: and FAMILY already sorts edit before delete, so the pair '

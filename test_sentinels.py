@@ -314,6 +314,15 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE SIXTH, 18 OCT 2026, and it arrived the way the fifth did -
+    # not because anybody wrote it today, but because MH-1 edited
+    # help_content/administration.html for the first time and so gave
+    # that file its first backup. The row became checkable, and the
+    # prose it watches is older than the one version there is to
+    # compare it against.
+    'nothing to press':
+        'the admin help prose, backed up for the first time by MH-1 on '
+        '18 Oct - the sentence predates every version this repo holds',
     'pd-detail-table':
         'the class the payment-days detail table is keyed by - never '
         'removed in the 8 versions of that page this repo holds',

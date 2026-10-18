@@ -170,7 +170,11 @@ ok(hasattr(RA, 'NAMED') and isinstance(RA.NAMED, dict),
    'alv_rowactions carries a NAMED register')
 ok(hasattr(RA, 'named'), '  and a named() that reads it')
 total = sum(e['count'] for e in RA.NAMED.values())
-ok(total == 5, 'it names %d control(s) on %d page(s)'
+# MD-1, 18 Oct 2026 - FIVE BECAME THREE. E33 collapsed the three copies
+# of the recipe row on create_meal_plan into one recipeRowHtml(), so
+# that page's entry went from three loose trashcans to one. Still three
+# pages; two fewer controls.
+ok(total == 3, 'it names %d control(s) on %d page(s)'
    % (total, len(RA.NAMED)), total)
 for pg, e in sorted(RA.NAMED.items()):
     ok(e['why'] and len(e['why']) > 40,
@@ -193,8 +197,9 @@ out = subprocess.run([sys.executable, REPORT], capture_output=True,
 # `btn btn-sm btn-link text-danger p-0`, and btn-link was not on
 # Show-ButtonDrift's list of Bootstrap colours, so no census in this
 # project could see it.
-ok('NAMED, NOT IN A WRAPPER - 5 button(s) on 3 page(s)' in out,
-   'the report names all five', out[-500:])
+# MD-1, 18 Oct 2026 - and the report's own line says three now.
+ok('NAMED, NOT IN A WRAPPER - 3 button(s) on 3 page(s)' in out,
+   'the report names all three', out[-500:])
 for pg, e in sorted(RA.NAMED.items()):
     ok(pg in out, '  %s appears in it' % pg)
     ok(e['why'].split(' - ')[0][:28] in out,

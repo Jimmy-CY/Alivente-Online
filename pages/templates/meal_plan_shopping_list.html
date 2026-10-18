@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{# MH-1, 18 Oct 2026 - the Meal Plans guide. One module across all five #}
+{# meal-plan screens: list, calendar, build, plan, shopping list. The   #}
+{# first module in the tree rendered by more than one page, by          #}
+{# Demetri's decision on 18 Oct - the meal plan module is one journey,  #}
+{# and five separate guides would repeat each other and then drift.     #}
+{% load help_modal_tags %}
 {% block title %}Shopping List - {{ meal_plan.plan_name }}{% endblock %}
 {% block content %}
 
@@ -633,6 +639,11 @@
         {# On step 1 nothing has been built, so Back leaves the page.    #}
         {# On step 2 there is a step behind you, so Back is that step    #}
         {# and Done is how you leave.                                    #}
+        {# MH-1, 18 Oct 2026 - Help, before Back because Back is last in #}
+        {# every bar in the tree. The same guide on all five screens.     #}
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
         <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}{% if request.GET.from == 'calendar' %}?from=calendar&amp;week={{ request.GET.week }}{% endif %}" class="btn action-back" id="backLink" aria-label="Back to Meal Plan">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -721,7 +732,6 @@
     // Parse missing conversions from Django
     const missingConversions = {{ missing_conversions|safe }};
     
-    console.log('Missing conversions:', missingConversions);
     
     // Store conversion values
     const conversionValues = {};
@@ -1435,4 +1445,5 @@
 
 </div>
 
+{% render_help_modal "meal_plans" %}
 {% endblock %}

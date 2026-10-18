@@ -436,6 +436,12 @@ CONVERTED = [
     # MP-1, 18 Oct 2026 - Meal Plans release 1, groups A, B and C.
     # Nineteen items that break, expose or lose data. Wide from birth.
     'test_meal_fixes.py',
+    # MD-1, 18 Oct 2026 - Meal Plans release 1, groups D and E. Twelve
+    # display, navigation, query and hygiene items. Wide from birth.
+    'test_meal_display.py',
+    # MH-1, 18 Oct 2026 - the Meal Plans user guide. Seven tabs, and a
+    # Help button on five screens that had none. Wide from birth.
+    'test_meal_help.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

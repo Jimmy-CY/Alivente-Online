@@ -503,6 +503,25 @@ head('4. the twenty-two a More menu carries - untouched')
 MOVED_BY = {
     'finance_pl_act.html':
         'PN-1, 3 Oct 2026 - a segment in a bar takes the bar height',
+    # MH-1, 18 Oct 2026. NEW ENTRANTS, not bars that moved.
+    #
+    # Neither of these had an action-secondary when this round ran, so
+    # neither was in NEEDY and neither was ever rendered here. MH-1 put
+    # a Help button in both bars, and for a bar whose secondary did not
+    # exist under the old stylesheet the two CSS versions must differ -
+    # the old one hid secondaries unconditionally, which is the whole
+    # thing this round changed.
+    #
+    # What matters for these two pages is whether the extra control
+    # changes the bar, and that is measured rather than assumed:
+    # test_meal_help.py renders all five meal-plan bars at 1200 and 390
+    # before and after MH-1 under the current stylesheet, and requires
+    # the same row count, the same height and no sideways scroll.
+    'meal_plans.html':
+        'MH-1, 18 Oct 2026 - a Help button, and this bar had no '
+        'secondary at all when this round ran',
+    'meal_plan_calendar.html':
+        'MH-1, 18 Oct 2026 - the same, on the calendar',
 }
 
 if sync_playwright is not None and FIX:

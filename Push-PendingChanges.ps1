@@ -1172,6 +1172,12 @@ $sentinels = @(
     # all three.
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'missing_units.append'; What = 'MP-1: the shopping list names the ingredients it dropped' },
     @{ File = 'pages/templates/create_meal_plan.html'; Text = 'function esc('; What = 'MP-1: recipe names are escaped before they reach innerHTML' },
+    # ------------------------------------------------- MD-1, 18 Oct 2026
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'week_day_map'; What = 'MD-1: the calendar week is one pair of queries, not fourteen' },
+    @{ File = 'pages/templates/view_meal_plan.html'; Text = '.btn-action-disabled'; What = 'MD-1: the swallowed selector that made disabled buttons look live' },
+    # ------------------------------------------------- MH-1, 18 Oct 2026
+    @{ File = 'pages/help_content/administration.html'; Text = 'data-module-slug="meal_plans"'; What = 'MH-1: the Meal Plans guide exists at all' },
+    @{ File = 'pages/templates/meal_plan_calendar.html'; Text = 'meal_plansHelpModal'; What = 'MH-1: the calendar has a Help button' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2611,7 +2617,11 @@ $suites = @(
     # PG-1, 18 Oct 2026 - E24, the subject read against the tree.
     'test_preflight.py',
     # MP-1, 18 Oct 2026 - Meal Plans release 1, groups A, B and C.
-    'test_meal_fixes.py'
+    'test_meal_fixes.py',
+    # MD-1, 18 Oct 2026 - Meal Plans release 1, groups D and E.
+    'test_meal_display.py',
+    # MH-1, 18 Oct 2026 - the Meal Plans user guide, on five screens.
+    'test_meal_help.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

@@ -100,12 +100,26 @@ NAMED = {
         'why': 'Remove the attached invoice - one control beside the file '
                'name it removes. AI-1, and Demetri: leave it named.',
     },
+    # MD-1, 18 Oct 2026 - THREE BECAME ONE. E33 collapsed the three
+    # copies of the recipe row on this page into one recipeRowHtml()
+    # function, so there is one trashcan in the source where there were
+    # three. The pin caught it - which is the register working in the
+    # direction nobody designed it for: it was built so a page that
+    # GREW a loose button could not inherit the exemption, and it
+    # refused a page that lost two just as loudly.
     'create_meal_plan.html': {
-        'count': 3,
+        'count': 1,
         'classes': ('icon-delete',),
+        # AND `since`, FOR THE SAME REASON VC-1 ADDED THE KEY.
+        # test_row_exempt reads a named page AS THE ROUND THAT NAMED IT
+        # LEFT IT, which for this entry is RA-5's era - and there were
+        # three then. Without this the count would be read against a
+        # snapshot taken before E33 existed and the register would be
+        # called wrong for being right.
+        'since': '.bak_mealdisplay',
         'why': 'Remove this recipe - one control at the end of each recipe '
                'row, beside the name and the servings box. Built inside a '
-               'JavaScript template literal.',
+               'JavaScript template literal, written once since MD-1.',
     },
     # VC-1, 14 Oct 2026. The fifth of this shape, and it arrived from the
     # BUTTON census rather than this one: it was `btn btn-sm btn-link
