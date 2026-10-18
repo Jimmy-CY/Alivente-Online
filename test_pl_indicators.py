@@ -524,6 +524,7 @@ except Exception as exc:                                   # pragma: no cover
 try:
     try:
         from playwright.sync_api import sync_playwright
+        import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     except ImportError:
         # Playwright is a dev-machine convenience, not a dependency of the app.
         # Where it is absent these checks simply do not run, and that is

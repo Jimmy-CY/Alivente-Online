@@ -194,6 +194,7 @@ BOOTSTRAP_WAS = {'approve': 'rgb(40, 167, 69)', 'unapprove': 'rgb(253, 126, 20)'
 
 async def render(base_txt, page_txt):
     from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page()

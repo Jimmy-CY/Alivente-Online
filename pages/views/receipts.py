@@ -139,11 +139,31 @@ def _company_context():
     return {**COMPANY, "logo_path": _resolve_logo(LOGO_STATIC_PATH)}
 
 
+def money_symbol(code):
+    """What a currency code looks like on screen and on paper.
+
+    CU-1, 18 Oct 2026 - ONE PLACE, because there were three and they
+    disagreed. The screen's total block already said that a non-EUR
+    currency prints its CODE; the amount cell printed a hardcoded euro
+    whatever the row held, and the printed receipt printed an empty
+    string, which is an amount with no currency on it at all.
+
+    Nothing in the application sets `currency` today - there is no form
+    field for it - so all three agreed by accident. This is the day
+    they stop being able to.
+    """
+    code = (code or 'EUR').strip().upper()
+    return '\u20ac' if code == 'EUR' else code
+
+
 # ----------------------------------------------------------------------- pdf
 def build_receipt_context(receipt):
     return {
         "company": _company_context(),
-        "currency_symbol": "€" if (receipt.currency or "EUR") == "EUR" else "",
+        # CU-1, 18 Oct 2026 - was an empty string for anything but
+        # EUR, which prints an amount with no currency on the document
+        # the payer keeps.
+        "currency_symbol": money_symbol(receipt.currency),
         "payer": {
             "name": receipt.payer_name,
             "address_lines": receipt.address_lines,
@@ -274,6 +294,10 @@ def cash_receipt_list(request):
             'description': r.description,
             'amount': r.amount,
             'currency': r.currency,
+            # CU-1, 18 Oct 2026 - the row says what the total block
+            # says. The cell printed a hardcoded euro under a total
+            # that would have read USD.
+            'symbol': money_symbol(r.currency),
             'method_display': r.get_method_display(),
             'format_display': r.get_doc_format_display(),
             'is_void': r.is_void,
@@ -297,7 +321,7 @@ def cash_receipt_list(request):
         code = (row['currency'] or 'EUR').strip().upper()
         totals[code] = totals.get(code, Decimal('0.00')) + row['amount']
     receipt_totals = [{'currency': c, 'amount': a,
-                       'symbol': '\u20ac' if c == 'EUR' else c}
+                       'symbol': money_symbol(c)}
                       for c, a in totals.items()]
 
     return render(request, "cash_receipts.html", {

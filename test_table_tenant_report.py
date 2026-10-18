@@ -273,6 +273,7 @@ for s in _mixed[:3]:
 # ================================================================ IN A BROWSER
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except ImportError:
     print('')
     for label, ok in results:

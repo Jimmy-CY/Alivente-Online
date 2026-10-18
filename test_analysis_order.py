@@ -245,6 +245,7 @@ FIXTURE = (
 def run_iife(js, tag):
     """Load the IIFE, click Analysis, and report what the browser did."""
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     d = os.path.join(SCRATCH, tag)
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, 'iife.js'), 'w', encoding='utf-8') as fh:

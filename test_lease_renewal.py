@@ -220,6 +220,7 @@ async def render(base_txt, page_txt, frag, strip=None):
     is to make the failure happen on purpose.
     """
     from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     css = css_of(page_txt)
     if strip:
         if strip not in css:

@@ -241,6 +241,7 @@ head('4. FOUR FILTERS, NARROWING TOGETHER, IN A BROWSER')
 # ==========================================================================
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except Exception:
     sync_playwright = None
 

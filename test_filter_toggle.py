@@ -390,6 +390,7 @@ head('5b. every <script> still PARSES')
 # fails AFTER is a regression.
 async def parse_check():
     from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page()

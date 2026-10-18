@@ -227,6 +227,7 @@ if ok(bool(sub), 'the bar\'s submit button is there'):
 # a duplicated id, both of which the two above can be blind to.
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     have_pw = True
 except Exception as e:
     have_pw = False

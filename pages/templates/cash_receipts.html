@@ -151,7 +151,10 @@ Receipts
             <td data-label="Date">{{ row.date|date:"Y-m-d" }}</td>
             <td data-label="Received From" style="text-align: left">{{ row.payer }}</td>
             <td data-label="Being Payment For" style="text-align: left">{{ row.description }}</td>
-            <td data-label="Amount" class="num">&euro; {{ row.amount|floatformat:2|intcomma }}</td>
+            {# CU-1, 18 Oct 2026 - the row's own currency, from the one #}
+            {# helper the total block below uses. This was a hardcoded   #}
+            {# euro, which would have contradicted that block.           #}
+            <td data-label="Amount" class="num">{{ row.symbol }} {{ row.amount|floatformat:2|intcomma }}</td>
             <td data-label="Status">
               <span class="alv-pill {{ row.status_pill }}">{{ row.status_display }}</span>
             </td>

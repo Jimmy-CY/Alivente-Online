@@ -238,6 +238,7 @@ async def paint(frag, page_css, base_css=None):
     an assertion about TODAY's base, which is section 2's job, not
     section 4's."""
     from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     if base_css is None:
         base_css = css_of(BASE)
     async with async_playwright() as pw:

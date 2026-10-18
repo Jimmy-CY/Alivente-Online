@@ -421,6 +421,13 @@ CONVERTED = [
     # reader re-encodes to PNG and then announced the media type from
     # the filename. Wide from birth.
     'test_image_wire.py',
+    # NW-1, 17 Oct 2026 - E20. 87 browser suites fetched Bootstrap,
+    # Font Awesome and jQuery from three CDNs on every page they
+    # opened. Wide from birth.
+    'test_offline.py',
+    # PF-1, 18 Oct 2026 - E24. The gate reads the subject line and asks
+    # the tree whether it has the rounds it names. Wide from birth.
+    'test_preflight.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

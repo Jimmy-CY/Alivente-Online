@@ -141,6 +141,7 @@ def cr(a, b):
 
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except Exception:
     sync_playwright = None
 

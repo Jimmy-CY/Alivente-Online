@@ -496,6 +496,7 @@ PROBE = """() => {
 
 async def render_screen(width=1300):
     from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page(viewport={'width': width, 'height': 800})
@@ -658,6 +659,46 @@ check('  and base defines cols-4', '.mobile-action-bar.cols-4' in css_of(BASE))
 
 
 asyncio.run(main())
+
+# ===========================================================================
+head('10. one currency helper, and three callers')
+# ===========================================================================
+# CU-1, 18 Oct 2026. CashReceipt.currency is a real column. Three places
+# decided what it looks like and they disagreed: the total block printed
+# the CODE for anything but EUR, the amount cell printed a hardcoded
+# euro, and the printed receipt printed an EMPTY STRING - an amount with
+# no currency on the document the payer keeps.
+_v = read(P_VIEWS)
+_pg = read(P_LIST)
+check('receipts.py has one currency helper', 'def money_symbol(' in _v)
+check('  and at most one place still writes the test by hand',
+      _v.count("if code == 'EUR'") <= 1)
+check('  called from the row, the totals and the printed receipt',
+      _v.count('money_symbol(') >= 4, '%d use(s)' % _v.count('money_symbol('))
+check('  and the printed receipt no longer falls back to no currency',
+      'else ""' not in _v.split('currency_symbol')[1][:80])
+check('cash_receipts.html no longer hardcodes a euro on the amount cell',
+      '&euro; {{ row.amount' not in _pg)
+check('  it prints the row own currency', '{{ row.symbol }}' in _pg)
+# RUN IT. A helper nobody drives is a claim about source text.
+_ns = {}
+_m = re.search(r'def money_symbol\(code\):.*?\n    return [^\n]+\n',
+               _v, re.S)
+check('  and the helper can be lifted out and run', _m is not None)
+if _m:
+    exec(_m.group(0), _ns)
+    _f2 = _ns['money_symbol']
+    for _code, _want in (('EUR', '\u20ac'), ('eur', '\u20ac'),
+                         (None, '\u20ac'), ('', '\u20ac'),
+                         ('USD', 'USD'), (' gbp ', 'GBP')):
+        check('  money_symbol(%r) -> %r' % (_code, _want),
+              _f2(_code) == _want, _f2(_code))
+# THE DECISION IT FOLLOWS, NOT A NEW ONE. The total block said this
+# first; the round made the other two agree with it rather than
+# inventing a third answer.
+check('  and the totals block still decides what the other two follow',
+      'symbol' in _v.split('receipt_totals')[1][:200])
+
 
 print('\n' + '=' * 72)
 print(' %d passed, %d failed' % (_p, _f))

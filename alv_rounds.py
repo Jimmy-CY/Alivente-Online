@@ -1225,6 +1225,18 @@ ROUNDS = [
     # CP-1, 17 Oct 2026 - a browser suite run from inside a browser
     # suite; the verdict was a duplicate and it was the half that flaked.
     '.bak_crsnest',
+    # NW-1, 17 Oct 2026 - E20. 87 browser suites were fetching from
+    # three CDNs on every page they opened.
+    '.bak_netguard',
+    # PG-1, 18 Oct 2026 - E24. A subject naming a round the tree does
+    # not have is refused before the sweep rather than after it.
+    '.bak_preflight',
+    # BG-1, 18 Oct 2026 - eight CRS pages in the other template root
+    # that the button guard had never looked at. 50 buttons, 0 drifting.
+    '.bak_crsbuttons',
+    # CU-1, 18 Oct 2026 - three places decided what a receipt's currency
+    # looks like and they disagreed. One helper now, three callers.
+    '.bak_recsymbol',
 ]
 
 

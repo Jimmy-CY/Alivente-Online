@@ -342,6 +342,7 @@ head('7. THE ROUND - THE COMPUTED VALUE DOES NOT MOVE')
 # ==========================================================================
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except Exception as e:
     sync_playwright = None
     skip('the computed-style comparison', 'playwright not importable (%s)' % e)

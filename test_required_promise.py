@@ -566,6 +566,7 @@ if not DJANGO:
 else:
     try:
         from playwright.sync_api import sync_playwright
+        import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
         from django.template.loader import get_template
         import atexit
         _pw = sync_playwright().start()

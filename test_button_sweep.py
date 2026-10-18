@@ -102,6 +102,10 @@ _spec = importlib.util.spec_from_file_location(
 sb = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(sb)
 
+# BG-1, 18 Oct 2026 - section 11 asks which pages the corpus does NOT
+# hold, and only the tree can answer that.
+import alv_tree                                             # noqa: E402
+
 # The patcher itself, imported rather than shelled out to, so section 10 can
 # ask sweep_template() what it does to a <script> instead of inferring it
 # from whether a live page happens to still hold a Bootstrap class.
@@ -345,6 +349,7 @@ def rgb(el):
 
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 
     exe = None
     for cand in ('/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
@@ -1463,6 +1468,68 @@ _r10b = subprocess.run([sys.executable, 'Show-ButtonDrift.py', '--js'],
                        cwd=ROOT, capture_output=True, text=True)
 check('--js lists every one of them with a line number',
       all(str(h[4]) in _r10b.stdout for h in _all[:8]))
+
+# ===========================================================================
+head('11. the fifth blind spot - the pages in the other template root')
+# ===========================================================================
+# BG-1, 18 Oct 2026. The CRS app keeps its templates in crs/templates/,
+# and sb.TPL is pages/templates alone - so eight pages have never been
+# scanned for button drift by anything.
+#
+# THE CORPUS IS NOT WIDENED, and that is deliberate twice over:
+# resolve()'s docstring (E-10) and the E11 note above both say that
+# FILES must stay narrow because the historical half of this suite
+# rebuilds a pre-sweep tree from .bak_btnsweep, and those eight pages
+# have no such backup. Handing that reconstruction live text is the
+# as_left_by mistake with the roles reversed.
+#
+# So they are asked LIVE, which is the only thing that can honestly be
+# claimed about files no round has ever backed up: not "they were
+# fixed", but "there is nothing drifting on them now".
+# alv_tree.templates(base=None, include_base=True) - the first
+# positional is the BASE, not the flag. Passing False positionally
+# set base=False and left base.html in the answer.
+_corpus = set(sb.templates(True))
+_outside = [alv_tree.rel(_p)
+            for _p in alv_tree.templates(include_base=False)]
+_outside = [f for f in _outside if f not in _corpus]
+check('the other template root holds %d page(s) the corpus does not'
+      % len(_outside), len(_outside) >= 8)
+_seen = _drift = _js = 0
+_bad = []
+for _f in _outside:
+    try:
+        _hits = sb.scan(_f)
+    except Exception as _e:
+        _bad.append('%s could not be scanned: %s' % (_f, str(_e)[:60]))
+        continue
+    _seen += len(_hits)
+    for _h in _hits:
+        if sb.drifting(_h) and not _h[7]:
+            _bad.append('%s  %r' % (_f, _h[1]))
+            _drift += 1
+    _js += len(sb.js_buttons(sb.read(sb.resolve(_f))))
+print('      %d button(s) across %d page(s) outside the corpus'
+      % (_seen, len(_outside)))
+check('.. and every one of them RESOLVES - E-10 made that work, and '
+      'nothing had asked since', not [b for b in _bad if 'scanned' in b])
+check('.. %d drifting button(s) on the %d page(s) the guard could not '
+      'see' % (_drift, len(_outside)), not _bad)
+if _bad:
+    for _b in _bad[:6]:
+        print('        %s' % _b)
+check('.. and %d built inside a <script> there either' % _js, _js == 0)
+# A CHECK OVER AN EMPTY LIST PASSES. Say that the scan found buttons at
+# all, so "nothing drifting" cannot mean "nothing looked at".
+check('.. over %d real button(s), not an empty list' % _seen, _seen > 20)
+# AND IT CAN FAIL. The same scanner, handed a page with a Bootstrap
+# tone on a bar button, must report it.
+_plant = sb.scan_text('crs/index.html',
+                      '<div class="page-action-bar">'
+                      '<button class="btn btn-info">Go</button></div>')
+check('CONTROL: the scanner does report a drifting button on one of '
+      'these pages', any(sb.drifting(_h) for _h in _plant))
+
 
 # ===========================================================================
 print('')

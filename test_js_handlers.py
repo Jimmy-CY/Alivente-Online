@@ -222,6 +222,7 @@ head('2. RENDERED - DOES THE HANDLER RUN, AND DOES IT GET THE NAME?')
 # suite records what the handler received - or that it never ran.
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     HAVE_PW = True
 except Exception:
     HAVE_PW = False

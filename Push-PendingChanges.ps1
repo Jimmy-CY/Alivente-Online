@@ -145,6 +145,38 @@ Say ("  origin  : " + $(if ($origin) { $origin } else { '(none)' }))
 
 if (-not $origin -and $Push) { Bad 'no origin remote - cannot push'; exit 1 }
 
+# ------------------------------------------ 0b. does the tree know it?
+#
+# PG-1, 18 Oct 2026 - E24. Twice in two days a push went through with a
+# subject naming rounds the tree did not contain: an unextracted zip on
+# 16 Oct, and six rounds delivered without their .bak_ files on 17 Oct.
+# Both looked green all the way down, because everything downstream
+# reads the tree in front of it and that tree was self-consistent.
+#
+# alv_preflight.py reads the SUBJECT and asks two things of each round
+# it names: does alv_rounds.py have an entry for it, and is there a
+# backup on disk. Both answers are already in the tree; neither is
+# hand-kept here.
+#
+# HERE, not at the bottom. A wrong subject should cost seconds. GT-1
+# moved the missing-subject refusal up for the same reason.
+#
+# IN PYTHON, not in this file. There is no PowerShell in the sandbox,
+# so anything written here ships untested - GT-2's lesson, and the
+# reason this is five lines and a call.
+if ($Apply -and $Message) {
+    & python (Join-Path $root 'alv_preflight.py') $Message 2>&1 |
+        ForEach-Object { Say $_ }
+    if ($LASTEXITCODE -ne 0) {
+        Bad 'the subject names a round this tree does not have'
+        if (-not $Force) {
+            Say ''
+            Say '  Stopping.  Nothing has been staged.'
+            exit 1
+        }
+    }
+}
+
 # ------------------------------------------------------- 1. is it applied?
 # Each change leaves a distinctive string behind.  If one is missing the tree
 # is only half-patched and must not be committed.
@@ -1125,6 +1157,10 @@ $sentinels = @(
     @{ File = 'alv_run.py'; Text = 'died.append'; What = 'AR-1: a suite that printed no tally is re-run once, alone' },
     # ------------------------------------------------- CC-3, 17 Oct 2026
     @{ File = 'pages\templates\celebration_management.html'; Text = 'copyInto'; What = 'CC-3: the copy is shown and its controls are wired' },
+    # ------------------------------------------------- NW-1, 17 Oct 2026
+    @{ File = 'alv_offline.py'; Text = 'LOOPBACK'; What = 'NW-1: the network guard spares a suite own loopback server' },
+    # ------------------------------------------------- PG-1, 18 Oct 2026
+    @{ File = 'alv_preflight.py'; Text = 'as_left_by'; What = 'PG-1: the pre-flight says what missing backups cost' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2558,7 +2594,11 @@ $suites = @(
     'test_contact_modal.py',
     'test_invoice_icon.py',
     'test_danger_pair.py',
-    'test_image_wire.py'
+    'test_image_wire.py',
+    # NW-1, 17 Oct 2026 - E20, the network guard and its 87 suites.
+    'test_offline.py',
+    # PG-1, 18 Oct 2026 - E24, the subject read against the tree.
+    'test_preflight.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

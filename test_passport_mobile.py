@@ -181,6 +181,7 @@ head('3. THE ROUND - CHROMIUM, BOTH WIDTHS, BEFORE AND AFTER')
 # ==========================================================================
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except Exception as e:
     sync_playwright = None
     skip('the rendered proof', 'playwright not importable (%s)' % e)

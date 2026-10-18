@@ -166,6 +166,7 @@ head('1. EVERY PANEL IN THE TREE, MEASURED AT 1280')
 # ==========================================================================
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except Exception:
     sync_playwright = None
 

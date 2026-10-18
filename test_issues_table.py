@@ -243,6 +243,7 @@ head('3. the browser: exactly one action row at each width')
 # ===========================================================================
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except ImportError:
     print('  SKIP  playwright not installed')
     sync_playwright = None

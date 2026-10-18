@@ -253,7 +253,8 @@ def real_table(text):
 
 
 async def measure(page_css, frag=None):
-    from playwright.async_api import async_playwright
+    from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page(viewport={'width': 1100, 'height': 420})

@@ -56,6 +56,8 @@ WHAT IT CANNOT DO
     It is a reading aid, not a guard: what it prints is a question, and
     the answer is sometimes "that one is fine".
 """
+import glob
+import os
 import re
 import sys
 
@@ -292,6 +294,103 @@ def audit_suite(path, src):
     return bad
 
 
+def suffix_free(src, path):
+    """IS THIS ROUND'S SUFFIX ALREADY TAKEN?
+
+    17 Oct 2026. NW-1 chose `.bak_offline` without asking, and there
+    has been a `.bak_offline` round in the tree since 7 September. The
+    collision showed up as one backup that did not match its file -
+    found by a pre-flight comparison, and then mis-diagnosed as a
+    planter hazard, because the first explanation that fits is not
+    always the one that is true.
+
+    IT CANNOT BE ANSWERED FROM alv_rounds.ROUNDS. 145 suffixes exist
+    on disk that the register has never heard of - every round from
+    before the register was written. The only honest source is the
+    disk.
+    """
+    m = re.search(r"^SUFFIX\s*=\s*'([^']+)'", src, re.M)
+    if not m:
+        return []
+    suf = m.group(1)
+    # THE REPO, NOT THE PATCHER'S OWN DIRECTORY. This file lives in the
+    # repo root, so asking from here is deterministic - and it means a
+    # control written in a scratch directory still asks the real tree,
+    # which is what made the first spelling of this check unable to
+    # fail: it reported .bak_conenc free because it was looking in
+    # /tmp, where 88 files carrying that suffix are not.
+    root = os.path.dirname(os.path.abspath(__file__)) or '.'
+    hits = glob.glob(os.path.join(root, '**', '*' + suf), recursive=True)
+    # A round that is ALREADY APPLIED owns its backups; that is not a
+    # collision, it is the normal state after it has run. The question
+    # this answers is whether a suffix was in use BEFORE, which a
+    # patcher can only ask before it writes - so the result is a
+    # reading, and the count is what makes it readable.
+    return [suf, len(hits), sorted(os.path.basename(h) for h in hits)[:6]]
+
+
+def name_free(src, path):
+    """IS THIS ROUND'S NAME ALREADY TAKEN?
+
+    18 Oct 2026, and the same mistake as the suffix one the day before,
+    in the other half of a round's identity. This round was written as
+    PF-1 - and PF-1 has been the picker-lazy round since 5 October. The
+    suffix check passed, because .bak_preflight really was free; it was
+    the NAME that was not.
+
+    The cost was worse than the collision. Renaming with a blunt
+    substitution rewrote the OLD round's comments too, in alv_rounds.py
+    and in the gate, which is history being edited to make room for
+    something new.
+
+    A round's name is read from the first line of its docstring, where
+    the house always writes it:
+
+        apply_preflight.py - round PG-1, 18 Oct 2026.
+    """
+    m = re.search(r'-\s*round\s+([A-Z]{1,4}-\d+[a-z]?)', src[:400])
+    if not m:
+        return None
+    name = m.group(1)
+    root = os.path.dirname(os.path.abspath(__file__)) or '.'
+    try:
+        reg = _register(root)
+    except Exception:
+        return None
+    return [name, reg.get(name) or []]
+
+
+def _register(root):
+    """{round name: [suffix]} out of alv_rounds.py - the same parse
+    alv_preflight.py uses, kept here so this tool needs nothing but
+    the file."""
+    with open(os.path.join(root, 'alv_rounds.py'), encoding='utf-8',
+              errors='replace') as f:
+        src = f.read()
+    i = src.index('ROUNDS = [')
+    body = src[i:src.index('\n]', i)]
+    out, note = {}, []
+    owns = re.compile(r'^#\s*([A-Z]{1,4}-\d+[a-z]?)\s*,')
+    for line in body.split('\n'):
+        t = line.strip()
+        if t.startswith('#'):
+            note.append(t)
+            continue
+        m = re.match(r"'(\.bak_[a-z0-9_]+)',?$", t)
+        if not m:
+            continue
+        owner = None
+        for c in note:
+            o = owns.match(c)
+            if o:
+                owner = o.group(1)
+                break
+        if owner:
+            out.setdefault(owner, []).append(m.group(1))
+        note = []
+    return out
+
+
 def main(paths):
     bad = 0
     for p in paths:
@@ -309,6 +408,41 @@ def main(paths):
         print('=' * 74)
         print('%s   %d replacement literal(s)' % (p, len(writes)))
         print('=' * 74)
+
+        nm = name_free(src, p)
+        if nm:
+            name, taken = nm
+            if taken:
+                # A QUESTION, LIKE THE SUFFIX ONE, AND FOR THE SAME
+                # REASON: an applied round owns its own name, so this
+                # fires on every patcher that has already run. It is
+                # asked BEFORE applying, which is the only time the
+                # answer means anything.
+                print('  ?  the round name %s already owns %s in '
+                      'alv_rounds.py' % (name, ', '.join(taken)))
+                print('     - fine if this round is already applied. If')
+                print('       it is NOT, the name belongs to an older')
+                print('       round and this one must choose another:')
+                print('       two rounds with one name make the register')
+                print('       ambiguous, and renaming afterwards rewrites')
+                print('       the older round comments, which is history')
+                print('       edited to make room. That happened on')
+                print('       18 Oct and cost a careful undo.')
+            else:
+                print('  ok   %s is a free round name' % name)
+
+        suf = suffix_free(src, p)
+        if suf:
+            name, n, sample = suf
+            if n:
+                print('  ?  %s already names %d file(s) on disk: %s'
+                      % (name, n, ', '.join(sample)))
+                print('     - fine if this round is already applied. If it')
+                print('       is NOT, the suffix is taken by an older round')
+                print('       and this one must choose another name.')
+            else:
+                print('  ok   %s is a free suffix - nothing on disk uses it'
+                      % name)
 
         absent, counts, regexes = gate_strings(src)
         for pat, where in regexes:

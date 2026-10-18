@@ -206,6 +206,7 @@ head('2. rendered: is it actually a scale?')
 # ===========================================================================
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
 except ImportError:
     print('  SKIP  playwright not installed')
     sync_playwright = None

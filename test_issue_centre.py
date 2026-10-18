@@ -212,6 +212,7 @@ head('3. MEASURED IN A BROWSER, NOT GREPPED')
 up = False
 try:
     from playwright.sync_api import sync_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     import atexit
     _pw = sync_playwright().start()
     atexit.register(_pw.stop)

@@ -298,6 +298,7 @@ def legacy_row(url, name, glyph='fa-check-circle', tone='success'):
 
 async def click_icon(body, extra_js=''):
     from playwright.async_api import async_playwright
+    import alv_offline   # NW-1, 17 Oct 2026 - renders stay offline
     async with async_playwright() as pw:
         br = await pw.chromium.launch()
         pg = await br.new_page()
