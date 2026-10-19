@@ -129,7 +129,12 @@ FALLBACK = 'var(--alv-disabled-bg, ' + OLD + ')'
 # RT-1, 18 Oct 2026 - N_OTHER was 96. Three of those non-border uses were on
 # pages MN-1 retired. This is a count of the live corpus, so it falls
 # with the corpus; F2a still settled 96 of them.
-N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 93
+# MV-3, 19 Oct 2026 - N_OTHER was 93. The week column's leftover chip
+# takes the panel-wash as its background, which is what a leftover
+# should look like and is the token MV-2's month chip already uses for
+# it. One more non-border use in the live corpus; F2a still settled
+# the 96 it settled.
+N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 94
 N_GAINED = 76   # DT-1, 16 Oct 2026 - six of the rules this round deletes carried the border token. base draws those borders now, so the count falls by exactly the copies that went.   # (was 82)
 
 passed = failed = skipped = 0

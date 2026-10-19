@@ -586,19 +586,43 @@ if django_up:
     # ----------------------------------------------------------------
     head('3f. the two rows, rendered')
     # ----------------------------------------------------------------
-    body = r.content.decode('utf-8', 'replace')
+    # SEVEN DAYS, SEVEN REQUESTS - repaired by MV-4, 19 Oct 2026.
+    #
+    # This read ONE page and counted six leftover rows on it, because
+    # the planner drew all seven day cards at once. MV-4 narrowed that
+    # to the selected day, so one page now holds one card.
+    #
+    # THE CLAIM IS UNCHANGED and so is the markup it is about: a
+    # leftover row wears its pill and names the day the pot was cooked
+    # on, a note row has no stepper, every day has an Add Note. Those
+    # are facts about a CARD. Asking each day for its own card is the
+    # same question - and a re-pin to `>= 1` would have been a smaller
+    # claim pretending to be the same one.
+    DAYS = [MON + _dt.timedelta(days=i) for i in range(7)]
+    bodies = [cl.get('/meal_plans/planner/?view=day&date='
+                     + d.strftime('%Y-%m-%d'))
+              .content.decode('utf-8', 'replace') for d in DAYS]
+    body = ''.join(bodies)
     ok(body.count('leftover-item') >= 6,
-       'six leftover rows are drawn as leftover rows',
-       body.count('leftover-item'))
+       'six leftover rows are drawn as leftover rows, across the six '
+       'days that have one', body.count('leftover-item'))
     ok(body.count('note-item') >= 6, '  and six note rows as note rows',
        body.count('note-item'))
+    # COUNTED ON THE ATTRIBUTE, not on the name: `.day-card-header`
+    # is also a CSS selector on every one of these pages, so counting
+    # the bare name found two per day and the claim read as false.
+    ok(len(bodies) == 7 and max(b.count('class="day-card-header"')
+                                for b in bodies) == 1,
+       '  and no single day draws more than one card - which is the '
+       'whole of what MV-4 changed',
+       [b.count('class="day-card-header"') for b in bodies])
     ok('Leftovers</span>' in body, '  the leftover row wears its pill')
     ok('Cooked on Mon 19 Oct' in body,
        '  and names the day the pot was cooked on')
     # THE STEPPER IS ON THE MEAL AND NOWHERE ELSE. One real meal on
     # this week, so one stepper - six leftovers and six notes add none.
     ok(body.count('class="servings-step"') == 1,
-       'exactly ONE servings stepper on a week of thirteen rows - the '
+       'exactly ONE servings stepper across the week of thirteen rows - '
        'one meal that was actually cooked',
        body.count('class="servings-step"'))
     ok(body.count('icon-action-btn icon-leftover') == 1,
@@ -612,10 +636,15 @@ if django_up:
     # the same two words, so the day controls are counted by the
     # function only they call.
     ok(body.count('onclick="openNote(') == 7,
-       '  an Add Note control under each of the seven days',
+       '  an Add Note control on each of the seven days - one per '
+       'page now, where it was seven on one page',
        body.count('onclick="openNote('))
-    ok(body.count('Add Note') == 9,
-       '  and the words appear nine times - seven days, the dialog '
+    # ASKED OF ONE PAGE - repaired by MV-4, 19 Oct 2026. `body` is
+    # seven pages joined now, and three different things say these two
+    # words on each of them, so the sum is twenty-one and says nothing.
+    # The claim was always about what ONE page holds.
+    ok(bodies[0].count('Add Note') == 3,
+       '  and on any one page the words appear three times - its day, '
        'button, and the guide this page carries',
        body.count('Add Note'))
     # AND A READER GETS NEITHER CONTROL.

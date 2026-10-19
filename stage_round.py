@@ -39,13 +39,35 @@ def main(argv):
                          'not applied, so there is nothing to stage and '
                          'nothing to enumerate from.' % suffix)
 
+    # A BACKUP WITH NO LIVE FILE IS A DELETION, NOT AN ERROR.
+    #
+    # MV-2, 19 Oct 2026. A round that RETIRES something removes it
+    # from the disk and leaves its backup - which is the only thing
+    # that makes the removal reversible. MN-1 deleted two suites and
+    # four templates the same way on 18 October.
+    #
+    # This refused the whole staging over it. The refusal was right to
+    # exist: a backup beside a missing file is usually a half-applied
+    # tree, and the 17 October push shipped one. So the two cases are
+    # told apart by ASKING THE ROUND, not by guessing - a round that
+    # means to delete says so in the register.
     applied = sorted(b[:-len(suffix)] for b in baks)
-    missing = [p for p in applied if not os.path.isfile(p)]
-    if missing:
-        raise SystemExit('stage_round: %d backup(s) have no live file '
-                         'beside them: %s' % (len(missing), missing))
+    gone = [p for p in applied if not os.path.isfile(p)]
+    if gone:
+        try:
+            import alv_rounds
+            known = suffix in alv_rounds.ROUNDS
+        except Exception:
+            known = False
+        if not known:
+            raise SystemExit(
+                'stage_round: %d backup(s) have no live file beside '
+                'them and %s is not a registered round, so this is a '
+                'half-applied tree rather than a retirement: %s'
+                % (len(gone), suffix, gone))
+    live = [p for p in applied if os.path.isfile(p)]
 
-    files = applied + [os.path.join(root, e) for e in extra]
+    files = live + [os.path.join(root, e) for e in extra]
     for e in extra:
         if not os.path.isfile(os.path.join(root, e)):
             raise SystemExit('stage_round: %s is not in the tree' % e)
@@ -57,15 +79,20 @@ def main(argv):
         shutil.copy2(src, dst)
 
     print('%s -> %s' % (suffix, out))
-    print('  APPLIED  %d' % len(applied))
+    print('  APPLIED  %d' % len(live))
     print('  BACKUPS  %d' % len(baks))
+    if gone:
+        print('  RETIRED  %d (backup staged, no live file - this round '
+              'removed it)' % len(gone))
     print('  ROUND    %d (patcher and suite)' % len(extra))
-    for p in applied:
+    for p in live:
         print('    %s' % os.path.relpath(p, root))
-    if len(applied) != len(baks):
-        raise SystemExit('stage_round: %d applied against %d backups - '
-                         'those two numbers are the same number'
-                         % (len(applied), len(baks)))
+    for p in gone:
+        print('    %s  (RETIRED)' % os.path.relpath(p, root))
+    if len(live) + len(gone) != len(baks):
+        raise SystemExit('stage_round: %d applied + %d retired against '
+                         '%d backups - those must add up'
+                         % (len(live), len(gone), len(baks)))
     return 0
 
 

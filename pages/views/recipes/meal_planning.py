@@ -423,35 +423,80 @@ def aggregate_meal_entries(entries):
 @login_required
 @permission_required('auth.can_access_recipes', raise_exception=True)
 def meal_planner(request):
-    """One week of dates, and the meals on them."""
+    """The calendar, at one of three zoom levels.
+
+    MV-1, 19 Oct 2026 - it was one week of dates, and a mini calendar
+    beside it to navigate with. Demetri, testing it: the daily list is
+    not required, and the Monthly Calendar comes first, full page.
+    """
 
     today = timezone.now().date()
+
+    # ---- ONE ANCHOR DATE FOR THREE VIEWS - MV-1, 19 Oct 2026.
+    #
+    # Month, Week and Day are three zoom levels on the SAME DAY, so
+    # they travel on ONE parameter. Three would each have to be kept
+    # in step by every link that moves the date - the week arrows, the
+    # month arrows, Today, the picker's return - which is six places
+    # to forget one.
+    #
+    # ?week= IS STILL READ, and second, because the Shopping List link
+    # and the Copy Week dialog already send it and MN-1 kept this
+    # screen's old addresses working on purpose.
+    #
+    # THE ADDRESS BAR IS A STRING SOMEBODY CAN TYPE - A5. Every one of
+    # these falls back rather than raising.
+    anchor = None
+    for _param in ('date', 'week'):
+        _raw = request.GET.get(_param)
+        if not _raw:
+            continue
+        try:
+            anchor = datetime.strptime(_raw, '%Y-%m-%d').date()
+            break
+        except (TypeError, ValueError):
+            anchor = None
+    if anchor is None:
+        anchor = today
+
+    # ---- WHICH VIEW - MV-1. Month is the landing view, by Demetri's
+    # own words on 19 Oct: "Monthly Calendar first - full page". That
+    # overrides the earlier answer of Week, which is dead.
+    #
+    # A LIST AND NOT A FREE STRING. `?view=<anything>` reaching a
+    # template that branches on it is how a page ends up rendering
+    # nothing at all.
+    view_mode = request.GET.get('view', 'month')
+    if view_mode not in ('month', 'week', 'day'):
+        view_mode = 'month'
 
     # THE ADDRESS BAR IS A STRING SOMEBODY CAN TYPE - A5, 18 Oct 2026,
     # one screen away. ?year=abc was a 500 on the old calendar, and so
     # was ?month=13 three lines later, and so was ?year=99999 in
     # December only. All three fall back here rather than raising.
+    # FROM THE ANCHOR, NOT FROM TODAY - MV-1, 19 Oct 2026. These
+    # defaulted to the current month, which was right while the month
+    # was only a navigation strip beside a week. Month is the landing
+    # VIEW now, so arriving with ?date=2026-12-03 and being shown
+    # October would be the page ignoring the address it was given.
     try:
-        year = int(request.GET.get('year', today.year))
+        year = int(request.GET.get('year', anchor.year))
         if not 1900 <= year <= 2200:
             raise ValueError('out of range')
     except (TypeError, ValueError):
-        year = today.year
+        year = anchor.year
     try:
-        month = int(request.GET.get('month', today.month))
+        month = int(request.GET.get('month', anchor.month))
         if not 1 <= month <= 12:
             raise ValueError('out of range')
     except (TypeError, ValueError):
-        month = today.month
+        month = anchor.month
 
-    asked = request.GET.get('week')
-    if asked:
-        try:
-            week_start = datetime.strptime(asked, '%Y-%m-%d').date()
-        except (TypeError, ValueError):
-            week_start = today
-    else:
-        week_start = today
+    # THE WEEK IS THE ANCHOR'S WEEK - MV-1, 19 Oct 2026. This block
+    # read ?week= for itself; the anchor above now does that for all
+    # three views, so there is one reading of the date instead of two
+    # that could disagree.
+    week_start = anchor
 
     # WHATEVER ARRIVES, THE WEEK STARTS ON A MONDAY - D26, and it is
     # the model's rule now rather than one screen's. Every row in the
@@ -474,44 +519,105 @@ def meal_planner(request):
     for e in entries:
         by_date.setdefault(e.date, []).append(e)
 
+    # WHICH DAY THE PHONE OPENS ON - MV-3, 19 Oct 2026.
+    #
+    # Seven columns is 51px on a phone, so the week there is a day
+    # strip with ONE day open underneath it - Demetri's answer to
+    # Question A. Something has to be that day.
+    #
+    # THE ANCHOR, WHEN IT IS IN THIS WEEK. Arriving from the Month on
+    # the 22nd should open the 22nd, not the Monday; and ?week= alone
+    # names a week and not a day, so the Monday is right then.
+    sel_date = anchor if week_start <= anchor <= week_end else week_start
+
     week_days = []
     for i in range(7):
         d = week_start + timedelta(days=i)
+        mine = by_date.get(d, [])
         week_days.append({
             'date': d,
             'day_name': d.strftime('%A'),
             'day_short': d.strftime('%a'),
+            # TWO LETTERS FOR THE STRIP. %a is three - Mon, Tue - and
+            # seven of those at 51px is wider than the strip.
+            'day_two': d.strftime('%a')[:2],
             'day_num': d.day,
             'is_today': d == today,
-            'entries': by_date.get(d, []),
+            'is_selected': d == sel_date,
+            'entries': mine,
+            'count': len(mine),
+            # ONE MARK PER MEAL, carrying what it is, capped at four
+            # the way the month's are - a fifth wraps a 51px button.
+            'dots': ['is-note' if not e.recipe_id
+                     else 'is-leftover' if e.leftover_of_id
+                     else '' for e in mine[:4]],
         })
 
-    # THE MINI MONTH. One query for the dots, not one per plan.
+    # ---- THE MONTH - MV-2, 19 Oct 2026. IT IS THE VIEW NOW.
+    #
+    # It was a 320px navigation strip beside the week, carrying one
+    # boolean per day: does this day have a meal. Demetri, testing the
+    # live page: "why does this still have the time calendar?" - and
+    # then, on the design, "Monthly Calendar first - full page".
+    #
+    # MEASURED BEFORE IT WAS BUILT. A seven-column cell at 1200px is
+    # 162px with the sidebar gone and 113px with it kept - twenty-three
+    # characters against fifteen. That measurement is why the mini
+    # calendar is not merely redundant: a cell cannot carry a recipe
+    # name while it is there.
     first_of_month = date(year, month, 1)
     if month == 12:
         month_end = date(year + 1, 1, 1) - timedelta(days=1)
     else:
         month_end = date(year, month + 1, 1) - timedelta(days=1)
-    dates_with_meals = set(
-        MealEntry.objects.filter(date__gte=first_of_month,
-                                 date__lte=month_end)
-        .values_list('date', flat=True).distinct())
 
-    calendar_weeks = []
+    # ONE QUERY FOR THE MONTH, and it fetches the MEALS rather than a
+    # set of dates that have one. A cell draws names now, so a boolean
+    # per day is not enough - and asking per day would be thirty-one
+    # queries to paint one screen. [E29]
+    month_by_date = {}
+    for e in (MealEntry.objects
+              .filter(date__gte=first_of_month, date__lte=month_end)
+              .select_related('recipe', 'leftover_of')
+              .order_by('date', 'sort_order', 'meal_entry_id')):
+        month_by_date.setdefault(e.date, []).append(e)
+
+    # THREE SHOWN, THE REST COUNTED. Demetri's answer to Q1: "if there
+    # are more recipes than can fit in the square, then include +x
+    # more". Three is what a 162px cell holds at its own line height
+    # without the row outgrowing its siblings, and the fourth line is
+    # the count rather than a fourth name.
+    MONTH_SHOWN = 3
+    # FOUR MARKS AND THEN NOTHING. At 47px a cell holds four dots on
+    # one line; a fifth wraps and the row grows. The count in the
+    # header is what says how many the month really holds.
+    MONTH_DOTS = 4
+    month_weeks = []
     for week in monthcalendar(year, month):
-        days, dates = [], []
+        row = []
         for day_num in week:
             if day_num == 0:
-                days.append(None)
+                row.append(None)
                 continue
             d = date(year, month, day_num)
-            dates.append(d)
-            days.append({'day': day_num, 'date': d,
-                         'has_meal': d in dates_with_meals,
-                         'is_today': d == today})
-        row_start = (dates[0] - timedelta(days=dates[0].weekday())
-                     if dates else None)
-        calendar_weeks.append({'days': days, 'week_start': row_start})
+            mine = month_by_date.get(d, [])
+            row.append({
+                'day': day_num,
+                'date': d,
+                'is_today': d == today,
+                'in_week': week_start <= d <= week_end,
+                'entries': mine[:MONTH_SHOWN],
+                'more': max(0, len(mine) - MONTH_SHOWN),
+                'count': len(mine),
+                # ONE MARK PER MEAL, not one per name shown, and
+                # carrying WHAT it is so the phone keeps the
+                # distinction the names make at full size. Built here
+                # because a template cannot loop a number.
+                'dots': ['is-note' if not e.recipe_id
+                         else 'is-leftover' if e.leftover_of_id
+                         else '' for e in mine[:MONTH_DOTS]],
+            })
+        month_weeks.append(row)
 
     prev_month = ({'year': year - 1, 'month': 12} if month == 1
                   else {'year': year, 'month': month - 1})
@@ -525,15 +631,35 @@ def meal_planner(request):
         'month_name': first_of_month.strftime('%B %Y'),
         'prev_month': prev_month,
         'next_month': next_month,
-        'calendar_weeks': calendar_weeks,
+        # MV-2, 19 Oct 2026 - month_weeks replaces calendar_weeks.
+        # The old one carried one boolean a day for the mini
+        # calendar's dots; this one carries the meals, because the
+        # month is the view and a cell draws names.
+        'month_weeks': month_weeks,
+        # HOW MANY THE MONTH HOLDS. meal_count is the WEEK's, and the
+        # month header asking the week's number would be a quiet lie.
+        'month_count': sum(len(v) for v in month_by_date.values()),
         'week_start': week_start,
         'week_end': week_end,
         'week_days': week_days,
+        # MV-3, 19 Oct 2026 - the day the phone's strip opens on.
+        'sel_date': sel_date,
+        # MV-4, 19 Oct 2026 - and the two days either side of it, for
+        # the Day view's own nav. Computed here rather than in the
+        # template because a template cannot do arithmetic on a date,
+        # and because `anchor` already lives here.
+        'prev_day': sel_date - timedelta(days=1),
+        'next_day': sel_date + timedelta(days=1),
+        'sel_count': len(by_date.get(sel_date, [])),
         'prev_week': week_start - timedelta(days=7),
         'next_week': week_start + timedelta(days=7),
         'this_week': today - timedelta(days=today.weekday()),
         'meal_count': len(entries),
         'household_size': household_size(request.user),
+        # MV-1, 19 Oct 2026 - the switcher. `anchor` is what every one
+        # of its three links carries, so the date survives the switch.
+        'view_mode': view_mode,
+        'anchor': anchor,
         # PF-2, 19 Oct 2026 - all_recipes IS GONE FROM THIS PAGE.
         #
         # It was every recipe in the library, with a prefetch, rendered

@@ -1189,9 +1189,11 @@ $sentinels = @(
     # ------------------------------------------------- MH-3, 19 Oct 2026
     @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-name="Moving a Week"'; What = 'MH-3: the guide has a tab for copying a week and saving a Menu' },
     @{ File = 'pages/help_content/administration.html'; Text = 'Leftovers, and they are free'; What = 'MH-3: and tells the reader the second night costs nothing' },
-    # ------------------------------------------------- MC-4, 19 Oct 2026
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WEEKS GO INSIDE THE GRID'; What = 'MC-4: the mini calendar draws seven columns, not one - Demetri found it on the live site' },
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'mini-calendar-grid - MC-4'; What = 'MC-4: and the grid closes AFTER the loop that fills it' },
+    # ---------------------------- MC-4, 19 Oct 2026 - RETIRED by MV-2
+    # Both rows pinned strings in the mini calendar's markup, and MV-2
+    # deleted the component. The claim they defended - a grid must
+    # contain the loop that fills it - is now test_month_view's, which
+    # counts COLUMNS in a browser rather than reading a class name.
     # ------------------------------------------------- PK-1, 19 Oct 2026
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))'; What = 'PK-1: the recipe picker is a grid, not one column in a wide dialog' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'function pfChanged('; What = 'PK-1, widened by PF-2 19 Oct 2026: it filters, composing with the search rather than replacing it - by course and by four more things since Demetri asked for them' },
@@ -1208,6 +1210,20 @@ $sentinels = @(
     @{ File = 'pages/views/recipes/recipe_crud.py'; Text = 'recipes = filter_recipes(recipes, _sel, request.user)'; What = 'PF-2: and the library stopped keeping its own copy of it' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def picker_recipes('; What = 'PF-2: the picker asks the server for its rows, after Demetri said it only allows you to choose Course' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerAuthor"'; What = 'PF-2: and all five filters are there - course, category, protein with vegetarian, author and favourites' },
+    # ------------------------------------------------- MV-1, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'aria-label="Calendar view"'; What = 'MV-1: Month, Week and Day on base .alv-seg - server-rendered links, not JavaScript, so the view is in the URL' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'ONE ANCHOR DATE FOR THREE VIEWS'; What = 'MV-1: and the three zoom levels travel on one ?date=, so switching keeps the day you were looking at' },
+    # ------------------------------------------------- MV-2, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'class="month-grid"'; What = 'MV-2: the month is the view, full page - a cell is 162px without the mini calendar and 113px with it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE MINI CALENDAR WAS HERE'; What = 'MV-2: and the 320px strip Demetri asked about is gone, with the record of why it went' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'THREE SHOWN, THE REST COUNTED'; What = 'MV-2: a cell shows three names then +n more - his own answer to what a full day looks like' },
+    # ------------------------------------------------- MV-3, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-grid"'; What = 'MV-3: the week is seven columns - 4,900px of day cards becomes about 420px, after Demetri said the daily list was not required' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'class="day-strip"'; What = 'MV-3: and on a phone the week is a day strip with one day open, because seven columns is 51px there' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'WHICH DAY THE PHONE OPENS ON'; What = 'MV-3: the anchor when it is in this week, the Monday otherwise - one rule, where the anchor already lives' },
+    # ------------------------------------------------- MV-4, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'ONE DAY, NOT SEVEN'; What = 'MV-4: the vertical list of seven day cards is gone - about 4,900px of it - which is what Demetri meant by the daily list not being required' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE DAY HAS ITS OWN NAV'; What = 'MV-4: and the Day view moves by days, because week arrows above one Tuesday move you seven' },
     @{ File = 'pages/help_content/administration.html'; Text = 'coming:</strong> repeating a whole week'; Absent = $true; Code = $true; What = 'MH-3: and no longer promises four things MW-1 and MO-1 have built' },
     @{ File = 'check_gates.py'; Text = 'already owns %s in'; Absent = $true; Code = $true; What = 'NF-1: and the old message is gone - it could only print when the register had an entry, which is the case this round exists for' },
     # -------------------------------------------- HL-1, 12 Oct 2026
@@ -2683,11 +2699,10 @@ $suites = @(
     # with the week. MH-2 promised four features at the foot of a
     # tab and MW-1 and MO-1 built all four the next morning.
     'test_meal_guide3.py',
-    # MC-4, 19 Oct 2026 - the mini calendar is a calendar. The
-    # first suite in this project that RENDERS it: every check
-    # before this one read its class names, and a layout fault
-    # is only visible in the picture.
-    'test_mini_grid.py',
+    # MC-4's test_mini_grid.py was HERE, and is retired by MV-2,
+    # 19 Oct 2026 - it rendered the mini calendar and MV-2 deletes
+    # it. Its lesson moved to test_month_view.py, which counts
+    # columns in a browser for the same reason MC-4 had to.
     # PK-1, 19 Oct 2026 - the picker is a grid, and it filters.
     # Demetri on the live dialog: "there is so much wasted space
     # on the right of each recipe. Should it not be a grid?"
@@ -2707,7 +2722,24 @@ $suites = @(
     # shared one against the same selections and compares the ORM
     # calls, because "it behaves the same" is a claim and a
     # recording is a reading.
-    'test_pick_filter.py'
+    'test_pick_filter.py',
+    # MV-1, 19 Oct 2026 - the view switcher. Section 3 DRIVES all
+    # three links and asks the view which day it landed on,
+    # because a switcher that loses the date is worse than none.
+    'test_view_switch.py',
+    # MV-2, 19 Oct 2026 - the month grid. It RENDERS the thing,
+    # because MC-4 is the round where every class name was right
+    # and the calendar drew one column.
+    'test_month_view.py',
+    # MV-3, 19 Oct 2026 - the week as seven columns. It RENDERS
+    # the week and measures its height, because "the daily list
+    # is not required" was a complaint about 4,900px and a
+    # number is the only answer to it.
+    'test_week_cols.py',
+    # MV-4, 19 Oct 2026 - one day in full. It counts the cards a
+    # page draws in each of the three views, because "not
+    # required" was a claim about how many there were.
+    'test_day_view.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

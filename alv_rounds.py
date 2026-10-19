@@ -1309,6 +1309,27 @@ ROUNDS = [
     # the application already had. One shared function now, and 336
     # recipes come off the planner page with it.
     '.bak_pickfilter',
+    # MV-1, 19 Oct 2026 - RELEASE 4. The switcher: Month, Week and Day
+    # on base's .alv-seg, server-rendered, with one ?date= carrying
+    # the day between them. Month lands first, by his own words.
+    '.bak_viewswitch',
+    # MV-2, 19 Oct 2026 - the month grid, full page, and the mini
+    # calendar deleted. Demetri: "why does this still have the time
+    # calendar?" and "Monthly Calendar first - full page". It went on
+    # a measurement: a cell is 113px with that strip and 162px
+    # without, which is fifteen characters against twenty-three.
+    '.bak_monthview',
+    # MV-3, 19 Oct 2026 - the week is seven columns. "This daily list
+    # is not required": one week of day cards is about 4,900px, so
+    # Sunday is four screens below Monday and you can see no days at
+    # once. On a phone it is a day strip with one day open, which is
+    # his own answer to the question.
+    '.bak_weekcols',
+    # MV-4, 19 Oct 2026 - one day, in full, and the list of seven is
+    # gone. The CARD is kept: the stepper, MO-1's note and leftover
+    # rows and the Add controls do not fit in a 146px column or a
+    # 152px cell, and for one day the card is exactly right.
+    '.bak_dayview',
 ]
 
 

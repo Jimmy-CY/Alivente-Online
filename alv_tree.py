@@ -770,10 +770,8 @@ CONVERTED = [
     # MH-3, 19 Oct 2026 - the guide catches up with the week. Wide
     # from birth: the promise gate reads every tab of the module.
     'test_meal_guide3.py',
-    # MC-4, 19 Oct 2026 - the mini calendar is a calendar. Wide from
-    # birth: section 4 asks every page in both roots whether any other
-    # one has a row of display: contents outside its grid.
-    'test_mini_grid.py',
+    # MC-4's test_mini_grid.py was HERE - retired by MV-2, 19 Oct
+    # 2026, with the component it judged.
     # PK-1, 19 Oct 2026 - the picker is a grid, and it filters by
     # course. Wide from birth: section 5 asks every page in both
     # roots whether any other one grew a copy of the filter strip.
@@ -790,6 +788,21 @@ CONVERTED = [
     # five things because the library already did, and they share one
     # function rather than two implementations in two languages.
     'test_pick_filter.py',
+    # MV-1, 19 Oct 2026 - three zoom levels on one calendar, after
+    # Demetri said the daily list was not required and asked for the
+    # Monthly Calendar first, full page.
+    'test_view_switch.py',
+    # MV-2, 19 Oct 2026 - the month is the view. Section 4 walks every
+    # page in both roots asking whether any other one still names a
+    # mini-calendar class, because this round deleted the component.
+    'test_month_view.py',
+    # MV-3, 19 Oct 2026 - seven columns at full size, a day strip on a
+    # phone. Section 3 measures the page height both ways, which is
+    # the claim Demetri actually made.
+    'test_week_cols.py',
+    # MV-4, 19 Oct 2026 - one day card instead of seven, and the Day
+    # view's own nav. Section 3 renders all three views and counts.
+    'test_day_view.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

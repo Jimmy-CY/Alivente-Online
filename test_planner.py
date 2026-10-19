@@ -653,8 +653,29 @@ if django_up:
        r.context['week_start'])
     ok(r.context['week_end'] == MON + _dt.timedelta(days=6),
        '  and ends on the Sunday', r.context['week_end'])
-    ok('mini-calendar-week selected' in r.content.decode('utf-8', 'replace'),
-       '  and that row is marked selected')
+    # REPOINTED BY MV-2, 19 Oct 2026. This read
+    # 'mini-calendar-week selected' - the strip MV-2 deleted. The
+    # fact it defends is unchanged: opening a Wednesday must SHOW you
+    # which week you are in. The month grid tints that week across all
+    # seven of its cells, so the claim moved to the thing that marks
+    # it now rather than being dropped with the thing that did.
+    _page = r.content.decode('utf-8', 'replace')
+    # AS MANY AS THE MONTH HOLDS, WHICH IS NOT ALWAYS SEVEN. A week
+    # straddles two months five times a year, and the grid draws only
+    # the days of the month it is showing - the first cut of this
+    # repair asked for seven and measured six.
+    _in = sum(1 for _i in range(7)
+              if (r.context['week_start']
+                  + _dt.timedelta(days=_i)).month == r.context['month'])
+    # COUNTED ON THE CLASS, NOT ON A PREFIX. A cell that is also
+    # today reads `month-cell is-today in-week`, so counting
+    # 'month-cell in-week' missed exactly one - the first cut of this
+    # repair measured six of seven and the odd one out was today.
+    _marked = _page.count(' in-week')
+    ok(_marked == _in,
+       "  and all %d of that week days that this month holds are "
+       "marked" % _in, _marked)
+    ok(_in >= 1, '    and the week really is in this month', _in)
 
     head('8c. ANY date takes a meal - A3 dissolved, not guarded')
     r = cl.post('/meal_plans/add/',

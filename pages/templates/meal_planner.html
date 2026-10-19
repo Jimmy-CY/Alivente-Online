@@ -36,149 +36,481 @@
 }
 
 
+/* ONE COLUMN - MV-2, 19 Oct 2026. This was `320px 1fr`: a mini
+   calendar beside a week. The strip is gone and the month is the
+   view, so there is nothing to put in a first column.
+
+   MEASURED, which is why the strip went rather than merely being
+   bypassed: a seven-column month cell at 1200px is 113px with it and
+   162px without - fifteen characters against twenty-three. */
 .calendar-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 25px;
+    display: block;
 }
 
-/* ==================== LEFT PANEL ==================== */
-.left-panel {
+/* ==================== THE DAY ==================== */
+/* MV-4, 19 Oct 2026. The card below is unchanged and that is the
+   point: it carries the servings stepper, MO-1's note and leftover
+   rows and the Add controls, none of which fits in a 146px week
+   column or a 152px month cell. What changed is that there is ONE of
+   it instead of seven.
+
+   IN WEEK VIEW IT IS FOR THE PHONE ONLY. Above 768px the seven
+   columns say everything a week has to say, and a day card under them
+   would be a second answer to the same question. Below it, the
+   columns are hidden and this is what the day strip opens. */
+@media (min-width: 768px) {
+    .day-detail.in-week {
+        display: none;
+    }
+}
+
+/* ==================== THE WEEK ==================== */
+/* SEVEN COLUMNS - MV-3, 19 Oct 2026. The day cards below this are
+   about 4,900px for one week; this is about 420px, and the whole
+   point of a planner is seeing the week at once.
+
+   The same grid shape as the month, for the same reason: one grid,
+   one child per column, and no row wrapper for a display:contents
+   rule to hand its children to. MC-4 is why that sentence exists. */
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--alv-line-soft);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.week-col {
+    background: var(--alv-paper);
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    min-height: 190px;
 }
 
-/* Mini Calendar */
-.mini-calendar {
-    background: var(--alv-paper);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.week-col-head {
+    background: var(--alv-surface);
+    border-bottom: 1px solid var(--alv-line);
+    padding: 6px 4px;
+    text-align: center;
 }
 
-.mini-calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+.week-col.is-today .week-col-head {
+    background: var(--alv-accent-soft);
 }
 
-.mini-calendar-header h3 {
-    font-size: 18px;
+/* --alv-ink-soft, NOT --alv-ink-faint. The faint token reads 2.85:1
+   on this ground and AA wants 4.5; ink-soft reads 5.25. A weekday
+   heading is a WORD somebody reads, not a mark. test_pair_contrast
+   caught the month's copy of exactly this on the first sweep after
+   the round was written. */
+.week-col-dow {
+    display: block;
+    font-size: 10px;
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--alv-ink-soft);
+}
+
+.week-col-num {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
     color: var(--alv-ink);
-    margin: 0;
 }
 
-.mini-calendar-nav {
+.week-col.is-today .week-col-num {
+    color: var(--alv-accent-ink);
+}
+
+.week-col-body {
+    flex: 1;
+    padding: 5px 4px;
     display: flex;
-    gap: 8px;
-}
-
-.mini-calendar-nav button {
-    background: var(--alv-line-soft);
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--alv-radius-sm);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.mini-calendar-nav button:hover {
-    background: var(--alv-accent);
-    color: var(--alv-on-accent);
-}
-
-.mini-calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    flex-direction: column;
     gap: 2px;
 }
 
-.mini-calendar-day-header {
+/* THE SAME CHIP THE MONTH DRAWS, in the same three colours, because a
+   meal should not change its appearance when you change zoom level. */
+.week-chip {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 2px 5px;
+    border-radius: 3px;
+    border-left: 2px solid var(--alv-accent);
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.week-chip.is-note {
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn-ink);
+    border-left-color: var(--alv-warn);
+}
+
+.week-chip.is-leftover {
+    background: var(--alv-surface-deep);
+    color: var(--alv-ink-soft);
+    border-left-color: var(--alv-neutral);
+}
+
+/* AN EMPTY DAY SAYS SO. A blank column and a broken column look the
+   same, which is the fault PK-1's empty state exists for. */
+.week-col-empty {
+    color: var(--alv-ink-faint);
+    font-size: 12px;
+    text-align: center;
+    padding: 6px 0;
+}
+
+.week-col-foot {
+    padding: 0 4px 6px;
+}
+
+.week-col-add {
+    width: 100%;
+    border: 1px dashed var(--alv-line);
+    background: none;
+    border-radius: 4px;
+    color: var(--alv-ink-faint);
+    font-size: 13px;
+    line-height: 1;
+    padding: 6px 0;
+}
+
+.week-col-add:hover {
+    background: var(--alv-surface);
+    color: var(--alv-accent);
+    border-color: var(--alv-accent-line);
+}
+
+.week-col-add:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: 1px;
+}
+
+/* ---- THE DAY STRIP, which is the WEEK on a phone - MV-3.
+
+   358px over seven columns is 51px. The Month answers that with dots
+   because a month at a glance is about shape; the Week cannot,
+   because it is the view you use standing in the kitchen. So the
+   shape stays across the top and one day opens in full below it.
+
+   Hidden above 768px, where the seven columns say all of it. */
+.day-strip {
+    display: none;
+}
+
+@media screen and (max-width: 767px) {
+    .week-grid {
+        display: none;
+    }
+
+    .day-strip {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 3px;
+        margin-bottom: 12px;
+    }
+
+    .day-strip-btn {
+        border: 1px solid var(--alv-line);
+        border-radius: 5px;
+        background: var(--alv-paper);
+        padding: 4px 0 3px;
+        /* 44px, THE HOUSE RULE, and this is the control the week is
+           navigated with on a phone. */
+        min-height: 44px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+    }
+
+    .day-strip-btn.is-selected {
+        background: var(--alv-accent);
+        border-color: var(--alv-accent);
+    }
+
+    .day-strip-dow {
+        font-size: 8.5px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        /* ink-soft, for the reason .week-col-dow gives above. */
+        color: var(--alv-ink-soft);
+    }
+
+    .day-strip-num {
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--alv-ink);
+    }
+
+    .day-strip-btn.is-today .day-strip-num {
+        color: var(--alv-accent-ink);
+    }
+
+    .day-strip-btn.is-selected .day-strip-dow,
+    .day-strip-btn.is-selected .day-strip-num {
+        color: var(--alv-on-accent);
+    }
+
+    .day-strip-dots {
+        display: flex;
+        gap: 2px;
+        min-height: 5px;
+    }
+
+    .day-strip-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--alv-accent);
+    }
+
+    .day-strip-dot.is-note {
+        background: var(--alv-warn);
+    }
+
+    .day-strip-dot.is-leftover {
+        background: var(--alv-neutral);
+    }
+
+    .day-strip-btn.is-selected .day-strip-dot {
+        background: var(--alv-on-accent);
+    }
+}
+
+/* ==================== THE MONTH ==================== */
+.month-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.month-count {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+}
+
+/* SEVEN COLUMNS, AND THE HEADINGS ARE IN THE SAME GRID. MC-4 is the
+   round where they were not - the grid closed after them, every week
+   row became a sibling, and display:contents handed thirty-five cells
+   to a plain div. One grid, one child per cell, no row wrapper. */
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    overflow: hidden;
+    background: var(--alv-line-soft);
+    gap: 1px;
+}
+
+.month-dow {
+    background: var(--alv-surface);
+    padding: 7px 4px;
     text-align: center;
     font-size: 11px;
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    /* --alv-ink-soft, NOT --alv-ink-faint. The faint token reads
+       2.85:1 on this ground; AA wants 4.5 and ink-soft reads 5.25.
+       A weekday heading is a WORD somebody reads. test_pair_contrast
+       caught this one - it is the only rule in this round that sets
+       both a ground and an ink, so it is the only one that suite
+       could see. */
     color: var(--alv-ink-soft);
-    padding: 8px 0;
 }
 
-.mini-calendar-day {
-    text-align: center;
-    padding: 8px 4px;
-    font-size: 13px;
-    border-radius: var(--alv-radius-sm);
-    position: relative;
-    transition: all 0.2s;
+.month-cell {
+    background: var(--alv-paper);
+    min-height: 104px;
+    padding: 5px 5px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
 }
 
-/* display: contents, AND THE ROW MUST BE INSIDE THE GRID - MC-4,
-   19 Oct 2026. This rule dissolves the row so its seven day cells
-   become children of the row's PARENT, which is what lets one grid
-   lay out every week while .mini-calendar-week.selected still paints
-   a whole row. It is also why the row is not optional furniture: move
-   it out of .mini-calendar-grid and the cells are handed to whatever
-   is outside, which for four weeks on the live site was a plain div -
-   thirty-five cells in one column.
-
-   cursor: pointer belongs to the ROW even though the row draws
-   nothing, because the row is what carries the onclick. */
-.mini-calendar-week {
-    display: contents;
+/* A CELL IS A BUTTON - Demetri's Q2: "I want it to go straight to the
+   Picker, when I click a day." So it must look live and take the
+   keyboard, and the day it opens on is in its aria-label. */
+.month-cell[role="button"] {
     cursor: pointer;
 }
 
-.mini-calendar-week:hover .mini-calendar-day:not(.empty) {
-    background: var(--alv-surface-deep);
+.month-cell[role="button"]:hover {
+    background: var(--alv-surface);
 }
 
-.mini-calendar-week.selected .mini-calendar-day:not(.empty) {
+.month-cell[role="button"]:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -2px;
+}
+
+.month-cell.is-out {
+    background: var(--alv-surface);
+}
+
+.month-cell.in-week {
+    background: var(--alv-accent-soft);
+}
+
+.month-daynum {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--alv-ink-soft);
+    font-variant-numeric: tabular-nums;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.month-cell.is-today .month-daynum {
     background: var(--alv-accent);
     color: var(--alv-on-accent);
-}
-
-.mini-calendar-day.empty {
-    color: var(--alv-ink-faint);
-}
-
-.mini-calendar-day.today {
-    font-weight: 700;
-    border: 2px solid var(--alv-accent);
-}
-
-.mini-calendar-day.has-meal::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
-    /* A STATUS, NOT A VERB - MC-3. This dot and the legend swatch below
-       say "there is a meal on this day". They keep a green because that
-       is what Demetri reads them by, but it is the palette's green. */
-    background: var(--alv-good);
     border-radius: 50%;
 }
 
-.mini-calendar-day.in-meal-plan {
+/* THE NAME, TRUNCATED. 162px holds about twenty-three characters and
+   a recipe called "Salad - Butternut Squash Quinoa" is thirty-one, so
+   the cell says as much as it can and stops. The full name is one
+   click away in the Day view. */
+.month-chip {
+    display: block;
+    width: 100%;
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border-left: 2px solid var(--alv-accent);
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* THE SAME THREE COLOURS THE DAY CARD USES. A note is MO-1's amber
+   and a leftover is the quietest thing on the page, here as there,
+   so the month does not teach a second vocabulary. */
+.month-chip.is-note {
+    background: var(--alv-warn-soft);
+    color: var(--alv-warn-ink);
+    border-left-color: var(--alv-warn);
+}
+
+.month-chip.is-leftover {
+    background: var(--alv-surface-deep);
+    color: var(--alv-ink-soft);
+    border-left-color: var(--alv-neutral);
+}
+
+.month-more {
+    font-size: 10.5px;
+    /* "+3 more" is a word too, and it is the one thing in the cell
+       that says there is something you cannot see. */
+    color: var(--alv-ink-soft);
+    padding-left: 5px;
+}
+
+/* THE MARKS ARE FOR THE PHONE and are hidden here - both are in the
+   markup and this stylesheet picks one, because which to draw is a
+   question about the screen. */
+.month-dots {
+    display: none;
+}
+
+.month-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
     background: var(--alv-accent);
-    color: var(--alv-on-accent);
+    display: inline-block;
 }
 
-.mini-calendar-day.in-meal-plan.has-meal::after {
-    background: var(--alv-paper);
+.month-dot.is-note {
+    background: var(--alv-warn);
 }
 
-.mini-calendar-day.in-meal-plan.today {
-    border-color: var(--alv-paper);
+.month-dot.is-leftover {
+    background: var(--alv-neutral);
 }
 
+@media screen and (max-width: 767px) {
+    /* FIVE CHARACTERS IS NOT A NAME, IT IS NOISE. At 390px a cell is
+       47px. Demetri: "I am happy that the mobile gets dots. All three
+       view everywhere." So the names go and the marks arrive, in the
+       chip's own colours, and tapping the day still opens the picker
+       on it. */
+    .month-chip,
+    .month-more {
+        display: none;
+    }
+
+    .month-dots {
+        display: flex;
+        gap: 2px;
+        flex-wrap: nowrap;
+        padding-left: 2px;
+    }
+
+    .month-cell {
+        min-height: 54px;
+        align-items: center;
+        padding: 3px 2px;
+        gap: 1px;
+    }
+
+    .month-dow {
+        font-size: 9px;
+        padding: 5px 0;
+    }
+
+    .month-daynum {
+        font-size: 11px;
+        min-width: 18px;
+        height: 18px;
+    }
+}
+
+
+/* THE MINI CALENDAR WAS HERE - MV-2, 19 Oct 2026.
+
+   A 320px strip of thirty-one numbers with a dot on the days that
+   had a meal, beside the week. Demetri, testing the live page:
+   "why does this still have the time calendar?"
+
+   IT WENT BECAUSE OF A MEASUREMENT, not because it duplicated the
+   month grid. A seven-column cell at 1200px is 113px with this
+   strip beside it and 162px without - fifteen characters against
+   twenty-three. A cell cannot carry a recipe name while it is
+   there, so the month could not become a view until it went.
+
+   MC-4 lived here too: this grid closed after its seven weekday
+   headers, so every week row was a sibling of it, and a row with
+   display:contents hands its cells to its PARENT. Thirty-five
+   cells in one column, on the live site, for four weeks. The
+   month grid that replaced it has no row wrapper at all. */
 /* Meal Plans List */
 
 
@@ -470,17 +802,19 @@
 
    base owns no multiselect - recipe_management rolled its own - so
    the rules are here, and they are the same shape so the two screens
-   read alike. */
+   read alike.
+
+   `.picker-filter .alv-seg { flex-wrap: wrap }` USED TO FOLLOW THIS.
+   It let PK-1's course strip wrap onto a second row. PF-2 replaced
+   that strip and left the rule, so it matched nothing; MV-1 removed
+   it on the same day, having tripped over it. A selector that matches
+   nothing is a claim about the page that has stopped being true. */
 .picker-filter {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
-}
-
-.picker-filter .alv-seg {
-    flex-wrap: wrap;
 }
 
 /* PF-2, 19 Oct 2026 - the five controls. */
@@ -739,84 +1073,16 @@
     pointer-events: none;
 }
 
-/* Legend */
-.calendar-legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid var(--alv-line);
-    font-size: 12px;
-    color: var(--alv-ink-soft);
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.legend-dot.meal {
-    background: var(--alv-good);
-}
-
-.legend-dot.today {
-    border: 2px solid var(--alv-accent);
-    background: var(--alv-paper);
-}
-
 /* ==================== RESPONSIVE ==================== */
 @media screen and (max-width: 1200px) {
     .calendar-layout {
         grid-template-columns: 1fr;
     }
     
-    .left-panel {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    .mini-calendar {
-        flex: 1;
-        min-width: 280px;
-    }
-    
 
 @media screen and (max-width: 768px) {
     .calendar-container {
         padding: 8px;
-    }
-
-    /* Left panel - stack the mini calendar above the week */
-    .left-panel {
-        flex-direction: column;
-    }
-
-    /* Mini calendar - tighter */
-    .mini-calendar {
-        padding: 14px;
-        min-width: 0 !important;
-    }
-    .mini-calendar-header h3 {
-        font-size: 16px;
-    }
-    .mini-calendar-day {
-        padding: 7px 2px;
-        font-size: 12px;
-    }
-    .mini-calendar-day-header {
-        font-size: 10px;
-        padding: 6px 0;
-    }
-    .calendar-legend {
-        flex-wrap: wrap;
-        gap: 12px;
     }
 
     /* Meal plans panel */
@@ -1020,7 +1286,38 @@
        the 76 template-walking suites ask of a new page on day one.
        --------------------------------------------------------------- */
 
-    .week-nav {
+    /* THE VIEW BAR - MV-1, 19 Oct 2026. Nothing but the box that holds
+   base's component: .alv-seg brings its own border, radius, type,
+   pressed state and focus ring, and a page that restated any of them
+   would be the hand-rolled toggle MC-1 removed, wearing a new name.
+
+   Centred, because the switcher is about the whole page rather than
+   about one panel in it, and the page title above it is centred too. */
+.planner-view-bar {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 16px;
+}
+
+@media screen and (max-width: 767px) {
+    /* FULL WIDTH ON A PHONE, three equal thirds. At 390px the three
+       labels and their icons measure 232px, which centred leaves two
+       small targets either side of a big one. Demetri gets all three
+       views at every width - his words - so all three get the same
+       thumb. */
+    .planner-view-bar .alv-seg {
+        display: flex;
+        width: 100%;
+    }
+
+    .planner-view-bar .alv-seg > * {
+        flex: 1;
+        justify-content: center;
+        min-height: 44px;
+    }
+}
+
+.week-nav {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -1180,70 +1477,150 @@
         </a>
     </div>
 
+    {# THE VIEW SWITCHER - MV-1, 19 Oct 2026.                        #}
+    {#                                                               #}
+    {# base owns .alv-seg, its pressed state and its focus ring, so  #}
+    {# this page writes none of that - only the bar that holds it.   #}
+    {# finance_expense has used exactly this shape since PN-1.       #}
+    {#                                                               #}
+    {# LINKS, NOT BUTTONS. The view is in the URL, so it survives a  #}
+    {# refresh, it can be sent to somebody, and the control works    #}
+    {# with JavaScript off. MC-1 is why this page does not roll its  #}
+    {# own toggle: the last hand-written one had both halves in the  #}
+    {# markup and painted the inactive one white on white.           #}
+    {#                                                               #}
+    {# EVERY LINK CARRIES THE ANCHOR, so switching zoom level keeps  #}
+    {# the day you were looking at.                                  #}
+    <div class="planner-view-bar">
+        <div class="alv-seg" role="group" aria-label="Calendar view">
+            <a href="?view=month&amp;date={{ anchor|date:'Y-m-d' }}"
+               {% if view_mode == 'month' %}aria-current="page"{% endif %}>
+                <i class="fas fa-calendar-alt"></i> Month
+            </a>
+            <a href="?view=week&amp;date={{ anchor|date:'Y-m-d' }}"
+               {% if view_mode == 'week' %}aria-current="page"{% endif %}>
+                <i class="fas fa-calendar-week"></i> Week
+            </a>
+            <a href="?view=day&amp;date={{ anchor|date:'Y-m-d' }}"
+               {% if view_mode == 'day' %}aria-current="page"{% endif %}>
+                <i class="fas fa-calendar-day"></i> Day
+            </a>
+        </div>
+    </div>
+
     <div class="calendar-layout">
 
-        {# ------------------------------------------------- left panel #}
-        <div class="left-panel">
-            <div class="mini-calendar">
-                <div class="mini-calendar-header">
-                    <button type="button" class="mini-calendar-nav"
+        {# ------------------------------------------------ the month #}
+        {#                                                             #}
+        {# MV-2, 19 Oct 2026. Demetri, testing the live planner: "why  #}
+        {# does this still have the time calendar?" - and then, on the #}
+        {# design: "Monthly Calendar first - full page".               #}
+        {#                                                             #}
+        {# THE MINI CALENDAR WAS HERE, a 320px strip carrying one dot  #}
+        {# a day. It is gone, and not merely because it duplicated     #}
+        {# this grid. MEASURED: a seven-column cell at 1200px is 113px #}
+        {# with that strip beside it and 162px without - fifteen       #}
+        {# characters against twenty-three. A cell cannot carry a      #}
+        {# recipe name while the strip is there, so the strip had to   #}
+        {# go for the month to become a view at all.                   #}
+        {#                                                             #}
+        {# CLICKING A DAY OPENS THE PICKER ON IT - Demetri's Q2, in    #}
+        {# his own words: "I want it to go straight to the Picker,     #}
+        {# when I click a day."                                        #}
+        {% if view_mode == 'month' %}
+        <div class="month-panel">
+            <div class="month-header">
+                <div class="week-nav">
+                    <button type="button" class="week-nav-btn"
                             onclick="goMonth({{ prev_month.year }}, {{ prev_month.month }})"
-                            aria-label="Previous month">
+                            aria-label="The month before">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <strong>{{ month_name }}</strong>
-                    <button type="button" class="mini-calendar-nav"
+                    <span class="week-title">{{ month_name }}</span>
+                    <button type="button" class="week-nav-btn"
                             onclick="goMonth({{ next_month.year }}, {{ next_month.month }})"
-                            aria-label="Next month">
+                            aria-label="The month after">
                         <i class="fas fa-chevron-right"></i>
                     </button>
+                    <button type="button" class="week-nav-btn"
+                            onclick="goDay('{{ today|date:'Y-m-d'|escapejs }}', 'month')">
+                        Today
+                    </button>
                 </div>
+                <span class="month-count">{{ month_count }} meal{{ month_count|pluralize }}</span>
+            </div>
 
-                <div class="mini-calendar-grid">
-                    <div class="mini-calendar-day-header">Mo</div>
-                    <div class="mini-calendar-day-header">Tu</div>
-                    <div class="mini-calendar-day-header">We</div>
-                    <div class="mini-calendar-day-header">Th</div>
-                    <div class="mini-calendar-day-header">Fr</div>
-                    <div class="mini-calendar-day-header">Sa</div>
-                    <div class="mini-calendar-day-header">Su</div>
-
-                {# THE WEEKS GO INSIDE THE GRID - MC-4, 19 Oct 2026, and  #}
-                {# the grid used to close on the line above this one.     #}
-                {# Each row wears display: contents so that a whole week  #}
-                {# can be painted by one rule while its seven cells still #}
-                {# sit in one seven-column grid - and display: contents   #}
-                {# hands the cells to the row's PARENT. With the grid     #}
-                {# closed above, that parent was .mini-calendar, which is #}
-                {# not a grid, so thirty-five day cells stacked in one    #}
-                {# column. Demetri found it on the live site.             #}
-                {% for week in calendar_weeks %}
-                {# MD-1's D26: the row you are looking at is marked, and  #}
-                {# it can only match because the view normalises the week #}
-                {# to a Monday before it gets here.                       #}
-                <div class="mini-calendar-week{% if week.week_start and week.week_start == week_start %} selected{% endif %}"
-                     {% if week.week_start %}onclick="goWeek('{{ week.week_start|date:'Y-m-d'|escapejs }}')"{% endif %}
-                     data-week-start="{{ week.week_start|date:'Y-m-d' }}">
-                    {% for day in week.days %}
-                    <div class="mini-calendar-day {% if not day %}empty{% endif %} {% if day.is_today %}today{% endif %} {% if day.has_meal %}has-meal{% endif %}"
-                         {% if day.date %}data-date="{{ day.date|date:'Y-m-d' }}"{% endif %}>
-                        {{ day.day|default_if_none:'' }}
-                    </div>
+            <div class="month-grid">
+                {# THE HEADINGS ARE INSIDE THE GRID. MC-4 is the round #}
+                {# where they were not: the grid closed after them and #}
+                {# thirty-five cells stacked in one column, on the     #}
+                {# live site, because display:contents handed them to  #}
+                {# a plain div. One seven-column grid, one child per   #}
+                {# cell, and no row wrapper to lose.                   #}
+                <div class="month-dow">Mon</div>
+                <div class="month-dow">Tue</div>
+                <div class="month-dow">Wed</div>
+                <div class="month-dow">Thu</div>
+                <div class="month-dow">Fri</div>
+                <div class="month-dow">Sat</div>
+                <div class="month-dow">Sun</div>
+                {% for week in month_weeks %}{% for cell in week %}{% if cell %}
+                <div class="month-cell{% if cell.is_today %} is-today{% endif %}{% if cell.in_week %} in-week{% endif %}"
+                     {% if perms.auth.can_edit_recipes %}role="button" tabindex="0"
+                     aria-label="{{ cell.count }} meal{{ cell.count|pluralize }} on {{ cell.date|date:'l j F' }} - add one"
+                     onclick="openPicker('{{ cell.date|date:'Y-m-d'|escapejs }}', '{{ cell.date|date:'l j F'|escapejs }}')"{% endif %}>
+                    <span class="month-daynum">{{ cell.day }}</span>
+                    {# NAMES AT 768px AND UP, MARKS BELOW IT. Five     #}
+                    {# characters is not a name, it is noise - which   #}
+                    {# is why both are in the markup and the CSS picks #}
+                    {# one. Demetri: "I am happy that the mobile gets  #}
+                    {# dots. All three view everywhere."               #}
+                    {% for e in cell.entries %}
+                    <span class="month-chip{% if e.leftover_of_id %} is-leftover{% elif not e.recipe_id %} is-note{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</span>
                     {% endfor %}
+                    {% if cell.more %}<span class="month-more">+{{ cell.more }} more</span>{% endif %}
+                    {% if cell.dots %}<span class="month-dots" aria-hidden="true">{% for d in cell.dots %}<span class="month-dot {{ d }}"></span>{% endfor %}</span>{% endif %}
                 </div>
-                {% endfor %}
-                </div>{# .mini-calendar-grid - MC-4, 19 Oct 2026 #}
-
-                <div class="calendar-legend">
-                    <div class="legend-item"><span class="legend-dot has-meal"></span> Has a meal</div>
-                    <div class="legend-item"><span class="legend-dot today"></span> Today</div>
-                </div>
+                {% else %}
+                <div class="month-cell is-out"></div>
+                {% endif %}{% endfor %}{% endfor %}
             </div>
         </div>
+        {% endif %}
 
         {# ------------------------------------------------ the week #}
+        {# SHOWN WHEN THE MONTH IS NOT - MV-2, 19 Oct 2026. This body #}
+        {# is still the vertical day-card list Demetri said was not   #}
+        {# required; MV-3 and MV-4 are what replace it. Until then it #}
+        {# is what Week and Day render, and the Month no longer has   #}
+        {# to share the screen with it.                               #}
+        {% if view_mode != 'month' %}
         <div class="week-detail-panel">
             <div class="week-detail-header">
+                {# THE DAY HAS ITS OWN NAV - MV-4, 19 Oct 2026.        #}
+                {# "19 Oct - 25 Oct 2026" above a single Tuesday is a  #}
+                {# label about the wrong thing, and the week arrows    #}
+                {# would move you seven days when you can see one.     #}
+                {% if view_mode == 'day' %}
+                <div class="week-nav">
+                    <button type="button" class="week-nav-btn"
+                            onclick="goDay('{{ prev_day|date:'Y-m-d'|escapejs }}')"
+                            aria-label="The day before">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="week-title">{{ sel_date|date:"l j M Y" }}</span>
+                    <button type="button" class="week-nav-btn"
+                            onclick="goDay('{{ next_day|date:'Y-m-d'|escapejs }}')"
+                            aria-label="The day after">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button type="button" class="week-nav-btn"
+                            onclick="goDay('{{ today|date:'Y-m-d'|escapejs }}')">
+                        Today
+                    </button>
+                </div>
+                <span class="week-meta">{{ sel_count }} meal{{ sel_count|pluralize }}</span>
+                {% else %}
                 <div class="week-nav">
                     <button type="button" class="week-nav-btn"
                             onclick="goWeek('{{ prev_week|date:'Y-m-d'|escapejs }}')"
@@ -1262,12 +1639,98 @@
                     </button>
                 </div>
                 <span class="week-meta">{{ meal_count }} meal{{ meal_count|pluralize }}</span>
+                {% endif %}{# view_mode == 'day' - MV-4, 19 Oct 2026 #}
             </div>
 
             <div class="week-detail-content">
                 <div id="plannerStatus" class="planner-status" role="status" aria-live="polite"></div>
 
-                {% for day in week_days %}
+                {# ------------------------------- SEVEN COLUMNS - MV-3 #}
+                {#                                                      #}
+                {# Demetri: "This daily list is not required..."        #}
+                {#                                                      #}
+                {# MEASURED: one week of the day cards below is about   #}
+                {# 4,900px tall, so Sunday is four screens under Monday #}
+                {# and the number of days you can see at once is ZERO.  #}
+                {# Seven columns is about 420px.                        #}
+                {#                                                      #}
+                {# NO STEPPER AND NO ROW ACTIONS HERE. A column is      #}
+                {# 152px at 1200px and the stepper alone is 90px of it. #}
+                {# They live in the Day view, which MV-4 builds.        #}
+                {% if view_mode == 'week' %}
+                <div class="week-grid">
+                    {% for day in week_days %}
+                    <div class="week-col{% if day.is_today %} is-today{% endif %}">
+                        <div class="week-col-head">
+                            <span class="week-col-dow">{{ day.day_short }}</span>
+                            <span class="week-col-num">{{ day.day_num }}</span>
+                        </div>
+                        <div class="week-col-body">
+                            {% for e in day.entries %}
+                            <span class="week-chip{% if e.leftover_of_id %} is-leftover{% elif not e.recipe_id %} is-note{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</span>
+                            {% empty %}
+                            <span class="week-col-empty">&mdash;</span>
+                            {% endfor %}
+                        </div>
+                        {% if perms.auth.can_edit_recipes %}
+                        <div class="week-col-foot">
+                            <button type="button" class="week-col-add"
+                                    onclick="openPicker('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }} {{ day.day_num }}')"
+                                    aria-label="Add a meal to {{ day.day_name }} {{ day.day_num }}">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {# --------------------------- AND THE PHONE'S STRIP - MV-3 #}
+                {#                                                          #}
+                {# 358px over seven columns is 51px, which is the wall the  #}
+                {# Month hit and answered with dots. Week cannot: it is the #}
+                {# view you use standing in the kitchen and a dot does not  #}
+                {# say what is for dinner.                                  #}
+                {#                                                          #}
+                {# So the week's SHAPE stays across the top - you can still #}
+                {# see that Saturday is busy - and one day opens in full    #}
+                {# underneath, which is the day-card list below, narrowed   #}
+                {# by MV-4 to the selected day.                             #}
+                <div class="day-strip" role="group" aria-label="The week">
+                    {% for day in week_days %}
+                    <button type="button"
+                            class="day-strip-btn{% if day.is_selected %} is-selected{% endif %}{% if day.is_today %} is-today{% endif %}"
+                            onclick="goDay('{{ day.date|date:'Y-m-d'|escapejs }}', 'week')"
+                            {% if day.is_selected %}aria-current="date"{% endif %}
+                            aria-label="{{ day.day_name }} {{ day.day_num }}, {{ day.count }} meal{{ day.count|pluralize }}">
+                        <span class="day-strip-dow">{{ day.day_two }}</span>
+                        <span class="day-strip-num">{{ day.day_num }}</span>
+                        <span class="day-strip-dots" aria-hidden="true">{% for d in day.dots %}<span class="day-strip-dot {{ d }}"></span>{% endfor %}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {# ONE DAY, NOT SEVEN - MV-4, 19 Oct 2026.             #}
+                {#                                                      #}
+                {# Demetri: "This daily list is not required..." Seven  #}
+                {# of these cards is about 4,900px, so Sunday is four   #}
+                {# screens below Monday. MV-3 replaced the SEEING of a  #}
+                {# week with seven columns; this is where the list      #}
+                {# itself goes.                                         #}
+                {#                                                      #}
+                {# THE CARD STAYS. It holds the servings stepper that   #}
+                {# saves on press, MO-1's note and leftover rows, and   #}
+                {# the Add controls - none of which fits in a 146px     #}
+                {# column or a 152px cell. For ONE day it is exactly    #}
+                {# right, and this is the only view with room for it.   #}
+                {#                                                      #}
+                {# ON A PHONE IN WEEK VIEW it sits under MV-3's day     #}
+                {# strip, which is his own answer to Question A. The    #}
+                {# stylesheet hides it in Week above 768px, where the   #}
+                {# seven columns say all of it.                         #}
+                <div class="day-detail{% if view_mode == 'week' %} in-week{% endif %}">
+                {% for day in week_days %}{% if day.is_selected %}
                 <div class="day-card">
                     <div class="day-card-header">
                         <h3>
@@ -1460,9 +1923,11 @@
                         </div>
                     </div>
                 </div>
-                {% endfor %}
+                {% endif %}{% endfor %}
+                </div>{# .day-detail - MV-4, 19 Oct 2026 #}
             </div>
         </div>
+        {% endif %}{# view_mode != 'month' - MV-2, 19 Oct 2026 #}
     </div>
 </div>
 
@@ -1949,14 +2414,51 @@
 // Every function here runs on interaction, so $ is defined by then.
 // =====================================================================
 
+// EVERY ADDRESS THIS PAGE BUILDS CARRIES THE VIEW - MV-1,
+// 19 Oct 2026. Neither of these did, so pressing the week arrow while
+// in Week view dropped `view` and landed you on the Month.
+//
+// ONE PLACE KNOWS IT. A second copy of `?view=` in each function is
+// two places to forget it, and this round is the one proving that is
+// how it gets forgotten.
+var plannerView = '{{ view_mode|escapejs }}';
+
+function plannerUrl(params) {
+    var p = new URLSearchParams(params);
+    p.set('view', plannerView);
+    return '{% url "meal_planner" %}?' + p.toString();
+}
+
 function goWeek(week) {
-    window.location.href = '{% url "meal_planner" %}?year={{ year }}&month={{ month }}&week=' + encodeURIComponent(week);
+    window.location.href = plannerUrl({
+        year: '{{ year }}', month: '{{ month }}', week: week});
 }
 
 function goMonth(year, month) {
-    window.location.href = '{% url "meal_planner" %}?year=' + year + '&month=' + month
-        + '&week={{ week_start|date:"Y-m-d"|escapejs }}';
+    window.location.href = plannerUrl({
+        year: year, month: month,
+        week: '{{ week_start|date:"Y-m-d"|escapejs }}'});
 }
+
+// AND A DAY, which Month and the day strip both need to send. It
+// goes on ?date=, the one parameter all three views read.
+function goDay(dateStr, view) {
+    var p = new URLSearchParams({date: dateStr});
+    p.set('view', view || plannerView);
+    window.location.href = '{% url "meal_planner" %}?' + p.toString();
+}
+
+// A MONTH CELL IS A BUTTON - MV-2, 19 Oct 2026, and role="button"
+// is a promise that the keyboard can reach it. Delegated, so the
+// markup carries the role and nothing else.
+document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') { return; }
+    var cell = e.target.closest
+        && e.target.closest('.month-cell[role="button"]');
+    if (!cell) { return; }
+    e.preventDefault();
+    cell.click();
+});
 
 function say(html) {
     var box = document.getElementById('plannerStatus');
