@@ -185,8 +185,6 @@ Head 'Are all the changes actually in the tree?'
 $sentinels = @(
     @{ File = 'pages\templates\base.html'; Text = 'PU-1b, 3 Oct 2026'; What = 'PU-1b: a scroll inside the popup no longer closes it' },
     @{ File = 'pages\templates\unit_conversions_management.html'; Text = 'UC-1b, 3 Oct 2026'; What = 'UC-1b: the scope toggle uses icons, which CSS can colour' },
-    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'icon-action-btn icon-delete'; What = 'MP-1: the trashcans are on the house row-action strip' },
-    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'btn-add-recipe'; Absent = $true; Code = $true; What = 'MP-1: and the green Add Recipe is gone, script included' },
     @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'form="saveRecipeForm"'; What = 'RE-1: the bar Update owns the form it is outside of' },
     @{ File = 'pages\templates\preview_imported_recipe.html'; Text = 'btn btn-secondary btn-lg'; Absent = $true; Code = $true; What = 'RE-1: and the bottom Cancel is gone' },
     @{ File = 'pages\templates\meal_plan_shopping_list.html'; Text = 'function hasPrintableList()'; What = 'SL-1: Print refuses when there is nothing to print' },
@@ -216,9 +214,7 @@ $sentinels = @(
     @{ File = 'pages\views\tenants.py'; Text = 'TN-1, 2 Oct 2026'; What = 'TN-1: the tenants list defaults to current' },
     @{ File = 'pages\templates\tenant.html'; Text = 'Include past tenants'; What = 'TN-1: the toggle is on the Tenants bar' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'B-1b, 2 Oct 2026: THIS NOTE USED TO SIT INSIDE THE TAG'; What = 'B-1b: the Favourites note sits above its tag, not inside it' },
-    @{ File = 'pages\templates\meal_plans.html'; Text = 'icon-action-btn icon-view'; What = 'ML-1: the row is on the house action strip' },
     @{ File = 'pages\templates\base.html'; Text = '.icon-list       { color: var(--alv-view)'; What = 'ML-1: base carries the shopping-list NAME on the view colour' },
-    @{ File = 'pages\templates\meal_plans.html'; Text = 'onclick="confirmDelete('; Absent = $true; Code = $true; What = 'ML-1: the plan name is not written into a handler' },
     @{ File = 'pages\templates\recipe_management.html'; Text = 'aria-pressed="{% if show_favourites %}true'; What = 'B-1: Favourites says its state with aria-pressed' },
     @{ File = 'pages\templates\base.html'; Text = '.btn.action-secondary[aria-pressed="true"]'; What = 'B-1: base gives a pressed secondary a visible state' },
     @{ File = 'pages\templates\view_recipe.html'; Text = 'btn btn-danger action-secondary'; Absent = $true; Code = $true; What = 'B-1: no control wears a Bootstrap colour on top of a house role' },
@@ -229,7 +225,6 @@ $sentinels = @(
     @{ File = 'pages\templates\celebration_management.html'; Text = 'THE COLLAPSED COMPACT CARD IS A LIST ROW'; What = 'C-1: the compact card rules are on the page' },
     @{ File = 'pages\templates\celebration_management.html'; Text = '}In compact'; Absent = $true; What = 'C-1: the stray close-comment that killed two rules has not come back' },
     @{ File = 'pages\templates\physical_invoice_list.html'; Text = 'Desktop: [New Customer Invoice] [Help]'; What = 'A-BAR: Help sits BEHIND the primary on Physical Invoices' },
-    @{ File = 'pages\templates\view_meal_plan.html'; Text = 'A-BAR, 2 Oct 2026. Back used to come FIRST here'; What = 'A-BAR: Back sits at the END of the bar on View Meal Plan' },
     @{ File = 'pages\templates\properties_edit.html'; Text = 'A-BAR, 2 Oct 2026. Assets came before Save'; What = 'A-BAR: Save sits ahead of Assets on the property edit form' },
     @{ File = 'pages\templates\celebration_calendar.html'; Text = 'class="btn btn-info"'; Absent = $true; Code = $true; What = 'A-BAR: the Calendar/Timeline toggle is no longer Bootstrap btn-info' },
     @{ File = 'pages\models.py';                          Text = 'FH_BASELINE_DATE = _fh_date(';  What = 'baseline constant' },
@@ -543,18 +538,11 @@ $sentinels = @(
     # view; it was there, painted white on a white page by a rule written
     # for a coloured header bar the page no longer has. Both halves of that
     # are asserted: the control is present, and the ink that hid it is gone.
-    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = 'class="alv-seg"'; What = 'the Calendar page can get back to the list' },
-    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = 'rgba(255, 255, 255, 0.7)'; What = 'and the white ink that hid the List half is gone'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\meal_plans.html'; Text = 'class="alv-seg"'; What = 'the list page wears the same two-segment control' },
     # Five filled buttons in five colours became the icon strip the list
     # rows already wore. #007bff is named because it was the loudest.
-    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = 'icon-action-btn icon-duplicate'; What = 'the Calendar week actions are the row-action strip' },
-    @{ File = 'pages\templates\meal_plan_calendar.html'; Text = '#007bff'; What = 'and the five filled colours went with them'; Absent = $true; Code = $true },
     # A disabled button that rendered as a live one, because .btn.action-primary
     # outranked the page's own grey. There is no string this adds that proves
     # it, so the absence of the old class is the assertion.
-    @{ File = 'pages\templates\meal_plans.html'; Text = 'btn-create-disabled'; What = 'the no-permission Create no longer renders as a live button'; Absent = $true; Code = $true },
-    @{ File = 'pages\templates\meal_plans.html'; Text = 'action-primary disabled-btn'; What = 'it wears the class base paints grey' },
 
     # ------------------------------------------------- SECTION SL, 3 Oct 2026
     # Four people's email addresses were typed into a template, in a product
@@ -598,7 +586,6 @@ $sentinels = @(
     @{ File = 'Show-ButtonDrift.py'; Text = "'d-flex':"; What = 'and d-flex is off the role register - a layout utility that only ever got one button wrong'; Absent = $true; Code = $true },
     @{ File = 'pages\templates\view_recipe.html'; Text = 'btn action-secondary" onclick="printShoppingList()'; What = 'Print and Copy join the three house siblings in the same share row' },
     @{ File = 'pages\templates\import_recipe.html'; Text = 'btn action-primary btn-lg'; What = 'and Extract Recipe with AI is the page it sits on' },
-    @{ File = 'pages\templates\view_meal_plan.html'; Text = 'action-secondary action-danger btn-action-disabled'; What = 'a Delete reads destructive even with no permission to press it' },
     # ------------------------------------------------- VC-1, 14 Oct 2026
     # The gate asked every PAGE after RS-1b and still not every BUTTON.
     # Three controls were a <label>, two Bootstrap colours were off the
@@ -609,8 +596,6 @@ $sentinels = @(
     @{ File = 'Show-ButtonDrift.py'; Text = 'def print_painted'; What = 'and a button painted by page CSS or JavaScript is counted, not dropped' },
     @{ File = 'pages\templates\my_profile.html'; Text = 'btn action-secondary btn-sm'; What = 'Upload Photo stops being Bootstrap blue at 3.98 to 1' },
     @{ File = 'pages\templates\ingredient_families.html'; Text = 'icon-action-btn icon-delete'; What = 'and the family icons stop being a near-white glyph on green at 2.97 to 1' },
-    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'aria-pressed'; What = 'the Favourites toggle carries its state in aria-pressed, not an inline style'; },
-    @{ File = 'pages\templates\create_meal_plan.html'; Text = 'btn.style.background'; What = 'and no JavaScript paints it any more'; Absent = $true; Code = $true },
     # ------------------------------------------------- PH-2, 14 Oct 2026
     # Demetri asked why three recipe screens were green. Because a STATUS
     # token was being used as decoration - base already mapped bg-success
@@ -1168,16 +1153,23 @@ $sentinels = @(
     # file in which its text is absent - a row that cannot fail is a row
     # that watches nothing - and it refused the shorter text, because
     # `seen_missing_units` has carried `missing_units` as a SUBSTRING
-    # since the aggregator was written. Three backups tried, present in
-    # all three.
+    # since the aggregator was written.
+    #
+    # MN-1, 18 Oct 2026 - THREE OF THE FOUR ROWS THAT WERE HERE WATCHED
+    # FILES RELEASE 3 DELETES: create_meal_plan.html's esc() helper,
+    # view_meal_plan.html's repaired selector, and the calendar week's
+    # query map. A sentinel on a file that does not exist is not a
+    # failed sentinel, it is a row nobody can read. The one that
+    # survives watches the aggregator, which survives.
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'missing_units.append'; What = 'MP-1: the shopping list names the ingredients it dropped' },
-    @{ File = 'pages/templates/create_meal_plan.html'; Text = 'function esc('; What = 'MP-1: recipe names are escaped before they reach innerHTML' },
-    # ------------------------------------------------- MD-1, 18 Oct 2026
-    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'week_day_map'; What = 'MD-1: the calendar week is one pair of queries, not fourteen' },
-    @{ File = 'pages/templates/view_meal_plan.html'; Text = '.btn-action-disabled'; What = 'MD-1: the swallowed selector that made disabled buttons look live' },
+    # ------------------------------------------------- MN-1, 18 Oct 2026
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def aggregate_meal_entries'; What = 'MN-1: the aggregator walks dated entries, not a plan' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'stepServings('; What = 'MN-1: servings save on press, with no Save button' },
     # ------------------------------------------------- MH-1, 18 Oct 2026
     @{ File = 'pages/help_content/administration.html'; Text = 'data-module-slug="meal_plans"'; What = 'MH-1: the Meal Plans guide exists at all' },
-    @{ File = 'pages/templates/meal_plan_calendar.html'; Text = 'meal_plansHelpModal'; What = 'MH-1: the calendar has a Help button' },
+    # ------------------------------------------------- MH-2, 18 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'meal_plansHelpModal'; What = 'MH-2: the planner has a Help button, wired to the guide' },
+    @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-name="Adding a Meal"'; What = 'MH-2: and the guide describes adding a meal to a day, not building a plan' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2616,12 +2608,22 @@ $suites = @(
     'test_offline.py',
     # PG-1, 18 Oct 2026 - E24, the subject read against the tree.
     'test_preflight.py',
-    # MP-1, 18 Oct 2026 - Meal Plans release 1, groups A, B and C.
-    'test_meal_fixes.py',
-    # MD-1, 18 Oct 2026 - Meal Plans release 1, groups D and E.
-    'test_meal_display.py',
-    # MH-1, 18 Oct 2026 - the Meal Plans user guide, on five screens.
-    'test_meal_help.py'
+    # MN-1, 18 Oct 2026 - test_meal_fixes.py and test_meal_display.py
+    # are RETIRED here. They asserted the shape of the two calendar
+    # views, the Create/Edit screen and the plan list, and release 3
+    # deletes all four. Their fixes are not dropped: the ones that
+    # outlive the shape are asserted by test_planner.py below, and the
+    # ones that were guards against a plan with dates dissolved when
+    # the plan did.
+    # MH-1, 18 Oct 2026 - the Meal Plans user guide. Two screens now.
+    'test_meal_help.py',
+    # MN-1, 18 Oct 2026 - release 3. The calendar IS the plan.
+    'test_planner.py',
+    # RT-1, 18 Oct 2026 - what the tree does with a page it
+    # used to have. Sixteen rows of the table above guarded
+    # the four pages MN-1 retired; they are gone, and this
+    # suite is why they cannot come back.
+    'test_retired.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

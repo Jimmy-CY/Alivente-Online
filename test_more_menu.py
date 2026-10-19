@@ -118,7 +118,7 @@ SUFFIX = '.bak_moremenu'
 ME = 'test_more_menu.py'
 PATCHER = 'apply_more_menu.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -182,7 +182,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    # RT-1, 18 Oct 2026 - a retired page's backups sit beside the
+    # hole it left, not beside its last text. See alv_tree.bak_path.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else now(p)
 
 
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style\s*>', re.S | re.I)
@@ -276,12 +279,17 @@ mine = [(n, p) for n, p in pages if n not in DEFERRED and n not in ALREADY]
 # ==========================================================================
 head('1. THE CENSUS')
 # ==========================================================================
-ok(len(pages) == 32, '32 pages carry the More menu in markup', len(pages))
-ok(len(mine) == 27, '  27 of them are this round\'s', len(mine))
+# 31 AND 26 SINCE RT-1, 18 Oct 2026. Both are readings of the
+# tree as it stands, not of what this round did - the round
+# converted 27 pages and MN-1 has since retired one of them,
+# view_meal_plan.html. Nobody should read 26 as the size of
+# this round; section 3 reads that from the backups.
+ok(len(pages) == 31, '31 pages carry the More menu in markup', len(pages))
+ok(len(mine) == 26, '  26 of them are this round\'s', len(mine))
 ok(len(DEFERRED) == 3, '  3 keep a hand-inlined handler, on purpose')
 ok(len(ALREADY) == 2, '  2 were already on the binder before it started')
 for n in DEFERRED + ALREADY:
-    ok(os.path.isfile(alv_tree.join(n)), '    %s is a real file' % n)
+    ok(os.path.isfile(alv_tree.last_join(n)), '    %s is a real file' % n)
 
 gone = sum(len(was(p)) - len(now(p)) for n, p in mine)
 ok(gone > 25000,
@@ -302,7 +310,7 @@ for n, p in mine:
 # The initial state is not academic. base's binder calls close() when it
 # binds, which is after DOMContentLoaded - a panel with no `hidden` is
 # visible until then, and finance_valuations has no local CSS to hide it.
-vp = alv_tree.join('finance_valuations.html')
+vp = alv_tree.last_join('finance_valuations.html')
 ok(not re.search(r'id="actionMoreMenu"[^>]*\bhidden\b', markup(was(vp))),
    '  CONTROL: finance_valuations had no hidden before this round')
 
@@ -320,7 +328,7 @@ for n, p in mine:
 # now() walks forward to the first later round's backup, which is
 # each page exactly as H8 left it.
 left = [n for n in DEFERRED
-        if 'actionMoreBtn' in js_of(now(alv_tree.join(n)))]
+        if 'actionMoreBtn' in js_of(now(alv_tree.last_join(n)))]
 ok(sorted(left) == sorted(DEFERRED),
    'the three deferred pages held one when this round ran - which is why '
    'the binder was made opt-in (H10 took all three; it stays opt-in for '
@@ -453,10 +461,10 @@ head('6. THE THREE THAT DID NOT WORK, RENDERED FROM THEIR BACKUPS')
 # ==========================================================================
 if not HAVE or not binder:
     skip('the rendered before', 'no browser')
-elif not all(os.path.isfile(alv_tree.join(n) + SUFFIX) for n in BROKEN):
+elif not all(os.path.isfile(alv_tree.last_join(n) + SUFFIX) for n in BROKEN):
     skip('the rendered before', 'a backup is missing - run the patcher')
 else:
-    before = drive([(n, was(alv_tree.join(n))) for n in sorted(BROKEN)],
+    before = drive([(n, was(alv_tree.last_join(n))) for n in sorted(BROKEN)],
                    True, 'before')
     r = before['finance_valuations.html']
     ok(r[0] == 'driven' and r[1]['menuVis'],
@@ -479,7 +487,7 @@ else:
        % BROKEN['user_administration.html'], r)
     ok(after['user_administration.html'][0] == 'driven',
        '  it now has a button, and it opens')
-    up = alv_tree.join('user_administration.html')
+    up = alv_tree.last_join('user_administration.html')
     ok('.action-more-wrapper { display: none; }' in was(up)
        and '.action-more-wrapper { display: none; }' not in now(up),
        "  because the half-copy that beat base's media rule is gone")
@@ -501,9 +509,9 @@ else:
 # ==========================================================================
 head('7. CONTROLS, AND THE GATE')
 # ==========================================================================
-ok('initializeMoreMenu' in js_of(was(alv_tree.join('act_expense.html'))),
+ok('initializeMoreMenu' in js_of(was(alv_tree.last_join('act_expense.html'))),
    'reverting a page puts its opener back, so section 3 would FAIL')
-ok(not all(a in markup(was(alv_tree.join('act_expense.html')))
+ok(not all(a in markup(was(alv_tree.last_join('act_expense.html')))
            for a in ATTRS),
    '  and takes the attributes off, so section 2 would FAIL too')
 ok(markup('<div class="action-more-wrapper" data-menu>'

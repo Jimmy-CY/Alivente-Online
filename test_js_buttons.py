@@ -129,7 +129,7 @@ BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 # NO NARROW TEMPLATE ROOT. X0's rule, and the first draft of this file
 # broke it fourteen times: a label goes back to a file through
-# alv_tree.path_of(), which knows both roots, not through a join onto a
+# alv_tree.last_path(), which knows both roots, not through a join onto a
 # pages/templates constant that knows one. test_waiting_down section 3
 # counts those joins across everything on CONVERTED and caught all
 # fourteen - inside the round whose whole point is that a gate has to be
@@ -139,8 +139,12 @@ WIZ = 'unit_conversions_wizard.html'
 MGT = 'unit_conversions_management.html'
 
 N_BUTTONS, N_PAGES = 5, 3
-CENSUS_NARROW, CENSUS_WIDE = 117, 142
-HITS_LOOSE, HITS_TIGHT = 706, 704
+# RT-1, 18 Oct 2026 - the application is 139 pages. Four meal-plan screens
+# were retired and the planner replaced them: 142 - 4 + 1. The SWEEP
+# SCOPE does not move - 117 was and is the narrow half, and the pages
+# the flag hides are still the recipe and meal-plan side.
+CENSUS_NARROW, CENSUS_WIDE = 117, 139   # (wide was 142)
+HITS_LOOSE, HITS_TIGHT = 673, 671   # RT-1, 18 Oct 2026 - thirty-three scanner hits went with the four retired screens, and both matchers fall by the same thirty-three.   # (was 706, 704)
 TAIL_MARKUP, TAIL_SCRIPT, TAIL_IN_REGION = 433, 36, 2
 NESTED_LABELS = 8
 MGT_MARKUP_BOOT = 4
@@ -184,7 +188,7 @@ def read(p):
 def was(p):
     """The file as E11 found it. Scoped: most files have no backup of
     this round and never needed one."""
-    b = p + SUFFIX
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else read(p)
 
 
@@ -192,7 +196,7 @@ def left_page(rel):
     """A TEMPLATE as E11 left it. left() above is for repo-root files;
     a page needs alv_tree.path_of first, and RS-1a is the round that
     found out this suite needed it at all."""
-    p = alv_tree.path_of(rel)
+    p = alv_tree.last_path(rel)
     if as_left_by is None:
         return read(p)
     return as_left_by(p, SUFFIX, read)
@@ -261,7 +265,7 @@ head('1. THE FIVE - BEFORE FROM THE BACKUP, AFTER FROM THE FILE')
 # ==========================================================================
 done, pages = 0, set()
 for pg, old, new in FIVE:
-    p = alv_tree.path_of(pg)
+    p = alv_tree.last_path(pg)
     b, a = was(p), read(p)
     hit = (b.count(old) == 1 and a.count(old) == 0
            and b.count(new) == 0 and a.count(new) == 1)
@@ -278,7 +282,7 @@ ok(done == N_BUTTONS and len(pages) == N_PAGES,
 
 # THE INLINE HEIGHT. The class change fixes the colour; this is what
 # fixes the tap target, and they are two different edits to one tag.
-mb, ma = was(alv_tree.path_of(MGT)), read(alv_tree.path_of(MGT))
+mb, ma = was(alv_tree.last_path(MGT)), read(alv_tree.last_path(MGT))
 ok(mb.count('style="height: 38px;"') == 1
    and ma.count('style="height: 38px;"') == 0,
    'the per-row Save loses its inline height - base can reach 44px now',
@@ -315,9 +319,9 @@ ok(mb.count('class="btn btn-secondary"') == ml.count(
 # CONTROL: the scripts are still scripts. A round that deleted the block
 # would pass every count above.
 for pg in (MAP, WIZ, MGT):
-    a = read(alv_tree.path_of(pg))
+    a = read(alv_tree.last_path(pg))
     n = sum(1 for _ in SCRIPT.finditer(a))
-    ok(n == sum(1 for _ in SCRIPT.finditer(was(alv_tree.path_of(pg))))
+    ok(n == sum(1 for _ in SCRIPT.finditer(was(alv_tree.last_path(pg))))
        and n > 0,
        'CONTROL: %-32s still carries its %d script block(s)' % (pg[:32], n))
 
@@ -352,7 +356,7 @@ ok(not [f for f in wide if f.startswith('crs/')],
 def census(text_of):
     hits = {}
     for f in wide:
-        h = sb.js_buttons(text_of(alv_tree.path_of(f)))
+        h = sb.js_buttons(text_of(alv_tree.last_path(f)))
         if h:
             hits[f] = h
     return hits
@@ -384,7 +388,7 @@ ok([h[0] for h in sb.js_buttons(
 # CONTROL: the narrow corpus is what USED to answer, and it answered 0.
 # This is the whole finding in one line.
 ok(not [f for f in narrow if sb.js_buttons(
-            was(alv_tree.path_of(f)))],
+            was(alv_tree.last_path(f)))],
    'CONTROL: over the OLD %d-page corpus the answer was 0 before the '
    'round too - the corpus was the fault, not the scanner' % CENSUS_NARROW)
 
@@ -527,7 +531,7 @@ else:
     # RECORDED, NOT FIXED. finditer does not overlap, so a control nested
     # inside another control is invisible. Written down as a number so the
     # next person meets it as a known shape rather than a surprise.
-    lt = read(alv_tree.path_of('lease_timeline.html'))
+    lt = read(alv_tree.last_path('lease_timeline.html'))
     spans = len(re.findall(r'class="btn-label-(?:full|short)"', lt))
     ok(spans == NESTED_LABELS,
        'RECORDED: %d nested label span(s) in lease_timeline that BTN '
@@ -587,7 +591,7 @@ if sync_playwright is None or not os.path.isfile(BOOT):
     skip('section 4', 'playwright or the Bootstrap fixture is missing')
 else:
     boot = read(BOOT)
-    base = css_of(read(alv_tree.path_of('base.html')))
+    base = css_of(read(alv_tree.last_path('base.html')))
     n = [0]
 
     def look(br, page_css, wrap, style, cls, w):
@@ -631,7 +635,7 @@ else:
             try:
                 tall = []
                 for pgname, wrap, style, old, new, what, same in CASES:
-                    pcss = css_of(read(alv_tree.path_of(pgname)))
+                    pcss = css_of(read(alv_tree.last_path(pgname)))
                     b38 = look(br, pcss, wrap, style, old, 390)
                     # after: the class moved AND, for the Save, the inline
                     # height went with it
@@ -672,7 +676,7 @@ else:
                 # THE TWO BACKS GET DIFFERENT TONES, AND THE REASON IS A
                 # NUMBER. Measured on the same white success card, label
                 # contrast and the button's OWN EDGE against that card:
-                pcss = css_of(read(alv_tree.path_of(WIZ)))
+                pcss = css_of(read(alv_tree.last_path(WIZ)))
                 tones = {}
                 for cls in ('btn btn-secondary', 'btn btn-info',
                             'btn action-secondary', 'btn action-primary',
@@ -719,7 +723,7 @@ else:
 
                 # CONTROL: the probe can report NO change, so "it moved" is a
                 # measurement and not a property of the harness.
-                pcss = css_of(read(alv_tree.path_of(MAP)))
+                pcss = css_of(read(alv_tree.last_path(MAP)))
                 s1 = look(br, pcss, 'wizard-done', '', 'btn action-secondary',
                           1280)
                 s2 = look(br, pcss, 'wizard-done', '', 'btn action-secondary',
@@ -794,7 +798,7 @@ sw = read(os.path.join(ROOT, SWEEP))
 # this suite's own source, because the first draft did it fourteen
 # times and a round should carry the control for the mistake it made.
 _me = read(os.path.join(ROOT, ME))
-ok('alv_tree.path_of(' in _me,
+ok('alv_tree.last_path(' in _me,
    'this suite turns a label back into a file through alv_tree.path_of')
 # The needle is BUILT, not written. Spelt out in one piece it would be
 # the very shape the detector counts, and this file would fail its own

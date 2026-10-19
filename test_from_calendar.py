@@ -102,7 +102,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 def code(p):
@@ -122,10 +125,10 @@ def source(*parts):
     return read(p) if os.path.isfile(p) else ''
 
 
-CAL = alv_tree.path_of('meal_plan_calendar.html')
-VIEW = alv_tree.path_of('view_meal_plan.html')
-EDIT = alv_tree.path_of('create_meal_plan.html')
-SHOP = alv_tree.path_of('meal_plan_shopping_list.html')
+CAL = alv_tree.last_path('meal_plan_calendar.html')
+VIEW = alv_tree.last_path('view_meal_plan.html')
+EDIT = alv_tree.last_path('create_meal_plan.html')
+SHOP = alv_tree.last_path('meal_plan_shopping_list.html')
 OUT = ('view_meal_plan', 'edit_meal_plan', 'meal_plan_shopping_list')
 
 
@@ -199,13 +202,52 @@ head('3. THE TEMPLATE TAGS RESOLVE')
 # page, in front of him, not here.
 urls = source('pages', 'urls.py') + source('mysite', 'urls.py')
 ok(urls, 'urls.py is where this suite says it is')
-for name in ('meal_plan_calendar', 'meal_plans') + OUT:
+# RT-1, 18 Oct 2026 - THE NAMES THE LIVE PAGES REVERSE, which is what
+# NoReverseMatch is a risk about. MN-1 retired four meal-plan screens
+# and the three names only they reversed - view_meal_plan,
+# edit_meal_plan and meal_plan_shopping_list - went with them. Sections
+# 1, 2, 4 and 5 above still read those pages, from the text MN-1 left
+# beside the hole, because BK-1's markup is still in them and the round
+# still did what it says. This section is the one that is about TODAY,
+# so it asks for today's names.
+for name in ('meal_plan_calendar', 'meal_plans', 'meal_planner',
+             'meal_shopping_list'):
     ok("name='%s'" % name in urls or 'name="%s"' % name in urls,
        'url name %-24s exists' % name)
+for name in OUT:
+    ok(("name='%s'" % name not in urls
+        and 'name="%s"' % name not in urls),
+       '  and %-22s went with the screen that reversed it' % name)
 
 v = source('pages', 'views', 'recipes', 'meal_planning.py')
 ok(v and "request.GET.get('week')" in v,
-   'and the calendar view reads week, so the trip home lands where it left')
+   'and the planner view reads week, so the trip home lands where it left')
+
+# 3b. AND BK-1'S STANDARD ON THE HOP THAT SURVIVED. RT-1, 18 Oct 2026 - 
+#
+# BK-1 is not a round about three screens; it is a round about a rule -
+# THE ORIGIN TRAVELS IN THE URL, AND THE WEEK TRAVELS WITH IT. Two of
+# its screens are gone and the rule is not, so it is asked of the pair
+# that is left: the planner hands the week to the shopping list, and
+# the shopping list hands it back. Nothing above could have caught a
+# planner that dropped it.
+# READ, NOT now(). now() in this suite means "as BK-1 left it",
+# which is the right reading for every claim above and the wrong
+# one here: this is a claim about the pair as they stand today.
+_pl = alv_tree.code_only(read(alv_tree.last_path('meal_planner.html')))
+_sh = alv_tree.code_only(read(SHOP))
+_out = re.search(r'<a href="\{% url \'meal_shopping_list\' %\}([^"]*)"',
+                 _pl)
+ok(_out is not None, 'the planner links to the shopping list')
+if _out:
+    ok('from=' in _out.group(1) and 'to=' in _out.group(1),
+       '  carrying the week it is showing, as a date range')
+    ok('&amp;' in _out.group(1)
+       and not re.search(r'&(?!amp;)', _out.group(1)),
+       '  and its separator is &amp;, not a bare ampersand')
+_home = re.findall(r"\{% url 'meal_planner' %\}\?week=", _sh)
+ok(_home, '  and the shopping list hands the week back - %d link(s)'
+   % len(_home))
 
 # ==========================================================================
 head('4. THE CHAIN - THE SHOPPING LIST IS A HOP')
@@ -247,7 +289,7 @@ for path, label in ((VIEW, 'view_meal_plan.html'),
        '%s: the else branch is the list' % label)
 
 # AND THE LIST PAGE ITSELF NEVER LEARNED ABOUT ANY OF THIS.
-plans = alv_tree.code_only(now(alv_tree.path_of('meal_plans.html')))
+plans = alv_tree.code_only(now(alv_tree.last_path('meal_plans.html')))
 ok('from=calendar' not in plans,
    'CONTROL: meal_plans.html carries no origin - it IS the fallback')
 

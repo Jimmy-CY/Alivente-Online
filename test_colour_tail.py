@@ -93,7 +93,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def css_of(x):
@@ -114,9 +114,13 @@ def ratio(a, b):
     return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
 
 
-BASEP = alv_tree.path_of('base.html')
-TOUCHED = sorted(p for p in alv_tree.templates()
-                 if os.path.exists(p + SUFFIX))
+BASEP = alv_tree.last_path('base.html')
+# RT-1, 18 Oct 2026 - THE BACKUPS, NOT THE WALK. This list was
+# "the templates that are there now, with a backup of this round",
+# so a page the tree has since retired dropped out of the round's
+# own census and the count came back one short. The backup never
+# went anywhere; only the walk had forgotten the page.
+TOUCHED = alv_tree.touched_by(SUFFIX)
 
 print(__doc__.strip().splitlines()[0])
 
@@ -360,7 +364,7 @@ ok(('#f8f9fa', 'LINE') not in MAP,
 # Demetri. His own suite caught it, in the sweep, on the first run.
 ok(('fsr_details.html', '#ecd9a8') in KEEP,
    'fsr_details keeps #ecd9a8 by decision, not by oversight')
-FSR = alv_tree.path_of('fsr_details.html')
+FSR = alv_tree.last_path('fsr_details.html')
 ok('#ecd9a8' in now(FSR) and 'alv-warn-line' not in css_of(now(FSR)),
    '  and it is still spelled by hand there, as the Notify round left it')
 ok(not os.path.exists(FSR + SUFFIX),
@@ -377,7 +381,7 @@ ok(len([1 for b in css_of(was(BASEP)).split(';') if '#ecd9a8' in b]) == 4,
    '  CONTROL: it did so four times before this round',
    len([1 for b in css_of(was(BASEP)).split(';') if '#ecd9a8' in b]))
 
-GLA = alv_tree.path_of('generate_lease_agreement.html')
+GLA = alv_tree.last_path('generate_lease_agreement.html')
 ok(re.search(r'border[^;:]*:[^;]*#f8f9fa', css_of(now(GLA)), re.I)
    is not None,
    '  and it is still a literal on generate_lease_agreement, waiting '

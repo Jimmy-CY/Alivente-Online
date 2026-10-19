@@ -96,11 +96,11 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def path_of(rel):
-    return alv_tree.path_of(rel)
+    return alv_tree.last_path(rel)
 
 
 # --- THE CENSUS, WITH BOTH BRANCHES RESOLVED -----------------------------
@@ -200,7 +200,7 @@ head('1. as IC-1 found it')
 before = {}
 for rel in (PAGE, HM, KEEPS):
     p = path_of(rel)
-    src = was(p) if os.path.exists(p + SUFFIX) else read(p)
+    src = was(p) if os.path.exists(alv_tree.bak_path(p, SUFFIX)) else read(p)
     for k, v in pictures(src).items():
         before.setdefault(k, set()).update(v)
 

@@ -102,7 +102,7 @@ SUFFIX = '.bak_lastmenu'
 ME = 'test_last_menus.py'
 PATCHER = 'apply_last_menus.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -152,7 +152,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    # RT-1, 18 Oct 2026 - a retired page's backups sit beside the
+    # hole it left, not beside its last text. See alv_tree.bak_path.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else now(p)
 
 
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style\s*>', re.S | re.I)
@@ -249,7 +252,12 @@ pages = [(rel, p) for rel, p in walked()
 # ==========================================================================
 head('1. THIRTY-TWO OF THIRTY-TWO, AND NOBODY WRITES IT OUT')
 # ==========================================================================
-ok(len(pages) == 32, '32 pages carry a More menu', len(pages))
+# 31 SINCE RT-1, 18 Oct 2026. This counts the pages that carry
+# a More menu TODAY. view_meal_plan.html carried one and MN-1
+# retired it; the planner that replaced it has no More menu.
+# H8 still bound 32 of them, and that is section 2's claim,
+# read from the backups.
+ok(len(pages) == 31, '31 pages carry a More menu', len(pages))
 off = [rel for rel, p in pages
        if not all(a in markup(now(p)) for a in ATTRS)]
 ok(not off, '  and every one of them is on base\'s binder', off)
@@ -267,7 +275,7 @@ ok(all(re.search(r'id="actionMoreMenu"[^>]*\bhidden\b', markup(now(p)))
 head('2. THE THREE GAVE UP A HANDLER THEY REALLY HAD')
 # ==========================================================================
 for rel in MINE:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     ok('actionMoreBtn' in js_of(was(p)),
        '%-28s CONTROL: it wrote one before this round'
        % rel.replace('.html', ''))
@@ -283,7 +291,7 @@ for rel in MINE:
 # ==========================================================================
 head('3. finance_pl_act GIVES UP WHAT H9 COULD NOT TAKE')
 # ==========================================================================
-fp = alv_tree.join('finance_pl_act.html')
+fp = alv_tree.last_join('finance_pl_act.html')
 ok(len(paints(was(fp))) == 8,
    'it painted the component with %d rules' % len(paints(was(fp))),
    paints(was(fp)))
@@ -377,7 +385,7 @@ else:
         for rel in MINE:
             fx = os.path.join(SCRATCH, rel.replace('/', '_'))
             with open(fx, 'w', encoding='utf-8') as fh:
-                fh.write(fixture(now(alv_tree.join(rel))))
+                fh.write(fixture(now(alv_tree.last_join(rel))))
             pg = ctx.new_page()
             _goto(pg, fx)
             s0 = pg.evaluate(STATE)
@@ -402,7 +410,7 @@ else:
 # ==========================================================================
 head('6. CONTROLS, AND THE GATE')
 # ==========================================================================
-ok('actionMoreBtn' in js_of(was(alv_tree.join('invoices.html'))),
+ok('actionMoreBtn' in js_of(was(alv_tree.last_join('invoices.html'))),
    'reverting a page puts its handler back, so section 2 would FAIL')
 ok(WRONG in was(BASE),
    "  and reverting base puts H8's wrong sentence back, so section 4 "

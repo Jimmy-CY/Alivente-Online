@@ -81,7 +81,7 @@ SUFFIX = '.bak_pagetitle'
 ME = 'test_page_title.py'
 PATCHER = 'apply_page_title.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 
 TITLE_CLS = 'page-title-h2'
 SUB_CLS = 'page-subtitle-h4'
@@ -189,7 +189,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    # RT-1, 18 Oct 2026 - a retired page's backups sit beside the
+    # hole it left, not beside its last text. See alv_tree.bak_path.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else now(p)
 
 
 def _sp(m):
@@ -264,7 +267,7 @@ ok(ROUNDS.index('.bak_surfdeep') < ROUNDS.index(SUFFIX)
 
 subs = 0
 for rel, cls, lift in JOBS:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -288,8 +291,8 @@ ok(subs == 5, 'five keep an h4 - a mode label or a record - and eleven '
 # The descriptive sentences really were there, or dropping them proves
 # nothing.
 _lost = [r for r, _, _ in JOBS
-         if r not in SUBTITLED and os.path.isfile(alv_tree.join(r))
-         and re.search(r'<p[^>]*>\s*[A-Za-z]', was(alv_tree.join(r)))]
+         if r not in SUBTITLED and os.path.isfile(alv_tree.last_join(r))
+         and re.search(r'<p[^>]*>\s*[A-Za-z]', was(alv_tree.last_join(r)))]
 ok(len(_lost) >= 9,
    'CONTROL: %d of the eleven really did carry a sentence to drop'
    % len(_lost), _lost)
@@ -301,7 +304,7 @@ head('2. THE TITLES FOLLOW THE HOUSE CONVENTIONS, WHICH WERE COUNTED FIRST')
 # 87 house page titles are uppercase, 1 is mixed only because it holds an
 # ampersand entity, 0 are lower. 0 of 88 carry an icon.
 for rel, cls, lift in JOBS:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         continue
     t = title_of(now(p))
@@ -314,10 +317,10 @@ for rel, cls, lift in JOBS:
        ' '.join(re.sub(PROTECT, '', t).split())[:50])
     ok('<i ' not in t and 'fa-' not in t,
        '  and carries no icon - 0 of 88 house titles do')
-ok('{% if mode ==' in (title_of(now(alv_tree.join('preview_imported_recipe.html'))) or ''),
+ok('{% if mode ==' in (title_of(now(alv_tree.last_join('preview_imported_recipe.html'))) or ''),
    'preview_imported_recipe keeps its THREE-BRANCH conditional heading - a '
    'prototype of this round flattened it into one sentence (lesson 52)')
-_t = title_of(now(alv_tree.join('preview_imported_recipe.html'))) or ''
+_t = title_of(now(alv_tree.last_join('preview_imported_recipe.html'))) or ''
 ok(_t.count('{% if') + _t.count('{% elif') + _t.count('{% else') == 3
    and '{% endif %}' in _t,
    '  all three branches and the endif are intact',
@@ -329,7 +332,7 @@ head('3. THE LIFTED CONTROLS BROUGHT THEIR STYLING WITH THEM')
 for rel, cls, lift in JOBS:
     if not lift:
         continue
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         continue
     b = now(p)
@@ -337,7 +340,7 @@ for rel, cls, lift in JOBS:
     ok(wears(b, lift) == 0, '  and .%s is gone' % lift)
     ok(rules_for(b, lift) == 0, '  along with its rules')
 
-hm = alv_tree.join('household_member_management.html')
+hm = alv_tree.last_join('household_member_management.html')
 if os.path.isfile(hm):
     b = now(hm)
     ok(wears(b, 'action-primary') == 1 and wears(b, 'action-secondary') == 1
@@ -365,7 +368,7 @@ else:
 # fine; the picture said otherwise. Pinned here so a later round cannot put
 # them back without the gate going red.
 # --------------------------------------------------------------------------
-cd = alv_tree.join('celebration_dashboard.html')
+cd = alv_tree.last_join('celebration_dashboard.html')
 if os.path.isfile(cd):
     b, a = now(cd), was(cd)
     ok(wears(a, 'action-primary') == 1 and wears(b, 'action-primary') == 0
@@ -389,14 +392,14 @@ prim = []
 for fn in sorted(os.listdir(T)):
     if not fn.endswith('.html'):
         continue
-    for m in HELP.finditer(blanked(read(alv_tree.join(fn)))):
+    for m in HELP.finditer(blanked(read(alv_tree.last_join(fn)))):
         if 'action-primary' in m.group(1).split():
             prim.append(fn)
 ok(not prim,
    'no page in the tree puts Help on .action-primary - 29 use '
    '.action-secondary, 21 the overflow menu', prim)
 
-mc = alv_tree.join('meal_plan_calendar.html')
+mc = alv_tree.last_join('meal_plan_calendar.html')
 if os.path.isfile(mc):
     b, a = now(mc), was(mc)
     ok(wears(a, 'btn-header-disabled') == 1,
@@ -434,7 +437,7 @@ DEAD_PILLS = {'household_member_management.html': 'hm-badge',
               'unit_conversions_wizard.html': 'recipe-scope-pill',
               'meal_plan_shopping_list.html': 'page-header-meta'}
 for rel in sorted(CARRIED):
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -453,13 +456,13 @@ for rel in sorted(CARRIED):
        '  .%s is gone from markup and stylesheet - it painted '
        'rgba(255,255,255,.2) and would now be white on white' % d,
        'worn %d, rules %d' % (wears(b, d), rules_for(b, d)))
-ok(all(len(re.findall(r'class="[^"]*' + SUB_CLS, now(alv_tree.join(r))))
+ok(all(len(re.findall(r'class="[^"]*' + SUB_CLS, now(alv_tree.last_join(r))))
        == (1 if r in SUBTITLED else 0) for r, _, _ in JOBS
-       if os.path.isfile(alv_tree.join(r))),
+       if os.path.isfile(alv_tree.last_join(r))),
    'no page carries two subtitles - every house page that has one has ONE')
 # And the five that keep one shout it, or hold data whose case is not ours.
 for rel in sorted(SUBTITLED):
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         continue
     m = re.search(r'<h4[^>]*class="[^"]*' + SUB_CLS + r'[^"]*"[^>]*>(.*?)</h4>',
@@ -475,7 +478,7 @@ for rel in sorted(SUBTITLED):
        '%-40s its h4 shouts, or is data whose case is not ours' % rel,
        repr(lit[:50]))
 
-cm = alv_tree.join('create_meal_plan.html')
+cm = alv_tree.last_join('create_meal_plan.html')
 if os.path.isfile(cm):
     b = now(cm)
     ok(title_of(b) == 'MEAL PLANS',
@@ -504,7 +507,7 @@ head('4. WHAT THE BANNERS TOOK WITH THEM')
 BANNER_OF = dict((rel, cls) for rel, cls, _ in JOBS)
 gone = 0
 for rel in FAILING:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         continue
     had, has = grad_selectors(was(p)), grad_selectors(now(p))
@@ -533,7 +536,7 @@ ok(sum(len(v) for v in KEEPS.values()) == 3,
 head('5. THE INVENTORY, PINNED - it was wrong twice')
 # ==========================================================================
 for rel, cls in NOT_BANNERS.items():
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -545,17 +548,17 @@ for rel, cls in NOT_BANNERS.items():
        '%-40s .%s paints NOTHING - a substring match put it on the first '
        'inventory' % (rel, cls),
        ' '.join(m.group(1).split())[:70] if m else '(no rule)')
-    ok(not os.path.isfile(p + SUFFIX), '  and this round never touched it')
+    ok(not os.path.isfile(alv_tree.bak_path(p, SUFFIX)), '  and this round never touched it')
 
 for rel, cls in HELD.items():
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
     ok(wears(now(p), cls) == 1,
        '%-40s still wears .%s - held back for a reading of its own'
        % (rel, cls))
-    ok(not os.path.isfile(p + SUFFIX), '  and has no backup')
+    ok(not os.path.isfile(alv_tree.bak_path(p, SUFFIX)), '  and has no backup')
 
 # ==========================================================================
 head('6. CONTROLS - checks that would catch a vacuous suite')
@@ -591,7 +594,7 @@ ok(n >= 70, '%d pages now wear the house title, up from 66' % n, n)
 
 # A REVERT MUST FAIL A CHECK, NOT CRASH (lesson 55).
 try:
-    src = alv_tree.join('categories_management.html')
+    src = alv_tree.last_join('categories_management.html')
     if os.path.isfile(src + SUFFIX):
         dst = os.path.join(SCRATCH, 'r.html')
         _shutil.copyfile(src + SUFFIX, dst)

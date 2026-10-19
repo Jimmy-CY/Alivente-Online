@@ -123,7 +123,7 @@ DANGER_PAGE = 'crs/submission_detail.html'
 BOOTSTRAP_PAGES = ('crs/country_list.html', 'crs/fi_list.html',
                    'crs/submission_list.html')
 CRS_N = 8
-N_FOOTER_SUBSTRING, N_FOOTER_TOKEN = 89, 88   # CC-2, 17 Oct 2026 - the contact detail modal adds one .modal-footer. Both matchers rise by the same one.   # (was 88, 87)   # CC-1, 15 Oct 2026 - the celebration day sheet adds one .modal-footer. Both matchers rise by the same one.   # (was 87, 86)   # PV-1, 15 Oct 2026 - two hand-rolled invoice viewers went, and each took one .modal-footer wrapper with it. Both matchers fall by the same two, which is itself the point: the wrappers that left were ordinary ones.   # (was 89, 88)
+N_FOOTER_SUBSTRING, N_FOOTER_TOKEN = 83, 82   # RT-1, 18 Oct 2026 - six .modal-footer wrappers went with the four meal-plan screens MN-1 retired, and the planner brought none. BOTH matchers fall by the same six, which is the point of keeping the pair: the wrappers that left were ordinary ones.   # (was 89, 88)   # CC-2, 17 Oct 2026 - the contact detail modal adds one .modal-footer. Both matchers rise by the same one.   # (was 88, 87)   # CC-1, 15 Oct 2026 - the celebration day sheet adds one .modal-footer. Both matchers rise by the same one.   # (was 87, 86)   # PV-1, 15 Oct 2026 - two hand-rolled invoice viewers went, and each took one .modal-footer wrapper with it. Both matchers fall by the same two, which is itself the point: the wrappers that left were ordinary ones.   # (was 89, 88)
 GREY = 'rgb(233, 236, 239)'
 GREY_INK = 'rgb(138, 151, 157)'
 DANGER_INK = 'rgb(179, 38, 30)'
@@ -163,7 +163,7 @@ def read(p):
 
 
 def before(p):
-    b = p + SUFFIX
+    b = alv_tree.bak_path(p, SUFFIX)
     if not os.path.exists(b):
         print('')
         print('  !! %s has no %s backup.' % (os.path.basename(p), SUFFIX))
@@ -315,7 +315,7 @@ check('tree-wide the two matchers differ by one wrapper: %d and %d' % (nl, nt),
 check('  and the page that moves is %s' % DANGER_PAGE, odd == [DANGER_PAGE],
       '%s' % odd)
 
-dp = alv_tree.path_of(DANGER_PAGE)
+dp = alv_tree.last_path(DANGER_PAGE)
 dnow = read(dp)
 check('  so the XML Viewer Download is still paper, not teal',
       'id="xmlViewerDownload" href="#" class="btn action-secondary"' in dnow)
@@ -330,7 +330,7 @@ print('        error, and it is one instance wide in 151 templates.')
 # ---------------------------------------------------------------------- 4
 head('4. BASE GREYS A SWITCHED-OFF DANGER - and it is the round')
 
-bp = alv_tree.path_of('base.html')
+bp = alv_tree.last_path('base.html')
 B, BW = read(bp), before(bp)
 for sel in ('.action-danger.disabled-btn',
             '.btn.action-danger.disabled-btn',
@@ -435,7 +435,7 @@ else:
 head('5. THE TWELVE, AND THE TREE AS A FIXED POINT')
 
 def plan(rel, text=None):
-    raw = text if text is not None else read(alv_tree.path_of(rel))
+    raw = text if text is not None else read(alv_tree.last_path(rel))
     sb.JS_REENABLED = sb.js_reenabled_ids(raw)
     return sb._scan(rel, sb.markup_of(raw))
 
@@ -489,7 +489,7 @@ def drifting_in(text, rel):
                 if not h[7] and h[3].split() != h[4].split()])
 
 
-OLD_PAGES = [(r, before(alv_tree.path_of(r)))
+OLD_PAGES = [(r, before(alv_tree.last_path(r)))
              for r in BOOTSTRAP_PAGES + (DANGER_PAGE,)]
 tight_n = sum(drifting_in(t, r) for r, t in OLD_PAGES)
 _saved = sb.footers

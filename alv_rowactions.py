@@ -107,20 +107,14 @@ NAMED = {
     # direction nobody designed it for: it was built so a page that
     # GREW a loose button could not inherit the exemption, and it
     # refused a page that lost two just as loudly.
-    'create_meal_plan.html': {
-        'count': 1,
-        'classes': ('icon-delete',),
-        # AND `since`, FOR THE SAME REASON VC-1 ADDED THE KEY.
-        # test_row_exempt reads a named page AS THE ROUND THAT NAMED IT
-        # LEFT IT, which for this entry is RA-5's era - and there were
-        # three then. Without this the count would be read against a
-        # snapshot taken before E33 existed and the register would be
-        # called wrong for being right.
-        'since': '.bak_mealdisplay',
-        'why': 'Remove this recipe - one control at the end of each recipe '
-               'row, beside the name and the servings box. Built inside a '
-               'JavaScript template literal, written once since MD-1.',
-    },
+    # RT-1, 18 Oct 2026 - create_meal_plan.html's ENTRY IS GONE, not moved
+    # to a backup. It named one loose trashcan - 'Remove this recipe',
+    # at the end of each recipe row - and MN-1 retired the page: a plan
+    # is built on the calendar now. An exemption names a control a
+    # reader can find and Show-RowActionDrift can print, so an
+    # exemption for a page that is not in the tree is a line nobody can
+    # check. The entry carried `since: .bak_mealdisplay`, which VC-1's
+    # key existed for; the history is in MD-1's round, not here.
     # VC-1, 14 Oct 2026. The fifth of this shape, and it arrived from the
     # BUTTON census rather than this one: it was `btn btn-sm btn-link
     # text-danger p-0`, and btn-link was not on Show-ButtonDrift's list of

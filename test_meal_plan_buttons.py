@@ -110,7 +110,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46
@@ -120,7 +123,7 @@ def was(p):
 code_only = alv_tree.code_only
 
 
-P = alv_tree.path_of(PAGE)
+P = alv_tree.last_path(PAGE)
 NOW = now(P)
 CODE = code_only(NOW)
 W = code_only(was(P))
@@ -182,7 +185,7 @@ ok('action-primary' not in seg,
    '  and not a primary - there is one per day card, so a primary here is '
    'seven primaries on one screen')
 
-BASE = code_only(read(alv_tree.path_of('base.html')))
+BASE = code_only(read(alv_tree.last_path('base.html')))
 for cls in ('.icon-action-btn', '.icon-delete', '.action-secondary'):
     ok(bool(re.search(re.escape(cls) + r'[\s,{:]', BASE)),
        'base defines %s' % cls)

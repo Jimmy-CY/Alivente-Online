@@ -93,16 +93,20 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def css_of(x):
     return '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', x, re.S | re.I))
 
 
-BASEP = alv_tree.path_of('base.html')
-TOUCHED = sorted(p for p in alv_tree.templates()
-                 if os.path.exists(p + SUFFIX))
+BASEP = alv_tree.last_path('base.html')
+# RT-1, 18 Oct 2026 - THE BACKUPS, NOT THE WALK. This list was
+# "the templates that are there now, with a backup of this round",
+# so a page the tree has since retired dropped out of the round's
+# own census and the count came back one short. The backup never
+# went anywhere; only the walk had forgotten the page.
+TOUCHED = alv_tree.touched_by(SUFFIX)
 
 print(__doc__.strip().splitlines()[0])
 
@@ -168,7 +172,7 @@ BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
 for s in sorted(STAND):
     p = BYNAME[s]
     print('      %-40s' % s, end='')
-    held = not os.path.exists(p + SUFFIX)
+    held = not os.path.exists(alv_tree.bak_path(p, SUFFIX))
     print('untouched' if held else 'TOUCHED BY B-1')
     if not held:
         FAILS.append('%s was rewritten and it cannot read :root' % s)

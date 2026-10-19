@@ -109,10 +109,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    return read(alv_tree.bak_path(p, SUFFIX)) if os.path.isfile(alv_tree.bak_path(p, SUFFIX)) else ''
 
 
-BASE = alv_tree.path_of('base.html')
+BASE = alv_tree.last_path('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 DETAIL = [p for p in alv_tree.templates()
           if alv_tree.rel(p).replace(os.sep, '/')
@@ -318,9 +318,14 @@ for name, n in sorted(users.items()):
 # Meal Plans list and the calendar; it had been on the plan page only,
 # so a plan could be SHIFTED from one screen out of three. Same markup
 # as the one that was already there, and base serves all of them.
-ok(len(users) == 5, 'the component is used on %d pages, base aside'
+# RT-1, 18 Oct 2026 - FIVE BECAME TWO. D28 had put the control on the
+# Duplicate dialogs of the Meal Plans list and the calendar as well as
+# the plan page; MN-1 retired all three screens, and the planner has no
+# Duplicate dialog because a plan is no longer a thing to duplicate.
+# MD-1 really did put it on five. This counts the live tree.
+ok(len(users) == 2, 'the component is used on %d pages, base aside'
    % len(users))
-ok(sum(users.values()) == 15,
+ok(sum(users.values()) == 12,
    '  %d controls in all, every one of them served by base'
    % sum(users.values()))
 ok(not owns,

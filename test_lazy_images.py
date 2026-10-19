@@ -105,7 +105,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 def code(p):
@@ -141,7 +144,7 @@ PRINT_PAGES = ('recipe_pdf.html', 'invoices/physical_invoice.html',
                'components/pdf_viewer.html')
 LIST_CLASSES = ('recipe-selector-card-image', 'book-recipe-card-image',
                 'recipe-image', 'recipe-list-image')
-CAL = alv_tree.path_of('meal_plan_calendar.html')
+CAL = alv_tree.last_path('meal_plan_calendar.html')
 
 
 def imgs(src):
@@ -176,7 +179,11 @@ for p in sorted(alv_tree.templates()):
         (lazy if 'loading="lazy"' in tag else eager).append((rel, tag))
         if 'loading="lazy"' in tag:
             pages.add(rel)
-ok(len(lazy) == 14, '%d image(s) wait, on %d page(s)' % (len(lazy), len(pages)),
+# RT-1, 18 Oct 2026 - 12 ON 7. Four lazy images went with the two meal-plan
+# screens MN-1 retired, and the planner that replaced them brought
+# two: 14 - 4 + 2. This counts the live tree, which is what a
+# reader's browser actually loads.
+ok(len(lazy) == 12, '%d image(s) wait, on %d page(s)' % (len(lazy), len(pages)),
    '\n'.join('%s %s' % (r, t[:60]) for r, t in lazy[:4]))
 ok(len(eager) >= 20, 'and %d do not' % len(eager))
 
@@ -228,7 +235,16 @@ ok(i >= 0 and alv_tree.code_only(cal).find(modal[0]) > i,
 
 # ONE PER RECIPE, FROM EVERY RECIPE. The size of the problem, named.
 v = source('pages', 'views', 'recipes', 'meal_planning.py')
-ok(v and 'all_recipes = Recipe.objects.all()' in v,
+# RT-1, 18 Oct 2026 - THE FACT, NOT THE SPELLING. MN-1 rewrote this view
+# and the line now reads
+#
+#     'all_recipes': Recipe.objects.all().order_by('recipe_name'),
+#
+# which hands the modal every recipe exactly as before - the limit this
+# check names is unchanged and still owed a fix. A check that pins the
+# spelling of a line reports a limit as LIFTED the day somebody
+# reformats it.
+ok(v and 'all_recipes' in v and 'Recipe.objects.all()' in v,
    'the view still hands the modal every recipe in the database - this '
    'round makes that free to RENDER, it does not make the page small')
 
@@ -326,13 +342,13 @@ ok(len(holds) >= 4,
 # ==========================================================================
 head('5. NOR ABOVE THE FOLD')
 # ==========================================================================
-b = now(alv_tree.path_of('base.html'))
+b = now(alv_tree.last_path('base.html'))
 for probe, what in (('alivente_online_logo.png', 'the logo'),
                     ('profile_photo.url', 'the header photo')):
     bad = [t for t in imgs(b) if probe in t and 'loading=' in t]
     ok(not bad, '%-18s in base is not lazy' % what)
 
-rm = now(alv_tree.path_of('recipe_management.html'))
+rm = now(alv_tree.last_path('recipe_management.html'))
 hero = [t for t in imgs(rm) if 'book-detail-image' in t]
 ok(len(hero) == 1, 'the recipe book has one detail hero')
 ok(hero and 'loading=' not in hero[0],

@@ -93,12 +93,33 @@ def suites():
                   for p in glob.glob(os.path.join(ROOT, 'test_*.py')))
 
 
+def patcher_of(suite):
+    """apply_X.py beside test_X.py, or None.
+
+    RT-1, 18 Oct 2026 - see select().
+    """
+    p = os.path.join(ROOT, 'apply_' + suite[len('test_'):])
+    return p if os.path.isfile(p) else None
+
+
 def select(changed):
     """(picked, named, why) for the files this round changed.
 
     A suite is picked if it names one of the changed files - by full
     relative path or by basename - or if it is one of the nine that
     count the whole repo.
+
+    IT READS EACH SUITE'S PATCHER TOO, AND USED NOT TO. RT-1, 18 Oct
+    2026: MN-1 deleted create_meal_plan.html, and this selector said
+    test_recipe_side_b.py was not at risk. It was - RS-1b edited that
+    page 31 times - but the suite never WRITES the name anywhere. It
+    reads apply_recipe_side_b.EDITS at run time and learns the name
+    from the payload. Four suites were invisible this way and Demetri's
+    gate would have been the one to find them.
+
+    A suite and its patcher are one instrument. The selector now reads
+    both halves. Measured on this round's own change set: it costs a
+    handful of extra suites, which is the price of not missing four.
     """
     keys = set()
     for c in changed:
@@ -110,6 +131,10 @@ def select(changed):
         with open(os.path.join(ROOT, s), encoding='utf-8',
                   errors='replace') as fh:
             text = fh.read()
+        ap = patcher_of(s)
+        if ap:
+            with open(ap, encoding='utf-8', errors='replace') as fh:
+                text += fh.read()
         if any(k in text for k in keys):
             named.add(s)
     wide = [os.path.basename(c) for c in changed

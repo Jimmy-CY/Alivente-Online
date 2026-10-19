@@ -1,0 +1,1172 @@
+{% extends 'base.html' %}
+{% load static %}
+{# MH-1, 18 Oct 2026 - the Meal Plans guide, the same one on every    #}
+{# meal-plan screen.                                                  #}
+{% load help_modal_tags %}
+{% block title %}Meal Planner{% endblock %}
+{% block content %}
+
+{# ===================================================================== #}
+{# MN-1, 18 Oct 2026 - RELEASE 3. THE CALENDAR IS THE PLAN.             #}
+{#                                                                      #}
+{# This replaces SEVEN screens: the plan list, Create, View, Edit,      #}
+{# Duplicate, Delete and the old calendar. A meal has a date, so there  #}
+{# is no box to make before you can plan a dinner, nothing can overlap, #}
+{# and changing your mind about a week cannot throw meals away.         #}
+{#                                                                      #}
+{# The CSS below is the old calendar's, trimmed. It was already token-  #}
+{# clean - zero hex literals outside its comments - so the planner      #}
+{# inherits a stylesheet the guards have already judged rather than     #}
+{# starting one.                                                        #}
+{# ===================================================================== #}
+
+<style>    /* B-1, 5 Oct 2026 - 15 literal(s) on this page became a var().
+       Each one was already the byte-identical value of the
+       token that replaced it, read from base's :root, so
+       nothing here moved. What changes is that the page is on
+       the token and will follow when the house does.
+       Tier A of the Section B map; B and C move a pixel and
+       are separate rounds.                   [B-1 tier A] */
+
+/* ==================== MAIN LAYOUT ==================== */
+.calendar-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+.calendar-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 25px;
+}
+
+/* ==================== LEFT PANEL ==================== */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Mini Calendar */
+.mini-calendar {
+    background: var(--alv-paper);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mini-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.mini-calendar-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--alv-ink);
+    margin: 0;
+}
+
+.mini-calendar-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.mini-calendar-nav button {
+    background: var(--alv-line-soft);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--alv-radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.mini-calendar-nav button:hover {
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+}
+
+.mini-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.mini-calendar-day-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--alv-ink-soft);
+    padding: 8px 0;
+}
+
+.mini-calendar-day {
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 13px;
+    border-radius: var(--alv-radius-sm);
+    position: relative;
+    transition: all 0.2s;
+}
+
+.mini-calendar-week {
+    display: contents;
+    cursor: pointer;
+}
+
+.mini-calendar-week:hover .mini-calendar-day:not(.empty) {
+    background: var(--alv-surface-deep);
+}
+
+.mini-calendar-week.selected .mini-calendar-day:not(.empty) {
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+}
+
+.mini-calendar-day.empty {
+    color: var(--alv-ink-faint);
+}
+
+.mini-calendar-day.today {
+    font-weight: 700;
+    border: 2px solid var(--alv-accent);
+}
+
+.mini-calendar-day.has-meal::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    /* A STATUS, NOT A VERB - MC-3. This dot and the legend swatch below
+       say "there is a meal on this day". They keep a green because that
+       is what Demetri reads them by, but it is the palette's green. */
+    background: var(--alv-good);
+    border-radius: 50%;
+}
+
+.mini-calendar-day.in-meal-plan {
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+}
+
+.mini-calendar-day.in-meal-plan.has-meal::after {
+    background: var(--alv-paper);
+}
+
+.mini-calendar-day.in-meal-plan.today {
+    border-color: var(--alv-paper);
+}
+
+/* Meal Plans List */
+
+
+
+
+
+
+
+/* MC-3, 3 Oct 2026. #28a745 IS HANDLED BY NAME ON THIS PAGE, not by
+   the sweep, because it carries two different intentions here: a CREATE
+   button and a "this day has a meal" dot. A blanket map would have
+   painted a verb and a status the same colour and called it tidying.
+   The button is a verb, so it takes the accent like every other create
+   in the tree; the two dots keep a green, but the palette's own
+   --alv-good rather than a literal. */
+
+
+
+/* ==================== RIGHT PANEL - WEEK DETAIL ==================== */
+.week-detail-panel {
+    background: var(--alv-paper);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.week-detail-header {
+    background: var(--alv-surface);
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--alv-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.week-detail-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--alv-ink);
+    margin: 0;
+}
+
+.week-detail-header h2 i {
+    color: var(--alv-accent-ink);
+    margin-right: 10px;
+}
+
+/* ROW ACTIONS - MC-2, 3 Oct 2026. .week-detail-actions is gone and so
+   are both of its .btn rules. There were TWO, 470 lines apart, one
+   setting 8px 16px and the other 8px 14px; the later one won and the
+   earlier one had been dead for as long as both existed. The strip is
+   base's .row-actions now, which is what the list rows have worn since
+   ML-1. */
+
+.week-detail-content {
+    padding: 20px;
+}
+
+/* No Meal Plan State */
+
+
+
+
+/* Day Cards */
+.day-card {
+    background: var(--alv-surface);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    border: 1px solid var(--alv-line);
+}
+
+.day-card.today {
+    border: 2px solid var(--alv-accent);
+    box-shadow: 0 0 0 3px var(--alv-accent-ring);
+}
+
+.day-card-header {
+    background: var(--alv-surface-deep);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-card.today .day-card-header {
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+}
+
+.day-card-header h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.day-card-header .today-badge {
+    background: var(--alv-paper);
+    color: var(--alv-accent-ink);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.day-card-body {
+    padding: 15px 18px;
+}
+
+/* Recipe Items */
+.recipe-item {
+    display: flex;
+    gap: 15px;
+    padding: 12px;
+    background: var(--alv-paper);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--alv-line);
+    transition: all 0.2s;
+}
+
+.recipe-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-item:last-child {
+    margin-bottom: 0;
+}
+
+.recipe-thumbnail {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.recipe-thumbnail-placeholder {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    background: var(--alv-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--alv-on-accent);
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.recipe-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.recipe-info h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--alv-ink);
+    margin: 0 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recipe-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: var(--alv-ink-soft);
+    margin-bottom: 8px;
+}
+
+.recipe-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recipe-meta i {
+    color: var(--alv-accent-ink);
+}
+
+/* .recipe-actions went the same way - MC-2. Base sizes .row-actions and
+   .icon-action-btn, including the 44px touch target under 768px, so a
+   page rule here could only disagree with it. */
+
+/* Empty Day */
+.empty-day {
+    text-align: center;
+    padding: 20px;
+    color: var(--alv-ink-faint);
+}
+
+.empty-day i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.add-recipe-btn {
+    margin-top: 12px;
+    padding: 8px 20px;
+    background: var(--alv-accent);
+    color: var(--alv-on-accent);
+    border: none;
+    border-radius: var(--alv-radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-recipe-btn:hover {
+    background: var(--alv-accent-ink);
+}
+
+.add-recipe-btn-disabled {
+    background: var(--alv-ink-faint) !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.add-another-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 2px dashed var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    color: var(--alv-ink-soft);
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+}
+
+.add-another-btn:hover {
+    border-color: var(--alv-accent);
+    color: var(--alv-accent-ink);
+    background: var(--alv-accent-soft);
+}
+
+.add-another-btn-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Legend */
+.calendar-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--alv-line);
+    font-size: 12px;
+    color: var(--alv-ink-soft);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-dot.meal {
+    background: var(--alv-good);
+}
+
+.legend-dot.today {
+    border: 2px solid var(--alv-accent);
+    background: var(--alv-paper);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media screen and (max-width: 1200px) {
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .left-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .mini-calendar {
+        flex: 1;
+        min-width: 280px;
+    }
+    
+
+@media screen and (max-width: 768px) {
+    .calendar-container {
+        padding: 8px;
+    }
+
+    /* Left panel - stack the mini calendar above the week */
+    .left-panel {
+        flex-direction: column;
+    }
+
+    /* Mini calendar - tighter */
+    .mini-calendar {
+        padding: 14px;
+        min-width: 0 !important;
+    }
+    .mini-calendar-header h3 {
+        font-size: 16px;
+    }
+    .mini-calendar-day {
+        padding: 7px 2px;
+        font-size: 12px;
+    }
+    .mini-calendar-day-header {
+        font-size: 10px;
+        padding: 6px 0;
+    }
+    .calendar-legend {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    /* Meal plans panel */
+
+    /* Week detail header - stack title above actions */
+    .week-detail-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 14px 14px;
+    }
+    .week-detail-header h2 {
+        font-size: 17px;
+        line-height: 1.3;
+    }
+
+    /* The 3-col grid that wrapped five labelled buttons on a phone went
+       with them - MC-2. Five icon buttons are five 44px targets, about
+       250px of the 390px a phone gives, so they sit on one row and need
+       no grid at all. */
+
+    /* Week detail content padding */
+    .week-detail-content {
+        padding: 14px;
+    }
+
+    /* Day cards - tighter */
+    .day-card-header {
+        padding: 10px 14px;
+    }
+    .day-card-header h4 {
+        font-size: 14px;
+    }
+    .day-card-body {
+        padding: 12px 14px;
+    }
+
+    /* Recipe items - smaller thumbnail, meta wraps */
+    .recipe-item {
+        gap: 12px;
+        padding: 10px;
+    }
+    .recipe-thumbnail,
+    .recipe-thumbnail-placeholder {
+        width: 56px;
+        height: 56px;
+    }
+    .recipe-thumbnail-placeholder {
+        font-size: 20px;
+    }
+    .recipe-info h5 {
+        font-size: 14px;
+        white-space: normal;
+    }
+    .recipe-meta {
+        flex-wrap: wrap;
+        gap: 6px 12px;
+    }
+
+    /* No meal plan state */
+
+    /* MODALS - full screen */
+    .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100vh;
+    }
+    .modal-content {
+        height: 100vh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        border: none;
+    }
+    .modal-header {
+        flex-shrink: 0;
+    }
+    .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+    .modal-footer {
+        flex-direction: column-reverse !important;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+    .modal-header .close {
+        font-size: 28px;
+        padding: 8px 12px;
+    }
+
+    /* Add Recipe Modal - recipe list inside */
+    #recipeList {
+        max-height: none !important;
+    }
+    .recipe-option > div {
+        padding: 10px 12px !important;
+    }
+    .recipe-option img,
+    .recipe-option > div > div:first-child {
+        flex-shrink: 0;
+    }
+}
+
+/* NO VIEW TOGGLE - MN-1, 18 Oct 2026. One calendar and no list, so
+   there is nothing to switch between. MC-1 replaced this page's
+   hand-rolled .view-toggle with base's .alv-seg on 3 Oct, and the
+   fault Demetri reported behind it - "I should have the List/Calendar
+   toggle in the Calendar view to be able to switch to List view
+   again", where the toggle was there and the half he needed was white
+   on white - cannot recur on a screen that has one view. MC-1's and
+   MC-2's notes went with the page they described. */
+
+/* THE FIVE COLOURS - MC-2, 3 Oct 2026, and the reason this round
+   exists. .btn-view #007bff, .btn-edit #ffc107 on black ink,
+   .btn-shopping #28a745, .btn-duplicate #0e7c8b, .btn-delete #dc3545,
+   their five hovers and .btn-action-disabled are all gone. Twelve
+   literals left with them.
+
+   Five filled colours in one row is not a palette, it is five
+   independent decisions sitting next to each other, and it taught the
+   reader nothing: the colour of Edit said "Edit" and nothing else. The
+   row-action strip says the same five things in one quiet voice and
+   keeps red for the one action that cannot be undone.
+
+   Disabled is base's .icon-disabled now rather than a local
+   !important pair. */
+
+
+    /* ---------------------------------------------------------------
+       MN-1, 18 Oct 2026 - what the PLANNER adds to what the calendar
+       already had. Three things: a week header that can move a week,
+       a servings stepper on every meal, and a note row for push 2.
+
+       No hex literals. Every colour is a base token, which is what
+       the 76 template-walking suites ask of a new page on day one.
+       --------------------------------------------------------------- */
+
+    .week-nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* 44px, because test_tap_target says that is the FLOOR on a phone
+       and these are the controls somebody taps most on this screen. */
+    .week-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 10px;
+        border: 1px solid var(--alv-line);
+        border-radius: var(--alv-radius-sm);
+        background: var(--alv-paper);
+        color: var(--alv-ink);
+        font-size: 15px;
+        cursor: pointer;
+    }
+    .week-nav-btn:hover { background: var(--alv-surface); }
+
+    .week-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--alv-ink);
+        margin: 0 8px;
+    }
+
+    .week-meta {
+        font-size: 13px;
+        color: var(--alv-ink-soft);
+    }
+
+    /* THE SERVINGS STEPPER. It saves on press, so there is no Save
+       button on this screen at all - which is the point of the model
+       change as much as it is a convenience. */
+    .servings-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+    .servings-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--alv-line);
+        border-radius: var(--alv-radius-sm);
+        background: var(--alv-paper);
+        color: var(--alv-ink);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .servings-btn:hover { background: var(--alv-surface); }
+    .servings-btn[disabled] {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+    .servings-count {
+        min-width: 30px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--alv-ink);
+        font-variant-numeric: tabular-nums;
+    }
+    .servings-word {
+        font-size: 12px;
+        color: var(--alv-ink-soft);
+        margin-left: 2px;
+    }
+
+    .meal-scale {
+        font-size: 11px;
+        color: var(--alv-ink-soft);
+    }
+
+    /* A NOTE IS NOT A MEAL. It reads quieter than the recipes around
+       it, because it is the night you decided not to cook. */
+    .note-item .recipe-info h5 {
+        color: var(--alv-ink-soft);
+        font-style: italic;
+    }
+
+    .planner-status {
+        font-size: 13px;
+        min-height: 20px;
+    }
+
+    @media screen and (max-width: 768px) {
+        .week-title { font-size: 15px; margin: 0 4px; }
+        .week-nav-btn { padding: 0 8px; }
+        /* THE STEPPER STAYS 30px AND THE ROW GROWS INSTEAD. A 44px
+           stepper beside a 44px trashcan wraps the meal row on a
+           phone, and test_zoom_guards cares that the page does not
+           scroll sideways rather than that every control is 44. */
+        .recipe-item { flex-wrap: wrap; row-gap: 6px; }
+    }
+</style>
+
+<div class="calendar-container">
+
+    <h2 class="page-title-h2">MEAL PLANNER</h2>
+
+    {# ONE BAR, and Back is LAST and carries no colour - test_bar_top. #}
+    {# Help sits before it, as it does on all five meal-plan screens.  #}
+    <div class="page-action-buttons">
+        <a href="{% url 'meal_shopping_list' %}?from={{ week_start|date:'Y-m-d' }}&amp;to={{ week_end|date:'Y-m-d' }}"
+           class="btn action-primary">
+            <i class="fas fa-shopping-cart"></i> Shopping List
+        </a>
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
+        <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipes">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    </div>
+
+    <div class="calendar-layout">
+
+        {# ------------------------------------------------- left panel #}
+        <div class="left-panel">
+            <div class="mini-calendar">
+                <div class="mini-calendar-header">
+                    <button type="button" class="mini-calendar-nav"
+                            onclick="goMonth({{ prev_month.year }}, {{ prev_month.month }})"
+                            aria-label="Previous month">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <strong>{{ month_name }}</strong>
+                    <button type="button" class="mini-calendar-nav"
+                            onclick="goMonth({{ next_month.year }}, {{ next_month.month }})"
+                            aria-label="Next month">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="mini-calendar-grid">
+                    <div class="mini-calendar-day-header">Mo</div>
+                    <div class="mini-calendar-day-header">Tu</div>
+                    <div class="mini-calendar-day-header">We</div>
+                    <div class="mini-calendar-day-header">Th</div>
+                    <div class="mini-calendar-day-header">Fr</div>
+                    <div class="mini-calendar-day-header">Sa</div>
+                    <div class="mini-calendar-day-header">Su</div>
+                </div>
+
+                {% for week in calendar_weeks %}
+                {# MD-1's D26: the row you are looking at is marked, and  #}
+                {# it can only match because the view normalises the week #}
+                {# to a Monday before it gets here.                       #}
+                <div class="mini-calendar-week{% if week.week_start and week.week_start == week_start %} selected{% endif %}"
+                     {% if week.week_start %}onclick="goWeek('{{ week.week_start|date:'Y-m-d'|escapejs }}')"{% endif %}
+                     data-week-start="{{ week.week_start|date:'Y-m-d' }}">
+                    {% for day in week.days %}
+                    <div class="mini-calendar-day {% if not day %}empty{% endif %} {% if day.is_today %}today{% endif %} {% if day.has_meal %}has-meal{% endif %}"
+                         {% if day.date %}data-date="{{ day.date|date:'Y-m-d' }}"{% endif %}>
+                        {{ day.day|default_if_none:'' }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="calendar-legend">
+                    <div class="legend-item"><span class="legend-dot has-meal"></span> Has a meal</div>
+                    <div class="legend-item"><span class="legend-dot today"></span> Today</div>
+                </div>
+            </div>
+        </div>
+
+        {# ------------------------------------------------ the week #}
+        <div class="week-detail-panel">
+            <div class="week-detail-header">
+                <div class="week-nav">
+                    <button type="button" class="week-nav-btn"
+                            onclick="goWeek('{{ prev_week|date:'Y-m-d'|escapejs }}')"
+                            aria-label="The week before">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="week-title">{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M Y" }}</span>
+                    <button type="button" class="week-nav-btn"
+                            onclick="goWeek('{{ next_week|date:'Y-m-d'|escapejs }}')"
+                            aria-label="The week after">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button type="button" class="week-nav-btn"
+                            onclick="goWeek('{{ this_week|date:'Y-m-d'|escapejs }}')">
+                        Today
+                    </button>
+                </div>
+                <span class="week-meta">{{ meal_count }} meal{{ meal_count|pluralize }}</span>
+            </div>
+
+            <div class="week-detail-content">
+                <div id="plannerStatus" class="planner-status" role="status" aria-live="polite"></div>
+
+                {% for day in week_days %}
+                <div class="day-card">
+                    <div class="day-card-header">
+                        <h3>
+                            <i class="fas fa-calendar-day"></i>
+                            {{ day.date|date:"D j M" }}
+                            {% if day.is_today %}<span class="alv-pill alv-pill-info">Today</span>{% endif %}
+                        </h3>
+                    </div>
+                    <div class="day-card-body">
+                        {% for entry in day.entries %}
+                        {# A SLOT IS NOT ALWAYS A RECIPE. MealEntry allows a  #}
+                        {# note from today even though push 2 is what writes  #}
+                        {# them - and a page that assumed a recipe 500d the   #}
+                        {# whole planner the moment one existed. Found by     #}
+                        {# this round's own suite before it shipped, which is #}
+                        {# what the behaviour register is for.                #}
+                        {% if entry.recipe %}
+                        <div class="recipe-item" data-entry="{{ entry.meal_entry_id }}">
+                            {% if entry.recipe.photo_url %}
+                            <img loading="lazy" decoding="async" src="{{ entry.recipe.photo_url }}"
+                                 alt="" class="recipe-thumbnail">
+                            {% else %}
+                            <div class="recipe-thumbnail-placeholder"><i class="fas fa-utensils"></i></div>
+                            {% endif %}
+
+                            <div class="recipe-info">
+                                <h5>{{ entry.recipe.recipe_name }}</h5>
+                                <div class="recipe-meta">
+                                    <span><i class="fas fa-clock"></i> {{ entry.recipe.prep_time|default:0|add:entry.recipe.cook_time|default:0 }} min</span>
+                                    <span class="meal-scale">recipe makes {{ entry.recipe.servings|default:"?" }}</span>
+                                </div>
+
+                                {# THE STEPPER. It saves on press - there is no #}
+                                {# Save button on this screen at all.            #}
+                                <div class="servings-step">
+                                    {% if perms.auth.can_edit_recipes %}
+                                    <button type="button" class="servings-btn"
+                                            onclick="stepServings({{ entry.meal_entry_id }}, -1)"
+                                            aria-label="One fewer serving of {{ entry.recipe.recipe_name }}">&minus;</button>
+                                    {% endif %}
+                                    <span class="servings-count" id="servings-{{ entry.meal_entry_id }}">{{ entry.servings }}</span>
+                                    {% if perms.auth.can_edit_recipes %}
+                                    <button type="button" class="servings-btn"
+                                            onclick="stepServings({{ entry.meal_entry_id }}, 1)"
+                                            aria-label="One more serving of {{ entry.recipe.recipe_name }}">+</button>
+                                    {% endif %}
+                                    <span class="servings-word">servings</span>
+                                </div>
+
+                                {# LOOK, then DESTROY - the house row-action order. #}
+                                <div class="row-actions">
+                                    <a href="{% url 'view_recipe' entry.recipe.recipe_id %}"
+                                       class="icon-action-btn icon-view" title="View recipe"
+                                       aria-label="View the recipe {{ entry.recipe.recipe_name }}"><i class="fas fa-eye"></i></a>
+                                    {% if perms.auth.can_edit_recipes %}
+                                    <button type="button" class="icon-action-btn icon-delete"
+                                            title="Remove from this day"
+                                            aria-label="Remove {{ entry.recipe.recipe_name }} from this day"
+                                            onclick="removeMeal({{ entry.meal_entry_id }}, '{{ entry.recipe.recipe_name|escapejs }}')"><i class="fas fa-trash"></i></button>
+                                    {% else %}
+                                    <span class="icon-action-btn icon-disabled" title="No permission to remove"
+                                          aria-label="Remove this meal, no permission"><i class="fas fa-trash"></i></span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        {# THE NOTE ROW. No thumbnail, no stepper, no View -  #}
+                        {# there is nothing to cook and nothing to buy. It is #}
+                        {# a planned decision rather than a gap, which is the #}
+                        {# whole reason the column exists.                     #}
+                        <div class="recipe-item note-item" data-entry="{{ entry.meal_entry_id }}">
+                            <div class="recipe-thumbnail-placeholder">
+                                <i class="fas {% if entry.leftover_of %}fa-redo{% else %}fa-store{% endif %}"></i>
+                            </div>
+                            <div class="recipe-info">
+                                <h5>{{ entry.note|default:"Nothing planned" }}</h5>
+                                <div class="recipe-meta">
+                                    <span>Nothing to cook, nothing to buy</span>
+                                </div>
+                                <div class="row-actions">
+                                    {% if perms.auth.can_edit_recipes %}
+                                    <button type="button" class="icon-action-btn icon-delete"
+                                            title="Remove from this day"
+                                            aria-label="Remove this note from this day"
+                                            onclick="removeMeal({{ entry.meal_entry_id }}, '{{ entry.note|escapejs }}')"><i class="fas fa-trash"></i></button>
+                                    {% else %}
+                                    <span class="icon-action-btn icon-disabled" title="No permission to remove"
+                                          aria-label="Remove this note, no permission"><i class="fas fa-trash"></i></span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% empty %}
+                        <div class="empty-day">
+                            <i class="fas fa-utensils"></i>
+                            <p>Nothing planned</p>
+                        </div>
+                        {% endfor %}
+
+                        {# EVERY DATE CAN TAKE A MEAL. There is no "this date  #}
+                        {# is outside the plan" any more, because there is no  #}
+                        {# plan for a date to be outside of - A3 dissolved by  #}
+                        {# the model rather than guarded.                       #}
+                        {% if perms.auth.can_edit_recipes %}
+                        <button type="button" class="add-recipe-btn"
+                                onclick="openPicker('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
+                            <i class="fas fa-plus"></i> Add Recipe
+                        </button>
+                        {% else %}
+                        <button type="button" class="add-recipe-btn add-recipe-btn-disabled" disabled
+                                title="No permission to add recipes">
+                            <i class="fas fa-plus"></i> Add Recipe
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ===================================================== the picker #}
+{# BOOTSTRAP 4.1.3, which is what base.html loads. A5's sibling A4  #}
+{# spent a release on `new bootstrap.Modal(...)` here - a Bootstrap #}
+{# 5 call on a Bootstrap 4 page - so the picker could never open.   #}
+{% if perms.auth.can_edit_recipes %}
+<div class="modal fade" id="pickerModal" tabindex="-1" role="dialog"
+     aria-labelledby="pickerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="pickerModalLabel">
+                    <i class="fas fa-plus-circle"></i> Add a meal to <span id="pickerDayName"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'add_meal_entry' %}" id="pickerForm">
+                {% csrf_token %}
+                <input type="hidden" name="date" id="pickerDate">
+                <input type="hidden" name="recipe_id" id="pickerRecipeId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="pickerSearch"><strong>Search recipes</strong></label>
+                        <input type="text" class="form-control" id="pickerSearch"
+                               placeholder="Type to search" oninput="filterPicker()"
+                               autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pickerList"><strong>Choose one</strong></label>
+                        <div id="pickerList">
+                            {% for recipe in all_recipes %}
+                            <div class="recipe-option"
+                                 data-recipe-id="{{ recipe.recipe_id }}"
+                                 data-recipe-servings="{{ recipe.servings|default:4 }}"
+                                 data-recipe-name="{{ recipe.recipe_name|lower }}"
+                                 onclick="pickRecipe(this)">
+                                {% if recipe.photo_url %}
+                                <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}"
+                                     alt="" class="recipe-thumbnail">
+                                {% else %}
+                                <div class="recipe-thumbnail-placeholder"><i class="fas fa-utensils"></i></div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ recipe.recipe_name }}</strong><br>
+                                    <small class="text-muted">
+                                        {{ recipe.prep_time|default:0|add:recipe.cook_time|default:0 }} min
+                                        &bull; makes {{ recipe.servings|default:"?" }}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pickerServings"><strong>Servings</strong></label>
+                        {# MP-1's C19, and it survives the model change: the #}
+                        {# box is filled from the recipe that gets picked,   #}
+                        {# and emptied when the picker opens. It used to be  #}
+                        {# hardcoded to 4 and to keep the last number.       #}
+                        <input type="number" class="form-control" id="pickerServings"
+                               name="servings" min="1" max="99"
+                               placeholder="{{ household_size }}">
+                        <small class="form-text text-muted">
+                            Blank uses the recipe's own yield. This household cooks for {{ household_size }}.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary" id="pickerAdd" disabled>
+                        <i class="fas fa-plus"></i> Add Meal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# THE REMOVE FORM. One form, reused - a form per meal would be one #}
+{# per meal in the page for a control pressed once in a while.      #}
+<form method="POST" action="{% url 'remove_meal_entry' %}" id="removeForm" hidden>
+    {% csrf_token %}
+    <input type="hidden" name="meal_entry_id" id="removeEntryId">
+</form>
+{% endif %}
+
+
+<script>
+// =====================================================================
+// MN-1, 18 Oct 2026. The planner.
+//
+// NO SECOND jQUERY - base.html loads jquery-3.6.0 after the content
+// block, and MD-1's E31 took the old calendar's duplicate copy out.
+// Every function here runs on interaction, so $ is defined by then.
+// =====================================================================
+
+function goWeek(week) {
+    window.location.href = '{% url "meal_planner" %}?year={{ year }}&month={{ month }}&week=' + encodeURIComponent(week);
+}
+
+function goMonth(year, month) {
+    window.location.href = '{% url "meal_planner" %}?year=' + year + '&month=' + month
+        + '&week={{ week_start|date:"Y-m-d"|escapejs }}';
+}
+
+function say(html) {
+    var box = document.getElementById('plannerStatus');
+    if (box) { box.innerHTML = html; }
+}
+
+{% if perms.auth.can_edit_recipes %}
+// ------------------------------------------------------- the picker
+function openPicker(dateStr, dayName) {
+    document.getElementById('pickerDate').value = dateStr;
+    document.getElementById('pickerDayName').textContent = dayName;
+    document.getElementById('pickerRecipeId').value = '';
+    // C19: the box is EMPTIED on every open. It used to arrive holding
+    // whatever the last recipe was set to.
+    document.getElementById('pickerServings').value = '';
+    document.getElementById('pickerSearch').value = '';
+    document.getElementById('pickerAdd').disabled = true;
+    document.querySelectorAll('.recipe-option').forEach(function (o) {
+        o.classList.remove('selected');
+    });
+    filterPicker();
+    $('#pickerModal').modal('show');
+}
+
+function filterPicker() {
+    var q = document.getElementById('pickerSearch').value.toLowerCase();
+    document.querySelectorAll('.recipe-option').forEach(function (o) {
+        o.style.display = o.dataset.recipeName.indexOf(q) >= 0 ? '' : 'none';
+    });
+}
+
+function pickRecipe(el) {
+    document.querySelectorAll('.recipe-option').forEach(function (o) {
+        o.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    document.getElementById('pickerRecipeId').value = el.dataset.recipeId;
+    // C19 again: the recipe's own yield, not a 4 and not the last one.
+    var box = document.getElementById('pickerServings');
+    if (box && !box.value) { box.value = el.dataset.recipeServings || ''; }
+    document.getElementById('pickerAdd').disabled = false;
+}
+
+// ------------------------------------------------------- the stepper
+// SAVES ON PRESS. There is no Save button on this screen, which is
+// what the design record asks for: "Press - or + beside any meal in
+// the planner. It saves immediately."
+function stepServings(entryId, delta) {
+    var span = document.getElementById('servings-' + entryId);
+    if (!span) { return; }
+    var next = parseInt(span.textContent, 10) + delta;
+    if (isNaN(next) || next < 1 || next > 99) { return; }
+
+    // OPTIMISTIC, THEN CORRECTED. The number moves at once so pressing
+    // + twice quickly reads as two presses, and the server's answer is
+    // what the span ends up holding.
+    var was = span.textContent;
+    span.textContent = next;
+
+    var body = new URLSearchParams();
+    body.append('meal_entry_id', entryId);
+    body.append('servings', next);
+
+    fetch('{% url "set_meal_servings" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: body.toString()
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+        if (d.success) {
+            span.textContent = d.servings;
+            say('');
+        } else {
+            span.textContent = was;
+            // NOT alert() - SL-4. A browser dialog blocks every event
+            // after it, and this page has a place to say things.
+            say('<div class="alert alert-warning">' + d.error + '</div>');
+        }
+    })
+    .catch(function () {
+        span.textContent = was;
+        say('<div class="alert alert-warning">That did not save. '
+            + 'Check your connection and try again.</div>');
+    });
+}
+
+// ------------------------------------------------------- remove
+function removeMeal(entryId, name) {
+    if (!confirm('Remove "' + name + '" from this day?')) { return; }
+    document.getElementById('removeEntryId').value = entryId;
+    document.getElementById('removeForm').submit();
+}
+{% endif %}
+</script>
+
+{% render_help_modal "meal_plans" %}
+{% endblock %}

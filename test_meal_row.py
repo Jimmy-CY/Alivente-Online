@@ -97,8 +97,8 @@ PS1 = 'Push-PendingChanges.ps1'
 EXE = '/opt/pw-browsers/chromium'
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
-MP = alv_tree.path_of('meal_plans.html')
-BASE = alv_tree.path_of('base.html')
+MP = alv_tree.last_path('meal_plans.html')
+BASE = alv_tree.last_path('base.html')
 
 GONE = ('btn-view', 'btn-edit', 'btn-shopping', 'btn-duplicate', 'btn-delete')
 LITERALS = ('#007bff', '#0056b3', '#ffc107', '#e0a800', '#28a745', '#218838',
@@ -141,7 +141,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46

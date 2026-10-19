@@ -128,7 +128,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46
@@ -151,10 +154,10 @@ def pat_for(lit):
     return re.escape(lit) + (r'\b' if lit[-1].isalnum() else '')
 
 
-NOW = {p: now(alv_tree.path_of(p)) for p in PAGES}
+NOW = {p: now(alv_tree.last_path(p)) for p in PAGES}
 CODE = {p: code_only(NOW[p]) for p in PAGES}
-WAS = {p: code_only(was(alv_tree.path_of(p))) for p in PAGES}
-BASE = read(alv_tree.path_of('base.html'))
+WAS = {p: code_only(was(alv_tree.last_path(p))) for p in PAGES}
+BASE = read(alv_tree.last_path('base.html'))
 FIX = read(FIXTURE) if os.path.exists(FIXTURE) else ''
 
 print('=' * 74)
@@ -276,7 +279,7 @@ if sync_playwright is not None and FIX and WAS[L]:
     off = render(css_of(NOW[L]),
                  '<span id="probe" class="btn action-primary disabled-btn">'
                  'Create</span>')
-    oldoff = render(css_of(was(alv_tree.path_of(L))),
+    oldoff = render(css_of(was(alv_tree.last_path(L))),
                     '<span id="probe" class="btn btn-create-disabled '
                     'action-primary">Create</span>')
     if ok(all(x is not None for x in (live, off, oldoff)),

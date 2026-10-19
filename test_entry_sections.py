@@ -150,6 +150,24 @@ import sys
 import alv_tree
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
+
+# RT-1, 18 Oct 2026 - THE PAGE'S LAST TEXT, UNDER THIS SUITE'S OWN ROOT.
+#
+# This suite predates alv_tree and composes every path from one
+# directory. Widening it to the whole tree would change what it
+# counts, and that is not this round's business: it sits on the
+# debt register test_waiting_down keeps, and the round that widens
+# it owns that number. All this does is let a page the tree has
+# RETIRED still be read, from the text MN-1 left beside the hole.
+import alv_tree
+
+
+def _tpl(*parts):
+    # Composed this way on purpose: the spelling this round swaps
+    # for _tpl is the join with ROOT as its first argument, and a
+    # helper that used it would call itself.
+    return alv_tree.last_of(os.path.join(*((ROOT,) + parts)))
+
 if not os.path.isdir(ROOT):
     sys.exit('! pages/templates not found - run from the repo root')
 
@@ -241,10 +259,18 @@ def state_after(p, n):
     is in .bak_sect3. Looking only at .bak_sect2 read the live file and
     failed on push 3's work, which is the same fault one round further on.
     """
+    # RT-1, 18 Oct 2026 - THE PAGE'S OWN PATH, AND ITS LAST TEXT AT THE END.
+    # This is alv_rounds.as_left_by's walk, hand-rolled, and it took
+    # the same two corrections in this round for the same reasons: `p`
+    # may arrive as a RETIRED page's last text, and <that text> plus
+    # .bak_sect2 has never existed; and the end of the walk means "no
+    # later push touched it, so the file itself is the answer", which
+    # for a retired page is the text beside the hole.
+    p = alv_tree.nominal(p)
     for suf in LATER_BACKUPS.get(n, ()):
         if os.path.isfile(p + suf):
             return read(p + suf)
-    return read(p)
+    return read(alv_tree.last_of(p))
 
 
 def after_push_one(p):
@@ -317,7 +343,7 @@ def fields(text):
     return out
 
 
-BASE = read(os.path.join(ROOT, 'base.html'))
+BASE = read(_tpl('base.html'))
 BASE_CSS = css_of(BASE)
 
 
@@ -400,7 +426,7 @@ print('2. EVERY HEADING THIS ROUND TOUCHED IS THE COMPONENT, WITH ONE ICON')
 print('=' * 74)
 
 for rel, n in sorted(CLAIM.items()):
-    p = os.path.join(ROOT, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip(rel, 'not in this checkout')
         continue
@@ -430,7 +456,7 @@ for rel, n in sorted(CLAIM.items()):
 # The old dialects are gone from the files this round touched - and ONLY
 # from those. A page this round never opened is not this round's failure.
 for rel in sorted(CLAIM):
-    p = os.path.join(ROOT, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         continue
     mk = markup_only(after_push_one(p))
@@ -454,8 +480,8 @@ print("""
 WORDING_EXCEPTIONS = {('preview_imported_recipe.html', 'Cooking Calculator')}
 
 for rel in sorted(CLAIM):
-    p = os.path.join(ROOT, rel)
-    bak = p + SUFFIX
+    p = _tpl(rel)
+    bak = alv_tree.bak_path(p, SUFFIX)
     if not os.path.isfile(bak):
         skip('%-38s wording unchanged' % rel,
              'no %s backup - it has been cleared' % SUFFIX)
@@ -494,8 +520,8 @@ print("""
 """)
 
 for rel in sorted(CLAIM):
-    p = os.path.join(ROOT, rel)
-    bak = p + SUFFIX
+    p = _tpl(rel)
+    bak = alv_tree.bak_path(p, SUFFIX)
     if not os.path.isfile(bak):
         skip('%-38s field order' % rel, 'no %s backup' % SUFFIX)
         continue
@@ -523,7 +549,7 @@ print("""
 """)
 
 for rel in ('notification_settings.html', 'personal_notification_settings.html'):
-    p = os.path.join(ROOT, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip(rel, 'not in this checkout')
         continue
@@ -568,7 +594,7 @@ print("""
 
 scoped = []
 for rel in sorted(CLAIM):
-    p = os.path.join(ROOT, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         continue
     text = read(p)
@@ -806,13 +832,13 @@ print('\n' + '=' * 74)
 print('9. PUSH 2 - EVERY SCREEN CARRIES ITS SECTIONS')
 print('=' * 74)
 
-ran2 = any(os.path.isfile(os.path.join(ROOT, r) + SUFFIX2) for r in CLAIM2)
+ran2 = any(os.path.isfile(_tpl(r) + SUFFIX2) for r in CLAIM2)
 if not ran2:
     skip('push 2', 'no %s backup - push 2 has not run on this tree'
          % SUFFIX2)
 else:
     for rel, (n, panelled) in sorted(CLAIM2.items()):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         if not os.path.isfile(p):
             skip(rel, 'not in this checkout')
             continue
@@ -847,7 +873,7 @@ print("""
 
 if ran2:
     for rel in sorted(CLAIM2):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         bak = p + SUFFIX2
         if not os.path.isfile(bak):
             skip('%-38s field order' % rel, 'no %s backup' % SUFFIX2)
@@ -892,7 +918,7 @@ print("""
 """)
 
 MODEL = 'customer_invoice_form.html'
-_p = os.path.join(ROOT, MODEL)
+_p = _tpl(MODEL)
 if not os.path.isfile(_p) or not ran2:
     skip('the model screen', 'push 2 has not run on this tree')
 else:
@@ -949,7 +975,7 @@ else:
         _four_labels = re.findall(
             r'<div class="col-md-3">\s*<div class="form-group">\s*'
             r'<label[^>]*>\s*<strong>([^<]+)</strong>',
-            markup_only(read(os.path.join(ROOT, 'properties_edit.html'))))
+            markup_only(read(_tpl('properties_edit.html'))))
         four = ''.join(
             '<div class="col-md-3"><div class="form-group"><label><strong>'
             '%s</strong></label><select class="form-control"><option>Yes'
@@ -1054,12 +1080,12 @@ print('\n' + '=' * 74)
 print('13. PUSH 3 - TITLES, AND NO PANEL INSIDE A MODAL')
 print('=' * 74)
 
-ran3 = any(os.path.isfile(os.path.join(ROOT, r) + SUFFIX3) for r in CLAIM3)
+ran3 = any(os.path.isfile(_tpl(r) + SUFFIX3) for r in CLAIM3)
 if not ran3:
     skip('push 3', 'no %s backup - push 3 has not run on this tree' % SUFFIX3)
 else:
     for rel, n in sorted(CLAIM3.items()):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         if not os.path.isfile(p):
             skip(rel, 'not in this checkout')
             continue
@@ -1074,7 +1100,7 @@ else:
         ok(not bad, '%-34s opens with exactly one icon' % rel, bad)
 
     for rel in MODALS:
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         bak = p + SUFFIX3
         if not os.path.isfile(bak):
             skip('%-34s gained no panel' % rel, 'no %s backup' % SUFFIX3)
@@ -1098,7 +1124,7 @@ if not ran3:
     skip('the Assets lifts', 'push 3 has not run on this tree')
 else:
     for rel in sorted(MOVES3):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         bak = p + SUFFIX3
         if not os.path.isfile(bak):
             skip('%-34s the lifts' % rel, 'no %s backup' % SUFFIX3)
@@ -1231,7 +1257,7 @@ ok(not inside, 'no section title is a grid cell or a flex item',
 ok(looked >= 10, 'CONTROL: and there are screens with titles to have got '
    'wrong', '%d screen(s) carry one' % looked)
 for rel_, why_ in sorted(FLEX_OK.items()):
-    p_ = os.path.join(ROOT, rel_)
+    p_ = _tpl(rel_)
     if os.path.isfile(p_):
         ok(True, '%-34s deliberately inside a flex container' % rel_, why_)
 
@@ -1272,12 +1298,12 @@ MOVES4 = {'projects/project_subtasks_add.html': ['task_description']}
 INSIDE_IF4 = {'projects/project_tasks_edit.html':
               [('Completion & Assignment', '{% if task.parent_task %}')]}
 
-ran4 = any(os.path.isfile(os.path.join(ROOT, r) + SUFFIX4) for r in CLAIM4)
+ran4 = any(os.path.isfile(_tpl(r) + SUFFIX4) for r in CLAIM4)
 if not ran4:
     skip('push 4', 'no %s backup - push 4 has not run on this tree' % SUFFIX4)
 else:
     for rel, titles in sorted(CLAIM4.items()):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         if not os.path.isfile(p):
             skip(rel, 'not in this checkout')
             continue
@@ -1339,7 +1365,7 @@ def row_groups4(text):
 
 if ran4:
     for rel in sorted(CLAIM4):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         bak = p + SUFFIX4
         if not os.path.isfile(bak):
             skip('%-38s field order' % rel, 'no %s backup' % SUFFIX4)
@@ -1413,7 +1439,7 @@ def label_text4(t):
 
 if ran4:
     for rel in sorted(CLAIM4):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         bak = p + SUFFIX4
         if not os.path.isfile(bak):
             skip('%-38s label icons' % rel, 'no %s backup' % SUFFIX4)
@@ -1439,7 +1465,7 @@ if ran4:
 # THE RULE, not the list: the standardised entry screens carry none either,
 # so "Projects joined the standard" is a statement about the standard.
 for rel in STANDARDISED:
-    p = os.path.join(ROOT, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip('%-38s label icons' % rel, 'not in this checkout')
         continue
@@ -1470,7 +1496,7 @@ print("""
 
 if ran4:
     for rel in sorted(CLAIM4):
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         if not os.path.isfile(p):
             continue
         mk = markup_only(read(p))

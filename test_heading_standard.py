@@ -79,7 +79,7 @@ import alv_tree
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 # The brand, which a heading must NOT carry. See scope guard #16 above.
 PREFIX = 'ALIVENTE ONLINE - '
 # The one page whose heading IS the brand: shown when the database is
@@ -372,10 +372,15 @@ check('every h5 descriptive line is sentence case, not capitals',
 # not a mode label. At three it counted as a label and failed for not
 # shouting. The shortest real label in the corpus is ADD EXPENSE at ten
 # letters, so six separates them with room either side.
+# EIGHT SINCE RT-1, 18 Oct 2026 - six was chosen for the
+# Shopping List subtitle and MN-1 reworded that subtitle from
+# "day" to "day meal", seven letters, which crossed it. The line
+# is still data with a unit on it; only its units multiplied.
+# ADD EXPENSE, the shortest real label in the corpus, is ten.
 _labels = [(r, t) for r, t in H4
-           if len([c for c in literal(t) if c.isalpha()]) >= 6]
+           if len([c for c in literal(t) if c.isalpha()]) >= 8]
 _records = [(r, t) for r, t in H4
-            if len([c for c in literal(t) if c.isalpha()]) < 6]
+            if len([c for c in literal(t) if c.isalpha()]) < 8]
 print('        of the h4s, %d are mode labels and %d name a record - the '
       'record\n        names take their case from the data.'
       % (len(_labels), len(_records)))
@@ -470,7 +475,7 @@ head('4. what the round left alone')
 # over: they are now checked for COMPLIANCE, and the fact that they were
 # deferred and then done is recorded rather than asserted forever.
 for rel in sorted(DEFERRED):
-    p = alv_tree.join(rel.replace('/', os.sep))
+    p = alv_tree.last_join(rel.replace('/', os.sep))
     if not os.path.exists(p):
         continue
     check('%-40s was deferred, and has since been done' % rel,

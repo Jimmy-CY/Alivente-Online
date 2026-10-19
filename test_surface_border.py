@@ -126,7 +126,10 @@ FALLBACK = 'var(--alv-disabled-bg, ' + OLD + ')'
 # border to one of these 43 pages. CC-1 adds four to
 # celebration_calendar: the key edge, the timeline date box, and the
 # hairlines between people and between day-sheet rows.
-N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 96
+# RT-1, 18 Oct 2026 - N_OTHER was 96. Three of those non-border uses were on
+# pages MN-1 retired. This is a count of the live corpus, so it falls
+# with the corpus; F2a still settled 96 of them.
+N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 93
 N_GAINED = 76   # DT-1, 16 Oct 2026 - six of the rules this round deletes carried the border token. base draws those borders now, so the count falls by exactly the copies that went.   # (was 82)
 
 passed = failed = skipped = 0
@@ -167,7 +170,7 @@ def read(p):
 def was(p):
     """The page as F2b found it - and SCOPED, because most pages have no
     backup of this round and never needed one."""
-    b = p + SUFFIX
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else read(p)
 
 
@@ -189,7 +192,8 @@ def as_f2b_left_it(p):
 
 
 def touched():
-    return [p for p in alv_tree.templates() if os.path.isfile(p + SUFFIX)]
+    # RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by().
+    return alv_tree.touched_by(SUFFIX)
 
 
 def srgb(c):
@@ -242,7 +246,7 @@ gained = sum(len(NEWB.findall(read(p))) - len(NEWB.findall(was(p)))
 ok(gained == N_GAINED,
    '  and exactly %d gained the border token' % N_GAINED, gained)
 
-b = alv_tree.join('base.html')
+b = alv_tree.last_join('base.html')
 ok(not os.path.isfile(b + SUFFIX), 'base.html was NOT touched')
 ok(len(BORDER.findall(read(b))) == N_FALLBACK,
    '  its %d border uses are all the var() fallback' % N_FALLBACK,
@@ -352,7 +356,7 @@ def body_of(t):
 
 
 boot = read(BOOT) if os.path.isfile(BOOT) else ''
-bcss = '\n'.join(styles_of(read(alv_tree.join('base.html'))))
+bcss = '\n'.join(styles_of(read(alv_tree.last_join('base.html'))))
 
 # EVERY PROPERTY, SORTED. Not a list I chose - E15 found out four times
 # over that every list is a subset of something, and that the browser's

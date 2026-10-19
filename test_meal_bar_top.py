@@ -100,13 +100,16 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 def code(p):
     return alv_tree.code_only(now(p))
 
-PAGE = alv_tree.path_of('create_meal_plan.html')
+PAGE = alv_tree.last_path('create_meal_plan.html')
 SRC = alv_tree.code_only(now(PAGE))
 OLD = alv_tree.code_only(was(PAGE)) if was(PAGE) else ''
 BAR = '<div class="page-action-buttons">'

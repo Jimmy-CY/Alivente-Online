@@ -92,7 +92,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def css_of(x):
@@ -113,9 +113,13 @@ def ratio(a, b):
     return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
 
 
-BASEP = alv_tree.path_of('base.html')
-TOUCHED = sorted(p for p in alv_tree.templates()
-                 if os.path.exists(p + SUFFIX))
+BASEP = alv_tree.last_path('base.html')
+# RT-1, 18 Oct 2026 - THE BACKUPS, NOT THE WALK. This list was
+# "the templates that are there now, with a backup of this round",
+# so a page the tree has since retired dropped out of the round's
+# own census and the count came back one short. The backup never
+# went anywhere; only the walk had forgotten the page.
+TOUCHED = alv_tree.touched_by(SUFFIX)
 
 print(__doc__.strip().splitlines()[0])
 

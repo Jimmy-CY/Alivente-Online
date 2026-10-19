@@ -96,7 +96,8 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path.
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def css_of(x):
@@ -159,7 +160,7 @@ for page in PAGES:
 head('2. every one is gone, and every rule survives')
 
 for page in PAGES:
-    p = alv_tree.path_of(page)
+    p = alv_tree.last_path(page)
     a, b = was(p), now(p)
     mine = [d for d in DROP if d[0] == page]
     # A RULE LEFT WITH NOTHING IN IT IS REMOVED, so "the rule survives"
@@ -205,7 +206,7 @@ if sync_playwright is None:
     print('  --    the renders  (playwright missing)')
 else:
     exe = '/opt/pw-browsers/chromium'
-    bcss = css_of(alv_tree.code_only(read(alv_tree.path_of('base.html'))))
+    bcss = css_of(alv_tree.code_only(read(alv_tree.last_path('base.html'))))
     with sync_playwright() as pw:
         br = pw.chromium.launch(**({'executable_path': exe}
                                    if os.path.exists(exe) else {}))
@@ -230,7 +231,7 @@ else:
 
         drifted, moved, painted = [], 0, 0
         for page in PAGES:
-            p = alv_tree.path_of(page)
+            p = alv_tree.last_path(page)
             a_css, b_css = css_of(was(p)), css_of(now(p))
             mine = [d for d in PLAIN if d[0] == page]
             klasses = {}
@@ -268,7 +269,7 @@ else:
 
 # THE TEN THAT CANNOT BE PAINTED, proved the other way.
 def tokens():
-    s = read(alv_tree.path_of('base.html'))
+    s = read(alv_tree.last_path('base.html'))
     out = {}
     for m in re.finditer(r'(--alv-[\w-]+)\s*:\s*([^;\n}]+)', s):
         out.setdefault(m.group(1), m.group(2).strip())
@@ -285,12 +286,12 @@ TOK = tokens()
 # round LIFTING a declaration into base was reported here as
 # drift - on pages that had just stopped declaring it. The same
 # one-sided comparison as test_dr2_spelling, two suites apart.
-bsrc = now(alv_tree.path_of('base.html'))
+bsrc = now(alv_tree.last_path('base.html'))
 spans = R.style_spans(bsrc)
 hd = decls(''.join('<style>%s</style>' % bsrc[a:b] for a, b in spans[:-1]))
 bad = []
 for page, sel, prop, _w in STATE:
-    d = decls(now(alv_tree.path_of(page)))
+    d = decls(now(alv_tree.last_path(page)))
     if prop in d.get(sel, {}):
         bad.append('%s %s %s' % (page, sel, prop))
 ok(not bad,
@@ -301,7 +302,7 @@ ok(not bad,
 head('4. the four kept, and what is left')
 
 for (page, sel, prop), why in sorted(KEPT.items()):
-    d = decls(now(alv_tree.path_of(page)))
+    d = decls(now(alv_tree.last_path(page)))
     ok(prop in d.get(sel, {}),
        '%-30s %-22s kept' % (page[:30], prop),
        'it was dropped, and it should not have been')
@@ -330,7 +331,7 @@ ok(sorted(left) == sorted(KEPT),
 # ==========================================================================
 head('5. the control')
 
-p = alv_tree.path_of('title_deeds_management.html')
+p = alv_tree.last_path('title_deeds_management.html')
 planted = now(p).replace('.mobile-action-btn {',
                          '.mobile-action-btn {color: #495057;', 1)
 ok(planted != now(p), 'the control could be planted')
@@ -351,7 +352,8 @@ ok(os.path.exists(os.path.join(ROOT, ME)), '%s is on disk' % ME)
 ok(SUFFIX in ROUNDS, '%s is registered in alv_rounds.ROUNDS' % SUFFIX,
    ROUNDS[-3:] if ROUNDS else 'ROUNDS is empty')
 ok(ME in ps1, '%s is in the push suites' % ME)
-nb = len([p for p in PAGES if os.path.exists(alv_tree.path_of(p) + SUFFIX)])
+nb = len([p for p in PAGES
+          if os.path.exists(alv_tree.bak_of(p, SUFFIX))])
 ok(nb == len(PAGES), '  all %d page(s) have a %s backup' % (nb, SUFFIX), nb)
 
 print('\n' + '-' * 68)

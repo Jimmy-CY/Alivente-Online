@@ -70,6 +70,25 @@ import sys
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
+
+# RT-1, 18 Oct 2026 - THE PAGE'S LAST TEXT, UNDER THIS SUITE'S OWN ROOT.
+#
+# This suite predates alv_tree and composes every path from one
+# directory. Widening it to the whole tree would change what it counts,
+# and that is not this round's business: it sits on the debt register
+# test_waiting_down keeps, and the round that widens it owns that
+# number. All this does is let a page the tree has RETIRED still be
+# read, from the text MN-1 left beside the hole it made.
+import alv_tree
+
+
+def _tpl(*parts):
+    # Composed this way on purpose: the literal spelling
+    # that this round swaps for _tpl is the one with T as its
+    # first argument, and a
+    # helper that used it would call itself.
+    return alv_tree.last_of(os.path.join(*((T,) + parts)))
+
 if not os.path.isdir(T):
     sys.exit('! pages/templates not found - run from the repo root')
 sys.path.insert(0, ROOT)
@@ -83,7 +102,7 @@ SUFFIX = '.bak_surfdeep'
 ME = 'test_surface_deep.py'
 PATCHER = 'apply_surface_deep.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = os.path.join(T, 'base.html')
+BASE = _tpl('base.html')
 
 LITERAL = '#e9ecef'
 TOKNAME = '--alv-surface-deep'
@@ -116,7 +135,7 @@ EXPECTED = {
     'unit_conversions_wizard.html': 1, 'user_add.html': 1, 'user_edit.html': 1,
     'view_meal_plan.html': 1, 'view_recipe.html': 2,
 }
-LEFT_BORDERS = 93
+LEFT_BORDERS = 89   # RT-1, 18 Oct 2026 - four of the kept border uses were on meal-plan screens MN-1 retired. F2a left 93 of them alone and F2b still decides the rest; this counts the live corpus.   # (was 93)
 LEFT_CUSTOM = 3          # base's own :root declaration + two --future-light
 NO_TOKEN_SCOPE = (
     'error_pages/connectivity_error.html',
@@ -185,7 +204,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    return read(alv_tree.bak_path(p, SUFFIX)) if os.path.isfile(alv_tree.bak_path(p, SUFFIX)) else now(p)
 
 
 def _sp(m):
@@ -334,7 +353,7 @@ ok(ROUNDS.index('.bak_accentink') < ROUNDS.index(SUFFIX)
 
 tb = ta = 0
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -354,8 +373,8 @@ ok(ta == 0, '  and none is left', ta)
 ok(len(EXPECTED) == 50, 'across 50 templates', len(EXPECTED))
 
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
-    if os.path.isfile(p + SUFFIX):
+    p = _tpl(rel)
+    if os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         ok(shape(was(p)) == shape(now(p)),
            '%-44s everything outside a CSS payload is byte-identical' % rel)
 
@@ -397,14 +416,14 @@ ok(_lt.get('--alv-line') == '#e3e8ea' and _lt.get('--alv-line-soft')
    'waited' % LITERAL,
    '%s / %s' % (_lt.get('--alv-line'), _lt.get('--alv-line-soft')))
 for rel in ('admin_apms.html', 'personal.html'):
-    p = os.path.join(T, rel)
+    p = _tpl(rel)
     if os.path.isfile(p):
         ok('--future-light: %s' % LITERAL in now(p),
            '%-44s still declares --future-light as the literal' % rel)
 ok(re.search(r'--future-light\s*:\s*' + re.escape(LITERAL),
-             now(os.path.join(T, 'admin_apms.html'))) is not None
+             now(_tpl('admin_apms.html'))) is not None
    and 'border-bottom-color: var(--future-light)'
-   in now(os.path.join(T, 'admin_apms.html')),
+   in now(_tpl('admin_apms.html')),
    '  and admin_apms spends it on a BORDER as well as a fill, which is '
    'exactly the question F2b has to answer')
 
@@ -426,8 +445,8 @@ if _live.get(TOKNAME, '').strip().lower() != LITERAL:
 
 trips = 0
 for rel in sorted(EXPECTED):
-    p = os.path.join(T, rel)
-    if not os.path.isfile(p + SUFFIX):
+    p = _tpl(rel)
+    if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         skip(rel, 'no backup - round not applied here')
         continue
     good, detail = round_trip(was(p), now(p), TABLE)
@@ -441,7 +460,7 @@ ok(trips == len(EXPECTED),
 head('4. TOKEN SCOPE - who can resolve a var(), and who cannot')
 # ==========================================================================
 for rel in NO_TOKEN_SCOPE:
-    p = os.path.join(T, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -450,9 +469,9 @@ for rel in NO_TOKEN_SCOPE:
        '%-44s holds no var(--alv-*) - nothing there resolves one' % rel)
     ok(not re.search(r'\{%\s*extends\b', t),
        '  and still does not extend base, so the exclusion still holds')
-    ok(not os.path.isfile(p + SUFFIX), '  and this round never touched it')
+    ok(not os.path.isfile(alv_tree.bak_path(p, SUFFIX)), '  and this round never touched it')
 
-frag = os.path.join(T, FRAGMENT)
+frag = _tpl(FRAGMENT)
 ok(not re.search(r'\{%\s*extends\b', now(frag)),
    '%s has no extends tag of its own' % FRAGMENT)
 inc, bad = 0, []
@@ -477,7 +496,7 @@ ok(not bad, '  every one of which extends base, so it always has tokens',
 # THE TWO INLINE STYLES WRITTEN INSIDE A SCRIPT. Markup, not a JS value - so
 # unlike F2a-2's Chart.js colour and anTok fallback, these DO resolve.
 for rel, n in sorted(SCRIPT_MARKUP.items()):
-    p = os.path.join(T, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip(rel, 'not on disk')
         continue
@@ -497,7 +516,7 @@ ok(sum(EXPECTED.values()) == 87, 'the survey total is 87',
    sum(EXPECTED.values()))
 ok(len(EXPECTED) == 50, 'across 50 files', len(EXPECTED))
 
-_p = os.path.join(T, 'recipe_management.html')
+_p = _tpl('recipe_management.html')
 if os.path.isfile(_p + SUFFIX):
     _a = was(_p)
     ok(round_trip(_a, LIT.sub('#ff0000', _a), TABLE)[0] is False,
@@ -539,7 +558,7 @@ ok(len(STYLE.findall(HTML_C.sub(_sp, CSS_C.sub(_sp, _trap)))) == 0,
    'accept=image/* attribute - the bug, reproduced')
 ok(buckets(_trap)[0] == 1, '  and THIS suite\'s order still finds the rule')
 for rel in ('passport_management.html', 'preview_imported_recipe.html'):
-    p = os.path.join(T, rel)
+    p = _tpl(rel)
     if os.path.isfile(p):
         mine = len(css_of(now(p)))
         house = len('\n'.join(STYLE.findall(
@@ -550,7 +569,7 @@ for rel in ('passport_management.html', 'preview_imported_recipe.html'):
 
 # A REVERT MUST FAIL A CHECK, NOT CRASH (lesson 55).
 try:
-    _src = os.path.join(T, 'recipe_management.html')
+    _src = _tpl('recipe_management.html')
     if os.path.isfile(_src + SUFFIX):
         _dst = os.path.join(SCRATCH, 'reverted.html')
         _shutil.copyfile(_src + SUFFIX, _dst)

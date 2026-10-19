@@ -103,7 +103,7 @@ PS1 = 'Push-PendingChanges.ps1'
 EXE = '/opt/pw-browsers/chromium'
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
-BASE = alv_tree.path_of('base.html')
+BASE = alv_tree.last_path('base.html')
 
 # The four pages this round touched, and what each one's first bar variant
 # read before and after. Pinned, because a round that cannot say what it
@@ -172,7 +172,10 @@ def now(p):
 def was(p):
     """BEFORE this round - the backup, read directly. as_left_by() returns
     the file as the round LEFT it, which is the opposite of a control."""
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46
@@ -414,7 +417,7 @@ ok(sorted(other) == KNOWN,
 head('3. CONTROL: THREE OF THEM WERE NOT, AND ONE CONTROL HAD NO ROLE')
 # ==========================================================================
 for label, before, after in MOVED:
-    p = alv_tree.path_of(label)
+    p = alv_tree.last_path(label)
     w = was(p)
     if not w:
         skip('%s control' % label, 'no %s backup' % SUFFIX)
@@ -433,7 +436,7 @@ for label, before, after in MOVED:
        '         and %d of those really did breach the rule'
        % len([s for s in vw if not HOUSE.match(s)]))
 
-_tp = alv_tree.path_of(TOGGLE)
+_tp = alv_tree.last_path(TOGGLE)
 _tw = was(_tp)
 if _tw:
     wb = bars(code_only(_tw))
@@ -555,7 +558,7 @@ if HAVE_PW and os.path.isfile(BOOT):
             return pg.evaluate(LOOK)
 
         for label, before, after in MOVED:
-            p = alv_tree.path_of(label)
+            p = alv_tree.last_path(label)
             for w, where in ((1280, 'desktop'), (375, 'phone')):
                 r = draw(now(p), 'a_%s_%d.html' % (label[:9], w), w)
                 if not r:
@@ -586,7 +589,7 @@ if HAVE_PW and os.path.isfile(BOOT):
         # sides. btn-info is Bootstrap teal; action-secondary is the house
         # secondary. If these come back equal the edit did nothing and the
         # round should say so.
-        p = alv_tree.path_of(TOGGLE)
+        p = alv_tree.last_path(TOGGLE)
         r_now = draw(now(p), 'tog_now.html', 1280)
         r_was = draw(was(p), 'tog_was.html', 1280) if was(p) else None
         if r_now and r_was:
@@ -609,7 +612,7 @@ if HAVE_PW and os.path.isfile(BOOT):
         # row-reverse, and if one ever does, claim 1 stops meaning anything.
         rev = []
         for label, _b, _a in MOVED:
-            r = draw(now(alv_tree.path_of(label)), 'f_%s.html' % label[:9],
+            r = draw(now(alv_tree.last_path(label)), 'f_%s.html' % label[:9],
                      1280)
             if r and r['flow'] != 'row':
                 rev.append('%s %s' % (label, r['flow']))
@@ -627,7 +630,7 @@ else:
 head('5. AND NOTHING ELSE MOVED')
 # ==========================================================================
 for label, _b, _a in MOVED + ((TOGGLE, '', ''),):
-    p = alv_tree.path_of(label)
+    p = alv_tree.last_path(label)
     w = was(p)
     if not w:
         skip('%s scope' % label, 'no %s backup' % SUFFIX)
@@ -666,7 +669,7 @@ for label, _b, _a in MOVED + ((TOGGLE, '', ''),):
     ok(re.sub(r'\s+', ' ', out_n).strip() == re.sub(r'\s+', ' ', out_w).strip(),
        '  and outside the bar the page is unchanged')
 
-ok(not [i for i, line in enumerate(now(alv_tree.path_of(MOVED[0][0]))
+ok(not [i for i, line in enumerate(now(alv_tree.last_path(MOVED[0][0]))
                                    .split('\n'), 1)
         if '{#' in line and '#}' not in line],
    'no Django comment spans lines - the lexer has no DOTALL')

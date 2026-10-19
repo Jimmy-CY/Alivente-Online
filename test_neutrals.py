@@ -139,7 +139,8 @@ import alv_cssrules as R                                   # noqa: E402
 import alv_rounds as RD                                    # noqa: E402
 import apply_neutrals as N                                 # noqa: E402
 
-TOUCHED = sorted(p for p in T.templates() if os.path.isfile(p + SUFFIX))
+# RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by().
+TOUCHED = T.touched_by(SUFFIX)
 
 
 def left(p):
@@ -170,8 +171,8 @@ ok(not [p for p in TOUCHED if T.rel(p) in stand],
    'and not one standalone template - they have no :root to read')
 in_css = in_attr = in_js = 0
 for p in TOUCHED:
-    was, now = T.code_only(read(p + SUFFIX)), T.code_only(left(p))
-    wjs, njs = T.code_only_js(read(p + SUFFIX)), T.code_only_js(left(p))
+    was, now = T.code_only(read(T.bak_path(p, SUFFIX))), T.code_only(left(p))
+    wjs, njs = T.code_only_js(read(T.bak_path(p, SUFFIX))), T.code_only_js(left(p))
     in_css += sum(now[a:b].count('var(--alv-')
                   for a, b in R.style_spans(now)) - \
         sum(was[a:b].count('var(--alv-') for a, b in R.style_spans(was))
@@ -239,7 +240,7 @@ ok(white_ink,
 # #dee2e6 as INK must NOT have been converted
 leftover = []
 for p in TOUCHED + [q for q in T.templates() if q not in TOUCHED]:
-    code = T.code_only(read(p))
+    code = T.code_only(read(T.last_of(p)))
     for a, b in R.style_spans(code):
         for sel, ba, bb, _r, _s in R.rule_spans(code, a, b):
             d = R.decl_span(code, ba, bb, 'color')
@@ -257,7 +258,7 @@ head('4. THE PAIR GATE - AND IT CATCHES B-4 EXACT REGRESSION')
 worse = []
 pairs = 0
 for p in TOUCHED:
-    was = N.pair_table(T.code_only(read(p + SUFFIX)))
+    was = N.pair_table(T.code_only(read(T.bak_path(p, SUFFIX))))
     now = N.pair_table(T.code_only(left(p)))
     for sel, (bg, ink) in now.items():
         if sel not in was:
@@ -321,7 +322,7 @@ head('5b. EVERY TOKEN IT WROTE EXISTS - AND RESOLVES WHERE IT WROTE IT')
 have = N.base_tokens()
 wrote = set()
 for p in TOUCHED:
-    was, now = read(p + SUFFIX), left(p)
+    was, now = read(T.bak_path(p, SUFFIX)), left(p)
     for t in re.findall(r'var\((--alv-[\w-]+)\)', now):
         if now.count('var(%s)' % t) > was.count('var(%s)' % t):
             wrote.add(t)
@@ -359,7 +360,7 @@ ok(not colourish,
 head('6. THE BLACK - S-a SETTLED IT, SO THIS ROUND LEAVES IT')
 # ==========================================================================
 for p in TOUCHED:
-    a = T.code_only(read(p + SUFFIX)).lower()
+    a = T.code_only(read(T.bak_path(p, SUFFIX))).lower()
     b = T.code_only(left(p)).lower()
     if a.count('#000') != b.count('#000'):
         ok(False, '%s lost a #000' % T.rel(p),
@@ -417,9 +418,16 @@ cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
 # are rewritten rather than relaxed.
 # PH-2, 14 Oct 2026 - two more of the six move, and down. The pantry
 # chips were the last inline colour literal on their page.
-for want in ('MARKUP_STYLE = 87', 'SCRIPT = 148', 'PAGES = 35',
-             "'style-attr': 22", "'style-prop': 8",
-             'safe == 30'):
+# RT-1, 18 Oct 2026 - AND THE FOUR THAT MOVED WITH THE TREE. This check
+# quotes test_cssrules_outside's own constants, which is the right
+# way to pin a sibling's census - a pin that only ever loosens
+# asserts nothing. Four of the six fell when four meal-plan screens
+# left the tree, and the arithmetic below is the reason they are
+# rewritten rather than relaxed: 118 = 27 + 91 still holds, because
+# every literal that went was a var-safe one.
+for want in ('MARKUP_STYLE = 86', 'SCRIPT = 146', 'PAGES = 33',
+             "'style-attr': 20", "'style-prop': 8",
+             'safe == 28'):
     ok(want in cr, '  CR-1 census now reads %s' % want)
 ok("'canvas': 27" in cr and "'unknown': 91" in cr,
    '  and canvas 27 / unknown 91 did NOT move - 201 - 83 = 118 = 27 + 91, '

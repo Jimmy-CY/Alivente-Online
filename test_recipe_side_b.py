@@ -131,7 +131,7 @@ BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 N_EDITS, N_PAGES = 31, 13
 N_DRIFT, N_DECIDED = 18, 13
-GATE_WAS, GATE_NOW = 117, 142
+GATE_WAS, GATE_NOW = 117, 139   # RT-1, 18 Oct 2026 - the wide census is four meal-plan screens smaller and one planner larger. The narrow half does not move.   # (GATE_NOW was 142)
 
 # The three bar buttons that are not their page's verb, and the eleven
 # bars the rule I proposed would have touched.
@@ -142,7 +142,13 @@ N_NAMED = 3
 # ship as .action-primary - a shipped decision each. The survey's
 # conditional-label numbers (10 and 9) are 9 and 7 when the test is
 # written once and asked of both template roots.
-N_NAV_RULE_HITS, N_NAV_RULE_PRIMARY = 12, 10
+# RT-1, 18 Oct 2026 - 13 AND 11. This is the rule RS-1b REFUSED, measured
+# against the live corpus so that the refusal keeps being justified.
+# MN-1's planner has a Shopping List link in its action bar and it
+# ships as .action-primary, so the rule would now reverse eleven
+# shipped decisions instead of ten. The refusal gets stronger, not
+# weaker, which is why this count is read and not frozen.
+N_NAV_RULE_HITS, N_NAV_RULE_PRIMARY = 13, 11   # (was 12, 10)
 N_COND_LABEL, N_COND_LABEL_PRIMARY = 9, 7
 
 # Buttons the scan cannot see at all: no Bootstrap colour it LISTS, no
@@ -191,7 +197,9 @@ def was(p):
     """The file as THIS round found it. A page RS-1b did not touch has no
     backup and is its own before, which is what makes the control in
     section 5 mean anything."""
-    b = p + SUFFIX
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path: a retired page's
+    # backups stay where they were, beside the hole it left.
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else read(p)
 
 
@@ -280,21 +288,21 @@ ok(len({e[0] for e in ap.EDITS}) == N_PAGES,
    '  across %d page(s)' % N_PAGES, len({e[0] for e in ap.EDITS}))
 
 missing = [e[0] for e in ap.EDITS
-           if not os.path.isfile(alv_tree.path_of(e[0]) + SUFFIX)]
+           if not os.path.isfile(alv_tree.bak_of(e[0], SUFFIX))]
 ok(not missing, '  and every one of those pages has a backup of this round',
    sorted(set(missing)))
 
 gone = [(p, o[:60]) for p, o, _n, _w in ap.EDITS
-        if o in read(alv_tree.path_of(p))]
+        if o in read(alv_tree.last_path(p))]
 ok(not gone, 'not one of the %d old open tags survives in its page'
    % N_EDITS, gone)
 
 here = [(p, n[:60]) for p, _o, n, _w in ap.EDITS
-        if n not in read(alv_tree.path_of(p))]
+        if n not in read(alv_tree.last_path(p))]
 ok(not here, '  and every one of the %d new ones is there' % N_EDITS, here)
 
 back = [(p, o[:60]) for p, o, _n, _w in ap.EDITS
-        if o not in was(alv_tree.path_of(p))]
+        if o not in was(alv_tree.last_path(p))]
 ok(not back, '  and the backups hold all %d of the old ones' % N_EDITS, back)
 
 # EVERY ONE OF THE 13 DECISIONS CARRIES A BOOTSTRAP COLOUR BEFORE AND A
@@ -358,7 +366,7 @@ def real_items(items):
 # I had tested it on four examples.
 nav_hits = []
 for r in BOTH:
-    for _n, items in bars_of(r, read(alv_tree.path_of(r))):
+    for _n, items in bars_of(r, read(alv_tree.last_path(r))):
         real = real_items(items)
         if len(real) != 1:
             continue
@@ -398,7 +406,7 @@ ok(sorted(l for r, l, c in nav_hits if 'action-primary' not in c)
 # time anyone sees a label.
 cond = []
 for r in BOTH:
-    for _n, items in bars_of(r, read(alv_tree.path_of(r))):
+    for _n, items in bars_of(r, read(alv_tree.last_path(r))):
         for lab, cls, _tag, inner in real_items(items):
             if re.search(r'\{%\s*if\b', inner):
                 cond.append((r, lab, cls))
@@ -456,7 +464,7 @@ ok(len(layout_left) == 5,
 # classes today, so they do not.
 _resets = []
 for r in ('ingredient_families.html', 'pantry_staples.html'):
-    for h in scan_of(r, read(alv_tree.path_of(r))):
+    for h in scan_of(r, read(alv_tree.last_path(r))):
         if h[1].strip().lower() == 'reset':
             _resets.append((r, h[0], h[3]))
 ok(len(_resets) == 2
@@ -474,7 +482,7 @@ for rel, label, keep in (('pantry_staples.html', 'Families',
                           'action-secondary'),
                          ('celebration_calendar.html', 'Calendar View',
                           'action-secondary')):
-    hits = [h for h in scan_of(rel, read(alv_tree.path_of(rel)))
+    hits = [h for h in scan_of(rel, read(alv_tree.last_path(rel)))
             if label.lower() in h[1].lower()]
     ok(len(hits) == 1 and keep in hits[0][3] and not sb.drifting(hits[0]),
        '%-28s %-16s stays a %s and is not drift'
@@ -488,7 +496,7 @@ for rel, label, keep in (('pantry_staples.html', 'Families',
 # the house already ships one of them.
 foot_links = []
 for r in pages():
-    text = read(alv_tree.path_of(r))
+    text = read(alv_tree.last_path(r))
     m = sb.markup_of(text)
     for w, a, z in sb.footers(m):
         items, tags = [], []
@@ -510,7 +518,7 @@ ok(sorted(r for r, _l in foot_links)
    '  and they are properties_edit (shipped as action-primary since '
    'the footer round) and this round\'s Open full recipe', foot_links)
 ok('class="btn action-primary"' in read(
-    alv_tree.path_of('properties_edit.html')),
+    alv_tree.last_path('properties_edit.html')),
    '  CONTROL: properties_edit really does ship a solid primary there - '
    'the precedent is on disk, not in my memory')
 
@@ -534,7 +542,7 @@ ok('walks every\n# template' not in ps1,
 # THE GATE ACTUALLY PASSES, run here rather than asserted about.
 drift, undecided = 0, 0
 for r in pages():
-    for h in scan_of(r, read(alv_tree.path_of(r))):
+    for h in scan_of(r, read(alv_tree.last_path(r))):
         if h[0] == 'UNCLASSIFIED':
             undecided += 1
         elif sb.drifting(h):
@@ -548,7 +556,7 @@ ok(drift == 0 and undecided == 0,
 # --strict be a gate rather than a perpetual to-do list.
 moved = []
 for r in pages():
-    for h in scan_of(r, read(alv_tree.path_of(r))):
+    for h in scan_of(r, read(alv_tree.last_path(r))):
         if h[7] or h[0] == 'UNCLASSIFIED':
             continue
         if h[3].split() != h[4].split():
@@ -560,7 +568,7 @@ ok(not moved, '  and the classifier is a fixed point on the swept tree',
 inv = collections.Counter()
 outline_light = []
 for r in pages():
-    m = sb.markup_of(read(alv_tree.path_of(r)))
+    m = sb.markup_of(read(alv_tree.last_path(r)))
     for b in sb.BTN.finditer(m):
         names = b.group(2).split()
         if any(c in ('btn-outline-light', 'btn-outline-dark') for c in names):
@@ -625,11 +633,11 @@ swept = [r for r in pages('other')]
 ok(len(swept) == GATE_WAS, 'the property side is %d page(s)' % GATE_WAS,
    len(swept))
 touched = [r for r in swept
-           if os.path.isfile(alv_tree.path_of(r) + SUFFIX)]
+           if os.path.isfile(alv_tree.bak_of(r, SUFFIX))]
 ok(not touched, '  and not one of them has a backup of this round',
    touched)
 diff = [r for r in swept
-        if read(alv_tree.path_of(r)) != was(alv_tree.path_of(r))]
+        if read(alv_tree.last_path(r)) != was(alv_tree.last_path(r))]
 ok(not diff, '  and not one of them changed by a byte', diff)
 
 # RS-1a'S SUITE, REPAIRED - the seventh and eighth occurrences.
@@ -727,7 +735,7 @@ if sync_playwright is None or not os.path.isfile(BOOT):
     skip('section 9', 'playwright or the Bootstrap fixture is missing')
 else:
     boot = read(BOOT)
-    base = css_of(read(alv_tree.path_of('base.html')))
+    base = css_of(read(alv_tree.last_path('base.html')))
     n = [0]
 
     def look(br, cls, w):

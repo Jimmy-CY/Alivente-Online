@@ -97,7 +97,7 @@ SUFFIX = '.bak_backlabel'
 ME = 'test_back_label.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 FIXED = 'resolved_issues_report.html'     # the page that SHOWED the word
 LANDSCAPE = ('finance_expense_types.html', 'finance_revenue_types.html')
 
@@ -152,15 +152,20 @@ def now(p):
     Third time: E-1b made the identical repair to test_contrast
     and wrote the rule down while doing it.
     """
+    # RT-1, 18 Oct 2026 - a retired page stands in for itself.
+    p = alv_tree.last_of(p)
     if not os.path.isfile(p):
         return ''
-    if not os.path.isfile(p + SUFFIX):
+    if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         return read(p)
     return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    # RT-1, 18 Oct 2026 - a retired page's backups sit beside the
+    # hole it left, not beside its last text. See alv_tree.bak_path.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else now(p)
 
 
 def styles_of(t):
@@ -239,17 +244,19 @@ ok(_m is not None and _m.start() < B_NOW.find('ALV BACK LABEL v1'),
 head('2. NOT ONE PAGE CARRIES A COPY')
 # ==========================================================================
 left, had, personal_was, orient_was = [], [], [], []
-for p in templates():
+for p in templates() + [q for q in alv_tree.touched_by(SUFFIX)
+                        if not os.path.isfile(q)]:
     rel = alv_tree.rel(p)
     if rel == 'base.html':
         continue
-    a = nocomment(css_of(now(p)))
-    if PAGE_RULE.search(a):
-        left.append(rel)
+    if os.path.isfile(p):
+        a = nocomment(css_of(now(p)))
+        if PAGE_RULE.search(a):
+            left.append(rel)
     b_src = was(p)
     b = nocomment(css_of(b_src))
     m = PAGE_RULE.search(b)
-    if m and os.path.isfile(p + SUFFIX):
+    if m and os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         had.append(rel)
         j = b.find(m.group(0))
         opens = [x.group(0) for x in re.finditer(r'@media[^{]*\{', b[:j])]
@@ -264,9 +271,7 @@ ok(len(orient_was) == 2 and sorted(orient_was) == sorted(LANDSCAPE),
 # Every body was the same declaration. If one had said something else,
 # deleting it would have lost that something.
 bodies = set()
-for p in templates():
-    if not os.path.isfile(p + SUFFIX):
-        continue
+for p in alv_tree.touched_by(SUFFIX):
     for m in PAGE_RULE.finditer(nocomment(css_of(was(p)))):
         bodies.add(' '.join(m.group(0).split('{')[1].split('}')[0].split()))
 ok(bodies == {'display: none;'},
@@ -277,9 +282,7 @@ ok(bodies == {'display: none;'},
 head('3. NOT ONE ATTRIBUTE OF MARKUP MOVED')
 # ==========================================================================
 moved, spans_now, spans_was = [], 0, 0
-for p in templates():
-    if not os.path.isfile(p + SUFFIX):
-        continue
+for p in alv_tree.touched_by(SUFFIX):
     rel = alv_tree.rel(p)
     a, b = now(p), was(p)
     ma = re.sub(r'<style[^>]*>.*?</style>', '', a, flags=re.S | re.I)
@@ -437,8 +440,8 @@ else:
            'CONTROL: and sideways too, %s was among the %d showing it '
            'before' % (FIXED, len(land_before)), land_before)
         for name in LANDSCAPE:
-            p = alv_tree.join(name)
-            if not os.path.isfile(p + SUFFIX):
+            p = alv_tree.last_join(name)
+            if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
                 skip('%s sideways' % name, 'no %s backup' % SUFFIX)
                 continue
             short = name.replace('.html', '')
@@ -466,7 +469,7 @@ for p in templates():
     # base is the one file this round ADDS to, and it has its own checks
     # in section 1. Counting its new block as "a comment that went with
     # the rule" is the scope guard misreading the round's own work.
-    if not os.path.isfile(p + SUFFIX) or os.path.basename(p) == 'base.html':
+    if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)) or os.path.basename(p) == 'base.html':
         continue
     rel = alv_tree.rel(p)
     a, b = now(p), was(p)

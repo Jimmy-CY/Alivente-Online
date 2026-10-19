@@ -115,7 +115,7 @@ SUFFIX = '.bak_morecss'
 ME = 'test_more_css.py'
 PATCHER = 'apply_more_css.py'
 PS1 = 'Push-PendingChanges.ps1'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
@@ -167,7 +167,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    # RT-1, 18 Oct 2026 - a retired page's backups sit beside the
+    # hole it left, not beside its last text. See alv_tree.bak_path.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else now(p)
 
 
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style\s*>', re.S | re.I)
@@ -244,9 +247,13 @@ print('=' * 74)
 print("%s - H9, THE MORE MENU'S CSS GOES HOME" % ME)
 print('=' * 74)
 
-mine = [(rel, p) for rel, p in walked()
-        if rel != 'base.html' and rel not in SKIP
-        and os.path.isfile(p + SUFFIX)]
+# RT-1, 18 Oct 2026 - the backups, not the walk. See
+# touched_by(): this is H9's census of the pages H9 changed, and a
+# page the tree has since retired is still one of them.
+mine = [(alv_tree.rel(p).replace(os.sep, '/'), p)
+        for p in alv_tree.touched_by(SUFFIX)
+        if alv_tree.rel(p).replace(os.sep, '/') != 'base.html'
+        and alv_tree.rel(p).replace(os.sep, '/') not in SKIP]
 
 # ==========================================================================
 head('1. THE CENSUS')
@@ -255,8 +262,8 @@ ok(len(mine) == 24, '24 pages gave up their copy', len(mine))
 gone = sum(len(was(p)) - len(now(p)) for _, p in mine)
 ok(gone > 21000, '  %d characters of duplicated CSS removed' % gone, gone)
 for rel, why in sorted(SKIP.items()):
-    ok(os.path.isfile(alv_tree.join(rel))
-       and not os.path.isfile(alv_tree.join(rel) + SUFFIX),
+    ok(os.path.isfile(alv_tree.last_join(rel))
+       and not os.path.isfile(alv_tree.last_join(rel) + SUFFIX),
        '  %s was not touched - %s' % (rel.replace('.html', ''), why))
 ok(any(rel.startswith('projects/') for rel, _ in mine),
    '  and the census WALKED - projects/ is in it')
@@ -272,7 +279,7 @@ ok(all(more_rules(was(p)) for _, p in mine),
    '  CONTROL: every one of them did before this round')
 
 # asset_detail is the proof that specificity, not order, was deciding.
-ad = alv_tree.join('asset_detail.html')
+ad = alv_tree.last_join('asset_detail.html')
 ok(len(more_rules(was(ad))) >= 1 and len(was(ad)) - len(now(ad)) > 100,
    'asset_detail had a local copy at all', len(more_rules(was(ad))))
 bc = css_of(now(BASE))
@@ -320,8 +327,8 @@ ok(not any('var(' in c for c in found.values()),
 # None of those menus holds a destructive action, so none of the colours
 # was carrying a meaning that is now lost.
 for rel in found:
-    mk = re.sub(r'<[^>]*>', ' ', was(alv_tree.join(*rel.split('/'))))
-    ok('action-more-item-danger' not in was(alv_tree.join(*rel.split('/'))),
+    mk = re.sub(r'<[^>]*>', ' ', was(alv_tree.last_join(*rel.split('/'))))
+    ok('action-more-item-danger' not in was(alv_tree.last_join(*rel.split('/'))),
        '  %s holds no destructive item, so its colour meant nothing'
        % rel.replace('.html', ''))
 ok(any(bare(m.group(1)) == '.action-more-item i' for m in RULE.finditer(bc)),
@@ -433,8 +440,10 @@ def drive(pairs, width, strip, tag):
 if not HAVE or not binder:
     skip('the rendered probe', 'no browser, or no binder in base')
 else:
-    res = drive([(rel, now(p)) for rel, p in mine], 390, False, 'after')
-    for rel, _ in mine:
+    # RT-1, 18 Oct 2026 - the live ones. See above.
+    shown = [(rel, p) for rel, p in mine if os.path.isfile(p)]
+    res = drive([(rel, now(p)) for rel, p in shown], 390, False, 'after')
+    for rel, _ in shown:
         r = res[rel]
         if r[0] != 'driven':
             ok(False, '%-38s opens and closes' % rel.replace('.html', ''),
@@ -446,11 +455,11 @@ else:
            '%-38s closed - open (%dpx) - closed'
            % (rel.replace('.html', ''), s1['mw']),
            '%s / %s / %s' % (s0, s1, s2))
-    widths = {res[rel][2]['mw'] for rel, _ in mine
+    widths = {res[rel][2]['mw'] for rel, _ in shown
               if res[rel][0] == 'driven'}
     ok(widths == {HOUSE_MENU_WIDTH},
-       '  and all twenty-four are the SAME box now - %s' % sorted(widths),
-       sorted(widths))
+       '  and all %d still served are the SAME box now - %s'
+       % (len(shown), sorted(widths)), sorted(widths))
 
 # ==========================================================================
 head('6. THE TWO EXCLUSIONS, PROVED BY STRIPPING THEM IN THE FIXTURE')
@@ -458,8 +467,8 @@ head('6. THE TWO EXCLUSIONS, PROVED BY STRIPPING THEM IN THE FIXTURE')
 if not HAVE or not binder:
     skip('the rendered exclusions', 'no browser')
 else:
-    dash = alv_tree.join('property_management_dashboard.html')
-    pl = alv_tree.join('finance_pl_act.html')
+    dash = alv_tree.last_join('property_management_dashboard.html')
+    pl = alv_tree.last_join('finance_pl_act.html')
     for width, label in ((390, 'a phone'), (1280, 'a desktop')):
         keep = drive([('d', now(dash))], width, False, 'dash_k%d' % width)
         cut = drive([('d', now(dash))], width, True, 'dash_c%d' % width)
@@ -503,7 +512,7 @@ ok(len(strip_more('.a{x:1}.action-more-item{y:2}.b{z:3}')) ==
    len('.a{x:1}.b{z:3}'),
    '  the fixture stripper removes only the rule it is aiming at')
 
-ok(more_rules(was(alv_tree.join('view_recipe.html'))),
+ok(more_rules(was(alv_tree.last_join('view_recipe.html'))),
    'reverting a page puts its copy back, so section 2 would FAIL')
 ok('.action-more-menu[hidden]' not in css_of(was(BASE)),
    '  and reverting base takes the hide rule with it, so section 3 would '

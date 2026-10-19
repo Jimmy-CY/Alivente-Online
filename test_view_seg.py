@@ -113,7 +113,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46
@@ -127,14 +130,14 @@ def css_of(t):
     return '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', t, re.S))
 
 
-BASEP = alv_tree.path_of('base.html')
+BASEP = alv_tree.last_path('base.html')
 BASE = read(BASEP)
 BCSS = css_of(BASE)
 FIX = read(FIXTURE) if os.path.exists(FIXTURE) else ''
 
-NOW = {p: now(alv_tree.path_of(p)) for p in PAGES}
+NOW = {p: now(alv_tree.last_path(p)) for p in PAGES}
 CODE = {p: code_only(NOW[p]) for p in PAGES}
-WAS = {p: was(alv_tree.path_of(p)) for p in PAGES}
+WAS = {p: was(alv_tree.last_path(p)) for p in PAGES}
 
 print('=' * 74)
 print('%s - MC-1, THE SWITCH BECOMES A SEGMENT' % ME)

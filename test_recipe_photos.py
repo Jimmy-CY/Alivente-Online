@@ -170,7 +170,9 @@ def raw(p):
 
 
 def was(p):
-    b = p + SUFFIX
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path: a retired page's
+    # backups stay where they were, beside the hole it left.
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else read(p)
 
 
@@ -338,7 +340,15 @@ SER = ((os.path.join('pages', 'views', 'recipes', 'meal_planning.py'), 4),
        (os.path.join('pages', 'views', 'recipes', 'recipe_crud.py'), 4))
 n_ser = 0
 for rel, n in SER:
-    t = read(os.path.join(ROOT, rel))
+    # RT-1, 18 Oct 2026 - AS PX-1 LEFT THE FILE, not as the tree has it now.
+    # MN-1 rewrote meal_planning.py and its four serialisers went with
+    # the view that had them: the planner renders
+    # entry.recipe.photo_url in the template instead, which is the
+    # property PX-1 built and one fewer place to get it wrong. PX-1 put
+    # four there and that does not stop being true, so the number stays
+    # and the READ moves. left() walks ROUNDS to the first later
+    # round's backup, which is this file as PX-1 left it.
+    t = left(rel)
     got = len(re.findall(r"'(?:recipe_image|image)': \w+\.photo_url,", t))
     old = len(re.findall(r"\.recipe_image\.url if \w+\.recipe_image", t))
     ok(got == n and old == 0,
@@ -346,13 +356,28 @@ for rel, n in SER:
        % (os.path.basename(rel), n), '%d and %d' % (got, old))
     n_ser += got
 ok(n_ser == N_SERIALISERS, 'all %d serialiser(s)' % N_SERIALISERS, n_ser)
+# AND THE PRESENT TENSE GETS A CHECK OF ITS OWN, RT-1, 18 Oct 2026 - 
+# because the one above is historical now. The half that matters going
+# forward - that no view reaches for recipe_image.url itself - is asked
+# of every live view file, which is wider than the two SER names.
+_old_live = []
+for _d, _ds, _fs in os.walk(os.path.join(ROOT, 'pages', 'views')):
+    for _f in sorted(_fs):
+        if not _f.endswith('.py'):
+            continue
+        if re.search(r'\.recipe_image\.url if \w+\.recipe_image',
+                     read(os.path.join(_d, _f))):
+            _old_live.append(_f)
+ok(not _old_live,
+   '  and not one live view reaches for recipe_image.url itself - asked '
+   'of every file under pages/views, not just the two above', _old_live)
 
 TPL = (('meal_plan_calendar.html', 1), ('recipe_management.html', 2),
        ('recipe_pdf.html', 1), ('view_meal_plan.html', 1),
        ('view_recipe.html', 1), ('wcim_recipe_quick_view.html', 1))
 n_tpl = n_old = 0
 for page, n in TPL:
-    t = read(alv_tree.path_of(page))
+    t = read(alv_tree.last_path(page))
     got = len(re.findall(r'\{\{\s*[\w.]*photo_url\s*\}\}', t))
     old = len(re.findall(r'\{\{\s*[\w.]*recipe_image\.url\s*\}\}', t))
     n_tpl += got
@@ -369,7 +394,7 @@ ok(n_tpl == N_TEMPLATES and n_old == 0,
 js = 0
 for page in ('create_meal_plan.html', 'recipe_management.html',
              'meal_plan_calendar.html'):
-    t = read(alv_tree.path_of(page))
+    t = read(alv_tree.last_path(page))
     # MP-1, 18 Oct 2026 - ANYTHING INSIDE THE BRACES, not a bare
     # dotted name. B10 wrapped one of these six in esc(), because the
     # same page inserts recipe text with innerHTML, and this regex went
@@ -459,7 +484,10 @@ for d, _ds, fs in os.walk(ROOT):
         if not f.endswith(SUFFIX):
             continue
         now_p = os.path.join(d, f)[:-len(SUFFIX)]
-        a, b = raw(now_p), raw(now_p + SUFFIX)
+        # RT-1, 18 Oct 2026 - this walk finds the round's BACKUPS and derives
+        # the page from each, so for a retired page it derives a
+        # path that is not there. Its last text is.
+        a, b = raw(alv_tree.last_of(now_p)), raw(now_p + SUFFIX)
         ca, cb = a.count(b'\r\n'), b.count(b'\r\n')
         la = a.count(b'\n') - ca
         lb = b.count(b'\n') - cb
@@ -494,8 +522,8 @@ for f in (ME, PATCHER):
                  read(os.path.join(ROOT, f))) is not None,
        '  %s aliases the house stripper at column zero' % f)
 _me = read(os.path.join(ROOT, ME))
-ok(_me.count('os.path.' + 'join(T,') == 0 and 'alv_tree.path_of(' in _me,
-   '  and this suite resolves labels through alv_tree.path_of')
+ok(_me.count('os.path.' + 'join(T,') == 0 and 'alv_tree.last_path(' in _me,
+   '  and this suite resolves labels through alv_tree.last_path')
 ok(SUFFIX in ROUNDS and '.bak_rstones' in ROUNDS
    and ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_rstones'),
    '%s sits after .bak_rstones in alv_rounds.ROUNDS' % SUFFIX,

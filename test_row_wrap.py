@@ -71,7 +71,9 @@ BOOTF = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 from apply_row_wrap import (EXPECT, loose, runs_of, FI_FORM,
                             GRID_NEW, ASSET, TAGS)
 
-HELD_BACK = ['create_meal_plan.html', 'household_member_management.html',
+# RT-1, 18 Oct 2026 - THREE, NOT FOUR - see WHY below for the reason
+# create_meal_plan.html came off this list rather than onto a backup.
+HELD_BACK = ['household_member_management.html',
              'invoices.html', 'physical_invoice_list.html']
 
 FAILS = []
@@ -103,7 +105,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def path_of(rel):
@@ -120,7 +122,7 @@ head('1. sixteen runs, twenty-four buttons, nine pages')
 tot_runs = tot_btns = 0
 for name, (want_runs, want_btns) in sorted(EXPECT.items()):
     p = path_of(name)
-    if not p or not os.path.exists(p + SUFFIX):
+    if not p or not os.path.exists(alv_tree.bak_path(p, SUFFIX)):
         ok(False, '%s has a backup' % name)
         continue
     before = runs_of(was(p))
@@ -179,7 +181,7 @@ head('2. each run became ONE wrapper, around the whole group')
 
 for name in sorted(EXPECT):
     p = path_of(name)
-    if not p or not os.path.exists(p + SUFFIX):
+    if not p or not os.path.exists(alv_tree.bak_path(p, SUFFIX)):
         continue
     before = runs_of(was(p))
     wraps = RA.wrappers(alv_tree.code_only(now(p)))
@@ -217,7 +219,7 @@ def detag(s):
     return re.sub(r'\{#.*?#\}', '', s, flags=re.S)
 
 
-BASECSS = css_of(alv_tree.code_only(now(alv_tree.path_of('base.html'))))
+BASECSS = css_of(alv_tree.code_only(now(alv_tree.last_path('base.html'))))
 
 
 def page_html(raw):
@@ -286,7 +288,7 @@ else:
         br.close()
 
 # ==========================================================================
-head('5. the four pages held back, held back whole')
+head('5. the three pages held back, held back whole')
 
 # COUNTED INCLUDING SCRIPT HERE, which loose() excludes on purpose.
 # create_meal_plan.html builds all three of its buttons inside a
@@ -302,7 +304,12 @@ def unwrapped_anywhere(src):
 
 
 WHY = {
-    'create_meal_plan.html': 'built inside a JavaScript template literal',
+    # RT-1, 18 Oct 2026 - create_meal_plan.html came OFF this list, not
+    # onto a backup. It was held back because its one trashcan is built
+    # inside a JavaScript template literal; MN-1 retired the page, and a
+    # page that is held back from a conversion it can never receive is a
+    # line nobody can check. Its entry in alv_rowactions.NAMED went in
+    # the same round, for the same reason.
     'household_member_management.html': 'mixes plain markup with two forms',
     'invoices.html': 'its one button is inside a form, inside a cell',
     'physical_invoice_list.html': 'five of its six are each in their own form',
@@ -317,7 +324,7 @@ for name in HELD_BACK:
        'it has none - then it was converted, and this round claims it was '
        'not')
     if p:
-        ok(not os.path.exists(p + SUFFIX),
+        ok(not os.path.exists(alv_tree.bak_path(p, SUFFIX)),
            '  and this round did not touch it at all')
 
 # NO PAGE IS HALF CONVERTED. This is the whole reason for splitting by
@@ -363,7 +370,7 @@ if m:
 # LIVE tree, so as_left_by cannot reach it: the number has to be written
 # down, and the arithmetic has to be written down beside it, or the next
 # person cannot tell a decision from a regression.
-LOOSE_NOW = 3   # MD-1, 18 Oct 2026 - E33 collapsed create_meal_plan's three copies of the recipe row into one recipeRowHtml(), so three loose trashcans became one. The first count in this register to go DOWN.   # (was 5)   # VC-1, 14 Oct 2026 - a FOURTH term, and the same kind as AI-1's: pantry_staples' Remove, one control inside the chip that names the staple it removes. It reached this census from the BUTTON one, because btn-link was not on Show-ButtonDrift's colour list and nothing here could see it.   # (was 4)
+LOOSE_NOW = 2   # RT-1, 18 Oct 2026 - create_meal_plan's one loose trashcan went with the page. The report walks the live tree, as a report should.   # (was 3)   # MD-1, 18 Oct 2026 - E33 collapsed create_meal_plan's three copies of the recipe row into one recipeRowHtml(), so three loose trashcans became one. The first count in this register to go DOWN.   # (was 5)   # VC-1, 14 Oct 2026 - a FOURTH term, and the same kind as AI-1's: pantry_staples' Remove, one control inside the chip that names the staple it removes. It reached this census from the BUTTON one, because btn-link was not on Show-ButtonDrift's colour list and nothing here could see it.   # (was 4)
 # AND RA-5 ADDED A THIRD TERM, which is a decision and not a wrap: all
 # four are now registered in alv_rowactions.NAMED as single controls
 # beside the thing they act on, so the report prints them under NAMED,

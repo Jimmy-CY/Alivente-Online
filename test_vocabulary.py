@@ -176,7 +176,9 @@ def was(p):
     """The file as VC-1 found it. A page this round never touched has no
     backup and is its own before, which is what makes section 9 mean
     anything."""
-    b = p + SUFFIX
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path: a retired page's
+    # backups stay where they were, beside the hole it left.
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else read(p)
 
 
@@ -233,8 +235,13 @@ def _tool_as_vc1_found_it():
 sb_before = _tool_as_vc1_found_it()
 
 GATE = sb.templates(True)
-BOTH = sorted(alv_tree.rel(p) for p in alv_tree.templates()
-              if alv_tree.rel(p) != 'base.html')
+# RT-1, 18 Oct 2026 - AND THE PAGES THE TREE HAS SINCE RETIRED. Section 9
+# asks which templates VC-1 CHANGED, and one of the eight it changed is
+# create_meal_plan.html, which MN-1 has since retired. A list built
+# from the live walk alone reports VC-1 as a seven-page round.
+BOTH = sorted([alv_tree.rel(p) for p in alv_tree.templates()
+               if alv_tree.rel(p) != 'base.html']
+              + alv_tree.retired_labels())
 HOUSE_TONES = {'action-primary', 'action-secondary', 'action-danger',
                'action-back', 'back-button', 'action-add-new'}
 
@@ -300,7 +307,7 @@ else:
     # found it: zero. With the new tool over the same tree: three.
     then = now = 0
     for r in BOTH:
-        old_text = was(alv_tree.path_of(r))
+        old_text = was(alv_tree.last_path(r))
         m_old = sb_before.markup_of(old_text)
         m_new = sb.markup_of(old_text)
         then += len([1 for b in sb_before.BTN.finditer(m_old)
@@ -320,7 +327,7 @@ LABELS = (('property_assets.html', 'Take Photo'),
           ('my_profile.html', 'Upload Photo'))
 found = []
 for r in BOTH:
-    m = sb.markup_of(read(alv_tree.path_of(r)))
+    m = sb.markup_of(read(alv_tree.last_path(r)))
     for b in sb.BTN.finditer(m):
         if b.group(1).lower() == 'label':
             found.append((r, sb.label_of(b.group(3)), b.group(2)))
@@ -339,7 +346,7 @@ ok(not [1 for _r, _l, c in found
 ok(all(any(x in sb.BOOTSTRAP for x in
            re.search(r'class="([^"]*)"',
                      re.search(r'<label[^>]*btn[^>]*>',
-                               was(alv_tree.path_of(r))).group(0)
+                               was(alv_tree.last_path(r))).group(0)
                      ).group(1).split())
        for r, _l in LABELS),
    '  CONTROL: all three DID carry one in the backups - that is the '
@@ -349,7 +356,7 @@ ok(all(any(x in sb.BOOTSTRAP for x in
 head('4. connectivity_error - the primary DECIDED said it was all along')
 # ==========================================================================
 _ce = 'error_pages/connectivity_error.html'
-_hits = [h for h in scan_of(_ce, read(alv_tree.path_of(_ce)))
+_hits = [h for h in scan_of(_ce, read(alv_tree.last_path(_ce)))
          if 'try again' in h[1].lower()]
 ok(len(_hits) == 1 and 'action-primary' in _hits[0][3],
    'Try Again carries action-primary', _hits)
@@ -359,9 +366,9 @@ ok(sb.DECIDED.get('button-group') and
    "  and DECIDED['button-group'] is what says so - a decision that was "
    'already on the register', sb.DECIDED.get('button-group'))
 if sb_before is not None:
-    _old = sb_before.markup_of(was(alv_tree.path_of(_ce)))
+    _old = sb_before.markup_of(was(alv_tree.last_path(_ce)))
     sb_before.JS_REENABLED = sb_before.js_reenabled_ids(
-        was(alv_tree.path_of(_ce)))
+        was(alv_tree.last_path(_ce)))
     _seen = [h for h in sb_before._scan(_ce, _old)
              if 'try again' in h[1].lower()]
     ok(not _seen,
@@ -374,7 +381,7 @@ head('5. THE PAINTED BUCKET - counted, and empty')
 painted = []
 drift = undecided = 0
 for r in GATE:
-    for h in scan_of(r, read(alv_tree.path_of(r))):
+    for h in scan_of(r, read(alv_tree.last_path(r))):
         if h[0] == 'PAINTED':
             painted.append((r, h[1], h[3]))
         elif h[0] == 'UNCLASSIFIED':
@@ -408,8 +415,12 @@ ok([h[0] for h in _probe] == ['PAINTED'],
 # buttons met it and every one was discarded in silence.
 if sb_before is not None:
     _then = []
-    for r in sb_before.templates(True):
-        t = was(alv_tree.path_of(r))
+    # RT-1, 18 Oct 2026 - AND THE PAGES THE TREE HAS SINCE RETIRED. This
+    # count is a question about the tree VC-1 FOUND, asked of the old
+    # tool with its own vocabulary; the live walk under it answers a
+    # question about today and is one page short of this one.
+    for r in sb_before.templates(True) + alv_tree.retired_labels():
+        t = was(alv_tree.last_path(r))
         m = sb_before.markup_of(t)
         claimed = {h[5] for h in sb_before._scan(r, m)}
         for b in sb_before.BTN.finditer(m):
@@ -430,7 +441,7 @@ if sb_before is not None:
 # ==========================================================================
 head('6. THREE CONTROLS THAT BECAME ROW ACTIONS')
 # ==========================================================================
-_if = read(alv_tree.path_of('ingredient_families.html'))
+_if = read(alv_tree.last_path('ingredient_families.html'))
 # THE TOKEN, NOT THE ATTRIBUTE - repaired by PH-2, 14 Oct 2026. This read
 # `class="row-actions"` exactly, and PH-2 made the wrapper
 # `class="alv-card-aside row-actions"`: the pair is still in .row-actions
@@ -450,7 +461,7 @@ ok([c for _cl in re.findall('class="([^"]*)"', _if)
    and 'display: flex; gap: 6px;' not in _if,
    'ingredient_families wraps its pair in .row-actions, and the inline '
    'style is gone')
-_base = read(alv_tree.path_of('base.html'))
+_base = read(alv_tree.last_path('base.html'))
 _ra_css = re.search(r'\.row-actions\s*\{([^}]*)\}', _base)
 ok(_ra_css and 'inline-flex' in _ra_css.group(1)
    and 'gap: 6px' in _ra_css.group(1),
@@ -462,10 +473,10 @@ ok(_if.count('icon-action-btn icon-edit') == 1
    '  the pencil is icon-edit and the trash is icon-delete')
 ok('btn-outline-light' not in _if,
    '  and btn-outline-light is gone from the page')
-ok('btn-outline-light' in was(alv_tree.path_of('ingredient_families.html')),
+ok('btn-outline-light' in was(alv_tree.last_path('ingredient_families.html')),
    '  CONTROL: it was there in the backup')
 
-_ps = read(alv_tree.path_of('pantry_staples.html'))
+_ps = read(alv_tree.last_path('pantry_staples.html'))
 ok('icon-action-btn icon-delete' in _ps and 'btn-link' not in _ps,
    'pantry_staples Remove is the house row-action control')
 ok('fa-trash' in _ps and 'fa-times' not in _ps,
@@ -478,9 +489,13 @@ ok('pantry_staples.html' in ra.NAMED
    ra.NAMED.get('pantry_staples.html'))
 # MD-1, 18 Oct 2026 - still three pages, three controls now. E33 wrote
 # create_meal_plan's recipe row once instead of three times.
-ok(len(ra.NAMED) == 3
-   and sum(v['count'] for v in ra.NAMED.values()) == 3,
-   '  which makes three such controls on three pages',
+# RT-1, 18 Oct 2026 - TWO AND TWO. create_meal_plan's entry came OFF the
+# register in this round rather than being read from a backup: MN-1
+# retired the page, and an exemption for a control nobody can reach is
+# a line nobody can check. This counts the register as it stands.
+ok(len(ra.NAMED) == 2
+   and sum(v['count'] for v in ra.NAMED.values()) == 2,
+   '  which makes two such controls on two pages',
    {k: v['count'] for k, v in ra.NAMED.items()})
 ok(ra.FAMILY.get('edit') < ra.FAMILY.get('delete'),
    '  CONTROL: and FAMILY already sorts edit before delete, so the pair '
@@ -489,7 +504,7 @@ ok(ra.FAMILY.get('edit') < ra.FAMILY.get('delete'),
 # ==========================================================================
 head('7. THE TOGGLE THAT WAS PAINTED BY JAVASCRIPT')
 # ==========================================================================
-_cm = read(alv_tree.path_of('create_meal_plan.html'))
+_cm = read(alv_tree.last_path('create_meal_plan.html'))
 _cm_code = code_only(_cm)
 ok('favouritesToggleBtn' in _cm and 'aria-pressed' in _cm,
    'create_meal_plan Favourites carries aria-pressed')
@@ -505,7 +520,7 @@ ok('.btn.action-secondary[aria-pressed="true"]' in _base,
    '  and base.html already answered this - B-1 wrote it on 2 Oct for '
    'the identical control on recipe_management')
 ok('btn.style.background' in code_only(
-    was(alv_tree.path_of('create_meal_plan.html'))),
+    was(alv_tree.last_path('create_meal_plan.html'))),
    '  CONTROL: the backup really does paint it in JavaScript')
 
 # ==========================================================================
@@ -518,7 +533,7 @@ head('8. WHAT A LEAVE ENTRY SILENCES - the mistake this round nearly made')
 ok('share-grid' not in sb.LEAVE,
    'share-grid is NOT on LEAVE - its one undecided button got a house '
    'class in the markup instead')
-_wa = read(alv_tree.path_of('meal_plan_shopping_list.html'))
+_wa = read(alv_tree.last_path('meal_plan_shopping_list.html'))
 ok('btn action-secondary share-btn share-whatsapp' in _wa,
    '  and that button is the WhatsApp tile, now action-secondary like '
    'its three siblings')
@@ -531,7 +546,7 @@ ok('btn action-secondary share-btn share-whatsapp' in _wa,
 # is the one that stays, and VC-1's own measurement below is why.
 silenced = collections.defaultdict(list)
 for r in GATE:
-    m = sb.markup_of(read(alv_tree.path_of(r)))
+    m = sb.markup_of(read(alv_tree.last_path(r)))
     for b in sb.BTN.finditer(m):
         if not (set(b.group(2).split()) & HOUSE_TONES):
             continue
@@ -560,10 +575,10 @@ for k in sorted(silenced):
 
 # AND THE ENTRY VC-1 DID ADD SILENCES NOTHING THAT WAS BEING CHECKED.
 _sa = [c for r in GATE
-       for b in sb.BTN.finditer(sb.markup_of(read(alv_tree.path_of(r))))
+       for b in sb.BTN.finditer(sb.markup_of(read(alv_tree.last_path(r))))
        for c in [b.group(2)]
        if 'status-action-form' in sb.innermost_wrapper(
-           sb.markup_of(read(alv_tree.path_of(r))), b.start())]
+           sb.markup_of(read(alv_tree.last_path(r))), b.start())]
 ok('status-action-form' in sb.LEAVE,
    'status-action-form IS on LEAVE - eight invoice status buttons')
 ok(len(_sa) == N_REGISTER
@@ -571,7 +586,7 @@ ok(len(_sa) == N_REGISTER
    '  and NOT ONE of the eight carried a house tone, so this entry '
    'silences nothing that was being checked',
    [c for c in _sa if set(c.split()) & HOUSE_TONES])
-_civ = read(alv_tree.path_of('customer_invoice_form.html'))
+_civ = read(alv_tree.last_path('customer_invoice_form.html'))
 ok(all(('.%s {' % n) in _civ.replace('\n', ' ').replace('  ', ' ')
        or ('.' + n) in _civ for n in
        ('btn-delete', 'btn-duplicate', 'btn-approve', 'btn-send',
@@ -591,7 +606,7 @@ TOUCHED = {'property_assets.html', 'edit_asset.html', 'my_profile.html',
            'ingredient_families.html', 'pantry_staples.html',
            'create_meal_plan.html', 'meal_plan_shopping_list.html'}
 moved = [r for r in BOTH
-         if read(alv_tree.path_of(r)) != was(alv_tree.path_of(r))]
+         if read(alv_tree.last_path(r)) != was(alv_tree.last_path(r))]
 ok(sorted(moved) == sorted(TOUCHED),
    'exactly %d template(s) changed, and they are the named ones'
    % len(TOUCHED), sorted(set(moved) ^ TOUCHED))
@@ -600,7 +615,7 @@ ok(len(moved) == 8, '  which is %d of %d' % (8, len(BOTH)), len(moved))
 # A FIXED POINT ON ITS OWN OUTPUT, with the WIDER vocabulary.
 _again = []
 for r in GATE:
-    for h in scan_of(r, read(alv_tree.path_of(r))):
+    for h in scan_of(r, read(alv_tree.last_path(r))):
         if h[7] or h[0] in ('UNCLASSIFIED', 'PAINTED'):
             continue
         if h[3].split() != h[4].split():

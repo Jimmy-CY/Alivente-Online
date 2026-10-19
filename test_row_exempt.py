@@ -93,7 +93,8 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path.
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 BLOCKS = ('div', 'td', 'li', 'tr', 'section', 'form')
@@ -174,7 +175,13 @@ total = sum(e['count'] for e in RA.NAMED.values())
 # of the recipe row on create_meal_plan into one recipeRowHtml(), so
 # that page's entry went from three loose trashcans to one. Still three
 # pages; two fewer controls.
-ok(total == 3, 'it names %d control(s) on %d page(s)'
+# RT-1, 18 Oct 2026 - THREE BECAME TWO, and the entry came OFF the register
+# rather than being read from a backup. An exemption names a control a
+# reader can find and a report can print; create_meal_plan.html is not
+# in the tree any more, so the entry was a line nobody could check.
+# The same argument took the placeholder card off
+# test_pair_contrast's WCAG exemption in this round.
+ok(total == 2, 'it names %d control(s) on %d page(s)'
    % (total, len(RA.NAMED)), total)
 for pg, e in sorted(RA.NAMED.items()):
     ok(e['why'] and len(e['why']) > 40,
@@ -184,7 +191,7 @@ for pg, e in sorted(RA.NAMED.items()):
 
 # A REGISTER OF PAGES THAT DO NOT EXIST WOULD PASS EVERY OTHER CHECK.
 for pg in RA.NAMED:
-    ok(alv_tree.path_of(pg) is not None,
+    ok(alv_tree.last_path(pg) is not None,
        '  %s is a page in this checkout' % pg)
 
 # ==========================================================================
@@ -198,8 +205,10 @@ out = subprocess.run([sys.executable, REPORT], capture_output=True,
 # Show-ButtonDrift's list of Bootstrap colours, so no census in this
 # project could see it.
 # MD-1, 18 Oct 2026 - and the report's own line says three now.
-ok('NAMED, NOT IN A WRAPPER - 3 button(s) on 3 page(s)' in out,
-   'the report names all three', out[-500:])
+# RT-1, 18 Oct 2026 - TWO ON TWO. The report walks the live tree, as a
+# report should, so the line it prints followed the register down.
+ok('NAMED, NOT IN A WRAPPER - 2 button(s) on 2 page(s)' in out,
+   'the report names both', out[-500:])
 for pg, e in sorted(RA.NAMED.items()):
     ok(pg in out, '  %s appears in it' % pg)
     ok(e['why'].split(' - ')[0][:28] in out,
@@ -220,7 +229,7 @@ head('3. each one really is alone where it sits')
 # the register promised one. An entry may now carry `since`.
 for pg, e in sorted(RA.NAMED.items()):
     _suf = e.get('since', SUFFIX)
-    _p = alv_tree.path_of(pg)
+    _p = alv_tree.last_path(pg)
     src = alv_tree.code_only(
         as_left_by(_p, _suf, read) if as_left_by else read(_p))
     hits = [m for m in RA.BTN_FULL.finditer(src)
@@ -244,7 +253,7 @@ for pg, e in sorted(RA.NAMED.items()):
 
 # THE CONTROL FOR SECTION 3: a page that really does have an action
 # column must NOT pass this test, or it proves nothing.
-col = alv_tree.path_of('physical_invoice_list.html')
+col = alv_tree.last_path('physical_invoice_list.html')
 csrc = alv_tree.code_only(now(col))
 grouped = 0
 for s, en, inner in RA.wrappers(csrc):
@@ -260,7 +269,7 @@ head('4. the register cannot hide anything')
 
 # Plant a fifth loose button on a registered page and require the report
 # to refuse it rather than absorb it.
-victim = alv_tree.path_of('edit_asset.html')
+victim = alv_tree.last_path('edit_asset.html')
 src = read(victim)
 # APPENDED, NOT INJECTED AT </body>. edit_asset extends base and has no
 # </body> of its own, so the first build of this control planted nothing

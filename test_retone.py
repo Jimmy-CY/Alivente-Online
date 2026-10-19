@@ -163,7 +163,7 @@ for _n in ast.walk(ast.parse(patcher)):
         CLASSES = ast.literal_eval(_n.value)
         break
 
-base = read(alv_tree.path_of('base.html'))
+base = read(alv_tree.last_path('base.html'))
 BOOT = ''
 _b = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 if os.path.isfile(_b):
@@ -198,12 +198,15 @@ ok(not left,
    'no Bootstrap tone is left anywhere in the tree - R1 took forty-four '
    'and D3 took the last three', left)
 ok(not re.search(r"className = 'btn btn-(?:success|warning|danger)'",
-                 nocom(read(alv_tree.join(ADMIN)))),
+                 nocom(read(alv_tree.last_join(ADMIN)))),
    'and no page assigns one in script either')
 
 was_total = 0
 for rel in sorted(CLASSES):
-    p = alv_tree.join(rel.replace('/', os.sep)) + SUFFIX
+    # RT-1, 18 Oct 2026 - a retired page's backups sit beside the hole it
+    # left, which is what bak_of resolves; join() plus the suffix
+    # would ask for <page>.bak_planner.bak_retone.
+    p = alv_tree.bak_of(rel, SUFFIX)
     if os.path.isfile(p):
         was_total += len(FAM.findall(nocom(read(p))))
 ok(was_total >= 35,
@@ -251,7 +254,7 @@ EXTENDED_BY = {
 
 total = 0
 for rel in sorted(CLASSES):
-    t = read(alv_tree.join(rel.replace('/', os.sep)))
+    t = read(alv_tree.last_join(rel.replace('/', os.sep)))
     good = []
     for was, now, n, what in CLASSES[rel]:
         c = t.count('class="%s"' % now)
@@ -283,7 +286,7 @@ ok(total == 41,
 # WEIGHT, NOT TINT. The round must not have painted anything.
 painted = []
 for rel in sorted(CLASSES):
-    t = read(alv_tree.join(rel.replace('/', os.sep)))
+    t = read(alv_tree.last_join(rel.replace('/', os.sep)))
     for m in re.finditer(r'(?:^|[,{}\s])\.(action-primary|action-secondary)'
                          r'\s*\{([^}]*)\}', nocom(css_of(t)), re.M):
         if re.search(r'(?<!-)\b(background|color)\s*:', m.group(2)):
@@ -295,7 +298,7 @@ ok(not painted,
 # ==========================================================================
 head('3. THE THREE THE ROUND HANDLED ONE AT A TIME')
 # ==========================================================================
-t = read(alv_tree.join(DEEDS))
+t = read(alv_tree.last_join(DEEDS))
 mk = re.sub(r'<(script|style)\b.*?</\1>', '', nocom(t), flags=re.S)
 m = re.search(r'<button[^>]*icon-action-btn[^>]*>.*?</button>', mk, re.S)
 ok(m is not None, '%s: View is a row action now' % DEEDS)
@@ -325,27 +328,27 @@ if m:
     i_cell = mk.rfind('desktop-action-cell', 0, mk.index('icon-action-btn'))
     ok(i_cell > 0,
        '  in the .desktop-action-cell it was already sitting in')
-bak = alv_tree.join(DEEDS) + SUFFIX
+bak = alv_tree.last_join(DEEDS) + SUFFIX
 if os.path.isfile(bak):
     ok('btn btn-sm btn-success' in read(bak),
        '  CONTROL: it was a green word-button in that cell')
 else:
     skip('the deeds control', 'no backup')
 
-t = read(alv_tree.join(ADMIN))
+t = read(alv_tree.last_join(ADMIN))
 ok("submitBtn.className = 'btn action-primary';" in t,
    '%s: Enable is the house primary' % ADMIN)
 ok("submitBtn.className = 'btn action-danger';" in t,
    '  and Disable the house danger - a user losing access is the '
    'destructive half of that pair')
-bak = alv_tree.join(ADMIN) + SUFFIX
+bak = alv_tree.last_join(ADMIN) + SUFFIX
 if os.path.isfile(bak):
     ok("'btn btn-success'" in read(bak) and "'btn btn-danger'" in read(bak),
        '  CONTROL: both were Bootstrap before')
 else:
     skip('the admin control', 'no backup')
 
-t = read(alv_tree.join(NOTIF))
+t = read(alv_tree.last_join(NOTIF))
 ok('.notification-card .btn-success' not in nocom(t),
    '%s: the rule with nothing to reach is gone' % NOTIF)
 ok(len(re.findall(r'class="[^"]*\bbtn-success\b', nocom(t))) == 0,
@@ -368,7 +371,7 @@ except Exception as e:
 
 if HAVE_PW and BOOT:
     fx = os.path.join(SCRATCH, 'retone.html')
-    page_css = css_of(read(alv_tree.join('view_recipe.html')))
+    page_css = css_of(read(alv_tree.last_join('view_recipe.html')))
     with open(fx, 'w', encoding='utf-8') as fh:
         fh.write('<!doctype html><html><head><meta charset="utf-8">'
                  '<style>%s</style><style>%s</style><style>%s</style>'
@@ -441,7 +444,7 @@ else:
 # ==========================================================================
 head('6. REPORTED, NOT CHANGED')
 # ==========================================================================
-t = read(alv_tree.join(LEFT))
+t = read(alv_tree.last_join(LEFT))
 ok(len(FAM.findall(nocom(t))) == 0,
    '%s gave up its three as well - D3, 30 Sep' % LEFT)
 ok('input-group-append' in nocom(t),
@@ -449,7 +452,7 @@ ok('input-group-append' in nocom(t),
    'their colour moved and their geometry did not')
 ok('action-field-add' in nocom(t),
    '  wearing base\'s .action-field-add now')
-adm = nocom(read(alv_tree.join(ADMIN)))
+adm = nocom(read(alv_tree.last_join(ADMIN)))
 ok("'modal-header bg-success text-white'" in adm,
    'RECORDED: %s still paints its confirm modal header bg-success and '
    'bg-danger in script, where base has .alv-modal-head and '

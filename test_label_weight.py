@@ -174,7 +174,7 @@ def css_of(text):
 
 print(__doc__.strip().split('\n')[0])
 
-BASE = alv_tree.path_of('base.html')
+BASE = alv_tree.last_path('base.html')
 
 # ---------------------------------------------------------------------- 1
 head('1. SCOPE')
@@ -216,7 +216,9 @@ def before(p):
     # A SUITE RUN BEFORE ITS ROUND SHOULD SAY SO. Without this the
     # first thing anyone sees is a FileNotFoundError traceback, which
     # blocks a push exactly as hard as a failure and says far less.
-    b = p + SUFFIX
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path: a retired page's
+    # backups stay where they were, beside the hole it left.
+    b = alv_tree.bak_path(p, SUFFIX)
     if not os.path.exists(b):
         print('')
         print('  !! %s has no %s backup.' % (os.path.basename(p), SUFFIX))
@@ -237,7 +239,7 @@ wrapped = 0
 part = 0
 bad = []
 for rel in CRS_PAGES:
-    p = alv_tree.path_of(rel)
+    p = alv_tree.last_path(rel)
     t = read(p)
     was = before(p)
     n_before = len([1 for m in LABEL.finditer(was) if '<strong' in m.group(1)])
@@ -267,7 +269,7 @@ print('        base: label > strong is the field name, span.alv-req the star.')
 print('        145 labels in the corpus already write it that way.')
 
 for rel in CRS_PAGES:
-    t = read(alv_tree.path_of(rel))
+    t = read(alv_tree.last_path(rel))
     plain = []
     for m in LABEL.finditer(t):
         i = m.group(1)
@@ -308,7 +310,7 @@ check('not one page still writes a weight onto .form-group label',
 
 removed = 0
 for rel in WEIGHTED:
-    p = alv_tree.path_of(rel)
+    p = alv_tree.last_path(rel)
     was = before(p)
     if [m for m in RULE.finditer(css_of(was)) if 'font-weight' in m.group(1)]:
         removed += 1
@@ -431,7 +433,7 @@ def part_wrapped(text):
 
 
 hint = sum(part_wrapped(read(p)) for p in alv_tree.templates())
-hint_was = sum(part_wrapped(read(p + SUFFIX) if os.path.exists(p + SUFFIX)
+hint_was = sum(part_wrapped(read(alv_tree.bak_path(p, SUFFIX)) if os.path.exists(alv_tree.bak_path(p, SUFFIX))
                             else read(p)) for p in alv_tree.templates())
 check('%d label(s) bold only part of themselves' % hint,
       hint == N_HINT, '%d' % hint)
@@ -470,7 +472,7 @@ for p in alv_tree.templates():
     if not any(x in alv_tree.rel(p) for x in RECIPE):
         continue
     rec += recipe_plain(read(p))
-    rec_was += recipe_plain(read(p + SUFFIX) if os.path.exists(p + SUFFIX)
+    rec_was += recipe_plain(read(alv_tree.bak_path(p, SUFFIX)) if os.path.exists(alv_tree.bak_path(p, SUFFIX))
                             else read(p))
 # THE CLAIM IS THAT IT DID NOT MOVE, not that it is any one number. A
 # count pinned as a literal is a claim that can only be true until the

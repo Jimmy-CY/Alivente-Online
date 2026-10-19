@@ -18,6 +18,10 @@ own round without being edited.
 """
 import os
 
+# RT-1, 18 Oct 2026 - for the two calls in as_left_by(). alv_tree
+# imports nothing of this programme, so there is no cycle to make.
+import alv_tree
+
 ROUNDS = [
     '.bak_zoomguard',
     '.bak_smallctl',
@@ -1247,6 +1251,20 @@ ROUNDS = [
     # Help button at all, and the only meal-plan help in the application
     # described a calendar feature that was a server error.
     '.bak_mealhelp',
+    # MN-1, 18 Oct 2026 - release 3, push 1. Meals belong to dates. The
+    # entries MP-1 and MD-1 left above stay in this register, because
+    # history is what it is for - the suites they shipped are retired,
+    # the backups they wrote are not.
+    '.bak_planner',
+    # RT-1, 18 Oct 2026 - what the tree does with a page it used to
+    # have. MN-1 retired four templates and eighty of the 370 suites
+    # went red, none of them on the planner. A census of what a round
+    # did is a claim about the past.
+    '.bak_retired',
+    # MH-2, 18 Oct 2026 - the Meal Plans guide describes the
+    # planner. MH-1 wrote seven tabs for five screens and MN-1
+    # replaced four of the five the same afternoon.
+    '.bak_mealguide',
 ]
 
 
@@ -1255,13 +1273,31 @@ def as_left_by(path, suffix, read):
     it - the earliest later round's backup of it, or the file itself.
 
     A round in ROUNDS is placed by the list. A round OLDER than the list
-    is placed by its backups' times: see later_backup()."""
+    is placed by its backups' times: see later_backup().
+
+    RT-1, 18 Oct 2026 - AND IT WORKS ON A PAGE THE TREE NO LONGER HAS.
+    Two calls into alv_tree do the whole of it:
+
+        nominal()  because a suite that resolved its label with
+                   alv_tree.last_path() hands in a RETIRED page's last
+                   text, and the walk below builds <page>.bak_<round>
+                   from its argument - never <page>.bak_planner.bak_...
+
+        last_of()  because the end of the walk means "no later round
+                   touched it, so the file itself is the answer", and
+                   for a retired page the file itself is not there. Its
+                   last text is, beside the hole it left.
+
+    The walk in the middle needed nothing: a retiring round's backup is
+    in ROUNDS like any other, so it was already the right answer for
+    every round older than it."""
+    path = alv_tree.nominal(path)
     if suffix in ROUNDS:
         for s in ROUNDS[ROUNDS.index(suffix) + 1:]:
             if os.path.isfile(path + s):
                 return read(path + s)
-        return read(path)
-    return read(later_backup(path, suffix) or path)
+        return read(alv_tree.last_of(path))
+    return read(later_backup(path, suffix) or alv_tree.last_of(path))
 
 
 def later_backup(path, suffix):

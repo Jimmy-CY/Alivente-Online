@@ -351,17 +351,23 @@ urlpatterns = [
     path('recipe/<int:recipe_id>/favourite/', views.toggle_recipe_favourite, name='toggle_recipe_favourite'),
     path('recipes/<int:recipe_id>/suggest_modification/', views.suggest_recipe_modification, name='suggest_recipe_modification'),
     # Meal Planning URLs
-    path('meal_plans/', views.meal_plans, name='meal_plans'),
-    path('meal_plans/create/', views.create_meal_plan, name='create_meal_plan'),
-    path('meal_plans/<int:meal_plan_id>/', views.view_meal_plan, name='view_meal_plan'),
-    path('meal_plans/<int:meal_plan_id>/edit/', views.edit_meal_plan, name='edit_meal_plan'),
-    path('meal_plans/<int:meal_plan_id>/duplicate/', views.duplicate_meal_plan, name='duplicate_meal_plan'),
-    path('meal_plans/<int:meal_plan_id>/delete/', views.delete_meal_plan, name='delete_meal_plan'),
-    path('meal_plans/<int:meal_plan_id>/shopping_list/', views.meal_plan_shopping_list, name='meal_plan_shopping_list'),
+    # MN-1, 18 Oct 2026 - RELEASE 3. Seven routes for seven screens
+    # became one planner, and two of the names stay because other
+    # pages reverse them: recipe_management.html links to `meal_plans`
+    # from its bar and from its More menu.
+    #
+    # `meal_plan_calendar` keeps its name too and lands on the same
+    # planner - every bookmark, every Back control written before
+    # today and every `?from=calendar` in the tree still resolves.
+    # Push 3 removes the aliases once nothing reverses them.
+    path('meal_plans/', views.meal_planner, name='meal_plans'),
+    path('meal_plans/planner/', views.meal_planner, name='meal_planner'),
+    path('meal_plans/calendar/', views.meal_planner, name='meal_plan_calendar'),
+    path('meal_plans/shopping_list/', views.meal_shopping_list, name='meal_shopping_list'),
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
-    path('meal_plans/calendar/', views.meal_plan_calendar, name='meal_plan_calendar'),
-    path('meal_plans/add_recipe_to_day/', views.add_recipe_to_meal_plan_day, name='add_recipe_to_meal_plan_day'),
-    path('meal_plans/remove_recipe/', views.remove_recipe_from_meal_plan, name='remove_recipe_from_meal_plan'),
+    path('meal_plans/add/', views.add_meal_entry, name='add_meal_entry'),
+    path('meal_plans/remove/', views.remove_meal_entry, name='remove_meal_entry'),
+    path('meal_plans/servings/', views.set_meal_servings, name='set_meal_servings'),
     path('save_unit_conversion/', views.save_unit_conversion, name='save_unit_conversion'),
     # Unit Conversion Management
     path('unit_conversions/', views.unit_conversions_management, name='unit_conversions_management'),

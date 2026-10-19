@@ -134,17 +134,17 @@ SUFFIX = '.bak_three'
 ME = 'test_small_three.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = alv_tree.join('base.html')
-WSM = alv_tree.join('workspace_management.html')
-PROPS_HTML = alv_tree.join('properties.html')
+BASE = alv_tree.last_join('base.html')
+WSM = alv_tree.last_join('workspace_management.html')
+PROPS_HTML = alv_tree.last_join('properties.html')
 PROPS_VIEW = os.path.join(ROOT, 'pages', 'views', 'properties.py')
-FSR_HTML = alv_tree.join('fsr.html')
+FSR_HTML = alv_tree.last_join('fsr.html')
 FSR_VIEW = os.path.join(ROOT, 'pages', 'views', 'issues.py')
 FIN_VIEW = os.path.join(ROOT, 'pages', 'views', 'finance.py')
-VAC = alv_tree.join('finance/vacancy_management.html')
-TWIN = alv_tree.join('finance/financial_indicators.html')
-ENTRY = [alv_tree.join('properties_add.html'),
-         alv_tree.join('properties_edit.html')]
+VAC = alv_tree.last_join('finance/vacancy_management.html')
+TWIN = alv_tree.last_join('finance/financial_indicators.html')
+ENTRY = [alv_tree.last_join('properties_add.html'),
+         alv_tree.last_join('properties_edit.html')]
 
 # The one line finance_expense_add/_edit already use. If this round wrote
 # a different one, the two filters could drift apart later.
@@ -195,7 +195,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    return read(alv_tree.bak_path(p, SUFFIX)) if os.path.isfile(alv_tree.bak_path(p, SUFFIX)) else now(p)
 
 
 def styles_of(t):
@@ -324,8 +324,13 @@ for base_, dirs, files in alv_tree.walk3():
                 liars.append('%s: %r' % (rel, txt))
 ok(not liars, 'no page labels a non-Back, non-Cancel control as a Back',
    '\n'.join(liars))
-_cml = read(alv_tree.join('create_meal_plan.html')) \
-    if os.path.isfile(alv_tree.join('create_meal_plan.html')) else ''
+# RT-1, 18 Oct 2026 - THE CONTROL READS THE PAGE'S LAST TEXT. This is a
+# claim about what SM-3 deliberately left alone, which is a claim
+# about the past; MN-1 has since retired the page, and a control
+# that answers '' is not a control.
+_cml = read(alv_tree.last_join('create_meal_plan.html')) \
+    if os.path.isfile(alv_tree.last_join('create_meal_plan.html')) \
+    else ''
 ok('class="action-back-label"> Cancel' in _cml
    or 'action-back-label' in _cml,
    "CONTROL: create_meal_plan's Cancel keeps the class - it IS an "
@@ -608,7 +613,7 @@ for label, p, a, b in (('workspace_management', WSM, W_NOW, W_WAS),
                        ('properties.html    ', PROPS_HTML, P_NOW, P_WAS),
                        ('fsr.html           ', FSR_HTML, F_NOW, F_WAS),
                        ('vacancy_management ', VAC, V_NOW, V_WAS)):
-    if not os.path.isfile(p + SUFFIX):
+    if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         skip('scope on %s' % label.strip(), 'no %s backup' % SUFFIX)
         continue
     ok(controls(a) == controls(b),

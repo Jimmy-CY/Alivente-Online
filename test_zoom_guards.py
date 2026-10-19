@@ -123,6 +123,22 @@ import alv_tree
 from collections import Counter
 
 ROOT = os.path.join(os.getcwd(), 'pages', 'templates')
+
+# RT-1, 18 Oct 2026 - THE PAGE'S LAST TEXT, UNDER THIS SUITE'S OWN ROOT.
+# This suite composes its paths from one directory and renders the
+# markup it reads into a fixture rather than asking a server for
+# it, so a page the tree no longer serves can still be measured -
+# from the text MN-1 left beside the hole it made. Widening the
+# suite to the whole tree is a different round's business; it is
+# on the register test_waiting_down keeps.
+import alv_tree
+
+
+def _tpl(*parts):
+    # Composed this way on purpose: the literal spelling that this
+    # round swaps for _tpl is the one with ROOT as its first
+    # argument, and a helper that used it would call itself.
+    return alv_tree.last_of(os.path.join(*((ROOT,) + parts)))
 if not os.path.isdir(ROOT):
     sys.exit('! pages/templates not found - run from the repo root')
 
@@ -198,12 +214,11 @@ def guards(css):
     return n
 
 
-touched = []
-for dp, _d, ns in alv_tree.walk3():
-    for n in sorted(ns):
-        if n.endswith('.html') and os.path.isfile(os.path.join(dp, n)
-                                                  + SUFFIX):
-            touched.append(alv_tree.rel(os.path.join(dp, n)).replace(os.sep, '/'))
+# RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by(): this is
+# the round's own list of the pages it touched, and six of them are
+# pages the tree has since retired.
+touched = [alv_tree.rel(p).replace(os.sep, '/')
+           for p in alv_tree.touched_by(SUFFIX)]
 pages = [r for r in touched if r != 'base.html']
 ran = bool(touched)
 
@@ -238,7 +253,7 @@ print("""
    pages, and a third of them were not redundant.
 """)
 
-BASE = read(os.path.join(ROOT, 'base.html'))
+BASE = read(_tpl('base.html'))
 BCSS = css_of(BASE)
 n_base = len(re.findall(r'\.form-control\s*\{\s*font-size\s*:\s*16px\s*;?\s*\}',
                         BCSS))
@@ -275,13 +290,13 @@ else:
     ok(len(pages) >= 40, 'the round touched %d page(s)' % len(pages),
        'expected about 43')
     for rel in pages:
-        p = os.path.join(ROOT, rel)
+        p = _tpl(rel)
         # LATER - test_print_queries.py, 21 Sep. That round put `screen
         # and ` in front of the phone queries in these same files, which
         # this check would read as a line THIS round added. So "after"
         # is the file as it stood before that round, when its backup is
         # there - this section goes on judging only its own round.
-        before = read(p + SUFFIX)
+        before = read(alv_tree.bak_path(p, SUFFIX))
         from alv_rounds import as_left_by
         after = as_left_by(p, SUFFIX, read)
         out = lambda t: re.sub(r'<style[^>]*>.*?</style>', '<style/>', t,
@@ -320,11 +335,11 @@ print("""
 
 unguarded = []
 for rel in KEPT_BY_RULE:
-    p = os.path.join(ROOT, rel)
+    p = _tpl(rel)
     if not os.path.isfile(p):
         skip(rel, 'not in this checkout')
         continue
-    ok(not os.path.isfile(p + SUFFIX),
+    ok(not os.path.isfile(alv_tree.bak_path(p, SUFFIX)),
        '%-42s kept whole - it shrinks a control below 16px' % rel,
        'the round touched it')
     if guards(css_of(read(p))) == 0:
@@ -434,7 +449,7 @@ else:
         r'/\* ALV SMALL CONTROLS v1\b.*?/\* /ALV SMALL CONTROLS v1 \*/', '',
         '\n'.join(styles_of(BASE)), flags=re.S))
     base_was = COMMENT.sub('', '\n'.join(styles_of(
-        read(os.path.join(ROOT, 'base.html') + SUFFIX))))
+        read(_tpl('base.html') + SUFFIX))))
     exe = '/opt/pw-browsers/chromium'
     n = [0]
 
@@ -456,8 +471,8 @@ else:
         br = pw.chromium.launch(**({'executable_path': exe}
                                    if os.path.exists(exe) else {}))
         for rel in pages:
-            p = os.path.join(ROOT, rel)
-            before, after = read(p + SUFFIX), read(p)
+            p = _tpl(rel)
+            before, after = read(alv_tree.bak_path(p, SUFFIX)), read(p)
             # THE MARKUP AS THIS ROUND LEFT IT, not as it is now - the
             # same reason as_left_by is used in the section above, and it
             # cost a red gate on 29 Sep to find here too. P1 put a
@@ -513,7 +528,7 @@ else:
         # ==============================================================
         small_now = []
         for rel in pages:
-            t_now = read(os.path.join(ROOT, rel))
+            t_now = read(_tpl(rel))
             for c in render(br, page_html(boot, base_now, styles_of(t_now),
                                           body_markup(t_now)), 375):
                 if float(re.match(r'([0-9.]+)', c[4]).group(1)) < 16:
@@ -535,7 +550,7 @@ else:
         # the guard moving, and the pair of checks below says so -
         # measured at 375: 0 controls move without the page's copy, 9
         # move when base's is taken as well.
-        _t = read(os.path.join(ROOT, 'fsr.html'))
+        _t = read(_tpl('fsr.html'))
         _mk = body_markup(_t)
         _real = render(br, page_html(boot, base_now, styles_of(_t),
                                      _mk), 375)
@@ -555,7 +570,7 @@ else:
         for rel, why in (
                          ('preview_imported_recipe.html',
                           'an ORPHAN guard - 24 inputs with no .form-control'),):
-            p = os.path.join(ROOT, rel)
+            p = _tpl(rel)
             if not os.path.isfile(p):
                 skip('CONTROL %s' % rel, 'not in this checkout')
                 continue
@@ -583,7 +598,7 @@ else:
         # that can only ever shrink is how the last one stayed wrong.
         really, looked = [], 0
         for rel in unguarded:
-            p = os.path.join(ROOT, rel)
+            p = _tpl(rel)
             if not os.path.isfile(p):
                 continue
             t = read(p)

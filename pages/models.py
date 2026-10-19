@@ -2572,6 +2572,137 @@ class MealPlanRecipe(models.Model):
         """
         return Decimal(self.servings) / Decimal(self.recipe.servings or 1)
 
+class MealEntry(models.Model):
+    """One meal on one date. MN-1, 18 Oct 2026 - release 3.
+
+    THE CALENDAR IS THE PLAN. This replaces the chain
+    MealPlan -> MealPlanDay -> MealPlanRecipe, where a meal could only
+    exist inside a named box with a start and an end date. Those boxes
+    could overlap, could not exceed seven days, and threw meals away
+    when their dates changed - which was C13, C17 and half of release
+    1's group C between them.
+
+    A meal has a DATE. That is the whole model change.
+
+    NO WORKSPACE, BY DECISION - 18 Oct 2026. The design record gives
+    this table one. `Recipe` has no workspace at all and its created_by
+    is a plain CharField, so a tenanted meal holding an untenanted
+    recipe would be precisely the inconsistency MP-1 recorded in
+    Workspace's own docstring. If recipes are ever tenanted, meal
+    entries follow in that round, in one migration.
+
+    RECIPE IS NULLABLE, because not every slot is a recipe. A note -
+    "Eat out", "At Yiayia's" - makes an empty night a DECISION rather
+    than a gap, and stays off the shopping list. Push 2 writes those;
+    the column is here from the start because adding it later would be
+    a second migration for a column this shape already implies.
+
+    CASCADE ON recipe, which is what MealPlanRecipe did. Deleting a
+    recipe you no longer want takes it off future plans too, and the
+    alternative - PROTECT - would refuse to delete any recipe that had
+    ever been planned.
+    """
+    meal_entry_id = models.AutoField(primary_key=True)
+    date = models.DateField(db_index=True)
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='meal_entries',
+        help_text='The recipe planned for this date, or blank for a note')
+    note = models.CharField(
+        max_length=200, blank=True, default='',
+        help_text='A planned night that is not a recipe - Eat out, Leftovers')
+    servings = models.IntegerField(
+        default=4,
+        help_text='How many this meal is cooked for. Scales the shopping list.')
+    sort_order = models.IntegerField(default=0)
+    leftover_of = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True,
+        related_name='leftovers',
+        help_text='Set when this meal is the leftovers of an earlier one. '
+                  'It costs nothing on the shopping list.')
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='meal_entries')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'meal_entries'
+        ordering = ['date', 'sort_order', 'meal_entry_id']
+        verbose_name_plural = 'Meal entries'
+
+    def __str__(self):
+        what = self.recipe.recipe_name if self.recipe else (self.note or 'Meal')
+        return '%s on %s' % (what, self.date.strftime('%a %d %b %Y'))
+
+    @property
+    def servings_multiplier(self):
+        """How far to scale this meal's ingredients.
+
+        The same guarded expression MD-1 put on MealPlanRecipe: Decimal
+        because every quantity downstream is one and mixing the two
+        raises, and `or 1` because a recipe with no yield recorded
+        should scale by one rather than refuse to be shopped for.
+        """
+        if not self.recipe:
+            return Decimal('0')
+        return Decimal(self.servings) / Decimal(self.recipe.servings or 1)
+
+    @property
+    def counts_on_shopping_list(self):
+        """A note buys nothing, and leftovers were bought once already."""
+        return bool(self.recipe) and self.leftover_of_id is None
+
+
+class Menu(models.Model):
+    """A saved week, kept by NAME rather than by date. MN-1, 18 Oct 2026.
+
+    Repeat copies last week. A Menu is for the weeks you come back to
+    months later - Christmas, girls visiting, the usual rotation - so
+    it holds DAY INDEXES, 0 to 6, and not dates.
+
+    Push 2 fills these. The tables arrive now so that release 3 has one
+    migration and not three.
+    """
+    menu_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=120)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='menus')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'menus'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class MenuItem(models.Model):
+    """One meal in a saved menu, on a day INDEX. MN-1, 18 Oct 2026."""
+    menu_item_id = models.AutoField(primary_key=True)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE,
+                             related_name='items')
+    day_index = models.IntegerField(
+        default=0, help_text='0 is the first day of the menu, not a weekday')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
+                               null=True, blank=True,
+                               related_name='menu_items')
+    note = models.CharField(max_length=200, blank=True, default='')
+    servings = models.IntegerField(default=4)
+    sort_order = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'menu_items'
+        ordering = ['day_index', 'sort_order', 'menu_item_id']
+
+    def __str__(self):
+        what = self.recipe.recipe_name if self.recipe else (self.note or 'Meal')
+        return '%s, day %d of %s' % (what, self.day_index + 1, self.menu.name)
+
+
 class UnitConversion(models.Model):
     """Conversion rates between different measurement units"""
     unit_conversion_id = models.AutoField(primary_key=True)

@@ -16,17 +16,24 @@ Functions
                                     MP-1, 18 Oct 2026: returns a FOUR-tuple -
                                     the fourth element is new and was dropped
                                     silently before.
-- meal_plans                      : List all meal plans. Read-tier.
-- create_meal_plan                : Create a meal plan. Edit-tier.
-- view_meal_plan                  : View one meal plan. Read-tier.
-- delete_meal_plan                : Delete a meal plan (POST). Edit-tier.
-- edit_meal_plan                  : Edit a meal plan. Edit-tier.
-- duplicate_meal_plan             : Duplicate / shift a meal plan. Edit-tier.
-- meal_plan_calendar              : Month/week calendar view. Read-tier.
-- meal_plan_shopping_list         : Render a meal plan's shopping list. Read-tier.
-- add_recipe_to_meal_plan_day     : Add a recipe to a day (POST). Edit-tier.
-- remove_recipe_from_meal_plan    : Remove a recipe from a day (POST). Edit-tier.
-- send_meal_plan_shopping_list    : Email a meal plan's shopping list (POST).
+- meal_planner                    : The planner. One week of dates, with
+                                    the meals on them. Read-tier.
+                                    Replaced meal_plans, create_meal_plan,
+                                    view_meal_plan, edit_meal_plan,
+                                    duplicate_meal_plan, delete_meal_plan
+                                    and meal_plan_calendar - seven screens
+                                    for one, because the calendar IS the
+                                    plan now. MN-1, 18 Oct 2026.
+- add_meal_entry                  : Put a recipe on a date (POST). Edit-tier.
+- remove_meal_entry               : Take one off (POST). Edit-tier.
+- set_meal_servings               : Change servings on one meal (POST,
+                                    JSON). Saves immediately, which is why
+                                    the planner has no Save button.
+                                    Edit-tier.
+- meal_shopping_list              : Shop a DATE RANGE. Read-tier. It took
+                                    a meal_plan_id until MN-1, and there
+                                    is no plan to key on any more.
+- send_meal_plan_shopping_list    : Email a shopping list (POST).
                                     Edit-tier.
 
 Auth tiers
@@ -93,9 +100,7 @@ logger = logging.getLogger(__name__)
 from pages.models import (
     CustomProtein,
     HouseholdMember,
-    MealPlan,
-    MealPlanDay,
-    MealPlanRecipe,
+    MealEntry,
     Recipe,
     RecipeCategory,
     RecipeCourse,
@@ -115,9 +120,15 @@ from .shopping import round_shopping_quantity
 # SHARED HELPER - INGREDIENT AGGREGATION
 # =====================================================================
 
-def aggregate_meal_plan_ingredients(meal_plan):
+def aggregate_meal_entries(entries):
     """
     Aggregate ingredients and convert to shopping units.
+
+    MN-1, 18 Oct 2026 - release 3. This took a MEAL PLAN and walked its
+    days; it takes an iterable of MealEntry now, because meals belong
+    to dates and there is no plan to walk. Everything below the walk -
+    the conversion, the smart rounding UP, the three trackers - is
+    untouched, deliberately.
     Always uses the ingredient's shopping unit. Prompts for missing conversions.
 
     Returns a FOUR-tuple:
@@ -218,13 +229,17 @@ def aggregate_meal_plan_ingredients(meal_plan):
     })
 
     # Process all recipes in meal plan
-    for day in meal_plan.days.all().order_by('date'):
-        for meal_recipe in day.recipes.all():
-            recipe = meal_recipe.recipe
+    for entry in entries:
+        # MN-1, 18 Oct 2026 - A NOTE BUYS NOTHING, AND LEFTOVERS WERE
+        # BOUGHT ONCE ALREADY. counts_on_shopping_list is the model's
+        # own answer to both, so the rule lives in one place rather
+        # than in every caller that walks entries.
+        if entry.counts_on_shopping_list:
+            recipe = entry.recipe
             # MD-1, 18 Oct 2026 - E33. The model's own property, which
             # was unused until now and carried this expression's unsafe
             # twin. It is this expression now.
-            servings_multiplier = meal_recipe.servings_multiplier
+            servings_multiplier = entry.servings_multiplier
 
             for recipe_ingredient in recipe.recipe_ingredients.all():
                 ingredient = recipe_ingredient.ingredient
@@ -359,697 +374,32 @@ def aggregate_meal_plan_ingredients(meal_plan):
 
 
 # =====================================================================
-# MEAL PLAN CRUD
+# THE PLANNER - MN-1, 18 Oct 2026, release 3
 # =====================================================================
+#
+# SEVEN SCREENS BECAME ONE. meal_plans, create_meal_plan,
+# view_meal_plan, edit_meal_plan, duplicate_meal_plan, delete_meal_plan
+# and meal_plan_calendar are all gone, and so is the chain of boxes
+# they existed to manage.
+#
+# The calendar IS the plan. A meal has a date. There is no name, no
+# start date and no end date to fill in before you can plan a single
+# dinner, nothing can overlap because there is only one calendar, and
+# changing your mind about a week cannot throw meals away - which was
+# C13, C17 and C20 of release 1 between them, all three dissolved by
+# the model rather than guarded.
 
 @login_required
 @permission_required('auth.can_access_recipes', raise_exception=True)
-def meal_plans(request):
-    """List all meal plans"""
+def meal_planner(request):
+    """One week of dates, and the meals on them."""
 
-    # Get all meal plans with recipe counts, sorted by most recent first
-    meal_plans_list = MealPlan.objects.annotate(
-        recipe_count=Count('days__recipes')
-    ).order_by('-start_date')  # NOTE (Phase 10 ASCII): orders newest first
-
-    # MD-1, 18 Oct 2026 - D23. The list has no week of its own, so its
-    # Create button sends the NEXT Monday - which is what the design
-    # record asks for, and what the calendar does with the week it is
-    # showing.
-    today = datetime.now().date()
-    next_monday = today + timedelta(days=(7 - today.weekday()) % 7 or 7)
-
-    context = {
-        'meal_plans': meal_plans_list,
-        'next_monday': next_monday,
-    }
-
-    return render(request, 'meal_plans.html', context)
-
-
-@login_required
-@permission_required('auth.can_edit_recipes', raise_exception=True)
-def create_meal_plan(request):
-    """Create a new meal plan"""
-
-    if request.method == 'POST':
-        try:
-            # MP-1, 18 Oct 2026 - C20. .strip(), and a name is
-            # REQUIRED. Edit has refused a blank name since it was
-            # written; Create accepted one, so the list could carry a
-            # plan with no name on it and no way to tell two apart.
-            plan_name = request.POST.get('plan_name', '').strip()
-            start_date_str = request.POST.get('start_date')
-            end_date_str = request.POST.get('end_date')
-
-            if not plan_name:
-                messages.error(request, 'Plan name is required.')
-                return redirect('create_meal_plan')
-
-            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-
-            days_diff = (end_date - start_date).days + 1
-            if days_diff < 1 or days_diff > 7:
-                messages.error(request, 'Meal plan must be between 1 and 7 days.')
-                return redirect('create_meal_plan')
-
-            # MP-1, 18 Oct 2026 - C17. A WARNING, NOT A REFUSAL. Two
-            # plans over the same dates are allowed and the calendar
-            # can only show one of them for a week, so the second
-            # one's meals are invisible there. Refusing the overlap
-            # would be a new rule nobody asked for; saying so is what
-            # the design record asks for, and the calendar now says it
-            # too.
-            clash = MealPlan.objects.filter(
-                start_date__lte=end_date, end_date__gte=start_date
-            ).order_by('start_date').first()
-            if clash:
-                messages.warning(
-                    request,
-                    'These dates overlap "%s" (%s to %s). Both plans are '
-                    'kept, but the calendar can only show one plan for a '
-                    'week.' % (clash.plan_name,
-                               clash.start_date.strftime('%d %b'),
-                               clash.end_date.strftime('%d %b %Y')))
-
-            # MP-1, 18 Oct 2026 - C14. ONE TRANSACTION. There was
-            # exactly one transaction.atomic() in this module and it
-            # was in Edit, so a bad recipe id - or any error part way
-            # down the week - left a plan with some of its days and
-            # some of its meals, and the message said the create had
-            # failed. Duplicate had the same hole and is fixed the
-            # same way.
-            with transaction.atomic():
-                meal_plan = MealPlan.objects.create(
-                    plan_name=plan_name,
-                    start_date=start_date,
-                    end_date=end_date,
-                    created_by=request.user
-                )
-
-                current_date = start_date
-                while current_date <= end_date:
-                    meal_day = MealPlanDay.objects.create(
-                        meal_plan=meal_plan,
-                        date=current_date
-                    )
-
-                    date_key = current_date.strftime('%Y-%m-%d')
-                    recipe_ids = request.POST.getlist(f'recipes_{date_key}[]')
-                    servings_list = request.POST.getlist(f'servings_{date_key}[]')
-
-                    for idx, recipe_id in enumerate(recipe_ids):
-                        if recipe_id:
-                            recipe = Recipe.objects.get(recipe_id=recipe_id)
-                            servings = int(servings_list[idx]) if idx < len(servings_list) else recipe.servings
-
-                            MealPlanRecipe.objects.create(
-                                meal_plan_day=meal_day,
-                                recipe=recipe,
-                                servings=servings,
-                                sort_order=idx
-                            )
-
-                    current_date += timedelta(days=1)
-
-            messages.success(request, f'Meal plan "{plan_name}" created successfully!')
-            return redirect('view_meal_plan', meal_plan_id=meal_plan.meal_plan_id)
-
-        except Exception as e:
-            # MD-1, 18 Oct 2026 - E32. Was print() plus
-            # traceback.print_exc(). logger.exception writes the same
-            # traceback with this module's name in front of it.
-            logger.exception('create_meal_plan failed')
-            messages.error(request, f'Error creating meal plan: {str(e)}')
-            return redirect('create_meal_plan')
-
-    # GET request - show form
-    recipes_qs = Recipe.objects.prefetch_related(
-        'courses', 'categories', 'proteins'
-    ).all().order_by('recipe_name')
-
-    recipes = []
-    for recipe in recipes_qs:
-        recipes.append({
-            'recipe_id': recipe.recipe_id,
-            'recipe_name': recipe.recipe_name,
-            'servings': recipe.servings,
-            'prep_time': recipe.prep_time,
-            'cook_time': recipe.cook_time,
-            'difficulty_level': recipe.difficulty_level or '',
-            'is_vegetarian': recipe.is_vegetarian,
-            'author': recipe.author,
-            'recipe_image': recipe.photo_url,
-            'courses': [course.name for course in recipe.courses.all()],
-            'categories': [cat.name for cat in recipe.categories.all()],
-            'proteins': [protein.name for protein in recipe.proteins.all()]
-        })
-
-    all_courses = list(RecipeCourse.objects.all().order_by('name').values('recipe_course_id', 'name'))
-    all_categories = list(RecipeCategory.objects.all().order_by('name').values('recipe_category_id', 'name'))
-    all_proteins = list(CustomProtein.objects.all().order_by('name').values('custom_protein_id', 'name'))
-
-    # MP-1, 18 Oct 2026 - B12. The model's own choices. This list was
-    # typed out by hand in three places, including recipe_crud.py, and
-    # Recipe.author validates against AUTHOR_CHOICES - so a name added
-    # to the model never reached any of the three pickers.
-    all_authors = [{'value': v, 'name': n} for v, n in Recipe.AUTHOR_CHOICES]
-
-    # MD-1, 18 Oct 2026 - D23. THE CALENDAR'S ?start_date IS READ NOW.
-    # It has been sent since the calendar was written - "Create Meal
-    # Plan for This Week" links with the week it is showing - and this
-    # function never looked at request.GET, so the form always opened on
-    # today and the reader re-typed what they had just clicked.
-    #
-    # Guarded exactly as A5 guards the calendar's own address: a date in
-    # a URL is a string somebody can type. A bad one falls back to
-    # today rather than raising.
-    today = datetime.now().date()
-    start_param = request.GET.get('start_date')
-    if start_param:
-        try:
-            default_start = datetime.strptime(start_param, '%Y-%m-%d').date()
-        except (TypeError, ValueError):
-            default_start = today
-    else:
-        default_start = today
-    default_end = default_start + timedelta(days=6)
-
-    user_favourite_ids = list(
-        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
-    )
-
-    context = {
-        'edit_mode': False,
-        'recipes_json': json.dumps(recipes),
-        'all_courses_json': json.dumps(all_courses),
-        'all_categories_json': json.dumps(all_categories),
-        'all_proteins_json': json.dumps(all_proteins),
-        'all_authors_json': json.dumps(all_authors),
-        'user_favourite_ids_json': json.dumps(user_favourite_ids),
-        # MD-1, 18 Oct 2026 - D23. default_start_date was today even
-        # when the calendar had just said which week it meant.
-        #
-        # `today` STAYS IN THE CONTEXT and is no longer used to bound
-        # the inputs - D27. The template reads it nowhere else, and it
-        # costs nothing to leave for the next round that wants it.
-        'today': today,
-        'default_start_date': default_start.strftime('%Y-%m-%d'),
-        'default_end_date': default_end.strftime('%Y-%m-%d'),
-    }
-
-    return render(request, 'create_meal_plan.html', context)
-
-
-@login_required
-@permission_required('auth.can_access_recipes', raise_exception=True)
-def view_meal_plan(request, meal_plan_id):
-    """View a meal plan with all days and recipes"""
-
-    # Get meal plan with optimized prefetch
-    meal_plan = get_object_or_404(
-        MealPlan.objects.prefetch_related(
-            Prefetch(
-                'days',
-                queryset=MealPlanDay.objects.order_by('date').prefetch_related(
-                    Prefetch(
-                        'recipes',
-                        # MD-1, 18 Oct 2026 - E29. The TAGS as well as
-                        # the recipe. This stopped at select_related,
-                        # so recipe.courses.all and
-                        # recipe.categories.all in the template were a
-                        # query each, per recipe - sixty-three of them
-                        # on a seven-day plan with three meals a day.
-                        queryset=MealPlanRecipe.objects
-                        .select_related('recipe')
-                        .prefetch_related('recipe__courses',
-                                          'recipe__categories')
-                    )
-                )
-            )
-        ),
-        meal_plan_id=meal_plan_id
-    )
-
-    # Days are already prefetched and ordered
-    days = meal_plan.days.all()
-
-    user_favourites = set(
-        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
-    )
-
-    context = {
-        'meal_plan': meal_plan,
-        'days': days,
-        'user_favourites': user_favourites,
-    }
-
-    return render(request, 'view_meal_plan.html', context)
-
-
-@login_required
-@permission_required('auth.can_edit_recipes', raise_exception=True)
-def delete_meal_plan(request, meal_plan_id):
-    """Delete a meal plan"""
-
-    # Only allow POST requests for deletion
-    if request.method != 'POST':
-        messages.error(request, 'Invalid request method.')
-        return redirect('meal_plans')
-
-    try:
-        meal_plan = MealPlan.objects.get(meal_plan_id=meal_plan_id)
-        plan_name = meal_plan.plan_name
-
-        # Delete the meal plan (cascade will delete days and recipes)
-        meal_plan.delete()
-
-        messages.success(request, f'Meal plan "{plan_name}" has been deleted successfully.')
-
-    except MealPlan.DoesNotExist:
-        messages.error(request, 'Meal plan not found.')
-
-    # Check where to redirect
-    redirect_to = request.POST.get('redirect_to', 'list')
-    if redirect_to == 'calendar':
-        return redirect('meal_plan_calendar')
-    return redirect('meal_plans')
-
-
-@login_required
-@permission_required('auth.can_edit_recipes', raise_exception=True)
-def edit_meal_plan(request, meal_plan_id):
-    """Edit an existing meal plan"""
-
-    meal_plan = get_object_or_404(
-        MealPlan.objects.prefetch_related(
-            Prefetch(
-                'days',
-                queryset=MealPlanDay.objects.order_by('date').prefetch_related(
-                    Prefetch(
-                        'recipes',
-                        # MD-1, 18 Oct 2026 - E29. And the three the Edit
-                        # form serialises per recipe: courses,
-                        # categories and proteins.
-                        queryset=MealPlanRecipe.objects
-                        .select_related('recipe')
-                        .prefetch_related('recipe__courses',
-                                          'recipe__categories',
-                                          'recipe__proteins')
-                        .order_by('sort_order')
-                    )
-                )
-            )
-        ),
-        meal_plan_id=meal_plan_id
-    )
-
-    if request.method == 'POST':
-        try:
-            new_plan_name = request.POST.get('plan_name', '').strip()
-            new_start_date_str = request.POST.get('start_date')
-            new_end_date_str = request.POST.get('end_date')
-
-            if not new_plan_name:
-                messages.error(request, 'Plan name is required.')
-                return redirect('edit_meal_plan', meal_plan_id=meal_plan_id)
-
-            new_start_date = datetime.strptime(new_start_date_str, '%Y-%m-%d').date()
-            new_end_date = datetime.strptime(new_end_date_str, '%Y-%m-%d').date()
-
-            days_diff = (new_end_date - new_start_date).days + 1
-            if days_diff < 1 or days_diff > 7:
-                messages.error(request, 'Meal plan must be between 1 and 7 days.')
-                return redirect('edit_meal_plan', meal_plan_id=meal_plan_id)
-
-            with transaction.atomic():
-                meal_plan.plan_name = new_plan_name
-                meal_plan.start_date = new_start_date
-                meal_plan.end_date = new_end_date
-                meal_plan.save()
-
-                existing_days = {day.date: day for day in meal_plan.days.all()}
-
-                new_dates = []
-                current_date = new_start_date
-                while current_date <= new_end_date:
-                    new_dates.append(current_date)
-                    current_date += timedelta(days=1)
-
-                # MP-1, 18 Oct 2026 - C13. COUNT WHAT GOES. Shortening
-                # the dates, or moving the start by one day, deletes the
-                # days that fall outside the new range - and CASCADE
-                # takes their meals. That part is intended; the silence
-                # was not. Nothing in the app said a meal had been
-                # removed, here or in the browser.
-                #
-                # WHAT IS NOT FIXED HERE: the record's "meals move with
-                # the start date". Whether shifting a plan carries its
-                # meals or leaves them on their dates is a behaviour
-                # decision, and release 3 - where the calendar IS the
-                # plan - is where it belongs. This round makes the loss
-                # visible at both ends: the browser warns before saving,
-                # the server names it after.
-                dates_to_keep = set(new_dates)
-                dropped_days = 0
-                dropped_meals = 0
-                for date_obj, day in existing_days.items():
-                    if date_obj not in dates_to_keep:
-                        dropped_days += 1
-                        dropped_meals += day.recipes.count()
-                        day.delete()
-
-                for date_obj in new_dates:
-                    if date_obj in existing_days:
-                        meal_day = existing_days[date_obj]
-                    else:
-                        meal_day = MealPlanDay.objects.create(
-                            meal_plan=meal_plan,
-                            date=date_obj
-                        )
-
-                    date_key = date_obj.strftime('%Y-%m-%d')
-                    recipe_ids = request.POST.getlist(f'recipes_{date_key}[]')
-                    servings_list = request.POST.getlist(f'servings_{date_key}[]')
-
-                    # MP-1, 18 Oct 2026 - C15. A QUEUE PER RECIPE, NOT
-                    # ONE ROW PER RECIPE.
-                    #
-                    # This was `{mr.recipe.recipe_id: mr for ...}`. Two
-                    # servings of the same recipe on one day collapsed
-                    # into a single key, so the second row was never
-                    # visited - it kept its old servings and sort order,
-                    # was never updated and was never deleted, because
-                    # its recipe id WAS in recipes_to_keep. The reader
-                    # saw two rows, edited both, and one of the edits
-                    # went nowhere.
-                    #
-                    # The record says "rows indexed by their own ID".
-                    # The form does not post row IDs - it posts
-                    # `recipes_<date>[]`, a list of RECIPE ids - so that
-                    # would mean a parallel hidden input in three JS
-                    # blocks and a view that trusts it. Keying to a LIST
-                    # and consuming one row per posted entry reaches the
-                    # same outcome, changes no form, and the leftovers
-                    # in the queues are exactly the rows to delete, so
-                    # recipes_to_keep is not needed at all.
-                    #
-                    # `.all()` and not `.order_by()`: the day's recipes
-                    # were prefetched in sort_order above, and asking
-                    # for an order here throws that cache away and costs
-                    # a query per day.
-                    existing_rows = {}
-                    for mr in meal_day.recipes.all():
-                        existing_rows.setdefault(
-                            mr.recipe.recipe_id, []).append(mr)
-
-                    for idx, recipe_id in enumerate(recipe_ids):
-                        if recipe_id:
-                            recipe_id = int(recipe_id)
-
-                            recipe = Recipe.objects.get(recipe_id=recipe_id)
-                            servings = int(servings_list[idx]) if idx < len(servings_list) else recipe.servings
-
-                            queue = existing_rows.get(recipe_id) or []
-                            if queue:
-                                meal_recipe = queue.pop(0)
-                                meal_recipe.servings = servings
-                                meal_recipe.sort_order = idx
-                                meal_recipe.save()
-                            else:
-                                MealPlanRecipe.objects.create(
-                                    meal_plan_day=meal_day,
-                                    recipe=recipe,
-                                    servings=servings,
-                                    sort_order=idx
-                                )
-
-                    for rows in existing_rows.values():
-                        for meal_recipe in rows:
-                            meal_recipe.delete()
-
-            # MP-1, 18 Oct 2026 - C13. SAY WHAT WAS REMOVED. A
-            # warning, after the success, because the save did succeed
-            # and the reader still needs to know a meal is gone.
-            if dropped_meals:
-                messages.warning(
-                    request,
-                    '%d meal%s on %d day%s fell outside the new dates and '
-                    'were removed.'
-                    % (dropped_meals, '' if dropped_meals == 1 else 's',
-                       dropped_days, '' if dropped_days == 1 else 's'))
-            messages.success(request, f'Meal plan "{new_plan_name}" updated successfully!')
-            # MD-1, 18 Oct 2026 - D24. CARRY THE CALENDAR THROUGH THE
-            # SAVE. BK-1 taught the Back control to return to the week
-            # you came from, on 3 Oct; this redirect still dropped
-            # from= and week= on the floor, so saving an edit sent you
-            # to the View page with no idea where you had started and
-            # ITS Back went to the list.
-            dest = reverse('view_meal_plan',
-                           kwargs={'meal_plan_id': meal_plan_id})
-            if request.GET.get('from') == 'calendar':
-                dest = '%s?from=calendar&week=%s' % (
-                    dest, request.GET.get('week', ''))
-            return redirect(dest)
-
-        except Exception as e:
-            # MD-1, 18 Oct 2026 - E32, the second of three.
-            logger.exception('edit_meal_plan failed for plan %s',
-                             meal_plan_id)
-            messages.error(request, f'Error updating meal plan: {str(e)}')
-            return redirect('edit_meal_plan', meal_plan_id=meal_plan_id)
-
-    # GET request - prepare data for editing
-    meal_plan_data = {
-        'meal_plan_id': meal_plan.meal_plan_id,
-        'plan_name': meal_plan.plan_name,
-        'start_date': meal_plan.start_date.strftime('%Y-%m-%d'),
-        'end_date': meal_plan.end_date.strftime('%Y-%m-%d'),
-        'days': []
-    }
-
-    for day in meal_plan.days.all():
-        day_data = {
-            'date': day.date.strftime('%Y-%m-%d'),
-            'recipes': []
-        }
-
-        for meal_recipe in day.recipes.all():
-            recipe = meal_recipe.recipe
-            day_data['recipes'].append({
-                'meal_plan_recipe_id': meal_recipe.meal_plan_recipe_id,
-                'recipe_id': recipe.recipe_id,
-                'recipe_name': recipe.recipe_name,
-                'servings': meal_recipe.servings,
-                'sort_order': meal_recipe.sort_order,
-                'recipe_image': recipe.photo_url,
-                'prep_time': recipe.prep_time,
-                'cook_time': recipe.cook_time,
-                'difficulty_level': recipe.difficulty_level or '',
-                'is_vegetarian': recipe.is_vegetarian,
-                'courses': [course.name for course in recipe.courses.all()],
-                'categories': [cat.name for cat in recipe.categories.all()],
-                'proteins': [protein.name for protein in recipe.proteins.all()]
-            })
-
-        meal_plan_data['days'].append(day_data)
-
-    recipes_qs = Recipe.objects.prefetch_related(
-        'courses', 'categories', 'proteins'
-    ).all().order_by('recipe_name')
-
-    recipes = []
-    for recipe in recipes_qs:
-        recipes.append({
-            'recipe_id': recipe.recipe_id,
-            'recipe_name': recipe.recipe_name,
-            'servings': recipe.servings,
-            'prep_time': recipe.prep_time,
-            'cook_time': recipe.cook_time,
-            'difficulty_level': recipe.difficulty_level or '',
-            'is_vegetarian': recipe.is_vegetarian,
-            'author': recipe.author,
-            'recipe_image': recipe.photo_url,
-            'courses': [course.name for course in recipe.courses.all()],
-            'categories': [cat.name for cat in recipe.categories.all()],
-            'proteins': [protein.name for protein in recipe.proteins.all()]
-        })
-
-    all_courses = list(RecipeCourse.objects.all().order_by('name').values('recipe_course_id', 'name'))
-    all_categories = list(RecipeCategory.objects.all().order_by('name').values('recipe_category_id', 'name'))
-    all_proteins = list(CustomProtein.objects.all().order_by('name').values('custom_protein_id', 'name'))
-
-    # MP-1, 18 Oct 2026 - B12. The model's own choices. This list was
-    # typed out by hand in three places, including recipe_crud.py, and
-    # Recipe.author validates against AUTHOR_CHOICES - so a name added
-    # to the model never reached any of the three pickers.
-    all_authors = [{'value': v, 'name': n} for v, n in Recipe.AUTHOR_CHOICES]
-
-    user_favourite_ids = list(
-        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
-    )
-
-    context = {
-        'edit_mode': True,
-        'meal_plan': meal_plan,
-        'meal_plan_json': json.dumps(meal_plan_data),
-        'recipes_json': json.dumps(recipes),
-        'all_courses_json': json.dumps(all_courses),
-        'all_categories_json': json.dumps(all_categories),
-        'all_proteins_json': json.dumps(all_proteins),
-        'all_authors_json': json.dumps(all_authors),
-        'user_favourite_ids_json': json.dumps(user_favourite_ids),
-    }
-
-    return render(request, 'create_meal_plan.html', context)
-
-
-@login_required
-@permission_required('auth.can_edit_recipes', raise_exception=True)
-def duplicate_meal_plan(request, meal_plan_id):
-    """Duplicate a meal plan to new dates"""
-
-    try:
-        # Get the original meal plan with all related data
-        original_plan = MealPlan.objects.prefetch_related(
-            'days__recipes__recipe'
-        ).get(meal_plan_id=meal_plan_id)
-
-        if request.method == 'POST':
-            new_plan_name = request.POST.get('new_plan_name', '').strip()
-            new_start_date = request.POST.get('new_start_date')
-
-            if not new_plan_name:
-                messages.error(request, 'Please enter a name for the duplicated meal plan.')
-                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
-
-            if not new_start_date:
-                messages.error(request, 'Please select a start date.')
-                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
-
-            try:
-                # Parse the new start date
-                new_start = datetime.strptime(new_start_date, '%Y-%m-%d').date()
-
-                # Calculate duration of original plan
-                duration = (original_plan.end_date - original_plan.start_date).days
-                new_end = new_start + timedelta(days=duration)
-
-                # MP-1, 18 Oct 2026 - C17, the same warning Create now
-                # gives. A duplicate landing on top of another plan is
-                # the commonest way to make two plans share a week, and
-                # the calendar can only show one of them. The original
-                # is excluded because a shift - duplicate then delete -
-                # always overlaps itself.
-                clash = MealPlan.objects.filter(
-                    start_date__lte=new_end, end_date__gte=new_start
-                ).exclude(meal_plan_id=original_plan.meal_plan_id
-                          ).order_by('start_date').first()
-                if clash:
-                    messages.warning(
-                        request,
-                        'These dates overlap "%s" (%s to %s). Both plans '
-                        'are kept, but the calendar can only show one plan '
-                        'for a week.' % (clash.plan_name,
-                                         clash.start_date.strftime('%d %b'),
-                                         clash.end_date.strftime('%d %b %Y')))
-
-                # MP-1, 18 Oct 2026 - C14. ONE TRANSACTION, as on
-                # Create. A failure part way through the copy used to
-                # leave a plan with some of its days, and - on a SHIFT,
-                # where the original is deleted afterwards - the
-                # original was deleted whether or not the copy was
-                # whole.
-                with transaction.atomic():
-                    # Create new meal plan with user-provided name
-                    new_plan = MealPlan.objects.create(
-                        plan_name=new_plan_name,
-                        start_date=new_start,
-                        end_date=new_end,
-                        created_by=request.user
-                    )
-
-                    # Duplicate all days and recipes
-                    for day in original_plan.days.all().order_by('date'):
-                        # Calculate the offset from original start date
-                        day_offset = (day.date - original_plan.start_date).days
-                        new_day_date = new_start + timedelta(days=day_offset)
-
-                        # Create new day
-                        new_day = MealPlanDay.objects.create(
-                            meal_plan=new_plan,
-                            date=new_day_date
-                        )
-
-                        # Copy all recipes for this day
-                        # MP-1, 18 Oct 2026 - AND sort_order, which the
-                        # copy used to drop. Found while wrapping this
-                        # block for C14: every copied meal took the
-                        # column's default, so a duplicated day came out
-                        # in an arbitrary order. Two words, in a block
-                        # already being rewritten.
-                        for meal_recipe in day.recipes.all().order_by('sort_order'):
-                            MealPlanRecipe.objects.create(
-                                meal_plan_day=new_day,
-                                recipe=meal_recipe.recipe,
-                                servings=meal_recipe.servings,
-                                sort_order=meal_recipe.sort_order
-                            )
-
-                # Check if user wants to delete original (shift functionality)
-                delete_original = request.POST.get('delete_original') == 'yes'
-
-                if delete_original:
-                    # Delete the original meal plan (this is a "shift" operation)
-                    original_plan_name = original_plan.plan_name
-                    original_plan.delete()
-                    messages.success(request, f'Meal plan "{original_plan_name}" shifted to new dates: {new_start.strftime("%B %d, %Y")} - {new_end.strftime("%B %d, %Y")}')
-                else:
-                    # Regular duplicate (keep original)
-                    messages.success(request, f'Meal plan "{new_plan_name}" created successfully starting on {new_start.strftime("%B %d, %Y")}.')
-
-                return redirect('view_meal_plan', meal_plan_id=new_plan.meal_plan_id)
-
-            except ValueError as e:
-                messages.error(request, f'Invalid date format: {str(e)}')
-                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
-            except Exception as e:
-                messages.error(request, f'Error duplicating meal plan: {str(e)}')
-                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
-
-        # GET request - should not happen with modal, but redirect just in case
-        return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
-
-    except MealPlan.DoesNotExist:
-        messages.error(request, 'Meal plan not found.')
-        return redirect('meal_plans')
-
-
-# =====================================================================
-# CALENDAR
-# =====================================================================
-
-@login_required
-@permission_required('auth.can_access_recipes', raise_exception=True)
-def meal_plan_calendar(request):
-    """Calendar view for meal plans"""
-
-    # Get requested month/year or default to current
-    #
-    # MP-1, 18 Oct 2026 - A5. A NON-NUMERIC OR OUT-OF-RANGE ADDRESS
-    # FALLS BACK, it does not 500. Three different failures lived here:
-    #
-    #   ?year=abc      int() raises straight away
-    #   ?month=13      survives int() and raises three lines down, in
-    #                  date(year, month, 1) - and again in monthcalendar
-    #   ?year=99999    survives both and raises in December only, where
-    #                  the next month is date(year + 1, 1, 1)
-    #
-    # So the range matters as much as the type. The window is kept
-    # plainly readable rather than pushed to date.MAXYEAR: a meal plan
-    # calendar for the year 9999 is a typo, not a request.
     today = timezone.now().date()
+
+    # THE ADDRESS BAR IS A STRING SOMEBODY CAN TYPE - A5, 18 Oct 2026,
+    # one screen away. ?year=abc was a 500 on the old calendar, and so
+    # was ?month=13 three lines later, and so was ?year=99999 in
+    # December only. All three fall back here rather than raising.
     try:
         year = int(request.GET.get('year', today.year))
         if not 1900 <= year <= 2200:
@@ -1063,293 +413,287 @@ def meal_plan_calendar(request):
     except (TypeError, ValueError):
         month = today.month
 
-    # Get selected week start date (Monday)
-    selected_week_start = request.GET.get('week')
-    if selected_week_start:
+    asked = request.GET.get('week')
+    if asked:
         try:
-            selected_week_start = datetime.strptime(
-                selected_week_start, '%Y-%m-%d').date()
+            week_start = datetime.strptime(asked, '%Y-%m-%d').date()
         except (TypeError, ValueError):
-            selected_week_start = today - timedelta(days=today.weekday())
+            week_start = today
     else:
-        # Default to current week (find Monday)
-        selected_week_start = today - timedelta(days=today.weekday())
+        week_start = today
 
-    # MD-1, 18 Oct 2026 - D26. WHATEVER ARRIVES, THE WEEK STARTS ON A
-    # MONDAY. selectMealPlan() sends a plan's start_date as ?week=, so a
-    # plan beginning on a Wednesday opened a Wednesday-to-Tuesday band
-    # that matched none of the mini calendar's rows - and the row it was
-    # meant to highlight could never match either, which is the other
-    # half of D26.
-    #
-    # Here rather than in the JS: ?week= is an address anybody can type,
-    # and one line covers the plan list, the month grid, a typed URL and
-    # a bookmark alike.
-    selected_week_start -= timedelta(days=selected_week_start.weekday())
-    selected_week_end = selected_week_start + timedelta(days=6)
+    # WHATEVER ARRIVES, THE WEEK STARTS ON A MONDAY - D26, and it is
+    # the model's rule now rather than one screen's. Every row in the
+    # mini calendar is a Monday-to-Sunday week, so a band that starts
+    # on a Wednesday lines up with nothing and cannot be highlighted.
+    week_start -= timedelta(days=week_start.weekday())
+    week_end = week_start + timedelta(days=6)
 
-    # Build calendar data for the month
-    # Get first day of month and adjust to start from Monday
+    # ONE QUERY FOR THE WEEK - E29's lesson, built in rather than
+    # retro-fitted. The old calendar asked for each day and then for
+    # that day's recipes, seven times over.
+    entries = list(
+        MealEntry.objects.filter(date__gte=week_start, date__lte=week_end)
+        .select_related('recipe')
+        .prefetch_related('recipe__courses', 'recipe__categories'))
+    by_date = {}
+    for e in entries:
+        by_date.setdefault(e.date, []).append(e)
+
+    week_days = []
+    for i in range(7):
+        d = week_start + timedelta(days=i)
+        week_days.append({
+            'date': d,
+            'day_name': d.strftime('%A'),
+            'day_short': d.strftime('%a'),
+            'day_num': d.day,
+            'is_today': d == today,
+            'entries': by_date.get(d, []),
+        })
+
+    # THE MINI MONTH. One query for the dots, not one per plan.
     first_of_month = date(year, month, 1)
-
-    # Get all days we need to show (including overflow from prev/next months)
-    cal = monthcalendar(year, month)  # Returns weeks starting from Monday
-
-    # Get all meal plans (shared across users)
-    # MD-1, 18 Oct 2026 - E29. ONE QUERY FOR EVERY PLAN'S COUNT.
-    #
-    # The plan list prints {{ plan.total_recipes }}, which is a PROPERTY
-    # on MealPlan that runs its own COUNT - so a list of twelve plans
-    # cost twelve queries to print twelve numbers. Exactly what the
-    # design record says, and the annotation is the answer.
-    #
-    # `recipe_count` AND NOT `total_recipes`. Annotating over the
-    # property's name raises "property total_recipes of MealPlan object
-    # has no setter" the moment the queryset is iterated - measured, by
-    # writing it that way first and driving the page. And
-    # `recipe_count` is not a name invented here: meal_plans() has
-    # annotated exactly that, with exactly this expression, since it was
-    # written, and meal_plans.html reads it.
-    #
-    # The property stays. view_meal_plan.html uses it for ONE plan,
-    # where one query is the right number.
-    all_meal_plans = MealPlan.objects.annotate(
-        recipe_count=Count('days__recipes')
-    ).order_by('-start_date')
-
-    # Get meal plans that overlap with this month (for dot indicators)
-    month_start = date(year, month, 1)
     if month == 12:
         month_end = date(year + 1, 1, 1) - timedelta(days=1)
     else:
         month_end = date(year, month + 1, 1) - timedelta(days=1)
-
-    month_meal_plans = MealPlan.objects.filter(
-        start_date__lte=month_end,
-        end_date__gte=month_start
-    )
-
-    # Build a set of dates that have meals planned
-    # MD-1, 18 Oct 2026 - E29. ONE QUERY, NOT ONE PER PLAN. This was a
-    # loop that asked the database for each overlapping plan's days
-    # separately; a month with eight plans in it cost eight queries to
-    # draw the dots.
     dates_with_meals = set(
-        MealPlanDay.objects.filter(
-            meal_plan__in=month_meal_plans,
-            recipes__isnull=False
-        ).values_list('date', flat=True).distinct())
+        MealEntry.objects.filter(date__gte=first_of_month,
+                                 date__lte=month_end)
+        .values_list('date', flat=True).distinct())
 
-    # Build calendar weeks with metadata
     calendar_weeks = []
-    for week in cal:
-        week_data = []
-        week_dates = []
+    for week in monthcalendar(year, month):
+        days, dates = [], []
         for day_num in week:
             if day_num == 0:
-                week_data.append(None)
-            else:
-                day_date = date(year, month, day_num)
-                week_dates.append(day_date)
-                week_data.append({
-                    'day': day_num,
-                    'date': day_date,
-                    'has_meal': day_date in dates_with_meals,
-                    'is_today': day_date == today,
-                })
+                days.append(None)
+                continue
+            d = date(year, month, day_num)
+            dates.append(d)
+            days.append({'day': day_num, 'date': d,
+                         'has_meal': d in dates_with_meals,
+                         'is_today': d == today})
+        row_start = (dates[0] - timedelta(days=dates[0].weekday())
+                     if dates else None)
+        calendar_weeks.append({'days': days, 'week_start': row_start})
 
-        # Calculate week start (Monday) for this row
-        if week_dates:
-            # Find the Monday of this week
-            first_valid_date = week_dates[0]
-            week_start = first_valid_date - timedelta(days=first_valid_date.weekday())
-        else:
-            week_start = None
-
-        calendar_weeks.append({
-            'days': week_data,
-            'week_start': week_start,
-        })
-
-    # Get the meal plan for the selected week (if any)
-    #
-    # MP-1, 18 Oct 2026 - C17. DETERMINISTIC, AND IT SAYS SO.
-    # .first() on an unordered queryset asked the database to choose,
-    # so which of two overlapping plans a week showed could change
-    # between two loads of the same page - and the meals in the other
-    # one were invisible with nothing on the screen to suggest they
-    # existed. Showing every plan in the week is release-3 markup; what
-    # ships here is a stable choice and a sentence.
-    week_plans = list(MealPlan.objects.filter(
-        start_date__lte=selected_week_end,
-        end_date__gte=selected_week_start
-    ).order_by('start_date', 'meal_plan_id'))
-    selected_meal_plan = week_plans[0] if week_plans else None
-    if len(week_plans) > 1:
-        messages.info(
-            request,
-            '%d meal plans cover this week. Showing "%s"; the others are '
-            'on the Meal Plans list.'
-            % (len(week_plans), selected_meal_plan.plan_name))
-
-    # MD-1, 18 Oct 2026 - E29. THE WEEK'S DAYS AND MEALS, IN ONE GO.
-    #
-    # The loop below used to ask for each day and then for that day's
-    # recipes - two queries a day, fourteen to draw a week. One
-    # prefetched query answers both, and the loop reads a dict.
-    #
-    # .all() on the prefetched manager keeps the cache; the Prefetch
-    # carries the sort order, so the ordering the page relies on is the
-    # queryset's and not a second trip.
-    week_day_map = {}
-    if selected_meal_plan:
-        week_day_map = dict(
-            (d.date, d) for d in MealPlanDay.objects.filter(
-                meal_plan=selected_meal_plan,
-                date__gte=selected_week_start,
-                date__lte=selected_week_end,
-            ).prefetch_related(
-                Prefetch('recipes',
-                         queryset=MealPlanRecipe.objects
-                         .select_related('recipe')
-                         .order_by('sort_order'))))
-
-    # Build week detail data
-    week_days = []
-    for i in range(7):
-        day_date = selected_week_start + timedelta(days=i)
-        day_data = {
-            'date': day_date,
-            'day_name': day_date.strftime('%A'),
-            'day_short': day_date.strftime('%a'),
-            'day_num': day_date.day,
-            'is_today': day_date == today,
-            'recipes': [],
-            'meal_plan_day_id': None,
-        }
-
-        # If there's a meal plan for this week, get recipes for this day
-        #
-        # MD-1, 18 Oct 2026 - E29. FOURTEEN QUERIES BECAME ONE PAIR.
-        # This used to ask for the day and then for its recipes, inside
-        # a loop over seven days. week_day_map is built once above.
-        if selected_meal_plan:
-            meal_plan_day = week_day_map.get(day_date)
-
-            if meal_plan_day:
-                day_data['meal_plan_day_id'] = meal_plan_day.meal_plan_day_id
-                recipes = meal_plan_day.recipes.all()
-
-                for mpr in recipes:
-                    recipe = mpr.recipe
-                    day_data['recipes'].append({
-                        'meal_plan_recipe_id': mpr.meal_plan_recipe_id,
-                        'recipe_id': recipe.recipe_id,
-                        'name': recipe.recipe_name,
-                        'image': recipe.photo_url,
-                        'prep_time': recipe.prep_time,
-                        'cook_time': recipe.cook_time,
-                        'total_time': (recipe.prep_time or 0) + (recipe.cook_time or 0),
-                        'servings': mpr.servings,
-                        'difficulty': recipe.difficulty_level,
-                    })
-
-        week_days.append(day_data)
-
-    # Previous and next month for navigation
-    if month == 1:
-        prev_month = {'year': year - 1, 'month': 12}
-    else:
-        prev_month = {'year': year, 'month': month - 1}
-
-    if month == 12:
-        next_month = {'year': year + 1, 'month': 1}
-    else:
-        next_month = {'year': year, 'month': month + 1}
-
-    # Month name for display
-    month_name = date(year, month, 1).strftime('%B %Y')
-
-    # Get all recipes for the "Add Recipe" modal
-    all_recipes = Recipe.objects.all().order_by('recipe_name')
+    prev_month = ({'year': year - 1, 'month': 12} if month == 1
+                  else {'year': year, 'month': month - 1})
+    next_month = ({'year': year + 1, 'month': 1} if month == 12
+                  else {'year': year, 'month': month + 1})
 
     context = {
-        'calendar_weeks': calendar_weeks,
-        'month_name': month_name,
+        'today': today,
         'year': year,
         'month': month,
+        'month_name': first_of_month.strftime('%B %Y'),
         'prev_month': prev_month,
         'next_month': next_month,
-        'today': today,
-        'selected_week_start': selected_week_start,
-        'selected_week_end': selected_week_end,
-        'selected_meal_plan': selected_meal_plan,
+        'calendar_weeks': calendar_weeks,
+        'week_start': week_start,
+        'week_end': week_end,
         'week_days': week_days,
-        'all_meal_plans': all_meal_plans,
-        'all_recipes': all_recipes,
+        'prev_week': week_start - timedelta(days=7),
+        'next_week': week_start + timedelta(days=7),
+        'this_week': today - timedelta(days=today.weekday()),
+        'meal_count': len(entries),
+        'household_size': household_size(request.user),
+        'all_recipes': Recipe.objects.all().order_by('recipe_name'),
     }
+    return render(request, 'meal_planner.html', context)
 
-    return render(request, 'meal_plan_calendar.html', context)
+
+def household_size(user):
+    """How many this house cooks for, used as the servings default.
+
+    MN-1, 18 Oct 2026. The design record asks for a household size that
+    "defaults to the number of active household members", and
+    HouseholdMember is already the roster SL-4 built the email list
+    from - so there is nothing new to configure.
+
+    Falls back to 4 when the roster is empty, which is what both ends
+    of the old code hardcoded.
+    """
+    try:
+        n = (HouseholdMember.objects.for_user(user)
+             .filter(is_active=True).count())
+    except Exception:
+        n = 0
+    return n or 4
+
+
+def week_of(value, fallback):
+    """A ?date= string as the Monday of its week, or the fallback."""
+    try:
+        d = datetime.strptime(value, '%Y-%m-%d').date()
+    except (TypeError, ValueError):
+        return fallback
+    return d
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def add_meal_entry(request):
+    """Put a recipe on a date.
+
+    MN-1, 18 Oct 2026. The view this replaces demanded a plan id the
+    URL never supplied, so every add on the calendar was a TypeError
+    until MP-1 - and then needed a MealPlanDay row to exist, which is
+    why a day outside a plan had a button that could not work (A3).
+
+    A date is a date. Any date can take a meal.
+    """
+    when = week_of(request.POST.get('date'), None)
+    recipe_id = request.POST.get('recipe_id')
+    servings = request.POST.get('servings')
+
+    if when is None:
+        messages.error(request, 'That date could not be read.')
+        return redirect('meal_planner')
+    try:
+        recipe = Recipe.objects.get(recipe_id=recipe_id)
+    except (Recipe.DoesNotExist, ValueError, TypeError):
+        messages.error(request, 'That recipe no longer exists.')
+        return redirect('%s?week=%s' % (reverse('meal_planner'),
+                                        when.strftime('%Y-%m-%d')))
+
+    # C19's lesson, and it survives the model change: the recipe's own
+    # yield, then the household size, and only then a 4.
+    try:
+        servings = int(servings)
+    except (TypeError, ValueError):
+        servings = recipe.servings or household_size(request.user)
+
+    last = MealEntry.objects.filter(date=when).aggregate(
+        Max('sort_order'))['sort_order__max']
+    MealEntry.objects.create(
+        date=when, recipe=recipe, servings=servings,
+        sort_order=(last or 0) + 1, created_by=request.user)
+
+    messages.success(request, 'Added "%s" to %s'
+                     % (recipe.recipe_name, when.strftime('%A, %d %B')))
+    return redirect('%s?week=%s' % (reverse('meal_planner'),
+                                    when.strftime('%Y-%m-%d')))
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def remove_meal_entry(request):
+    """Take a meal off its date."""
+    try:
+        entry = MealEntry.objects.select_related('recipe').get(
+            meal_entry_id=request.POST.get('meal_entry_id'))
+    except (MealEntry.DoesNotExist, ValueError, TypeError):
+        messages.error(request, 'That meal is no longer on the planner.')
+        return redirect('meal_planner')
+
+    when = entry.date
+    what = entry.recipe.recipe_name if entry.recipe else (entry.note or 'Meal')
+    entry.delete()
+    messages.success(request, 'Removed "%s" from %s'
+                     % (what, when.strftime('%A, %d %B')))
+    return redirect('%s?week=%s' % (reverse('meal_planner'),
+                                    when.strftime('%Y-%m-%d')))
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def set_meal_servings(request):
+    """Change how many a meal is cooked for. Saves immediately.
+
+    MN-1, 18 Oct 2026. The design record asks for - and + beside every
+    meal, saving with no Save button: "Press - or + beside any meal in
+    the planner. It saves immediately; there is no Save button."
+
+    Changing servings here never touches the recipe. The shopping list
+    scales from MealEntry.servings_multiplier, which is the meal's own
+    number over the recipe's yield.
+    """
+    try:
+        entry = MealEntry.objects.select_related('recipe').get(
+            meal_entry_id=request.POST.get('meal_entry_id'))
+    except (MealEntry.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({'success': False,
+                             'error': 'That meal is no longer on the planner.'},
+                            status=404)
+    try:
+        servings = int(request.POST.get('servings'))
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False,
+                             'error': 'That is not a number of servings.'},
+                            status=400)
+    # A FLOOR OF ONE AND A CEILING OF NINETY-NINE. Nobody cooks for
+    # nought, and the - button must not be able to walk a meal into
+    # negative servings that then scale the shopping list backwards.
+    servings = max(1, min(99, servings))
+    entry.servings = servings
+    entry.save(update_fields=['servings', 'updated_at'])
+
+    recipe_yield = entry.recipe.servings if entry.recipe else None
+    return JsonResponse({
+        'success': True,
+        'servings': servings,
+        'recipe_yield': recipe_yield,
+        'scales': (float(entry.servings_multiplier)
+                   if entry.recipe else None),
+    })
 
 
 # =====================================================================
-# SHOPPING LIST (RENDER / MUTATE / EMAIL)
+# SHOPPING LIST - A DATE RANGE, NOT A PLAN
 # =====================================================================
 
 @login_required
 @permission_required('auth.can_access_recipes', raise_exception=True)
-def meal_plan_shopping_list(request, meal_plan_id):
-    """Display shopping list with unit conversion and prompt for missing conversions"""
+def meal_shopping_list(request):
+    """Shop for the days you choose.
+
+    MN-1, 18 Oct 2026. This took a meal_plan_id and there is no plan to
+    key on any more, so it takes ?from= and ?to= and defaults to the
+    week the planner was showing.
+
+    THE DATE RANGE IS THE ONLY THING THAT CHANGED. The conversion, the
+    aggregation and the rounding UP are untouched - the design record
+    is explicit that this part is already ahead of the field, and
+    release 4 builds saved ticks, manual items and pantry staples on
+    top of it rather than replacing it.
+    """
+    today = timezone.now().date()
+    monday = today - timedelta(days=today.weekday())
+    start = week_of(request.GET.get('from'), monday)
+    end = week_of(request.GET.get('to'), start + timedelta(days=6))
+    if end < start:
+        start, end = end, start
+    # A CEILING, because the aggregator walks every ingredient of every
+    # recipe in the range and ?from=1900-01-01 would walk all of them.
+    if (end - start).days > 92:
+        end = start + timedelta(days=92)
+        messages.info(request, 'A shopping list covers at most 13 weeks. '
+                               'Showing the first.')
 
     try:
-        # Get meal plan with optimized prefetching
-        meal_plan = get_object_or_404(
-            MealPlan.objects.prefetch_related(
-                Prefetch(
-                    'days',
-                    queryset=MealPlanDay.objects.order_by('date').prefetch_related(
-                        Prefetch(
-                            'recipes',
-                            queryset=MealPlanRecipe.objects.select_related('recipe').prefetch_related(
-                                Prefetch(
-                                    'recipe__recipe_ingredients',
-                                    queryset=RecipeIngredient.objects.select_related(
-                                        'ingredient',
-                                        'ingredient__category',
-                                        'ingredient__default_unit',
-                                        'unit'
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            meal_plan_id=meal_plan_id
-        )
+        entries = (
+            MealEntry.objects.filter(date__gte=start, date__lte=end)
+            .select_related('recipe')
+            .prefetch_related(
+                Prefetch('recipe__recipe_ingredients',
+                         queryset=RecipeIngredient.objects.select_related(
+                             'ingredient', 'ingredient__category',
+                             'ingredient__default_unit', 'unit'))))
 
-        # Aggregate ingredients with conversion
         (ingredients, missing_conversions, missing_shopping_units,
-         missing_units) = aggregate_meal_plan_ingredients(meal_plan)
+         missing_units) = aggregate_meal_entries(entries)
 
-        # Check for missing conversions or shopping units
         has_issues = (len(missing_conversions) > 0
                       or len(missing_shopping_units) > 0
                       or len(missing_units) > 0)
 
-        # SL-4, 3 Oct 2026. THE ADDRESSES COME FROM THE ROSTER NOW.
-        #
-        # The template carried four <option> elements with four people's
-        # addresses typed into it. HouseholdMember's own docstring says
-        # the table exists to replace exactly this kind of hard-coding -
-        # "Members are an AUDIENCE ... Replaces the hardcoded
-        # notify_demetri / notify_angy / notify_erene / notify_alexandra
-        # flags" - and the flags were replaced while this list was not.
-        #
-        # Active members with an address, by name. A member with no email
-        # is a real row (the table allows blank for people who never sign
-        # in and are only tagged on celebrations), so they are excluded
-        # here rather than offered as an empty option.
+        # SL-4, 3 Oct 2026. THE ADDRESSES COME FROM THE ROSTER.
         household_emails = (
             HouseholdMember.objects.for_user(request.user)
             .filter(is_active=True)
@@ -1358,133 +702,51 @@ def meal_plan_shopping_list(request, meal_plan_id):
         )
 
         context = {
-            'meal_plan': meal_plan,
+            'start': start,
+            'end': end,
+            'day_count': (end - start).days + 1,
+            'meal_count': sum(1 for e in entries
+                              if e.counts_on_shopping_list),
+            'week_start': start,
             'household_emails': household_emails,
             'ingredients': ingredients,
-            'total_ingredients': sum(len(items) for items in ingredients.values()),
-            'missing_conversions': json.dumps(missing_conversions) if missing_conversions else '[]',
-            'missing_shopping_units': json.dumps(missing_shopping_units) if missing_shopping_units else '[]',
+            'total_ingredients': sum(len(v) for v in ingredients.values()),
+            'missing_conversions': (json.dumps(missing_conversions)
+                                    if missing_conversions else '[]'),
+            'missing_shopping_units': (json.dumps(missing_shopping_units)
+                                       if missing_shopping_units else '[]'),
             'has_missing_conversions': len(missing_conversions) > 0,
-            # MP-1, 18 Oct 2026 - C16. has_missing_shopping_units has
-            # been in this context all along and no template ever read
-            # it, so an ingredient with no shopping unit vanished from
-            # the list in silence. The page prints both lists now.
             'has_missing_shopping_units': len(missing_shopping_units) > 0,
             'missing_shopping_units_list': missing_shopping_units,
             'missing_units_list': missing_units,
             'has_missing_units': len(missing_units) > 0,
             'has_issues': has_issues,
         }
-
         return render(request, 'meal_plan_shopping_list.html', context)
 
     except Exception as e:
-        # MD-1, 18 Oct 2026 - E32, the third. This one had no print()
-        # in front of it, so the traceback arrived in the log with
-        # neither a module nor a message to say what had been attempted.
-        logger.exception('meal_plan_shopping_list failed for plan %s',
-                         meal_plan_id)
+        # MD-1, 18 Oct 2026 - E32.
+        logger.exception('meal_shopping_list failed for %s to %s', start, end)
         messages.error(request, f'Error generating shopping list: {str(e)}')
-        return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+        return redirect('%s?week=%s' % (reverse('meal_planner'),
+                                        start.strftime('%Y-%m-%d')))
 
 
 @login_required
 @require_POST
 @permission_required('auth.can_edit_recipes', raise_exception=True)
-def add_recipe_to_meal_plan_day(request):
-    """Add a recipe to a meal plan day.
+def send_meal_plan_shopping_list(request):
+    """Email a shopping list for a date range.
 
-    MP-1, 18 Oct 2026 - A1. `meal_plan_id` used to be a required
-    positional argument and the URL supplies none:
+    MN-1, 18 Oct 2026. The signature carried a meal_plan_id the route
+    never supplied - a Phase 10 note called it a pre-existing bug and
+    made it optional rather than removing it, which is the same shape
+    A1 found in the two calendar views. There is no plan to pass now,
+    so it is gone.
 
-        path('meal_plans/add_recipe_to_day/', views.add_recipe_to_meal_plan_day)
-
-    so every add on the calendar was a TypeError before this function
-    ran. The parameter is gone rather than added to the URL, because
-    nothing here ever read it - the day comes from meal_plan_day_id in
-    the POST body - and because a day with no plan has no plan id to
-    send, which is A3.
-
-    A2 - THE FAILURE PATH RETURNS. The redirect used to sit outside
-    the try and read meal_plan_day, which the except branch never
-    assigns, so a missing day set an error message and then raised
-    UnboundLocalError on the way out.
-
-    B8 - NO OWNERSHIP CHECK. It used to refuse anyone who was not
-    created_by. That check and its twin in remove() were the only two
-    in the module and they have never run, because A1 stopped this
-    function being reached at all. Demetri decided on 18 Oct that all
-    users may edit all plans; the checks go rather than come alive.
-    """
-    meal_plan_day_id = request.POST.get('meal_plan_day_id')
-    recipe_id = request.POST.get('recipe_id')
-    servings = request.POST.get('servings')
-
-    try:
-        meal_plan_day = MealPlanDay.objects.get(meal_plan_day_id=meal_plan_day_id)
-        recipe = Recipe.objects.get(recipe_id=recipe_id)
-    except (MealPlanDay.DoesNotExist, Recipe.DoesNotExist,
-            ValueError, TypeError):
-        messages.error(request, 'That day or recipe no longer exists.')
-        return redirect('meal_plan_calendar')
-
-    # C19 - THE RECIPE'S OWN YIELD, not a hardcoded 4. The picker sent
-    # 4 whatever the recipe made, and the server fell back to 4 too, so
-    # a recipe for six was planned for four in both directions.
-    try:
-        servings = int(servings)
-    except (TypeError, ValueError):
-        servings = recipe.servings or 4
-
-    max_order = MealPlanRecipe.objects.filter(
-        meal_plan_day=meal_plan_day
-    ).aggregate(Max('sort_order'))['sort_order__max'] or 0
-
-    MealPlanRecipe.objects.create(
-        meal_plan_day=meal_plan_day,
-        recipe=recipe,
-        servings=servings,
-        sort_order=max_order + 1
-    )
-
-    messages.success(request, f'Added "{recipe.recipe_name}" to {meal_plan_day.date.strftime("%A, %B %d")}')
-    return redirect(f"{reverse('meal_plan_calendar')}?week={meal_plan_day.date.strftime('%Y-%m-%d')}")
-
-
-@login_required
-@require_POST
-@permission_required('auth.can_edit_recipes', raise_exception=True)
-def remove_recipe_from_meal_plan(request):
-    """Remove a recipe from a meal plan day.
-
-    MP-1, 18 Oct 2026 - A1 and B8, the same two as add() above. The
-    URL supplies no plan id and this function never read one; the
-    ownership check goes with its twin.
-    """
-    meal_plan_recipe_id = request.POST.get('meal_plan_recipe_id')
-
-    try:
-        meal_plan_recipe = MealPlanRecipe.objects.get(
-            meal_plan_recipe_id=meal_plan_recipe_id)
-    except (MealPlanRecipe.DoesNotExist, ValueError, TypeError):
-        messages.error(request, 'That meal is no longer on the plan.')
-        return redirect('meal_plan_calendar')
-
-    recipe_name = meal_plan_recipe.recipe.recipe_name
-    week_date = meal_plan_recipe.meal_plan_day.date.strftime('%Y-%m-%d')
-    meal_plan_recipe.delete()
-
-    messages.success(request, f'Removed "{recipe_name}" from the meal plan')
-    return redirect(f"{reverse('meal_plan_calendar')}?week={week_date}")
-
-
-@login_required
-@require_POST
-@permission_required('auth.can_edit_recipes', raise_exception=True)
-def send_meal_plan_shopping_list(request, meal_plan_id=None):
-    """Send meal plan shopping list via email
-    NOTE (Phase 10): meal_plan_id is accepted but unused ... optional (=None)
-    because the route supplies no id (pre-existing bug). """
+    B9's work from 18 Oct is untouched: the recipient must still be an
+    active household member with an address or the signed-in user, and
+    every value is still escaped before it reaches the HTML."""
 
     try:
         try:
@@ -1538,17 +800,25 @@ def send_meal_plan_shopping_list(request, meal_plan_id=None):
         # `meal_plan.days.count` - the number of DAYS - so a seven-day
         # plan's email said "7 recipes" however many recipes were on
         # it. That is C18, and it is the same line.
-        plan_id = data.get('meal_plan_id') or meal_plan_id
-        plan = MealPlan.objects.filter(meal_plan_id=plan_id).first()
-        if plan is None:
-            return JsonResponse({'success': False,
-                                 'error': 'That meal plan no longer exists.'},
-                                status=400)
-        meal_plan_name = plan.plan_name
-        date_range = '%s - %s' % (plan.start_date.strftime('%d %b'),
-                                  plan.end_date.strftime('%d %b %Y'))
-        total_recipes = MealPlanRecipe.objects.filter(
-            meal_plan_day__meal_plan=plan).count()
+        # MN-1, 18 Oct 2026 - A RANGE, NOT A PLAN. The server still
+        # decides the heading and the count rather than believing the
+        # request body, which is the whole of B9; what it reads them
+        # off is a pair of dates instead of a MealPlan row.
+        today = timezone.now().date()
+        monday = today - timedelta(days=today.weekday())
+        start = week_of(data.get('from'), monday)
+        end = week_of(data.get('to'), start + timedelta(days=6))
+        if end < start:
+            start, end = end, start
+        meal_plan_name = 'Meal plan'
+        date_range = '%s - %s' % (start.strftime('%d %b'),
+                                  end.strftime('%d %b %Y'))
+        # C18's lesson survives the model change: this counts MEALS,
+        # not days. A seven-day range used to be emailed as
+        # "7 recipes" whatever was on it.
+        total_recipes = MealEntry.objects.filter(
+            date__gte=start, date__lte=end,
+            recipe__isnull=False, leftover_of__isnull=True).count()
 
         # Build email content
         # NOTE (Phase 10 ASCII): subject originally led with a corrupted/

@@ -173,9 +173,9 @@ JOBS = re.findall(r"^\s*\('([^']+\.html)',\s*'([^']*)'\),\s*$", patcher, re.M)
 # was that round, on 30 Sep.
 try:
     from alv_rounds import as_left_by as _left
-    base = _left(alv_tree.path_of('base.html'), SUFFIX, read)
+    base = _left(alv_tree.last_path('base.html'), SUFFIX, read)
 except Exception:
-    base = read(alv_tree.path_of('base.html'))
+    base = read(alv_tree.last_path('base.html'))
 
 # BOOTSTRAP 4.1.3, THE REPO'S OWN COPY. The whole finding is that an
 # unclassed h2 keeps BOOTSTRAP's 2rem, so a fixture without Bootstrap
@@ -251,7 +251,7 @@ else:
 head('2. ALL TWENTY-ONE, AND NONE LEFT ANYWHERE')
 # ==========================================================================
 for rel, title in JOBS:
-    t = inert(read(alv_tree.join(rel.replace('/', os.sep))))
+    t = inert(read(alv_tree.last_join(rel.replace('/', os.sep))))
     ok('<h2 class="%s">%s</h2>' % (CLS, title) in t,
        '%-38s %s' % (rel, title))
 
@@ -271,8 +271,13 @@ wearers = [alv_tree.rel(p) for p in alv_tree.templates()
 # number and base's note move together or one of them is lying.
 # 122 since 6 Oct 2026. Section E round E-2b made the 403 page a
 # template, and it wears the house title like every other page.
-ok(len(wearers) == 122,
-   '122 templates now wear the class, which is the number base\'s note '
+# 120 SINCE RT-1, 18 Oct 2026. MN-1 retired four meal-plan screens,
+# three of which wore the house title, and the planner that
+# replaced them wears it too: 122 - 3 + 1. base.html's note
+# moves in the same round, because the sentence above is the
+# one thing keeping the two honest.
+ok(len(wearers) == 120,
+   '120 templates now wear the class, which is the number base\'s note '
    'states', len(wearers))
 
 # WHAT IS DELIBERATELY LEFT: the hand-rolled headers. They are a content
@@ -302,7 +307,7 @@ if HAVE_PW:
         pg.route(re.compile(r'^https?://'), lambda r: r.abort())
         shrank, held, missing = [], [], []
         for rel, title in JOBS:
-            path = alv_tree.join(rel.replace('/', os.sep))
+            path = alv_tree.last_join(rel.replace('/', os.sep))
             if not os.path.isfile(path + SUFFIX):
                 missing.append(rel)
                 continue
@@ -355,7 +360,7 @@ if HAVE_PW:
         land = []
         for rel, title in JOBS:
             css = re.sub(r'/\*.*?\*/', '',
-                         css_of(read(alv_tree.join(rel.replace('/', os.sep)))),
+                         css_of(read(alv_tree.last_join(rel.replace('/', os.sep)))),
                          flags=re.S)
             for m in re.finditer(r'@media[^{]*orientation:\s*landscape[^{]*\{',
                                  css):
@@ -368,7 +373,7 @@ if HAVE_PW:
         pg.set_viewport_size({'width': 844, 'height': 390})
         kept = []
         for rel, title in land:
-            path = alv_tree.join(rel.replace('/', os.sep))
+            path = alv_tree.last_join(rel.replace('/', os.sep))
             f = os.path.join(SCRATCH, 'land_' + rel.replace('/', '_'))
             with open(f, 'w', encoding='utf-8') as fh:
                 fh.write('<!doctype html><html><head><meta charset="utf-8">'
@@ -405,7 +410,7 @@ head('4. ONE LINE PER PAGE, AND NOTHING ELSE')
 # ==========================================================================
 scoped, unscoped = 0, []
 for rel, title in JOBS:
-    path = alv_tree.join(rel.replace('/', os.sep))
+    path = alv_tree.last_join(rel.replace('/', os.sep))
     if not os.path.isfile(path + SUFFIX):
         continue
     try:
@@ -440,7 +445,7 @@ ok('renders the same and' not in doc,
 ok('32px against 20px' in doc,
    '  replaced by the measurement, so the next reader has the number')
 ok('117 pages' in doc, '  and the note that round wrote still says what was true THEN - doc is read through as_left_by, so it is a frozen copy; the live count is section 2\'s')
-bak = alv_tree.path_of('base.html') + SUFFIX
+bak = alv_tree.last_path('base.html') + SUFFIX
 if os.path.isfile(bak):
     old = read(bak)
     ok('renders the same and' in old,

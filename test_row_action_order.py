@@ -116,18 +116,26 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    return read(alv_tree.bak_path(p, SUFFIX)) if os.path.isfile(alv_tree.bak_path(p, SUFFIX)) else ''
 
 
-BASE = alv_tree.path_of('base.html')
+BASE = alv_tree.last_path('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
-TENANT = alv_tree.path_of('tenant.html')
+TENANT = alv_tree.last_path('tenant.html')
 
 
-def scan(getter):
-    """[(page, seq, unfixable)] and {class: {glyphs}} over the tree."""
+def scan(getter, pages=None):
+    """[(page, seq, unfixable)] and {class: {glyphs}} over the tree.
+
+    `pages` ADDED BY RT-1, 18 Oct 2026 - so that the two scans below can
+    ask different questions. ROWS is about the tree TODAY. OLDROWS is
+    the CONTROL - what the columns looked like BEFORE this round - and
+    that tree had four meal-plan screens MN-1 has since retired, so a
+    live walk answers it three columns short.
+    """
     rows, glyphs = [], {}
-    for p in sorted(alv_tree.templates()):
+    for p in sorted(pages if pages is not None
+                    else alv_tree.templates()):
         name = alv_tree.rel(p).replace(os.sep, '/')
         src = alv_tree.code_only(getter(p))
         for s, e, inner in RA.wrappers(src):
@@ -146,7 +154,13 @@ def scan(getter):
 
 
 ROWS, GLYPHS = scan(now)
-OLDROWS, OLDGLYPHS = scan(lambda p: was(p) or now(p))
+# RT-1, 18 Oct 2026 - the control reads the tree this round found, which
+# includes the pages it has since lost. Nominal paths, so rel() still
+# names the page and was() still finds the backup beside it.
+OLDROWS, OLDGLYPHS = scan(lambda p: was(p) or now(p),
+                          list(alv_tree.templates())
+                          + [alv_tree.last_join(r)
+                             for r in alv_tree.retired_labels()])
 
 # ==========================================================================
 head('1. EVERY ACTION COLUMN IN THE TREE IS IN HOUSE ORDER')
@@ -155,7 +169,11 @@ multi = [(n, s) for n, s, _ in ROWS if len(s) >= 2]
 out = [(n, s) for n, s in multi if not RA.in_order(s)]
 print('   %d wrapper(s), %d with two or more actions'
       % (len(ROWS), len(multi)))
-ok(len(multi) >= 20,
+# RT-1, 18 Oct 2026 - 18, not 20. One multi-action column went with the
+# four meal-plan screens MN-1 retired. This is a floor, not a count -
+# it is here so a scanner that went quiet cannot pass - and 19 is
+# still plenty of corpus to be a rule rather than a coincidence.
+ok(len(multi) >= 18,
    'there are %d multi-action columns to judge' % len(multi))
 ok(not out, 'and every one reads Look, Change, Copy, Advance, Destroy',
    '\n'.join('%s: %s' % (n, ' -> '.join(s)) for n, s in out))

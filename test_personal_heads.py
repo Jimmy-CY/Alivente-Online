@@ -88,6 +88,25 @@ import sys
 
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
+
+# RT-1, 18 Oct 2026 - THE PAGE'S LAST TEXT, UNDER THIS SUITE'S OWN ROOT.
+#
+# This suite predates alv_tree and composes every path from one
+# directory. Widening it to the whole tree would change what it counts,
+# and that is not this round's business: it sits on the debt register
+# test_waiting_down keeps, and the round that widens it owns that
+# number. All this does is let a page the tree has RETIRED still be
+# read, from the text MN-1 left beside the hole it made.
+import alv_tree
+
+
+def _tpl(*parts):
+    # Composed this way on purpose: the literal spelling
+    # that this round swaps for _tpl is the one with T as its
+    # first argument, and a
+    # helper that used it would call itself.
+    return alv_tree.last_of(os.path.join(*((T,) + parts)))
+
 if not os.path.isdir(T):
     sys.exit('! pages/templates not found - run from the repo root')
 sys.path.insert(0, ROOT)
@@ -101,7 +120,7 @@ SUFFIX = '.bak_pershead'
 ME = 'test_personal_heads.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = os.path.join(T, 'base.html')
+BASE = _tpl('base.html')
 HEAD, DANGER = 'alv-modal-head', 'alv-modal-head--danger'
 LEAVE_FILE, LEAVE_MARK = 'recipe_management.html', 'id="recipeViewModalTitle"'
 FILES = {
@@ -154,7 +173,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    return read(alv_tree.bak_path(p, SUFFIX)) if os.path.isfile(alv_tree.bak_path(p, SUFFIX)) else now(p)
 
 
 def styles_of(t):
@@ -266,7 +285,7 @@ head('1. ALL 32 WEAR THE CLASS, AND --danger GOES WHERE DELETE IS SAID')
 worn = danger = leaves = 0
 bad, danger_wrong = [], []
 for name in sorted(FILES):
-    p = os.path.join(T, name)
+    p = _tpl(name)
     a, b = now(p), was(p)
     for cls, rest, title, is_leave in heads_of(a):
         if is_leave:
@@ -296,7 +315,7 @@ ok(leaves == 1, 'and exactly one header is left bare', leaves)
 # CONTROL, from the backups: what they wore before.
 looks = set()
 for name in sorted(FILES):
-    for cls, rest, title, is_leave in heads_of(was(os.path.join(T, name))):
+    for cls, rest, title, is_leave in heads_of(was(_tpl(name))):
         if is_leave:
             continue
         st = re.search(r'style="([^"]*)"', rest)
@@ -308,7 +327,7 @@ ok(len(looks) >= 12,
    'CONTROL: before this round the same headers wore %d different looks'
    % len(looks))
 ok(not any(HEAD in ' '.join(c) for name in FILES
-           for c, _r, _t, _l in heads_of(was(os.path.join(T, name)))),
+           for c, _r, _t, _l in heads_of(was(_tpl(name)))),
    '  CONTROL: and not one of them wore the house class')
 
 # ==========================================================================
@@ -365,7 +384,7 @@ else:
         fail_before, fail3_before, fail_after = [], [], []
         seen_after, unreadable = 0, []
         for name in sorted(FILES):
-            p = os.path.join(T, name)
+            p = _tpl(name)
             a = look(br, B_NOW, styles_of(now(p)), body_markup(now(p)))
             b = look(br, B_WAS, styles_of(was(p)), body_markup(was(p)))
             for row, bucket in ((b, 'before'), (a, 'after')):
@@ -425,8 +444,8 @@ else:
         # ==============================================================
         head('3. THE LEAVE IS STILL INVISIBLE')
         # ==============================================================
-        rm = look(br, B_NOW, styles_of(now(os.path.join(T, LEAVE_FILE))),
-                  body_markup(now(os.path.join(T, LEAVE_FILE))))
+        rm = look(br, B_NOW, styles_of(now(_tpl(LEAVE_FILE))),
+                  body_markup(now(_tpl(LEAVE_FILE))))
         strip = [h for h in rm if h['pad'] == '8px']
         ok(bool(strip),
            'the Recipe View close strip still has its 8px top padding - '
@@ -442,8 +461,8 @@ else:
 head('4. NOTHING ELSE ON THOSE FOURTEEN PAGES MOVED')
 # ==========================================================================
 for name in sorted(FILES):
-    p = os.path.join(T, name)
-    if not os.path.isfile(p + SUFFIX):
+    p = _tpl(name)
+    if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         skip(name, 'no %s backup' % SUFFIX)
         continue
     a, b = now(p), was(p)

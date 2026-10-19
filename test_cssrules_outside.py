@@ -89,12 +89,12 @@ RULES = os.path.join(ROOT, 'alv_cssrules.py')
 #   says 'no kcal data' on two pages. SCRIPT, style-attr and the
 #   var-safe total each came down by two; canvas and unknown did
 #   not move, because this round converted only var-safe ones.
-MARKUP_STYLE = 87      # colour literals in inline style= attributes   # PH-2, 14 Oct 2026 - pantry_staples' 92 staple chips carried #f0fff4 inline; they carry var(--alv-good-soft) now, and that page has no hex literal left at all.   # (was 88)
-SCRIPT = 148            # colour literals inside <script> bodies   # VC-1, 14 Oct 2026 - create_meal_plan's Favourites toggle no longer writes #e74c3c from JavaScript; it carries aria-pressed and base paints it.   # (was 149)
+MARKUP_STYLE = 86      # colour literals in inline style= attributes   # RT-1, 18 Oct 2026 - one was on a meal-plan screen MN-1 retired   # (was 87)   # PH-2, 14 Oct 2026 - pantry_staples' 92 staple chips carried #f0fff4 inline; they carry var(--alv-good-soft) now, and that page has no hex literal left at all.   # (was 88)
+SCRIPT = 146            # colour literals inside <script> bodies   # RT-1, 18 Oct 2026 - two were in the scripts of meal-plan screens MN-1 retired   # (was 148)   # VC-1, 14 Oct 2026 - create_meal_plan's Favourites toggle no longer writes #e74c3c from JavaScript; it carries aria-pressed and base paints it.   # (was 149)
 PRES = 0                # HTML presentation attributes carrying a colour
-PAGES = 35              # real pages carrying any of them   # PH-2 - and it was pantry_staples' ONLY one, so the page leaves this census   # (was 36)
+PAGES = 33              # real pages carrying any of them   # RT-1, 18 Oct 2026 - two of them were meal-plan screens MN-1 retired   # (was 35)   # PH-2 - and it was pantry_staples' ONLY one, so the page leaves this census   # (was 36)
 STANDALONE = 26         # on the twelve exempt templates - correct, and staying
-CTX = {'style-attr': 22, 'style-prop': 8, 'css-text': 0,   # VC-1 - the hex above was a style-prop write, the var-safe kind   # (style-prop was 9)
+CTX = {'style-attr': 20, 'style-prop': 8, 'css-text': 0,   # RT-1, 18 Oct 2026 - two style-attr writes were in the scripts of meal-plan screens MN-1 retired   # (style-attr was 22)   # VC-1 - the hex above was a style-prop write, the var-safe kind   # (style-prop was 9)
        'canvas': 27, 'unknown': 91}
 
 passed = failed = skipped = 0
@@ -316,8 +316,12 @@ for k in ('style-attr', 'style-prop', 'css-text', 'canvas', 'unknown'):
     ok(ctx.get(k, 0) == CTX[k], '  <script> context %-11s %4d'
        % (k, CTX[k]), ctx.get(k, 0))
 safe = sum(ctx.get(k, 0) for k in R.VAR_SAFE)
-ok(safe == 30,
-   '30 of the 148 may become var() - and 118 may not, which is '
+# RT-1, 18 Oct 2026 - 28 OF 146. The two style-attr writes that went
+# with the retired meal-plan screens were both var-safe ones, so the
+# safe half falls by two and the 118 that may NOT become var() does
+# not move at all - which is the half this round is about.
+ok(safe == 28,
+   '28 of the 146 may become var() - and 118 may not, which is '
    'the whole reason this round exists. B-7 took 52 of the safe '
    'ones on 9 Oct 2026 and not one of the 118: a colour handed '
    'to a chart library as DATA is painted onto a canvas with '
@@ -336,7 +340,7 @@ for name in ('script_spans', 'style_attr_spans', 'colour_spans',
              'js_colour_context'):
     ok(name not in was, '  %s did not exist before this round' % name)
 tpl_bak = [T.rel(p) for p in T.templates()
-           if os.path.isfile(p + SUFFIX)]
+           if os.path.isfile(T.bak_path(p, SUFFIX))]
 ok(not tpl_bak,
    'NOT ONE TEMPLATE was backed up, because not one was touched - this '
    'round converts nothing', tpl_bak)

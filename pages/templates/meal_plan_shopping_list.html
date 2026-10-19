@@ -6,7 +6,7 @@
 {# Demetri's decision on 18 Oct - the meal plan module is one journey,  #}
 {# and five separate guides would repeat each other and then drift.     #}
 {% load help_modal_tags %}
-{% block title %}Shopping List - {{ meal_plan.plan_name }}{% endblock %}
+{% block title %}Shopping List{% endblock %}
 {% block content %}
 
 <style>    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
@@ -611,7 +611,9 @@
     
     <!-- Page Header -->
     <h2 class="page-title-h2">SHOPPING LIST</h2>
-<h4 class="page-subtitle-h4">{{ meal_plan.plan_name }} &mdash; {{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }} &mdash; {% if meal_plan.days.count %}{{ meal_plan.days.count }}{% else %}0{% endif %} day{{ meal_plan.days.count|pluralize }}</h4>
+{# MN-1, 18 Oct 2026 - A DATE RANGE, NOT A PLAN NAME. There is no  #}
+{# plan to name: the list is for the days you chose.                #}
+<h4 class="page-subtitle-h4">{{ start|date:"j M" }} &ndash; {{ end|date:"j M Y" }} &mdash; {{ day_count }} day{{ day_count|pluralize }} &mdash; {{ meal_count }} meal{{ meal_count|pluralize }}</h4>
 <div class="page-action-buttons">
         {# ONE BAR, BOTH STEPS - SL-2, 3 Oct 2026. Demetri: take the       #}
         {# buttons to the top and make the Cancel a Back. This bar sits    #}
@@ -622,7 +624,8 @@
         <button type="button" onclick="generateShoppingList()" class="btn action-primary" id="genBtn">
             Generate List <i class="fas fa-arrow-right"></i>
         </button>
-        <button type="button" onclick="window.location.href='{% url 'view_meal_plan' meal_plan.meal_plan_id %}{% if request.GET.from == 'calendar' %}?from=calendar&amp;week={{ request.GET.week }}{% endif %}'" class="btn action-primary" id="doneBtn" hidden>
+        {# MN-1 - Done goes back to the week you shopped for. #}
+        <button type="button" onclick="window.location.href='{% url 'meal_planner' %}?week={{ week_start|date:'Y-m-d' }}'" class="btn action-primary" id="doneBtn" hidden>
             <i class="fas fa-check"></i> Done
         </button>
         {# HIDDEN UNTIL THERE IS A LIST - SL-1, 3 Oct 2026. Demetri:    #}
@@ -644,7 +647,7 @@
         <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
-        <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}{% if request.GET.from == 'calendar' %}?from=calendar&amp;week={{ request.GET.week }}{% endif %}" class="btn action-back" id="backLink" aria-label="Back to Meal Plan">
+        <a href="{% url 'meal_planner' %}?week={{ week_start|date:'Y-m-d' }}" class="btn action-back" id="backLink" aria-label="Back to the planner">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
         <button type="button" onclick="goBackToReview()" class="btn action-back" id="backStep" hidden aria-label="Back to the review step">
@@ -720,7 +723,7 @@
             <button onclick="saveAllConversions()" id="saveConversionsBtn" class="btn action-primary" style="flex: 1; padding: 15px; font-size: 16px;">
                 <i class="fas fa-save"></i> Save Conversions & Generate List
             </button>
-            <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}{% if request.GET.from == 'calendar' %}?from=calendar&amp;week={{ request.GET.week }}{% endif %}" class="btn action-back" style="padding: 15px;">
+            <a href="{% url 'meal_planner' %}?week={{ week_start|date:'Y-m-d' }}" class="btn action-back" style="padding: 15px;">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
@@ -938,7 +941,7 @@
         </div>
         
         <div style="margin-top: 20px;">
-            <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}{% if request.GET.from == 'calendar' %}?from=calendar&amp;week={{ request.GET.week }}{% endif %}" class="btn action-secondary">
+            <a href="{% url 'meal_planner' %}?week={{ week_start|date:'Y-m-d' }}" class="btn action-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Meal Plan
             </a>
         </div>
@@ -1234,8 +1237,8 @@
     function formatIngredientsText() {
         const finalList = window.finalShoppingList || {};
         
-        let text = `🛒 Shopping List for {{ meal_plan.plan_name }}\n`;
-        text += `{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}\n\n`;
+        let text = `🛒 Shopping List\n`;
+        text += `{{ start|date:"j M" }} - {{ end|date:"j M Y" }}\n\n`;
         text += `Items to Buy:\n`;
         
         Object.keys(finalList).sort().forEach(category => {
@@ -1411,7 +1414,11 @@
             {# from the one on the screen.                               #}
             body: JSON.stringify({
                 email: email,
-                meal_plan_id: {{ meal_plan.meal_plan_id }},
+                {# MN-1, 18 Oct 2026 - the range, not a plan id. The server #}
+                {# still reads the heading and the count off it rather than #}
+                {# believing them, which is the whole of B9.                #}
+                from: '{{ start|date:"Y-m-d" }}',
+                to: '{{ end|date:"Y-m-d" }}',
                 ingredients: finalList
             })
         })

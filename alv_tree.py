@@ -52,6 +52,311 @@ TEMPLATE_ROOTS = [
 ]
 
 
+# THE PAGES THE TREE USED TO HAVE, AND THE ROUND THAT TOOK EACH ONE.
+#
+# WHY THIS EXISTS, WHICH IS THE SAME SHAPE OF FAILURE AS THE ROOTS ABOVE.
+#
+#     MN-1 deleted four templates on 18 Oct 2026 - the planner replaced
+#     all four screens. Its own suite was green at 156 checks and the
+#     sweep of the tree came back EIGHTY RED OUT OF 370. Not one of the
+#     eighty was a fault in the planner. They were historical rounds
+#     whose censuses still counted a page the tree no longer has:
+#     seventeen crashed in path_of() before their first check, and
+#     fifty-three reported a number one short.
+#
+#     The finding underneath them is worth writing down. A census that
+#     asks "how many pages carry MY backup?" is asking a question about
+#     the PAST, and every one of them has been answering it by reading
+#     today's disk. That worked for 290 rounds for exactly one reason:
+#     nothing had ever been deleted.
+#
+#         A census of what a round did is a claim about the past.
+#         Reading it off today's disk is correct only while the
+#         past is still on the disk.
+#
+#     So a retired page keeps its last text beside the hole it left -
+#     the retiring round BACKS IT UP rather than merely unlinking it,
+#     exactly as apply_remove_legacy_reports.py did with four root
+#     modules on 25 Aug - and this register says where that text is and
+#     which round took the page.
+#
+# WHAT THIS IS NOT. It is not a list of pages that may be missing. A
+# label that is neither live nor in here is simply wrong, and both
+# path_of() and last_path() still stop the run on one. The register
+# changes WHAT THE REFUSAL SAYS, not whether there is one.
+#
+# Each entry is (the retiring round's backup suffix, which round and why).
+RETIRED = {
+    'meal_plans.html': (
+        '.bak_planner',
+        'MN-1, 18 Oct 2026 - the planner is the list'),
+    'meal_plan_calendar.html': (
+        '.bak_planner',
+        'MN-1, 18 Oct 2026 - the planner IS the calendar'),
+    'create_meal_plan.html': (
+        '.bak_planner',
+        'MN-1, 18 Oct 2026 - a plan is built on the calendar now'),
+    'view_meal_plan.html': (
+        '.bak_planner',
+        'MN-1, 18 Oct 2026 - a week of the planner is the plan page'),
+}
+
+
+def retired(label):
+    """(suffix, which round and why) for a page the tree used to have,
+    or None.
+
+    Keyed on the label first and the basename second, for the same
+    reason the rest of this file keys on basenames: 146 templates
+    across both roots and ZERO collisions, asserted in
+    test_tree_roots.py so that the day it stops holding the programme
+    is told rather than a dict silently merging two pages.
+    """
+    key = label.replace('\\', '/')
+    return RETIRED.get(key) or RETIRED.get(os.path.basename(key))
+
+
+def last_path(label, base=None):
+    """The path of a page's LAST TEXT - the live file if it is there,
+    the retiring round's backup if it is not.
+
+    THIS IS WHAT A HISTORICAL CLAIM WANTS, AND WHAT path_of() CANNOT
+    GIVE IT.
+
+        "RS-1b changed 31 class lists on 13 pages."
+
+    That is true. It was true the day RS-1b landed and it is true now.
+    One of those 13 pages was create_meal_plan.html, which MN-1
+    retired, so a census resolving the label against today's disk
+    either crashes or answers 30 on 12 - a number describing a round
+    that never happened.
+
+    USE path_of() INSTEAD when the claim is about the tree TODAY. "Not
+    one page still carries this literal" is present tense, and a
+    retired page is no part of it. Such a census walks the tree and
+    never names a page at all, so it gets the right answer by
+    construction.
+
+    NOT TO BE CONFUSED WITH alv_rounds.as_left_by(), which answers a
+    narrower and older question - the TEXT of a page as one NAMED round
+    left it, by walking ROUNDS forward to the next round's backup. That
+    helper is already correct for a retired page, because the retiring
+    round backed the page up. This one is about PATH RESOLUTION, which
+    is where the eighty failures actually were.
+
+    Raises when the label is neither live nor retired. Then the label
+    is simply wrong, and that should stop the run exactly as path_of()
+    does.
+    """
+    rel_ = label.replace('/', os.sep)
+    rs = roots(base)
+    for r in rs:
+        p = os.path.join(r, rel_)
+        if os.path.isfile(p):
+            return p
+    ret = retired(label)
+    if ret:
+        for r in rs:
+            p = os.path.join(r, rel_) + ret[0]
+            if os.path.isfile(p):
+                return p
+        raise IOError('alv_tree.last_path: %r was retired by %s, but its '
+                      'backup %s is not beside it. A round that retires '
+                      'a page must back it up, not merely unlink it.'
+                      % (label, ret[1], ret[0]))
+    raise IOError('alv_tree.last_path: no template named %r under %s, and '
+                  'it is not in RETIRED either'
+                  % (label, [os.path.basename(r) for r in rs]))
+
+
+def touched_by(suffix, base=None):
+    """Every page a round touched, found by ITS BACKUPS ON DISK.
+
+    THE SAME RULE THE PRE-FLIGHT ALREADY LIVES BY. Demetri's standing
+    instruction for a delivery is that the file list is enumerated from
+    the .bak_<suffix> files on disk and never typed, because a typed
+    list is a claim about the round rather than a reading of it. A
+    round's own census is the same question asked later, and twenty of
+    them were asking it the other way round:
+
+        TOUCHED = [p for p in alv_tree.templates()
+                   if os.path.exists(p + SUFFIX)]
+
+    That enumerates the pages THAT ARE THERE NOW and keeps the ones
+    with a backup. Retire a page and it is not in the walk, so it is
+    not in the census, and the round's count comes back one short -
+    four of the colour rounds reported exactly that on 18 Oct. The
+    backup is still on the disk; nothing but the walk had forgotten
+    the page.
+
+    IT ANSWERS WITH THE PAGE'S OWN PATH, not with the retired page's
+    last text, and that choice is what makes it a one-line change at
+    every call site. A census built this way reads two texts:
+
+        was(p)  ->  read(p + SUFFIX)        the round's own backup,
+                    which is beside the page's own path whether the
+                    page is still there or not
+        now(p)  ->  as_left_by(p, SUFFIX)   which RT-1 taught to read
+                    a retired page's last text at the end of its walk
+
+    So both readers already work from the page's own path, and neither
+    needed touching. Answer with the last text instead and every
+    `read(p + SUFFIX)` in twenty suites would have had to move.
+    """
+    out = []
+    for folder, names in walk(base):
+        for n in names:
+            if n.endswith(suffix) and not n.endswith(suffix + suffix):
+                out.append(os.path.join(folder, n[:-len(suffix)]))
+    return sorted(set(out))
+
+
+def last_join(*parts, **kw):
+    """join(), except that a retired page resolves to its last text.
+
+    THE FORGIVING TWIN OF last_path(), FOR THE SUITES BUILT ON join().
+    Those suites all do the same thing:
+
+        p = alv_tree.join(rel)
+        if not os.path.isfile(p):
+            skip(rel, 'not on disk')
+            continue
+
+    which is a reasonable guard and the right one for a page that was
+    never there. For a RETIRED page it is the wrong answer twice over:
+    the page was there, this round did edit it, and the census quietly
+    skips it and reports a total two literals short of what the round
+    actually did. test_accent_ink.py said "the round was 120 literals
+    in all" and answered 118.
+
+    So this resolves a retired label to the text beside the hole, and
+    anything else exactly as join() does - a path under the first root,
+    so isfile() still answers False for a label that is simply wrong
+    and the guard above still works.
+    """
+    p = join(*parts, **kw)
+    return p if os.path.isfile(p) else last_of(p)
+
+
+
+def retired_labels(base=None):
+    """The labels in RETIRED that really are gone from the tree.
+
+    FOR A CENSUS WHOSE SUBJECT IS THE TREE AS A ROUND FOUND IT. Several
+    suites take their page list from a live walk - their own, or
+    Show-ButtonDrift's templates() - and then ask a question about what
+    some earlier round saw. The walk is right for a question about
+    today and one page short for a question about then, so those
+    censuses add this.
+
+    It checks the disk rather than trusting the register, so that a
+    page put BACK into the tree stops being counted twice the moment
+    it returns.
+    """
+    out = []
+    for label in sorted(RETIRED):
+        rel_ = label.replace('/', os.sep)
+        if not any(os.path.isfile(os.path.join(r, rel_))
+                   for r in roots(base)):
+            out.append(label)
+    return out
+
+
+def nominal(path):
+    """A page's OWN path, with any retirement suffix taken off.
+
+    last_path() answers with a retired page's backup, and that answer
+    then travels - into was(), into alv_rounds.as_left_by(), into any
+    code that composes a further suffix onto it. All of those want the
+    page's own path, because what they build from it is
+
+        <page>.bak_<some round>
+
+    and never <page>.bak_planner.bak_<some round>, which has never
+    existed. One function, so the stripping is spelt once and only
+    ever removes a suffix this register put there.
+    """
+    for suf, _why in RETIRED.values():
+        if path.endswith(suf):
+            return path[:-len(suf)]
+    return path
+
+
+def last_of(path):
+    """The path of a page's last text, given the page's OWN path.
+
+    THE PATH-SIDE TWIN OF last_path(). last_path() takes a label and is
+    what a suite calls at the top; this takes a path and is what the
+    shared readers call at the bottom, where a label is long gone.
+    """
+    path = nominal(path)
+    if os.path.isfile(path):
+        return path
+    ret = retired(os.path.basename(path))
+    if ret and os.path.isfile(path + ret[0]):
+        return path + ret[0]
+    return path
+
+
+def bak_path(path, suffix):
+    """One round's backup of the page whose LAST TEXT is at `path`.
+
+    THE PATH-SIDE OF bak_of(), FOR THE DOZENS OF SUITES THAT RESOLVE A
+    LABEL ONCE AND THEN WORK IN PATHS. Almost every suite in this
+    programme is built the same way:
+
+        def now(p): return as_left_by(p, SUFFIX, read)
+        def was(p): return read(p + SUFFIX)
+
+    and both take a path the suite resolved at the top. Point that path
+    at a retired page's last text and now() is right - as_left_by()
+    finds no later backup and reads the file, which IS the page as the
+    last round left it - while was() goes looking for
+
+        create_meal_plan.html.bak_planner.bak_btntone
+
+    So the backup of a retired page is found by dropping the
+    RETIREMENT suffix and appending the round's own.
+    """
+    return nominal(path) + suffix
+
+
+def bak_of(label, suffix, base=None):
+    """The path of <label><suffix> - one round's backup of a page -
+    whether that page is still live or has since been retired.
+
+    WHY THIS IS NOT path_of(label) + suffix. That composition is
+    written in dozens of suites and it is correct only while the page
+    is live. Measured on test_label_weight.py, 18 Oct 2026: with
+    create_meal_plan.html retired, a historical read answers
+
+        pages/templates/create_meal_plan.html.bak_planner
+
+    and the composition then goes looking for
+
+        pages/templates/create_meal_plan.html.bak_planner.bak_lblwt
+
+    a file that has never existed anywhere. The suite did not even
+    crash on it - it reported that the page "has no .bak_lblwt backup",
+    which is a sentence about a real round that was simply false.
+
+    A retired page's backups stay exactly where they were, beside the
+    hole the page left, so this resolves the NOMINAL path and appends
+    the suffix.
+
+    FORGIVING, like join() and unlike path_of(), because almost every
+    caller asks os.path.isfile() about the answer. That is a QUESTION,
+    and a question deserves False rather than a traceback.
+    """
+    rel_ = label.replace('/', os.sep)
+    rs = roots(base)
+    for r in rs:
+        p = os.path.join(r, rel_) + suffix
+        if os.path.isfile(p):
+            return p
+    return os.path.join(rs[0], rel_) + suffix
+
+
 def roots(base=None):
     """Every template root that exists, absolute.
 
@@ -106,6 +411,13 @@ def path_of(label, base=None):
         p = os.path.join(r, rel_)
         if os.path.isfile(p):
             return p
+    ret = retired(label)
+    if ret:
+        raise IOError(
+            'alv_tree.path_of: %r was retired by %s and is not in the '
+            'tree any more. A claim about what a round DID to that page '
+            'reads alv_tree.last_path(); a claim about the tree TODAY '
+            'should not name it at all.' % (label, ret[1]))
     raise IOError('alv_tree.path_of: no template named %r under %s'
                   % (label, [os.path.basename(r) for r in roots(base)]))
 
@@ -433,15 +745,17 @@ CONVERTED = [
     # before the collision was found; the register was corrected and
     # this was missed.
     'test_preflight.py',
-    # MP-1, 18 Oct 2026 - Meal Plans release 1, groups A, B and C.
-    # Nineteen items that break, expose or lose data. Wide from birth.
-    'test_meal_fixes.py',
-    # MD-1, 18 Oct 2026 - Meal Plans release 1, groups D and E. Twelve
-    # display, navigation, query and hygiene items. Wide from birth.
-    'test_meal_display.py',
     # MH-1, 18 Oct 2026 - the Meal Plans user guide. Seven tabs, and a
     # Help button on five screens that had none. Wide from birth.
     'test_meal_help.py',
+    # MN-1, 18 Oct 2026 - release 3. The calendar IS the plan: MealEntry
+    # replaces three tables and the planner replaces seven screens.
+    # Wide from birth.
+    'test_planner.py',
+    # RT-1, 18 Oct 2026 - the retired register. Wide from birth: it
+    # reads every suite in this list and asks each one whether it names
+    # a page the tree no longer has.
+    'test_retired.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -121,8 +121,8 @@ PRECEDENT = 'workspace_management.html'
 SPAN = ('<i class="fas fa-question-circle"></i>'
         '<span class="action-back-label"> Help</span>')
 BARE = '<i class="fas fa-question-circle"></i> Help'
-LABELS_TOTAL = 129   # PJ-1, 15 Oct 2026 - the same duplicate Back, counted by its label span. The check below it compares the backup and so falls by one with it.   # (was 130)   # DB-5, 12 Oct 2026 - the dashboard Back gains the house label   # (was 129)   # AFTER this round. 130 before - the Help one.
-HELP_TOTAL = 46   # MH-1, 18 Oct 2026 - the five meal-plan screens, which had no Help control at all   # (was 41)   # DB-5, 12 Oct 2026 - and a Help secondary joins the bar   # (was 40)
+LABELS_TOTAL = 126   # RT-1, 18 Oct 2026 - three Back labels went with the four meal-plan screens MN-1 retired, and the planner brought none   # (was 129)   # PJ-1, 15 Oct 2026 - the same duplicate Back, counted by its label span. The check below it compares the backup and so falls by one with it.   # (was 130)   # DB-5, 12 Oct 2026 - the dashboard Back gains the house label   # (was 129)   # AFTER this round. 130 before - the Help one.
+HELP_TOTAL = 43   # RT-1, 18 Oct 2026 - three of MH-1 five Help buttons went with the screens they sat on. The guide is unchanged and still reached from the planner and the shopping list.   # (was 46)   # MH-1, 18 Oct 2026 - the five meal-plan screens, which had no Help control at all   # (was 41)   # DB-5, 12 Oct 2026 - and a Help secondary joins the bar   # (was 40)
 # The shape 77 pages carried before D7 removed every one of them.
 UNSCOPED = '.action-back-label { display: none; }'
 
@@ -161,7 +161,7 @@ def read(p):
 
 
 def before(p):
-    b = p + SUFFIX
+    b = alv_tree.bak_path(p, SUFFIX)
     if not os.path.exists(b):
         print('')
         print('  !! %s has no %s backup.' % (os.path.basename(p), SUFFIX))
@@ -193,7 +193,7 @@ check('%s is on disk' % PATCHER, os.path.isfile(os.path.join(ROOT, PATCHER)))
 for n in RELEASED:
     check('  %s is still here' % n, os.path.isfile(os.path.join(ROOT, n)))
 check('  and the page is in the SECOND template root',
-      alv_tree.path_of(PAGE) != os.path.join(ROOT, 'pages', 'templates',
+      alv_tree.last_path(PAGE) != os.path.join(ROOT, 'pages', 'templates',
                                              PAGE.replace('/', os.sep)))
 print('        That is the whole reason D-2 could not see it. Its census')
 print('        walked pages/templates, and this page is not under it.')
@@ -201,14 +201,14 @@ print('        walked pages/templates, and this page is not under it.')
 # ---------------------------------------------------------------------- 2
 head('2. THE SPAN IS GONE, AND THE CLASS IS NOT')
 
-p = alv_tree.path_of(PAGE)
+p = alv_tree.last_path(PAGE)
 now, was = read(p), before(p)
 check('the Help button no longer calls its label a Back label',
       SPAN not in now)
 check('  CONTROL: and the backup proves it did', SPAN in was)
 check('  it writes bare text instead', BARE in now)
 check('    which is byte-for-byte the shape D-2 gave %s' % PRECEDENT,
-      BARE in read(alv_tree.path_of(PRECEDENT)))
+      BARE in read(alv_tree.last_path(PRECEDENT)))
 
 # THE CLASS ITSELF MUST SURVIVE ON THAT PAGE. A round that removes the
 # one wrong use by removing the class would pass a check that only
@@ -283,7 +283,7 @@ print('        since September and the exception was still one.')
 # ---------------------------------------------------------------------- 4
 head('4. NOTHING ON SCREEN MOVES - AND THE TRAP IS REAL. MEASURED.')
 
-bp = alv_tree.path_of('base.html')
+bp = alv_tree.last_path('base.html')
 B = read(bp)
 scoped = re.search(r'\.action-back\s+\.action-back-label\s*,\s*'
                    r'\.back-button\s+\.action-back-label\s*\{[^{}]*'
@@ -420,8 +420,15 @@ blw = before(os.path.join(ROOT, 'test_back_label.py'))
 
 check('test_back_label reads a page it never touched LIVE',
       'FOR A PAGE IT TOUCHED' in bl)
+# RT-1, 18 Oct 2026 - THE SPELLING OF THE BACKUP'S PATH MOVED, AND THE
+# CLAIM DID NOT. test_back_label now asks alv_tree.bak_path for its
+# own backup, because a retired page's backups sit beside the hole it
+# left rather than beside its last text. What this check is about is
+# the FALLBACK - that a page the round never touched is read LIVE -
+# so it accepts either spelling of the question above it.
 check('  which is the live file when the round left no backup',
-      re.search(r'if not os\.path\.isfile\(p \+ SUFFIX\):\s*\n'
+      re.search(r'if not os\.path\.isfile\(\s*(?:p \+ SUFFIX'
+                r'|alv_tree\.bak_path\(p, SUFFIX\))\):\s*\n'
                 r'\s*return read\(p\)', bl) is not None)
 check('  CONTROL: and the backup proves it did not',
       'FOR A PAGE IT TOUCHED' not in blw)

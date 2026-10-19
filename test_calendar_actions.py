@@ -121,7 +121,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46
@@ -135,12 +138,12 @@ def css_of(t):
     return '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', t, re.S))
 
 
-P = alv_tree.path_of(PAGE)
+P = alv_tree.last_path(PAGE)
 NOW = now(P)
 CODE = code_only(NOW)
 W = code_only(was(P))
-SIB = code_only(read(alv_tree.path_of(SIBLING)))
-BASE = code_only(read(alv_tree.path_of('base.html')))
+SIB = code_only(read(alv_tree.last_path(SIBLING)))
+BASE = code_only(read(alv_tree.last_path('base.html')))
 FIX = read(FIXTURE) if os.path.exists(FIXTURE) else ''
 
 print('=' * 74)
@@ -348,7 +351,7 @@ def render(html, width):
     doc = ('<!doctype html><meta charset=utf-8>'
            '<style>%s</style><style>%s</style><style>%s</style>'
            '<style>body{margin:0;padding:8px;background:#fff}</style>'
-           '<body>%s' % (FIX, css_of(read(alv_tree.path_of('base.html'))),
+           '<body>%s' % (FIX, css_of(read(alv_tree.last_path('base.html'))),
                          css_of(NOW), html))
     pg = browser().new_page(viewport={'width': width, 'height': 300})
     pg.route(re.compile(r'^https?://'), lambda r: r.abort())

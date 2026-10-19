@@ -89,7 +89,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 print(__doc__.strip().splitlines()[0])
@@ -108,7 +108,7 @@ for s in sa:
 # EVERY ONE REALLY HAS NO EXTENDS, read off the file rather than trusted.
 bad = []
 for name in sa:
-    p = alv_tree.path_of(name)
+    p = alv_tree.last_path(name)
     if p is None or re.search(r'\{%\s*extends\b',
                               alv_tree.code_only(read(p))):
         bad.append(name)
@@ -126,13 +126,13 @@ ok(not missing,
    '  and all %d others do, so the two lists partition the tree'
    % (len(alv_tree.templates()) - len(sa) - 1), missing)
 
-ok(alv_tree.inherits_base(alv_tree.path_of('base.html')),
+ok(alv_tree.inherits_base(alv_tree.last_path('base.html')),
    '  base.html itself is not in the list - it is the thing not extended')
 
 # ==========================================================================
 head('2. manual_pdf, which is where this was found')
 
-p = alv_tree.path_of('manual_pdf.html')
+p = alv_tree.last_path('manual_pdf.html')
 ok('manual_pdf.html' in sa, 'manual_pdf.html is standalone')
 ok(not alv_tree.inherits_base(p), '  inherits_base() says so too')
 src = read(p)
@@ -199,9 +199,13 @@ m = re.search(r'(\d+) page declarations beat', r.stdout)
 ok(m is not None, '  5b still prints a number', r.stdout[-400:])
 if m:
     print('      5b now reports %s, down from 140 - the six manual_pdf '
-          'carried' % m.group(1))
-    ok(int(m.group(1)) == 134,
-       '  and it is %s, which is 140 less manual_pdf\'s six'
+          'carried and one on a page MN-1 retired' % m.group(1))
+    # RT-1, 18 Oct 2026 - 133. One of the page declarations 5b counts was
+    # on a meal-plan screen MN-1 retired. 5b reads the LIVE tree, as
+    # it should - what it reports is what beats base today.
+    ok(int(m.group(1)) == 133,
+       '  and it is %s, which is 140 less manual_pdf\'s six and one '
+       'retired page\'s'
        % m.group(1), m.group(1))
 m2 = re.search(r'(\d+) standalone template\(s\) are not counted', r.stdout)
 ok(m2 is not None and int(m2.group(1)) == len(sa),

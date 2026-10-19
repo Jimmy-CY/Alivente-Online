@@ -95,7 +95,7 @@ PS1 = 'Push-PendingChanges.ps1'
 # set-password pages. CRS_N is untouched.
 # 143 since 6 Oct: Section E round E-2b added access_denied.html,
 # the 403 page, which until then lived in an f-string.
-MAIN_N = 143
+MAIN_N = 140   # RT-1, 18 Oct 2026 - MN-1 retired four meal-plan screens and the planner replaced them: 143 - 4 + 1. This is the shape of the tree, which is what this file is for.   # (was 143)
 CRS_N = 8
 TOTAL_N = MAIN_N + CRS_N
 
@@ -313,7 +313,14 @@ for n in MINE:
     t = read(os.path.join(ROOT, n))
     if not re.search(r'^import alv_tree$', t, re.M):
         bad_imp.append(n)
-    if 'alv_tree.walk3()' not in t:
+    # RT-1, 18 Oct 2026 - OR touched_by, WHICH IS ALSO alv_tree WALKING.
+    # X0's claim is that none of the 33 builds a root of its own, and
+    # walk3() was the only way it had to say so. touched_by() is
+    # another: it walks the roots and keeps the files that carry a
+    # round's backup, which is exactly what one of these suites was
+    # doing by hand around a walk3(). test_zoom_guards calls it now.
+    if ('alv_tree.walk3()' not in t
+            and 'alv_tree.touched_by(' not in t):
         bad_walk.append(n)
     if walks_own_root(t):
         bad_rel.append(n)
@@ -322,7 +329,7 @@ ok(not set(MINE) - set(CONVERT),
    '  and all 33 are still on the live register',
    sorted(set(MINE) - set(CONVERT)))
 ok(not bad_imp, '  every one imports alv_tree', bad_imp)
-ok(not bad_walk, '  every one walks via alv_tree.walk3()', bad_walk)
+ok(not bad_walk, '  every one walks via alv_tree - walk3 or touched_by', bad_walk)
 ok(not bad_rel, '  and none still walks a root of its own', bad_rel)
 
 ok(all(os.path.isfile(os.path.join(ROOT, n + SUFFIX)) for n in MINE),

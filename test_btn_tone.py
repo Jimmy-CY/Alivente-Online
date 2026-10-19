@@ -106,8 +106,8 @@ PS1 = 'Push-PendingChanges.ps1'
 EXE = '/opt/pw-browsers/chromium'
 STYLE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
-BASE = alv_tree.path_of('base.html')
-RM = alv_tree.path_of('recipe_management.html')
+BASE = alv_tree.last_path('base.html')
+RM = alv_tree.last_path('recipe_management.html')
 
 CLEANED = {'ingredient_base_units_management.html': 4,
            'meal_plan_shopping_list.html': 1,
@@ -156,7 +156,10 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else ''
+    # RT-1, 18 Oct 2026 - the backup of a RETIRED page sits beside
+    # the hole the page left, not beside its last text.
+    b = alv_tree.bak_path(p, SUFFIX)
+    return read(b) if os.path.isfile(b) else ''
 
 
 # CO-1, 3 Oct 2026 - this was written out here, as it was in 46
@@ -215,7 +218,7 @@ ok(colours('btn btn-outline-danger action-secondary')
 # THE CONTROLS, from the backups.
 total_was = 0
 for label, n in sorted(CLEANED.items()):
-    p = alv_tree.path_of(label)
+    p = alv_tree.last_path(label)
     w = was(p)
     if not w:
         skip('%s control' % label, 'no %s backup' % SUFFIX)
@@ -229,7 +232,7 @@ ok(total_was == sum(CLEANED.values()),
 
 # THE ROLES SURVIVED. Stripping a colour must not strip the role with it.
 for label in list(CLEANED) + ['recipe_management.html']:
-    p = alv_tree.path_of(label)
+    p = alv_tree.last_path(label)
     w = was(p)
     if not w:
         continue
@@ -472,7 +475,7 @@ for good, why in (
 # carried the broken tag is the one B-1 LEFT, which is what B-1b backed up.
 # A control pointed at the wrong backup proves the wrong thing, and this
 # one proved nothing until it was moved.
-_b1b = alv_tree.path_of('recipe_management.html') + '.bak_favtag'
+_b1b = alv_tree.last_path('recipe_management.html') + '.bak_favtag'
 if os.path.isfile(_b1b):
     ok(len(comments_in_tags(read(_b1b))) == 1,
        'CONTROL: the page B-1 LEFT carried exactly one comment inside a tag '

@@ -97,7 +97,7 @@ ME = 'test_palette.py'
 PATCHER = 'apply_palette.py'
 PS1 = 'Push-PendingChanges.ps1'
 BOOT = 'test_fixture_bootstrap413.css'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 BAR = 4.5
 
 # The surfaces the house paints things on. The palette used to be judged
@@ -142,7 +142,13 @@ LEAVE = {
 # straight onto the accent.
 STILL_BROKEN = {
     'celebration_dashboard.html': ('Back', 1.66),
-    'meal_plan_calendar.html': ('Back', 1.13),
+    # RT-1, 18 Oct 2026 - meal_plan_calendar.html was here at 1.13, a Back
+    # label this round named rather than hid. MN-1 retired the page.
+    # A recorded defect on a page nobody can reach is a line nobody
+    # can check, and this register exists to be checked - the same
+    # argument took three exemptions off three other registers in
+    # this round. The planner's own Back is measured by
+    # test_planner.py, on the page that is actually served.
 }
 
 passed = failed = skipped = 0
@@ -184,7 +190,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now(p)
+    return read(alv_tree.bak_path(p, SUFFIX)) if os.path.isfile(alv_tree.bak_path(p, SUFFIX)) else now(p)
 
 
 def _lin(c):
@@ -387,9 +393,9 @@ print('      { background: transparent } on purpose, so on a page whose')
 print('      bar sits on an accent header the label is dark ink on it.')
 print('')
 for rel, (txt, c) in sorted(STILL_BROKEN.items()):
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     ok(os.path.isfile(p), '%-34s %r still measures %.2f' % (rel, txt, c))
-ok(all(not os.path.isfile(alv_tree.join(r) + SUFFIX) for r in STILL_BROKEN),
+ok(all(not os.path.isfile(alv_tree.last_join(r) + SUFFIX) for r in STILL_BROKEN),
    '  neither was edited here - they belong to the Personal pass')
 
 # ==========================================================================

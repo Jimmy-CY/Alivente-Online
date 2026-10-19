@@ -111,7 +111,7 @@ def read(p):
 
 def was(p):
     """The file as CS-1 found it."""
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def now(p):
@@ -120,8 +120,17 @@ def now(p):
 
 
 def page(name):
+    # RT-1, 18 Oct 2026 - AND A PAGE THE TREE USED TO HAVE. Every caller of
+    # this is a claim about what CS-1 pruned, which is a claim about
+    # the past: one of the pages it pruned is create_meal_plan.html,
+    # and MN-1 has retired it. A live-only lookup answers None and the
+    # round reports itself two declarations short of what it did.
     hits = [p for p in alv_tree.templates() if alv_tree.rel(p) == name]
-    return hits[0] if len(hits) == 1 else None
+    if len(hits) == 1:
+        return hits[0]
+    if alv_tree.retired(name):
+        return alv_tree.last_path(name)
+    return None
 
 
 def rules_of(text):
@@ -400,9 +409,10 @@ def section_5():
 def section_6():
     print('\n6. the backups are byte-for-byte')
     baks = []
-    for q in alv_tree.templates():
-        if os.path.exists(q + SUFFIX):
-            baks.append(q)
+    # RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by(): the
+    # claim is that CS-1 backed up 27 files, which it did, and one of
+    # them is a page the tree has since retired.
+    baks.extend(alv_tree.touched_by(SUFFIX))
     # 26 pruned pages plus base. customer_invoice_form is both pruned and
     # retokenised and is still one file, which is why this is derived from
     # the prune list rather than written out as a number.
@@ -414,10 +424,12 @@ def section_6():
     # Line endings are the thing that went wrong in the first build.
     crlf_bak = crlf_now = 0
     for q in baks:
-        with open(q + SUFFIX, 'rb') as fh:
+        # RT-1, 18 Oct 2026 - a retired page's backup sits beside the hole,
+        # and its last text stands in for the file.
+        with open(alv_tree.bak_path(q, SUFFIX), 'rb') as fh:
             if b'\r\n' in fh.read():
                 crlf_bak += 1
-        with open(q, 'rb') as fh:
+        with open(alv_tree.last_of(q), 'rb') as fh:
             if b'\r\n' in fh.read():
                 crlf_now += 1
     ok(crlf_bak == crlf_now,

@@ -134,12 +134,12 @@ ME = 'test_modal_heads2.py'
 PATCHER = 'apply_modal_heads2.py'
 PS1 = 'Push-PendingChanges.ps1'
 MH = 'test_modal_heads.py'
-BASE = alv_tree.join('base.html')
+BASE = alv_tree.last_join('base.html')
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
 HOUSE = 'modal-header alv-modal-head alv-modal-head--danger'
-PRECEDENTS = 16
+PRECEDENTS = 13   # RT-1, 18 Oct 2026 - three of the sixteen were written on pages MN-1 retired. This is a count of the live tree, not of what MH-2 did.   # (was 16)
 CRS = ('crs/country_list.html', 'crs/fi_list.html',
        'crs/submission_detail.html', 'crs/submission_list.html')
 RULE_PAGES = ['comments_report.html', 'finance/cashflow_forecast.html',
@@ -202,7 +202,7 @@ def read(p):
 
 
 def was(p):
-    b = p + SUFFIX
+    b = alv_tree.bak_path(p, SUFFIX)
     if not os.path.isfile(b):
         print('')
         print('  !! %s has no %s backup.' % (os.path.basename(p), SUFFIX))
@@ -274,23 +274,23 @@ ok(prec == PRECEDENTS + len(CRS),
    'the house danger header is now written %d times - %d precedents plus '
    'these %d' % (PRECEDENTS + len(CRS), PRECEDENTS, len(CRS)), prec)
 for rel in CRS:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     ok('class="%s"' % HOUSE in code_only(read(p)),
        '%-28s wears the house danger class' % rel.replace('crs/', ''))
     ok('modal-header bg-danger' in was(p),
        '  CONTROL: and it was Bootstrap bg-danger before')
-ok(not any('modal-header bg-danger' in code_only(read(alv_tree.join(r)))
+ok(not any('modal-header bg-danger' in code_only(read(alv_tree.last_join(r)))
            for r in CRS),
    'not one Bootstrap danger header survives in the CRS root')
 ok(all(w.count('<i class="fas fa-exclamation-triangle"></i>')
-       == read(alv_tree.join(r)).count(
+       == read(alv_tree.last_join(r)).count(
            '<i class="fas fa-exclamation-triangle"></i>')
-       for r, w in ((r, was(alv_tree.join(r))) for r in CRS)),
+       for r, w in ((r, was(alv_tree.last_join(r))) for r in CRS)),
    '  CONTROL: and every title and icon came through unchanged - this is '
    'a class change, not a rewrite')
 
 # THE TWIN THAT WAS DELIBERATELY NOT TOUCHED.
-twins = sum(code_only(read(alv_tree.join(r))).count('class="close text-white"')
+twins = sum(code_only(read(alv_tree.last_join(r))).count('class="close text-white"')
             for r in CRS)
 ok(twins == 3,
    'the three OTHER `close text-white` are left exactly alone', twins)
@@ -306,7 +306,7 @@ head('3. THE ELEVEN RULES, IN SOURCE')
 # ==========================================================================
 whole = part = 0
 for rel in RULE_PAGES:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     before, now = header_rules(was(p)), header_rules(read(p))
     keeps = KEEPS[rel]
     bgb = [s for s, d in before if 'background' in d]
@@ -428,7 +428,7 @@ else:
                                    if os.path.exists(EXE) else {}))
         moved = []
         for rel in RULE_PAGES:
-            p = alv_tree.join(rel)
+            p = alv_tree.last_join(rel)
             shots = {}
             for tag, text in (('before', was(p)), ('after', read(p))):
                 fx = os.path.join(SCRATCH, '%s_%s.html'
@@ -466,7 +466,7 @@ else:
         # report one. Strip a rule base does NOT override and it must
         # fire.
         rel = 'finance/cashflow_forecast.html'
-        p = alv_tree.join(rel)
+        p = alv_tree.last_join(rel)
         broken = read(p).replace('border-radius: 8px 8px 0 0;', '', 1)
         got = {}
         for tag, text in (('live', read(p)), ('cut', broken)):
@@ -533,12 +533,12 @@ ok('<(script|style)' in mh,
 # ==========================================================================
 head('6. THE TWO SMALL ONES, RE-MEASURED BEFORE THEY WERE DONE')
 # ==========================================================================
-fsr_add = alv_tree.join('fsr_add.html')
+fsr_add = alv_tree.last_join('fsr_add.html')
 ok('1900-01-01' not in code_only(read(fsr_add)),
    'fsr_add.html no longer seeds issues_resolution_date with 1900-01-01')
 ok('1900-01-01' in was(fsr_add),
    '  CONTROL: it did before')
-fsr = read(alv_tree.join('fsr.html'))
+fsr = read(alv_tree.last_join('fsr.html'))
 ok(fsr.count('1900-01-01') == 4,
    'and fsr.html KEEPS all four of its 1900-01-01s', fsr.count('1900-01-01'))
 ok(all('dataset.date' in fsr[max(0, m.start() - 90):m.start()]
@@ -552,12 +552,12 @@ print('        them breaks date sorting on the report. The item was one')
 print('        line, and four of the five had to stay.')
 
 for rel in FORM_CARD:
-    p = alv_tree.join(rel)
+    p = alv_tree.last_join(rel)
     ok('margin-bottom: 14px' not in code_only(read(p)),
        '%-22s drops its .form-card margin and takes base 22px' % rel)
     ok('margin-bottom: 14px' in was(p), '  CONTROL: it had one')
 
-ea = alv_tree.join('edit_asset.html')
+ea = alv_tree.last_join('edit_asset.html')
 ok(not os.path.isfile(ea + SUFFIX),
    'edit_asset.html was NOT touched - this round took no backup of it')
 ok('.form-card label' in read(ea) and 'margin-bottom: 4px' in read(ea),

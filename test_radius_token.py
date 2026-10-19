@@ -123,8 +123,15 @@ PS1 = 'Push-PendingChanges.ps1'
 
 N_RADIUS = 158        # what THIS round converted
 N_PRE = 13            # already tokenised before it, by the B rounds
-N_TOTAL = N_RADIUS + N_PRE
-N_STYLE, N_ATTR, N_SCRIPT = 156, 6, 9
+# RT-1, 18 Oct 2026 - AND THREE OF THE 158 ARE NO LONGER IN THE CORPUS. The
+# corpus total used to be simply this round's plus the pre-existing
+# ones; it cannot be any more, because three of this round's
+# conversions were on meal-plan screens MN-1 retired. The round still
+# converted 158 - that is what the loop below reads from the backups -
+# and the live corpus carries 168.
+N_RETIRED = 3
+N_TOTAL = N_RADIUS + N_PRE - N_RETIRED
+N_STYLE, N_ATTR, N_SCRIPT = 155, 4, 9   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
 N_CHIP, N_CHIP_PAGES = 5, 4
 
 passed = failed = skipped = 0
@@ -221,9 +228,12 @@ ok(lit == 0, 'no `border-radius: 6px` literal survives anywhere in code',
 # the total as if the round had made all of it would have been a number
 # that was true and attributed to the wrong cause - and the first thing
 # it would hide is a later round quietly converting more.
+# RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by(): what
+# THIS round converted is a claim about the past, and three of the
+# declarations it converted are on pages the tree has since retired.
 converted = 0
-for p in sorted(T.templates()):
-    b = p + SUFFIX
+for p in sorted(T.touched_by(SUFFIX)):
+    b = T.bak_path(p, SUFFIX)
     if os.path.isfile(b):
         converted += (len(TOK.findall(T.code_only_js(left_by(p))))
                       - len(TOK.findall(T.code_only_js(read(b)))))
@@ -369,7 +379,7 @@ if up:
 
     pages = [p for p in sorted(T.templates())
              if TOK.search(T.code_only_js(left_by(p)))
-             or os.path.isfile(p + SUFFIX)]
+             or os.path.isfile(T.bak_path(p, SUFFIX))]
     ctx = _br.new_context(viewport={'width': 1280, 'height': 900})
     # HERMETIC, like test_tap_target and test_control_height already are.
     # 34 templates carry a remote <link> - Font Awesome, and base pulls
@@ -392,7 +402,7 @@ if up:
     for p in pages:
         rel = T.rel(p).replace(os.sep, '/')
         now_t = left_by(p)
-        was_t = read(p + SUFFIX) if os.path.isfile(p + SUFFIX) else now_t
+        was_t = read(T.bak_path(p, SUFFIX)) if os.path.isfile(T.bak_path(p, SUFFIX)) else now_t
         pg.set_content(doc(base_now, now_t))
         a = pg.evaluate(JS)
         pg.set_content(doc(base_was, was_t))

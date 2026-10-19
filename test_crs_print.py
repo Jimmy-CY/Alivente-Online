@@ -118,7 +118,12 @@ PAGES = ('crs/country_list.html', 'crs/fi_form.html', 'crs/fi_list.html',
          'crs/index.html', 'crs/submission_detail.html',
          'crs/submission_list.html')
 N_PAGES = 6
-N_TEMPLATES_MIN = 151
+# RT-1, 18 Oct 2026 - 148. A FLOOR, NOT A COUNT - it is here so that a
+# reader of the CRS guard which had gone back to one root could
+# not pass. MN-1 retired four meal-plan screens and added the
+# planner, so the tree is 148; the narrow root alone is 140, and
+# the floor still separates the two by eight.
+N_TEMPLATES_MIN = 148   # (was 151)
 
 passed = failed = skipped = 0
 
@@ -295,10 +300,10 @@ if up:
     pg.emulate_media(media='print')
     for rel in PAGES:
         p = T.path_of(rel)
-        if not os.path.isfile(p + SUFFIX):
+        if not os.path.isfile(T.bak_path(p, SUFFIX)):
             continue
         probed += 1
-        for t, bucket in ((left_by(p), leaked_now), (read(p + SUFFIX),
+        for t, bucket in ((left_by(p), leaked_now), (read(T.bak_path(p, SUFFIX)),
                                                      leaked_was)):
             pg.set_content(doc(t))
             hit = pg.evaluate(

@@ -49,6 +49,16 @@ import re
 import subprocess
 import sys
 
+# RT-1, 18 Oct 2026 - SECTION 2 IS A SAFETY ARGUMENT ABOUT THE PAST, AND IT
+# HAS TO BE READ THAT WAY NOW. DF-1 deleted four EMPTY templates, one of
+# them edit_meal_plan.html, and section 2 is how it proved that deletion
+# safe: the edit_meal_plan VIEW existed and rendered create_meal_plan.html,
+# never the empty file. MN-1 has since removed the view AND the page it
+# rendered, so asked of today's tree the argument reads as four failures
+# about a round that was right. as_left_by walks the round order to the
+# first later backup, which is these files as DF-1 left them.
+from alv_rounds import as_left_by
+
 ROOT = os.getcwd()
 T = os.path.join(ROOT, 'pages', 'templates')
 if not os.path.isdir(T):
@@ -134,7 +144,8 @@ head('2. EDIT MEAL PLAN STILL WORKS')
 if not os.path.isfile(VIEW):
     skip('the meal-plan view', 'not in this checkout')
 else:
-    v = read(VIEW)
+    # AS DF-1 LEFT IT - RT-1, 18 Oct 2026 - see the import above.
+    v = as_left_by(VIEW, SUFFIX, read)
     m = re.search(r'def edit_meal_plan\(.*?(?=\ndef )', v, re.S)
     ok(m is not None, 'the edit_meal_plan view is still there')
     ok(m is not None and "render(request, 'create_meal_plan.html'"
@@ -144,8 +155,19 @@ else:
        '  and never named the empty file that has gone')
 if os.path.isfile(URLS):
     ok(re.search(r"path\('meal_plans/<int:meal_plan_id>/edit/',\s*"
-                 r"views\.edit_meal_plan", read(URLS)) is not None,
-       'the URL still points at that view')
+                 r"views\.edit_meal_plan",
+                 as_left_by(URLS, SUFFIX, read)) is not None,
+       'the URL pointed at that view, and not at the empty file')
+
+# AND IT IS GONE NOW, WHICH DOES NOT WEAKEN THE ARGUMENT ABOVE.
+# RT-1, 18 Oct 2026 - MN-1 retired create_meal_plan.html and removed the view
+# that rendered it. The empty file DF-1 deleted is still deleted, which
+# is section 1 and is still asked of the live tree; this records that
+# nothing reaches it from the live application either, by a second
+# route and for a second reason.
+ok('def edit_meal_plan(' not in read(VIEW),
+   '  and MN-1 has since removed the view as well - the planner edits a '
+   'meal where it sits')
 
 # ==========================================================================
 head('3. script_names(), RUN - NOT DESCRIBED')

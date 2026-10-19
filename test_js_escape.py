@@ -155,7 +155,7 @@ def head(t):
 def _when_j1_ran():
     best = None
     for p in alv_tree.templates():
-        b = p + SUFFIX
+        b = alv_tree.bak_path(p, SUFFIX)
         if os.path.isfile(b):
             t = os.path.getmtime(b)
             if best is None or t < best:
@@ -190,11 +190,28 @@ def was(p):
     THE RULE, FOR THE FIFTH TIME: a scope or recency claim is measured
     against the state it names, never against read(path).
     """
-    if os.path.isfile(p + SUFFIX):
-        return read(p + SUFFIX)
-    if as_of is not None and J1_RAN is not None:
-        return as_of(p, J1_RAN, read)
-    return read(p)
+    if os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
+        return read(alv_tree.bak_path(p, SUFFIX))
+    # RT-1, 18 Oct 2026 - AND THE SECOND CLAUSE IS RESOLVED BY THE ROUND
+    # ORDER, NOT BY FILE TIMESTAMPS.
+    #
+    # The warning above stays true where it applies: as_left_by()
+    # answers "as the round LEFT it", which is the opposite of a
+    # control, and that is why the FIRST clause reads J-1's own backup.
+    # The second clause only ever runs for a page J-1 NEVER TOUCHED -
+    # it has no .bak_jsescape - and for such a page before and after
+    # are the same text, so the two helpers agree by construction.
+    #
+    # What they do not agree on is how they find it. as_of() picks the
+    # first backup by MODIFICATION TIME, and in a rebuilt mirror every
+    # backup carries today's date, so the answer depends on the order
+    # the files happened to be written. Measured 18 Oct: this control
+    # read 43 in the mirror and 45 on the laptop, for the same tree.
+    # as_left_by() walks ROUNDS, which is a fact about the programme
+    # rather than a fact about the filesystem.
+    if as_left_by is not None:
+        return as_left_by(p, SUFFIX, read)
+    return read(alv_tree.last_of(p))
 
 
 def filters_of(expr):
@@ -281,13 +298,37 @@ print('=' * 74)
 head('1. THE GATE - EVERY TEMPLATE IN THE TREE, NOT THE ONES THIS ROUND SAW')
 # ==========================================================================
 PATHS = dict((alv_tree.rel(p), p) for p in alv_tree.templates())
+# RT-1, 18 Oct 2026 - TWO QUESTIONS, TWO PAGE LISTS, AND THEY WERE ONE.
+#
+# `left` is the claim that matters and it is present tense: not one
+# interpolation anywhere in the tree is unprotected. It walks every
+# live template, which is the whole point of this section's heading.
+#
+# The three counts under it are J-1's OWN arithmetic, and that holds
+# over THE TREE J-1 LEFT - which is not the tree today in two
+# directions. Two of J-1's pages were retired by MN-1, which pulled the
+# total below the sum; and MN-1's planner arrived with eight |escapejs
+# sites of its own, which pushed it above. Neither is a fault in J-1.
+#
+# A PAGE THAT DID NOT EXIST YET IS NO PART OF A ROUND'S CENSUS, and it
+# has to be NAMED, because nothing in this programme records when a
+# page ARRIVED. alv_tree.RETIRED says which pages have left; if the
+# other half of that register is ever built, this is its first entry.
+SINCE_J1 = ('meal_planner.html',)
+
+j1_tree = [(r, p) for r, p in sorted(PATHS.items())
+           if r not in SINCE_J1]
+j1_tree += [(r, alv_tree.last_join(r)) for r in alv_tree.retired_labels()]
+
 left, safe_now, bad_was, safe_was = [], 0, 0, 0
 for rel, p in sorted(PATHS.items()):
     # left_by_j1, NOT read - this is J-1's census and it must stay J-1's.
-    b, s = census(left_by_j1(p))
-    safe_now += s
+    b, _s = census(left_by_j1(p))
     if b:
         left.append('%s: %d' % (rel, b))
+for rel, p in sorted(j1_tree):
+    _b, s = census(left_by_j1(p))
+    safe_now += s
     wb, ws = census(was(p))
     bad_was += wb
     safe_was += ws
@@ -316,7 +357,9 @@ ok(len(alv_tree.roots()) >= 2,
 
 print('')
 for rel in sorted(EXPECT, key=lambda r: -EXPECT[r]):
-    b, s = census(read(PATHS[rel]))
+    # RT-1, 18 Oct 2026 - EXPECT is J-1's own list and two of its pages have
+    # since been retired, so this print reads each one's last text.
+    b, s = census(read(alv_tree.last_path(rel)))
     print('     %-38s %3d fixed, %3d now safe' % (rel, EXPECT[rel], s))
 
 # ==========================================================================
@@ -510,17 +553,21 @@ head('5. NOTHING ELSE MOVED, AND THE FILTER IS LAST')
 
 
 moved = []
-for rel, p in sorted(PATHS.items()):
-    if not os.path.isfile(p + SUFFIX):
+# RT-1, 18 Oct 2026 - j1_tree, not PATHS - see section 1. Two of the pages
+# this round edited have since been retired, and a claim about what it
+# wrote has to be asked of them too.
+for rel, p in sorted(j1_tree):
+    if not os.path.isfile(alv_tree.bak_path(p, SUFFIX)):
         continue
-    if left_by_j1(p).replace('|escapejs', '') != read(p + SUFFIX).replace(
+    if left_by_j1(p).replace('|escapejs', '') != read(alv_tree.bak_path(p, SUFFIX)).replace(
             '|escapejs', ''):
         moved.append(rel)
 ok(not moved,
    'strip every |escapejs from the new files and the old, and they are '
    'byte-identical - the only thing this round wrote is the filter',
    moved[:4])
-ok(len([r for r in PATHS if os.path.isfile(PATHS[r] + SUFFIX)]) == len(EXPECT),
+ok(len([r for r, q in j1_tree
+        if os.path.isfile(alv_tree.bak_path(q, SUFFIX))]) == len(EXPECT),
    '  across all %d of them' % len(EXPECT))
 
 mid = []
@@ -538,7 +585,9 @@ ok(not mid,
 
 # THE BARE ARGUMENTS ARE UNTOUCHED, AND NAMED.
 bare_n = 0
-for rel, p in sorted(PATHS.items()):
+# RT-1, 18 Oct 2026 - j1_tree, for the same reason as section 1: this is a
+# count of what J-1 left alone, over the tree J-1 saw.
+for rel, p in sorted(j1_tree):
     # left_by_j1, NOT read - same reason as section 1.
     t = HTML_C.sub('', left_by_j1(p))
     for h in HANDLER.finditer(t):

@@ -114,7 +114,7 @@ def now(p):
 
 
 def was(p):
-    return read(p + SUFFIX)
+    return read(alv_tree.bak_path(p, SUFFIX))
 
 
 def css_of(x):
@@ -135,10 +135,12 @@ def ratio(a, b):
     return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
 
 
-BASEP = alv_tree.path_of('base.html')
-TOUCHED = sorted(p for p in alv_tree.templates()
-                 if os.path.exists(p + SUFFIX)
-                 and alv_tree.rel(p) != 'base.html')
+BASEP = alv_tree.last_path('base.html')
+# RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by().
+# base.html is excluded here as it always was: this round's census is
+# about the pages, and base is where the tokens are defined.
+TOUCHED = [p for p in alv_tree.touched_by(SUFFIX)
+           if alv_tree.rel(p) != 'base.html']
 
 print(__doc__.strip().splitlines()[0])
 
@@ -287,7 +289,7 @@ for p in alv_tree.templates():
     rel = alv_tree.rel(p).replace(os.sep, '/')
     if rel in stand:
         continue
-    src = alv_tree.code_only(was(p) if os.path.exists(p + SUFFIX) else now(p))
+    src = alv_tree.code_only(was(p) if os.path.exists(alv_tree.bak_path(p, SUFFIX)) else now(p))
     rest, hover = states(src)
     for key, props in hover.items():
         for prop, hcol in props.items():

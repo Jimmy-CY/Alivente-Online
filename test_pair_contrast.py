@@ -110,7 +110,7 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 698   # DT-1, 16 Oct 2026 - eight rules that set both a background and a colour went with the two .data-table stylesheets. Every pair below AA that this table names is untouched; the gross count is what moved.   # (was 706)   # CC-1, 15 Oct 2026 - .day-more and .day-more:hover, the chip that opens a busy day. Both are house pairs, so the AA check below is unchanged.   # (was 704)   # MH-2, 13 Oct 2026 - eight rules that set
+EXPECT_PAIRS = 694   # RT-1, 18 Oct 2026 - four rules that set both a background and a colour went with the four pages MN-1 retired, and the planner that replaced them brought its own already on tokens. Measured, not deduced: every pair below AA this table names is untouched, and the gross count is what moved.   # (was 698)   # DT-1, 16 Oct 2026 - eight rules that set both a background and a colour went with the two .data-table stylesheets. Every pair below AA that this table names is untouched; the gross count is what moved.   # (was 706)   # CC-1, 15 Oct 2026 - .day-more and .day-more:hover, the chip that opens a busy day. Both are house pairs, so the AA check below is unchanged.   # (was 704)   # MH-2, 13 Oct 2026 - eight rules that set
 # both a background and a colour on a modal header went, because
 # base had been overriding every one of them.   # (was 712)   # DB-5, 12 Oct 2026 - four rules that set
 # both a background and a colour went with the teal slab and the
@@ -120,7 +120,7 @@ EXPECT_PAIRS = 698   # DT-1, 16 Oct 2026 - eight rules that set both a backgroun
 # set a background and a colour, and it is gone.   # (was 712)   # IN-2, 11 Oct 2026 - .lines-table thead th
 # sets a background AND a colour. It came off two pages and went
 # into base once, so the census FALLS by one.   # (was 713)
-EXPECT_INACTIVE = 25   # E-10 - the same five. WCAG 1.4.3
+EXPECT_INACTIVE = 24   # RT-1, 18 Oct 2026 - create_meal_plan.html went, and its placeholder card went with it. The exemption below loses the same one entry.   # (was 25)   # E-10 - the same five. WCAG 1.4.3
 # exempts text that is part of an inactive user interface
 # component, which is what a switched-off danger is.   # (was 20)
 
@@ -219,7 +219,10 @@ INACTIVE_PINS = (
     ('base.html', '.btn.action-primary:disabled', 2.53),
     ('base.html', '.btn.action-primary[disabled]', 2.53),
     ('base.html', '.btn.action-primary[aria-disabled="true"]', 2.53),
-    ('create_meal_plan.html', '.recipe-selector-card-placeholder', 2.53),
+    # RT-1, 18 Oct 2026 - create_meal_plan.html's placeholder
+    # card was here at 2.53:1 under the WCAG 1.4.3 exemption.
+    # MN-1 retired the page; the planner picks a recipe from a
+    # list on the calendar and has no placeholder card.
     ('base.html', '.icon-disabled', 2.85),
     ('base.html', '.icon-action-btn.icon-disabled', 2.85),
     ('base.html', '.icon-disabled:hover', 2.85),
@@ -235,7 +238,8 @@ INACTIVE_PINS = (
 head('1. SCOPE - ONE DECLARATION')
 # ==========================================================================
 ok(os.path.isfile(PAGE + SUFFIX), 'view_recipe.html has its backup')
-touched = [p for p in T.templates() if os.path.isfile(p + SUFFIX)]
+# RT-1, 18 Oct 2026 - the backups, not the walk. See touched_by().
+touched = T.touched_by(SUFFIX)
 ok(len(touched) == 1,
    'and it is the ONLY template this round touched', [T.rel(p)
                                                       for p in touched])

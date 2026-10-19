@@ -164,7 +164,9 @@ def read(p):
 
 
 def was(p):
-    b = p + SUFFIX
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path: a retired page's
+    # backups stay where they were, beside the hole it left.
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else read(p)
 
 
@@ -193,7 +195,9 @@ def before_rs1a(p):
     # the same thing. was() could not say that. It fell back to the LIVE
     # file, so two of the thirty-five came back as thirty-three the
     # moment RS-1b edited those two pages.
-    b = p + SUFFIX
+    # RT-1, 18 Oct 2026 - see alv_tree.bak_path: a retired page's
+    # backups stay where they were, beside the hole it left.
+    b = alv_tree.bak_path(p, SUFFIX)
     return read(b) if os.path.isfile(b) else as_rs1a_left_it(p)
 
 
@@ -226,7 +230,13 @@ TONES = {'action-primary', 'action-secondary', 'action-danger',
 
 
 def pages_of(side):
-    rels = sorted(alv_tree.rel(p) for p in alv_tree.templates())
+    # RT-1, 18 Oct 2026 - AND THE PAGES THE TREE HAS SINCE RETIRED. Every
+    # count in section 2 is a statement about the handover from RS-1a,
+    # so the page list has to be the one RS-1a handed over - which
+    # includes four meal-plan screens MN-1 has since retired. The side
+    # test below still decides which of them belong to this half.
+    rels = sorted([alv_tree.rel(p) for p in alv_tree.templates()]
+                  + alv_tree.retired_labels())
     out = []
     for r in rels:
         if r == 'base.html':
@@ -246,7 +256,7 @@ def buckets(side, text_of, tool=None):
     s_ = tool or sb
     b = collections.Counter()
     for r in pages_of(side):
-        raw = text_of(alv_tree.path_of(r))
+        raw = text_of(alv_tree.last_path(r))
         s_.JS_REENABLED = s_.js_reenabled_ids(raw)
         m = s_.markup_of(raw)
         for h in s_._scan(r, m):
@@ -310,7 +320,7 @@ ok(sum(e[3] for e in _p.EDITS) == N_ELEMENTS,
 
 done, pages, bad = 0, set(), []
 for page, old, new, n, what in _p.EDITS:
-    p = alv_tree.path_of(page)
+    p = alv_tree.last_path(page)
     b, a = was(p), read(p)
     if b.count(old) == n and a.count(old) == 0 \
             and b.count(new) == 0 and a.count(new) == n:
@@ -414,7 +424,7 @@ ok(swept_now == swept_was,
    'the 117 pages the sweep has always covered are unchanged',
    '%s vs %s' % (dict(swept_now), dict(swept_was)))
 ok(not [p for p in pages_of('other')
-        if os.path.isfile(alv_tree.path_of(p) + SUFFIX)],
+        if os.path.isfile(alv_tree.bak_of(p, SUFFIX))],
    '  and not one of them even has a backup of this round')
 
 # ==========================================================================
@@ -422,7 +432,7 @@ head('3. THESE ARE JOINING A LOOK, NOT INVENTING ONE')
 # ==========================================================================
 cancels, danger, primary = collections.Counter(), 0, 0
 for r in pages_of('other'):
-    raw = read(alv_tree.path_of(r))
+    raw = read(alv_tree.last_path(r))
     sb.JS_REENABLED = sb.js_reenabled_ids(raw)
     m = sb.markup_of(raw)
     for h in sb._scan(r, m):
@@ -492,8 +502,8 @@ if sync_playwright is None or not os.path.isfile(BOOT):
     skip('section 4', 'playwright or the Bootstrap fixture is missing')
 else:
     boot = read(BOOT)
-    base = css_of(read(alv_tree.path_of('base.html')))
-    pcss = css_of(read(alv_tree.path_of('meal_plan_calendar.html')))
+    base = css_of(read(alv_tree.last_path('base.html')))
+    pcss = css_of(read(alv_tree.last_path('meal_plan_calendar.html')))
     n = [0]
 
     def look(br, cls, w):
@@ -610,8 +620,8 @@ for f in (ME, PATCHER):
        '  %s aliases the house stripper at column zero' % f)
 _me = read(os.path.join(ROOT, ME))
 _narrow = 'os.path.' + 'join(T,'
-ok(_me.count(_narrow) == 0 and 'alv_tree.path_of(' in _me,
-   '  and this suite resolves labels through alv_tree.path_of, not a '
+ok(_me.count(_narrow) == 0 and 'alv_tree.last_path(' in _me,
+   '  and this suite resolves labels through alv_tree.last_path, not a '
    'root of its own')
 # Nor "last" - the next round appends. What the order must say is that
 # this round comes after the one before it, which is what as_left_by
@@ -655,10 +665,13 @@ ok('FIFTH occurrence of the as_left_by lesson' in fb,
 # it comes true leaves no record that it was ever owed.
 ps1 = read(os.path.join(ROOT, PS1))
 ok('--strict --recipes' in ps1,
-   'the push gate runs --strict --recipes now - all 142 pages, which is '
+   'the push gate runs --strict --recipes now - all 139 pages, which is '
    'what RS-1a said RS-1b owed it')
-ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 142,
-   '  which is %d of %d' % (117, 142),
+# RT-1, 18 Oct 2026 - 139, not 142. The gate still runs --strict over the
+# WHOLE census; the census is four meal-plan screens smaller and one
+# planner larger. The narrow half, 117, does not move.
+ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 139,
+   '  which is %d of %d' % (117, 139),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

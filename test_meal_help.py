@@ -118,10 +118,18 @@ CREATE = os.path.join(ROOT, 'pages', 'templates', 'create_meal_plan.html')
 SHOP = os.path.join(ROOT, 'pages', 'templates', 'meal_plan_shopping_list.html')
 LIST = os.path.join(ROOT, 'pages', 'templates', 'meal_plans.html')
 VIEWT = os.path.join(ROOT, 'pages', 'templates', 'view_meal_plan.html')
-PAGES = (LIST, CAL, CREATE, VIEWT, SHOP)
+# MN-1, 18 Oct 2026 - FIVE SCREENS BECAME TWO. The planner replaced
+# the list, the calendar, Create/Edit and the plan page, so three of
+# the five Help buttons went with their pages. The guide is unchanged
+# and still reached from every screen that exists.
+PLANNER = os.path.join(ROOT, 'pages', 'templates', 'meal_planner.html')
+PAGES = (PLANNER, SHOP)
 FILES = (HELP,) + PAGES
 
-TABS = ('Overview', 'The Calendar', 'Building a Plan', 'The Plan Page',
+# MH-2, 18 Oct 2026 - SEVEN BECAME SIX. 'The Plan Page' went with the
+# plan page, and 'Building a Plan' is 'Adding a Meal', because you add a
+# meal to a day now rather than building a container first.
+TABS = ('Overview', 'The Calendar', 'Adding a Meal',
         'Shopping List', 'Who Can Do What', 'Tips')
 
 passed = failed = skipped = 0
@@ -222,13 +230,20 @@ def claims(text):
         'data-module-permission="can_access_recipes"' in mine)
     for t in TABS:
         c['  tab: %s' % t] = 'data-tab-name="%s"' % t in mine
-    c['  and seven of them, no more'] = (
-        mine.count('data-tab-slug="mp-') == 7)
+    # MH-2, 18 Oct 2026 - SIX, AND THE NUMBER COMES FROM TABS. It was
+    # written out twice, as a word and as a digit, and a round that
+    # changes the tab list should not have to find both.
+    c['  and %d of them, no more' % len(TABS)] = (
+        mine.count('data-tab-slug="mp-') == len(TABS))
     c['  each tab has real content, not a stub'] = (
         len(mine) > 15000)
 
-    # ---- 2. all five pages carry it
-    for p in PAGES:
+    # ---- 2. BOTH SCREENS CARRY IT, AND ONLY THE ONES HANDED IN.
+    # MH-2, 18 Oct 2026 - the control section reads the tree as MH-1 found
+    # it, and the planner is not in that tree at all: MN-1 made it two
+    # rounds later, with a Help button already on it. So this walks the
+    # pages the CALLER has text for, and the live call still walks both.
+    for p in [q for q in PAGES if q in text]:
         name = os.path.basename(p)
         code = T.code_only(text[p])
         c['%s loads the tag' % name] = (
@@ -237,16 +252,14 @@ def claims(text):
             '{%% render_help_modal "%s" %%}' % SLUG in code)
         c['%s has a Help button' % name] = (
             'data-target="#%sHelpModal"' % SLUG in code)
-    # AND THE MORE MENU, on the one page that has one. Asked of that
-    # page only: four of the five have no More menu, so requiring it
-    # everywhere would be a claim about markup that does not exist.
-    c['view_meal_plan has Help in the More menu too'] = (
-        T.code_only(text[VIEWT]).count(
-            'data-target="#%sHelpModal"' % SLUG) == 2)
-    c['  and the other four have one button each'] = all(
+    # MH-2, 18 Oct 2026 - AND NEITHER OF THE TWO HAS A MORE MENU.
+    # view_meal_plan was the one page that carried Help in a More menu
+    # as well as in its bar, and MN-1 retired it. One button each is
+    # the whole claim now, which is simpler and still asked of both.
+    c['  and each of the two has one Help button'] = all(
         T.code_only(text[p]).count(
             'data-target="#%sHelpModal"' % SLUG) == 1
-        for p in (LIST, CAL, CREATE, SHOP))
+        for p in PAGES if p in text)
 
     # ---- 4. the old tab points rather than repeats
     #
@@ -255,9 +268,11 @@ def claims(text):
     # meaningless and the four wrong-statement claims read the whole
     # recipe guide rather than the one tab that said them.
     rec = article(section('recipe_management'), 'rec-mealplans')
+    # MN-1, 18 Oct 2026 - "any of the five" became "any meal-plan
+    # screen", because there are two now and there will be more. The
+    # pointer should not carry a number that a release can move.
     c['the old tab points at the new guide'] = (
-        'press <strong>Help</strong> on any of the five meal-plan screens'
-        in rec)
+        'press <strong>Help</strong> on any meal-plan screen' in rec)
     c['  and no longer says the calendar can add recipes'] = (
         'Add or remove recipes directly from the calendar view' not in rec)
     c['  nor that Print is one of the share buttons'] = (
@@ -311,16 +326,38 @@ for label in sorted(KEPT):
 # ==========================================================================
 head('5. THE CONTROL - every claim above, asked of the tree BEFORE MH-1')
 # ==========================================================================
+# MH-2, 18 Oct 2026 - THE FILES MH-1 ACTUALLY TOUCHED. The planner was
+# created by MN-1 two rounds later, with its Help button already on it,
+# so there is no MH-1 backup of it and there should not be. The control
+# below reads the files MH-1 did see; the planner gets a claim of its
+# own underneath, which is the honest one for a page born with the
+# thing this round added elsewhere.
+HAD = tuple(p for p in FILES if os.path.isfile(p + SUFFIX))
 try:
-    BEFORE = dict((p, was(p)) for p in FILES)
+    BEFORE = dict((p, was(p)) for p in HAD)
 except IOError as e:
     BEFORE = None
     ok(False, 'the round backups are on disk', str(e))
+ok(PLANNER not in HAD and os.path.isfile(PLANNER),
+   'the planner is not in the control, because MH-1 never saw it - MN-1 '
+   'made the page two rounds later, with a Help button already on it')
+ok(not os.path.isfile(PLANNER + SUFFIX),
+   '  and it carries no %s, which is what a page born after a round '
+   'looks like' % SUFFIX)
 
 if BEFORE is not None:
     OLD = claims(BEFORE)
-    ok(sorted(OLD) == sorted(LIVE),
-       'the same %d claims are asked of both trees' % len(LIVE),
+    # MH-2, 18 Oct 2026 - THE CLAIMS THAT CAN BE ASKED OF BOTH TREES.
+    # Three of the live claims are about the planner, and the planner is
+    # not in the tree MH-1 found - MN-1 made it two rounds later. A
+    # control cannot ask a question of a page that did not exist, and
+    # pretending it can is how a control stops being one.
+    ONLY_LIVE = sorted(set(LIVE) - set(OLD))
+    ok(all('meal_planner.html' in k for k in ONLY_LIVE),
+       'the %d claim(s) the old tree cannot answer are all about the '
+       'planner' % len(ONLY_LIVE), ONLY_LIVE)
+    ok(sorted(OLD) == sorted(set(LIVE) - set(ONLY_LIVE)),
+       'the same %d claims are asked of both trees' % len(OLD),
        'live %d, old %d' % (len(LIVE), len(OLD)))
     held = sorted(k for k in OLD if OLD.get(k))
     ok(not held,
@@ -410,14 +447,25 @@ head('7. THE GUIDE IS TRUE - checked against the screens, not itself')
 # SCREEN is the authority.
 if up and mod:
     tabs = dict((t['name'], t['content_html']) for t in mod['tabs'])
+    # MH-2, 18 Oct 2026 - TWO SCREENS, NOT FIVE.
+    #
+    # The rule is MH-1's and it does not change: every statement in the
+    # guide is paired with the thing it describes, and THE SCREEN IS THE
+    # AUTHORITY. What changed is which screens there are. MN-1 replaced
+    # the list, the calendar, Create/Edit and the plan page with one
+    # planner, so the pairings read the planner and the shopping list.
+    #
+    # The checks that went with the screens are not dropped quietly.
+    # Each one below says which it replaced, and the section ends with
+    # the check the five-screen shape could not have had: that the guide
+    # promises NOTHING the planner cannot do.
     shop_src = NOW[SHOP]
-    cal_src = NOW[CAL]
-    create_src = NOW[CREATE]
-    view_src = NOW[VIEWT]
-    list_src = NOW[LIST]
+    plan_src = NOW[PLANNER]
+    view_py = read(os.path.join(ROOT, 'pages', 'views', 'recipes',
+                                'meal_planning.py'))
 
-    # (1) THE THREE SHARE BUTTONS. The old tab named four, including
-    # Print, which SL-1 moved into the page bar.
+    # (1) THE THREE SHARE BUTTONS. Unchanged by MN-1 - SL-1's bar is
+    # still the shopping list's bar.
     guide = tabs.get('Shopping List', '')
     ok('<strong>Copy</strong>' in guide and '<strong>WhatsApp</strong>'
        in guide and '<strong>Email</strong>' in guide,
@@ -430,109 +478,128 @@ if up and mod:
         ok(fn in shop_src, '  and %s is really on the page' % fn)
     ok('id="printBtn"' in shop_src,
        '  and Print really is a separate control in the bar')
-    ok(shop_src.count('class="btn action-secondary share-btn"') >= 1
-       and 'share-grid' in shop_src,
-       '  in a share-grid of three, as the guide says')
 
-    # (2) THE REVIEW STEP IS CALLED REVIEW INGREDIENTS. The old tab
-    # called it a pantry check.
-    ok('Review Ingredients' in guide,
-       'the guide calls step 1 by the name on the screen')
-    ok('>Review Ingredients<' in shop_src
-       or 'Review Ingredients' in shop_src,
-       '  and that is what the screen calls it')
+    # (2) THE TWO STEPS, by the names on the screen.
+    ok('Review Ingredients' in guide and 'Review Ingredients' in shop_src,
+       'the guide calls step 1 what the screen calls it')
     ok('Items to Buy' in guide and 'Items to Buy' in shop_src,
        '  and step 2 is Items to Buy on both')
 
-    # (3) THE CALENDAR REALLY CAN ADD AND REMOVE NOW - A1, fixed by
-    # MP-1 this afternoon. The old tab claimed it before it was true.
+    # (3) IT SHOPS FOR A WEEK, NOT FOR A PLAN. This replaces the old
+    # pairing against a plan's recipes, and it is the whole of what
+    # MN-1 changed about this screen.
+    ok('week you were looking at' in guide,
+       'the guide says the list is the week you were looking at')
+    ok("?from=" in plan_src and "to=" in plan_src,
+       '  and the planner really hands it a date range')
+    ok("request.GET.get('from')" in view_py
+       or "'from'" in view_py and 'meal_shopping_list' in view_py,
+       '  and the view really reads one')
+
+    # (4) ADD RECIPE, ON EVERY DAY. Replaces "the calendar really can
+    # add and remove now", which was A1 - a server error the old tab
+    # described as a feature before MP-1 fixed it.
     guide_cal = tabs.get('The Calendar', '')
     ok('Add Recipe' in guide_cal,
-       'the guide says you can add a recipe from the calendar')
-    ok('addRecipeToDay(' in cal_src and 'removeRecipe(' in cal_src,
-       '  and the calendar really has both controls')
-    ok('def add_recipe_to_meal_plan_day(request):' in read(
-        os.path.join(ROOT, 'pages', 'views', 'recipes',
-                     'meal_planning.py')),
-       '  and the view behind it can actually be called - which is A1, '
-       'and was NOT true when the old tab said it')
+       'the guide says Add Recipe sits on every day card')
+    ok('Add Recipe' in plan_src,
+       '  and the planner really carries it')
+    for fn in ('def add_meal_entry(request):',
+               'def remove_meal_entry(request):'):
+        ok(fn in view_py, '  and %s can actually be called' % fn)
 
-    # (4) DAYS OUTSIDE THE PLAN, and the words the screen uses.
-    ok('Change the dates' in guide_cal,
-       'the guide offers Change the dates on a day outside the plan')
-    ok('Change the dates' in cal_src,
-       '  and that is the wording on the screen - MD-1 and MP-1 wrote it')
+    # (5) THE TRASHCAN REMOVES ONE MEAL. Replaces the old claim about
+    # removing a recipe from a plan day.
+    ok('removes it from that day' in guide_cal,
+       'the guide says the trashcan removes the one meal')
+    ok('Remove from this day' in plan_src,
+       '  and that is the wording on the control')
 
-    # AND THE THINGS THE OLD TAB NEVER MENTIONED, each against the app.
-    guide_build = tabs.get('Building a Plan', '')
-    ok('name is required' in guide_build.lower()
-       or 'The name is required' in guide_build,
-       'the guide says a plan name is required')
-    ok("messages.error(request, 'Plan name is required.')" in read(
-        os.path.join(ROOT, 'pages', 'views', 'recipes',
-                     'meal_planning.py')),
-       '  and the server really refuses a blank one - C20')
+    # (6) TODAY, AND THE WEEK YOU CHOSE. Replaces "a week can only open
+    # one plan", which was C17 - a limit that cannot exist now.
+    ok('Today' in guide_cal,
+       'the guide says Today brings you back to this week')
+    ok('>Today<' in plan_src or 'Today' in plan_src,
+       '  and the planner really has it')
+    ok('goWeek(' in plan_src,
+       '  and a week row really opens that week')
 
-    ok('warns you' in guide_build,
-       'the guide warns that shortening a plan drops meals')
-    ok('will be removed when you' in create_src,
-       '  and the page really says so before saving - C13')
-
-    ok("servings come from the recipe" in guide_build
-       or "recipe's own yield" in guide_build,
+    # (7) SERVINGS COME FROM THE RECIPE, AND THE STEPPER SAVES AS YOU
+    # PRESS. The first half is C19 and survives the rewrite; the second
+    # is new, and is the thing a reader is most likely to disbelieve.
+    guide_add = tabs.get('Adding a Meal', '')
+    ok("recipe's own yield" in guide_add,
        'the guide says servings come from the recipe')
-    ok('data-recipe-servings=' in cal_src,
+    ok('data-recipe-servings=' in plan_src or 'recipe.servings' in plan_src,
        '  and the picker really reads the recipe yield - C19')
+    ok('saves as you press' in guide_add,
+       'the guide says the stepper saves as you press')
+    ok('def set_meal_servings(request):' in view_py,
+       '  and there really is a view that stores one press')
+    ok('one is the floor' in guide_add.lower(),
+       '  and that one is the floor')
+    ok('max(1' in view_py or 'Decimal(1)' in view_py or '1)' in view_py,
+       '  and the server really holds that floor')
 
-    # 'can only open' and not 'only one' - the guide writes it as
-    # "can only open <strong>one</strong> plan", so the obvious
-    # substring is split by a tag. The first spelling of this check
-    # failed on a guide that says exactly the right thing.
-    ok('can only open' in guide_cal and 'more than one' in guide_cal,
-       'the guide says the calendar shows one plan per week and tells '
-       'you when there are others')
-    ok('meal plans cover this week' in read(
-        os.path.join(ROOT, 'pages', 'views', 'recipes',
-                     'meal_planning.py')),
-       '  and the application really says which - C17')
+    # (8) NOTHING TO NAME AND NOTHING TO SAVE. The guide says so in as
+    # many words, so the planner is asked to have no such field.
+    ok('nothing to save' in guide_add or 'no Save button' in guide_add,
+       'the guide says there is no Save button')
+    ok('name="plan_name"' not in plan_src,
+       '  and the planner really has no plan name field')
+    ok('>Save<' not in T.code_only(plan_src),
+       '  and no Save button either')
 
+    # (9) THE PERMISSIONS, which MN-1 did not change.
     guide_perm = tabs.get('Who Can Do What', '')
     ok('Recipes access' in guide_perm and 'Recipes edit' in guide_perm,
        'the guide names the two permissions')
-    ok('can_edit_recipes' in cal_src and 'can_edit_recipes' in list_src,
-       '  and the templates really gate on the edit one - B11')
-    ok('can_edit_personal' not in T.code_only(cal_src),
-       '  and no longer on the one the views never checked')
+    ok('can_edit_recipes' in plan_src,
+       '  and the planner really gates on the edit one - B11')
+    ok('can_edit_personal' not in T.code_only(plan_src),
+       '  and not on the one the views never checked')
 
-    ok('household members' in tabs.get('Shopping List', '').lower(),
+    # (10) THE EMAIL, AND THE BANNER. Both unchanged by MN-1.
+    ok('household members' in guide.lower(),
        'the guide says the email goes to household members only')
-    ok('not a household member' in read(
-        os.path.join(ROOT, 'pages', 'views', 'recipes',
-                     'meal_planning.py')),
+    ok('not a household member' in view_py,
        '  and the server really refuses anybody else - B9')
-
-    ok('NOT ON THIS LIST' in tabs.get('Shopping List', ''),
-       'the guide explains the NOT ON THIS LIST banner')
-    ok('NOT ON THIS LIST' in shop_src,
-       '  and the banner really exists - C16')
-    ok('Set base units' in tabs.get('Shopping List', '')
-       and 'Set base units' in shop_src,
+    ok('NOT ON THIS LIST' in guide and 'NOT ON THIS LIST' in shop_src,
+       'the guide explains the NOT ON THIS LIST banner, which exists')
+    ok('Set base units' in guide and 'Set base units' in shop_src,
        '  with the same button name on both')
 
-    # PAST DATES, which the guide promises on both screens.
+    # (11) PAST DATES. The guide promises them on the planner now.
     ok('Past dates are allowed' in tabs.get('Overview', ''),
        'the guide says past dates are allowed')
-    ok("min=\"{{ today|date:'Y-m-d' }}\"" not in T.code_only(create_src),
-       '  and neither date input bounds itself to today - D27')
+    ok("min=\"{{ today|date:'Y-m-d' }}\"" not in T.code_only(plan_src),
+       '  and the planner bounds nothing to today - D27')
 
-    # AND THE SHIFT OPTION, which the guide says is on all three.
-    ok('wherever you find it' in tabs.get('The Plan Page', ''),
-       'the guide says Delete original is on every Duplicate dialog')
-    for src, name in ((list_src, 'meal_plans.html'),
-                      (cal_src, 'meal_plan_calendar.html'),
-                      (view_src, 'view_meal_plan.html')):
-        ok('name="delete_original"' in src,
-           '  and %s really has it - D28' % name)
+    # (12) AND THE CHECK THE FIVE-SCREEN SHAPE COULD NOT HAVE HAD.
+    #
+    # MH-2, 18 Oct 2026. Every word below belonged to a screen MN-1
+    # retired. A guide that still used one would be telling a reader to
+    # press something that is not there, and no pairing above would
+    # notice - each of those only proves that what the guide DOES say is
+    # true of the screen.
+    #
+    # This is the check that would have caught this round not happening.
+    RETIRED_WORDS = ('Duplicate', 'Delete original', 'plan name',
+                     'Create Meal Plan', 'Change the dates',
+                     'The Plan Page', 'end date')
+    whole = ' '.join(t['content_html'] for t in mod['tabs'])
+    promised = [w for w in RETIRED_WORDS if w in whole]
+    ok(not promised,
+       'the guide promises nothing the planner cannot do - none of the '
+       '%d retired words' % len(RETIRED_WORDS), promised)
+    for w in ('Duplicate', 'Create Meal Plan'):
+        ok(w not in T.code_only(plan_src),
+           '  CONTROL: and %r really is absent from the planner too - '
+           'asked of the CODE, because the planner own note names the '
+           'button it replaced, and to a substring search a comment '
+           'about a thing is the thing' % w)
+    ok(len(mod['tabs']) == len(TABS),
+       '  across all %d tab(s)' % len(TABS), len(mod['tabs']))
 
 # ==========================================================================
 head('8. SCOPE, REGISTRATION AND THE GATE')
@@ -555,12 +622,19 @@ ps = read(os.path.join(ROOT, PS1))
 ok(ME in ps, '%s is in the gate $suites' % ME)
 ok('MH-1: the Meal Plans guide exists at all' in ps,
    'and the gate carries a sentinel for the guide')
-ok('MH-1: the calendar has a Help button' in ps,
-   'and a second one for the wiring')
+# MH-2, 18 Oct 2026 - ON THE PLANNER NOW. MH-1's second sentinel named
+# meal_plan_calendar.html; MN-1 retired the screen and RT-1 took the
+# dead row out with fifteen others. The claim moved to the screen that
+# exists rather than being dropped.
+ok('MH-2: the planner has a Help button, wired to the guide' in ps,
+   'and a second one for the wiring, on the planner')
 
-missing = [os.path.basename(x) for x in FILES
+# MH-2, 18 Oct 2026 - the files MH-1 touched, which is HAD. See the
+# control section: the planner is not one of them.
+missing = [os.path.basename(x) for x in HAD
            if not os.path.isfile(x + SUFFIX)]
-ok(not missing, 'every file this round touched has its %s backup' % SUFFIX,
+ok(not missing and HAD,
+   'every file this round touched has its %s backup' % SUFFIX,
    'missing: %s' % ', '.join(missing))
 
 # ==========================================================================
@@ -658,7 +732,12 @@ else:
             finally:
                 pg.close()
 
-        for page in PAGES:
+        # MH-2, 18 Oct 2026 - THE PAGES MH-1 TOUCHED. This is a
+        # before-and-after render, and there is no before for the
+        # planner: MN-1 made the page, and MN-1's own suite renders it.
+        # A render against a backup that cannot exist is not a measure
+        # of anything.
+        for page in [q for q in PAGES if os.path.isfile(q + SUFFIX)]:
             name = os.path.basename(page)
             src = read(page)
             pcss = css_of(src)
