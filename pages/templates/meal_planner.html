@@ -117,6 +117,17 @@
     transition: all 0.2s;
 }
 
+/* display: contents, AND THE ROW MUST BE INSIDE THE GRID - MC-4,
+   19 Oct 2026. This rule dissolves the row so its seven day cells
+   become children of the row's PARENT, which is what lets one grid
+   lay out every week while .mini-calendar-week.selected still paints
+   a whole row. It is also why the row is not optional furniture: move
+   it out of .mini-calendar-grid and the cells are handed to whatever
+   is outside, which for four weeks on the live site was a plain div -
+   thirty-five cells in one column.
+
+   cursor: pointer belongs to the ROW even though the row draws
+   nothing, because the row is what carries the onclick. */
 .mini-calendar-week {
     display: contents;
     cursor: pointer;
@@ -355,6 +366,212 @@
    .icon-action-btn, including the 44px touch target under 768px, so a
    page rule here could only disagree with it. */
 
+/* THE MENU LIST - MW-1, 19 Oct 2026. The Apply dialog's rows, and
+   the only new CSS this round writes. The More menu that opens the
+   three dialogs is base's, CSS and binder both. */
+/* THE THREE SUGGESTIONS - MO-1, 19 Oct 2026. House pills, used as
+   buttons, so a planned night is one tap and no typing. */
+.note-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.note-suggestions .alv-pill {
+    border: none;
+    cursor: pointer;
+}
+
+.menu-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.menu-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-option:last-child {
+    margin-bottom: 0;
+}
+
+.menu-option:hover {
+    border-color: var(--alv-accent);
+}
+
+/* THE SELECTED ROW HAS TO LOOK SELECTED. Two signals, not one: the
+   ring and the tint. A border colour alone is the fault MC-2 found
+   five times over on this screen's ancestor - a state you can only
+   see if you already know where to look. */
+.menu-option.selected {
+    border-color: var(--alv-accent);
+    background: var(--alv-accent-soft);
+    box-shadow: 0 0 0 2px var(--alv-accent-ring);
+}
+
+.menu-option-name {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+/* THE PICKER ROW IS A ROW - MW-1, 19 Oct 2026, and it is the second
+   subject in this round, which the docstring says and says why.
+
+   .recipe-option had NO RULE. Not here, not in base, and not in any
+   backup of this template or of the calendar it descends from. The
+   markup has an image and a block of text side by side and nothing
+   was laying them out; pickRecipe() has added a .selected class since
+   the picker was written and nothing was drawing it. The only signal
+   that a click had landed was the Add button un-greying, at the
+   bottom of a dialog, away from the thing that was clicked.
+
+   Same two signals as the menu rows above, for the same reason. */
+
+/* AND THE LIST GETS THE CAP ITS OWN OVERRIDE WAS WRITTEN TO UNDO. The
+   under-768px block carried `#recipeList { max-height: none
+   !important; }` - an override of a desktop cap that is not in this
+   file and is in no backup of it. Bootstrap 4.1.3 has no
+   .modal-dialog-scrollable, so a tree with two hundred recipes makes a
+   dialog taller than the screen with its Add button below the fold.
+   The cap is restored at the size .menu-list above uses, and the
+   phone override is kept - it now has something to override. */
+/* THE PICKER IS A GRID - PK-1, 19 Oct 2026. Demetri: "there is so
+   much wasted space on the right of each recipe. Should it not be a
+   grid?" It should: this is a modal-lg and the list was one column.
+
+   auto-fill with a 240px floor, so the dialog decides how many columns
+   fit rather than this rule deciding for it - three on a desktop, two
+   on a tablet, one on a phone, and nothing to re-pin when the dialog
+   width changes. The cap grows from 320px to 420px because a grid is
+   three times shorter than the column it replaces. */
+#pickerList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+    max-height: 420px;
+    overflow-y: auto;
+    align-content: start;
+}
+
+/* THE FILTER STRIP. base owns .alv-seg - its CSS, its pressed state
+   and its focus ring - so this round writes none of that. All it does
+   is let the strip wrap on a narrow dialog, which a bar of five
+   courses needs and a segmented view bar of two never did. */
+.picker-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.picker-filter .alv-seg {
+    flex-wrap: wrap;
+}
+
+/* HOW MANY OF HOW MANY. A filter that hides everything has to say so,
+   or it reads as a broken dialog - which is the same class of fault as
+   the selected state nothing drew. */
+.picker-count {
+    font-size: 12px;
+    color: var(--alv-ink-soft);
+    margin-left: auto;
+}
+
+.picker-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 24px 12px;
+    color: var(--alv-ink-faint);
+}
+
+.recipe-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    /* NO margin-bottom - PK-1, 19 Oct 2026. MW-1 gave this row an 8px
+       bottom margin because it sat in a column and that margin was the
+       gap between cards. #pickerList is a grid now and `gap` does
+       that; a margin as well would show on every row but the last. */
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* .recipe-option:last-child went with the margin - PK-1. */
+
+.recipe-option:hover {
+    border-color: var(--alv-accent);
+}
+
+/* A CARD IS AS TALL AS THE TALLEST IN ITS ROW, and the text inside it
+   has to survive that: a recipe name of four words in a 240px column
+   wraps, and the thumbnail must not shrink to make room for it. */
+.recipe-option > div {
+    min-width: 0;
+}
+
+.recipe-option > div strong {
+    overflow-wrap: break-word;
+}
+
+.recipe-option.selected {
+    border-color: var(--alv-accent);
+    background: var(--alv-accent-soft);
+    box-shadow: 0 0 0 2px var(--alv-accent-ring);
+}
+
+/* THE LEFTOVER ROW - MO-1, 19 Oct 2026. It is a recipe row with the
+   stepper taken out, because a number that changes nothing on the
+   shopping list is a control that lies. The tint says the night is
+   free; the pill says why. */
+.recipe-item.leftover-item {
+    background: var(--alv-surface);
+    border-style: dashed;
+}
+
+.leftover-source {
+    color: var(--alv-ink-soft);
+}
+
+/* TWO CONTROLS UNDER A DAY, SIDE BY SIDE ON A DESKTOP and stacked on a
+   phone - a row of two buttons at 390px puts six words on two lines
+   inside each of them.
+
+   AND BOTH KEEP THEIR NATURAL WIDTH. The first cut wrote
+   `flex: 1 1 auto` and the before-and-after render showed what that
+   does: Add Recipe stopped being the small pill it has been since
+   MN-1 and became half the width of the card. This round came to add
+   a control, not to restyle the one already there, and a round that
+   quietly changes the look of something outside its own subject is a
+   round nobody can review. The phone block below is where they
+   stretch, because there they are stacked and a full-width button is
+   the point. */
+.day-add-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.day-add-row .add-recipe-btn {
+    margin-top: 0;
+    flex: 0 0 auto;
+}
+
 /* Empty Day */
 .empty-day {
     text-align: center;
@@ -588,16 +805,35 @@
         padding: 8px 12px;
     }
 
-    /* Add Recipe Modal - recipe list inside */
-    #recipeList {
-        max-height: none !important;
+    /* THE PICKER LIST ON A PHONE - MW-1, 19 Oct 2026. Three rules
+       left here when this round gave .recipe-option the layout it
+       never had: #recipeList (MN-1 renamed that list to pickerList),
+       .recipe-option > div and .recipe-option > div > div:first-child
+       (both written for a two-level nesting the row does not have -
+       the thumbnail is a direct child). The one below matches, and
+       is what stops a long recipe name squeezing the photo. */
+    /* HALF THE SCREEN, NOT NO LIMIT - PK-1, 19 Oct 2026. MW-1 put
+       `max-height: none !important` back here when it gave the list
+       its first desktop cap, and that was right while the list was
+       one column of rows. It is a GRID now, and a one-column grid of
+       thirty cards measured 2,572px on a phone - the Servings field
+       and the Add Meal button both below the fold, with nothing on
+       screen to say they were there. */
+    #pickerList {
+        max-height: 50vh;
     }
-    .recipe-option > div {
-        padding: 10px 12px !important;
-    }
-    .recipe-option img,
-    .recipe-option > div > div:first-child {
+    .recipe-option img {
         flex-shrink: 0;
+    }
+
+    /* MO-1, 19 Oct 2026 - TWO ADD CONTROLS STACK ON A PHONE. Side by
+       side at 390px each button wraps its own label onto two lines,
+       and test_tap_target reads the rendered height of both. */
+    .day-add-row {
+        flex-direction: column;
+    }
+    .day-add-row .add-recipe-btn {
+        width: 100%;
     }
 }
 
@@ -754,6 +990,42 @@
         <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
+        {% if perms.auth.can_edit_recipes %}
+        {# MW-1, 19 Oct 2026 - THE WEEK MOVES, and the three controls   #}
+        {# that move it live here rather than in the bar. Shopping      #}
+        {# List, Help and Back fill a phone already; base owns this     #}
+        {# menu, its CSS and the binder, so this page writes neither.   #}
+        <div class="action-more-wrapper" data-menu>
+            <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
+                    aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
+                {# data-toggle OPENS IT AND onclick EMPTIES IT FIRST.    #}
+                {# base's binder closes this panel on any item click and #}
+                {# says so, so the modal is Bootstrap's to open; the     #}
+                {# inline reset is the page's own openPicker pattern and #}
+                {# needs no reasoning about when jQuery is defined,      #}
+                {# which a top-level $(document).on would. C19 is why    #}
+                {# a dialog is emptied on open and not on close.         #}
+                <button type="button" class="action-more-item" role="menuitem"
+                        onclick="resetCopyWeek()"
+                        data-toggle="modal" data-target="#copyWeekModal">
+                    <i class="fas fa-copy"></i> Copy this week to...
+                </button>
+                <button type="button" class="action-more-item" role="menuitem"
+                        onclick="resetSaveMenu()"
+                        data-toggle="modal" data-target="#saveMenuModal">
+                    <i class="fas fa-bookmark"></i> Save this week as a Menu
+                </button>
+                <button type="button" class="action-more-item" role="menuitem"
+                        onclick="resetApplyMenu()"
+                        data-toggle="modal" data-target="#applyMenuModal">
+                    <i class="fas fa-list-ul"></i> Apply a Menu...
+                </button>
+            </div>
+        </div>
+        {% endif %}
         <a href="{% url 'recipe_management' %}" class="btn action-back" aria-label="Back to Recipes">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -786,8 +1058,16 @@
                     <div class="mini-calendar-day-header">Fr</div>
                     <div class="mini-calendar-day-header">Sa</div>
                     <div class="mini-calendar-day-header">Su</div>
-                </div>
 
+                {# THE WEEKS GO INSIDE THE GRID - MC-4, 19 Oct 2026, and  #}
+                {# the grid used to close on the line above this one.     #}
+                {# Each row wears display: contents so that a whole week  #}
+                {# can be painted by one rule while its seven cells still #}
+                {# sit in one seven-column grid - and display: contents   #}
+                {# hands the cells to the row's PARENT. With the grid     #}
+                {# closed above, that parent was .mini-calendar, which is #}
+                {# not a grid, so thirty-five day cells stacked in one    #}
+                {# column. Demetri found it on the live site.             #}
                 {% for week in calendar_weeks %}
                 {# MD-1's D26: the row you are looking at is marked, and  #}
                 {# it can only match because the view normalises the week #}
@@ -803,6 +1083,7 @@
                     {% endfor %}
                 </div>
                 {% endfor %}
+                </div>{# .mini-calendar-grid - MC-4, 19 Oct 2026 #}
 
                 <div class="calendar-legend">
                     <div class="legend-item"><span class="legend-dot has-meal"></span> Has a meal</div>
@@ -854,7 +1135,55 @@
                         {# whole planner the moment one existed. Found by     #}
                         {# this round's own suite before it shipped, which is #}
                         {# what the behaviour register is for.                #}
-                        {% if entry.recipe %}
+                        {% if entry.recipe and entry.leftover_of %}
+                        {# THE LEFTOVER ROW - MO-1, 19 Oct 2026. Tested     #}
+                        {# FIRST, because a leftover has a recipe and the    #}
+                        {# arm below would otherwise catch it and hand it a  #}
+                        {# servings stepper that buys nothing.               #}
+                        <div class="recipe-item leftover-item" data-entry="{{ entry.meal_entry_id }}">
+                            {% if entry.recipe.photo_url %}
+                            <img loading="lazy" decoding="async" src="{{ entry.recipe.photo_url }}"
+                                 alt="" class="recipe-thumbnail">
+                            {% else %}
+                            <div class="recipe-thumbnail-placeholder"><i class="fas fa-redo"></i></div>
+                            {% endif %}
+
+                            <div class="recipe-info">
+                                <h5>
+                                    {{ entry.recipe.recipe_name }}
+                                    <span class="alv-pill alv-pill-info">Leftovers</span>
+                                </h5>
+                                <div class="recipe-meta">
+                                    {# NO STEPPER. The number would change    #}
+                                    {# nothing: counts_on_shopping_list is     #}
+                                    {# False for a leftover, which is the whole #}
+                                    {# feature. So the row says the day it was  #}
+                                    {# cooked on instead, which is the thing    #}
+                                    {# somebody actually wants to know.         #}
+                                    <span class="leftover-source">
+                                        <i class="fas fa-utensils"></i>
+                                        Cooked on {{ entry.leftover_of.date|date:"D j M" }}
+                                    </span>
+                                    <span class="meal-scale">nothing to buy</span>
+                                </div>
+
+                                <div class="row-actions">
+                                    <a href="{% url 'view_recipe' entry.recipe.recipe_id %}"
+                                       class="icon-action-btn icon-view" title="View recipe"
+                                       aria-label="View the recipe {{ entry.recipe.recipe_name }}"><i class="fas fa-eye"></i></a>
+                                    {% if perms.auth.can_edit_recipes %}
+                                    <button type="button" class="icon-action-btn icon-delete"
+                                            title="Remove from this day"
+                                            aria-label="Remove these leftovers from this day"
+                                            onclick="removeMeal({{ entry.meal_entry_id }}, 'leftovers of {{ entry.recipe.recipe_name|escapejs }}')"><i class="fas fa-trash"></i></button>
+                                    {% else %}
+                                    <span class="icon-action-btn icon-disabled" title="No permission to remove"
+                                          aria-label="Remove these leftovers, no permission"><i class="fas fa-trash"></i></span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% elif entry.recipe %}
                         <div class="recipe-item" data-entry="{{ entry.meal_entry_id }}">
                             {% if entry.recipe.photo_url %}
                             <img loading="lazy" decoding="async" src="{{ entry.recipe.photo_url }}"
@@ -887,12 +1216,23 @@
                                     <span class="servings-word">servings</span>
                                 </div>
 
-                                {# LOOK, then DESTROY - the house row-action order. #}
+                                {# LOOK, then COPY, then DESTROY - the house order.  #}
+                                {# MO-1, 19 Oct 2026: Leftovers is COPY - the same    #}
+                                {# meal again on another day - so it takes COPY's     #}
+                                {# colour under its OWN name. It was written as       #}
+                                {# icon-duplicate first and test_icon_names refused   #}
+                                {# it: a class carries one picture, and that one       #}
+                                {# already wears fa-copy on eleven buttons. Alias the #}
+                                {# colour, never the name.                            #}
                                 <div class="row-actions">
                                     <a href="{% url 'view_recipe' entry.recipe.recipe_id %}"
                                        class="icon-action-btn icon-view" title="View recipe"
                                        aria-label="View the recipe {{ entry.recipe.recipe_name }}"><i class="fas fa-eye"></i></a>
                                     {% if perms.auth.can_edit_recipes %}
+                                    <button type="button" class="icon-action-btn icon-leftover"
+                                            title="Eat it again on another day"
+                                            aria-label="Add leftovers of {{ entry.recipe.recipe_name }} to another day"
+                                            onclick="openLeftover({{ entry.meal_entry_id }}, '{{ entry.recipe.recipe_name|escapejs }}', '{{ entry.date|date:'Y-m-d'|escapejs }}')"><i class="fas fa-redo"></i></button>
                                     <button type="button" class="icon-action-btn icon-delete"
                                             title="Remove from this day"
                                             aria-label="Remove {{ entry.recipe.recipe_name }} from this day"
@@ -943,17 +1283,32 @@
                         {# is outside the plan" any more, because there is no  #}
                         {# plan for a date to be outside of - A3 dissolved by  #}
                         {# the model rather than guarded.                       #}
+                        {# TWO CONTROLS NOW - MO-1, 19 Oct 2026. A day can     #}
+                        {# take a recipe or a planned night that is not one.   #}
+                        {# The second is what makes the note row fillable:     #}
+                        {# MN-1 has drawn it since 18 October and nothing in    #}
+                        {# the application could make one.                      #}
+                        <div class="day-add-row">
                         {% if perms.auth.can_edit_recipes %}
-                        <button type="button" class="add-recipe-btn"
-                                onclick="openPicker('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
-                            <i class="fas fa-plus"></i> Add Recipe
-                        </button>
+                            <button type="button" class="add-recipe-btn"
+                                    onclick="openPicker('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
+                                <i class="fas fa-plus"></i> Add Recipe
+                            </button>
+                            <button type="button" class="add-recipe-btn"
+                                    onclick="openNote('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }}')">
+                                <i class="fas fa-store"></i> Add Note
+                            </button>
                         {% else %}
-                        <button type="button" class="add-recipe-btn add-recipe-btn-disabled" disabled
-                                title="No permission to add recipes">
-                            <i class="fas fa-plus"></i> Add Recipe
-                        </button>
+                            <button type="button" class="add-recipe-btn add-recipe-btn-disabled" disabled
+                                    title="No permission to add recipes">
+                                <i class="fas fa-plus"></i> Add Recipe
+                            </button>
+                            <button type="button" class="add-recipe-btn add-recipe-btn-disabled" disabled
+                                    title="No permission to add notes">
+                                <i class="fas fa-store"></i> Add Note
+                            </button>
                         {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -993,12 +1348,34 @@
 
                     <div class="form-group">
                         <label for="pickerList"><strong>Choose one</strong></label>
+                        {# THE FILTER - PK-1, 19 Oct 2026. Demetri, on the #}
+                        {# live picker: "There is no search or filtering". #}
+                        {# base owns .alv-seg, its pressed state and its   #}
+                        {# focus ring, so this page writes no component -  #}
+                        {# only the wrap rule a five-course strip needs.   #}
+                        <div class="picker-filter">
+                            <div class="alv-seg" role="group" aria-label="Filter by course">
+                                <button type="button" data-course="" aria-pressed="true"
+                                        onclick="pickCourse(this)">All</button>
+                                {% for course in all_courses %}
+                                <button type="button" data-course="{{ course.recipe_course_id }}"
+                                        aria-pressed="false" onclick="pickCourse(this)">{{ course.name }}</button>
+                                {% endfor %}
+                            </div>
+                            <span class="picker-count" id="pickerCount" aria-live="polite"></span>
+                        </div>
                         <div id="pickerList">
                             {% for recipe in all_recipes %}
                             <div class="recipe-option"
                                  data-recipe-id="{{ recipe.recipe_id }}"
                                  data-recipe-servings="{{ recipe.servings|default:4 }}"
                                  data-recipe-name="{{ recipe.recipe_name|lower }}"
+                                 {# PK-1, 19 Oct 2026 - the ids, not the   #}
+                                 {# names: a course that is renamed should #}
+                                 {# not silently stop matching. Read from  #}
+                                 {# a prefetch, so this is not a query per #}
+                                 {# card.                                  #}
+                                 data-recipe-courses="{% for c in recipe.courses.all %}{{ c.recipe_course_id }} {% endfor %}"
                                  onclick="pickRecipe(this)">
                                 {% if recipe.photo_url %}
                                 <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}"
@@ -1015,6 +1392,14 @@
                                 </div>
                             </div>
                             {% endfor %}
+                            {# A FILTER THAT HIDES EVERYTHING SAYS SO -  #}
+                            {# PK-1. Otherwise an empty dialog reads as  #}
+                            {# a broken one, which is the same class of  #}
+                            {# fault as a selected state nothing drew.   #}
+                            <div class="picker-empty" id="pickerEmpty" hidden>
+                                <i class="fas fa-search"></i>
+                                <p>No recipe matches that.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -1042,6 +1427,282 @@
         </div>
     </div>
 </div>
+
+{# ================================================== a planned night #}
+{# MO-1, 19 Oct 2026. The note row has been drawn since MN-1 and     #}
+{# nothing could fill it. Three suggestions, because the point is    #}
+{# speed: a night you are not cooking should take one tap and a word.#}
+<div class="modal fade" id="noteModal" tabindex="-1" role="dialog"
+     aria-labelledby="noteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="noteModalLabel">
+                    <i class="fas fa-store"></i> A planned night on <span id="noteDayName"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'add_meal_note' %}">
+                {% csrf_token %}
+                <input type="hidden" name="date" id="noteDate">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="noteText"><strong>What is happening?</strong></label>
+                        <input type="text" class="form-control" id="noteText"
+                               name="note" maxlength="200" autocomplete="off"
+                               placeholder="e.g. Eat out" required>
+                        <small class="form-text text-muted">
+                            A night that is planned and is not cooking. It buys nothing.
+                        </small>
+                    </div>
+                    <div class="note-suggestions">
+                        <button type="button" class="alv-pill alv-pill-info"
+                                onclick="setNote('Eat out')">Eat out</button>
+                        <button type="button" class="alv-pill alv-pill-info"
+                                onclick="setNote('Takeaway')">Takeaway</button>
+                        <button type="button" class="alv-pill alv-pill-info"
+                                onclick="setNote('Out for the night')">Out for the night</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">
+                        <i class="fas fa-plus"></i> Add Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ======================================================== leftovers #}
+{# A LEFTOVER COSTS NOTHING, and the dialog says so before the button #}
+{# - the same principle as MW-1's copy dialog, for the same reason:   #}
+{# the free night is the whole feature and a user who does not know   #}
+{# it is free will not use it.                                        #}
+<div class="modal fade" id="leftoverModal" tabindex="-1" role="dialog"
+     aria-labelledby="leftoverModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="leftoverModalLabel">
+                    <i class="fas fa-redo"></i> Eat it again
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'add_leftover' %}">
+                {% csrf_token %}
+                <input type="hidden" name="meal_entry_id" id="leftoverEntryId">
+                <div class="modal-body">
+                    <p>
+                        <strong id="leftoverName"></strong> again, on another day.
+                        It costs nothing on the shopping list - you bought
+                        the ingredients on the night you cooked it.
+                    </p>
+                    <div class="form-group">
+                        <label for="leftoverDate"><strong>Which day?</strong></label>
+                        <input type="date" class="form-control" id="leftoverDate"
+                               name="date" required>
+                        <small class="form-text text-muted">
+                            On or after the day it was cooked. Leftovers cannot come first.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">
+                        <i class="fas fa-redo"></i> Add Leftovers
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ============================================= copy this week to... #}
+{# MW-1, 19 Oct 2026. "Copy this week to a week you pick" - the old    #}
+{# Duplicate, without a plan to duplicate it from.                    #}
+<div class="modal fade" id="copyWeekModal" tabindex="-1" role="dialog"
+     aria-labelledby="copyWeekLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="copyWeekLabel">
+                    <i class="fas fa-copy"></i> Copy this week to&hellip;
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'copy_meal_week' %}">
+                {% csrf_token %}
+                <input type="hidden" name="from_week" value="{{ week_start|date:'Y-m-d' }}">
+                <div class="modal-body">
+                    <p>
+                        Every meal on <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>
+                        goes onto the matching weekday of the week you pick, with its servings.
+                    </p>
+                    <div class="form-group">
+                        <label for="copyWeekTo"><strong>Copy to the week of</strong></label>
+                        <input type="date" class="form-control" id="copyWeekTo"
+                               name="to_week" onchange="copyPreview()" required>
+                        <small class="form-text text-muted">
+                            Any day in the week you want. The whole week it belongs to is what receives the meals.
+                        </small>
+                    </div>
+                    {# SAY SO FIRST. The decision was "add alongside, AND  #}
+                    {# say so first", and a dialog that cannot count what  #}
+                    {# the target week already holds is the same copy with #}
+                    {# a quieter conscience. So it asks before the button  #}
+                    {# can be pressed - which is also why the button       #}
+                    {# starts disabled and the answer is what enables it.  #}
+                    <div id="copyWeekNote" aria-live="polite"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary" id="copyWeekGo" disabled>
+                        <i class="fas fa-copy"></i> Copy the Week
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ========================================= save this week as a menu #}
+{# A MENU IS A TEMPLATE. It holds day indexes 0 to 6, not dates, which #}
+{# is why MN-1 built MenuItem that way: a week saved in October can be #}
+{# stamped onto a week in December. Leftovers are not saved - a        #}
+{# leftover is a consequence of a particular week, not a plan.         #}
+<div class="modal fade" id="saveMenuModal" tabindex="-1" role="dialog"
+     aria-labelledby="saveMenuLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="saveMenuLabel">
+                    <i class="fas fa-bookmark"></i> Save this week as a Menu
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'save_menu' %}">
+                {% csrf_token %}
+                <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+                <div class="modal-body">
+                    <p>
+                        The meals on <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>
+                        are kept under a name, by weekday. Apply it to any week later.
+                    </p>
+                    <div class="form-group">
+                        <label for="saveMenuName"><strong>Name</strong></label>
+                        <input type="text" class="form-control" id="saveMenuName"
+                               name="name" maxlength="100" autocomplete="off"
+                               placeholder="e.g. Easy Winter Week" required>
+                        <small class="form-text text-muted">
+                            This is how you will recognise it in the Apply list.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">
+                        <i class="fas fa-bookmark"></i> Save the Menu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ================================================== apply a menu... #}
+{# MANAGED HERE, NOT ON A PAGE OF ITS OWN - the fourth decision, and   #}
+{# the reason is Release 3's whole subject: meal planning is ONE       #}
+{# SCREEN. A Menus list page would be the second one, reached from     #}
+{# here, holding one verb. So the trashcan lives per row in the        #}
+{# dialog that already has to list them.                               #}
+<div class="modal fade" id="applyMenuModal" tabindex="-1" role="dialog"
+     aria-labelledby="applyMenuLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="applyMenuLabel">
+                    <i class="fas fa-list-ul"></i> Apply a Menu
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'apply_menu' %}">
+                {% csrf_token %}
+                <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+                <input type="hidden" name="menu_id" id="applyMenuId">
+                <div class="modal-body">
+                    {% if menus %}
+                    <p>
+                        The menu you pick is added to
+                        <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>,
+                        alongside whatever is already there.
+                    </p>
+                    <div class="menu-list">
+                        {% for menu in menus %}
+                        <div class="menu-option" data-menu-id="{{ menu.menu_id }}"
+                             onclick="pickMenu(this)">
+                            <div class="menu-option-name">
+                                <strong>{{ menu.name }}</strong><br>
+                                <small class="text-muted">
+                                    {{ menu.item_count }} meal{{ menu.item_count|pluralize }}
+                                </small>
+                            </div>
+                            <div class="row-actions">
+                                <button type="button" class="icon-action-btn icon-delete"
+                                        title="Delete this menu"
+                                        aria-label="Delete the menu {{ menu.name }}"
+                                        onclick="deleteMenu(event, {{ menu.menu_id }}, '{{ menu.name|escapejs }}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {# THE EMPTY STATE SAYS WHERE MENUS COME FROM. There   #}
+                    {# is no other place to make one, so a dialog that     #}
+                    {# only said "none yet" would be a dead end.           #}
+                    <div class="empty-day">
+                        <i class="fas fa-list-ul"></i>
+                        <p>No menus yet.</p>
+                        <p class="text-muted">
+                            Put some meals on a week, then choose
+                            <strong>Save this week as a Menu</strong>.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+                    {% if menus %}
+                    <button type="submit" class="btn action-primary" id="applyMenuGo" disabled>
+                        <i class="fas fa-check"></i> Add to This Week
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# THE DELETE FORM. Outside the Apply form, because a form inside a    #}
+{# form is not a thing HTML has - the trashcan is a plain button that  #}
+{# fills this one and submits it, the same shape removeForm below has  #}
+{# worn since MN-1.                                                   #}
+<form method="POST" action="{% url 'delete_menu' %}" id="deleteMenuForm" hidden>
+    {% csrf_token %}
+    <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+    <input type="hidden" name="menu_id" id="deleteMenuId">
+</form>
 
 {# THE REMOVE FORM. One form, reused - a form per meal would be one #}
 {# per meal in the page for a control pressed once in a while.      #}
@@ -1085,6 +1746,15 @@ function openPicker(dateStr, dayName) {
     // whatever the last recipe was set to.
     document.getElementById('pickerServings').value = '';
     document.getElementById('pickerSearch').value = '';
+    // C19 AGAIN, now that there is a second thing to forget. A dialog
+    // that opens still filtered to Dessert, three days after you last
+    // used it, is a dialog with no recipes in it.
+    pickerCourse = '';
+    document.querySelectorAll('.picker-filter .alv-seg button').forEach(
+        function (b) {
+            b.setAttribute('aria-pressed',
+                           b.dataset.course ? 'false' : 'true');
+        });
     document.getElementById('pickerAdd').disabled = true;
     document.querySelectorAll('.recipe-option').forEach(function (o) {
         o.classList.remove('selected');
@@ -1093,11 +1763,47 @@ function openPicker(dateStr, dayName) {
     $('#pickerModal').modal('show');
 }
 
+// PK-1, 19 Oct 2026 - the search and the course filter COMPOSE.
+// Either alone narrows; both together narrow further. The first cut of
+// a filter that replaced the search instead of joining it is the kind
+// of thing that makes a dialog feel broken when it is only opinionated.
+var pickerCourse = '';
+
+function pickCourse(btn) {
+    var strip = btn.parentNode;
+    strip.querySelectorAll('button').forEach(function (b) {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+    });
+    pickerCourse = btn.dataset.course || '';
+    filterPicker();
+}
+
 function filterPicker() {
     var q = document.getElementById('pickerSearch').value.toLowerCase();
+    var shown = 0, total = 0;
     document.querySelectorAll('.recipe-option').forEach(function (o) {
-        o.style.display = o.dataset.recipeName.indexOf(q) >= 0 ? '' : 'none';
+        total += 1;
+        var byName = o.dataset.recipeName.indexOf(q) >= 0;
+        // SPACE-DELIMITED, AND PADDED AT BOTH ENDS, so course 1 does
+        // not match course 11. The template writes a trailing space
+        // after every id for the same reason.
+        var byCourse = !pickerCourse ||
+            (' ' + (o.dataset.recipeCourses || '') + ' ')
+                .indexOf(' ' + pickerCourse + ' ') >= 0;
+        var on = byName && byCourse;
+        o.style.display = on ? '' : 'none';
+        if (on) { shown += 1; }
     });
+    // HOW MANY OF HOW MANY. The number is the thing that tells you the
+    // filter did something rather than the dialog breaking.
+    var count = document.getElementById('pickerCount');
+    if (count) {
+        count.textContent = shown === total
+            ? total + ' recipe' + (total === 1 ? '' : 's')
+            : shown + ' of ' + total;
+    }
+    var empty = document.getElementById('pickerEmpty');
+    if (empty) { empty.hidden = shown !== 0; }
 }
 
 function pickRecipe(el) {
@@ -1164,6 +1870,137 @@ function removeMeal(entryId, name) {
     if (!confirm('Remove "' + name + '" from this day?')) { return; }
     document.getElementById('removeEntryId').value = entryId;
     document.getElementById('removeForm').submit();
+}
+
+// --------------------------------------------------------- the day speaks
+// MO-1, 19 Oct 2026. A planned night, and leftovers.
+
+function openNote(dateStr, dayName) {
+    document.getElementById('noteDate').value = dateStr;
+    document.getElementById('noteDayName').textContent = dayName;
+    // EMPTIED ON OPEN, like the picker above it. C19 is the round that
+    // paid for a dialog arriving with the last answer still in it.
+    document.getElementById('noteText').value = '';
+    $('#noteModal').modal('show');
+}
+
+function setNote(text) {
+    document.getElementById('noteText').value = text;
+}
+
+function openLeftover(entryId, name, cookedOn) {
+    document.getElementById('leftoverEntryId').value = entryId;
+    document.getElementById('leftoverName').textContent = name;
+    var box = document.getElementById('leftoverDate');
+    box.value = '';
+    // THE BROWSER REFUSES IT BEFORE THE SERVER HAS TO. The view checks
+    // the same thing and says so in words - a min attribute is a
+    // courtesy, not a guard, and anybody can post past it.
+    box.min = cookedOn;
+    $('#leftoverModal').modal('show');
+}
+
+// ------------------------------------------------------- the week moves
+// MW-1, 19 Oct 2026. Three dialogs: copy a week, save a week as a
+// Menu, apply a Menu. Each is emptied as it opens - C19's lesson, and
+// the picker above does the same thing for the same reason.
+
+function resetCopyWeek() {
+    document.getElementById('copyWeekTo').value = '';
+    document.getElementById('copyWeekNote').innerHTML = '';
+    document.getElementById('copyWeekGo').disabled = true;
+}
+
+function resetSaveMenu() {
+    document.getElementById('saveMenuName').value = '';
+}
+
+function resetApplyMenu() {
+    document.querySelectorAll('.menu-option').forEach(function (o) {
+        o.classList.remove('selected');
+    });
+    document.getElementById('applyMenuId').value = '';
+    // THE BUTTON IS NOT THERE WHEN THERE ARE NO MENUS - the template
+    // leaves it out rather than disabling it, so this asks.
+    var go = document.getElementById('applyMenuGo');
+    if (go) { go.disabled = true; }
+}
+
+// SAY SO FIRST. "Add alongside, and say so first" was the decision, and
+// this is the second half of it: before Copy can be pressed, the dialog
+// asks the server what the target week already holds and says it. The
+// button is enabled by the ANSWER, not by the date being typed - a
+// Copy that went ahead while the count was still in flight would be
+// the quieter conscience the decision was taken to avoid.
+function copyPreview() {
+    var box = document.getElementById('copyWeekTo');
+    var note = document.getElementById('copyWeekNote');
+    var go = document.getElementById('copyWeekGo');
+    go.disabled = true;
+    if (!box.value) { note.innerHTML = ''; return; }
+
+    note.innerHTML = '<p class="text-muted"><i class="fas fa-spinner fa-spin"></i> '
+        + 'Checking that week...</p>';
+
+    fetch('{% url "meal_week_preview" %}?week=' + encodeURIComponent(box.value), {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+        if (!d.success) {
+            // NOT alert() - SL-4. A browser dialog blocks every event
+            // after it, and this dialog has a place to say things.
+            note.innerHTML = '<div class="alert alert-warning">' + d.error + '</div>';
+            return;
+        }
+        if (d.week === '{{ week_start|date:"Y-m-d"|escapejs }}') {
+            note.innerHTML = '<div class="alert alert-warning">'
+                + 'That is this week. A week cannot be copied onto itself.</div>';
+            return;
+        }
+        if (d.meals === 0) {
+            note.innerHTML = '<div class="alert alert-info">'
+                + '<strong>' + d.label + '</strong> is empty. '
+                + 'The copy lands on a clear week.</div>';
+        } else {
+            // THE COUNT, IN WORDS, BEFORE THE BUTTON. Nothing is
+            // replaced and nothing is skipped: a day that had a dinner
+            // and gains another has two, visibly, which is a thing you
+            // can fix. A silent repair is not.
+            note.innerHTML = '<div class="alert alert-warning">'
+                + '<strong>' + d.label + '</strong> already has '
+                + d.meals + ' meal' + (d.meals === 1 ? '' : 's')
+                + ' on ' + d.days_with_meals + ' day'
+                + (d.days_with_meals === 1 ? '' : 's') + '. '
+                + 'The copy is <strong>added alongside</strong> them - '
+                + 'nothing is removed or replaced.</div>';
+        }
+        go.disabled = false;
+    })
+    .catch(function () {
+        note.innerHTML = '<div class="alert alert-warning">That week could not '
+            + 'be checked. Check your connection and try again.</div>';
+    });
+}
+
+function pickMenu(el) {
+    document.querySelectorAll('.menu-option').forEach(function (o) {
+        o.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    document.getElementById('applyMenuId').value = el.dataset.menuId;
+    document.getElementById('applyMenuGo').disabled = false;
+}
+
+// THE TRASHCAN IS INSIDE A CLICKABLE ROW, so it stops the click going
+// up - without this, deleting a menu would also select it, and the
+// Apply button would be left armed with an id that no longer exists.
+function deleteMenu(ev, menuId, name) {
+    ev.stopPropagation();
+    if (!confirm('Delete the menu "' + name + '"? The meals it has already '
+                 + 'put on your weeks stay where they are.')) { return; }
+    document.getElementById('deleteMenuId').value = menuId;
+    document.getElementById('deleteMenuForm').submit();
 }
 {% endif %}
 </script>

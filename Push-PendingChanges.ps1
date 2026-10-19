@@ -1170,6 +1170,35 @@ $sentinels = @(
     # ------------------------------------------------- MH-2, 18 Oct 2026
     @{ File = 'pages/templates/meal_planner.html'; Text = 'meal_plansHelpModal'; What = 'MH-2: the planner has a Help button, wired to the guide' },
     @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-name="Adding a Meal"'; What = 'MH-2: and the guide describes adding a meal to a day, not building a plan' },
+    # ------------------------------------------------- MW-1, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="copyWeekModal"'; What = 'MW-1: a week can be copied onto a week you pick' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="saveMenuModal"'; What = 'MW-1: and saved under a name, by weekday' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="applyMenuModal"'; What = 'MW-1: and a saved Menu stamped onto any week' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'added alongside'; What = 'MW-1: and the dialog counts what is there BEFORE the button - add alongside, and say so first' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def copy_week_rows('; What = 'MW-1: one function copies a week, parents before leftovers' },
+    @{ File = 'pages/urls.py'; Text = "name='meal_week_preview'"; What = 'MW-1: the route the dialog asks the count of' },
+    # ------------------------------------------------- MO-1, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="noteModal"'; What = 'MO-1: a day can take a planned night that is not a recipe' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="leftoverModal"'; What = 'MO-1: and a meal can be eaten again on another day' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'leftover-item'; What = 'MO-1: the leftover row is its own row - no stepper, because it buys nothing' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def add_leftover('; What = 'MO-1: and a leftover of a leftover points at the original' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = "select_related('recipe', 'leftover_of')"; What = 'MO-1: in the ONE query the week already costs' },
+    # ------------------------------------------------- NF-1, 19 Oct 2026
+    @{ File = 'check_gates.py'; Text = 'def _toolchain('; What = 'NF-1: the round-name check asks the whole toolchain, not just the register' },
+    @{ File = 'check_gates.py'; Text = 'name, taken, declared, referenced = nm'; What = 'NF-1: and the caller reads all four answers' },
+    # ------------------------------------------------- MH-3, 19 Oct 2026
+    @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-name="Moving a Week"'; What = 'MH-3: the guide has a tab for copying a week and saving a Menu' },
+    @{ File = 'pages/help_content/administration.html'; Text = 'Leftovers, and they are free'; What = 'MH-3: and tells the reader the second night costs nothing' },
+    # ------------------------------------------------- MC-4, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WEEKS GO INSIDE THE GRID'; What = 'MC-4: the mini calendar draws seven columns, not one - Demetri found it on the live site' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'mini-calendar-grid - MC-4'; What = 'MC-4: and the grid closes AFTER the loop that fills it' },
+    # ------------------------------------------------- PK-1, 19 Oct 2026
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))'; What = 'PK-1: the recipe picker is a grid, not one column in a wide dialog' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'function pickCourse('; What = 'PK-1: and it filters by course, composing with the search rather than replacing it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerCount"'; What = 'PK-1: and says how many of how many are showing' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = "prefetch_related('courses')"; What = 'PK-1: the course ids come from one query, not one per card' },
+    @{ File = 'pages/help_content/administration.html'; Text = 'coming:</strong> repeating a whole week'; Absent = $true; Code = $true; What = 'MH-3: and no longer promises four things MW-1 and MO-1 have built' },
+    @{ File = 'check_gates.py'; Text = 'already owns %s in'; Absent = $true; Code = $true; What = 'NF-1: and the old message is gone - it could only print when the register had an entry, which is the case this round exists for' },
     # -------------------------------------------- HL-1, 12 Oct 2026
     # A Help button is not a Back button. Base hides the back
     # label below 768px, and 77 pages once carried their own
@@ -2623,7 +2652,35 @@ $suites = @(
     # used to have. Sixteen rows of the table above guarded
     # the four pages MN-1 retired; they are gone, and this
     # suite is why they cannot come back.
-    'test_retired.py'
+    'test_retired.py',
+    # MW-1, 19 Oct 2026 - release 3, push 2. The week moves: copy
+    # a week onto a week you pick, save one as a Menu, stamp a
+    # Menu onto any week. No migration - Menu and MenuItem came
+    # with 0100 in push 1, holding DAY INDEXES and not dates
+    # exactly so that this round could exist.
+    'test_meal_week.py',
+    # MO-1, 19 Oct 2026 - release 3, push 2. The day speaks: a
+    # planned night that is not a recipe, and leftovers that
+    # cost nothing. Both columns shipped with 0100 and nothing
+    # in the application could fill either.
+    'test_meal_day.py',
+    # NF-1, 19 Oct 2026 - the round-name check reads the tree. The
+    # register is one place a name lives; MP-2 has no entry in it
+    # and four live references, one of them a pin.
+    'test_name_free.py',
+    # MH-3, 19 Oct 2026 - release 3, push 2. The guide catches up
+    # with the week. MH-2 promised four features at the foot of a
+    # tab and MW-1 and MO-1 built all four the next morning.
+    'test_meal_guide3.py',
+    # MC-4, 19 Oct 2026 - the mini calendar is a calendar. The
+    # first suite in this project that RENDERS it: every check
+    # before this one read its class names, and a layout fault
+    # is only visible in the picture.
+    'test_mini_grid.py',
+    # PK-1, 19 Oct 2026 - the picker is a grid, and it filters.
+    # Demetri on the live dialog: "there is so much wasted space
+    # on the right of each recipe. Should it not be a grid?"
+    'test_picker_grid.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

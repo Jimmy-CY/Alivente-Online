@@ -363,8 +363,27 @@ lost = [f for f in old_rows if f not in rows
         and os.path.basename(f.replace('\\', '/')) not in GONE]
 ok(not lost, '  and not one row on a page that is still there went with '
    'them', lost)
-ok(len(old_rows) - len(rows) >= N_DEAD_SENTINELS - 2,
-   '  the table is %d rows, down from %d' % (len(rows), len(old_rows)))
+# MW-1, 19 Oct 2026 - ASKED OF THE TABLE AS THIS ROUND LEFT IT.
+# This read today's PS1 against the pre-RT-1 one, which is a
+# present-tense reading of a claim about the past: RT-1 cut sixteen
+# dead rows and MH-2 added two, so the claim is that THIS ROUND took
+# the table down by at least fourteen. Push 2 adds eleven rows of its
+# own and the table is now larger than the one RT-1 started from, so
+# the check failed on a round that had done nothing wrong.
+#
+# alv_rounds.as_left_by reads the file as the round whose backups end
+# in SUFFIX left it, which is the question this line was always
+# asking. Five repairs in two days, all the same sentence.
+mine_rows = re.findall(r"(?m)^\s*@\{\s*File\s*=\s*'([^']+)'",
+                       alv_rounds.as_left_by(os.path.join(ROOT, PS1), SUFFIX, read))
+ok(len(old_rows) - len(mine_rows) >= N_DEAD_SENTINELS - 2,
+   '  as this round left it the table was %d rows, down from %d'
+   % (len(mine_rows), len(old_rows)),
+   (len(old_rows), len(mine_rows)))
+ok(len(rows) >= len(mine_rows),
+   '  and later rounds have added %d row(s) since, which is not this '
+   'round\'s business' % (len(rows) - len(mine_rows)),
+   (len(mine_rows), len(rows)))
 print('        A sentinel on a retired page is the push script')
 print('        asserting the shape of a file nothing serves - which is')
 print('        the failure -Message and -Checks were built to prevent.')

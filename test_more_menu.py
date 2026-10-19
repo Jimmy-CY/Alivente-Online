@@ -274,18 +274,50 @@ print('=' * 74)
 
 pages = [(n, p) for n, p in templates()
          if n != 'base.html' and has_menu(read(p))]
-mine = [(n, p) for n, p in pages if n not in DEFERRED and n not in ALREADY]
+# MW-1, 19 Oct 2026 - THIS ROUND'S PAGES COME FROM THIS ROUND'S
+# BACKUPS. `mine` used to be today's census minus two exemption lists,
+# and that worked only while no later round joined the census. MW-1 is
+# that round: it hangs a More menu on meal_planner.html, which H8 never
+# saw, and the planner arrived in `mine` - so sections 2, 3 and 7 went
+# looking for H8's work on it and three checks failed. A set of pages a
+# round TOUCHED is a fact about the past and alv_tree.touched_by reads
+# it from the only place it is still written down.
+TOUCHED = set(alv_tree.rel(q).replace(os.sep, '/')
+              for q in alv_tree.touched_by(SUFFIX) if q.endswith('.html'))
+TOUCHED.discard('base.html')
+# The one page of the twenty-seven the tree has since retired. It is
+# counted and named rather than quietly dropped, which is the whole
+# point of RT-1's register: an exemption for a page nobody can reach is
+# a line nobody can check.
+GONE = sorted(n for n in TOUCHED if alv_tree.retired(n))
+mine = [(n, p) for n, p in pages if n in TOUCHED]
+# Pages carrying a menu that are neither this round's, nor deferred,
+# nor already bound - which is to say, pages a LATER round put on the
+# binder. A round that hangs a More menu on a page adds it here.
+LATER = sorted(set(n for n, _ in pages)
+               - TOUCHED - set(DEFERRED) - set(ALREADY))
 
 # ==========================================================================
 head('1. THE CENSUS')
 # ==========================================================================
-# 31 AND 26 SINCE RT-1, 18 Oct 2026. Both are readings of the
-# tree as it stands, not of what this round did - the round
-# converted 27 pages and MN-1 has since retired one of them,
-# view_meal_plan.html. Nobody should read 26 as the size of
-# this round; section 3 reads that from the backups.
-ok(len(pages) == 31, '31 pages carry the More menu in markup', len(pages))
-ok(len(mine) == 26, '  26 of them are this round\'s', len(mine))
+# 32 TODAY, 27 FROM THE BACKUPS, 26 OF THEM STILL IN THE TREE.
+# Three numbers now, because they are three different questions
+# and reading one of them as another is what broke this section
+# on 19 October. 32 is what the tree HAS; 27 is what H8 DID and
+# cannot change again; 26 is the part of H8's work still on a
+# page the tree serves. Section 3 measures the round from the
+# backups and nobody should read any of these as its size.
+ok(len(pages) == 32, '32 pages carry the More menu in markup', len(pages))
+ok(len(TOUCHED) == 27, '  27 of them are this round\'s, from its backups',
+   len(TOUCHED))
+ok(GONE == ['view_meal_plan.html'],
+   '  and one of the 27 has been retired since - %s'
+   % (GONE[0] if GONE else 'none'), GONE)
+ok(len(mine) == 26, '  so 26 of this round\'s pages are still in the tree',
+   len(mine))
+ok(LATER == ['meal_planner.html'],
+   '  and 1 page was put on the binder by a LATER round - %s, MW-1, '
+   '19 Oct 2026' % (LATER[0] if LATER else 'none'), LATER)
 ok(len(DEFERRED) == 3, '  3 keep a hand-inlined handler, on purpose')
 ok(len(ALREADY) == 2, '  2 were already on the binder before it started')
 for n in DEFERRED + ALREADY:

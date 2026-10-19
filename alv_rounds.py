@@ -1265,6 +1265,31 @@ ROUNDS = [
     # planner. MH-1 wrote seven tabs for five screens and MN-1
     # replaced four of the five the same afternoon.
     '.bak_mealguide',
+    # MW-1, 19 Oct 2026 - release 3, push 2. The week moves. The
+    # register's own subject: this round reads meal_planner.html as
+    # MN-1 left it, and MH-2 has written to it since.
+    '.bak_mealweek',
+    # MO-1, 19 Oct 2026 - the day speaks. Reads meal_planner.html as
+    # MW-1 left it, which is the same afternoon.
+    '.bak_mealday',
+    # NF-1, 19 Oct 2026 - the round-name check stops reading one
+    # register and starts reading the tree. Logged as a tooling item on
+    # 18 Oct when MP-2 was caught by hand, and left for its own round:
+    # widening a gate while writing a round is forbidden.
+    '.bak_namefree',
+    # MH-3, 19 Oct 2026 - the guide catches up with the week. Demetri's
+    # standing instruction on release 3: the help sections of the whole
+    # meal plan module are part of the release, not a follow-up to it.
+    '.bak_mealguide3',
+    # MC-4, 19 Oct 2026 - the mini calendar draws thirty-five cells in
+    # one column, on the live site, because its grid closed before the
+    # loop that fills it. Demetri's finding, and no suite in the
+    # project had ever rendered the thing.
+    '.bak_minigrid',
+    # PK-1, 19 Oct 2026 - the Add-a-Meal picker becomes a grid with a
+    # course filter. Demetri's finding, the same hour as MC-4 and from
+    # the same root: .recipe-option has never had a CSS rule anywhere.
+    '.bak_pickergrid',
 ]
 
 

@@ -368,6 +368,17 @@ urlpatterns = [
     path('meal_plans/add/', views.add_meal_entry, name='add_meal_entry'),
     path('meal_plans/remove/', views.remove_meal_entry, name='remove_meal_entry'),
     path('meal_plans/servings/', views.set_meal_servings, name='set_meal_servings'),
+    # MW-1, 19 Oct 2026 - the week moves. Five routes, no migration:
+    # Menu and MenuItem arrived with 0100 in push 1.
+    path('meal_plans/week_preview/', views.meal_week_preview, name='meal_week_preview'),
+    path('meal_plans/copy_week/', views.copy_meal_week, name='copy_meal_week'),
+    path('meal_plans/menus/save/', views.save_menu, name='save_menu'),
+    path('meal_plans/menus/apply/', views.apply_menu, name='apply_menu'),
+    path('meal_plans/menus/delete/', views.delete_menu, name='delete_menu'),
+    # MO-1, 19 Oct 2026 - the day speaks. Two routes, no migration:
+    # both columns came with 0100 and nothing could fill them.
+    path('meal_plans/note/', views.add_meal_note, name='add_meal_note'),
+    path('meal_plans/leftover/', views.add_leftover, name='add_leftover'),
     path('save_unit_conversion/', views.save_unit_conversion, name='save_unit_conversion'),
     # Unit Conversion Management
     path('unit_conversions/', views.unit_conversions_management, name='unit_conversions_management'),

@@ -864,14 +864,62 @@
         <strong style="color:#2c3e50;"><i class="fas fa-layer-group" style="color:#28a745;"></i> As many meals a day as you like.</strong> Breakfast, lunch and dinner on the same card, in the order you added them. There is no slot to fill and none to leave empty.
       </div>
 
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-store" style="color:#28a745;"></i> Add Note, for a night you are not cooking.</strong> Eat out, takeaway, at a friend's. It sits on the day like a meal does, so the week reads as a plan rather than as a plan with holes in it &mdash; and it buys nothing: a note never reaches the shopping list. Three suggestions are offered so a planned night is one tap.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #0e7c8b; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-redo" style="color:#0e7c8b;"></i> Leftovers, and they are free.</strong> The <strong><i class="fas fa-redo"></i></strong> button beside a meal puts it on another day as leftovers. <strong>It costs nothing on the shopping list</strong> &mdash; you bought the ingredients on the night you cooked &mdash; so a pot of soup that feeds you three times is bought once. The leftover row names the day it was cooked on and has no servings stepper, because changing that number would buy nothing.
+      </div>
+
       <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #ffc107; font-size:13px; color:#6c757d;">
-        <strong style="color:#2c3e50;"><i class="fas fa-mobile-alt" style="color:#e6a817;"></i> It works on a phone.</strong> The picker, the stepper and the day cards are all built for a narrow screen, which is where a week usually gets planned.
+        <strong style="color:#2c3e50;"><i class="fas fa-mobile-alt" style="color:#e6a817;"></i> It works on a phone.</strong> The picker, the stepper, the two Add buttons and the day cards are all built for a narrow screen, which is where a week usually gets planned.
       </div>
 
     </div>
 
     <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">
-      <i class="fas fa-info-circle"></i> <strong>Not yet, and coming:</strong> repeating a whole week onto another, saved menus, a free-text note on a day, and marking a meal as leftovers. Moving a meal from one day to another comes with them.
+      <i class="fas fa-info-circle"></i> <strong>Not yet, and coming:</strong> moving a meal from one day to another, and reordering the meals on a day. Everything else this tab used to list as coming is now on the <strong>Moving a Week</strong> tab or above.
+    </div>
+  </article>
+
+  <article data-tab-slug="mp-week"
+           data-tab-name="Moving a Week"
+           data-tab-icon="fa-copy">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-copy" style="color:#28a745;"></i> Copying a week, and saving one</h6>
+
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Three controls, and all three sit behind the <strong><i class="fas fa-ellipsis-v"></i></strong> button on the planner's own bar &mdash; beside Shopping List and Help. They act on <strong>the week on screen</strong>, so pick the week first.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-copy" style="color:#28a745;"></i> Copy this week to&hellip;</strong> Pick any day in the week you want and every meal on screen lands on the matching weekday of that week, with the servings it was cooked for. Nothing stays linked afterwards &mdash; change the new week and the old one does not move.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #0e7c8b; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-bookmark" style="color:#0e7c8b;"></i> Save this week as a Menu.</strong> Give the week a name and it is kept <strong>by weekday</strong> rather than by date. That is the difference between a Menu and a copy: a week you save in October can be applied to a week in December, because what is stored is &ldquo;Monday, Thursday, Sunday&rdquo; and not three dates in October.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #0e7c8b; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-list-ul" style="color:#0e7c8b;"></i> Apply a Menu&hellip;</strong> Choose one from the list and its meals are added to the week on screen. The menu itself is unchanged &mdash; applying it is a stamp, not a move, so the same menu can be used every month. Each row says how many meals it holds, and carries a <strong>trashcan</strong> to forget it.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #ffc107; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-layer-group" style="color:#e6a817;"></i> Two meals landing on one day gives you two meals.</strong> Nothing is replaced and nothing is skipped. Before <strong>Copy the Week</strong> can be pressed, the dialog counts what the target week already holds and tells you &mdash; so a day that ends up with two dinners is something you chose and can see, rather than something that happened quietly.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #0e7c8b; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-redo" style="color:#0e7c8b;"></i> Leftovers travel with their meal.</strong> Copy a week that has leftovers on it and they point at the copy of the meal they came from, not back at the old week &mdash; so the new week is still bought exactly once. A Menu does not keep leftovers at all: a leftover is a consequence of a particular week, not something you plan in advance.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #dc3545; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-ban" style="color:#dc3545;"></i> Deleting a Menu does not delete any meals.</strong> The meals an Apply put on your weeks are real meals on real dates, with no link back. Forgetting the menu leaves every week you used it on exactly as it was.
+      </div>
+
+    </div>
+
+    <div style="background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; padding:12px; font-size:13px; color:#856404;">
+      <i class="fas fa-user-lock"></i> <strong>You need editing rights.</strong> A reader can see the week and shop from it, but the <strong><i class="fas fa-ellipsis-v"></i></strong> button is not there without permission to edit recipes.
     </div>
   </article>
 
@@ -970,6 +1018,14 @@
 
       <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">
         <strong><i class="fas fa-history"></i> Record, as well as plan.</strong> Past dates take meals like any other, so filling last week in afterwards is a perfectly good note of what you ate.
+      </div>
+
+      <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">
+        <strong><i class="fas fa-bookmark"></i> Save the weeks you come back to.</strong> A Menu is kept by weekday, so the Christmas week, the week the family visits and the ordinary rotation can each be saved once and applied whenever they come round. That is what a Menu is for; <strong>Copy this week to&hellip;</strong> is for last week.
+      </div>
+
+      <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">
+        <strong><i class="fas fa-redo"></i> Use leftovers &mdash; they are free.</strong> Marking the second and third night as leftovers of the first means the shopping list buys that pot once instead of three times. It is the single biggest difference you can make to what a week costs, and it takes two taps.
       </div>
 
       <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">

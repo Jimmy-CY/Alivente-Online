@@ -756,6 +756,28 @@ CONVERTED = [
     # reads every suite in this list and asks each one whether it names
     # a page the tree no longer has.
     'test_retired.py',
+    # MW-1, 19 Oct 2026 - release 3, push 2. The week moves. Wide from
+    # birth: section 7 asks every page in both template roots whether
+    # any of them grew a second copy of these three dialogs.
+    'test_meal_week.py',
+    # MO-1, 19 Oct 2026 - release 3, push 2. The day speaks. Wide from
+    # birth: it asks every page in both roots whether any of them grew
+    # a second copy of the two dialogs.
+    'test_meal_day.py',
+    # NF-1, 19 Oct 2026 - the name check reads the tree. Wide by
+    # nature: the thing it tests is a walk of the toolchain.
+    'test_name_free.py',
+    # MH-3, 19 Oct 2026 - the guide catches up with the week. Wide
+    # from birth: the promise gate reads every tab of the module.
+    'test_meal_guide3.py',
+    # MC-4, 19 Oct 2026 - the mini calendar is a calendar. Wide from
+    # birth: section 4 asks every page in both roots whether any other
+    # one has a row of display: contents outside its grid.
+    'test_mini_grid.py',
+    # PK-1, 19 Oct 2026 - the picker is a grid, and it filters by
+    # course. Wide from birth: section 5 asks every page in both
+    # roots whether any other one grew a copy of the filter strip.
+    'test_picker_grid.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

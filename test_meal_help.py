@@ -129,7 +129,13 @@ FILES = (HELP,) + PAGES
 # MH-2, 18 Oct 2026 - SEVEN BECAME SIX. 'The Plan Page' went with the
 # plan page, and 'Building a Plan' is 'Adding a Meal', because you add a
 # meal to a day now rather than building a container first.
-TABS = ('Overview', 'The Calendar', 'Adding a Meal',
+#
+# MH-3, 19 Oct 2026 - AND SIX BECAME SEVEN AGAIN, which is a different
+# seven: 'Moving a Week' is the three controls MW-1 shipped - copy a
+# week, save one as a Menu, apply a Menu - and they are not 'Adding a
+# Meal', because they act on a WEEK. The six above are MH-2's own and
+# none of them left.
+TABS = ('Overview', 'The Calendar', 'Adding a Meal', 'Moving a Week',
         'Shopping List', 'Who Can Do What', 'Tips')
 
 passed = failed = skipped = 0
@@ -415,7 +421,7 @@ if up and mod:
     ok(bool(mod.get('subtitle')), '  with a subtitle on the header',
        mod.get('subtitle'))
     got = [t['name'] for t in mod.get('tabs', [])]
-    ok(got == list(TABS), 'seven tabs, in order', got)
+    ok(got == list(TABS), '%d tabs, in order' % len(TABS), got)
     # AND EVERY TAB HAS CONTENT. A tab that parses to an empty string
     # renders an empty panel, which looks like a bug in the shell.
     thin = [t['name'] for t in mod.get('tabs', [])
@@ -600,6 +606,45 @@ if up and mod:
            'about a thing is the thing' % w)
     ok(len(mod['tabs']) == len(TABS),
        '  across all %d tab(s)' % len(TABS), len(mod['tabs']))
+
+    # MH-3, 19 Oct 2026 - AND NOTHING THE PLANNER ALREADY DOES IS
+    # DESCRIBED AS COMING. The mirror of RETIRED_WORDS above: MH-2
+    # wrote a promise at the foot of the Adding a Meal tab naming four
+    # things, and MW-1 and MO-1 built all four the next morning. A
+    # guide that promises what the application does is worse than one
+    # that says nothing - a reader who believes it will not go looking
+    # for the control.
+    PROMISED_WORDS = ('repeating a whole week', 'saved menus',
+                      'a free-text note on a day',
+                      'marking a meal as leftovers')
+    coming = [s for s in re.split(r'(?<=[.!])\s+', whole)
+              if 'coming' in s.lower() or 'not yet' in s.lower()]
+    stale = sorted(w for w in PROMISED_WORDS
+                   for s in coming if w in s)
+    ok(not stale,
+       'the guide promises nothing it already does - none of the %d '
+       'features MW-1 and MO-1 shipped' % len(PROMISED_WORDS), stale)
+    # AND THE CONTROLS REALLY ARE THERE, asked of the planner. An
+    # absence claim on its own would pass on a guide that simply never
+    # mentions them.
+    for text, what in (("id=\"copyWeekModal\"", 'Copy this week to'),
+                       ("id=\"saveMenuModal\"", 'Save this week as a Menu'),
+                       ("id=\"applyMenuModal\"", 'Apply a Menu'),
+                       ("id=\"noteModal\"", 'Add Note'),
+                       ("id=\"leftoverModal\"", 'Leftovers')):
+        ok(text in T.code_only(plan_src),
+           '  CONTROL: the planner really has %s' % what)
+    # AND THE GUIDE DESCRIBES EVERY ONE OF THEM. A tab that exists is
+    # not the same as a tab that says the thing.
+    for phrase in ('Copy this week to', 'Save this week as a Menu',
+                   'Apply a Menu', 'Add Note', 'Leftovers'):
+        ok(phrase in whole, '  and the guide describes %r' % phrase)
+    # THE ONE THING STILL OUTSTANDING IS STILL PROMISED, honestly. A
+    # round that cleared the promise box by emptying it would pass
+    # every check above and tell the reader less.
+    ok(any('moving a meal from one day to another' in s.lower()
+           for s in coming),
+       '  while what is NOT built is still named as coming', coming[:2])
 
 # ==========================================================================
 head('8. SCOPE, REGISTRATION AND THE GATE')

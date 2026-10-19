@@ -382,9 +382,26 @@ ok('{% load help_modal_tags %}' in PC and 'meal_plansHelpModal' in PC,
 ok(PC.count('class="page-action-buttons"') == 1,
    'ONE action bar', PC.count('class="page-action-buttons"'))
 # BACK IS LAST, asked of the order in the bar and not of its presence.
-_bar = PC.split('class="page-action-buttons"')[1].split('</div>')[0] \
-    if 'class="page-action-buttons"' in PC else ''
-_bar = PC[PC.index('class="page-action-buttons"'):][:1800]
+#
+# MW-1, 19 Oct 2026 - THE WHOLE BAR, COUNTED, NOT A WINDOW OF 1,800
+# CHARACTERS. That number was the length of this bar on the day this
+# round was written; MW-1 hung a More menu in it and the window
+# stopped 1,400 characters short of Back, so .index() raised
+# ValueError and this suite DIED instead of failing. A slice by
+# character count is a measurement of nothing.
+#
+# Two spellings stood here and the first was dead - computed, then
+# overwritten by the next line before anything read it. Both are
+# replaced by one that counts div depth from the opening tag, which
+# is what a bar is.
+_i = PC.index('class="page-action-buttons"')
+_depth, _bar = 0, ''
+for _m in re.finditer(r'<div\b|</div>', PC[_i:]):
+    _depth += 1 if _m.group(0) == '<div' else -1
+    if _depth < 0:
+        _bar = PC[_i:_i + _m.start()]
+        break
+ok(bool(_bar), '  and the bar is readable as one element', len(_bar))
 ok(_bar.index('action-back') > _bar.index('action-secondary'),
    '  and Back is after the Help secondary - Back is last in every bar')
 ok('action-back-label' in PC,
@@ -697,7 +714,16 @@ if django_up:
     ok(q_big == q_small,
        'the planner costs the same with 84 meals as with one - %d queries'
        % q_big, 'one meal: %d, 84 meals: %d' % (q_small, q_big))
-    ok(q_big <= 12, '  and that number is under 12', q_big)
+    # MW-1, 19 Oct 2026 - THIRTEEN, because this round asks for one
+    # more thing: the Menus the Apply dialog lists. It is ONE query
+    # however many menus there are - Count() in an annotate, not a
+    # count per row, which is the fault E29 took off four screens -
+    # and the check above is the one that proves it: the number
+    # does not move with the data.
+    # PK-1, 19 Oct 2026 - fourteen. One more, for the courses the
+    # picker's filter strip is built from. One query, not one per
+    # course and not one per card.
+    ok(q_big <= 14, '  and that number is under 14', q_big)
 
     head('8f. the shopping list shops a range')
     r, q = cost('/meal_plans/shopping_list/?from=2026-10-19&to=2026-10-25')

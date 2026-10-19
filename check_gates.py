@@ -31,6 +31,15 @@ WHAT IT DOES
     sentinel row out of a patcher, then reports any gate string that
     also appears in what the round writes.
 
+AND THE ROUND'S NAME, ASKED OF THE WHOLE TOOLCHAIN   [NF-1, 19 Oct 2026]
+    A round's name is the other half of its identity, and reusing one
+    has cost a wrong statement six times in four days. This check read
+    the ROUNDS register and nothing else until NF-1, and MP-2 is the
+    case that proves those are two different questions: the 3 October
+    round that relabelled the meal plan form's Cancel has NO REGISTER
+    ENTRY and is named in four live files, one of which PINS THE STRING.
+    The register alone would have called it free.
+
 AND, ON A SUITE (any path whose name starts with test_), TWO MORE
     Both of these cost a failed gate on his laptop after a green sweep
     here, which is the most expensive kind of mistake we make.
@@ -356,8 +365,87 @@ def name_free(src, path):
     try:
         reg = _register(root)
     except Exception:
-        return None
-    return [name, reg.get(name) or []]
+        reg = {}
+    declared, referenced = _toolchain(root, name, path)
+    return [name, reg.get(name) or [], declared, referenced]
+
+
+# NF-1, 19 Oct 2026 - WHERE ELSE IS THIS NAME?
+#
+# The register is ONE place a name lives and it is not the only one.
+# MP-2 has no register entry and four live references, one of them a
+# pin, and the question "is this name free" asked of the register alone
+# answered yes. The toolchain is the rest of the answer.
+TOOL = re.compile(r'^(?:apply_|test_|alv_|render_|show_|check_)'
+                  r'[a-z0-9_]*\.py$|^(?:Push-PendingChanges\.ps1|'
+                  r'check_gates\.py|alv_rounds\.py|alv_tree\.py)$')
+
+
+def _toolchain(root, name, mine):
+    """(declared_in, referenced_in) for a round name, across the live
+    toolchain at the repo root.
+
+    DECLARED is a round docstring saying `- round NAME,` - that is a
+    round claiming the name, and it is the file that tells you whose it
+    is. REFERENCED is any other mention: a comment, or a suite pinning
+    the string, which is what test_ae_line does with MP-2. Both make
+    the name taken; they are kept apart because only the first answers
+    "taken by what".
+
+    THE FILE BEING CHECKED IS EXCLUDED. Every patcher declares its own
+    name in its own docstring, so including it would report a
+    collision with itself on every round ever written. Matched on the
+    resolved path, not the spelling, because `python check_gates.py
+    ./apply_x.py` and `python check_gates.py apply_x.py` are the same
+    file and a string comparison says otherwise.
+
+    AND THE LIVE TREE ONLY. A name in a .bak is history. Between the
+    register and the live toolchain every name in use is already
+    found, and a walk of four thousand backups is a gate nobody waits
+    for. [test_gate_speed]
+    """
+    try:
+        mine = os.path.abspath(mine)
+    except Exception:
+        mine = ''
+    # WORD BOUNDARIES THAT KNOW ABOUT THE HYPHEN. Without the lookahead
+    # MP-2 matches inside MP-21 and MP-2a, which are different rounds;
+    # without the lookbehind it matches inside AMP-2. \b would do
+    # neither, because a hyphen is not a word character.
+    rx = re.compile(r'(?<![\w-])%s(?![\w-])' % re.escape(name))
+    # TWO HOUSE STYLES, AND THE OLDER ONE IS WHERE MP-2 LIVES. The
+    # modern first line is `apply_x.py - round NF-1, 19 Oct 2026.` and
+    # the check was written against it; apply_meal_bar_top.py opens
+    # `"""MP-2 - THE MEAL PLAN FORM'S BAR GOES TO THE TOP`, which is
+    # the style of early October. The first cut of this walk read only
+    # the modern form and filed MP-2 - the round this whole round
+    # exists for - under REFERENCED instead of DECLARED, with eleven
+    # mentions in the patcher that owns the name.
+    decl = re.compile(r'-\s*round\s+%s\s*,|^\s*"""%s\s*-'
+                      % (re.escape(name), re.escape(name)), re.M)
+    declared, referenced = [], []
+    try:
+        names = sorted(os.listdir(root))
+    except Exception:
+        return [], []
+    for n in names:
+        if not TOOL.match(n):
+            continue
+        p = os.path.join(root, n)
+        if not os.path.isfile(p) or os.path.abspath(p) == mine:
+            continue
+        try:
+            with open(p, encoding='utf-8', errors='replace') as f:
+                text = f.read()
+        except Exception:
+            continue
+        if not rx.search(text):
+            continue
+        if decl.search(text[:400]):
+            declared.append(n)
+        else:
+            referenced.append('%s x%d' % (n, len(rx.findall(text))))
+    return declared, referenced
 
 
 def _register(root):
@@ -411,15 +499,35 @@ def main(paths):
 
         nm = name_free(src, p)
         if nm:
-            name, taken = nm
-            if taken:
+            # FOUR THINGS SINCE NF-1, 19 Oct 2026, not two: the
+            # register is one place a name lives and MP-2 is the case
+            # that proves it is not the only one.
+            name, taken, declared, referenced = nm
+            if taken or declared or referenced:
                 # A QUESTION, LIKE THE SUFFIX ONE, AND FOR THE SAME
                 # REASON: an applied round owns its own name, so this
                 # fires on every patcher that has already run. It is
                 # asked BEFORE applying, which is the only time the
                 # answer means anything.
-                print('  ?  the round name %s already owns %s in '
-                      'alv_rounds.py' % (name, ', '.join(taken)))
+                print('  ?  the round name %s is already in use' % name)
+                if taken:
+                    print('     register  : owns %s in alv_rounds.py'
+                          % ', '.join(taken))
+                if declared:
+                    print('     declared  : %s' % ', '.join(declared))
+                if referenced:
+                    print('     named in  : %s' % ', '.join(referenced))
+                if not taken:
+                    # THE MP-2 CASE, SAID OUT LOUD. A name with no
+                    # register entry and live references is the exact
+                    # shape that answered "free" until this round.
+                    print('     - AND IT HAS NO REGISTER ENTRY. That is')
+                    print('       the MP-2 shape: the 3 Oct round that')
+                    print('       relabelled the meal plan Cancel owns no')
+                    print('       suffix and is named in four live files,')
+                    print('       one of which pins the string. Until')
+                    print('       NF-1 this check read the register alone')
+                    print('       and would have called the name free.')
                 print('     - fine if this round is already applied. If')
                 print('       it is NOT, the name belongs to an older')
                 print('       round and this one must choose another:')
@@ -429,7 +537,9 @@ def main(paths):
                 print('       edited to make room. That happened on')
                 print('       18 Oct and cost a careful undo.')
             else:
-                print('  ok   %s is a free round name' % name)
+                print('  ok   %s is a free round name - not in the '
+                      'register, and named nowhere in the toolchain'
+                      % name)
 
         suf = suffix_free(src, p)
         if suf:

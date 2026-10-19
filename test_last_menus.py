@@ -252,22 +252,63 @@ pages = [(rel, p) for rel, p in walked()
 # ==========================================================================
 head('1. THIRTY-TWO OF THIRTY-TWO, AND NOBODY WRITES IT OUT')
 # ==========================================================================
-# 31 SINCE RT-1, 18 Oct 2026. This counts the pages that carry
-# a More menu TODAY. view_meal_plan.html carried one and MN-1
-# retired it; the planner that replaced it has no More menu.
-# H8 still bound 32 of them, and that is section 2's claim,
-# read from the backups.
-ok(len(pages) == 31, '31 pages carry a More menu', len(pages))
+# 32 SINCE MW-1, 19 Oct 2026, AND THE HEADING ABOVE IS TRUE
+# AGAIN - but the number is the small half of what changed here.
+#
+# THIS SECTION SAYS "TODAY" AND USED TO READ THE PAST. Every
+# check below went through now(), which is as_left_by: the page
+# as H10 left it. For the 31 pages that existed when H10 ran
+# that is the same text as today's. MW-1 hung a More menu on
+# meal_planner.html - a page H10 never saw - and the planner
+# joined this census while its historical read, 41,017
+# characters against today's 60,973, has no menu in it at all.
+# Four checks failed, correctly: they were asked about a page
+# and answered about a different version of it.
+#
+# So today() is what a present-tense census reads with, and
+# now() stays where it belongs - sections 2 and 3, which ask
+# what H10 DID. Historical and present-tense reads are
+# different questions and the call site is the only place that
+# knows which one is being asked. [RT-1, 18 Oct 2026]
+
+
+def today(p):
+    """The page's text as the tree holds it NOW.
+
+    Not now() - that is the page as this round left it, which is a
+    question about the past and the wrong one to ask of a census
+    built from today's disk.
+    """
+    return read(p)
+
+
+ok(len(pages) == 32, '32 pages carry a More menu', len(pages))
 off = [rel for rel, p in pages
-       if not all(a in markup(now(p)) for a in ATTRS)]
+       if not all(a in markup(today(p)) for a in ATTRS)]
 ok(not off, '  and every one of them is on base\'s binder', off)
-holding = [rel for rel, p in pages if 'actionMoreBtn' in js_of(now(p))]
+holding = [rel for rel, p in pages if 'actionMoreBtn' in js_of(today(p))]
 ok(not holding, '  NOT ONE still writes its own handler', holding)
-painting = [rel for rel, p in pages if paints(now(p))]
-ok(painting == [PAINTER],
-   '  and exactly one still paints it - %s, named and measured in H9'
-   % PAINTER.replace('.html', ''), painting)
-ok(all(re.search(r'id="actionMoreMenu"[^>]*\bhidden\b', markup(now(p)))
+# AND THE ONE DEBT H9 COULD NOT TAKE HAS BEEN PAID - which
+# this section could not see, because it was reading H10's
+# tree. property_management_dashboard.html kept SEVEN rules
+# naming the component when H10 ran; that measurement is a
+# fact about the past and is asserted as one, from the
+# backups, on the line below. DB-5 took those seven out on
+# 12 OCTOBER, together with the ten .dashboard-side-actions
+# rules beside them - and for the seven days since, this
+# line has said one page still paints it and passed, because
+# a claim asked of the past cannot notice that the present
+# has moved on. That is the whole lesson of this round's
+# repair, found by accident while re-pinning a count.
+ok(len(paints(now(alv_tree.last_join(PAINTER)))) == 7,
+   '  %s painted it with 7 rules when H10 ran - from the backups'
+   % PAINTER.replace('.html', ''),
+   len(paints(now(alv_tree.last_join(PAINTER)))))
+painting = [rel for rel, p in pages if paints(today(p))]
+ok(not painting,
+   '  and TODAY not one page paints it - DB-5 took the last seven '
+   'on 12 Oct 2026', painting)
+ok(all(re.search(r'id="actionMoreMenu"[^>]*\bhidden\b', markup(today(p)))
        for _, p in pages),
    '  every panel starts closed in its own markup')
 

@@ -50,6 +50,18 @@ FAMILY = {
     'edit': CHANGE,
     # COPY
     'duplicate': COPY,
+    # MO-1, 19 Oct 2026 - LEFTOVERS. Putting a meal on another day as
+    # leftovers makes a new row from an existing one, which is COPY
+    # and nothing else; it sits beside duplicate and wears the same
+    # colour. It has its own NAME because a class carries one picture
+    # - fa-redo, against duplicate's fa-copy - which is base.html's
+    # rule beside .icon-manage: alias the colour, never the name.
+    #
+    # REGISTERED BECAUSE verbs_of DROPS WHAT IT DOES NOT KNOW. Without
+    # this line the control is invisible to in_order, to rank and to
+    # Show-RowActionDrift, and every row-action suite passes by not
+    # seeing it.
+    'leftover': COPY,
     # ADVANCE - the record moves on.
     'upload': ADVANCE, 'send': ADVANCE, 'approve': ADVANCE,
     'unapprove': ADVANCE, 'void': ADVANCE, 'lock': ADVANCE,
@@ -184,6 +196,11 @@ TONE = {
     'view': '--alv-view',
     'edit': '--alv-edit',
     'duplicate': '--alv-edit',
+    # MO-1, 19 Oct 2026 - the same token duplicate wears, which is the
+    # point of the entry: base aliases .icon-leftover onto --alv-edit
+    # rather than inventing a seventh colour, and this register is
+    # where that decision is written down once.
+    'leftover': '--alv-edit',
     'delete': '--alv-danger',
 }
 

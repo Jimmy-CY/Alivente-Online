@@ -33,8 +33,29 @@ Functions
 - meal_shopping_list              : Shop a DATE RANGE. Read-tier. It took
                                     a meal_plan_id until MN-1, and there
                                     is no plan to key on any more.
+- add_meal_note                   : A planned night that is not a
+                                    recipe - Eat out, takeaway (POST).
+                                    Edit-tier. MO-1, 19 Oct 2026.
+- add_leftover                    : Monday's soup again on Wednesday,
+                                    and it costs nothing the second
+                                    time (POST). Edit-tier.
+                                    MO-1, 19 Oct 2026.
 - send_meal_plan_shopping_list    : Email a shopping list (POST).
                                     Edit-tier.
+- meal_week_preview               : What a copy onto a week would land
+                                    on (GET, JSON). Read-tier. The
+                                    dialog asks before it says "2 of
+                                    those days already have meals".
+                                    MW-1, 19 Oct 2026.
+- copy_meal_week                  : Copy one week of meals onto another
+                                    (POST). Edit-tier. MW-1.
+- save_menu                       : Save the week on screen as a named
+                                    Menu (POST). Edit-tier. MW-1.
+- apply_menu                      : Stamp a Menu onto the week on
+                                    screen (POST). Edit-tier. MW-1.
+- delete_menu                     : Forget a Menu (POST). Edit-tier.
+                                    The meals it put on weeks stay.
+                                    MW-1.
 
 Auth tiers
 ----------
@@ -101,6 +122,8 @@ from pages.models import (
     CustomProtein,
     HouseholdMember,
     MealEntry,
+    Menu,
+    MenuItem,
     Recipe,
     RecipeCategory,
     RecipeCourse,
@@ -434,7 +457,10 @@ def meal_planner(request):
     # that day's recipes, seven times over.
     entries = list(
         MealEntry.objects.filter(date__gte=week_start, date__lte=week_end)
-        .select_related('recipe')
+        # MO-1, 19 Oct 2026 - leftover_of joins the ONE query. The
+        # leftover row prints the date of the meal it came from, and
+        # that is a query per row without this. [E29]
+        .select_related('recipe', 'leftover_of')
         .prefetch_related('recipe__courses', 'recipe__categories'))
     by_date = {}
     for e in entries:
@@ -500,7 +526,23 @@ def meal_planner(request):
         'this_week': today - timedelta(days=today.weekday()),
         'meal_count': len(entries),
         'household_size': household_size(request.user),
-        'all_recipes': Recipe.objects.all().order_by('recipe_name'),
+        # PK-1, 19 Oct 2026 - prefetch_related('courses'), because
+        # every card in the picker prints the course ids it belongs to
+        # so the filter can work in the browser. Without it that is a
+        # query per recipe, which on this tree is two hundred of them
+        # to open a dialog. [E29]
+        'all_recipes': (Recipe.objects.all()
+                        .prefetch_related('courses')
+                        .order_by('recipe_name')),
+        # The filter's own buttons. RecipeCourse orders itself by
+        # display_order then name, so the strip reads Starter, Main,
+        # Dessert rather than alphabetically.
+        'all_courses': RecipeCourse.objects.all(),
+        # MW-1, 19 Oct 2026 - the Apply dialog lists these. annotate
+        # rather than a count per row: E29 took that fault off four
+        # screens and this round is not putting it back on one.
+        'menus': Menu.objects.annotate(
+            item_count=Count('items')).order_by('name'),
     }
     return render(request, 'meal_planner.html', context)
 
@@ -643,6 +685,396 @@ def set_meal_servings(request):
                    if entry.recipe else None),
     })
 
+
+# =====================================================================
+# THE WEEK MOVES - MW-1, 19 Oct 2026
+# =====================================================================
+# Demetri, 19 Oct, asked for four decisions and took all four:
+#
+#   REPEAT      "Copy this week to a week you pick." A date, every meal
+#               onto the matching weekday with its servings, and
+#               nothing linked afterwards. The old Duplicate, without a
+#               plan to duplicate.
+#   MENUS       "A named set of meals you stamp onto a week." Save the
+#               week on screen under a name; apply it to any week
+#               later. Menu holds DAY INDEXES, 0 to 6, which is why
+#               MN-1 built it that way and not with dates.
+#   COLLISIONS  "Add alongside, and say so first."
+#   MANAGED     In the Apply dialog, with a trashcan per Menu. Release
+#               3 is about meal planning being ONE SCREEN, and a Menus
+#               list page would be the second one.
+
+
+def monday_of(d):
+    """The Monday of d's week. A week is a Monday here, everywhere."""
+    return d - timedelta(days=d.weekday())
+
+
+def week_entries(week_start):
+    """Every meal on the seven days from week_start."""
+    return (MealEntry.objects
+            .filter(date__gte=week_start,
+                    date__lte=week_start + timedelta(days=6))
+            .select_related('recipe')
+            .order_by('date', 'sort_order', 'meal_entry_id'))
+
+
+def day_label(d):
+    """`3 Nov` - built without %-d, which is not portable.
+
+    Windows strftime has no %-d and Linux has no %#d. This project runs
+    on both: the laptop and Railway. One format string that works on
+    one of them is a defect that only shows up on the other.
+    """
+    return '%d %s' % (d.day, d.strftime('%b'))
+
+
+def week_label(week_start):
+    """`3 Nov - 9 Nov`, the way the planner's own week strip reads."""
+    return '%s - %s' % (day_label(week_start),
+                        day_label(week_start + timedelta(days=6)))
+
+
+def copy_week_rows(rows, src_start, dst_start, user):
+    """Copy `rows` from one week onto another. Returns how many landed.
+
+    ADDS ALONGSIDE, which is the decision, and lands each copy AFTER
+    whatever that day already holds rather than interleaving with it -
+    so a day that had a dinner and gains a lunch reads in the order the
+    two were put there.
+
+    AND A LEFTOVER FOLLOWS ITS PARENT. leftover_of points at the meal a
+    leftover came from; copied flat it would point into the week you
+    copied FROM, so the shopping list would charge the new week for a
+    meal in the old one. The parents are copied first and the map is
+    used to re-point the copies. A leftover whose parent is not in the
+    copy is dropped, because a leftover of nothing is not a meal - it
+    is a row that buys nothing and says nothing.
+
+    MO-1 is what puts leftovers on the screen. The column is here from
+    MN-1, so this round handles it correctly rather than leaving a
+    trap for the round after it.
+    """
+    tails, made, mapping = {}, 0, {}
+
+    def place(entry, parent=None):
+        offset = (entry.date - src_start).days
+        when = dst_start + timedelta(days=offset)
+        if when not in tails:
+            last = MealEntry.objects.filter(date=when).aggregate(
+                Max('sort_order'))['sort_order__max']
+            tails[when] = last or 0
+        tails[when] += 1
+        return MealEntry.objects.create(
+            date=when, recipe=entry.recipe, note=entry.note,
+            servings=entry.servings, sort_order=tails[when],
+            leftover_of=parent, created_by=user)
+
+    for e in rows:
+        if e.leftover_of_id:
+            continue
+        mapping[e.meal_entry_id] = place(e)
+        made += 1
+    for e in rows:
+        if not e.leftover_of_id:
+            continue
+        parent = mapping.get(e.leftover_of_id)
+        if parent is None:
+            continue
+        place(e, parent)
+        made += 1
+    return made
+
+
+@login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
+def meal_week_preview(request):
+    """What a copy onto this week would be landing on. JSON, read-tier.
+
+    THE DIALOG HAS TO BE ABLE TO SAY IT. "Add alongside, AND SAY SO
+    FIRST" is not the same decision as "add alongside" - a dialog that
+    cannot count what is already there is the same copy with a quieter
+    conscience. So the dialog asks, before the button is pressed.
+    """
+    week = week_of(request.GET.get('week'), None)
+    if week is None:
+        return JsonResponse({'success': False,
+                             'error': 'That week could not be read.'},
+                            status=400)
+    week = monday_of(week)
+    rows = list(week_entries(week))
+    return JsonResponse({
+        'success': True,
+        'week': week.strftime('%Y-%m-%d'),
+        'label': week_label(week),
+        'meals': len(rows),
+        'days_with_meals': len({e.date for e in rows}),
+    })
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def copy_meal_week(request):
+    """Copy one week of meals onto another week."""
+    src = week_of(request.POST.get('from_week'), None)
+    dst = week_of(request.POST.get('to_week'), None)
+    if src is None or dst is None:
+        messages.error(request, 'That week could not be read.')
+        return redirect('meal_planner')
+    src, dst = monday_of(src), monday_of(dst)
+
+    back = '%s?week=%s' % (reverse('meal_planner'),
+                           dst.strftime('%Y-%m-%d'))
+    if src == dst:
+        messages.error(request, 'A week cannot be copied onto itself.')
+        return redirect(back)
+
+    rows = list(week_entries(src))
+    if not rows:
+        messages.error(request, 'There is nothing on %s to copy.'
+                       % week_label(src))
+        return redirect('%s?week=%s' % (reverse('meal_planner'),
+                                        src.strftime('%Y-%m-%d')))
+
+    with transaction.atomic():
+        made = copy_week_rows(rows, src, dst, request.user)
+
+    messages.success(request, 'Copied %d meal%s from %s onto %s.'
+                     % (made, '' if made == 1 else 's',
+                        week_label(src), week_label(dst)))
+    return redirect(back)
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def save_menu(request):
+    """Save the week on screen as a named Menu.
+
+    DAY INDEXES, NOT DATES - 0 for the Monday of the week being saved.
+    That is the whole reason a Menu is a different table from a week of
+    MealEntry rows, and it is what lets one be applied in March to a
+    week in December.
+    """
+    week = week_of(request.POST.get('week'), None)
+    name = (request.POST.get('name') or '').strip()
+    if week is None:
+        messages.error(request, 'That week could not be read.')
+        return redirect('meal_planner')
+    week = monday_of(week)
+    back = '%s?week=%s' % (reverse('meal_planner'),
+                           week.strftime('%Y-%m-%d'))
+
+    # A NAME IS REQUIRED, and for the reason C20 settled on the old
+    # Create screen: the name is how you tell two of them apart
+    # everywhere else. Unlike C20, there is nothing else to fill in.
+    if not name:
+        messages.error(request, 'A menu needs a name.')
+        return redirect(back)
+    if Menu.objects.filter(name__iexact=name).exists():
+        messages.error(request, 'There is already a menu called "%s".'
+                       % name)
+        return redirect(back)
+
+    rows = list(week_entries(week))
+    if not rows:
+        messages.error(request, 'There is nothing on %s to save.'
+                       % week_label(week))
+        return redirect(back)
+
+    with transaction.atomic():
+        menu = Menu.objects.create(name=name, created_by=request.user)
+        for e in rows:
+            # A LEFTOVER IS NOT SAVED. MenuItem has no leftover_of -
+            # MN-1 did not give it one - and that is right: a leftover
+            # is a consequence of a particular week, not a thing you
+            # would plan in advance.
+            if e.leftover_of_id:
+                continue
+            MenuItem.objects.create(
+                menu=menu, day_index=(e.date - week).days,
+                recipe=e.recipe, note=e.note, servings=e.servings,
+                sort_order=e.sort_order)
+
+    messages.success(request, 'Saved %s as the menu "%s".'
+                     % (week_label(week), menu.name))
+    return redirect(back)
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def apply_menu(request):
+    """Stamp a saved Menu onto the week on screen."""
+    week = week_of(request.POST.get('week'), None)
+    if week is None:
+        messages.error(request, 'That week could not be read.')
+        return redirect('meal_planner')
+    week = monday_of(week)
+    back = '%s?week=%s' % (reverse('meal_planner'),
+                           week.strftime('%Y-%m-%d'))
+    try:
+        menu = Menu.objects.prefetch_related('items__recipe').get(
+            menu_id=request.POST.get('menu_id'))
+    except (Menu.DoesNotExist, ValueError, TypeError):
+        messages.error(request, 'That menu no longer exists.')
+        return redirect(back)
+
+    items = list(menu.items.all())
+    if not items:
+        messages.error(request, 'The menu "%s" has nothing on it.'
+                       % menu.name)
+        return redirect(back)
+
+    tails, made = {}, 0
+    with transaction.atomic():
+        for it in items:
+            # A DAY INDEX OUTSIDE THE WEEK IS DROPPED, not wrapped. A
+            # menu saved from a week is 0 to 6 by construction; a row
+            # that somehow says 9 would land in the NEXT week, which is
+            # a surprise nobody asked for.
+            if not 0 <= it.day_index <= 6:
+                continue
+            when = week + timedelta(days=it.day_index)
+            if when not in tails:
+                last = MealEntry.objects.filter(date=when).aggregate(
+                    Max('sort_order'))['sort_order__max']
+                tails[when] = last or 0
+            tails[when] += 1
+            MealEntry.objects.create(
+                date=when, recipe=it.recipe, note=it.note,
+                servings=it.servings, sort_order=tails[when],
+                created_by=request.user)
+            made += 1
+
+    messages.success(request, 'Added %d meal%s from "%s" to %s.'
+                     % (made, '' if made == 1 else 's', menu.name,
+                        week_label(week)))
+    return redirect(back)
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def delete_menu(request):
+    """Forget a saved Menu. The meals it put on weeks stay where they are."""
+    week = week_of(request.POST.get('week'), None)
+    back = ('%s?week=%s' % (reverse('meal_planner'),
+                            monday_of(week).strftime('%Y-%m-%d'))
+            if week else reverse('meal_planner'))
+    try:
+        menu = Menu.objects.get(menu_id=request.POST.get('menu_id'))
+    except (Menu.DoesNotExist, ValueError, TypeError):
+        messages.error(request, 'That menu no longer exists.')
+        return redirect(back)
+    name = menu.name
+    # CASCADE TAKES THE ITEMS AND NOTHING ELSE. MenuItem is the menu's
+    # own rows; the MealEntry rows an earlier Apply created are real
+    # meals on real dates and have no link back to the menu, which is
+    # the point of stamping rather than subscribing.
+    menu.delete()
+    messages.success(request, 'Deleted the menu "%s". The meals it put '
+                              'on your weeks are still there.' % name)
+    return redirect(back)
+
+# =====================================================================
+# THE DAY SPEAKS - MO-1, 19 Oct 2026
+# =====================================================================
+# Demetri, 19 Oct: "A note row, and Leftovers marked on a meal."
+#
+# Both columns have been in MealEntry since MN-1 and the planner has
+# rendered both row shapes since - but nothing in the application could
+# MAKE either one. A column nobody can fill is a column nobody can
+# check, which is the same sentence RT-1 wrote about exemptions.
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def add_meal_note(request):
+    """A planned night that is not a recipe.
+
+    THE EMPTY STATE ALREADY SAYS "NOTHING PLANNED" - so a note is for
+    a night that IS planned and is not cooking: eat out, takeaway, at
+    Helen's. It buys nothing, which MealEntry.counts_on_shopping_list
+    has returned since MN-1.
+    """
+    when = week_of(request.POST.get('date'), None)
+    # TRIMMED AND CAPPED AT THE FIELD'S OWN WIDTH. note is 200
+    # characters; a form that accepted 300 would raise on save, which
+    # on Railway is a 500 on the planner.
+    note = (request.POST.get('note') or '').strip()[:200]
+    if when is None:
+        messages.error(request, 'That date could not be read.')
+        return redirect('meal_planner')
+    back = '%s?week=%s' % (reverse('meal_planner'),
+                           monday_of(when).strftime('%Y-%m-%d'))
+    if not note:
+        messages.error(request, 'A note needs some words.')
+        return redirect(back)
+
+    last = MealEntry.objects.filter(date=when).aggregate(
+        Max('sort_order'))['sort_order__max']
+    MealEntry.objects.create(date=when, recipe=None, note=note,
+                             servings=0, sort_order=(last or 0) + 1,
+                             created_by=request.user)
+    messages.success(request, 'Added "%s" to %s.' % (note, day_label(when)))
+    return redirect(back)
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def add_leftover(request):
+    """Eat it again, and buy nothing twice.
+
+    A LEFTOVER OF A LEFTOVER POINTS AT THE ORIGINAL. Soup Monday,
+    leftovers Wednesday, leftovers again Friday - Wednesday and Friday
+    both point at Monday. The shopping list is right either way, since
+    any leftover_of at all is free, but a chain makes the screen say
+    "leftovers of leftovers" and turns "how many nights did that pot
+    feed us" into a recursive question instead of a count.
+
+    AND IT CANNOT BE DATED BEFORE THE MEAL IT CAME FROM. Refused with
+    a sentence rather than quietly moved: quietly moving dates is what
+    C13 did.
+    """
+    when = week_of(request.POST.get('date'), None)
+    try:
+        src = MealEntry.objects.select_related('recipe', 'leftover_of').get(
+            meal_entry_id=request.POST.get('meal_entry_id'))
+    except (MealEntry.DoesNotExist, ValueError, TypeError):
+        messages.error(request, 'That meal no longer exists.')
+        return redirect('meal_planner')
+    if when is None:
+        messages.error(request, 'That date could not be read.')
+        return redirect('meal_planner')
+    back = '%s?week=%s' % (reverse('meal_planner'),
+                           monday_of(when).strftime('%Y-%m-%d'))
+
+    # FLATTENED HERE, at the only place that knows both ends.
+    root = src.leftover_of or src
+    if root.recipe_id is None:
+        messages.error(request, 'A note has no leftovers - there was '
+                                'nothing cooked.')
+        return redirect(back)
+    if when < root.date:
+        messages.error(request, 'Leftovers cannot be eaten before the '
+                                'meal they came from. %s was cooked on %s.'
+                       % (root.recipe.recipe_name, day_label(root.date)))
+        return redirect(back)
+
+    last = MealEntry.objects.filter(date=when).aggregate(
+        Max('sort_order'))['sort_order__max']
+    MealEntry.objects.create(
+        date=when, recipe=root.recipe, note=root.note,
+        servings=root.servings, sort_order=(last or 0) + 1,
+        leftover_of=root, created_by=request.user)
+    messages.success(request, 'Leftovers of %s added to %s. They cost '
+                              'nothing on the shopping list.'
+                     % (root.recipe.recipe_name, day_label(when)))
+    return redirect(back)
 
 # =====================================================================
 # SHOPPING LIST - A DATE RANGE, NOT A PLAN

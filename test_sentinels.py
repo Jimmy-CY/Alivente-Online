@@ -314,6 +314,29 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE SEVENTH AND EIGHTH, 19 OCT 2026, AND THE SAME STORY AS THE
+    # FIFTH AND SIXTH - revealed, not broken.
+    #
+    # MN-1 CREATED meal_planner.html, and it created the page WITH the
+    # servings stepper and WITH the Help modal. So no version of that
+    # file has ever lacked either string, and no version ever can have:
+    # the page did not exist before the round that wrote them. MW-1 is
+    # the first round since to back the page up, and with four versions
+    # in hand the verdict is provable rather than merely likely.
+    #
+    # That is the correct shape for a guard against a FUTURE deletion.
+    # `stepServings(` is the one control on the planner that writes
+    # without a Save button, and `meal_plansHelpModal` is the Help
+    # button five meal-plan screens were given; the day either is
+    # removed the row fails. Pinned, not rewritten - and said plainly,
+    # as the fifth and sixth were: MW-1 did not break these rows. It
+    # made them checkable.
+    'stepServings(':
+        'the planner servings stepper, which saves on press - MN-1 '
+        'wrote the page WITH it, so no version has ever lacked it',
+    'meal_plansHelpModal':
+        'the Help button MH-2 wired to the guide - present in every '
+        'version of a page MN-1 created on 18 Oct',
     # THE SIXTH, 18 OCT 2026, and it arrived the way the fifth did -
     # not because anybody wrote it today, but because MH-1 edited
     # help_content/administration.html for the first time and so gave

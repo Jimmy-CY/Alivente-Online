@@ -3913,6 +3913,18 @@ table.alv-matrix {
 .icon-duplicate:hover { background-color: var(--alv-edit); color: var(--alv-on-accent); }
 .icon-color-duplicate { color: var(--alv-edit); }
 
+/* Leftovers: the fourth NAME on an existing colour - MO-1, 19 Oct 2026.
+   Putting a meal on another day as leftovers creates a new row, which is a
+   write exactly as Duplicating is, so it points at --alv-edit and sits in
+   the COPY family beside it. It gets its own name rather than wearing
+   .icon-duplicate because A CLASS CARRIES ONE PICTURE: the first cut of
+   MO-1 hung fa-redo on .icon-duplicate beside the fa-copy it already wore
+   on eleven buttons, and test_icon_names refused it in under a minute.
+   Alias the colour, never the name. */
+.icon-leftover       { color: var(--alv-edit); border-color: var(--alv-edit); }
+.icon-leftover:hover { background-color: var(--alv-edit); color: var(--alv-on-accent); }
+.icon-color-leftover { color: var(--alv-edit); }
+
 /* Manage: the third NAME on an existing colour, and for the same reason as
    Duplicate and Upload. Opening an expense's record - its details, its invoice
    document, its delete tab - is a VIEW, so it points at --alv-view, the same
