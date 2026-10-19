@@ -131,6 +131,14 @@ from pages.models import (
     RecipeIngredient,
 )
 
+# PF-2, 19 Oct 2026 - the shared filter, asked by the picker exactly
+# as recipe_management asks it.
+from pages.views.recipes._recipe_filter import (
+    filter_recipes,
+    selected_from,
+    vocabulary as _filter_vocabulary,
+)
+
 from .conversions import convert_quantity, get_conversion_cache
 # MD-1, 18 Oct 2026 - E33. The nested round_shopping_qty in
 # aggregate_meal_plan_ingredients made the same decisions as this, in
@@ -526,18 +534,21 @@ def meal_planner(request):
         'this_week': today - timedelta(days=today.weekday()),
         'meal_count': len(entries),
         'household_size': household_size(request.user),
-        # PK-1, 19 Oct 2026 - prefetch_related('courses'), because
-        # every card in the picker prints the course ids it belongs to
-        # so the filter can work in the browser. Without it that is a
-        # query per recipe, which on this tree is two hundred of them
-        # to open a dialog. [E29]
-        'all_recipes': (Recipe.objects.all()
-                        .prefetch_related('courses')
-                        .order_by('recipe_name')),
-        # The filter's own buttons. RecipeCourse orders itself by
-        # display_order then name, so the strip reads Starter, Main,
-        # Dessert rather than alphabetically.
-        'all_courses': RecipeCourse.objects.all(),
+        # PF-2, 19 Oct 2026 - all_recipes IS GONE FROM THIS PAGE.
+        #
+        # It was every recipe in the library, with a prefetch, rendered
+        # into the markup as 336 cards and 336 <img> tags on every load
+        # of the planner - whether the dialog was opened or not. PK-1
+        # added the prefetch to stop it being 200 queries as well, which
+        # was right and did not make it cheap.
+        #
+        # The picker now fetches what it needs from picker_recipes()
+        # when it opens, so the page ships none of them.
+        #
+        # The five controls still need their OPTIONS, which is a few
+        # dozen rows and not a few hundred recipes. vocabulary() is the
+        # same list recipe_management draws its panel from.
+        **_filter_vocabulary(),
         # MW-1, 19 Oct 2026 - the Apply dialog lists these. annotate
         # rather than a count per row: E29 took that fault off four
         # screens and this round is not putting it back on one.
@@ -1424,3 +1435,57 @@ Items to Buy:
             'success': False,
             'error': str(e)
         }, status=500)
+
+# ==========================================================================
+# PF-2, 19 Oct 2026 - THE PICKER ASKS THE SERVER
+# ==========================================================================
+@login_required
+def picker_recipes(request):
+    """The recipe picker's rows, filtered by the SAME function the
+    library uses.
+
+    Demetri, testing the planner: "It only allows you to choose
+    Course. We need to be able to select Author, Favorites, Category
+    and Protein (or vegetarian)."
+
+    WHY THIS IS AN ENDPOINT AND NOT FOUR MORE data- ATTRIBUTES.
+    Matching five filters in the browser means writing, in JavaScript,
+    a second description of what `Protein: Chicken` selects. There
+    would then be two, in two languages, and they would drift - which
+    is the fault the suites in this project exist to refuse.
+
+    AND IT TAKES 336 RECIPES OFF THE PLANNER PAGE. The picker used to
+    render every recipe in the library into the page, with its photo,
+    on every load of the planner whether the dialog was opened or not.
+    Now the page ships none and the dialog asks for what it needs.
+
+    READ TIER. It selects and never writes, so it answers GET and
+    says so - a view that mutates nothing should not require a POST,
+    and a filter you can link to is worth more than one you cannot.
+    """
+    sel = selected_from(request.GET)
+    recipes = filter_recipes(
+        Recipe.objects.all().prefetch_related('courses'),
+        sel, request.user).order_by('recipe_name')
+
+    # THE CEILING IS A REFUSAL TO BE SLOW, not a page. 336 rows of
+    # four fields is small; a library of 20,000 would not be, and a
+    # dialog that hangs is worse than one that says there is too much
+    # to show. MD-1 put the same ceiling on the shopping list.
+    total = recipes.count()
+    rows = []
+    for r in recipes[:500]:
+        rows.append({
+            'id': r.recipe_id,
+            'name': r.recipe_name,
+            'servings': r.servings or '',
+            'minutes': (r.prep_time or 0) + (r.cook_time or 0),
+            'photo': r.photo_url or '',
+        })
+    return JsonResponse({
+        'success': True,
+        'rows': rows,
+        'total': total,
+        'shown': len(rows),
+        'capped': total > len(rows),
+    })

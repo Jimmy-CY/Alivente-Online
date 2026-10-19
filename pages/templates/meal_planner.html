@@ -463,10 +463,14 @@
     align-content: start;
 }
 
-/* THE FILTER STRIP. base owns .alv-seg - its CSS, its pressed state
-   and its focus ring - so this round writes none of that. All it does
-   is let the strip wrap on a narrow dialog, which a bar of five
-   courses needs and a segmented view bar of two never did. */
+/* THE FILTER STRIP. PK-1 built it for one course bar; PF-2 put five
+   dropdowns in it, by Demetri's choice, because fourteen courses
+   already wrapped to two rows and five dimensions of chips would have
+   been six rows with the recipes below the fold.
+
+   base owns no multiselect - recipe_management rolled its own - so
+   the rules are here, and they are the same shape so the two screens
+   read alike. */
 .picker-filter {
     display: flex;
     flex-wrap: wrap;
@@ -477,6 +481,109 @@
 
 .picker-filter .alv-seg {
     flex-wrap: wrap;
+}
+
+/* PF-2, 19 Oct 2026 - the five controls. */
+.picker-lbl {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.pf-drop {
+    position: relative;
+}
+
+.pf-btn,
+.pf-fav,
+.pf-clear {
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border: 1px solid var(--alv-line);
+    border-radius: 6px;
+    background: var(--alv-paper);
+    color: var(--alv-ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    /* 44px ON A PHONE. Every Add/Edit control in this application is
+       thumb-sized at 390px and a filter is no different - PK-1 paid
+       for that lesson on this same dialog. */
+    min-height: 34px;
+}
+
+/* --alv-ink-soft AND NOT --alv-ink-faint. The faint token reads
+   3.0:1 on paper, which is below AA, and test_verb_colours counts
+   every rule that takes its ground from an ancestor and lands there.
+   It caught this one the first time the sweep ran after this round -
+   the chevron is decorative and aria-hidden, and the rule is the rule.
+   ink-soft reads 5.3:1 on the same ground. */
+.pf-btn .fa-chevron-down {
+    font-size: 10px;
+    color: var(--alv-ink-soft);
+}
+
+/* A CONTROL THAT IS DOING SOMETHING LOOKS LIKE IT. The accent tint is
+   the same one base gives a selected chip, so a narrowed filter is
+   visible without reading the label. */
+.pf-btn.is-on {
+    border-color: var(--alv-accent-line);
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
+    font-weight: 600;
+}
+
+.pf-fav.is-on {
+    border-color: var(--alv-bad-line);
+    background: var(--alv-bad-soft);
+    color: var(--alv-bad-ink);
+    font-weight: 600;
+}
+
+.pf-clear {
+    color: var(--alv-accent);
+    border-color: transparent;
+    background: none;
+}
+
+.pf-menu {
+    display: none;
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 190px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 6px;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.pf-menu.is-open {
+    display: block;
+}
+
+.pf-menu label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 400;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pf-menu label:hover {
+    background: var(--alv-surface);
+}
+
+.pf-menu input {
+    margin: 0;
 }
 
 /* HOW MANY OF HOW MANY. A filter that hides everything has to say so,
@@ -819,8 +926,50 @@
        thirty cards measured 2,572px on a phone - the Servings field
        and the Add Meal button both below the fold, with nothing on
        screen to say they were there. */
+    /* PF-2, 19 Oct 2026 - the five controls at 390px. Two per row,
+       and the menus go full width rather than hanging off the edge
+       of a dialog that is only 340px wide. */
+    .pf-drop {
+        flex: 1 1 46%;
+    }
+
+    .pf-btn {
+        width: 100%;
+        min-height: 44px;
+        justify-content: space-between;
+    }
+
+    .pf-fav,
+    .pf-clear {
+        min-height: 44px;
+    }
+
+    .pf-menu {
+        left: 0;
+        right: 0;
+        min-width: 0;
+    }
+
+    .pf-menu label {
+        min-height: 44px;
+    }
+
+    /* THE LIST GIVES UP WHAT THE FILTERS TOOK - PF-2, 19 Oct 2026.
+
+       PK-1 capped this at 50vh after finding MW-1's
+       `max-height: none !important` had left the phone list 2,572px
+       tall with Add Meal below the fold. Its rule stands: the
+       controls under the list must stay on the screen.
+
+       Five filters are 71px taller than one course strip, and that
+       pushed Add Meal to 967px on an 844px phone - the same fault
+       PK-1 fixed, caused by this round. The list is what gives way,
+       because an Add Meal button you cannot reach is a broken dialog
+       and three visible cards instead of four is not.
+
+       test_picker_grid measures both and would refuse either. */
     #pickerList {
-        max-height: 50vh;
+        max-height: 38vh;
     }
     .recipe-option img {
         flex-shrink: 0;
@@ -1347,51 +1496,120 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="pickerList"><strong>Choose one</strong></label>
-                        {# THE FILTER - PK-1, 19 Oct 2026. Demetri, on the #}
-                        {# live picker: "There is no search or filtering". #}
-                        {# base owns .alv-seg, its pressed state and its   #}
-                        {# focus ring, so this page writes no component -  #}
-                        {# only the wrap rule a five-course strip needs.   #}
+                        {# THE LABEL MOVED - PF-2, 19 Oct 2026. PK-1 put  #}
+                        {# "Choose one" above the filter strip, where it  #}
+                        {# labelled the one course bar as well as the     #}
+                        {# list. With five controls between it and the    #}
+                        {# recipes it reads as an instruction about the   #}
+                        {# filters, which is not what it means.           #}
+                        <label class="picker-lbl"><strong>Filter</strong></label>
+                        {# THE FIVE FILTERS - PF-2, 19 Oct 2026. Demetri:  #}
+                        {# "It only allows you to choose Course. We need to #}
+                        {# be able to select Author, Favorites, Category    #}
+                        {# and Protein (or vegetarian)."                    #}
+                        {#                                                  #}
+                        {# DROPDOWNS, NOT CHIPS, by his choice. PK-1's      #}
+                        {# course chips already wrapped to two rows in this #}
+                        {# dialog; five dimensions of chips would be six,   #}
+                        {# and the recipes would start below the fold.      #}
+                        {#                                                  #}
+                        {# The names are recipe_management's own - course,  #}
+                        {# category, protein, author - because the server   #}
+                        {# answers both screens with one function now.      #}
                         <div class="picker-filter">
-                            <div class="alv-seg" role="group" aria-label="Filter by course">
-                                <button type="button" data-course="" aria-pressed="true"
-                                        onclick="pickCourse(this)">All</button>
-                                {% for course in all_courses %}
-                                <button type="button" data-course="{{ course.recipe_course_id }}"
-                                        aria-pressed="false" onclick="pickCourse(this)">{{ course.name }}</button>
-                                {% endfor %}
-                            </div>
-                            <span class="picker-count" id="pickerCount" aria-live="polite"></span>
-                        </div>
-                        <div id="pickerList">
-                            {% for recipe in all_recipes %}
-                            <div class="recipe-option"
-                                 data-recipe-id="{{ recipe.recipe_id }}"
-                                 data-recipe-servings="{{ recipe.servings|default:4 }}"
-                                 data-recipe-name="{{ recipe.recipe_name|lower }}"
-                                 {# PK-1, 19 Oct 2026 - the ids, not the   #}
-                                 {# names: a course that is renamed should #}
-                                 {# not silently stop matching. Read from  #}
-                                 {# a prefetch, so this is not a query per #}
-                                 {# card.                                  #}
-                                 data-recipe-courses="{% for c in recipe.courses.all %}{{ c.recipe_course_id }} {% endfor %}"
-                                 onclick="pickRecipe(this)">
-                                {% if recipe.photo_url %}
-                                <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}"
-                                     alt="" class="recipe-thumbnail">
-                                {% else %}
-                                <div class="recipe-thumbnail-placeholder"><i class="fas fa-utensils"></i></div>
-                                {% endif %}
-                                <div>
-                                    <strong>{{ recipe.recipe_name }}</strong><br>
-                                    <small class="text-muted">
-                                        {{ recipe.prep_time|default:0|add:recipe.cook_time|default:0 }} min
-                                        &bull; makes {{ recipe.servings|default:"?" }}
-                                    </small>
+                            <div class="pf-drop">
+                                <button type="button" class="pf-btn" id="pickerCourseBtn"
+                                        aria-expanded="false" aria-haspopup="true"
+                                        onclick="pfToggle('course')">
+                                    <span id="pickerCourseLabel">All Courses</span>
+                                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                </button>
+                                <div class="pf-menu" id="pickerCourseMenu" role="group"
+                                     aria-label="Filter by course">
+                                    {% for course in courses %}
+                                    <label><input type="checkbox" name="course"
+                                           value="{{ course.recipe_course_id }}"
+                                           onchange="pfChanged()"> {{ course.name }}</label>
+                                    {% endfor %}
                                 </div>
                             </div>
-                            {% endfor %}
+                            <div class="pf-drop">
+                                <button type="button" class="pf-btn" id="pickerCategoryBtn"
+                                        aria-expanded="false" aria-haspopup="true"
+                                        onclick="pfToggle('category')">
+                                    <span id="pickerCategoryLabel">All Categories</span>
+                                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                </button>
+                                <div class="pf-menu" id="pickerCategoryMenu" role="group"
+                                     aria-label="Filter by category">
+                                    {% for cat in categories %}
+                                    <label><input type="checkbox" name="category"
+                                           value="{{ cat.recipe_category_id }}"
+                                           onchange="pfChanged()"> {{ cat.name }}</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="pf-drop">
+                                <button type="button" class="pf-btn" id="pickerProteinBtn"
+                                        aria-expanded="false" aria-haspopup="true"
+                                        onclick="pfToggle('protein')">
+                                    <span id="pickerProteinLabel">All Proteins</span>
+                                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                </button>
+                                <div class="pf-menu" id="pickerProteinMenu" role="group"
+                                     aria-label="Filter by protein">
+                                    {% for protein in proteins %}
+                                    <label><input type="checkbox" name="protein"
+                                           value="{{ protein.custom_protein_id }}"
+                                           onchange="pfChanged()"> {{ protein.name }}</label>
+                                    {% endfor %}
+                                    {# VEGETARIAN IS A COLUMN, NOT A ROW, so #}
+                                    {# it has no id and travels as a literal.#}
+                                    {# recipe_management has done exactly    #}
+                                    {# this since long before the planner.   #}
+                                    <label><input type="checkbox" name="protein"
+                                           value="vegetarian"
+                                           onchange="pfChanged()"> Vegetarian</label>
+                                </div>
+                            </div>
+                            <div class="pf-drop">
+                                <button type="button" class="pf-btn" id="pickerAuthorBtn"
+                                        aria-expanded="false" aria-haspopup="true"
+                                        onclick="pfToggle('author')">
+                                    <span id="pickerAuthorLabel">All Authors</span>
+                                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                </button>
+                                <div class="pf-menu" id="pickerAuthor" role="group"
+                                     aria-label="Filter by author">
+                                    {% for author in authors %}
+                                    <label><input type="checkbox" name="author"
+                                           value="{{ author.value }}"
+                                           onchange="pfChanged()"> {{ author.name }}</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {# FAVOURITES IS ONE ANSWER, so it is one button #}
+                            {# and not a menu of one checkbox.               #}
+                            <button type="button" class="pf-fav" id="pickerFav"
+                                    aria-pressed="false" onclick="pfFav(this)">
+                                <i class="fas fa-heart" aria-hidden="true"></i> Favourites
+                            </button>
+                            <button type="button" class="pf-clear" id="pickerClear"
+                                    onclick="pfClear()" hidden>Clear filters</button>
+                            <span class="picker-count" id="pickerCount" aria-live="polite"></span>
+                        </div>
+                        <label for="pickerList"><strong>Choose one</strong></label>
+                        {# EMPTY ON ARRIVAL - PF-2, 19 Oct 2026.          #}
+                        {#                                                #}
+                        {# This held every recipe in the library: 336     #}
+                        {# cards and 336 <img> tags rendered into the     #}
+                        {# planner on every load, opened or not. PK-1     #}
+                        {# gave them a grid and a prefetch, which was     #}
+                        {# right and did not make them cheap.             #}
+                        {#                                                #}
+                        {# openPicker() fetches what it needs now. The    #}
+                        {# page ships none of them.                       #}
+                        <div id="pickerList" aria-busy="false">
                             {# A FILTER THAT HIDES EVERYTHING SAYS SO -  #}
                             {# PK-1. Otherwise an empty dialog reads as  #}
                             {# a broken one, which is the same class of  #}
@@ -1399,6 +1617,15 @@
                             <div class="picker-empty" id="pickerEmpty" hidden>
                                 <i class="fas fa-search"></i>
                                 <p>No recipe matches that.</p>
+                            </div>
+                            {# AND A DIALOG THAT IS THINKING SAYS THAT   #}
+                            {# TOO. The fetch is fast on a library of    #}
+                            {# 336, and a blank grid with no explanation #}
+                            {# is indistinguishable from a broken one on #}
+                            {# the one connection where it is not.       #}
+                            <div class="picker-empty" id="pickerLoading">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                                <p>Finding recipes...</p>
                             </div>
                         </div>
                     </div>
@@ -1746,64 +1973,244 @@ function openPicker(dateStr, dayName) {
     // whatever the last recipe was set to.
     document.getElementById('pickerServings').value = '';
     document.getElementById('pickerSearch').value = '';
-    // C19 AGAIN, now that there is a second thing to forget. A dialog
-    // that opens still filtered to Dessert, three days after you last
-    // used it, is a dialog with no recipes in it.
-    pickerCourse = '';
-    document.querySelectorAll('.picker-filter .alv-seg button').forEach(
-        function (b) {
-            b.setAttribute('aria-pressed',
-                           b.dataset.course ? 'false' : 'true');
-        });
+    // C19 AGAIN, now with five things to forget rather than one. A
+    // dialog that opens still filtered to Dessert, three days after
+    // you last used it, is a dialog with no recipes in it.
+    pfClear(true);
     document.getElementById('pickerAdd').disabled = true;
-    document.querySelectorAll('.recipe-option').forEach(function (o) {
-        o.classList.remove('selected');
-    });
     filterPicker();
     $('#pickerModal').modal('show');
 }
 
-// PK-1, 19 Oct 2026 - the search and the course filter COMPOSE.
-// Either alone narrows; both together narrow further. The first cut of
-// a filter that replaced the search instead of joining it is the kind
-// of thing that makes a dialog feel broken when it is only opinionated.
-var pickerCourse = '';
+// PF-2, 19 Oct 2026 - THE FILTERS COMPOSE, AND THE SERVER DECIDES.
+//
+// PK-1's note is still true and now applies to five things rather
+// than two: search and every filter narrow together, never replace
+// each other. What changed is WHO answers. Matching five dimensions
+// in the browser would mean a second description of what
+// `Protein: Chicken` selects, in a second language, drifting from
+// recipe_management's.
+function pfToggle(which) {
+    var menu = document.getElementById('picker' + pfCap(which) + 'Menu')
+        || document.getElementById('picker' + pfCap(which));
+    var btn = document.getElementById('picker' + pfCap(which) + 'Btn');
+    var open = menu.classList.contains('is-open');
+    pfCloseAll();
+    if (!open) {
+        menu.classList.add('is-open');
+        if (btn) { btn.setAttribute('aria-expanded', 'true'); }
+    }
+}
 
-function pickCourse(btn) {
-    var strip = btn.parentNode;
-    strip.querySelectorAll('button').forEach(function (b) {
-        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+function pfCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function pfCloseAll() {
+    document.querySelectorAll('.pf-menu.is-open').forEach(function (m) {
+        m.classList.remove('is-open');
     });
-    pickerCourse = btn.dataset.course || '';
+    document.querySelectorAll('.pf-btn[aria-expanded="true"]').forEach(
+        function (b) { b.setAttribute('aria-expanded', 'false'); });
+}
+
+// A MENU THAT CANNOT BE DISMISSED IS A TRAP. Click anywhere that is
+// not inside a dropdown and all of them close.
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('.pf-drop')) { pfCloseAll(); }
+});
+
+function pfChecked(name) {
+    var out = [];
+    document.querySelectorAll(
+        '.picker-filter input[name="' + name + '"]:checked'
+    ).forEach(function (i) { out.push(i.value); });
+    return out;
+}
+
+// THE BUTTON SAYS WHAT IT IS DOING. "All Courses", "Salad", or
+// "3 Courses" - a control whose label never changes cannot tell you
+// the dialog is narrowed, and an empty grid then reads as broken.
+function pfLabel(which, plural) {
+    var on = pfChecked(which);
+    var span = document.getElementById('picker' + pfCap(which) + 'Label');
+    var btn = document.getElementById('picker' + pfCap(which) + 'Btn');
+    if (!span) { return; }
+    if (!on.length) {
+        span.textContent = 'All ' + plural;
+    } else if (on.length === 1) {
+        var box = document.querySelector(
+            '.picker-filter input[name="' + which + '"]:checked');
+        span.textContent = (box && box.parentNode.textContent.trim())
+            || on[0];
+    } else {
+        span.textContent = on.length + ' ' + plural;
+    }
+    if (btn) { btn.classList.toggle('is-on', on.length > 0); }
+}
+
+function pfChanged() {
+    pfLabel('course', 'Courses');
+    pfLabel('category', 'Categories');
+    pfLabel('protein', 'Proteins');
+    pfLabel('author', 'Authors');
+    var any = pfChecked('course').length + pfChecked('category').length +
+        pfChecked('protein').length + pfChecked('author').length +
+        (pickerFav ? 1 : 0);
+    var clear = document.getElementById('pickerClear');
+    if (clear) { clear.hidden = any === 0; }
     filterPicker();
 }
 
+var pickerFav = false;
+
+function pfFav(btn) {
+    pickerFav = !pickerFav;
+    btn.setAttribute('aria-pressed', pickerFav ? 'true' : 'false');
+    btn.classList.toggle('is-on', pickerFav);
+    pfChanged();
+}
+
+function pfClear(quiet) {
+    document.querySelectorAll('.picker-filter input[type="checkbox"]')
+        .forEach(function (i) { i.checked = false; });
+    pickerFav = false;
+    var fav = document.getElementById('pickerFav');
+    if (fav) {
+        fav.setAttribute('aria-pressed', 'false');
+        fav.classList.remove('is-on');
+    }
+    pfCloseAll();
+    pfLabel('course', 'Courses');
+    pfLabel('category', 'Categories');
+    pfLabel('protein', 'Proteins');
+    pfLabel('author', 'Authors');
+    var clear = document.getElementById('pickerClear');
+    if (clear) { clear.hidden = true; }
+    if (!quiet) { filterPicker(); }
+}
+
+// ONE FETCH IN FLIGHT AT A TIME. Typing in the search box fires on
+// every keystroke; without this the answer to "sal" can arrive after
+// the answer to "salad" and overwrite it. The token is checked when
+// the reply lands, which is cheaper than aborting and does not depend
+// on AbortController.
+var pfSeq = 0;
+var pfTimer = null;
+
 function filterPicker() {
-    var q = document.getElementById('pickerSearch').value.toLowerCase();
-    var shown = 0, total = 0;
-    document.querySelectorAll('.recipe-option').forEach(function (o) {
-        total += 1;
-        var byName = o.dataset.recipeName.indexOf(q) >= 0;
-        // SPACE-DELIMITED, AND PADDED AT BOTH ENDS, so course 1 does
-        // not match course 11. The template writes a trailing space
-        // after every id for the same reason.
-        var byCourse = !pickerCourse ||
-            (' ' + (o.dataset.recipeCourses || '') + ' ')
-                .indexOf(' ' + pickerCourse + ' ') >= 0;
-        var on = byName && byCourse;
-        o.style.display = on ? '' : 'none';
-        if (on) { shown += 1; }
+    // DEBOUNCED, because the server answers now. 180ms is below the
+    // threshold at which a list feels like it is lagging the keyboard
+    // and above the one at which every letter is a request.
+    if (pfTimer) { clearTimeout(pfTimer); }
+    pfTimer = setTimeout(pfFetch, 180);
+}
+
+function pfFetch() {
+    var mine = ++pfSeq;
+    var p = new URLSearchParams();
+    var q = document.getElementById('pickerSearch').value.trim();
+    if (q) { p.append('search', q); }
+    pfChecked('course').forEach(function (v) { p.append('course', v); });
+    pfChecked('category').forEach(function (v) { p.append('category', v); });
+    pfChecked('protein').forEach(function (v) { p.append('protein', v); });
+    pfChecked('author').forEach(function (v) { p.append('author', v); });
+    if (pickerFav) { p.append('favourites', '1'); }
+
+    var list = document.getElementById('pickerList');
+    var load = document.getElementById('pickerLoading');
+    if (load) { load.hidden = false; }
+    if (list) { list.setAttribute('aria-busy', 'true'); }
+
+    fetch('{% url "picker_recipes" %}?' + p.toString(), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (mine !== pfSeq) { return; }
+            pfDraw(d);
+        })
+        .catch(function () {
+            if (mine !== pfSeq) { return; }
+            // A DIALOG THAT CANNOT REACH THE SERVER SAYS SO. It used
+            // to be impossible for this list to fail, because it was
+            // already in the page; now it is possible and silence
+            // would read as "no recipes".
+            pfDraw({ rows: [], total: 0, shown: 0, error: true });
+        });
+}
+
+function pfDraw(d) {
+    var list = document.getElementById('pickerList');
+    var load = document.getElementById('pickerLoading');
+    var empty = document.getElementById('pickerEmpty');
+    if (load) { load.hidden = true; }
+    if (list) { list.setAttribute('aria-busy', 'false'); }
+
+    list.querySelectorAll('.recipe-option').forEach(function (o) {
+        o.remove();
     });
-    // HOW MANY OF HOW MANY. The number is the thing that tells you the
-    // filter did something rather than the dialog breaking.
+
+    (d.rows || []).forEach(function (r) {
+        var card = document.createElement('div');
+        card.className = 'recipe-option';
+        card.dataset.recipeId = r.id;
+        card.dataset.recipeServings = r.servings;
+        card.onclick = function () { pickRecipe(card); };
+
+        if (r.photo) {
+            var img = document.createElement('img');
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.src = r.photo;
+            img.alt = '';
+            img.className = 'recipe-thumbnail';
+            card.appendChild(img);
+        } else {
+            var ph = document.createElement('div');
+            ph.className = 'recipe-thumbnail-placeholder';
+            ph.innerHTML = '<i class="fas fa-utensils"></i>';
+            card.appendChild(ph);
+        }
+
+        // BUILT, NOT INTERPOLATED. A recipe called Ben & Jerry's goes
+        // into textContent intact and into innerHTML as a hole; the
+        // names come from the server but they came from a person
+        // first. SL-4 is the same lesson about alert().
+        var box = document.createElement('div');
+        var name = document.createElement('strong');
+        name.textContent = r.name;
+        var small = document.createElement('small');
+        small.className = 'text-muted';
+        small.textContent = r.minutes + ' min \u2022 makes ' +
+            (r.servings || '?');
+        box.appendChild(name);
+        box.appendChild(document.createElement('br'));
+        box.appendChild(small);
+        card.appendChild(box);
+        list.insertBefore(card, empty);
+    });
+
+    // HOW MANY OF HOW MANY. PK-1's rule, and now it can also say that
+    // the answer was cut short, which it could not before.
     var count = document.getElementById('pickerCount');
     if (count) {
-        count.textContent = shown === total
-            ? total + ' recipe' + (total === 1 ? '' : 's')
-            : shown + ' of ' + total;
+        if (d.error) {
+            count.textContent = 'could not reach the server';
+        } else if (d.capped) {
+            count.textContent = 'first ' + d.shown + ' of ' + d.total;
+        } else {
+            count.textContent = d.total + ' recipe' +
+                (d.total === 1 ? '' : 's');
+        }
     }
-    var empty = document.getElementById('pickerEmpty');
-    if (empty) { empty.hidden = shown !== 0; }
+    if (empty) {
+        empty.hidden = (d.rows || []).length !== 0;
+        var p = empty.querySelector('p');
+        if (p) {
+            p.textContent = d.error
+                ? 'Could not reach the server. Try again.'
+                : 'No recipe matches that.';
+        }
+    }
 }
 
 function pickRecipe(el) {

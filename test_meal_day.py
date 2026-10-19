@@ -738,8 +738,21 @@ ok('meal_planner.html' not in alv_rowactions.VERNACULAR,
 head('5. NO MIGRATION, AND BOTH COLUMNS WERE ALREADY THERE')
 # ==========================================================================
 migs = os.path.join(ROOT, 'pages', 'migrations')
-ours = sorted(n for n in os.listdir(migs)
-              if n.endswith('.py') and n[:4].isdigit() and int(n[:4]) > 100)
+# ASKED OF THIS ROUND, NOT OF THE TREE - repaired by MX-1,
+# 19 Oct 2026. This read `int(n[:4]) > 100` and so answered
+# "has anybody migrated since 0100?" rather than "did I?". It
+# was true until MX-1 added 0101 to drop the old planner's
+# tables, which 0100 had announced on 18 October.
+#
+# A migration THIS round added would carry this round's mark.
+# That question keeps its answer no matter how many rounds
+# migrate afterwards.
+ours = []
+for n in sorted(os.listdir(migs)):
+    if not (n.endswith('.py') and n[:4].isdigit()):
+        continue
+    if 'MO-1, 19 Oct 2026' in read(os.path.join(migs, n)):
+        ours.append(n)
 ok(not ours, 'this round adds NO migration', ours)
 mcode = T.python_code_only(read(MODELS))
 block = mcode.split('class MealEntry')[1].split('class Menu')[0]

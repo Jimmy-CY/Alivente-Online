@@ -74,6 +74,12 @@ from django.template.loader import get_template
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
+# PF-2, 19 Oct 2026 - the shared filter. One description of what a
+# recipe filter selects, asked by this screen and by the picker.
+from pages.views.recipes._recipe_filter import (
+    filter_recipes,
+    selected_from,
+)
 from pages.models import (
     CookingCalculation,
     CustomProtein,
@@ -213,10 +219,21 @@ def recipe_management(request):
         RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
     )
 
-    selected_courses = request.GET.getlist('course')
-    selected_categories = request.GET.getlist('category')
-    selected_proteins = request.GET.getlist('protein')
-    selected_authors = request.GET.getlist('author')
+    # PF-2, 19 Oct 2026 - ONE READING, SHARED WITH THE PICKER.
+    # These five lines and the filter block below were the only
+    # description in the application of what a recipe filter selects,
+    # and the picker needed the same answer. Rather than a second copy
+    # in JavaScript, both screens now ask _recipe_filter.
+    #
+    # The names are unchanged on purpose: `course`, `category`,
+    # `protein` with its `vegetarian` magic value, `author`,
+    # `favourites=1`. Every saved link to a filtered library still
+    # works, and the template below still writes exactly these.
+    _sel = selected_from(request.GET)
+    selected_courses = _sel['courses']
+    selected_categories = _sel['categories']
+    selected_proteins = _sel['proteins']
+    selected_authors = _sel['authors']
     selected_letter = request.GET.get('letter', '')
 
     # === Nutrition sort params (Step 3) ===
@@ -233,41 +250,13 @@ def recipe_management(request):
     if nutrition_sort not in NUTRITION_SORT_FIELDS:
         nutrition_sort = ''  # ignore unknown values silently
 
-    # Apply filters
-    if search_query:
-        if search_type == 'ingredient':
-            recipes = recipes.filter(
-                recipe_ingredients__ingredient__name__icontains=search_query
-            )
-        else:
-            recipes = recipes.filter(recipe_name__icontains=search_query)
-
-    if selected_courses:
-        recipes = recipes.filter(courses__recipe_course_id__in=selected_courses)
-
-    if selected_categories:
-        recipes = recipes.filter(categories__recipe_category_id__in=selected_categories)
-
-    if selected_proteins:
-        if 'vegetarian' in selected_proteins:
-            protein_ids = [p for p in selected_proteins if p != 'vegetarian']
-            if protein_ids:
-                recipes = recipes.filter(
-                    Q(is_vegetarian=True) |
-                    Q(proteins__custom_protein_id__in=protein_ids)
-                )
-            else:
-                recipes = recipes.filter(is_vegetarian=True)
-        else:
-            recipes = recipes.filter(proteins__custom_protein_id__in=selected_proteins)
-
-    if selected_authors:
-        recipes = recipes.filter(author__in=selected_authors)
-
-    if show_favourites:
-        recipes = recipes.filter(favourited_by__user=request.user)
-
-    recipes = recipes.distinct()
+    # Apply filters - PF-2, 19 Oct 2026. THE BODY MOVED, THE
+    # BEHAVIOUR DID NOT. Every clause that was here is in
+    # _recipe_filter.filter_recipes in the same order, including the
+    # three-way protein branch and the distinct() at the end, and
+    # test_pick_filter replays both implementations against the same
+    # selections to prove this screen still selects what it selected.
+    recipes = filter_recipes(recipes, _sel, request.user)
 
     # === Nutrition sort branch (Step 3) ===
     # If a nutrient was picked, switch the queryset over to:

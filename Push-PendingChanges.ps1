@@ -1194,9 +1194,20 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'mini-calendar-grid - MC-4'; What = 'MC-4: and the grid closes AFTER the loop that fills it' },
     # ------------------------------------------------- PK-1, 19 Oct 2026
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))'; What = 'PK-1: the recipe picker is a grid, not one column in a wide dialog' },
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'function pickCourse('; What = 'PK-1: and it filters by course, composing with the search rather than replacing it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'function pfChanged('; What = 'PK-1, widened by PF-2 19 Oct 2026: it filters, composing with the search rather than replacing it - by course and by four more things since Demetri asked for them' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerCount"'; What = 'PK-1: and says how many of how many are showing' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = "prefetch_related('courses')"; What = 'PK-1: the course ids come from one query, not one per card' },
+    # ------------------------------------------------- GS-1, 19 Oct 2026
+    @{ File = 'alv_run.py'; Text = 'CONTENDED = ['; What = 'GS-1: a suite whose verdict moves with the load runs alone, because a pool failure cancels the rest of the sweep' },
+    @{ File = 'alv_run.py'; Text = 'Only this list prevents it'; What = 'GS-1: and the phase 3 rescue is left alone - it explains a stop, it cannot undo one' },
+    # ------------------------------------------------- MX-1, 19 Oct 2026
+    @{ File = 'pages/migrations/0101_drop_meal_plan.py'; Text = "DeleteModel(name='MealPlanRecipe')"; What = 'MX-1: the old planner three tables go, children first - the step 0100 said would come last' },
+    @{ File = 'pages/migrations/0101_drop_meal_plan.py'; Text = 'dropping %s - %d row(s)'; What = 'MX-1: and the count is taken BEFORE the drop and printed, because a DeleteModel reverses into an empty table' },
+    # ------------------------------------------------- PF-2, 19 Oct 2026
+    @{ File = 'pages/views/recipes/_recipe_filter.py'; Text = 'def filter_recipes('; What = 'PF-2: ONE place decides what a recipe filter selects, asked by the library and by the picker' },
+    @{ File = 'pages/views/recipes/recipe_crud.py'; Text = 'recipes = filter_recipes(recipes, _sel, request.user)'; What = 'PF-2: and the library stopped keeping its own copy of it' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def picker_recipes('; What = 'PF-2: the picker asks the server for its rows, after Demetri said it only allows you to choose Course' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerAuthor"'; What = 'PF-2: and all five filters are there - course, category, protein with vegetarian, author and favourites' },
     @{ File = 'pages/help_content/administration.html'; Text = 'coming:</strong> repeating a whole week'; Absent = $true; Code = $true; What = 'MH-3: and no longer promises four things MW-1 and MO-1 have built' },
     @{ File = 'check_gates.py'; Text = 'already owns %s in'; Absent = $true; Code = $true; What = 'NF-1: and the old message is gone - it could only print when the register had an entry, which is the case this round exists for' },
     # -------------------------------------------- HL-1, 12 Oct 2026
@@ -2680,7 +2691,23 @@ $suites = @(
     # PK-1, 19 Oct 2026 - the picker is a grid, and it filters.
     # Demetri on the live dialog: "there is so much wasted space
     # on the right of each recipe. Should it not be a grid?"
-    'test_picker_grid.py'
+    'test_picker_grid.py',
+    # GS-1, 19 Oct 2026 - the contended list. This suite RUNS the
+    # runner against a planted slow suite and counts which phase
+    # it landed in, because a list nobody reads is a list that
+    # stops being true.
+    'test_gate_serial.py',
+    # MX-1, 19 Oct 2026 - the old planner's three tables. The
+    # suite re-asks the whole tree whether anything still reads
+    # them, because a migration that drops a table something
+    # still names is a 500 and not a failed check.
+    'test_meal_drop.py',
+    # PF-2, 19 Oct 2026 - the five filters on one shared function.
+    # Section 2 REPLAYS the library's old filter block and the new
+    # shared one against the same selections and compares the ORM
+    # calls, because "it behaves the same" is a claim and a
+    # recording is a reading.
+    'test_pick_filter.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

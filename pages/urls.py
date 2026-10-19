@@ -368,6 +368,10 @@ urlpatterns = [
     path('meal_plans/add/', views.add_meal_entry, name='add_meal_entry'),
     path('meal_plans/remove/', views.remove_meal_entry, name='remove_meal_entry'),
     path('meal_plans/servings/', views.set_meal_servings, name='set_meal_servings'),
+    # PF-2, 19 Oct 2026 - the picker's rows. GET, because it selects
+    # and never writes, and because a filter you can link to is worth
+    # more than one you cannot.
+    path('meal_plans/picker_recipes/', views.picker_recipes, name='picker_recipes'),
     # MW-1, 19 Oct 2026 - the week moves. Five routes, no migration:
     # Menu and MenuItem arrived with 0100 in push 1.
     path('meal_plans/week_preview/', views.meal_week_preview, name='meal_week_preview'),

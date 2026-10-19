@@ -21,6 +21,15 @@ WHAT IT DOES THAT THE LOOP DID NOT
     FAILS beside five others, measured 16 Oct.  So the planters run
     first, alone, and everything else runs in a pool.
 
+    AND SO DOES ANYTHING WHOSE VERDICT MOVES WITH THE LOAD.  GS-1,
+    19 Oct.  A planter runs alone because it WRITES; a CONTENDED suite
+    runs alone because the number it measures is only about the tree
+    when nothing else is running.  test_print_queries.py takes 137s
+    alone and passes 19 of 19; in a pool of six it takes 530s and
+    reports a failed check.  Phase 3 would rescue it - but the pool has
+    already cancelled 115 suites by then, so the rescue buys an
+    explanation and not a sweep.
+
     RENDERS FIRST.  E17.  71% of the suites launch a browser; if the
     browser is missing or the fixture cannot be opened, that should
     show at suite 10 and not at suite 350.
@@ -84,6 +93,59 @@ PLANTERS = [
     # signature caught it; arguing with the signature is how a race
     # nobody can reproduce gets written.
     'test_gate_speed.py',
+]
+
+# THE CONTENDED - a SECOND reason to run alone, and not the planters'.
+#
+# A planter is here because it WRITES into a file the repo owns. A
+# suite is HERE because its VERDICT changes with machine load: it
+# passes by itself and fails in a pool of six, and between those two
+# answers the uncontended one is the one that is about the tree.
+#
+# Keeping them in two lists rather than one is the point. They are
+# fixed by different things - a planter needs a quiet TREE, these need
+# a quiet MACHINE - and the next person deciding whether a new suite
+# belongs has to answer which fault they have.
+#
+# WHY THE PHASE 3 RESCUE IS NOT ENOUGH, which is the whole of GS-1.
+# AR-1 re-runs every pool failure alone and clears the ones that pass.
+# It works, and test_print_queries has been rescued on every push since
+# 17 Oct. But the pool STOPS at the first failure and cancels every
+# future still queued, so the rescue runs over a sweep that already
+# gave up - 262 of 377 suites on Demetri's laptop, three pushes in a
+# row, and a --resume each time.
+#
+# THE RESCUE EXPLAINS THE STOP. Only this list prevents it.
+#
+# Measured, 19 Oct 2026, in the sandbox:
+#
+#   test_print_queries.py   137s alone, 19 of 19 passed
+#                           530s in a pool of six, a failed check
+#
+#   test_print_buttons.py   204s alone, passed
+#                           TIMED OUT in a pool of six, at 313 of 380
+#
+# Both drive Chromium over a census of pages. A verdict reached while
+# five other workers are also launching browsers is a number about the
+# machine.
+#
+# THE SECOND NAME WAS FOUND BY PHASE 3, ON THE FIRST SWEEP AFTER THIS
+# ROUND WAS WRITTEN - which is exactly how the list is meant to grow.
+# Its summary says "if the same name keeps appearing here, that suite
+# is too heavy to share a machine", and test_print_buttons appeared
+# there with a timeout and a 204s solo run. Without --force that
+# timeout stops the sweep at 313 and costs a --resume: the same twenty
+# minutes this round exists to remove, from a different suite.
+#
+# test_picker_grid.py is NOT here. It failed in one pool and passed in
+# the next, and passed alone in 14.1s - a light suite having a bad
+# moment is not a contended one. One observation is not a measurement.
+#
+# Phase 3 is deliberately LEFT ALONE: it is how the next name gets
+# found, and it has already found one.
+CONTENDED = [
+    'test_print_buttons.py',
+    'test_print_queries.py',
 ]
 
 
@@ -249,8 +311,15 @@ def main(argv=None):
 
     # ------------------------------------------------- order and split
     # RENDERS FIRST (E17), and the planters before everything, alone.
+    # GS-1, 19 Oct 2026 - and the contended beside them, for the other
+    # reason. Planters first within the serial phase, because a planter
+    # wants the quietest tree there is and the contended only want the
+    # pool to not exist yet.
     plant = [n for n in todo if n in PLANTERS]
-    rest = [n for n in todo if n not in PLANTERS]
+    slow = [n for n in todo if n in CONTENDED and n not in PLANTERS]
+    serial = plant + slow
+    rest = [n for n in todo
+            if n not in PLANTERS and n not in CONTENDED]
     rest.sort(key=lambda n: (not renders(n), n))
 
     def _save(d):
@@ -338,13 +407,24 @@ def main(argv=None):
         _save(done)
         return True
 
-    # ---- phase 1: the planters, one at a time, in a quiet tree
-    if plant:
+    # ---- phase 1: the planters and the contended, one at a time
+    #
+    # TWO REASONS, SAID SEPARATELY - GS-1, 19 Oct 2026. Printing one
+    # number for both would make the next reader think there is one
+    # kind of suite in here, and there are two.
+    if serial:
         print('')
-        print('  -- %d planter(s) first, serially: they write into real '
-              'files and put them back, so nothing else may be reading '
-              'while they do' % len(plant))
-    for n in plant:
+        print('  -- %d suite(s) first, one at a time:' % len(serial))
+        if plant:
+            print('       %d planter(s) - they write into real files and '
+                  'put them back, so nothing else may be reading while '
+                  'they do' % len(plant))
+        if slow:
+            print('       %d contended - they pass alone and fail in a '
+                  'pool, and a pool failure CANCELS the rest of the '
+                  'sweep, so running them here is the difference between '
+                  'a swept tree and a --resume' % len(slow))
+    for n in serial:
         if not report(run_one(n)):
             break
 

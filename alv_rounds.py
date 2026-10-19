@@ -1290,6 +1290,25 @@ ROUNDS = [
     # course filter. Demetri's finding, the same hour as MC-4 and from
     # the same root: .recipe-option has never had a CSS rule anywhere.
     '.bak_pickergrid',
+    # GS-1, 19 Oct 2026 - a rescue cannot undo a stop. The pool
+    # cancelled 115 of 377 suites on three pushes in a row because
+    # test_print_queries fails under contention; AR-1's phase 3 proved
+    # the pool was the cause and could not give the sweep back. Twenty
+    # minutes of Demetri's gate time per push.
+    '.bak_gateserial',
+    # MX-1, 19 Oct 2026 - MealPlan, MealPlanDay and MealPlanRecipe are
+    # deleted and 0101 drops meal_plans, meal_plan_days and
+    # meal_plan_recipes. The decision was taken on 18 Oct and written
+    # into 0100's docstring; this is it being carried out. The only
+    # irreversible step in release 3, which is why it went last.
+    '.bak_mealdrop',
+    # PF-2, 19 Oct 2026 - "I don't think that this picker is any good
+    # at all. It only allows you to choose Course." All four of the
+    # filters he asked for already existed in recipe_management with
+    # these exact parameter names; the picker was ignoring a feature
+    # the application already had. One shared function now, and 336
+    # recipes come off the planner page with it.
+    '.bak_pickfilter',
 ]
 
 

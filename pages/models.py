@@ -2369,64 +2369,6 @@ class RecipeModificationSuggestion(models.Model):
 
 # ========== MEAL PLANNING MODELS ==========
 
-class MealPlan(models.Model):
-    """Main meal plan header - represents a weekly meal plan"""
-    meal_plan_id = models.AutoField(primary_key=True)
-    plan_name = models.CharField(max_length=200)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'meal_plans'
-        ordering = ['-start_date']
-    
-    def __str__(self):
-        return f"{self.plan_name} ({self.start_date} to {self.end_date})"
-    
-    @property
-    def total_days(self):
-        """Calculate total number of days in the meal plan"""
-        return (self.end_date - self.start_date).days + 1
-    
-    @property
-    def total_recipes(self):
-        """Count total recipes across all days"""
-        return MealPlanRecipe.objects.filter(
-            meal_plan_day__meal_plan=self
-        ).count()
-    
-    @property
-    def date_range_display(self):
-        """Format date range for display"""
-        return f"{self.start_date.strftime('%b %d')} - {self.end_date.strftime('%b %d, %Y')}"
-
-
-class MealPlanDay(models.Model):
-    """Individual day within a meal plan"""
-    meal_plan_day_id = models.AutoField(primary_key=True)
-    meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name='days')
-    date = models.DateField()
-    
-    class Meta:
-        db_table = 'meal_plan_days'
-        ordering = ['date']
-        unique_together = ['meal_plan', 'date']
-    
-    def __str__(self):
-        return f"{self.date.strftime('%A, %B %d, %Y')}"
-    
-    @property
-    def day_name(self):
-        """Get day name (Monday, Tuesday, etc.)"""
-        return self.date.strftime('%A')
-    
-    @property
-    def formatted_date(self):
-        """Get formatted date for display"""
-        return self.date.strftime('%B %d, %Y')
 
 class CookingCalculation(models.Model):
     """Optional cooking time calculator for braai/BBQ/roast recipes"""
@@ -2534,43 +2476,6 @@ class CookingCalculation(models.Model):
     def __str__(self):
         return f"Cooking calculation for {self.recipe.recipe_name}"
 
-class MealPlanRecipe(models.Model):
-    """Recipe assignment to a specific day in a meal plan"""
-    meal_plan_recipe_id = models.AutoField(primary_key=True)
-    meal_plan_day = models.ForeignKey(MealPlanDay, on_delete=models.CASCADE, related_name='recipes')
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    servings = models.IntegerField()  # Can override recipe's default servings
-    sort_order = models.IntegerField(default=0)
-    
-    class Meta:
-        db_table = 'meal_plan_recipes'
-        ordering = ['sort_order', 'meal_plan_recipe_id']
-    
-    def __str__(self):
-        return f"{self.recipe.recipe_name} ({self.servings} servings)"
-    
-    @property
-    def servings_multiplier(self):
-        """How far to scale this recipe's ingredients for this meal.
-
-        MD-1, 18 Oct 2026 - E33. This property had no caller. It read
-
-            return self.servings / self.recipe.servings
-
-        - float division with no guard, so a recipe whose servings are 0
-        or None raised ZeroDivisionError or TypeError. The design record
-        asks for the shopping list to use it; the shopping list's own
-        inline expression was already the safe one, and THAT is what is
-        here now:
-
-            Decimal(self.servings) / Decimal(self.recipe.servings or 1)
-
-        Decimal because every quantity downstream is a Decimal and
-        mixing the two raises, and `or 1` because a recipe with no yield
-        recorded should scale by one rather than refuse to be shopped
-        for.
-        """
-        return Decimal(self.servings) / Decimal(self.recipe.servings or 1)
 
 class MealEntry(models.Model):
     """One meal on one date. MN-1, 18 Oct 2026 - release 3.

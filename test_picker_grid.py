@@ -137,13 +137,31 @@ NOW = dict((p, read(p)) for p in FILES)
 
 
 def claims(text):
-    """Every source claim PK-1 makes, written once and asked twice."""
+    """Every source claim PK-1 makes, written once and asked twice.
+
+    WIDENED BY PF-2, 19 Oct 2026. Demetri: "It only allows you to
+    choose Course. We need to be able to select Author, Favorites,
+    Category and Protein (or vegetarian)."
+
+    Sections 2 to 6 were about a course strip that matched in the
+    browser. The picker now offers five filters and the SERVER
+    decides, so those claims are rewritten to the controls that
+    replaced them rather than deleted - what PK-1 was defending is
+    still worth defending, and only the thing doing it changed.
+
+    Section 5 is the exception and is retired outright: the card's
+    course ids existed so the browser could match, and this round is
+    the one that stopped it matching. In their place, the claim that
+    MATTERS now - the page carries no recipe cards at all.
+    """
     c = {}
     code = T.code_only(text[TPL])
     js = T.code_only_js(text[TPL])
     v = T.python_code_only(text[VIEW])
+    # THE DRAWING MOVED. filterPicker did the matching and the
+    # counting; since PF-2 it debounces, and pfDraw does both.
     body = re.split(r'\n(?=function )',
-                    js.split('function filterPicker()')[-1])[0]
+                    js.split('function pfDraw(')[-1])[0]
 
     # ---- 1. the grid
     c['the picker list is a grid'] = '#pickerList {\n    display: grid;' in code
@@ -157,53 +175,73 @@ def claims(text):
         and 'margin-bottom' not in
         code.split('.recipe-option {')[1].split('}')[0])
 
-    # ---- 2. the filter, and it is BASE'S component
-    c['there is a course filter'] = 'picker-filter' in code
-    c['  built from base\'s .alv-seg'] = (
-        'class="alv-seg" role="group"' in code)
-    # PAIRED WITH THE STRIP. A page that has no filter at all writes no
-    # .alv-seg rule either, so the absence on its own was true before
-    # this round and the control section said so.
+    # ---- 2. the filter - FIVE of them since PF-2, 19 Oct 2026
+    c['there is a filter'] = 'picker-filter' in code
+    c['  five of them, by name'] = (
+        all('name="%s"' % n in code
+            for n in ('course', 'category', 'protein', 'author'))
+        and 'id="pickerFav"' in code)
+    c['  and Vegetarian rides in the protein menu'] = (
+        'value="vegetarian"' in code)
+    # PAIRED WITH THE CONTROL, exactly as PK-1 paired it with the
+    # strip. A page that has no filter at all writes no component rule
+    # either, so the absence on its own was true before PK-1 and the
+    # control section said so.
     c['  and the page writes no .alv-seg rule of its own'] = (
-        'class="alv-seg" role="group"' in code
+        'class="pf-btn"' in code
         and not re.search(r'(?m)^\s*\.alv-seg\s*\{', code))
-    c['  one button per course, out of the context'] = (
-        '{% for course in all_courses %}' in code)
-    c['  and an All button that is pressed to begin with'] = (
-        'data-course="" aria-pressed="true"' in code)
+    c['  one entry per course, out of the context'] = (
+        '{% for course in courses %}' in code)
+    c['  and every menu starts with nothing chosen'] = (
+        'All Courses' in code and 'All Authors' in code)
 
-    # ---- 3. the two narrowings COMPOSE
-    c['the filter and the search compose'] = (
-        'byName && byCourse' in body)
-    c['  the typed text still narrows'] = 'byName' in body
-    c['  the chosen course narrows too'] = 'byCourse' in body
-    c['  matched on ids, padded on BOTH sides'] = (
-        "' ' + pickerCourse + ' '" in body)
-    c['  so course 1 cannot match course 11'] = (
-        "' ' + (o.dataset.recipeCourses || '') + ' '" in body)
+    # ---- 3. the narrowings COMPOSE - on the server since PF-2
+    c['the filters and the search compose'] = (
+        "p.append('search'" in js and "p.append('course'" in js)
+    c['  the typed text still narrows'] = "p.append('search'" in js
+    c['  and each of the five narrows too'] = (
+        all("p.append('%s'" % n in js
+            for n in ('course', 'category', 'protein', 'author'))
+        and "p.append('favourites'" in js)
+    # NEITHER REPLACES THE OTHER, which was PK-1's whole point about
+    # composing: every narrowing goes into ONE query string.
+    c['  all of them into one request, never one replacing another'] = (
+        js.split('function pfFetch(')[-1].split('\nfunction ')[0]
+        .count('fetch(') == 1)
+    c['  and only the newest answer is drawn'] = 'mine !== pfSeq' in js
 
     # ---- 4. the count and the empty state
     c['the dialog says how many of how many'] = 'id="pickerCount"' in code
     c['  and names a plain total when nothing is filtered'] = (
-        "shown === total" in body)
+        "d.total + ' recipe'" in body)
     c['a filter that matches nothing says so'] = 'id="pickerEmpty"' in code
     c['  rather than looking like a broken dialog'] = (
-        'empty.hidden = shown !== 0' in body)
+        'empty.hidden = (d.rows || []).length !== 0' in body)
+    # AND A DIALOG THAT CANNOT REACH THE SERVER SAYS THAT TOO - a case
+    # that could not exist while the list was in the page.
+    c['  and says so differently when the server cannot be reached'] = (
+        'could not reach the server' in body)
 
-    # ---- 5. every card knows its courses
-    c['each card carries its course ids'] = (
-        'data-recipe-courses=' in code)
-    c['  from a prefetch, not a query per card  [E29]'] = (
+    # ---- 5. RETIRED BY PF-2, and replaced by what matters now
+    #
+    # `data-recipe-courses` on every card existed so the BROWSER could
+    # match. This round stopped it matching, so the attribute is gone
+    # and with it the claim. What took its place is the thing the
+    # attribute was costing: the page no longer carries the library.
+    c['the page carries no recipe cards at all'] = (
+        '{% for recipe in all_recipes %}' not in code
+        and 'data-recipe-courses=' not in code)
+    c['  the dialog fetches them when it opens'] = (
+        '{% url "picker_recipes" %}' in js)
+    c['  and the view still prefetches courses  [E29]'] = (
         "prefetch_related('courses')" in v)
-    c['  and the context hands the strip its courses'] = (
-        "'all_courses':" in v)
 
-    # ---- 6. C19, now that there is a second thing to forget
-    c['the filter is reset when the dialog opens  [C19]'] = (
-        "pickerCourse = '';" in js.split('function openPicker')[-1]
+    # ---- 6. C19, now that there are five things to forget
+    c['the filters are reset when the dialog opens  [C19]'] = (
+        'pfClear(true);' in js.split('function openPicker')[-1]
         .split('\nfunction ')[0])
-    c['  and the All button pressed again with it'] = (
-        "b.dataset.course ? 'false' : 'true'" in js)
+    c['  and every menu label goes back to All with them'] = (
+        "span.textContent = 'All ' + plural" in js)
 
     # ---- 7. MW-1's card is untouched - this round changed the LIST
     c['MW-1\'s selected state is still there'] = (
@@ -329,12 +367,25 @@ else:
        'courses come from a prefetch, not one query per card  [E29]'
        % (many, few), (few, many))
     body = resp.content.decode('utf-8', 'replace')
-    ok(body.count('class="recipe-option"') == 30,
-       '  and all thirty cards are drawn',
+    # NONE OF THEM ARE DRAWN, WHICH IS THE POINT - PF-2, 19 Oct 2026.
+    # This asked for thirty cards in the markup and got them, because
+    # PK-1's dialog carried the whole library whether it was opened or
+    # not. That is the cost this round removed, so the number it
+    # checks for is now zero and the assertion is the opposite one.
+    ok(body.count('class="recipe-option"') == 0,
+       '  and NOT ONE card is in the page - thirty were, before this '
+       'round, on every load whether the dialog opened or not',
        body.count('class="recipe-option"'))
-    ok(body.count('data-course=') == len(COURSES) + 1,
-       '  with %d course buttons - one per course, plus All'
-       % (len(COURSES) + 1), body.count('data-course='))
+    ok(body.count('data-course=') == 0,
+       '  nor a single course id: the browser stopped matching, so the '
+       'cards stopped carrying what it matched on',
+       body.count('data-course='))
+    # AND THE CONTROLS ARE STILL DRAWN, because a few dozen options is
+    # not a few hundred recipes - which is the whole shape of the
+    # trade this round made.
+    ok(body.count('class="pf-btn"') == 4 and 'id="pickerFav"' in body,
+       '  while all five filter controls ARE drawn',
+       body.count('class="pf-btn"'))
 
     FIX = '<style>%s</style>' % read(FIXCSS)
     i = body.lower().find('</head>')
@@ -353,14 +404,30 @@ else:
     }"""
     STATE = """() => ({
         count: document.getElementById('pickerCount').textContent,
+        // THE NAME COMES OFF THE CARD - PF-2, 19 Oct 2026. It used
+        // to come from data-recipe-name, which existed so the browser
+        // could match on it. Adding the attribute back for a test to
+        // read would be a suite shaping the page it judges.
         shown: [...document.querySelectorAll('.recipe-option')]
                  .filter(o => o.style.display !== 'none')
-                 .map(o => o.dataset.recipeName),
+                 .map(o => o.querySelector('strong').textContent
+                            .trim().toLowerCase()),
         empty: !document.getElementById('pickerEmpty').hidden,
         pressed: [...document.querySelectorAll('.picker-filter button')]
                    .filter(b => b.getAttribute('aria-pressed') === 'true')
                    .map(b => b.textContent.trim())
     })"""
+
+    # THE ROWS THE ENDPOINT WOULD ANSWER - PF-2, 19 Oct 2026, built
+    # HERE and not in the block below: a queryset evaluated inside
+    # sync_playwright raises SynchronousOnlyOperation, because the
+    # sync api runs on an event loop and the ORM refuses to be called
+    # from one. Cost one run to find out.
+    ROWS = [{'id': r.recipe_id, 'name': r.recipe_name,
+             'servings': r.servings, 'minutes': 30, 'photo': ''}
+            for r in Recipe.objects.order_by('recipe_name')]
+    DRAW = ('(rows) => pfDraw({rows: rows, total: rows.length, '
+            'shown: rows.length})')
 
     with sync_playwright() as _pw:
         # PLAIN launch(). A suite that names a path only one machine has
@@ -371,79 +438,63 @@ else:
         pg.set_content(DRESSED, wait_until='domcontentloaded')
         pg.evaluate(OPEN)
 
+        # THE DIALOG ARRIVES EMPTY NOW - PF-2, 19 Oct 2026, and this
+        # is the whole of what moved.
+        #
+        # PK-1's picker had every recipe in its markup, so opening it
+        # was enough to have thirty cards. PF-2 took them out: the
+        # dialog asks picker_recipes, and a page loaded with
+        # set_content has no server to ask.
+        #
+        # THE FILTER'S OWN BEHAVIOUR MOVED WITH IT. Pressing a course
+        # button and counting cards tested a matcher that no longer
+        # exists in this page. test_pick_filter drives the real
+        # endpoint against a real database over fourteen selections,
+        # including the three-way protein branch this section could
+        # never have reached - so that claim is asked THERE, better,
+        # and asking a weaker version of it here as well would be two
+        # instruments disagreeing waiting to happen.
+        #
+        # WHAT STAYS IS WHAT IS STILL PK-1'S: the card, its selected
+        # state, the Add Meal button it arms, the empty state, and the
+        # grid in section 5. All of it needs cards, so the rows the
+        # endpoint really answers are handed to the page's own pfDraw.
+        # ROWS and DRAW are built ABOVE this block, never in it: a
+        # queryset evaluated inside sync_playwright raises
+        # SynchronousOnlyOperation, because the sync api runs on an
+        # event loop and the ORM refuses to be called from one.
+        pg.evaluate(DRAW, ROWS)
         s = pg.evaluate(STATE)
-        ok(len(s['shown']) == 30, 'the dialog opens showing all thirty',
-           len(s['shown']))
+        ok(len(s['shown']) == 30,
+           "the thirty rows the endpoint answered are drawn by the "
+           "page's own pfDraw", len(s['shown']))
         ok(s['count'] == '30 recipes',
-           '  and says so in words, not as a fraction', s['count'])
-        ok(s['pressed'] == ['All'], '  with All pressed', s['pressed'])
+           '  and the count says so in words, not as a fraction',
+           s['count'])
         ok(not s['empty'], '  and no empty state')
 
-        # ---- THE FILTER NARROWS
-        pg.evaluate("""(id) => {
-            const b = [...document.querySelectorAll('.picker-filter button')]
-                        .find(x => x.dataset.course === String(id));
-            pickCourse(b);
-        }""", DESSERT.recipe_course_id)
+        # ---- A LIST WITH NOTHING IN IT SAYS SO
+        pg.evaluate('() => pfDraw({rows: [], total: 0, shown: 0})')
         s = pg.evaluate(STATE)
-        ok(s['pressed'] == ['Dessert'],
-           'pressing Dessert presses only Dessert', s['pressed'])
-        ok('baklava' in s['shown'],
-           '  and Baklava is showing', s['shown'])
-        ok(all('avgolemono' != n for n in s['shown']),
-           '  while Avgolemono, a Starter, is not', s['shown'])
-        ok(s['count'].endswith(' of 30'),
-           '  and the count reads as a fraction now - %s' % s['count'],
-           s['count'])
-        n_dessert = len(s['shown'])
-
-        # ---- AND THE SEARCH COMPOSES WITH IT, which is the claim
-        pg.evaluate("""() => {
-            document.getElementById('pickerSearch').value = 'ba';
-            filterPicker();
-        }""")
-        s = pg.evaluate(STATE)
-        ok(s['shown'] == ['baklava'],
-           'typing "ba" ON TOP of Dessert leaves Baklava alone - the two '
-           'COMPOSE, neither replaces the other', s['shown'])
-        ok(s['pressed'] == ['Dessert'],
-           '  and Dessert is still pressed - typing did not clear it',
-           s['pressed'])
-
-        # ---- EITHER ALONE STILL WORKS
-        pg.evaluate("""() => {
-            const b = [...document.querySelectorAll('.picker-filter button')]
-                        .find(x => !x.dataset.course);
-            pickCourse(b);
-        }""")
-        s = pg.evaluate(STATE)
-        ok(s['shown'] == ['baklava'],
-           'clearing the course leaves the search doing the work',
-           s['shown'])
-        pg.evaluate("""() => {
-            document.getElementById('pickerSearch').value = '';
-            filterPicker();
-        }""")
-        s = pg.evaluate(STATE)
-        ok(len(s['shown']) == 30, '  and clearing both shows all thirty',
-           len(s['shown']))
-
-        # ---- A FILTER THAT MATCHES NOTHING SAYS SO
-        pg.evaluate("""() => {
-            document.getElementById('pickerSearch').value = 'zzzzz';
-            filterPicker();
-        }""")
-        s = pg.evaluate(STATE)
-        ok(s['shown'] == [], 'a search that matches nothing hides every card')
+        ok(s['shown'] == [], 'no rows means no cards')
         ok(s['empty'],
            '  AND THE DIALOG SAYS SO - an empty grid with no message is '
            'a dialog that looks broken')
-        ok(s['count'] == '0 of 30', '  with the count at zero', s['count'])
+        ok(s['count'] == '0 recipes', '  with the count at zero',
+           s['count'])
+
+        # ---- AND A DIALOG THAT CANNOT REACH THE SERVER, which could
+        # not happen at all while the list was in the page.
+        pg.evaluate('() => pfDraw({rows: [], total: 0, shown: 0, '
+                    'error: true})')
+        s = pg.evaluate(STATE)
+        ok(s['empty'] and 'server' in s['count'],
+           '  and says something DIFFERENT when it could not ask - '
+           '%r' % s['count'], s['count'])
 
         # ---- AND THE THING HE ACTUALLY REPORTED
+        pg.evaluate(DRAW, ROWS)
         pg.evaluate("""() => {
-            document.getElementById('pickerSearch').value = '';
-            filterPicker();
             pickRecipe(document.querySelector('.recipe-option'));
         }""")
         sel = pg.evaluate("""() => {
@@ -474,6 +525,10 @@ else:
             pg.route(re.compile(r'^https?://'), lambda r: r.abort())
             pg.set_content(DRESSED, wait_until='domcontentloaded')
             pg.evaluate(OPEN)
+            # CARDS FIRST - PF-2, 19 Oct 2026. The grid is measured by
+            # what is IN it, and since this round nothing is until the
+            # dialog has asked. Same rows, same pfDraw.
+            pg.evaluate(DRAW, ROWS)
             m = pg.evaluate("""() => {
                 const cs = [...document.querySelectorAll('.recipe-option')];
                 const xs = new Set(cs.map(
@@ -560,7 +615,9 @@ ok('new bootstrap.Modal' not in T.code_only_js(nt),
 
 # WIDE FROM BIRTH. The filter strip belongs to one dialog.
 pages_all = T.templates(include_base=False)
-for text in ('picker-filter', 'function pickCourse('):
+# PF-2, 19 Oct 2026 - pfChanged replaced pickCourse. The claim is
+# unchanged: whatever drives this filter belongs to one dialog.
+for text in ('picker-filter', 'function pfChanged('):
     holders = [T.rel(p) for p in pages_all
                if text in T.code_only_js(read(p))]
     ok(holders == ['meal_planner.html'],
@@ -574,7 +631,8 @@ ok(ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_mealweek'),
 ok(ME in T.CONVERTED, '%s is in alv_tree.CONVERTED' % ME)
 ps1 = read(os.path.join(ROOT, PS1))
 ok("'%s'" % ME in ps1, '%s is on the push gate' % ME)
-for text in ('function pickCourse(', 'id="pickerCount"',
+# PF-2, 19 Oct 2026 - the gate row moved with the function it pins.
+for text in ('function pfChanged(', 'id="pickerCount"',
              "prefetch_related('courses')"):
     ok(text in ps1, '  the pre-flight can see %r' % text)
 ok(os.path.isfile(os.path.join(ROOT, PATCHER)),

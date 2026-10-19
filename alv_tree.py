@@ -778,6 +778,18 @@ CONVERTED = [
     # course. Wide from birth: section 5 asks every page in both
     # roots whether any other one grew a copy of the filter strip.
     'test_picker_grid.py',
+    # GS-1, 19 Oct 2026 - test_print_queries out of the pool. Its
+    # section 4 re-derives the contended signature across every
+    # suite, the way test_gate_speed does for the planters.
+    'test_gate_serial.py',
+    # MX-1, 19 Oct 2026 - the three dead models leave models.py and
+    # 0101 drops their tables. Section 3 walks both template roots and
+    # every view, url and admin file looking for a reader.
+    'test_meal_drop.py',
+    # PF-2, 19 Oct 2026 - Demetri's finding. The picker filters by
+    # five things because the library already did, and they share one
+    # function rather than two implementations in two languages.
+    'test_pick_filter.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
