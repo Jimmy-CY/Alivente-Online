@@ -93,13 +93,22 @@ FIXCSS = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 FILES = (HELP, MH)
 
+# MH-5, 20 Oct 2026 - AND AN EIGHTH, after Shopping List: PP-1's
+# printable plan. It sits there because that is the order the two
+# buttons sit in on the planner bar, and a guide that disagrees with
+# the screen about order is a guide somebody stops trusting.
 ORDER = ('mp-overview', 'mp-calendar', 'mp-build', 'mp-week',
-         'mp-shopping', 'mp-permissions', 'mp-tips')
+         'mp-shopping', 'mp-print', 'mp-permissions', 'mp-tips')
 # The four things MH-2 promised and MW-1 and MO-1 built.
 BUILT = ('repeating a whole week', 'saved menus',
          'a free-text note on a day', 'marking a meal as leftovers')
 # And the one that is not built, which must still be promised.
-OUTSTANDING = 'moving a meal from one day to another'
+#
+# MH-5, 20 Oct 2026 - MOVE SHIPPED. CH-1 put it on the chip menu, so
+# the sentence this pin was watching for would now be a lie. The
+# claim is unchanged - the guide still says what it cannot do - and
+# what it cannot do is the other half of MH-3's pair.
+OUTSTANDING = 'reordering the meals on a day'
 
 passed = failed = skipped = 0
 
@@ -199,7 +208,9 @@ def claims(text):
     whole = ' '.join(t[2] for t in tabs)
 
     # ---- 1. the seventh tab, and the reading order
-    c['the module has seven tabs'] = len(tabs) == 7
+    c['the module has %d tabs' % len(ORDER)] = len(tabs) == len(ORDER)
+    c['  and mp-print is one of them'] = 'mp-print' in slugs
+    c['  called Printing'] = names.get('mp-print') == 'Printing'
     c['  and mp-week is one of them'] = 'mp-week' in slugs
     c['  called Moving a Week'] = names.get('mp-week') == 'Moving a Week'
     c['  in the order a reader needs them'] = slugs == list(ORDER)
@@ -320,9 +331,10 @@ if up:
     ok(mod is not None, 'the renderer finds the %r module' % SLUG)
     got = [t['name'] for t in mod.get('tabs', [])]
     ok(got == ['Overview', 'The Calendar', 'Adding a Meal',
-               'Moving a Week', 'Shopping List', 'Who Can Do What',
-               'Tips'],
-       'seven named tabs, in order, out of the real parser', got)
+               'Moving a Week', 'Shopping List', 'Printing',
+               'Who Can Do What', 'Tips'],
+       '%d named tabs, in order, out of the real parser'
+       % len(ORDER), got)
     empty = [t['name'] for t in mod['tabs']
              if not (t.get('content_html') or '').strip()]
     ok(not empty, '  and not one of them parses to nothing - an empty '
@@ -432,20 +444,32 @@ else:
             # THAN THEY WERE, except the two this round deliberately
             # adds to.
             for slug in ORDER:
-                if slug == 'mp-week':
+                # mp-print has no 'before' to compare against either -
+                # MH-5 creates it, as MH-3 created mp-week.
+                if slug in ('mp-week', 'mp-print'):
                     continue
                 a = shot(_br, old_by_slug[slug], w)
                 b = heights[(slug, w)]
-                if slug in ('mp-build', 'mp-tips'):
-                    ok(b > a['h'],
-                       '%-16s %-7s grew, as this round intends: %d -> %d'
-                       % (slug, where, a['h'], b), (a['h'], b))
+                # MH-5, 20 Oct 2026 - FOUR MOVE NOW, NOT TWO, and
+                # the test is `!=` rather than `>`. mp-calendar
+                # DELETES four pieces of prose about controls that no
+                # longer exist; a round that trims a tab is a correct
+                # round and `>` would call it a failure. (This one
+                # happens to end up taller anyway, 540 -> 673, but a
+                # pin that depends on that is a pin waiting to break.)
+                if slug in ('mp-build', 'mp-tips', 'mp-calendar',
+                            'mp-shopping'):
+                    ok(b != a['h'],
+                       '%-16s %-7s moved, as this round intends: '
+                       '%d -> %d' % (slug, where, a['h'], b),
+                       (a['h'], b))
                 else:
                     ok(b == a['h'],
                        '%-16s %-7s is unchanged at %dpx'
                        % (slug, where, b), (a['h'], b))
             # AND THE NEW TAB IS NOT THE LONGEST READ IN THE MODULE.
-            tallest = max(heights[(s, w)] for s in ORDER if s != 'mp-week')
+            tallest = max(heights[(s, w)] for s in ORDER
+                          if s not in ('mp-week', 'mp-print'))
             ok(heights[('mp-week', w)] <= tallest,
                'mp-week          %-7s at %dpx is no taller than the '
                'tallest tab already there, %dpx'
@@ -496,9 +520,10 @@ ok('Duplicate' not in T.code_only(read(PLANNER)),
 # EVERY TAB CLOSES. An unclosed <article> or <div> in a help tab eats
 # the tabs after it, and the renderer says nothing.
 blk = module(NOW[HELP])
-ok(blk.count('<article') == blk.count('</article>') == 7,
-   'seven <article> open and seven close - %d and %d'
-   % (blk.count('<article'), blk.count('</article>')))
+ok(blk.count('<article') == blk.count('</article>') == len(ORDER),
+   '%d <article> open and %d close - %d and %d'
+   % (len(ORDER), len(ORDER),
+      blk.count('<article'), blk.count('</article>')))
 ok(blk.count('<div') == blk.count('</div>'),
    '  and the divs balance inside the module - %d and %d'
    % (blk.count('<div'), blk.count('</div>')))

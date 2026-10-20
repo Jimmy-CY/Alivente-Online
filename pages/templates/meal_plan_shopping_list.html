@@ -415,6 +415,7 @@
 /* Print Styles */
 @media print {
     .page-action-buttons,
+    .sl-range,
     .step-indicator,
     .email-section,
     .ingredient-checkbox,
@@ -614,6 +615,30 @@
 {# MN-1, 18 Oct 2026 - A DATE RANGE, NOT A PLAN NAME. There is no  #}
 {# plan to name: the list is for the days you chose.                #}
 <h4 class="page-subtitle-h4">{{ start|date:"j M" }} &ndash; {{ end|date:"j M Y" }} &mdash; {{ day_count }} day{{ day_count|pluralize }} &mdash; {{ meal_count }} meal{{ meal_count|pluralize }}</h4>
+
+{# AND YOU CAN CHANGE YOUR MIND HERE - SL-7, 20 Oct 2026.          #}
+{# The button on the planner covers the view you were on, which    #}
+{# answers a day, a week and a month. It cannot answer "Tuesday to #}
+{# Thursday", and Demetri asked for "a day, or a couple of days or #}
+{# a week". A range you can only choose before you arrive is a     #}
+{# range you have to go back to change.                             #}
+{#                                                                  #}
+{# A GET, AND THE SAME TWO PARAMETERS THE SERVER HAS TAKEN SINCE    #}
+{# MN-1. No new endpoint, no new aggregation path - this re-asks    #}
+{# the page it is on.                                               #}
+{#                                                                  #}
+{# IT PRINTS NOTHING. SL-1 hides .page-action-buttons on paper and  #}
+{# this belongs with them: a shopping list on the fridge does not   #}
+{# need a form on it.                                                #}
+<form method="get" action="" class="sl-range page-action-buttons">
+    <label class="sl-range-label" for="slFrom">From</label>
+    <input type="date" id="slFrom" name="from" class="form-control"
+           value="{{ start|date:'Y-m-d' }}">
+    <label class="sl-range-label" for="slTo">To</label>
+    <input type="date" id="slTo" name="to" class="form-control"
+           value="{{ end|date:'Y-m-d' }}">
+    <button type="submit" class="btn action-primary">Show these days</button>
+</form>
 <div class="page-action-buttons">
         {# ONE BAR, BOTH STEPS - SL-2, 3 Oct 2026. Demetri: take the       #}
         {# buttons to the top and make the Cancel a Back. This bar sits    #}

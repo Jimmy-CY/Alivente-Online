@@ -1662,7 +1662,20 @@
     {# ONE BAR, and Back is LAST and carries no colour - test_bar_top. #}
     {# Help sits before it, as it does on all five meal-plan screens.  #}
     <div class="page-action-buttons">
-        <a href="{% url 'meal_shopping_list' %}?from={{ week_start|date:'Y-m-d' }}&amp;to={{ week_end|date:'Y-m-d' }}"
+        {# PRINT WHAT YOU ARE LOOKING AT - PP-1, 20 Oct 2026. The    #}
+        {# same two dates SL-7 computes, handed to a page built for   #}
+        {# paper. There was no way to print a plan at all before this: #}
+        {# the only mention of print on this screen was a comment.     #}
+        <a href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}"
+           class="btn action-secondary">
+            <i class="fas fa-print"></i> Print
+        </a>
+        {# THE RANGE FOLLOWS THE VIEW - SL-7, 20 Oct 2026. This was  #}
+        {# ?from=week_start&to=week_end on a screen with three views, #}
+        {# so Month bought for a week and Day bought for a week.      #}
+        {# The two dates are decided beside view_mode, where a fourth #}
+        {# view would be added once rather than here as well.         #}
+        <a href="{% url 'meal_shopping_list' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}"
            class="btn action-primary">
             <i class="fas fa-shopping-cart"></i> Shopping List
         </a>
@@ -1687,6 +1700,27 @@
                 {# needs no reasoning about when jQuery is defined,      #}
                 {# which a top-level $(document).on would. C19 is why    #}
                 {# a dialog is emptied on open and not on close.         #}
+                {# AND PRINT IS IN HERE TOO - PP-1, 20 Oct 2026.          #}
+                {#                                                        #}
+                {# The Print button above is an .action-secondary, and     #}
+                {# base hides every secondary below 768px IN A BAR THAT    #}
+                {# HAS A MORE MENU - deliberately, because the menu is     #}
+                {# where they are supposed to have gone. The standard says #}
+                {# it in as many words: "If you add a More menu to a bar,  #}
+                {# its secondaries start hiding on phones again - that is  #}
+                {# the intent, but check the menu lists them."             #}
+                {#                                                         #}
+                {# MEASURED, NOT ASSUMED: at 390px the Print link came     #}
+                {# back display:none, height 0. He asked to print a plan;  #}
+                {# a button he cannot reach on his phone is not that.      #}
+                {# Only an editing user ever sees this menu, and only an   #}
+                {# editing user ever loses the button to it - a read-only  #}
+                {# user has no More button, so :has() does not match and   #}
+                {# the bar keeps its Print.                                #}
+                <a class="action-more-item" role="menuitem"
+                   href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}">
+                    <i class="fas fa-print"></i> Print this plan
+                </a>
                 <button type="button" class="action-more-item" role="menuitem"
                         onclick="resetCopyWeek()"
                         data-toggle="modal" data-target="#copyWeekModal">
@@ -2461,6 +2495,14 @@
                     {# a Cancel that did not undo them would be a lie.    #}
                     {# The strip above is where you undo.                 #}
                     <span class="picker-hint" id="pickerHint">Click a recipe to add it.</span>
+                    {# A NIGHT YOU ARE NOT COOKING - NT-1, 20 Oct 2026. #}
+                    {# Demetri asked how to add a note from Month or    #}
+                    {# Week; openNote was reachable only from the Day    #}
+                    {# card. A note belongs to a DAY, and this dialog is #}
+                    {# the one that adds things to a day.                #}
+                    <button type="button" class="btn action-secondary" id="pickerNote">
+                        <i class="fas fa-store"></i> Add a note instead
+                    </button>
                     <button type="button" class="btn action-primary" id="pickerDone"
                             onclick="closePicker()">Done</button>
                 </div>
@@ -2822,6 +2864,19 @@
     <button type="button" class="chip-menu-item" data-act="move" role="menuitem">
         <i class="fas fa-arrow-right"></i> Move to&hellip;
     </button>
+    {# LEFTOVERS - LO-1, 20 Oct 2026. Demetri: "How can I add a Note #}
+    {# or Leftovers from the month view or the week view??" He could #}
+    {# not: openLeftover was reachable only from the Day card.       #}
+    {#                                                               #}
+    {# HERE BECAUSE IT ACTS ON A MEAL, which is what this menu is    #}
+    {# for - the same reason Move to... is on it.                    #}
+    {#                                                               #}
+    {# THE SAME ICON THE DAY CARD USES, so one verb keeps one        #}
+    {# picture wherever you meet it. MO-1's lesson, and RD-2 paid it #}
+    {# again on the 19th.                                            #}
+    <button type="button" class="chip-menu-item" data-act="leftovers" role="menuitem">
+        <i class="fas fa-redo"></i> Leftovers&hellip;
+    </button>
     <button type="button" class="chip-menu-item chip-menu-danger" data-act="remove" role="menuitem">
         <i class="fas fa-trash"></i> <span data-slot="remove">Remove</span>
     </button>
@@ -3012,6 +3067,13 @@
             // A NOTE IS NOT A RECIPE. "Eat out" has nothing to view.
             view.hidden = !url;
             view.setAttribute('data-url', url || '');
+            // AND IT HAS NOTHING TO HAVE AGAIN - LO-1, 20 Oct 2026.
+            // add_leftover refuses a note in as many words, so the
+            // same attribute that hides View hides this: a menu item
+            // that opens a dialog which then refuses is worse than
+            // one that was never offered.
+            var again = menu.querySelector('[data-act="leftovers"]');
+            if (again) { again.hidden = !url; }
             var slot = menu.querySelector('[data-slot="remove"]');
             if (slot) {
                 slot.textContent = 'Remove from ' +
@@ -3042,6 +3104,13 @@
             askMove(chip.getAttribute('data-chip'),
                     chip.getAttribute('data-chip-name'),
                     chip.getAttribute('data-chip-date'));
+        } else if (act === 'leftovers') {
+            // THE DIALOG MO-1 ALREADY BUILT, with the three things it
+            // has always taken. Nothing new is written here: the chip
+            // carries the entry, the name and the day it was cooked.
+            openLeftover(chip.getAttribute('data-chip'),
+                         chip.getAttribute('data-chip-name'),
+                         chip.getAttribute('data-chip-date'));
         } else if (act === 'remove') {
             removeMeal(chip.getAttribute('data-chip'),
                        chip.getAttribute('data-chip-name'));
@@ -3693,6 +3762,48 @@ function removeMeal(entryId, name) {
 
 // --------------------------------------------------------- the day speaks
 // MO-1, 19 Oct 2026. A planned night, and leftovers.
+
+// THE HAND-OFF FROM THE PICKER - NT-1, 20 Oct 2026.
+//
+// DELEGATED, so it does not care when the footer was drawn, and in a
+// block that cannot be taken down by somebody else's line.
+//
+// THE DIRTY FLAG IS CARRIED, NOT IGNORED. PS-1 reloads the page when
+// the picker closes having added something, and that reload would
+// arrive in the middle of opening this dialog and take it with it.
+// So it is cleared before the picker hides and spent when the note
+// dialog is DISMISSED. If the note is submitted instead, the form
+// posts and the page reloads anyway - with the meals and the note on
+// it.
+//
+// jQuery IS ASKED FOR AT CLICK TIME, not at parse time. RL-1 spent a
+// day on the difference: base loads it near the end of the document,
+// so a guard that runs while the page is parsing finds nothing and
+// binds nothing for ever. By the time somebody presses a button it is
+// certainly there - and it is still guarded, because a page without
+// it should not throw.
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('#pickerNote')) { return; }
+    var when = document.getElementById('pickerDate');
+    var name = document.getElementById('pickerDayName');
+    if (!when || !name || !window.jQuery) { return; }
+    var dateStr = when.value;
+    var dayName = name.textContent;
+    var carried = (typeof pickerDirty !== 'undefined') && pickerDirty;
+    pickerDirty = false;
+    var $picker = window.jQuery('#pickerModal');
+    $picker.one('hidden.bs.modal', function () {
+        openNote(dateStr, dayName);
+        if (carried) {
+            // ONE SHOT. If they dismiss the note the calendar behind
+            // is stale by however many meals they just added, so the
+            // reload PS-1 would have done happens here instead.
+            window.jQuery('#noteModal').one('hidden.bs.modal',
+                function () { window.location.reload(); });
+        }
+    });
+    $picker.modal('hide');
+});
 
 function openNote(dateStr, dayName) {
     document.getElementById('noteDate').value = dateStr;

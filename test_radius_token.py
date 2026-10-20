@@ -130,8 +130,16 @@ N_PRE = 13            # already tokenised before it, by the B rounds
 # converted 158 - that is what the loop below reads from the backups -
 # and the live corpus carries 168.
 N_RETIRED = 3
-N_TOTAL = N_RADIUS + N_PRE - N_RETIRED
-N_STYLE, N_ATTR, N_SCRIPT = 155, 4, 9   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
+# PP-1, 20 Oct 2026 - AND ONE WAS ADDED AFTER THE ROUND. The total
+# stopped being "this round's plus what was already there" when RT-1
+# retired three of the conversions; it stops being derivable at all
+# once a LATER round declares the token on a page this round never
+# saw. meal_plan_print.html gives .pp-week a var(--alv-radius-sm),
+# which is the house radius and not a literal - the right thing for
+# it to do, and one more in the live corpus.
+N_ADDED = 1
+N_TOTAL = N_RADIUS + N_PRE - N_RETIRED + N_ADDED
+N_STYLE, N_ATTR, N_SCRIPT = 156, 4, 9   # PP-1, 20 Oct 2026 - the printable plan's .pp-week   # (was 155, 4, 9)   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
 N_CHIP, N_CHIP_PAGES = 5, 4
 
 passed = failed = skipped = 0

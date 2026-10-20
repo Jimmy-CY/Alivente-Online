@@ -841,6 +841,33 @@ CONVERTED = [
     # PB-3, 20 Oct 2026 - the half of PB-2 that PB-2 said it was not
     # doing: the DATE a write returns you to.
     'test_back_date.py',
+    # RD-3, 20 Oct 2026 - the photograph opens the recipe, and a
+    # second recipe dialog that nobody could open goes out with it.
+    'test_quick_look.py',
+    # AP-1, 20 Oct 2026 - a recipe goes on a day from the library,
+    # and base learns a toast.
+    'test_add_planner.py',
+    # FV-1, 20 Oct 2026 - the heart could not post for anybody who
+    # may not edit recipes, because the token was behind that.
+    'test_fav_token.py',
+    # LO-1, 20 Oct 2026 - leftovers join the chip menu, so the verb
+    # is reachable from every view rather than one.
+    'test_chip_left.py',
+    # NT-1, 20 Oct 2026 - and a note joins the picker, which is the
+    # dialog that adds things to a day.
+    'test_pick_note.py',
+    # SL-7, 20 Oct 2026 - the shopping list range follows the view,
+    # decided in one place rather than spelled in the markup.
+    'test_list_range.py',
+    # CE-1, 20 Oct 2026 - a suite stops writing into the tree it is
+    # being run against, which cost a whole sweep.
+    'test_ce_scratch.py',
+    # PP-1, 20 Oct 2026 - the plan on paper, which the application
+    # could not do at all.
+    'test_print_plan.py',
+    # MH-5, 20 Oct 2026 - the guide describes the calendar that is
+    # there, rather than the one that was there on 19 October.
+    'test_meal_guide5.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

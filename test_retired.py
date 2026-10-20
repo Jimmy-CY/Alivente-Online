@@ -102,11 +102,20 @@ KEPT = (
     'test_dr2_values.py',
     'test_entry_sections.py', 'test_js_escape.py', 'test_label_weight.py',
     'test_meal_plan_buttons.py', 'test_more_css.py',
-    'test_page_title.py', 'test_personal_heads.py',
+    'test_page_title.py',
     'test_recipe_photos.py', 'test_recipe_spice.py', 'test_retone.py',
     'test_user_slash.py', 'test_zoom_guards.py',
 )
 MOVED = (
+    # PP-1, 20 Oct 2026 - moved out of KEPT by RD-3, earlier in this
+    # same push. RD-3 deleted the Recipe View dialog, and with it the
+    # close strip test_personal_heads section 3 measured - so that
+    # section was rewritten to assert the strip is GONE, which is a
+    # claim about today's tree rather than about what CS-2 did. Three
+    # integers went with the old assertion: an 8px padding, a 16px
+    # shorthand and a slice. A suite whose subject a later round
+    # removed cannot keep every number it had.
+    'test_personal_heads.py',
     # RD-1, 19 Oct 2026 - moved out of KEPT, where RT-1 filed them.
     # Their standalone() count is a census of the tree as it stands,
     # not a claim about what CS-2 did.
@@ -336,7 +345,24 @@ for name in MOVED:
     if not old:
         skip('%-28s a number moved' % name, 'no backup')
         continue
-    if digits(old) == digits(read(p)):
+    # PP-1, 20 Oct 2026 - ASKED OF EVERY STATE, NOT OF TODAY.
+    #
+    # This compared the live file against the pre-RT-1 backup, and a
+    # number that moves and moves BACK reads as a number that never
+    # moved. test_tree_roots held MAIN_N = 143; RT-1 took it to 142
+    # when MN-1 retired four screens; PP-1 adds a page and takes it to
+    # 143 again. Nothing about RT-1's work changed - the yardstick
+    # did.
+    #
+    # The claim is that each of these numbers is a census of the tree
+    # as it stands, and the evidence for that is that it has moved at
+    # some point - so every state of the file still on disk is asked,
+    # and one difference anywhere is enough. A suite whose number is
+    # identical in the pre-RT-1 text, in every backup since, AND
+    # today, really has never moved and does not belong in this list.
+    states = [read(p)] + [read(p + suf) for suf in alv_rounds.ROUNDS
+                          if os.path.isfile(p + suf)]
+    if all(digits(old) == digits(st) for st in states):
         still.append(name)
 ok(not still, 'CONTROL: and all %d present-tense suites really did move '
    'a number' % len(MOVED), still)

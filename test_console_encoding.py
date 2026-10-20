@@ -86,7 +86,31 @@ import re
 import subprocess
 import sys
 import alv_tree
+import atexit as _atexit
+import shutil as _shutil
 import tempfile
+
+# A DIRECTORY NO OTHER PROCESS KNOWS - CE-1, 20 Oct 2026.
+#
+# The throwaway script below used to be written into the repository
+# itself, with dir=ROOT. test_code_only lists the repository for
+# *.py and reads every name it finds, so when the two ran together in
+# the pool it listed a temporary file and then read a file that had
+# already been deleted:
+#
+#     FileNotFoundError: ...\Alivente-Online\tmpzv3mfgnd.py
+#
+# That stopped a push at 290 of 395 with nothing staged. The window is
+# a few milliseconds wide, which is why it took until the twentieth to
+# appear and why it would have come back.
+#
+# THIS IS apply_probe_location's PATTERN, and its words: mkdtemp hands
+# THIS PROCESS a directory whose name no other process knows, so two
+# suites cannot collide however they are ordered, and nothing is
+# written into the working tree at all. That round moved the probes;
+# this one is the script-runner it did not reach.
+SCRATCH = tempfile.mkdtemp(prefix='alv_conenc_')
+_atexit.register(_shutil.rmtree, SCRATCH, True)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 T = os.path.join(ROOT, 'pages', 'templates')
@@ -147,7 +171,10 @@ def run_under(encoding, body):
     """Run a throwaway script with stdout forced to `encoding`."""
     env = dict(os.environ)
     env['PYTHONIOENCODING'] = encoding
-    fd, path = tempfile.mkstemp(suffix='.py', dir=ROOT)
+    # NOT dir=ROOT - CE-1, 20 Oct 2026. The script is run as its own
+    # process and imports nothing from this repository, so it never
+    # needed to live in it.
+    fd, path = tempfile.mkstemp(suffix='.py', dir=SCRATCH)
     os.close(fd)
     try:
         with open(path, 'w', encoding='utf-8') as f:

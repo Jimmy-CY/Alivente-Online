@@ -512,11 +512,20 @@ print('        while the walk could not reach the second root.')
 print('        E-10 made exactly this fix on the FOOTER side in')
 print('        Show-ButtonDrift.py three days ago. This is its twin.')
 
-# AND THE NUMBER THAT DID NOT HAVE TO MOVE.
-ok("len(naked) == 1 and naked[0].startswith('recipe_management.html')" in mh,
-   'the suite still asserts exactly ONE naked header, unchanged')
-print('        A widening that needs no new number is a widening that was')
-print('        right. Before: one, in one root. Now: one, in two.')
+# AND THE NUMBER, WHICH MOVED FOR THE OTHER REASON.
+# RD-3, 20 Oct 2026. The widening did not move it and the note below
+# still holds. What moved it is a DELETION: the one naked header was
+# the Recipe View close strip, and the dialog it closed had no opener,
+# so it went out with the quick-look that replaces it. A census that
+# falls because the corpus fell is the honest kind.
+ok("len(naked) == 0" in mh,
+   'the suite now asserts NO naked header anywhere - the one it named '
+   'was deleted, not converted')
+ok("naked[0].startswith('recipe_management.html')" not in mh,
+   '  CONTROL: and it no longer names the header it used to exempt')
+print('        A widening that needs no new number was a widening that was')
+print('        right. Before: one, in one root. Then: one, in two. Now:')
+print('        none, in two - because the one was never reachable.')
 
 for rel, n in sorted(SCRIPT_BUILT.items()):
     ok("'%s': %d" % (rel, n) in mh,

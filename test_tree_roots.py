@@ -95,7 +95,8 @@ PS1 = 'Push-PendingChanges.ps1'
 # set-password pages. CRS_N is untouched.
 # 143 since 6 Oct: Section E round E-2b added access_denied.html,
 # the 403 page, which until then lived in an f-string.
-MAIN_N = 142   # RD-1, 19 Oct 2026 - the quick-look dialog adds two:
+MAIN_N = 143   # PP-1, 20 Oct 2026 - the printable meal plan is a
+               # new page: 142 + 1. (was 142)   # RD-1, 19 Oct 2026 - the quick-look dialog adds two:
                # the partial and its shell. (was 140)   # RT-1, 18 Oct 2026 - MN-1 retired four meal-plan screens and the planner replaced them: 143 - 4 + 1. This is the shape of the tree, which is what this file is for.   # (was 143)
 CRS_N = 8
 TOTAL_N = MAIN_N + CRS_N

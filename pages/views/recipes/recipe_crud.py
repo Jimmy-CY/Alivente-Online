@@ -79,6 +79,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.template.loader import get_template
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
@@ -353,6 +354,16 @@ def recipe_management(request):
                 'proteins': [{'name': p.name} for p in recipe.proteins.all()],
                 'is_favourite': recipe.recipe_id in user_favourites,
                 'nutrition_values': nutrition_values,
+                # RD-3, 20 Oct 2026 - THE ROUTES COME FROM THE URLCONF.
+                # The card builders had three hardcoded paths between
+                # them; the two this round needs are rendered here
+                # instead, because RD-1's shell records what the
+                # alternative costs - WCIM built its quick-view path by
+                # hand and a route that moves takes that with it
+                # silently.
+                'view_url': reverse('view_recipe', args=[recipe.recipe_id]),
+                'quicklook_url': reverse('recipe_quicklook',
+                                         args=[recipe.recipe_id]),
             })
 
         return JsonResponse({

@@ -368,6 +368,10 @@ urlpatterns = [
     path('meal_plans/planner/', views.meal_planner, name='meal_planner'),
     path('meal_plans/calendar/', views.meal_planner, name='meal_plan_calendar'),
     path('meal_plans/shopping_list/', views.meal_shopping_list, name='meal_shopping_list'),
+    # PP-1, 20 Oct 2026 - the plan, laid out for paper. Beside the
+    # shopping list because it takes the same two parameters.
+    path('meal_plans/print/', views.meal_plan_print,
+         name='meal_plan_print'),
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
     path('meal_plans/add/', views.add_meal_entry, name='add_meal_entry'),
     path('meal_plans/remove/', views.remove_meal_entry, name='remove_meal_entry'),

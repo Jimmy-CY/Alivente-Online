@@ -446,9 +446,14 @@ else:
                 """() => Array.from(document.querySelectorAll(
                      '#chipMenu [data-act]')).filter(e => !e.hidden)
                      .map(e => e.getAttribute('data-act'))""")
-            ok(items == ['view', 'move', 'remove'],
-               'and it offers View, Move to and Remove, in that order - '
-               'look, then change, then destroy',
+            # LO-1, 20 Oct 2026 - FOUR, NOT THREE. Leftovers
+            # joined the menu, and it is a CHANGE, so it sits with
+            # Move and before Remove: nothing belongs after the
+            # destructive item. The order is still the argument CH-1
+            # made - look, then change, then destroy.
+            ok(items == ['view', 'move', 'leftovers', 'remove'],
+               'and it offers View, Move to, Leftovers and Remove, in '
+               'that order - look, then change, then destroy',
                'offered %r' % (items,))
 
             label = pg.evaluate(

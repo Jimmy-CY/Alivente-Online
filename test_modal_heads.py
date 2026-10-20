@@ -270,11 +270,15 @@ ok(n_danger == 9 and not danger_wrong,
 # rendered it is eleven, and rendering is what counts) - so that line is spent, and what replaces
 # it is strictly stronger: EVERY modal header in the system carries the
 # class, and the only one that does not is named here with its reason.
+# RETIRED BY RD-3, 20 Oct 2026 - kept so the reasoning survives the
+# thing it reasoned about. The dialog had no caller in its own file and
+# used an API the page does not load; its header is gone with it, and
+# the count below is now nought.
 LEAVE = {'recipe_management.html':
          'the Recipe View modal renders in an IFRAME; its header is a '
          'close strip - no border, 8px padding, and a title a script '
          'fills in that is never shown. A pop-up header by markup, not '
-         'by intent. [E1]'}
+         'by intent. [E1] RETIRED - RD-3 removed the dialog.'}
 # NOT ON THE LIST ABOVE, AND NOT COUNTED - because mask() blanks
 # <script> before this walk ever sees them. home.html twice and
 # notifications.html once BUILD their modal header inside a
@@ -298,12 +302,18 @@ for d, _, fs in alv_tree.walk3():
             if HEAD in cls:
                 continue
             naked.append('%s: %s' % (rel, title or '(no title)'))
-ok(len(naked) == 1 and naked[0].startswith('recipe_management.html'),
-   'EVERY modal header in the system wears the class - the single one '
-   'that does not is the Recipe View close strip, and it is recorded',
+ok(len(naked) == 0,
+   'EVERY modal header in the system wears the class, with NO '
+   'exception - RD-3 removed the one that was recorded here',
    '\n'.join(naked[:8]))
+# THE EXEMPTION IS KEPT AS A RECORD, NOT AS A LICENCE. RD-3, 20 Oct
+# 2026: the dialog it described had no opener and called a Bootstrap 5
+# constructor on a 4.1.3 page. Deleting the entry as well would edit
+# out the reasoning, which was right about the markup; what it never
+# asked was whether anything could open the thing.
 for rel, why in LEAVE.items():
-    print('        LEAVE %s' % rel)
+    print('        LEAVE %s  (RETIRED - the dialog was removed by RD-3)'
+          % rel)
     print('              %s' % why[:66])
 ok(re.search(r'class="[^"]*\b%s\b' % HEAD,
              '<div class="modal-header %s">' % HEAD) is not None

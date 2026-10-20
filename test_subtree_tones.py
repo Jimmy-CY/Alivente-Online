@@ -254,8 +254,10 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # is still eighteen.
 # RT-1, 18 Oct 2026 - 148. Four retired, one added: see alv_tree.RETIRED.
 # 148 -> 150 - RD-1, 19 Oct 2026, the quick-look pair.
-ok(len(tree) == 150, 'a WALK finds 150 templates', len(tree))
-ok(len(top) == 124, '  a flat listing finds 124 - 120 was what H7 '
+# PP-1, 20 Oct 2026 - 151. meal_plan_print.html is the printable
+# plan, and it sits flat in pages/templates, so both numbers move.
+ok(len(tree) == 151, 'a WALK finds 151 templates', len(tree))
+ok(len(top) == 125, '  a flat listing finds 125 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',

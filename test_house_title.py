@@ -276,8 +276,11 @@ wearers = [alv_tree.rel(p) for p in alv_tree.templates()
 # replaced them wears it too: 122 - 3 + 1. base.html's note
 # moves in the same round, because the sentence above is the
 # one thing keeping the two honest.
-ok(len(wearers) == 120,
-   '120 templates now wear the class, which is the number base\'s note '
+# PP-1, 20 Oct 2026 - 121. meal_plan_print.html carries a
+# .page-title-h2 like every other page with a title, so it joins the
+# count rather than being an exception to it.
+ok(len(wearers) == 121,
+   '121 templates now wear the class, which is the number base\'s note '
    'states', len(wearers))
 
 # WHAT IS DELIBERATELY LEFT: the hand-rolled headers. They are a content

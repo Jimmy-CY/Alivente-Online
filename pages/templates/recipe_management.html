@@ -6,6 +6,20 @@
 {% block title %}Recipe Management{% endblock %}
 {% block content %}
 
+{# A TOKEN FOR EVERYONE WHO CAN PRESS SOMETHING - FV-1, 20 Oct    #}
+{# 2026. The heart is drawn with no permission guard at all, and  #}
+{# toggleFavourite posts with getCookie('csrftoken') - but the    #}
+{# only token on this page sat behind can_edit_personal, so for   #}
+{# anybody else the cookie was never set, the POST came back 403, #}
+{# and the heart filled in and emptied again.                     #}
+{#                                                                #}
+{# A TOKEN IS NOT A PRIVILEGE. It is proof the request came from  #}
+{# this site; what the user may then DO is the view's business,   #}
+{# and every view here still checks. Rendering the tag is also    #}
+{# what sets the cookie, which is the half that makes getCookie   #}
+{# return anything at all.                                        #}
+{% csrf_token %}
+
 <style>
     /* B-7, 9 Oct 2026 - 12 Bootstrap literal(s) on this page
        became a var(). The ones in script blocks and in style
@@ -910,15 +924,28 @@
     gap: 6px;
 }
 
-/* Recipe View Modal Styling */
-#recipeViewModal .recipe-header-box { padding: 20px 25px !important; border-radius: 8px !important; }
-#recipeViewModal .recipe-header-box h2 { font-size: 24px !important; margin-bottom: 15px !important; }
-#recipeViewModal .recipe-meta-grid { gap: 10px !important; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important; }
-#recipeViewModal .recipe-meta-item { padding: 10px 15px !important; }
-#recipeViewModal .recipe-meta-item .recipe-meta-label { font-size: 11px !important; margin-bottom: 4px !important; }
-#recipeViewModal .recipe-meta-item .recipe-meta-value { font-size: 16px !important; }
-#recipeViewModal .recipe-header-image { max-height: 180px !important; border-radius: 8px !important; }
-#recipeViewModal .recipe-tags { margin-top: 15px !important; }
+/* THE PHOTO IS A TRIGGER - RD-3, 20 Oct 2026, and these rules sit
+   exactly where the iframe dialog's eight used to: every one of them
+   !important, re-styling a page from outside the frame it was in, for
+   a dialog with no opener. */
+.recipe-photo-link {
+    display: block;
+    cursor: pointer;
+    /* THE LIST ROW IS A FLEX ROW and the link is its child now. The
+       thumbnail's own flex-shrink: 0 protects the image inside a box
+       that is itself free to shrink, which is not the same thing. */
+    flex-shrink: 0;
+}
+.recipe-photo-link:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -2px;
+}
+/* A HOVER THAT SAYS THE PICTURE IS LIVE. There is no hover on a touch
+   screen and the tap opens the dialog anyway - the same shape RD-2
+   gave the chips, where the reveal is the desktop's preview of a
+   gesture the phone has regardless. */
+.recipe-photo-link:hover .recipe-image,
+.recipe-photo-link:hover .recipe-list-image { filter: brightness(0.93); }
 
 /* Dropdown Button Styles */
 .dropdown-btn-container { position: relative; display: inline-block; }
@@ -1305,6 +1332,134 @@
 .book-layout-btn-inline.active { border-color: #5c3a2a; background: #5c3a2a; color: var(--alv-on-accent); }
 .book-layout-btn-inline .layout-icon { width: 14px; height: 14px; }
 
+/* THE PLANNER ICON - AP-1, 20 Oct 2026 ---------------------------
+   Beside the heart, which is where Demetri put it, so it takes the
+   heart's own geometry and steps one target to the right: 8 for the
+   edge, 32 for the heart, 8 for the gap.
+
+   IT IS A SIBLING OF RD-3's PHOTO LINK, never a child, so pressing it
+   cannot open the quick-look. That is a fact about where the element
+   sits rather than a guard that has to be maintained. */
+.recipe-plan-btn {
+    position: absolute;
+    top: 8px;
+    left: 48px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--alv-accent-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 2;
+}
+.recipe-plan-btn:hover { background: var(--alv-paper); color: var(--alv-accent); }
+.recipe-plan-btn:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: 2px;
+}
+/* IN THE LIST ROW IT IS NOT AN OVERLAY. There is no photograph to lie
+   on, so it joins the actions group and wears that group's shape -
+   which is why it does not carry .recipe-plan-btn at all. */
+.recipe-list-plan-btn { color: var(--alv-accent-ink); }
+.recipe-list-plan-btn:hover { color: var(--alv-accent); }
+
+/* THE POPOVER - one for the page, moved to whichever icon was
+   pressed. RD-2's pattern and RD-2's reason: 324 recipes in two
+   layouts is 648 of these if each card carries its own, and only ever
+   one is open. */
+.plan-pop {
+    position: absolute;
+    z-index: 1200;
+    width: 280px;
+    padding: 12px;
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    background: var(--alv-paper);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.16);
+}
+.plan-pop[hidden] { display: none; }
+.plan-pop-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--alv-ink);
+    margin-bottom: 10px;
+}
+.plan-pop-x {
+    border: 0;
+    background: none;
+    color: var(--alv-ink-soft);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+}
+.plan-pop-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.plan-quick {
+    flex: 1 1 auto;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--alv-accent-line);
+    border-radius: 999px;
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.plan-quick:hover { background: var(--alv-paper); }
+.plan-cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--alv-ink);
+}
+.plan-cal-nav {
+    min-width: 36px;
+    min-height: 36px;
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    background: var(--alv-surface);
+    color: var(--alv-ink-soft);
+    cursor: pointer;
+}
+.plan-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.plan-cal-dow {
+    text-align: center;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--alv-ink-faint);
+    padding-bottom: 2px;
+}
+.plan-day {
+    min-height: 34px;
+    border: 1px solid transparent;
+    border-radius: var(--alv-radius-sm);
+    background: none;
+    color: var(--alv-ink);
+    font-size: 12px;
+    cursor: pointer;
+}
+.plan-day:hover { background: var(--alv-accent-soft); }
+.plan-day.is-today { border-color: var(--alv-accent); font-weight: 700; }
+.plan-day.is-blank { visibility: hidden; cursor: default; }
+.plan-day:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -2px;
+}
+
 /* Favourite Heart Button */
 .recipe-favourite-btn {
     position: absolute;
@@ -1521,7 +1676,18 @@
     .recipe-card-actions-mobile .disabled-action { background: var(--alv-surface-deep); color: var(--alv-ink-soft); opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
     /* Favourite heart on image: smaller for compact 2-col */
-    .recipe-favourite-btn { width: 28px; height: 28px; font-size: 13px; top: 6px; left: 6px; }
+    /* BOTH OVERLAYS ARE 44px HERE - AP-1, 20 Oct 2026, and the heart
+       grows with the new icon rather than sitting beside it two
+       thirds the size. It has been 28px since it was written, under
+       the house floor for a thumb, and putting a 44px control next to
+       it would have made that visible instead of fixing it.
+       MEASURED FIRST: the image is 172x120 at 390px, so 6 + 44 + 6 +
+       44 is 100 of 172 and both fit with room to spare. */
+    .recipe-favourite-btn { width: 44px; height: 44px; font-size: 15px; top: 6px; left: 6px; }
+    .recipe-plan-btn { width: 44px; height: 44px; font-size: 15px; top: 6px; left: 56px; }
+    /* THE POPOVER IS A SHEET ON A PHONE. 280px floating beside a 44px
+       button on a 390px screen is a popover half off the edge. */
+    .plan-pop { position: fixed; left: 12px; right: 12px; bottom: 12px; top: auto; width: auto; }
 
     /* === LIST VIEW === */
     .recipe-list-item { padding: 10px 12px; flex-wrap: wrap; gap: 0; }
@@ -1567,16 +1733,6 @@
     .match-badge { font-size: 13px; padding: 5px 9px; min-width: 50px; top: 8px; right: 8px; }
     .match-stats { font-size: 13px; gap: 10px; }
     .missing-badge { font-size: 11px; }
-
-    /* Recipe View Modal — full-screen */
-    #recipeViewModal .modal-dialog { max-width: 100% !important; margin: 0 !important; height: 100vh; }
-    #recipeViewModal .modal-content { height: 100vh; border-radius: 0; border: none; }
-    #recipeViewModal .recipe-header-box { padding: 15px !important; flex-direction: column !important; }
-    #recipeViewModal .recipe-header-box h2 { font-size: 20px !important; }
-    #recipeViewModal .recipe-meta-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    #recipeViewModal .recipe-header-image { width: 100% !important; max-height: 200px !important; margin-bottom: 15px !important; }
-    #recipeViewModal .modal-body { padding: 0 !important; }
-    #recipeViewIframe { height: calc(100vh - 50px) !important; }
 
     /* Hide book view on mobile */
     #bookViewBtn { display: none !important; }
@@ -2027,6 +2183,24 @@
     {% for recipe in recipes %}
     <div class="recipe-card">
         <div class="recipe-image-container">
+            {# THE PHOTO OPENS THE RECIPE - RD-3, 20 Oct 2026. Demetri:  #}
+            {# "The photo opens the modal for a quick view."              #}
+            {#                                                            #}
+            {# A TRIGGER IS A LINK THAT STILL WORKS - RD-1's contract,    #}
+            {# not a new one. data-quicklook opens the dialog and the     #}
+            {# href is what a middle-click, a failed fetch or no          #}
+            {# JavaScript at all still gives you.                         #}
+            {#                                                            #}
+            {# AND IT WRAPS THE IMAGE ONLY. The heart and the four-icon   #}
+            {# overlay are SIBLINGS of this link, so a click on either    #}
+            {# never walks up through it - closest() finds nothing and    #}
+            {# the dialog stays shut. MO-1's trashcan lesson answered by  #}
+            {# where the trigger sits, not by a guard naming five         #}
+            {# controls that would miss the sixth.                        #}
+            <a class="recipe-photo-link"
+               href="{% url 'view_recipe' recipe.recipe_id %}"
+               data-quicklook="{% url 'recipe_quicklook' recipe.recipe_id %}"
+               aria-label="Quick look at {{ recipe.recipe_name }}">
             {% if recipe.recipe_image %}
             <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}" alt="{{ recipe.recipe_name }}" class="recipe-image">
             {% else %}
@@ -2034,6 +2208,7 @@
                 <i class="fas fa-utensils"></i>
             </div>
             {% endif %}
+            </a>
 
             <button type="button"
                     class="recipe-favourite-btn {% if recipe.recipe_id in user_favourites %}is-favourite{% endif %}"
@@ -2041,6 +2216,20 @@
                     title="{% if recipe.recipe_id in user_favourites %}Remove from Favourites{% else %}Add to Favourites{% endif %}">
                 <i class="fas fa-heart"></i>
             </button>
+            {# BESIDE THE HEART - AP-1, 20 Oct 2026, which is where  #}
+            {# Demetri put it. A SIBLING of the photo link RD-3 made, #}
+            {# never a child of it, so pressing this never opens the  #}
+            {# quick-look: closest() cannot reach a trigger it is not #}
+            {# inside.                                                #}
+            {% if perms.auth.can_edit_recipes %}
+            <button type="button" class="recipe-plan-btn"
+                    data-plan-id="{{ recipe.recipe_id }}"
+                    data-plan-name="{{ recipe.recipe_name }}"
+                    title="Add to the planner"
+                    aria-label="Add {{ recipe.recipe_name }} to the planner">
+                <i class="fas fa-calendar-plus"></i>
+            </button>
+            {% endif %}
 
             <div class="recipe-image-actions">
                 <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
@@ -2181,6 +2370,18 @@
 <div class="recipe-list" id="recipeListView" style="display: none;">
     {% for recipe in recipes %}
     <div class="recipe-list-item">
+        {# THE THUMBNAIL OPENS IT TOO - RD-3, 20 Oct 2026. The list is  #}
+        {# a view of the same 324 recipes and a round that lands in one #}
+        {# of two layouts is a feature that depends on which button you #}
+        {# last pressed.                                                #}
+        {#                                                              #}
+        {# THE LINK IS THE FLEX CHILD NOW, which is why                 #}
+        {# .recipe-photo-link carries flex-shrink: 0 - it was on the     #}
+        {# image, and the image is no longer the row's own child.        #}
+        <a class="recipe-photo-link"
+           href="{% url 'view_recipe' recipe.recipe_id %}"
+           data-quicklook="{% url 'recipe_quicklook' recipe.recipe_id %}"
+           aria-label="Quick look at {{ recipe.recipe_name }}">
         {% if recipe.recipe_image %}
         <img loading="lazy" decoding="async" src="{{ recipe.photo_url }}" alt="{{ recipe.recipe_name }}" class="recipe-list-image">
         {% else %}
@@ -2188,6 +2389,7 @@
             <i class="fas fa-utensils"></i>
         </div>
         {% endif %}
+        </a>
 
         <div class="recipe-list-content">
             <div class="recipe-list-name">
@@ -2271,6 +2473,20 @@
                     title="{% if recipe.recipe_id in user_favourites %}Remove from Favourites{% else %}Add to Favourites{% endif %}">
                 <i class="fas fa-heart"></i>
             </button>
+            {# BESIDE THE HEART - AP-1, 20 Oct 2026. The list row has #}
+            {# no photograph to lie on, so the icon follows the heart  #}
+            {# into the actions group rather than inventing a third    #}
+            {# position for itself.                                    #}
+            {% if perms.auth.can_edit_recipes %}
+            <button type="button"
+                    class="recipe-list-action-btn recipe-list-plan-btn"
+                    data-plan-id="{{ recipe.recipe_id }}"
+                    data-plan-name="{{ recipe.recipe_name }}"
+                    title="Add to the planner"
+                    aria-label="Add {{ recipe.recipe_name }} to the planner">
+                <i class="fas fa-calendar-plus"></i>
+            </button>
+            {% endif %}
             <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
                 <i class="fas fa-eye"></i>
             </a>
@@ -2403,22 +2619,267 @@
 </div>
 {% endif %}
 
-<!-- Recipe View Modal - iframe approach -->
-<div class="modal fade" id="recipeViewModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl" role="document" style="max-width: 900px;">
-        <div class="modal-content">
-            <div class="modal-header" style="border-bottom: none; padding: 8px 15px 0 15px; min-height: 40px;">
-                <h5 class="modal-title" id="recipeViewModalTitle" style="display: none;"></h5>
-                <button type="button" class="close" data-dismiss="modal" style="font-size: 28px; font-weight: 300; opacity: 0.5; position: absolute; right: 15px; top: 8px; z-index: 1000;">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" style="padding: 0;">
-                <iframe id="recipeViewIframe" style="width: 100%; height: 75vh; border: none;"></iframe>
-            </div>
-        </div>
+{# THE QUICK-LOOK DIALOG - RD-3, 20 Oct 2026. ONE include, and  #}
+{# every photograph on the page carrying data-quicklook opens it. #}
+{# RD-1 built the shell and the planner has used it since         #}
+{# yesterday; this is the second page, not a second dialog.       #}
+{#                                                                #}
+{# IT STANDS WHERE A SECOND RECIPE DIALOG USED TO. That one       #}
+{# loaded the whole recipe page into a 75vh frame and re-styled   #}
+{# it from outside with twenty-four !important declarations. It    #}
+{# had no caller, and it called the Bootstrap 5 modal constructor  #}
+{# on a page that loads 4.1.3, so the first press would have      #}
+{# thrown. Removed with Demetri's word, 20 Oct.                   #}
+{#                                                                #}
+{# ONE COMMENT PER LINE - a house rule with a suite behind it.     #}
+{# ONE POPOVER, MOVED TO THE PRESSED ICON - AP-1, 20 Oct 2026.  #}
+{# RD-2's pattern: 324 recipes in two layouts is 648 of these if  #}
+{# each card carries its own, and only one is ever open.          #}
+{#                                                                #}
+{# THE ROUTES COME FROM THE URLCONF and ride on the element,      #}
+{# because RD-1's shell head records what the alternative costs:  #}
+{# WCIM built a path by hand and a route that moves takes it with #}
+{# it silently.                                                   #}
+{% if perms.auth.can_edit_recipes %}
+<div id="planPop" class="plan-pop" role="dialog"
+     aria-labelledby="planPopTitle" hidden
+     data-add-url="{% url 'add_meal_entry' %}"
+     data-remove-url="{% url 'remove_meal_entry' %}">
+    {# ITS OWN TOKEN, AND IT HAS TO BE ITS OWN. The only csrf_token  #}
+    {# on this page sits behind can_edit_personal, which is a        #}
+    {# DIFFERENT permission from the one that draws this icon, so    #}
+    {# somebody who may plan meals but not edit recipes got the icon #}
+    {# and a 403. Found by driving it, not by reading it.            #}
+    {#                                                               #}
+    {# RENDERING THE TAG ALSO SETS THE COOKIE, which is the other    #}
+    {# half: getCookie returned an empty string because nothing on   #}
+    {# the page had asked Django for a token at all.                 #}
+    {% csrf_token %}
+    <div class="plan-pop-head">
+        <span id="planPopTitle">Add to the planner</span>
+        <button type="button" class="plan-pop-x" id="planPopClose"
+                aria-label="Close">&times;</button>
     </div>
+    <div class="plan-pop-quick">
+        <button type="button" class="plan-quick" data-plan-when="today">Tonight</button>
+        <button type="button" class="plan-quick" data-plan-when="tomorrow">Tomorrow</button>
+        <button type="button" class="plan-quick" data-plan-when="saturday">This Saturday</button>
+    </div>
+    <div class="plan-cal-head">
+        <button type="button" class="plan-cal-nav" id="planPrev"
+                aria-label="The month before"><i class="fas fa-chevron-left"></i></button>
+        <span id="planCalLabel"></span>
+        <button type="button" class="plan-cal-nav" id="planNext"
+                aria-label="The month after"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="plan-cal-grid" id="planCalGrid"></div>
 </div>
+
+{# A BLOCK OF ITS OWN, LIKE RD-1's SHELL - AP-1, 20 Oct 2026.     #}
+{# This was first written into the page's big script block, where #}
+{# it sat downstream of everything above it: anything that throws #}
+{# up there takes every statement after it, which is the fault    #}
+{# PS-1 shipped on the 19th when a top-level jQuery call killed   #}
+{# PF-2's outside-click handler. A block of its own cannot be     #}
+{# taken down by somebody else's line, and the suite caught this  #}
+{# by pressing the icon on a page served without jQuery.          #}
+<script>
+(function () {
+    var pop = null, forId = null, forName = '', shown = new Date();
+
+    function el(id) { return document.getElementById(id); }
+
+    function iso(d) {
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    // THE SHORTCUTS, AS DATES. "This Saturday" means the Saturday of
+    // the week you are in, and on a Saturday it means today - not a
+    // week away, which is what counting forward from tomorrow gives.
+    function when(code) {
+        var d = new Date();
+        d.setHours(12, 0, 0, 0);
+        if (code === 'tomorrow') { d.setDate(d.getDate() + 1); }
+        if (code === 'saturday') { d.setDate(d.getDate() + ((6 - d.getDay()) + 7) % 7); }
+        return d;
+    }
+
+    function draw() {
+        var grid = el('planCalGrid');
+        if (!grid) { return; }
+        // EMPTIED BY REMOVING CHILDREN, not by assigning markup. A
+        // round whose comment spells the word its own gate forbids
+        // makes that gate unreadable - check_gates said so twice
+        // before this ran, both times about a COMMENT. To a substring
+        // search, a note about a thing is the thing.
+        while (grid.firstChild) { grid.removeChild(grid.firstChild); }
+        el('planCalLabel').textContent = shown.toLocaleDateString(
+            undefined, {month: 'long', year: 'numeric'});
+        ['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach(function (n) {
+            var h = document.createElement('div');
+            h.className = 'plan-cal-dow';
+            h.textContent = n;
+            grid.appendChild(h);
+        });
+        var first = new Date(shown.getFullYear(), shown.getMonth(), 1);
+        // MONDAY FIRST, like every other calendar in this application.
+        var lead = (first.getDay() + 6) % 7;
+        var days = new Date(shown.getFullYear(), shown.getMonth() + 1, 0)
+            .getDate();
+        var today = iso(new Date());
+        for (var i = 0; i < lead; i++) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'plan-day is-blank';
+            b.disabled = true;
+            grid.appendChild(b);
+        }
+        for (var day = 1; day <= days; day++) {
+            var d = new Date(shown.getFullYear(), shown.getMonth(), day);
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'plan-day' + (iso(d) === today ? ' is-today' : '');
+            btn.textContent = day;
+            btn.setAttribute('data-plan-date', iso(d));
+            grid.appendChild(btn);
+        }
+    }
+
+    function close() {
+        if (pop) { pop.hidden = true; }
+        forId = null;
+    }
+
+    function open(btn) {
+        pop = el('planPop');
+        if (!pop) { return; }
+        forId = btn.getAttribute('data-plan-id');
+        forName = btn.getAttribute('data-plan-name') || 'That recipe';
+        el('planPopTitle').textContent = 'Add ' + forName;
+        shown = new Date();
+        draw();
+        pop.hidden = false;
+        // PLACED UNDER THE ICON THAT OPENED IT, in page coordinates,
+        // because the card it belongs to scrolls.
+        var r = btn.getBoundingClientRect();
+        pop.style.top = (r.bottom + window.scrollY + 6) + 'px';
+        pop.style.left = Math.max(
+            8, Math.min(r.left + window.scrollX,
+                        window.scrollX + document.documentElement.clientWidth
+                        - pop.offsetWidth - 8)) + 'px';
+        var x = el('planPopClose');
+        if (x) { x.focus(); }
+    }
+
+    // THE TOKEN COMES FROM THE POPOVER'S OWN FIELD, and falls back to
+    // the cookie for any page that sets one. Reading the cookie alone
+    // was the first spelling and it returned an empty string here,
+    // because nothing on this page had asked for a token.
+    function token() {
+        var f = pop && pop.querySelector('[name=csrfmiddlewaretoken]');
+        if (f && f.value) { return f.value; }
+        return (typeof getCookie === 'function' &&
+                getCookie('csrftoken')) || '';
+    }
+
+    function body(obj) {
+        var p = new URLSearchParams();
+        Object.keys(obj).forEach(function (k) { p.append(k, obj[k]); });
+        return p;
+    }
+
+    // FORM-ENCODED, NOT JSON. add_meal_entry reads request.POST, and
+    // a JSON body leaves that empty - the planner's own JavaScript
+    // posts the same way.
+    function add(dateStr) {
+        var id = forId, name = forName;
+        if (!id || !pop) { return; }
+        var addUrl = pop.getAttribute('data-add-url');
+        var rmUrl = pop.getAttribute('data-remove-url');
+        close();
+        fetch(addUrl, {
+            method: 'POST',
+            headers: {'X-CSRFToken': token()},
+            body: body({recipe_id: id, date: dateStr, json: '1'})
+        })
+            .then(function (r) {
+                if (!r.ok) { throw new Error(r.status); }
+                return r.json();
+            })
+            .then(function (d) {
+                var label = d.added_label || dateStr;
+                window.alvToast(name + ' added to ' + label, {
+                    undo: function () {
+                        fetch(rmUrl, {
+                            method: 'POST',
+                            headers: {'X-CSRFToken': token()},
+                            // meal_entry_id, WHICH IS WHAT THE
+                            // ENDPOINT READS. The first spelling sent
+                            // entry_id, the lookup missed, the view
+                            // redirected - and the toast said
+                            // "Removed again" anyway, because it never
+                            // asked. An Undo that reports a success it
+                            // did not have is worse than no Undo.
+                            body: body({meal_entry_id: d.added_id,
+                                        json: '1'})
+                        }).then(function (r) {
+                            if (!r.ok || r.redirected) {
+                                throw new Error(r.status);
+                            }
+                            window.alvToast('Removed again.');
+                        }).catch(function () {
+                            window.alvToast(
+                                'That could not be undone. It is on '
+                                + label + '.');
+                        });
+                    }
+                });
+            })
+            .catch(function () {
+                window.alvToast('That could not be added. Please try again.');
+            });
+    }
+
+    document.addEventListener('click', function (e) {
+        var icon = e.target.closest('[data-plan-id]');
+        if (icon) {
+            // THE CARD AROUND IT MAY BE CLICKABLE. RD-3 made the
+            // photograph a trigger and this icon is its sibling -
+            // stopping here costs nothing and says so out loud.
+            e.preventDefault();
+            e.stopPropagation();
+            open(icon);
+            return;
+        }
+        var day = e.target.closest('[data-plan-date]');
+        if (day) { add(day.getAttribute('data-plan-date')); return; }
+        var quick = e.target.closest('[data-plan-when]');
+        if (quick) { add(iso(when(quick.getAttribute('data-plan-when')))); return; }
+        if (e.target.closest('#planPopClose')) { close(); return; }
+        if (e.target.closest('#planPrev')) {
+            shown = new Date(shown.getFullYear(), shown.getMonth() - 1, 1);
+            draw();
+            return;
+        }
+        if (e.target.closest('#planNext')) {
+            shown = new Date(shown.getFullYear(), shown.getMonth() + 1, 1);
+            draw();
+            return;
+        }
+        // OUTSIDE CLOSES IT, which is the other half of a popover.
+        if (pop && !pop.hidden && !e.target.closest('#planPop')) { close(); }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && pop && !pop.hidden) { close(); }
+    });
+})();
+</script>
+{% endif %}
+
+{% include 'recipe_quicklook_shell.html' %}
 
 {% render_help_modal "recipe_management" %}
 
@@ -2469,6 +2930,8 @@ function handleLetterClick(event, letter) {
 
 // Permission flag for JS-generated cards
 const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_personal %}true{% else %}false{% endif %};
+// AP-1, 20 Oct 2026 - the permission add_meal_entry really asks for.
+const USER_CAN_EDIT_RECIPES = {% if perms.auth.can_edit_recipes %}true{% else %}false{% endif %};
 
 // === Step 3 — nutrition sort state for JS-generated cards ===
 const NUTRITION_SORT = "{{ nutrition_sort|default:'' }}";
@@ -2632,9 +3095,15 @@ function appendListRecipes(recipes) {
 }
 
 function createGridRecipeCard(recipe) {
-    const imageHtml = recipe.recipe_image
+    // THE PHOTO OPENS THE RECIPE - RD-3, 20 Oct 2026, and the two
+    // URLs come from the payload rather than from a path typed here.
+    // RD-1's shell head records what the alternative costs: WCIM built
+    // its quick-view path by hand and a route that moves takes that
+    // with it silently.
+    const photoInner = recipe.recipe_image
         ? `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-image">`
         : `<div class="recipe-image-placeholder"><i class="fas fa-utensils"></i></div>`;
+    const imageHtml = `<a class="recipe-photo-link" href="${recipe.view_url}" data-quicklook="${recipe.quicklook_url}" aria-label="Quick look at ${escapeHtml(recipe.recipe_name)}">${photoInner}</a>`;
 
     const prepTime = recipe.prep_time ? `<span class="recipe-meta-item"><i class="fas fa-clock"></i> ${recipe.prep_time}m prep</span>` : '';
     const cookTime = recipe.cook_time ? `<span class="recipe-meta-item"><i class="fas fa-fire"></i> ${recipe.cook_time}m cook</span>` : '';
@@ -2683,6 +3152,14 @@ function createGridRecipeCard(recipe) {
                         title="${recipe.is_favourite ? 'Remove from Favourites' : 'Add to Favourites'}">
                     <i class="fas fa-heart"></i>
                 </button>
+                ${USER_CAN_EDIT_RECIPES ? `
+                <button type="button" class="recipe-plan-btn"
+                        data-plan-id="${recipe.recipe_id}"
+                        data-plan-name="${escapeHtml(recipe.recipe_name)}"
+                        title="Add to the planner"
+                        aria-label="Add ${escapeHtml(recipe.recipe_name)} to the planner">
+                    <i class="fas fa-calendar-plus"></i>
+                </button>` : ''}
                 <div class="recipe-image-actions">
                     <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
                         <i class="fas fa-eye"></i>
@@ -2705,9 +3182,13 @@ function createGridRecipeCard(recipe) {
 }
 
 function createListRecipeItem(recipe) {
-    const imageHtml = recipe.recipe_image
+    // THE THUMBNAIL OPENS IT TOO - RD-3, 20 Oct 2026. Same trigger,
+    // same two URLs off the payload, because the list is a view of the
+    // same recipes and not a lesser one.
+    const photoInner = recipe.recipe_image
         ? `<img loading="lazy" decoding="async" src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-list-image">`
         : `<div class="recipe-list-image-placeholder"><i class="fas fa-utensils"></i></div>`;
+    const imageHtml = `<a class="recipe-photo-link" href="${recipe.view_url}" data-quicklook="${recipe.quicklook_url}" aria-label="Quick look at ${escapeHtml(recipe.recipe_name)}">${photoInner}</a>`;
 
     let tagsHtml = '<div class="recipe-list-tags">';
     recipe.courses.forEach(c => { tagsHtml += `<span class="recipe-list-tag course">${c.name}</span>`; });
@@ -2766,6 +3247,15 @@ function createListRecipeItem(recipe) {
                         title="${recipe.is_favourite ? 'Remove from Favourites' : 'Add to Favourites'}">
                     <i class="fas fa-heart"></i>
                 </button>
+                ${USER_CAN_EDIT_RECIPES ? `
+                <button type="button"
+                        class="recipe-list-action-btn recipe-list-plan-btn"
+                        data-plan-id="${recipe.recipe_id}"
+                        data-plan-name="${escapeHtml(recipe.recipe_name)}"
+                        title="Add to the planner"
+                        aria-label="Add ${escapeHtml(recipe.recipe_name)} to the planner">
+                    <i class="fas fa-calendar-plus"></i>
+                </button>` : ''}
                 <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-view-btn" title="View Recipe"><i class="fas fa-eye"></i></a>
                 ${editActionsList}
             </div>
@@ -3188,13 +3678,6 @@ function getCookie(name) {
     return cookieValue;
 }
 // ==================== END INGREDIENT MATCHER ====================
-
-function openRecipeInModal(recipeId, recipeName) {
-    document.getElementById('recipeViewModalTitle').textContent = recipeName;
-    document.getElementById('recipeViewIframe').src = `/view_recipe/${recipeId}/?modal=1`;
-    const modal = new bootstrap.Modal(document.getElementById('recipeViewModal'));
-    modal.show();
-}
 
 function duplicateRecipe(recipeId, recipeName, sourceBtn) {
     if (confirm(`Duplicate "${recipeName}"?\n\nThis will create a copy with all ingredients and instructions.`)) {

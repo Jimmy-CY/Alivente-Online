@@ -672,8 +672,10 @@ ok('--strict --recipes' in ps1,
 # planner larger. The narrow half, 117, does not move.
 # 139 -> 141 - RD-1, 19 Oct 2026, the quick-look pair. The narrow
 # half does not move: neither is a recipe-side page.
-ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 141,
-   '  which is %d of %d' % (117, 141),
+# PP-1, 20 Oct 2026 - 142. meal_plan_print.html. The narrow half
+# does not move: it is not a recipe-side page.
+ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 142,
+   '  which is %d of %d' % (117, 142),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

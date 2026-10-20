@@ -131,7 +131,7 @@ BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 N_EDITS, N_PAGES = 31, 13
 N_DRIFT, N_DECIDED = 18, 13
-GATE_WAS, GATE_NOW = 117, 141   # RD-1, 19 Oct 2026 - the quick-look
+GATE_WAS, GATE_NOW = 117, 142   # PP-1, 20 Oct 2026 - meal_plan_print.html. (GATE_NOW was 141)   # RD-1, 19 Oct 2026 - the quick-look
 # pair. (GATE_NOW was 139)   # RT-1, 18 Oct 2026 - the wide census is four meal-plan screens smaller and one planner larger. The narrow half does not move.   # (GATE_NOW was 142)
 
 # The three bar buttons that are not their page's verb, and the eleven
@@ -149,7 +149,7 @@ N_NAMED = 3
 # ships as .action-primary, so the rule would now reverse eleven
 # shipped decisions instead of ten. The refusal gets stronger, not
 # weaker, which is why this count is read and not frozen.
-N_NAV_RULE_HITS, N_NAV_RULE_PRIMARY = 13, 11   # (was 12, 10)
+N_NAV_RULE_HITS, N_NAV_RULE_PRIMARY = 12, 10   # PP-1, 20 Oct 2026 - the planner leaves the set. The rule needs a bar whose only non-Back item is a link, and the planner bar now holds Print as well as Shopping List.   # (was 13, 11)   # (was 12, 10)
 N_COND_LABEL, N_COND_LABEL_PRIMARY = 9, 7
 
 # Buttons the scan cannot see at all: no Bootstrap colour it LISTS, no

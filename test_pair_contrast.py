@@ -110,7 +110,14 @@ PATCHER = 'apply_edit_ink.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4b, 8 Oct 2026'
 
-EXPECT_PAIRS = 713   # RD-1 and PS-1, 19 Oct 2026 - the quick-look
+EXPECT_PAIRS = 719   # PP-1, 20 Oct 2026 - the printable plan sets
+# both a ground and an ink on six rules. All house pairs off base's
+# own tokens, so the AA table below is untouched and the gross count
+# is what moved. The one rule in this round that DID read below AA -
+# .pp-day.is-out, ink-faint on surface at 2.85:1 - was REPAIRED to
+# ink-soft at 5.25:1 rather than pinned. It is the dimmed background
+# that marks a day as outside the range; the date in it still has to
+# be legible, and this page is read on paper.   # (was 713)   # RD-1 and PS-1, 19 Oct 2026 - the quick-look
 # dialog and the picker strip set both a ground and an ink on seven
 # more rules between them. (was 706)   # MV-3, 19 Oct 2026 - the week grid adds four rules that set both a ground and an ink, all house pairs off base tokens, so the AA table below is untouched. The two weekday headings that read 2.85:1 were REPAIRED to ink-soft, not pinned.   # (was 702)   # MV-2, 19 Oct 2026 - the month grid adds .month-dow and .month-chip, both house pairs off base tokens, so the AA table below is untouched. A third rule took --alv-ink-faint at 2.85:1 and was REPAIRED to ink-soft rather than pinned.   # (was 700)   # PF-2, 19 Oct 2026 - five rules, the picker's five filter controls and the two tints that mark a narrowed one. All house pairs off base's own tokens, so the AA table below is untouched and the gross count is what moved. The one rule in this round that DID read below AA - the chevron at 3.0:1 - was fixed rather than pinned.   # (was 695)   # MO-1, 19 Oct 2026 - one rule, .icon-leftover:hover in base, which sets --alv-on-accent on --alv-edit. It is base .icon-duplicate:hover pairing exactly - the alias this round took rather than inventing a seventh colour - so the AA table below is untouched and the gross count is what moved.   # (was 694)   # RT-1, 18 Oct 2026 - four rules that set both a background and a colour went with the four pages MN-1 retired, and the planner that replaced them brought its own already on tokens. Measured, not deduced: every pair below AA this table names is untouched, and the gross count is what moved.   # (was 698)   # DT-1, 16 Oct 2026 - eight rules that set both a background and a colour went with the two .data-table stylesheets. Every pair below AA that this table names is untouched; the gross count is what moved.   # (was 706)   # CC-1, 15 Oct 2026 - .day-more and .day-more:hover, the chip that opens a busy day. Both are house pairs, so the AA check below is unchanged.   # (was 704)   # MH-2, 13 Oct 2026 - eight rules that set
 # both a background and a colour on a modal header went, because

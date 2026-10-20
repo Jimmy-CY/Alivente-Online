@@ -135,8 +135,14 @@ FILES = (HELP,) + PAGES
 # week, save one as a Menu, apply a Menu - and they are not 'Adding a
 # Meal', because they act on a WEEK. The six above are MH-2's own and
 # none of them left.
+#
+# MH-5, 20 Oct 2026 - AND SEVEN BECAME EIGHT. 'Printing' is PP-1's
+# printable plan, and it is not 'Shopping List', because that tab is
+# about a list of things to buy and this is about a calendar on paper.
+# It sits after Shopping List, which is the order the two buttons sit
+# in on the planner bar.
 TABS = ('Overview', 'The Calendar', 'Adding a Meal', 'Moving a Week',
-        'Shopping List', 'Who Can Do What', 'Tips')
+        'Shopping List', 'Printing', 'Who Can Do What', 'Tips')
 
 passed = failed = skipped = 0
 
@@ -494,8 +500,15 @@ if up and mod:
     # (3) IT SHOPS FOR A WEEK, NOT FOR A PLAN. This replaces the old
     # pairing against a plan's recipes, and it is the whole of what
     # MN-1 changed about this screen.
-    ok('week you were looking at' in guide,
-       'the guide says the list is the week you were looking at')
+    # MH-5, 20 Oct 2026 - A RANGE, NOT A WEEK. SL-7 made the
+    # Shopping List button follow the view, so the list is a month
+    # from Month and a day from Day; and the list page itself takes
+    # a from/to pair. 'the week you were looking at' was the true
+    # sentence on 18 October and became a false one this morning.
+    ok('range you were looking at' in guide,
+       'the guide says the list is the range you were looking at')
+    ok('buys for the month' in guide and 'for that day' in guide,
+       '  and spells out that the view decides it')
     ok("?from=" in plan_src and "to=" in plan_src,
        '  and the planner really hands it a date range')
     ok("request.GET.get('from')" in view_py
@@ -516,8 +529,16 @@ if up and mod:
 
     # (5) THE TRASHCAN REMOVES ONE MEAL. Replaces the old claim about
     # removing a recipe from a plan day.
-    ok('removes it from that day' in guide_cal,
-       'the guide says the trashcan removes the one meal')
+    # MH-5, 20 Oct 2026 - THERE IS NO TRASHCAN. CH-1 made a meal a
+    # chip with a menu on it, and Remove is one of four things on
+    # that menu. What this check was really asking - does the guide
+    # say removal takes the meal and not the day - is asked of the
+    # sentence that says it now.
+    ok('the one meal, not the day' in guide_cal,
+       'the guide says Remove takes the one meal, not the day')
+    for act in ('View', 'Move', 'Leftovers', 'Remove'):
+        ok('<strong>%s</strong>' % act in guide_cal,
+           '  and the chip menu offers %s' % act)
     ok('Remove from this day' in plan_src,
        '  and that is the wording on the control')
 
@@ -592,7 +613,13 @@ if up and mod:
     # This is the check that would have caught this round not happening.
     RETIRED_WORDS = ('Duplicate', 'Delete original', 'plan name',
                      'Create Meal Plan', 'Change the dates',
-                     'The Plan Page', 'end date')
+                     'The Plan Page', 'end date',
+                     # MH-5, 20 Oct 2026 - the controls CH-1 replaced
+                     # with a chip menu, and the two-panel screen MV-2
+                     # replaced with three views. The guide described
+                     # all four for a month and nothing asked.
+                     'The trashcan', 'The eye', 'Two panels',
+                     'Click a week row')
     whole = ' '.join(t['content_html'] for t in mod['tabs'])
     promised = [w for w in RETIRED_WORDS if w in whole]
     ok(not promised,
@@ -616,7 +643,16 @@ if up and mod:
     # for the control.
     PROMISED_WORDS = ('repeating a whole week', 'saved menus',
                       'a free-text note on a day',
-                      'marking a meal as leftovers')
+                      'marking a meal as leftovers',
+                      # MH-5, 20 Oct 2026 - release 4. Nine more the
+                      # planner now does, so none of them may appear
+                      # in a sentence calling something coming.
+                      'moving a meal from one day to another',
+                      'three views', 'a month view', 'a day view',
+                      'printing a plan', 'a printable plan',
+                      'adding from the library',
+                      'a note from the picker',
+                      'a quick look at a recipe')
     coming = [s for s in re.split(r'(?<=[.!])\s+', whole)
               if 'coming' in s.lower() or 'not yet' in s.lower()]
     stale = sorted(w for w in PROMISED_WORDS
@@ -627,6 +663,23 @@ if up and mod:
     # AND THE CONTROLS REALLY ARE THERE, asked of the planner. An
     # absence claim on its own would pass on a guide that simply never
     # mentions them.
+    # MH-5, 20 Oct 2026 - THE EIGHTH TAB SAYS SOMETHING. A name in
+    # TABS proves a tab exists and nothing else; this asks the tab's
+    # own prose for the four facts PP-1 settled, and asks the planner
+    # whether the button it describes is there to press.
+    pr = [t for t in mod['tabs'] if t['name'] == 'Printing']
+    ok(len(pr) == 1, 'the Printing tab is there exactly once', len(pr))
+    if pr:
+        body = pr[0]['content_html']
+        for word, what in (('seven columns', 'the shape of it'),
+                           ('greyed', 'what happens at the edges'),
+                           ('landscape', 'which way up it comes out'),
+                           ('thirteen weeks', 'the ceiling')):
+            ok(word in body,
+               '  and it says %s (%r)' % (what, word))
+    ok("meal_plan_print" in T.code_only(plan_src),
+       '  CONTROL: and the planner really has a Print button to press')
+
     for text, what in (("id=\"copyWeekModal\"", 'Copy this week to'),
                        ("id=\"saveMenuModal\"", 'Save this week as a Menu'),
                        ("id=\"applyMenuModal\"", 'Apply a Menu'),
@@ -642,9 +695,21 @@ if up and mod:
     # THE ONE THING STILL OUTSTANDING IS STILL PROMISED, honestly. A
     # round that cleared the promise box by emptying it would pass
     # every check above and tell the reader less.
-    ok(any('moving a meal from one day to another' in s.lower()
+    # MH-5, 20 Oct 2026 - AND THE OUTSTANDING THING HAS CHANGED.
+    # MH-3 named two: moving a meal, and reordering a day. Move is
+    # on the chip menu now, so one of the two is in PROMISED_WORDS
+    # above and the other is the honest remainder. The claim is the
+    # same claim - that the guide still says what it cannot do.
+    ok(any('reordering the meals on a day' in s.lower()
            for s in coming),
-       '  while what is NOT built is still named as coming', coming[:2])
+       '  while what is NOT built is still named as outstanding',
+       coming[:2])
+    # AND IT REALLY IS NOT BUILT. Without this, the line above would
+    # keep passing for as long as nobody edited the guide, however
+    # long after the feature shipped - which is the whole of what
+    # went wrong here between 19 and 20 October.
+    ok('def reorder' not in view_py,
+       '  CONTROL: and there is still no way to reorder a day')
 
 # ==========================================================================
 head('8. SCOPE, REGISTRATION AND THE GATE')

@@ -5141,6 +5141,87 @@ table.alv-matrix {
 }
 /* ===== /ALV LANDING TABS v1 ===== */
 
+/* ===== THE TOAST - AP-1, 20 Oct 2026 =============================
+   A thing that happened, said without taking the page away, and a
+   chance to put it back.
+
+   IN BASE, because base owns the shared furniture: .modal-overlay,
+   .alv-modal-head and RD-2's chip menu are all here, and base's own
+   note records what it cost the last time a screen kept a private
+   copy of one. Nothing about this is specific to recipes.
+
+   IT IS NOT django messages. Those arrive with a page render, and
+   the whole point of Demetri's answer - "stay put, with a toast and
+   an Undo" - is that no page is rendered.
+
+   NO COLOUR HERE THAT IS NOT A TOKEN. */
+.alv-toast-dock {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* THE DOCK IS NOT A TARGET, only the toasts in it - otherwise an
+       invisible strip across the foot of every page would eat clicks
+       meant for whatever is under it. */
+    pointer-events: none;
+}
+.alv-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: min(92vw, 520px);
+    padding: 12px 16px;
+    border-radius: var(--alv-radius-sm);
+    background: var(--alv-ink);
+    color: var(--alv-on-accent);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    font-size: 14px;
+    line-height: 1.35;
+}
+.alv-toast-text { flex: 1 1 auto; }
+.alv-toast-undo {
+    flex: 0 0 auto;
+    border: 0;
+    background: none;
+    color: var(--alv-on-accent);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    /* 44px, because it is a thumb target and it is the control that
+       takes something back. */
+    min-height: 44px;
+    padding: 0 6px;
+}
+.alv-toast-undo:focus-visible {
+    outline: 2px solid var(--alv-on-accent);
+    outline-offset: 2px;
+}
+/* AND screen, NOT a bare max-width - a clause naming no media type
+   matches print too, which test_print_queries has enforced since the
+   21 September print-leak round. */
+@media screen and (max-width: 767px) {
+    .alv-toast-dock {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        transform: none;
+    }
+    .alv-toast { max-width: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .alv-toast { animation: alv-toast-in 160ms ease-out; }
+}
+@keyframes alv-toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
 
 
 </style>
@@ -5711,6 +5792,76 @@ table.alv-matrix {
       }
   })();
   </script>
+
+<script>
+/* alv-toast -------------------------------------------------------
+   window.alvToast(text, {undo: fn, seconds: n})
+
+   AP-1, 20 Oct 2026. One dock, made on first use; one toast per
+   call; the Undo slot only appears when something can be undone.
+
+   PLAIN DOM, SO THERE IS NOTHING TO WAIT FOR. PS-1 learned on the
+   19th that a top-level call into jQuery throws when it has not
+   loaded and takes every statement after it down with it, and RL-1
+   learned the next day that guarding it turns "not loaded yet" into
+   "silently never". This touches neither.
+
+   THE UNDO FIRES ONCE. A second press of a button already gone from
+   the screen is still possible with a keyboard, and removing the
+   same row twice is a 404 the person did not cause. */
+(function () {
+    function dock() {
+        var d = document.getElementById('alvToastDock');
+        if (!d) {
+            d = document.createElement('div');
+            d.id = 'alvToastDock';
+            d.className = 'alv-toast-dock';
+            /* POLITE, NOT ASSERTIVE. A confirmation is not an alert. */
+            d.setAttribute('aria-live', 'polite');
+            document.body.appendChild(d);
+        }
+        return d;
+    }
+
+    window.alvToast = function (text, opts) {
+        opts = opts || {};
+        var box = document.createElement('div');
+        box.className = 'alv-toast';
+        var span = document.createElement('span');
+        span.className = 'alv-toast-text';
+        /* SET AS TEXT, NEVER AS MARKUP - a recipe name is somebody
+           else's text. The word this round must not write is the one
+           its own gate forbids, so the gate reads as one thing. */
+        span.textContent = text;
+        box.appendChild(span);
+
+        var timer = null;
+        function close() {
+            if (timer) { clearTimeout(timer); timer = null; }
+            if (box.parentNode) { box.parentNode.removeChild(box); }
+        }
+
+        if (typeof opts.undo === 'function') {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'alv-toast-undo';
+            b.textContent = 'Undo';
+            var spent = false;
+            b.addEventListener('click', function () {
+                if (spent) { return; }
+                spent = true;
+                close();
+                opts.undo();
+            });
+            box.appendChild(b);
+        }
+
+        dock().appendChild(box);
+        timer = setTimeout(close, (opts.seconds || 7) * 1000);
+        return close;
+    };
+})();
+</script>
 
 <script>
 /* alv-sticky-cue -------------------------------------------------------

@@ -535,6 +535,20 @@ def meal_planner(request):
     # names a week and not a day, so the Monday is right then.
     sel_date = anchor if week_start <= anchor <= week_end else week_start
 
+    # WHAT THE SHOPPING LIST SHOULD BUY FOR - SL-7, 20 Oct 2026.
+    # Month: the month itself, 1st to last, NOT the grid - the grid
+    # carries up to six days of the neighbouring months because it
+    # draws whole weeks.
+    # Week: the week on screen. Day: that one day.
+    if view_mode == 'month':
+        sl_from = date(anchor.year, anchor.month, 1)
+        sl_to = (date(anchor.year + (anchor.month == 12),
+                      anchor.month % 12 + 1, 1) - timedelta(days=1))
+    elif view_mode == 'day':
+        sl_from = sl_to = anchor
+    else:
+        sl_from, sl_to = week_start, week_end
+
     week_days = []
     for i in range(7):
         d = week_start + timedelta(days=i)
@@ -665,6 +679,24 @@ def meal_planner(request):
         # of its three links carries, so the date survives the switch.
         'view_mode': view_mode,
         'anchor': anchor,
+        # THE SHOPPING LIST COVERS WHAT YOU ARE LOOKING AT - SL-7,
+        # 20 Oct 2026. The button was hard-wired to the week on a
+        # screen that has had three views since MV-1, so in Month it
+        # bought for a week of the month and in Day for a week round
+        # the day.
+        #
+        # DECIDED HERE, NOT IN THE TEMPLATE. PB-2's lesson one screen
+        # over: eleven addresses built in eleven places, and eleven
+        # places forgot the same thing. A fourth view would have to be
+        # added to a template conditional; it only has to be added
+        # here.
+        #
+        # THE MONTH IS THE MONTH. The grid draws whole weeks, so its
+        # first and last rows hold up to six days of the neighbouring
+        # months. The bar says October and a list that quietly bought
+        # for 28 September would be a control that lies.
+        'sl_from': sl_from,
+        'sl_to': sl_to,
         # PF-2, 19 Oct 2026 - all_recipes IS GONE FROM THIS PAGE.
         #
         # It was every recipe in the library, with a prefetch, rendered
@@ -767,6 +799,83 @@ def meal_day_entries(request):
 
 
 @login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
+def meal_plan_print(request):
+    """The plan for a range of days, laid out for paper.
+
+    PP-1, 20 Oct 2026. Demetri: "I would like to be able to print a
+    month, week of day in a presentable format. Also, I should be able
+    to select To and From Dates and print a Meal Plan."
+
+    A SEPARATE PAGE, which is what he chose over a print stylesheet
+    on the planner. The screen layout is three views and a switcher;
+    paper is one shape, and squeezing one into the other is how both
+    end up compromised.
+
+    ?from= AND ?to=, THE SAME TWO THE SHOPPING LIST TAKES. Printing
+    the view you are on is then this page with the dates SL-7 already
+    computes, rather than a second idea about what a month means.
+
+    WHOLE WEEKS, EDGES DIMMED. A range from a Wednesday has a ragged
+    first week, and three empty cells at the front of a seven-column
+    grid read as missing data rather than as a boundary. So the grid
+    always runs Monday to Sunday and the days outside the range are
+    marked out-of-range for the template to grey.
+
+    ONE QUERY. The entries for the whole grid are fetched once and
+    bucketed by date; asking per day would be up to 98 queries for a
+    quarter.
+    """
+    today = timezone.now().date()
+    monday = today - timedelta(days=today.weekday())
+    start = week_of(request.GET.get('from'), monday)
+    end = week_of(request.GET.get('to'), start + timedelta(days=6))
+    if end < start:
+        start, end = end, start
+
+    # THE SHOPPING LIST'S OWN CEILING, deliberately the same number.
+    # Two limits on two pages that take the same two parameters is how
+    # one of them surprises somebody.
+    if (end - start).days > 92:
+        end = start + timedelta(days=92)
+        messages.info(request, 'A plan covers at most 13 weeks. '
+                               'Showing the first.')
+
+    grid_start = monday_of(start)
+    grid_end = monday_of(end) + timedelta(days=6)
+
+    by_day = defaultdict(list)
+    for e in (MealEntry.objects
+              .filter(date__gte=grid_start, date__lte=grid_end)
+              .select_related('recipe', 'leftover_of')
+              .order_by('date', 'sort_order')):
+        by_day[e.date].append(e)
+
+    weeks, cursor = [], grid_start
+    while cursor <= grid_end:
+        days = []
+        for i in range(7):
+            when = cursor + timedelta(days=i)
+            days.append({
+                'date': when,
+                'in_range': start <= when <= end,
+                'is_today': when == today,
+                'entries': by_day.get(when, []),
+            })
+        weeks.append({'start': cursor, 'days': days})
+        cursor += timedelta(days=7)
+
+    return render(request, 'meal_plan_print.html', {
+        'start': start,
+        'end': end,
+        'weeks': weeks,
+        'day_count': (end - start).days + 1,
+        'meal_count': sum(len(v) for k, v in by_day.items()
+                          if start <= k <= end),
+    })
+
+
+@login_required
 @require_POST
 @permission_required('auth.can_edit_recipes', raise_exception=True)
 def add_meal_entry(request):
@@ -801,15 +910,33 @@ def add_meal_entry(request):
 
     last = MealEntry.objects.filter(date=when).aggregate(
         Max('sort_order'))['sort_order__max']
-    MealEntry.objects.create(
+    # KEPT, WHICH IT WAS NOT - AP-1, 20 Oct 2026. The row was created
+    # and dropped on the floor, so the JSON branch could describe the
+    # DAY and never the thing it had just added. An Undo needs
+    # something to point at.
+    entry = MealEntry.objects.create(
         date=when, recipe=recipe, servings=servings,
         sort_order=(last or 0) + 1, created_by=request.user)
 
     # THE DIALOG WANTS THE DAY BACK, NOT A REDIRECT - PS-1,
     # 19 Oct 2026. The form post is unchanged and still redirects;
     # this branch exists for the picker, which stays open.
+    #
+    # AP-1 ADDS ONE KEY AND MOVES NOTHING. The picker reads the keys
+    # it knows and ignores the rest, so added_id reaches the library
+    # without the picker noticing it went past.
     if request.POST.get('json'):
-        return JsonResponse(day_payload(when))
+        payload = day_payload(when)
+        payload['added_id'] = entry.meal_entry_id
+        payload['added_name'] = recipe.recipe_name
+        # WITH THE WEEKDAY - AP-1, 20 Oct 2026. Demetri's words were
+        # "Fakes Soupa added to Sat 24 Oct", and the weekday is the
+        # half that tells you whether you meant it. day_label itself
+        # is untouched: it is the vocabulary of every other message on
+        # the planner and this is one toast, not a new dialect.
+        payload['added_label'] = '%s %s' % (when.strftime('%a'),
+                                            day_label(when))
+        return JsonResponse(payload)
 
     messages.success(request, 'Added "%s" to %s'
                      % (recipe.recipe_name, when.strftime('%A, %d %B')))

@@ -1233,6 +1233,17 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WRAPPER THAT NEVER CLOSED'; What = 'DB-1: 88 rules and 2,471 lines were nested inside a max-width 1200px block that was never closed, so the date bar rendered as default browser buttons on any screen wider than that' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: 1fr'; Absent = $true; Code = $true; What = 'DB-1: and the one rule it held is gone - .calendar-layout stopped being a grid when MV-2 deleted the mini calendar beside it' },
+    @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-slug="mp-print"'; What = 'MH-5: the meal plans guide has eight tabs and no longer describes the two-panel screen, the trashcan or the eye - none of which has existed since release 4 push 1' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def meal_plan_print('; What = 'PP-1: a meal plan can be printed - there was no print support on the planner at all, and the only mention of print on that screen was a comment about the print-leak rule' },
+    @{ File = 'pages/templates/meal_plan_print.html'; Text = 'pp-grid'; What = 'PP-1: and it is a week-grid per week, whole weeks with the days outside the range dimmed, because a ragged first week reads as missing data rather than as a boundary' },
+    @{ File = 'test_console_encoding.py'; Text = 'alv_conenc_'; What = 'CE-1: the console-encoding probe writes its throwaway script into a directory of its own - it used to write a .py into the repository, which test_code_only lists and reads, and one unlucky interleaving stopped a push at 290 of 395' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = "'sl_from': sl_from"; What = 'SL-7: the Shopping List button covers the view you are on - it was hard-wired to the week, so Month bought for a week of the month and Day bought for a week round the day' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerNote"'; What = 'NT-1: a note can be added from Month and Week - openNote was reachable only from the Day card, and a note belongs to a DAY so it joins the dialog that adds things to one' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'data-act="leftovers"'; What = 'LO-1: leftovers can be added from Month and Week - openLeftover was reachable only from the Day card, so Demetri asked how to do it from the calendar and the answer was that he could not' },
+    @{ File = 'pages/templates/recipe_management.html'; Text = 'A TOKEN FOR EVERYONE WHO CAN PRESS SOMETHING'; What = 'FV-1: the favourites heart is drawn for every user and posts with a CSRF cookie that was only set for users who may EDIT recipes - so for anybody else the heart filled in, the post came back 403, and it emptied again' },
+    @{ File = 'pages/templates/recipe_management.html'; Text = 'data-plan-id='; What = 'AP-1: a recipe goes on a day without leaving the library - beside the heart on all FOUR card renderings, because this page draws every card twice and the JavaScript copies redraw after a search' },
+    @{ File = 'pages/templates/base.html'; Text = 'window.alvToast'; What = 'AP-1: and base owns the toast, the way it owns the modal overlay - a confirmation that does not take the page away, with an Undo, because django messages need a render and the whole point is staying put' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = "payload['added_id']"; What = 'AP-1: the add endpoint hands back the row it just made - it created one and dropped it, so an Undo had nothing to point at' },
     @{ File = 'pages/templates/meal_planner.html'; Text = "document.addEventListener('DOMContentLoaded', bind)"; What = 'RL-1: the picker reload is bound after the document is parsed - base loads jQuery near the end, so PS-1 guard found none and silently bound nothing, and the month grid stayed stale until a hand refresh' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def planner_back(request, when=None, stay=True)'; What = 'PB-3: a write returns you to the DAY you were on, not to a date computed from the write - adding leftovers in Day view moved you to the Monday of the leftovers week, which read as the meal vanishing' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'name="from_date"'; What = 'PB-3: and the reader tells the server where they were, on the same nine forms PB-2 gave the view - one place instead of sixteen call sites each guessing' },
@@ -1242,6 +1253,10 @@ $sentinels = @(
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def day_payload('; What = 'PS-1: ONE description of what is on a day, asked by the dialog on open, on every add and on every remove, so the strip cannot drift from the calendar' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'function pickAdd('; What = 'PS-1: clicking a recipe ADDS it - twenty actions to put four things on a Saturday became seven, because the filters stop being forgotten between adds' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerDayList"'; What = 'PS-1: and the dialog shows the day it is adding to, each row removable - without it a mis-click would be a row you could not see' },
+    @{ File = 'pages/templates/recipe_management.html'; Text = 'data-quicklook='; What = 'RD-3: the photograph opens the recipe without leaving the library - browsing 324 recipes stopped meaning 324 page loads' },
+    @{ File = 'pages/templates/recipe_management.html'; Text = 'id="recipeViewIframe"'; Absent = $true; Code = $true; What = 'RD-3: and the second recipe dialog is gone - a whole page in a 75vh frame, with no caller and a Bootstrap 5 constructor on a 4.1.3 page' },
+    @{ File = 'pages/templates/recipe_management.html'; Text = 'openRecipeInModal'; Absent = $true; Code = $true; What = 'RD-3: and so is its opener, which nothing in the file ever called' },
+    @{ File = 'pages/templates/view_recipe.html'; Text = 'request.GET.modal'; Absent = $true; Code = $true; What = 'RD-3: and the 56-line mode that existed to hide the navbar inside that frame - fifteen more !important for a frame nobody could open' },
     @{ File = 'pages/templates/meal_planner.html'; Text = "}, true);"; What = 'RD-2: the chip listens in the CAPTURE phase - the month cell opens the picker on click, and a bubble-phase handler is told only after that has already happened' },
     @{ File = 'pages/views/recipes/recipe_crud.py'; Text = 'def recipe_quicklook('; What = 'RD-1: the recipe as a partial, so clicking a meal in the calendar does not cost you the calendar' },
     @{ File = 'pages/templates/recipe_quicklook_shell.html'; Text = 'data-quicklook'; What = 'RD-1: a trigger is a link that still works - the href stays pointing at view_recipe for JavaScript-off and middle-click' },
@@ -2814,7 +2829,41 @@ $suites = @(
     # PB-3, 20 Oct 2026 - a write leaves you on the day you were on.
     # Section 3 POSTS from a day and reads the Location header, which
     # is the only place this fault is visible.
-    'test_back_date.py'
+    'test_back_date.py',
+    # RD-3, 20 Oct 2026 - the photograph opens the recipe. Section 3
+    # RENDERS the library and presses a heart, so the claim that the
+    # overlays are siblings of the trigger is measured rather than
+    # reasoned.
+    'test_quick_look.py',
+    # AP-1, 20 Oct 2026 - a recipe goes on a day from the library.
+    # Section 3 DRIVES it: press the icon, press a day, read the
+    # toast, press Undo, and ask the database what is left.
+    'test_add_planner.py',
+    # FV-1, 20 Oct 2026 - a token for everyone who can press
+    # something. Section 2 asks which {% if %} every csrf_token on
+    # the page sits inside, which is the question that found it.
+    'test_fav_token.py',
+    # LO-1, 20 Oct 2026 - leftovers from Month and Week. Section 3
+    # opens the menu on a RECIPE chip and on a NOTE chip and asks
+    # which items each one offers.
+    'test_chip_left.py',
+    # NT-1, 20 Oct 2026 - a note from Month and Week. Section 3
+    # drives the hand-off, because two dialogs and a reload is
+    # exactly where this goes wrong.
+    'test_pick_note.py',
+    # SL-7, 20 Oct 2026 - the shopping list covers what you are
+    # looking at. Section 3 asks the three views for their link and
+    # reads the dates out of it.
+    'test_list_range.py',
+    # CE-1, 20 Oct 2026 - the console-encoding probe stops writing a
+    # .py into the repository that test_code_only is reading.
+    'test_ce_scratch.py',
+    # PP-1, 20 Oct 2026 - the plan, laid out for paper. Section 3
+    # asks the page for a ragged range and counts the columns.
+    'test_print_plan.py',
+    # MH-5, 20 Oct 2026 - the guide catches up with the calendar, and
+    # stops describing two panels, a trashcan and an eye.
+    'test_meal_guide5.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

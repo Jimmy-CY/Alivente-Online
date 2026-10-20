@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{# meal_plan_print.html - PP-1, 20 Oct 2026.                        #}
+{#                                                                  #}
+{# THE PLAN, LAID OUT FOR PAPER. Demetri asked to print a month, a  #}
+{# week or a day "in a presentable format", and for a from/to range. #}
+{# He chose a separate page over a print stylesheet on the planner,  #}
+{# and a week-grid per week over a day-by-day list.                  #}
+{#                                                                   #}
+{# WHOLE WEEKS, EDGES DIMMED. A range from a Wednesday would give a   #}
+{# ragged first week, and empty cells at the front of a seven-column  #}
+{# grid read as missing data rather than as a boundary.               #}
+{% block title %}Meal Plan{% endblock %}
+
+{% block content %}
+
+<style>
+/* PAPER FIRST, SCREEN SECOND - PP-1, 20 Oct 2026. Every colour is a
+   token; nothing here is a literal. */
+
+/* ITS OWN CONTAINER, NOT THE PLANNER'S - PP-1, 20 Oct 2026.
+   The first draft of this page wrapped itself in .calendar-container,
+   because that is what meal_planner.html wraps itself in. But that
+   class is DEFINED IN meal_planner.html, not in base - so on this
+   page it is a name with no rules behind it, and the grid ran flush
+   to both edges of the window with no padding at all. A class is not
+   a style; the style is wherever the style was written. Every other
+   standalone meal-plan page declares its own, and so does this one. */
+.pp-page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.pp-head { margin-bottom: 18px; }
+.pp-week {
+    margin-bottom: 18px;
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    overflow: hidden;
+}
+.pp-week-label {
+    padding: 6px 10px;
+    background: var(--alv-surface);
+    border-bottom: 1px solid var(--alv-line);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--alv-ink-soft);
+}
+/* minmax(0, 1fr), NOT 1fr - PP-1, 20 Oct 2026. A bare `1fr` track is
+   minmax(AUTO, 1fr), so it never shrinks below the widest unbreakable
+   thing in the cell: seven cells holding BUTTER CHICKEN CURRY pushed
+   the grid to 992px inside a 794px sheet of A4, and the Sunday column
+   printed off the edge of the paper. minmax(0, ...) lets the track go
+   as narrow as the column needs to be, and the wrap below decides
+   what happens to the words instead. */
+.pp-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.pp-day {
+    min-height: 110px;
+    padding: 6px 7px;
+    border-right: 1px solid var(--alv-line-soft);
+    vertical-align: top;
+}
+.pp-day:last-child { border-right: 0; }
+/* OUT OF RANGE IS STILL DRAWN, so the week keeps its seven columns
+   and the boundary is visible rather than implied. */
+/* DIMMED BY ITS GROUND, NOT BY ILLEGIBLE INK - PP-1, 20 Oct 2026.
+   This read `color: var(--alv-ink-faint)` and test_pair_contrast
+   named it: ink-faint on surface measures 2.85:1, below AA, and this
+   is a page that exists to be read on paper under a kitchen light.
+   What marks a day as outside the range is the tinted BACKGROUND;
+   the date in it still has to be readable, so the ink is ink-soft -
+   5.25:1 on the same ground. */
+.pp-day.is-out { background: var(--alv-surface); color: var(--alv-ink-soft); }
+.pp-day.is-today .pp-date { color: var(--alv-accent); font-weight: 700; }
+.pp-date {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--alv-ink-soft);
+    margin-bottom: 4px;
+}
+.pp-meal {
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--alv-ink);
+    padding: 2px 0;
+    border-bottom: 1px solid var(--alv-line-soft);
+    /* A 137px COLUMN AND A LONG NAME. The track can now shrink, so
+       something has to give in the cell rather than in the grid. */
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+.pp-meal:last-child { border-bottom: 0; }
+.pp-meal.is-note { color: var(--alv-warn-ink); font-style: italic; }
+.pp-meal.is-left { color: var(--alv-ink-soft); }
+.pp-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    /* ink-soft, not ink-faint. LEFTOVERS is the word that tells you
+       not to cook; 3.00:1 on paper is not where to put it. */
+    color: var(--alv-ink-soft);
+}
+.pp-none { font-size: 11px; color: var(--alv-ink-faint); }
+
+/* AND screen, NOT a bare max-width - a clause naming no media type
+   matches print too, which is the 21 September print-leak rule and
+   the one thing this page must not get wrong. */
+@media screen and (max-width: 767px) {
+    .pp-page { padding: 8px; }
+    .pp-grid { grid-template-columns: repeat(2, 1fr); }
+    .pp-day { min-height: 80px; border-bottom: 1px solid var(--alv-line-soft); }
+}
+
+/* LANDSCAPE, BECAUSE THE THING BEING PRINTED IS SEVEN COLUMNS WIDE.
+   A4 portrait is about 794 CSS px and A4 landscape about 1123, and a
+   week divided seven ways wants the wider sheet: 137px per day against
+   95px decides whether a recipe name is read or guessed at. */
+@page { size: landscape; margin: 10mm; }
+
+@media print {
+    /* THE CHROME GOES. SL-1 does the same on the shopping list, and
+       this page exists to be printed rather than to be browsed. */
+    nav, .navbar, header, footer,
+    .page-action-buttons, .pp-noprint { display: none !important; }
+    .pp-week { page-break-inside: avoid; break-inside: avoid; }
+    .pp-day { min-height: 92px; }
+
+    /* AND SO DOES THE BOOTSTRAP CONTAINER - PP-1, 20 Oct 2026.
+       base wraps every page in a .container, and Bootstrap sets that
+       class's max-width inside `@media (min-width: ...)` queries,
+       which name no media type and therefore apply to PAPER as well
+       as to screens. Measured on a 794px sheet: max-width 720px, with
+       the grid overflowing to 992px and the document scrolling 198px
+       wider than the page - the Sunday column printed off the edge.
+       A page that exists to be printed cannot leave its own width to
+       a grid system's idea of a small desktop. */
+    .main-content > .container,
+    .main-content { max-width: none !important; width: auto !important;
+                    margin: 0 !important; padding: 0 !important; }
+    .pp-page { max-width: none; padding: 0; }
+    body { padding-top: 0; }
+}
+</style>
+
+<div class="pp-page">
+
+    <h2 class="page-title-h2">MEAL PLAN</h2>
+    <h4 class="page-subtitle-h4">{{ start|date:"j M" }} &ndash; {{ end|date:"j M Y" }} &mdash; {{ day_count }} day{{ day_count|pluralize }} &mdash; {{ meal_count }} meal{{ meal_count|pluralize }}</h4>
+
+    {# ONE BAR, and Back is LAST and carries no colour - test_bar_top. #}
+    <div class="page-action-buttons pp-noprint">
+        <button type="button" class="btn action-primary" onclick="window.print()">
+            <i class="fas fa-print"></i> Print
+        </button>
+        {# .action-back, NOT .action-secondary - PP-1, 20 Oct 2026.   #}
+        {# The first draft wore action-secondary and five suites said  #}
+        {# so at once: test_vocabulary's classifier put this button in #}
+        {# the action-back bucket by its WORD, and the button gate on  #}
+        {# four other suites reported one drifting control across the  #}
+        {# whole tree - this one. The standard is explicit: "Back is   #}
+        {# quiet, sits right, and keeps a 44px target on a phone", and #}
+        {# base gives .action-back the square phone treatment and the  #}
+        {# hideable label. A page that invents its own Back is a page  #}
+        {# that will drift away from the other hundred and forty.      #}
+        <a href="{% url 'meal_planner' %}" class="btn action-back"
+           aria-label="Back to the planner">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    </div>
+
+    {% for week in weeks %}
+    <div class="pp-week">
+        <div class="pp-week-label">Week of {{ week.start|date:"j M Y" }}</div>
+        <div class="pp-grid">
+            {% for day in week.days %}
+            <div class="pp-day{% if not day.in_range %} is-out{% endif %}{% if day.is_today %} is-today{% endif %}">
+                <div class="pp-date">{{ day.date|date:"D j" }}</div>
+                {% for e in day.entries %}
+                <div class="pp-meal{% if not e.recipe_id %} is-note{% elif e.leftover_of_id %} is-left{% endif %}">
+                    {% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}
+                    {% if e.leftover_of_id %}<div class="pp-tag">Leftovers</div>{% endif %}
+                </div>
+                {% empty %}
+                <div class="pp-none">&mdash;</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1362,6 +1362,25 @@ ROUNDS = [
     '.bak_pickreload',
     # PB-3, 20 Oct 2026 - a write leaves you on the day you were on.
     '.bak_backdate',
+    # RD-3, 20 Oct 2026 - the photograph opens the recipe; the dead
+    # iframe dialog and its 39 !important declarations go with it.
+    '.bak_quicklook',
+    # AP-1, 20 Oct 2026 - a recipe goes on a day from the library.
+    '.bak_addplanner',
+    # FV-1, 20 Oct 2026 - a token for everyone who can press one.
+    '.bak_favtoken',
+    # LO-1, 20 Oct 2026 - leftovers from Month and Week.
+    '.bak_chipleft',
+    # NT-1, 20 Oct 2026 - a note from Month and Week.
+    '.bak_picknote',
+    # SL-7, 20 Oct 2026 - the list covers what you are looking at.
+    '.bak_listrange',
+    # CE-1, 20 Oct 2026 - the probe writes outside the tree.
+    '.bak_cescratch',
+    # PP-1, 20 Oct 2026 - a meal plan you can put on the fridge.
+    '.bak_printplan',
+    # MH-5, 20 Oct 2026 - the guide catches up with the calendar.
+    '.bak_mealguide5',
 ]
 
 

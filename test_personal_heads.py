@@ -444,17 +444,48 @@ else:
         # ==============================================================
         head('3. THE LEAVE IS STILL INVISIBLE')
         # ==============================================================
-        rm = look(br, B_NOW, styles_of(now(_tpl(LEAVE_FILE))),
-                  body_markup(now(_tpl(LEAVE_FILE))))
-        strip = [h for h in rm if h['pad'] == '8px']
-        ok(bool(strip),
-           'the Recipe View close strip still has its 8px top padding - '
-           'base\'s 16px 20px !important has not reached it',
-           [h['pad'] for h in rm])
-        if strip:
-            ok(not strip[0]['bg'].startswith('linear-gradient'),
-               '  and no teal banner was painted where the design has none',
-               strip[0]['bg'][:50])
+        # RD-3, 20 Oct 2026 - THE LEAVE'S SUBJECT IS GONE.
+        #
+        # This rendered the page and proved the close strip still had
+        # its 8px padding and no teal banner. It cannot: RD-3 deleted
+        # the dialog, because it had no caller in its own file and
+        # called the Bootstrap 5 modal constructor on a page that
+        # loads 4.1.3.
+        #
+        # AN ABSENCE MUST ESTABLISH ITS SUBJECT FIRST. Push 2 found
+        # eight claims that were trivially true of a file where the
+        # thing did not exist, so this asks the BACKUP as well: the
+        # strip was there before this round and is not there now. A
+        # bare "it is gone" would pass against any tree that never had
+        # it.
+        # NOT now(). THE FILE.
+        #
+        # RD-3 wrote `now(...)` here and the sweep went red. now() is
+        # as_left_by(p, SUFFIX) - the page as THIS suite's own round
+        # left it, which is the right reader for every other claim in
+        # this file and the wrong one for this claim. The walk stops
+        # at the earliest LATER round that backed the page up, and
+        # that round is RD-3 itself: now() handed back
+        # recipe_management.html.bak_quicklook, which is the page
+        # BEFORE the dialog was deleted, and the absence claim was
+        # asked of the one snapshot guaranteed to still contain it.
+        #
+        # A CLAIM ABOUT A LATER ROUND CANNOT BE ASKED OF AN EARLIER
+        # ROUND'S VIEW OF THE TREE. The live file is what "is gone"
+        # means.
+        live = read(alv_tree.last_path(LEAVE_FILE))
+        bak = alv_tree.bak_path(_tpl(LEAVE_FILE), '.bak_quicklook')
+        ok(LEAVE_MARK not in live,
+           'the Recipe View close strip is gone - RD-3 retired the '
+           'dialog it closed')
+        if os.path.isfile(bak):
+            ok(LEAVE_MARK in read(bak),
+               '  and RD-3\'s own backup still holds it, so the absence '
+               'is a change and not a file that never had one')
+        else:
+            skipped += 1
+            print('  skip RD-3 has not run here, so there is no before '
+                  'to compare')
         br.close()
 
 # ==========================================================================
