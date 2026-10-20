@@ -131,7 +131,8 @@ BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 N_EDITS, N_PAGES = 31, 13
 N_DRIFT, N_DECIDED = 18, 13
-GATE_WAS, GATE_NOW = 117, 139   # RT-1, 18 Oct 2026 - the wide census is four meal-plan screens smaller and one planner larger. The narrow half does not move.   # (GATE_NOW was 142)
+GATE_WAS, GATE_NOW = 117, 141   # RD-1, 19 Oct 2026 - the quick-look
+# pair. (GATE_NOW was 139)   # RT-1, 18 Oct 2026 - the wide census is four meal-plan screens smaller and one planner larger. The narrow half does not move.   # (GATE_NOW was 142)
 
 # The three bar buttons that are not their page's verb, and the eleven
 # bars the rule I proposed would have touched.
@@ -510,11 +511,16 @@ for r in pages():
             h = re.search(r'href\s*=\s*"([^"]*)"', t)
             if h and h.group(1).strip() not in ('', '#'):
                 foot_links.append((r, lab))
-ok(len(foot_links) == 2,
-   'exactly 2 modal-footer primaries in the application are a link to '
+# 2 -> 3 - RD-1, 19 Oct 2026. The quick-look dialog is modelled on
+# wcim_recipe_quick_view and carries the same Open full recipe in its
+# footer for the same reason, so it joins this list rather than being
+# an exception to it.
+ok(len(foot_links) == 3,
+   'exactly 3 modal-footer primaries in the application are a link to '
    'another page', foot_links)
 ok(sorted(r for r, _l in foot_links)
-   == ['properties_edit.html', 'wcim_recipe_quick_view.html'],
+   == ['properties_edit.html', 'recipe_quicklook.html',
+       'wcim_recipe_quick_view.html'],
    '  and they are properties_edit (shipped as action-primary since '
    'the footer round) and this round\'s Open full recipe', foot_links)
 ok('class="btn action-primary"' in read(

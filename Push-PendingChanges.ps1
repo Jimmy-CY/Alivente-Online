@@ -1224,6 +1224,20 @@ $sentinels = @(
     # ------------------------------------------------- MV-4, 19 Oct 2026
     @{ File = 'pages/templates/meal_planner.html'; Text = 'ONE DAY, NOT SEVEN'; What = 'MV-4: the vertical list of seven day cards is gone - about 4,900px of it - which is what Demetri meant by the daily list not being required' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE DAY HAS ITS OWN NAV'; What = 'MV-4: and the Day view moves by days, because week arrows above one Tuesday move you seven' },
+    @{ File = 'pages/views/recipes/_recipe_read.py'; Text = 'def ingredient_rows('; What = 'RD-1: ONE read of a whole recipe, asked by the page, the PDF and the dialog - they held two copies of it and the two disagreed' },
+    @{ File = 'pages/views/recipes/_recipe_read.py'; Text = 'GRAMS_PER'; What = 'RW-1: the weight is worked out in grams - round(x, 1) is 100g of precision in kilograms, and a cup of flour at 0.120kg was reading 100g' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def planner_back('; What = 'PB-2: a write on the planner leaves you where you were - eleven redirects carried the date and dropped the view, so every add and remove bounced you to Month' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def move_meal_entry('; What = 'RD-2: move a meal to another day, and its leftovers travel with it keeping the gap - MM-1 logic, finally with buttons to reach it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'data-chip='; What = 'RD-2: a meal in Month or Week is a button with a menu - View, Move to and Remove - because a 152px column has room for a name and nothing else' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'week-nav-btn is-today'; What = 'MB-2: Today is an action, not a third direction - it sat between the two arrows wearing the same 44px box' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'class="dc-tags"'; What = 'DC-1: the Day card is one line and the width carries the recipe facts - it was four lines using 37% of the row' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def day_payload('; What = 'PS-1: ONE description of what is on a day, asked by the dialog on open, on every add and on every remove, so the strip cannot drift from the calendar' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'function pickAdd('; What = 'PS-1: clicking a recipe ADDS it - twenty actions to put four things on a Saturday became seven, because the filters stop being forgotten between adds' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerDayList"'; What = 'PS-1: and the dialog shows the day it is adding to, each row removable - without it a mis-click would be a row you could not see' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = "}, true);"; What = 'RD-2: the chip listens in the CAPTURE phase - the month cell opens the picker on click, and a bubble-phase handler is told only after that has already happened' },
+    @{ File = 'pages/views/recipes/recipe_crud.py'; Text = 'def recipe_quicklook('; What = 'RD-1: the recipe as a partial, so clicking a meal in the calendar does not cost you the calendar' },
+    @{ File = 'pages/templates/recipe_quicklook_shell.html'; Text = 'data-quicklook'; What = 'RD-1: a trigger is a link that still works - the href stays pointing at view_recipe for JavaScript-off and middle-click' },
     @{ File = 'pages/help_content/administration.html'; Text = 'coming:</strong> repeating a whole week'; Absent = $true; Code = $true; What = 'MH-3: and no longer promises four things MW-1 and MO-1 have built' },
     @{ File = 'check_gates.py'; Text = 'already owns %s in'; Absent = $true; Code = $true; What = 'NF-1: and the old message is gone - it could only print when the register had an entry, which is the case this round exists for' },
     # -------------------------------------------- HL-1, 12 Oct 2026
@@ -2739,7 +2753,44 @@ $suites = @(
     # MV-4, 19 Oct 2026 - one day in full. It counts the cards a
     # page draws in each of the three views, because "not
     # required" was a claim about how many there were.
-    'test_day_view.py'
+    'test_day_view.py',
+    # RD-1, 19 Oct 2026 - the recipe modal, and the one read behind
+    # it. Section 3 asks a real database whether the extracted read
+    # gives the same answer as get_preferred_weight_conversion, which
+    # is the authority the rest of the package already asks, on every
+    # ingredient of every recipe it builds.
+    'test_recipe_modal.py',
+    # RW-1, 19 Oct 2026 - the weight in grams. Section 3 asks a real
+    # database for the five quantities that were wrong, and section 1
+    # asks the function directly for the one that was invisible.
+    'test_recipe_weight.py',
+    # PB-2, 19 Oct 2026 - the view survives a write. Section 3 drives
+    # every one of the eleven endpoints from each of the three views
+    # and asks where it landed, which is the question nobody asked in
+    # push 1.
+    'test_planner_back.py',
+    # RD-2, 19 Oct 2026 - the chip menu. Section 3 clicks a chip and
+    # asks whether the picker ALSO opened, which is the question the
+    # capture phase exists to answer.
+    'test_chip_menu.py',
+    # MB-2, 19 Oct 2026 - the date bar. Section 3 RENDERS the three
+    # views and measures the bar against the switcher above it,
+    # because "I do not like how it displays" came down to 44px
+    # against 32px.
+    'test_month_bar.py',
+    # WC-1, 19 Oct 2026 - a day is a day in every view. Section 3
+    # clicks a day in BOTH views and asks whether the picker opened,
+    # which is the comparison no suite was making.
+    'test_week_click.py',
+    # DC-1, 19 Oct 2026 - the Day card on one line. Section 3 RENDERS
+    # it and measures the ink with a Range, because a block's
+    # rectangle is the row's width whatever is in it and two earlier
+    # instruments said 99% because of that.
+    'test_day_card.py',
+    # PS-1, 19 Oct 2026 - the picker adds on click and stays open.
+    # Section 3 drives it in a browser: four adds, one open, and the
+    # filters still set at the end.
+    'test_picker_stays.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

@@ -331,6 +331,10 @@ urlpatterns = [
     path('recipes/duplicate/<int:recipe_id>/', views.duplicate_recipe, name='duplicate_recipe'),
     path('view_recipe/<int:recipe_id>/', views.view_recipe, name='view_recipe'),
     path('recipe/<int:recipe_id>/pdf/', views.recipe_pdf, name='recipe_pdf'),
+    # RD-1, 19 Oct 2026 - the quick-look partial. Beside view_recipe
+    # and the PDF, because it is the same recipe in a third shape.
+    path('recipe/<int:recipe_id>/quick-look/', views.recipe_quicklook,
+         name='recipe_quicklook'),
     path('create_recipe/', views.create_recipe, name='create_recipe'),
     path('recipe/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
     path('spell-check-instructions/', views.spell_check_instructions, name='spell_check_instructions'),
@@ -367,6 +371,12 @@ urlpatterns = [
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
     path('meal_plans/add/', views.add_meal_entry, name='add_meal_entry'),
     path('meal_plans/remove/', views.remove_meal_entry, name='remove_meal_entry'),
+    # RD-2, 19 Oct 2026 - move a meal to another day. Beside remove,
+    # because the chip menu offers them together.
+    path('meal_plans/move/', views.move_meal_entry, name='move_meal_entry'),
+    # PS-1, 19 Oct 2026 - what is on one day, for the picker's strip.
+    path('meal_plans/day_entries/', views.meal_day_entries,
+         name='meal_day_entries'),
     path('meal_plans/servings/', views.set_meal_servings, name='set_meal_servings'),
     # PF-2, 19 Oct 2026 - the picker's rows. GET, because it selects
     # and never writes, and because a filter you can link to is worth

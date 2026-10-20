@@ -670,8 +670,10 @@ ok('--strict --recipes' in ps1,
 # RT-1, 18 Oct 2026 - 139, not 142. The gate still runs --strict over the
 # WHOLE census; the census is four meal-plan screens smaller and one
 # planner larger. The narrow half, 117, does not move.
-ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 139,
-   '  which is %d of %d' % (117, 139),
+# 139 -> 141 - RD-1, 19 Oct 2026, the quick-look pair. The narrow
+# half does not move: neither is a recipe-side page.
+ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 141,
+   '  which is %d of %d' % (117, 141),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

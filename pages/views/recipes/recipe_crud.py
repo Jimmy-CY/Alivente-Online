@@ -17,6 +17,9 @@ Functions
 - duplicate_recipe       : Deep-copy a recipe + related rows (POST).
                            Edit-tier.
 - view_recipe            : Recipe detail page. Read-tier.
+- recipe_quicklook       : The same recipe as an HTML partial, for the
+                           quick-look dialog. Read-tier.
+- recipe_pdf             : A shareable PDF of one recipe. Read-tier.
 - create_recipe          : Create a recipe (GET form / POST save).
                            Edit-tier.
 - edit_recipe            : Edit a recipe (GET form / POST save). Edit-tier.
@@ -34,7 +37,13 @@ Cross-module imports (homes verified via grep + manage.py check)
                 the pre-split main.py (depth-independent, like pages.signals).
   ._helpers   : convert_to_decimal, format_quantity,
                 get_or_create_ingredient, get_or_create_preparation,
-                get_or_create_unit, get_preferred_weight_conversion
+                get_or_create_unit
+                RD-1 took get_preferred_weight_conversion off this list:
+                _recipe_read asks WEIGHT_UNIT_PRIORITY itself, in bulk,
+                and is now the only thing in the package that resolves
+                a weight.
+  ._recipe_read : ingredient_rows, instruction_rows, weight_conversions,
+                weight_equivalent. ONE read of a whole recipe.
   .nutrition  : recipe_has_any_mapped_ingredient
 
 Deliberate exception to import-hoisting
@@ -80,6 +89,16 @@ from pages.views.recipes._recipe_filter import (
     filter_recipes,
     selected_from,
 )
+# RD-1, 19 Oct 2026 - the shared read. One description of what a whole
+# recipe is, asked by the page, by the PDF, by the book detail and by
+# the quick-look dialog. Those four held THREE copies of it between
+# them - see _recipe_read's docstring for which one was right.
+from pages.views.recipes._recipe_read import (
+    ingredient_rows,
+    instruction_rows,
+    weight_conversions,
+    weight_equivalent,
+)
 from pages.models import (
     CookingCalculation,
     CustomProtein,
@@ -109,7 +128,6 @@ from ._helpers import (
     get_or_create_ingredient,
     get_or_create_preparation,
     get_or_create_unit,
-    get_preferred_weight_conversion,
 )
 from .nutrition import recipe_has_any_mapped_ingredient
 
@@ -118,37 +136,26 @@ from .nutrition import recipe_has_any_mapped_ingredient
 @permission_required('auth.can_access_recipes', raise_exception=True)
 def recipe_book_detail(request, recipe_id):
     recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
-    ingredients = recipe.recipe_ingredients.select_related(
+    # A LIST, NOT A QUERYSET - RD-1, 19 Oct 2026. It is walked twice
+    # below: once to collect the units a weight is wanted for, and once
+    # to build the rows. A queryset walked twice is queried twice.
+    ingredients = list(recipe.recipe_ingredients.select_related(
         'ingredient', 'unit', 'preparation'
-    ).order_by('ingredient_group', 'ingredient_order')
+    ).order_by('ingredient_group', 'ingredient_order'))
     instructions = recipe.instructions.all().order_by('step_number')
 
-    def get_weight_equivalent(ing):
-        """Return weight equivalent string or None"""
-        if not ing.unit:
-            return None
-        if ing.unit.unit_type == 'weight':
-            return None
-        try:
-            amount = float(ing.amount) if ing.amount else 0
-            if amount <= 0:
-                return None
-            conversion = get_preferred_weight_conversion(ing.unit, ing.ingredient)
-            if not conversion:
-                return None
-            weight_amount = round(amount * float(conversion.multiplier), 1)
-            if weight_amount == int(weight_amount):
-                weight_amount = int(weight_amount)
-            if weight_amount <= 0:
-                return None
-            weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
-            # If result is kg but less than 1, convert to grams
-            if weight_unit == 'kg' and weight_amount < 1:
-                weight_amount = round(weight_amount * 1000)
-                weight_unit = 'g'
-            return f"{weight_amount}{weight_unit}"
-        except Exception:
-            return None
+    # THE THIRD COPY OF THE WEIGHT WAS HERE - RD-1, 19 Oct 2026, and it
+    # was the only one that was already RIGHT: it asked
+    # get_preferred_weight_conversion, the authority the rest of this
+    # package asks, while view_recipe and recipe_pdf each built a bulk
+    # map that did not. It was simply one query per ingredient, which is
+    # why neither of them copied it.
+    #
+    # _recipe_read keeps this answer at that bulk map's cost, so this
+    # call site loses nothing.
+    _convs = weight_conversions(
+        {i.unit_id for i in ingredients
+         if i.unit and i.unit.unit_type != 'weight' and i.amount})
 
     data = {
         'recipe_name': recipe.recipe_name,
@@ -170,7 +177,7 @@ def recipe_book_detail(request, recipe_id):
                 'ingredient': ing.ingredient.name,
                 'preparation': ing.preparation.name if ing.preparation else '',
                 'group': ing.ingredient_group or '',
-                'weight_equivalent': get_weight_equivalent(ing)
+                'weight_equivalent': weight_equivalent(ing, _convs)
             }
             for ing in ingredients
         ],
@@ -647,65 +654,13 @@ def view_recipe(request, recipe_id):
         recipe_id=recipe_id
     )
 
-    # Get ingredients with all related data in a single query
-    ingredients = RecipeIngredient.objects.filter(recipe=recipe).select_related(
-        'ingredient',
-        'ingredient__category',
-        'unit',
-        'preparation',
-    ).order_by('ingredient_group', 'ingredient_order')
-
-    # Pre-fetch all unit conversions needed for weight equivalents in bulk
-    # to avoid one DB hit per ingredient inside the loop
-    units_needed = set()
-    for ing in ingredients:
-        if ing.unit and ing.unit.unit_type != 'weight' and ing.amount:
-            units_needed.add(ing.unit_id)
-
-    # Bulk fetch all relevant conversions once
-    conversions_qs = UnitConversion.objects.filter(
-        from_unit_id__in=units_needed
-    ).select_related('from_unit', 'to_unit', 'specific_ingredient').order_by('specific_ingredient', 'from_unit')
-
-    # Build a lookup dict: (from_unit_id, specific_ingredient_id) -> conversion
-    #                   and (from_unit_id, None) -> conversion as fallback
-    conversion_map = {}
-    for conv in conversions_qs:
-        key_specific = (conv.from_unit_id, conv.specific_ingredient_id)
-        key_generic  = (conv.from_unit_id, None)
-        if key_specific not in conversion_map:
-            conversion_map[key_specific] = conv
-        if conv.specific_ingredient_id is None and key_generic not in conversion_map:
-            conversion_map[key_generic] = conv
-
-    # Format amounts and compute weight equivalents from the in-memory map
-    for ing in ingredients:
-        ing.formatted_amount = format_quantity(ing.amount)
-        ing.weight_equivalent = None
-        if ing.unit and ing.unit.unit_type != 'weight':
-            try:
-                amount = float(ing.amount) if ing.amount else 0
-                if amount > 0:
-                    # Look up specific ingredient first, then generic fallback
-                    conversion = (
-                        conversion_map.get((ing.unit_id, ing.ingredient_id)) or
-                        conversion_map.get((ing.unit_id, None))
-                    )
-                    if conversion:
-                        weight_amount = round(amount * float(conversion.multiplier), 1)
-                        if weight_amount == int(weight_amount):
-                            weight_amount = int(weight_amount)
-                        if weight_amount > 0:
-                            weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
-                            if weight_unit == 'kg' and weight_amount < 1:
-                                weight_amount = round(weight_amount * 1000)
-                                weight_unit = 'g'
-                            ing.weight_equivalent = f"{weight_amount}{weight_unit}"
-            except Exception:
-                pass
-
-    # Get instructions
-    instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by('step_number')
+    # ONE READ, SHARED - RD-1, 19 Oct 2026. Seventy lines stood here
+    # and fifty-one more of the same stood in recipe_pdf, and the
+    # quick-look dialog would have been the third copy. _recipe_read
+    # holds it now, and it resolves a weight the way the rest of this
+    # package does rather than the way the database happened to.
+    ingredients = ingredient_rows(recipe)
+    instructions = instruction_rows(recipe)
 
     # Get cooking calculation if exists
     try:
@@ -753,51 +708,12 @@ def recipe_pdf(request, recipe_id):
         recipe_id=recipe_id,
     )
 
-    # Ingredients with formatted amounts + weight equivalents (mirrors view_recipe)
-    ingredients = RecipeIngredient.objects.filter(recipe=recipe).select_related(
-        'ingredient', 'ingredient__category', 'unit', 'preparation',
-    ).order_by('ingredient_group', 'ingredient_order')
-
-    units_needed = set()
-    for ing in ingredients:
-        if ing.unit and ing.unit.unit_type != 'weight' and ing.amount:
-            units_needed.add(ing.unit_id)
-
-    conversion_map = {}
-    if units_needed:
-        conversions_qs = UnitConversion.objects.filter(
-            from_unit_id__in=units_needed
-        ).select_related('from_unit', 'to_unit', 'specific_ingredient')
-        for conv in conversions_qs:
-            conversion_map.setdefault((conv.from_unit_id, conv.specific_ingredient_id), conv)
-            if conv.specific_ingredient_id is None:
-                conversion_map.setdefault((conv.from_unit_id, None), conv)
-
-    for ing in ingredients:
-        ing.formatted_amount = format_quantity(ing.amount)
-        ing.weight_equivalent = None
-        if ing.unit and ing.unit.unit_type != 'weight':
-            try:
-                amount = float(ing.amount) if ing.amount else 0
-                if amount > 0:
-                    conversion = (
-                        conversion_map.get((ing.unit_id, ing.ingredient_id)) or
-                        conversion_map.get((ing.unit_id, None))
-                    )
-                    if conversion:
-                        weight_amount = round(amount * float(conversion.multiplier), 1)
-                        if weight_amount == int(weight_amount):
-                            weight_amount = int(weight_amount)
-                        if weight_amount > 0:
-                            weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
-                            if weight_unit == 'kg' and weight_amount < 1:
-                                weight_amount = round(weight_amount * 1000)
-                                weight_unit = 'g'
-                            ing.weight_equivalent = f"{weight_amount}{weight_unit}"
-            except Exception:
-                pass
-
-    instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by('step_number')
+    # THE SAME READ THE PAGE USES - RD-1, 19 Oct 2026. This had its
+    # own copy, and the comment above it claimed to mirror view_recipe
+    # while differing from it in three places. A mirror nobody checks
+    # is a second implementation.
+    ingredients = ingredient_rows(recipe)
+    instructions = instruction_rows(recipe)
 
     html = get_template('recipe_pdf.html').render({
         'recipe': recipe,
@@ -830,6 +746,40 @@ def recipe_pdf(request, recipe_id):
     if pisa_status.err:
         return HttpResponse('Recipe PDF generation failed.', status=500)
     return response
+
+
+# ============================================
+# VIEW: Recipe quick-look - the partial behind the dialog
+# ============================================
+
+@login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
+def recipe_quicklook(request, recipe_id):
+    """One recipe as an HTML partial, for the quick-look dialog.
+
+    RD-1, 19 Oct 2026. Demetri, on clicking a meal in the calendar:
+    he wanted "a detailed view of the recipe in a modal" rather than
+    losing the calendar to a page load.
+
+    SAME SHAPE AS wcim_recipe_quick_view, which has returned a recipe
+    partial into a dialog since What Can I Make? shipped - a GET, a
+    partial, no layout. WCIM keeps its own template because its
+    ingredient list says have / substitute / missing, which is a
+    different thing said about the same rows.
+
+    READ-TIER, matching view_recipe and recipe_pdf. A dialog that
+    showed a recipe to somebody who may not open its page would be a
+    way round the permission rather than a convenience.
+    """
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related('courses', 'categories', 'proteins'),
+        recipe_id=recipe_id,
+    )
+    return render(request, 'recipe_quicklook.html', {
+        'recipe': recipe,
+        'ingredients': ingredient_rows(recipe),
+        'instructions': instruction_rows(recipe),
+    })
 
 
 # ============================================

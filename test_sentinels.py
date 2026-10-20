@@ -411,6 +411,14 @@ PINNED = {
     'PLANTERS':
         'the fifteen suites that must not share a tree, backed up once '
         'by AR-1',
+    # THE EIGHTH, 19 Oct 2026, and the same story a third time. RD-1
+    # pinned `def ingredient_rows(` on _recipe_read.py, which RD-1
+    # CREATES - so there is no earlier version to revert to and the
+    # row has one version to try. It becomes checkable the moment any
+    # later round backs that file up.
+    'ingredient_rows':
+        'the shared recipe read, on a file RD-1 created - no earlier '
+        'version exists to discriminate against',
 }
 unpinned = [b for b in blind
             if not any(k.lower() in b.lower() for k in PINNED)]

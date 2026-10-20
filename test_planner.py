@@ -436,9 +436,35 @@ ok('console.log(' not in PC,
    'no debug tracing left on the page - E32')
 ok('class="row-actions"' in PC,
    'the row controls are in a .row-actions wrapper')
-_ra = PC[PC.index('class="row-actions"'):][:900]
-ok(_ra.index('icon-view') < _ra.index('icon-delete'),
-   '  in house order: LOOK before DESTROY')
+# EVERY BLOCK, AND ONLY THE CONTROLS IT HAS - repaired by RD-2,
+# 19 Oct 2026, twice.
+#
+# It read a 900-CHARACTER WINDOW from the first `class="row-actions"`.
+# RD-1's comment above the eye and this round's Move button pushed
+# icon-delete past it and .index() RAISED rather than failing - a
+# crash blocks a push as hard as a failure and says less about why.
+#
+# The first repair then asked for icon-move in that same first block,
+# which is the LEFTOVER row - and a leftover has no Move, because its
+# date is tied to the meal it came from. Asking every block for the
+# order of the controls IT HAS is the claim that was always meant.
+# LOOK, COPY, CHANGE, DESTROY - and Move is CHANGE, so it sits after
+# Leftovers (which creates a row) and before Remove (which ends one).
+# That is where RD-2 put the button; this is the same order written
+# down.
+_order = ['icon-view', 'icon-leftover', 'icon-move', 'icon-delete']
+_blocks = [b[:b.index('</div>')]
+           for b in PC.split('class="row-actions"')[1:]]
+ok(_blocks, 'the row controls are in blocks this suite can read')
+_bad = []
+for _b in _blocks:
+    _seen = [(_b.index(n), n) for n in _order if n in _b]
+    if [n for _i, n in sorted(_seen)] != [n for n in _order
+                                          if n in _b]:
+        _bad.append([n for _i, n in sorted(_seen)])
+ok(not _bad,
+   '  in house order: LOOK before CHANGE before DESTROY, in each of '
+   'the %d block(s)' % len(_blocks), _bad)
 ok('<label for="pickerSearch"><strong>' in PC,
    'field labels are bold through <strong>, which base pins')
 ok('perms.auth.can_edit_recipes' in PC

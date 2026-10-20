@@ -93,8 +93,13 @@ GONE = ('meal_plans.html', 'meal_plan_calendar.html',
 KEPT = (
     'test_accent_ink.py', 'test_action_bar.py', 'test_back_label.py',
     'test_bar_top.py', 'test_btn_tone.py', 'test_colour_good_bad.py',
-    'test_colour_neutrals.py', 'test_colour_tail.py',
-    'test_colour_tokens.py', 'test_dr2_values.py',
+    # test_colour_neutrals.py and test_colour_tail.py were HERE and
+    # are not historical - RD-1, 19 Oct 2026. Both assert
+    # len(alv_tree.standalone()) == 12, and standalone() reads the
+    # LIVE tree, so the number moves whenever a template with no
+    # {% extends %} is added. They are in MOVED, with the other live
+    # censuses.
+    'test_dr2_values.py',
     'test_entry_sections.py', 'test_js_escape.py', 'test_label_weight.py',
     'test_meal_plan_buttons.py', 'test_more_css.py',
     'test_page_title.py', 'test_personal_heads.py',
@@ -102,6 +107,11 @@ KEPT = (
     'test_user_slash.py', 'test_zoom_guards.py',
 )
 MOVED = (
+    # RD-1, 19 Oct 2026 - moved out of KEPT, where RT-1 filed them.
+    # Their standalone() count is a census of the tree as it stands,
+    # not a claim about what CS-2 did.
+    'test_colour_neutrals.py', 'test_colour_tail.py',
+    'test_colour_tokens.py',
     'test_crs_print.py', 'test_css_order.py', 'test_css_standalone.py',
     'test_cssrules_outside.py', 'test_custom_control.py',
     'test_dead_files.py', 'test_drift_root.py', 'test_from_calendar.py',

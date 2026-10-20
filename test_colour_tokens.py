@@ -166,7 +166,10 @@ for tok in sorted(set(MAP.values())):
 head('3. the twelve that must keep their literals, and why it is checkable')
 
 STAND = set(alv_tree.standalone())
-ok(len(STAND) == 12, '%d standalone template(s)' % len(STAND), sorted(STAND))
+# 12 -> 14 - RD-1, 19 Oct 2026. The quick-look partial and its shell
+# have no {% extends %}, which is what standalone() means by it: its
+# own docstring names "a modal shell" and "detail fragments".
+ok(len(STAND) == 14, '%d standalone template(s)' % len(STAND), sorted(STAND))
 BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
           for q in alv_tree.templates()}
 for s in sorted(STAND):

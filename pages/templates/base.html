@@ -3925,6 +3925,16 @@ table.alv-matrix {
 .icon-leftover:hover { background-color: var(--alv-edit); color: var(--alv-on-accent); }
 .icon-color-leftover { color: var(--alv-edit); }
 
+/* Move: the fifth NAME on the same colour - RD-2, 19 Oct 2026. Moving a
+   meal to another day changes a row rather than creating or destroying
+   one, so it is CHANGE, like Leftovers beside it and Duplicate above.
+   Its own name, for the reason written there: a class carries one
+   picture, this one is fa-arrow-right, and .icon-leftover is already
+   spoken for by fa-redo. */
+.icon-move       { color: var(--alv-edit); border-color: var(--alv-edit); }
+.icon-move:hover { background-color: var(--alv-edit); color: var(--alv-on-accent); }
+.icon-color-move { color: var(--alv-edit); }
+
 /* Manage: the third NAME on an existing colour, and for the same reason as
    Duplicate and Upload. Opening an expense's record - its details, its invoice
    document, its delete tab - is a VIEW, so it points at --alv-view, the same

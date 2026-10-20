@@ -126,6 +126,14 @@
     color: var(--alv-accent-ink);
 }
 
+/* THE BODY IS A TARGET - WC-1, 19 Oct 2026, and it is the month
+   cell's own rule, because the two are the same gesture. */
+.week-col-body[role="button"] { cursor: pointer; }
+.week-col-body[role="button"]:hover { background: var(--alv-accent-soft); }
+.week-col-body[role="button"]:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -2px;
+}
 .week-col-body {
     flex: 1;
     padding: 5px 4px;
@@ -293,12 +301,46 @@
 }
 
 /* ==================== THE MONTH ==================== */
+/* THE DATE BAR - MB-2, 19 Oct 2026, and it is the shape
+   celebration_calendar.html has used since it was written: the period
+   as a centred heading, the navigation at the ends, on a surface of
+   its own. MV-2 built a different one for this screen without looking
+   at the one the application already had.
+
+   MEASURED, which is what Demetri's finding came down to: the
+   switcher above this bar is 32px and the three boxes in it were
+   44px, so the navigation was louder than the month it navigated. */
 .month-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin-bottom: 0;
+    padding: 12px 14px;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-bottom: 0;
+    border-radius: var(--alv-radius-sm) var(--alv-radius-sm) 0 0;
+}
+/* JOINED TO WHAT IT HEADS. The bar's bottom edge IS the grid's top
+   edge, so the month reads as the grid's heading rather than as a
+   label floating above it. */
+.month-grid {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.week-nav { flex: 1 1 auto; }
+.week-nav-btn.is-today {
+    min-width: auto;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--alv-ink);
+}
+@media screen and (max-width: 767px) {
+    /* THE PHONE KEEPS 44px. The bar is quieter at every width, but a
+       thumb is the same size on all of them. */
+    .month-header { padding: 10px; }
 }
 
 .month-count {
@@ -632,6 +674,74 @@
     transition: all 0.2s;
 }
 
+/* ONE LINE, NOT FOUR - DC-1, 19 Oct 2026.
+   .recipe-info was a vertical stack inside a 1066px row, so the name,
+   the times, the stepper and the buttons queued downwards in the left
+   third of it and the rest was empty. Measured with a Range around
+   the text - a block element's rectangle is the row's width whatever
+   is written in it, which is why the first two measurements said 99%
+   used and meant nothing.
+
+       before   108px a row, 37% ink
+       after     82px a row, 99% ink
+
+   AT 768px AND UP ONLY. The phone keeps the stack, because at 300px
+   there genuinely is no room for it. */
+@media screen and (min-width: 768px) {
+    .recipe-item { align-items: center; gap: 14px; }
+    .recipe-info {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex: 1;
+        /* MIN-WIDTH ZERO, or a long recipe name refuses to shrink and
+           pushes the stepper off the row - the default min-width of a
+           flex item is its content, not nothing. */
+        min-width: 0;
+    }
+    .recipe-info h5 {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .recipe-meta,
+    .dc-tags,
+    .servings-step,
+    .row-actions { flex: 0 0 auto; margin: 0; }
+    .recipe-thumbnail,
+    .recipe-thumbnail-placeholder { width: 56px; height: 56px; }
+    .leftover-source { margin: 0; }
+}
+
+/* THE TAGS - DC-1. What the freed width carries. */
+.dc-tags { display: flex; gap: 6px; }
+.dc-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
+    /* ink-soft, not ink-faint: these are WORDS somebody reads, and
+       faint measures 2.53 on this ground. */
+    color: var(--alv-ink-soft);
+    white-space: nowrap;
+}
+.dc-tag-veg {
+    background: var(--alv-good-soft);
+    border-color: var(--alv-good-line);
+    color: var(--alv-good-ink);
+}
+/* HIDDEN ON A PHONE, not wrapped. Three pills on a 300px row would
+   push the stepper onto a fifth line, which is the fault this round
+   is fixing somewhere else. And `screen`, because a bare max-width
+   clause matches print - the 21 Sep print-leak round. */
+@media screen and (max-width: 767px) {
+    .dc-tags { display: none; }
+}
+
 .recipe-item:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -786,6 +896,75 @@
    on a tablet, one on a phone, and nothing to re-pin when the dialog
    width changes. The cap grows from 320px to 420px because a grid is
    three times shorter than the column it replaces. */
+
+/* WHAT IS ON THIS DAY - PS-1, 19 Oct 2026. The strip that makes
+   adding-on-click safe: every row it created, removable in place. */
+.picker-day {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+}
+.picker-day-head { font-size: 13px; color: var(--alv-ink); }
+.picker-day-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.picker-day-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* 44px, because taking a mis-click off again is the one thing
+       this dialog must not make fiddly. */
+    min-height: 44px;
+    padding: 2px 0;
+    font-size: 14px;
+    color: var(--alv-ink);
+    border-bottom: 1px solid var(--alv-line-soft);
+}
+.picker-day-row:last-child { border-bottom: none; }
+.picker-day-name { flex: 1; min-width: 0; }
+.picker-day-note { color: var(--alv-ink-soft); font-size: 12px; }
+.picker-day-drop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--alv-bad-ink);
+    cursor: pointer;
+    border-radius: var(--alv-radius-sm);
+}
+.picker-day-drop:hover { background: var(--alv-bad-soft); }
+.picker-hint {
+    margin-right: auto;
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+}
+/* ADDED, AND HOW MANY TIMES - PS-1. A card that has been added twice
+   is two helpings, not an error, so the card says the number.
+
+   THE POSITIONING GOES ON MW-1's OWN RULE, further down, rather than
+   in a second `.recipe-option {` up here. A second rule for the same
+   selector is not wrong CSS, but test_picker_grid reads MW-1's card
+   by splitting the stylesheet on the FIRST `.recipe-option {` - and a
+   new one earlier in the file hid it. One rule per selector costs
+   nothing and leaves nothing to trip over. */
+.pf-added {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--alv-good);
+    color: var(--alv-on-accent);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+}
 #pickerList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -937,6 +1116,10 @@
 }
 
 .recipe-option {
+    /* RELATIVE, so PS-1's added-count badge has something to sit in.
+       On MW-1's own rule rather than in a second one earlier in the
+       file - see the note beside .pf-added. */
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1329,23 +1512,36 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 44px;
-        height: 44px;
-        padding: 0 10px;
+        /* 36px, NOT 44px - MB-2, 19 Oct 2026. The switcher above this
+           bar is 32px and these were 44px, which made the arrows the
+           loudest thing on the page. 36px sits between the two and
+           still clears a thumb at the phone width below, where the
+           media query puts them back to 44. */
+        min-width: 36px;
+        height: 36px;
+        padding: 0 8px;
         border: 1px solid var(--alv-line);
         border-radius: var(--alv-radius-sm);
-        background: var(--alv-paper);
-        color: var(--alv-ink);
-        font-size: 15px;
+        background: var(--alv-surface);
+        color: var(--alv-ink-soft);
+        font-size: 13px;
         cursor: pointer;
     }
-    .week-nav-btn:hover { background: var(--alv-surface); }
+    .week-nav-btn:hover {
+        background: var(--alv-paper);
+        color: var(--alv-ink);
+    }
 
     .week-title {
-        font-size: 17px;
+        /* THE PERIOD IS THE HEADING - MB-2, 19 Oct 2026. It was 17px
+           sitting between two 44px boxes, so the navigation read as
+           more important than the month it navigated. */
+        flex: 1 1 auto;
+        text-align: center;
+        font-size: 20px;
         font-weight: 600;
         color: var(--alv-ink);
-        margin: 0 8px;
+        margin: 0;
     }
 
     .week-meta {
@@ -1412,8 +1608,14 @@
     }
 
     @media screen and (max-width: 768px) {
-        .week-title { font-size: 15px; margin: 0 4px; }
-        .week-nav-btn { padding: 0 8px; }
+        .week-title { font-size: 16px; margin: 0; }
+        .week-nav-btn {
+            /* A THUMB IS THE SAME SIZE AT EVERY WIDTH. The bar is
+               quieter on the desktop; it is not smaller to press. */
+            min-width: 44px;
+            height: 44px;
+            padding: 0 8px;
+        }
         /* THE STEPPER STAYS 30px AND THE ROW GROWS INSTEAD. A 44px
            stepper beside a 44px trashcan wraps the meal row on a
            phone, and test_zoom_guards cares that the page does not
@@ -1542,11 +1744,15 @@
                             aria-label="The month after">
                         <i class="fas fa-chevron-right"></i>
                     </button>
-                    <button type="button" class="week-nav-btn"
-                            onclick="goDay('{{ today|date:'Y-m-d'|escapejs }}', 'month')">
-                        Today
-                    </button>
                 </div>
+                {# TODAY IS AN ACTION, NOT A DIRECTION - MB-2,     #}
+                {# 19 Oct 2026. It sat between the two arrows      #}
+                {# wearing the same box, so pressing it looked     #}
+                {# like a third way to move.                       #}
+                <button type="button" class="week-nav-btn is-today"
+                        onclick="goDay('{{ today|date:'Y-m-d'|escapejs }}', 'month')">
+                    Today
+                </button>
                 <span class="month-count">{{ month_count }} meal{{ month_count|pluralize }}</span>
             </div>
 
@@ -1576,7 +1782,17 @@
                     {# one. Demetri: "I am happy that the mobile gets  #}
                     {# dots. All three view everywhere."               #}
                     {% for e in cell.entries %}
-                    <span class="month-chip{% if e.leftover_of_id %} is-leftover{% elif not e.recipe_id %} is-note{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</span>
+                    {# THE CHIP IS A CONTROL - RD-2, 19 Oct 2026. A span with #}
+                    {# a click handler cannot be reached by a keyboard, and in #}
+                    {# Month and Week this menu is the ONLY way to Move or     #}
+                    {# Remove: the row actions live on the Day card.           #}
+                    <button type="button" class="month-chip{% if e.leftover_of_id %} is-leftover{% elif not e.recipe_id %} is-note{% endif %}"
+                            data-chip="{{ e.meal_entry_id }}"
+                            data-chip-name="{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}"
+                            data-chip-date="{{ e.date|date:'Y-m-d' }}"{% if e.recipe_id %}
+                            data-chip-view="{% url 'recipe_quicklook' e.recipe.recipe_id %}"{% endif %}
+                            aria-haspopup="menu"
+                            aria-label="{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %} - view, move or remove">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</button>
                     {% endfor %}
                     {% if cell.more %}<span class="month-more">+{{ cell.more }} more</span>{% endif %}
                     {% if cell.dots %}<span class="month-dots" aria-hidden="true">{% for d in cell.dots %}<span class="month-dot {{ d }}"></span>{% endfor %}</span>{% endif %}
@@ -1614,11 +1830,15 @@
                             aria-label="The day after">
                         <i class="fas fa-chevron-right"></i>
                     </button>
-                    <button type="button" class="week-nav-btn"
-                            onclick="goDay('{{ today|date:'Y-m-d'|escapejs }}')">
-                        Today
-                    </button>
                 </div>
+                {# TODAY IS AN ACTION, NOT A DIRECTION - MB-2,     #}
+                {# 19 Oct 2026. It sat between the two arrows      #}
+                {# wearing the same box, so pressing it looked     #}
+                {# like a third way to move.                       #}
+                <button type="button" class="week-nav-btn is-today"
+                        onclick="goDay('{{ today|date:'Y-m-d'|escapejs }}')">
+                    Today
+                </button>
                 <span class="week-meta">{{ sel_count }} meal{{ sel_count|pluralize }}</span>
                 {% else %}
                 <div class="week-nav">
@@ -1633,11 +1853,15 @@
                             aria-label="The week after">
                         <i class="fas fa-chevron-right"></i>
                     </button>
-                    <button type="button" class="week-nav-btn"
-                            onclick="goWeek('{{ this_week|date:'Y-m-d'|escapejs }}')">
-                        Today
-                    </button>
                 </div>
+                {# TODAY IS AN ACTION, NOT A DIRECTION - MB-2,     #}
+                {# 19 Oct 2026. It sat between the two arrows      #}
+                {# wearing the same box, so pressing it looked     #}
+                {# like a third way to move.                       #}
+                <button type="button" class="week-nav-btn is-today"
+                        onclick="goWeek('{{ this_week|date:'Y-m-d'|escapejs }}')">
+                    Today
+                </button>
                 <span class="week-meta">{{ meal_count }} meal{{ meal_count|pluralize }}</span>
                 {% endif %}{# view_mode == 'day' - MV-4, 19 Oct 2026 #}
             </div>
@@ -1665,9 +1889,28 @@
                             <span class="week-col-dow">{{ day.day_short }}</span>
                             <span class="week-col-num">{{ day.day_num }}</span>
                         </div>
-                        <div class="week-col-body">
+                        {# A DAY IS A DAY IN EVERY VIEW - WC-1,      #}
+                        {# 19 Oct 2026. Demetri: "why does this        #}
+                        {# change from the month view?" It did not     #}
+                        {# need to. The month cell has carried this    #}
+                        {# since MV-2; the week column got a button    #}
+                        {# instead because it was a different round.   #}
+                        {#                                             #}
+                        {# THE CHIPS INSIDE ARE SAFE. RD-2's listener  #}
+                        {# captures, so a click on a meal never        #}
+                        {# reaches this.                               #}
+                        <div class="week-col-body"
+                             {% if perms.auth.can_edit_recipes %}role="button" tabindex="0"
+                             aria-label="{{ day.entries|length }} meal{{ day.entries|length|pluralize }} on {{ day.date|date:'l j F' }} - add one"
+                             onclick="openPicker('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }} {{ day.day_num }}')"{% endif %}>
                             {% for e in day.entries %}
-                            <span class="week-chip{% if e.leftover_of_id %} is-leftover{% elif not e.recipe_id %} is-note{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</span>
+                            <button type="button" class="week-chip{% if e.leftover_of_id %} is-leftover{% elif not e.recipe_id %} is-note{% endif %}"
+                                    data-chip="{{ e.meal_entry_id }}"
+                                    data-chip-name="{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}"
+                                    data-chip-date="{{ e.date|date:'Y-m-d' }}"{% if e.recipe_id %}
+                                    data-chip-view="{% url 'recipe_quicklook' e.recipe.recipe_id %}"{% endif %}
+                                    aria-haspopup="menu"
+                                    aria-label="{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %} - view, move or remove">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</button>
                             {% empty %}
                             <span class="week-col-empty">&mdash;</span>
                             {% endfor %}
@@ -1780,7 +2023,13 @@
                                 </div>
 
                                 <div class="row-actions">
+                                    {# THE EYE OPENS A DIALOG - RD-1, 19 Oct 2026, and #}
+                                    {# IT IS STILL A LINK. The href stays pointing at  #}
+                                    {# view_recipe, so with JavaScript off, on a        #}
+                                    {# middle-click, or when the fetch fails, the page  #}
+                                    {# is what you get.                                #}
                                     <a href="{% url 'view_recipe' entry.recipe.recipe_id %}"
+                                       data-quicklook="{% url 'recipe_quicklook' entry.recipe.recipe_id %}"
                                        class="icon-action-btn icon-view" title="View recipe"
                                        aria-label="View the recipe {{ entry.recipe.recipe_name }}"><i class="fas fa-eye"></i></a>
                                     {% if perms.auth.can_edit_recipes %}
@@ -1811,6 +2060,33 @@
                                     <span class="meal-scale">recipe makes {{ entry.recipe.servings|default:"?" }}</span>
                                 </div>
 
+                                {# WHAT THE WIDTH IS FOR - DC-1, 19 Oct 2026.  #}
+                                {# Demetri: "there is no clever use of space.  #}
+                                {# 90% of the box is empty." Measured at 63%,  #}
+                                {# and this is what the 63% now carries:       #}
+                                {# facts you could otherwise only get by       #}
+                                {# opening the recipe.                         #}
+                                {#                                             #}
+                                {# FREE. MN-1 has prefetched courses and       #}
+                                {# categories on this screen since 18 Oct, so  #}
+                                {# none of this costs a query.                 #}
+                                {#                                             #}
+                                {# BOUNDED AT THREE. A recipe with nine        #}
+                                {# categories would push the stepper off the   #}
+                                {# row and recreate the stacking this round    #}
+                                {# exists to end.                              #}
+                                <div class="dc-tags">
+                                    {% for c in entry.recipe.courses.all|slice:":1" %}
+                                    <span class="dc-tag">{{ c.name }}</span>
+                                    {% endfor %}
+                                    {% for c in entry.recipe.categories.all|slice:":1" %}
+                                    <span class="dc-tag">{{ c.name }}</span>
+                                    {% endfor %}
+                                    {% if entry.recipe.is_vegetarian %}
+                                    <span class="dc-tag dc-tag-veg">Vegetarian</span>
+                                    {% endif %}
+                                </div>
+
                                 {# THE STEPPER. It saves on press - there is no #}
                                 {# Save button on this screen at all.            #}
                                 <div class="servings-step">
@@ -1837,7 +2113,13 @@
                                 {# already wears fa-copy on eleven buttons. Alias the #}
                                 {# colour, never the name.                            #}
                                 <div class="row-actions">
+                                    {# THE EYE OPENS A DIALOG - RD-1, 19 Oct 2026, and #}
+                                    {# IT IS STILL A LINK. The href stays pointing at  #}
+                                    {# view_recipe, so with JavaScript off, on a        #}
+                                    {# middle-click, or when the fetch fails, the page  #}
+                                    {# is what you get.                                #}
                                     <a href="{% url 'view_recipe' entry.recipe.recipe_id %}"
+                                       data-quicklook="{% url 'recipe_quicklook' entry.recipe.recipe_id %}"
                                        class="icon-action-btn icon-view" title="View recipe"
                                        aria-label="View the recipe {{ entry.recipe.recipe_name }}"><i class="fas fa-eye"></i></a>
                                     {% if perms.auth.can_edit_recipes %}
@@ -1845,6 +2127,16 @@
                                             title="Eat it again on another day"
                                             aria-label="Add leftovers of {{ entry.recipe.recipe_name }} to another day"
                                             onclick="openLeftover({{ entry.meal_entry_id }}, '{{ entry.recipe.recipe_name|escapejs }}', '{{ entry.date|date:'Y-m-d'|escapejs }}')"><i class="fas fa-redo"></i></button>
+                                    {# MOVE - RD-2, 19 Oct 2026. The Day card keeps  #}
+                                    {# buttons rather than gaining the chip menu:    #}
+                                    {# it has the room, and a second way to do the   #}
+                                    {# same thing is not a feature.                  #}
+                                    <button type="button" class="icon-action-btn icon-move"
+                                            title="Move to another day"
+                                            aria-label="Move {{ entry.recipe.recipe_name }} to another day"
+                                            data-move="{{ entry.meal_entry_id }}"
+                                            data-move-name="{{ entry.recipe.recipe_name }}"
+                                            data-move-date="{{ entry.date|date:'Y-m-d' }}"><i class="fas fa-arrow-right"></i></button>
                                     <button type="button" class="icon-action-btn icon-delete"
                                             title="Remove from this day"
                                             aria-label="Remove {{ entry.recipe.recipe_name }} from this day"
@@ -1950,6 +2242,11 @@
             </div>
             <form method="POST" action="{% url 'add_meal_entry' %}" id="pickerForm">
                 {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                {# Eleven endpoints sent you back to the planner and  #}
+                {# every one of them dropped the view, so a write in  #}
+                {# Week view handed you the Month.                    #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
                 <input type="hidden" name="date" id="pickerDate">
                 <input type="hidden" name="recipe_id" id="pickerRecipeId">
                 <div class="modal-body">
@@ -2095,25 +2392,42 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="pickerServings"><strong>Servings</strong></label>
-                        {# MP-1's C19, and it survives the model change: the #}
-                        {# box is filled from the recipe that gets picked,   #}
-                        {# and emptied when the picker opens. It used to be  #}
-                        {# hardcoded to 4 and to keep the last number.       #}
-                        <input type="number" class="form-control" id="pickerServings"
-                               name="servings" min="1" max="99"
-                               placeholder="{{ household_size }}">
-                        <small class="form-text text-muted">
-                            Blank uses the recipe's own yield. This household cooks for {{ household_size }}.
-                        </small>
+                    {# THE SERVINGS FIELD WAS HERE - PS-1, 19 Oct 2026.   #}
+                    {#                                                     #}
+                    {# Demetri: "I also don't need the servings right now. #}
+                    {# When I add a recipe, it must just add the standard  #}
+                    {# servings for that recipe."                          #}
+                    {#                                                     #}
+                    {# WHICH IS WHAT A BLANK BOX ALREADY DID. C19's own    #}
+                    {# note above said so - "Blank uses the recipe's own   #}
+                    {# yield" - so nothing about the BEHAVIOUR changes      #}
+                    {# here. add_meal_entry still falls back to the         #}
+                    {# recipe's yield, then the household size, then 4.     #}
+                    {# The day's stepper adjusts it afterwards and saves    #}
+                    {# on press: one click after, rather than a field       #}
+                    {# before, every time.                                  #}
+
+                    {# ---------------- WHAT IS ON THIS DAY NOW - PS-1 #}
+                    {# A MIS-CLICK IS A REAL ROW THE MOMENT IT HAPPENS, #}
+                    {# because there is no Add Meal to think twice      #}
+                    {# before. So the dialog shows the day and lets you #}
+                    {# take anything off it in place. Without this, the #}
+                    {# round should not be made at all.                 #}
+                    <div class="picker-day" id="pickerDay" hidden>
+                        <div class="picker-day-head">
+                            <strong>On <span id="pickerDayLabel"></span></strong>
+                        </div>
+                        <ul class="picker-day-list" id="pickerDayList"></ul>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn action-primary" id="pickerAdd" disabled>
-                        <i class="fas fa-plus"></i> Add Meal
-                    </button>
+                    {# NO CANCEL - PS-1, 19 Oct 2026. There is nothing to #}
+                    {# cancel when every action has already happened, and #}
+                    {# a Cancel that did not undo them would be a lie.    #}
+                    {# The strip above is where you undo.                 #}
+                    <span class="picker-hint" id="pickerHint">Click a recipe to add it.</span>
+                    <button type="button" class="btn action-primary" id="pickerDone"
+                            onclick="closePicker()">Done</button>
                 </div>
             </form>
         </div>
@@ -2138,6 +2452,11 @@
             </div>
             <form method="POST" action="{% url 'add_meal_note' %}">
                 {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                {# Eleven endpoints sent you back to the planner and  #}
+                {# every one of them dropped the view, so a write in  #}
+                {# Week view handed you the Month.                    #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
                 <input type="hidden" name="date" id="noteDate">
                 <div class="modal-body">
                     <div class="form-group">
@@ -2188,6 +2507,11 @@
             </div>
             <form method="POST" action="{% url 'add_leftover' %}">
                 {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                {# Eleven endpoints sent you back to the planner and  #}
+                {# every one of them dropped the view, so a write in  #}
+                {# Week view handed you the Month.                    #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
                 <input type="hidden" name="meal_entry_id" id="leftoverEntryId">
                 <div class="modal-body">
                     <p>
@@ -2232,6 +2556,11 @@
             </div>
             <form method="POST" action="{% url 'copy_meal_week' %}">
                 {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                {# Eleven endpoints sent you back to the planner and  #}
+                {# every one of them dropped the view, so a write in  #}
+                {# Week view handed you the Month.                    #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
                 <input type="hidden" name="from_week" value="{{ week_start|date:'Y-m-d' }}">
                 <div class="modal-body">
                     <p>
@@ -2284,6 +2613,11 @@
             </div>
             <form method="POST" action="{% url 'save_menu' %}">
                 {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                {# Eleven endpoints sent you back to the planner and  #}
+                {# every one of them dropped the view, so a write in  #}
+                {# Week view handed you the Month.                    #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
                 <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
                 <div class="modal-body">
                     <p>
@@ -2331,6 +2665,11 @@
             </div>
             <form method="POST" action="{% url 'apply_menu' %}">
                 {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                {# Eleven endpoints sent you back to the planner and  #}
+                {# every one of them dropped the view, so a write in  #}
+                {# Week view handed you the Month.                    #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
                 <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
                 <input type="hidden" name="menu_id" id="applyMenuId">
                 <div class="modal-body">
@@ -2392,14 +2731,302 @@
 {# worn since MN-1.                                                   #}
 <form method="POST" action="{% url 'delete_menu' %}" id="deleteMenuForm" hidden>
     {% csrf_token %}
+    {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+    {# Eleven endpoints sent you back to the planner and  #}
+    {# every one of them dropped the view, so a write in  #}
+    {# Week view handed you the Month.                    #}
+    <input type="hidden" name="view" value="{{ view_mode }}">
     <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
     <input type="hidden" name="menu_id" id="deleteMenuId">
 </form>
 
 {# THE REMOVE FORM. One form, reused - a form per meal would be one #}
 {# per meal in the page for a control pressed once in a while.      #}
+{# THE QUICK-LOOK DIALOG - RD-1, 19 Oct 2026. One include,   #}
+{# and every trigger on the page carrying data-quicklook opens #}
+{# it. RD-3 includes the same file on the library's cards.     #}
+{#                                                             #}
+{# ONE COMMENT PER LINE, which is a house rule with a suite     #}
+{# behind it. This was first written as one comment across     #}
+{# three lines and test_crs_comment_fix refused it: a comment  #}
+{# that outlives its line swallows whatever follows if its     #}
+{# closer is ever edited away.                                 #}
+{% include 'recipe_quicklook_shell.html' %}
+
+{# ------------------------------------- THE CHIP MENU - RD-2, 19 Oct 2026 #}
+{# One menu, moved to whichever chip was pressed. Thirty-five cells of     #}
+{# month times three meals is a hundred menus if each chip carries its own #}
+{# and only ever one of them is open.                                      #}
+<div id="chipMenu" class="chip-menu" role="menu" hidden>
+    <button type="button" class="chip-menu-item" data-act="view" role="menuitem">
+        <i class="fas fa-eye"></i> View recipe
+    </button>
+    {% if perms.auth.can_edit_recipes %}
+    <button type="button" class="chip-menu-item" data-act="move" role="menuitem">
+        <i class="fas fa-arrow-right"></i> Move to&hellip;
+    </button>
+    <button type="button" class="chip-menu-item chip-menu-danger" data-act="remove" role="menuitem">
+        <i class="fas fa-trash"></i> <span data-slot="remove">Remove</span>
+    </button>
+    {% endif %}
+</div>
+
+{% if perms.auth.can_edit_recipes %}
+{# -------------------------------------------------- MOVE TO, RD-2 #}
+{# A native date input, because a date picker that works offline, on #}
+{# a phone, with a keyboard and in every locale is one the browser   #}
+{# already wrote. AP-1 builds a mini month for ADDING from the       #}
+{# library, where the shortcuts earn their room; moving is one date. #}
+<div class="modal fade" id="moveModal" tabindex="-1" role="dialog"
+     aria-labelledby="moveTitle" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="moveTitle">
+                    <i class="fas fa-arrow-right"></i> Move to another day
+                </h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'move_meal_entry' %}">
+                {% csrf_token %}
+                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+                <input type="hidden" name="view" value="{{ view_mode }}">
+                <input type="hidden" name="meal_entry_id" id="moveEntry">
+                <div class="modal-body">
+                    <p class="move-what" id="moveWhat"></p>
+                    <label for="moveDate" class="move-label">New day</label>
+                    <input type="date" class="form-control" id="moveDate"
+                           name="date" required>
+                </div>
+                <div class="modal-footer">
+                    {# HOUSE TONE - RS-1a's rule, which this round broke #}
+                    {# once and test_recipe_tones caught.                 #}
+                    <button type="button" class="btn action-secondary"
+                            data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn action-primary">Move</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* THE CHIP MENU - RD-2, 19 Oct 2026. No colour here that is not a token. */
+.chip-menu {
+    position: absolute;
+    z-index: 1060;
+    min-width: 190px;
+    padding: 4px;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+.chip-menu[hidden] { display: none; }
+.chip-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    /* 44px, because this is the only way to Move or Remove on a phone. */
+    min-height: 44px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--alv-radius-sm);
+    background: transparent;
+    color: var(--alv-ink);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+.chip-menu-item:hover { background: var(--alv-surface); }
+.chip-menu-item:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -2px;
+}
+/* A WORD SOMEBODY READS GETS ink-soft; a mark may stay faint. */
+.chip-menu-item i { width: 15px; color: var(--alv-ink-faint); }
+.chip-menu-danger { color: var(--alv-bad-ink); }
+.chip-menu-danger i { color: var(--alv-bad-ink); }
+/* THE CHIPS ARE BUTTONS NOW, so they must not look like buttons.
+
+   AND THIS RULE DOES NOT SET display. It did - `display: block` - and
+   it sits LATER in the file than MV-2's phone rule, which hides
+   .month-chip below 768px so the month shows marks instead of names.
+   So the names came back on the phone: 38 chips drawn at 390px in a
+   48px cell, which is five characters of noise. test_month_view
+   caught it.
+
+   A reset that reaches for display is a reset that outranks every
+   decision about whether a thing is shown at all. */
+.month-chip, .week-chip {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+.month-chip:focus-visible, .week-chip:focus-visible {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: 1px;
+}
+.move-what { color: var(--alv-ink-soft); font-size: 14px; }
+.move-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--alv-ink-strong);
+}
+</style>
+
+<script>
+(function () {
+    var menu = document.getElementById('chipMenu');
+    if (!menu) { return; }
+    var open = null;
+
+    function place(chip) {
+        var r = chip.getBoundingClientRect();
+        menu.hidden = false;
+        var mw = menu.offsetWidth, mh = menu.offsetHeight;
+        // IT MUST NOT GO OFF THE EDGE. A month cell on the Sunday
+        // column is at the right-hand edge of the page, and a menu
+        // that opens rightwards from there is half off the screen.
+        var left = Math.min(r.left + window.scrollX,
+                            window.scrollX + document.documentElement.clientWidth - mw - 8);
+        var top = r.bottom + window.scrollY + 2;
+        if (r.bottom + mh + 8 > window.innerHeight) {
+            top = r.top + window.scrollY - mh - 2;
+        }
+        menu.style.left = Math.max(window.scrollX + 8, left) + 'px';
+        menu.style.top = top + 'px';
+    }
+
+    function close() {
+        menu.hidden = true;
+        open = null;
+    }
+
+    // CAPTURE, NOT BUBBLE - RD-2, 19 Oct 2026, and this is the whole
+    // trick of this round.
+    //
+    // The month cell carries onclick="openPicker(...)" and the chip
+    // sits inside it. A bubbling event reaches the CELL before it
+    // reaches the document, so a delegated listener here in the bubble
+    // phase would be told about the click only after the picker had
+    // already opened - stopPropagation at that point stops nothing,
+    // because there is nothing left above.
+    //
+    // The capture phase runs top-down, document first, which is the
+    // only place one delegated handler can get in front of an inline
+    // onclick further down the tree.
+    document.addEventListener('click', function (e) {
+        var chip = e.target.closest('[data-chip]');
+        if (chip) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (open === chip) { close(); return; }
+            open = chip;
+            var view = menu.querySelector('[data-act="view"]');
+            var url = chip.getAttribute('data-chip-view');
+            // A NOTE IS NOT A RECIPE. "Eat out" has nothing to view.
+            view.hidden = !url;
+            view.setAttribute('data-url', url || '');
+            var slot = menu.querySelector('[data-slot="remove"]');
+            if (slot) {
+                slot.textContent = 'Remove from ' +
+                    new Date(chip.getAttribute('data-chip-date') +
+                             'T00:00:00').toLocaleDateString(undefined,
+                        {weekday: 'short', day: 'numeric', month: 'short'});
+            }
+            place(chip);
+            return;
+        }
+        if (!e.target.closest('#chipMenu')) { close(); }
+    }, true);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { close(); }
+    });
+
+    menu.addEventListener('click', function (e) {
+        var item = e.target.closest('[data-act]');
+        if (!item || !open) { return; }
+        var act = item.getAttribute('data-act');
+        var chip = open;
+        close();
+        if (act === 'view') {
+            var url = item.getAttribute('data-url');
+            if (url) { openQuickLookAt(url, chip); }
+        } else if (act === 'move') {
+            askMove(chip.getAttribute('data-chip'),
+                    chip.getAttribute('data-chip-name'),
+                    chip.getAttribute('data-chip-date'));
+        } else if (act === 'remove') {
+            removeMeal(chip.getAttribute('data-chip'),
+                       chip.getAttribute('data-chip-name'));
+        }
+    });
+
+    // THE DAY CARD'S OWN MOVE BUTTON, which has no menu around it.
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-move]');
+        if (!btn) { return; }
+        e.preventDefault();
+        askMove(btn.getAttribute('data-move'),
+                btn.getAttribute('data-move-name'),
+                btn.getAttribute('data-move-date'));
+    });
+
+    function askMove(entryId, name, dateStr) {
+        var form = document.getElementById('moveEntry');
+        if (!form) { return; }
+        form.value = entryId;
+        document.getElementById('moveWhat').textContent =
+            'Moving ' + name;
+        var d = document.getElementById('moveDate');
+        d.value = dateStr || '';
+        $('#moveModal').modal('show');
+        window.setTimeout(function () { d.focus(); }, 300);
+    }
+
+    // RD-1's dialog, opened from here rather than from a link - the
+    // chip is not an anchor, so there is no href to fall back to and
+    // the menu item passes the URL it was given.
+    function openQuickLookAt(url, chip) {
+        var box = document.getElementById('quickLookContent');
+        if (!box) { window.location.href = url; return; }
+        box.innerHTML = '<div class="modal-body text-center ql-none">' +
+            '<i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        $('#quickLookModal').modal('show');
+        fetch(url, {credentials: 'same-origin'})
+            .then(function (r) {
+                if (!r.ok) { throw new Error(r.status); }
+                return r.text();
+            })
+            .then(function (html) { box.innerHTML = html; })
+            .catch(function () {
+                box.innerHTML = '<div class="modal-body ql-none">' +
+                    'Could not load the recipe.</div>';
+            });
+    }
+})();
+</script>
+
 <form method="POST" action="{% url 'remove_meal_entry' %}" id="removeForm" hidden>
     {% csrf_token %}
+    {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
+    {# Eleven endpoints sent you back to the planner and  #}
+    {# every one of them dropped the view, so a write in  #}
+    {# Week view handed you the Month.                    #}
+    <input type="hidden" name="view" value="{{ view_mode }}">
     <input type="hidden" name="meal_entry_id" id="removeEntryId">
 </form>
 {% endif %}
@@ -2471,18 +3098,50 @@ function openPicker(dateStr, dayName) {
     document.getElementById('pickerDate').value = dateStr;
     document.getElementById('pickerDayName').textContent = dayName;
     document.getElementById('pickerRecipeId').value = '';
-    // C19: the box is EMPTIED on every open. It used to arrive holding
-    // whatever the last recipe was set to.
-    document.getElementById('pickerServings').value = '';
     document.getElementById('pickerSearch').value = '';
+
+    // WHAT IS ALREADY ON THIS DAY - PS-1, 19 Oct 2026. The strip
+    // shows the WHOLE day, not just what this visit added, because
+    // "what is on Saturday" is the question being asked.
+    pickerDirty = false;
+    pdDraw({ entries: [], label: dayName });
+    fetch('{% url "meal_day_entries" %}?date=' +
+          encodeURIComponent(dateStr), {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (d) { pdDraw(d); } })
+        .catch(function () { /* the strip stays empty; adds still work */ });
     // C19 AGAIN, now with five things to forget rather than one. A
     // dialog that opens still filtered to Dessert, three days after
     // you last used it, is a dialog with no recipes in it.
     pfClear(true);
-    document.getElementById('pickerAdd').disabled = true;
     filterPicker();
     $('#pickerModal').modal('show');
 }
+
+// THE CALENDAR BEHIND IS STALE ONCE ANYTHING WAS ADDED - PS-1. Bound
+// to the dialog's own hide event rather than to the Done button, so
+// the x and the backdrop behave identically.
+//
+// WRAPPED AND GUARDED, BECAUSE NO TOP-LEVEL jQUERY. This was written
+// as `$(function () { ... })` and that is a house rule broken: if
+// jQuery has not loaded, the call throws and EVERYTHING AFTER IT IN
+// THE SAME SCRIPT BLOCK never registers - which took PF-2's
+// outside-click handler with it and left its filter menus unable to
+// close. test_pick_filter caught it; nothing in the source could
+// have. An IIFE with a guard cannot take its neighbours down.
+//
+// It still needs jQuery, because hidden.bs.modal is a jQuery event
+// and addEventListener never sees it.
+(function () {
+    var el = document.getElementById('pickerModal');
+    if (!el || !window.jQuery) { return; }
+    window.jQuery(el).on('hidden.bs.modal', function () {
+        if (pickerDirty) { window.location.reload(); }
+    });
+})();
 
 // PF-2, 19 Oct 2026 - THE FILTERS COMPOSE, AND THE SERVER DECIDES.
 //
@@ -2656,7 +3315,7 @@ function pfDraw(d) {
         card.className = 'recipe-option';
         card.dataset.recipeId = r.id;
         card.dataset.recipeServings = r.servings;
-        card.onclick = function () { pickRecipe(card); };
+        card.onclick = function () { pickAdd(card); };
 
         if (r.photo) {
             var img = document.createElement('img');
@@ -2704,6 +3363,11 @@ function pfDraw(d) {
                 (d.total === 1 ? '' : 's');
         }
     }
+    // THE COUNTS SURVIVE A REFILTER - PS-1, 19 Oct 2026. The cards
+    // are rebuilt every time a filter moves, so the badges have to be
+    // put back from the day we already hold.
+    if (window.pdLast) { pdDraw(window.pdLast); }
+
     if (empty) {
         empty.hidden = (d.rows || []).length !== 0;
         var p = empty.querySelector('p');
@@ -2715,16 +3379,164 @@ function pfDraw(d) {
     }
 }
 
-function pickRecipe(el) {
-    document.querySelectorAll('.recipe-option').forEach(function (o) {
-        o.classList.remove('selected');
+// CLICK IS THE ADD - PS-1, 19 Oct 2026.
+//
+// There is no Add Meal button any more, so this is not a selection:
+// the row exists the moment you let go of the mouse. SELECTION IS
+// GONE WITH IT - a card that is "selected" and a card that has been
+// ADDED are different things, and keeping both would say neither.
+// The card shows a COUNT instead, because a second click is a second
+// helping rather than a mistake.
+var pickerBusy = false;
+
+function pickAdd(el) {
+    if (pickerBusy) { return; }
+    var date = document.getElementById('pickerDate').value;
+    if (!date) { return; }
+    pickerBusy = true;
+    el.classList.add('is-adding');
+
+    var body = new URLSearchParams();
+    body.append('recipe_id', el.dataset.recipeId);
+    body.append('date', date);
+    // NO SERVINGS. Left out entirely rather than sent empty, so the
+    // server takes the branch it already had: the recipe's own yield,
+    // then the household size, then 4.
+    body.append('json', '1');
+    body.append('view', plannerView);
+    body.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "add_meal_entry" %}', {
+        method: 'POST', credentials: 'same-origin', body: body
+    })
+        .then(function (r) {
+            if (!r.ok) { throw new Error(r.status); }
+            return r.json();
+        })
+        .then(function (d) { pickerDirty = true; pdDraw(d); })
+        .catch(function () {
+            var hint = document.getElementById('pickerHint');
+            if (hint) {
+                hint.textContent = 'Could not add that. Try again.';
+            }
+        })
+        .then(function () {
+            pickerBusy = false;
+            el.classList.remove('is-adding');
+        });
+}
+
+// WHAT IS ON THE DAY, DRAWN - PS-1. One function for the strip and
+// the counts, so the two cannot disagree about what was added.
+var pickerDirty = false;
+
+function pdDraw(d) {
+    var wrap = document.getElementById('pickerDay');
+    var list = document.getElementById('pickerDayList');
+    var label = document.getElementById('pickerDayLabel');
+    if (!wrap || !list) { return; }
+    var rows = (d && d.entries) || [];
+    // KEPT, because the cards are destroyed and rebuilt every time a
+    // filter moves and the badges have to be put back from something.
+    window.pdLast = d;
+
+    if (label) { label.textContent = (d && d.label) || ''; }
+    wrap.hidden = rows.length === 0;
+    while (list.firstChild) { list.removeChild(list.firstChild); }
+
+    var counts = {};
+    rows.forEach(function (e) {
+        if (e.recipe_id) {
+            counts[e.recipe_id] = (counts[e.recipe_id] || 0) + 1;
+        }
+
+        var li = document.createElement('li');
+        li.className = 'picker-day-row';
+
+        // BUILT, NOT INTERPOLATED. A recipe called Ben & Jerry's goes
+        // into textContent intact and into innerHTML as a hole -
+        // PK-1's note, and SL-4's lesson about alert().
+        var name = document.createElement('span');
+        name.className = 'picker-day-name';
+        name.textContent = e.name;
+        if (e.leftover) {
+            var tag = document.createElement('span');
+            tag.className = 'picker-day-note';
+            tag.textContent = ' leftovers';
+            name.appendChild(tag);
+        }
+        li.appendChild(name);
+
+        var drop = document.createElement('button');
+        drop.type = 'button';
+        drop.className = 'picker-day-drop';
+        drop.title = 'Take off this day';
+        drop.setAttribute('aria-label', 'Take ' + e.name +
+                          ' off this day');
+        drop.innerHTML = '<i class="fas fa-times"></i>';
+        drop.onclick = function () { pickDrop(e.id); };
+        li.appendChild(drop);
+
+        list.appendChild(li);
     });
-    el.classList.add('selected');
-    document.getElementById('pickerRecipeId').value = el.dataset.recipeId;
-    // C19 again: the recipe's own yield, not a 4 and not the last one.
-    var box = document.getElementById('pickerServings');
-    if (box && !box.value) { box.value = el.dataset.recipeServings || ''; }
-    document.getElementById('pickerAdd').disabled = false;
+
+    // AND THE CARDS SAY HOW MANY. Two of something is two helpings.
+    document.querySelectorAll('.recipe-option').forEach(function (card) {
+        var had = card.querySelector('.pf-added');
+        if (had) { had.remove(); }
+        var n = counts[card.dataset.recipeId];
+        if (n) {
+            var b = document.createElement('span');
+            b.className = 'pf-added';
+            b.textContent = n > 1 ? ('x' + n) : '\u2713';
+            card.appendChild(b);
+        }
+    });
+
+    var hint = document.getElementById('pickerHint');
+    if (hint) {
+        hint.textContent = rows.length
+            ? (rows.length + ' on this day')
+            : 'Click a recipe to add it.';
+    }
+}
+
+function pickDrop(entryId) {
+    if (pickerBusy) { return; }
+    pickerBusy = true;
+    var body = new URLSearchParams();
+    body.append('meal_entry_id', entryId);
+    body.append('json', '1');
+    body.append('view', plannerView);
+    body.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    fetch('{% url "remove_meal_entry" %}', {
+        method: 'POST', credentials: 'same-origin', body: body
+    })
+        .then(function (r) {
+            if (!r.ok) { throw new Error(r.status); }
+            return r.json();
+        })
+        .then(function (d) { pickerDirty = true; pdDraw(d); })
+        .catch(function () {
+            var hint = document.getElementById('pickerHint');
+            if (hint) {
+                hint.textContent = 'Could not remove that. Try again.';
+            }
+        })
+        .then(function () { pickerBusy = false; });
+}
+
+// DONE RELOADS, AND ONLY IF SOMETHING HAPPENED - PS-1.
+//
+// The calendar behind the dialog is server-rendered and now out of
+// date, so closing has to fetch it again. Opening the picker and
+// closing it without adding anything should not cost a page load,
+// which is what `pickerDirty` is for. The x and the backdrop go
+// through the same path, because a dialog that only updates the page
+// when you press the right button is a dialog that lies half the
+// time.
+function closePicker() {
+    $('#pickerModal').modal('hide');
 }
 
 // ------------------------------------------------------- the stepper

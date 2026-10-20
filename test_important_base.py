@@ -266,7 +266,9 @@ ok('manual_pdf.html' in stand,
 ok(not any(d[0] == 'manual_pdf.html' for d in drift),
    '  and it is therefore NOT counted as drift. Including it read 23 '
    'where the answer is %d' % len(drift))
-ok(len(stand) == 12, '  twelve templates are standalone', sorted(stand))
+# 12 -> 14 - RD-1, 19 Oct 2026, the quick-look pair.
+ok(len(stand) == 14, '  fourteen templates are standalone',
+   sorted(stand))
 
 # (b) a grouped selector is one declaration, not two
 probe = '<style>.a, .b { color: red !important; }</style>'

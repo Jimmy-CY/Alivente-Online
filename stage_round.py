@@ -67,7 +67,43 @@ def main(argv):
                 % (len(gone), suffix, gone))
     live = [p for p in applied if os.path.isfile(p)]
 
-    files = live + [os.path.join(root, e) for e in extra]
+    # A FILE THE ROUND CREATED HAS NO BACKUP, SO ASK THE PATCHER.
+    #
+    # RD-1, 19 Oct 2026. Everything above enumerates from .bak files,
+    # which is right for a file the round CHANGED and blind to one it
+    # INVENTED. PF-2 created pages/views/recipes/_recipe_filter.py on
+    # 19 October and it shipped only because its name happened to get
+    # typed on this command line - a hand-written list, which is the
+    # exact failure the docstring above says this tool exists to
+    # prevent.
+    #
+    # So a patcher may declare CREATES, a tuple of repo-relative paths,
+    # and that declaration is read from the patcher itself. It lives
+    # with the round, it is covered by the round's own suite, and it
+    # cannot disagree with what the round writes - the patcher's gate
+    # refuses if it does.
+    created = []
+    for e in extra:
+        if not os.path.basename(e).startswith('apply_'):
+            continue
+        mod = os.path.basename(e)[:-3]
+        try:
+            sys.path.insert(0, root)
+            patcher = __import__(mod)
+        except Exception as exc:
+            raise SystemExit('stage_round: %s would not import, so its '
+                             'CREATES cannot be read: %s' % (e, exc))
+        for rel in getattr(patcher, 'CREATES', ()):
+            full = os.path.join(root, rel)
+            if not os.path.isfile(full):
+                raise SystemExit(
+                    'stage_round: %s declares it creates %s and that '
+                    'file is not in the tree. Either the round is not '
+                    'applied or the declaration is wrong, and both ship '
+                    'a broken import.' % (e, rel))
+            created.append(full)
+
+    files = live + created + [os.path.join(root, e) for e in extra]
     for e in extra:
         if not os.path.isfile(os.path.join(root, e)):
             raise SystemExit('stage_round: %s is not in the tree' % e)
@@ -84,6 +120,11 @@ def main(argv):
     if gone:
         print('  RETIRED  %d (backup staged, no live file - this round '
               'removed it)' % len(gone))
+    if created:
+        print('  CREATED  %d (declared by the patcher - no backup '
+              'exists, because there was nothing there)' % len(created))
+        for p in created:
+            print('    %s  (NEW)' % os.path.relpath(p, root))
     print('  ROUND    %d (patcher and suite)' % len(extra))
     for p in live:
         print('    %s' % os.path.relpath(p, root))

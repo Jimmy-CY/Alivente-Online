@@ -143,8 +143,12 @@ N_BUTTONS, N_PAGES = 5, 3
 # were retired and the planner replaced them: 142 - 4 + 1. The SWEEP
 # SCOPE does not move - 117 was and is the narrow half, and the pages
 # the flag hides are still the recipe and meal-plan side.
-CENSUS_NARROW, CENSUS_WIDE = 117, 139   # (wide was 142)
-HITS_LOOSE, HITS_TIGHT = 673, 671   # RT-1, 18 Oct 2026 - thirty-three scanner hits went with the four retired screens, and both matchers fall by the same thirty-three.   # (was 706, 704)
+CENSUS_NARROW, CENSUS_WIDE = 117, 141   # RD-1, 19 Oct 2026 - the
+# quick-look pair. (wide was 139, and 142 before MN-1 retired four
+# meal-plan screens.)
+HITS_LOOSE, HITS_TIGHT = 675, 673   # RD-1, 19 Oct 2026 - one scanner
+# hit per new template, and BOTH matchers rise by the same two.
+# (was 673, 671)   # RT-1, 18 Oct 2026 - thirty-three scanner hits went with the four retired screens, and both matchers fall by the same thirty-three.   # (was 706, 704)
 TAIL_MARKUP, TAIL_SCRIPT, TAIL_IN_REGION = 433, 36, 2
 NESTED_LABELS = 8
 MGT_MARKUP_BOOT = 4

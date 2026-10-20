@@ -493,27 +493,37 @@ else:
            '%r' % s['count'], s['count'])
 
         # ---- AND THE THING HE ACTUALLY REPORTED
+        #
+        # RETIRED BY PS-1, 19 Oct 2026, with the thing it judged.
+        #
+        # This drove pickRecipe() and asked that the card ended up
+        # `.selected` with the Add Meal button armed. PS-1 deleted all
+        # three: clicking a card ADDS it now, there is no selection to
+        # show and no button to arm.
+        #
+        # PK-1's point was that pressing a card must visibly do
+        # something, and it still holds - it is asked in
+        # test_picker_stays, which drives four clicks against a
+        # stubbed fetch and reads the strip, the badges and the four
+        # posts that resulted. The CSS claims below stay here, because
+        # the card itself is still PK-1's.
         pg.evaluate(DRAW, ROWS)
-        pg.evaluate("""() => {
-            pickRecipe(document.querySelector('.recipe-option'));
-        }""")
         sel = pg.evaluate("""() => {
             const o = document.querySelector('.recipe-option');
+            if (!o) { return {cls: '', shadow: '', bg: '', border: ''}; }
             const st = getComputedStyle(o);
             return {cls: o.className, shadow: st.boxShadow,
-                    bg: st.backgroundColor, border: st.borderColor,
-                    add: !document.getElementById('pickerAdd').disabled};
+                    bg: st.backgroundColor, border: st.borderColor};
         }""")
-        ok('selected' in sel['cls'],
-           'CLICKING A CARD SELECTS IT', sel['cls'])
-        ok(sel['add'], '  and arms the Add Meal button', sel['add'])
-        # THE WHOLE POINT. He could select; nothing TOLD him he had.
-        ok(sel['shadow'] not in ('none', ''),
-           '  AND IT IS VISIBLE - a ring, %s' % sel['shadow'],
-           sel['shadow'])
-        ok(sel['bg'] not in ('rgba(0, 0, 0, 0)', 'transparent'),
-           '  and a tint, %s - two signals, not one' % sel['bg'],
-           sel['bg'])
+        ok(not pg.evaluate("() => typeof pickRecipe === 'function'"),
+           'pickRecipe is gone - PS-1 made the click an ADD, so there '
+           'is no selection left to judge')
+        ok(not pg.evaluate(
+               "() => !!document.getElementById('pickerAdd')"),
+           '  and so is the Add Meal button it armed')
+        ok(sel['cls'] and 'selected' not in sel['cls'],
+           '  and a card carries no selected state, because there is '
+           'no selection', sel['cls'])
         pg.close()
 
         # ======================================================
@@ -534,7 +544,10 @@ else:
                 const xs = new Set(cs.map(
                     c => Math.round(c.getBoundingClientRect().left)));
                 const l = document.getElementById('pickerList');
-                const add = document.getElementById('pickerAdd');
+                // Done, not Add Meal - PS-1, 19 Oct 2026. Same
+                // button, same claim: the footer must stay on the
+                // screen. Only the errand changed.
+                const add = document.getElementById('pickerDone');
                 return {cols: xs.size, cards: cs.length,
                         addTop: Math.round(
                             add.getBoundingClientRect().top),
@@ -559,9 +572,9 @@ else:
             # and the Add Meal button below the fold.
             ok(m['listH'] <= VH // 2 + 2,
                '  the list is capped at %dpx - half the screen or less, '
-               'so Add Meal stays reachable' % m['listH'], m['listH'])
+               'so Done stays reachable' % m['listH'], m['listH'])
             ok(m['addTop'] < VH,
-               '  and the Add Meal button is ON the screen at %dpx'
+               '  and the Done button is ON the screen at %dpx'
                % m['addTop'], (m['addTop'], VH))
             pg.close()
         _br.close()

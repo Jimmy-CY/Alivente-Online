@@ -1,0 +1,154 @@
+{# recipe_quicklook_shell.html - RD-1, 19 Oct 2026.                #}
+{#                                                                 #}
+{# The dialog, its rules and its one handler. INCLUDED ONCE per    #}
+{# page; recipe_quicklook.html is what arrives inside it on each   #}
+{# open and carries no rules of its own.                            #}
+{#                                                                  #}
+{# A TRIGGER IS A LINK THAT STILL WORKS. Anything carrying           #}
+{# data-quicklook opens the dialog, and its href is left pointing at #}
+{# view_recipe - so with JavaScript off, with the fetch failing, or  #}
+{# on a middle-click, the recipe page is still what you get. The URL #}
+{# is rendered by the server onto each trigger, which is why there   #}
+{# is no path spelled out in the JavaScript below. WCIM's quick view #}
+{# built '/recipes/wcim/recipe/' + id + '/quick-view/' by hand, and  #}
+{# a route that moves takes that with it silently.                   #}
+<div class="modal fade" id="quickLookModal" tabindex="-1" role="dialog"
+     aria-labelledby="quickLookTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="quickLookContent"></div>
+    </div>
+</div>
+
+<style>
+/* THE QUICK-LOOK - RD-1, 19 Oct 2026. base owns .modal-overlay,
+   .modal-content and .alv-modal-head; these are the rules for what
+   goes INSIDE one, and there is no colour here that is not a token. */
+.ql-photo {
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 14px;
+}
+.ql-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-bottom: 12px;
+}
+.ql-fact {
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+}
+/* A WORD SOMEBODY READS GETS ink-soft; a mark may stay faint. The
+   icon beside each fact is a mark, the fact is a word. */
+.ql-fact i { color: var(--alv-ink-faint); margin-right: 4px; }
+.ql-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.ql-tag {
+    font-size: 12px;
+    padding: 3px 9px;
+    border-radius: 11px;
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
+    color: var(--alv-ink-soft);
+}
+.ql-tag-veg {
+    background: var(--alv-good-soft);
+    border-color: var(--alv-good-line);
+    color: var(--alv-good-ink);
+}
+.ql-desc { color: var(--alv-ink-soft); font-size: 14px; }
+.ql-head {
+    margin: 20px 0 8px;
+    color: var(--alv-ink);
+    font-size: 15px;
+    font-weight: 600;
+}
+.ql-head i { color: var(--alv-ink-faint); margin-right: 6px; }
+.ql-group {
+    margin: 12px 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--alv-ink-strong);
+}
+.ql-ings { list-style: none; padding: 0; margin: 0; }
+.ql-ing {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--alv-line-soft);
+    font-size: 14px;
+}
+.ql-ing:last-child { border-bottom: none; }
+/* THE AMOUNTS LINE UP, which is what a column of numbers is for. */
+.ql-amount {
+    flex: 0 0 88px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--alv-ink);
+    font-weight: 600;
+}
+.ql-name { color: var(--alv-ink); }
+.ql-weight { color: var(--alv-ink-soft); font-size: 13px; }
+.ql-steps { padding-left: 22px; margin: 0; }
+.ql-step {
+    padding: 4px 0;
+    font-size: 14px;
+    color: var(--alv-ink);
+    line-height: 1.5;
+}
+.ql-none { color: var(--alv-ink-soft); font-size: 14px; font-style: italic; }
+
+/* AND screen, NOT a bare max-width. A clause naming no media type
+   matches print too - the 21 Sep print-leak round, which test_print_queries
+   has enforced ever since. */
+@media screen and (max-width: 767px) {
+    .ql-photo { max-height: 180px; }
+    .ql-amount { flex: 0 0 68px; }
+    /* 44px, because a footer button on a phone is a thumb target. */
+    #quickLookModal .modal-footer .btn { min-height: 44px; }
+}
+</style>
+
+<script>
+(function () {
+    // ONE DELEGATED HANDLER, because the triggers are rendered inside
+    // loops and some of them arrive after this runs - the picker's
+    // grid and the month's chips are both built or replaced later.
+    document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('[data-quicklook]');
+        if (!trigger) { return; }
+
+        // A MODIFIED CLICK IS A REQUEST FOR A TAB. Swallowing it would
+        // take away something the plain link could already do.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
+
+        var url = trigger.getAttribute('data-quicklook');
+        if (!url) { return; }
+        e.preventDefault();
+
+        var box = document.getElementById('quickLookContent');
+        box.innerHTML = '<div class="modal-body text-center ql-none">' +
+            '<i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        $('#quickLookModal').modal('show');
+
+        fetch(url, {credentials: 'same-origin'})
+            .then(function (r) {
+                if (!r.ok) { throw new Error(r.status); }
+                return r.text();
+            })
+            .then(function (html) { box.innerHTML = html; })
+            .catch(function () {
+                // THE FALLBACK IS THE PAGE THE LINK ALREADY POINTED AT.
+                // A dialog that cannot load a recipe should hand you
+                // the recipe, not an apology.
+                box.innerHTML =
+                    '<div class="modal-body ql-none">Could not load ' +
+                    'the recipe. <a href="' + trigger.getAttribute('href') +
+                    '">Open the full recipe page</a> instead.</div>';
+            });
+    });
+})();
+</script>

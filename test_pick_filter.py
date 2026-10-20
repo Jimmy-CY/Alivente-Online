@@ -174,7 +174,13 @@ CODEF = T.python_code_only(FSRC, payloads=True)
 CODEC = T.python_code_only(CSRC, payloads=True)
 CODEM = T.python_code_only(MSRC, payloads=True)
 MARKUP = T.code_only(TSRC)
-JS = T.code_only_js(TSRC)
+# ASKED OF THE SCRIPT, NOT OF THE FILE - narrowed by DC-1,
+# 19 Oct 2026. code_only_js returns the markup too, so a Django
+# `{% if recipe.is_vegetarian %}` that renders a TAG read as a copy of
+# the matching in the browser. A template tag runs on the server; that
+# it never reaches the browser is what this claim is about.
+JS = T.code_only_js(''.join(
+    re.findall(r'<script[^>]*>(.*?)</script>', TSRC, re.S)))
 
 CLAUSES = (
     ('recipe_name__icontains', 'search by name'),

@@ -1330,6 +1330,30 @@ ROUNDS = [
     # rows and the Add controls do not fit in a 146px column or a
     # 152px cell, and for one day the card is exactly right.
     '.bak_dayview',
+    # RD-1, 19 Oct 2026 - a recipe without leaving the calendar, and
+    # the extraction that had to happen first: view_recipe and
+    # recipe_pdf each carried their own copy of the read, and the two
+    # did not agree about which weight conversion wins.
+    '.bak_recipemodal',
+    # RW-1, 19 Oct 2026 - the weight worked out in grams rather than to
+    # one decimal place of whatever unit it was recorded in. It edits
+    # the module RD-1 created, so it reverts first.
+    '.bak_recipeweight',
+    # PB-2, 19 Oct 2026 - a write on the planner leaves you where you
+    # were. MV-1 fixed this in the JavaScript, wrote down the lesson,
+    # and shipped the same fault in the eleven server redirects.
+    '.bak_viewback',
+    # RD-2, 19 Oct 2026 - a meal in the calendar has a menu, and base
+    # learns one more name on the CHANGE colour.
+    '.bak_chipmenu',
+    # MB-2, 19 Oct 2026 - the date bar is a bar, in all three views.
+    '.bak_monthbar',
+    # WC-1, 19 Oct 2026 - clicking a day opens the picker in Week too.
+    '.bak_weekclick',
+    # DC-1, 19 Oct 2026 - the Day card uses its width.
+    '.bak_daycard',
+    # PS-1, 19 Oct 2026 - the picker adds on click and stays open.
+    '.bak_pickerstays',
 ]
 
 

@@ -803,6 +803,31 @@ CONVERTED = [
     # MV-4, 19 Oct 2026 - one day card instead of seven, and the Day
     # view's own nav. Section 3 renders all three views and counts.
     'test_day_view.py',
+    # RD-1, 19 Oct 2026 - the recipe modal and the shared read behind
+    # it. Section 3 replays the block it replaced beside the helper
+    # the rest of the package asks, over every ingredient.
+    'test_recipe_modal.py',
+    # RW-1, 19 Oct 2026 - and then the sum itself, in grams. The five
+    # quantities it repairs are in the suite as cases, with the true
+    # weight beside what the page used to show.
+    'test_recipe_weight.py',
+    # PB-2, 19 Oct 2026 - the regression push 1 shipped: eleven
+    # redirects that kept the date and dropped the view.
+    'test_planner_back.py',
+    # RD-2, 19 Oct 2026 - the chip menu, and the move behind it.
+    # Leftovers travel with their parent and cannot overtake it.
+    'test_chip_menu.py',
+    # MB-2, 19 Oct 2026 - the date bar, on celebration_calendar's
+    # shape. Measured against the switcher it sits under.
+    'test_month_bar.py',
+    # WC-1, 19 Oct 2026 - the same gesture in Month and Week.
+    'test_week_click.py',
+    # DC-1, 19 Oct 2026 - the Day card on one line, with the tags the
+    # planner was already fetching and never showing.
+    'test_day_card.py',
+    # PS-1, 19 Oct 2026 - the picker adds on click and stays open,
+    # and shows the day so a mis-click can be undone.
+    'test_picker_stays.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

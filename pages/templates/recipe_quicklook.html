@@ -1,0 +1,120 @@
+{# recipe_quicklook.html - RD-1, 19 Oct 2026.                      #}
+{#                                                                 #}
+{# The whole recipe, read-only, as a partial for the quick-look     #}
+{# dialog. Demetri asked for "a detailed view of the recipe in a    #}
+{# modal" so that clicking a meal in the calendar does not cost him #}
+{# the calendar.                                                    #}
+{#                                                                  #}
+{# NO STYLESHEET HERE. This arrives on every open; the rules live in #}
+{# recipe_quicklook_shell.html, which arrives once.                  #}
+{#                                                                  #}
+{# NO INLINE STYLE AND NO LITERAL COLOUR. Every colour is a token,   #}
+{# because a hex here is a hex the standards suites cannot reason    #}
+{# about and the dark ground would keep.                             #}
+<div class="modal-header alv-modal-head">
+    <h5 class="modal-title" id="quickLookTitle">
+        <i class="fas fa-utensils"></i> {{ recipe.recipe_name }}
+    </h5>
+    <button type="button" class="close" data-dismiss="modal"
+            aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body ql-body">
+    {# NOT LAZY - RD-1, 19 Oct 2026. This is the ONE picture in the   #}
+    {# dialog and the thing you opened it to see; it was written with  #}
+    {# loading="lazy" out of habit and test_lazy_images refused it.    #}
+    {# Its rule is that a lazy image is one of a LIST - a card in a    #}
+    {# loop, below the fold - and a hero that waits is a hero you are  #}
+    {# looking at a gap where.                                         #}
+    {% if recipe.recipe_image %}
+    <img decoding="async" src="{{ recipe.photo_url }}"
+         alt="" class="ql-photo">
+    {% endif %}
+
+    {# WHAT IT COSTS YOU AND WHAT IT FEEDS, on one line. These are the #}
+    {# four facts somebody deciding whether to cook it needs.          #}
+    <div class="ql-facts">
+        {% if recipe.servings %}
+        <span class="ql-fact"><i class="fas fa-users"></i>
+            Serves {{ recipe.servings }}</span>
+        {% endif %}
+        {% if recipe.prep_time %}
+        <span class="ql-fact"><i class="far fa-clock"></i>
+            {{ recipe.prep_time }} min prep</span>
+        {% endif %}
+        {% if recipe.cook_time %}
+        <span class="ql-fact"><i class="fas fa-fire"></i>
+            {{ recipe.cook_time }} min cook</span>
+        {% endif %}
+        {% if recipe.author %}
+        <span class="ql-fact"><i class="fas fa-user-edit"></i>
+            {{ recipe.author }}</span>
+        {% endif %}
+    </div>
+
+    {% if recipe.courses.all or recipe.categories.all or recipe.is_vegetarian %}
+    <div class="ql-tags">
+        {% for c in recipe.courses.all %}
+        <span class="ql-tag">{{ c.name }}</span>
+        {% endfor %}
+        {% for c in recipe.categories.all %}
+        <span class="ql-tag">{{ c.name }}</span>
+        {% endfor %}
+        {% if recipe.is_vegetarian %}
+        <span class="ql-tag ql-tag-veg">Vegetarian</span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if recipe.recipe_description %}
+    <p class="ql-desc">{{ recipe.recipe_description }}</p>
+    {% endif %}
+
+    <h6 class="ql-head"><i class="fas fa-list-ul"></i> Ingredients</h6>
+    {% regroup ingredients by ingredient_group as ingredient_groups %}
+    {% for group in ingredient_groups %}
+    {% if group.grouper %}<p class="ql-group">{{ group.grouper }}</p>{% endif %}
+    <ul class="ql-ings">
+        {% for ing in group.list %}
+        <li class="ql-ing">
+            <span class="ql-amount">{% if ing.formatted_amount %}{{ ing.formatted_amount }}{% endif %}{% if ing.unit %} {{ ing.unit.abbreviation|default:ing.unit.name }}{% endif %}</span>
+            <span class="ql-name">{{ ing.ingredient.name }}{% if ing.preparation %}, {{ ing.preparation.name }}{% endif %}{% if ing.weight_equivalent %} <span class="ql-weight">({{ ing.weight_equivalent }})</span>{% endif %}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% empty %}
+    <p class="ql-none">No ingredients recorded for this recipe.</p>
+    {% endfor %}
+
+    <h6 class="ql-head"><i class="fas fa-tasks"></i> Method</h6>
+    {% regroup instructions by instruction_group as instruction_groups %}
+    {% for group in instruction_groups %}
+    {% if group.grouper %}<p class="ql-group">{{ group.grouper }}</p>{% endif %}
+    <ol class="ql-steps">
+        {% for step in group.list %}
+        <li class="ql-step">{{ step.instruction_text }}</li>
+        {% endfor %}
+    </ol>
+    {% empty %}
+    <p class="ql-none">No method recorded for this recipe.</p>
+    {% endfor %}
+</div>
+<div class="modal-footer">
+    {# THE WAY OUT TO THE WHOLE PAGE. The dialog is a look, not a    #}
+    {# replacement: scaling, nutrition, the shopping list and every  #}
+    {# edit control live on view_recipe and stay there.              #}
+    {# HOUSE TONES, NOT BOOTSTRAP'S - RS-1a took all 35 Bootstrap-  #}
+    {# toned buttons off the recipe side and this round put two      #}
+    {# back. test_recipe_tones counted 37 and refused it.            #}
+    {#                                                               #}
+    {# AND PRIMARY, BECAUSE wcim_recipe_quick_view's IS. That dialog #}
+    {# is the one this round was modelled on, and its footer already #}
+    {# carries an Open full recipe as a solid primary link -         #}
+    {# test_recipe_side_b pins exactly those. Going to the recipe IS #}
+    {# the forward action here; Close is the quiet one.              #}
+    <a href="{% url 'view_recipe' recipe.recipe_id %}"
+       class="btn action-primary">Open full recipe</a>
+    <button type="button" class="btn action-secondary"
+            data-dismiss="modal">Close</button>
+</div>

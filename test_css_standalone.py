@@ -101,7 +101,8 @@ ok(hasattr(alv_tree, 'standalone'), 'alv_tree.standalone() exists')
 ok(hasattr(alv_tree, 'inherits_base'), '  and inherits_base() beside it')
 
 sa = alv_tree.standalone()
-ok(len(sa) == 12, 'it names %d template(s)' % len(sa), sa)
+# 12 -> 14 - RD-1, 19 Oct 2026, the quick-look pair.
+ok(len(sa) == 14, 'it names %d template(s)' % len(sa), sa)
 for s in sa:
     print('      %s' % s)
 

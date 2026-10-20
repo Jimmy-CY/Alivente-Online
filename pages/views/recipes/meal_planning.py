@@ -104,6 +104,11 @@ from django.db import transaction
 from django.db.models import Count, Max, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+# PB-2, 19 Oct 2026 - planner_back builds the return
+# address, and planner_view reads a Referer only as a
+# fallback.
+from urllib.parse import parse_qs, urlencode, urlsplit
+
 from django.urls import reverse
 from django.utils import timezone
 # MP-1, 18 Oct 2026 - B9. The shopping-list email interpolated every
@@ -712,6 +717,55 @@ def week_of(value, fallback):
     return d
 
 
+# ---- WHAT IS ON A DAY - PS-1, 19 Oct 2026.
+#
+# The picker stays open now, so it has to be able to SHOW the day it
+# is adding to: a mis-click is a real row the moment it happens, and a
+# dialog that creates rows you cannot see or undo is worse than the
+# four-click one it replaces.
+#
+# ONE DESCRIPTION OF A DAY, asked by three endpoints - the dialog's
+# first load, every add and every remove - so the strip cannot drift
+# from what the calendar will show when you close it.
+def day_payload(when):
+    """Every meal on `when`, in the order the planner draws them."""
+    rows = (MealEntry.objects
+            .filter(date=when)
+            .select_related('recipe')
+            .order_by('sort_order', 'meal_entry_id'))
+    return {
+        'date': when.strftime('%Y-%m-%d'),
+        'label': when.strftime('%A, %d %B'),
+        'entries': [{
+            'id': e.meal_entry_id,
+            'recipe_id': e.recipe_id,
+            'name': (e.recipe.recipe_name if e.recipe
+                     else (e.note or 'Note')),
+            'servings': e.servings,
+            # A LEFTOVER IS NOT A SECOND HELPING. It costs nothing on
+            # the shopping list and it is not something this dialog
+            # added, so the strip says which it is.
+            'leftover': bool(e.leftover_of_id),
+            'note': not e.recipe_id,
+        } for e in rows],
+    }
+
+
+@login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
+def meal_day_entries(request):
+    """What is on one day, as JSON. Read-tier.
+
+    PS-1, 19 Oct 2026. The picker asks this when it opens, so the
+    strip shows the whole day rather than only what this visit added -
+    "what is on Saturday" being the question actually being asked.
+    """
+    when = week_of(request.GET.get('date'), None)
+    if when is None:
+        return JsonResponse({'error': 'date'}, status=400)
+    return JsonResponse(day_payload(when))
+
+
 @login_required
 @require_POST
 @permission_required('auth.can_edit_recipes', raise_exception=True)
@@ -736,8 +790,7 @@ def add_meal_entry(request):
         recipe = Recipe.objects.get(recipe_id=recipe_id)
     except (Recipe.DoesNotExist, ValueError, TypeError):
         messages.error(request, 'That recipe no longer exists.')
-        return redirect('%s?week=%s' % (reverse('meal_planner'),
-                                        when.strftime('%Y-%m-%d')))
+        return redirect(planner_back(request, when))
 
     # C19's lesson, and it survives the model change: the recipe's own
     # yield, then the household size, and only then a 4.
@@ -752,10 +805,161 @@ def add_meal_entry(request):
         date=when, recipe=recipe, servings=servings,
         sort_order=(last or 0) + 1, created_by=request.user)
 
+    # THE DIALOG WANTS THE DAY BACK, NOT A REDIRECT - PS-1,
+    # 19 Oct 2026. The form post is unchanged and still redirects;
+    # this branch exists for the picker, which stays open.
+    if request.POST.get('json'):
+        return JsonResponse(day_payload(when))
+
     messages.success(request, 'Added "%s" to %s'
                      % (recipe.recipe_name, when.strftime('%A, %d %B')))
-    return redirect('%s?week=%s' % (reverse('meal_planner'),
-                                    when.strftime('%Y-%m-%d')))
+    return redirect(planner_back(request, when))
+
+
+# ---- WHERE A WRITE SENDS YOU BACK TO - PB-2, 19 Oct 2026.
+#
+# Eleven endpoints below return to the planner, and before this round
+# every one of them built its own address as `?week=<date>`. MV-1 still
+# reads `?week=`, on purpose, so the DATE survived and `?view=` was
+# simply absent - which means view_mode fell back to Month. Remove a
+# meal while looking at Wednesday in Day view and you were handed the
+# month.
+#
+# ONE PLACE SPELLS THE ADDRESS, because eleven places are what forgot.
+PLANNER_VIEWS = ('month', 'week', 'day')
+
+
+def planner_view(request):
+    """Which view the page that posted this was showing.
+
+    THE FORM IS ASKED FIRST. Every form on the planner carries a hidden
+    `view`, so this is told rather than left to infer.
+
+    THE REFERER IS THE FALLBACK AND NOTHING MORE. A browser need not
+    send one, a proxy may strip it, and it is attacker-settable - which
+    is harmless here, because the worst a bad value can do is be
+    discarded by the membership test below and leave you on Month,
+    which is exactly where you were going anyway.
+    """
+    raw = request.POST.get('view') or request.GET.get('view') or ''
+    if raw in PLANNER_VIEWS:
+        return raw
+    ref = request.META.get('HTTP_REFERER') or ''
+    try:
+        found = parse_qs(urlsplit(ref).query).get('view') or ['']
+    except (ValueError, TypeError):
+        return 'month'
+    return found[0] if found[0] in PLANNER_VIEWS else 'month'
+
+
+def planner_back(request, when=None):
+    """The planner, at the view and the date you came from.
+
+    `when` is whatever the call site already passed - some of them a
+    day, some the Monday of a week, because they are week-level
+    operations. Which date an action should return to is a separate
+    question from whether the VIEW survives, and this round answers
+    only the second.
+    """
+    params = {'view': planner_view(request)}
+    if when is not None:
+        params['date'] = when.strftime('%Y-%m-%d')
+    return '%s?%s' % (reverse('meal_planner'), urlencode(params))
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def move_meal_entry(request):
+    """Move a meal to another day, and its leftovers with it.
+
+    RD-2, 19 Oct 2026. The server half of this was written for MM-1 on
+    the same day, never run - MM-1's buttons were going to hang on the
+    day card that MV-3 and MV-4 deleted - and lost when the mirror was
+    rebuilt. It is written again here, where the chip menu gives it
+    somewhere to live.
+
+    TWO RULES, AND THEY ARE THE SAME RULE SEEN FROM EITHER END.
+
+    LEFTOVERS TRAVEL WITH THEIR PARENT, KEEPING THE GAP. Monday's
+    dinner with Tuesday's leftovers, moved to Wednesday, becomes
+    Wednesday's dinner with Thursday's leftovers. Moving the parent and
+    stranding the leftovers two days before it would make nonsense of
+    both rows.
+
+    A LEFTOVER CANNOT OVERTAKE ITS PARENT. Leftovers of a meal that has
+    not been cooked yet are not leftovers. This one REFUSES rather than
+    clamping, because a silent correction to a date you typed is worse
+    than being told no.
+
+    THE WHOLE CHAIN MOVES, not just the first generation. Nothing in
+    the interface builds leftovers of leftovers today, but `leftover_of`
+    is a self-FK and the model permits it, so a walk that stopped at
+    one level would strand the third row on a date nobody chose.
+    """
+    try:
+        entry = MealEntry.objects.select_related(
+            'recipe', 'leftover_of').get(
+                meal_entry_id=request.POST.get('meal_entry_id'))
+    except (MealEntry.DoesNotExist, ValueError, TypeError):
+        messages.error(request, 'That meal is no longer on the planner.')
+        return redirect(planner_back(request))
+
+    what = entry.recipe.recipe_name if entry.recipe else (
+        entry.note or 'That meal')
+
+    # THE DATE IS A STRING SOMEBODY CAN TYPE - A5. It falls back
+    # rather than raising.
+    try:
+        when = datetime.strptime(
+            request.POST.get('date', ''), '%Y-%m-%d').date()
+    except (TypeError, ValueError):
+        messages.error(request, 'That is not a date I can read.')
+        return redirect(planner_back(request, entry.date))
+
+    if when == entry.date:
+        return redirect(planner_back(request, when))
+
+    if entry.leftover_of_id and when <= entry.leftover_of.date:
+        messages.error(
+            request,
+            'Leftovers cannot go on %s - that is on or before the day '
+            '"%s" is cooked.'
+            % (when.strftime('%A %d %B'), what))
+        return redirect(planner_back(request, entry.date))
+
+    delta = when - entry.date
+
+    # THE CHAIN, BREADTH FIRST, collected before anything is written.
+    travelling = []
+    frontier = [entry]
+    while frontier:
+        nxt = []
+        for parent in frontier:
+            for child in parent.leftovers.all():
+                travelling.append(child)
+                nxt.append(child)
+        frontier = nxt
+
+    with transaction.atomic():
+        for child in travelling:
+            child.date = child.date + delta
+            child.save(update_fields=['date'])
+        entry.date = when
+        entry.save(update_fields=['date'])
+
+    if travelling:
+        messages.success(
+            request,
+            'Moved "%s" to %s, and %d lot of leftovers with it.'
+            % (what, when.strftime('%A, %d %B'), len(travelling))
+            if len(travelling) == 1 else
+            'Moved "%s" to %s, and %d lots of leftovers with it.'
+            % (what, when.strftime('%A, %d %B'), len(travelling)))
+    else:
+        messages.success(request, 'Moved "%s" to %s'
+                         % (what, when.strftime('%A, %d %B')))
+    return redirect(planner_back(request, when))
 
 
 @login_required
@@ -773,10 +977,15 @@ def remove_meal_entry(request):
     when = entry.date
     what = entry.recipe.recipe_name if entry.recipe else (entry.note or 'Meal')
     entry.delete()
+
+    # AND THE SAME FOR REMOVE - PS-1, 19 Oct 2026. The strip in the
+    # picker removes in place, which is the undo a mis-click needs.
+    if request.POST.get('json'):
+        return JsonResponse(day_payload(when))
+
     messages.success(request, 'Removed "%s" from %s'
                      % (what, when.strftime('%A, %d %B')))
-    return redirect('%s?week=%s' % (reverse('meal_planner'),
-                                    when.strftime('%Y-%m-%d')))
+    return redirect(planner_back(request, when))
 
 
 @login_required
@@ -961,8 +1170,7 @@ def copy_meal_week(request):
         return redirect('meal_planner')
     src, dst = monday_of(src), monday_of(dst)
 
-    back = '%s?week=%s' % (reverse('meal_planner'),
-                           dst.strftime('%Y-%m-%d'))
+    back = planner_back(request, dst)
     if src == dst:
         messages.error(request, 'A week cannot be copied onto itself.')
         return redirect(back)
@@ -971,8 +1179,7 @@ def copy_meal_week(request):
     if not rows:
         messages.error(request, 'There is nothing on %s to copy.'
                        % week_label(src))
-        return redirect('%s?week=%s' % (reverse('meal_planner'),
-                                        src.strftime('%Y-%m-%d')))
+        return redirect(planner_back(request, src))
 
     with transaction.atomic():
         made = copy_week_rows(rows, src, dst, request.user)
@@ -1000,8 +1207,7 @@ def save_menu(request):
         messages.error(request, 'That week could not be read.')
         return redirect('meal_planner')
     week = monday_of(week)
-    back = '%s?week=%s' % (reverse('meal_planner'),
-                           week.strftime('%Y-%m-%d'))
+    back = planner_back(request, week)
 
     # A NAME IS REQUIRED, and for the reason C20 settled on the old
     # Create screen: the name is how you tell two of them apart
@@ -1049,8 +1255,7 @@ def apply_menu(request):
         messages.error(request, 'That week could not be read.')
         return redirect('meal_planner')
     week = monday_of(week)
-    back = '%s?week=%s' % (reverse('meal_planner'),
-                           week.strftime('%Y-%m-%d'))
+    back = planner_back(request, week)
     try:
         menu = Menu.objects.prefetch_related('items__recipe').get(
             menu_id=request.POST.get('menu_id'))
@@ -1097,8 +1302,7 @@ def apply_menu(request):
 def delete_menu(request):
     """Forget a saved Menu. The meals it put on weeks stay where they are."""
     week = week_of(request.POST.get('week'), None)
-    back = ('%s?week=%s' % (reverse('meal_planner'),
-                            monday_of(week).strftime('%Y-%m-%d'))
+    back = (planner_back(request, monday_of(week))
             if week else reverse('meal_planner'))
     try:
         menu = Menu.objects.get(menu_id=request.POST.get('menu_id'))
@@ -1145,8 +1349,7 @@ def add_meal_note(request):
     if when is None:
         messages.error(request, 'That date could not be read.')
         return redirect('meal_planner')
-    back = '%s?week=%s' % (reverse('meal_planner'),
-                           monday_of(when).strftime('%Y-%m-%d'))
+    back = planner_back(request, monday_of(when))
     if not note:
         messages.error(request, 'A note needs some words.')
         return redirect(back)
@@ -1187,8 +1390,7 @@ def add_leftover(request):
     if when is None:
         messages.error(request, 'That date could not be read.')
         return redirect('meal_planner')
-    back = '%s?week=%s' % (reverse('meal_planner'),
-                           monday_of(when).strftime('%Y-%m-%d'))
+    back = planner_back(request, monday_of(when))
 
     # FLATTENED HERE, at the only place that knows both ends.
     root = src.leftover_of or src
@@ -1297,8 +1499,7 @@ def meal_shopping_list(request):
         # MD-1, 18 Oct 2026 - E32.
         logger.exception('meal_shopping_list failed for %s to %s', start, end)
         messages.error(request, f'Error generating shopping list: {str(e)}')
-        return redirect('%s?week=%s' % (reverse('meal_planner'),
-                                        start.strftime('%Y-%m-%d')))
+        return redirect(planner_back(request, start))
 
 
 @login_required

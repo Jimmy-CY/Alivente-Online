@@ -253,8 +253,10 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # that live in subdirectories - the whole point of this section -
 # is still eighteen.
 # RT-1, 18 Oct 2026 - 148. Four retired, one added: see alv_tree.RETIRED.
-ok(len(tree) == 148, 'a WALK finds 148 templates', len(tree))
-ok(len(top) == 122, '  a flat listing finds 122 - 120 was what H7 counted',
+# 148 -> 150 - RD-1, 19 Oct 2026, the quick-look pair.
+ok(len(tree) == 150, 'a WALK finds 150 templates', len(tree))
+ok(len(top) == 124, '  a flat listing finds 124 - 120 was what H7 '
+   'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',
    len(sub))

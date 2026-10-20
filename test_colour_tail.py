@@ -191,7 +191,8 @@ head('3. the twelve standalone templates are untouched here too')
 STAND = set(alv_tree.standalone())
 BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
           for q in alv_tree.templates()}
-ok(len(STAND) == 12, '%d standalone template(s)' % len(STAND))
+# 12 -> 14 - RD-1, 19 Oct 2026, the quick-look pair.
+ok(len(STAND) == 14, '%d standalone template(s)' % len(STAND))
 bad = [s for s in sorted(STAND) if os.path.exists(BYNAME[s] + SUFFIX)]
 ok(not bad,
    '  none of them was rewritten - with no {% extends %} a var() there '
