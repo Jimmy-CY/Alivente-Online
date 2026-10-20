@@ -852,15 +852,39 @@ def planner_view(request):
     return found[0] if found[0] in PLANNER_VIEWS else 'month'
 
 
-def planner_back(request, when=None):
-    """The planner, at the view and the date you came from.
+def planner_back(request, when=None, stay=True):
+    """The planner, at the view and the DAY you came from.
 
-    `when` is whatever the call site already passed - some of them a
-    day, some the Monday of a week, because they are week-level
-    operations. Which date an action should return to is a separate
-    question from whether the VIEW survives, and this round answers
-    only the second.
+    PB-2 answered half of this and said so: it kept the VIEW across a
+    write and left the date to whatever each call site had in scope.
+    Two of them had the date being WRITTEN rather than the date being
+    READ - add_leftover and add_meal_note both passed
+    monday_of(when), where `when` is the day the new row lands on.
+
+    In Week view that is invisible: the Monday of the new row's week
+    is usually the week already on screen. In Day view it is wrong by
+    up to six days, and Demetri reported it as a meal disappearing
+    from the day he was standing on. Nothing had disappeared; he had
+    been moved.
+
+    SO THE READER SAYS WHERE THEY WERE, and that beats anything the
+    write computed. The forms already carry the view; PB-3 gives them
+    the date as well, which fixes every call site at once instead of
+    asking sixteen of them to each be right.
+
+    NAMED from_date BECAUSE date IS TAKEN. The leftovers form posts
+    `date` and it means the day the leftovers are for. Two different
+    dates under one name is how this bug is made.
+
+    stay=False is for an action whose POINT is to move you -
+    copy_meal_week lands on the week it copied to. One call site, with
+    its reason written beside it.
     """
+    if stay:
+        raw = request.POST.get('from_date') or request.GET.get('from_date')
+        seen = week_of(raw, None) if raw else None
+        if seen is not None:
+            when = seen
     params = {'view': planner_view(request)}
     if when is not None:
         params['date'] = when.strftime('%Y-%m-%d')
@@ -1170,7 +1194,11 @@ def copy_meal_week(request):
         return redirect('meal_planner')
     src, dst = monday_of(src), monday_of(dst)
 
-    back = planner_back(request, dst)
+    # stay=False - PB-3, 20 Oct 2026. SEEING THE COPY IS THE POINT.
+    # Every other write on this screen returns you to the day you were
+    # on; this one deliberately does not, because an action whose
+    # whole purpose is to fill another week should show you that week.
+    back = planner_back(request, dst, stay=False)
     if src == dst:
         messages.error(request, 'A week cannot be copied onto itself.')
         return redirect(back)

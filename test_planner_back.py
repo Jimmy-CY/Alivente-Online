@@ -435,9 +435,16 @@ for _dep in []:
        alv_rounds.ROUNDS.index(_dep) < _i,
        'and it sits after %s, whose work it edits - so revert takes '
        'them off in the right order' % _dep)
-ok(_i >= len(alv_rounds.ROUNDS) - 8,
-   'and it is among the eight newest, where this push put it',
-   'it is at %d of %d' % (_i, len(alv_rounds.ROUNDS)))
+# RETIRED - DB-1, 20 Oct 2026. This asked whether the round sat in
+# the last eight entries of the register, which was true while push 2
+# was the newest thing in it and false as soon as anything shipped
+# after it. It is the same mistake as the `ROUNDS[-1] == SUFFIX` it
+# replaced: a claim about a POSITION in a growing list expires
+# whatever number is in it, so re-pinning would only move the date.
+# The dependency claim above is the real one and does not expire.
+ok(alv_rounds.ROUNDS.count(SUFFIX) == 1,
+   'and it is in the register exactly once',
+   alv_rounds.ROUNDS.count(SUFFIX))
 ok('def planner_back(' in gate, 'the gate pins the one place')
 
 for p in FILES:

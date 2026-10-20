@@ -1354,6 +1354,14 @@ ROUNDS = [
     '.bak_daycard',
     # PS-1, 19 Oct 2026 - the picker adds on click and stays open.
     '.bak_pickerstays',
+    # DB-1, 20 Oct 2026 - the responsive wrapper that never closed.
+    '.bak_datebar',
+    # CL-1, 20 Oct 2026 - a meal in the calendar is a pill again.
+    '.bak_chippill',
+    # RL-1, 20 Oct 2026 - the picker reload actually binds.
+    '.bak_pickreload',
+    # PB-3, 20 Oct 2026 - a write leaves you on the day you were on.
+    '.bak_backdate',
 ]
 
 

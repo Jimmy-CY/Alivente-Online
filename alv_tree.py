@@ -828,6 +828,19 @@ CONVERTED = [
     # PS-1, 19 Oct 2026 - the picker adds on click and stays open,
     # and shows the day so a mis-click can be undone.
     'test_picker_stays.py',
+    # DB-1, 20 Oct 2026 - 88 rules come back out of a media query that
+    # was never closed, and a suite starts asking what media a rule is
+    # actually in.
+    'test_date_bar.py',
+    # CL-1, 20 Oct 2026 - the chip is a pill, and a later stylesheet
+    # stops overruling the rule that draws it.
+    'test_chip_pill.py',
+    # RL-1, 20 Oct 2026 - a guard that asked "is jQuery here" when it
+    # meant "will it be", and bound nothing for a day.
+    'test_pick_reload.py',
+    # PB-3, 20 Oct 2026 - the half of PB-2 that PB-2 said it was not
+    # doing: the DATE a write returns you to.
+    'test_back_date.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

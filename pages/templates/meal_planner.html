@@ -145,12 +145,28 @@
 /* THE SAME CHIP THE MONTH DRAWS, in the same three colours, because a
    meal should not change its appearance when you change zoom level. */
 .week-chip {
-    display: block;
+    /* A PILL - CL-1, 20 Oct 2026. Demetri: "shouldn't they be like
+       pills?? not just words with a coloured background?" 3px with a
+       2px left bar is a flat tag. This is the shape the Side / Frozen
+       / Vegetarian tags on the Day card already use, so the calendar
+       stops teaching a second vocabulary for the same idea. */
+    display: inline-block;
+    width: fit-content;
+    max-width: 100%;
+    /* THE PARENT IS A FLEX COLUMN and its children stretch by
+       default, which would make every pill the width of the column
+       and undo the hugging. */
+    align-self: flex-start;
     font-size: 11px;
     line-height: 1.35;
-    padding: 2px 5px;
-    border-radius: 3px;
-    border-left: 2px solid var(--alv-accent);
+    padding: 2px 9px;
+    border-radius: 999px;
+    /* AN EDGE, BECAUSE THE ROW IT SITS ON IS TINTED TOO. accent-soft
+       on the highlighted week row is accent-soft on accent-soft, and
+       the fill disappeared - the pill read as bare words again, which
+       was the complaint. base's own token comment says what this is
+       for: "borders on tinted surfaces". */
+    border: 1px solid var(--alv-accent-line);
     background: var(--alv-accent-soft);
     color: var(--alv-accent-ink);
     white-space: nowrap;
@@ -160,14 +176,14 @@
 
 .week-chip.is-note {
     background: var(--alv-warn-soft);
+    border-color: var(--alv-warn-line);
     color: var(--alv-warn-ink);
-    border-left-color: var(--alv-warn);
 }
 
 .week-chip.is-leftover {
     background: var(--alv-surface-deep);
+    border-color: var(--alv-line);
     color: var(--alv-ink-soft);
-    border-left-color: var(--alv-neutral);
 }
 
 /* AN EMPTY DAY SAYS SO. A blank column and a broken column look the
@@ -438,13 +454,18 @@
    the cell says as much as it can and stops. The full name is one
    click away in the Day view. */
 .month-chip {
-    display: block;
-    width: 100%;
+    /* A PILL - CL-1, 20 Oct 2026, the same one the week draws. A meal
+       does not change shape when you change zoom level, which is the
+       rule .week-chip's own comment states. */
+    display: inline-block;
+    width: fit-content;
+    max-width: 100%;
+    align-self: flex-start;
     font-size: 11px;
     line-height: 1.35;
-    padding: 1px 5px;
-    border-radius: 3px;
-    border-left: 2px solid var(--alv-accent);
+    padding: 1px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--alv-accent-line);
     background: var(--alv-accent-soft);
     color: var(--alv-accent-ink);
     white-space: nowrap;
@@ -457,14 +478,14 @@
    so the month does not teach a second vocabulary. */
 .month-chip.is-note {
     background: var(--alv-warn-soft);
+    border-color: var(--alv-warn-line);
     color: var(--alv-warn-ink);
-    border-left-color: var(--alv-warn);
 }
 
 .month-chip.is-leftover {
     background: var(--alv-surface-deep);
+    border-color: var(--alv-line);
     color: var(--alv-ink-soft);
-    border-left-color: var(--alv-neutral);
 }
 
 .month-more {
@@ -1257,10 +1278,20 @@
 }
 
 /* ==================== RESPONSIVE ==================== */
-@media screen and (max-width: 1200px) {
-    .calendar-layout {
-        grid-template-columns: 1fr;
-    }
+/* THE WRAPPER THAT NEVER CLOSED - DB-1, 20 Oct 2026.
+   An `@media screen and (max-width: 1200px) {` opened here, held one
+   rule and was never closed, so EVERY rule below it to the end of this
+   stylesheet was nested inside it: 88 of them, 2,471 lines, including
+   the whole date bar. Above 1200px the arrows rendered as browser
+   default buttons - 2px outset black - which is what Demetri reported
+   twice.
+   IT IS OLD. .bak_mealweek already swallows 722 lines and 54 rules;
+   the number has grown with every round that appended CSS since.
+   THE ONE RULE INSIDE WAS DEAD TOO: .calendar-layout was `320px 1fr`
+   until MV-2 deleted the mini calendar and set `display: block` at the
+   top of this file. A grid-template override on a block element
+   overrides nothing, so the wrapper is removed rather than closed -
+   closing it would keep a dead rule and say somebody wanted it. */
     
 
 @media screen and (max-width: 768px) {
@@ -2247,6 +2278,10 @@
                 {# every one of them dropped the view, so a write in  #}
                 {# Week view handed you the Month.                    #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="date" id="pickerDate">
                 <input type="hidden" name="recipe_id" id="pickerRecipeId">
                 <div class="modal-body">
@@ -2457,6 +2492,10 @@
                 {# every one of them dropped the view, so a write in  #}
                 {# Week view handed you the Month.                    #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="date" id="noteDate">
                 <div class="modal-body">
                     <div class="form-group">
@@ -2512,6 +2551,10 @@
                 {# every one of them dropped the view, so a write in  #}
                 {# Week view handed you the Month.                    #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="meal_entry_id" id="leftoverEntryId">
                 <div class="modal-body">
                     <p>
@@ -2561,6 +2604,10 @@
                 {# every one of them dropped the view, so a write in  #}
                 {# Week view handed you the Month.                    #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="from_week" value="{{ week_start|date:'Y-m-d' }}">
                 <div class="modal-body">
                     <p>
@@ -2618,6 +2665,10 @@
                 {# every one of them dropped the view, so a write in  #}
                 {# Week view handed you the Month.                    #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
                 <div class="modal-body">
                     <p>
@@ -2670,6 +2721,10 @@
                 {# every one of them dropped the view, so a write in  #}
                 {# Week view handed you the Month.                    #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
                 <input type="hidden" name="menu_id" id="applyMenuId">
                 <div class="modal-body">
@@ -2736,6 +2791,8 @@
     {# every one of them dropped the view, so a write in  #}
     {# Week view handed you the Month.                    #}
     <input type="hidden" name="view" value="{{ view_mode }}">
+    {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026. #}
+    <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
     <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
     <input type="hidden" name="menu_id" id="deleteMenuId">
 </form>
@@ -2794,6 +2851,10 @@
                 {% csrf_token %}
                 {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
+                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
+                {# from_date, not date: this form may already post  #}
+                {# a `date` and mean a different one by it.         #}
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
                 <input type="hidden" name="meal_entry_id" id="moveEntry">
                 <div class="modal-body">
                     <p class="move-what" id="moveWhat"></p>
@@ -2864,11 +2925,23 @@
    A reset that reaches for display is a reset that outranks every
    decision about whether a thing is shown at all. */
 .month-chip, .week-chip {
-    width: 100%;
-    border: 0;
-    background: transparent;
+    /* CUT TO WHAT A BUTTON ACTUALLY NEEDS - CL-1, 20 Oct 2026.
+       This <style> is a LATER stylesheet than the one holding the
+       chip, so every property named here beats the chip's own at equal
+       specificity. It named four the chip owns:
+           width: 100%          the pill hugs its word now
+           background           the chip's fill, gone at every width
+           the font shorthand   it resets font-size too, so 11px
+                                chips rendered at 16px
+       What is left is the two things a <button> brings that the chip
+       does not set for itself, plus the two nothing else sets.
+       The note above this rule is right and was written one property
+       too early.
+       AND NOT border EITHER. The pill carries a 1px edge now, so a
+       reset that zeroed the border would delete it from a later
+       stylesheet - which is this bug a second time. */
+    font-family: inherit;
     text-align: left;
-    font: inherit;
     cursor: pointer;
 }
 .month-chip:focus-visible, .week-chip:focus-visible {
@@ -3027,6 +3100,8 @@
     {# every one of them dropped the view, so a write in  #}
     {# Week view handed you the Month.                    #}
     <input type="hidden" name="view" value="{{ view_mode }}">
+    {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026. #}
+    <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
     <input type="hidden" name="meal_entry_id" id="removeEntryId">
 </form>
 {% endif %}
@@ -3136,11 +3211,34 @@ function openPicker(dateStr, dayName) {
 // It still needs jQuery, because hidden.bs.modal is a jQuery event
 // and addEventListener never sees it.
 (function () {
-    var el = document.getElementById('pickerModal');
-    if (!el || !window.jQuery) { return; }
-    window.jQuery(el).on('hidden.bs.modal', function () {
-        if (pickerDirty) { window.location.reload(); }
-    });
+    // BOUND WHEN THE DOCUMENT IS PARSED, NOT WHILE IT IS - RL-1,
+    // 20 Oct 2026. base loads jQuery near the END of the document and
+    // this block is in the content, so at the moment it first runs
+    // window.jQuery is undefined. The guard below then returned and
+    // NOTHING EVER BOUND: adding a meal from the month view left the
+    // grid stale until the page was refreshed by hand.
+    //
+    // DOMContentLoaded fires after every parser-inserted script has
+    // executed, so jQuery is certain to be there - certain, not
+    // likely, which is what makes this different from a timer.
+    //
+    // THE GUARD STAYS. PS-1 added it because `$(function(){...})`
+    // threw when jQuery was missing and took every statement after it
+    // in the same block with it, PF-2's outside-click handler
+    // included. It was right about the crash; it was asked the wrong
+    // question - "is jQuery here?" rather than "will it be?".
+    function bind() {
+        var el = document.getElementById('pickerModal');
+        if (!el || !window.jQuery) { return; }
+        window.jQuery(el).on('hidden.bs.modal', function () {
+            if (pickerDirty) { window.location.reload(); }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bind);
+    } else {
+        bind();
+    }
 })();
 
 // PF-2, 19 Oct 2026 - THE FILTERS COMPOSE, AND THE SERVER DECIDES.

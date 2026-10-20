@@ -1231,6 +1231,13 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'data-chip='; What = 'RD-2: a meal in Month or Week is a button with a menu - View, Move to and Remove - because a 152px column has room for a name and nothing else' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'week-nav-btn is-today'; What = 'MB-2: Today is an action, not a third direction - it sat between the two arrows wearing the same 44px box' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WRAPPER THAT NEVER CLOSED'; What = 'DB-1: 88 rules and 2,471 lines were nested inside a max-width 1200px block that was never closed, so the date bar rendered as default browser buttons on any screen wider than that' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: 1fr'; Absent = $true; Code = $true; What = 'DB-1: and the one rule it held is gone - .calendar-layout stopped being a grid when MV-2 deleted the mini calendar beside it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = "document.addEventListener('DOMContentLoaded', bind)"; What = 'RL-1: the picker reload is bound after the document is parsed - base loads jQuery near the end, so PS-1 guard found none and silently bound nothing, and the month grid stayed stale until a hand refresh' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def planner_back(request, when=None, stay=True)'; What = 'PB-3: a write returns you to the DAY you were on, not to a date computed from the write - adding leftovers in Day view moved you to the Monday of the leftovers week, which read as the meal vanishing' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'name="from_date"'; What = 'PB-3: and the reader tells the server where they were, on the same nine forms PB-2 gave the view - one place instead of sixteen call sites each guessing' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'border-radius: 999px'; What = 'CL-1: a meal in the calendar is a pill again - RD-2 made the chips buttons and reset background, border and font in a LATER stylesheet, which beat the chip own rule and left 16px plain text' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'font: inherit'; Absent = $true; Code = $true; What = 'CL-1: and the shorthand that took the type size with it is gone - font-family is what a button needed, not the whole font' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="dc-tags"'; What = 'DC-1: the Day card is one line and the width carries the recipe facts - it was four lines using 37% of the row' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def day_payload('; What = 'PS-1: ONE description of what is on a day, asked by the dialog on open, on every add and on every remove, so the strip cannot drift from the calendar' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'function pickAdd('; What = 'PS-1: clicking a recipe ADDS it - twenty actions to put four things on a Saturday became seven, because the filters stop being forgotten between adds' },
@@ -2790,7 +2797,24 @@ $suites = @(
     # PS-1, 19 Oct 2026 - the picker adds on click and stays open.
     # Section 3 drives it in a browser: four adds, one open, and the
     # filters still set at the end.
-    'test_picker_stays.py'
+    'test_picker_stays.py',
+    # DB-1, 20 Oct 2026 - the responsive wrapper closes. Section 2
+    # asks the BROWSER what media every rule in this file ends up in,
+    # which is the question no suite in this system was asking.
+    'test_date_bar.py',
+    # CL-1, 20 Oct 2026 - the chip is a pill. Section 2 RENDERS it and
+    # reads the COMPUTED fill and type size, because the fault was a
+    # rule that was present in the file and beaten in the browser.
+    'test_chip_pill.py',
+    # RL-1, 20 Oct 2026 - the picker reload binds. Section 3 DRIVES a
+    # real server in a real browser and counts navigations after Done,
+    # because nothing readable in the source says whether a handler
+    # was registered.
+    'test_pick_reload.py',
+    # PB-3, 20 Oct 2026 - a write leaves you on the day you were on.
+    # Section 3 POSTS from a day and reads the Location header, which
+    # is the only place this fault is visible.
+    'test_back_date.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
