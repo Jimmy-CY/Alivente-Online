@@ -2661,9 +2661,17 @@
                 aria-label="Close">&times;</button>
     </div>
     <div class="plan-pop-quick">
-        <button type="button" class="plan-quick" data-plan-when="today">Tonight</button>
+        {# TODAY, NOT TONIGHT - SC-1, 21 Oct 2026. The value was    #}
+        {# already `today` and the date it computes is today's; only #}
+        {# the word disagreed. There are no meal types in this       #}
+        {# module - his decision, 19 Oct - so the planner does not   #}
+        {# know morning from evening and must not imply that it does. #}
+        {#                                                            #}
+        {# AND TWO, NOT THREE. "This Saturday" was my guess at the    #}
+        {# shape of a week; he has said it does not earn its place.   #}
+        {# The month below reaches any date in two clicks.            #}
+        <button type="button" class="plan-quick" data-plan-when="today">Today</button>
         <button type="button" class="plan-quick" data-plan-when="tomorrow">Tomorrow</button>
-        <button type="button" class="plan-quick" data-plan-when="saturday">This Saturday</button>
     </div>
     <div class="plan-cal-head">
         <button type="button" class="plan-cal-nav" id="planPrev"
@@ -2695,14 +2703,19 @@
             String(d.getDate()).padStart(2, '0');
     }
 
-    // THE SHORTCUTS, AS DATES. "This Saturday" means the Saturday of
-    // the week you are in, and on a Saturday it means today - not a
-    // week away, which is what counting forward from tomorrow gives.
+    // THE SHORTCUTS, AS DATES - SC-1, 21 Oct 2026.
+    //
+    // There were three, and the third computed the Saturday of the
+    // week you are standing in. It is gone with its button, and so is
+    // the paragraph that explained the arithmetic: a comment that
+    // outlives the code it describes is the next person's wrong turn.
+    //
+    // Midday, not midnight, because a date built at 00:00 and then
+    // formatted in a timezone behind UTC is yesterday.
     function when(code) {
         var d = new Date();
         d.setHours(12, 0, 0, 0);
         if (code === 'tomorrow') { d.setDate(d.getDate() + 1); }
-        if (code === 'saturday') { d.setDate(d.getDate() + ((6 - d.getDay()) + 7) % 7); }
         return d;
     }
 

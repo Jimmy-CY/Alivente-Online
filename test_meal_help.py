@@ -268,10 +268,25 @@ def claims(text):
     # view_meal_plan was the one page that carried Help in a More menu
     # as well as in its bar, and MN-1 retired it. One button each is
     # the whole claim now, which is simpler and still asked of both.
-    c['  and each of the two has one Help button'] = all(
-        T.code_only(text[p]).count(
+    # HP-1, 21 Oct 2026 - ONE PER WIDTH, which is not the same
+    # as one per page. The planner carries Help twice now: in the
+    # bar for a desktop and in the More menu for a phone, because
+    # base hides every .action-secondary below 768px in a bar that
+    # has a menu, and for two days that left an editing user with
+    # no Help on a phone at all.
+    #
+    # MN-1's retired view_meal_plan had two that were BOTH
+    # reachable at once, which is the shape this claim was written
+    # against on 18 October. These two never are: each width shows
+    # exactly one. test_help_phone measures that at 1280 and 390.
+    c['  and each of the two has Help where a finger can reach it'] = (
+        all(1 <= T.code_only(text[p]).count(
+            'data-target="#%sHelpModal"' % SLUG) <= 2
+            for p in PAGES if p in text)
+        and all(T.code_only(text[p]).count(
             'data-target="#%sHelpModal"' % SLUG) == 1
-        for p in PAGES if p in text)
+            or 'action-more-menu' in T.code_only(text[p])
+            for p in PAGES if p in text))
 
     # ---- 4. the old tab points rather than repeats
     #
@@ -680,17 +695,20 @@ if up and mod:
     ok("meal_plan_print" in T.code_only(plan_src),
        '  CONTROL: and the planner really has a Print button to press')
 
-    for text, what in (("id=\"copyWeekModal\"", 'Copy this week to'),
-                       ("id=\"saveMenuModal\"", 'Save this week as a Menu'),
-                       ("id=\"applyMenuModal\"", 'Apply a Menu'),
+    # CP-2, 21 Oct 2026 - the two dialogs that replaced the
+    # three. They were reachable only on a phone: base hides the
+    # More menu above 768px and nothing else pointed at them.
+    for text, what in (("id=\"copyRangeModal\"",
+                        'Copy meals to another date'),
+                       ("id=\"menusModal\"", 'Saved Menus'),
                        ("id=\"noteModal\"", 'Add Note'),
                        ("id=\"leftoverModal\"", 'Leftovers')):
         ok(text in T.code_only(plan_src),
            '  CONTROL: the planner really has %s' % what)
     # AND THE GUIDE DESCRIBES EVERY ONE OF THEM. A tab that exists is
     # not the same as a tab that says the thing.
-    for phrase in ('Copy this week to', 'Save this week as a Menu',
-                   'Apply a Menu', 'Add Note', 'Leftovers'):
+    for phrase in ('Copy meals to another date', 'Saved Menus',
+                   'Add Note', 'Leftovers'):
         ok(phrase in whole, '  and the guide describes %r' % phrase)
     # THE ONE THING STILL OUTSTANDING IS STILL PROMISED, honestly. A
     # round that cleared the promise box by emptying it would pass

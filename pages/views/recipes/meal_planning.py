@@ -860,15 +860,61 @@ def meal_plan_print(request):
                 'date': when,
                 'in_range': start <= when <= end,
                 'is_today': when == today,
+                # RG-1, 21 Oct 2026 - the week sheet heads each column
+                # with its own weekday, so the template needs to know
+                # which day of the week this is without doing date
+                # arithmetic in a filter.
+                'weekday': when.weekday(),
                 'entries': by_day.get(when, []),
             })
         weeks.append({'start': cursor, 'days': days})
         cursor += timedelta(days=7)
 
+    # THE SHAPE OF THE SHEET IS THE SHAPE OF THE RANGE - RG-1,
+    # 21 Oct 2026.
+    #
+    # PP-1 had one layout and gave every range to it, so a single day
+    # printed as a seven-column grid with six columns greyed out -
+    # which is precisely what Demetri reported as "Day view Print,
+    # prints a Week view". It was a week. It had one day in it.
+    #
+    # NOT A ?shape= PARAMETER. The planner already sends the two
+    # dates SL-7 computes for the view you are on; a second parameter
+    # saying what those dates MEAN is a thing that can disagree with
+    # them. A day is a range of one. A week is a Monday and six days
+    # after it. A month is the first to the last. Nothing else needs
+    # to be passed and nothing else can go stale.
+    last_of_month = (date(start.year + (start.month == 12),
+                          start.month % 12 + 1, 1) - timedelta(days=1))
+    if start == end:
+        sheet = 'day'
+    elif start.weekday() == 0 and (end - start).days == 6:
+        sheet = 'week'
+    elif start.day == 1 and end == last_of_month:
+        sheet = 'month'
+    else:
+        sheet = 'range'
+
+    # THE BIG LINE ON THE SHEET, built here rather than in four
+    # template branches - and built with day_label's arithmetic
+    # rather than strftime's %-d, which Windows does not have and
+    # this project runs on Windows and on Railway both.
+    if sheet == 'day':
+        period = '%s %d %s' % (start.strftime('%A'), start.day,
+                               start.strftime('%B'))
+    elif sheet == 'month':
+        period = start.strftime('%B %Y')
+    else:
+        period = '%s - %s %d' % (day_label(start), day_label(end),
+                                 end.year)
+
     return render(request, 'meal_plan_print.html', {
         'start': start,
         'end': end,
         'weeks': weeks,
+        'sheet': sheet,
+        'period': period,
+        'day_entries': by_day.get(start, []),
         'day_count': (end - start).days + 1,
         'meal_count': sum(len(v) for k, v in by_day.items()
                           if start <= k <= end),
@@ -1293,6 +1339,31 @@ def meal_week_preview(request):
     cannot count what is already there is the same copy with a quieter
     conscience. So the dialog asks, before the button is pressed.
     """
+    # A SPAN, NOT ONLY A WEEK - CP-2, 21 Oct 2026. The copy dialog
+    # takes any range now, so the question it has to ask is "what is
+    # already on these days", not "what is already on this week".
+    # ?week= still answers below: copy_meal_week is untouched.
+    first = week_of(request.GET.get('from'), None)
+    last = week_of(request.GET.get('to'), None)
+    if first is not None and last is not None:
+        if last < first:
+            first, last = last, first
+        if (last - first).days > 92:
+            return JsonResponse({'success': False,
+                                 'error': 'A copy covers at most '
+                                          '13 weeks.'}, status=400)
+        span = list(MealEntry.objects
+                    .filter(date__gte=first, date__lte=last)
+                    .only('date'))
+        return JsonResponse({
+            'success': True,
+            'week': first.strftime('%Y-%m-%d'),
+            'label': day_label(first) if first == last
+                     else '%s - %s' % (day_label(first), day_label(last)),
+            'meals': len(span),
+            'days_with_meals': len({e.date for e in span}),
+        })
+
     week = week_of(request.GET.get('week'), None)
     if week is None:
         return JsonResponse({'success': False,
@@ -1343,6 +1414,78 @@ def copy_meal_week(request):
                      % (made, '' if made == 1 else 's',
                         week_label(src), week_label(dst)))
     return redirect(back)
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
+def copy_meal_range(request):
+    """Copy every meal in a span of days onto another span, keeping
+    the original.
+
+    CP-2, 21 Oct 2026. Demetri asked for four things - a day onto a
+    day, a week onto a week, a month onto a month, and any range onto
+    a start date - and they are one thing. copy_week_rows has always
+    copied by DATE OFFSET rather than by weekday:
+
+        offset = (entry.date - src_start).days
+        when   = dst_start + timedelta(days=offset)
+
+    so the span it can carry was never a week; only the door was
+    week-shaped. Day, This week and This month are presets in the
+    dialog that fill in two dates. There is one code path.
+
+    ADDS ALONGSIDE, which is the 19 October decision, and the engine
+    lands each copy AFTER whatever the destination day already holds.
+
+    A LEFTOVER WHOSE PARENT IS NOT IN THE SPAN IS DROPPED - also the
+    engine's doing, and the reason this view does not filter the rows
+    itself. A leftover of nothing buys nothing and says nothing.
+    """
+    start = week_of(request.POST.get('from'), None)
+    end = week_of(request.POST.get('to'), None)
+    onto = week_of(request.POST.get('onto'), None)
+    back = planner_back(request, onto or start or timezone.now().date())
+
+    if start is None or end is None or onto is None:
+        messages.error(request, 'Those dates could not be read.')
+        return redirect(back)
+    if end < start:
+        start, end = end, start
+
+    # THE SHOPPING LIST'S CEILING, deliberately the same number. Three
+    # pages now take a span and a fourth limit would be the one that
+    # surprises somebody.
+    if (end - start).days > 92:
+        messages.error(request, 'A copy covers at most 13 weeks.')
+        return redirect(back)
+
+    # COPYING ONTO ITSELF IS NOT A COPY. Landing on the first day of
+    # the span you are copying would duplicate every meal in place.
+    if start <= onto <= end:
+        messages.error(request, 'That would copy the days onto '
+                                'themselves. Pick a date outside '
+                                '%s to %s.'
+                       % (day_label(start), day_label(end)))
+        return redirect(back)
+
+    rows = list(MealEntry.objects
+                .filter(date__gte=start, date__lte=end)
+                .select_related('recipe', 'leftover_of')
+                .order_by('date', 'sort_order'))
+    if not rows:
+        messages.error(request, 'There is nothing on %s to %s to copy.'
+                       % (day_label(start), day_label(end)))
+        return redirect(back)
+
+    made = copy_week_rows(rows, start, onto, request.user)
+    span = (end - start).days + 1
+    messages.success(
+        request,
+        'Copied %d meal%s from %d day%s onto %s.'
+        % (made, '' if made == 1 else 's',
+           span, '' if span == 1 else 's', day_label(onto)))
+    return redirect(planner_back(request, onto))
 
 
 @login_required

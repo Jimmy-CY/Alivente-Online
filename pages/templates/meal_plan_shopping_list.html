@@ -9,6 +9,27 @@
 {% block title %}Shopping List{% endblock %}
 {% block content %}
 
+{# THE MESSAGE BAR - MG-1, 21 Oct 2026.                             #}
+{#                                                                  #}
+{# This page wrote messages and could not show one. Django keeps a  #}
+{# message in the session until a template RENDERS it, and 78 of    #}
+{# the 151 live templates carry this loop - the planner, the        #}
+{# shopping list and the printable plan carried none between them.  #}
+{# So twelve messages.success() calls in meal_planning.py queued up #}
+{# and surfaced on whatever page came next: Recipe Management, or   #}
+{# the logout screen. Demetri reported exactly that.                #}
+{#                                                                  #}
+{# `msg`, not `message`: 73 pages spell it this way and 5 do not.   #}
+{# This is not the place to found a third dialect.                  #}
+{% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+      {{ msg }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+
 <style>    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
        Each one was already the byte-identical value of the
        token that replaced it, read from base's :root, so
@@ -111,6 +132,71 @@
     font-size: 80px;
     color: var(--alv-line);
     margin-bottom: 20px;
+}
+
+/* THE RANGE ROW - SH-2, 21 Oct 2026.
+   This had NO rule at all. It wore .page-action-buttons and was laid
+   out by it, which is the whole reason it looked like a bar: it was
+   being painted as one. Now it is what it is - a compact filter.
+
+   WIDTH: AUTO ON THE DATES. They were .form-control, which is
+   width:100%, so two date inputs and a button stretched across the
+   page and ate the top of it. A date input sized to a date is about
+   150px; the browser decides, and `width: auto` lets it.
+
+   44px, because that is what 3.4 promises a control on a phone and
+   what ALV FILTER FIELD gives every other filter in the system.
+   --alv-line for the border, which is the colour every field in the
+   system uses. */
+.sl-range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+.sl-range-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.sl-range-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--alv-ink-soft);
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+.sl-range-date {
+    width: auto;
+    height: 44px;
+    padding: 0 10px;
+    font-size: 14px;
+    color: var(--alv-ink);
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
+}
+.sl-range-date:focus {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -1px;
+    border-color: var(--alv-accent);
+}
+.sl-range .btn {
+    height: 44px;
+}
+
+/* A PHONE WRAPS IT, it does not stretch it. Two dates and a button
+   on one 390px line would give each about 110px; the row breaks
+   after the second date instead and the button takes its own line. */
+/* A PHONE TAKES TWO LINES, NOT THREE. The pairs share the first -
+   half each - and the button sits on the second at its own width,
+   because a secondary stretched across the screen reads as a verb. */
+@media screen and (max-width: 767px) {
+    .sl-range { gap: 6px; }
+    .sl-range-pair { flex: 1 1 calc(50% - 3px); min-width: 0; }
+    .sl-range-pair .sl-range-date { flex: 1 1 auto; min-width: 0; }
+    .sl-range .btn { flex: 0 0 auto; }
 }
 
 /* Step Navigation */
@@ -623,22 +709,6 @@
 {# a week". A range you can only choose before you arrive is a     #}
 {# range you have to go back to change.                             #}
 {#                                                                  #}
-{# A GET, AND THE SAME TWO PARAMETERS THE SERVER HAS TAKEN SINCE    #}
-{# MN-1. No new endpoint, no new aggregation path - this re-asks    #}
-{# the page it is on.                                               #}
-{#                                                                  #}
-{# IT PRINTS NOTHING. SL-1 hides .page-action-buttons on paper and  #}
-{# this belongs with them: a shopping list on the fridge does not   #}
-{# need a form on it.                                                #}
-<form method="get" action="" class="sl-range page-action-buttons">
-    <label class="sl-range-label" for="slFrom">From</label>
-    <input type="date" id="slFrom" name="from" class="form-control"
-           value="{{ start|date:'Y-m-d' }}">
-    <label class="sl-range-label" for="slTo">To</label>
-    <input type="date" id="slTo" name="to" class="form-control"
-           value="{{ end|date:'Y-m-d' }}">
-    <button type="submit" class="btn action-primary">Show these days</button>
-</form>
 <div class="page-action-buttons">
         {# ONE BAR, BOTH STEPS - SL-2, 3 Oct 2026. Demetri: take the       #}
         {# buttons to the top and make the Cancel a Back. This bar sits    #}
@@ -978,6 +1048,42 @@
     
     {% if ingredients %}
     <!-- Step Indicator -->
+    {# UNDER THE BAR - SH-2, 21 Oct 2026.                              #}
+    {#                                                                  #}
+    {# SL-7 put this ABOVE the action bar and gave it the bar's own     #}
+    {# class, so the page had two .page-action-buttons rows and the     #}
+    {# wrong one came first. base 3.4 forbids both: one bar per page,   #}
+    {# and nothing sits above it. Demetri reported it as wasted space   #}
+    {# at the top of the page, which is what a second bar looks like.   #}
+    {#                                                                  #}
+    {# A GET, AND THE SAME TWO PARAMETERS THE SERVER HAS TAKEN SINCE    #}
+    {# MN-1. No new endpoint, no new aggregation path - this re-asks    #}
+    {# the page it is on.                                               #}
+    {#                                                                  #}
+    {# IT PRINTS NOTHING. SL-1 hides .page-action-buttons on paper and  #}
+    {# this belongs with them: a shopping list on the fridge does not   #}
+    {# need a form on it.                                                #}
+    <form method="get" action="" class="sl-range">
+        {# EACH LABEL IS WELDED TO ITS INPUT. Loose in a wrapping flex #}
+        {# row they are five independent children, and at 390px the    #}
+        {# row broke as "From [date] To" / "[date]" - the To label      #}
+        {# orphaned at the end of a line with its own field underneath. #}
+        <span class="sl-range-pair">
+            <label class="sl-range-label" for="slFrom">From</label>
+            <input type="date" id="slFrom" name="from" class="sl-range-date"
+                   value="{{ start|date:'Y-m-d' }}">
+        </span>
+        <span class="sl-range-pair">
+            <label class="sl-range-label" for="slTo">To</label>
+            <input type="date" id="slTo" name="to" class="sl-range-date"
+                   value="{{ end|date:'Y-m-d' }}">
+        </span>
+        {# A SECONDARY. The page's verb is Generate List, and that is  #}
+        {# on screen at the same time as this - so an .action-primary  #}
+        {# here is a second primary, which 3.4 forbids outright.       #}
+        <button type="submit" class="btn action-secondary">Show these days</button>
+    </form>
+
     <div class="step-indicator">
         <div class="step-badge active" id="step1Badge">
             <span class="step-number">1</span>

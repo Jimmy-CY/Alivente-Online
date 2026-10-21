@@ -226,7 +226,12 @@ def claims(bundle, page):
     # names the thing are not the same thing; it is the class
     # attribute that has to be clean, not the prose.
     c['  and it styles its own container'] = (
-        'class="pp-page"' in page
+        # RG-1, 21 Oct 2026 - the attribute reads `pp-page is-month`
+        # now, so the exact-string form stopped matching a page that
+        # is still doing the right thing. A word boundary asks the
+        # question PP-1 meant: is this page wearing its OWN container
+        # rather than one meal_planner.html defines?
+        bool(re.search(r'class="pp-page\b', page))
         and 'class="calendar-container"' not in page)
     # B - two of them, both measured on paper.
     c['  tracks that can shrink: minmax(0, 1fr)'] = (
@@ -332,6 +337,7 @@ head('3. SIX RANGES, ASKED OF THE SERVER')
 # five weeks of grid holding 31 in-range days and four dimmed ones, a
 # single day is one week of grid holding one. Ask for all six.
 seen, shapes, planner = {}, None, {}
+sheets_seen = {}          # RG-1, 21 Oct 2026
 try:
     os.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
@@ -388,6 +394,12 @@ try:
             'weeks': h.count('class="pp-week"'),
             'cells': len(re.findall(r'class="pp-day(?:[ "])', h)),
             'out': len(re.findall(r'class="pp-day is-out', h)),
+            # RG-1, 21 Oct 2026 - which of the four sheets came back.
+            # A day is no longer a week with six columns greyed out,
+            # so the count of cells is not on its own a description of
+            # what was printed.
+            'sheet': (re.findall(r'class="pp-page is-(\w+)"', h) or
+                      ['?'])[0],
             'html': h,
         }
 
@@ -396,10 +408,14 @@ try:
             ('week', {'from': '2026-10-19', 'to': '2026-10-25'}),
             ('month', {'from': '2026-10-01', 'to': '2026-10-31'}),
             ('ragged', {'from': '2026-10-21', 'to': '2026-11-03'}),
+            # RG-1, 21 Oct 2026 - the same dates under the name the
+            # page now gives that shape.
+            ('range', {'from': '2026-10-21', 'to': '2026-11-03'}),
             ('reversed', {'from': '2026-10-31', 'to': '2026-10-01'}),
             ('nothing', {})):
         g = grid(qs)
         seen[name] = (g['weeks'], g['cells'], g['out'])
+        sheets_seen[name] = g['sheet']   # RG-1, 21 Oct 2026
         if name == 'ragged':
             h = g['html']
             shapes = (h.count('pp-meal is-left'),
@@ -434,9 +450,27 @@ else:
     ok(not ragged,
        'EVERY range draws whole weeks - seven cells per week, no '
        'week part-drawn', ragged)
-    ok(seen.get('day') == (1, 7, 6),
-       'A DAY is one week of grid with one day lit and six dimmed',
+    # RG-1, 21 Oct 2026 - THIS CLAIM IS THE FAULT, INVERTED.
+    #
+    # It read: "A DAY is one week of grid with one day lit and six
+    # dimmed" - (1, 7, 6) - and it passed, every time, because that
+    # is exactly what the page did. Demetri reported it as "Day view
+    # Print, prints a Week view", and he was right: it was a week.
+    # The suite measured the thing and agreed with it.
+    #
+    # A day is now a day sheet: no grid, no cells, nothing dimmed.
+    ok(seen.get('day') == (0, 0, 0),
+       'A DAY DRAWS NO GRID AT ALL - RG-1. It was (1, 7, 6): one '
+       'week of grid with six columns greyed out, which is what '
+       '"Day view Print, prints a Week view" was',
        seen.get('day'))
+    ok(sheets_seen.get('day') == 'day',
+       '  and the page says which sheet it is', sheets_seen.get('day'))
+    ok(sheets_seen.get('week') == 'week'
+       and sheets_seen.get('month') == 'month'
+       and sheets_seen.get('range') == 'range',
+       '  as do the other three - the range decides the sheet',
+       sheets_seen)
     ok(seen.get('week') == (1, 7, 0),
        'A WEEK fills its grid exactly - nothing to dim',
        seen.get('week'))

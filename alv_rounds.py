@@ -1381,6 +1381,26 @@ ROUNDS = [
     '.bak_printplan',
     # MH-5, 20 Oct 2026 - the guide catches up with the calendar.
     '.bak_mealguide5',
+    # SC-1, 21 Oct 2026 - Today, not Tonight, and two not three.
+    '.bak_saytoday',
+    # BO-1, 21 Oct 2026 - the primary comes first.
+    '.bak_barfirst',
+    # WT-1, 21 Oct 2026 - the week owns the edge, the meal the fill.
+    '.bak_weekband',
+    # SH-2, 21 Oct 2026 - the range row stops being a second bar.
+    '.bak_slrangerow',
+    # MG-1, 21 Oct 2026 - the message bar the meal plans never had.
+    '.bak_msgbar2',
+    # HP-1, 21 Oct 2026 - Help, reachable on a phone.
+    '.bak_helpphone',
+    # BA-1, 21 Oct 2026 - three holes in the bar instrument.
+    '.bak_baraudit',
+    # CP-2, 21 Oct 2026 - a copy of any span, and menus with a door.
+    '.bak_copymenus',
+    # RG-1, 21 Oct 2026 - four sheets, and a month on one of them.
+    '.bak_printshape',
+    # RG-2, 21 Oct 2026 - From, To, and what the second press is for.
+    '.bak_printrange',
 ]
 
 

@@ -1171,9 +1171,8 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'meal_plansHelpModal'; What = 'MH-2: the planner has a Help button, wired to the guide' },
     @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-name="Adding a Meal"'; What = 'MH-2: and the guide describes adding a meal to a day, not building a plan' },
     # ------------------------------------------------- MW-1, 19 Oct 2026
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="copyWeekModal"'; What = 'MW-1: a week can be copied onto a week you pick' },
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="saveMenuModal"'; What = 'MW-1: and saved under a name, by weekday' },
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="applyMenuModal"'; What = 'MW-1: and a saved Menu stamped onto any week' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="copyRangeModal"'; What = 'MW-1, as CP-2 left it: any span of days can be copied onto a landing date - a day, a week, a month or a range you type' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'id="menusModal"'; What = 'MW-1, as CP-2 left it: a week saved under a name by weekday, applied to any week, and deleted - all three in one dialog' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'added alongside'; What = 'MW-1: and the dialog counts what is there BEFORE the button - add alongside, and say so first' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def copy_week_rows('; What = 'MW-1: one function copies a week, parents before leftovers' },
     @{ File = 'pages/urls.py'; Text = "name='meal_week_preview'"; What = 'MW-1: the route the dialog asks the count of' },
@@ -1233,9 +1232,19 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WRAPPER THAT NEVER CLOSED'; What = 'DB-1: 88 rules and 2,471 lines were nested inside a max-width 1200px block that was never closed, so the date bar rendered as default browser buttons on any screen wider than that' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: 1fr'; Absent = $true; Code = $true; What = 'DB-1: and the one rule it held is gone - .calendar-layout stopped being a grid when MV-2 deleted the mini calendar beside it' },
+    @{ File = 'pages/templates/meal_plan_print.html'; Text = 'THE RANGE - RG-2'; What = 'RG-2: From and To on the printable plan, on one 44px line like the shopping list - and a line saying what the second Print press does, which is the answer he chose to "why do we press Print twice"' },
+    @{ File = 'pages/templates/meal_plan_print.html'; Text = 'is-{{ sheet }}'; What = 'RG-1: the printed sheet follows the range - a day prints a day, a week prints seven columns you can write in, and a month fits on one sheet of A4. Day view used to print a week with six columns greyed out' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'BACK ON THE BAR - CP-2'; What = 'CP-2: Copy... and Saved Menus... are bar buttons, so they can be reached on a desktop - MW-1 put all three week controls inside the More menu, which base hides above 768px, and for two days they existed only on a phone' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def copy_meal_range('; What = 'CP-2: a copy takes any span of days onto a landing date - day, week and month are presets that fill in two dates, because copy_week_rows has always worked by date offset' },
+    @{ File = 'test_bar_order.py'; Text = 'A BAR IS NOT ALWAYS A <div>'; What = 'BA-1: the bar-order instrument reads the LIVE tree for its tree-wide claim, sees a bar written as a form, and asserts one bar per page - three holes that let four separate faults ship between 19 and 21 October' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'AND HELP - HP-1'; What = 'HP-1: Help is in the planner More menu, so it can be reached on a phone - base hides every secondary below 768px in a bar that has a menu, and MW-1 added the menu without putting Help in it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE MESSAGE BAR - MG-1'; What = 'MG-1: the planner, the shopping list and the printable plan render Django messages - between them they carried none, so twelve messages.success() calls queued in the session and surfaced on whatever screen came next' },
+    @{ File = 'pages/templates/meal_plan_shopping_list.html'; Text = 'UNDER THE BAR - SH-2'; What = 'SH-2: the from/to range sits under the action bar and is a compact row rather than a second .page-action-buttons above it - the page had two bars, which 3.4 forbids, and two visible primaries' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WEEK OWNS THE EDGE'; What = 'WT-1: the selected week in Month view is marked by an accent rule above and below rather than by a fill - it used to fill with the exact token the meal pills fill with, so a pill on that row was its 1px border and nothing else' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE PRIMARY FIRST - BO-1'; What = 'BO-1: the planner bar reads PRIMARY, SECONDARIES, BACK - Shopping List is the page verb and Print follows it, where PP-1 had put Print above it' },
+    @{ File = 'pages/templates/recipe_management.html'; Text = 'data-plan-when="today">Today<'; What = 'SC-1: the add-to-planner shortcut says Today rather than Tonight - the value was always today, and this module has no meal types, so it cannot know morning from evening' },
     @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-slug="mp-print"'; What = 'MH-5: the meal plans guide has eight tabs and no longer describes the two-panel screen, the trashcan or the eye - none of which has existed since release 4 push 1' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def meal_plan_print('; What = 'PP-1: a meal plan can be printed - there was no print support on the planner at all, and the only mention of print on that screen was a comment about the print-leak rule' },
-    @{ File = 'pages/templates/meal_plan_print.html'; Text = 'pp-grid'; What = 'PP-1: and it is a week-grid per week, whole weeks with the days outside the range dimmed, because a ragged first week reads as missing data rather than as a boundary' },
     @{ File = 'test_console_encoding.py'; Text = 'alv_conenc_'; What = 'CE-1: the console-encoding probe writes its throwaway script into a directory of its own - it used to write a .py into the repository, which test_code_only lists and reads, and one unlucky interleaving stopped a push at 290 of 395' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = "'sl_from': sl_from"; What = 'SL-7: the Shopping List button covers the view you are on - it was hard-wired to the week, so Month bought for a week of the month and Day bought for a week round the day' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'id="pickerNote"'; What = 'NT-1: a note can be added from Month and Week - openNote was reachable only from the Day card, and a note belongs to a DAY so it joins the dialog that adds things to one' },
@@ -2863,7 +2872,38 @@ $suites = @(
     'test_print_plan.py',
     # MH-5, 20 Oct 2026 - the guide catches up with the calendar, and
     # stops describing two panels, a trashcan and an eye.
-    'test_meal_guide5.py'
+    'test_meal_guide5.py',
+    # SC-1, 21 Oct 2026 - the library shortcut says Today, and the
+    # third one that nobody wanted is gone.
+    'test_say_today.py',
+    # BO-1, 21 Oct 2026 - the planner bar reads primary first, which
+    # is what the standard has said since 7 September.
+    'test_bar_first.py',
+    # WT-1, 21 Oct 2026 - the selected week and the meals on it were
+    # the same token, dE 0.0. The week is an edge now.
+    'test_week_band.py',
+    # SH-2, 21 Oct 2026 - the shopping list had two action bars and
+    # the wrong one came first.
+    'test_sl_range_row.py',
+    # MG-1, 21 Oct 2026 - three meal-plan pages wrote messages and
+    # none of them could show one.
+    'test_msg_bar.py',
+    # HP-1, 21 Oct 2026 - Help on the planner could not be reached on
+    # a phone at all. One control in 32 bars; the others are clean.
+    'test_help_phone.py',
+    # BA-1, 21 Oct 2026 - the bar instrument could not see a form
+    # bar, read a tree-wide claim through a historical reader, and
+    # nobody asked whether a menu item exists outside its menu.
+    'test_bar_audit.py',
+    # CP-2, 21 Oct 2026 - three features that could only be reached
+    # on a phone are on the bar, and Copy takes any span of days.
+    'test_copy_menus.py',
+    # RG-1, 21 Oct 2026 - the printed plan has four shapes now, and a
+    # month fits on one sheet of A4.
+    'test_print_shape.py',
+    # RG-2, 21 Oct 2026 - the printed plan takes a range of its own,
+    # and says what the second Print press is for.
+    'test_print_range.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

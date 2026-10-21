@@ -469,8 +469,15 @@ else:
                        m['over'])
                     if slug in old_by_slug:
                         a = shot(_br, old_by_slug[slug], w)
+                        # CP-2, 21 Oct 2026 - mp-week joins them.
+                        # Three controls became two and the tab is
+                        # 601 -> 598px on a desktop, 1128 -> 1105 on
+                        # a phone. A tab that describes controls
+                        # nobody can find would have kept its height
+                        # exactly.
                         if slug in ('mp-calendar', 'mp-build',
-                                    'mp-shopping', 'mp-tips'):
+                                    'mp-shopping', 'mp-tips',
+                                    'mp-week'):
                             # `!=`, NOT `>`. mp-calendar DELETES four
                             # pieces of prose about controls that are
                             # gone; a round that trims a tab is a

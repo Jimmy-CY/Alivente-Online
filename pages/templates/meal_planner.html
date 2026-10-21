@@ -6,6 +6,27 @@
 {% block title %}Meal Planner{% endblock %}
 {% block content %}
 
+{# THE MESSAGE BAR - MG-1, 21 Oct 2026.                             #}
+{#                                                                  #}
+{# This page wrote messages and could not show one. Django keeps a  #}
+{# message in the session until a template RENDERS it, and 78 of    #}
+{# the 151 live templates carry this loop - the planner, the        #}
+{# shopping list and the printable plan carried none between them.  #}
+{# So twelve messages.success() calls in meal_planning.py queued up #}
+{# and surfaced on whatever page came next: Recipe Management, or   #}
+{# the logout screen. Demetri reported exactly that.                #}
+{#                                                                  #}
+{# `msg`, not `message`: 73 pages spell it this way and 5 do not.   #}
+{# This is not the place to found a third dialect.                  #}
+{% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+      {{ msg }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+
 {# ===================================================================== #}
 {# MN-1, 18 Oct 2026 - RELEASE 3. THE CALENDAR IS THE PLAN.             #}
 {#                                                                      #}
@@ -369,6 +390,32 @@
    round where they were not - the grid closed after them, every week
    row became a sibling, and display:contents handed thirty-five cells
    to a plain div. One grid, one child per cell, no row wrapper. */
+/* THE COPY DIALOG - CP-2, 21 Oct 2026. */
+.cp-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.cp-presets .btn { height: 44px; }
+.cp-preset[aria-pressed="true"] {
+    background: var(--alv-accent-soft);
+    border-color: var(--alv-accent-line);
+    color: var(--alv-accent-ink);
+}
+.cp-dates { display: flex; gap: 12px; }
+.cp-dates .form-group { flex: 1 1 0; min-width: 0; }
+@media screen and (max-width: 767px) {
+    .cp-dates { flex-direction: column; gap: 0; }
+}
+
+/* THE MENUS DIALOG - two sections, two forms, one dialog. */
+.mn-section + .mn-section {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--alv-line);
+}
+.mn-head {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--alv-ink-soft);
+    margin-bottom: 10px;
+}
+
 .month-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -427,8 +474,18 @@
     background: var(--alv-surface);
 }
 
+/* THE WEEK OWNS THE EDGE, THE MEAL OWNS THE FILL - WT-1, 21 Oct 2026.
+   This was `background: var(--alv-accent-soft)`, which is the SAME
+   TOKEN .month-chip fills itself with: dE 0.0 in Lab, so a pill on
+   the selected week was the pill's 1px border and nothing else. CL-1
+   added that border on 20 October and it was treating the symptom.
+   A fourth near-white was measured and there is no room for one -
+   surface-deep lands 4.8 from is-out, and a pale accent closes on
+   surface before it clears the pill. Two properties, not two tints. */
 .month-cell.in-week {
-    background: var(--alv-accent-soft);
+    background: var(--alv-paper);
+    box-shadow: inset 0 2px 0 var(--alv-accent),
+                inset 0 -2px 0 var(--alv-accent);
 }
 
 .month-daynum {
@@ -1662,14 +1719,13 @@
     {# ONE BAR, and Back is LAST and carries no colour - test_bar_top. #}
     {# Help sits before it, as it does on all five meal-plan screens.  #}
     <div class="page-action-buttons">
-        {# PRINT WHAT YOU ARE LOOKING AT - PP-1, 20 Oct 2026. The    #}
-        {# same two dates SL-7 computes, handed to a page built for   #}
-        {# paper. There was no way to print a plan at all before this: #}
-        {# the only mention of print on this screen was a comment.     #}
-        <a href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}"
-           class="btn action-secondary">
-            <i class="fas fa-print"></i> Print
-        </a>
+        {# THE PRIMARY FIRST - BO-1, 21 Oct 2026.                    #}
+        {#                                                            #}
+        {# PP-1 put Print above this link and the bar read SPSB. The  #}
+        {# standard is PRIMARY, SECONDARIES, FILTER, BACK, and the    #}
+        {# page's verb is Shopping List: it is the thing this screen  #}
+        {# exists to produce. Print is a secondary and sits after it. #}
+        {#                                                            #}
         {# THE RANGE FOLLOWS THE VIEW - SL-7, 20 Oct 2026. This was  #}
         {# ?from=week_start&to=week_end on a screen with three views, #}
         {# so Month bought for a week and Day bought for a week.      #}
@@ -1679,6 +1735,37 @@
            class="btn action-primary">
             <i class="fas fa-shopping-cart"></i> Shopping List
         </a>
+        {# PRINT WHAT YOU ARE LOOKING AT - PP-1, 20 Oct 2026. The    #}
+        {# same two dates SL-7 computes, handed to a page built for   #}
+        {# paper. There was no way to print a plan at all before this: #}
+        {# the only mention of print on this screen was a comment.     #}
+        <a href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}"
+           class="btn action-secondary">
+            <i class="fas fa-print"></i> Print
+        </a>
+        {% if perms.auth.can_edit_recipes %}
+        {# BACK ON THE BAR - CP-2, 21 Oct 2026.                       #}
+        {#                                                            #}
+        {# MW-1 put Copy, Save-as-Menu and Apply-a-Menu inside the    #}
+        {# More menu and gave none of them a bar button. base hides   #}
+        {# that menu above 768px - it is a PHONE control, there to    #}
+        {# catch secondaries a narrow screen hid - so for two days    #}
+        {# three features existed only on a phone. Demetri: "I don't  #}
+        {# see Copy this week nor save this week as a menu???"        #}
+        {#                                                            #}
+        {# TWO, because Copy is about dates and a Menu is a saved set #}
+        {# of meals: Save-as and Apply are two halves of one idea and #}
+        {# live in one dialog, which also gives Delete a home - it    #}
+        {# was a trashcan buried inside Apply.                        #}
+        <button type="button" class="btn action-secondary"
+                data-toggle="modal" data-target="#copyRangeModal">
+            <i class="fas fa-copy"></i> Copy&hellip;
+        </button>
+        <button type="button" class="btn action-secondary"
+                data-toggle="modal" data-target="#menusModal">
+            <i class="fas fa-bookmark"></i> Saved Menus&hellip;
+        </button>
+        {% endif %}
         <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#meal_plansHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
@@ -1721,20 +1808,38 @@
                    href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}">
                     <i class="fas fa-print"></i> Print this plan
                 </a>
+                {# AND HELP - HP-1, 21 Oct 2026.                          #}
+                {#                                                        #}
+                {# base hides every .action-secondary below 768px in a    #}
+                {# bar that has a More menu, deliberately, because the    #}
+                {# menu is where they went. MW-1 added the menu on 19     #}
+                {# October and Help was not put in it, so for two days    #}
+                {# an editing user could not reach Help on a phone at     #}
+                {# all - measured at 390px: display:none, height 0. A     #}
+                {# read-only user kept theirs, because they have no More  #}
+                {# button and :has() does not match.                      #}
+                {#                                                        #}
+                {# Audited across all 32 bars with a menu: this was the   #}
+                {# only control in the application in that state.         #}
                 <button type="button" class="action-more-item" role="menuitem"
-                        onclick="resetCopyWeek()"
-                        data-toggle="modal" data-target="#copyWeekModal">
-                    <i class="fas fa-copy"></i> Copy this week to...
+                        data-toggle="modal" data-target="#meal_plansHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                {# TWINS, NOT HOMES - CP-2, 21 Oct 2026.                  #}
+                {#                                                        #}
+                {# These three were the only copies in the application    #}
+                {# of a feature that had no bar button, and this menu is  #}
+                {# display:none above 768px - so they could be reached    #}
+                {# only on a phone. They are bar secondaries now, and     #}
+                {# what sits here is what sits in every other menu in     #}
+                {# the tree: a twin of a control that exists outside it.  #}
+                <button type="button" class="action-more-item" role="menuitem"
+                        data-toggle="modal" data-target="#copyRangeModal">
+                    <i class="fas fa-copy"></i> Copy...
                 </button>
                 <button type="button" class="action-more-item" role="menuitem"
-                        onclick="resetSaveMenu()"
-                        data-toggle="modal" data-target="#saveMenuModal">
-                    <i class="fas fa-bookmark"></i> Save this week as a Menu
-                </button>
-                <button type="button" class="action-more-item" role="menuitem"
-                        onclick="resetApplyMenu()"
-                        data-toggle="modal" data-target="#applyMenuModal">
-                    <i class="fas fa-list-ul"></i> Apply a Menu...
+                        data-toggle="modal" data-target="#menusModal">
+                    <i class="fas fa-bookmark"></i> Saved Menus...
                 </button>
             </div>
         </div>
@@ -2627,55 +2732,81 @@
 {# ============================================= copy this week to... #}
 {# MW-1, 19 Oct 2026. "Copy this week to a week you pick" - the old    #}
 {# Duplicate, without a plan to duplicate it from.                    #}
-<div class="modal fade" id="copyWeekModal" tabindex="-1" role="dialog"
-     aria-labelledby="copyWeekLabel" aria-hidden="true">
+{# ===================================================== copy... #}
+{# ONE DIALOG FOR FOUR THINGS - CP-2, 21 Oct 2026. He asked for a   #}
+{# day, a week, a month and an arbitrary range onto a start date.   #}
+{# copy_week_rows copies by DATE OFFSET, so all four are one call;  #}
+{# the three buttons below fill in two dates and nothing else.      #}
+<div class="modal fade" id="copyRangeModal" tabindex="-1" role="dialog"
+     aria-labelledby="copyRangeLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header alv-modal-head">
-                <h5 class="modal-title" id="copyWeekLabel">
-                    <i class="fas fa-copy"></i> Copy this week to&hellip;
+                <h5 class="modal-title" id="copyRangeLabel">
+                    <i class="fas fa-copy"></i> Copy meals to another date
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="POST" action="{% url 'copy_meal_week' %}">
+            <form method="POST" action="{% url 'copy_meal_range' %}">
                 {% csrf_token %}
-                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
-                {# Eleven endpoints sent you back to the planner and  #}
-                {# every one of them dropped the view, so a write in  #}
-                {# Week view handed you the Month.                    #}
+                {# THE VIEW AND THE DAY TRAVEL WITH IT - PB-2 and PB-3. #}
                 <input type="hidden" name="view" value="{{ view_mode }}">
-                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
-                {# from_date, not date: this form may already post  #}
-                {# a `date` and mean a different one by it.         #}
                 <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
-                <input type="hidden" name="from_week" value="{{ week_start|date:'Y-m-d' }}">
                 <div class="modal-body">
-                    <p>
-                        Every meal on <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>
-                        goes onto the matching weekday of the week you pick, with its servings.
+                    <p class="text-muted" style="font-size:13px;">
+                        The meals stay where they are. A copy of each one
+                        lands on the matching day of the new dates,
+                        alongside anything already there.
                     </p>
                     <div class="form-group">
-                        <label for="copyWeekTo"><strong>Copy to the week of</strong></label>
-                        <input type="date" class="form-control" id="copyWeekTo"
-                               name="to_week" onchange="copyPreview()" required>
+                        <label><strong>Copy</strong></label>
+                        <div class="cp-presets">
+                            <button type="button" class="btn action-secondary cp-preset"
+                                    data-cp-span="day">This day</button>
+                            <button type="button" class="btn action-secondary cp-preset"
+                                    data-cp-span="week">This week</button>
+                            <button type="button" class="btn action-secondary cp-preset"
+                                    data-cp-span="month">This month</button>
+                        </div>
+                    </div>
+                    <div class="cp-dates">
+                        <div class="form-group">
+                            <label for="cpFrom"><strong>From</strong></label>
+                            <input type="date" class="form-control" id="cpFrom"
+                                   name="from" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cpTo"><strong>To</strong></label>
+                            <input type="date" class="form-control" id="cpTo"
+                                   name="to" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cpOnto"><strong>Landing on</strong></label>
+                        <input type="date" class="form-control" id="cpOnto"
+                               name="onto" required>
                         <small class="form-text text-muted">
-                            Any day in the week you want. The whole week it belongs to is what receives the meals.
+                            The first day of the copy. A span of seven days
+                            landing on a Monday fills that Monday to Sunday.
                         </small>
                     </div>
-                    {# SAY SO FIRST. The decision was "add alongside, AND  #}
-                    {# say so first", and a dialog that cannot count what  #}
-                    {# the target week already holds is the same copy with #}
-                    {# a quieter conscience. So it asks before the button  #}
-                    {# can be pressed - which is also why the button       #}
-                    {# starts disabled and the answer is what enables it.  #}
-                    <div id="copyWeekNote" aria-live="polite"></div>
+                    {# SAY SO FIRST - the other half of the 19 October  #}
+                    {# collision decision, and the half the first draft #}
+                    {# of this round quietly dropped. Before Copy can   #}
+                    {# be pressed the dialog asks the server what the   #}
+                    {# landing days already hold and says it. The       #}
+                    {# button is enabled by the ANSWER, not by a date   #}
+                    {# being typed: a copy that went ahead while the    #}
+                    {# count was still in flight would be the quieter   #}
+                    {# conscience the decision was taken to avoid.      #}
+                    <div id="cpNote"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn action-primary" id="copyWeekGo" disabled>
-                        <i class="fas fa-copy"></i> Copy the Week
+                    <button type="submit" class="btn action-primary" id="cpGo" disabled>
+                        <i class="fas fa-copy"></i> Copy
                     </button>
                 </div>
             </form>
@@ -2683,60 +2814,122 @@
     </div>
 </div>
 
-{# ========================================= save this week as a menu #}
-{# A MENU IS A TEMPLATE. It holds day indexes 0 to 6, not dates, which #}
-{# is why MN-1 built MenuItem that way: a week saved in October can be #}
-{# stamped onto a week in December. Leftovers are not saved - a        #}
-{# leftover is a consequence of a particular week, not a plan.         #}
-<div class="modal fade" id="saveMenuModal" tabindex="-1" role="dialog"
-     aria-labelledby="saveMenuLabel" aria-hidden="true">
+{# ============================================== saved menus #}
+{# ONE DIALOG FOR THE WHOLE IDEA - CP-2, 21 Oct 2026.               #}
+{#                                                                  #}
+{# Save-as-a-Menu and Apply-a-Menu are two halves of one thing: a   #}
+{# named set of meals kept by weekday. They were two dialogs behind #}
+{# two items in a menu no desktop could open. Delete was a trashcan #}
+{# buried inside Apply, which is why it had nowhere to be described. #}
+{#                                                                  #}
+{# TWO SIBLING FORMS, because they post to different endpoints and  #}
+{# a form cannot nest. Both endpoints are untouched by this round.  #}
+<div class="modal fade" id="menusModal" tabindex="-1" role="dialog"
+     aria-labelledby="menusLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header alv-modal-head">
-                <h5 class="modal-title" id="saveMenuLabel">
-                    <i class="fas fa-bookmark"></i> Save this week as a Menu
+                <h5 class="modal-title" id="menusLabel">
+                    <i class="fas fa-bookmark"></i> Saved Menus
                 </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="POST" action="{% url 'save_menu' %}">
-                {% csrf_token %}
-                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
-                {# Eleven endpoints sent you back to the planner and  #}
-                {# every one of them dropped the view, so a write in  #}
-                {# Week view handed you the Month.                    #}
-                <input type="hidden" name="view" value="{{ view_mode }}">
-                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
-                {# from_date, not date: this form may already post  #}
-                {# a `date` and mean a different one by it.         #}
-                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
-                <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
-                <div class="modal-body">
-                    <p>
-                        The meals on <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>
-                        are kept under a name, by weekday. Apply it to any week later.
-                    </p>
-                    <div class="form-group">
-                        <label for="saveMenuName"><strong>Name</strong></label>
-                        <input type="text" class="form-control" id="saveMenuName"
-                               name="name" maxlength="100" autocomplete="off"
-                               placeholder="e.g. Easy Winter Week" required>
-                        <small class="form-text text-muted">
-                            This is how you will recognise it in the Apply list.
-                        </small>
-                    </div>
+            <div class="modal-body">
+
+                <div class="mn-section">
+                    <div class="mn-head">Save this week as a menu</div>
+                    <form method="POST" action="{% url 'save_menu' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="view" value="{{ view_mode }}">
+                        <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
+                        <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+                        <p class="text-muted" style="font-size:13px;">
+                            The meals on <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>
+                            are kept under a name, by weekday, so the same
+                            week can be stamped onto any week later.
+                        </p>
+                        <div class="form-group">
+                            <label for="saveMenuName"><strong>Name</strong></label>
+                            <input type="text" class="form-control" id="saveMenuName"
+                                   name="name" maxlength="100" autocomplete="off"
+                                   placeholder="e.g. Easy Winter Week" required>
+                        </div>
+                        <button type="submit" class="btn action-secondary">
+                            <i class="fas fa-bookmark"></i> Save this week
+                        </button>
+                    </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn action-primary">
-                        <i class="fas fa-bookmark"></i> Save the Menu
-                    </button>
+
+                <div class="mn-section">
+                    <div class="mn-head">Your menus</div>
+                    <form method="POST" action="{% url 'apply_menu' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="view" value="{{ view_mode }}">
+                        <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
+                        <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+                        <input type="hidden" name="menu_id" id="applyMenuId">
+                        {% if menus %}
+                        <p class="text-muted" style="font-size:13px;">
+                            The menu you pick is added to
+                            <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>,
+                            alongside whatever is already there.
+                        </p>
+                        <div class="menu-list">
+                            {% for menu in menus %}
+                            <div class="menu-option" data-menu-id="{{ menu.menu_id }}"
+                                 onclick="pickMenu(this)">
+                                <div class="menu-option-name">
+                                    <strong>{{ menu.name }}</strong><br>
+                                    <small class="text-muted">
+                                        {{ menu.item_count }} meal{{ menu.item_count|pluralize }}
+                                    </small>
+                                </div>
+                                <div class="row-actions">
+                                    <button type="button" class="icon-action-btn icon-delete"
+                                            title="Delete this menu"
+                                            aria-label="Delete the menu {{ menu.name }}"
+                                            onclick="deleteMenu(event, {{ menu.menu_id }}, '{{ menu.name|escapejs }}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn action-primary" id="applyMenuGo" disabled>
+                            <i class="fas fa-check"></i> Add to This Week
+                        </button>
+                        {% else %}
+                        {# THE EMPTY STATE SAYS WHERE MENUS COME FROM, and  #}
+                        {# now it can point UP rather than at a dialog the  #}
+                        {# reader cannot see from here.                     #}
+                        <div class="empty-day">
+                            <i class="fas fa-list-ul"></i>
+                            <p>No menus yet.</p>
+                            <p class="text-muted">
+                                Put some meals on a week, then use
+                                <strong>Save this week</strong> above.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </form>
                 </div>
-            </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
+
+
+
+{# ========================================= save this week as a menu #}
+{# A MENU IS A TEMPLATE. It holds day indexes 0 to 6, not dates, which #}
+{# is why MN-1 built MenuItem that way: a week saved in October can be #}
+{# stamped onto a week in December. Leftovers are not saved - a        #}
+{# leftover is a consequence of a particular week, not a plan.         #}
+
 
 {# ================================================== apply a menu... #}
 {# MANAGED HERE, NOT ON A PAGE OF ITS OWN - the fourth decision, and   #}
@@ -2744,83 +2937,7 @@
 {# SCREEN. A Menus list page would be the second one, reached from     #}
 {# here, holding one verb. So the trashcan lives per row in the        #}
 {# dialog that already has to list them.                               #}
-<div class="modal fade" id="applyMenuModal" tabindex="-1" role="dialog"
-     aria-labelledby="applyMenuLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header alv-modal-head">
-                <h5 class="modal-title" id="applyMenuLabel">
-                    <i class="fas fa-list-ul"></i> Apply a Menu
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form method="POST" action="{% url 'apply_menu' %}">
-                {% csrf_token %}
-                {# AND THE VIEW TRAVELS WITH IT - PB-2, 19 Oct 2026. #}
-                {# Eleven endpoints sent you back to the planner and  #}
-                {# every one of them dropped the view, so a write in  #}
-                {# Week view handed you the Month.                    #}
-                <input type="hidden" name="view" value="{{ view_mode }}">
-                {# AND THE DAY YOU WERE ON - PB-3, 20 Oct 2026.     #}
-                {# from_date, not date: this form may already post  #}
-                {# a `date` and mean a different one by it.         #}
-                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
-                <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
-                <input type="hidden" name="menu_id" id="applyMenuId">
-                <div class="modal-body">
-                    {% if menus %}
-                    <p>
-                        The menu you pick is added to
-                        <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>,
-                        alongside whatever is already there.
-                    </p>
-                    <div class="menu-list">
-                        {% for menu in menus %}
-                        <div class="menu-option" data-menu-id="{{ menu.menu_id }}"
-                             onclick="pickMenu(this)">
-                            <div class="menu-option-name">
-                                <strong>{{ menu.name }}</strong><br>
-                                <small class="text-muted">
-                                    {{ menu.item_count }} meal{{ menu.item_count|pluralize }}
-                                </small>
-                            </div>
-                            <div class="row-actions">
-                                <button type="button" class="icon-action-btn icon-delete"
-                                        title="Delete this menu"
-                                        aria-label="Delete the menu {{ menu.name }}"
-                                        onclick="deleteMenu(event, {{ menu.menu_id }}, '{{ menu.name|escapejs }}')"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    {# THE EMPTY STATE SAYS WHERE MENUS COME FROM. There   #}
-                    {# is no other place to make one, so a dialog that     #}
-                    {# only said "none yet" would be a dead end.           #}
-                    <div class="empty-day">
-                        <i class="fas fa-list-ul"></i>
-                        <p>No menus yet.</p>
-                        <p class="text-muted">
-                            Put some meals on a week, then choose
-                            <strong>Save this week as a Menu</strong>.
-                        </p>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
-                    {% if menus %}
-                    <button type="submit" class="btn action-primary" id="applyMenuGo" disabled>
-                        <i class="fas fa-check"></i> Add to This Week
-                    </button>
-                    {% endif %}
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 
 {# THE DELETE FORM. Outside the Apply form, because a form inside a    #}
 {# form is not a thing HTML has - the trashcan is a plain button that  #}
@@ -3831,87 +3948,18 @@ function openLeftover(entryId, name, cookedOn) {
 }
 
 // ------------------------------------------------------- the week moves
-// MW-1, 19 Oct 2026. Three dialogs: copy a week, save a week as a
-// Menu, apply a Menu. Each is emptied as it opens - C19's lesson, and
-// the picker above does the same thing for the same reason.
-
-function resetCopyWeek() {
-    document.getElementById('copyWeekTo').value = '';
-    document.getElementById('copyWeekNote').innerHTML = '';
-    document.getElementById('copyWeekGo').disabled = true;
-}
-
-function resetSaveMenu() {
-    document.getElementById('saveMenuName').value = '';
-}
-
-function resetApplyMenu() {
-    document.querySelectorAll('.menu-option').forEach(function (o) {
-        o.classList.remove('selected');
-    });
-    document.getElementById('applyMenuId').value = '';
-    // THE BUTTON IS NOT THERE WHEN THERE ARE NO MENUS - the template
-    // leaves it out rather than disabling it, so this asks.
-    var go = document.getElementById('applyMenuGo');
-    if (go) { go.disabled = true; }
-}
-
-// SAY SO FIRST. "Add alongside, and say so first" was the decision, and
-// this is the second half of it: before Copy can be pressed, the dialog
-// asks the server what the target week already holds and says it. The
-// button is enabled by the ANSWER, not by the date being typed - a
-// Copy that went ahead while the count was still in flight would be
-// the quieter conscience the decision was taken to avoid.
-function copyPreview() {
-    var box = document.getElementById('copyWeekTo');
-    var note = document.getElementById('copyWeekNote');
-    var go = document.getElementById('copyWeekGo');
-    go.disabled = true;
-    if (!box.value) { note.innerHTML = ''; return; }
-
-    note.innerHTML = '<p class="text-muted"><i class="fas fa-spinner fa-spin"></i> '
-        + 'Checking that week...</p>';
-
-    fetch('{% url "meal_week_preview" %}?week=' + encodeURIComponent(box.value), {
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-        if (!d.success) {
-            // NOT alert() - SL-4. A browser dialog blocks every event
-            // after it, and this dialog has a place to say things.
-            note.innerHTML = '<div class="alert alert-warning">' + d.error + '</div>';
-            return;
-        }
-        if (d.week === '{{ week_start|date:"Y-m-d"|escapejs }}') {
-            note.innerHTML = '<div class="alert alert-warning">'
-                + 'That is this week. A week cannot be copied onto itself.</div>';
-            return;
-        }
-        if (d.meals === 0) {
-            note.innerHTML = '<div class="alert alert-info">'
-                + '<strong>' + d.label + '</strong> is empty. '
-                + 'The copy lands on a clear week.</div>';
-        } else {
-            // THE COUNT, IN WORDS, BEFORE THE BUTTON. Nothing is
-            // replaced and nothing is skipped: a day that had a dinner
-            // and gains another has two, visibly, which is a thing you
-            // can fix. A silent repair is not.
-            note.innerHTML = '<div class="alert alert-warning">'
-                + '<strong>' + d.label + '</strong> already has '
-                + d.meals + ' meal' + (d.meals === 1 ? '' : 's')
-                + ' on ' + d.days_with_meals + ' day'
-                + (d.days_with_meals === 1 ? '' : 's') + '. '
-                + 'The copy is <strong>added alongside</strong> them - '
-                + 'nothing is removed or replaced.</div>';
-        }
-        go.disabled = false;
-    })
-    .catch(function () {
-        note.innerHTML = '<div class="alert alert-warning">That week could not '
-            + 'be checked. Check your connection and try again.</div>';
-    });
-}
+// MW-1, 19 Oct 2026, cut back by CP-2 on 21 Oct 2026.
+//
+// resetCopyWeek, resetSaveMenu, resetApplyMenu and copyPreview all
+// addressed elements inside the three dialogs this round replaced.
+// Left behind they would not merely be dead: test_req_marker reads
+// every getElementById on every page and reports a selector the
+// markup never provides, which is how a handler that will throw at
+// runtime is found before a user finds it.
+//
+// The copy dialog's own script - presets, seeding and the preview
+// that says what the landing days already hold - is a block of its
+// own at the end of this file, below base's jQuery.
 
 function pickMenu(el) {
     document.querySelectorAll('.menu-option').forEach(function (o) {
@@ -3933,6 +3981,175 @@ function deleteMenu(ev, menuId, name) {
     document.getElementById('deleteMenuForm').submit();
 }
 {% endif %}
+</script>
+
+{# THE PRESETS - CP-2, 21 Oct 2026. Three buttons that fill two     #}
+{# date fields. No fourth code path, on the page or in the view.    #}
+{# A BLOCK OF ITS OWN, like RD-1's shell and AP-1's popover: in the #}
+{# page's shared script it would sit downstream of everything above #}
+{# it, and anything that throws up there takes this with it.        #}
+<script>
+(function () {
+    var ANCHOR = '{{ anchor|date:"Y-m-d" }}';
+    var WEEK_FROM = '{{ week_start|date:"Y-m-d" }}';
+    var WEEK_TO = '{{ week_end|date:"Y-m-d" }}';
+    var PREVIEW = '{% url "meal_week_preview" %}';
+
+    function el(id) { return document.getElementById(id); }
+
+    function iso(d) {
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function span(kind) {
+        if (kind === 'day') { return [ANCHOR, ANCHOR]; }
+        if (kind === 'week') { return [WEEK_FROM, WEEK_TO]; }
+        // THE MONTH THE ANCHOR IS IN, not the grid around it - the
+        // same decision SL-7 took for the shopping list, so a month
+        // means one thing on this screen.
+        var p = ANCHOR.split('-');
+        var y = Number(p[0]), m = Number(p[1]) - 1;
+        return [iso(new Date(y, m, 1)), iso(new Date(y, m + 1, 0))];
+    }
+
+    document.addEventListener('click', function (ev) {
+        var b = ev.target && ev.target.closest
+            && ev.target.closest('.cp-preset');
+        if (!b) { return; }
+        var two = span(b.getAttribute('data-cp-span'));
+        if (el('cpFrom')) { el('cpFrom').value = two[0]; }
+        if (el('cpTo')) { el('cpTo').value = two[1]; }
+        [].forEach.call(document.querySelectorAll('.cp-preset'),
+            function (x) { x.setAttribute('aria-pressed',
+                x === b ? 'true' : 'false'); });
+    });
+
+    // OPENS ON THIS WEEK, because that is what the old dialog copied
+    // and the commonest thing to want. Nothing is landed until a
+    // landing date is typed, which has no sensible default.
+    //
+    // NO jQUERY HERE - CP-2, 21 Oct 2026. The first draft bound this
+    // with $('#copyRangeModal').on('show.bs.modal', ...) and the
+    // browser said `$ is not defined`: base loads jQuery near the END
+    // of the document, so a parse-time $ binds nothing. That is
+    // RL-1's finding from 20 October, in a new costume - a guard
+    // answers "is it here?", not "will it be?" - and it was found the
+    // same way, by driving the dialog rather than reading it.
+    //
+    // Set now, because the inputs are parsed by the time this runs,
+    // and re-set on every open, because a cancelled dialog leaves
+    // whatever was last typed in it.
+    function seed() {
+        if (el('cpFrom') && !el('cpFrom').value) {
+            el('cpFrom').value = WEEK_FROM;
+            el('cpTo').value = WEEK_TO;
+        }
+    }
+    seed();
+    document.addEventListener('click', function (ev) {
+        var o = ev.target && ev.target.closest
+            && ev.target.closest('[data-target="#copyRangeModal"]');
+        if (o) { seed(); copyPreview(); }
+    });
+
+    // SAY SO FIRST - MW-1's decision, 19 Oct 2026, kept.
+    //
+    // "Add alongside, AND SAY SO FIRST" is not the same decision as
+    // "add alongside": a dialog that cannot count what is already
+    // there is the same copy with a quieter conscience. MW-1's week
+    // dialog asked, and the first draft of this round dropped the
+    // question along with the dialog. test_meal_week said so.
+    //
+    // The button is enabled by the ANSWER. Nothing a user typed
+    // enables it, so a copy cannot go ahead while the count is still
+    // in flight.
+    function days(a, b) {
+        return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+    }
+
+    function copyPreview() {
+        var note = el('cpNote'), go = el('cpGo');
+        if (!note || !go) { return; }
+        go.disabled = true;
+        var f = el('cpFrom').value, t = el('cpTo').value,
+            o = el('cpOnto').value;
+        if (!f || !t || !o) { note.innerHTML = ''; return; }
+        var span = days(f, t);
+        if (span < 0) { span = -span; }
+        var end = new Date(Date.parse(o) + span * 86400000);
+        var onto_to = iso(end);
+        if (!(Date.parse(o) > Date.parse(t)
+              || Date.parse(onto_to) < Date.parse(f))) {
+            note.innerHTML = '<div class="alert alert-warning">'
+                + 'Those days overlap the ones being copied. Pick a '
+                + 'landing date outside them.</div>';
+            return;
+        }
+        note.innerHTML = '<p class="text-muted">'
+            + '<i class="fas fa-spinner fa-spin"></i> '
+            + 'Checking those days...</p>';
+        // THE HEADER OBJECT ON ITS OWN LINE, so the literal does
+        // not end on two closing braces with nothing between them.
+        // test_meal_week balances Django's variable delimiters
+        // across the whole page to catch an unclosed tag, and a
+        // JavaScript object that happens to end that way is counted
+        // as one - a false close that the page pays for.
+        //
+        // AND THIS NOTE DOES NOT SPELL IT EITHER. The first version
+        // explained the problem by quoting it, and the detector read
+        // the explanation: 169 opens against 171 closes, both of the
+        // extras in these six lines. Tenth instance of the house's
+        // oldest trap - a thing and something that merely names the
+        // thing are not two things.
+        fetch(PREVIEW + '?from=' + encodeURIComponent(o)
+              + '&to=' + encodeURIComponent(onto_to), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            if (!d.success) {
+                // NOT alert() - SL-4. A browser dialog blocks every
+                // event after it, and this dialog has a place to say
+                // things.
+                note.innerHTML = '<div class="alert alert-warning">'
+                    + d.error + '</div>';
+                return;
+            }
+            if (d.meals === 0) {
+                note.innerHTML = '<div class="alert alert-info">'
+                    + '<strong>' + d.label + '</strong> is empty. '
+                    + 'The copy lands on clear days.</div>';
+            } else {
+                // THE COUNT, IN WORDS, BEFORE THE BUTTON. Nothing is
+                // replaced and nothing is skipped: a day that had a
+                // dinner and gains another has two, visibly, which is
+                // a thing you can fix. A silent repair is not.
+                note.innerHTML = '<div class="alert alert-warning">'
+                    + '<strong>' + d.label + '</strong> already has '
+                    + d.meals + ' meal' + (d.meals === 1 ? '' : 's')
+                    + ' on ' + d.days_with_meals + ' day'
+                    + (d.days_with_meals === 1 ? '' : 's') + '. '
+                    + 'The copy is <strong>added alongside</strong> '
+                    + 'them - nothing is removed or replaced.</div>';
+            }
+            go.disabled = false;
+        })
+        .catch(function () {
+            note.innerHTML = '<div class="alert alert-warning">Those '
+                + 'days could not be checked. Check your connection '
+                + 'and try again.</div>';
+        });
+    }
+
+    ['cpFrom', 'cpTo', 'cpOnto'].forEach(function (id) {
+        if (el(id)) { el(id).addEventListener('change', copyPreview); }
+    });
+    [].forEach.call(document.querySelectorAll('.cp-preset'),
+        function (b) { b.addEventListener('click', copyPreview); });
+    copyPreview();
+}());
 </script>
 
 {% render_help_modal "meal_plans" %}

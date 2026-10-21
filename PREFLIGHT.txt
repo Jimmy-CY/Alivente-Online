@@ -1,0 +1,32 @@
+PRE-FLIGHT - release 4 push 4
+enumerated from the .bak files on disk, never typed
+
+file                                                       rounds                    bytes sha256-16         
+--------------------------------------------------------------------------------------------------------------
+Push-PendingChanges.ps1                                    SC-1+BO-1+WT-1+SH-2+MG-1+HP-1+BA-1+CP-2+RG-1+RG-2   234786 b04fdc098194a349   
+alv_rounds.py                                              SC-1+BO-1+WT-1+SH-2+MG-1+HP-1+BA-1+CP-2+RG-1+RG-2    75652 11a01746e4229b92   
+alv_tree.py                                                SC-1+BO-1+WT-1+SH-2+MG-1+HP-1+BA-1+CP-2+RG-1+RG-2    58653 33b80b5c5aca11bf   
+pages/help_content/administration.html                     CP-2                     246868 a3827b6caeb8077a   
+pages/templates/meal_plan_print.html                       MG-1+RG-1+RG-2            29363 86296af9f0675977   
+pages/templates/meal_plan_shopping_list.html               SH-2+MG-1                 61016 d8a0ea2620980e4a   
+pages/templates/meal_planner.html                          BO-1+WT-1+MG-1+HP-1+CP-2   182388 511bc3a161cc3fc9   
+pages/templates/recipe_management.html                     SC-1                     185664 65416b5096262fe1   
+pages/urls.py                                              CP-2                      36862 3f41fb855efdd5a1   
+pages/views/recipes/meal_planning.py                       CP-2+RG-1                 91256 245e58e60d2e4da6   
+test_add_planner.py                                        SC-1                      16402 191d80e27af2d93e   
+test_bar_first.py                                          CP-2                      14338 d4c52a18e9b403ab   
+test_bar_order.py                                          BA-1                      33688 d40b9c94d159e883   
+test_drift_root.py                                         CP-2                      35435 6c5c62b873faf95f   
+test_important_base.py                                     RG-1                      19588 8a1b63339f8b75d4   
+test_meal_guide3.py                                        CP-2                      25487 3dd87cf6b10e4054   
+test_meal_guide5.py                                        CP-2                      23638 99764bbb9bcd89aa   
+test_meal_help.py                                          HP-1+CP-2                 42099 63fa46bfd966f72c   
+test_meal_week.py                                          CP-2                      64487 84c5a8955e7743d9   
+test_pair_contrast.py                                      RG-1+RG-2                 21773 aee0987faf37f8f0   
+test_planner_back.py                                       CP-2                      19042 bf9c734f14e1fdf9   
+test_print_plan.py                                         RG-1                      23327 1277709d67c1bbc9   
+test_surface_border.py                                     RG-1                      22439 6d262a1301ee07e3   
+test_waiting_down.py                                       SC-1+BO-1+WT-1+SH-2+MG-1+HP-1+BA-1+CP-2+RG-1+RG-2    30907 1dd28b84dfd6f456   
+--------------------------------------------------------------------------------------------------------------
+24 distinct files, 10 touched by more than one round
+24 staged copies match the tree byte for byte

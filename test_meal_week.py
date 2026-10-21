@@ -103,7 +103,16 @@ VIEWS_ADDED = ('meal_week_preview', 'copy_meal_week', 'save_menu',
                'apply_menu', 'delete_menu')
 HELPERS_ADDED = ('monday_of', 'week_entries', 'day_label', 'week_label',
                  'copy_week_rows')
-DIALOGS = ('copyWeekModal', 'saveMenuModal', 'applyMenuModal')
+# CP-2, 21 Oct 2026 - TWO, not three. The three were reachable
+# only on a phone: base hides .action-more-wrapper above 768px,
+# so a feature whose only control lives in that menu cannot be
+# used on a desktop at all. Demetri: "I don't see Copy this week
+# nor save this week as a menu???"
+#
+# Save-as and Apply are two halves of one idea - a named set of
+# meals kept by weekday - and live in one dialog now, which also
+# gives Delete a home instead of a trashcan buried inside Apply.
+DIALOGS = ('copyRangeModal', 'menusModal')
 
 passed = failed = skipped = 0
 
@@ -256,21 +265,39 @@ def claims(text):
     for mid in DIALOGS:
         c['%s is on the planner' % mid] = (
             tcode.count('id="%s"' % mid) == 1)
-    c['the three controls live in base\'s More menu'] = (
+    # CP-2, 21 Oct 2026 - THE BAR, AND THE MENU AS A TWIN. The menu
+    # is a phone control: base hides it above 768px. A feature whose
+    # only control lives there is a feature nobody can reach on a
+    # desktop, which is what these two were for two days.
+    c['the two controls live on the bar'] = (
         tcode.count('id="actionMoreBtn"') == 1
-        and tcode.count('data-menu-panel') == 1)
+        and tcode.count('data-menu-panel') == 1
+        and all('data-target="#%s"' % m in
+                tcode[tcode.index('page-action-buttons'):
+                      tcode.index('action-more-menu')]
+                for m in DIALOGS))
     c['  and the page writes NO handler for it - base binds it'] = (
         tcode.count('id="actionMoreBtn"') == 1
         and "getElementById('actionMoreBtn')" not in tcode)
+    # TWO EACH, AND THAT IS THE POINT - CP-2, 21 Oct 2026. One in
+    # the bar for a desktop and one in the More menu for a phone,
+    # because base hides each of those at the other's width. Exactly
+    # one is reachable at a time; test_copy_menus measures that over
+    # all 32 bars in the application, in both directions.
     for mid in DIALOGS:
-        c['  one control targets %s' % mid] = (
-            tcode.count('data-target="#%s"' % mid) == 1)
+        c['  two controls target %s - bar and menu' % mid] = (
+            len(re.findall(r'<(?:button|a)\b[^>]*data-target="#%s"' % mid,
+                           tcode)) == 2)
 
     # ---- 8. SAY SO FIRST, which is half of the collision decision
     c['the copy dialog asks the server what is already there'] = (
         'meal_week_preview' in tcode and 'function copyPreview()' in tcode)
+    # CP-2, 21 Oct 2026 - renamed with the dialog, and the question
+    # it asks is a RANGE now rather than a week. The decision it
+    # serves is unchanged and is the reason this claim exists: "add
+    # alongside, AND SAY SO FIRST".
     c['  and the Copy button starts DISABLED'] = (
-        'id="copyWeekGo" disabled' in tcode)
+        'id="cpGo" disabled' in tcode)
     c['  and the dialog says the copy is added alongside'] = (
         'added alongside' in tcode)
     # SL-4: a browser dialog blocks every event after it. Paired with
@@ -280,9 +307,13 @@ def claims(text):
         'function copyPreview()' in tcode and 'alert(' not in tcode)
 
     # ---- 9. and the shapes that break a page rather than a feature
+    # CP-2, 21 Oct 2026 - the apply form is inside menusModal now,
+    # and the delete form is still its own top-level <form hidden>.
+    # The claim is unchanged in substance: a form cannot nest, and a
+    # delete nested inside apply would submit the wrong action.
     c['the delete form is OUTSIDE the apply form'] = (
-        tcode.find('id="deleteMenuForm"') > tcode.find('id="applyMenuModal"')
-        and '</form>' in tcode[tcode.find('id="applyMenuModal"'):
+        tcode.find('id="deleteMenuForm"') > tcode.find('id="menusModal"')
+        and '</form>' in tcode[tcode.find('id="menusModal"'):
                                tcode.find('id="deleteMenuForm"')])
     c['the trashcan stops the click selecting the row'] = (
         'ev.stopPropagation();' in tcode)
@@ -301,8 +332,12 @@ def claims(text):
     c['no colour literal enters the page'] = bool(block) and not re.search(
         r'(?m)^\s*(background|border-color|box-shadow|color)\s*:'
         r'[^;]*#[0-9a-fA-F]{3,6}', block)
+    # CP-2, 21 Oct 2026 - the empty state can point UP now rather
+    # than at a dialog the reader cannot see from here: Save and
+    # Apply are two sections of one dialog, so "Save this week" is
+    # eighty pixels above the sentence that names it.
     c['the Apply dialog says where menus come from when there are none'] = (
-        'Save this week as a Menu</strong>' in tcode)
+        'Save this week</strong> above' in tcode)
 
     # ---- 10. THE SECOND SUBJECT. Demetri was offered this three ways
     #          on 19 Oct and chose to fold it into this round, so these
@@ -1226,8 +1261,13 @@ ok(ROUNDS.index(SUFFIX) > ROUNDS.index('.bak_mealguide'),
 ok(ME in T.CONVERTED, '%s is in alv_tree.CONVERTED' % ME)
 ps1 = read(os.path.join(ROOT, PS1))
 ok("'%s'" % ME in ps1, '%s is on the push gate' % ME)
-for text in ('id="copyWeekModal"', 'id="saveMenuModal"',
-             'id="applyMenuModal"', 'added alongside',
+# CP-2, 21 Oct 2026 - the two dialogs that replaced the three. A
+# sentinel pointed at a string a round renamed stops the push BEFORE
+# any suite runs, and twenty-two suites in this tree check that every
+# sentinel still resolves - so three stale ones turned one change
+# into twenty-two red suites in the 21 October sweep.
+for text in ('id="copyRangeModal"', 'id="menusModal"',
+             'added alongside',
              'def copy_week_rows(', "name='meal_week_preview'"):
     ok(text in ps1, '  the pre-flight can see %r' % text)
 ok(os.path.isfile(os.path.join(ROOT, PATCHER)),

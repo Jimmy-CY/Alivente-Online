@@ -390,6 +390,10 @@ urlpatterns = [
     # Menu and MenuItem arrived with 0100 in push 1.
     path('meal_plans/week_preview/', views.meal_week_preview, name='meal_week_preview'),
     path('meal_plans/copy_week/', views.copy_meal_week, name='copy_meal_week'),
+    # CP-2, 21 Oct 2026 - any span of days onto a landing date. The
+    # week endpoint above is left alone; its preview is week-shaped.
+    path('meal_plans/copy_range/', views.copy_meal_range,
+         name='copy_meal_range'),
     path('meal_plans/menus/save/', views.save_menu, name='save_menu'),
     path('meal_plans/menus/apply/', views.apply_menu, name='apply_menu'),
     path('meal_plans/menus/delete/', views.delete_menu, name='delete_menu'),

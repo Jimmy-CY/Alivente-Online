@@ -209,7 +209,15 @@ VOID = frozenset(('area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
                   'link', 'meta', 'param', 'source', 'track', 'wbr'))
 ANY = re.compile(r'</?([a-zA-Z][-\w]*)\b([^>]*)>'
                  r'|\{%\s*(?:if|elif|else|endif)\b[^%]*%\}')
-BAR = re.compile(r'<div[^>]*class="[^"]*\bpage-action-buttons\b[^"]*"[^>]*>')
+# A BAR IS NOT ALWAYS A <div> - BA-1, 21 Oct 2026.
+#
+# This read `<div[^>]*...` and SL-7 wrote the shopping list's date
+# range as `<form class="sl-range page-action-buttons">`, above the
+# real bar. The page carried two bars and this suite could see one of
+# them, so neither the duplicate nor its order was ever reported.
+# SH-2 fixed that page; the instrument had to stop being able to miss
+# the next one.
+BAR = re.compile(r'<(?:div|form)[^>]*class="[^"]*\bpage-action-buttons\b[^"]*"[^>]*>')
 CONTROL = frozenset(('a', 'button', 'span'))
 ROLES = (('action-primary', 'P'),
          ('action-secondary', 'S'),
@@ -340,11 +348,28 @@ print('=' * 74)
 # ==========================================================================
 head('1. EVERY BAR IN THE APP IS PRIMARY, SECONDARIES, FILTER, BACK')
 # ==========================================================================
+# THE LIVE FILE, NOT now() - BA-1, 21 Oct 2026.
+#
+# This loop walks alv_tree.templates(), which is TODAY's list of
+# templates, and read each one through now() - which is
+# as_left_by(p, SUFFIX), the file as THIS round left it. Today's file
+# list, September's file contents.
+#
+# PP-1 added a Print button to the planner on 20 October and this
+# section ran that bar through a snapshot taken before the button
+# existed: it reported PSB where the markup said SPSB, and the
+# violation shipped. Demetri found it by looking at the screen.
+#
+# now() is right for a SCOPE GUARD - its own docstring says why, and
+# that reasoning is sound - but a scope guard is a claim about what
+# this round touched, and section 1 is a claim about what the
+# application is. The call site is the only place that knows which
+# question is being asked.
 nbars = nvar = 0
 unread = []
 off = []
 for p in alv_tree.templates():
-    for b in bars(code_only(now(p))):
+    for b in bars(code_only(read(alv_tree.last_path(alv_tree.rel(p))))):
         nbars += 1
         v = variants(b)
         if v is None:
@@ -358,13 +383,41 @@ for p in alv_tree.templates():
 ok(nbars > 100, 'the tree really was walked - %d bars found' % nbars, nbars)
 ok(not unread, 'every bar can be read - its branches nest',
    '\n'.join(unread[:6]))
-ok(not off, 'and all %d variants of all %d bars are in house order'
-   % (nvar, nbars), '\n'.join(sorted(set(off))[:8]))
+ok(not off, 'and all %d variants of all %d bars are in house order, '
+   'read LIVE' % (nvar, nbars), '\n'.join(sorted(set(off))[:8]))
+
+# ONE BAR PER PAGE - BA-1, 21 Oct 2026.
+#
+# base 3.4 says "One `.page-action-buttons` row per page" and nothing
+# in the project asserted it. test_one_action_bar does not, despite
+# the name: its eleven checks are about a retired CSS variant.
+# The shopping list carried two from 19 to 21 October.
+#
+# A CENSUS, NOT AN EXCEPTION. One page carries two bars and is right
+# to: projects/project_tasks_delete puts a Back-only bar at the top
+# and the confirm/cancel pair BELOW the warnings, because by then the
+# reader has seen what the button will do. Its own comment says so.
+#
+# Naming it keeps the claim able to FAIL - a second page appearing is
+# reported on the day it is written, which "delete pages may have
+# two" would never do. A gate with an exception in it is a gate
+# somebody will widen.
+TWO_BARS = ('projects/project_tasks_delete.html',)
+doubled = []
+for p in alv_tree.templates():
+    if len(BAR.findall(code_only(read(alv_tree.last_path(
+            alv_tree.rel(p)))))) > 1:
+        doubled.append(alv_tree.rel(p))
+ok(sorted(doubled) == sorted(TWO_BARS),
+   'and the only page carrying two action bars is the delete '
+   'confirmation, which puts its verb below the warnings',
+   '\n'.join(sorted(set(doubled) ^ set(TWO_BARS))[:6]))
 
 # BOTH ROOTS. X0 exists because a census that walks pages/templates alone
 # has never seen the six CRS screens.
 roots = {('crs/' in alv_tree.rel(p)) for p in alv_tree.templates()
-         for _b in bars(code_only(now(p)))}
+         for _b in bars(code_only(read(alv_tree.last_path(
+             alv_tree.rel(p)))))}
 ok(roots == {True, False},
    '  counted across BOTH template roots, pages/ and crs/', sorted(roots))
 
@@ -375,12 +428,23 @@ nctrl = nwrap = 0
 nameless = []
 doubled = []
 other = []
+# LIVE, like section 1 - BA-1, 21 Oct 2026. Same reasoning: this is
+# a claim about what every bar in the application IS, not about what
+# this round changed.
 for p in alv_tree.templates():
     rel = alv_tree.rel(p)
-    for b in bars(code_only(now(p))):
+    for b in bars(code_only(read(alv_tree.last_path(rel)))):
         for tag, role, cls in children(b):
             if tag not in CONTROL:
                 if 'action-more-wrapper' in cls.split():
+                    nwrap += 1
+                # .alv-seg IS A HOUSE CONTAINER - BA-1, 21 Oct 2026.
+                # base owns it, its rules and its pressed state. PN-1
+                # converted finance_pl_act's bespoke btn-group to it
+                # on 3 October; this suite went on counting that page
+                # as bespoke because it was reading a September
+                # snapshot of it.
+                elif 'alv-seg' in cls.split():
                     nwrap += 1
                 else:
                     other.append('%s %s' % (rel, cls))
@@ -400,9 +464,12 @@ ok(nwrap > 25, '  %d of the bars have the house More wrapper' % nwrap, nwrap)
 # what .action-more-wrapper does, on finance_pl_act (twice), fsr, tenant
 # and recipe_management (twice). This round does not convert them; it pins
 # the set, so a seventh is reported the day it is written.
+# FIVE, NOT SIX - BA-1, 21 Oct 2026. finance_pl_act's
+# `btn-group pl-view-toggle` left this list on 3 October, when PN-1
+# converted it to base's .alv-seg, and nobody knew because section 2
+# was reading the page as it stood in September.
 KNOWN = sorted((
     'finance_pl_act.html dropdown pl-year-dropdown',
-    'finance_pl_act.html btn-group pl-view-toggle',
     'fsr.html ui-menu',
     'recipe_management.html dropdown-btn-container',
     'recipe_management.html dropdown-btn-container',

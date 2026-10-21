@@ -13,9 +13,32 @@
 
 {% block content %}
 
+{# THE MESSAGE BAR - MG-1, 21 Oct 2026.                             #}
+{#                                                                  #}
+{# This page wrote messages and could not show one. Django keeps a  #}
+{# message in the session until a template RENDERS it, and 78 of    #}
+{# the 151 live templates carry this loop - the planner, the        #}
+{# shopping list and the printable plan carried none between them.  #}
+{# So twelve messages.success() calls in meal_planning.py queued up #}
+{# and surfaced on whatever page came next: Recipe Management, or   #}
+{# the logout screen. Demetri reported exactly that.                #}
+{#                                                                  #}
+{# `msg`, not `message`: 73 pages spell it this way and 5 do not.   #}
+{# This is not the place to found a third dialect.                  #}
+{% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+      {{ msg }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+
 <style>
-/* PAPER FIRST, SCREEN SECOND - PP-1, 20 Oct 2026. Every colour is a
-   token; nothing here is a literal. */
+/* PAPER FIRST, SCREEN SECOND - PP-1, 20 Oct 2026, redrawn by RG-1 on
+   21 Oct 2026. Every colour is a token; nothing here is a literal.
+   The five renders Demetri chose from were built with hex values to
+   move fast, and not one of those values survived into this page. */
 
 /* ITS OWN CONTAINER, NOT THE PLANNER'S - PP-1, 20 Oct 2026.
    The first draft of this page wrapped itself in .calendar-container,
@@ -26,103 +49,397 @@
    a style; the style is wherever the style was written. Every other
    standalone meal-plan page declares its own, and so does this one. */
 .pp-page {
-    max-width: 1600px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
-.pp-head { margin-bottom: 18px; }
-.pp-week {
-    margin-bottom: 18px;
+
+/* THE SHEET. -webkit-print-color-adjust, because the pills ARE the
+   layout here: a browser that drops background colour to save ink
+   leaves seven columns of identical grey text. */
+.pp-sheet {
+    background: var(--alv-paper);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ---- THE MASTHEAD -------------------------------------------------
+   THE SHEET'S OWN, IN ITS OWN CLASSES. The first draft restyled
+   base's .page-title-h2 and .page-subtitle-h4 inside .pp-sheet, and
+   test_heading_components named it at once: NO page may carry a rule
+   whose selector mentions either class. That is the whole point of a
+   shared heading component - a page that restyles it has forked it -
+   and the suite says so about every one of the hundred and fifty.
+
+   So the house heading stays above the bar where test_bar_top wants
+   it, untouched and unstyled by this page, and the printed sheet
+   carries a masthead of its own that base has never seen. */
+.pp-title {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--alv-accent);
+    padding-bottom: 7px;
+    margin-bottom: 12px;
+}
+.pp-eyebrow {
+    margin: 0 0 2px 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--alv-accent);
+}
+.pp-period {
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--alv-ink);
+}
+.pp-count {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    /* ink-soft, NOT ink-faint. ink-faint on paper measures 3.00:1
+       and test_verb_colours names every rule that takes its ground
+       from an ancestor and reads below AA. PP-1 had to lift two of
+       this page's greys for the same reason, and this page is read
+       under a kitchen light. */
+    color: var(--alv-ink-soft);
+    text-align: right;
+}
+
+/* ---- A MEAL ------------------------------------------------------
+   One pill, three sizes. NEVER TRUNCATED: `Amygdalopita` came out
+   `Amygdalo...` in a 130px column while this was being drawn. On a
+   screen an ellipsis is a promise you can hover; on paper it is a
+   name you cannot read, so it wraps instead. */
+.pp-meal {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    line-height: 1.25;
+    border-radius: 999px;
+    border: 1px solid var(--alv-accent-line);
+    background: var(--alv-accent-soft);
+    color: var(--alv-accent-ink);
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+.pp-meal.is-note {
+    background: var(--alv-warn-soft);
+    border-color: var(--alv-warn-line);
+    color: var(--alv-warn-ink);
+    font-style: italic;
+}
+/* LEFTOVERS WEAR THE RECYCLE MARK, not a 9px LEFTOVERS tag under the
+   name. PP-1 set that tag in ink-faint, measured 3.00:1 and had to
+   lift it to ink-soft; a glyph in front of the name says the same
+   thing inside the pill and costs no second line in a 130px cell. */
+.pp-meal.is-left {
+    background: var(--alv-surface-deep);
+    border-color: var(--alv-line);
+    color: var(--alv-ink-soft);
+}
+.pp-meal.is-left::before { content: "\21BB\00A0"; }
+
+/* ---- THE GRID, SHARED BY WEEK, MONTH AND RANGE -------------------
+   minmax(0, 1fr), NOT 1fr - PP-1, 20 Oct 2026. A bare `1fr` track is
+   minmax(AUTO, 1fr), so it never shrinks below the widest unbreakable
+   thing in the cell: seven cells holding BUTTER CHICKEN CURRY pushed
+   the grid to 992px inside a 794px sheet of A4, and the Sunday column
+   printed off the edge of the paper. */
+.pp-sheet-grid {
     border: 1px solid var(--alv-line);
     border-radius: var(--alv-radius-sm);
     overflow: hidden;
 }
-.pp-week-label {
-    padding: 6px 10px;
-    background: var(--alv-surface);
-    border-bottom: 1px solid var(--alv-line);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--alv-ink-soft);
-}
-/* minmax(0, 1fr), NOT 1fr - PP-1, 20 Oct 2026. A bare `1fr` track is
-   minmax(AUTO, 1fr), so it never shrinks below the widest unbreakable
-   thing in the cell: seven cells holding BUTTER CHICKEN CURRY pushed
-   the grid to 992px inside a 794px sheet of A4, and the Sunday column
-   printed off the edge of the paper. minmax(0, ...) lets the track go
-   as narrow as the column needs to be, and the wrap below decides
-   what happens to the words instead. */
+.pp-dow-row,
 .pp-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-.pp-day {
-    min-height: 110px;
-    padding: 6px 7px;
+.pp-dow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--alv-ink-soft);
+    background: var(--alv-surface);
+    padding: 5px 7px;
+    border-bottom: 1px solid var(--alv-line);
     border-right: 1px solid var(--alv-line-soft);
-    vertical-align: top;
+}
+.pp-dow:last-child { border-right: 0; }
+.pp-day {
+    padding: 4px 6px 5px;
+    border-right: 1px solid var(--alv-line-soft);
+    border-top: 1px solid var(--alv-line-soft);
+    min-width: 0;
 }
 .pp-day:last-child { border-right: 0; }
 /* OUT OF RANGE IS STILL DRAWN, so the week keeps its seven columns
-   and the boundary is visible rather than implied. */
-/* DIMMED BY ITS GROUND, NOT BY ILLEGIBLE INK - PP-1, 20 Oct 2026.
-   This read `color: var(--alv-ink-faint)` and test_pair_contrast
-   named it: ink-faint on surface measures 2.85:1, below AA, and this
-   is a page that exists to be read on paper under a kitchen light.
-   What marks a day as outside the range is the tinted BACKGROUND;
-   the date in it still has to be readable, so the ink is ink-soft -
-   5.25:1 on the same ground. */
-.pp-day.is-out { background: var(--alv-surface); color: var(--alv-ink-soft); }
-.pp-day.is-today .pp-date { color: var(--alv-accent); font-weight: 700; }
+   and the boundary is visible rather than implied. TWO SIGNALS, not
+   one: the ground is tinted AND the number drops to ink-faint. One
+   pale fill against another is the mistake WT-1 corrected this
+   morning - the month view marked the current week with a tint that
+   measured dE 0.0 against the pills sitting on it. */
+.pp-day.is-out { background: var(--alv-surface); }
+/* ink-soft, NOT ink-faint - PP-1's lesson, re-learned. ink-faint on
+   the surface wash measures 2.85:1, below AA, and the first draft of
+   this round put it back on the one page in the application that
+   exists to be read on paper. The in-range date takes the full ink
+   instead, so the two states are still two signals apart. */
+.pp-day.is-out .pp-date { color: var(--alv-ink-soft); }
 .pp-date {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--alv-ink);
+    margin-bottom: 3px;
+    display: block;
+}
+.pp-day.is-today .pp-date {
+    color: var(--alv-on-accent);
+    background: var(--alv-accent);
+    border-radius: 999px;
+    padding: 0 6px;
+    width: fit-content;
+}
+
+/* ---- THE MONTH AND THE RANGE -------------------------------------- */
+.is-month .pp-day,
+.is-range .pp-day { min-height: 104px; }
+.is-month .pp-meal,
+.is-range .pp-meal {
+    font-size: 9px;
+    padding: 1px 7px;
+    margin-bottom: 2px;
+}
+
+/* ---- THE WEEK: SEVEN COLUMNS YOU CAN WRITE IN ---------------------
+   B2, which is the one he chose. The pills are legible across a
+   kitchen, each column is headed with its own date, and the space
+   under them is ruled rather than blank - the sheet is meant to be
+   taken off the fridge and written on. */
+.is-week .pp-day {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-top: 0;
+}
+.is-week .pp-colhead {
+    padding: 9px 10px 8px;
+    border-bottom: 1px solid var(--alv-line);
+    background: var(--alv-surface);
+}
+.pp-dow-s {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--alv-ink-soft);
+}
+.pp-num {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--alv-ink);
+}
+.is-week .pp-day.is-today .pp-colhead { background: var(--alv-accent-soft); }
+.is-week .pp-day.is-today .pp-num,
+.is-week .pp-day.is-today .pp-dow-s { color: var(--alv-accent-ink); }
+.is-week .pp-meals { padding: 10px 10px 0; }
+.is-week .pp-meal {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 11px;
+    margin-bottom: 5px;
+}
+.pp-rule {
+    flex: 1;
+    min-height: 0;
+    margin: 6px 10px 10px;
+    background-image: repeating-linear-gradient(to bottom,
+        transparent 0 25px, var(--alv-line-soft) 25px 26px);
+}
+.is-week .pp-grid { min-height: 520px; }
+
+/* ---- THE DAY: ONE DAY, FILLING THE PAGE ---------------------------
+   C2, the agenda. He was offered a big-type day and this, and took
+   this: the meals as a list with their servings, and the rest of the
+   sheet given over to Notes, because a printed day is a thing people
+   write on. */
+.is-day .pp-period { font-size: 38px; text-transform: none; }
+.is-day .pp-body { display: flex; flex-direction: column; }
+.pp-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 11px 0;
+}
+.pp-row + .pp-row { border-top: 1px solid var(--alv-line-soft); }
+.is-day .pp-meal {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 6px 16px;
+}
+.pp-srv {
     font-size: 11px;
+    color: var(--alv-ink-soft);
+    margin-left: auto;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.pp-empty {
+    font-size: 13px;
+    color: var(--alv-ink-soft);
+    padding: 14px 0;
+}
+.pp-notes {
+    flex: 1;
+    min-height: 240px;
+    margin-top: 22px;
+    border-top: 1px solid var(--alv-line);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.pp-notes-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--alv-ink-soft);
+    margin-bottom: 8px;
+}
+.pp-notes-lines {
+    flex: 1;
+    min-height: 0;
+    background-image: repeating-linear-gradient(to bottom,
+        transparent 0 26px, var(--alv-line-soft) 26px 27px);
+}
+.pp-foot {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--alv-line-soft);
+    font-size: 10px;
+    color: var(--alv-ink-soft);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ---- THE RANGE, AND THE SECOND STEP -------------------------------
+   SH-2 put From, To and one button on a single 44px line on the
+   shopping list this morning, after Demetri said the pickers were
+   "using up far too much space at the top of the page". This is that
+   row again, on the other page that takes the same two dates.
+
+   WRITTEN OUT, NOT REUSED. .sl-range is defined in
+   meal_plan_shopping_list.html, not in base, so on this page it is a
+   name with no rules behind it. That is exactly the mistake PP-1
+   made with .calendar-container and it cost a round; the geometry is
+   copied deliberately, the class name is this page's own.
+
+   44px, because that is what 3.4 promises a control on a phone, and
+   --alv-line for the border, which is what every field in the system
+   wears. */
+.pp-range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.pp-range-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.pp-range-label {
+    font-size: 12px;
     font-weight: 600;
     color: var(--alv-ink-soft);
-    margin-bottom: 4px;
+    margin: 0;
+    letter-spacing: 0.02em;
 }
-.pp-meal {
-    font-size: 11px;
-    line-height: 1.35;
+.pp-range-date {
+    width: auto;
+    height: 44px;
+    padding: 0 10px;
+    font-size: 14px;
     color: var(--alv-ink);
-    padding: 2px 0;
-    border-bottom: 1px solid var(--alv-line-soft);
-    /* A 137px COLUMN AND A LONG NAME. The track can now shrink, so
-       something has to give in the cell rather than in the grid. */
-    overflow-wrap: anywhere;
-    hyphens: auto;
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm);
 }
-.pp-meal:last-child { border-bottom: 0; }
-.pp-meal.is-note { color: var(--alv-warn-ink); font-style: italic; }
-.pp-meal.is-left { color: var(--alv-ink-soft); }
-.pp-tag {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    /* ink-soft, not ink-faint. LEFTOVERS is the word that tells you
-       not to cook; 3.00:1 on paper is not where to put it. */
+.pp-range-date:focus {
+    outline: 2px solid var(--alv-accent);
+    outline-offset: -1px;
+    border-color: var(--alv-accent);
+}
+.pp-range .btn { height: 44px; }
+
+/* THE SECOND STEP, SAID OUT LOUD. He asked why Print has to be
+   pressed twice and chose "keep two steps, make the second obvious".
+   window.print() IS the browser's dialog - there is no third thing
+   this page could do instead - so what was missing was not a step
+   but a sentence. */
+.pp-hint {
+    font-size: 12.5px;
     color: var(--alv-ink-soft);
+    background: var(--alv-surface);
+    border: 1px solid var(--alv-line);
+    border-left: 3px solid var(--alv-accent);
+    border-radius: var(--alv-radius-sm);
+    padding: 9px 12px;
+    margin-bottom: 18px;
 }
-.pp-none { font-size: 11px; color: var(--alv-ink-faint); }
+.pp-hint i { color: var(--alv-accent); margin-right: 5px; }
+.pp-hint strong { color: var(--alv-ink); }
 
 /* AND screen, NOT a bare max-width - a clause naming no media type
    matches print too, which is the 21 September print-leak rule and
    the one thing this page must not get wrong. */
 @media screen and (max-width: 767px) {
     .pp-page { padding: 8px; }
-    .pp-grid { grid-template-columns: repeat(2, 1fr); }
-    .pp-day { min-height: 80px; border-bottom: 1px solid var(--alv-line-soft); }
+    /* TWO LINES, NOT THREE - SH-2's measurement, 21 Oct 2026. The
+       pairs take half the first line each and the button sits on the
+       second at its own width, because a secondary stretched across
+       the screen reads as a verb. */
+    .pp-range { gap: 6px; }
+    .pp-range-pair { flex: 1 1 calc(50% - 3px); min-width: 0; }
+    .pp-range-pair .pp-range-date { flex: 1 1 auto; min-width: 0; }
+    .pp-range .btn { flex: 0 0 auto; }
+    .pp-dow-row { display: none; }
+    .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .is-month .pp-day,
+    .is-range .pp-day { min-height: 80px; }
+    .is-week .pp-grid { min-height: 0; }
+    .pp-rule { display: none; }
+    .pp-count { text-align: left; }
 }
 
-/* LANDSCAPE, BECAUSE THE THING BEING PRINTED IS SEVEN COLUMNS WIDE.
-   A4 portrait is about 794 CSS px and A4 landscape about 1123, and a
-   week divided seven ways wants the wider sheet: 137px per day against
-   95px decides whether a recipe name is read or guessed at. */
-@page { size: landscape; margin: 10mm; }
+/* THE SHEET IS LANDSCAPE UNLESS IT IS ONE DAY. A week divided seven
+   ways wants the wider sheet - 137px per day against 95px decides
+   whether a recipe name is read or guessed at - and a single day
+   wants the taller one, because what fills it is the Notes block. */
+{% if sheet == 'day' %}@page { size: A4 portrait; margin: 18mm; }
+{% else %}@page { size: A4 landscape; margin: 11mm 12mm; }
+{% endif %}
 
 @media print {
     /* THE CHROME GOES. SL-1 does the same on the shopping list, and
        this page exists to be printed rather than to be browsed. */
     nav, .navbar, header, footer,
+    /* .alv-message - MG-1, 21 Oct 2026. This page can show a message
+       now, and a dismissible alert on paper is a coloured box with a
+       close cross in it. */
+    .alv-message,
     .page-action-buttons, .pp-noprint { display: none !important; }
-    .pp-week { page-break-inside: avoid; break-inside: avoid; }
-    .pp-day { min-height: 92px; }
 
     /* AND SO DOES THE BOOTSTRAP CONTAINER - PP-1, 20 Oct 2026.
        base wraps every page in a .container, and Bootstrap sets that
@@ -137,14 +454,78 @@
     .main-content { max-width: none !important; width: auto !important;
                     margin: 0 !important; padding: 0 !important; }
     .pp-page { max-width: none; padding: 0; }
-    body { padding-top: 0; }
+    /* AND THE THREE THINGS base PUTS AROUND THE CONTAINER - RG-1,
+       21 Oct 2026, every one of them found by printing the page and
+       counting the sheets that came out.
+
+       Three <br> at 17px each and a centred copyright line: 68px of
+       screen furniture, which on A4 landscape is a tenth of the
+       sheet and, more to the point, is 68px MORE than the sheet has.
+       Every single shape printed on two pages - the first the plan,
+       the second the word Copyright - until these went. The body
+       margin is the UA's own 8px and goes for the same reason.
+
+       SCOPED TO THIS PAGE's PRINT BLOCK. base's own chrome is right
+       for every screen it is on; it is paper that does not want it,
+       and this is the only page in the application that is paper. */
+    .main-content > br,
+    .main-content > center { display: none !important; }
+    body { padding-top: 0; margin: 0 !important; }
+
+    /* ONE SHEET, MEASURED. A month is five week rows or six - August
+       2026 and February 2027 are six - and a fixed cell height fits
+       one of those and spills the other onto a second page. So the
+       SHEET is a fixed box the height of the printable area and the
+       grid is a flex column inside it: both months fill exactly one
+       sheet, the six-week one tighter. Fixing the sheet rather than
+       the grid also means the masthead can change height without
+       anybody having to re-measure the number below it.
+
+       A4 landscape is 210mm tall and the margin is 11mm each way, so
+       the printable band is 188mm; A4 portrait is 297mm with 18mm
+       margins, so 261mm. The two numbers below sit just inside those
+       - a sheet exactly as tall as its page rounds onto a second one
+       on some printers, which is the fault this block exists to fix.
+
+       test_print_shape prints five of these to real A4 through
+       Chromium and reads the page count out of the PDF. */
+    .is-month .pp-sheet,
+    .is-week .pp-sheet { height: 186mm; display: flex;
+                         flex-direction: column; }
+    .is-day .pp-sheet { height: 258mm; display: flex;
+                        flex-direction: column; }
+    .is-month .pp-sheet-grid,
+    .is-week .pp-sheet-grid { flex: 1; min-height: 0; display: flex;
+                              flex-direction: column; }
+    .is-month .pp-week,
+    .is-week .pp-week { flex: 1; min-height: 0; display: flex; }
+    .is-month .pp-grid,
+    .is-week .pp-grid { flex: 1; min-height: 0; height: auto; }
+    .is-day .pp-body { flex: 1; min-height: 0; }
+    .pp-day, .pp-row { break-inside: avoid; }
+    .is-range .pp-week { break-inside: avoid; }
 }
 </style>
 
-<div class="pp-page">
+<div class="pp-page is-{{ sheet }}">
 
-    <h2 class="page-title-h2">MEAL PLAN</h2>
-    <h4 class="page-subtitle-h4">{{ start|date:"j M" }} &ndash; {{ end|date:"j M Y" }} &mdash; {{ day_count }} day{{ day_count|pluralize }} &mdash; {{ meal_count }} meal{{ meal_count|pluralize }}</h4>
+    {# THE HOUSE HEADING, ABOVE THE BAR - RG-1, 21 Oct 2026.       #}
+    {#                                                             #}
+    {# test_bar_top reads every page in the tree and asserts that   #}
+    {# none of them puts its action bar above its title. The first  #}
+    {# draft of this round folded the title into the printed        #}
+    {# sheet's masthead, below the bar, and that suite named this   #}
+    {# page by itself.                                              #}
+    {#                                                              #}
+    {# AND IT DOES NOT GO ON THE PAPER. The sheet below carries a    #}
+    {# masthead laid out for A4; printing both would say MEAL PLAN   #}
+    {# twice. The wrapper is what carries pp-noprint - a print rule  #}
+    {# naming .page-title-h2 would be a page restating a shared      #}
+    {# component, which test_heading_components forbids outright.    #}
+    <div class="pp-noprint">
+        <h2 class="page-title-h2">MEAL PLAN</h2>
+        <h4 class="page-subtitle-h4">{{ start|date:"j M" }} &ndash; {{ end|date:"j M Y" }} &mdash; {{ day_count }} day{{ day_count|pluralize }} &mdash; {{ meal_count }} meal{{ meal_count|pluralize }}</h4>
+    </div>
 
     {# ONE BAR, and Back is LAST and carries no colour - test_bar_top. #}
     <div class="page-action-buttons pp-noprint">
@@ -167,26 +548,144 @@
         </a>
     </div>
 
-    {% for week in weeks %}
-    <div class="pp-week">
-        <div class="pp-week-label">Week of {{ week.start|date:"j M Y" }}</div>
-        <div class="pp-grid">
-            {% for day in week.days %}
-            <div class="pp-day{% if not day.in_range %} is-out{% endif %}{% if day.is_today %} is-today{% endif %}">
-                <div class="pp-date">{{ day.date|date:"D j" }}</div>
-                {% for e in day.entries %}
-                <div class="pp-meal{% if not e.recipe_id %} is-note{% elif e.leftover_of_id %} is-left{% endif %}">
-                    {% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}
-                    {% if e.leftover_of_id %}<div class="pp-tag">Leftovers</div>{% endif %}
+    {# THE RANGE - RG-2, 21 Oct 2026.                                #}
+    {#                                                               #}
+    {# "Print Date Range needs to be included (similar to the        #}
+    {#  Shopping List)". The view has read ?from= and ?to= since     #}
+    {# PP-1; there was simply no way to change them once you were    #}
+    {# here, so a different fortnight meant going back to the        #}
+    {# planner, onto another view, and pressing Print again.         #}
+    {#                                                               #}
+    {# UNDER THE BAR, which is where SH-2 put the shopping list's -  #}
+    {# "the date pickers should go under the Generate List, Help and #}
+    {# Back Button". base 3.4: nothing sits above the bar.           #}
+    {#                                                               #}
+    {# IT PRINTS NOTHING. .pp-noprint, with the bar.                 #}
+    <form method="get" action="" class="pp-range pp-noprint">
+        {# EACH LABEL WELDED TO ITS INPUT - SH-2, 21 Oct 2026. Loose #}
+        {# in a wrapping flex row they are five independent children #}
+        {# and at 390px the row broke as "From [date] To" / "[date]",#}
+        {# with the To label orphaned at the end of a line.          #}
+        <span class="pp-range-pair">
+            <label class="pp-range-label" for="ppFrom">From</label>
+            <input type="date" id="ppFrom" name="from" class="pp-range-date"
+                   value="{{ start|date:'Y-m-d' }}">
+        </span>
+        <span class="pp-range-pair">
+            <label class="pp-range-label" for="ppTo">To</label>
+            <input type="date" id="ppTo" name="to" class="pp-range-date"
+                   value="{{ end|date:'Y-m-d' }}">
+        </span>
+        {# A SECONDARY. The page's verb is Print and it is on screen #}
+        {# at the same time as this, so a primary here would be the  #}
+        {# second one 3.4 forbids.                                   #}
+        <button type="submit" class="btn action-secondary">Show these days</button>
+    </form>
+
+    {# THE SECOND STEP, SAID OUT LOUD - RG-2, 21 Oct 2026.           #}
+    {# "Why do we need to Press Print twice. It is very              #}
+    {#  inefficient." - and his answer to the three options was      #}
+    {# "Keep two steps, make the second obvious". window.print() IS  #}
+    {# the browser's own dialog; there is no third thing this page   #}
+    {# could do instead, and a page that printed itself on load      #}
+    {# would be a page you could not change the dates on. So what    #}
+    {# was missing was not a step - it was a sentence.               #}
+    <p class="pp-hint pp-noprint">
+        <i class="fas fa-print"></i>
+        <strong>Step 2 of 2.</strong> This sheet is laid out and ready.
+        Press <strong>Print</strong> above to open your printer dialog{% if sheet != 'range' %} - it is one A4 sheet, {% if sheet == 'day' %}portrait{% else %}landscape{% endif %}{% endif %}.
+    </p>
+
+    <div class="pp-sheet">
+
+        {# THE SHEET'S OWN MASTHEAD, in classes base has never seen. #}
+        {# Restyling .page-title-h2 here is what the first draft did, #}
+        {# and test_heading_components forbids any page from carrying #}
+        {# a rule that names a shared heading component.              #}
+        <div class="pp-title">
+            <div>
+                <div class="pp-eyebrow">Meal Plan</div>
+                <div class="pp-period">{{ period }}</div>
+            </div>
+            <div class="pp-count">{{ day_count }} day{{ day_count|pluralize }} &middot; {{ meal_count }} meal{{ meal_count|pluralize }}</div>
+        </div>
+
+        {% if sheet == 'day' %}
+        {# C2, THE AGENDA - his choice of the two day sheets. The    #}
+        {# meals as a list with their servings, and the rest of the  #}
+        {# page given to Notes, because a printed day gets written   #}
+        {# on. PP-1 printed this as a week with six columns greyed   #}
+        {# out, which is what he reported.                           #}
+        <div class="pp-body">
+            {% for e in day_entries %}
+            <div class="pp-row">
+                <div class="pp-meal{% if not e.recipe_id %} is-note{% elif e.leftover_of_id %} is-left{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</div>
+                {# A NOTE HAS NO SERVINGS. The column defaults to a #}
+                {# number for every row, so `Dinner at Mums` came   #}
+                {# off the first proof reading SERVES 4.            #}
+                {% if e.recipe_id and e.servings %}<div class="pp-srv">serves {{ e.servings }}</div>{% endif %}
+            </div>
+            {% empty %}
+            <div class="pp-empty">Nothing planned for this day.</div>
+            {% endfor %}
+            <div class="pp-notes">
+                <div class="pp-notes-label">Notes</div>
+                <div class="pp-notes-lines"></div>
+            </div>
+        </div>
+        <div class="pp-foot">
+            <span>Alivente &middot; Meal Plan</span>
+            <span>{{ start|date:"l j F Y" }}</span>
+        </div>
+
+        {% else %}
+        <div class="pp-sheet-grid">
+            {% if sheet != 'week' %}
+            {# ONE WEEKDAY ROW FOR THE WHOLE SHEET, not a `Week of   #}
+            {# 19 Oct` strip above every row. Five of those strips   #}
+            {# were a third of why a month would not fit.            #}
+            <div class="pp-dow-row">
+                <div class="pp-dow">Mon</div>
+                <div class="pp-dow">Tue</div>
+                <div class="pp-dow">Wed</div>
+                <div class="pp-dow">Thu</div>
+                <div class="pp-dow">Fri</div>
+                <div class="pp-dow">Sat</div>
+                <div class="pp-dow">Sun</div>
+            </div>
+            {% endif %}
+            {% for week in weeks %}
+            <div class="pp-week">
+                <div class="pp-grid">
+                    {% for day in week.days %}
+                    <div class="pp-day{% if not day.in_range %} is-out{% endif %}{% if day.is_today %} is-today{% endif %}">
+                        {% if sheet == 'week' %}
+                        <div class="pp-colhead">
+                            <div class="pp-dow-s">{{ day.date|date:"D" }}</div>
+                            <div class="pp-num">{{ day.date|date:"j" }}</div>
+                        </div>
+                        {% else %}
+                        {# A BARE NUMBER INSIDE ONE MONTH, THE MONTH  #}
+                        {# NAMED WHEN THE RANGE CROSSES ONE: `1` is   #}
+                        {# not a date when the sheet runs 19 Oct to   #}
+                        {# 14 Nov.                                    #}
+                        <span class="pp-date">{% if sheet == 'month' %}{{ day.date|date:"j" }}{% else %}{{ day.date|date:"j M" }}{% endif %}</span>
+                        {% endif %}
+                        <div class="pp-meals">
+                            {% for e in day.entries %}
+                            <div class="pp-meal{% if not e.recipe_id %} is-note{% elif e.leftover_of_id %} is-left{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</div>
+                            {% endfor %}
+                        </div>
+                        {% if sheet == 'week' %}<div class="pp-rule"></div>{% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
-                {% empty %}
-                <div class="pp-none">&mdash;</div>
-                {% endfor %}
             </div>
             {% endfor %}
         </div>
+        {% endif %}
+
     </div>
-    {% endfor %}
 
 </div>
 

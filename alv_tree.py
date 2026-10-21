@@ -868,6 +868,26 @@ CONVERTED = [
     # MH-5, 20 Oct 2026 - the guide describes the calendar that is
     # there, rather than the one that was there on 19 October.
     'test_meal_guide5.py',
+    # SC-1, 21 Oct 2026 - a label that disagreed with its own value.
+    'test_say_today.py',
+    # BO-1, 21 Oct 2026 - the planner bar in house order.
+    'test_bar_first.py',
+    # WT-1, 21 Oct 2026 - a row and the pills on it, told apart.
+    'test_week_band.py',
+    # SH-2, 21 Oct 2026 - one bar per page, and the range under it.
+    'test_sl_range_row.py',
+    # MG-1, 21 Oct 2026 - a page that writes a message can show one.
+    'test_msg_bar.py',
+    # HP-1, 21 Oct 2026 - a control nobody on a phone could reach.
+    'test_help_phone.py',
+    # BA-1, 21 Oct 2026 - the instrument that could not see the bar.
+    'test_bar_audit.py',
+    # CP-2, 21 Oct 2026 - Copy and Saved Menus, reachable at last.
+    'test_copy_menus.py',
+    # RG-1, 21 Oct 2026 - a printed day that was a week.
+    'test_print_shape.py',
+    # RG-2, 21 Oct 2026 - the range, and the second press explained.
+    'test_print_range.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

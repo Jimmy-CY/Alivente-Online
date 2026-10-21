@@ -220,10 +220,12 @@ def claims(text):
 
     # ---- 2. what the new tab has to say
     w = html.get('mp-week', '')
-    for phrase in ('Copy this week to', 'Save this week as a Menu',
-                   'Apply a Menu'):
+    # CP-2, 21 Oct 2026 - the two the planner really has. The three
+    # it named were in a menu base hides above 768px.
+    for phrase in ('Copy meals to another date', 'Saved Menus'):
         c['  it names %r' % phrase] = phrase in w
-    c['  and says where the three live'] = 'fa-ellipsis-v' in w
+    c['  and says where the two live, and where a phone puts them'] = (
+        'fa-ellipsis-v' in w and 'bar' in w)
     c['  that a Menu is kept BY WEEKDAY, which is the whole point'] = (
         'by weekday' in w.lower())
     c['  that two meals on one day gives you two meals'] = (
@@ -363,9 +365,8 @@ if up:
     # guide that never mentions the feature at all, so each one is
     # paired with the control that really exists on the planner.
     plan = T.code_only(read(PLANNER))
-    for mid, phrase in (('copyWeekModal', 'Copy this week to'),
-                        ('saveMenuModal', 'Save this week as a Menu'),
-                        ('applyMenuModal', 'Apply a Menu'),
+    for mid, phrase in (('copyRangeModal', 'Copy meals to another date'),
+                        ('menusModal', 'Saved Menus'),
                         ('noteModal', 'Add Note'),
                         ('leftoverModal', 'Leftovers')):
         ok('id="%s"' % mid in plan,

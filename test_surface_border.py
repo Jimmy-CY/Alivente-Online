@@ -134,8 +134,8 @@ FALLBACK = 'var(--alv-disabled-bg, ' + OLD + ')'
 # should look like and is the token MV-2's month chip already uses for
 # it. One more non-border use in the live corpus; F2a still settled
 # the 96 it settled.
-N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 94
-N_GAINED = 78   # PP-1, 20 Oct 2026 - the printable plan draws two borders off var(--alv-line): the frame around a week and the rule under its label. Both are borders on a tinted surface, which is what base's own token note says the token is for.   # (was 76)   # DT-1, 16 Oct 2026 - six of the rules this round deletes carried the border token. base draws those borders now, so the count falls by exactly the copies that went.   # (was 82)
+N_CONVERT, N_PAGES, N_FALLBACK, N_OTHER = 78, 43, 3, 95   # RG-1, 21 Oct 2026 - N_OTHER 94 -> 95: a leftover pill is filled with the panel wash, which is a BACKGROUND use of the token and so one more of the uses F2a settled and this suite refuses to re-open.
+N_GAINED = 79   # RG-1, 21 Oct 2026 - one more: the frame round the whole sheet. PP-1 drew a frame per week and a rule under each week label; this draws one frame and one weekday row, and the net is a single rule.   # (was 78)   # PP-1, 20 Oct 2026 - the printable plan draws two borders off var(--alv-line): the frame around a week and the rule under its label. Both are borders on a tinted surface, which is what base's own token note says the token is for.   # (was 76)   # DT-1, 16 Oct 2026 - six of the rules this round deletes carried the border token. base draws those borders now, so the count falls by exactly the copies that went.   # (was 82)
 
 passed = failed = skipped = 0
 

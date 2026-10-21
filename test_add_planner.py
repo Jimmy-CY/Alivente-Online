@@ -171,9 +171,14 @@ def claims(bundle):
         'csrfmiddlewaretoken' in js)
     c['its routes come from the urlconf'] = (
         'data-add-url=' in pop and 'data-remove-url=' in pop)
-    c['the three shortcuts are there'] = all(
+    # SC-1, 21 Oct 2026 - TWO. Demetri: "Tonight should be Today.
+    # Then let's remove This Saturday - it doesn't really add value."
+    # The third button and its when() branch both went.
+    c['the two shortcuts are there'] = all(
         'data-plan-when="%s"' % w in rm
-        for w in ('today', 'tomorrow', 'saturday'))
+        for w in ('today', 'tomorrow'))
+    c['  and the third one is gone, with its branch'] = (
+        'data-plan-when="saturday"' not in rm)
     c['base owns the toast'] = ('window.alvToast' in bs)
     c['and the toast sets its text as text'] = (
         'textContent' in bs.split('window.alvToast', 1)[-1][:1800])
@@ -369,8 +374,9 @@ else:
            '  and Monday is the first of them', seen['dow'])
         ok(seen['days'] >= 28,
            'a month of days is drawn', seen['days'])
-        ok(len(seen['quick']) == 3,
-           'with the three shortcuts above it', seen['quick'])
+        ok(len(seen['quick']) == 2,
+           'with the two shortcuts above it - SC-1, 21 Oct 2026, '
+           'took This Saturday away', seen['quick'])
         ok(seen['token'],
            'and the popover carries its own token, so it does not '
            'need somebody else\'s permission to post')
