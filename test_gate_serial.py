@@ -204,8 +204,8 @@ ok(planters is not None
    and not [s for s in SLOW if s in planters],
    '  and neither was quietly filed as a planter - they do not write '
    'into anything')
-ok(planters is not None and len(planters) == 15,
-   '  the fifteen planters are untouched; this round adds a reason, it '
+ok(planters is not None and len(planters) == 16,
+   '  the sixteen planters are untouched; this round adds a reason, it '
    'does not re-file the old one',
    '%s planter(s)' % (len(planters) if planters else '?'))
 
@@ -253,10 +253,15 @@ ok('137s alone' not in BEFORE,
 ok('%d contended - they pass alone and fail in a pool' not in BEFORE,
    'CONTROL: and phase 1 printed one reason, because there was one')
 bp = listed(BEFORE, 'PLANTERS')
-ok(bp == planters,
-   'CONTROL: the planters are byte-for-byte the same list before and '
-   'after - %d names' % len(bp or []),
+ok(bp is not None and set(bp) <= set(planters or []),
+   'CONTROL: GS-1 took nothing off the planters list - %d names then, '
+   '%d now, and every one of the old ones is still there'
+   % (len(bp or []), len(planters or [])),
    '%r != %r' % (bp, planters))
+ok(sorted(set(planters or []) - set(bp or []))
+   == ['test_planter_lock.py'],
+   '  and the only name added since is LK-1 own suite, which plants',
+   sorted(set(planters or []) - set(bp or [])))
 
 # AND THE SUITE REALLY WAS IN THE POOL. Asked by running the BEFORE
 # file's own split against the real suite list, not by reading it.
@@ -335,6 +340,18 @@ def build(tmp, contend):
                  'PLANTERS = []', src, count=1)
     with open(os.path.join(tmp, RUNNER), 'w', encoding='utf-8') as f:
         f.write(src)
+    # THE RUNNER'S HELPER TRAVELS WITH IT - LK-1, 22 Oct 2026.
+    #
+    # alv_run imports alv_plant now, and this harness copied the runner
+    # ALONE into the temp directory. The first run after that round
+    # failed every claim in this suite on an ImportError, which read as
+    # the scheduler being broken rather than the harness being
+    # incomplete. shutil, not a re-write: the code under test is the
+    # code that shipped, and that applies to the module beside it.
+    helper = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          'alv_plant.py')
+    if os.path.isfile(helper):
+        shutil.copyfile(helper, os.path.join(tmp, 'alv_plant.py'))
     names = [SLOWP] + CHEAP
     with open(os.path.join(tmp, PS1), 'w', encoding='utf-8') as f:
         f.write('$suites = @(\n%s\n)\n'

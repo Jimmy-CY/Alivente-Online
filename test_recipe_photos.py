@@ -345,7 +345,8 @@ head('3. ONE PROPERTY, AND EVERY CALL SITE ASKING IT')
 # ==========================================================================
 ok('recipe_image_display = models.ImageField(' in M,
    'Recipe carries the derived field')
-ok('editable=False' in M.split('recipe_image_display')[1][:400],
+ok('editable=False' in
+   M.split('recipe_image_display = models.ImageField(')[1][:400],
    '  and it is editable=False, so no ModelForm can set it by hand')
 ok(re.search(r'(?m)^    def photo_url\(self\):', M) is not None
    or 'def photo_url(self)' in M, 'Recipe carries photo_url')
@@ -457,12 +458,22 @@ ok("'--write'" in cmd and "action='store_true'" in cmd,
 ok("opts['write']" in cmd, '  and reads it')
 ok('DRY RUN. Nothing was written' in cmd,
    '  and says so out loud when it has not written')
+# SD-1, 22 Oct 2026 - THE WRITE MOVED, AND THE CLAIM MOVED WITH IT.
+# This asked for exactly one recipe_image_display.save( in handle(),
+# which was right until the command stopped writing the field at all.
+# Django storage does not overwrite: that call handed back a suffixed
+# name on every rebuild, left the old copy on the volume and left the
+# row permanently stale. store_display_jpeg in models.py is the one
+# place now, and what this asks is that the command goes through it
+# and does not reach past it.
 body = cmd.split('def handle')[1]
-writes = re.findall(r'recipe_image_display\.save\(', body)
+writes = re.findall(r'store_display_jpeg\(', body)
 ok(len(writes) == 1, '  it writes in exactly one place', len(writes))
+ok('recipe_image_display.save(' not in cmd,
+   '  and that place is NOT a field write of its own - see SD-1')
 guarded = body.split('if write:')[1] if 'if write:' in body else ''
-ok('recipe_image_display.save(' in guarded,
-   '  and that place is INSIDE the --write guard')
+ok('store_display_jpeg(' in guarded,
+   '  and it is INSIDE the --write guard')
 ok('recipe_image.save(' not in cmd and 'os.remove' not in cmd
    and 'unlink' not in cmd,
    'CONTROL: it never writes an original and never deletes anything')

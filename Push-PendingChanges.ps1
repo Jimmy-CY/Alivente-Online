@@ -74,7 +74,14 @@ param(
     # 300, not at 1. alv_run.py decides what may be skipped: a suite is
     # only skipped when NOTHING IT COULD READ has changed since the run
     # that passed it, which alv_impact answers. Everything else re-runs.
-    [switch]$Resume
+    [switch]$Resume,
+    # DP-1, 22 Oct 2026 - WAIT FOR THE DEPLOY, DO NOT ANNOUNCE IT.
+    # Push 4 and push 5 both ended by saying Railway would build and
+    # deploy, and in both cases it did not. -Site is where to ask,
+    # -WaitMinutes is how long to care, -NoWait skips it entirely.
+    [string]$Site = 'https://alivente.online',
+    [int]$WaitMinutes = 8,
+    [switch]$NoWait
 )
 
 # Deliberately NOT 'Stop'.  Under 'Stop', anything a native command writes to
@@ -1232,6 +1239,13 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WRAPPER THAT NEVER CLOSED'; What = 'DB-1: 88 rules and 2,471 lines were nested inside a max-width 1200px block that was never closed, so the date bar rendered as default browser buttons on any screen wider than that' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: 1fr'; Absent = $true; Code = $true; What = 'DB-1: and the one rule it held is gone - .calendar-layout stopped being a grid when MV-2 deleted the mini calendar beside it' },
+    @{ File = 'alv_plant.py'; Text = 'def recover'; What = 'LK-1: fifteen suites write into real files and restore in a finally, which a SIGKILL does not run - the defect stays and nothing noticed. The lock is armed around the PLANTERS list, names every file a planter did not put back, and deliberately restores nothing' },
+    @{ File = 'pages/views/users.py'; Text = "to_attr='member_list'"; What = 'WN-1: the workspace list ran one SELECT per workspace, which WM-1 left deliberately on 16 October and named as its own round. A Prefetch with to_attr does it in two, whatever N is - and to_attr because the template reads member_list, and an undefined name in a template is silence' },
+    @{ File = 'mysite/cron-requirements.txt'; Text = 'pillow-heif'; What = 'CF-1: railway.json installs THIS file, and it did not carry pillow-heif - so HEIC uploads from an iPhone failed quietly on Live, because pages/utils.py guards that import on purpose. Also UTF-8 now, and five open-ended packages bounded' },
+    @{ File = 'pages/models.py'; Text = 'def store_display_jpeg'; What = 'SD-1: the ONE place that stores a display copy. Django storage does not overwrite, so --rebuild --write used to write a suffixed copy beside the one it meant to replace, leave the old on the volume and leave the row permanently stale. This deletes the target path first and checks the name it got' },
+    @{ File = 'mysite/urls.py'; Text = 'def deploy_version'; What = 'DP-1: /version/ answers seven characters of hex - the commit the running process was built from - and this script asks it after a push until it answers the SHA just pushed. No Railway token anywhere' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'saveColumnOrder'; What = 'WD-1: the week view seven columns drag into order through reorder_meal_day, the endpoint RO-1 built - a column is a date. Within a column only: across days writes a date and that is Move' },
+    @{ File = 'pages/help_content/administration.html'; Text = 'how far into the menu'; What = 'HG-1: the Moving a Week tab describes the feature MN-2 actually shipped - a menu is a span of days kept by offset, saved with a From and a To and landed on a date you choose. It said by weekday, and test_meal_guide3 was requiring it to' },
     @{ File = 'pages/templates/view_recipe.html'; Text = 'NOT A DATA TABLE'; What = 'VR-1: the cooking schedule readout and its printed copy are key-and-value lists, not data tables, and the three colour literals in the first of them became tokens' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def reorder_meal_day'; What = 'RO-1: the only endpoint that moves a row within its day - sort_order has decided the order since MN-1 and nothing could write it' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'day-rows'; What = 'RO-1: the day card rows drag by the same grip the ingredients list uses, and the grip is hidden unless SortableJS actually loaded' },
@@ -2933,7 +2947,22 @@ $suites = @(
     'test_day_order.py',
     # VR-1, 21 Oct 2026 - the cooking schedule readout wears tokens,
     # and the two tables that are NOT data tables say so.
-    'test_recipe_tidy.py'
+    'test_recipe_tidy.py',
+    # HG-1, 22 Oct 2026 - the guide names what the page shows, and the
+    # page's bar is named in the guide. Both directions.
+    'test_help_agrees.py',
+    # WD-1, 22 Oct 2026 - the week columns drag, through RO-1 endpoint.
+    'test_week_drag.py',
+    # DP-1, 22 Oct 2026 - the site says what commit it is running.
+    'test_deploy_probe.py',
+    # SD-1, 22 Oct 2026 - a rebuild replaces the file it rebuilds.
+    'test_photo_rebuild.py',
+    # CF-1, 22 Oct 2026 - the configuration says what it really is.
+    'test_config_truth.py',
+    # WN-1, 22 Oct 2026 - the workspace list is two queries, not N.
+    'test_ws_prefetch.py',
+    # LK-1, 22 Oct 2026 - a killed planter leaves a lock behind.
+    'test_planter_lock.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
@@ -3186,9 +3215,72 @@ Good 'pushed'
 Write-Host ''
 Write-Host 'Railway will build and deploy from this push.' -ForegroundColor Cyan
 Write-Host 'Migrations run automatically on deploy; this batch adds none.' -ForegroundColor Cyan
+
+# DP-1, 22 Oct 2026 - AND THEN FIND OUT WHETHER IT DID.
+#
+# The line above has been printed at the end of every push since this
+# script was written, and twice in two days it was not true: Railway
+# had builds paused, the push landed, the post-deploy checks printed,
+# and the live site went on running 3245f19.
+#
+# THE SITE ANSWERS THE QUESTION ITSELF. /version/ returns seven
+# characters of hex - the commit the running process was built from -
+# and this asks it until it answers the SHA just pushed. No token, no
+# API, nothing on this laptop to leak.
+#
+# A TIMEOUT IS NOT A FAILURE. The push is already in; running out of
+# patience costs nothing, so this exits 0 either way and says what the
+# live site is still running.
+$deployed = $false
+if (-not $NoWait) {
+    Head 'Deploy'
+    $sha  = [string](& git rev-parse HEAD)
+    $want = $sha.Trim().Substring(0, 7)
+    $probe = ($Site.TrimEnd('/') + '/version/')
+    Say ('  asking ' + $probe + ' for ' + $want)
+    Say ('  up to ' + $WaitMinutes + ' minute(s). Ctrl-C costs nothing - the push is already in.')
+    $deadline = (Get-Date).AddMinutes($WaitMinutes)
+    $seen = ''
+    while ((Get-Date) -lt $deadline) {
+        $got = ''
+        try {
+            $resp = Invoke-WebRequest -UseBasicParsing -TimeoutSec 15 -Uri $probe
+            $got = ([string]$resp.Content).Trim()
+        } catch {
+            $got = '(no answer)'
+        }
+        if ($got -eq $want) { $deployed = $true; break }
+        if ($got -ne $seen) {
+            $seen = $got
+            Say ('  ' + (Get-Date -Format 'HH:mm:ss') + '   live says: ' + $seen)
+        }
+        Start-Sleep -Seconds 15
+    }
+    if ($deployed) {
+        Good ('DEPLOYED - ' + $Site + ' is running ' + $want)
+    } elseif ($seen -eq 'unknown') {
+        Warn 'the probe answers, but the build supplied no commit SHA'
+        Say  '        Railway normally sets RAILWAY_GIT_COMMIT_SHA on its own.'
+        Say  '        Until it does, this cannot tell one deploy from another.'
+    } elseif ($seen -eq '(no answer)' -or $seen -eq '') {
+        Warn ('no answer from ' + $probe + ' in ' + $WaitMinutes + ' minute(s)')
+        Say  '        Either the deploy has not landed yet, or this is the'
+        Say  '        first push carrying the probe and the OLD build has no'
+        Say  '        /version/ to answer with. Both look the same from here.'
+    } else {
+        Warn ('not deployed after ' + $WaitMinutes + ' minute(s) - live is still running ' + $seen)
+        Say  '        The push is in. Watch Railway, or ask again:'
+        Say  ('           (Invoke-WebRequest -UseBasicParsing ' + $probe + ').Content')
+    }
+}
+
 Write-Host ''
 if ($Checks.Count -gt 0) {
-    Write-Host 'Worth checking on Live once the deploy is green:' -ForegroundColor Cyan
+    if ($deployed) {
+        Write-Host 'The deploy is green. Worth checking on Live:' -ForegroundColor Cyan
+    } else {
+        Write-Host 'Worth checking on Live ONCE THE DEPLOY IS GREEN - it is not yet:' -ForegroundColor Yellow
+    }
     for ($i = 0; $i -lt $Checks.Count; $i++) {
         Write-Host ('  {0}. {1}' -f ($i + 1), $Checks[$i])
     }

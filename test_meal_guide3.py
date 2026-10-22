@@ -109,7 +109,8 @@ BUILT = ('repeating a whole week', 'saved menus',
 # claim is unchanged - the guide still says what it cannot do - and
 # what it cannot do is the other half of MH-3's pair.
 # RO-1, 21 Oct 2026 - the day can be dragged now; the week cannot.
-OUTSTANDING = 'reordering the week view'
+# WD-1, 22 Oct 2026 - and now it can. Across days is what is left.
+OUTSTANDING = 'dragging a meal from one day to another'
 
 passed = failed = skipped = 0
 
@@ -227,8 +228,16 @@ def claims(text):
         c['  it names %r' % phrase] = phrase in w
     c['  and says where the two live, and where a phone puts them'] = (
         'fa-ellipsis-v' in w and 'bar' in w)
-    c['  that a Menu is kept BY WEEKDAY, which is the whole point'] = (
-        'by weekday' in w.lower())
+    # HG-1, 22 Oct 2026 - THIS CLAIM WAS HOLDING THE GUIDE WRONG.
+    # MW-1 wrote it when it was true: a Menu really was kept by
+    # weekday. MN-2 made a Menu a span of days kept by OFFSET on 21
+    # October and could not have corrected the guide without this
+    # going red - so the guide was not corrected. A suite that pins
+    # the wording of a feature outlives the feature unless the round
+    # that changes the feature is the round that moves the pin.
+    c['  that a Menu is kept by HOW FAR INTO IT each day falls'] = (
+        'how far into the menu' in w.lower()
+        and 'by weekday' not in w.lower())
     c['  that two meals on one day gives you two meals'] = (
         'two meals' in w.lower() and 'replaced' in w)
     c['  that the dialog counts first'] = 'counts what the target' in w
@@ -257,13 +266,19 @@ def claims(text):
         bool(tabs) and not [w2 for w2 in BUILT for s in coming if w2 in s])
     c['  and what is NOT built is still named as coming'] = (
         any(OUTSTANDING in s.lower() for s in coming))
-    c['  reordering a day too'] = (
-        any('reordering' in s.lower() for s in coming))
+    # WD-1, 22 Oct 2026 - the coming sentence is no longer about
+    # reordering anything: the week reorders. It is about crossing days,
+    # which writes a date. Asking for the word 'reordering' here would
+    # ask the guide to keep promising a thing that now ships.
+    c['  and it is about crossing days, not ordering them'] = (
+        any('from one day to another' in s.lower() for s in coming)
+        and not any('reordering' in s.lower() for s in coming))
 
     # ---- 5. two tips, and they are about the two free things
     t = html.get('mp-tips', '')
-    c['the tips tell you to save the weeks you come back to'] = (
-        'Save the weeks you come back to' in t)
+    # HG-1, 22 Oct 2026 - days, not weeks. MN-2 made a Menu a span.
+    c['the tips tell you to save the days you come back to'] = (
+        'Save the days you come back to' in t)
     c['  and to use leftovers, because they are free'] = (
         'they are free' in t and 'buys that pot once' in t)
 

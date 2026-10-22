@@ -1415,6 +1415,20 @@ ROUNDS = [
     '.bak_dayorder',
     # VR-1, 21 Oct 2026 - the recipe schedule readout onto tokens.
     '.bak_recipetidy',
+    # HG-1, 22 Oct 2026 - the guide describes what shipped.
+    '.bak_helpagrees',
+    # WD-1, 22 Oct 2026 - the week columns drag.
+    '.bak_weekdrag',
+    # DP-1, 22 Oct 2026 - the site says what it is running.
+    '.bak_deployprobe',
+    # SD-1, 22 Oct 2026 - a rebuild replaces the file it rebuilds.
+    '.bak_photorebuild',
+    # CF-1, 22 Oct 2026 - the configuration says what it really is.
+    '.bak_configtruth',
+    # WN-1, 22 Oct 2026 - the workspace list is two queries, not N.
+    '.bak_wsprefetch',
+    # LK-1, 22 Oct 2026 - a killed planter leaves a lock behind.
+    '.bak_planterlock',
 ]
 
 

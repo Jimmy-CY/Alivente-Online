@@ -116,7 +116,12 @@ BUILT = ('moving a meal from one day to another', 'three views',
 # the guide names as outstanding moved on rather than disappearing: the
 # WEEK view's seven columns still cannot be dragged, that question is
 # with Demetri and unanswered, and RO-1 explicitly does not do it.
-OUTSTANDING = 'reordering the week view'
+# WD-1, 22 Oct 2026 - THE WEEK REORDERS NOW, so the promise moves on
+# again. What is genuinely not built is dragging a meal ACROSS days:
+# that writes a date and not an order, which is Move's job, and one
+# gesture doing either depending on where the pointer lands is how a
+# plan gets quietly rearranged.
+OUTSTANDING = 'dragging a meal from one day to another'
 
 passed = failed = skipped = 0
 
@@ -303,7 +308,7 @@ def claims(text):
         'the one meal, not the day' in mh)
     c['test_meal_guide3 has the eighth slug'] = ("'mp-print'" in g3)
     c['  and its outstanding pin moved to reordering'] = (
-        "OUTSTANDING = 'reordering the week view'" in g3)
+        "OUTSTANDING = 'dragging a meal from one day to another'" in g3)
     c['  and its render pin allows a tab to SHRINK'] = (
         "ok(b != a['h']," in g3)
     return c
@@ -402,8 +407,8 @@ for probe, what in (('meal_plan_print', 'the Print button'),
 # a delta; both are the thing the delta must not have broken.
 ok(any(OUTSTANDING in x.lower() for x in coming_sentences(block)),
    'what is NOT built is still named as outstanding')
-ok('def reorder_meal_day' in view and 'def reorder_week' not in view,
-   'CONTROL: a DAY can be reordered now and a WEEK cannot, so the one '
+ok('def reorder_meal_day' in view and 'def move_meal_entry' in view,
+   'CONTROL: ordering and MOVING are two endpoints, which is why one '
    'remaining promise is honest')
 
 # THE RETIRED WORDS, ASKED OF THE WHOLE MODULE rather than one tab -

@@ -242,10 +242,17 @@ head('2. NO NEW QUERY, AND THE VIEW SAYS WHAT THE DATA IS FOR')
 v_now = read(os.path.join(ROOT, VIEW))
 v_was = (read(os.path.join(ROOT, VIEW) + SUFFIX)
          if os.path.isfile(os.path.join(ROOT, VIEW) + SUFFIX) else v_now)
-ok('ws.member_list = list(ws.members.select_related(' in v_now,
-   'the view still builds member_list, select_related on user')
+# WN-1, 22 Oct 2026 - THE LOOP WM-1 LEFT HERE IS GONE, and this
+# claim went with it. What it protected - that the panel is handed a
+# list of members with the user already pulled and in username order -
+# is still exactly true; it is a Prefetch with to_attr now rather than
+# a loop, which is the round WM-1 named on 16 October.
+ok("to_attr='member_list'" in v_now,
+   'the view still builds member_list - as a prefetch now, not a loop')
+ok("select_related('user')" in v_now,
+   '  with the user pulled in the same query')
 ok("order_by('user__username')" in v_now,
-   '  and still orders it - the panel inherits that order for free')
+   '  and still ordered - the panel inherits that order for free')
 
 # THE CODE DID NOT MOVE. Comments out, compare the rest.
 def bare(t):
@@ -253,16 +260,30 @@ def bare(t):
                      if not ln.strip().startswith('#'))
 
 
-ok(bare(v_now) == bare(v_was),
-   'and NOT ONE LINE OF VIEW CODE CHANGED - the round touched only the '
-   'comment')
-ok('count POPUP' in v_now and 'count tooltip' not in v_now,
-   'whose wording now names the popup, not the tooltip that is gone')
+# WN-1, 22 Oct 2026 - AND NOW A LINE HAS CHANGED, which is the point
+# of that round and was never true of this one. What WM-1 claimed was
+# that IT changed no view code; against its own backup that is still
+# provable, and against a later round it is not a claim about WM-1 at
+# all. So it is asked of the thing WM-1 really promised: the panel gets
+# the same list, from the same place, under the same name.
+ok("member_list" in v_now,
+   'and the panel still reads member_list by that name - WN-1 changed '
+   'how it is built and deliberately not what it is called')
+ok('count tooltip' not in v_now,
+   'and nothing in the view still names the tooltip that is gone')
 ok(not APPLIED or 'count tooltip' in v_was,
    'CONTROL: it said tooltip, which would have been a reason the tree '
    'no longer had')
-ok('prefetch' in v_now.lower() and 'its own round' in v_now,
-   'and the N+1 it has always had is written down rather than hidden')
+# WN-1, 22 Oct 2026 - IT IS NOT AN N+1 ANY MORE. WM-1 wrote the
+# problem down and named a round for it; that round happened, and
+# test_ws_prefetch counts the queries at 1, 4 and 10 workspaces to
+# prove it. A claim here that the N+1 is still 'written down' would be
+# asking the tree to keep describing a fault it no longer has.
+ok('prefetch' in v_now.lower(),
+   'and the N+1 WM-1 wrote down is gone - WN-1, 22 October, counted '
+   'in test_ws_prefetch')
+ok('for ws in workspaces' not in v_now,
+   '  the loop it named is not here at all')
 
 # THE TEMPLATE NEVER REACHES PAST THE LIST THE VIEW PREPARED.
 ok(not re.search(r'\{%\s*for\s+\w+\s+in\s+ws\.members\b', B_NOW),

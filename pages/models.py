@@ -1960,6 +1960,57 @@ def make_display_jpeg(field_file, quality=85):
     return out.getvalue()
 
 
+def store_display_jpeg(recipe, data):
+    """Put JPEG bytes at the display copy's PROPER name. SD-1, 22 Oct 2026.
+
+    THE ONE PLACE THAT KNOWS HOW A DISPLAY COPY IS STORED, as
+    make_display_jpeg has been the one place that knows how one is made
+    since PX-1. Both callers go through it: the convert_recipe_photos
+    command and Recipe.save().
+
+    WHY IT EXISTS. FieldFile.save() asks the storage for an AVAILABLE
+    name, and FileSystemStorage answers one that is not taken - the name
+    you asked for with a random seven-character suffix on it. Writing a
+    display copy over itself therefore produced
+
+        recipe-1-alpha-20261022063218_xUkNf5M.jpg
+
+    and three consequences. The old copy was never deleted, so a rebuild
+    of 324 photos left 324 orphans. display_copy_is_stale compares the
+    stored name with display_name_for(original) - by design, so that
+    there is no column to forget to clear - and the suffixed name is
+    never equal to it, so every recipe became permanently stale. And
+    permanently stale means save() rebuilds the copy every time the
+    recipe is edited, leaving another orphan each time.
+
+    SO IT DELETES THE TARGET PATH FIRST and then writes there. One
+    path, asked of the storage by exact name - not a pattern, not a
+    glob, not a listing. The file deleted is the one about to be
+    replaced at the same path, and nothing else on the volume can be
+    reached from here.
+
+    AND IT CHECKS RATHER THAN HOPES. If the stored name still is not
+    the name asked for, this returns False and says nothing more; the
+    caller decides. That check is the thing nobody did before, and it
+    is why this round exists.
+
+    Returns True when the display copy is on the volume under its
+    proper name, False otherwise. Never raises: a picture is worth less
+    than the recipe it belongs to, which is PX-1's rule and still true.
+    """
+    from django.core.files.base import ContentFile
+    try:
+        want = display_name_for(recipe.recipe_image.name)
+        field = recipe.recipe_image_display
+        target = recipe_display_upload_path(recipe, want)
+        if field.storage.exists(target):
+            field.storage.delete(target)
+        field.save(want, ContentFile(data), save=False)
+        return os.path.basename(field.name) == want
+    except Exception:
+        return False
+
+
 def display_name_for(original_name):
     """The display copy's filename for a given original. PX-1.
 
@@ -2106,14 +2157,17 @@ class Recipe(models.Model):
         # write names its one field, and a failure here must never lose
         # the recipe the person just saved - the picture is worth less
         # than the recipe.
+        #
+        # THROUGH store_display_jpeg SINCE SD-1, 22 Oct 2026. This block
+        # used to call field.save() directly, which asks the storage for
+        # an AVAILABLE name and gets the one you asked for with a random
+        # suffix whenever the target already exists. A recipe left
+        # permanently stale by that - see store_display_jpeg - came
+        # through here on EVERY edit and left another orphan each time.
         if self.display_copy_is_stale():
             try:
-                from django.core.files.base import ContentFile
                 data = make_display_jpeg(self.recipe_image)
-                if data is not None:
-                    self.recipe_image_display.save(
-                        display_name_for(self.recipe_image.name),
-                        ContentFile(data), save=False)
+                if data is not None and store_display_jpeg(self, data):
                     super().save(update_fields=['recipe_image_display'])
             except Exception:
                 pass

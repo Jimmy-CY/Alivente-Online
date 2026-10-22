@@ -396,6 +396,41 @@
     .cp-dates { flex-direction: column; gap: 0; }
 }
 
+/* AND THE WEEK'S COLUMNS - WD-1, 22 Oct 2026.
+
+   NO GRIP HERE. A column is 152px at 1200px, which is why MV-3 put
+   neither a stepper nor row actions in one, and a chip in it has a
+   single interaction. The chip drags itself; there is no room for a
+   handle and nothing for one to disambiguate.
+
+   HIDDEN BEHIND THE SAME CLASS AS THE DAY CARD. .is-draggable is only
+   added once Sortable has really answered, so a failed CDN leaves the
+   week exactly as it was - chips that open their menu and nothing
+   that looks draggable and is not.
+
+   THE CHOSEN CHIP GETS A RING AND NOT A FILL, which is where this
+   round differs from the day card on purpose. RO-1 marks a chosen ROW
+   with --alv-surface, and that works because a row has no fill of its
+   own. A week chip does: accent-soft normally, warn-soft for a note,
+   surface-deep for a leftover. The first draft of this rule copied
+   RO-1 and set the chosen background to accent-soft - which is what a
+   normal chip ALREADY IS. Measured in CIE Lab it came out at dE 0.0,
+   an invisible state, and the renders are what caught it.
+
+   A FILL CANNOT WIN HERE. accent-line reads at dE 15.9 / 27.4 / 18.0
+   against the three chip fills, so it is detectable - but ink-soft on
+   it measures 3.57:1, and the leftover chip's own text would go under
+   the floor at 11px. The fill carries MEANING on this chip; the ring
+   does not have to. accent-ink is dE 60+ from all three fills, leaves
+   every chip's own colours alone, and says the same thing. */
+.week-col-body.is-draggable .week-chip { cursor: grab; touch-action: none; }
+.week-col-body.is-draggable .week-chip:active { cursor: grabbing; }
+.week-col-body .sortable-ghost { opacity: 0.4; }
+.week-col-body .sortable-drag { opacity: 0.9; }
+.week-col-body .sortable-chosen {
+    box-shadow: 0 0 0 2px var(--alv-accent-ink);
+}
+
 /* DRAGGING A DAY INTO ORDER - RO-1, 21 Oct 2026.
 
    THE GRIP IS HIDDEN UNTIL THE LIBRARY ANSWERS. Sortable comes from a
@@ -2146,7 +2181,11 @@
                         {# THE CHIPS INSIDE ARE SAFE. RD-2's listener  #}
                         {# captures, so a click on a meal never        #}
                         {# reaches this.                               #}
+                        {# data-day - WD-1, 22 Oct 2026. The column IS a   #}
+                        {# date, and reorder_meal_day asks for one: an     #}
+                        {# order only means anything about a day.          #}
                         <div class="week-col-body"
+                             data-day="{{ day.date|date:'Y-m-d' }}"
                              {% if perms.auth.can_edit_recipes %}role="button" tabindex="0"
                              aria-label="{{ day.entries|length }} meal{{ day.entries|length|pluralize }} on {{ day.date|date:'l j F' }} - add one"
                              onclick="openPicker('{{ day.date|date:'Y-m-d'|escapejs }}', '{{ day.day_name|escapejs }} {{ day.day_num }}')"{% endif %}>
@@ -3344,6 +3383,23 @@
     // only place one delegated handler can get in front of an inline
     // onclick further down the tree.
     document.addEventListener('click', function (e) {
+        // A DROP IS NOT A CLICK - WD-1, 22 Oct 2026.
+        //
+        // Sortable fires a click on the element that was dragged, and
+        // this listener captures, so without the guard every drop in
+        // the week view opened the menu of whatever was dropped. The
+        // same return covers .week-col-body's inline onclick, which
+        // would otherwise open the picker.
+        //
+        // CLEARED BY TIME, NOT BY THE NEXT CLICK. A drop that lands
+        // outside any chip produces no click at all, and a flag
+        // cleared by a click that never comes stays set for ever.
+        if (window.__alvDragEnded
+                && Date.now() - window.__alvDragEnded < 300) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
         var chip = e.target.closest('[data-chip]');
         if (chip) {
             e.preventDefault();
@@ -4084,6 +4140,62 @@ function removeMeal(entryId, name) {
         onEnd: function () { saveDayOrder(list); }
     });
 }());
+
+// ------------------------------------------- dragging a week column
+// WD-1, 22 Oct 2026. Demetri, asked on 21 October and answered on 22:
+// yes, the week too.
+//
+// ONE SORTABLE PER COLUMN, WITH NO SHARED GROUP, so nothing crosses
+// from Tuesday to Wednesday. Dragging between columns writes a DATE
+// and not an order, which is what Move on the chip menu already does.
+//
+// THE SAME ENDPOINT AS THE DAY CARD. A column is a date, and
+// reorder_meal_day has taken a date and an order since RO-1 - it
+// refuses an order that is not exactly the rows on that date, which
+// is as true of a column as of a card.
+(function () {
+    if (typeof Sortable === 'undefined') { return; }
+    var cols = document.querySelectorAll('.week-col-body[data-day]');
+    if (!cols.length) { return; }
+    [].forEach.call(cols, function (col) {
+        if (!col.querySelector('.week-chip')) { return; }
+        col.classList.add('is-draggable');
+        new Sortable(col, {
+            draggable: '.week-chip',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            chosenClass: 'sortable-chosen',
+            animation: 150,
+            onStart: function () { window.__alvDragEnded = 0; },
+            onEnd: function () {
+                window.__alvDragEnded = Date.now();
+                saveColumnOrder(col);
+            }
+        });
+    });
+}());
+
+function saveColumnOrder(col) {
+    var ids = [].map.call(col.querySelectorAll('[data-chip]'),
+        function (c) { return c.getAttribute('data-chip'); });
+    if (!ids.length) { return; }
+    var body = new FormData();
+    body.append('date', col.getAttribute('data-day'));
+    body.append('order', ids.join(','));
+    body.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    fetch('{% url "reorder_meal_day" %}', {
+        method: 'POST', credentials: 'same-origin', body: body
+    })
+        .then(function (r) {
+            // 409 MEANS THE DAY CHANGED UNDER US - RO-1's answer, and
+            // the same one applies here: this column is looking at
+            // something that is no longer true.
+            if (r.status === 409) { window.location.reload(); return null; }
+            if (!r.ok) { throw new Error(r.status); }
+            return r.json();
+        })
+        .catch(function () { window.location.reload(); });
+}
 
 // WHAT THE DROP SENDS. The ids in the order they now sit in, and the
 // day they sit on - the endpoint will not take one without the other.

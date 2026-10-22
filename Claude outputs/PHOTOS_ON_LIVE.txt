@@ -1,0 +1,35 @@
+RUN THESE IN THE RAILWAY CONSOLE (Alivente-Online service), NOT ON THE LAPTOP.
+Only after push 6 shows ACTIVE with a successful build.
+
+--------------------------------------------------------------------------
+0. Confirm the deploy really landed - this works for the first time now
+--------------------------------------------------------------------------
+   Open in a browser:   https://alivente.online/version/
+   It answers seven characters of hex. Compare with:   git rev-parse --short HEAD
+   Match = push 6 is live. No match, or a login page = it is not.
+
+--------------------------------------------------------------------------
+1. DRY RUN - changes nothing, writes nothing
+--------------------------------------------------------------------------
+python manage.py convert_recipe_photos --rebuild
+
+   Read the totals. It ends with: DRY RUN. Nothing was written.
+
+--------------------------------------------------------------------------
+2. WRITE FIVE - then look at those five recipes on the site
+--------------------------------------------------------------------------
+python manage.py convert_recipe_photos --rebuild --write --limit 5
+
+--------------------------------------------------------------------------
+3. WRITE THE REST
+--------------------------------------------------------------------------
+python manage.py convert_recipe_photos --rebuild --write
+
+   It now reads every row back out of the database and measures the file
+   on the volume, so it says how many landed and what they weigh - and
+   names any that did not. The 22 October run went quiet; this one will not.
+
+--------------------------------------------------------------------------
+The originals are never touched. Only recipe_images_display/ is written.
+If the result is wrong, delete the display copies and the site falls back
+to the originals.

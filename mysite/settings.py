@@ -329,9 +329,23 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Push site online
-#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATICFILES_STORAGE = "/staticfiles/"
+# STATICFILES_STORAGE IS GONE - CF-1, 22 Oct 2026.
+#
+# Two lines stood here. One set STATICFILES_STORAGE to "/staticfiles/",
+# which is a path where a dotted class path belongs; the other was the
+# WhiteNoise Manifest storage, commented out.
+#
+# MEASURED, NOT ASSUMED. The setting was deprecated in Django 4.2 and
+# REMOVED in 5.1, and this tree runs 5.1.4. Asked at runtime on 22
+# October, STORAGES came back as the untouched default and staticfiles
+# resolved to plain StaticFilesStorage. The line did nothing whatever.
+#
+# AND TURNING MANIFEST STORAGE ON IS NOT A ONE-LINE FIX - E15. It wants
+# a staticfiles.json that is not on the volume, and railway.json runs
+# no collectstatic, so the first static file after that change would
+# 500 the site. Checked 22 October. Whoever takes E15 on needs the
+# collectstatic step and the STORAGES dict together, in one round, with
+# a deploy behind it.
 # STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # where collectstatic puts files (production)
 

@@ -717,6 +717,21 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             'set-password/',
             'accounts/',
             'api/',  # If you have API endpoints
+            # DP-1, 22 Oct 2026 - THE DEPLOY PROBE.
+            #
+            # /version/ answers seven characters of hex and nothing
+            # else, and the push script asks it from a laptop with no
+            # session at all. Without this line the middleware would
+            # bounce it to the login page and the probe would read a
+            # login form as the running version for ever.
+            #
+            # ON ITS OWN LINE RATHER THAN UNDER 'api/'. That prefix is
+            # already exempt and would have carried this for free - but
+            # nothing is mounted under api/ anywhere in the tree, so it
+            # is dead configuration, and hiding a deliberate public
+            # endpoint inside dead configuration is how the reason gets
+            # lost. This one says what it is.
+            'version/',
             'media/',  # Media files
             'static/',  # Static files
             # Removed empty string '' that was matching everything

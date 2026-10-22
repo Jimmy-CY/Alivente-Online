@@ -718,7 +718,7 @@ if up and mod:
     # on the chip menu now, so one of the two is in PROMISED_WORDS
     # above and the other is the honest remainder. The claim is the
     # same claim - that the guide still says what it cannot do.
-    ok(any('reordering the week view' in s.lower()
+    ok(any('dragging a meal from one day to another' in s.lower()
            for s in coming),
        '  while what is NOT built is still named as outstanding',
        coming[:2])
@@ -731,10 +731,14 @@ if up and mod:
     # promised unless something asks the code. So it asks about the
     # WEEK, which is what the guide names now and what really is not
     # built.
+    # WD-1, 22 Oct 2026 - the week reorders too, through the SAME
+    # endpoint, because a column is a date. What is still not built is
+    # dragging ACROSS days, and the thing that would do it is a date
+    # write - move_meal_entry - not an order write.
     ok('def reorder_meal_day' in view_py
        and 'def reorder_week' not in view_py,
-       '  CONTROL: a day reorders and a week does not, which is what '
-       'the guide says')
+       '  CONTROL: one endpoint orders a date, whichever view you are '
+       'looking at it in')
 
 # ==========================================================================
 head('8. SCOPE, REGISTRATION AND THE GATE')

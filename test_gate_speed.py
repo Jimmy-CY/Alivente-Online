@@ -243,10 +243,10 @@ head('3. THE FOURTEEN THAT MUST NOT SHARE A TREE')
 # A suite that plants a defect into a REAL file and restores it cannot
 # run beside a suite reading that file. MEASURED on 16 Oct, not assumed:
 # test_icon_names passes alone and FAILS beside five others.
-ok(len(alv_run.PLANTERS) == 15,
-   '%d planter(s) are named - the fourteen measured on 16 Oct, and '
-   'this suite, which section 3 below caught writing into the repo '
-   'itself' % len(alv_run.PLANTERS))
+ok(len(alv_run.PLANTERS) == 16,
+   '%d planter(s) are named - the fourteen measured on 16 Oct, this '
+   'suite, and test_planter_lock, both of which section 3 below '
+   'caught writing into the repo themselves' % len(alv_run.PLANTERS))
 missing = [n for n in alv_run.PLANTERS if n not in names]
 ok(not missing, '  and every one of them is a suite the gate runs',
    missing)

@@ -902,6 +902,20 @@ CONVERTED = [
     'test_day_order.py',
     # VR-1, 21 Oct 2026 - the schedule readout, measured onto tokens.
     'test_recipe_tidy.py',
+    # HG-1, 22 Oct 2026 - the guide and the page agree, both ways.
+    'test_help_agrees.py',
+    # WD-1, 22 Oct 2026 - the week drags too.
+    'test_week_drag.py',
+    # DP-1, 22 Oct 2026 - and the push finds out whether it deployed.
+    'test_deploy_probe.py',
+    # SD-1, 22 Oct 2026 - a rebuild replaces rather than accumulates.
+    'test_photo_rebuild.py',
+    # CF-1, 22 Oct 2026 - the configuration says what it really is.
+    'test_config_truth.py',
+    # WN-1, 22 Oct 2026 - the workspace list is two queries, not N.
+    'test_ws_prefetch.py',
+    # LK-1, 22 Oct 2026 - a killed planter leaves a lock behind.
+    'test_planter_lock.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

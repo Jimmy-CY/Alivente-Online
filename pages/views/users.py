@@ -40,7 +40,7 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.contrib.auth.models import Permission, User
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.contrib.contenttypes.models import ContentType
 from pages.permissions import MODULE_PERMISSIONS
 from django.shortcuts import get_object_or_404, redirect, render
@@ -488,19 +488,39 @@ def user_reset_password(request, user_id):
 @permission_required('auth.can_access_administration', raise_exception=True)
 def workspace_management(request):
     """List all workspaces with owner, member count, and actions."""
+    # TWO QUERIES, WHATEVER N IS - WN-1, 22 Oct 2026.
+    #
+    # WM-1 left a loop here on 16 October and said so in as many words:
+    # one SELECT per workspace on the page, plus the one that fetched
+    # the workspaces. This is the round it named.
+    #
+    # to_attr, NOT a bare prefetch_related('members'). The template
+    # reads ws.member_list. A bare prefetch would fill ws.members.all()
+    # and leave member_list undefined - and an undefined name in a
+    # Django template is SILENCE, not an error, so every popup would
+    # simply have come up empty and nothing would have said why.
+    #
+    # select_related('user') STAYS INSIDE IT. The list is ordered by
+    # username and the popup prints usernames; without it this would be
+    # two queries plus one per MEMBER, which is a worse N+1 than the
+    # one being removed.
+    #
+    # AND THE COUNT IS LEFT ALONE. annotate(Count('members')) is a
+    # GROUP BY on the first query, costs nothing extra, and is what the
+    # column sorts on. len(member_list) would become a different number
+    # the day a filter is added to one and not the other.
     workspaces = (
         Workspace.objects
         .select_related('owner')
         .annotate(member_count=Count('members'))
+        .prefetch_related(Prefetch(
+            'members',
+            queryset=(UserProfile.objects
+                      .select_related('user')
+                      .order_by('user__username')),
+            to_attr='member_list'))
         .order_by('name')
     )
-
-    # Pre-fetch members for the count POPUP and edit-page reuse.
-    # WM-1, 16 Oct 2026 - it was a title= tooltip until this round; the
-    # popup reads the same list, so no query changed. One query per row
-    # is pre-existing and still here: a prefetch is its own round.
-    for ws in workspaces:
-        ws.member_list = list(ws.members.select_related('user').order_by('user__username'))
 
     return render(request, 'workspace_management.html', {
         'workspaces': workspaces,

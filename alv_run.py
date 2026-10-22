@@ -93,6 +93,12 @@ PLANTERS = [
     # signature caught it; arguing with the signature is how a race
     # nobody can reproduce gets written.
     'test_gate_speed.py',
+    # LK-1, 22 Oct 2026 - and this round's own suite, for the same
+    # reason and found the same way. It writes a probe file into the
+    # repo, kills a child that damages it, and removes both. The
+    # signature caught it; it is here because of that and not because
+    # anybody remembered.
+    'test_planter_lock.py',
 ]
 
 # THE CONTENDED - a SECOND reason to run alone, and not the planters'.
@@ -241,6 +247,45 @@ def file_table():
     return t
 
 
+import alv_plant                                          # noqa: E402
+
+
+def planting(names, run):
+    """Run the planters with the lock armed once around all of them.
+
+    LK-1, 22 Oct 2026. The lock is written BEFORE the first planter and
+    cleared after the last, so a kill anywhere in the phase leaves it
+    on disk for the next run to find.
+
+    ONCE AROUND THE PHASE, NOT ONCE PER PLANTER. The first spelling
+    armed and disarmed around each one - thirty-two fingerprints in a
+    sweep. On Demetri's laptop that is 8,392 files and 3.26 seconds
+    each: 97 seconds added to a run, found by his gate on 22 October
+    and not by anything here, because the mirror holds 1,395 files and
+    took 0.12. Two fingerprints cost six seconds there and a quarter of
+    one here.
+
+    WHAT THAT GIVES UP is which planter left a file behind; what it
+    keeps is WHICH FILE, which is the part anybody acts on. The lock
+    names the phase and the file, and the file is what git checkout
+    takes.
+    """
+    armed = alv_plant.arm('the planter phase: ' + ', '.join(names))
+    try:
+        for n in names:
+            yield run(n)
+    finally:
+        changed, vanished, appeared = alv_plant.disarm('planters', armed)
+        for label, paths in (('did not put back', changed),
+                             ('deleted', vanished),
+                             ('left behind', appeared)):
+            if paths:
+                print('  !! the planters %s %d file(s):'
+                      % (label, len(paths)))
+                for p in paths[:8]:
+                    print('       %s' % p)
+
+
 def run_one(name):
     t0 = time.time()
     path = os.path.join(ROOT, name)
@@ -315,6 +360,34 @@ def main(argv=None):
     # reason. Planters first within the serial phase, because a planter
     # wants the quietest tree there is and the contended only want the
     # pool to not exist yet.
+    # ---- A KILLED PLANTER LEFT A LOCK - LK-1, 22 Oct 2026.
+    #
+    # Asked before anything runs, because every suite after this point
+    # would be reading a tree that nobody meant to test, and the
+    # failures it produced would be about the wrong thing.
+    #
+    # IT NAMES AND REFUSES; IT DOES NOT PUT ANYTHING BACK. See
+    # alv_plant.py - restoring a source file silently is a worse thing
+    # to own than the fault it fixes.
+    left = alv_plant.recover()
+    if left is not None:
+        suite, changed, vanished, appeared = left
+        if changed or vanished or appeared:
+            print('')
+            print('  !! %s WAS KILLED WHILE IT HAD A FILE OPEN.' % suite)
+            print('     The tree is not the tree this sweep means to '
+                  'test. Put these back and run again:')
+            for label, paths in (('changed', changed),
+                                 ('deleted', vanished),
+                                 ('appeared', appeared)):
+                for p in paths[:12]:
+                    print('       %-9s git checkout -- %s' % (label, p))
+            print('')
+            return 1
+        print('  -- a planter lock was left by %s, and the tree matches '
+              'it - clearing it' % suite)
+        alv_plant.release()
+
     plant = [n for n in todo if n in PLANTERS]
     slow = [n for n in todo if n in CONTENDED and n not in PLANTERS]
     serial = plant + slow
@@ -424,9 +497,19 @@ def main(argv=None):
                   'pool, and a pool failure CANCELS the rest of the '
                   'sweep, so running them here is the difference between '
                   'a swept tree and a --resume' % len(slow))
-    for n in serial:
-        if not report(run_one(n)):
+    # LK-1, 22 Oct 2026 - THE PLANTERS RUN WITH THE LOCK ARMED, once
+    # around the whole phase rather than once per suite. The contended
+    # ones beside them do not write into the tree, so they go through
+    # run_one unchanged.
+    stop = False
+    for outcome in planting(plant, run_one):
+        if not report(outcome):
+            stop = True
             break
+    if not stop:
+        for n in slow:
+            if not report(run_one(n)):
+                break
 
     # ---- phase 2: everything else, in a pool
     if not failed or a.force:
