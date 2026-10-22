@@ -378,6 +378,11 @@ urlpatterns = [
     # RD-2, 19 Oct 2026 - move a meal to another day. Beside remove,
     # because the chip menu offers them together.
     path('meal_plans/move/', views.move_meal_entry, name='move_meal_entry'),
+    # RO-1, 21 Oct 2026 - what comes first on a day. Beside move,
+    # because the two are halves of where a meal sits: move says which
+    # day, this says where on it.
+    path('meal_plans/reorder/', views.reorder_meal_day,
+         name='reorder_meal_day'),
     # PS-1, 19 Oct 2026 - what is on one day, for the picker's strip.
     path('meal_plans/day_entries/', views.meal_day_entries,
          name='meal_day_entries'),

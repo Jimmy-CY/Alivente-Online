@@ -11,14 +11,6 @@ Edit Physical Invoice
 <h4 class="page-subtitle-h4">{{ number }} &mdash; {{ pi.tenant.tenant_name }}</h4>
 <br/>
 
-{% for msg in messages %}
-  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-    {{ msg }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-{% endfor %}
 
 {% if not is_editable %}
   <div class="lock-banner">

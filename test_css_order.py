@@ -119,6 +119,25 @@ def now(p):
     return as_left_by(p, SUFFIX, read) if as_left_by else read(p)
 
 
+def source_of(p):
+    """The PATH now() reads from - BM-1, 21 Oct 2026.
+
+    now() returns the file as CS-1 left it: the earliest later round's
+    backup of it, or the file itself. Section 7 has to write into
+    whichever of those it is, or its plant is invisible to section 5
+    and the control reports a fault that is its own.
+    """
+    if not as_left_by:
+        return p
+    import alv_rounds as _r
+    later = (_r.ROUNDS[_r.ROUNDS.index(SUFFIX) + 1:]
+             if SUFFIX in _r.ROUNDS else [])
+    for s in later:
+        if os.path.isfile(p + s):
+            return p + s
+    return p
+
+
 def page(name):
     # RT-1, 18 Oct 2026 - AND A PAGE THE TREE USED TO HAVE. Every caller of
     # this is a claim about what CS-1 pruned, which is a claim about
@@ -453,12 +472,18 @@ def section_7():
     # now() really is the file on disk. That is a property to look for,
     # not a name to hard-code, because the next round will move the name
     # again.
+    # BM-1, 21 Oct 2026 - PLANT WHERE SECTION 5 READS, which is what
+    # the note below always meant. This used to require a page NO LATER
+    # ROUND HAD TOUCHED, because on such a page now() is the live file
+    # and the plant lands where section 5 will look. BM-1 backs up 81
+    # templates - it takes the message loop off every page that spells
+    # one - and there was no such page left. The control now writes
+    # into source_of(q), which IS where section 5 reads, so it holds
+    # however much of the tree a later round has touched.
     victim = None
     for q in alv_tree.templates():
         if alv_tree.rel(q) == BASE:
             continue
-        if now(q) != read(q):
-            continue                      # a later round owns this file
         # PQ-1, 10 Oct 2026 - ASK FOR THE PROPERTY THE
         # CONTROL NEEDS, which is a page section 5 actually
         # SCANS. Two guesses were wrong before this one:
@@ -480,16 +505,19 @@ def section_7():
         victim = q
         break
     if not ok(victim is not None,
-              'a page no later round has touched was found to plant into',
-              'every template now has a backup from a round after CS-1 - '
-              'the control needs one that does not'):
+              'a page section 5 scans was found to plant into',
+              'no template in the tree has rules section 5 would read'):
         return
-    print('        planting into %s' % alv_tree.rel(victim))
+    into = source_of(victim)
+    print('        planting into %s%s' % (alv_tree.rel(victim),
+                                          '' if into == victim
+                                          else '  (via %s)'
+                                          % os.path.basename(into)))
     vname = alv_tree.rel(victim)
     copy = os.path.join(SCRATCH, 'victim.html')
-    shutil.copyfile(victim, copy)
+    shutil.copyfile(into, copy)
     try:
-        text = read(victim)
+        text = read(into)
         bd = decls_of(now(page(BASE)))
         # .form-group label is a base component with a known value.
         want = bd.get('.form-group label', {}).get('color')
@@ -500,7 +528,7 @@ def section_7():
             '<style>',
             '<style>\n.form-group label { color: #ff00ff; }\n', 1)
         ok(planted != text, 'the control could be planted')
-        with open(victim, 'w', encoding='utf-8', newline='') as fh:
+        with open(into, 'w', encoding='utf-8', newline='') as fh:
             fh.write(planted)
 
         bad = collisions()
@@ -510,8 +538,8 @@ def section_7():
            'section 5 catches a planted hex literal over a base token',
            'found %d' % len(hit))
     finally:
-        shutil.copyfile(copy, victim)
-    ok(read(victim) == text, 'the control was put back exactly')
+        shutil.copyfile(copy, into)
+    ok(read(into) == text, 'the control was put back exactly')
     ok(not [b for b in collisions() if b[0] == vname],
        'and the tree is clean again')
 

@@ -131,14 +131,29 @@ import alv_tree as T                                        # noqa: E402
 
 NOW = dict((p, read(p)) for p in FILES)
 LOOP = '{% for msg in messages %}'
+# BM-1, 21 Oct 2026 - base is part of the subject now. It renders the
+# bar for every page that extends it, so a claim about whether the
+# planner can show a message is a claim about base and about the
+# planner not spelling a second loop of its own.
+BASE = T.path_of('base.html')
+BASETXT = read(BASE)
+BASE_HAS_LOOP = (T.code_only(BASETXT).count(LOOP) == 1)
 
 
 def claims(bundle):
+    # BM-1, 21 Oct 2026 - INHERITED, NOT SPELLED. MG-1 put a loop on
+    # each of these three pages and the fault was never three pages:
+    # 55 more had it. base renders the bar now, so what MG-1 proved -
+    # that a message written by the planner LANDS on the planner - is
+    # asked of the rendered page in section 3, and what is asked here
+    # is that the page does not spell a second loop of its own. Two
+    # loops would show every message twice.
     c = {}
     for p in FILES:
         name = os.path.basename(p)
         code = T.code_only(bundle[p])
-        c['%s renders a message bar' % name] = (code.count(LOOP) == 1)
+        c['%s renders a message bar' % name] = (
+            code.count(LOOP) == 0 and BASE_HAS_LOOP)
     return c
 
 
@@ -148,45 +163,57 @@ head('1. THE SOURCE')
 for msg, got in claims(NOW).items():
     ok(got, msg)
 
+# BM-1, 21 Oct 2026 - THE PLACE MOVED TO base. This asked where each
+# of the three pages put the bar inside its own content. base puts it
+# in one place for all of them now, so the question is asked once, of
+# base, and the three are asked only that they do not spell one.
+#
+# .find(), NOT .index(), throughout. Against the reverted tree there is
+# no bar in base at all, and .index() raised ValueError - the suite
+# CRASHED rather than failing, which blocks a push exactly as hard and
+# says far less about why. test_pick_note crashed on the same thing on
+# 20 October.
+_bi = BASETXT.find('{% block content %}')
+_bl = BASETXT.find(LOOP)
+ok(_bl >= 0 and _bi >= 0 and _bl < _bi,
+   'base renders the bar ABOVE the page content, which is the only '
+   'place one loop can sit', 'loop at %d, block at %d' % (_bl, _bi))
+ok('class="alert' in BASETXT, '  and it is the house alert')
 for p in FILES:
     name = os.path.basename(p)
-    body = NOW[p]
-    # .find(), NOT .index(). Against the reverted tree there is no bar
-    # on any of these three pages, and .index() raised ValueError -
-    # the suite CRASHED rather than failing, which blocks a push
-    # exactly as hard and says far less about why. test_pick_note
-    # crashed on the same thing on 20 October.
-    i = body.find('{% block content %}')
-    at = body.find('alv-message')
-    ok(at >= 0 and i >= 0 and at - i < 1400,
-       '%s puts it at the top of the content' % name,
-       'block at %d, message at %d' % (i, at))
-    ok('class="alert' in body, '  and it is the house alert' % ())
+    ok(T.code_only(NOW[p]).count(LOOP) == 0,
+       '%s spells none of its own - two loops would show every '
+       'message twice' % name)
 
 # THE HOUSE SPELLING, read off the tree rather than trusted.
+# BM-1, 21 Oct 2026 - there is exactly ONE page left that spells it,
+# and it is base. This used to count how many pages already used the
+# block MG-1 copied; the answer is 1, and that is the whole round.
+#
+# FOUND BY THE LOOP, NOT BY THE CLASS. The first `alv-message` in
+# base.html is in its STYLESHEET, 138,000 characters before the loop,
+# so anchoring on the class walked backwards into the sidebar and off
+# the end. Ask for the tag.
 import collections                                          # noqa: E402
 shapes = collections.Counter()
+spelt = []
 for p in T.templates():
     s = read(p)
-    if 'alv-message' not in s:
-        continue
-    i = s.index('alv-message')
-    j = s.rfind('{% for', 0, i)
-    if j < 0:
-        continue
-    k = s.find('{% endfor %}', i)
-    shapes[re.sub(r'\s+', ' ', s[j:k + 12]).strip()] += 1
-house, n = shapes.most_common(1)[0]
-# .find() AGAIN, for the same reason: against the reverted tree the
-# planner has no loop to compare, and a missing block is a FAILED
-# claim here, not a ValueError.
-_at = NOW[PLANNER].find(LOOP)
-_end = (NOW[PLANNER].find('{% endfor %}', _at) if _at >= 0 else -1)
-mine = (re.sub(r'\s+', ' ', NOW[PLANNER][_at:_end + 12]).strip()
-        if _at >= 0 and _end > _at else '(no loop on the planner)')
-ok(mine == house,
-   'and all three use the block %d other pages already use' % n,
-   '\n  house: %s\n  mine : %s' % (house[:88], mine[:88]))
+    found = 0
+    for m in re.finditer(r'\{%\s*for\s+\w+\s+in\s+messages\s*%\}', s):
+        k = s.find('{% endfor %}', m.start())
+        if k < 0:
+            continue
+        shapes[re.sub(r'\s+', ' ', s[m.start():k + 12]).strip()] += 1
+        found += 1
+    if found:
+        spelt.append((os.path.basename(p), found))
+ok(len(shapes) == 1, 'ONE shape in the tree spells the message loop',
+   '%d shape(s): %r' % (len(shapes), [x[:70] for x in shapes]))
+ok(spelt == [('base.html', 1)],
+   'and ONE page spells it, once - base. There were 81 on 21 October',
+   spelt[:6])
+house, n = shapes.most_common(1)[0] if shapes else ('', 0)
 
 # THE PRINTABLE PAGE DOES NOT PRINT IT.
 pc = T.code_only(NOW[PRINT])
@@ -200,12 +227,16 @@ ok('.alv-message' in pb,
 head('2. THE CONTROL')
 # ==========================================================================
 BEFORE = dict((p, was(p)) for p in FILES)
-held = [m for m, got in claims(BEFORE).items() if got]
-ok(not held, 'CONTROL: before this round not one of the three did',
-   'what held: %r' % (held,))
 for p in FILES:
     ok('alv-message' not in T.code_only(BEFORE[p]),
-       'CONTROL: %s really had no bar at all' % os.path.basename(p))
+       'CONTROL: %s really had no bar at all before MG-1'
+       % os.path.basename(p))
+# BM-1, 21 Oct 2026 - THE CONTROL IS STILL MG-1's BACKUP, and that is
+# the point: these three pages had no bar before MG-1 and have none of
+# their own after BM-1, for opposite reasons. claims() now asks about
+# base, which .bak_msgbar2 says nothing about, so re-asking it of the
+# backup would compare this round's tree with itself. The round that
+# took the loops away carries its own control, in test_msg_base.py.
 # AND THE VIEW REALLY WRITES MESSAGES. Without this the round is a
 # bar on a page that never had anything to show.
 vsrc = T.python_code_only(read(VIEW), payloads=True)

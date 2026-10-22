@@ -425,7 +425,9 @@ cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
 # left the tree, and the arithmetic below is the reason they are
 # rewritten rather than relaxed: 118 = 27 + 91 still holds, because
 # every literal that went was a var-safe one.
-for want in ('MARKUP_STYLE = 86', 'SCRIPT = 146', 'PAGES = 33',
+# VR-1, 21 Oct 2026 - MARKUP_STYLE was 86 and the cooking schedule
+# readout gave up six of them.
+for want in ('MARKUP_STYLE = 80', 'SCRIPT = 146', 'PAGES = 33',
              "'style-attr': 20", "'style-prop': 8",
              'safe == 28'):
     ok(want in cr, '  CR-1 census now reads %s' % want)

@@ -287,9 +287,18 @@ def claims(bundle):
                            items(menu, 'action-more-item'))
                if k in ('#copyRangeModal', '#menusModal'))
         == ['#copyRangeModal', '#menusModal'])
+    # MN-2, 21 Oct 2026 - THE DIALOG, NOT SIX THOUSAND CHARACTERS.
+    # This read a fixed window from the dialog's id, and MN-2 gave the
+    # Save half a preset row, two dates and a note while the Apply half
+    # gained a landing date and a line of its own. deleteMenu( landed
+    # past 6000 and the claim failed for the dialog being BIGGER, which
+    # is not what it is about. Sliced to the dialog's own end instead,
+    # so it cannot drift again.
+    _mi = code.find('id="menusModal"')
+    _me = code.find('</div>\n</div>', _mi) if _mi >= 0 else -1
+    _menu = code[_mi:_me if _me > _mi else len(code)] if _mi >= 0 else ''
     c['SAVE, APPLY AND DELETE ARE IN ONE DIALOG'] = all(
-        x in code[code.find('id="menusModal"'):
-                  code.find('id="menusModal"') + 6000]
+        x in _menu
         for x in ("url 'save_menu'", "url 'apply_menu'", 'deleteMenu('))
     c['THE VIEW TAKES A SPAN, NOT A WEEK'] = bool(rng)
     c['  landing it with the existing engine'] = (
@@ -432,16 +441,37 @@ ok(seq_of(oldcode).count('S') == 2,
    'CONTROL: the bar carried two secondaries, not four',
    seq_of(oldcode))
 
-# THE WALLS ARE BYTE-IDENTICAL. This round moved a door. If the copy
-# engine or any of the three endpoints had changed under it, every
-# claim above would still hold and the behaviour would be new.
+# THE WALLS WERE BYTE-IDENTICAL, AND TWO OF THEM HAVE SINCE BEEN
+# REBUILT. CP-2 moved a door and left the walls alone; if the copy
+# engine or any of the three endpoints had changed UNDER IT, every
+# claim above would still have held and the behaviour would have been
+# new. That was the point and it still is.
+#
+# MN-2, 21 Oct 2026 - save_menu AND apply_menu ARE NOT THE SAME TWO
+# FUNCTIONS ANY MORE, and that is deliberate: a menu is a span of days
+# landing where you say. Comparing them with CP-2's backup now answers
+# "has anything changed since 21 October" rather than "did CP-2 change
+# anything", and the first question has a different right answer every
+# day. So the three CP-2 did not touch are still held to the byte, and
+# the two MN-2 rebuilt are held to being MN-2's work and to still
+# doing what CP-2's dialog needs of them.
 oldv = BEFORE[VIEW]
-for name in ('copy_week_rows', 'save_menu', 'apply_menu', 'delete_menu',
-             'copy_meal_week'):
+for name in ('copy_week_rows', 'delete_menu', 'copy_meal_week'):
     a, b = fn(oldv, name), fn(NOW[VIEW], name)
     ok(bool(a) and a == b,
        'CONTROL: %s is byte-identical before and after' % name,
        'len before %d, len after %d' % (len(a), len(b)))
+for name in ('save_menu', 'apply_menu'):
+    a, b = fn(oldv, name), fn(NOW[VIEW], name)
+    ok(bool(a) and bool(b) and a != b,
+       'CONTROL: %s was rebuilt after this round, by MN-2' % name,
+       'len before %d, len after %d' % (len(a), len(b)))
+    ok('MN-2, 21 Oct 2026' in b,
+       '  and says so in its own text, so this is a change somebody '
+       'signed rather than a drift', name)
+    ok("request.POST.get('week')" in b,
+       '  and it still reads the week this dialog posts, which is all '
+       'CP-2 ever asked of it', name)
 
 
 # ==========================================================================

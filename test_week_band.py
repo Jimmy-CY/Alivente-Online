@@ -203,8 +203,12 @@ def claims(bundle):
         'box-shadow' in (row or ''))
     c['  and that edge is the accent, so it reads as a selection'] = (
         'var(--alv-accent)' in (row or ''))
-    c['  the cells themselves are paper again'] = (
-        bg(row) == 'var(--alv-paper)')
+    # WF-1, 21 Oct 2026 - MOSS, not paper. Demetri, having used what
+    # WT-1 shipped: "It needs a colour fill." The band fills with a
+    # tag-palette tint that clears every other fill on this grid by
+    # 6.9 dE, and keeps the accent rule as a second signal.
+    c['  the cells fill with a tint nothing else here uses'] = (
+        bg(row) == 'var(--alv-tag-moss-soft)')
     # NOT HERE: "the pill was not touched". It is a GUARD - true
     # before this round and required after it - and a claims() dict is
     # a DELTA, re-asked of the pre-round file where every entry must
@@ -275,9 +279,12 @@ else:
     ok(dE(soft, paper) >= VISIBLE,
        'and against the NEW row (paper) it is above it: %.1f'
        % dE(soft, paper))
-    # WHY NO FOURTH FILL. Kept as a measurement rather than as prose
-    # so that a later round proposing one has to re-read the numbers.
-    print('  rejected candidates for a fourth fill:')
+    # THE FOURTH FILL WAS FOUND - WF-1, 21 Oct 2026. These two
+    # candidates really are too close, and that part of WT-1 stands.
+    # What did not stand was the conclusion drawn from two: base
+    # carries ten more pale tints in the tag palette and none of them
+    # had been measured. test_week_fill asks all thirteen.
+    print('  the two WT-1 measured, and both still fail:')
     for name, c in (('surface-deep', deep),
                     ('pale accent, 45pc white', '#f0f8fa')):
         print('     %-22s dE pill %4.1f   dE is-out %4.1f'
@@ -288,6 +295,11 @@ else:
     ok(dE(surface, '#f0f8fa') < 3.0,
        '  and a pale accent closes on surface before it clears the '
        'pill: dE %.1f' % dE(surface, '#f0f8fa'))
+    moss = token('--alv-tag-moss-soft')
+    ok(moss and dE(soft, moss) >= VISIBLE * 2,
+       '  AND THE ONE WF-1 FOUND CLEARS THE PILL BY %.1f - from a '
+       'palette WT-1 never looked at'
+       % (dE(soft, moss) if moss else 0.0))
 
 
 # ==========================================================================

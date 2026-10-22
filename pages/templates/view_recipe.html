@@ -2253,24 +2253,54 @@
                 </div>
 
                 <!-- Schedule table -->
+                {# NOT A DATA TABLE - VR-1, 21 Oct 2026.                   #}
+                {#                                                          #}
+                {# This and the printed copy below it are NOT going on      #}
+                {# .alv-table. They are two-column key-and-value readouts:  #}
+                {# a label, a time, six                                     #}
+                {# rows, no header and no column meaning beyond what and   #}
+                {# when. .alv-table is for lists you read DOWN, with a     #}
+                {# header row. Dressing a readout as one would leave the   #}
+                {# next reader working out why the schedule has headings   #}
+                {# it never uses. Asked and answered, here, so it stops    #}
+                {# being a question.                                       #}
+                {#                                                         #}
+                {# WHAT WAS ACTUALLY WRONG was three colour literals, all  #}
+                {# in this half - the printed copy was already tokenised.  #}
+                {# Measured in CIE Lab against the whole palette:          #}
+                {#   a 7 per cent black hairline                           #}
+                {#                     -> var(--alv-line)      dE  1.75     #}
+                {#   a slate heading   -> var(--alv-ink)       dE  8.31     #}
+                {#   a hot pink icon   -> var(--alv-spice-ink) dE 45.73     #}
+                {# The first is below the 2.0 just-detectable threshold.    #}
+                {#                                                          #}
+                {# THE LITERALS ARE NOT SPELLED IN THIS NOTE. The hairline  #}
+                {# is replaced by RULE across the whole file, so a comment  #}
+                {# quoting it rewrote itself into nonsense - caught by      #}
+                {# check_gates, which asks whether a round reads text it    #}
+                {# also writes.                                             #}
+                {# The last is the big one and the plainest: the two OTHER #}
+                {# icons on this page wear warn-ink and spice-ink, and     #}
+                {# this was a hot pink belonging to nothing.               #}
+                {#                                     [test_recipe_tidy]  #}
                 <div id="modal_schedule" style="display:none; background: linear-gradient(135deg, var(--alv-surface) 0%, var(--alv-surface-deep) 100%); border-radius: 10px; padding: 20px 24px;">
-                    <div style="font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 14px;">
-                        <i class="fas fa-calendar-alt" style="color: #f5576c;"></i> Cooking Schedule
+                    <div style="font-size: 15px; font-weight: 700; color: var(--alv-ink); margin-bottom: 14px;">
+                        <i class="fas fa-calendar-alt" style="color: var(--alv-spice-ink);"></i> Cooking Schedule
                     </div>
                     <table style="width: 100%; border-collapse: collapse;">
-                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                        <tr style="border-bottom: 1px solid var(--alv-line);">
                             <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;" id="ms_label_fire">🔥 Light Fire</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_light_fire">—</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                        <tr style="border-bottom: 1px solid var(--alv-line);">
                             <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;">🥩 Start Cooking</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cooking">—</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                        <tr style="border-bottom: 1px solid var(--alv-line);">
                             <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;">✅ Finish Cooking / Start Resting</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_finish_cooking">—</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                        <tr style="border-bottom: 1px solid var(--alv-line);">
                             <td style="padding: 10px 0; color: var(--alv-ink-strong); font-size: 15px;">🔪 Start Cutting & Making Sauce</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cutting">—</td>
                         </tr>
@@ -2293,6 +2323,17 @@
 </div>
 
 <!-- Hidden print area for cooking schedule -->
+{# THE OTHER READOUT, AND THE ONE THAT WAS ALREADY RIGHT - VR-1, 21  #}
+{# Oct 2026. Same shape as the dialog's table, same reason it is not #}
+{# .alv-table, and it carried no colour literal at all: every rule   #}
+{# in it already resolves to a token. It is here so a reader looking #}
+{# for the pair finds both.                                          #}
+{#                                                                   #}
+{# AND THE EMOJI STAY, in both. A flame, a steak, a knife and a tick #}
+{# label these rows while the rest of the application uses Font      #}
+{# Awesome. That is a real inconsistency and it is not this round's: #}
+{# changing five labels on a screen in daily use is a visible change #}
+{# nobody asked for. Written down rather than done.                  #}
 <div id="cookingSchedulePrintArea" style="display:none;">
     <h2 style="margin-bottom: 4px;">🔥 Cooking Schedule</h2>
     <h3 style="color: var(--alv-good); margin-bottom: 16px;" id="print_recipe_name">{{ recipe.recipe_name }}</h3>

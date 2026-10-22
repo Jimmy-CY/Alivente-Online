@@ -103,10 +103,20 @@ KEPT = (
     'test_entry_sections.py', 'test_js_escape.py', 'test_label_weight.py',
     'test_meal_plan_buttons.py', 'test_more_css.py',
     'test_page_title.py',
-    'test_recipe_photos.py', 'test_recipe_spice.py', 'test_retone.py',
+    'test_recipe_spice.py', 'test_retone.py',
     'test_user_slash.py', 'test_zoom_guards.py',
 )
 MOVED = (
+    # PX-2, 21 Oct 2026 - moved out of KEPT, where RT-1 filed it.
+    # PX-1 measured the library on 13 October and its numbers were a
+    # record of that day. PX-2 gives the display copy a 1200px floor
+    # and corrects four of PX-1's claims in the same patcher - three
+    # of them carrying integers, because a 600px fixture is resampled
+    # to 1200 before it is encoded and the old margins cannot hold. A
+    # suite whose subject a later round CHANGED cannot keep every
+    # number it had; what it can do, and does, is say which round
+    # changed it and why.
+    'test_recipe_photos.py',
     # PP-1, 20 Oct 2026 - moved out of KEPT by RD-3, earlier in this
     # same push. RD-3 deleted the Recipe View dialog, and with it the
     # close strip test_personal_heads section 3 measured - so that

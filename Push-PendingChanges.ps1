@@ -1232,6 +1232,16 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WRAPPER THAT NEVER CLOSED'; What = 'DB-1: 88 rules and 2,471 lines were nested inside a max-width 1200px block that was never closed, so the date bar rendered as default browser buttons on any screen wider than that' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: 1fr'; Absent = $true; Code = $true; What = 'DB-1: and the one rule it held is gone - .calendar-layout stopped being a grid when MV-2 deleted the mini calendar beside it' },
+    @{ File = 'pages/templates/view_recipe.html'; Text = 'NOT A DATA TABLE'; What = 'VR-1: the cooking schedule readout and its printed copy are key-and-value lists, not data tables, and the three colour literals in the first of them became tokens' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'def reorder_meal_day'; What = 'RO-1: the only endpoint that moves a row within its day - sort_order has decided the order since MN-1 and nothing could write it' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'day-rows'; What = 'RO-1: the day card rows drag by the same grip the ingredients list uses, and the grip is hidden unless SortableJS actually loaded' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'MENU_MAX_DAYS'; What = 'MN-2: a saved menu is a span of days up to a quarter long, not a week, and Apply puts it on a date you choose - the table always allowed both and the two views did not' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'mn-preset'; What = 'MN-2: the Saved Menus dialog has a From, a To and a Landing on, with the same three presets CP-2 gave Copy' },
+    @{ File = 'pages/templates/base.html'; Text = 'THE ONE MESSAGE LOOP - BM-1'; What = 'BM-1: base renders the message bar for every page that extends it - 81 identical copies removed, and the 55 pages that had none can show a message at last' },
+    @{ File = 'pages/models.py'; Text = 'DISPLAY_FLOOR'; What = 'PX-2: a photo under 1200px on the long edge is resampled up once, on the server, with Lanczos and a light sharpen - the phone hero asks for about 1170 and the browser was doing that stretch itself on every page load' },
+    @{ File = 'pages/management/commands/convert_recipe_photos.py'; Text = '--rebuild'; What = 'PX-2: the batch command can rebuild every display copy, because staleness is decided from filenames and this round changed what a display copy contains without changing its name' },
+    @{ File = 'pages/templates/meal_plan_print.html'; Text = 'RG-3, 21 Oct 2026'; What = 'RG-3: the printed week and day are as tall as their content - 186mm to 55mm and 258mm to 44mm on his own week. The ruled fill and the Notes block are gone; the month still fills one sheet' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'corrected by WF-1'; What = 'WF-1: the selected week in Month view fills with tag-moss-soft and keeps its accent rule - a tint that clears every other fill on that grid by 6.9 dE, from the decorative palette WT-1 never looked at' },
     @{ File = 'pages/templates/meal_plan_print.html'; Text = 'THE RANGE - RG-2'; What = 'RG-2: From and To on the printable plan, on one 44px line like the shopping list - and a line saying what the second Print press does, which is the answer he chose to "why do we press Print twice"' },
     @{ File = 'pages/templates/meal_plan_print.html'; Text = 'is-{{ sheet }}'; What = 'RG-1: the printed sheet follows the range - a day prints a day, a week prints seven columns you can write in, and a month fits on one sheet of A4. Day view used to print a week with six columns greyed out' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'BACK ON THE BAR - CP-2'; What = 'CP-2: Copy... and Saved Menus... are bar buttons, so they can be reached on a desktop - MW-1 put all three week controls inside the More menu, which base hides above 768px, and for two days they existed only on a phone' },
@@ -1240,7 +1250,7 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'AND HELP - HP-1'; What = 'HP-1: Help is in the planner More menu, so it can be reached on a phone - base hides every secondary below 768px in a bar that has a menu, and MW-1 added the menu without putting Help in it' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE MESSAGE BAR - MG-1'; What = 'MG-1: the planner, the shopping list and the printable plan render Django messages - between them they carried none, so twelve messages.success() calls queued in the session and surfaced on whatever screen came next' },
     @{ File = 'pages/templates/meal_plan_shopping_list.html'; Text = 'UNDER THE BAR - SH-2'; What = 'SH-2: the from/to range sits under the action bar and is a compact row rather than a second .page-action-buttons above it - the page had two bars, which 3.4 forbids, and two visible primaries' },
-    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WEEK OWNS THE EDGE'; What = 'WT-1: the selected week in Month view is marked by an accent rule above and below rather than by a fill - it used to fill with the exact token the meal pills fill with, so a pill on that row was its 1px border and nothing else' },
+    @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WEEK OWNS BOTH NOW'; What = 'WT-1 as WF-1 corrected it: the selected week in Month view wears an accent rule above and below AND a moss fill. WT-1 found the fault - it used to fill with the exact token the meal pills fill with, so a pill on that row was its 1px border and nothing else - and concluded there was no room for a fourth fill after measuring two candidates. There was: moss clears every fill on that grid by 6.9 dE' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE PRIMARY FIRST - BO-1'; What = 'BO-1: the planner bar reads PRIMARY, SECONDARIES, BACK - Shopping List is the page verb and Print follows it, where PP-1 had put Print above it' },
     @{ File = 'pages/templates/recipe_management.html'; Text = 'data-plan-when="today">Today<'; What = 'SC-1: the add-to-planner shortcut says Today rather than Tonight - the value was always today, and this module has no meal types, so it cannot know morning from evening' },
     @{ File = 'pages/help_content/administration.html'; Text = 'data-tab-slug="mp-print"'; What = 'MH-5: the meal plans guide has eight tabs and no longer describes the two-panel screen, the trashcan or the eye - none of which has existed since release 4 push 1' },
@@ -2903,7 +2913,27 @@ $suites = @(
     'test_print_shape.py',
     # RG-2, 21 Oct 2026 - the printed plan takes a range of its own,
     # and says what the second Print press is for.
-    'test_print_range.py'
+    'test_print_range.py',
+    # WF-1, 21 Oct 2026 - the week band gets the fill he asked for,
+    # from the one palette WT-1 never measured.
+    'test_week_fill.py',
+    # RG-3, 21 Oct 2026 - a sheet is as tall as what is on it. The
+    # week and the day stop after the last recipe; the month still
+    # fills its page, which is the point of the month.
+    'test_print_compact.py',
+    # PX-2, 21 Oct 2026 - a floor under the display copy, so the
+    # browser stops upscaling 97 photos badly on every page load.
+    'test_photo_floor.py',
+    # BM-1, 21 Oct 2026 - one message loop in base, 81 copies gone,
+    # and the 55 pages that could not show a message can now.
+    'test_msg_base.py',
+    # MN-2, 21 Oct 2026 - a menu takes a range and lands where you say.
+    'test_menu_range.py',
+    # RO-1, 21 Oct 2026 - a day is dragged into order by its grip.
+    'test_day_order.py',
+    # VR-1, 21 Oct 2026 - the cooking schedule readout wears tokens,
+    # and the two tables that are NOT data tables say so.
+    'test_recipe_tidy.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

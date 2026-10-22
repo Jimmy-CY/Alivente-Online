@@ -89,7 +89,7 @@ RULES = os.path.join(ROOT, 'alv_cssrules.py')
 #   says 'no kcal data' on two pages. SCRIPT, style-attr and the
 #   var-safe total each came down by two; canvas and unknown did
 #   not move, because this round converted only var-safe ones.
-MARKUP_STYLE = 86      # colour literals in inline style= attributes   # RT-1, 18 Oct 2026 - one was on a meal-plan screen MN-1 retired   # (was 87)   # PH-2, 14 Oct 2026 - pantry_staples' 92 staple chips carried #f0fff4 inline; they carry var(--alv-good-soft) now, and that page has no hex literal left at all.   # (was 88)
+MARKUP_STYLE = 80      # colour literals in inline style= attributes   # VR-1, 21 Oct 2026 - the cooking schedule readout on view_recipe held six: a slate heading, a hot pink icon and four copies of a hand-mixed 7 per cent black hairline. All six are tokens now, measured at dE 8.31, 45.73 and 1.75.   # (was 86)   # RT-1, 18 Oct 2026 - one was on a meal-plan screen MN-1 retired   # (was 87)   # PH-2, 14 Oct 2026 - pantry_staples' 92 staple chips carried #f0fff4 inline; they carry var(--alv-good-soft) now, and that page has no hex literal left at all.   # (was 88)
 SCRIPT = 146            # colour literals inside <script> bodies   # RT-1, 18 Oct 2026 - two were in the scripts of meal-plan screens MN-1 retired   # (was 148)   # VC-1, 14 Oct 2026 - create_meal_plan's Favourites toggle no longer writes #e74c3c from JavaScript; it carries aria-pressed and base paints it.   # (was 149)
 PRES = 0                # HTML presentation attributes carrying a colour
 PAGES = 33              # real pages carrying any of them   # RT-1, 18 Oct 2026 - two of them were meal-plan screens MN-1 retired   # (was 35)   # PH-2 - and it was pantry_staples' ONLY one, so the page leaves this census   # (was 36)

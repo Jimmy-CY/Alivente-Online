@@ -11,10 +11,21 @@ it into a write. The convention is backfill_task_rollup's, 20 Sep 2026,
 and backfill_passport_holder's after it.
 
 WHAT IT DOES. For each recipe with an original and no current display
-copy, it re-encodes the original as JPEG at the SAME pixel dimensions
-and stores it in recipe_images_display/. It never writes to
-recipe_images/ and never deletes anything. The originals stay the
-masters.
+copy, it re-encodes the original as JPEG and stores it in
+recipe_images_display/. It never writes to recipe_images/ and never
+deletes anything. The originals stay the masters.
+
+SINCE PX-2, 21 Oct 2026, a photo under 1200px on the long edge is also
+resampled UP with Lanczos and lightly sharpened, because the phone
+hero asks for about 1170 real pixels and the browser was doing that
+stretch itself, badly, on every page load. Nothing is ever shrunk.
+
+    python manage.py convert_recipe_photos --rebuild --write
+
+--rebuild is what you want after PX-2. Staleness is decided from the
+FILENAMES and that round changed what a display copy CONTAINS without
+changing its name, so a plain re-run would skip all 324 and report
+success.
 
 MEASURED ON THE LIVE VOLUME, 13 Oct 2026:
 
@@ -55,6 +66,13 @@ class Command(BaseCommand):
             help='Stop after this many recipes. Useful for a first '
                  'cautious --write over a handful.')
         parser.add_argument(
+            '--rebuild', action='store_true',
+            help='Convert every photo, not only the ones whose display '
+                 'copy is missing or stale. PX-2 changed what a display '
+                 'copy CONTAINS without changing its name, and staleness '
+                 'is decided from names - so a plain re-run after that '
+                 'round would skip all 324 and report success.')
+        parser.add_argument(
             '--quality', type=int, default=85,
             help='JPEG quality. Default 85, which Demetri reviewed '
                  'against real photos on 13 Oct 2026.')
@@ -63,6 +81,7 @@ class Command(BaseCommand):
         write = opts['write']
         limit = opts['limit'] or 0
         quality = opts['quality']
+        rebuild = opts.get('rebuild', False)
 
         done = skipped = failed = 0
         before = after = 0
@@ -79,7 +98,7 @@ class Command(BaseCommand):
         for recipe in qs.iterator():
             if limit and done + skipped >= limit:
                 break
-            if not recipe.display_copy_is_stale():
+            if not rebuild and not recipe.display_copy_is_stale():
                 skipped += 1
                 continue
 

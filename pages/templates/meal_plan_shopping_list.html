@@ -21,14 +21,6 @@
 {#                                                                  #}
 {# `msg`, not `message`: 73 pages spell it this way and 5 do not.   #}
 {# This is not the place to found a third dialect.                  #}
-{% for msg in messages %}
-    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-      {{ msg }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-  {% endfor %}
 
 <style>    /* B-1, 5 Oct 2026 - 3 literal(s) on this page became a var().
        Each one was already the byte-identical value of the

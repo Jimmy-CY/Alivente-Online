@@ -176,14 +176,22 @@ def claims(bundle):
         "'day_entries'" in seg)
     c['THE PAGE DRAWS WHICHEVER ONE IT WAS GIVEN'] = (
         'class="pp-page is-{{ sheet }}"' in page)
-    c['  the day sheet is an agenda with a Notes block'] = (
-        'pp-notes-lines' in page and 'pp-srv' in page)
-    c['  the week sheet has columns ruled to write in'] = (
-        'pp-rule' in page and 'pp-colhead' in page)
+    # RG-3, 21 Oct 2026 - the Notes block is gone. It was 240mm of
+    # ruled paper under a day that usually holds one or two meals:
+    # "Show the Date, and the recipes and then done."
+    c['  the day sheet is the date, the meals and nothing else'] = (
+        'pp-notes-lines' not in page and 'pp-srv' in page)
+    # RG-3, 21 Oct 2026 - the ruled fill is gone with it. The column
+    # head stays: a week sheet still names its seven days.
+    c['  the week sheet heads each column with its own date'] = (
+        'pp-rule' not in page and 'pp-colhead' in page)
     c['  one weekday row for the sheet, not a strip per week'] = (
         'pp-dow-row' in page and 'pp-week-label' not in page)
-    c['THE SHEET IS EXACTLY ONE PAGE TALL'] = (
-        'height: 186mm' in style and 'height: 258mm' in style)
+    # RG-3, 21 Oct 2026 - A MONTH IS. The week and the day are as
+    # tall as their content now, which is why only one number is
+    # left. test_print_compact measures all three.
+    c['THE MONTH SHEET IS EXACTLY ONE PAGE TALL'] = (
+        'height: 186mm' in style and 'height: 258mm' not in style)
     c['  and base own furniture is off the paper'] = (
         '.main-content > br' in style
         and '.main-content > center' in style)

@@ -488,8 +488,15 @@ for p in FILES:
 pc = os.path.join(ROOT, 'test_pair_contrast.py')
 ok(MARK in read(pc),
    'test_pair_contrast carries this round reason for its new number')
-ok('EXPECT_PAIRS = 726' in read(pc),
-   '  and it is 726, measured by running it')
+# MN-2, 21 Oct 2026 - THE TOTAL MOVED AGAIN, and this claim is about
+# what RG-2 DID, not about what the tree holds today. RG-2 added two
+# pairs and took the census from 724 to 726; MN-2 adds the Saved Menus
+# preset row and takes it to 727. Asking for today's total here would
+# make a 21 October round's record change every time somebody adds a
+# rule, which is the opposite of a record.
+ok("# RG-2, 21 Oct 2026" in read(pc)
+   and "(was 724)" in read(pc),
+   '  and RG-2 two pairs are still in its history, 724 -> 726')
 ok(os.path.isfile(pc + SUFFIX), '  and it is backed up')
 
 patcher = read(os.path.join(ROOT, PATCHER))

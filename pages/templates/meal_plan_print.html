@@ -25,14 +25,6 @@
 {#                                                                  #}
 {# `msg`, not `message`: 73 pages spell it this way and 5 do not.   #}
 {# This is not the place to found a third dialect.                  #}
-{% for msg in messages %}
-    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-      {{ msg }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-  {% endfor %}
 
 <style>
 /* PAPER FIRST, SCREEN SECOND - PP-1, 20 Oct 2026, redrawn by RG-1 on
@@ -258,14 +250,17 @@
     padding: 3px 11px;
     margin-bottom: 5px;
 }
-.pp-rule {
-    flex: 1;
-    min-height: 0;
-    margin: 6px 10px 10px;
-    background-image: repeating-linear-gradient(to bottom,
-        transparent 0 25px, var(--alv-line-soft) 25px 26px);
-}
-.is-week .pp-grid { min-height: 520px; }
+/* THE RULED FILL IS GONE - RG-3, 21 Oct 2026. It was B2's
+   "writable" half: the space under each day ruled so the sheet could
+   be written on. On a real week - his own had one meal on four of
+   the seven days - it printed as seven columns of ruled emptiness
+   under five words. "Just wasting space. Show the Date, and the
+   recipes and then done."
+
+   The rule leaves with the markup rather than being hidden, because
+   a declaration that paints nothing is one the next person has to
+   read and decide about. */
+.is-week .pp-meals { padding-bottom: 10px; }
 
 /* ---- THE DAY: ONE DAY, FILLING THE PAGE ---------------------------
    C2, the agenda. He was offered a big-type day and this, and took
@@ -299,29 +294,11 @@
     color: var(--alv-ink-soft);
     padding: 14px 0;
 }
-.pp-notes {
-    flex: 1;
-    min-height: 240px;
-    margin-top: 22px;
-    border-top: 1px solid var(--alv-line);
-    padding-top: 10px;
-    display: flex;
-    flex-direction: column;
-}
-.pp-notes-label {
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--alv-ink-soft);
-    margin-bottom: 8px;
-}
-.pp-notes-lines {
-    flex: 1;
-    min-height: 0;
-    background-image: repeating-linear-gradient(to bottom,
-        transparent 0 26px, var(--alv-line-soft) 26px 27px);
-}
+/* AND SO IS THE NOTES BLOCK - RG-3, 21 Oct 2026, for the same
+   reason and on the same instruction. C2's lower half was 240mm of
+   ruled paper under a day that usually holds one or two meals. The
+   day sheet is now the date, the meals and the line that says what
+   the sheet is. */
 .pp-foot {
     margin-top: 14px;
     padding-top: 10px;
@@ -419,7 +396,6 @@
     .is-month .pp-day,
     .is-range .pp-day { min-height: 80px; }
     .is-week .pp-grid { min-height: 0; }
-    .pp-rule { display: none; }
     .pp-count { text-align: left; }
 }
 
@@ -472,38 +448,38 @@
     .main-content > center { display: none !important; }
     body { padding-top: 0; margin: 0 !important; }
 
-    /* ONE SHEET, MEASURED. A month is five week rows or six - August
-       2026 and February 2027 are six - and a fixed cell height fits
-       one of those and spills the other onto a second page. So the
-       SHEET is a fixed box the height of the printable area and the
-       grid is a flex column inside it: both months fill exactly one
-       sheet, the six-week one tighter. Fixing the sheet rather than
-       the grid also means the masthead can change height without
-       anybody having to re-measure the number below it.
+    /* ONE SHEET FOR A MONTH, MEASURED - RG-1, 21 Oct 2026. A month
+       is five week rows or six - August 2026 and February 2027 are
+       six - and a fixed CELL height fits one of those and spills the
+       other onto a second page. So the SHEET is a fixed box the
+       height of the printable area and the grid is a flex column
+       inside it: both months fill exactly one sheet, the six-week one
+       tighter. Fixing the sheet rather than the grid also means the
+       masthead can change height without anybody having to re-measure
+       the number below it.
 
        A4 landscape is 210mm tall and the margin is 11mm each way, so
-       the printable band is 188mm; A4 portrait is 297mm with 18mm
-       margins, so 261mm. The two numbers below sit just inside those
-       - a sheet exactly as tall as its page rounds onto a second one
-       on some printers, which is the fault this block exists to fix.
+       the printable band is 188mm. 186mm sits just inside it - a
+       sheet exactly as tall as its page rounds onto a second one on
+       some printers, which is the fault this block exists to fix.
 
-       test_print_shape prints five of these to real A4 through
-       Chromium and reads the page count out of the PDF. */
-    .is-month .pp-sheet,
-    .is-week .pp-sheet { height: 186mm; display: flex;
-                         flex-direction: column; }
-    .is-day .pp-sheet { height: 258mm; display: flex;
-                        flex-direction: column; }
-    .is-month .pp-sheet-grid,
-    .is-week .pp-sheet-grid { flex: 1; min-height: 0; display: flex;
-                              flex-direction: column; }
-    .is-month .pp-week,
-    .is-week .pp-week { flex: 1; min-height: 0; display: flex; }
-    .is-month .pp-grid,
-    .is-week .pp-grid { flex: 1; min-height: 0; height: auto; }
-    .is-day .pp-body { flex: 1; min-height: 0; }
+       AND ONLY A MONTH - RG-3, 21 Oct 2026. The week and the day
+       filled their sheets too, and on a real week that printed as
+       ruled emptiness: "Just wasting space. Show the Date, and the
+       recipes and then done." They are as tall as their content now.
+       A month still fills its page because fitting a whole month on
+       one sheet is the entire point of that layout.
+
+       test_print_compact measures all three heights and reads the
+       page counts out of real PDFs. */
+    .is-month .pp-sheet { height: 186mm; display: flex;
+                          flex-direction: column; }
+    .is-month .pp-sheet-grid { flex: 1; min-height: 0; display: flex;
+                               flex-direction: column; }
+    .is-month .pp-week { flex: 1; min-height: 0; display: flex; }
+    .is-month .pp-grid { flex: 1; min-height: 0; height: auto; }
     .pp-day, .pp-row { break-inside: avoid; }
-    .is-range .pp-week { break-inside: avoid; }
+    .is-range .pp-week, .is-week .pp-week { break-inside: avoid; }
 }
 </style>
 
@@ -628,10 +604,6 @@
             {% empty %}
             <div class="pp-empty">Nothing planned for this day.</div>
             {% endfor %}
-            <div class="pp-notes">
-                <div class="pp-notes-label">Notes</div>
-                <div class="pp-notes-lines"></div>
-            </div>
         </div>
         <div class="pp-foot">
             <span>Alivente &middot; Meal Plan</span>
@@ -676,7 +648,6 @@
                             <div class="pp-meal{% if not e.recipe_id %} is-note{% elif e.leftover_of_id %} is-left{% endif %}">{% if e.recipe_id %}{{ e.recipe.recipe_name }}{% else %}{{ e.note }}{% endif %}</div>
                             {% endfor %}
                         </div>
-                        {% if sheet == 'week' %}<div class="pp-rule"></div>{% endif %}
                     </div>
                     {% endfor %}
                 </div>

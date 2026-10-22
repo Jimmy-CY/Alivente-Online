@@ -240,26 +240,46 @@ def claims(text):
         'cannot be copied onto itself' in vcode)
 
     # ---- 5. what makes a menu a template and not a week
-    c['a menu stores a DAY INDEX, computed from the week'] = (
-        "day_index=(e.date - week).days" in vcode)
+    # MN-2, 21 Oct 2026 - FROM THE START OF THE RANGE, not from a
+    # Monday. MN-1 measured the offset from the week on screen because
+    # the week on screen was the only thing a menu could be. The
+    # column always said otherwise - "0 is the first day of the menu,
+    # not a weekday" - and now the view agrees with it.
+    c['a menu stores a DAY OFFSET, computed from the start of the range'] = (
+        "day_index=(e.date - start).days" in vcode)
     c['  a leftover is NOT saved into a menu'] = (
         'if e.leftover_of_id:' in vcode.split('def save_menu')[-1]
         .split('def ')[0])
     c['  a menu needs a name'] = 'A menu needs a name.' in vcode
     c['  and the name is unique, case-blind'] = (
         'name__iexact=name' in vcode)
-    c['applying reads the day index back'] = (
+    c['applying reads the day offset back'] = (
         'timedelta(days=it.day_index)' in vcode)
-    c['  and a day index outside 0..6 is dropped, not wrapped'] = (
-        'if not 0 <= it.day_index <= 6:' in vcode)
+    # MN-2, 21 Oct 2026 - THE CEILING MOVED AND THE RULE DID NOT. A
+    # menu was 0..6 by construction; it is 0..91 now, and an offset
+    # past the end is still DROPPED rather than wrapped - a row that
+    # says a year would otherwise land a year away.
+    c['  and a day offset past the ceiling is dropped, not wrapped'] = (
+        'if not 0 <= it.day_index < MENU_MAX_DAYS:' in vcode)
+    c['  the ceiling is a quarter, declared where the rule lives'] = (
+        'MENU_MAX_DAYS = 92' in vcode)
+    c['  and a menu lands where you say, not on the week on screen'] = (
+        "onto = week_of(request.POST.get('onto'), week)" in vcode
+        and 'when = onto + timedelta(days=it.day_index)' in vcode)
     c['deleting a menu leaves the meals it stamped'] = (
         'are still there' in vcode)
 
     # ---- 6. the planner hands the dialog its menus, counted in ONE query
     c['the planner context carries the menus'] = "'menus':" in vcode
+    # MN-2, 21 Oct 2026 - AND ITS LENGTH, IN THE SAME annotate. The
+    # Apply half says which days a menu will cover; it works that out
+    # in the page from a number the planner already has. A second
+    # annotate, or a count per row, would be E29's fault coming back
+    # on the screen MW-1 took it off.
     c['  counted by annotate, not once per row'] = (
-        "annotate(\n            item_count=Count('items'))" in vcode
-        or "annotate(item_count=Count('items'))" in vcode)
+        "item_count=Count('items')," in vcode
+        and "span_days=Coalesce(Max('items__day_index'), -1) + 1" in vcode
+        and vcode.count('Menu.objects.annotate(') == 1)
 
     # ---- 7. the three dialogs, and one control each
     for mid in DIALOGS:
@@ -334,10 +354,16 @@ def claims(text):
         r'[^;]*#[0-9a-fA-F]{3,6}', block)
     # CP-2, 21 Oct 2026 - the empty state can point UP now rather
     # than at a dialog the reader cannot see from here: Save and
-    # Apply are two sections of one dialog, so "Save this week" is
-    # eighty pixels above the sentence that names it.
+    # Apply are two sections of one dialog, so the control that makes
+    # a menu is eighty pixels above the sentence that names it.
+    #
+    # MN-2, 21 Oct 2026 - AND THE CONTROL IS NOT CALLED THAT ANY MORE.
+    # Saving takes a range, so the button says "Save these days" and
+    # this sentence says the same words it does. The claim is still
+    # that the empty state names the real control; only the control
+    # was renamed.
     c['the Apply dialog says where menus come from when there are none'] = (
-        'Save this week</strong> above' in tcode)
+        'Save these days</strong> above' in tcode)
 
     # ---- 10. THE SECOND SUBJECT. Demetri was offered this three ways
     #          on 19 Oct and chose to fold it into this round, so these
@@ -848,24 +874,40 @@ if django_up:
        '  the second behind the first',
        [e.sort_order for e in on(DST)])
 
-    # A DAY INDEX OUTSIDE THE WEEK IS DROPPED, NOT WRAPPED. A menu
-    # saved from a week is 0..6 by construction; a row that somehow
-    # says 9 would otherwise land in the NEXT week, which is a
-    # surprise nobody asked for and nobody would find.
+    # A DAY OFFSET OUTSIDE THE MENU IS DROPPED, NOT WRAPPED.
+    #
+    # MN-2, 21 Oct 2026 - THE CEILING MOVED AND THE RULE DID NOT. This
+    # read 9 and -1 and expected both dropped, because a menu was
+    # seven days by construction. A menu is up to 92 days now, so 9 is
+    # an ordinary Tuesday-after-next and lands; 92 and -1 are the ones
+    # outside, and they are still dropped rather than wrapped. A row
+    # that said 400 would otherwise land more than a year away, which
+    # is a surprise nobody asked for and nobody would find.
     MealEntry.objects.all().delete()
-    MenuItem.objects.create(menu=menu, day_index=9, recipe=pie,
+    MenuItem.objects.create(menu=menu, day_index=92, recipe=pie,
                             servings=4, sort_order=1)
     MenuItem.objects.create(menu=menu, day_index=-1, recipe=pie,
                             servings=4, sort_order=1)
     post(APPLY, {'week': DST.strftime('%Y-%m-%d'),
                  'menu_id': menu.menu_id})
     ok(MealEntry.objects.count() == 2,
-       'a day index outside 0..6 is DROPPED', MealEntry.objects.count())
+       'a day offset outside 0..91 is DROPPED', MealEntry.objects.count())
     ok(not MealEntry.objects.filter(
-        date__gt=DST + _dt.timedelta(days=6)).exists(),
-       '  and nothing landed in the week after')
+        date__gte=DST + _dt.timedelta(days=92)).exists(),
+       '  and nothing landed a quarter away')
     ok(not MealEntry.objects.filter(date__lt=DST).exists(),
-       '  or the week before')
+       '  or before the landing date')
+    # AND 9 IS NOW AN ORDINARY DAY, which is the behaviour that
+    # changed rather than a pin that moved.
+    MealEntry.objects.all().delete()
+    MenuItem.objects.create(menu=menu, day_index=9, recipe=pie,
+                            servings=4, sort_order=1)
+    post(APPLY, {'week': DST.strftime('%Y-%m-%d'),
+                 'menu_id': menu.menu_id})
+    ok(MealEntry.objects.filter(
+        date=DST + _dt.timedelta(days=9)).exists(),
+       '  while day 9 LANDS - a menu is no longer seven days long',
+       list(MealEntry.objects.values_list('date', flat=True)))
 
     # ----------------------------------------------------------------
     head('3i. deleting a Menu forgets the menu, not the meals')

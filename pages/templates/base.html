@@ -5461,6 +5461,43 @@ table.alv-matrix {
   <div class="main-content {% if user.is_authenticated and menu_preference == 'sidebar' %}with-sidebar{% else %}with-topnav{% endif %}" id="mainContent">
     {% if menu_preference != 'sidebar' %}<br/>{% endif %}
     <div {% if menu_preference != 'sidebar' %}class="container"{% endif %}>
+      {# THE ONE MESSAGE LOOP - BM-1, 21 Oct 2026.                      #}
+      {#                                                                #}
+      {# ONE loop, here, for every page that extends this file.         #}
+      {#                                                                #}
+      {# M1 made 77 copies agree on a shape on 29 September. They still #}
+      {# agreed on 21 October - 81 pages, one shape, identical to the   #}
+      {# byte - which is the definition of a thing that wants to live   #}
+      {# in one place.                                                  #}
+      {#                                                                #}
+      {# AND 55 PAGES HAD NO COPY AT ALL. Their views queue messages    #}
+      {# that Django holds in the session until SOME page iterates      #}
+      {# them, so the message surfaced on whatever screen came next.    #}
+      {# MG-1 fixed three of those on 21 October, one page at a time;   #}
+      {# this is the same fix for all of them at once.                  #}
+      {#                                                                #}
+      {# ABOVE THE TITLE, WHICH IS A MOVE. 71 of the 81 put the bar     #}
+      {# under their page title. base cannot know where a page title    #}
+      {# is, so one loop can only sit here. Demetri was shown both      #}
+      {# positions rendered at 1280px and 390px and chose this.         #}
+      {#                                                                #}
+      {# ONE COMMENT TAG PER LINE, and this note does not spell one.   #}
+      {# Django comment tags DO NOT SPAN LINES. Written as one tag      #}
+      {# around all of this, it stopped being a comment and printed     #}
+      {# itself across the top of all 136 pages. The before-and-after   #}
+      {# renders caught it; nothing else would have. A tag spelled      #}
+      {# inside a comment ends it early and does the same thing.        #}
+      {#                                                                #}
+      {# `msg`, not `message`: 76 of the 81 spelled it that way.        #}
+      {#                                       [test_msg_base.py]       #}
+      {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
+          {{ msg }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
       {% block content %}{% endblock %}
     </div>
     <br/><br/>

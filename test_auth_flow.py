@@ -272,8 +272,19 @@ ok(m.count('>LOGIN<') == 1 and '<h3 class="text-center">Login</h3>' not in m,
    'the word Login appears as ONE heading, not two',
    'page-title %d, h3 present %s'
    % (m.count('>LOGIN<'), '<h3 class="text-center">Login</h3>' in m))
-ok('{% for msg in messages %}' in m and 'alv-message' in m,
-   'it has the house message loop - which is what makes the red bar possible')
+# BM-1, 21 Oct 2026 - A1 PUT A LOOP ON THIS PAGE AND base OWNS IT NOW.
+# The finding does not change: a failed login must show a red bar.
+# Where the bar comes from does, so the claim is asked of base and of
+# this page NOT spelling a second one - and section 5 posts a real
+# failed login and reads the bar off the page that comes back, which
+# is the only form of this claim that was ever about the application.
+_bs = read(alv_tree.path_of('base.html'))
+ok('{% for msg in messages %}' in _bs and 'alv-message' in _bs,
+   'base carries the house message loop - which is what makes the red '
+   'bar possible, here and on the 55 pages that never had one')
+ok('{% for msg in messages %}' not in m,
+   '  and login.html spells none of its own - two loops would show a '
+   'failed login twice')
 ok('btn action-secondary" type="button" id="togglePassword"' in m,
    'the eye toggle wears the house neutral button, not btn-outline-secondary')
 ok('btn-outline-secondary' not in m, '  and Bootstrap\'s raw outline is gone')
@@ -291,9 +302,15 @@ if was is None:
     skip('the control', 'no backup of login.html')
 else:
     bm = markup_of(was)
+    # BM-1, 21 Oct 2026 - THE BACKUP IS STILL A1's, and this still
+    # reads as A1 wrote it. It must: the backup predates the loop A1
+    # added, so it has none for a different reason than today's page
+    # has none. What separates them is base, which the claim above
+    # asks about and this backup knows nothing of.
     ok('{% for msg in messages %}' not in bm,
-       'CONTROL: the backup had NO message loop at all - which is why the '
-       'error the view queued surfaced on a later page')
+       'CONTROL: the backup had NO message loop at all, and no base to '
+       'inherit one from - which is why the error the view queued '
+       'surfaced on a later page')
     ok('<h3 class="text-center">Login</h3>' in bm,
        'CONTROL: and it really did carry the second heading')
 

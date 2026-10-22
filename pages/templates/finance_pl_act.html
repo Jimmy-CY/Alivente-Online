@@ -13,14 +13,6 @@
 <h5 class="page-subtitle-h5">12 month budget including actuals incurred for the year</h5>
 <br/>
 
-{% for msg in messages %}
-  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-    {{ msg }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-{% endfor %}
 
 <!-- Rotate-to-landscape prompt (mobile portrait only) -->
 <div class="rotate-prompt" style="display:none;">

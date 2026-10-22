@@ -11,16 +11,6 @@
 
 {% if perms.auth.can_edit_tenants %}
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show alv-message" role="alert">
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-  {% endfor %}
-{% endif %}
 
 {% for tresults in tenant %}
 <form action="{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">

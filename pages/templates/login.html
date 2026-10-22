@@ -15,18 +15,15 @@
 {# the view queued was never iterated here and surfaced on the NEXT page   #}
 {# that had a loop - the screen after the next SUCCESSFUL login. That is   #}
 {# the stale "You Have Successfully Logged In" he also reported.           #}
-{#                                             [test_auth_flow.py]         #}
+{#                                                                         #}
+{# BM-1, 21 Oct 2026 - THE LOOP A1 ADDED HERE IS GONE, AND THE BAR IS NOT. #}
+{# base renders it for every page now, this one included, because 55 other #}
+{# pages had A1's bug and nobody had counted them. Do not add one back:    #}
+{# two loops means every message twice.                                    #}
+{#                               [test_auth_flow.py] [test_msg_base.py]    #}
 <h2 class="page-title-h2">LOGIN</h2>
 <br/>
 
-{% for msg in messages %}
-  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-    {{ msg }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-{% endfor %}
 
 <div class="col-md-6 offset-md-3">
 <form method="POST">

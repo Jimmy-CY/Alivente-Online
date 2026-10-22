@@ -92,14 +92,6 @@ select.form-control {
 
 <div class="workspace-form-container">
 
-    {% for msg in messages %}
-      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-        {{ msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    {% endfor %}
 
     <h2 class="page-title-h2">WORKSPACE MANAGEMENT</h2>
     <h4 class="page-subtitle-h4">EDIT WORKSPACE — {{ workspace.name }}</h4>

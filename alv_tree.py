@@ -888,6 +888,20 @@ CONVERTED = [
     'test_print_shape.py',
     # RG-2, 21 Oct 2026 - the range, and the second press explained.
     'test_print_range.py',
+    # WF-1, 21 Oct 2026 - the fourth fill, found at the second ask.
+    'test_week_fill.py',
+    # RG-3, 21 Oct 2026 - a sheet as tall as what is on it.
+    'test_print_compact.py',
+    # PX-2, 21 Oct 2026 - the upscale done once, properly, here.
+    'test_photo_floor.py',
+    # BM-1, 21 Oct 2026 - the message bar, once, in base.
+    'test_msg_base.py',
+    # MN-2, 21 Oct 2026 - a menu is a span, and it lands where you say.
+    'test_menu_range.py',
+    # RO-1, 21 Oct 2026 - a day dragged into the order you want.
+    'test_day_order.py',
+    # VR-1, 21 Oct 2026 - the schedule readout, measured onto tokens.
+    'test_recipe_tidy.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -26,6 +26,13 @@ Functions
                                     plan now. MN-1, 18 Oct 2026.
 - add_meal_entry                  : Put a recipe on a date (POST). Edit-tier.
 - remove_meal_entry               : Take one off (POST). Edit-tier.
+- reorder_meal_day                : What comes first on a day (POST,
+                                    JSON). Edit-tier. The only endpoint
+                                    that moves a row WITHIN its date -
+                                    every other one appends. It refuses
+                                    an order that is not exactly the
+                                    rows on that date.
+                                    RO-1, 21 Oct 2026.
 - set_meal_servings               : Change servings on one meal (POST,
                                     JSON). Saves immediately, which is why
                                     the planner has no Save button.
@@ -102,6 +109,9 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import Count, Max, Prefetch
+# MN-2, 21 Oct 2026 - a menu with no items has no Max, and NULL + 1 is
+# NULL, which would reach the template as an empty string.
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 # PB-2, 19 Oct 2026 - planner_back builds the return
@@ -715,8 +725,15 @@ def meal_planner(request):
         # MW-1, 19 Oct 2026 - the Apply dialog lists these. annotate
         # rather than a count per row: E29 took that fault off four
         # screens and this round is not putting it back on one.
+        # MN-2, 21 Oct 2026 - AND HOW LONG EACH ONE IS. The Apply
+        # half says which dates a menu will cover once a landing date
+        # is picked, and it works that out in the page from this
+        # number. Annotated alongside the count, so it is still one
+        # query and still no endpoint.
         'menus': Menu.objects.annotate(
-            item_count=Count('items')).order_by('name'),
+            item_count=Count('items'),
+            span_days=Coalesce(Max('items__day_index'), -1) + 1,
+        ).order_by('name'),
     }
     return render(request, 'meal_planner.html', context)
 
@@ -1162,6 +1179,67 @@ def move_meal_entry(request):
 @login_required
 @require_POST
 @permission_required('auth.can_edit_recipes', raise_exception=True)
+def reorder_meal_day(request):
+    """Write the order a drag left a day in. RO-1, 21 Oct 2026.
+
+    Demetri, 21 October:
+
+        "For the reordering, do we need the buttons. Can we not just
+         have like three lines or something that somebody clicks on
+         and then drags and drops (similar to Ingredients and
+         Instructions entry)???"
+
+    THE COLUMN WAS ALWAYS THERE AND NOTHING COULD WRITE IT. sort_order
+    has decided the order of a day since MN-1; every endpoint that
+    makes a row puts it at the TAIL and no endpoint ever moved one.
+    This is that endpoint, and it is the only one.
+
+    IT REFUSES RATHER THAN GUESSES. What arrives must be exactly the
+    set of rows on that date - none missing, none added, none twice. A
+    page left open while somebody else cooked would otherwise write an
+    order that quietly drops whatever it never knew about. On a
+    mismatch this answers 409 WITH THE REAL ORDER, so the page can put
+    itself right instead of guessing too.
+
+    ONE UPDATE PER ROW, inside a transaction. A day holds a handful of
+    meals; bulk_update for five rows would be cleverness with no
+    reader.
+
+    A LEFTOVER DRAGS LIKE ANYTHING ELSE. It is tied to the meal it
+    came from by leftover_of and not by position, so moving it up the
+    day changes what you read first and nothing else.
+    """
+    day = week_of(request.POST.get('date'), None)
+    if day is None:
+        return JsonResponse({'ok': False, 'why': 'date'}, status=400)
+
+    raw = (request.POST.get('order') or '').strip()
+    try:
+        ids = [int(x) for x in raw.split(',') if x.strip() != '']
+    except (ValueError, TypeError):
+        return JsonResponse({'ok': False, 'why': 'order'}, status=400)
+    if not ids:
+        return JsonResponse({'ok': False, 'why': 'empty'}, status=400)
+    if len(set(ids)) != len(ids):
+        return JsonResponse({'ok': False, 'why': 'twice'}, status=400)
+
+    on_day = list(MealEntry.objects.filter(date=day)
+                  .order_by('sort_order', 'meal_entry_id')
+                  .values_list('meal_entry_id', flat=True))
+    if set(ids) != set(on_day):
+        return JsonResponse({'ok': False, 'why': 'stale',
+                             'order': on_day}, status=409)
+
+    with transaction.atomic():
+        for n, eid in enumerate(ids, start=1):
+            MealEntry.objects.filter(meal_entry_id=eid).update(sort_order=n)
+
+    return JsonResponse({'ok': True, 'order': ids})
+
+
+@login_required
+@require_POST
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def remove_meal_entry(request):
     """Take a meal off its date."""
     try:
@@ -1251,6 +1329,39 @@ def set_meal_servings(request):
 def monday_of(d):
     """The Monday of d's week. A week is a Monday here, everywhere."""
     return d - timedelta(days=d.weekday())
+
+
+# ---- A SPAN OF DAYS - MN-2, 21 Oct 2026.
+#
+# A menu was a week because the two views either side of it said so,
+# not because the table did. MenuItem.day_index has read "0 is the
+# first day of the menu, not a weekday" since MN-1.
+#
+# THE CEILING IS 92 DAYS - a quarter. It covers Christmas and New Year
+# with room to spare and stops a dragged date field saving a year.
+MENU_MAX_DAYS = 92
+
+
+def range_entries(start, end):
+    """Every meal from start to end inclusive.
+
+    week_entries is this with end pinned seven days out. One query
+    shape, so a menu saved over three days and a menu saved over a
+    week are read the same way.
+    """
+    return (MealEntry.objects
+            .filter(date__gte=start, date__lte=end)
+            .select_related('recipe')
+            .order_by('date', 'sort_order', 'meal_entry_id'))
+
+
+def span_label(start, end):
+    """`3 Nov` for one day, `3 Nov - 9 Nov` for more than one.
+
+    A menu of a single day saying `3 Nov - 3 Nov` reads like a fault.
+    """
+    return (day_label(start) if start == end
+            else '%s - %s' % (day_label(start), day_label(end)))
 
 
 def week_entries(week_start):
@@ -1492,12 +1603,24 @@ def copy_meal_range(request):
 @require_POST
 @permission_required('auth.can_edit_recipes', raise_exception=True)
 def save_menu(request):
-    """Save the week on screen as a named Menu.
+    """Save a RANGE of days as a named Menu.
 
-    DAY INDEXES, NOT DATES - 0 for the Monday of the week being saved.
-    That is the whole reason a Menu is a different table from a week of
+    DAY OFFSETS, NOT DATES - 0 for the FIRST DAY OF THE RANGE. That is
+    the whole reason a Menu is a different table from a set of
     MealEntry rows, and it is what lets one be applied in March to a
     week in December.
+
+    MN-2, 21 Oct 2026 - THE RANGE IS A CHOICE. This read the week on
+    screen and nothing else, so a Christmas menu had to be built on
+    the week it was going to be used:
+
+        "What if I want to save a previous week, or ... just create a
+         Xmas and New Years menu for days, and save that??"
+
+    WHERE YOU ARE AND WHAT YOU ARE SAVING ARE TWO THINGS. `week` is
+    still the page you came from and still decides where Back goes.
+    `from` and `to` say what to keep, and default to that week - so a
+    caller that sends neither gets exactly what this view did before.
     """
     week = week_of(request.POST.get('week'), None)
     name = (request.POST.get('name') or '').strip()
@@ -1506,6 +1629,18 @@ def save_menu(request):
         return redirect('meal_planner')
     week = monday_of(week)
     back = planner_back(request, week)
+
+    start = week_of(request.POST.get('from'), week)
+    end = week_of(request.POST.get('to'), week + timedelta(days=6))
+    if end < start:
+        messages.error(request, 'Those dates are the wrong way round.')
+        return redirect(back)
+    span = (end - start).days + 1
+    if span > MENU_MAX_DAYS:
+        messages.error(
+            request, 'A menu can cover at most %d days and that is %d. '
+            'Pick a shorter range.' % (MENU_MAX_DAYS, span))
+        return redirect(back)
 
     # A NAME IS REQUIRED, and for the reason C20 settled on the old
     # Create screen: the name is how you tell two of them apart
@@ -1518,10 +1653,10 @@ def save_menu(request):
                        % name)
         return redirect(back)
 
-    rows = list(week_entries(week))
+    rows = list(range_entries(start, end))
     if not rows:
         messages.error(request, 'There is nothing on %s to save.'
-                       % week_label(week))
+                       % span_label(start, end))
         return redirect(back)
 
     with transaction.atomic():
@@ -1534,12 +1669,15 @@ def save_menu(request):
             if e.leftover_of_id:
                 continue
             MenuItem.objects.create(
-                menu=menu, day_index=(e.date - week).days,
+                # FROM THE START OF THE RANGE, not from a Monday -
+                # MN-2. The range IS the menu; day 0 is its first day.
+                menu=menu, day_index=(e.date - start).days,
                 recipe=e.recipe, note=e.note, servings=e.servings,
                 sort_order=e.sort_order)
 
-    messages.success(request, 'Saved %s as the menu "%s".'
-                     % (week_label(week), menu.name))
+    messages.success(request, 'Saved %s as the menu "%s" - %d day%s.'
+                     % (span_label(start, end), menu.name, span,
+                        '' if span == 1 else 's'))
     return redirect(back)
 
 
@@ -1547,13 +1685,26 @@ def save_menu(request):
 @require_POST
 @permission_required('auth.can_edit_recipes', raise_exception=True)
 def apply_menu(request):
-    """Stamp a saved Menu onto the week on screen."""
+    """Stamp a saved Menu onto a date of your choosing.
+
+    MN-2, 21 Oct 2026 - WHERE IT LANDS IS A CHOICE.
+
+        "I am also not happy that a Menu has to be applied to a
+         pre-specified week. Should I not be able to select to which
+         week I want to apply the Saved Menu???"
+
+    `onto` is the day the menu's day 0 lands on, and it defaults to the
+    week on screen - which is where this view always put it. Back goes
+    to where it landed rather than where you were standing, because a
+    menu stamped onto December is not worth seeing from October.
+    """
     week = week_of(request.POST.get('week'), None)
     if week is None:
         messages.error(request, 'That week could not be read.')
         return redirect('meal_planner')
     week = monday_of(week)
-    back = planner_back(request, week)
+    onto = week_of(request.POST.get('onto'), week)
+    back = planner_back(request, onto)
     try:
         menu = Menu.objects.prefetch_related('items__recipe').get(
             menu_id=request.POST.get('menu_id'))
@@ -1570,13 +1721,14 @@ def apply_menu(request):
     tails, made = {}, 0
     with transaction.atomic():
         for it in items:
-            # A DAY INDEX OUTSIDE THE WEEK IS DROPPED, not wrapped. A
-            # menu saved from a week is 0 to 6 by construction; a row
-            # that somehow says 9 would land in the NEXT week, which is
-            # a surprise nobody asked for.
-            if not 0 <= it.day_index <= 6:
+            # A DAY OFFSET OUTSIDE THE MENU IS DROPPED, not wrapped -
+            # MN-2 widened the ceiling from 6 to 91 and kept the rule.
+            # A menu is 0 to its own length by construction; a row that
+            # somehow says a year would land a year away, which is a
+            # surprise nobody asked for.
+            if not 0 <= it.day_index < MENU_MAX_DAYS:
                 continue
-            when = week + timedelta(days=it.day_index)
+            when = onto + timedelta(days=it.day_index)
             if when not in tails:
                 last = MealEntry.objects.filter(date=when).aggregate(
                     Max('sort_order'))['sort_order__max']
@@ -1588,9 +1740,11 @@ def apply_menu(request):
                 created_by=request.user)
             made += 1
 
+    last = max((it.day_index for it in items
+                if 0 <= it.day_index < MENU_MAX_DAYS), default=0)
     messages.success(request, 'Added %d meal%s from "%s" to %s.'
                      % (made, '' if made == 1 else 's', menu.name,
-                        week_label(week)))
+                        span_label(onto, onto + timedelta(days=last))))
     return redirect(back)
 
 

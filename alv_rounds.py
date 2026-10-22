@@ -1401,6 +1401,20 @@ ROUNDS = [
     '.bak_printshape',
     # RG-2, 21 Oct 2026 - From, To, and what the second press is for.
     '.bak_printrange',
+    # WF-1, 21 Oct 2026 - the week band gets its colour.
+    '.bak_weekfill',
+    # RG-3, 21 Oct 2026 - the printed week and day stop at the end.
+    '.bak_printcompact',
+    # PX-2, 21 Oct 2026 - a floor under every display copy.
+    '.bak_photofloor',
+    # BM-1, 21 Oct 2026 - one message loop, in base.
+    '.bak_msgbase',
+    # MN-2, 21 Oct 2026 - menus take a range.
+    '.bak_menurange',
+    # RO-1, 21 Oct 2026 - drag a day into order.
+    '.bak_dayorder',
+    # VR-1, 21 Oct 2026 - the recipe schedule readout onto tokens.
+    '.bak_recipetidy',
 ]
 
 

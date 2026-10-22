@@ -1872,6 +1872,13 @@ def recipe_display_upload_path(instance, filename):
     return os.path.join('recipe_images_display', filename)
 
 
+# THE PHONE HERO ASKS FOR ABOUT 1170 REAL PIXELS - PX-2, 21 Oct 2026.
+# Full-width at 390 CSS px and device-pixel-ratio 3. A round number is
+# easier to check than a clever one, and it is a module constant
+# rather than a literal inside the function so a suite can read it.
+DISPLAY_FLOOR = 1200
+
+
 def make_display_jpeg(field_file, quality=85):
     """The ONE place that knows how a display copy is made.
 
@@ -1882,10 +1889,27 @@ def make_display_jpeg(field_file, quality=85):
     read - a recipe with an unreadable image is not a reason to refuse a
     save.
 
-    NO RESIZING. Measured 13 Oct: nothing in the library is over 1000px
-    on the long edge, and the sizes the app draws want up to about 1170.
-    Shrinking these would make a soft picture softer to save bytes that
-    the encoder gives up for nothing.
+    NEVER SHRINKS, AND LIFTS THE SMALL ONES - PX-1 then PX-2.
+    Measured 13 Oct: nothing in the library is over 1000px on the long
+    edge, and the sizes the app draws want up to about 1170. Shrinking
+    these would make a soft picture softer to save bytes the encoder
+    gives up for nothing, so nothing is ever shrunk.
+
+    AND 97 OF THE 324 ARE UNDER 500px, which is where PX-2 comes in.
+    The recipe hero is 200x200 on a desktop and 150x150 on a tablet -
+    both downscale, both sharp - but below 768px it is the full width
+    of the screen at 240px tall. At 390 CSS px and device-pixel-ratio
+    3 that wants about 1170 real pixels, so a 500px photo is stretched
+    2.3x by the browser, with a cheap filter, on every page load.
+
+    DOING IT ONCE, PROPERLY, HERE IS BETTER THAN BADLY, THERE. Lanczos
+    plus a light unsharp mask invents no detail - a 500px photo will
+    never be a 1600px photo - but it beats bilinear-in-a-browser, and
+    the renders Demetri approved on 21 Oct show the difference: the
+    weave of a tablecloth and the tines of a fork come back.
+
+    THE FLOOR IS 1200 because 1170 is what the widest phone hero asks
+    for and a round number is easier to check than a clever one.
 
     THE FLATTEN IS DEFENCE, NOT NEED. Measured the same day: 0 of 324
     images have a single non-opaque pixel, though 322 carry an alpha
@@ -1893,7 +1917,7 @@ def make_display_jpeg(field_file, quality=85):
     rather than discovered later as a black rectangle.
     """
     import io
-    from PIL import Image
+    from PIL import Image, ImageFilter
 
     if not field_file:
         return None
@@ -1912,6 +1936,24 @@ def make_display_jpeg(field_file, quality=85):
     rgba = im.convert('RGBA')
     flat = Image.new('RGB', im.size, (255, 255, 255))
     flat.paste(rgba, mask=rgba.split()[3])
+
+    # THE FLOOR - PX-2, 21 Oct 2026. Up only, never down.
+    #
+    # FLATTENED FIRST, SO THE SHARPEN HAS REAL PIXELS UNDER IT. An
+    # unsharp mask over an alpha edge haloes the transparency rather
+    # than the subject, and 322 of the 324 carry an alpha channel.
+    long_edge = max(flat.size)
+    if long_edge and long_edge < DISPLAY_FLOOR:
+        scale = DISPLAY_FLOOR / float(long_edge)
+        flat = flat.resize((max(1, int(round(flat.size[0] * scale))),
+                            max(1, int(round(flat.size[1] * scale)))),
+                           Image.LANCZOS)
+        # A LIGHT HAND. 110 per cent at radius 1.6 was chosen against
+        # real renders at device-pixel-ratio 3; heavier than this and
+        # the edges ring, which reads as worse than soft.
+        flat = flat.filter(ImageFilter.UnsharpMask(
+            radius=1.6, percent=110, threshold=2))
+
     out = io.BytesIO()
     flat.save(out, 'JPEG', quality=quality, optimize=True,
               progressive=True)
@@ -2560,14 +2602,23 @@ class MealEntry(models.Model):
 
 
 class Menu(models.Model):
-    """A saved week, kept by NAME rather than by date. MN-1, 18 Oct 2026.
+    """A saved SPAN OF DAYS, kept by NAME rather than by date.
 
-    Repeat copies last week. A Menu is for the weeks you come back to
-    months later - Christmas, girls visiting, the usual rotation - so
-    it holds DAY INDEXES, 0 to 6, and not dates.
+    MN-1, 18 Oct 2026. Repeat copies last week. A Menu is for the days
+    you come back to months later - Christmas, girls visiting, the
+    usual rotation - so it holds DAY OFFSETS and not dates.
 
-    Push 2 fills these. The tables arrive now so that release 3 has one
-    migration and not three.
+    MN-2, 21 Oct 2026 - IT WAS NEVER A WEEK. This said "DAY INDEXES, 0
+    to 6" and the table never agreed: MenuItem.day_index has read "0 is
+    the first day of the menu, not a weekday" since the day it was
+    written. What held a menu to seven days was save_menu and
+    apply_menu, which now take a range and a landing date. The ceiling
+    is MENU_MAX_DAYS, 92, and it lives in the view with the rule it
+    serves.
+
+    THE COLUMN KEEPS ITS NAME. day_offset would be better English;
+    renaming a column on a live table buys nothing this docstring does
+    not say.
     """
     menu_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=120)

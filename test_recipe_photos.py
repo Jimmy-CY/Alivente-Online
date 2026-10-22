@@ -212,8 +212,17 @@ for name in ('make_display_jpeg', 'display_name_for'):
     if m:
         src.append(m.group(0))
 ns = {'os': os}
-lifted = ok(len(src) == 2, 'both functions lifted out of %s' % MODELS,
-            '%d found' % len(src))
+# PX-2, 21 Oct 2026 - THE FLOOR IS LIFTED TOO, NOT TYPED. It is read
+# out of the module so that this suite exercises the number the app
+# actually ships; a floor written in here would pass whatever the
+# model said.
+cm = re.search(r'(?m)^DISPLAY_FLOOR = (\d+)\s*$', M)
+if cm:
+    ns['DISPLAY_FLOOR'] = int(cm.group(1))
+lifted = ok(len(src) == 2 and cm is not None,
+            'both functions and the floor lifted out of %s' % MODELS,
+            '%d function(s), floor %s'
+            % (len(src), cm.group(1) if cm else 'absent'))
 if lifted:
     try:
         exec('\n\n'.join(src), ns)
@@ -279,17 +288,29 @@ else:
     jpg = ns['make_display_jpeg'](ff)
     ok(jpg is not None, 'it converts a real RGBA PNG')
     if jpg:
-        ok(len(jpg) < len(png) / 2,
-           '  and the result is far smaller: %.0f KB -> %.0f KB (%.0f%%)'
+        # PX-2, 21 Oct 2026 - the fixture is 600px and the floor is
+        # 1200, so this one is now resampled up four times the area
+        # before it is encoded. It is STILL smaller than the PNG,
+        # which is the claim PX-1 was making; the margin is just not
+        # a half any more.
+        ok(len(jpg) < len(png),
+           '  and the result is still smaller: %.0f KB -> %.0f KB (%.0f%%)'
            % (len(png) / 1024.0, len(jpg) / 1024.0,
               100.0 * len(jpg) / len(png)),
            '%d vs %d' % (len(png), len(jpg)))
         out = Image.open(_io.BytesIO(jpg))
         ok(out.format == 'JPEG', '  it really is a JPEG', out.format)
-        # NO RESIZING. The whole round rests on this.
-        ok(out.size == (w, h),
-           '  and EVERY PIXEL IS KEPT - %dx%d in, %dx%d out'
+        # NEVER SHRUNK, AND LIFTED IF IT IS SMALL - PX-1, then PX-2
+        # on 21 Oct 2026. The 600x400 fixture is under the 1200px
+        # floor, so it comes back larger in the same proportion. What
+        # PX-1 actually rested on was that nothing is ever LOST, and
+        # that is what is asked here.
+        ok(out.size[0] >= w and out.size[1] >= h,
+           '  and NO PIXEL IS LOST - %dx%d in, %dx%d out'
            % (w, h, out.size[0], out.size[1]), out.size)
+        ok(abs(out.size[0] / float(out.size[1]) - w / float(h)) < 0.01,
+           '  at the same shape - %.3f in, %.3f out'
+           % (w / float(h), out.size[0] / float(out.size[1])))
         ok(out.mode == 'RGB', '  flattened to RGB, so no alpha survives')
 
     # THE FLATTEN IS DEFENCE, and defence that is never exercised is a
@@ -548,8 +569,12 @@ print('')
 print('  Not that the pictures are good enough. %d of the %d originals'
       % (97, LIVE['files']))
 print('  are under 500px on the long edge and the phone hero wants about')
-print('  1170. They are soft in the PNG already. Converting makes them')
-print('  light; it cannot make them sharp.')
+print('  1170. They are soft in the PNG already, and PX-2 cannot invent')
+print('  detail that was never photographed - a 500px picture will never')
+print('  be a 1600px picture. What PX-2 does is move the stretch off the')
+print('  browser and onto the server, done once with Lanczos and a')
+print('  measured sharpen rather than every page load with whatever the')
+print('  browser reaches for. Better, not fixed. See test_photo_floor.')
 print('')
 print('=' * 74)
 print(' %d passed, %d failed, %d skipped' % (passed, failed, skipped))

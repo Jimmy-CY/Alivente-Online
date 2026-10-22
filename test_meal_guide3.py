@@ -108,7 +108,8 @@ BUILT = ('repeating a whole week', 'saved menus',
 # the sentence this pin was watching for would now be a lie. The
 # claim is unchanged - the guide still says what it cannot do - and
 # what it cannot do is the other half of MH-3's pair.
-OUTSTANDING = 'reordering the meals on a day'
+# RO-1, 21 Oct 2026 - the day can be dragged now; the week cannot.
+OUTSTANDING = 'reordering the week view'
 
 passed = failed = skipped = 0
 

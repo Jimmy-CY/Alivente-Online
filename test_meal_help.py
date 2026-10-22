@@ -718,7 +718,7 @@ if up and mod:
     # on the chip menu now, so one of the two is in PROMISED_WORDS
     # above and the other is the honest remainder. The claim is the
     # same claim - that the guide still says what it cannot do.
-    ok(any('reordering the meals on a day' in s.lower()
+    ok(any('reordering the week view' in s.lower()
            for s in coming),
        '  while what is NOT built is still named as outstanding',
        coming[:2])
@@ -726,8 +726,15 @@ if up and mod:
     # keep passing for as long as nobody edited the guide, however
     # long after the feature shipped - which is the whole of what
     # went wrong here between 19 and 20 October.
-    ok('def reorder' not in view_py,
-       '  CONTROL: and there is still no way to reorder a day')
+    # RO-1, 21 Oct 2026 - A DAY REORDERS NOW. The reason this control
+    # exists is untouched: a promise in a guide outlives the thing it
+    # promised unless something asks the code. So it asks about the
+    # WEEK, which is what the guide names now and what really is not
+    # built.
+    ok('def reorder_meal_day' in view_py
+       and 'def reorder_week' not in view_py,
+       '  CONTROL: a day reorders and a week does not, which is what '
+       'the guide says')
 
 # ==========================================================================
 head('8. SCOPE, REGISTRATION AND THE GATE')

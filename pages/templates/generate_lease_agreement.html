@@ -262,14 +262,6 @@
 <h4 class="page-subtitle-h4">GENERATE LEASE AGREEMENT</h4>
 <br/>
 
-{% for msg in messages %}
-  <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-    {{ msg }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-{% endfor %}
 
 <!-- Mobile-only desktop guard message (hidden on desktop, shown on mobile) -->
 <div class="desktop-only-message">

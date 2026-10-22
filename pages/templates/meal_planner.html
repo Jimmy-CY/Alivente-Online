@@ -18,14 +18,6 @@
 {#                                                                  #}
 {# `msg`, not `message`: 73 pages spell it this way and 5 do not.   #}
 {# This is not the place to found a third dialect.                  #}
-{% for msg in messages %}
-    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show alv-message" role="alert">
-      {{ msg }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-  {% endfor %}
 
 {# ===================================================================== #}
 {# MN-1, 18 Oct 2026 - RELEASE 3. THE CALENDAR IS THE PLAN.             #}
@@ -404,6 +396,43 @@
     .cp-dates { flex-direction: column; gap: 0; }
 }
 
+/* DRAGGING A DAY INTO ORDER - RO-1, 21 Oct 2026.
+
+   THE GRIP IS HIDDEN UNTIL THE LIBRARY ANSWERS. Sortable comes from a
+   CDN; a CDN can fail, and a handle you can press that does nothing is
+   worse than no handle. The script adds .is-draggable to the list only
+   once `Sortable` is really there, so a failed load leaves the card
+   exactly as it was.
+
+   THE NAMES ARE preview_imported_recipe's. That page has dragged
+   ingredients and instructions since it was written - .drag-handle,
+   .sortable-ghost, .sortable-drag, .sortable-chosen - and a second
+   vocabulary for the same gesture would be a second thing to learn. */
+.day-rows .drag-handle { display: none; }
+.day-rows.is-draggable .drag-handle {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    padding: 6px 8px;
+    margin-right: 2px;
+    color: var(--alv-ink-faint);
+    cursor: grab;
+    touch-action: none;
+}
+.day-rows.is-draggable .drag-handle:hover { color: var(--alv-ink-soft); }
+.day-rows.is-draggable .drag-handle:active { cursor: grabbing; }
+.day-rows .sortable-ghost { opacity: 0.4; }
+.day-rows .sortable-drag { opacity: 0.9; }
+.day-rows .sortable-chosen { background: var(--alv-surface); }
+/* THE PHONE RULES FOR THESE ARE IN THE PAGE'S OWN PHONE BLOCK, further
+   down, and NOT in a new one here. Opening a second
+   `@media screen and (max-width: 768px)` above the first one moved
+   where the first one STARTS, and three suites slice this stylesheet
+   on exactly that string to find "the phone block" - test_meal_week
+   says so in as many words: "A scope that silently lands on the wrong
+   block is the same fault as a fallback that silently widens one."
+   It landed on the wrong block, and the sweep caught it. */
+
 /* THE MENUS DIALOG - two sections, two forms, one dialog. */
 .mn-section + .mn-section {
     margin-top: 18px;
@@ -414,6 +443,14 @@
     font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
     text-transform: uppercase; color: var(--alv-ink-soft);
     margin-bottom: 10px;
+}
+/* MN-2, 21 Oct 2026 - the Save half took a range, so it wears the
+   same preset row the Copy dialog does. The rules are CP-2's; this
+   adds the one selector they did not know about. */
+.mn-preset[aria-pressed="true"] {
+    background: var(--alv-accent-soft);
+    border-color: var(--alv-accent-line);
+    color: var(--alv-accent-ink);
 }
 
 .month-grid {
@@ -474,16 +511,37 @@
     background: var(--alv-surface);
 }
 
-/* THE WEEK OWNS THE EDGE, THE MEAL OWNS THE FILL - WT-1, 21 Oct 2026.
-   This was `background: var(--alv-accent-soft)`, which is the SAME
-   TOKEN .month-chip fills itself with: dE 0.0 in Lab, so a pill on
-   the selected week was the pill's 1px border and nothing else. CL-1
-   added that border on 20 October and it was treating the symptom.
-   A fourth near-white was measured and there is no room for one -
-   surface-deep lands 4.8 from is-out, and a pale accent closes on
-   surface before it clears the pill. Two properties, not two tints. */
+/* THE WEEK OWNS BOTH NOW - WT-1, 21 Oct 2026, corrected by WF-1 the
+   same day.
+
+   THE FAULT WT-1 FOUND STANDS. This filled with `--alv-accent-soft`,
+   which is the SAME TOKEN .month-chip fills itself with: dE 0.0 in
+   Lab, so a pill on the selected week was the pill's 1px border and
+   nothing else. CL-1 added that border on 20 October and it was
+   treating the symptom.
+
+   WHAT WT-1 GOT WRONG WAS THE SEARCH. It measured TWO candidates for
+   a fourth fill - surface-deep and a pale accent - and concluded
+   there was no room. base carries ten more pale tints in the TAG
+   palette, which exist to be decorative and carry no status meaning
+   at all. None of them had been looked at.
+
+   ASKED OF ALL THIRTEEN against the four fills already on this grid -
+   the cell, the out-of-month cell, and the meal, note and leftover
+   pills. Worst-case dE, because a candidate is only as good as its
+   nearest collision:
+
+       tag-moss-soft  6.9      spice-soft   5.2 (from the NOTE pill)
+       tag-clay-soft  6.4      good-soft    5.1 (from the MEAL pill)
+       tag-plum-soft  4.3      tag-sky-soft 2.3
+
+   Moss clears everything by 6.9 - three times the threshold a trained
+   eye can just detect - and carries no meaning to collide with.
+
+   AND THE EDGE STAYS. Two signals: the fill says WHICH week, the rule
+   says it is a selection rather than a tint somebody chose. */
 .month-cell.in-week {
-    background: var(--alv-paper);
+    background: var(--alv-tag-moss-soft);
     box-shadow: inset 0 2px 0 var(--alv-accent),
                 inset 0 -2px 0 var(--alv-accent);
 }
@@ -1352,6 +1410,25 @@
     
 
 @media screen and (max-width: 768px) {
+    /* DRAGGING, ON A PHONE - RO-1, 21 Oct 2026.
+       22px and the padding make the grip a 44px target, which is the
+       house floor for anything you press.
+
+       AND THE ACTIONS WRAP, BECAUSE 44px HAD TO COME FROM SOMEWHERE.
+       At 390px the row is 286px wide and .row-actions already wanted
+       194 of a 183px share - eleven pixels over, which nobody could
+       see. The grip takes 44 more and the fourth button went off the
+       edge of the card. Measured in Chromium, not guessed: the
+       before-and-after renders caught it.
+
+       WRAPPING RATHER THAN SHRINKING. A narrower grip would buy the
+       pixels by breaking the 44px floor, and dropping a button would
+       be paying for a drag with a control that does something else.
+       Scoped to .day-rows, so base's own .row-actions is untouched
+       everywhere else in the system. */
+    .day-rows.is-draggable .drag-handle { font-size: 22px; padding: 6px 8px; }
+    .day-rows .row-actions { flex-wrap: wrap; row-gap: 6px; }
+
     .calendar-container {
         padding: 8px;
     }
@@ -2153,6 +2230,18 @@
                         </h3>
                     </div>
                     <div class="day-card-body">
+                        {# .day-rows - RO-1, 21 Oct 2026.                    #}
+                        {#                                                   #}
+                        {# THE ROWS NEEDED SOMETHING OF THEIR OWN TO LIVE IN.#}
+                        {# .day-card-body holds these rows AND the Add       #}
+                        {# Recipe / Add Note row below them, so a sortable   #}
+                        {# bound to the body would let a meal be dropped     #}
+                        {# underneath the buttons.                           #}
+                        {#                                                   #}
+                        {# The date rides on the wrapper because the endpoint#}
+                        {# asks for it: an order is only meaningful about a  #}
+                        {# particular day.                                   #}
+                        <div class="day-rows" data-day="{{ day.date|date:'Y-m-d' }}">
                         {% for entry in day.entries %}
                         {# A SLOT IS NOT ALWAYS A RECIPE. MealEntry allows a  #}
                         {# note from today even though push 2 is what writes  #}
@@ -2166,6 +2255,13 @@
                         {# arm below would otherwise catch it and hand it a  #}
                         {# servings stepper that buys nothing.               #}
                         <div class="recipe-item leftover-item" data-entry="{{ entry.meal_entry_id }}">
+                            {# THE GRIP - RO-1, 21 Oct 2026. The same handle  #}
+                            {# preview_imported_recipe has dragged ingredients #}
+                            {# and instructions with since it was written.     #}
+                            {# HIDDEN until Sortable answers: a grip you can   #}
+                            {# press that does nothing is worse than no grip.  #}
+                            <span class="drag-handle" aria-hidden="true"
+                                  title="Drag to reorder this day"><i class="fas fa-grip-vertical"></i></span>
                             {% if entry.recipe.photo_url %}
                             <img loading="lazy" decoding="async" src="{{ entry.recipe.photo_url }}"
                                  alt="" class="recipe-thumbnail">
@@ -2216,6 +2312,13 @@
                         </div>
                         {% elif entry.recipe %}
                         <div class="recipe-item" data-entry="{{ entry.meal_entry_id }}">
+                            {# THE GRIP - RO-1, 21 Oct 2026. The same handle  #}
+                            {# preview_imported_recipe has dragged ingredients #}
+                            {# and instructions with since it was written.     #}
+                            {# HIDDEN until Sortable answers: a grip you can   #}
+                            {# press that does nothing is worse than no grip.  #}
+                            <span class="drag-handle" aria-hidden="true"
+                                  title="Drag to reorder this day"><i class="fas fa-grip-vertical"></i></span>
                             {% if entry.recipe.photo_url %}
                             <img loading="lazy" decoding="async" src="{{ entry.recipe.photo_url }}"
                                  alt="" class="recipe-thumbnail">
@@ -2324,6 +2427,13 @@
                         {# a planned decision rather than a gap, which is the #}
                         {# whole reason the column exists.                     #}
                         <div class="recipe-item note-item" data-entry="{{ entry.meal_entry_id }}">
+                            {# THE GRIP - RO-1, 21 Oct 2026. The same handle  #}
+                            {# preview_imported_recipe has dragged ingredients #}
+                            {# and instructions with since it was written.     #}
+                            {# HIDDEN until Sortable answers: a grip you can   #}
+                            {# press that does nothing is worse than no grip.  #}
+                            <span class="drag-handle" aria-hidden="true"
+                                  title="Drag to reorder this day"><i class="fas fa-grip-vertical"></i></span>
                             <div class="recipe-thumbnail-placeholder">
                                 <i class="fas {% if entry.leftover_of %}fa-redo{% else %}fa-store{% endif %}"></i>
                             </div>
@@ -2352,6 +2462,7 @@
                             <p>Nothing planned</p>
                         </div>
                         {% endfor %}
+                        </div>{# .day-rows - RO-1, 21 Oct 2026 #}
 
                         {# EVERY DATE CAN TAKE A MEAL. There is no "this date  #}
                         {# is outside the plan" any more, because there is no  #}
@@ -2839,25 +2950,63 @@
             <div class="modal-body">
 
                 <div class="mn-section">
-                    <div class="mn-head">Save this week as a menu</div>
+                    <div class="mn-head">Save days as a menu</div>
                     <form method="POST" action="{% url 'save_menu' %}">
                         {% csrf_token %}
+                        {# THE VIEW AND THE DAY TRAVEL WITH IT - PB-2 and PB-3. #}
                         <input type="hidden" name="view" value="{{ view_mode }}">
                         <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
+                        {# `week` IS WHERE YOU ARE, NOT WHAT YOU SAVE - MN-2.  #}
+                        {# It decides where Back goes. From and To say what to #}
+                        {# keep, and the view defaults them to this week, so   #}
+                        {# sending neither means what it always meant.         #}
                         <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
                         <p class="text-muted" style="font-size:13px;">
-                            The meals on <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>
-                            are kept under a name, by weekday, so the same
-                            week can be stamped onto any week later.
+                            The meals between these dates are kept under a
+                            name, by how far into the menu each day falls -
+                            so the same set can be stamped onto any dates
+                            later. Up to 92 days.
                         </p>
+                        {# "Days to keep", NOT "Save" - MN-2. The Copy     #}
+                        {# dialog's twin of this row is labelled Copy, so    #}
+                        {# Save was the obvious word. It is also the word    #}
+                        {# test_meal_help looks for when it asks whether the #}
+                        {# planner has grown a Save button - the planner     #}
+                        {# writes on press and must not have one - and a     #}
+                        {# <label>Save</label> reads as one to that check.   #}
+                        {# The longer label says what the two dates are for, #}
+                        {# which it needed to anyway.                        #}
+                        <div class="form-group">
+                            <label><strong>Days to keep</strong></label>
+                            <div class="cp-presets">
+                                <button type="button" class="btn action-secondary mn-preset"
+                                        data-mn-span="day">This day</button>
+                                <button type="button" class="btn action-secondary mn-preset"
+                                        data-mn-span="week">This week</button>
+                                <button type="button" class="btn action-secondary mn-preset"
+                                        data-mn-span="month">This month</button>
+                            </div>
+                        </div>
+                        <div class="cp-dates">
+                            <div class="form-group">
+                                <label for="mnFrom"><strong>From</strong></label>
+                                <input type="date" class="form-control" id="mnFrom"
+                                       name="from" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="mnTo"><strong>To</strong></label>
+                                <input type="date" class="form-control" id="mnTo"
+                                       name="to" required>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label for="saveMenuName"><strong>Name</strong></label>
                             <input type="text" class="form-control" id="saveMenuName"
                                    name="name" maxlength="100" autocomplete="off"
-                                   placeholder="e.g. Easy Winter Week" required>
+                                   placeholder="e.g. Christmas and New Year" required>
                         </div>
                         <button type="submit" class="btn action-secondary">
-                            <i class="fas fa-bookmark"></i> Save this week
+                            <i class="fas fa-bookmark"></i> Save these days
                         </button>
                     </form>
                 </div>
@@ -2872,18 +3021,23 @@
                         <input type="hidden" name="menu_id" id="applyMenuId">
                         {% if menus %}
                         <p class="text-muted" style="font-size:13px;">
-                            The menu you pick is added to
-                            <strong>{{ week_start|date:"j M" }} &ndash; {{ week_end|date:"j M" }}</strong>,
-                            alongside whatever is already there.
+                            Pick a menu, then the day its first day lands on.
+                            It is added alongside whatever is already there.
                         </p>
                         <div class="menu-list">
                             {% for menu in menus %}
+                            {# data-menu-days IS THE MENU OWN LENGTH - MN-2.   #}
+                            {# The planner annotates it beside the item count, #}
+                            {# so the line under Landing on costs no query and #}
+                            {# no endpoint.                                    #}
                             <div class="menu-option" data-menu-id="{{ menu.menu_id }}"
+                                 data-menu-days="{{ menu.span_days }}"
                                  onclick="pickMenu(this)">
                                 <div class="menu-option-name">
                                     <strong>{{ menu.name }}</strong><br>
                                     <small class="text-muted">
                                         {{ menu.item_count }} meal{{ menu.item_count|pluralize }}
+                                        over {{ menu.span_days }} day{{ menu.span_days|pluralize }}
                                     </small>
                                 </div>
                                 <div class="row-actions">
@@ -2895,8 +3049,25 @@
                             </div>
                             {% endfor %}
                         </div>
+                        {# LANDING ON - MN-2, 21 Oct 2026.                  #}
+                        {#                                                  #}
+                        {# "Should I not be able to select to which week I  #}
+                        {#  want to apply the Saved Menu???"                #}
+                        {#                                                  #}
+                        {# Defaulted to the week on screen, which is where  #}
+                        {# this dialog always put it, so the commonest      #}
+                        {# thing to want is one click away and the rest is  #}
+                        {# a date field.                                    #}
+                        <div class="form-group" style="margin-top:14px;">
+                            <label for="mnOnto"><strong>Landing on</strong></label>
+                            <input type="date" class="form-control" id="mnOnto"
+                                   name="onto" value="{{ week_start|date:'Y-m-d' }}" required>
+                            <small class="form-text text-muted" id="mnSpan">
+                                Pick a menu to see which days it will cover.
+                            </small>
+                        </div>
                         <button type="submit" class="btn action-primary" id="applyMenuGo" disabled>
-                            <i class="fas fa-check"></i> Add to This Week
+                            <i class="fas fa-check"></i> Add to These Days
                         </button>
                         {% else %}
                         {# THE EMPTY STATE SAYS WHERE MENUS COME FROM, and  #}
@@ -2906,8 +3077,8 @@
                             <i class="fas fa-list-ul"></i>
                             <p>No menus yet.</p>
                             <p class="text-muted">
-                                Put some meals on a week, then use
-                                <strong>Save this week</strong> above.
+                                Put some meals on some days, then use
+                                <strong>Save these days</strong> above.
                             </p>
                         </div>
                         {% endif %}
@@ -3293,6 +3464,13 @@
 {% endif %}
 
 
+{# SORTABLE 1.15.0 - RO-1, 21 Oct 2026. The version and the URL are    #}
+{# preview_imported_recipe's, so the browser has one copy to cache and #}
+{# this project has one answer to which version it drags with.         #}
+{#                                                                     #}
+{# IF THIS FAILS TO LOAD THE DAY CARD LOSES NOTHING: the grip is hidden #}
+{# until the guard at the foot of this page sees Sortable and says so.  #}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 // =====================================================================
 // MN-1, 18 Oct 2026. The planner.
@@ -3877,6 +4055,68 @@ function removeMeal(entryId, name) {
     document.getElementById('removeForm').submit();
 }
 
+// ------------------------------------------------- dragging a day
+// RO-1, 21 Oct 2026.
+//
+//     "Can we not just have like three lines or something that
+//      somebody clicks on and then drags and drops (similar to
+//      Ingredients and Instructions entry)???"
+//
+// SO IT IS THE SAME LIBRARY AND THE SAME OPTIONS preview_imported_recipe
+// uses. handle, ghostClass, dragClass, chosenClass, animation 150.
+//
+// NOTHING IS DRAWN UNTIL Sortable ANSWERS. The guard is the whole
+// degradation story: no library, no .is-draggable, no grip, and the
+// card is what it was before this round. RL-1's lesson from 20 October
+// is in here too - this runs at the END of the document, where the
+// CDN tag above it has already resolved or failed.
+(function () {
+    if (typeof Sortable === 'undefined') { return; }
+    var list = document.querySelector('.day-rows');
+    if (!list || !list.querySelector('.drag-handle')) { return; }
+    list.classList.add('is-draggable');
+    new Sortable(list, {
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        chosenClass: 'sortable-chosen',
+        animation: 150,
+        onEnd: function () { saveDayOrder(list); }
+    });
+}());
+
+// WHAT THE DROP SENDS. The ids in the order they now sit in, and the
+// day they sit on - the endpoint will not take one without the other.
+function saveDayOrder(list) {
+    var ids = [].map.call(list.querySelectorAll('[data-entry]'),
+        function (r) { return r.getAttribute('data-entry'); });
+    if (!ids.length) { return; }
+    var body = new FormData();
+    body.append('date', list.getAttribute('data-day'));
+    body.append('order', ids.join(','));
+    body.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    list.classList.add('is-saving');
+    fetch('{% url "reorder_meal_day" %}', {
+        method: 'POST', credentials: 'same-origin', body: body
+    })
+        .then(function (r) {
+            // 409 MEANS THE DAY CHANGED UNDER US and the server sent
+            // back what is really on it. Reloading is the honest
+            // answer: this page is looking at something that is no
+            // longer true, and guessing which rows it missed would be
+            // the same mistake the endpoint refuses to make.
+            if (r.status === 409) { window.location.reload(); return null; }
+            if (!r.ok) { throw new Error(r.status); }
+            return r.json();
+        })
+        .catch(function () {
+            // A FAILED SAVE MUST NOT LEAVE A LIE ON THE SCREEN. The
+            // rows are sitting in an order the database does not have.
+            window.location.reload();
+        })
+        .then(function () { list.classList.remove('is-saving'); });
+}
+
 // --------------------------------------------------------- the day speaks
 // MO-1, 19 Oct 2026. A planned night, and leftovers.
 
@@ -3967,8 +4207,54 @@ function pickMenu(el) {
     });
     el.classList.add('selected');
     document.getElementById('applyMenuId').value = el.dataset.menuId;
-    document.getElementById('applyMenuGo').disabled = false;
+    mnSaySpan();
 }
+
+// WHICH DAYS IT WILL COVER - MN-2, 21 Oct 2026.
+//
+// A menu is a span now, so a button naming one fixed week stopped
+// being true the moment Landing on arrived - and this note does not
+// spell that old label, because a suite asking whether it is gone
+// would find it here. This says the actual dates, worked out
+// from the menu own length and the date in the field - no query, no
+// endpoint, and nothing to be in flight.
+//
+// THE BUTTON IS ARMED BY BOTH. A menu with no landing date, or a
+// landing date with no menu, is half an instruction.
+function mnSaySpan() {
+    var sel = document.querySelector('.menu-option.selected'),
+        onto = document.getElementById('mnOnto'),
+        note = document.getElementById('mnSpan'),
+        go = document.getElementById('applyMenuGo');
+    if (!go) { return; }
+    var ready = !!(sel && onto && onto.value);
+    go.disabled = !ready;
+    if (!note) { return; }
+    if (!sel) {
+        note.textContent = 'Pick a menu to see which days it will cover.';
+        return;
+    }
+    if (!onto || !onto.value) {
+        note.textContent = 'Pick the day it starts on.';
+        return;
+    }
+    var days = Number(sel.getAttribute('data-menu-days')) || 1,
+        p = onto.value.split('-'),
+        a = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])),
+        b = new Date(a.getTime());
+    b.setDate(b.getDate() + days - 1);
+    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    function lbl(d) { return d.getDate() + ' ' + MON[d.getMonth()]; }
+    note.textContent = (days === 1
+        ? 'It will land on ' + lbl(a) + '.'
+        : 'It will cover ' + lbl(a) + ' to ' + lbl(b)
+          + ' - ' + days + ' days.');
+}
+
+document.addEventListener('change', function (ev) {
+    if (ev.target && ev.target.id === 'mnOnto') { mnSaySpan(); }
+});
 
 // THE TRASHCAN IS INSIDE A CLICKABLE ROW, so it stops the click going
 // up - without this, deleting a menu would also select it, and the
@@ -4024,6 +4310,39 @@ function deleteMenu(ev, menuId, name) {
         [].forEach.call(document.querySelectorAll('.cp-preset'),
             function (x) { x.setAttribute('aria-pressed',
                 x === b ? 'true' : 'false'); });
+    });
+
+    // THE SAME THREE PRESETS, FOR SAVING A MENU - MN-2, 21 Oct 2026.
+    //
+    // span() already answers day, week and month off the anchor on
+    // screen, and SL-7 settled what a month means here. A second
+    // implementation would be a second answer waiting to disagree.
+    document.addEventListener('click', function (ev) {
+        var b = ev.target && ev.target.closest
+            && ev.target.closest('.mn-preset');
+        if (!b) { return; }
+        var two = span(b.getAttribute('data-mn-span'));
+        if (el('mnFrom')) { el('mnFrom').value = two[0]; }
+        if (el('mnTo')) { el('mnTo').value = two[1]; }
+        [].forEach.call(document.querySelectorAll('.mn-preset'),
+            function (x) { x.setAttribute('aria-pressed',
+                x === b ? 'true' : 'false'); });
+    });
+
+    // AND IT OPENS ON THIS WEEK, for the reason the copy dialog does:
+    // it is the commonest thing to want and it is what the dialog did
+    // before there was a choice.
+    function mnSeed() {
+        if (el('mnFrom') && !el('mnFrom').value) {
+            el('mnFrom').value = WEEK_FROM;
+            el('mnTo').value = WEEK_TO;
+        }
+    }
+    mnSeed();
+    document.addEventListener('click', function (ev) {
+        var o = ev.target && ev.target.closest
+            && ev.target.closest('[data-target="#menusModal"]');
+        if (o) { mnSeed(); }
     });
 
     // OPENS ON THIS WEEK, because that is what the old dialog copied

@@ -263,7 +263,15 @@ ok(len(shapes) == 1,
    'sixteen' % (sum(len(loops(read(p))) for p in alv_tree.templates()),
                 pages),
    '\n'.join(sorted(shapes))[:400])
-ok(pages >= 70, '  and that is %d pages, not a handful' % pages, pages)
+# BM-1, 21 Oct 2026 - M1 UNIFIED THE SHAPE, BM-1 UNIFIED THE PLACE.
+# This read `pages >= 70` and it was the finding at the time: one
+# shape, written out seventy-odd times. The shape never drifted - 81
+# pages, identical to the byte, on 21 October - which is what made it
+# safe to move into base. The claim is now the opposite number for the
+# same reason.
+ok(pages == 1, '  and that is %d page - base, and nobody else. It was 81 '
+   'on 21 October and they never drifted, which is what made moving '
+   'them safe' % pages, pages)
 one = list(shapes)[0] if shapes else ''
 ok('alert-{{ VAR.tags }}' in one,
    '  the shape takes its colour from the tag')
