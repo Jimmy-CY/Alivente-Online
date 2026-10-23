@@ -419,6 +419,15 @@ PINNED = {
     'ingredient_rows':
         'the shared recipe read, on a file RD-1 created - no earlier '
         'version exists to discriminate against',
+    # THE NINTH, 22 Oct 2026, and the same story again. SI-1 pins
+    # `def held_names` on check_recipe_files.py, which SI-1 CREATES,
+    # so there is no earlier version and the row has one version to
+    # try. It becomes checkable the moment any later round backs that
+    # file up - which NL-1 does in this same push, but a round may not
+    # assume the one after it applied.
+    'held_names':
+        'the recipe file detector, on a file SI-1 created - no earlier '
+        'version exists to discriminate against',
 }
 unpinned = [b for b in blind
             if not any(k.lower() in b.lower() for k in PINNED)]

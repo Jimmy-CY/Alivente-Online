@@ -426,7 +426,13 @@ try:
         h = cl.get('/meal_plans/', {'view': v, 'date': '2026-10-20'}
                    ).content.decode('utf-8')
         planner[v] = re.findall(
-            r'href="/meal_plans/print/\?from=([0-9-]+)&amp;to=([0-9-]+)"',
+            # [^"]*" RATHER THAN " - PT-1, 22 Oct 2026. The link now
+            # carries the origin after the two dates, and this regex
+            # ended at the quote that used to follow ?to=. What it
+            # claims is unchanged: from and to are the period of the
+            # view you are on.
+            r'href="/meal_plans/print/\?from=([0-9-]+)&amp;'
+            r'to=([0-9-]+)[^"]*"',
             h)
 except Exception as e:
     skip('the asked checks',

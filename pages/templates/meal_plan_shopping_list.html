@@ -708,9 +708,36 @@
         {# step - every control lives here with `hidden`, and setBar()     #}
         {# below decides which are on screen. Same mechanism SL-1 gave     #}
         {# Print yesterday, so this round adds no new machinery.           #}
+        {# NOT RENDERED WHEN THERE IS NOTHING TO GENERATE - SB-2,        #}
+        {# 22 Oct 2026.                                                  #}
+        {#                                                               #}
+        {# The two-step flow below is inside {% if ingredients %}. When  #}
+        {# no ingredient on the plan has a shopping unit, step 1 is not  #}
+        {# rendered at all - and this button sat above the empty state   #}
+        {# offering to generate a list from it.                          #}
+        {#                                                               #}
+        {# THE SAME FAULT DEMETRI REPORTED ON 3 OCTOBER, about Print:    #}
+        {# "Should not appear until shopping list has been defined."     #}
+        {#                                                               #}
+        {# NOT RENDERED, NOT hidden, AND NOT disabled. SL-1 chose hidden #}
+        {# over disabled because a disabled control still says you may   #}
+        {# press it and then refuses - and said in the same breath that  #}
+        {# what it really wanted was that "the server never renders a    #}
+        {# usable Print for a list that cannot exist". That is available #}
+        {# here, because the condition is known before the page is sent. #}
+        {#                                                               #}
+        {# AND A CONDITIONAL ATTRIBUTE WOULD HAVE BEEN WRONG. The first #}
+        {# draft wrote {%% if not ingredients %%} hidden{%% endif %%}     #}
+        {# INSIDE the tag. Every instrument in this tree that reads a    #}
+        {# template as text - and that is most of them - then sees the   #}
+        {# word hidden in the tag and concludes the button always ships  #}
+        {# hidden. test_meal_help renders the bar from raw template      #}
+        {# text and counted one control fewer; it said so.               #}
+        {% if ingredients %}
         <button type="button" onclick="generateShoppingList()" class="btn action-primary" id="genBtn">
             Generate List <i class="fas fa-arrow-right"></i>
         </button>
+        {% endif %}
         {# MN-1 - Done goes back to the week you shopped for. #}
         <button type="button" onclick="window.location.href='{% url 'meal_planner' %}?week={{ week_start|date:'Y-m-d' }}'" class="btn action-primary" id="doneBtn" hidden>
             <i class="fas fa-check"></i> Done
@@ -721,7 +748,18 @@
         {# a disabled control still says you may print and then refuses.  #}
         {# generateShoppingList() removes the attribute, so the server    #}
         {# never renders a usable Print for a list that cannot exist.     #}
-        <button type="button" onclick="printList()" class="btn action-primary"
+        {# A SECONDARY - SB-2, 22 Oct 2026. It was an .action-primary,  #}
+        {# and so is Done, so step 2 put TWO primaries on one bar.       #}
+        {# Neither round could see it: SL-1 gave Print the primary when  #}
+        {# it was the only new control on the page, and SL-2 gave Done   #}
+        {# one the next day when it built this bar. Nothing failed - no  #}
+        {# suite counts primaries WITHIN a bar.                          #}
+        {#                                                               #}
+        {# DEMETRI CHOSE DONE, 22 October, from the rendered states:     #}
+        {# Done is how you finish the flow and it is where his hand      #}
+        {# already expects it. Print is a thing you may also want, which #}
+        {# is what a secondary is.                                       #}
+        <button type="button" onclick="printList()" class="btn action-secondary"
                 id="printBtn" hidden aria-label="Print shopping list">
             <i class="fas fa-print"></i> Print
         </button>
@@ -1387,9 +1425,36 @@
     // list exists rather than on which step is open - two different
     // questions, and folding them together is how the empty sheet
     // happened.
+    // WHETHER THERE IS ANYTHING TO GENERATE - SB-2, 22 Oct 2026.
+    //
+    // Rendered once by the server, from the same `ingredients`
+    // condition that decides whether step 1 exists at all.
+    //
+    // THE CONDITION IS NAMED HERE, NOT WRITTEN. A template tag inside
+    // a JavaScript comment is still a template tag: Django does not
+    // know that // starts a comment, so the first draft of this block
+    // put a live if-tag here and it swallowed the endif belonging to
+    // has_missing_conversions nine hundred lines above. The page
+    // raised TemplateSyntaxError - 'Invalid block tag: endblock,
+    // expected endif' - and it would have done so on Live for anyone
+    // whose list had a missing conversion. The suite's render caught
+    // it; the dry run and every text gate did not, because as TEXT it
+    // is a comment and reads perfectly.
+    //
+    // setBar reads the flag below so
+    // that a call to setBar(1) cannot reveal a button the template
+    // deliberately hid.
+    //
+    // NOTHING CALLS setBar(1) IN THAT STATE TODAY - it is reached only
+    // from the two step switches, and neither exists when step 1 was
+    // never rendered. This is the second guard, for the later round
+    // that calls setBar on load without reading this note. SL-1 wrote
+    // three guards for Print on 3 October for the same reason.
+    var ALV_CAN_GENERATE = {% if ingredients %}true{% else %}false{% endif %};
+
     function setBar(step) {
         var on = {
-            genBtn: step === 1,
+            genBtn: step === 1 && ALV_CAN_GENERATE,
             backLink: step === 1,
             doneBtn: step === 2,
             backStep: step === 2

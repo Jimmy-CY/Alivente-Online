@@ -1852,10 +1852,42 @@ class RecipeCategory(models.Model):
         verbose_name_plural = "Recipe Categories"
         ordering = ['name']
 
+# HOW MUCH OF A RECIPE NAME GOES INTO A FILENAME - NL-1, 22 Oct 2026.
+#
+# A generated basename is recipe-{id}-{slug}-{14 digit stamp}.{ext}:
+# 'recipe-' is 7, a six digit id is 6, two hyphens are 2, the stamp is
+# 14, and '.jpeg' is 5 - 34 characters before any of the name. The
+# longest directory, 'recipe_images_display/', is 22 more.
+#
+# 40 IS NOT A ROUND NUMBER, IT IS THE ONE THAT FITS. 40 + 34 + 22 = 96,
+# inside the 255 the fields now hold AND inside the 100 they used to,
+# so a tree that has somehow not run the migration still behaves
+# rather than silently truncating. The first draft said 60, which is
+# 116, and the gate below refused the round - correctly.
+#
+# The filename is not shown to anybody. A recipe called 'Pork Shoulder
+# (Deboned, Rind-off) - Oven and Gas Braai' losing its last few words
+# HERE costs nothing; losing its display copy cost four recipes a
+# rebuild on every edit.
+#
+# A module constant and not a literal inside three functions, so a
+# suite can read it and so the three agree by construction.
+NAME_SLUG_CAP = 40
+
+
 def recipe_image_upload_path(instance, filename):
-    """Generate upload path for recipe images"""
+    """Where a recipe's uploaded photo lives.
+
+    THE SLUG IS BOUNDED - NL-1, 22 Oct 2026. Unbounded, a long recipe
+    name generates a filename that does not fit the column, and Django
+    truncates the stem and adds a random suffix rather than refusing.
+    Four recipes on Live were left permanently stale that way, because
+    display_copy_is_stale compares names and a truncated name can
+    never match. NAME_SLUG_CAP keeps a generated basename near 100
+    characters whatever the recipe is called.
+    """
     ext = filename.split('.')[-1]
-    recipe_name_slug = slugify(instance.recipe_name or 'recipe')
+    recipe_name_slug = slugify(instance.recipe_name or 'recipe')[:NAME_SLUG_CAP]
     recipe_id = instance.recipe_id or 'new'
     timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
     new_filename = f"recipe-{recipe_id}-{recipe_name_slug}-{timestamp}.{ext}"
@@ -2011,6 +2043,120 @@ def store_display_jpeg(recipe, data):
         return False
 
 
+def file_holders(model, name, fields):
+    """How many rows of this model name this file, across these fields.
+
+    SI-1, 22 Oct 2026. Asked of the DATABASE, by exact path, because
+    that is the only place the answer lives: a file on a media volume
+    carries no record of who points at it.
+
+    ACROSS FIELDS, not one field. A display copy's path can be named by
+    recipe_image_display on any row, and asking about one field would
+    answer 'nobody' while somebody was plainly standing there.
+    """
+    if not name:
+        return 0
+    total = 0
+    for field_name in fields:
+        total += model._default_manager.filter(**{field_name: name}).count()
+    return total
+
+
+def let_go_of_file(instance, field_name):
+    """Clear the reference and return the name. DELETES NOTHING. SI-1.
+
+    THE BYTES MUST OUTLIVE THE SAVE. edit_recipe used to call
+    field.delete(save=False) and then recipe.save(), and a save that
+    fails after that leaves the file gone and the row still naming it -
+    which is exactly the MISSING state the 22 October rebuild found on
+    Live. It was demonstrated on 22 October by a test POST that omitted
+    difficulty_level: the except fired, the redirect looked like
+    success, and the photo was already destroyed.
+
+    So this half only lets go. delete_unheld does the other half, after
+    the save has committed, and a failed save therefore costs nothing.
+    """
+    field = getattr(instance, field_name, None)
+    name = getattr(field, 'name', None)
+    if not name:
+        return None
+    setattr(instance, field_name, None)
+    return name
+
+
+def delete_unheld(model, names, fields):
+    """Delete the bytes of each name no row still holds. SI-1.
+
+    CALLED AFTER THE SAVE, never before - see let_go_of_file.
+
+    AND IT COUNTS FIRST. A duplicated recipe used to share its photo
+    path with the recipe it came from, so deleting on the strength of
+    one row letting go destroyed the other row's picture. That is how
+    71 Cottage Pie and 336 Beans, Edamame lost theirs.
+
+    One name at a time, by exact path, asked of the storage. No
+    pattern, no listing, no glob: a delete on a media volume that takes
+    anything wider than a path is a delete nobody can bound.
+
+    Returns the names whose bytes were removed. Never raises - a
+    leftover file costs disk, and an exception here would lose the edit
+    that has already been saved.
+    """
+    from django.core.files.storage import default_storage
+
+    gone = []
+    for name in [n for n in names if n]:
+        if file_holders(model, name, fields):
+            # SOMEBODY ELSE IS STANDING ON IT. The last row out turns
+            # off the light.
+            continue
+        try:
+            if default_storage.exists(name):
+                default_storage.delete(name)
+                gone.append(name)
+        except Exception:
+            pass
+    return gone
+
+
+def unshare_file(instance, field_name):
+    """Give this row its OWN copy of the file its field names. SI-1.
+
+    For a row made by copying another - duplicate_recipe sets pk to
+    None and saves, which copies the PATH, not the picture.
+
+    THE NEW NAME IS NOT INVENTED HERE. The bytes are saved back through
+    the field, which runs upload_to, and recipe_image_upload_path
+    builds its name from the row's own id and a fresh timestamp. A
+    second naming scheme in this function is a second thing to keep in
+    agreement with display_name_for.
+
+    Returns True when the field now names a file of its own. On a file
+    that cannot be read the field is CLEARED and False returned: a row
+    pointing at nothing is honest, and leaving it pointing at somebody
+    else's file is the fault this round exists to end.
+    """
+    from django.core.files.base import ContentFile
+
+    field = getattr(instance, field_name, None)
+    old = getattr(field, 'name', None)
+    if not old:
+        return False
+    try:
+        field.open('rb')
+        data = field.read()
+    except Exception:
+        setattr(instance, field_name, None)
+        return False
+    finally:
+        try:
+            field.close()
+        except Exception:
+            pass
+    field.save(os.path.basename(old), ContentFile(data), save=False)
+    return field.name != old
+
+
 def display_name_for(original_name):
     """The display copy's filename for a given original. PX-1.
 
@@ -2024,9 +2170,9 @@ def display_name_for(original_name):
 
 
 def recipe_document_upload_path(instance, filename):
-    """Generate upload path for recipe documents"""
+    """Where a recipe's document lives. Slug bounded - NL-1, 22 Oct 2026."""
     ext = filename.split('.')[-1]
-    recipe_name_slug = slugify(instance.recipe_name or 'recipe')
+    recipe_name_slug = slugify(instance.recipe_name or 'recipe')[:NAME_SLUG_CAP]
     date_str = timezone.now().strftime('%Y%m%d')
     new_filename = f"recipe-{recipe_name_slug}-{date_str}.{ext}"
     return os.path.join('recipe_docs', new_filename)
@@ -2060,7 +2206,11 @@ class Recipe(models.Model):
     
     # Additional fields
     difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True)
-    recipe_image = models.ImageField(upload_to=recipe_image_upload_path, blank=True, null=True)
+    # NL-1, 22 Oct 2026 - 255, NOT THE DEFAULT 100. Four recipes on
+    # Live generated a display name that did not fit, and Django
+    # truncated the stem mid-timestamp and suffixed it, which left
+    # them permanently stale. See apply_name_width.
+    recipe_image = models.ImageField(upload_to=recipe_image_upload_path, blank=True, null=True, max_length=255)
     # PX-1, 13 Oct 2026 - THE DERIVED DISPLAY COPY, never uploaded
     # to directly. editable=False keeps it out of every ModelForm in
     # the application, because a field nobody may set by hand cannot
@@ -2068,6 +2218,11 @@ class Recipe(models.Model):
     recipe_image_display = models.ImageField(
         upload_to=recipe_display_upload_path, blank=True, null=True,
         editable=False,
+        # NL-1, 22 Oct 2026 - AND THIS IS THE ONE THAT OVERFLOWED.
+        # recipe_images_display/ is 22 characters before the filename
+        # starts, which is why this field hit the limit and
+        # recipe_images/ did not.
+        max_length=255,
         help_text='Derived JPEG of recipe_image. Rebuilt by '
                   'manage.py convert_recipe_photos --write.')
     recipe_document = models.FileField(
@@ -2309,9 +2464,9 @@ class RecipeIngredientText(models.Model):
 
 
 def instruction_image_upload_path(instance, filename):
-    """Generate upload path for instruction step images"""
+    """Where a step photo lives. Slug bounded - NL-1, 22 Oct 2026."""
     ext = filename.split('.')[-1]
-    recipe_name_slug = slugify(instance.recipe.recipe_name or 'recipe')
+    recipe_name_slug = slugify(instance.recipe.recipe_name or 'recipe')[:NAME_SLUG_CAP]
     step_num = instance.step_number
     new_filename = f"recipe-{recipe_name_slug}-step{step_num}.{ext}"
     return os.path.join('recipe_instructions', new_filename)
@@ -2337,7 +2492,11 @@ class RecipeInstruction(models.Model):
     )
     
     # Optional step image
-    step_image = models.ImageField(upload_to=instruction_image_upload_path, blank=True, null=True)
+    # NL-1, 22 Oct 2026 - 255, for the same reason as the other two.
+    # No step image has overflowed yet; this one is widened because a
+    # rule that holds for two of three fields is a rule somebody will
+    # trip over on the third.
+    step_image = models.ImageField(upload_to=instruction_image_upload_path, blank=True, null=True, max_length=255)
     
     def __str__(self):
         return f"Step {self.step_number}: {self.instruction_text[:50]}..."

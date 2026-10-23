@@ -1239,6 +1239,14 @@ $sentinels = @(
     @{ File = 'pages/templates/meal_planner.html'; Text = 'class="week-col-body"'; What = 'WC-1: clicking a day opens the picker in WEEK view too - it only did so in Month, because the two views were built in different rounds' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'THE WRAPPER THAT NEVER CLOSED'; What = 'DB-1: 88 rules and 2,471 lines were nested inside a max-width 1200px block that was never closed, so the date bar rendered as default browser buttons on any screen wider than that' },
     @{ File = 'pages/templates/meal_planner.html'; Text = 'grid-template-columns: 1fr'; Absent = $true; Code = $true; What = 'DB-1: and the one rule it held is gone - .calendar-layout stopped being a grid when MV-2 deleted the mini calendar beside it' },
+    @{ File = 'pages/templates/meal_plan_shopping_list.html'; Text = 'ALV_CAN_GENERATE'; What = 'SB-2: step 2 had TWO primaries - Done and Print, written on different days by rounds that could not see each other state. Demetri chose Done. And Generate List is hidden when no ingredient has a shopping unit, because step 1 is not rendered at all then - the same fault he reported about Print on 3 October' },
+    @{ File = 'pages/views/recipes/recipe_crud.py'; Text = 'unshare_file(original_recipe'; What = 'SI-1: duplicate_recipe set pk to None and saved, which copies the PATH of the photo and not the photo - two rows, one file. Changing the picture on either then deleted it for the other, which is how 71 Cottage Pie and 336 Beans, Edamame lost theirs on Live' },
+    @{ File = 'pages/models.py'; Text = 'def delete_unheld'; What = 'SI-1: and a delete counts the rows naming that path before it removes the bytes - the copies made BEFORE this round are the ones that line protects' },
+    @{ File = 'pages/views/recipes/recipe_crud.py'; Text = 'delete_unheld(Recipe, released'; What = 'SI-1: and it runs AFTER recipe.save(), not before. The old order deleted the photo and then saved, so a save that raised - a missing difficulty_level does it - left the file gone and the row still naming it, which is the same broken image from the other direction' },
+    @{ File = 'pages/management/commands/check_recipe_files.py'; Text = 'def held_names'; What = 'SI-1: the instrument. Missing, shared and orphaned, asked of the storage rather than reasoned about - the rebuild found the first two by luck, which is not a detector' },
+    @{ File = 'pages/models.py'; Text = 'NAME_SLUG_CAP'; What = 'NL-1: four recipes on Live generated a display filename longer than the 100-character column, and Django truncated the stem mid-timestamp and added a random suffix rather than refusing - which left them permanently stale, because display_copy_is_stale compares names. The columns are 255 and the slug is bounded, so both halves have to fail before it can happen again' },
+    @{ File = 'pages/templates/meal_plan_print.html'; Text = '{{ back_url }}'; What = 'PT-1: Back was the bare planner URL, so Back from a printed week landed on the month view on today date - Demetri reported it for all three views. The origin is carried because no arithmetic on from and to can recover it: a day sheet and a one-day range are the same two dates' },
+    @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'start = min(max(start, range_min), range_max)'; What = 'PT-1: and the week bounds are CLAMPED on the server, not only offered as min and max to a browser - the attributes stop somebody picking a date outside the week, the clamp stops it working' },
     @{ File = 'alv_plant.py'; Text = 'def recover'; What = 'LK-1: fifteen suites write into real files and restore in a finally, which a SIGKILL does not run - the defect stays and nothing noticed. The lock is armed around the PLANTERS list, names every file a planter did not put back, and deliberately restores nothing' },
     @{ File = 'pages/views/users.py'; Text = "to_attr='member_list'"; What = 'WN-1: the workspace list ran one SELECT per workspace, which WM-1 left deliberately on 16 October and named as its own round. A Prefetch with to_attr does it in two, whatever N is - and to_attr because the template reads member_list, and an undefined name in a template is silence' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pillow-heif'; What = 'CF-1: railway.json installs THIS file, and it did not carry pillow-heif - so HEIC uploads from an iPhone failed quietly on Live, because pages/utils.py guards that import on purpose. Also UTF-8 now, and five open-ended packages bounded' },
@@ -2962,7 +2970,19 @@ $suites = @(
     # WN-1, 22 Oct 2026 - the workspace list is two queries, not N.
     'test_ws_prefetch.py',
     # LK-1, 22 Oct 2026 - a killed planter leaves a lock behind.
-    'test_planter_lock.py'
+    'test_planter_lock.py',
+    # SB-2, 22 Oct 2026 - one primary on the shopping bar, and none
+    # offering to do something there is nothing to do.
+    'test_shop_bar2.py',
+    # SI-1, 22 Oct 2026 - a copied recipe takes its own photo, and a
+    # delete asks who else is holding the file.
+    'test_shared_image.py',
+    # NL-1, 22 Oct 2026 - a generated name fits the column it is
+    # stored in, and the names got shorter as well as the column wider.
+    'test_name_width.py',
+    # PT-1, 22 Oct 2026 - the print sheet knows which view sent it, so
+    # Back lands where it started and a week bounds its own pickers.
+    'test_print_origin.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

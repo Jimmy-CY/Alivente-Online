@@ -1429,6 +1429,14 @@ ROUNDS = [
     '.bak_wsprefetch',
     # LK-1, 22 Oct 2026 - a killed planter leaves a lock behind.
     '.bak_planterlock',
+    # SB-2, 22 Oct 2026 - one primary on the shopping bar.
+    '.bak_shopbar2',
+    # SI-1, 22 Oct 2026 - a copied recipe does not share its photo.
+    '.bak_sharedimage',
+    # NL-1, 22 Oct 2026 - a generated name fits the column.
+    '.bak_namewidth',
+    # PT-1, 22 Oct 2026 - the print sheet knows which view sent it.
+    '.bak_printorigin',
 ]
 
 

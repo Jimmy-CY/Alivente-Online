@@ -916,6 +916,14 @@ CONVERTED = [
     'test_ws_prefetch.py',
     # LK-1, 22 Oct 2026 - a killed planter leaves a lock behind.
     'test_planter_lock.py',
+    # SB-2, 22 Oct 2026 - one primary on the shopping bar.
+    'test_shop_bar2.py',
+    # SI-1, 22 Oct 2026 - a copied recipe does not share its photo.
+    'test_shared_image.py',
+    # NL-1, 22 Oct 2026 - a generated name fits the column.
+    'test_name_width.py',
+    # PT-1, 22 Oct 2026 - the print sheet knows which view sent it.
+    'test_print_origin.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

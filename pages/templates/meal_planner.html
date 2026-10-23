@@ -1851,7 +1851,11 @@
         {# same two dates SL-7 computes, handed to a page built for   #}
         {# paper. There was no way to print a plan at all before this: #}
         {# the only mention of print on this screen was a comment.     #}
-        <a href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}"
+        {# AND WHICH VIEW IS SENDING THEM - PT-1, 22 Oct 2026. The   #}
+        {# two dates say what to print; they cannot say where Back    #}
+        {# should land, because a day and a one-day range are the     #}
+        {# same two dates.                                            #}
+        <a href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}&amp;view={{ view_mode }}&amp;date={{ anchor|date:'Y-m-d' }}"
            class="btn action-secondary">
             <i class="fas fa-print"></i> Print
         </a>
@@ -1916,8 +1920,11 @@
                 {# editing user ever loses the button to it - a read-only  #}
                 {# user has no More button, so :has() does not match and   #}
                 {# the bar keeps its Print.                                #}
+                {# THE SAME FOUR PARAMETERS AS THE BAR'S OWN Print -  #}
+                {# PT-1. Two entry points to one page that disagreed   #}
+                {# about what it is given would be the next finding.   #}
                 <a class="action-more-item" role="menuitem"
-                   href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}">
+                   href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}&amp;view={{ view_mode }}&amp;date={{ anchor|date:'Y-m-d' }}">
                     <i class="fas fa-print"></i> Print this plan
                 </a>
                 {# AND HELP - HP-1, 21 Oct 2026.                          #}

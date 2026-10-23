@@ -246,9 +246,16 @@ if BOOTED:
     # history and Railway refuses to migrate it.
     loader = MigrationLoader(None, ignore_no_migrations=True)
     leaves = sorted(loader.graph.leaf_nodes('pages'))
-    ok(leaves == [('pages', '0101_drop_meal_plan')],
-       'the migration graph has ONE leaf and it is 0101 - a second leaf '
-       'is a branched history and the deploy refuses it', leaves)
+    # ONE LEAF, NOT ONE NAMED LEAF - NL-1, 22 Oct 2026. This read
+    # == [('pages', '0101_drop_meal_plan')] and so it failed the day a
+    # migration was added, which NL-1 does. The branched history is
+    # what Railway refuses; which migration happens to be last is not
+    # this suite's business. The leaf is still PRINTED.
+    ok(len(leaves) == 1,
+       'the migration graph has exactly ONE leaf - a second leaf is a '
+       'branched history and the deploy refuses it', leaves)
+    ok(leaves and leaves[0][0] == 'pages',
+       '  and it belongs to pages', leaves)
 
     # THE AUTODETECTOR. "Is anything about these models not yet
     # written down?" If 0101 missed an operation this is where it

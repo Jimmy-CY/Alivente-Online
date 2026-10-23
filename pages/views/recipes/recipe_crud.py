@@ -115,6 +115,9 @@ from pages.models import (
     RecipeIngredientText,
     RecipeInstruction,
     UnitConversion,
+    delete_unheld,
+    let_go_of_file,
+    unshare_file,
 )
 from pages.utils import (
     convert_to_pdf,
@@ -573,6 +576,28 @@ def duplicate_recipe(request, recipe_id):
             original_recipe.recipe_name = f"{original_recipe.recipe_name} (Copy)"
             original_recipe.save()
 
+            # SI-1, 22 Oct 2026 - THE COPY TAKES ITS OWN FILES.
+            #
+            # pk = None and save() copied the field VALUES, and an
+            # image field's value is a path. Until these two lines run,
+            # this recipe and the one it was copied from are pointing
+            # at one file, and whichever of them changes its photo
+            # first deletes the other's. That is how 71 Cottage Pie and
+            # 336 Beans, Edamame lost theirs.
+            #
+            # AFTER THE SAVE, NOT BEFORE: recipe_image_upload_path
+            # builds the name from recipe_id, which does not exist
+            # until the row does. Hence the second save below.
+            #
+            # THE DISPLAY COPY IS CLEARED RATHER THAN COPIED. It is
+            # derived from the original, and an empty display field
+            # makes display_copy_is_stale() true, so the save below
+            # rebuilds it through SD-1's store_display_jpeg under this
+            # recipe's own proper name.
+            unshare_file(original_recipe, 'recipe_image')
+            original_recipe.recipe_image_display = None
+            original_recipe.save()
+
             new_recipe_id = original_recipe.recipe_id
             new_recipe_name = original_recipe.recipe_name
 
@@ -625,6 +650,18 @@ def duplicate_recipe(request, recipe_id):
             ]
             if new_instructions:
                 RecipeInstruction.objects.bulk_create(new_instructions)
+
+            # SI-1, 22 Oct 2026 - AND THE STEP PHOTOS TOO. The list
+            # above passes step_image=inst.step_image, which is the
+            # same path-copying fault one level down.
+            #
+            # RE-QUERIED RATHER THAN USING new_instructions: bulk_create
+            # does not set primary keys on MySQL, so the objects in that
+            # list cannot be saved back. The rows on disk can.
+            for fresh in RecipeInstruction.objects.filter(
+                    recipe=original_recipe):
+                if fresh.step_image and unshare_file(fresh, 'step_image'):
+                    fresh.save(update_fields=['step_image'])
 
         return JsonResponse({
             'success': True,
@@ -990,14 +1027,39 @@ def edit_recipe(request, recipe_id):
             recipe.servings = request.POST.get('servings')
 
             # Image handling
+            #
+            # SI-1, 22 Oct 2026 - NOTHING IS DELETED HERE ANY MORE.
+            #
+            # Both branches used to call recipe_image.delete(save=False),
+            # which destroyed the bytes immediately and asked nothing
+            # about who else was pointing at them. Two faults in one
+            # line. A duplicate of this recipe shares the path, so the
+            # delete took ITS photo too - that is how 71 Cottage Pie and
+            # 336 Beans, Edamame lost theirs. And the delete happened
+            # BEFORE recipe.save(), so a save that failed left the file
+            # gone and the row still naming it, which is the same
+            # broken-image state arrived at from the other direction.
+            #
+            # So this half only lets go, and remembers what it let go
+            # of. The bytes are dealt with after the save commits.
+            #
+            # AND THE DISPLAY COPY GOES WITH THE ORIGINAL. Neither
+            # branch has ever released it, so every removed or replaced
+            # photo has left its shrunken twin on the volume for ever.
+            # On a replace, save() rebuilds a fresh one from the new
+            # upload; on a removal there is nothing left to display.
+            released = []
             if request.POST.get('remove_image') == '1':
                 if recipe.recipe_image:
-                    recipe.recipe_image.delete(save=False)
-                    recipe.recipe_image = None
+                    released.append(let_go_of_file(recipe, 'recipe_image'))
+                    released.append(
+                        let_go_of_file(recipe, 'recipe_image_display'))
 
             if 'recipe_image' in request.FILES:
                 if recipe.recipe_image:
-                    recipe.recipe_image.delete(save=False)
+                    released.append(let_go_of_file(recipe, 'recipe_image'))
+                released.append(
+                    let_go_of_file(recipe, 'recipe_image_display'))
                 recipe.recipe_image = request.FILES['recipe_image']
 
             # Classification
@@ -1011,6 +1073,16 @@ def edit_recipe(request, recipe_id):
 
             # Save recipe
             recipe.save()
+
+            # SI-1, 22 Oct 2026 - AND ONLY NOW DO THE OLD BYTES GO.
+            #
+            # After the save, so a save that raises costs a leftover
+            # file rather than a photo. Counting first, so a recipe
+            # duplicated from this one keeps the picture it is still
+            # pointing at. Both image fields are asked, because a
+            # display copy's path is named by recipe_image_display.
+            delete_unheld(Recipe, released,
+                          ('recipe_image', 'recipe_image_display'))
 
             # Handle document upload/merge/replace
             if request.FILES.get('recipe_document'):

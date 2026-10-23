@@ -850,6 +850,53 @@ def meal_plan_print(request):
     if end < start:
         start, end = end, start
 
+    # WHERE THE READER CAME FROM - PT-1, 22 Oct 2026.
+    #
+    # NOT the shape of the sheet, which is still worked out from the
+    # two dates below exactly as RG-1 left it. This is the one fact no
+    # arithmetic on those dates can recover: a day sheet and a one-day
+    # range are the same two dates, and a week sheet and a Monday to
+    # Sunday range are the same two dates. Back has to know which.
+    #
+    # The planner already reads ?view= and ?date=; its own switcher
+    # uses them. Nothing new is invented here, and anything else in
+    # the parameter falls back to no origin at all.
+    origin = request.GET.get('view')
+    if origin not in ('month', 'week', 'day'):
+        origin = ''
+    came_from = week_of(request.GET.get('date'), None)
+
+    # THE BOUNDS OF THE PERIOD THE READER WAS LOOKING AT.
+    #
+    # Demetri, 22 October: "the earliest date that I can pick is the
+    # first day of the week displayed below, and the latest date that
+    # I can pick is the last day of the week displayed below."
+    range_min = range_max = None
+    if origin and came_from:
+        if origin == 'week':
+            range_min = monday_of(came_from)
+            range_max = range_min + timedelta(days=6)
+        elif origin == 'month':
+            range_min = date(came_from.year, came_from.month, 1)
+            range_max = (date(came_from.year + (came_from.month == 12),
+                              came_from.month % 12 + 1, 1)
+                         - timedelta(days=1))
+        else:
+            range_min = range_max = came_from
+
+    # AND THE SERVER CLAMPS, not only the browser.
+    #
+    # min and max on a date input are a REQUEST to a browser. They are
+    # what stops somebody picking a date outside the week; they are not
+    # what stops the date working if they do, and ?from= is a string
+    # anybody can type - A5. The attributes and the clamp are two
+    # halves of one claim.
+    if range_min and range_max:
+        start = min(max(start, range_min), range_max)
+        end = min(max(end, range_min), range_max)
+        if end < start:
+            start, end = end, start
+
     # THE SHOPPING LIST'S OWN CEILING, deliberately the same number.
     # Two limits on two pages that take the same two parameters is how
     # one of them surprises somebody.
@@ -868,11 +915,28 @@ def meal_plan_print(request):
               .order_by('date', 'sort_order')):
         by_day[e.date].append(e)
 
+    # CROPPED WHEN THE READER NARROWED A PERIOD - PT-1, 22 Oct 2026.
+    #
+    # THIS OVERRIDES RG-1, which renders whole Monday-to-Sunday weeks
+    # and greys the days outside the range, on the reasoning that
+    # three blank cells at the front of a seven column grid read as
+    # missing data rather than as a boundary. That reasoning is sound.
+    # Demetri overruled it on 22 October: "the print must only show,
+    # and then only print the date range selected."
+    #
+    # ONLY WHEN THE PERIOD WAS NARROWED. A reader who prints a whole
+    # week, month or day gets RG-1's sheet unchanged, because there is
+    # nothing out of range in it to drop.
+    crop = bool(range_min and range_max
+                and (start > range_min or end < range_max))
+
     weeks, cursor = [], grid_start
     while cursor <= grid_end:
         days = []
         for i in range(7):
             when = cursor + timedelta(days=i)
+            if crop and not (start <= when <= end):
+                continue
             days.append({
                 'date': when,
                 'in_range': start <= when <= end,
@@ -884,7 +948,18 @@ def meal_plan_print(request):
                 'weekday': when.weekday(),
                 'entries': by_day.get(when, []),
             })
-        weeks.append({'start': cursor, 'days': days})
+        # A WEEK WITH NOTHING LEFT IN IT IS NOT AN EMPTY WEEK, IT IS
+        # NOT A WEEK - PT-1. Cropping a range to three days in the
+        # middle of a month would otherwise leave four blank rows.
+        #
+        # cols TRAVELS WITH THE ROW. The grid is seven columns by CSS,
+        # and a cropped row needs as many as it has days or three days
+        # sit squashed at the left with four columns of white beside
+        # them. The template cannot count inside a grid-template rule,
+        # so the count is handed to it.
+        if days:
+            weeks.append({'start': cursor, 'days': days,
+                          'cols': len(days)})
         cursor += timedelta(days=7)
 
     # THE SHAPE OF THE SHEET IS THE SHAPE OF THE RANGE - RG-1,
@@ -925,11 +1000,31 @@ def meal_plan_print(request):
         period = '%s - %s %d' % (day_label(start), day_label(end),
                                  end.year)
 
+    # BACK GOES WHERE IT CAME FROM - PT-1, 22 Oct 2026. Findings 3, 4
+    # and 5, which were one line: Back was the bare planner URL, so it
+    # landed on the default view on today's date whatever you had been
+    # looking at.
+    back_url = reverse('meal_planner')
+    if origin and came_from:
+        back_url = '%s?view=%s&date=%s' % (back_url, origin,
+                                           came_from.isoformat())
+
     return render(request, 'meal_plan_print.html', {
         'start': start,
         'end': end,
         'weeks': weeks,
         'sheet': sheet,
+        # PT-1, 22 Oct 2026 - the origin, and what follows from it.
+        'origin': origin,
+        'came_from': came_from,
+        'back_url': back_url,
+        # NOT RENDERED AT ALL ON A DAY, rather than disabled or
+        # hidden: Demetri, 22 October, "it must not give me the date
+        # options... It cannot be more than that."
+        'show_range': origin != 'day',
+        'range_min': range_min,
+        'range_max': range_max,
+        'crop': crop,
         'period': period,
         'day_entries': by_day.get(start, []),
         'day_count': (end - start).days + 1,

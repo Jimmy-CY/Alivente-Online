@@ -162,9 +162,20 @@ def claims(bundle):
         hint = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', m.group(1)))
     c = {}
     c['THE PAGE TAKES A RANGE OF ITS OWN - the finding'] = bool(form)
+    # THE DATE FIELDS, NOT EVERY INPUT - PT-1, 22 Oct 2026.
+    #
+    # This counted every input in the form and required exactly two.
+    # PT-1 puts the origin in the form as two hidden inputs, so that
+    # Show these days does not lose the week it is bounded to, and
+    # this claim failed in the sweep. It is MOVED, not relaxed: the
+    # visible date fields are still exactly From and To, and the
+    # hidden pair is claimed on the line below.
     c['  From and To, which is what the view reads'] = (
-        sorted(re.findall(r'<input[^>]*name="(\w+)"', form))
-        == ['from', 'to'])
+        sorted(re.findall(r'<input[^>]*type="date"[^>]*name="(\w+)"',
+                          form)) == ['from', 'to'])
+    c['  and the origin travels hidden beside them - PT-1'] = (
+        sorted(re.findall(r'<input[^>]*type="hidden"[^>]*name="(\w+)"',
+                          form)) == ['date', 'view'])
     c['  as date fields, not typed text'] = (
         form.count('type="date"') == 2)
     c['  holding the range the page is already showing'] = (

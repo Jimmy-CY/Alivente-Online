@@ -518,7 +518,13 @@
         {# base gives .action-back the square phone treatment and the  #}
         {# hideable label. A page that invents its own Back is a page  #}
         {# that will drift away from the other hundred and forty.      #}
-        <a href="{% url 'meal_planner' %}" class="btn action-back"
+        {# BACK GOES WHERE IT CAME FROM - PT-1, 22 Oct 2026.          #}
+        {# This was the bare planner URL, so Back from a printed week  #}
+        {# landed on the month view on today's date. The view builds   #}
+        {# the whole address, because a template assembling a query    #}
+        {# string is a second place that has to agree about the        #}
+        {# parameter names.                                            #}
+        <a href="{{ back_url }}" class="btn action-back"
            aria-label="Back to the planner">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -537,26 +543,44 @@
     {# Back Button". base 3.4: nothing sits above the bar.           #}
     {#                                                               #}
     {# IT PRINTS NOTHING. .pp-noprint, with the bar.                 #}
+    {# NOT RENDERED ON A DAY - PT-1, 22 Oct 2026. Demetri: "In the   #}
+    {# Day View, when I press the Print Button, it must not give me   #}
+    {# the date options. It must only be a print of the day that is   #}
+    {# showing below. It cannot be more than that."                   #}
+    {#                                                                #}
+    {# NOT hidden and not disabled. A control that is not on offer    #}
+    {# should not be on the page.                                     #}
+    {% if show_range %}
     <form method="get" action="" class="pp-range pp-noprint">
+        {# THE ORIGIN TRAVELS WITH THE FORM - PT-1. Without these two  #}
+        {# the first use of Show these days would lose the week it     #}
+        {# was bounded to, and the second would be unbounded.          #}
+        {% if origin %}<input type="hidden" name="view" value="{{ origin }}">{% endif %}
+        {% if came_from %}<input type="hidden" name="date" value="{{ came_from|date:'Y-m-d' }}">{% endif %}
         {# EACH LABEL WELDED TO ITS INPUT - SH-2, 21 Oct 2026. Loose #}
         {# in a wrapping flex row they are five independent children #}
         {# and at 390px the row broke as "From [date] To" / "[date]",#}
         {# with the To label orphaned at the end of a line.          #}
         <span class="pp-range-pair">
             <label class="pp-range-label" for="ppFrom">From</label>
+            {# BOUNDED TO THE PERIOD BELOW - PT-1, 22 Oct 2026. And  #}
+            {# the server clamps as well: min is a request to a       #}
+            {# browser, not a rule, and ?from= is a string anybody    #}
+            {# can type.                                              #}
             <input type="date" id="ppFrom" name="from" class="pp-range-date"
-                   value="{{ start|date:'Y-m-d' }}">
+                   value="{{ start|date:'Y-m-d' }}"{% if range_min %} min="{{ range_min|date:'Y-m-d' }}" max="{{ range_max|date:'Y-m-d' }}"{% endif %}>
         </span>
         <span class="pp-range-pair">
             <label class="pp-range-label" for="ppTo">To</label>
             <input type="date" id="ppTo" name="to" class="pp-range-date"
-                   value="{{ end|date:'Y-m-d' }}">
+                   value="{{ end|date:'Y-m-d' }}"{% if range_min %} min="{{ range_min|date:'Y-m-d' }}" max="{{ range_max|date:'Y-m-d' }}"{% endif %}>
         </span>
         {# A SECONDARY. The page's verb is Print and it is on screen #}
         {# at the same time as this, so a primary here would be the  #}
         {# second one 3.4 forbids.                                   #}
         <button type="submit" class="btn action-secondary">Show these days</button>
     </form>
+    {% endif %}
 
     {# THE SECOND STEP, SAID OUT LOUD - RG-2, 21 Oct 2026.           #}
     {# "Why do we need to Press Print twice. It is very              #}
@@ -612,7 +636,7 @@
 
         {% else %}
         <div class="pp-sheet-grid">
-            {% if sheet != 'week' %}
+            {% if sheet != 'week' and not crop %}
             {# ONE WEEKDAY ROW FOR THE WHOLE SHEET, not a `Week of   #}
             {# 19 Oct` strip above every row. Five of those strips   #}
             {# were a third of why a month would not fit.            #}
@@ -628,7 +652,11 @@
             {% endif %}
             {% for week in weeks %}
             <div class="pp-week">
-                <div class="pp-grid">
+                {# AS MANY COLUMNS AS THERE ARE DAYS WHEN CROPPED -  #}
+                {# PT-1, 22 Oct 2026. The rule is seven by CSS, and   #}
+                {# three days in a seven column grid sit squashed at  #}
+                {# the left with four columns of white beside them.   #}
+                <div class="pp-grid"{% if crop %} style="grid-template-columns: repeat({{ week.cols }}, minmax(0, 1fr));"{% endif %}>
                     {% for day in week.days %}
                     <div class="pp-day{% if not day.in_range %} is-out{% endif %}{% if day.is_today %} is-today{% endif %}">
                         {% if sheet == 'week' %}

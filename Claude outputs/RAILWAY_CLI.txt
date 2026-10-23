@@ -1,0 +1,63 @@
+RUNNING THE PHOTO REBUILD ON LIVE, VIA THE RAILWAY CLI
+======================================================
+
+!! DO NOT USE  railway run  FOR THIS. !!
+   railway run executes the command ON YOUR LAPTOP with Railway's
+   environment variables injected. It would read the 324 recipes from
+   the LIVE database and write the display copies to your LOCAL disk -
+   then point the live database at files that are not on the volume.
+   That breaks every recipe photo on the site.
+
+   railway ssh is the one that runs INSIDE the deployed container.
+
+
+STEP 1 - log in (opens a browser)
+---------------------------------
+railway login
+
+   No browser on that machine:   railway login --browserless
+
+
+STEP 2 - link this folder to the project
+----------------------------------------
+cd C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online
+railway link
+
+   It asks you to pick the project, the environment (production) and
+   the service (Alivente-Online). Pick the service that serves
+   alivente.online, NOT MySQL and NOT cron-service.
+
+
+STEP 3 - open a shell INSIDE the live container
+-----------------------------------------------
+railway ssh
+
+   Or, naming the service explicitly:
+   railway ssh --service Alivente-Online --environment production
+
+
+STEP 4 - prove you are in the right place BEFORE writing anything
+-----------------------------------------------------------------
+python manage.py convert_recipe_photos --rebuild
+
+   On Live this reports 324 photos.
+   On your laptop it reports 2.
+   If it is not 324, you are in the wrong shell. STOP. Do not add --write.
+
+
+STEP 5 - write five, and look at them on the site
+-------------------------------------------------
+python manage.py convert_recipe_photos --rebuild --write --limit 5
+
+
+STEP 6 - write the rest
+-----------------------
+python manage.py convert_recipe_photos --rebuild --write
+
+
+SINGLE COMMAND, if you prefer not to open a shell
+-------------------------------------------------
+railway ssh -- python manage.py convert_recipe_photos --rebuild
+
+
+The originals are never touched. Only recipe_images_display/ is written.
