@@ -279,7 +279,12 @@ lost = sorted(set(OLDPK) - set(PK))
 ok(not lost,
    'CONTROL: and not one package disappeared from it - %d in, %d out'
    % (len(OLDPK), len(PK)), lost)
-ok(sorted(set(PK) - set(OLDPK)) == ['pillow-heif'],
+# ES-2, 23 Oct 2026 - three now, not one. CF-1 added
+# pillow-heif; ES-2 adds the PDF renderer and the font faces it
+# draws with. The number moves with the round that moved it
+# rather than being loosened to a range.
+ok(sorted(set(PK) - set(OLDPK)) == ['pillow-heif', 'pymupdf',
+                                    'pymupdf-fonts'],
    'CONTROL: exactly one was added, and it is the one this round is '
    'about', sorted(set(PK) - set(OLDPK)))
 same = [n for n in OLDPK if n in PK and OLDPK[n] != PK[n]]

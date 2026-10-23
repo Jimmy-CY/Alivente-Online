@@ -50,7 +50,8 @@ from django.contrib.auth.models import User
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ..models import UserProfile, props, tenant
+from ..models import (UserProfile, props, tenant,
+                      delete_unheld, let_go_of_file)
 # TB-1b - which tab a Back button asked this page to open on.
 from ..services.landing_tabs import landing_tab
 
@@ -269,14 +270,21 @@ def title_deeds_management(request):
                         return redirect('title_deeds_management')
 
                     try:
-                        # Delete old file if exists (so the FileField swap is clean)
-                        if property_obj.prop_title_deed:
-                            property_obj.prop_title_deed.delete(save=False)
+                        # UO-1, 23 Oct 2026. RELEASED BEFORE THE SAVE,
+                        # DELETED AFTER IT - SI-1's rule. The old order
+                        # destroyed the title deed first and then saved,
+                        # so a save that raised left the deed gone and
+                        # the row still pointing at it.
+                        released = [let_go_of_file(
+                            property_obj, 'prop_title_deed')]
 
                         # Save new file via the FileField (uses title_deed_upload_path)
                         property_obj.prop_title_deed = uploaded_file
                         property_obj.prop_title_deed_status = "Available"
                         property_obj.save()
+
+                        delete_unheld(props, released,
+                                      ('prop_title_deed',))
 
                         messages.success(request, f'Title deed uploaded for {property_obj.prop_name}!')
                     except Exception as e:

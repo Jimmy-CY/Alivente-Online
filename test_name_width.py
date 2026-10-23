@@ -171,8 +171,11 @@ def claims(d):
             field_has_width(m, 'recipe_image_display = models.ImageField'),
         'step_image holds 255':
             field_has_width(m, 'step_image = models.ImageField'),
-        'all three upload paths bound the slug':
-            m.count('[:NAME_SLUG_CAP]') == 3,
+        # FIVE SINCE ES-1, 23 Oct 2026. Three recipe paths, plus
+        # the e-signing envelope and the signature mark - both of
+        # which inherited this cap rather than rediscovering it.
+        'all five upload paths bound the slug':
+            m.count('[:NAME_SLUG_CAP]') == 5,
         '  from one constant, not three literals':
             'NAME_SLUG_CAP = ' in m,
         'the detector asks a fourth question':
@@ -412,13 +415,29 @@ if os.path.isfile(MIG):
     ok(g.count('max_length=255') == 3, '  widening all three to 255')
     # THE DEPENDENCY IS READ OFF DISK, NOT TYPED. A typed one is wrong
     # the moment somebody adds a migration.
+    # REPAIRED BY ES-1, 23 Oct 2026 - THE ONE BEFORE IT, NOT THE
+    # LATEST.
+    #
+    # This asked whether 0102 depends on the newest migration on
+    # disk other than itself. That was the same sentence while NL-1
+    # was the newest round and stopped being so the moment ES-1
+    # added 0103 - so the claim failed on a line NL-1 had correctly
+    # written, which is a claim with an expiry date rather than a
+    # test. Bumping it to 0103 would only move the expiry to ES-3.
+    #
+    # A migration depends on the one immediately BEFORE it. That is
+    # true the day it ships and every day after.
     names = sorted(n[:-3] for n in
                    os.listdir(os.path.join(ROOT, 'pages', 'migrations'))
                    if n.endswith('.py') and n != '__init__.py'
-                   and '.bak_' not in n and 'nl1_name_width' not in n)
-    ok(names and ("'%s'" % names[-1]) in g,
-       '  depending on the migration that really is latest',
-       'latest on disk: %s' % (names[-1] if names else '(none)'))
+                   and '.bak_' not in n)
+    mine = [n for n in names if 'nl1_name_width' in n]
+    prior = [n for n in names if mine and n < mine[0]]
+    ok(prior and ("'%s'" % prior[-1]) in g,
+       '  depending on the migration immediately before it',
+       'expected %s, and %d migration(s) now sit after it'
+       % (prior[-1] if prior else '(none)',
+          len([n for n in names if mine and n > mine[0]])))
 
 
 # ==========================================================================

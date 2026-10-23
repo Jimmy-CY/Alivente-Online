@@ -928,6 +928,12 @@ CONVERTED = [
     'test_receipt_view.py',
     # IR-1, 23 Oct 2026 - one register for one kind of identifier.
     'test_ref_link.py',
+    # ES-1, 23 Oct 2026 - the e-signing envelope and its audit trail.
+    'test_esign_model.py',
+    # ES-2, 23 Oct 2026 - the page images and the appended seal.
+    'test_esign_pdf.py',
+    # UO-1, 23 Oct 2026 - SI-1's rule reaches the lease and the deed.
+    'test_upload_order.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

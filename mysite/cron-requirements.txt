@@ -69,6 +69,15 @@ pycparser==2.22
 pydantic>=2.0.0,<3.0
 pyHanko==0.30.0
 pyhanko-certvalidator==0.28.0
+# ES-2, 23 Oct 2026. Renders the lease to page images for the
+# signing page, and appends the signature page at sealing.
+# Pure wheels - MuPDF and the fonts are bundled, so Nixpacks
+# installs no system packages for either.
+pymupdf==1.28.2
+# AND THE GLYPHS IT DRAWS WITH. Helvetica is Base-14 and has
+# no Greek: a tenant called Andreas Georgiou in Greek letters
+# printed as a row of dots, silently. Noto Sans carries them.
+pymupdf-fonts==1.0.5
 PyMySQL==1.1.1
 pypdf==6.0.0
 PyPDF2==3.0.1

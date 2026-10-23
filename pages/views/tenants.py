@@ -51,7 +51,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from ..forms import TenantForm
-from ..models import PhysicalInvoiceProfile, invoices, props, tenant
+from ..models import (PhysicalInvoiceProfile, invoices, props, tenant,
+                      delete_unheld, let_go_of_file)
 
 
 def _apply_physical_invoice_fields(request, tenant_obj):
@@ -437,14 +438,26 @@ def tenant_lease_agreement(request):
                         upload_path = os.path.join(settings.MEDIA_ROOT, 'tenants', 'lease_agreements')
                         os.makedirs(upload_path, exist_ok=True)
 
-                        # Delete old file if exists
-                        if tenant_obj.tenant_lease_agreement:
-                            tenant_obj.tenant_lease_agreement.delete(save=False)
+                        # UO-1, 23 Oct 2026. THE OLD LEASE IS RELEASED
+                        # BEFORE THE SAVE AND DELETED AFTER IT, which is
+                        # SI-1's rule applied to the file that matters
+                        # most. This used to call delete(save=False) and
+                        # then save(), so anything that raised in between
+                        # left the lease destroyed and the row still
+                        # naming it. A recipe photo can be taken again; a
+                        # signed lease agreement cannot.
+                        released = [let_go_of_file(
+                            tenant_obj, 'tenant_lease_agreement')]
 
-                        # Save new file
                         tenant_obj.tenant_lease_agreement = uploaded_file
                         tenant_obj.tenant_lease_agreement_status = "Lease Agreement Uploaded"
                         tenant_obj.save()
+
+                        # AND IT COUNTS FIRST. duplicate_tenant copies a
+                        # tenant, so two rows can name one file; the last
+                        # row out turns off the light.
+                        delete_unheld(tenant, released,
+                                      ('tenant_lease_agreement',))
 
                         messages.success(request, f'Lease agreement uploaded successfully for {tenant_obj.tenant_name}!')
                     except Exception as e:

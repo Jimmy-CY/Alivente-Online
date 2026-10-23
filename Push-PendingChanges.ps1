@@ -1251,6 +1251,11 @@ $sentinels = @(
     @{ File = 'pages/templates/cash_receipt_detail.html'; Text = 'rv-trail'; What = 'RV-1: and the history is built in the VIEW, oldest first, each event present only if it happened - a template that decides which events occurred cannot be asked how many it drew' },
     @{ File = 'pages/templates/base.html'; Text = 'alv-ref-link'; What = 'IR-1: the receipt number was grey monospace and the invoice number a teal link - two registers for one kind of identifier, Demetri 16 Oct. One rule in base now, which BOTH pages take; a second copy would make one register true by coincidence' },
     @{ File = 'pages/templates/base.html'; Text = '.alv-table .ref'; Absent = $true; Code = $true; What = 'IR-1: and the rule it replaced is gone rather than left. It had one consumer and no suite; a base rule nothing uses is one the next page picks up by accident' },
+    @{ File = 'pages/models.py'; Text = 'def issue_token'; What = 'ES-1: the emailed link IS the credential, so the token is stored as a sha256 and the raw value exists only as this method return. A resend mints a new one and the old link dies - a link that expires and then works again never really expired' },
+    @{ File = 'pages/models.py'; Text = 'class LeaseSigningEvent'; What = 'ES-1: and the audit trail is append only, because with no certificate it and pdf_sha256 ARE the evidence - nothing in the file proves anything' },
+    @{ File = 'pages/services/lease_sealing.py'; Text = 'THE ORIGINAL IS NEVER TOUCHED'; What = 'ES-2: signatures go on an APPENDED page, so the lease everybody signed stays byte for byte the lease that was sent - which is also why this works on a PDF nobody here produced' },
+    @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
+    @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'alv_plant.py'; Text = 'def recover'; What = 'LK-1: fifteen suites write into real files and restore in a finally, which a SIGKILL does not run - the defect stays and nothing noticed. The lock is armed around the PLANTERS list, names every file a planter did not put back, and deliberately restores nothing' },
     @{ File = 'pages/views/users.py'; Text = "to_attr='member_list'"; What = 'WN-1: the workspace list ran one SELECT per workspace, which WM-1 left deliberately on 16 October and named as its own round. A Prefetch with to_attr does it in two, whatever N is - and to_attr because the template reads member_list, and an undefined name in a template is silence' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pillow-heif'; What = 'CF-1: railway.json installs THIS file, and it did not carry pillow-heif - so HEIC uploads from an iPhone failed quietly on Live, because pages/utils.py guards that import on purpose. Also UTF-8 now, and five open-ended packages bounded' },
@@ -2992,7 +2997,15 @@ $suites = @(
     'test_receipt_view.py',
     # IR-1, 23 Oct 2026 - one register for one kind of identifier, and
     # the receipt number finally goes somewhere. G1.
-    'test_ref_link.py'
+    'test_ref_link.py',
+    # ES-1, 23 Oct 2026 - the e-signing envelope, its parties and its
+    # append-only audit trail.
+    'test_esign_model.py',
+    # ES-2, 23 Oct 2026 - the lease rendered to page images, and the
+    # signature page appended at sealing.
+    'test_esign_pdf.py',
+    # UO-1, 23 Oct 2026 - the lease and the deed survive a failed save.
+    'test_upload_order.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

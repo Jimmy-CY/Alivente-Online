@@ -1441,6 +1441,12 @@ ROUNDS = [
     '.bak_receiptview',
     # IR-1, 23 Oct 2026 - one register for one kind of identifier.
     '.bak_reflink',
+    # ES-1, 23 Oct 2026 - the e-signing envelope and its audit trail.
+    '.bak_esignmodel',
+    # ES-2, 23 Oct 2026 - the page images and the appended seal.
+    '.bak_esignpdf',
+    # UO-1, 23 Oct 2026 - SI-1's rule reaches the lease and the deed.
+    '.bak_uploadorder',
 ]
 
 

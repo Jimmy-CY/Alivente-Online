@@ -142,7 +142,18 @@ print(__doc__.strip().splitlines()[0])
 
 import alv_tree as T                                        # noqa: E402
 
-NOW = read(MODELS)
+# THROUGH THE SCOPE HELPER - repaired by ES-1, 23 Oct 2026.
+#
+# This was read(MODELS): the file as it stands TODAY, compared below
+# against this round's own backup. Every claim in section 1 is about
+# what MX-1 removed, so a later round adding a model made them fail
+# on lines MX-1 had written correctly. ES-1 adds three.
+#
+# as_left_by returns models.py as MX-1 left it - the earliest later
+# round's backup of it - which is what section 1 was always asking
+# about.
+import alv_rounds                                           # noqa: E402
+NOW = alv_rounds.as_left_by(MODELS, SUFFIX, read)
 BEFORE = was(MODELS)
 CODE = T.python_code_only(NOW, payloads=True)
 
