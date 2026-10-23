@@ -138,7 +138,11 @@ Receipts
           {# locale or separator can get into the number the script #}
           {# adds up. It never reads the formatted cell.            #}
           <tr{% if row.is_void %} class="rec-void"{% endif %} data-amount="{{ row.amount_raw }}" data-currency="{{ row.currency|default:'EUR' }}" data-void="{% if row.is_void %}1{% else %}0{% endif %}">
-            <td data-label="Receipt #" class="ref">{{ row.number }}{% if row.is_edited %}
+            {# IR-1, 23 Oct 2026 - G1. This was grey monospace text,    #}
+            {# not a link, because until RV-1 there was nowhere for it  #}
+            {# to go. It now wears the same register as the invoice     #}
+            {# number and opens the record behind the receipt.          #}
+            <td data-label="Receipt #"><a href="{% url 'cash_receipt_detail' row.pk %}" class="alv-ref-link">{{ row.number }}</a>{% if row.is_edited %}
               <span class="rec-edited" title="Edited on {{ row.edited_display }} — any copy already sent shows the previous details">edited</span>{% endif %}</td>
             <td data-label="Date">{{ row.date|date:"Y-m-d" }}</td>
             <td data-label="Received From" style="text-align: left">{{ row.payer }}</td>

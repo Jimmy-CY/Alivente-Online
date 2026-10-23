@@ -577,7 +577,12 @@ ok(NOTE + 'the View button in the desktop strip' in bh,
 ok(len(alv_tree.CONVERTED) >= CONVERTED_NOW,
    '  CONVERTED holds at least %d' % CONVERTED_NOW,
    len(alv_tree.CONVERTED))
-_r = re.search(r'N_BAR, N_ROW, N_MODAL = 267, (\d+), 95', bh)
+# THE ROW COUNT, NOT THE OTHER TWO - RV-1, 23 Oct 2026.
+# This read `= 267, (\d+), 95`, pinning the BAR and MODAL
+# counts incidentally. RV-1 adds a page whose bar carries
+# three controls, N_BAR moved 267 -> 270, and the claim
+# failed on a number it does not care about.
+_r = re.search(r'N_BAR, N_ROW, N_MODAL = \d+, (\d+), \d+', bh)
 ok(_r and int(_r.group(1)) >= ROW_N,
    '  and the table-row count is at least %d - 110 plus NV-1b two, '
    'NV-1c one and this round one, each measured per page' % ROW_N,

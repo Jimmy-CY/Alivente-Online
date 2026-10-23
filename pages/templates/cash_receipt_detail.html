@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{# THE TAB TITLE - RV-1, 23 Oct 2026. The first draft of this  #}
+{# screen had no title block at all, and test_heading_prefix   #}
+{# said so: 1 of 116 bad. The receipt number is what makes one #}
+{# open tab tell itself from another.                          #}
+{% block title %}Receipt {{ r.receipt_number }}{% endblock %}
+
+{# RECEIPT DETAILS - RV-1, 23 Oct 2026. G2, outstanding since 16 Oct. #}
+{#                                                                    #}
+{# THE RECORD, NOT THE DOCUMENT. The receipts list has had a LOOK     #}
+{# action since RC-1: the PDF icon opens the receipt in the shared    #}
+{# components/pdf_viewer.html. So the gap was never "see the receipt" #}
+{# - it was see the RECORD BEHIND IT. None of the following is on the #}
+{# PDF and none of it was on any screen before this one:              #}
+{#                                                                    #}
+{#   who voided it, when, and why                                     #}
+{#   who edited it and when - the list shows a badge, not a name      #}
+{#   when it was emailed                                              #}
+{#   the property it relates to                                       #}
+{#   the payment method and the bank reference                        #}
+{#   the payer's address, telephone and email                         #}
+{#                                                                    #}
+{# READ ONLY, ON PURPOSE. Edit already exists and owns changing a     #}
+{# receipt. A second screen that could also change one is a second    #}
+{# code path for one job - the rule that kept store_display_jpeg to   #}
+{# one caller in SD-1.                                                #}
+{#                                                                    #}
+{# THE PDF IS ONE CLICK AWAY, NOT EMBEDDED. Demetri chose that on     #}
+{# 23 October: the viewer this page includes is the same component    #}
+{# the list, act_expense and asset_detail all use.                    #}
+{% block content %}
+
+<h2 class="page-title-h2">RECEIPT DETAILS</h2>
+<h4 class="page-subtitle-h4">{{ r.receipt_number }} &mdash; {{ r.payer_name }}</h4>
+
+{# ONE BAR, and Back is LAST and carries no colour - base 3.4,        #}
+{# test_bar_top. Nothing sits above it.                               #}
+<div class="page-action-buttons">
+    {% if r.pdf_file %}
+    <a href="{% url 'cash_receipt_pdf' r.pk %}"
+       onclick="openPdfViewer('{% url 'cash_receipt_pdf' r.pk %}', 'Receipt {{ r.receipt_number|escapejs }} &mdash; {{ r.payer_name|escapejs }}', '{{ r.receipt_number|escapejs }}.pdf'); return false;"
+       class="btn action-secondary">
+        <i class="fas fa-file-pdf"></i> View receipt
+    </a>
+    {% endif %}
+    {% if perms.auth.can_edit_receipts and not r.is_void %}
+    <a href="{% url 'cash_receipt_edit' r.pk %}" class="btn action-secondary">
+        <i class="fas fa-pencil-alt"></i> Edit
+    </a>
+    {% endif %}
+    <a href="{% url 'cash_receipt_list' %}" class="btn action-back"
+       role="button" aria-label="Back to receipts">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+{# ---------------------------------------------------- THE RECEIPT #}
+<div class="alv-card alv-card-lead">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0">
+            <i class="fas fa-receipt"></i> {{ r.receipt_number }}
+            <span class="alv-pill {{ status_pill }}">{{ status_display }}</span>
+        </h4>
+    </div>
+    <div class="alv-card-body">
+        <div class="rv-groups">
+            <div class="rv-group">
+                <div class="rv-row">
+                    <span class="rv-label">Date received:</span>
+                    <span class="rv-value">{{ r.receipt_date|date:"j F Y" }}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Amount:</span>
+                    <span class="rv-value rv-amount">{{ symbol }} {{ r.amount|floatformat:2|intcomma }}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Method:</span>
+                    <span class="rv-value">{{ r.get_method_display }}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Reference:</span>
+                    <span class="rv-value">{{ r.reference|default:"&mdash;" }}</span>
+                </div>
+            </div>
+            <div class="rv-group">
+                <div class="rv-row">
+                    <span class="rv-label">Property:</span>
+                    <span class="rv-value">{% if r.prop %}{{ r.prop.prop_name }}{% else %}&mdash;{% endif %}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Tenant:</span>
+                    <span class="rv-value">{% if r.tenant %}{{ r.tenant.tenant_name }}{% else %}&mdash;{% endif %}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Customer:</span>
+                    <span class="rv-value">{% if r.customer %}{{ r.customer.name }}{% else %}&mdash;{% endif %}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Document:</span>
+                    <span class="rv-value">{{ r.get_doc_format_display }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="rv-block">
+            <span class="rv-label">Being payment for:</span>
+            <p class="rv-prose">{{ r.description|linebreaksbr }}</p>
+        </div>
+    </div>
+</div>
+
+{# ------------------------------------------------- WHO WAS PAYING #}
+<div class="alv-card">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0"><i class="fas fa-user"></i> Received from</h4>
+    </div>
+    <div class="alv-card-body">
+        <div class="rv-groups">
+            <div class="rv-group">
+                <div class="rv-row">
+                    <span class="rv-label">Name:</span>
+                    <span class="rv-value">{{ r.payer_name }}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Telephone:</span>
+                    <span class="rv-value">{{ r.payer_tel|default:"&mdash;" }}</span>
+                </div>
+            </div>
+            <div class="rv-group">
+                <div class="rv-row">
+                    <span class="rv-label">Email:</span>
+                    <span class="rv-value">{{ r.payer_email|default:"&mdash;" }}</span>
+                </div>
+                <div class="rv-row">
+                    <span class="rv-label">Address:</span>
+                    <span class="rv-value">{% if r.payer_address %}{{ r.payer_address|linebreaksbr }}{% else %}&mdash;{% endif %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ------------------------------------------------- THE AUDIT TRAIL #}
+{#                                                                    #}
+{# THE REASON THIS SCREEN EXISTS. Everything above could be read off  #}
+{# the PDF. Nothing below could be read anywhere at all.              #}
+{#                                                                    #}
+{# BUILT IN THE VIEW, not in four template branches - the same rule   #}
+{# RG-1 used for the printed sheet's heading. A template that decides #}
+{# which events happened cannot be asked how many it drew.            #}
+<div class="alv-card">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0"><i class="fas fa-clock-rotate-left"></i> History</h4>
+    </div>
+    <div class="alv-card-body">
+        <ul class="rv-trail">
+            {% for e in trail %}
+            <li class="rv-event{% if e.tone %} rv-{{ e.tone }}{% endif %}">
+                <span class="rv-event-what">{{ e.what }}</span>
+                <span class="rv-event-when">{{ e.when|date:"j F Y, H:i" }}</span>
+                {% if e.who %}<span class="rv-event-who">by {{ e.who }}</span>{% endif %}
+                {% if e.note %}<span class="rv-event-note">{{ e.note }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{# The SAME viewer the list, act_expense and asset_detail use. #}
+{% include 'components/pdf_viewer.html' %}
+
+<style>
+/* RV-1, 23 Oct 2026.
+   NAMED rv-* AND NOT detail-*. Nine templates in this tree each define
+   their own .detail-row, .detail-label and .detail-value, and base
+   defines none of them - measured 23 October. Adding a tenth copy of a
+   name that already means nine slightly different things would make a
+   system-wide problem worse to save one round's work. Promoting the
+   component into base is its own round, on the system-wide list; until
+   then this page owns its own prefix and does not pretend to share. */
+.rv-groups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+.rv-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.rv-row {
+    display: flex;
+    gap: 12px;
+    line-height: 1.5;
+}
+.rv-label {
+    font-weight: 600;
+    color: var(--alv-ink);
+    min-width: 130px;
+}
+.rv-value {
+    color: var(--alv-ink-strong);
+    flex: 1;
+}
+.rv-amount {
+    font-weight: 700;
+}
+.rv-block {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--alv-line);
+}
+.rv-prose {
+    margin: 6px 0 0;
+    color: var(--alv-ink-strong);
+    line-height: 1.55;
+}
+
+/* THE TRAIL. One row per event, oldest first, so it reads downward the
+   way the receipt's life ran. */
+.rv-trail {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.rv-event {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding-left: 14px;
+    border-left: 3px solid var(--alv-line);
+    line-height: 1.5;
+}
+.rv-event-what {
+    font-weight: 600;
+    color: var(--alv-ink-strong);
+    min-width: 118px;
+}
+.rv-event-when { color: var(--alv-ink); }
+.rv-event-who { color: var(--alv-ink-soft); }
+.rv-event-note {
+    flex-basis: 100%;
+    color: var(--alv-ink-soft);
+}
+/* VOID IS THE ONE EVENT THAT CHANGES WHAT THE RECEIPT MEANS, so it is
+   the one that carries a colour. Everything else is history. */
+.rv-event.rv-void { border-left-color: var(--alv-danger-ink, #b42318); }
+.rv-event.rv-void .rv-event-what { color: var(--alv-danger-ink, #b42318); }
+
+/* A PHONE READS ONE COLUMN, and a label that keeps a 130px minimum
+   beside a long email pushes the value off the screen at 390px.
+
+   `screen and`, NOT A BARE max-width - test_print_queries, 23 Oct
+   2026. A bare max-width block fires on PAPER too, because print has
+   a narrow effective width, so the phone layout leaks into every
+   printed copy. A print-leak round fixed 98 such blocks across this
+   tree and this screen arrived with a 99th; its suite caught it in
+   the sweep. 768px is the house breakpoint, not 767.98. */
+@media screen and (max-width: 768px) {
+    .rv-groups {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .rv-row {
+        flex-direction: column;
+        gap: 2px;
+    }
+    .rv-label { min-width: 0; }
+    .rv-event-what { min-width: 0; }
+}
+</style>
+{% endblock %}

@@ -81,6 +81,10 @@ __all__ = [
     "cash_receipt_void",
     "cash_receipt_unvoid",
     "cash_receipt_pdf",
+    # RV-1, 23 Oct 2026. __init__.py re-exports this module with
+    # `import *`, which obeys __all__ - so a view missing from this
+    # list is invisible to the URLconf no matter how correct it is.
+    "cash_receipt_detail",
     "render_cash_receipt_pdf",
     "amount_in_words",
 ]
@@ -614,6 +618,82 @@ def cash_receipt_unvoid(request, cash_receipt_id):
 
 
 # ----------------------------------------------------------------------- pdf
+@login_required
+@permission_required('auth.can_access_receipts', raise_exception=True)
+def cash_receipt_detail(request, cash_receipt_id):
+    """The RECORD behind the receipt. RV-1, 23 Oct 2026 - G2.
+
+    NOT the document. The pdf icon in the list has opened the receipt
+    itself since RC-1, through the same shared viewer this page
+    includes. What no screen in this application has ever shown is
+    what is stored ABOUT the receipt: who voided it and why, who
+    edited it and when, when it was emailed, the property, the method,
+    the bank reference, and the payer's address, telephone and email.
+
+    void_reason is the clearest case. It is captured when a receipt is
+    voided, it is stored, and before this screen it was never
+    displayed anywhere at all.
+
+    READ ONLY. cash_receipt_edit owns changing a receipt; a second
+    screen that could also change one is a second code path for one
+    job.
+
+    can_access_receipts, NOT can_edit_receipts - the same permission
+    the list and the PDF take. Reading the record is reading.
+    """
+    r = get_object_or_404(
+        CashReceipt.objects.select_related(
+            'tenant', 'customer', 'prop', 'created_by', 'edited_by',
+            'voided_by'),
+        pk=cash_receipt_id)
+
+    # THE HISTORY IS BUILT HERE, not in four template branches.
+    #
+    # OLDEST FIRST, so it reads downward the way the receipt's life
+    # ran. Each event is included only if it HAPPENED - an absent
+    # edited_at is not "edited: never", it is not an event.
+    #
+    # A NAME OR NOTHING. created_by is SET_NULL, so a deleted user
+    # leaves a row whose author is genuinely unknown; printing
+    # "by None" would be a lie dressed as a fact.
+    def _who(user):
+        if not user:
+            return ''
+        return user.get_full_name() or user.get_username()
+
+    trail = []
+    if r.created_at:
+        trail.append({'what': 'Issued', 'when': r.created_at,
+                      'who': _who(r.created_by), 'note': '',
+                      'tone': ''})
+    if r.sent_at:
+        trail.append({'what': 'Emailed', 'when': r.sent_at,
+                      'who': '', 'note': '', 'tone': ''})
+    if r.edited_at:
+        trail.append({'what': 'Edited', 'when': r.edited_at,
+                      'who': _who(r.edited_by),
+                      'note': 'Any copy already sent shows the '
+                              'previous details.',
+                      'tone': ''})
+    if r.voided_at:
+        trail.append({'what': 'Voided', 'when': r.voided_at,
+                      'who': _who(r.voided_by),
+                      'note': r.void_reason or '',
+                      'tone': 'void'})
+    trail.sort(key=lambda e: e['when'])
+
+    return render(request, 'cash_receipt_detail.html', {
+        'r': r,
+        'trail': trail,
+        # THE SAME TWO THE LIST ROW USES, from the same helper - a
+        # second idea about what a void receipt is called is a second
+        # thing to keep in agreement.
+        'symbol': money_symbol(r.currency),
+        'status_pill': 'alv-pill-neutral' if r.is_void else 'alv-pill-good',
+        'status_display': 'Void' if r.is_void else 'Issued',
+    })
+
+
 @login_required
 @permission_required('auth.can_access_receipts', raise_exception=True)
 def cash_receipt_pdf(request, cash_receipt_id):

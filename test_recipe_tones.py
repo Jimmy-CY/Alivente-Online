@@ -674,8 +674,11 @@ ok('--strict --recipes' in ps1,
 # half does not move: neither is a recipe-side page.
 # PP-1, 20 Oct 2026 - 142. meal_plan_print.html. The narrow half
 # does not move: it is not a recipe-side page.
-ok(len(sb.templates(False)) == 117 and len(sb.templates(True)) == 142,
-   '  which is %d of %d' % (117, 142),
+# RV-1, 23 Oct 2026 - 118 of 143. cash_receipt_detail is
+# an ordinary pages/templates page, so it joins the sweep
+# scope and the application count alike.
+ok(len(sb.templates(False)) == 118 and len(sb.templates(True)) == 143,
+   '  which is %d of %d' % (118, 143),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

@@ -256,8 +256,11 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # 148 -> 150 - RD-1, 19 Oct 2026, the quick-look pair.
 # PP-1, 20 Oct 2026 - 151. meal_plan_print.html is the printable
 # plan, and it sits flat in pages/templates, so both numbers move.
-ok(len(tree) == 151, 'a WALK finds 151 templates', len(tree))
-ok(len(top) == 125, '  a flat listing finds 125 - 120 was what H7 '
+# RV-1, 23 Oct 2026 - 152, 126. cash_receipt_detail.html
+# sits flat in pages/templates, so it joins the walk and
+# the flat listing alike.
+ok(len(tree) == 152, 'a WALK finds 152 templates', len(tree))
+ok(len(top) == 126, '  a flat listing finds 126 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',

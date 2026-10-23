@@ -1437,6 +1437,10 @@ ROUNDS = [
     '.bak_namewidth',
     # PT-1, 22 Oct 2026 - the print sheet knows which view sent it.
     '.bak_printorigin',
+    # RV-1, 23 Oct 2026 - the receipt has a screen for its record.
+    '.bak_receiptview',
+    # IR-1, 23 Oct 2026 - one register for one kind of identifier.
+    '.bak_reflink',
 ]
 
 

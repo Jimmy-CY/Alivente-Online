@@ -403,7 +403,12 @@ bh = read(os.path.join(ROOT, 'test_bar_height.py'))
 ok(NOTE + 'the title deeds Actions cell' in bh,
    "the table-row census carries this round's note, naming the two "
    'Bootstrap buttons it could not see')
-_n = re.search(r'N_BAR, N_ROW, N_MODAL = 267, (\d+), 95', bh)
+# THE ROW COUNT, NOT THE OTHER TWO - RV-1, 23 Oct 2026.
+# This read `= 267, (\d+), 95`, pinning the BAR and MODAL
+# counts incidentally. RV-1 adds a page whose bar carries
+# three controls, N_BAR moved 267 -> 270, and the claim
+# failed on a number it does not care about.
+_n = re.search(r'N_BAR, N_ROW, N_MODAL = \d+, (\d+), \d+', bh)
 ok(_n and int(_n.group(1)) >= ROW_N,
    '  and the live count is at least %d, which is %d plus this round\'s '
    'two' % (ROW_N, ROW_N - 2), _n.group(1) if _n else None)

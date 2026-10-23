@@ -169,7 +169,7 @@ TOTAL = sum(EXPECT.values())
 # the same way. 38 was a pages/templates figure; crs/templates holds the
 # other seven. Measured across alv_tree.templates(), which is the only
 # count that means anything.
-ALREADY_SAFE = 45
+ALREADY_SAFE = 48   # RV-1, 23 Oct 2026 - plus the three in cash_receipt_detail.html. A CREATED file has no backup for this suffix, so the before-reader falls through to the live file and the screen counts on both sides.   # (was 45)
 # 111, NOT 98 - the pages/templates-only census again. crs/templates
 # holds the other thirteen, every one of them a primary key.
 BARE_ARGS = 111

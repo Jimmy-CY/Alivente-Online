@@ -176,9 +176,9 @@ Physical Invoices
           <tr>
             <td data-label="Number" class="pi-number">
               {% if row.is_customer %}
-                <a href="{% url 'customer_invoice_edit' row.pk %}" class="pi-number-link">{{ row.number }}</a>
+                <a href="{% url 'customer_invoice_edit' row.pk %}" class="alv-ref-link">{{ row.number }}</a>
               {% else %}
-                <a href="{% url 'physical_invoice_edit' row.pk %}" class="pi-number-link">{{ row.number }}</a>
+                <a href="{% url 'physical_invoice_edit' row.pk %}" class="alv-ref-link">{{ row.number }}</a>
               {% endif %}
             </td>
             <td data-label="Date">{{ row.invoice_date_display }}</td>
@@ -415,8 +415,10 @@ Physical Invoices
 .numbering-controls .btn { border-radius: 0 6px 6px 0; margin-left: -2px; }
 .numbering-hint { font-size: 12px; color: var(--alv-ink-soft); margin-top: 10px; }
 .pi-number { font-weight: 600; color: var(--alv-ink); }
-.pi-number-link { color: var(--alv-accent); text-decoration: none; font-weight: 600; }
-.pi-number-link:hover { text-decoration: underline; }
+/* .pi-number-link IS GONE - IR-1, 23 Oct 2026. Its three declarations
+   are now .alv-ref-link in base, which the receipt number also takes.
+   G1 was "two registers for one kind of identifier"; one rule in one
+   place is the only version of the fix that stays fixed. */
 
 .pi-actions-cell { white-space: nowrap; }
 .pi-inline-form { display: inline; margin: 0; }

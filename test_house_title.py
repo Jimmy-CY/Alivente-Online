@@ -279,8 +279,16 @@ wearers = [alv_tree.rel(p) for p in alv_tree.templates()
 # PP-1, 20 Oct 2026 - 121. meal_plan_print.html carries a
 # .page-title-h2 like every other page with a title, so it joins the
 # count rather than being an exception to it.
-ok(len(wearers) == 121,
-   '121 templates now wear the class, which is the number base\'s note '
+# RV-1, 23 Oct 2026 - 122. cash_receipt_detail.html carries a
+# .page-title-h2 like every other page with a title.
+#
+# AND base.html's NOTE SAID 120 WHEN THIS ROUND ARRIVED, against 121
+# here. PP-1 moved this pin on 20 October and left the sentence
+# behind, so the two numbers the comment above calls "the one thing
+# keeping the two honest" had been disagreeing for three days. Both
+# say 122 now.
+ok(len(wearers) == 122,
+   '122 templates now wear the class, which is the number base\'s note '
    'states', len(wearers))
 
 # WHAT IS DELIBERATELY LEFT: the hand-rolled headers. They are a content

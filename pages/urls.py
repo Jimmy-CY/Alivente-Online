@@ -280,6 +280,8 @@ urlpatterns = [
     path("receipts/", views.cash_receipt_list, name="cash_receipt_list"),
     path("receipts/new/", views.cash_receipt_add, name="cash_receipt_add"),
     path("receipts/issue/", views.cash_receipt_commit, name="cash_receipt_commit"),
+    # RV-1, 23 Oct 2026 - the record behind the receipt. G2.
+    path("receipts/<int:cash_receipt_id>/", views.cash_receipt_detail, name="cash_receipt_detail"),
     path("receipts/<int:cash_receipt_id>/void/", views.cash_receipt_void, name="cash_receipt_void"),
     path("receipts/<int:cash_receipt_id>/unvoid/", views.cash_receipt_unvoid, name="cash_receipt_unvoid"),
     path("receipts/<int:cash_receipt_id>/edit/", views.cash_receipt_edit, name="cash_receipt_edit"),

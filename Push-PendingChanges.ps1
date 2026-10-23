@@ -1247,6 +1247,10 @@ $sentinels = @(
     @{ File = 'pages/models.py'; Text = 'NAME_SLUG_CAP'; What = 'NL-1: four recipes on Live generated a display filename longer than the 100-character column, and Django truncated the stem mid-timestamp and added a random suffix rather than refusing - which left them permanently stale, because display_copy_is_stale compares names. The columns are 255 and the slug is bounded, so both halves have to fail before it can happen again' },
     @{ File = 'pages/templates/meal_plan_print.html'; Text = '{{ back_url }}'; What = 'PT-1: Back was the bare planner URL, so Back from a printed week landed on the month view on today date - Demetri reported it for all three views. The origin is carried because no arithmetic on from and to can recover it: a day sheet and a one-day range are the same two dates' },
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = 'start = min(max(start, range_min), range_max)'; What = 'PT-1: and the week bounds are CLAMPED on the server, not only offered as min and max to a browser - the attributes stop somebody picking a date outside the week, the clamp stops it working' },
+    @{ File = 'pages/views/receipts.py'; Text = 'def cash_receipt_detail'; What = 'RV-1: the PDF shows the receipt as issued; nothing showed the record behind it. void_reason was captured, stored, and never once displayed anywhere in the application' },
+    @{ File = 'pages/templates/cash_receipt_detail.html'; Text = 'rv-trail'; What = 'RV-1: and the history is built in the VIEW, oldest first, each event present only if it happened - a template that decides which events occurred cannot be asked how many it drew' },
+    @{ File = 'pages/templates/base.html'; Text = 'alv-ref-link'; What = 'IR-1: the receipt number was grey monospace and the invoice number a teal link - two registers for one kind of identifier, Demetri 16 Oct. One rule in base now, which BOTH pages take; a second copy would make one register true by coincidence' },
+    @{ File = 'pages/templates/base.html'; Text = '.alv-table .ref'; Absent = $true; Code = $true; What = 'IR-1: and the rule it replaced is gone rather than left. It had one consumer and no suite; a base rule nothing uses is one the next page picks up by accident' },
     @{ File = 'alv_plant.py'; Text = 'def recover'; What = 'LK-1: fifteen suites write into real files and restore in a finally, which a SIGKILL does not run - the defect stays and nothing noticed. The lock is armed around the PLANTERS list, names every file a planter did not put back, and deliberately restores nothing' },
     @{ File = 'pages/views/users.py'; Text = "to_attr='member_list'"; What = 'WN-1: the workspace list ran one SELECT per workspace, which WM-1 left deliberately on 16 October and named as its own round. A Prefetch with to_attr does it in two, whatever N is - and to_attr because the template reads member_list, and an undefined name in a template is silence' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pillow-heif'; What = 'CF-1: railway.json installs THIS file, and it did not carry pillow-heif - so HEIC uploads from an iPhone failed quietly on Live, because pages/utils.py guards that import on purpose. Also UTF-8 now, and five open-ended packages bounded' },
@@ -2982,7 +2986,13 @@ $suites = @(
     'test_name_width.py',
     # PT-1, 22 Oct 2026 - the print sheet knows which view sent it, so
     # Back lands where it started and a week bounds its own pickers.
-    'test_print_origin.py'
+    'test_print_origin.py',
+    # RV-1, 23 Oct 2026 - the receipt has a screen that shows the
+    # record, not only the document. G2, outstanding since 16 Oct.
+    'test_receipt_view.py',
+    # IR-1, 23 Oct 2026 - one register for one kind of identifier, and
+    # the receipt number finally goes somewhere. G1.
+    'test_ref_link.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

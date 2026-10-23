@@ -346,7 +346,11 @@ for r in HEADS:
 
 lead = sum(len(re.findall(r'class="[^"]*\balv-card-lead\b',
                           read(alv_tree.path_of(r)))) for r in ALL)
-ok(lead == 3,
+# RV-1, 23 Oct 2026 - 4. cash_receipt_detail.html takes one on
+# its first card, as asset_detail.html does: a DETAIL screen with a
+# page title. The WCIM exception below is a chooser, which is not the
+# same shape.
+ok(lead == 4,
    'CONTROL: .alv-card-lead is still 3 use(s) - the WCIM landing did NOT '
    'take one, because it is a chooser and its h1 already names the screen',
    lead)

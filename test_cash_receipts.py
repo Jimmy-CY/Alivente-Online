@@ -289,7 +289,9 @@ head('4. the routes resolve')
 _routed = re.findall(r'name="(cash_receipt_\w+)"', URLS)
 _expected = {'cash_receipt_list', 'cash_receipt_add', 'cash_receipt_commit',
              'cash_receipt_edit', 'cash_receipt_update', 'cash_receipt_void',
-             'cash_receipt_unvoid', 'cash_receipt_pdf'}
+             'cash_receipt_unvoid', 'cash_receipt_pdf',
+             # RV-1, 23 Oct 2026 - the record behind the receipt. G2.
+             'cash_receipt_detail'}
 # Was five. The edit/unvoid round added edit, update and unvoid, so the floor
 # moved with the decision - and it names them rather than counting, because a
 # count tells you something changed and not which.

@@ -565,7 +565,12 @@ ok(NOTE + 'the two comment controls' in bh,
    'and the LOOSE census carries its own - the two comment controls '
    'were .status-btn, which that census does not select, and a comment '
    'thread is not a table')
-_r = re.search(r'N_BAR, N_ROW, N_MODAL = 267, (\d+), 95', bh)
+# THE ROW COUNT, NOT THE OTHER TWO - RV-1, 23 Oct 2026.
+# This read `= 267, (\d+), 95`, pinning the BAR and MODAL
+# counts incidentally. RV-1 adds a page whose bar carries
+# three controls, N_BAR moved 267 -> 270, and the claim
+# failed on a number it does not care about.
+_r = re.search(r'N_BAR, N_ROW, N_MODAL = \d+, (\d+), \d+', bh)
 _l = re.search(r'N_LOOSE, N_LOOSE_H = (\d+), 11', bh)
 ok(_r and int(_r.group(1)) >= ROW_N,
    '  the live table-row count is at least %d' % ROW_N,

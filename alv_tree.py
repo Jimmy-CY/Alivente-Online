@@ -924,6 +924,10 @@ CONVERTED = [
     'test_name_width.py',
     # PT-1, 22 Oct 2026 - the print sheet knows which view sent it.
     'test_print_origin.py',
+    # RV-1, 23 Oct 2026 - the receipt has a screen for its record.
+    'test_receipt_view.py',
+    # IR-1, 23 Oct 2026 - one register for one kind of identifier.
+    'test_ref_link.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
