@@ -392,10 +392,26 @@ def get_property_tenant_data(request):
                 response_data['tenant'] = {
                     'tenant_id': tenant_obj.tenant_id,
                     'tenant_name': tenant_obj.tenant_name or '',
+                    # T2-4, 24 Oct 2026 - Generate shows this in two
+                    # preview panes.
+                    'tenant_display_name':
+                        tenant_obj.tenant_display_name or '',
                     'tenant_type': tenant_obj.tenant_type or '',
                     'tenant_contact_person': tenant_obj.tenant_contact_person or '',
                     'tenant_contact_number': tenant_obj.tenant_contact_number or '',
                     'tenant_email': tenant_obj.tenant_email or '',
+                    # THE JOINT TENANT - T2-3, 24 Oct 2026. The modal
+                    # is filled from this payload and from nothing
+                    # else, so a column missing here cannot be
+                    # prefilled however correct the markup is.
+                    #
+                    # THREE AND NOT SIX: passport id, passport country
+                    # and address are per-document and the FIRST
+                    # tenant has none of them stored either.
+                    'tenant_2_name': tenant_obj.tenant_2_name or '',
+                    'tenant_2_contact_number':
+                        tenant_obj.tenant_2_contact_number or '',
+                    'tenant_2_email': tenant_obj.tenant_2_email or '',
                     'tenant_lease_start_date': tenant_obj.tenant_lease_start_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_start_date else '',
                     'tenant_lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
                     'tenant_rent': float(tenant_obj.tenant_rent) if tenant_obj.tenant_rent else 0,

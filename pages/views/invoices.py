@@ -98,6 +98,10 @@ def _open_invoice_rows(open_invoices, shown_props, shown_tenants):
             'prop_name':    p.prop_name,
             'prop_country': p.prop_country,
             'tenant_name':  t.tenant_name,
+            # T2-4, 24 Oct 2026 - a second key. The Invoices filter
+            # posts tenant_name into .filter(tenant_name=...), so
+            # replacing it would return no rows at all.
+            'tenant_display_name': t.tenant_display_name,
             'amount':       inv.effective_amount,
             'invoice_date': inv.invoice_date,
             'due_date':     due,
@@ -445,6 +449,7 @@ def open_invoices_report(request):
                 'prop_country': tenant_obj.prop.prop_country,
                 'tenant_id': tenant_obj.tenant_id,
                 'tenant_name': tenant_obj.tenant_name,
+                'tenant_display_name': tenant_obj.tenant_display_name,
                 'tenant_contact_person': tenant_obj.tenant_contact_person,
                 'tenant_contact_number': tenant_obj.tenant_contact_number,
                 'tenant_email': tenant_obj.tenant_email,
@@ -460,7 +465,14 @@ def open_invoices_report(request):
 
     for tenant_obj in current_tenants:
         tenant_analysis = {
+            # BOTH KEYS - T2-4, 24 Oct 2026. This report's own
+            # javascript matches on tenant_name to find a tenant's
+            # invoices, and carries it in data-tenant-name attributes
+            # to do it. Replacing it makes the lookup find nothing,
+            # and the table stops naming somebody rather than
+            # breaking.
             'tenant_name': tenant_obj.tenant_name,
+            'tenant_display_name': tenant_obj.tenant_display_name,
             'tenant_id': tenant_obj.tenant_id,  # Add tenant_id here too
             'total_outstanding': 0,
         }

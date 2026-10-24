@@ -8,7 +8,7 @@ Edit Physical Invoice
 {% block content %}
 
 <h2 class="page-title-h2">PHYSICAL INVOICE</h2>
-<h4 class="page-subtitle-h4">{{ number }} &mdash; {{ pi.tenant.tenant_name }}</h4>
+<h4 class="page-subtitle-h4">{{ number }} &mdash; {{ pi.tenant.tenant_display_name }}</h4>
 <br/>
 
 
@@ -41,7 +41,7 @@ Edit Physical Invoice
   <!-- Header summary -->
   <div class="summary-card">
     <div class="summary-grid">
-      <div class="summary-item"><span class="summary-label">Tenant</span><span class="summary-value">{{ pi.tenant.tenant_name }}</span></div>
+      <div class="summary-item"><span class="summary-label">Tenant</span><span class="summary-value">{{ pi.tenant.tenant_display_name }}</span></div>
       <div class="summary-item"><span class="summary-label">Property</span><span class="summary-value">{{ property_name }}</span></div>
       <div class="summary-item"><span class="summary-label">Period</span><span class="summary-value">{{ period_label }}</span></div>
       <div class="summary-item"><span class="summary-label">Number</span><span class="summary-value">{{ number }}</span></div>

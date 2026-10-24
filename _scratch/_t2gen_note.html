@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><select id="tenant-select"><option value=""></option><option value="7">a tenancy</option><option value="new_tenant">new</option></select><div id="second-tenant-section" style="display:none"><p id="second-tenant-record-note" style="display:none">This person will also be saved to the tenant record.</p></div><script>var tenantData = {};
+function paintSecondTenantNote() {
+  const note = document.getElementById('second-tenant-record-note');
+  if (!note) return;
+  const sel = document.getElementById('tenant-select');
+  const tenantId = sel ? sel.value : '';
+  const section = document.getElementById('second-tenant-section');
+  const open = section && section.style.display !== 'none';
+  const stored = (tenantData.tenant_2_name || '').trim();
+  note.style.display =
+    (open && tenantId && tenantId !== 'new_tenant' && !stored)
+      ? '' : 'none';
+}</script></body></html>

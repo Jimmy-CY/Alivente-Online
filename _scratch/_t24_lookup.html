@@ -1,0 +1,113 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><script>var tenantDataList = [];
+function ageStep(days) {
+    // THE SAME FIVE BANDS THE VIEW BUCKETS ON, and the index matches
+    // AGE_BUCKETS in pages/views/invoices.py: 0 is not yet due, 4 is 91+.
+    // If these two ever part company an invoice gets two verdicts again,
+    // which is the fault part A closed.
+    if (days > 90) { return 'alv-age-4'; }
+    if (days > 60) { return 'alv-age-3'; }
+    if (days > 30) { return 'alv-age-2'; }
+    if (days > 0)  { return 'alv-age-1'; }
+    return 'alv-age-0';
+}
+function formatAmount(value) {
+    var n = parseFloat(value) || 0;
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function findTenantData(tenantName, tenantId) {
+    if (!Array.isArray(tenantDataList) || tenantDataList.length === 0) {
+        return null;
+    }
+    for (var i = 0; i < tenantDataList.length; i++) {
+        var t = tenantDataList[i];
+        if (!t) continue;
+        if (t.tenant_name === tenantName || t.tenant_id == tenantId) {
+            return t;
+        }
+    }
+    return null;
+}
+function generateTenantHTML(tenant, showTenantLine) {
+    if (!tenant) {
+        return '<div class="no-invoices"><p>Tenant data unavailable.</p></div>';
+    }
+    if (showTenantLine === undefined) showTenantLine = true;
+
+    var html = '<div class="property-card">';
+    html += '<h3 class="property-name">' + (tenant.prop_name || 'Property') + ' (' + (tenant.prop_country || '-') + ')</h3>';
+    html += '<div class="tenant-details">';
+
+    if (showTenantLine) {
+        // T2-4 - the DISPLAY key, falling back to the match key.
+        html += '<p><strong>Tenant:</strong> ' + (tenant.tenant_display_name || tenant.tenant_name || '-') + '</p>';
+    }
+
+    html += '<p><strong>Contact:</strong> ' + (tenant.tenant_contact_person || '-') + ' | ' + (tenant.tenant_contact_number || '-') + '</p>';
+    html += '<p><strong>Email:</strong> ' + (tenant.tenant_email || '-') + '</p>';
+    html += '<p><strong>Payment Terms:</strong> ' + (tenant.tenant_payment_terms == 0 ? 'Immediate' : (tenant.tenant_payment_terms || '-') + ' days') + '</p>';
+    html += '</div>';
+
+    var invoices = Array.isArray(tenant.invoices) ? tenant.invoices : [];
+
+    html += '<div class="invoices-list">';
+    html += '<h4>Outstanding Invoices:</h4>';
+
+    if (invoices.length === 0) {
+        html += '<p class="no-invoices-inline">No individual invoices recorded for this tenant.</p>';
+    } else {
+        // Desktop: traditional table
+        html += '<div class="table-container desktop-only-invoices">';
+        html += '<table class="alv-table">';
+        html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th class="num">Days Overdue</th><th class="num">Amount</th></tr></thead>';
+        html += '<tbody>';
+
+        for (var i = 0; i < invoices.length; i++) {
+            var invoice = invoices[i];
+            if (!invoice) continue;
+            var d = invoice.days_overdue !== undefined ? invoice.days_overdue : 0;
+            html += '<tr>';
+            html += '<td data-label="Invoice Date">' + (invoice.invoice_date || '-') + '</td>';
+            html += '<td data-label="Due Date">' + (invoice.due_date || '-') + '</td>';
+            html += '<td class="num" data-label="Days Overdue">'
+                 + '<span class="alv-age-pill ' + ageStep(d) + '">'
+                 + (d > 0 ? d : 'Not yet due') + '</span></td>';
+            html += '<td class="num" data-label="Amount">€' + formatAmount(invoice.amount != null ? invoice.amount : (tenant.tenant_rent || 0)) + '</td>';
+            html += '</tr>';
+        }
+
+        html += '</tbody></table></div>';
+
+        // Mobile: compact row cards
+        html += '<div class="invoice-rows mobile-only-invoices">';
+        for (var j = 0; j < invoices.length; j++) {
+            var inv = invoices[j];
+            if (!inv) continue;
+            var amount = formatAmount(inv.amount != null ? inv.amount : (tenant.tenant_rent || 0));
+            var daysOverdue = inv.days_overdue !== undefined ? inv.days_overdue : 0;
+            // THE SAME FIVE BANDS THE VIEW BUCKETS ON. These thresholds and
+            // open_invoices_report's five branches are one decision; if they
+            // ever part company an invoice gets two verdicts again, which is
+            // the bug this round closed.
+            var daysClass = ageStep(daysOverdue);
+
+            html += '<div class="invoice-row ' + (inv.overdue ? 'invoice-row-overdue' : '') + '">';
+            html += '<div class="invoice-row-main">';
+            html += '<div class="invoice-row-date">' + (inv.invoice_date || '-') + '</div>';
+            html += '<div class="invoice-row-amount">€' + amount + '</div>';
+            html += '</div>';
+            html += '<div class="invoice-row-meta">';
+            html += '<span class="invoice-row-due">Due: ' + (inv.due_date || '-') + '</span>';
+            if (daysOverdue > 0) {
+                html += '<span class="alv-age-pill ' + daysClass + '">' + daysOverdue + ' days late</span>';
+            } else {
+                html += '<span class="alv-age-pill alv-age-0">Not yet due</span>';
+            }
+            html += '</div>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    html += '</div></div>';
+    return html;
+}</script></body></html>

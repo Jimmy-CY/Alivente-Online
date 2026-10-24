@@ -162,7 +162,18 @@ def dataset(seed, nprops=6, ntenants=9, ninv=25, orphans=True):
     props = [Row(prop_id=i, prop_name='Prop %d' % i,
                  prop_country=rnd.choice(['Cyprus', 'Greece', 'Spain']))
              for i in range(1, nprops + 1)]
+    # THE FIXTURE STANDS IN FOR A TENANT, so it has to stand
+    # in for the whole of what the function needs - T2-4,
+    # 24 Oct 2026, which taught _open_invoice_rows to carry a
+    # display name beside the match key.
+    #
+    # Every OTHER tenant here has one person, so their display
+    # name is their stored name; one is given a joint tenant so
+    # the comparison below sees the joined form too.
     tenants = [Row(tenant_id=100 + i, tenant_name='Tenant %02d' % i,
+                   tenant_display_name=('Tenant %02d & Joint %02d'
+                                        % (i, i) if i == 2
+                                        else 'Tenant %02d' % i),
                    prop_id=rnd.choice(props).prop_id,
                    tenant_payment_terms=rnd.choice([0, 7, 30, 60, None]))
                for i in range(1, ntenants + 1)]

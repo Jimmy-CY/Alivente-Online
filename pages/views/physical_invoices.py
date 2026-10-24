@@ -240,7 +240,15 @@ def _first_nonblank(*values):
 def _billing_block(tenant_obj):
     """Customer dict + customer-ID, from the profile falling back to tenant fields."""
     profile = _get_profile(tenant_obj)
-    name = _first_nonblank(getattr(profile, "billing_name", ""), tenant_obj.tenant_name)
+    # BOTH NAMES ON A VAT INVOICE - T2-4, 24 Oct 2026, his
+    # decision: both people are jointly liable for the rent, so both
+    # are named on the document that bills it. A billing profile
+    # still overrides it, which is what a profile is for.
+    name = _first_nonblank(getattr(profile, "billing_name", ""),
+                           tenant_obj.tenant_display_name)
+    # AND THE CUSTOMER ID DOES NOT MOVE. It is an IDENTIFIER - it
+    # goes on statements and is matched against - so it keeps the
+    # stored first name even when the invoice names two people.
     customer_id = _first_nonblank(getattr(profile, "customer_id_label", ""), tenant_obj.tenant_name)
     tel = _first_nonblank(getattr(profile, "billing_tel", ""), tenant_obj.tenant_contact_number)
     address_raw = (getattr(profile, "billing_address", "") or "").strip()

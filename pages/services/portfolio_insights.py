@@ -178,7 +178,11 @@ def forward_projection(today=None, months=12):
 
             if tag in ("lease", "assumed") and lease_amt:
                 breakdown.append({
-                    "name": lease.tenant_name or "",
+                    # T2-4, 24 Oct 2026 - the Cash Flow Forecast
+                    # breakdown names every tenant. Read, never
+                    # matched, so it carries the joined name
+                    # outright rather than a second key.
+                    "name": lease.tenant_display_name or "",
                     "prop": getattr(lease.prop, "prop_name", "") or "",
                     "rent": round(float(rent or 0), 2),
                     "levies": round(float(levies or 0), 2),
@@ -280,6 +284,10 @@ def expiring_no_successor(today=None, within_days=90):
         monthly_rent = float((cur.tenant_rent or 0) + (cur.tenant_levies or 0))
         out.append({
             "tenant_name": cur.tenant_name,
+            # T2-4 - a SECOND key. _norm(x.tenant_name) joins these
+            # rows to orm leases further down this same file, so the
+            # match key stays exactly where it is.
+            "tenant_display_name": cur.tenant_display_name,
             "prop_name": getattr(cur.prop, "prop_name", ""),
             "prop_country": getattr(cur.prop, "prop_country", ""),
             "lease_end": end,
@@ -354,6 +362,7 @@ def renewal_due(today=None, status='pending'):
         eff = RENEWAL_PERIOD_DEFAULT if period is None else int(period)
         out.append({
             "tenant_name": t.tenant_name,
+            "tenant_display_name": t.tenant_display_name,   # T2-4
             "prop_name": getattr(t.prop, "prop_name", ""),
             "prop_country": getattr(t.prop, "prop_country", ""),
             "lease_end": end,
@@ -404,6 +413,7 @@ def arrears(today=None):
         if g is None:
             g = {
                 "tenant_name": t.tenant_name,
+                "tenant_display_name": t.tenant_display_name,   # T2-4
                 "prop_name": getattr(t.prop, "prop_name", ""),
                 "amount": 0.0,
                 "invoice_count": 0,
@@ -534,6 +544,7 @@ def churn_risk(today=None, arrears_rows=None):
         level = "high" if score >= 4 else "medium" if score >= 2 else "low"
         out.append({
             "tenant_name": l.tenant_name,
+            "tenant_display_name": l.tenant_display_name,   # T2-4
             "prop_name": getattr(l.prop, "prop_name", ""),
             "score": score,
             "level": level,

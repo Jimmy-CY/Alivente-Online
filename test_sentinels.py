@@ -314,6 +314,29 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE NINTH AND TENTH, 24 OCT 2026 - REVEALED, NOT BROKEN, and
+    # the same story as the fifth through eighth.
+    #
+    # T2-4 is the first round to back up cash_receipt_detail.html
+    # and lease_signing_list.html. Until today neither file had a
+    # single backup, so both rows sat in the "names a file no round
+    # has ever backed up" bucket and were never tested at all. With
+    # a version in hand the verdict is provable: the string has
+    # always been there, because the round that wrote each page
+    # wrote it WITH the string.
+    #
+    # That is exactly what a guard against a FUTURE deletion looks
+    # like. `rv-trail` is the audit trail on a receipt and
+    # `data-label` is what turns the lease-signing register into
+    # phone cards - the day either goes, the row fails. Pinned, not
+    # rewritten, and said plainly: T2-4 did not weaken these rows.
+    # It made them checkable.
+    'rv-trail':
+        'the audit trail on a receipt - present in every version of '
+        'a page its own round created with it',
+    'data-label':
+        'what turns the lease signing register into phone cards - '
+        'ES-3a created that page WITH it on 23 Oct',
     # THE SEVENTH AND EIGHTH, 19 OCT 2026, AND THE SAME STORY AS THE
     # FIFTH AND SIXTH - revealed, not broken.
     #

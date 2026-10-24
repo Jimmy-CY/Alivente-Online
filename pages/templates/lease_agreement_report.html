@@ -12,7 +12,7 @@ Lease Agreement - {{ property.prop_name }}
             <div class="alv-report-titles">
                 <div class="alv-report-brand">ALIVENTE ONLINE</div>
                 <h2 class="alv-report-title">LEASE AGREEMENT ({{ property.prop_name }})</h2>
-                <h3 class="alv-report-sub">for {{ tenant.tenant_name }}</h3>
+                <h3 class="alv-report-sub">for {{ tenant.tenant_display_name }}</h3>
             </div>
             <a href="{% url 'tenant' %}" class="btn back-button" role="button">
                 <i class="fas fa-arrow-left"></i> Back
@@ -31,7 +31,7 @@ Lease Agreement - {{ property.prop_name }}
                         <strong>Property:</strong> {{ property.prop_name }}
                     </p>
                     <p class="lease-document-tenant">
-                        <strong>Tenant:</strong> {{ tenant.tenant_name }}
+                        <strong>Tenant:</strong> {{ tenant.tenant_display_name }}
                     </p>
                 </div>
                 <div class="lease-document-actions">

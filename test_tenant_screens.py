@@ -239,9 +239,23 @@ def claims(d):
             'def tenant_display_name' in t,
         '  and the separator between two names is written once':
             'JOINT_SEPARATOR' in t,
+        # WIDENED BY T2-3, 24 Oct 2026, WHICH MOVED THE RULE.
+        #
+        # This asked clean() in particular. T2-3 lifted the rule into
+        # second_tenant_refusal() so the Generate save-back could ask
+        # it too - that writes with .update() and never reaches
+        # clean() at all.
+        #
+        # NOT read through as_left_by, and that is deliberate: "the
+        # model refuses a joint tenant on a Company tenancy" is a
+        # LIVE invariant and has to be true today, not merely true on
+        # the day T2-2 ran. An invariant read off a backup stops
+        # being a control. So it asks the CLASS and no longer cares
+        # which method holds the rule - and section 4 drives the
+        # behaviour against a real database either way.
         'the model refuses a joint tenant on a Company tenancy':
-            'has_second_tenant' in clean_body(d[MODELS])
-            and "!= 'Individual'" in clean_body(d[MODELS]),
+            'Individual' in tenant_class(d[MODELS])
+            and 'has_second_tenant' in tenant_class(d[MODELS]),
         'Add Tenant can take a second person':
             all(('name="%s"' % c) in a for c in COLS),
         '  behind a button rather than on the form':
@@ -362,8 +376,11 @@ ok(RULE in g,
 # whitespace leaves `changing to " "Company type` - the first draft of
 # this check failed on a model that was word-perfect. Section 4 asks
 # the same question of the RAISED message, where no such seam exists.
+# THE CLASS, NOT clean() - widened by T2-3, 24 Oct 2026, which
+# moved the sentence into second_tenant_refusal() so the Generate
+# save-back could ask it without going through clean().
 src_rule = re.sub(r'"\s*"', '',
-                  ' '.join(clean_body(NOW[MODELS]).split()))
+                  ' '.join(tenant_class(NOW[MODELS]).split()))
 ok(RULE in src_rule,
    '  and the model raises it word for word, so the application holds '
    'ONE rule and not two that agree by coincidence')

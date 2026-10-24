@@ -421,10 +421,26 @@ else:
                                    'commands',
                                    'send_physical_invoices.py'),
                       encoding='utf-8', errors='replace').read()
-        ok(_T.EMAIL_RE in mailer,
-           '  CONTROL: and it is the SAME expression the mailer uses, '
-           'character for character - two parsers would be two answers '
-           'to who is on a tenancy')
+        # ONE PARSER, WHICH IS THE STRONGER FORM OF THE SAME CLAIM -
+        # repaired by T2-5, 24 Oct 2026, the round that deleted the
+        # second copy.
+        #
+        # T2-1 asserted the mailer carried this expression CHARACTER
+        # FOR CHARACTER, and said in its own note that two parsers
+        # would be two answers to who is on a tenancy. It was right,
+        # and the remedy was never to keep two copies in agreement -
+        # it was to have one. The mailer now calls tenant_emails.
+        #
+        # NOT read through as_left_by: "there is only one parser" is a
+        # LIVE invariant and has to be true today, not merely true on
+        # the day T2-1 ran.
+        ok(_T.EMAIL_RE not in mailer,
+           '  CONTROL: and the mailer no longer carries a SECOND copy '
+           'of that expression - T2-5 deleted it, because two parsers '
+           'that agree today are still two answers tomorrow')
+        ok('tenant_emails' in mailer,
+           '  CONTROL: it asks the model instead, so there is exactly '
+           'one answer to who is on a tenancy')
 
         dup = Tenant(tenant_name='X', tenant_email='One@Example.com',
                      tenant_2_name='Y', tenant_2_email='one@example.com')
@@ -475,16 +491,32 @@ ok(not shown,
 # behaviour change on a job that runs every five minutes.
 mailers = ('send_physical_invoices.py',
            'check_lease_renewal_and_invoices.py')
+# AS T2-1 LEFT THE TREE, NOT AS IT STANDS - repaired by T2-5,
+# 24 Oct 2026, which is the round this sentence was waiting for.
+#
+# "No scheduled mail reaches anybody new - that is T2-5" was true on
+# 24 October and false the same day. The claim worth keeping is about
+# T2-1: that the round which added three columns did not also change
+# who receives mail, because a round that did both would be two
+# claims in one - and the second changes behaviour on a job that runs
+# every five minutes.
+try:
+    from alv_rounds import as_left_by as _alb5
+except Exception:
+    _alb5 = None
 touched = []
 for n in mailers:
     full = os.path.join(ROOT, 'pages', 'management', 'commands', n)
-    if os.path.isfile(full) and ('tenant_2' in read(full)
-                                 or MARK in read(full)):
+    if not os.path.isfile(full):
+        continue
+    text_ = _alb5(full, SUFFIX, read) if _alb5 else read(full)
+    if 'tenant_2' in text_ or MARK in text_:
         touched.append(n)
 ok(not touched,
-   'and no scheduled mail reaches anybody new - that is T2-5, decided '
-   'as BOTH TENANTS but not built here, because it changes behaviour '
-   'on a job that runs every five minutes', touched)
+   'and no scheduled mail reached anybody new as T2-1 left the tree - '
+   'the columns and who receives mail were deliberately two rounds, '
+   'because the second changes behaviour on a job that runs every '
+   'five minutes', touched)
 ok(os.path.isfile(os.path.join(ROOT, 'pages', 'management', 'commands',
                                'send_physical_invoices.py')),
    '  CONTROL: and that mailer really is there to have been changed')

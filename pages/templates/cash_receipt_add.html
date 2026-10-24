@@ -104,10 +104,10 @@
             <optgroup label="Tenants">
               {% for t in tenants %}
                 <option value="tenant:{{ t.tenant_id }}"
-                        data-name="{{ t.tenant_name }}"
+                        data-name="{{ t.tenant_display_name }}"
                         data-tel="{{ t.tenant_contact_number|default_if_none:'' }}"
                         data-email="{{ t.tenant_email|default_if_none:'' }}"
-                        {% if prefill.tenant_id == t.tenant_id %}selected{% endif %}>{{ t.tenant_name }}</option>
+                        {% if prefill.tenant_id == t.tenant_id %}selected{% endif %}>{{ t.tenant_display_name }}</option>
               {% endfor %}
             </optgroup>
             <optgroup label="Invoice customers">

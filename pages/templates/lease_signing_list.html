@@ -89,7 +89,7 @@
                 {# FIRST CELL IS THE CARD TITLE ON A PHONE, and base   #}
                 {# gives it no label - so it carries none.             #}
                 <td data-label="">
-                    {{ r.tenant.tenant_name }}
+                    {{ r.tenant.tenant_display_name }}
                     <span class="ls-sub">
                         {% if r.env.sent_at %}sent {{ r.env.sent_at|date:"j M Y" }}
                         {% else %}created {{ r.env.created_at|date:"j M Y" }}{% endif %}

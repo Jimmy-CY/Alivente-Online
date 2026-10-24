@@ -91,7 +91,7 @@
           {% for r in rows %}
           <tr class="pd-row pd-band-{{ r.band }}">
             <td class="pd-col-name" data-label="Tenant">
-              <span class="pd-name">{{ r.tenant.tenant_name }}</span>
+              <span class="pd-name">{{ r.tenant.tenant_display_name }}</span>
               <!-- Replaces both the old n column and the "provisional" chip.
                    How much an average rests on is the single most important
                    thing about it here, and "1 payment" says that outright
@@ -190,7 +190,7 @@
           <tbody>
             {% for o in outstanding %}
             <tr class="pd-row {% if o.age > 30 %}pd-band-late{% elif o.age > grace %}pd-band-slight{% else %}pd-band-ontime{% endif %}">
-              <td data-label="Tenant">{{ o.tenant.tenant_name }}</td>
+              <td data-label="Tenant">{{ o.tenant.tenant_display_name }}</td>
               <td data-label="Property">{{ o.tenant.prop.prop_name }}</td>
               <td data-label="Invoiced">{{ o.invoice.invoice_date }}</td>
               <td class="pd-num" data-label="Age">{{ o.age }}d</td>

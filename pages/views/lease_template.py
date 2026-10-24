@@ -149,6 +149,13 @@ def generate_lease_agreement_view(request):
             )
 
             if document_path:
+                # THE JOINT TENANT GOES BACK ON THE RECORD - T2-3,
+                # 24 Oct 2026. After the document, never before: a
+                # generation that failed is not a statement about
+                # who is on a tenancy.
+                _save_second_tenant_back(
+                    tenant_id, tenant_obj, additional_data)
+
                 # Create filename
                 filename = f'lease_agreement_{property_obj.prop_name}_{tenant_obj.tenant_name}_{country}_{language}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
                 filename = filename.replace(' ', '_').replace('/', '_')  # Clean filename
@@ -173,6 +180,88 @@ def generate_lease_agreement_view(request):
             messages.error(request, f'An error occurred while generating the lease agreement: {str(e)}')
 
     return render(request, 'generate_lease_agreement.html', context)
+
+
+def _save_second_tenant_back(tenant_id, tenant_obj, additional_data):
+    """Put the joint tenant typed into Generate onto the record. T2-3.
+
+    HIS FOUR DECISIONS, 24 October, and every branch below is one of
+    them:
+
+      PREFILL AND SAVE BACK, so there is one place to type a joint
+      tenant and it sticks. Before this round Generate asked for a
+      second tenant in full and kept none of it - somebody typed one
+      for every lease generated and the system forgot them the
+      moment the .docx downloaded.
+
+      ASK FIRST WHEN THE RECORD ALREADY HOLDS ONE AND THE DETAILS
+      DIFFER. The page asks; second_tenant_save_back is the answer it
+      got. An empty record is not a disagreement, so filling one
+      needs no permission - the modal says so before the fact,
+      because a message after the fact would never be seen: this view
+      returns a FileResponse and the page never navigates.
+
+      REMOVE NEVER DELETES. has_second_tenant false means the lease
+      leaves them off - a renewal where only one person signs is an
+      ordinary thing to want. Taking a jointly liable person OFF a
+      tenancy is an Edit Tenant action. There is no path below that
+      writes a blank name, and the suite proves it.
+
+      AND A NEW TENANT HAS NO ROW. Generate builds leases for people
+      who are not in the database; tenant_id arrives as the string
+      new_tenant and the view makes a MockTenant. Creating a tenancy
+      as a side effect of generating a document would be a far larger
+      change than this round.
+
+    .update() AND NOT .save(). save() runs full_clean() over the
+    whole row, so an old tenancy with a pre-existing lease-date
+    problem would make LEASE GENERATION fail over something with no
+    bearing on the lease being generated. .update() skips clean(),
+    which is why the Individual-only rule now lives in
+    tenant.second_tenant_refusal() where this can ask it too.
+
+    Returns the fields written, or None.
+    """
+    if tenant_id == 'new_tenant' or not getattr(tenant_obj, 'pk', None):
+        return None
+
+    # REMOVE NEVER DELETES.
+    if not additional_data.get('has_second_tenant'):
+        return None
+
+    data = additional_data.get('second_tenant_data') or {}
+    name = (data.get('tenant_name') or '').strip()
+    if not name:
+        return None
+
+    # THE RULE, ASKED OF THE MODEL AND NOT RESTATED HERE.
+    refusal = tenant.second_tenant_refusal(tenant_obj.tenant_type, True)
+    if refusal:
+        # NOT A MESSAGE, because this view returns a FileResponse and
+        # the page never navigates - line 162 carries a commented-out
+        # messages.success left by whoever found that before me. And
+        # NOT a refusal of the document either: what may be typed into
+        # a lease is not this round claim. The RECORD is.
+        logger.warning(
+            'T2-3: refused to save a joint tenant onto tenant %s - %s',
+            tenant_obj.pk, refusal)
+        return None
+
+    stored = (tenant_obj.tenant_2_name or '').strip()
+    if stored and not additional_data.get('second_tenant_save_back'):
+        return None
+
+    fields = {
+        'tenant_2_name': name,
+        'tenant_2_contact_number':
+            (data.get('tenant_contact_number') or '').strip(),
+        'tenant_2_email': (data.get('tenant_email') or '').strip(),
+    }
+    if all((getattr(tenant_obj, k) or '') == v for k, v in fields.items()):
+        return None
+
+    tenant.objects.filter(pk=tenant_obj.pk).update(**fields)
+    return fields
 
 
 def get_ordinal_day(day):

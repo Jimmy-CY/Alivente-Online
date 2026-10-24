@@ -1273,6 +1273,12 @@ $sentinels = @(
     @{ File = 'Push-PendingChanges.ps1'; Text = 'ZERO MEANS SAY NOTHING'; What = 'WK-1: the sweep can be told how many workers to use, and a push that does not mention them behaves exactly as before - 6 is right on a machine that can take it and wrong on one that cannot, and rc=0xC0000374 killed two sweeps on 23 October saying so' },
     @{ File = 'pages/views/lease_signing.py'; Text = 'ONE ROW PER ENVELOPE'; What = 'ES-3a: the register is one row per ATTEMPT, not per tenant - which is why it is not a tab on Manage Lease Agreements, where one tenant with four attempts could only ever show one of them' },
     @{ File = 'pages/templates/lease_signing_list.html'; Text = 'data-label'; What = 'ES-3a: and the phone layout is base turning rows into cards, not a ninth hand-written copy of something base already does' },
+    @{ File = 'pages/management/commands/send_physical_invoices.py'; Text = 'tenant_emails'; What = 'T2-5: the invoice mailer asks the MODEL who is on a tenancy rather than carrying its own copy of the address parser - T2-1 put the same expression on the model for exactly this moment, and two parsers that agree today are still two answers tomorrow' },
+    @{ File = 'pages/models.py'; Text = 'def joint_name'; What = 'T2-4: ONE join, named once - get_overdue_invoices builds its rows from raw sql and never loads a tenant, so it asks this rather than writing a second join, and two joins would be two separators' },
+    @{ File = 'pages/views/physical_invoices.py'; Text = 'tenant_display_name'; What = 'T2-4: a VAT invoice names both liable people, his decision of 24 Oct - and the CUSTOMER ID deliberately keeps the stored first name beside it, because an identifier is matched against and a label is not' },
+    @{ File = 'pages/models.py'; Text = 'def second_tenant_refusal'; What = 'T2-3: who may hold a joint tenancy, named ONCE - clean() asks it and so does the Generate save-back, which writes with .update() and therefore never reaches clean() at all; two copies of the sentence would be two rules that agree by coincidence' },
+    @{ File = 'pages/views/lease_template.py'; Text = 'def _save_second_tenant_back'; What = 'T2-3: a joint tenant typed into Generate is kept - before this round the screen asked for six fields and threw every one of them away the moment the document downloaded' },
+    @{ File = 'pages/views/properties.py'; Text = 'tenant_2_name'; What = 'T2-3: the modal is filled from this payload and from nothing else, so a column missing here cannot be prefilled however correct the markup is' },
     @{ File = 'pages/models.py'; Text = 'def tenant_display_name'; What = 'T2-2: one spelling of how a tenancy is NAMED on a screen - the register prints it today and the four reports T2-4 builds print the same thing, because five screens each joining two names for themselves is five chances to disagree about the separator' },
     @{ File = 'pages/templates/tenant_add.html'; Text = 'id="t2-add-btn"'; What = 'T2-2: one tenant stays the default and has to LOOK like it - the three second-tenant fields sit behind Add Second Tenant rather than on the form, and the button itself only appears once Tenant Type says Individual' },
     @{ File = 'pages/models.py'; Text = 'def has_second_tenant'; What = 'T2-1: one predicate for whether a tenancy has a joint tenant, named once - twenty templates and twenty-seven python modules read the first tenant details, and each deciding this for itself is how two screens come to disagree about whether somebody exists' },
@@ -3038,7 +3044,13 @@ $suites = @(
     # T2-1, 24 Oct 2026 - a tenancy can hold two people.
     'test_second_tenant.py',
     # T2-2, 24 Oct 2026 - and the screens that show the second one.
-    'test_tenant_screens.py'
+    'test_tenant_screens.py',
+    # T2-3, 24 Oct 2026 - Generate reads the record and writes back.
+    'test_generate_second.py',
+    # T2-4, 24 Oct 2026 - sixteen screens name a joint tenancy one way.
+    'test_report_names.py',
+    # T2-5, 24 Oct 2026 - a joint tenant gets the invoice.
+    'test_invoice_recipients.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

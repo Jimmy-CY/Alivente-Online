@@ -1457,6 +1457,12 @@ ROUNDS = [
     '.bak_secondtenant',
     # T2-2, 24 Oct 2026 - and the screens that show the second one.
     '.bak_t2screens',
+    # T2-3, 24 Oct 2026 - Generate reads the record and writes back.
+    '.bak_t2gen',
+    # T2-4, 24 Oct 2026 - sixteen screens name a joint tenancy one way.
+    '.bak_reportnames',
+    # T2-5, 24 Oct 2026 - a joint tenant gets the invoice.
+    '.bak_invrecip',
 ]
 
 

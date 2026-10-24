@@ -129,7 +129,7 @@ Invoices
           <tr>
             <td data-label="Property">{{ row.prop_name }}</td>
             <td data-label="Country">{{ row.prop_country }}</td>
-            <td data-label="Tenant">{{ row.tenant_name }}</td>
+            <td data-label="Tenant">{{ row.tenant_display_name|default:row.tenant_name }}</td>
             <td data-label="Amount" class="num amount-cell">&euro;{{ row.amount|floatformat:0 }}</td>
             <td data-label="Invoice Date">{{ row.invoice_date|date:"Y-m-d" }}</td>
             <td data-label="Due Date">{{ row.due_date|date:"Y-m-d" }}</td>

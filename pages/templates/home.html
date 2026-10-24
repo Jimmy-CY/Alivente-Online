@@ -229,7 +229,7 @@ Home
         {% for r in insights.arrears.rows|slice:":3" %}
           <div class="ins-row">
             <div>
-              <div class="ins-who">{{ r.tenant_name }}</div>
+              <div class="ins-who">{{ r.tenant_display_name|default:r.tenant_name }}</div>
               <div class="ins-meta">{{ r.prop_name }}{% if r.invoice_count > 1 %} &middot; {{ r.invoice_count }} invoices{% else %} &middot; due {{ r.due_date|date:"j M" }}{% endif %}</div>
             </div>
             <span class="ins-amt ins-amt--red">{{ r.amount_fmt }} &middot; {{ r.days_overdue }}d</span>
@@ -267,7 +267,7 @@ Home
           <div class="ins-row">
             <div>
               <div class="ins-who">{{ e.prop_name }}</div>
-              <div class="ins-meta">{{ e.prop_country }}{% if e.tenant_name %} &middot; {{ e.tenant_name }}{% endif %}</div>
+              <div class="ins-meta">{{ e.prop_country }}{% if e.tenant_name %} &middot; {{ e.tenant_display_name|default:e.tenant_name }}{% endif %}</div>
             </div>
             <span class="ins-tag {% if e.days_to_end <= 30 %}ins-tag--red{% else %}ins-tag--amber{% endif %}">
               {{ e.days_to_end }}d
@@ -326,7 +326,7 @@ Home
           <div class="ins-row">
             <div>
               <div class="ins-who">
-                {{ c.tenant_name }}
+                {{ c.tenant_display_name|default:c.tenant_name }}
                 <span class="ins-tag ins-tag--{{ c.level }}">{{ c.level|upper }}</span>
               </div>
               <div class="ins-reasons">{{ c.reasons|join:" &middot; " }}</div>

@@ -48,7 +48,6 @@ check_lease_renewal_and_invoices.
 """
 
 import os
-import re
 import smtplib
 import ssl
 from datetime import date
@@ -237,11 +236,28 @@ class Command(BaseCommand):
         sent_count = failed_count = 0
         for pi in approved:
             tenant = pi.tenant
-            # tenant_email is a free-text field that may hold several addresses
-            # (separated by "and", commas, spaces, etc.). Pull out every email so
-            # the invoice reaches all recipients recorded on the tenant.
-            raw_email = getattr(tenant, "tenant_email", "") or ""
-            to_list = re.findall(r"[^\s,;<>()]+@[^\s,;<>()]+\.[^\s,;<>()]+", raw_email)
+            # EVERY ADDRESS ON THE TENANCY, BOTH PEOPLE - T2-5,
+            # 24 Oct 2026, his decision of 23 October.
+            #
+            # tenant_email is free text and always has been: the form
+            # labels it Email Address(es) and its placeholder reads
+            # "One or more emails, separated by commas". This used to
+            # pull every address out of THAT ONE FIELD with a regex
+            # written here - so a joint tenant typed into it has been
+            # receiving invoices for as long as anyone typed them
+            # that way, while one entered properly in tenant_2_email
+            # received nothing.
+            #
+            # tenant_emails IS THE SAME PARSER, ON THE MODEL. T2-1 put
+            # it there with this exact expression and its suite
+            # asserted the two were identical character for character,
+            # so that this round could delete one of them. Two copies
+            # that agree today are still two answers tomorrow.
+            #
+            # NOBODY LOSES AN EMAIL: it returns tenant_email's
+            # addresses first and in order, so a tenancy that already
+            # had both people in the one box is unaffected.
+            to_list = list(getattr(tenant, "tenant_emails", None) or [])
             to_display = ", ".join(to_list)
 
             try:
@@ -255,17 +271,27 @@ class Command(BaseCommand):
                 failed_count += 1
                 self.stderr.write(
                     f"  SKIP {pi.invoice_number} ({tenant}): no valid email in "
-                    f"tenant_email; stays approved for retry."
+                    f"tenant_email or tenant_2_email; stays approved "
+                    f"for retry."
                 )
                 continue
 
             subject = f"{period_label} - Rental Invoice"
-            tenant_name = getattr(tenant, "tenant_name", "") or ""
+            # BOTH NAMES IN THE GREETING - T2-5, 24 Oct 2026. Both
+            # people are being billed, so the letter addresses both.
+            # tenant_display_name falls back to the stored name on a
+            # tenancy with one person, so nothing moves for them.
+            tenant_name = getattr(tenant, "tenant_display_name", "") or ""
             text_body, html_body = self._assemble_bodies(
                 self._saved_body_for(tenant), tenant_name, period_label,
                 include_logo=logo_bytes is not None,
             )
-            filename = (f"{pi.invoice_number} - {tenant_name} - "
+            # THE FILENAME KEEPS THE STORED FIRST NAME - T2-5.
+            # It is how a document is found on disk and how it sorts
+            # beside its siblings: an identifier, not a label, which
+            # is the line T2-4 drew everywhere else yesterday.
+            file_name_who = getattr(tenant, "tenant_name", "") or ""
+            filename = (f"{pi.invoice_number} - {file_name_who} - "
                         f"({year:04d}-{month:02d}-01).pdf")
 
             if dry_run or no_email:

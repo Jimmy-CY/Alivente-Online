@@ -525,6 +525,26 @@
               <textarea class="form-control" id="second-tenant-address" name="second_tenant_address" rows="2"></textarea>
             </div>
           </div>
+
+          <!-- WHAT THIS WILL DO TO THE RECORD, SAID BEFORE IT DOES IT -
+               T2-3, 24 Oct 2026.
+
+               A MESSAGE AFTERWARDS WOULD NOT BE SEEN. This view
+               returns a FileResponse: the browser downloads the .docx
+               and the page never navigates, so a Django message sits
+               in the session until some other page loads. Line 162 of
+               lease_template.py carries a commented-out
+               messages.success, left there by whoever found that
+               before me.
+
+               So it is said HERE, where the user is looking, and only
+               when it is true - the record has no joint tenant and
+               this one is about to become it. When the record already
+               holds one, the confirm at save time does the telling. -->
+          <p id="second-tenant-record-note" style="display: none;">
+            <i class="fas fa-info-circle"></i>
+            This person will also be saved to the tenant record.
+          </p>
         </div>
 
         <!-- Additional Data Form -->
@@ -947,6 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('add-second-tenant-btn').addEventListener('click', function() {
     document.getElementById('second-tenant-section').style.display = 'block';
     document.getElementById('add-second-tenant-btn').style.display = 'none';
+    paintSecondTenantNote();                        // T2-3, 24 Oct 2026
   });
 
   // Remove second tenant button handler
@@ -954,6 +975,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('second-tenant-section').style.display = 'none';
     document.getElementById('add-second-tenant-btn').style.display = 'inline-block';
     
+    paintSecondTenantNote();                        // T2-3, 24 Oct 2026
+
+    // T2-3, 24 Oct 2026 - THIS CLEARS THE FORM AND NOT THE RECORD.
+    // Remove here means leave them off THIS document; a renewal where
+    // only one person signs is an ordinary case. Taking a jointly
+    // liable person off a tenancy is an Edit Tenant action, done on
+    // the screen that owns the record.
     // Clear second tenant fields (removed second-tenant-contact)
     document.getElementById('second-tenant-name').value = '';
     document.getElementById('second-tenant-email').value = '';
@@ -1140,7 +1168,7 @@ function showDataPreview() {
     previewHtml += '</div>';
   } else if (Object.keys(tenantData).length > 0) {
     previewHtml += '<div class="col-md-6"><strong>Tenant:</strong><br>';
-    previewHtml += `${tenantData.tenant_name || 'N/A'}<br>`;
+    previewHtml += `${tenantData.tenant_display_name || tenantData.tenant_name || 'N/A'}<br>`;
     previewHtml += `Email: ${tenantData.tenant_email || 'N/A'}<br>`;
     previewHtml += `Phone: ${tenantData.tenant_contact_number || 'N/A'}`;
     previewHtml += '</div>';
@@ -1219,6 +1247,31 @@ function updateTenantFields() {
   }
 }
 
+// IS THE PROMISE IN THE MODAL STILL TRUE? - T2-3, 24 Oct 2026.
+//
+// The note says this person will also be saved to the tenant record.
+// That is true exactly when the record has NO joint tenant and we are
+// on a real tenancy - not for a new tenant, who has no row, and not
+// when the record already holds one, where a confirm does the telling
+// at save time instead.
+//
+// ONE FUNCTION AND NOT THREE BRANCHES SETTING A STYLE. The note is
+// repainted on open, on Add and on Remove, and three copies of this
+// condition would be three chances to leave a promise on screen that
+// is no longer being made.
+function paintSecondTenantNote() {
+  const note = document.getElementById('second-tenant-record-note');
+  if (!note) return;
+  const sel = document.getElementById('tenant-select');
+  const tenantId = sel ? sel.value : '';
+  const section = document.getElementById('second-tenant-section');
+  const open = section && section.style.display !== 'none';
+  const stored = (tenantData.tenant_2_name || '').trim();
+  note.style.display =
+    (open && tenantId && tenantId !== 'new_tenant' && !stored)
+      ? '' : 'none';
+}
+
 function populateModal() {
   const tenantId = document.getElementById('tenant-select').value;
   
@@ -1289,7 +1342,7 @@ function populateModal() {
     
     if (Object.keys(tenantData).length > 0) {
       tenantHtml = `
-        <p><strong>Name:</strong> ${tenantData.tenant_name || 'N/A'}</p>
+        <p><strong>Name:</strong> ${tenantData.tenant_display_name || tenantData.tenant_name || 'N/A'}</p>
         <p><strong>Contact:</strong> ${tenantData.tenant_contact_person || 'N/A'}</p>
         <p><strong>Email:</strong> ${tenantData.tenant_email || 'N/A'}</p>
         <p><strong>Phone:</strong> ${tenantData.tenant_contact_number || 'N/A'}</p>
@@ -1301,6 +1354,24 @@ function populateModal() {
       const tenantType = tenantData.tenant_type || 'Individual';
       if (tenantType === 'Individual') {
         addSecondTenantBtn.style.display = 'inline-block';
+        // PREFILL THE THREE THE RECORD HOLDS - T2-3, 24 Oct 2026.
+        //
+        // Before this round Generate asked for a joint tenant it had
+        // already been told about, every single time. The other
+        // three - passport id, passport country and address - are
+        // per-document and stay asked, which is the same reason T2-1
+        // stored three columns and not six.
+        if (tenantData.tenant_2_name) {
+          document.getElementById('second-tenant-name').value =
+            tenantData.tenant_2_name || '';
+          document.getElementById('second-tenant-phone').value =
+            tenantData.tenant_2_contact_number || '';
+          document.getElementById('second-tenant-email').value =
+            tenantData.tenant_2_email || '';
+          secondTenantSection.style.display = 'block';
+          addSecondTenantBtn.style.display = 'none';
+        }
+        paintSecondTenantNote();
       } else {
         addSecondTenantBtn.style.display = 'none';
         secondTenantSection.style.display = 'none';
@@ -1489,6 +1560,41 @@ function saveAdditionalData() {
     }
     
     additionalData.second_tenant_data = secondTenantData;
+
+    // DOES THE RECORD NEED TO CHANGE, AND MAY IT? - T2-3, 24 Oct 2026.
+    //
+    // HIS DECISION: an empty record is filled without asking, because
+    // filling one is additive and the modal has already said so. A
+    // record that already holds a joint tenant is only overwritten
+    // after a confirm that names both - a lease naming somebody else
+    // is a real thing to want, and silently rewriting a tenancy from
+    // a document screen is not.
+    //
+    // THE SERVER DOES NOT TRUST THIS FLAG FOR ANYTHING ELSE. It
+    // decides for itself that the tenancy is Individual, that the
+    // tenant exists, and that nothing is ever deleted. This carries
+    // one thing only: the answer the user gave.
+    const storedSecond = (tenantData.tenant_2_name || '').trim();
+    const typedSecond = (secondTenantData.tenant_name || '').trim();
+    const differs =
+      typedSecond !== storedSecond ||
+      (secondTenantData.tenant_contact_number || '').trim() !==
+        (tenantData.tenant_2_contact_number || '').trim() ||
+      (secondTenantData.tenant_email || '').trim() !==
+        (tenantData.tenant_2_email || '').trim();
+
+    if (tenantId !== 'new_tenant' && typedSecond && differs) {
+      if (!storedSecond) {
+        additionalData.second_tenant_save_back = true;
+      } else {
+        additionalData.second_tenant_save_back = confirm(
+          'The tenant record currently has ' + storedSecond +
+          ' as the second tenant.\n\nUpdate the record to ' +
+          typedSecond + '?\n\nOK updates the tenant record. Cancel ' +
+          'leaves the record alone and still generates this lease ' +
+          'with the details you typed.');
+      }
+    }
     additionalData.has_second_tenant = true;
   } else {
     additionalData.has_second_tenant = false;

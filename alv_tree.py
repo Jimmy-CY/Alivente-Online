@@ -944,6 +944,12 @@ CONVERTED = [
     'test_second_tenant.py',
     # T2-2, 24 Oct 2026 - and the screens that show the second one.
     'test_tenant_screens.py',
+    # T2-3, 24 Oct 2026 - Generate reads the record and writes back.
+    'test_generate_second.py',
+    # T2-4, 24 Oct 2026 - sixteen screens name a joint tenancy one way.
+    'test_report_names.py',
+    # T2-5, 24 Oct 2026 - a joint tenant gets the invoice.
+    'test_invoice_recipients.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

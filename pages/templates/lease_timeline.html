@@ -554,7 +554,7 @@ function initTimelineIfNeeded() {
         }
 
         const tooltip = `
-            <strong>${item.tenant_name}</strong><br>
+            <strong>${item.tenant_display_name || item.tenant_name}</strong><br>
             Start: ${startDate.toLocaleDateString()}<br>
             End: ${endDate.toLocaleDateString()}<br>
             Rent: €${item.rent.toFixed(2)}/month<br>
@@ -565,7 +565,7 @@ function initTimelineIfNeeded() {
         items.add({
             id: `lease_${item.tenant_id}`,
             group: item.property_id,
-            content: item.tenant_name,
+            content: item.tenant_display_name || item.tenant_name,
             start: startDate,
             end: endDate,
             style: `background-color: ${color}; border-color: ${color};`,
@@ -667,11 +667,11 @@ function initTimelineIfNeeded() {
                 items.add({
                     id: itemId,
                     group: item.property_id,
-                    content: item.tenant_name,
+                    content: item.tenant_display_name || item.tenant_name,
                     start: startDate,
                     end: endDate,
                     style: 'background-color: #6c757d; border-color: #6c757d;',
-                    title: `${item.tenant_name} (Inactive)`,
+                    title: `${item.tenant_display_name || item.tenant_name} (Inactive)`,
                     className: 'inactive-lease',
                     editable: false
                 });

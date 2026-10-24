@@ -520,6 +520,11 @@ def lease_timeline_view(request):
                     'property_name': prop.prop_name,
                     'tenant_id': t.tenant_id,
                     'tenant_name': t.tenant_name,
+                    # T2-4, 24 Oct 2026 - the Lease Timeline draws
+                    # this on every bar and in every tooltip. A bar
+                    # is keyed on tenant_id, so nothing matches on
+                    # the name and both keys travel together.
+                    'tenant_display_name': t.tenant_display_name,
                     'start_date': t.tenant_lease_start_date.isoformat(),
                     'end_date': t.tenant_lease_end_date.isoformat() if t.tenant_lease_end_date else None,
                     'is_active': t.tenant_current == 'Yes',

@@ -776,13 +776,10 @@ class tenant(models.Model):
         # NO ROW IN THE DATABASE CAN FAIL THIS TODAY: the three
         # columns landed blank in T2-1's migration yesterday and
         # nothing has written one yet.
-        if self.has_second_tenant and (self.tenant_type or '').strip() \
-                != 'Individual':
-            raise ValidationError(
-                "You must remove the second tenant before changing to "
-                "Company type. Second tenants are only allowed for "
-                "Individual tenants."
-            )
+        refusal = self.second_tenant_refusal(
+            self.tenant_type, self.has_second_tenant)
+        if refusal:
+            raise ValidationError(refusal)
 
         if self.tenant_lease_start_date and self.tenant_lease_end_date:
             # Validate date order
@@ -807,6 +804,43 @@ class tenant(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    # WHO MAY HOLD A JOINT TENANCY, lifted out of clean().
+    # T2-3, 24 Oct 2026 - and it is the same rule it always was.
+    #
+    # THE DATE SITS ON ONE LINE ON PURPOSE. main() asks whether MARK
+    # is already in this file to decide that the round has run, and
+    # the first spelling wrapped the mark across two comment lines.
+    # The check never fired, so a second run refused on a missing
+    # anchor instead of saying it was already applied - safe, and
+    # not what the house pattern says.
+    #
+    # IT IS A STATICMETHOD BECAUSE THE SECOND CALLER HAS NO ROW IN
+    # HAND. T2-3 saves a joint tenant back from Generate with
+    # .update(), which never loads the object and never calls
+    # clean() - and .update() is deliberate: .save() runs full_clean()
+    # over the WHOLE row, so an old tenancy with a pre-existing lease
+    # date problem would make LEASE GENERATION fail over something
+    # that has nothing to do with the lease being generated.
+    #
+    # BUT BYPASSING clean() BYPASSES THIS RULE, so the rule had to
+    # stop living inside clean() to be asked anywhere else. One rule,
+    # named once, two callers - rather than a second copy of the
+    # sentence in a view, which is what T2-2 refused to do when it
+    # read Generate's wording rather than inventing its own.
+    #
+    # Returns the refusal, or None when there is nothing to refuse,
+    # so a caller can raise it, show it or log it as it needs to.
+    @staticmethod
+    def second_tenant_refusal(tenant_type, has_second):
+        """Why this tenancy may not hold a joint tenant, or None."""
+        if not has_second:
+            return None
+        if (tenant_type or '').strip() == 'Individual':
+            return None
+        return ("You must remove the second tenant before changing to "
+                "Company type. Second tenants are only allowed for "
+                "Individual tenants.")
 
     @property
     def has_second_tenant(self):
@@ -888,13 +922,43 @@ class tenant(models.Model):
         "& Maria Georgiou" would read as a bug in the screen rather
         than as a gap in the record.
         """
-        first = (self.tenant_name or '').strip()
-        if not self.has_second_tenant:
-            return first
-        second = (self.tenant_2_name or '').strip()
-        if not first:
-            return second
-        return first + self.JOINT_SEPARATOR + second
+        return self.joint_name(self.tenant_name, self.tenant_2_name)
+
+    # THE JOIN ITSELF, BECAUSE ONE CALLER IS NOT A MODEL.
+    # T2-4, 24 Oct 2026 - and the date sits on ONE line on purpose.
+    #
+    # main() asks whether MARK is already in this file to decide the
+    # round has run. T2-3 wrapped its mark across two comment lines
+    # four hours ago and the check never fired - a second run refused
+    # on a missing anchor instead of saying it was already applied.
+    # This round made the identical mistake. Both are one line now.
+    #
+    # get_overdue_invoices builds its rows from RAW SQL and never
+    # loads a tenant object, so it cannot ask the property above. It
+    # can ask this. The alternative was a second join written out in
+    # a view, and two joins are two separators - the exact fault
+    # tenant_display_name exists to prevent.
+    #
+    # Same shape as second_tenant_refusal, which T2-3 lifted out of
+    # clean() for the same reason: one rule, named once, asked by
+    # whoever needs it.
+    @staticmethod
+    def joint_name(first, second):
+        """Both people on a tenancy, as one line. Either may be blank.
+
+        A BLANK FIRST NAME IS NOT A REASON TO PRINT A SEPARATOR. It
+        should not happen - the form requires it - but a row imported
+        or edited around the form could carry one, and "& Maria
+        Georgiou" reads as a bug in the screen rather than as a gap
+        in the record.
+        """
+        a = (first or '').strip()
+        b = (second or '').strip()
+        if not b:
+            return a
+        if not a:
+            return b
+        return a + tenant.JOINT_SEPARATOR + b
 
     def __str__(self):
         return self.tenant_name if self.tenant_name else ""

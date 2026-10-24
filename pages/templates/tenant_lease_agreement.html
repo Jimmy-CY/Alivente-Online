@@ -143,7 +143,7 @@
 <tbody>
     {% for tenant in tenants %}
     <tr>
-        <td data-label="Tenant" style="text-align: left">{{ tenant.tenant_name }}</td>
+        <td data-label="Tenant" style="text-align: left">{{ tenant.tenant_display_name }}</td>
         <td data-label="Property" style="text-align: left">{{ tenant.prop.prop_name }}</td>
         <td data-label="Start Date">{{ tenant.tenant_lease_start_date|date:"Y-m-d"|default:"-" }}</td>
         <td data-label="End Date">

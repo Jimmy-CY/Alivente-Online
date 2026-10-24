@@ -35,7 +35,7 @@
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Name:</span>
-                            <span class="detail-value">{{ tenant.tenant_name }}</span>
+                            <span class="detail-value">{{ tenant.tenant_display_name }}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Rental Type:</span>
@@ -95,7 +95,7 @@
                         <p class="card-message">{{ declined.message }}</p>
                         <div class="detail-row">
                             <span class="detail-label">Current Tenant:</span>
-                            <span class="detail-value">{{ declined.tenant_name }}</span>
+                            <span class="detail-value">{{ declined.tenant_display_name }}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Lease End Date:</span>

@@ -67,6 +67,9 @@ var tenantDataList = [
         prop_country: '{{ property.prop_country|default_if_none:""|escapejs }}',
         tenant_id: {{ property.tenant_id|default_if_none:"null" }},
         tenant_name: '{{ property.tenant_name|default_if_none:""|escapejs }}',
+        {# T2-4 - a SECOND key, never a replacement. The lookup below #}
+        {# MATCHES on tenant_name. #}
+        tenant_display_name: '{{ property.tenant_display_name|default_if_none:""|escapejs }}',
         tenant_contact_person: '{{ property.tenant_contact_person|default_if_none:""|escapejs }}',
         tenant_contact_number: '{{ property.tenant_contact_number|default_if_none:""|escapejs }}',
         tenant_email: '{{ property.tenant_email|default_if_none:""|escapejs }}',
@@ -129,7 +132,8 @@ function generateTenantHTML(tenant, showTenantLine) {
     html += '<div class="tenant-details">';
 
     if (showTenantLine) {
-        html += '<p><strong>Tenant:</strong> ' + (tenant.tenant_name || '-') + '</p>';
+        // T2-4 - the DISPLAY key, falling back to the match key.
+        html += '<p><strong>Tenant:</strong> ' + (tenant.tenant_display_name || tenant.tenant_name || '-') + '</p>';
     }
 
     html += '<p><strong>Contact:</strong> ' + (tenant.tenant_contact_person || '-') + ' | ' + (tenant.tenant_contact_number || '-') + '</p>';
@@ -260,7 +264,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                 <tbody>
                     {% for debtor in debtors_age_analysis %}
                     <tr>
-                        <td class="tenant-name-cell">{{ debtor.tenant_name }}</td>
+                        <td class="tenant-name-cell">{{ debtor.tenant_display_name }}</td>
                         {% if debtor.total_outstanding > 0 %}
                         <td class="num total-amount clickable-amount"
                             data-tenant-name="{{ debtor.tenant_name }}"
@@ -309,7 +313,7 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                 <div class="debtor-card">
                 {% endif %}
                     <div class="debtor-card-header">
-                        <span class="debtor-name">{{ debtor.tenant_name }}</span>
+                        <span class="debtor-name">{{ debtor.tenant_display_name }}</span>
                         <span class="debtor-total">€{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}</span>
                     </div>
 

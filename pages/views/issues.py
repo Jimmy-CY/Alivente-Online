@@ -1099,6 +1099,10 @@ def lease_agreement_report(request, tenant_id):
     today = date.today()
     tenant_obj = get_object_or_404(tenant.objects.only(
         'tenant_id', 'prop_id', 'tenant_type', 'tenant_name', 'tenant_contact_person', 'tenant_contact_number',
+        # T2-4, 24 Oct 2026 - the joint tenant columns. .only() defers
+        # what it does not name, and a deferred field that is then
+        # read costs a second query per row.
+        'tenant_2_name', 'tenant_2_contact_number', 'tenant_2_email',
         'tenant_email', 'tenant_deposit', 'tenant_lease_start_date', 'tenant_lease_end_date',
         'tenant_rental_type', 'tenant_renewal', 'tenant_renewal_period',
         'tenant_rent', 'tenant_levies',
@@ -1126,6 +1130,10 @@ def tenant_report(request, tenant_id):
     today = date.today()
     tenant_obj = get_object_or_404(tenant.objects.only(
         'tenant_id', 'prop_id', 'tenant_type', 'tenant_name', 'tenant_contact_person', 'tenant_contact_number',
+        # T2-4, 24 Oct 2026 - the joint tenant columns. .only() defers
+        # what it does not name, and a deferred field that is then
+        # read costs a second query per row.
+        'tenant_2_name', 'tenant_2_contact_number', 'tenant_2_email',
         'tenant_email', 'tenant_deposit', 'tenant_lease_start_date', 'tenant_lease_end_date',
         'tenant_rental_type', 'tenant_renewal', 'tenant_renewal_period',
         'tenant_rent', 'tenant_levies',
@@ -1576,7 +1584,11 @@ def lease_renewal_report(request):
                         'prop_name': tenant_obj.prop.prop_name,
                         'prop_country': tenant_obj.prop.prop_country,
                         'tenant_type': tenant_obj.tenant_type,
+                        # T2-4, 24 Oct 2026 - both keys, neither
+                        # replacing the other.
                         'tenant_name': tenant_obj.tenant_name,
+                        'tenant_display_name':
+                            tenant_obj.tenant_display_name,
                         'tenant_contact_person': tenant_obj.tenant_contact_person,
                         'tenant_contact_number': tenant_obj.tenant_contact_number,
                         'tenant_email': tenant_obj.tenant_email,
@@ -1596,7 +1608,9 @@ def lease_renewal_report(request):
                     # Tenant declined renewal - add to declined_renewals list
                     declined_renewals.append({
                         'prop_name': tenant_obj.prop.prop_name,
-                        'tenant_name': tenant_obj.tenant_name,
+                        'tenant_name': tenant_obj.tenant_name,   # T2-4
+                        'tenant_display_name':
+                            tenant_obj.tenant_display_name,
                         'lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
                         'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
                     })

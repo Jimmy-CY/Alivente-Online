@@ -267,6 +267,10 @@ def get_expiring_leases(cursor, today):
             'prop_name': row['prop_name'],
             'prop_country': row['prop_country'],
             'tenant_name': row['tenant_name'],
+            # T2-4 - passed through from portfolio_insights, which
+            # holds a model object and joins the two names there.
+            'tenant_display_name': row.get('tenant_display_name')
+            or row['tenant_name'],
             'lease_end_date': end.strftime('%Y-%m-%d') if end else '',
             'days_to_end': row['days_to_end'],
             'renewal_date': row['renewal_date'].strftime('%Y-%m-%d'),
@@ -295,6 +299,8 @@ def get_declined_renewals(cursor, today):
         'prop_name': row['prop_name'],
         'prop_country': row['prop_country'],
         'tenant_name': row['tenant_name'],
+        'tenant_display_name': row.get('tenant_display_name')
+        or row['tenant_name'],                              # T2-4
         'lease_end_date': (row['lease_end'].strftime('%Y-%m-%d')
                            if row['lease_end'] else ''),
         'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT',
@@ -305,6 +311,7 @@ def get_overdue_invoices(cursor, today):
     """Get properties with overdue invoices"""
     cursor.execute("""
         SELECT prop.prop_name, prop.prop_country, tenant.tenant_name,
+               tenant.tenant_2_name,
                tenant.tenant_payment_terms, tenant.tenant_rent,
                invoice.invoice_date, invoice.invoice_id, invoice.invoice_amount
         FROM railway.invoice
@@ -347,6 +354,12 @@ def get_overdue_invoices(cursor, today):
                 'prop_name': prop_name,
                 'prop_country': prop_country,
                 'tenant_name': tenant_name,
+                # T2-4, 24 Oct 2026 - THIS ROW HAS NO MODEL OBJECT.
+                # It is built from raw sql, so it asks the model's
+                # staticmethod for the join rather than writing a
+                # second one here. Two joins would be two separators.
+                'tenant_display_name': tenant.joint_name(
+                    tenant_name, tenant_2_name),
                 'tenant_rent': effective_amount,
                 'invoice_date': invoice_date.strftime('%Y-%m-%d'),
                 'due_date': due_date.strftime('%Y-%m-%d'),
