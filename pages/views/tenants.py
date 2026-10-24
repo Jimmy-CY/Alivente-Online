@@ -556,6 +556,24 @@ def duplicate_tenant_view(request, tenant_id):
         new_tenant.tenant_contact_person = original_tenant.tenant_contact_person
         new_tenant.tenant_contact_number = original_tenant.tenant_contact_number
         new_tenant.tenant_email = original_tenant.tenant_email
+
+        # AND THE JOINT TENANT COMES WITH THEM - T2-2, 24 Oct 2026.
+        #
+        # This list is explicit, which is right: copying everything
+        # would carry the primary key, the lease dates and the lease
+        # agreement. But a column missing from it is dropped in
+        # silence, under a button whose own confirm box promises to
+        # "copy all tenant details except lease dates".
+        #
+        # A RENEWAL IS WHEN THIS MATTERS MOST. Both people signed the
+        # first lease and both are liable for the next one; a renewal
+        # that quietly came back with one name on it would be wrong
+        # in the direction nobody checks.
+        new_tenant.tenant_2_name = original_tenant.tenant_2_name
+        new_tenant.tenant_2_contact_number = \
+            original_tenant.tenant_2_contact_number
+        new_tenant.tenant_2_email = original_tenant.tenant_2_email
+
         new_tenant.tenant_deposit = original_tenant.tenant_deposit
         new_tenant.tenant_rental_type = original_tenant.tenant_rental_type
         new_tenant.tenant_renewal = original_tenant.tenant_renewal

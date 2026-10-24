@@ -229,6 +229,10 @@ class TenantAdmin(admin.ModelAdmin):
         'tenant_name', 'prop', 'tenant_current',
         'tenant_physical_invoice_required', 'tenant_bill_levies',
     ]
+    # T2-1, 24 Oct 2026 - a joint tenant is findable by name here
+    # before any screen shows one, which is what makes the columns
+    # usable the day they land rather than the day T2-2 ships.
+    search_fields = ['tenant_name', 'tenant_2_name']
     list_filter = [
         'tenant_current', 'tenant_physical_invoice_required', 'tenant_bill_levies',
     ]

@@ -1273,6 +1273,10 @@ $sentinels = @(
     @{ File = 'Push-PendingChanges.ps1'; Text = 'ZERO MEANS SAY NOTHING'; What = 'WK-1: the sweep can be told how many workers to use, and a push that does not mention them behaves exactly as before - 6 is right on a machine that can take it and wrong on one that cannot, and rc=0xC0000374 killed two sweeps on 23 October saying so' },
     @{ File = 'pages/views/lease_signing.py'; Text = 'ONE ROW PER ENVELOPE'; What = 'ES-3a: the register is one row per ATTEMPT, not per tenant - which is why it is not a tab on Manage Lease Agreements, where one tenant with four attempts could only ever show one of them' },
     @{ File = 'pages/templates/lease_signing_list.html'; Text = 'data-label'; What = 'ES-3a: and the phone layout is base turning rows into cards, not a ninth hand-written copy of something base already does' },
+    @{ File = 'pages/models.py'; Text = 'def tenant_display_name'; What = 'T2-2: one spelling of how a tenancy is NAMED on a screen - the register prints it today and the four reports T2-4 builds print the same thing, because five screens each joining two names for themselves is five chances to disagree about the separator' },
+    @{ File = 'pages/templates/tenant_add.html'; Text = 'id="t2-add-btn"'; What = 'T2-2: one tenant stays the default and has to LOOK like it - the three second-tenant fields sit behind Add Second Tenant rather than on the form, and the button itself only appears once Tenant Type says Individual' },
+    @{ File = 'pages/models.py'; Text = 'def has_second_tenant'; What = 'T2-1: one predicate for whether a tenancy has a joint tenant, named once - twenty templates and twenty-seven python modules read the first tenant details, and each deciding this for itself is how two screens come to disagree about whether somebody exists' },
+    @{ File = 'pages/forms.py'; Text = 'tenant_2_name'; What = 'T2-1: and the three columns are in TenantForm.fields, which is an explicit list - a column missing from it is one the form silently drops, so the user types a joint tenant and the save forgets them without a word' },
     @{ File = 'alv_plant.py'; Text = 'def recover'; What = 'LK-1: fifteen suites write into real files and restore in a finally, which a SIGKILL does not run - the defect stays and nothing noticed. The lock is armed around the PLANTERS list, names every file a planter did not put back, and deliberately restores nothing' },
     @{ File = 'pages/views/users.py'; Text = "to_attr='member_list'"; What = 'WN-1: the workspace list ran one SELECT per workspace, which WM-1 left deliberately on 16 October and named as its own round. A Prefetch with to_attr does it in two, whatever N is - and to_attr because the template reads member_list, and an undefined name in a template is silence' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pillow-heif'; What = 'CF-1: railway.json installs THIS file, and it did not carry pillow-heif - so HEIC uploads from an iPhone failed quietly on Live, because pages/utils.py guards that import on purpose. Also UTF-8 now, and five open-ended packages bounded' },
@@ -3030,7 +3034,11 @@ $suites = @(
     # suites to run at once.
     'test_push_workers.py',
     # ES-3a, 23 Oct 2026 - the envelope register and the fourth tile.
-    'test_lease_signing.py'
+    'test_lease_signing.py',
+    # T2-1, 24 Oct 2026 - a tenancy can hold two people.
+    'test_second_tenant.py',
+    # T2-2, 24 Oct 2026 - and the screens that show the second one.
+    'test_tenant_screens.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

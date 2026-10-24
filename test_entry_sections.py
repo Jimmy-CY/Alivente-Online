@@ -878,7 +878,20 @@ if ran2:
         if not os.path.isfile(bak):
             skip('%-38s field order' % rel, 'no %s backup' % SUFFIX2)
             continue
-        a, b = fields(read(bak)), fields(read(p))
+        # AS PUSH 2 LEFT IT, NOT AS THE TREE IS NOW - repaired
+        # by T2-2, 24 Oct 2026. These are the same two lines
+        # section 3 of this file has carried since AI-1 made the
+        # identical repair on 5 October; section 10 was missed.
+        #
+        # The claim is that push 2's move lost no control. What a
+        # LATER round adds is that round's to prove, and
+        # test_tenant_screens.py proves it.
+        try:
+            from alv_rounds import as_left_by as _alb2
+        except Exception:
+            _alb2 = None
+        a = fields(read(bak))
+        b = fields(_alb2(p, SUFFIX2, read) if _alb2 else read(p))
         named_ = set(MOVES2.get(rel, []))
         ok(sorted(a) == sorted(b),
            '%-38s %3d control(s), none lost or gained' % (rel, len(b)),

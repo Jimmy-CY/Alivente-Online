@@ -192,7 +192,7 @@ Tenants
           {% for tresults in tenant_rows %}
             {% if tresults.prop_id == results.prop_id %}
               <tr>
-                <td data-label="Tenant" style="text-align: left">{{tresults.tenant_name}}</td>
+                <td data-label="Tenant" style="text-align: left">{# T2-2, 24 Oct 2026 - both names, the same way the four #}{# reports will print them. tenant_display_name is on the #}{# model so the register and the reports cannot come to #}{# different answers. The FILTER above still matches on #}{# tenant_name exactly - this is for reading only. #}{{tresults.tenant_display_name}}</td>
                 <td data-label="Property">{{results.prop_name}}</td>
                 <td data-label="Status">
                   <span class="alv-pill {% if tresults.tenant_current == 'Yes' %}alv-pill-good{% else %}alv-pill-neutral{% endif %}">

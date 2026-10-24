@@ -693,6 +693,26 @@ class tenant(models.Model):
     tenant_contact_person = models.CharField(max_length=255, blank=True)
     tenant_contact_number = models.CharField(max_length=255, blank=True)
     tenant_email = models.CharField(max_length=255, blank=True)
+
+    # A SECOND TENANT - T2-1, 24 Oct 2026.
+    #
+    # A JOINT TENANT WHO SIGNS AND IS LIABLE, not a non-signing
+    # occupant - his decision of 23 October. The Cyprus lease
+    # templates have assumed one for months: generate_lease_agreement
+    # asks for a full set of details and throws every one of them
+    # away when the document downloads.
+    #
+    # THREE COLUMNS AND NOT SIX. The first tenant has no passport and
+    # no address stored either - those live in Generate's
+    # per-document data. Giving the second person columns the first
+    # does not have would make this model say more about a joint
+    # tenant than about the one who signs first.
+    #
+    # BLANK BY DEFAULT, so every row already in the database is
+    # correct the moment the migration lands and nothing is touched.
+    tenant_2_name = models.CharField(max_length=255, blank=True)
+    tenant_2_contact_number = models.CharField(max_length=255, blank=True)
+    tenant_2_email = models.CharField(max_length=255, blank=True)
     tenant_deposit = models.IntegerField(blank=True, null=True)
     tenant_lease_start_date = models.DateField(blank=True, null=True)
     tenant_lease_end_date = models.DateField(blank=True, null=True)
@@ -738,7 +758,32 @@ class tenant(models.Model):
     )
 
     def clean(self):
-        """Validate lease dates and check for ACTIVE tenant overlaps only"""
+        """Validate lease dates, and who may hold a joint tenancy."""
+        # A SECOND TENANT ONLY ON AN INDIVIDUAL TENANCY - T2-2, 24 Oct
+        # 2026, his decision of the same day.
+        #
+        # THIS RULE IS NOT NEW AND IT IS NOT MINE. Generate Lease
+        # Agreement has refused this since before the columns existed
+        # and says so in an alert. What was new was that the RECORD
+        # would have accepted what Generate refuses, so T2-3's prefill
+        # could have handed Generate a tenancy it will not open.
+        #
+        # HERE AND NOT ONLY IN THE SCRIPT, because a script is a
+        # courtesy and clean() is the rule. save() calls full_clean(),
+        # so the admin, a management command and a POST from a stale
+        # page all meet it.
+        #
+        # NO ROW IN THE DATABASE CAN FAIL THIS TODAY: the three
+        # columns landed blank in T2-1's migration yesterday and
+        # nothing has written one yet.
+        if self.has_second_tenant and (self.tenant_type or '').strip() \
+                != 'Individual':
+            raise ValidationError(
+                "You must remove the second tenant before changing to "
+                "Company type. Second tenants are only allowed for "
+                "Individual tenants."
+            )
+
         if self.tenant_lease_start_date and self.tenant_lease_end_date:
             # Validate date order
             if self.tenant_lease_end_date <= self.tenant_lease_start_date:
@@ -762,6 +807,94 @@ class tenant(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    @property
+    def has_second_tenant(self):
+        """Is there a second person on this tenancy? T2-1.
+
+        THE NAME DECIDES, not the email and not the telephone. A
+        joint tenant who has not given an address is still a joint
+        tenant and still liable; a blank name with an email is a
+        half-typed form, not a person.
+
+        ONE PREDICATE, HERE. Twenty templates and twenty-seven python
+        modules read the first tenant's details. Each deciding this
+        for itself is how two screens come to disagree about whether
+        somebody exists.
+        """
+        return bool((self.tenant_2_name or '').strip())
+
+    # THE ADDRESS PARSER, AND IT IS NOT A STRIP.
+    #
+    # tenant_email is FREE TEXT and always has been: the form labels
+    # it Email Address(es) and its placeholder reads One or more
+    # emails, separated by commas. send_physical_invoices already
+    # pulls every address out of it with this exact expression and
+    # mails all of them - so a joint tenant crammed into that one box
+    # has been receiving invoices for as long as anyone has typed
+    # them that way.
+    #
+    # THE FIRST SPELLING OF tenant_emails TREATED IT AS ONE ADDRESS,
+    # which would have made the model and the mailer disagree about
+    # who is on a tenancy: the model saying one person, the mailer
+    # sending to two. The worst kind of disagreement, because each is
+    # right about its own half.
+    #
+    # ONE EXPRESSION, HERE, so T2-5 can point the mailer at this
+    # instead of keeping a second copy of it.
+    EMAIL_RE = r'[^\s,;<>()]+@[^\s,;<>()]+\.[^\s,;<>()]+'
+
+    @property
+    def tenant_emails(self):
+        """Every address on this tenancy, in order, without repeats.
+
+        WHO ACTUALLY GETS EMAILED IS NOT DECIDED BY THIS. Renewal
+        notices do not read it at all - check_lease_renewal_and_
+        invoices mails configured staff recipients, not tenants. T2-5
+        points send_physical_invoices here so a joint tenant in the
+        proper column is reached exactly as one typed into the
+        free-text box already is. This only answers what addresses
+        EXIST.
+        """
+        import re as _re
+        out = []
+        for raw in ((self.tenant_email or ''), (self.tenant_2_email or '')):
+            for e in _re.findall(self.EMAIL_RE, raw):
+                if e.lower() not in [x.lower() for x in out]:
+                    out.append(e)
+        return out
+
+    # HOW A TENANCY IS NAMED ON A SCREEN - T2-2, 24 Oct 2026.
+    #
+    # The register's Tenant column, and the four reports T2-4 will
+    # build, all have to answer the same question: whose tenancy is
+    # this. Five screens each joining two names for themselves is five
+    # chances to disagree about the separator, about which name comes
+    # first, and about what to show when the second one is blank.
+    JOINT_SEPARATOR = ' & '
+
+    @property
+    def tenant_display_name(self):
+        """Who is on this tenancy, as one line.
+
+        THE STORED NAME IS UNCHANGED AND STILL THE ONE THAT FILTERS.
+        The Tenants register's own dropdown filters on tenant_name
+        exactly - this is for reading, never for matching, and nothing
+        here is written back to the column.
+
+        A BLANK FIRST NAME IS NOT A REASON TO PRINT A SEPARATOR. It
+        should not happen - the form requires the first name - but a
+        row imported or edited around the form could carry one, and
+        "& Maria Georgiou" would read as a bug in the screen rather
+        than as a gap in the record.
+        """
+        first = (self.tenant_name or '').strip()
+        if not self.has_second_tenant:
+            return first
+        second = (self.tenant_2_name or '').strip()
+        if not first:
+            return second
+        return first + self.JOINT_SEPARATOR + second
 
     def __str__(self):
         return self.tenant_name if self.tenant_name else ""

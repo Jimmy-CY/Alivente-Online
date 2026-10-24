@@ -372,12 +372,22 @@ if os.path.isfile(MIG):
     ok(not any(b in g for b in ('RunPython', 'RunSQL', 'DeleteModel',
                                 'RemoveField', 'AlterField')),
        '  and it touches nothing that already exists')
+    # THE ONE BEFORE IT, NOT THE LATEST - repaired by T2-1,
+    # 24 Oct 2026, the first round to add a migration after this one.
+    #
+    # ES-1 made this exact repair to NL-1's suite and to its own
+    # patcher gate on 23 October, and missed its own suite. Asking
+    # whether 0103 depends on "the newest other than me" is true only
+    # while ES-1 IS the newest; bumping it to 0104 would move the
+    # failure to the next round instead of removing it.
     names = sorted(n[:-3] for n in
                    os.listdir(os.path.join(ROOT, 'pages', 'migrations'))
                    if n.endswith('.py') and n != '__init__.py'
-                   and '.bak_' not in n and 'es1_lease_signing' not in n)
-    ok(names and ("'%s'" % names[-1]) in g.replace('"', "'"),
-       '  depending on the migration that really is latest',
+                   and '.bak_' not in n)
+    mine_ = [n for n in names if 'es1_lease_signing' in n]
+    prior_ = [n for n in names if mine_ and n < mine_[0]]
+    ok(prior_ and ("'%s'" % prior_[-1]) in g.replace('"', "'"),
+       '  depending on the migration immediately before it',
        'latest on disk: %s' % (names[-1] if names else '(none)'))
 
 

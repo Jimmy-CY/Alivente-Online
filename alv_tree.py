@@ -940,6 +940,10 @@ CONVERTED = [
     'test_push_workers.py',
     # ES-3a, 23 Oct 2026 - the envelope register and the fourth tile.
     'test_lease_signing.py',
+    # T2-1, 24 Oct 2026 - a tenancy can hold two people.
+    'test_second_tenant.py',
+    # T2-2, 24 Oct 2026 - and the screens that show the second one.
+    'test_tenant_screens.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

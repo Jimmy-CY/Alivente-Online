@@ -296,7 +296,21 @@ else:
         if not os.path.isfile(bak):
             skip('%-22s wiring' % rel, 'no %s backup' % SUFFIX)
             continue
-        a, b = markup_only(read(bak)), markup_only(read(p))
+        # AS LF-1 LEFT IT, NOT AS THE TREE IS NOW - repaired
+        # by T2-2, 24 Oct 2026, the first round to add a field to
+        # either tenant screen.
+        #
+        # The claim is that LF-1's edit lost no id, name or
+        # placeholder. Read against the LIVE file it also claims
+        # that nobody has added one since, which is a different
+        # claim and not one this round can keep. Bumping the lists
+        # would only move the failure to T2-3.
+        try:
+            from alv_rounds import as_left_by as _alb
+        except Exception:
+            _alb = None
+        a = markup_only(read(bak))
+        b = markup_only(_alb(p, SUFFIX, read) if _alb else read(p))
         for what, pat in (('for=', r'<label[^>]*\bfor="([^"]+)"'),
                           ('id=', r'\bid="([^"]+)"'),
                           ('name=', r'\bname="([^"]+)"'),
@@ -731,10 +745,17 @@ for rel, want in (('properties_edit.html', 4), ('properties_add.html', 4),
     if not os.path.isfile(bak):
         skip('%-22s column classes' % rel, 'no %s backup' % SUFFIX)
         continue
+    # AS LF-1 LEFT IT - the same repair, same reason. T2-2
+    # adds a form-row of three col-md-4 to both tenant screens.
+    try:
+        from alv_rounds import as_left_by as _albc
+    except Exception:
+        _albc = None
     a = re.findall(r'class="((?:col-|form-group col-)[^"]*)"',
                    markup_only(read(bak)))
     b = re.findall(r'class="((?:col-|form-group col-)[^"]*)"',
-                   markup_only(read(p)))
+                   markup_only(_albc(p, SUFFIX, read) if _albc
+                               else read(p)))
     ok(a == b, '%-22s every column class is unchanged' % rel,
        '%d before, %d after' % (len(a), len(b)))
     n3 = sum(1 for c in b if re.search(r'col-md-3(?![-\w])', c))

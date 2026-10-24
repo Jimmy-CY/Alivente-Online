@@ -112,6 +112,58 @@
           </div>
         </div>
     </div>
+
+    <!-- A SECOND TENANT - T2-2, 24 Oct 2026. The argument for the
+         button, for the Individual-only rule and for the class list is
+         written out once, on tenant_add.html. This is the same block
+         reading a saved row instead of a posted form.
+
+         IT OPENS ALREADY EXPANDED when the row has a joint tenant, and
+         the server decides that - has_second_tenant, the one predicate
+         T2-1 named, so this screen cannot come to a different answer
+         from the register beside it. -->
+    <div class="form-row" id="t2-add-row"{% if tresults.tenant_type != 'Individual' or tresults.has_second_tenant %} style="display: none;"{% endif %}>
+        <div class="col-md-12">
+          <div class="form-group">
+            <button type="button" id="t2-add-btn" class="btn action-secondary btn-sm">
+              <i class="fas fa-plus"></i> Add Second Tenant
+            </button>
+          </div>
+        </div>
+    </div>
+
+    <div id="t2-section"{% if not tresults.has_second_tenant %} style="display: none;"{% endif %}>
+      <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tenant_2_name"><strong>Second Tenant</strong></label>
+            <input type="text" class="form-control" id="tenant_2_name" name="tenant_2_name" placeholder="Name of Second Tenant" value="{{tresults.tenant_2_name}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tenant_2_contact_number"><strong>Second Tenant Contact Number</strong></label>
+            <input type="text" class="form-control" id="tenant_2_contact_number" name="tenant_2_contact_number" placeholder="Contact Number" value="{{tresults.tenant_2_contact_number}}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tenant_2_email"><strong>Second Tenant Email Address(es)</strong></label>
+            <input type="text" class="form-control" id="tenant_2_email" name="tenant_2_email" placeholder="One or more emails, separated by commas" value="{{tresults.tenant_2_email}}">
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <button type="button" id="t2-remove-btn" class="btn action-secondary action-danger btn-sm">
+              <i class="fas fa-minus"></i> Remove Second Tenant
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /A SECOND TENANT - T2-2 -->
 </div>
 <div class="form-card">
     <h3 class="form-section-title"><i class="fas fa-file-signature"></i> Lease</h3>
@@ -473,6 +525,81 @@
     if (cb) cb.addEventListener('change', syncPiDetails);
     syncPiDetails();
   });
+})();
+</script>
+
+<script>
+(function () {
+  // A SECOND TENANT - T2-2, 24 Oct 2026.
+  //
+  // THE RULE LIVES IN pages/models.py clean(). This is the courtesy
+  // that keeps a user from meeting it: same sentence, read off
+  // Generate Lease Agreement, which has said it for months.
+  var sel = document.getElementById('tenant_type');
+  var addRow = document.getElementById('t2-add-row');
+  var addBtn = document.getElementById('t2-add-btn');
+  var sect = document.getElementById('t2-section');
+  var remBtn = document.getElementById('t2-remove-btn');
+  if (!sel || !addRow || !addBtn || !sect || !remBtn) return;
+
+  var FIELDS = ['tenant_2_name', 'tenant_2_contact_number',
+                'tenant_2_email'];
+
+  // THE NAME DECIDES, matching has_second_tenant on the model. A
+  // telephone number with no name is a half-typed form, not a person.
+  function named() {
+    var el = document.getElementById('tenant_2_name');
+    return !!(el && el.value.trim());
+  }
+
+  function clearAll() {
+    for (var i = 0; i < FIELDS.length; i++) {
+      var el = document.getElementById(FIELDS[i]);
+      if (el) el.value = '';
+    }
+  }
+
+  // '' AND NOT 'block', so the stylesheet keeps deciding. The house
+  // gives #t2-add-row flex, being a .form-row; pinning a display here
+  // would override a choice this script never made. MEASURED 24 Oct:
+  // with one col-md-12 in it the row happens to LOOK the same either
+  // way, which is why the rule is worth keeping rather than arguing
+  // from. The physical-invoice reveal above does the same thing for
+  // the same reason.
+  function paint(open) {
+    var individual = (sel.value === 'Individual');
+    sect.style.display = (individual && open) ? '' : 'none';
+    addRow.style.display = (individual && !open) ? '' : 'none';
+  }
+
+  addBtn.addEventListener('click', function () {
+    paint(true);
+    var el = document.getElementById('tenant_2_name');
+    if (el) el.focus();
+  });
+
+  remBtn.addEventListener('click', function () {
+    clearAll();
+    paint(false);
+  });
+
+  sel.addEventListener('change', function () {
+    if (sel.value !== 'Individual' && named()) {
+      alert('You must remove the second tenant before changing to ' +
+            'Company type. Second tenants are only allowed for ' +
+            'Individual tenants.');
+      sel.value = 'Individual';
+      paint(true);
+      return;
+    }
+    if (sel.value !== 'Individual') clearAll();
+    paint(named());
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    paint(named());
+  });
+  paint(named());
 })();
 </script>
 

@@ -41,7 +41,13 @@ class TenantForm(forms.ModelForm):
         model = models.tenant
         fields = [
             'tenant_type', 'tenant_name', 'tenant_contact_person', 
-            'tenant_contact_number', 'tenant_email', 'tenant_lease_start_date',
+            'tenant_contact_number', 'tenant_email',
+            # T2-1, 24 Oct 2026. fields is an explicit list, so a
+            # column missing from it is a column the form silently
+            # ignores - the user types a joint tenant and the save
+            # drops them without a word.
+            'tenant_2_name', 'tenant_2_contact_number', 'tenant_2_email',
+            'tenant_lease_start_date',
             'tenant_lease_end_date', 'tenant_rental_type', 'tenant_deposit',
             'tenant_rent', 'tenant_levies', 'tenant_payment_terms',
             'tenant_renewal', 'tenant_renewal_period', 'tenant_renewal_status',

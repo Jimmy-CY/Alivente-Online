@@ -1453,6 +1453,10 @@ ROUNDS = [
     '.bak_pushworkers',
     # ES-3a, 23 Oct 2026 - the envelope register and the fourth tile.
     '.bak_leasesigning',
+    # T2-1, 24 Oct 2026 - a tenancy can hold two people.
+    '.bak_secondtenant',
+    # T2-2, 24 Oct 2026 - and the screens that show the second one.
+    '.bak_t2screens',
 ]
 
 
