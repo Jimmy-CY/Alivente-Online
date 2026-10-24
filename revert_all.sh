@@ -1,9 +1,9 @@
 #!/bin/sh
-# revert_all.sh - release 9 push 1. NEWEST ROUND FIRST.
+# revert_all.sh - release 10 push 1. NEWEST ROUND FIRST.
 #
 # All three write Push-PendingChanges.ps1, alv_rounds.py,
-# alv_tree.py and test_waiting_down.py. Applied ES-1, ES-2,
-# UO-1 - so they revert UO-1, ES-2, ES-1.
+# alv_tree.py and test_waiting_down.py. Applied CF-2, WK-1,
+# ES-3a - so they revert ES-3a, WK-1, CF-2.
 #
 # Reverting oldest-first restores the LATER round's text over
 # the earlier one and loses the original. That is the 18 Oct
@@ -12,28 +12,30 @@
 # cp, NOT a text copy. A revert is a byte copy and a
 # helper that read backups as text crashed on a UTF-16 file
 # on 22 Oct and left three files reverted in an applied tree.
+# CF-2 retires three UTF-16 files, so this matters here more
+# than anywhere: their backups ARE the only copies.
 #
-# ES-1 and ES-2 each CREATE a file, which a revert deletes -
-# there was no before to restore.
+# ES-3a CREATES two files, which a revert deletes - there
+# was no before to restore.
 # Run from the repo root.
 set -e
 
-echo "reverting UO-1 - the lease and the deed survive a failed save"
-find . -name "*.bak_uploadorder" -not -path "./.git/*" | while read b; do
-  f="${b%.bak_uploadorder}"; cp "$b" "$f"; rm "$b"
+echo "reverting ES-3a - the fourth tile and the envelope register"
+find . -name "*.bak_leasesigning" -not -path "./.git/*" | while read b; do
+  f="${b%.bak_leasesigning}"; cp "$b" "$f"; rm "$b"
+done
+rm -f "pages/views/lease_signing.py"   # created by ES-3a, no before to restore
+rm -f "pages/templates/lease_signing_list.html"   # created by ES-3a, no before to restore
+
+echo "reverting WK-1 - the sweep can be told how many workers to use"
+find . -name "*.bak_pushworkers" -not -path "./.git/*" | while read b; do
+  f="${b%.bak_pushworkers}"; cp "$b" "$f"; rm "$b"
 done
 
-echo "reverting ES-2 - the lease renders to page images and the seal appends"
-find . -name "*.bak_esignpdf" -not -path "./.git/*" | while read b; do
-  f="${b%.bak_esignpdf}"; cp "$b" "$f"; rm "$b"
+echo "reverting CF-2 - one requirements file, and it is the one that deploys"
+find . -name "*.bak_onelist" -not -path "./.git/*" | while read b; do
+  f="${b%.bak_onelist}"; cp "$b" "$f"; rm "$b"
 done
-rm -f "pages/services/lease_sealing.py"   # created by ES-2, no before to restore
-
-echo "reverting ES-1 - the envelope, its parties and its audit trail"
-find . -name "*.bak_esignmodel" -not -path "./.git/*" | while read b; do
-  f="${b%.bak_esignmodel}"; cp "$b" "$f"; rm "$b"
-done
-rm -f "pages/migrations/0103_es1_lease_signing.py"   # created by ES-1, no before to restore
 
 echo "all three reverted. Backups still on disk (want 0):"
-find . \( -name "*.bak_uploadorder" -o -name "*.bak_esignpdf" -o -name "*.bak_esignmodel" \) -not -path "./.git/*" | wc -l
+find . \( -name "*.bak_leasesigning" -o -name "*.bak_pushworkers" -o -name "*.bak_onelist" \) -not -path "./.git/*" | wc -l

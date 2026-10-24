@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{# THE TAB TITLE - RV-1's lesson, 23 Oct 2026. That round shipped a  #}
+{# screen with no title block at all and test_heading_prefix said so #}
+{# the same day: 1 of 116 bad. Inherited rather than rediscovered.   #}
+{% block title %}Lease Signing{% endblock %}
+
+{# LEASE SIGNING - ES-3a, 23 Oct 2026. The envelope register.        #}
+{#                                                                    #}
+{# ONE ROW PER ENVELOPE, NOT PER TENANT, which is the whole reason   #}
+{# this is not a tab on Manage Lease Agreements. That screen is one  #}
+{# row per tenant and has to be - its job is "who has no lease". An  #}
+{# envelope is an ATTEMPT, and one tenant can have four: expired,    #}
+{# cancelled, resent, signed. A per-tenant table shows one of those. #}
+{#                                                                    #}
+{# THE ROWS ARE BUILT IN THE VIEW. A template that decides its own   #}
+{# rows cannot tell you whether it drew any, so it cannot have an    #}
+{# empty state and no instrument can ask it how many it drew. Same   #}
+{# reasoning as Open Invoices, the receipts list and RG-1's sheet.   #}
+{#                                                                    #}
+{# NO CARDS WRITTEN BY HAND. base turns a .alv-table row into a card #}
+{# below 768px on its own, from data-label on every cell - so every  #}
+{# cell here carries one, the first cell is the card title, and the  #}
+{# phone actions sit in .mobile-action-bar. A page that drew its own #}
+{# cards would be a ninth copy of something base already does.       #}
+{% block content %}
+
+<h2 class="page-title-h2">LEASE SIGNING</h2>
+{# CAPITALS, AND SLASHES. test_heading_standard holds that an h4 is a #}
+{# MODE LABEL and a label shouts - 53 of the 55 in the tree are       #}
+{# capitals, and this page arrived as the one exception. Its two      #}
+{# siblings, Manage Lease Agreements and Manage Title Deeds, both     #}
+{# read UPLOAD / VIEW / DELETE, so the separator is a slash here too. #}
+<h4 class="page-subtitle-h4">SEND / TRACK / RESEND / CANCEL</h4>
+
+{# ONE BAR, and Back is LAST and carries no colour - base 3.4.       #}
+{# Exactly one .action-primary, which is the thing you came to do.   #}
+<div class="page-action-buttons">
+    {% if perms.auth.can_edit_tenants %}
+    <a href="{% url 'lease_signing_list' %}" class="btn action-primary"
+       role="button">
+        <i class="fas fa-paper-plane"></i> Send a lease for signature
+    </a>
+    {% endif %}
+    {% if show_all %}
+    <a href="{% url 'lease_signing_list' %}" class="btn action-secondary"
+       role="button">
+        <i class="fas fa-hourglass-half"></i> Live only
+    </a>
+    {% else %}
+    <a href="{% url 'lease_signing_list' %}?all=1" class="btn action-secondary"
+       role="button">
+        <i class="fas fa-clock-rotate-left"></i> Include finished
+    </a>
+    {% endif %}
+    <a href="{% url 'admin_apms' %}?tab=functional" class="btn action-back"
+       role="button" aria-label="Back to Administration">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+{# WAITING ON YOU, SAID WHERE THE WORK IS. A completed envelope whose #}
+{# sealed copy has not been approved onto the tenant is the one row   #}
+{# that needs an action, and a notification can be missed. ES-6 builds #}
+{# the page this points at; until then it is a count, not a link.     #}
+{% if waiting_on_me %}
+<div class="ls-note">
+    <i class="fas fa-circle-exclamation"></i>
+    {{ waiting_on_me }} signed agreement{{ waiting_on_me|pluralize }}
+    waiting to be approved onto the tenant record.
+</div>
+{% endif %}
+
+<div class="table-container">
+    <table class="alv-table">
+        <thead>
+            <tr>
+                <th style="text-align: left; width: 24%">Tenant</th>
+                <th style="text-align: left; width: 21%">Property</th>
+                <th style="width: 15%">Status</th>
+                <th style="width: 15%">Signers</th>
+                <th style="width: 14%">Expires</th>
+                <th class="desktop-action-cell cell-actions" style="width: 11%">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+            <tr>
+                {# FIRST CELL IS THE CARD TITLE ON A PHONE, and base   #}
+                {# gives it no label - so it carries none.             #}
+                <td data-label="">
+                    {{ r.tenant.tenant_name }}
+                    <span class="ls-sub">
+                        {% if r.env.sent_at %}sent {{ r.env.sent_at|date:"j M Y" }}
+                        {% else %}created {{ r.env.created_at|date:"j M Y" }}{% endif %}
+                    </span>
+                </td>
+                <td data-label="Property">
+                    {% if r.prop %}{{ r.prop.prop_name }}{% else %}&mdash;{% endif %}
+                </td>
+                <td data-label="Status">
+                    <span class="alv-pill {{ r.status_pill }}">{{ r.status_display }}</span>
+                </td>
+                <td data-label="Signers">
+                    <span class="ls-signers">
+                        <b>{{ r.signed }}/{{ r.total }}</b>
+                        {% for m in r.marks %}
+                        <span class="ls-dot ls-dot-{{ m.state }}"
+                              title="{{ m.name }} &mdash; {{ m.role }}">
+                            {% if m.state == 'done' %}<i class="fas fa-check"></i>
+                            {% elif m.state == 'no' %}<i class="fas fa-xmark"></i>
+                            {% else %}&bull;{% endif %}
+                        </span>
+                        {% endfor %}
+                    </span>
+                </td>
+                <td data-label="Expires">
+                    {% if r.awaiting_approval %}
+                        <span class="ls-attn">awaiting approval</span>
+                    {% elif r.env.expires_at %}
+                        {{ r.env.expires_at|date:"j M Y" }}
+                        {% if r.overdue %}<span class="ls-sub ls-over">past its date</span>{% endif %}
+                    {% else %}&mdash;{% endif %}
+                </td>
+
+                {# ONE WRAPPER ROUND EVERY BRANCH, and the house       #}
+                {# pairings inside it. test_pd_tables walks the tree   #}
+                {# for an icon class wearing a glyph it does not carry #}
+                {# inside a .row-actions wrapper, and the first draft  #}
+                {# of this page broke it twice: icon-delete wearing    #}
+                {# fa-ban, and no wrapper at all. icon-delete means    #}
+                {# fa-trash on forty other rows; cancelling an         #}
+                {# envelope is not deleting one, and icon-cancel with  #}
+                {# fa-times already exists for exactly this.           #}
+                <td class="desktop-action-cell cell-actions">
+                    <div class="row-actions">
+                        <span class="icon-action-btn icon-view" title="View this envelope">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                        {% if perms.auth.can_edit_tenants %}
+                            {% if r.env.is_open %}
+                            <span class="icon-action-btn icon-send" title="Resend">
+                                <i class="fas fa-paper-plane"></i>
+                            </span>
+                            <span class="icon-action-btn icon-cancel" title="Cancel">
+                                <i class="fas fa-times"></i>
+                            </span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </td>
+
+                {# THE PHONE ACTIONS. Hidden on desktop by base. #}
+                <td class="mobile-action-bar cols-2">
+                    <span class="mobile-action-btn">
+                        <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                        <span class="mobile-action-label">View</span>
+                    </span>
+                    {% if perms.auth.can_edit_tenants and r.env.is_open %}
+                    <span class="mobile-action-btn">
+                        <i class="fas fa-paper-plane mobile-action-icon icon-color-upload"></i>
+                        <span class="mobile-action-label">Resend</span>
+                    </span>
+                    {% else %}
+                    <span class="mobile-action-btn mobile-action-disabled">
+                        <i class="fas fa-paper-plane mobile-action-icon"></i>
+                        <span class="mobile-action-label">Resend</span>
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" class="ls-empty" data-label="">
+                    {% if show_all %}
+                        No lease has ever been sent for signature.
+                    {% else %}
+                        Nothing is out for signature.
+                        <a href="{% url 'lease_signing_list' %}?all=1"
+                           class="alv-ref-link">Include finished</a>
+                        to see the ones that are done.
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+/* ES-3a, 23 Oct 2026.
+   NAMED ls-* AND NOT detail-* OR rv-*. Nine templates in this tree each
+   define their own .detail-row and base defines none - measured 23
+   October, and RV-1 took its own prefix for the same reason the day
+   before. A tenth copy of a name that already means nine slightly
+   different things makes a system-wide problem worse to save a round's
+   work. Promoting the component into base is its own round. */
+.ls-sub {
+    display: block;
+    color: var(--alv-ink-faint);
+    font-size: 0.78rem;
+    margin-top: 2px;
+}
+.ls-over { color: var(--alv-warn); }
+.ls-attn { color: var(--alv-warn); font-weight: 600; }
+
+/* THE SIGNER DOTS. Who are we waiting for, without opening a second
+   screen. Alivente is always first because Alivente signs first -
+   decision 2 of 22 October - so the leftmost dot is the house's own. */
+.ls-signers {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.ls-signers b {
+    font-size: 0.78rem;
+    color: var(--alv-ink-soft);
+    font-weight: 600;
+    margin-right: 3px;
+    font-variant-numeric: tabular-nums;
+}
+.ls-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    border: 1px solid;
+    font-weight: 700;
+}
+/* THREE STATES AND NOT FOUR. Viewed-but-not-signed is in the audit
+   trail and is not a different answer to "are we waiting for this
+   person", which is the only question this column asks.
+
+   AND EACH DOT IS A HOUSE PILL PAIRING. done mirrors .alv-pill-good,
+   no mirrors .alv-pill-bad, wait mirrors .alv-pill-neutral - all
+   three pairings base already ships and test_pair_contrast already
+   knows. The first draft painted the waiting dot --alv-ink-faint on
+   --alv-surface, which reads 2.85:1 and is below AA: a dot that says
+   WE ARE WAITING ON THIS PERSON is information, not decoration, so
+   it has to be legible. Mirroring the neutral pill gives 4.74:1 and
+   adds no pair the tree did not already have. */
+.ls-dot-done { background: var(--alv-good-soft); color: var(--alv-good); border-color: var(--alv-good-line); }
+.ls-dot-wait { background: var(--alv-neutral-soft); color: var(--alv-neutral); border-color: var(--alv-line); }
+.ls-dot-no   { background: var(--alv-bad-soft);  color: var(--alv-bad);  border-color: var(--alv-bad-line); }
+
+.ls-note {
+    background: var(--alv-warn-soft);
+    border: 1px solid var(--alv-warn-line);
+    border-left: 4px solid var(--alv-warn);
+    border-radius: var(--alv-radius-sm, 6px);
+    padding: 11px 14px;
+    margin: 0 0 16px;
+    color: var(--alv-ink);
+    font-size: 0.86rem;
+}
+/* SPECIFICITY RATHER THAN FORCING IT - test_important_base counts
+   every forced declaration in the tree and the first draft of this
+   page added three. Two only ever had to beat `.alv-table tbody td`,
+   which a longer selector does on its own. The third is in the phone
+   block below, where base forces the alignment and nothing short of
+   an equally forceful rule can win.
+
+   AND THE WORD ITSELF IS KEPT OUT OF THESE COMMENTS. That census is
+   a text count over style bodies and cannot tell a comment from a
+   declaration - writing the keyword here would be counted as one,
+   which is SB-2's lesson about a Django tag inside a JavaScript
+   comment wearing a different hat. */
+.alv-table tbody td.ls-empty {
+    color: var(--alv-ink-soft);
+    text-align: center;
+    padding: 26px 12px;
+}
+
+/* `screen and`, NOT A BARE max-width - test_print_queries, 23 Oct 2026.
+   A bare max-width block fires on PAPER too, because print has a narrow
+   effective width, so the phone layout leaks into every printed copy.
+   A print-leak round fixed 98 such blocks across this tree and RV-1
+   arrived with a 99th the day before; its suite caught it in the sweep.
+   768px is the house breakpoint, not 767.98. */
+@media screen and (max-width: 768px) {
+    .ls-signers { margin-left: auto; }
+    /* THE ONE DECLARATION THIS PAGE FORCES. base forces the
+       alignment of every table cell in this same block, and only an
+       equally forceful rule with a longer selector beats it. */
+    .alv-table tbody td.ls-empty {
+        text-align: center !important;
+        padding: 18px 8px;
+    }
+}
+</style>
+{% endblock %}

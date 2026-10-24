@@ -259,8 +259,9 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # RV-1, 23 Oct 2026 - 152, 126. cash_receipt_detail.html
 # sits flat in pages/templates, so it joins the walk and
 # the flat listing alike.
-ok(len(tree) == 152, 'a WALK finds 152 templates', len(tree))
-ok(len(top) == 126, '  a flat listing finds 126 - 120 was what H7 '
+# ES-3a, 23 Oct 2026 - one more page under pages/templates.
+ok(len(tree) == 153, 'a WALK finds 153 templates', len(tree))
+ok(len(top) == 127, '  a flat listing finds 127 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',

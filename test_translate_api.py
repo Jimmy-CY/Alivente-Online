@@ -280,7 +280,22 @@ def section_4():
 
 def section_5():
     print('\n5. requirements.txt')
-    raw = open(REQS, 'rb').read()
+    # THROUGH THE SCOPE HELPER, not off disk - repaired by CF-2,
+    # 23 Oct 2026, which retired this file.
+    #
+    # This read was the one defect test_translate_honest.py had
+    # already found in ITSELF and written up: "a round's suite must
+    # judge the tree as that round left it, or every round after it
+    # is a false failure waiting to happen". TR-2's suite kept the
+    # bug its sibling grew out of, and it only showed when a later
+    # round removed the file.
+    #
+    # as_left_by answers for a file the tree no longer has - RT-1,
+    # 18 October - so the claims below are still about requirements
+    # .txt as TR-2 left it, which is what they were always for.
+    import alv_rounds
+    raw = alv_rounds.as_left_by(REQS, SUFFIX,
+                                lambda p: open(p, 'rb').read())
     ok(raw.startswith(b'\xff\xfe'),
        'still UTF-16 LE with its BOM',
        'writing it back as UTF-8 hands Railway a file pip cannot read')

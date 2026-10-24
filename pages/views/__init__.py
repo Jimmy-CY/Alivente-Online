@@ -44,6 +44,10 @@ from .auth import *  # noqa: F401, F403
 from .home import *  # noqa: F401, F403
 from .notifications_dashboard import *  # noqa: F401, F403
 from .lease_template import *  # noqa: F401, F403
+# ES-3a, 23 Oct 2026 - the lease signing register. `import *` obeys
+# __all__, so a view missing from that list does not exist to the
+# URLconf no matter how correct it is - RV-1 learned that on 23 Oct.
+from .lease_signing import *  # noqa: F401, F403
 from .recipes import *  # noqa: F401, F403
 from .help import *  # noqa: F401, F403
 from .household import *

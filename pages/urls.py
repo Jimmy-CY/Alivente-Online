@@ -24,6 +24,11 @@ urlpatterns = [
     path('admin_clear/', views.admin_clear, name='admin_clear'),
     path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
     path('title_deeds_management/', views.title_deeds_management, name='title_deeds_management'),
+    # ES-3a, 23 Oct 2026 - the envelope register. One row per ATTEMPT
+    # to get a lease signed, which is why it is not a tab on Manage
+    # Lease Agreements: that screen is one row per tenant, and one
+    # tenant can have four attempts.
+    path('lease-signing/', views.lease_signing_list, name='lease_signing_list'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),

@@ -100,7 +100,7 @@ HELPER = os.path.join('pages', 'services', 'landing_tabs.py')
 ADMIN_VIEW = os.path.join('pages', 'views', 'administration.py')
 FIN_VIEW = os.path.join('pages', 'views', 'finance.py')
 CONVERTED_NOW = 84
-N_BACKS = 24
+N_BACKS = 25   # ES-3a, 23 Oct 2026 - lease_signing_list.html, the envelope register. An ordinary pages/templates page, so it joins every tree-wide count.   # (was 24)
 
 # The three landing pages: template, url name, tabs, default.
 LANDING = (
@@ -110,11 +110,24 @@ LANDING = (
 )
 # The four no panel claims, and why. Named here so they cannot be
 # mistaken for derivations in section 5.
+# CREATED AFTER THIS ROUND, so the control below must not read
+# them: they have no backup to fall back from, and the live file is
+# not evidence about TB-1b's past. ES-3a, 23 Oct 2026.
+CREATED_LATER = {
+    'lease_signing_list.html',
+}
+
 BY_DEFAULT = {
     'household_member_management.html': 'the landing page action bar',
     'notification_settings.html': 'the landing page action bar',
     'act_expense.html': 'nothing links to it',
     'personal_notification_settings.html': 'nothing links to it',
+    # ES-3a, 23 Oct 2026. The fourth Administration tile links
+    # it, but panel_owner() reads admin_apms.html as THIS round
+    # left it - so the tile is correctly invisible here, and the
+    # Back landing on functional is a default rather than a
+    # derivation. Naming it is what the register is for.
+    'lease_signing_list.html': 'the fourth Administration tile, added after this round froze its copy of the panel',
 }
 
 passed = failed = skipped = 0
@@ -362,11 +375,16 @@ if not was(alv_tree.path_of('finance.html')):
     skip('the control', 'no backups on disk')
 else:
     n2, b2 = census(lambda q: was(q) or now(q))
-    ok(len(b2) == N_BACKS - 1 and not n2,
+    # ES-3a, 23 Oct 2026 - see CREATED_LATER.
+    n2 = dict((k, v) for k, v in n2.items()
+              if os.path.basename(k) not in CREATED_LATER)
+    b2 = [x for x in b2
+          if os.path.basename(x.split(' ->')[0]) not in CREATED_LATER]
+    ok(len(b2) == 23 and not n2,   # ES-3a, 23 Oct 2026 - was N_BACKS - 1, which drifted with every later round.
        '  CONTROL: before this round not one of the %d the census could '
        'see named a tab' % len(b2),
        '%d named, %d bare' % (sum(len(v) for v in n2.values()), len(b2)))
-    ok(len(b2) == total - 1,
+    ok(len(b2) == 24 - 1,   # ES-3a, 23 Oct 2026 - was total - 1, which drifted the moment a later round added a Back.
        '  and the twenty-fourth was invisible to it, because my_profile '
        'pointed at home - which has no tabs to name')
 
@@ -420,7 +438,7 @@ ok(not mismatch and derived >= 18,
    'and %d Back control(s) name the tab whose panel links to them - '
    'derived from the pages, not from a table' % derived,
    '%d mismatch(es)' % mismatch)
-ok(by_default == 4,
+ok(by_default == 5,   # ES-3a, 23 Oct 2026 - lease_signing_list.html, the envelope register. An ordinary pages/templates page, so it joins every tree-wide count.   # (was 4)
    '  with exactly %d explained by the default, each one named above'
    % by_default, by_default)
 

@@ -425,6 +425,14 @@ if target and target in files:
         'mysql-connector-python': 'DB driver, may be named in settings',
         'pymysql': 'DB driver, usually install_as_MySQLdb() in __init__',
         'whitenoise': 'middleware, named in settings as a string',
+        # CF-2, 23 Oct 2026. NOTHING IMPORTS THIS AND IT IS NOT
+        # TOOLING. pymupdf resolves 'notos' and 'notosbo' by NAME at
+        # runtime, so a static import scan cannot see it and this
+        # script reported it under USED ONLY BY TOOLING - a verdict
+        # that, acted on, makes the e-signing signature page print a
+        # row of dots on Live and nowhere else.
+        'pymupdf-fonts': 'font faces resolved by name at runtime - '
+                         'ES-2 draws the signature page with notos',
         'psycopg2-binary': 'DB driver, named in settings',
         'setuptools': 'build tooling',
         'wheel': 'build tooling',

@@ -75,6 +75,19 @@ param(
     # only skipped when NOTHING IT COULD READ has changed since the run
     # that passed it, which alv_impact answers. Everything else re-runs.
     [switch]$Resume,
+    # WK-1, 23 Oct 2026 - HOW MANY SUITES RUN AT ONCE.
+    #
+    # alv_run.py has had --workers since GT-2 and defaults to 6. This
+    # script could not pass it, so the only way to sweep at 3 was to
+    # run alv_run.py by hand and then push - which Demetri had to do
+    # twice on 23 October after rc=3221227274 (0xC0000374, Windows
+    # heap corruption under pool contention) killed a sweep at suite
+    # 371 and again at 370. Both suites passed when re-run alone.
+    #
+    # ZERO MEANS SAY NOTHING. The argument is only added when it is
+    # asked for, so a push that does not mention workers behaves
+    # exactly as every push before this round did.
+    [int]$Workers = 0,
     # DP-1, 22 Oct 2026 - WAIT FOR THE DEPLOY, DO NOT ANNOUNCE IT.
     # Push 4 and push 5 both ended by saying Railway would build and
     # deploy, and in both cases it did not. -Site is where to ask,
@@ -1256,6 +1269,10 @@ $sentinels = @(
     @{ File = 'pages/services/lease_sealing.py'; Text = 'THE ORIGINAL IS NEVER TOUCHED'; What = 'ES-2: signatures go on an APPENDED page, so the lease everybody signed stays byte for byte the lease that was sent - which is also why this works on a PDF nobody here produced' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
+    @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
+    @{ File = 'Push-PendingChanges.ps1'; Text = 'ZERO MEANS SAY NOTHING'; What = 'WK-1: the sweep can be told how many workers to use, and a push that does not mention them behaves exactly as before - 6 is right on a machine that can take it and wrong on one that cannot, and rc=0xC0000374 killed two sweeps on 23 October saying so' },
+    @{ File = 'pages/views/lease_signing.py'; Text = 'ONE ROW PER ENVELOPE'; What = 'ES-3a: the register is one row per ATTEMPT, not per tenant - which is why it is not a tab on Manage Lease Agreements, where one tenant with four attempts could only ever show one of them' },
+    @{ File = 'pages/templates/lease_signing_list.html'; Text = 'data-label'; What = 'ES-3a: and the phone layout is base turning rows into cards, not a ninth hand-written copy of something base already does' },
     @{ File = 'alv_plant.py'; Text = 'def recover'; What = 'LK-1: fifteen suites write into real files and restore in a finally, which a SIGKILL does not run - the defect stays and nothing noticed. The lock is armed around the PLANTERS list, names every file a planter did not put back, and deliberately restores nothing' },
     @{ File = 'pages/views/users.py'; Text = "to_attr='member_list'"; What = 'WN-1: the workspace list ran one SELECT per workspace, which WM-1 left deliberately on 16 October and named as its own round. A Prefetch with to_attr does it in two, whatever N is - and to_attr because the template reads member_list, and an undefined name in a template is silence' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pillow-heif'; What = 'CF-1: railway.json installs THIS file, and it did not carry pillow-heif - so HEIC uploads from an iPhone failed quietly on Live, because pages/utils.py guards that import on purpose. Also UTF-8 now, and five open-ended packages bounded' },
@@ -3005,7 +3022,15 @@ $suites = @(
     # signature page appended at sealing.
     'test_esign_pdf.py',
     # UO-1, 23 Oct 2026 - the lease and the deed survive a failed save.
-    'test_upload_order.py'
+    'test_upload_order.py',
+    # CF-2, 23 Oct 2026 - one requirements file, and it is the one
+    # railway.json installs.
+    'test_one_list.py',
+    # WK-1, 23 Oct 2026 - the push script can be told how many
+    # suites to run at once.
+    'test_push_workers.py',
+    # ES-3a, 23 Oct 2026 - the envelope register and the fourth tile.
+    'test_lease_signing.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
@@ -3035,6 +3060,8 @@ $suites = @(
 $runArgs = @((Join-Path $root 'alv_run.py'))
 if ($Force)  { $runArgs += '--force' }
 if ($Resume) { $runArgs += '--resume' }
+# WK-1, 23 Oct 2026. Only when asked - see the parameter.
+if ($Workers -gt 0) { $runArgs += @('--workers', "$Workers") }
 & python @runArgs 2>&1 | ForEach-Object { Say $_ }
 if ($LASTEXITCODE -ne 0) {
     Bad 'one or more suites FAILED - see the lines above'

@@ -1447,6 +1447,12 @@ ROUNDS = [
     '.bak_esignpdf',
     # UO-1, 23 Oct 2026 - SI-1's rule reaches the lease and the deed.
     '.bak_uploadorder',
+    # CF-2, 23 Oct 2026 - one requirements file, not four.
+    '.bak_onelist',
+    # WK-1, 23 Oct 2026 - the sweep can be told its own width.
+    '.bak_pushworkers',
+    # ES-3a, 23 Oct 2026 - the envelope register and the fourth tile.
+    '.bak_leasesigning',
 ]
 
 

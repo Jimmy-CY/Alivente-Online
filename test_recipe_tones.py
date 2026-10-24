@@ -677,8 +677,9 @@ ok('--strict --recipes' in ps1,
 # RV-1, 23 Oct 2026 - 118 of 143. cash_receipt_detail is
 # an ordinary pages/templates page, so it joins the sweep
 # scope and the application count alike.
-ok(len(sb.templates(False)) == 118 and len(sb.templates(True)) == 143,
-   '  which is %d of %d' % (118, 143),
+# ES-3a, 23 Oct 2026 - the register joins both halves.
+ok(len(sb.templates(False)) == 119 and len(sb.templates(True)) == 144,
+   '  which is %d of %d' % (119, 144),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

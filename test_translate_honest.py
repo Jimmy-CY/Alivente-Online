@@ -303,8 +303,18 @@ def section_4():
 
     # And say out loud that the line is gone again, so nobody reads this
     # section as a claim about the tree today.
-    live = open(REQS, 'rb').read().decode('utf-16')
-    if 'deep-translator' not in live:
+    #
+    # GUARDED BY CF-2, 23 Oct 2026, which RETIRED requirements.txt.
+    # This read is only a note - it decides what to print, not what to
+    # assert - but an unguarded open() crashes just as hard as a false
+    # claim, and a crash blocks a push exactly as hard as a failure
+    # while saying far less about why.
+    live = (open(REQS, 'rb').read().decode('utf-16')
+            if os.path.isfile(REQS) else '')
+    if not os.path.isfile(REQS):
+        print('        (CF-2 has since retired requirements.txt itself -')
+        print('         one list now, mysite/cron-requirements.txt.)')
+    elif 'deep-translator' not in live:
         print('        (TR-2 has since removed it again - translation runs')
         print('         on the Anthropic API now. See test_translate_api.py.)')
 

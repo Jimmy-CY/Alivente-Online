@@ -934,6 +934,12 @@ CONVERTED = [
     'test_esign_pdf.py',
     # UO-1, 23 Oct 2026 - SI-1's rule reaches the lease and the deed.
     'test_upload_order.py',
+    # CF-2, 23 Oct 2026 - one requirements file, not four.
+    'test_one_list.py',
+    # WK-1, 23 Oct 2026 - the sweep can be told its own width.
+    'test_push_workers.py',
+    # ES-3a, 23 Oct 2026 - the envelope register and the fourth tile.
+    'test_lease_signing.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
