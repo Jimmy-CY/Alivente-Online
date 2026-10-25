@@ -42,7 +42,13 @@ function generateTenantHTML(tenant, showTenantLine) {
         html += '<p><strong>Tenant:</strong> ' + (tenant.tenant_display_name || tenant.tenant_name || '-') + '</p>';
     }
 
-    html += '<p><strong>Contact:</strong> ' + (tenant.tenant_contact_person || '-') + ' | ' + (tenant.tenant_contact_number || '-') + '</p>';
+    // T2-6, 24 Oct 2026 - the contact PERSON only for a Company.
+    // The number is the tenancy's either way.
+    if (tenant.tenant_type === 'Company') {
+        html += '<p><strong>Contact:</strong> ' + (tenant.tenant_contact_person || '-') + ' | ' + (tenant.tenant_contact_number || '-') + '</p>';
+    } else {
+        html += '<p><strong>Contact:</strong> ' + (tenant.tenant_contact_number || '-') + '</p>';
+    }
     html += '<p><strong>Email:</strong> ' + (tenant.tenant_email || '-') + '</p>';
     html += '<p><strong>Payment Terms:</strong> ' + (tenant.tenant_payment_terms == 0 ? 'Immediate' : (tenant.tenant_payment_terms || '-') + ' days') + '</p>';
     html += '</div>';

@@ -450,6 +450,10 @@ def open_invoices_report(request):
                 'tenant_id': tenant_obj.tenant_id,
                 'tenant_name': tenant_obj.tenant_name,
                 'tenant_display_name': tenant_obj.tenant_display_name,
+                # T2-6, 24 Oct 2026 - the card asks whether the
+                # contact person applies, and could not: the payload
+                # never carried the type.
+                'tenant_type': tenant_obj.tenant_type,
                 'tenant_contact_person': tenant_obj.tenant_contact_person,
                 'tenant_contact_number': tenant_obj.tenant_contact_number,
                 'tenant_email': tenant_obj.tenant_email,

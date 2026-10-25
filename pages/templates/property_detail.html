@@ -316,10 +316,13 @@
                                             <!-- Contact Info Section -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Contact Information</h4>
+                                                {# T2-6, 24 Oct 2026 - a Company field. #}
+                                                {% if active_tenant.tenant_type == 'Company' %}
                                                 <div class="detail-row">
                                                     <span class="detail-label">Contact Person:</span>
                                                     <span class="detail-value">{{ active_tenant.tenant_contact_person }}</span>
                                                 </div>
+                                                {% endif %}
                                                 <div class="detail-row">
                                                     <span class="detail-label">Contact Number:</span>
                                                     <span class="detail-value">{{ active_tenant.tenant_contact_number }}</span>
@@ -456,7 +459,8 @@
                                         <p class="highlight-red"><strong>{{ lease_renewal_data.message }}</strong></p>
                                         <div class="renewal-details-block">
                                             <p><strong>Current Tenant:</strong> {{ lease_renewal_data.tenant.tenant_display_name }}</p>
-                                            <p><strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} | {{ lease_renewal_data.tenant.tenant_contact_number }}</p>
+                                            {# T2-6 - the number always; the person only for a Company. #}
+                                            <p><strong>Contact:</strong> {% if lease_renewal_data.tenant.tenant_type == 'Company' %}{{ lease_renewal_data.tenant.tenant_contact_person }} | {% endif %}{{ lease_renewal_data.tenant.tenant_contact_number }}</p>
                                             <p><strong>Email:</strong> {{ lease_renewal_data.tenant.tenant_email }}</p>
                                         </div>
                                     </div>
@@ -485,7 +489,8 @@
                                             </p>
 
                                             <p>
-                                                <strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} |
+                                                {# T2-6 - a Company field. #}
+                                                <strong>Contact:</strong> {% if lease_renewal_data.tenant.tenant_type == 'Company' %}{{ lease_renewal_data.tenant.tenant_contact_person }} |{% endif %}
                                                 <strong>Number:</strong> {{ lease_renewal_data.tenant.tenant_contact_number }}
                                             </p>
 

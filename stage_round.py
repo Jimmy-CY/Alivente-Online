@@ -16,7 +16,11 @@ import os
 import shutil
 import sys
 
-SKIP_DIRS = ('.git', '__pycache__', 'media', 'node_modules', 'staticfiles')
+# PG-3, 24 Oct 2026 - alv_tree owns this now, venv and all. The tuple
+# stays as a name so nothing that imported it breaks.
+import alv_tree as _T                                       # noqa: E402
+
+SKIP_DIRS = _T.SKIP_DIRS
 
 
 def main(argv):
@@ -30,7 +34,7 @@ def main(argv):
 
     baks = []
     for folder, dirs, names in os.walk(root):
-        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        _T.prune(folder, dirs)
         for n in names:
             if n.endswith(suffix):
                 baks.append(os.path.join(folder, n))

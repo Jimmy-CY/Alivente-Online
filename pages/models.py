@@ -4778,6 +4778,37 @@ def lease_signing_upload_path(instance, filename):
         'lease-%s-%s-%s.%s' % (instance.pk or 'new', who, stamp, ext))
 
 
+def lease_sealed_upload_path(instance, filename):
+    """Where an envelope's SEALED pdf lives. ES-2a, 24 Oct 2026.
+
+    ONE ENVELOPE, ONE OUTPUT, REBUILT IN PLACE - which is what SD-1
+    is about, and what the timestamped path above could not deliver.
+
+    THIS NAME DEPENDS ON THE PRIMARY KEY AND NOTHING ELSE. The other
+    path in this file embeds a clock AND a tenant slug, and seal()
+    calls its path function twice - once to decide what to delete and
+    once to write. Either ingredient moving between those two calls
+    leaves the delete pointing at a file that is no longer the one
+    being replaced:
+
+        the CLOCK moves whenever the two calls straddle a second,
+        which on a loaded machine is most of the time - Demetri's
+        push gate caught exactly that on 24 October
+
+        the SLUG moves whenever a tenant is renamed, which T2-1 and
+        T2-4 made an ordinary thing to do this morning
+
+    A primary key moves never.
+
+    SLASHES, NOT os.path.join - ES-2's lesson of 23 October, learned
+    forty lines below this one and not applied here until now.
+    os.path.join gives Windows a backslash key and Linux a slash, so
+    the same envelope is named differently on a laptop and on Live.
+    """
+    del filename                      # the extension is always pdf
+    return 'lease_signing/sealed/lease-%s.pdf' % instance.pk
+
+
 def lease_signature_upload_path(instance, filename):
     """Where one person's signature mark lives. Bounded, as above."""
     who = slugify(instance.name or 'party')[:NAME_SLUG_CAP]
@@ -4823,7 +4854,13 @@ class LeaseSigning(models.Model):
     # byte-for-byte the lease that was sent.
     original_pdf = models.FileField(upload_to=lease_signing_upload_path,
                                     max_length=255)
-    sealed_pdf = models.FileField(upload_to=lease_signing_upload_path,
+    # ES-2a, 24 Oct 2026 - ITS OWN PATH, and the original keeps the
+    # timestamped one. Uploading a REPLACEMENT lease is a different
+    # act from re-sealing the same one: two documents want two names.
+    # Only the sealed file is one envelope, one output, rebuilt in
+    # place - and a name with a clock in it cannot be rebuilt in
+    # place at all.
+    sealed_pdf = models.FileField(upload_to=lease_sealed_upload_path,
                                   max_length=255, blank=True, null=True)
 
     # THE TAMPER-EVIDENCE, because there is no certificate. Taken of

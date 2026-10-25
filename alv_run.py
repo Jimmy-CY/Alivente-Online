@@ -55,6 +55,8 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import alv_tree as _T          # PG-3 - what the tree is, in one place
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 PS1 = os.path.join(ROOT, 'Push-PendingChanges.ps1')
 LOG = os.path.join(ROOT, '.alv_run_log.json')
@@ -181,8 +183,10 @@ def tree_stamp():
     """A cheap fingerprint of every file a suite could read."""
     h = hashlib.sha256()
     for dp, dn, fn in os.walk(ROOT):
-        dn[:] = [d for d in dn
-                 if d not in ('.git', '__pycache__', 'node_modules')]
+        # PG-3, 24 Oct 2026 - a virtualenv inside the repo is not the
+        # tree, and hashing one on every run is the same wasted walk
+        # that timed the gate out.
+        _T.prune(dp, dn)
         for f in sorted(fn):
             if f.endswith(('.bak_' + 'x')[:0] or '.pyc'):
                 continue
@@ -220,7 +224,9 @@ def changed_since(stamp_files):
     return out
 
 
-SKIP_DIRS = ('.git', '__pycache__', 'node_modules', '.pytest_cache')
+# PG-3, 24 Oct 2026 - alv_tree owns this now, venv and all. The name
+# stays so nothing that imported it breaks.
+SKIP_DIRS = _T.SKIP_DIRS
 
 
 def file_table():
@@ -231,7 +237,7 @@ def file_table():
     always just changed."""
     t = {}
     for dp, dn, fn in os.walk(ROOT):
-        dn[:] = [d for d in dn if d not in SKIP_DIRS]
+        _T.prune(dp, dn)
         for f in fn:
             if '.bak_' in f or f.endswith('.pyc'):
                 continue

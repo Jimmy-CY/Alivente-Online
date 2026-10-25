@@ -1463,6 +1463,15 @@ ROUNDS = [
     '.bak_reportnames',
     # T2-5, 24 Oct 2026 - a joint tenant gets the invoice.
     '.bak_invrecip',
+    # PG-2, 24 Oct 2026 - the pre-flight can see a round name with a
+    # digit in it, and check_gates catches a date mark that wraps.
+    '.bak_pgnames',
+    # ES-2a, 24 Oct 2026 - a re-seal lands where the last one did.
+    '.bak_sealedname',
+    # T2-6, 24 Oct 2026 - the contact person is a Company field.
+    '.bak_contactco',
+    # PG-3, 24 Oct 2026 - the gate does not walk a virtualenv.
+    '.bak_gatewalk',
 ]
 
 

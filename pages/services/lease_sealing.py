@@ -297,6 +297,16 @@ def seal(signing, parties=None, events=None):
     Returns the hex digest. Does NOT save the model - the caller owns
     the transaction and what else goes in it.
     """
+    # AN UNSAVED ENVELOPE HAS NO NAME TO LAND ON - ES-2a, 24 Oct
+    # 2026. The sealed path is built from the primary key, which is
+    # what makes a re-seal land where the last one did; without a pk
+    # every unsaved envelope would be called the same thing. Nothing
+    # calls it this way, and now nothing can.
+    if not signing.pk:
+        raise ValueError(
+            'seal() needs a saved envelope: the sealed pdf is named '
+            'from its primary key, and an unsaved one has none.')
+
     raw, _pages = build_sealed(signing, parties=parties, events=events)
     digest = hashlib.sha256(raw).hexdigest()
 

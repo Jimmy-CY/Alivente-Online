@@ -314,6 +314,33 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE TWELFTH, 24 OCT 2026 - REVEALED, NOT BROKEN, and the third
+    # of its kind today after T2-4's two and PG-2's one.
+    #
+    # ES-2 CREATED pages/services/lease_sealing.py on 23 October, and
+    # created it WITH this heading - the paragraph explaining why a
+    # signature page is APPENDED rather than stamped, which is the
+    # whole basis of the round. No version of that file has ever
+    # lacked it and none can have. ES-2a is simply the first round
+    # since to back the file up, so the verdict is provable rather
+    # than untested.
+    #
+    # The day somebody stamps in place instead, the row fails.
+    'THE ORIGINAL IS NEVER TOUCHED':
+        'why the signature page is appended and not stamped - ES-2 '
+        'created the file WITH it on 23 Oct, and ES-2a is the first '
+        'round since to back that file up',
+    # THE ELEVENTH, 24 OCT 2026 - REVEALED, NOT BROKEN.
+    #
+    # PG-2 is the first round ever to back up alv_preflight.py. Until
+    # today PG-1's row on it had no version to be compared against
+    # and was never tested at all. `as_left_by` is the helper the
+    # pre-flight uses to say what a missing backup costs, and PG-1
+    # wrote the file with it - so no version has ever lacked it, and
+    # none can have. The day it goes, the row fails.
+    'as_left_by':
+        'what a missing backup costs - PG-1 created alv_preflight '
+        'WITH it, and PG-2 is the first round to back that file up',
     # THE NINTH AND TENTH, 24 OCT 2026 - REVEALED, NOT BROKEN, and
     # the same story as the fifth through eighth.
     #

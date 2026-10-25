@@ -1165,6 +1165,8 @@ $sentinels = @(
     # ------------------------------------------------- NW-1, 17 Oct 2026
     @{ File = 'alv_offline.py'; Text = 'LOOPBACK'; What = 'NW-1: the network guard spares a suite own loopback server' },
     # ------------------------------------------------- PG-1, 18 Oct 2026
+    @{ File = 'alv_preflight.py'; Text = '[A-Z][A-Z0-9]{0,3}-'; What = 'PG-2: the pre-flight can see a round name with a DIGIT in its prefix - [A-Z]{1,4} could not match T2, so the whole second-tenant family was invisible to the one gate whose job is noticing that a named round never arrived' },
+    @{ File = 'check_gates.py'; Text = 'IS WRAPPED IN THE FILE'; What = 'PG-2: a patcher whose date mark wraps across two comment lines can never detect that it has already run - caught twice in one day by hand before this gate existed, and this sentinel text itself went stale across four rewrites of the message until the suite caught it' },
     @{ File = 'alv_preflight.py'; Text = 'as_left_by'; What = 'PG-1: the pre-flight says what missing backups cost' },
     # ------------------------------------------------- MP-1, 18 Oct 2026
     #
@@ -1266,7 +1268,11 @@ $sentinels = @(
     @{ File = 'pages/templates/base.html'; Text = '.alv-table .ref'; Absent = $true; Code = $true; What = 'IR-1: and the rule it replaced is gone rather than left. It had one consumer and no suite; a base rule nothing uses is one the next page picks up by accident' },
     @{ File = 'pages/models.py'; Text = 'def issue_token'; What = 'ES-1: the emailed link IS the credential, so the token is stored as a sha256 and the raw value exists only as this method return. A resend mints a new one and the old link dies - a link that expires and then works again never really expired' },
     @{ File = 'pages/models.py'; Text = 'class LeaseSigningEvent'; What = 'ES-1: and the audit trail is append only, because with no certificate it and pdf_sha256 ARE the evidence - nothing in the file proves anything' },
+    @{ File = 'pages/models.py'; Text = 'def lease_sealed_upload_path'; What = 'ES-2a: the sealed pdf is named from the primary key and NOTHING else - the path it used before embedded a clock and a tenant slug, and seal() calls its path function twice, so either one moving between those two calls left the delete pointing at a file that was no longer the one being replaced' },
     @{ File = 'pages/services/lease_sealing.py'; Text = 'THE ORIGINAL IS NEVER TOUCHED'; What = 'ES-2: signatures go on an APPENDED page, so the lease everybody signed stays byte for byte the lease that was sent - which is also why this works on a PDF nobody here produced' },
+    @{ File = 'pages/templates/tenant_add.html'; Text = 'contact-person-field'; What = 'T2-6: the contact person is a COMPANY field, and the id is Generate the same one so that one grep finds every screen that knows it - Generate has made it required for a Company and written N/A into the lease for an Individual for months, while this screen asked everybody and for a person only repeated the name above' },
+    @{ File = 'pages/views/invoices.py'; Text = 'tenant_obj.tenant_type'; What = 'T2-6: and the open-invoices card is built in JavaScript, so it could not ask whether a contact person applies until the payload carried the type - the one place where hiding a field needed a new ingredient rather than a new condition' },
+    @{ File = 'alv_tree.py'; Text = 'def prune'; What = 'PG-3: a virtualenv inside the repository is not part of the tree, and four instruments walked one. Demetri push gate timed out at suite 448 of 448 on 24 October after running clean for 447 - check_gates was doing a recursive glob of site-packages once per patcher, 525 times. The test is pyvenv.cfg and not a name, because his venv is called code and the next one will be called something else' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3050,7 +3056,16 @@ $suites = @(
     # T2-4, 24 Oct 2026 - sixteen screens name a joint tenancy one way.
     'test_report_names.py',
     # T2-5, 24 Oct 2026 - a joint tenant gets the invoice.
-    'test_invoice_recipients.py'
+    'test_invoice_recipients.py',
+    # PG-2, 24 Oct 2026 - the pre-flight can see T2-3, and check_gates
+    # catches a date mark that wraps.
+    'test_preflight_names.py',
+    # ES-2a, 24 Oct 2026 - a re-seal lands where the last one did.
+    'test_sealed_name.py',
+    # T2-6, 24 Oct 2026 - the contact person is a Company field.
+    'test_contact_company.py',
+    # PG-3, 24 Oct 2026 - the gate does not walk a virtualenv.
+    'test_gate_walk.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

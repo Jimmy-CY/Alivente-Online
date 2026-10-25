@@ -70,6 +70,68 @@ import os
 import re
 import sys
 
+# PG-3, 24 Oct 2026 - alv_tree owns what the tree IS, and this file
+# has four lines that needed to know. It is still a standalone tool in
+# every sense that matters: alv_tree imports nothing but the standard
+# library, and a tree without it is a tree with no instruments at all.
+import alv_tree as _T
+
+# AND THE INDEX IS BUILT ONCE. suffix_free() used a recursive glob of
+# the whole repository, called once per patcher; test_preflight_names
+# runs this over every apply_*.py in the tree, so that was 525 full
+# walks. The file already says what it wanted, forty lines down:
+# "ONE PROCESS, NOT 525."
+_BAK_INDEX = None
+_TOOLS = None
+
+
+def _tools(root):
+    """[(name, path, text)] for every tool file in the root, once.
+
+    SAFE BECAUSE THIS TOOL ONLY READS. Nothing check_gates does can
+    change a file while it runs, so caching the texts is the same
+    answer computed once rather than an optimisation that might be
+    stale.
+    """
+    global _TOOLS
+    if _TOOLS is not None:
+        return _TOOLS
+    out = []
+    try:
+        names = sorted(os.listdir(root))
+    except Exception:
+        _TOOLS = []
+        return _TOOLS
+    for n in names:
+        if not TOOL.match(n):
+            continue
+        p = os.path.join(root, n)
+        if not os.path.isfile(p):
+            continue
+        try:
+            with open(p, encoding='utf-8', errors='replace') as f:
+                out.append((n, p, f.read()))
+        except Exception:
+            continue
+    _TOOLS = out
+    return _TOOLS
+
+
+def _bak_index(root):
+    """{suffix: [basename, ...]} for every backup in the tree, once."""
+    global _BAK_INDEX
+    if _BAK_INDEX is not None:
+        return _BAK_INDEX
+    out = {}
+    for dp, fn in _T.walk_tree(root):
+        del dp
+        for f in fn:
+            i = f.rfind('.bak_')
+            if i >= 0:
+                out.setdefault(f[i:], []).append(f)
+    _BAK_INDEX = out
+    return out
+
 
 def literals(src, suffixes=('_NOW', '_NEW')):
     """The text this round WRITES - its replacement literals."""
@@ -329,7 +391,13 @@ def suffix_free(src, path):
     # fail: it reported .bak_conenc free because it was looking in
     # /tmp, where 88 files carrying that suffix are not.
     root = os.path.dirname(os.path.abspath(__file__)) or '.'
-    hits = glob.glob(os.path.join(root, '**', '*' + suf), recursive=True)
+    # PG-3, 24 Oct 2026 - ONE WALK, NOT 525, AND NOT THROUGH A
+    # VIRTUALENV. This was a recursive glob of the whole repository
+    # per patcher. On a tree whose venv lives inside it - which
+    # Demetri's does, at code/ - that is 525 walks of site-packages,
+    # and it timed his push gate out at suite 448 of 448 on 24
+    # October after running clean for 447.
+    hits = _bak_index(root).get(suf, [])
     # A round that is ALREADY APPLIED owns its backups; that is not a
     # collision, it is the normal state after it has run. The question
     # this answers is whether a suffix was in use BEFORE, which a
@@ -357,7 +425,13 @@ def name_free(src, path):
 
         apply_preflight.py - round PG-1, 18 Oct 2026.
     """
-    m = re.search(r'-\s*round\s+([A-Z]{1,4}-\d+[a-z]?)', src[:400])
+    # PG-3, 24 Oct 2026 - THE SAME PATTERN alv_preflight USES.
+    # PG-2 widened that one because [A-Z]{1,4} cannot match the T2
+    # prefix - a digit in it - and left this copy narrow. Every T2
+    # round of 24 October went past this check without its name being
+    # read: not a failure, SILENCE, which reads as a pass.
+    m = re.search(r'-\s*round\s+([A-Z][A-Z0-9]{0,3}-\d+[a-z]?)',
+                  src[:400])
     if not m:
         return None
     name = m.group(1)
@@ -424,20 +498,30 @@ def _toolchain(root, name, mine):
     decl = re.compile(r'-\s*round\s+%s\s*,|^\s*"""%s\s*-'
                       % (re.escape(name), re.escape(name)), re.M)
     declared, referenced = [], []
-    try:
-        names = sorted(os.listdir(root))
-    except Exception:
-        return [], []
-    for n in names:
-        if not TOOL.match(n):
+    for n, p, text in _tools(root):
+        # PG-3, 24 Oct 2026 - READ ONCE PER PROCESS, not once per
+        # patcher. This opened all 1,100 tool files to answer one
+        # round's question, and test_preflight_names asks it 531
+        # times: about 580,000 opens. Demetri's repository lives in
+        # OneDrive, where every one of those goes through a sync
+        # filter, and his push gate did not finish in ten minutes.
+        if os.path.abspath(p) == mine:
             continue
-        p = os.path.join(root, n)
-        if not os.path.isfile(p) or os.path.abspath(p) == mine:
-            continue
-        try:
-            with open(p, encoding='utf-8', errors='replace') as f:
-                text = f.read()
-        except Exception:
+        # THE SUBSTRING FIRST, AND IT IS WORTH 40x.
+        #
+        # `(?<![\w-])NAME(?![\w-])` cannot match unless NAME is
+        # literally in the text - but the LOOKBEHIND defeats CPython's
+        # literal prefilter, so re.search scans every one of 21MB of
+        # tool source for every one of 531 round names. Measured on
+        # 24 October: 48.8 seconds for a hundred names, and 1.2 with
+        # this line in front of it.
+        #
+        # EQUIVALENT, NOT MERELY FASTER, which is the only reason it
+        # is allowed to be here: a regex that requires a literal can
+        # never match a string that does not contain it. The suite
+        # drives both spellings over every name in the tree and
+        # requires the same answer.
+        if name not in text:
             continue
         if not rx.search(text):
             continue
@@ -458,7 +542,11 @@ def _register(root):
     i = src.index('ROUNDS = [')
     body = src[i:src.index('\n]', i)]
     out, note = {}, []
-    owns = re.compile(r'^#\s*([A-Z]{1,4}-\d+[a-z]?)\s*,')
+    # PG-3 - WIDENED IN LOCKSTEP WITH THE ONE ABOVE, which is the
+    # pairing PG-2 made a rule: a round whose NAME can be read and
+    # whose register entry cannot is half-checked, and half-checked
+    # reads as checked.
+    owns = re.compile(r'^#\s*([A-Z][A-Z0-9]{0,3}-\d+[a-z]?)\s*,')
     for line in body.split('\n'):
         t = line.strip()
         if t.startswith('#'):
@@ -492,6 +580,130 @@ def main(paths):
             continue
         writes = literals(src)
         blob = '\n'.join(writes.values())
+
+        # A DATE MARK THAT WRAPS CAN NEVER BE FOUND - PG-2, 24 Oct
+        # 2026, and I walked into this twice in one day.
+        #
+        # Every patcher here opens with `if MARK in m: ... already
+        # applied`. MARK is a string like 'T2-3, 24 Oct 2026'. If the
+        # comment the round WRITES wraps that mark over two lines,
+        # the mark is never in that file, the check never fires, and
+        # a second run refuses on a missing anchor instead of saying
+        # it has already run. Safe, and not what the house says.
+        #
+        # T2-3 did it at about half past one and T2-4 four hours
+        # later, after the first had been found and fixed. Both
+        # turned up only by running the patcher a second time by
+        # hand.
+        #
+        # IT LOOKS FOR THE MISTAKE, NOT FOR THE ABSENCE, AND THE
+        # FIRST SPELLING OF THIS GATE GOT THAT WRONG. It asked
+        # whether the mark appeared unbroken ANYWHERE the round
+        # writes - and T2-3 would have passed it, because T2-3 wrote
+        # an unbroken mark into properties.py while the WRAPPED one
+        # went into models.py, which is the file its check reads.
+        # Tested against the real T2-3 and it sailed through.
+        #
+        # So this matches the anti-pattern itself: a round name and a
+        # comma at the end of a comment line, with the date at the
+        # start of the next one. That is the mistake, exactly, in
+        # whichever payload it hides.
+        mk = re.search(r"^MARK\s*=\s*'([^']+)'", src, re.M)
+        if mk:
+            mark = mk.group(1)
+            nm_ = mark.split(',')[0].strip()
+
+            # WHICH FILE main() ASKS. The house shape is
+            #   pm = os.path.join(root, MODELS)
+            #   m = read(pm)
+            #   if MARK in m:
+            # so the answer is three hops back from the check.
+            checked = None
+            mi = re.search(r'if MARK in (\w+)\b', src)
+            if mi:
+                v = re.search(r'\b%s\s*=\s*read\((\w+)\)' % mi.group(1), src)
+                if v:
+                    j = re.search(
+                        r'\b%s\s*=\s*os\.path\.join\([^,]+,\s*(\w+)\)'
+                        % v.group(1), src)
+                    if j:
+                        checked = j.group(1)
+
+            # AND WHICH FILE EACH PAYLOAD WRITES. Every swap() in
+            # this house carries a `where` string built as
+            # '%s (what it is)' % CONST - so the payload names its
+            # own destination, two arguments along.
+            #
+            # THE FIRST TWO SPELLINGS OF THIS GATE DID NOT DO THIS
+            # AND BOTH WERE USELESS. One asked whether the mark
+            # appeared unbroken ANYWHERE, and T2-3 passed it. The
+            # next matched the wrap in any payload or anywhere in
+            # the source, and fired on five of six correct
+            # patchers - a gate nobody would read twice. The
+            # question is not "is a mark wrapped" but "is a mark
+            # wrapped IN THE FILE main() asks about".
+            def target(name):
+                # THE where STRING CONTAINS PARENTHESES - '%s (the
+                # call)' % LEASE - so a pattern that forbade them
+                # walked past the real match and found a stray % far
+                # away. Match the quoted string itself.
+                m2 = re.search(
+                    re.escape(name) + r"\s*,\s*'[^']*'\s*%\s*(\w+)", src)
+                return m2.group(1) if m2 else None
+
+            # BOTH QUOTE STYLES, AND literals() READS ONLY ONE.
+            # It matches triple-DOUBLE-quoted payloads. T2-3 wrote
+            # its wrapped mark into M_NOW, a triple-SINGLE-quoted
+            # one, so a check over writes alone walked straight past
+            # the very round that prompted this round. Widening
+            # literals() itself would change what every other gate
+            # in this file sees, so the pair is re-read here.
+            both = {}
+            for q in ('"' * 3, "'" * 3):
+                for m3 in re.finditer(
+                        r'^([A-Z][A-Z0-9_]*(?:_NOW|_NEW))\s*=\s*'
+                        r'(?:\(?\s*)?r?' + q + r'(.*?)' + q,
+                        src, re.S | re.M):
+                    both.setdefault(m3.group(1), m3.group(2))
+
+            split_mark = re.compile(
+                re.escape(nm_) + r',[ \t]*\n[ \t]*#[ \t]*\d')
+            hits = [k for k, v in both.items()
+                    if split_mark.search(v) and target(k) == checked]
+
+            # AND ONLY IF NOTHING ELSE PUTS IT IN THAT FILE WHOLE.
+            #
+            # T2-5 wraps the mark in R_NOW, which writes the mailer -
+            # the very file its check reads - and is PERFECTLY FINE,
+            # because G_NOW writes the same file with the mark on one
+            # line. The check fires; verified by running it twice.
+            #
+            # A wrap is only a defect when it is the ONLY spelling
+            # reaching that file. Without this clause the gate cried
+            # wolf on a correct round, which is how the two before it
+            # earned their silence.
+            whole = any(target(k) == checked and mark in v
+                        for k, v in both.items())
+            if checked and hits and not whole:
+                print('  !! THE DATE MARK %r IS WRAPPED IN THE FILE '
+                      'main() CHECKS' % mark)
+                print('     wrapped in : %s  ->  %s'
+                      % (', '.join(sorted(hits)), checked))
+                print('     main() asks `if MARK in %s` to decide the '
+                      'round has already run.' % checked)
+                print('     Wrapped, that string is never in the file: '
+                      'the check cannot fire and')
+                print('     a second run refuses on a missing anchor. '
+                      'Put the mark on one line.')
+                print('     T2-3 and T2-4 both shipped that way on 24 '
+                      'Oct, four hours apart.')
+                bad += 1
+            elif checked and writes and mark not in blob:
+                print('  ?  the date mark %r is not in any replacement '
+                      'literal' % mark)
+                print('     main() asks `MARK in %s`. If nothing '
+                      'writes the mark into that file,' % checked)
+                print('     the already-applied check can never fire.')
         print('')
         print('=' * 74)
         print('%s   %d replacement literal(s)' % (p, len(writes)))

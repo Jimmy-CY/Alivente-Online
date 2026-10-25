@@ -348,10 +348,16 @@ def build(tmp, contend):
     # the scheduler being broken rather than the harness being
     # incomplete. shutil, not a re-write: the code under test is the
     # code that shipped, and that applies to the module beside it.
-    helper = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          'alv_plant.py')
-    if os.path.isfile(helper):
-        shutil.copyfile(helper, os.path.join(tmp, 'alv_plant.py'))
+    # PG-3, 24 Oct 2026 - AND alv_tree, FOR THE SAME REASON. The
+    # runner asks it what the tree is now, so a scratch directory
+    # holding the runner alone is a scratch directory where the
+    # runner cannot start. One list, so the third helper does not
+    # need this comment written a third time.
+    here = os.path.dirname(os.path.abspath(__file__))
+    for helper_name in ('alv_plant.py', 'alv_tree.py'):
+        helper = os.path.join(here, helper_name)
+        if os.path.isfile(helper):
+            shutil.copyfile(helper, os.path.join(tmp, helper_name))
     names = [SLOWP] + CHEAP
     with open(os.path.join(tmp, PS1), 'w', encoding='utf-8') as f:
         f.write('$suites = @(\n%s\n)\n'

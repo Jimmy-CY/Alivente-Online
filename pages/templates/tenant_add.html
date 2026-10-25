@@ -40,7 +40,11 @@
         </div>
         <div class="col-md-4">
           <div class="form-group">
-            <label for="tenant_name"><strong>Tenant</strong> <span class="alv-req">*</span></label>
+            {# T2-6, 24 Oct 2026 - TENANT NAME, not Tenant. Between #}
+            {# "Tenant Type" and "Tenant Status" the bare word reads #}
+            {# as a third attribute of something rather than as the #}
+            {# name of the thing. #}
+            <label for="tenant_name"><strong>Tenant Name</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_name" name="tenant_name"
                    value="{{ form_data.tenant_name }}" placeholder="Company or Tenant Name" required>
           </div>
@@ -57,11 +61,34 @@
         </div>
     </div>
     <div class="form-row">
-        <div class="col-md-4">
+        <!-- CONTACT PERSON IS A COMPANY FIELD - T2-6, 24 Oct 2026.
+
+             Generate Lease Agreement has always known this. Its
+             updateTenantFields() hides #contact-person-field for an
+             Individual and flips `required` with it, and
+             lease_template.py writes 'N/A' into the document. This
+             screen was the only place that asked everybody for it,
+             and for a person it just repeated the Tenant Name above.
+
+             THE SAME ID AS GENERATE, deliberately: one grep for
+             contact-person-field now finds every screen that knows
+             the rule.
+
+             THE WHOLE COLUMN HIDES, not the input alone - a label
+             standing over nothing is worse than either.
+
+             AND THE SERVER PAINTS IT FIRST. Doing it in script alone
+             shows the column for as long as the page takes to run,
+             and worse: tenant_edit.html's listener returns early if
+             the second-tenant controls are missing, which would
+             leave a hidden-by-nobody field carrying `required` and a
+             form that refuses to save with nothing on screen to
+             explain why. The server decides; the script keeps up. -->
+        <div class="col-md-4" id="contact-person-field"{% if form_data.tenant_type != 'Company' %} style="display: none;"{% endif %}>
           <div class="form-group">
             <label for="tenant_contact_person"><strong>Contact Person</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person"
-                   value="{{ form_data.tenant_contact_person }}" placeholder="Name of Contact Person" required>
+                   value="{{ form_data.tenant_contact_person }}" placeholder="Name of Contact Person"{% if form_data.tenant_type == 'Company' %} required{% endif %}>
           </div>
         </div>
         <div class="col-md-4">
@@ -514,10 +541,31 @@ $(document).ready(function() {
   // way, which is why the rule is worth keeping rather than arguing
   // from. The physical-invoice reveal above does the same thing for
   // the same reason.
+  // CONTACT PERSON IS A COMPANY FIELD - T2-6, 24 Oct 2026.
+  //
+  // IN THE LISTENER T2-2 ALREADY WROTE, not a second one beside it.
+  // Two handlers on the same select is two answers to what the
+  // screen should look like, and whichever ran last would win.
+  var contactCol = document.getElementById('contact-person-field');
+  var contactIn = document.getElementById('tenant_contact_person');
+
+  function paintContact() {
+    if (!contactCol) return;
+    var company = (sel.value === 'Company');
+    // '' AND NOT 'block' - the stylesheet keeps deciding, the same
+    // rule T2-2 wrote four lines below. Generate says 'block' here;
+    // that is the one thing of Generate's this does not copy.
+    contactCol.style.display = company ? '' : 'none';
+    // REQUIRED COMES OFF WITH IT. A hidden required field refuses
+    // the form and the browser cannot show the user where.
+    if (contactIn) contactIn.required = company;
+  }
+
   function paint(open) {
     var individual = (sel.value === 'Individual');
     sect.style.display = (individual && open) ? '' : 'none';
     addRow.style.display = (individual && !open) ? '' : 'none';
+    paintContact();
   }
 
   addBtn.addEventListener('click', function () {

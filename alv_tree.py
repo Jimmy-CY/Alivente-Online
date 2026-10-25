@@ -357,6 +357,59 @@ def bak_of(label, suffix, base=None):
     return os.path.join(rs[0], rel_) + suffix
 
 
+# WHAT IS NOT THE TREE - PG-3, 24 Oct 2026.
+#
+# A VIRTUALENV INSIDE THE REPOSITORY IS NOT PART OF IT. Demetri's
+# lives at code/, with Lib/site-packages under it; mine lives outside
+# the repo. Four instruments walked "the tree" pruning .git,
+# __pycache__ and node_modules - the right list for the tree they
+# were written against, and the wrong question for his. His push gate
+# timed out at suite 448 of 448 on 24 October because of it.
+#
+# THE TEST IS pyvenv.cfg, NOT A NAME. His is called `code` and the
+# next one will be called something else. Every virtualenv Python has
+# made since 3.3 writes that file at its root - it is the marker the
+# interpreter uses, so it is the one that cannot be wrong about a
+# directory somebody named after their project.
+#
+# AND site-packages BY NAME, because a venv copied without its marker
+# still has one, and a vendored system install has the directory and
+# no cfg at all.
+#
+# ONE RULE, FOUR CALLERS. check_gates, alv_preflight, alv_run and
+# stage_round all ask this. A list in four files is four places to
+# forget the fifth name.
+SKIP_DIRS = ('.git', '__pycache__', 'node_modules', 'media',
+             'staticfiles', 'site-packages', '.mypy_cache',
+             '.pytest_cache', '.ruff_cache')
+
+
+def prune(folder, dirnames):
+    """Drop what is not the tree, IN PLACE, for an os.walk.
+
+    Called as `prune(dp, dn)` inside the loop, which is the only
+    spelling that works: os.walk reads the list it was handed, so a
+    function that returned a new one would be ignored.
+    """
+    keep = []
+    for d in dirnames:
+        if d in SKIP_DIRS:
+            continue
+        if os.path.isfile(os.path.join(folder, d, 'pyvenv.cfg')):
+            continue
+        keep.append(d)
+    dirnames[:] = keep
+    return dirnames
+
+
+def walk_tree(base=None):
+    """Every (folder, filenames) in the tree, with the rest left out."""
+    base = base or os.getcwd()
+    for dp, dn, fn in os.walk(base):
+        prune(dp, dn)
+        yield dp, fn
+
+
 def roots(base=None):
     """Every template root that exists, absolute.
 
@@ -950,6 +1003,15 @@ CONVERTED = [
     'test_report_names.py',
     # T2-5, 24 Oct 2026 - a joint tenant gets the invoice.
     'test_invoice_recipients.py',
+    # PG-2, 24 Oct 2026 - the pre-flight can see a round name with a
+    # digit in it, and check_gates catches a date mark that wraps.
+    'test_preflight_names.py',
+    # ES-2a, 24 Oct 2026 - a re-seal lands where the last one did.
+    'test_sealed_name.py',
+    # T2-6, 24 Oct 2026 - the contact person is a Company field.
+    'test_contact_company.py',
+    # PG-3, 24 Oct 2026 - the gate does not walk a virtualenv.
+    'test_gate_walk.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

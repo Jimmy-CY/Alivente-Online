@@ -81,19 +81,40 @@ import os
 import re
 import sys
 
+import alv_tree as _T          # PG-3 - what the tree is, in one place
+
 ROUNDS = 'alv_rounds.py'
 PS1 = 'Push-PendingChanges.ps1'
 
-# A ROUND NAME. Two to four capitals, a hyphen, a number, maybe a
-# letter: AB-1, HM-4, CC-1b, GT-2. A FINDING is written E24, with no
-# hyphen, and is deliberately not matched - a subject may mention one.
-NAME = re.compile(r'\b([A-Z]{1,4}-\d+[a-z]?)\b')
+# A ROUND NAME. A capital, then up to three more capitals OR DIGITS,
+# a hyphen, a number, maybe a letter: AB-1, HM-4, CC-1b, GT-2, T2-3.
+# A FINDING is written E24, with no hyphen, and is deliberately not
+# matched - a subject may mention one.
+#
+# THE DIGIT WAS ADDED BY PG-2, 24 OCT 2026, AND IT HAD BEEN MISSING
+# FOR THE WHOLE SECOND-TENANT FAMILY. `[A-Z]{1,4}` cannot match T2,
+# so T2-1 through T2-5 - five rounds across two pushes and 87 files -
+# were invisible to this file. It printed "no round name in the
+# subject - nothing to check" and then a green line, which is a gate
+# finding nothing to do and saying it in the language of success.
+#
+# OWNS BELOW MOVES WITH IT AND MUST. This reads the SUBJECT; OWNS
+# reads alv_rounds.py to learn who owns a suffix. Widen only this one
+# and every T2 name becomes unresolvable - and an unresolved name is
+# a REFUSAL, so the gate would go from blind to refusing every push.
+# test_preflight requires the two patterns to agree.
+NAME = re.compile(r'\b([A-Z][A-Z0-9]{0,3}-\d+[a-z]?)\b')
 
 # THE OWNER OF A REGISTER ENTRY. The house writes the round that owns
 # a suffix first in its comment block, followed by a comma and a date.
 # Matching the whole comment instead picked up every sibling a note
 # mentioned, and made .bak_contactwire belong to CC-2 as well as CC-3.
-OWNS = re.compile(r'^#\s*([A-Z]{1,4}-\d+[a-z]?)\s*,')
+#
+# THE SAME SHAPE AS NAME ABOVE, AND IT HAS TO BE - PG-2, 24 Oct 2026.
+# If this cannot read `# T2-1, 24 Oct 2026` out of alv_rounds.py then
+# T2-1 owns nothing, a subject naming it resolves to no suffix, and
+# the push is refused for a round that is perfectly well applied.
+OWNS = re.compile(r'^#\s*([A-Z][A-Z0-9]{0,3}-\d+[a-z]?)\s*,')
 
 
 def register(root):
@@ -150,8 +171,10 @@ def backups(root, suffixes):
     want = list(suffixes)
     got = dict((s, 0) for s in want)
     for dp, dn, fn in os.walk(root):
-        dn[:] = [d for d in dn
-                 if d not in ('.git', '__pycache__', 'node_modules')]
+        # PG-3, 24 Oct 2026 - and a virtualenv inside the repo too.
+        # This list was right for the tree it was written against and
+        # the wrong QUESTION for one that holds its own venv.
+        _T.prune(dp, dn)
         for f in fn:
             i = f.rfind('.bak_')
             if i < 0:
@@ -185,7 +208,16 @@ def check(subject, root=None):
         if not sufs:
             bad.append('%s is named in the subject and alv_rounds.py has '
                        'no entry for it. That is the 16 Oct shape: the '
-                       'round\'s own files are not in the tree.' % n)
+                       'round\'s own files are not in the tree.\n'
+                       '       If %s is NOT a round name - a year, a '
+                       'standard number, anything of the shape XX-9 - '
+                       'reword the subject so it does not look like '
+                       'one. PG-2 widened this pattern on 24 Oct to '
+                       'see names with a digit in the prefix, such as '
+                       'T2-3, and that shape catches Q4-2026 too. A '
+                       'refusal you can reword away is the accepted '
+                       'cost of not passing a push nobody checked.'
+                       % (n, n))
             say.append('  !! %-6s UNKNOWN to alv_rounds.py' % n)
             continue
         # THE SENTINEL IS A NOTE, NOT A REFUSAL - and that is a
