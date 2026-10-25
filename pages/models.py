@@ -4856,7 +4856,16 @@ class LeaseSigning(models.Model):
     # 6, the day before it lapses. Day 6 alone finds a wrong address
     # on day 6; day 1/3/6 is three emails in a week.
     SIGNING_DAYS = 7
-    REMINDER_DAYS = (3, 6)
+    # ES-6, 25 Oct 2026 - DAY 3, AND THE DAY BEFORE IT LAPSES. ES-5 wrote
+    # (3, 6) against a seven-day window, but the Send screen lets the
+    # window be anything from 1 to 60 days, and with fourteen days the
+    # fixed pair landed on days 10 and 13. His two rules, read literally:
+    # one nudge on day 3, one the day before it lapses. For the usual
+    # seven days those ARE day 3 and day 6.
+    FIRST_REMINDER_DAY = 3
+    LAST_REMINDER_DAYS_BEFORE = 1
+    REMINDER_RULE = ('Day 3, and the day before the link lapses, to '
+                     'whoever has not signed')
 
     lease_signing_id = models.AutoField(primary_key=True)
     tenant = models.ForeignKey(tenant, on_delete=models.PROTECT,
@@ -4916,6 +4925,29 @@ class LeaseSigning(models.Model):
     # answer that is right on Live and on a laptop alike.
     link_base = models.CharField(max_length=200, blank=True)
 
+    # THE APPROVAL - ES-6, 25 Oct 2026. His decision of 23 October: a
+    # signed lease is NOT written onto the tenant by the tenant's own
+    # action on a page nobody at Alivente is watching. A completed
+    # envelope waits here until somebody approves it (the sealed copy
+    # becomes the tenant's lease) or declines it (nothing is written).
+    #
+    # TWO PAIRS AND NOT A STATUS. `status` says what happened to the
+    # SIGNING; these say what happened to the RESULT. A completed
+    # envelope stays completed whichever way the approval goes, and the
+    # register can still ask "was it signed" separately from "was it
+    # attached".
+    #
+    # DECLINE IS FINAL - his decision of 25 October. A declined approval
+    # never reappears; attaching that lease means a new envelope.
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='lease_signings_approved')
+    approval_declined_at = models.DateTimeField(null=True, blank=True)
+    approval_declined_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='lease_signings_approval_declined')
+
     class Meta:
         db_table = 'lease_signings'
         ordering = ['-created_at']
@@ -4934,6 +4966,26 @@ class LeaseSigning(models.Model):
         """Past its date - which is not the same as marked expired."""
         return bool(self.expires_at and timezone.now() > self.expires_at)
 
+    @property
+    def awaiting_approval(self):
+        """Signed by everybody, and nobody has yet approved or declined it.
+
+        ES-6, 25 Oct 2026. THE ONE ANSWER, asked by the register, the
+        approval page, the bell and the two dashboards - five places
+        that must never disagree about whether there is work waiting.
+        """
+        return (self.status == self.COMPLETED and bool(self.sealed_pdf)
+                and self.approved_at is None
+                and self.approval_declined_at is None)
+
+    @classmethod
+    def pending_approval(cls):
+        """The same question as awaiting_approval, asked of the table."""
+        return (cls.objects.filter(status=cls.COMPLETED,
+                                   approved_at__isnull=True,
+                                   approval_declined_at__isnull=True)
+                .exclude(sealed_pdf='').exclude(sealed_pdf__isnull=True))
+
     def outstanding(self):
         """The parties who have not signed and have not declined.
 
@@ -4945,26 +4997,48 @@ class LeaseSigning(models.Model):
         return [p for p in self.parties.order_by('order', 'party_id')
                 if not p.signed_at and not p.declined_at]
 
+    def window_start(self):
+        """When the current signing window opened - ES-6, 25 Oct 2026.
+
+        THE LATER OF THE FIRST SEND AND THE LAST EXTENSION. The window
+        opens when the links go out (the house signature sends them), and
+        an extension opens a new one; a reminder counts from there, not
+        from when the envelope was created.
+        """
+        start = self.sent_at
+        if self.pk:
+            ext = (self.events.filter(kind='extended')
+                   .order_by('-at').values_list('at', flat=True).first())
+            if ext and (start is None or ext > start):
+                start = ext
+        return start
+
     def reminder_due(self, now=None):
         """The reminder day that has come and not been sent, or None.
 
-        ES-5, 25 Oct 2026. MEASURED FROM THE WINDOW, NOT FROM sent_at:
-        an extension moves expires_at, and the reminders follow it.
-        AT MOST ONE A RUN, and a cron that was down across both days
-        sends one email rather than two in the same minute.
+        ES-5, 25 Oct 2026; ES-6 made it follow any window length. Day 3
+        of the window, and the day before it lapses - each only if it
+        falls INSIDE the window. AT MOST ONE A RUN, and a cron that was
+        down across both sends one email rather than two in a minute.
+        Returns the day number counted from the window's start.
         """
         if not (self.is_open and self.expires_at):
             return None
         now = now or timezone.now()
         if now >= self.expires_at:
             return None
-        start = self.expires_at - timezone.timedelta(days=self.SIGNING_DAYS)
+        start = self.window_start()
+        if start is None:
+            return None
         due = None
-        for day in self.REMINDER_DAYS:
-            at = start + timezone.timedelta(days=day)
+        for at in (start + timezone.timedelta(days=self.FIRST_REMINDER_DAY),
+                   self.expires_at - timezone.timedelta(
+                       days=self.LAST_REMINDER_DAYS_BEFORE)):
+            if not (start < at < self.expires_at):
+                continue
             if now >= at and (self.last_reminder_at is None
                               or self.last_reminder_at < at):
-                due = day
+                due = int(round((at - start).total_seconds() / 86400.0))
         return due
 
 
@@ -5111,6 +5185,12 @@ class LeaseSigningEvent(models.Model):
         # when. The fresh links it sends are recorded as `sent`, one
         # per outstanding party; this row is the decision itself.
         ('extended', 'Extended'),
+        # ES-6, 25 Oct 2026 - what happened to the RESULT. `rejected`
+        # and not `declined`, because `declined` already means a TENANT
+        # refused to sign, and one word for two acts is a trail nobody
+        # can read.
+        ('approved', 'Approved onto the tenant'),
+        ('rejected', 'Approval declined'),
     ]
 
     event_id = models.AutoField(primary_key=True)

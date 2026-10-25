@@ -64,6 +64,16 @@ urlpatterns = [
          name='lease_signing_extend'),
     path('lease-signing/<int:pk>/cancel/', views.lease_signing_cancel,
          name='lease_signing_cancel'),
+    # ES-6, 25 Oct 2026 - ONE ENVELOPE IN FULL, where the register's
+    # View icon has pointed since 23 October with nowhere to go; the
+    # sealed PDF behind a permission check; and the approval itself,
+    # POST only, behind the tenants EDIT permission.
+    path('lease-signing/<int:pk>/', views.lease_signing_detail,
+         name='lease_signing_detail'),
+    path('lease-signing/<int:pk>/signed.pdf', views.lease_signing_sealed,
+         name='lease_signing_sealed'),
+    path('lease-signing/<int:pk>/approve/', views.lease_signing_approve,
+         name='lease_signing_approve'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),

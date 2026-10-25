@@ -314,6 +314,21 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE SIXTEENTH AND SEVENTEENTH - ES-6c, 25 Oct 2026 - REVEALED,
+    # NOT BROKEN. ES-3b CREATED pages/views/lease_signing_create.py on 24
+    # October WITH its import of ES-4's _invite (one spelling of
+    # mint-a-link-and-send-it) and with the COPY of a stored lease onto
+    # the envelope. No version has ever lacked either. ES-6 is the
+    # first round since to back that file up. Pinned in ES-6c, the last
+    # round of the same push, so the gate meets them already explained.
+    'from .lease_signing_sign import _invite':
+        'one spelling of mint-and-send - ES-3b created '
+        'lease_signing_create.py WITH it on 24 Oct, and ES-6 is the '
+        'first round since to back that file up',
+    'ContentFile(stored.read())':
+        'a stored lease is COPIED onto the envelope - ES-3b created '
+        'lease_signing_create.py WITH it, and ES-6 is the first round '
+        'since to back that file up',
     # THE THIRTEENTH TO FIFTEENTH, 25 OCT 2026 - REVEALED, NOT BROKEN,
     # and the same story as the twelfth.
     #

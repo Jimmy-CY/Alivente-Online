@@ -55,6 +55,9 @@ from .lease_signing_sign import *  # noqa: F401, F403
 # because it imports _invite from it; the other order is an import
 # cycle that fails at startup rather than at the first request.
 from .lease_signing_create import *  # noqa: F401, F403
+# ES-6, 25 Oct 2026 - one envelope in full, and the approval of a
+# signed lease onto its tenant.
+from .lease_signing_approve import *  # noqa: F401, F403
 from .recipes import *  # noqa: F401, F403
 from .help import *  # noqa: F401, F403
 from .household import *

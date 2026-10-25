@@ -1022,6 +1022,12 @@ CONVERTED = [
     'test_one_email.py',
     # ES-5, 25 Oct 2026 - what happens to an envelope after it is sent.
     'test_signing_lifecycle.py',
+    # ES-6, 25 Oct 2026 - a signed lease is approved onto its tenant.
+    'test_lease_approval.py',
+    # ES-6b, 25 Oct 2026 - every drawn signature is blue.
+    'test_blue_ink.py',
+    # ES-6c, 25 Oct 2026 - a second tenant signs only when there is one.
+    'test_second_signer.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

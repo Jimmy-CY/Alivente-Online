@@ -26,7 +26,12 @@
 {# NOT INDEXED, EVER. The URL holds a credential and the page holds a #}
 {# contract. #}
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="referrer" content="no-referrer">
+{# SAME-ORIGIN, NOT NO-REFERRER - 25 Oct 2026, found on Live. With     #}
+{# no-referrer the browser sends "Origin: null" when the form is       #}
+{# submitted, and Django's CSRF check refuses a null origin: nobody    #}
+{# could sign. same-origin still keeps the link (and its token) away   #}
+{# from every other site, and lets the browser name this one.          #}
+<meta name="referrer" content="same-origin">
 <title>Sign your lease agreement</title>
 {% include 'lease_sign_styles.html' %}
 </head>
@@ -316,7 +321,9 @@
     ctx.lineWidth = 2.2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#21343c';
+    // ES-6b, 25 Oct 2026 - BLUE, the ink the signature page prints
+    // every drawn mark in; the view passes it from lease_sealing.
+    ctx.strokeStyle = '{{ ink|escapejs }}';
     if (keep) {
       var img = new Image();
       img.onload = function () { ctx.drawImage(img, 0, 0, r.width, r.height); };

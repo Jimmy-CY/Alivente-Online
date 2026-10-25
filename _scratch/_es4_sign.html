@@ -26,7 +26,12 @@
 
 
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="referrer" content="no-referrer">
+
+
+
+
+
+<meta name="referrer" content="same-origin">
 <title>Sign your lease agreement</title>
 
 
@@ -392,7 +397,7 @@
   </div>
 
   <form method="post" id="ls-form" novalidate>
-    <input type="hidden" name="csrfmiddlewaretoken" value="I4nSRTOi0RzU5EID3zLKKqwoIwU3xS8H1lBCPqqUeLIsbed41IR4tVV6wOF0B2Ek">
+    <input type="hidden" name="csrfmiddlewaretoken" value="4TtXJVkyJ1Gd3JA3j8voFLmx9Ybnnuy6pjM98yxtYHrUdbCeHFGYi5ZB07gBw4pK">
     <input type="hidden" name="read_to_end" id="ls-read" value="0">
     <input type="hidden" name="seconds_open" id="ls-seconds" value="0">
     <input type="hidden" name="signature_kind" id="ls-kind" value="drawn">
@@ -471,7 +476,7 @@
   
   <form method="post" id="ls-decline" class="ls-decline"
         onsubmit="return confirm('Decline to sign this lease agreement? It will no longer be possible for anybody to sign it, and Alivente Limited will be told.');">
-    <input type="hidden" name="csrfmiddlewaretoken" value="I4nSRTOi0RzU5EID3zLKKqwoIwU3xS8H1lBCPqqUeLIsbed41IR4tVV6wOF0B2Ek">
+    <input type="hidden" name="csrfmiddlewaretoken" value="4TtXJVkyJ1Gd3JA3j8voFLmx9Ybnnuy6pjM98yxtYHrUdbCeHFGYi5ZB07gBw4pK">
     <input type="hidden" name="action" value="decline">
     <p class="ls-foot">
       Not able to agree to this lease?
@@ -586,7 +591,9 @@
     ctx.lineWidth = 2.2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#21343c';
+    // ES-6b, 25 Oct 2026 - BLUE, the ink the signature page prints
+    // every drawn mark in; the view passes it from lease_sealing.
+    ctx.strokeStyle = '#1a3d9e';
     if (keep) {
       var img = new Image();
       img.onload = function () { ctx.drawImage(img, 0, 0, r.width, r.height); };

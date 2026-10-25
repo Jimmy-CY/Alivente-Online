@@ -36,6 +36,7 @@ is printed on every single import, which would land in every log line
 this application writes.
 """
 import hashlib
+import io
 import os
 
 from django.core.files.base import ContentFile
@@ -160,6 +161,53 @@ def _line(page, x, y, text, size=9, bold=False, colour=(0, 0, 0)):
                      fontname=FONT_BOLD if bold else FONT)
 
 
+# EVERY DRAWN SIGNATURE IS BLUE - ES-6b, 25 Oct 2026. His instruction:
+# "All signatures that have been drawn, need to display in Blue." Blue
+# is how a signature on paper says it was signed by hand and is not a
+# photocopy, and a dark-grey stroke on a printed page reads as print.
+#
+# ONE INK, NAMED HERE, used twice: the signing pad draws with the hex
+# (so the signer sees blue while signing) and the signature page prints
+# every drawn mark in the same colour. A second spelling in the template
+# would be a second answer.
+SIGNATURE_INK = (26, 61, 158)
+SIGNATURE_INK_HEX = '#%02x%02x%02x' % SIGNATURE_INK
+
+
+def _in_blue(raw):
+    """A drawn signature, re-inked in SIGNATURE_INK, as PNG bytes.
+
+    AT SEALING, NOT AT CAPTURE. The stored image stays exactly what the
+    signer's device sent - that is the evidence - and the page prints it
+    in blue. Which is also why marks captured before ES-6b, drawn in
+    dark grey, come out blue too.
+
+    THE SHAPE IS THE ALPHA. The pad's PNG is transparent with the stroke
+    painted on it, so the stroke keeps its alpha (and its smoothed edges)
+    and only its colour changes. An image with no alpha - a flattened
+    one - takes its alpha from how dark each pixel is: white paper
+    vanishes, ink stays.
+
+    IF ANYTHING GOES WRONG, THE ORIGINAL. A mark in the wrong colour is
+    a cosmetic fault; a mark missing from a signature page is not.
+    """
+    try:
+        from PIL import Image, ImageOps
+        im = Image.open(io.BytesIO(raw))
+        im.load()
+        if 'A' in im.getbands() or 'transparency' in im.info:
+            alpha = im.convert('RGBA').getchannel('A')
+        else:
+            alpha = ImageOps.invert(im.convert('L'))
+        inked = Image.new('RGBA', im.size, SIGNATURE_INK + (0,))
+        inked.putalpha(alpha)
+        out = io.BytesIO()
+        inked.save(out, 'PNG')
+        return out.getvalue()
+    except Exception:                                   # noqa: BLE001
+        return raw
+
+
 def build_sealed(signing, parties=None, events=None):
     """The original, plus ONE appended page, as bytes.
 
@@ -213,7 +261,8 @@ def build_sealed(signing, parties=None, events=None):
                     img = p.signature_image.read()
                     p.signature_image.close()
                     rect = pymupdf.Rect(56, y, 56 + 190, y + 52)
-                    page.insert_image(rect, stream=img, keep_proportion=True)
+                    page.insert_image(rect, stream=_in_blue(img),
+                                      keep_proportion=True)
                 except Exception:
                     # A MISSING MARK IS NOT A MISSING SIGNATURE. The
                     # row says they signed and when; the picture is

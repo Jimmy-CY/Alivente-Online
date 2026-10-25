@@ -350,7 +350,9 @@ lead = sum(len(re.findall(r'class="[^"]*\balv-card-lead\b',
 # its first card, as asset_detail.html does: a DETAIL screen with a
 # page title. The WCIM exception below is a chooser, which is not the
 # same shape.
-ok(lead == 4,
+# ES-6, 25 Oct 2026 - 5. lease_signing_detail.html, the envelope page,
+# takes one on its first card: a DETAIL screen, like the two above.
+ok(lead == 5,
    'CONTROL: .alv-card-lead is still 3 use(s) - the WCIM landing did NOT '
    'take one, because it is a chooser and its h1 already names the screen',
    lead)

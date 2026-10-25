@@ -1281,6 +1281,10 @@ $sentinels = @(
     @{ File = 'pages/forms.py'; Text = 'def clean_tenant_email(self):'; What = 'T2-8: one email address per tenant, required - a signing link is a credential for one person, and a box holding two hands one link to two people; ON THE FORM so a legacy record is refused only when a person saves it, never by the cron' },
     @{ File = 'pages/models.py'; Text = 'def outstanding(self):'; What = 'ES-5: ONE answer to who are we waiting for - reminders, extend and the expiry record all ask it, and whoever has signed is never emailed again; a second spelling is how a co-operative tenant gets chased for somebody else silence' },
     @{ File = 'pages/management/commands/check_lease_renewal_and_invoices.py'; Text = "call_command('lease_signing_tick'"; What = 'ES-5: the five-minute job writes expiry and sends the day 3 and day 6 reminders - without this line envelopes never expire and nobody is ever reminded, silently' },
+    @{ File = 'pages/models.py'; Text = 'def awaiting_approval(self):'; What = 'ES-6: ONE answer to is this signed lease waiting for approval - the register, the envelope page, the bell and both dashboards ask it, and five screens deciding for themselves is how they come to disagree about whether there is work waiting' },
+    @{ File = 'pages/views/lease_signing_approve.py'; Text = "released = [let_go_of_file(ten, 'tenant_lease_agreement')]"; What = 'ES-6: approving a signed lease lets go of the old one BEFORE the save and deletes it AFTER - UO-1 order on the second door into this field; the other order is how a failed save destroys a lease' },
+    @{ File = 'pages/services/lease_sealing.py'; Text = 'stream=_in_blue(img)'; What = 'ES-6b: every drawn signature prints in blue on the signature page - re-inked at sealing, so the stored mark stays exactly what the signer sent' },
+    @{ File = 'pages/views/lease_signing_create.py'; Text = 'if not chosen.has_second_tenant and any('; What = 'ES-6c: a second signer posted for a one-person tenancy is refused - the page draws no second row, and this makes it a rule rather than a layout' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3083,7 +3087,13 @@ $suites = @(
     # T2-8, 25 Oct 2026 - one email address per person.
     'test_one_email.py',
     # ES-5, 25 Oct 2026 - what happens to an envelope after it is sent.
-    'test_signing_lifecycle.py'
+    'test_signing_lifecycle.py',
+    # ES-6, 25 Oct 2026 - a signed lease is approved onto its tenant.
+    'test_lease_approval.py',
+    # ES-6b, 25 Oct 2026 - every drawn signature is blue.
+    'test_blue_ink.py',
+    # ES-6c, 25 Oct 2026 - a second tenant signs only when there is one.
+    'test_second_signer.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

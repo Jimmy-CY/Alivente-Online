@@ -761,10 +761,16 @@ else:
                'one copy of the signed agreement goes out', len(mail.outbox))
             if mail.outbox:
                 m = mail.outbox[0]
+                # ES-6, 25 Oct 2026 - AND TO ALIVENTE. Decision 2 of 23
+                # October: the signed copy goes to each tenant who signed
+                # AND to Demetri. The tenancy's addresses first, then the
+                # house signer, once.
                 ok(sorted(m.to) == ['antoine.madelbos@example.com',
-                                    'dorian.tirouard@example.com'],
+                                    'dorian.tirouard@example.com',
+                                    'signer@example.com'],
                    '  to every address on the tenancy, which T2-5 made '
-                   'one expression on the model', sorted(m.to))
+                   'one expression on the model - and to the house signer',
+                   sorted(m.to))
                 ok(len(m.attachments) == 1
                    and m.attachments[0][0].endswith('.pdf'),
                    '  with the sealed PDF attached',

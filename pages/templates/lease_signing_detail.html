@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{# THE TAB TITLE - RV-1's lesson, inherited: a screen with no title #}
+{# block fails test_heading_prefix on the day it ships.            #}
+{% block title %}Lease Signing {{ env.pk }}{% endblock %}
+
+{# ONE ENVELOPE, IN FULL - ES-6, 25 Oct 2026.                          #}
+{#                                                                    #}
+{# WHERE THE REGISTER'S VIEW ICON HAS POINTED SINCE 23 OCTOBER, and    #}
+{# the approval page his decision of 23 October asked for: the sealed #}
+{# PDF, who signed and from where, the full trail, the tenancy it      #}
+{# would be attached to, and WHAT IS ATTACHED TO THAT TENANCY NOW.    #}
+{#                                                                    #}
+{# APPROVE AND DECLINE APPEAR ONLY WHEN THERE IS SOMETHING TO DECIDE  #}
+{# (awaiting, from the model's one answer). Approve replaces whatever #}
+{# is attached; Decline is final - both his decisions of 25 October. #}
+{#                                                                    #}
+{# NAMED lsd-* - the same reason RV-1 took rv-*: nine templates own a  #}
+{# .detail-row and base owns none. Promoting one is its own round.    #}
+{% block content %}
+
+<h2 class="page-title-h2">LEASE SIGNING</h2>
+<h4 class="page-subtitle-h4">{{ tenant.tenant_display_name }}{% if prop %} &mdash; {{ prop.prop_name }}{% endif %}</h4>
+
+{# ONE BAR, Back last and uncoloured - base 3.4. A POST control has to #}
+{# be a form, and display: contents keeps the button where a link     #}
+{# would have been.                                                   #}
+<div class="page-action-buttons">
+    {% if awaiting and perms.auth.can_edit_tenants %}
+    {# THE BUTTONS SIT IN THE BAR; THEIR FORMS SIT BELOW IT - 25 Oct  #}
+    {# 2026. A <form> inside .page-action-buttons is a container the  #}
+    {# bar census does not know (test_bar_order), so each button      #}
+    {# names its form with form="..." - cash_receipt_add's pattern.   #}
+    <button type="submit" form="lsd-approve-form" class="btn action-primary">
+        <i class="fas fa-check"></i> Approve and attach
+    </button>
+    <button type="submit" form="lsd-decline-form" class="btn action-secondary action-danger">
+        <i class="fas fa-times"></i> Decline
+    </button>
+    {% endif %}
+    {% if env.sealed_pdf %}
+    <a href="{% url 'lease_signing_sealed' env.pk %}"
+       onclick="openPdfViewer('{% url 'lease_signing_sealed' env.pk as sealed_url %}{{ sealed_url|escapejs }}', 'Signed lease &mdash; {{ tenant.tenant_display_name|escapejs }}', 'lease-agreement-signed-{{ env.pk|escapejs }}.pdf'); return false;"
+       class="btn action-secondary">
+        <i class="fas fa-file-pdf"></i> View signed lease
+    </a>
+    {% endif %}
+    <a href="{% url 'lease_signing_list' %}?all=1" class="btn action-back"
+       role="button" aria-label="Back to Lease Signing">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+{% if awaiting and perms.auth.can_edit_tenants %}
+<form method="post" action="{% url 'lease_signing_approve' env.pk %}" id="lsd-approve-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="approve">
+</form>
+<form method="post" action="{% url 'lease_signing_approve' env.pk %}" id="lsd-decline-form"
+      onsubmit="return confirm('Decline this signed lease? Nothing will be attached to the tenant, and this cannot be undone - to attach a lease later you would send a new one for signature.');">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="decline">
+</form>
+{% endif %}
+
+{% if awaiting %}
+{# THE DECISION, SAID WHERE IT IS MADE. The note names what approving  #}
+{# will REPLACE, because that is the one consequence a person cannot  #}
+{# see from the signed PDF itself.                                    #}
+<div class="lsd-note">
+    <i class="fas fa-circle-exclamation"></i>
+    Everybody has signed. <b>Approve</b> to make this the lease agreement for
+    {{ tenant.tenant_display_name }}{% if current_lease %} &mdash; it will
+    <b>replace</b> the lease attached now ({{ current_lease_name }}){% endif %}.
+    <b>Decline</b> to attach nothing; that is final.
+</div>
+{% endif %}
+
+{# ------------------------------------------------------ THE ENVELOPE #}
+<div class="alv-card alv-card-lead">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0">
+            <i class="fas fa-file-signature"></i> Envelope {{ env.pk }}
+            <span class="alv-pill {{ status_pill }}">{{ env.get_status_display }}</span>
+        </h4>
+    </div>
+    <div class="alv-card-body">
+        <div class="lsd-groups">
+            <div class="lsd-group">
+                <div class="lsd-row"><span class="lsd-label">Tenant:</span>
+                    <span class="lsd-value">{{ tenant.tenant_display_name }}</span></div>
+                <div class="lsd-row"><span class="lsd-label">Property:</span>
+                    <span class="lsd-value">{% if prop %}{{ prop.prop_name }}{% else %}&mdash;{% endif %}</span></div>
+                <div class="lsd-row"><span class="lsd-label">Lease period:</span>
+                    <span class="lsd-value">{{ tenant.tenant_lease_start_date|date:"j M Y" }} to {{ tenant.tenant_lease_end_date|date:"j M Y" }}</span></div>
+                <div class="lsd-row"><span class="lsd-label">Attached now:</span>
+                    <span class="lsd-value">{% if current_lease %}{{ current_lease_name }}{% else %}no lease attached{% endif %}</span></div>
+            </div>
+            <div class="lsd-group">
+                <div class="lsd-row"><span class="lsd-label">Sent:</span>
+                    <span class="lsd-value">{% if env.sent_at %}{{ env.sent_at|date:"j F Y, H:i" }}{% else %}not yet{% endif %}</span></div>
+                <div class="lsd-row"><span class="lsd-label">Signing closes:</span>
+                    <span class="lsd-value">{% if env.expires_at %}{{ env.expires_at|date:"j F Y, H:i" }}{% else %}&mdash;{% endif %}</span></div>
+                <div class="lsd-row"><span class="lsd-label">Completed:</span>
+                    <span class="lsd-value">{% if env.completed_at %}{{ env.completed_at|date:"j F Y, H:i" }}{% else %}&mdash;{% endif %}</span></div>
+                <div class="lsd-row"><span class="lsd-label">Approval:</span>
+                    <span class="lsd-value">
+                    {% if env.approved_at %}approved {{ env.approved_at|date:"j F Y, H:i" }}{% if env.approved_by %} by {{ env.approved_by.get_full_name|default:env.approved_by.username }}{% endif %}
+                    {% elif env.approval_declined_at %}declined {{ env.approval_declined_at|date:"j F Y, H:i" }}{% if env.approval_declined_by %} by {{ env.approval_declined_by.get_full_name|default:env.approval_declined_by.username }}{% endif %}
+                    {% elif awaiting %}waiting for approval
+                    {% else %}&mdash;{% endif %}
+                    </span></div>
+            </div>
+        </div>
+        {% if env.pdf_sha256 %}
+        <div class="lsd-block">
+            <span class="lsd-label">Fingerprint of the signed file (SHA-256):</span>
+            <code class="lsd-hash">{{ env.pdf_sha256 }}</code>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ------------------------------------------------------ WHO SIGNS #}
+<div class="alv-card">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0"><i class="fas fa-pen-nib"></i> Who signs</h4>
+    </div>
+    <div class="alv-card-body">
+        <div class="table-container">
+        <table class="alv-table">
+            <thead>
+                <tr>
+                    <th style="text-align: left; width: 26%">Name</th>
+                    <th style="text-align: left; width: 16%">For</th>
+                    <th style="width: 20%">Signed</th>
+                    <th style="width: 18%">How</th>
+                    <th style="width: 20%">From</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for p in parties %}
+                <tr>
+                    <td data-label="">{{ p.name }}<span class="lsd-sub">{{ p.email }}</span></td>
+                    <td data-label="For">{{ p.get_role_display }}</td>
+                    <td data-label="Signed">
+                        {% if p.signed_at %}{{ p.signed_at|date:"j M Y, H:i" }}
+                        {% elif p.declined_at %}<span class="alv-pill alv-pill-bad">Declined</span>
+                        {% else %}<span class="alv-pill alv-pill-neutral">Waiting</span>{% endif %}
+                    </td>
+                    <td data-label="How">
+                        {% if p.signed_at %}{{ p.get_signature_kind_display|lower }}, {{ p.get_signed_auth_display|lower }}{% if p.read_to_end %}<span class="lsd-sub">read to the end</span>{% endif %}{% else %}&mdash;{% endif %}
+                    </td>
+                    <td data-label="From">{{ p.signed_ip|default:"&mdash;" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+{# ------------------------------------------------------ THE TRAIL #}
+{# APPEND ONLY, OLDEST FIRST, every row - with no certificate this is #}
+{# the evidence, so the screen shows all of it and summarises none.   #}
+<div class="alv-card">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0"><i class="fas fa-clock-rotate-left"></i> What happened</h4>
+    </div>
+    <div class="alv-card-body">
+        <ul class="lsd-trail">
+            {% for e in events %}
+            <li class="lsd-event">
+                <span class="lsd-event-what">{{ e.get_kind_display }}</span>
+                <span class="lsd-event-when">{{ e.at|date:"j F Y, H:i" }}</span>
+                <span class="lsd-event-who">{% if e.party %}{{ e.party.name }}{% else %}Alivente{% endif %}{% if e.ip %} &middot; {{ e.ip }}{% endif %}</span>
+                {% if e.detail %}<span class="lsd-event-note">{{ e.detail }}</span>{% endif %}
+            </li>
+            {% empty %}
+            <li class="lsd-event"><span class="lsd-event-note">Nothing has happened yet.</span></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{# The SAME viewer Receipt Details, act_expense and asset_detail use. #}
+{% include 'components/pdf_viewer.html' %}
+
+<style>
+/* ES-6, 25 Oct 2026 - lsd-* for the reason in the header note. */
+.lsd-note {
+    background: var(--alv-warn-soft);
+    border: 1px solid var(--alv-warn-line);
+    border-left: 4px solid var(--alv-warn);
+    border-radius: var(--alv-radius-sm, 6px);
+    padding: 11px 14px;
+    margin: 0 0 16px;
+    color: var(--alv-ink);
+    font-size: 0.9rem;
+}
+.lsd-groups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+.lsd-group { display: flex; flex-direction: column; gap: 10px; }
+.lsd-row { display: flex; gap: 12px; line-height: 1.5; flex-wrap: wrap; }
+.lsd-label { font-weight: 600; color: var(--alv-ink); min-width: 130px; }
+.lsd-value { color: var(--alv-ink-strong); flex: 1 0 auto; min-width: 0; overflow-wrap: anywhere; }
+.lsd-sub { display: block; color: var(--alv-ink-faint); font-size: 0.78rem; margin-top: 2px; }
+.lsd-block { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--alv-line); }
+.lsd-hash { display: block; margin-top: 6px; color: var(--alv-ink-soft); font-size: 0.8rem; overflow-wrap: anywhere; }
+.lsd-trail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.lsd-event {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px;
+    padding-left: 14px; border-left: 3px solid var(--alv-line); line-height: 1.5;
+}
+.lsd-event-what { font-weight: 600; color: var(--alv-ink-strong); min-width: 150px; }
+.lsd-event-when { color: var(--alv-ink); }
+.lsd-event-who { color: var(--alv-ink-soft); }
+.lsd-event-note { flex-basis: 100%; color: var(--alv-ink-soft); }
+
+/* `screen and`, NOT A BARE max-width - test_print_queries: a bare
+   max-width block fires on paper too. 768px is the house breakpoint. */
+@media screen and (max-width: 768px) {
+    .lsd-groups { grid-template-columns: 1fr; gap: 10px; }
+    .lsd-label { min-width: 110px; }
+}
+</style>
+{% endblock %}

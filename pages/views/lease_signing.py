@@ -141,8 +141,11 @@ def lease_signing_list(request):
             # has to act on, so it says so where the work is rather
             # than only in a notification that can be missed. ES-6
             # builds the page it points at.
-            'awaiting_approval': (env.status == LeaseSigning.COMPLETED
-                                  and not env.tenant.tenant_lease_agreement),
+            # ES-6, 25 Oct 2026 - THE MODEL'S ONE ANSWER. ES-3a guessed
+            # from whether the tenant had any lease attached, which was
+            # wrong both ways once a lease could be approved over an
+            # existing one or declined.
+            'awaiting_approval': env.awaiting_approval,
             # ES-5 - from the view's own tuples, never re-decided in the
             # template.
             'can_extend': env.status in EXTENDABLE,

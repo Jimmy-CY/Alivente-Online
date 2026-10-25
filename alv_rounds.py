@@ -1482,6 +1482,12 @@ ROUNDS = [
     '.bak_oneemail',
     # ES-5, 25 Oct 2026 - what happens to an envelope after it is sent.
     '.bak_signlife',
+    # ES-6, 25 Oct 2026 - a signed lease is approved onto its tenant.
+    '.bak_leaseapprove',
+    # ES-6b, 25 Oct 2026 - every drawn signature is blue.
+    '.bak_blueink',
+    # ES-6c, 25 Oct 2026 - a second tenant signs only when there is one.
+    '.bak_secondsigner',
 ]
 
 

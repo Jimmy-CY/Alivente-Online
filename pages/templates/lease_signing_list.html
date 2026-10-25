@@ -67,10 +67,15 @@
 {# that needs an action, and a notification can be missed. ES-6 builds #}
 {# the page this points at; until then it is a count, not a link.     #}
 {% if waiting_on_me %}
+{# ES-6, 25 Oct 2026 - and now each one is a link: the row's View     #}
+{# icon and the "awaiting approval" note both open the envelope page, #}
+{# where Approve and Decline are.                                     #}
 <div class="ls-note">
     <i class="fas fa-circle-exclamation"></i>
     {{ waiting_on_me }} signed agreement{{ waiting_on_me|pluralize }}
-    waiting to be approved onto the tenant record.
+    waiting to be approved onto the tenant record &mdash; open
+    {% if waiting_on_me == 1 %}it{% else %}each one{% endif %} from the
+    <b>awaiting approval</b> link on its row.
 </div>
 {% endif %}
 
@@ -119,7 +124,7 @@
                 </td>
                 <td data-label="Expires">
                     {% if r.awaiting_approval %}
-                        <span class="ls-attn">awaiting approval</span>
+                        <a href="{% url 'lease_signing_detail' r.env.pk %}" class="ls-attn alv-ref-link">awaiting approval</a>
                     {% elif r.env.expires_at %}
                         {{ r.env.expires_at|date:"j M Y" }}
                         {% if r.overdue %}<span class="ls-sub ls-over">past its date</span>{% endif %}
@@ -137,9 +142,10 @@
                 {# fa-times already exists for exactly this.           #}
                 <td class="desktop-action-cell cell-actions">
                     <div class="row-actions">
-                        <span class="icon-action-btn icon-view" title="View this envelope">
+                        {# ES-6 - the View icon goes somewhere at last. #}
+                        <a href="{% url 'lease_signing_detail' r.env.pk %}" class="icon-action-btn icon-view" title="View this envelope">
                             <i class="fas fa-eye"></i>
-                        </span>
+                        </a>
                         {# EXTEND AND CANCEL - ES-5, 25 Oct 2026. Drawn on 23  #}
                         {# October as icons that did nothing; now they POST.   #}
                         {# WHICH ROWS OFFER THEM IS THE VIEW'S ANSWER         #}
@@ -174,10 +180,10 @@
 
                 {# THE PHONE ACTIONS. Hidden on desktop by base. #}
                 <td class="mobile-action-bar cols-2">
-                    <span class="mobile-action-btn">
+                    <a href="{% url 'lease_signing_detail' r.env.pk %}" class="mobile-action-btn">
                         <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
                         <span class="mobile-action-label">View</span>
-                    </span>
+                    </a>
                     {% if perms.auth.can_edit_tenants and r.can_extend %}
                     {# ES-5 - the phone's Resend becomes the same Extend. #}
                     <form method="post" action="{% url 'lease_signing_extend' r.env.pk %}" class="ls-inline">

@@ -170,9 +170,9 @@ for p in alv_tree.templates():
         left_hex[alv_tree.rel(p)] = len(hits)
     on_token += len(ON_TOKEN.findall(c))
 ok(not left_hex, 'no left stripe is painted #ffc107 anywhere', left_hex)
-ok(on_token == 16,   # ES-3a, 23 Oct 2026 - .ls-note on the lease signing register.   # (was 15)
+ok(on_token == 17,   # ES-6, 25 Oct 2026 - .lsd-note on the envelope page (lease_signing_detail.html), the amber 'this will replace the lease attached now' note, on the token.   # (was 16)   # ES-3a, 23 Oct 2026 - .ls-note on the lease signing register.   # (was 15)
    'and all %d of them carry var(--alv-warn)' % on_token,
-   '%d found - 11 converted, the 4 that already had it, and ES-3a' % on_token)
+   '%d found - 11 converted, the 4 that already had it, ES-3a and ES-6' % on_token)
 
 # ==========================================================================
 head('3. the render, in situ - nothing but the stripe moved')

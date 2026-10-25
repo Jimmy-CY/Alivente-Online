@@ -207,6 +207,17 @@ def _signed_copy(env):
     from django.core.mail import EmailMessage
 
     to = list(getattr(env.tenant, 'tenant_emails', None) or [])
+    # AND TO ALIVENTE - ES-6, 25 Oct 2026, his decision of 23 October:
+    # "the signed copy is emailed to Demetri as well as to each tenant
+    # who signed". The person who sent the envelope and the house
+    # signer, once each, after the tenants.
+    house = env.parties.filter(role=LeaseSigningParty.ROLE_ALIVENTE).first()
+    for extra in ((getattr(env.created_by, 'email', '') or '')
+                  if env.created_by_id else '',
+                  (house.email if house else '') or ''):
+        extra = extra.strip()
+        if extra and extra.lower() not in [t.lower() for t in to]:
+            to.append(extra)
     if not to:
         return 0
     who = getattr(env.tenant, 'tenant_display_name', '') or ''
@@ -606,6 +617,9 @@ def _page_context(request, env, party, how, error=None):
             role=LeaseSigningParty.ROLE_ALIVENTE).first(),
         'pages': _page_urls(request, env, party, how),
         'already': bool(party.signed_at),
+        # ES-6b, 25 Oct 2026 - the pad draws in the ink the signature
+        # page prints in, named once in lease_sealing.
+        'ink': lease_sealing.SIGNATURE_INK_HEX,
     }
 
 

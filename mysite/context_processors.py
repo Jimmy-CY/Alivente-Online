@@ -7,8 +7,21 @@ def notification_count(request):
     Context processor to add notification count to all templates
     """
     if not request.user.is_authenticated:
-        return {'notification_count': 0}
-    
+        return {'notification_count': 0, 'lease_approvals_waiting': 0}
+
+    # SIGNED LEASES WAITING FOR APPROVAL - ES-6, 25 Oct 2026. His
+    # decision of 23 October: the approval appears in Notifications and
+    # on the Home dashboard. Counted with the ORM on its own, OUTSIDE the
+    # raw-SQL block below, so a MySQL hiccup there cannot hide work that
+    # is waiting, and only for somebody who can see tenants at all.
+    approvals = 0
+    try:
+        if request.user.has_perm('auth.can_access_tenants'):
+            from pages.models import LeaseSigning
+            approvals = LeaseSigning.pending_approval().count()
+    except Exception:
+        approvals = 0
+
     try:
         # Get the notification data
         notification_data = get_notification_summary()
@@ -20,10 +33,12 @@ def notification_count(request):
             notification_data.get('expensesWaitingApproval', 0) +
             notification_data.get('expensesWaitingPayment', 0)
         )
-        return {'notification_count': total_count}
+        return {'notification_count': total_count + approvals,
+                'lease_approvals_waiting': approvals}
     except Exception as e:
         # Log the error if needed
-        return {'notification_count': 0}
+        return {'notification_count': approvals,
+                'lease_approvals_waiting': approvals}
 
 def get_notification_summary():
     """

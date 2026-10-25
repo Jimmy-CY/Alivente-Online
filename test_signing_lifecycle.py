@@ -147,8 +147,13 @@ def claims(src):
          'an envelope can be DECLINED'),
         ("('extended', 'Extended')" in py[MODELS],
          'and the trail can say it was EXTENDED'),
-        ('REMINDER_DAYS = (3, 6)' in py[MODELS],
-         'reminders are day 3 and day 6, written once on the model'),
+        # ES-6, 25 Oct 2026 - day 3 and the day before it lapses, which
+        # for the usual seven days IS day 3 and day 6; the fixed pair
+        # broke on any other window the Send screen allows.
+        ('FIRST_REMINDER_DAY = 3' in py[MODELS]
+         and 'LAST_REMINDER_DAYS_BEFORE = 1' in py[MODELS],
+         'reminders are day 3 and the day before it lapses, written once '
+         'on the model'),
         ('def outstanding(self)' in py[MODELS]
          and 'def reminder_due(self' in py[MODELS],
          'one answer to "who are we waiting for", and one to "is a '

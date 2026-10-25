@@ -211,8 +211,9 @@
     <hr>
 
     {# PREFILLED FROM THE TENANCY - T2-1's columns. The second row   #}
-    {# is only filled when there IS a second tenant, which the model #}
-    {# answers with has_second_tenant.                               #}
+    {# is only DRAWN when there IS a second tenant, which the model  #}
+    {# answers with has_second_tenant. ES-6c, 25 Oct 2026: it used   #}
+    {# to be drawn blank for a one-person tenancy.                   #}
     {% for s in signers %}
     <div class="form-row">
         <div class="col-md-4">
@@ -247,8 +248,14 @@
     <div class="form-row">
         <div class="col-md-12">
           <small class="form-text">
+            {% if signers|length > 1 %}
             Two tenants need two different email addresses &mdash; one link
             each, so the record can tell who signed.
+            {% else %}
+            One tenant on this tenancy. If a second person has to sign, add
+            them as the second tenant on the tenant record first, then
+            choose this tenancy again.
+            {% endif %}
           </small>
         </div>
     </div>
@@ -274,9 +281,11 @@
         </div>
         <div class="col-md-8">
           <div class="form-group">
+            {# ES-6, 25 Oct 2026 - THE MODEL'S OWN SENTENCE. This said   #}
+            {# "every 2 days" after ES-5 had built day 3 and day 6.     #}
             <label for="ls-remind"><strong>Reminders</strong></label>
             <input type="text" id="ls-remind" class="form-control" readonly
-                   value="Every {{ remind_every }} days until they sign">
+                   value="{{ reminder_rule }}">
           </div>
         </div>
     </div>

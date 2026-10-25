@@ -85,13 +85,12 @@ __all__ = [
 # is a real column and an extension moves it - sent_at + 7 would then
 # disagree with the date the tenant was told in writing.
 #
-# THE REMINDER CADENCE IS A CONSTANT. Every two days, for everybody.
-# An earlier draft offered it as a per-envelope choice and there is no
-# column to put the answer in: adding one would make a view round into
-# a model round with a migration, to configure something nobody has
-# asked to vary. ES-5 reads this number.
+# THE REMINDERS ARE NOT CHOSEN HERE. ES-5 sends them - day 3, and the
+# day before the link lapses (day 3 and day 6 of the usual seven), to
+# whoever has not signed. ES-6, 25 Oct 2026: this screen said "every 2
+# days", the 22 October plan, after ES-5 had built something else; it
+# now describes what actually happens, in the model's own words.
 DEFAULT_EXPIRY_DAYS = 7
-REMIND_EVERY_DAYS = 2
 MIN_EXPIRY_DAYS = 1
 MAX_EXPIRY_DAYS = 60
 
@@ -134,6 +133,13 @@ def _prefill(ten, user):
     ONE ROW PER PERSON, and the second only when there IS one -
     has_second_tenant, which T2-1 put on the model with a warning
     about every screen deciding that for itself.
+
+    NO BLANK SECOND ROW - ES-6c, 25 Oct 2026. ES-3b padded a one-person
+    tenancy with an empty second signer, so somebody could be added by
+    hand. Since T2-1 the second tenant is a person on the RECORD, and a
+    signer typed in here is somebody the envelope names and the tenancy
+    does not. His decision: the second row appears only when the
+    tenancy has a second tenant; to add one, add them to the record.
     """
     first = list(getattr(ten, 'tenant_emails', None) or [])
     rows = [{'name': ten.tenant_name or '',
@@ -141,10 +147,8 @@ def _prefill(ten, user):
     if ten.has_second_tenant:
         rows.append({'name': ten.tenant_2_name or '',
                      'email': (ten.tenant_2_email or '').strip()})
-    while len(rows) < MAX_TENANT_SIGNERS:
-        rows.append({'name': '', 'email': ''})
     return {
-        'signers': rows[:MAX_TENANT_SIGNERS],
+        'signers': rows,
         'house_name': user.get_full_name() or user.get_username(),
         'house_email': user.email or '',
     }
@@ -214,6 +218,20 @@ def lease_signing_create(request):
         house_email = (request.POST.get('house_email') or '').strip()
         if not house_name:
             messages.error(request, 'Name who signs for Alivente.')
+            return redirect(request.get_full_path())
+
+        # ONE TENANT, ONE SIGNER - ES-6c, 25 Oct 2026. The page no longer
+        # draws a second row for a one-person tenancy; this is the same
+        # rule where a hand-made POST meets it, so it is a rule and not
+        # a layout.
+        if not chosen.has_second_tenant and any(
+                (request.POST.get('signer_%d_%s' % (i, part)) or '').strip()
+                for i in range(2, MAX_TENANT_SIGNERS + 1)
+                for part in ('name', 'email')):
+            messages.error(
+                request, 'This tenancy has one tenant, so one tenant signs. '
+                         'If a second person has to sign, add them as the '
+                         'second tenant on the tenant record first.')
             return redirect(request.get_full_path())
 
         signers = []
@@ -333,7 +351,7 @@ def lease_signing_create(request):
         'chosen': chosen,
         'tenants': tenants,
         'default_expiry': DEFAULT_EXPIRY_DAYS,
-        'remind_every': REMIND_EVERY_DAYS,
+        'reminder_rule': LeaseSigning.REMINDER_RULE,
         'max_tenant_signers': MAX_TENANT_SIGNERS,
         'min_expiry': MIN_EXPIRY_DAYS,
         'max_expiry': MAX_EXPIRY_DAYS,

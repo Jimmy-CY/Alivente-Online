@@ -42,6 +42,39 @@
         </a>
     </div>
 
+    {# SIGNED LEASES WAITING FOR APPROVAL - ES-6, 25 Oct 2026. His decision #}
+    {# of 23 October: the approval appears here AND on the Home dashboard.        #}
+    {# WRITTEN INTO BOTH PAGES, not included: an include would be a new #}
+    {# standalone template, and a dozen censuses count those. The two  #}
+    {# copies read ONE count - the context processor's, from the       #}
+    {# model's pending_approval() - so they cannot disagree on numbers. #}
+    {% if lease_approvals_waiting %}
+    <a href="{% url 'lease_signing_list' %}" class="lsa-strip" role="status">
+        <i class="fas fa-file-signature"></i>
+        <span><b>{{ lease_approvals_waiting }} signed lease{{ lease_approvals_waiting|pluralize }}</b>
+        waiting for your approval</span>
+        <span class="lsa-go">Review <i class="fas fa-arrow-right"></i></span>
+    </a>
+    <style>
+    /* ES-6 - lsa-* and tokens only: no hex literal reaches a page. */
+    .lsa-strip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--alv-warn-soft);
+        border: 1px solid var(--alv-warn-line);
+        border-left: 4px solid var(--alv-warn);
+        border-radius: var(--alv-radius-sm, 6px);
+        padding: 11px 14px;
+        margin: 0 0 16px;
+        color: var(--alv-ink);
+        text-decoration: none;
+    }
+    .lsa-strip:hover { text-decoration: none; color: var(--alv-ink-strong); }
+    .lsa-go { margin-left: auto; font-weight: 600; white-space: nowrap; }
+    </style>
+    {% endif %}
+
     <!-- Loading Indicator -->
     <div id="loadingIndicator" class="text-center py-5">
         <div class="spinner-border text-info" role="status">
