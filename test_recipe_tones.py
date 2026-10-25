@@ -680,9 +680,10 @@ ok('--strict --recipes' in ps1,
 # ES-3a, 23 Oct 2026 - the register joins both halves.
 # ES-4, 24 Oct 2026 - the four public signing templates. They are ordinary pages/templates files, so they join every tree-wide count; they cannot extend base, which is why they are standalone.
 # ES-3b, 24 Oct 2026 - the Send for Signature screen, an ordinary page that joins both halves.
+# ES-7, 25 Oct 2026 - the Signature and Stamp screen joins both. (was 125, 150)
 # ES-6, 25 Oct 2026 - the envelope page joins both counts. (was 124, 149)
-ok(len(sb.templates(False)) == 125 and len(sb.templates(True)) == 150,
-   '  which is %d of %d' % (125, 150),
+ok(len(sb.templates(False)) == 126 and len(sb.templates(True)) == 151,
+   '  which is %d of %d' % (126, 151),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

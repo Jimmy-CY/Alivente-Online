@@ -1285,6 +1285,9 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_approve.py'; Text = "released = [let_go_of_file(ten, 'tenant_lease_agreement')]"; What = 'ES-6: approving a signed lease lets go of the old one BEFORE the save and deletes it AFTER - UO-1 order on the second door into this field; the other order is how a failed save destroys a lease' },
     @{ File = 'pages/services/lease_sealing.py'; Text = 'stream=_in_blue(img)'; What = 'ES-6b: every drawn signature prints in blue on the signature page - re-inked at sealing, so the stored mark stays exactly what the signer sent' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'if not chosen.has_second_tenant and any('; What = 'ES-6c: a second signer posted for a one-person tenancy is refused - the page draws no second row, and this makes it a rule rather than a layout' },
+    @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def _house_mark(party, request, how, kind):'; What = 'ES-7: the ONE place that decides who gets his signature and the stamp - the Alivente party, signing by session, as the account that owns them; a typed name never reaches it' },
+    @{ File = 'pages/templates/lease_sign.html'; Text = 'content="same-origin"'; What = 'Live fix of 25 Oct: with no-referrer the browser sends Origin: null and Django refused every signature' },
+    @{ File = 'pages/views/lease_signing_approve.py'; Text = 'transaction.on_commit(_remove_files)'; What = 'ES-7b: an envelope is deleted rows first and files only after the commit - a failed delete leaves everything' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3093,7 +3096,11 @@ $suites = @(
     # ES-6b, 25 Oct 2026 - every drawn signature is blue.
     'test_blue_ink.py',
     # ES-6c, 25 Oct 2026 - a second tenant signs only when there is one.
-    'test_second_signer.py'
+    'test_second_signer.py',
+    # ES-7, 25 Oct 2026 - his signature and the stamp; the address.
+    'test_house_marks.py',
+    # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
+    'test_envelope_delete.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

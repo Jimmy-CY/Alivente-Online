@@ -318,7 +318,9 @@ SINCE_J1 = ('meal_planner.html',
             # ES-6, 25 Oct 2026 - the envelope page arrived a week after
             # J-1. Its interpolations are all |escapejs (the gate above
             # proves it); it is simply no part of J-1's arithmetic.
-            'lease_signing_detail.html',)
+            'lease_signing_detail.html',
+            # ES-7, 25 Oct 2026 - the Signature and Stamp screen, likewise.
+            'house_marks.html',)
 
 j1_tree = [(r, p) for r, p in sorted(PATHS.items())
            if r not in SINCE_J1]

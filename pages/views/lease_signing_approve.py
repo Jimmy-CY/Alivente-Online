@@ -30,7 +30,9 @@ trail worth reading too, so this is that page - and the two approval
 controls appear only when there is something to approve.
 """
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import (login_required,
+                                            permission_required,
+                                            user_passes_test)
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -49,7 +51,17 @@ __all__ = [
     "lease_signing_detail",
     "lease_signing_sealed",
     "lease_signing_approve",
+    # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
+    "lease_signing_delete",
 ]
+
+# WHAT MAY BE DELETED - ES-7b, 25 Oct 2026, his decisions. Any envelope that
+# is no longer LIVE: cancelled, expired, declined or completed. A draft or
+# one still out for signature must be cancelled first, so its links are
+# dead before it can go. Named once, here, because the page offers the
+# control from the same tuple the view checks.
+DELETABLE = (LeaseSigning.CANCELLED, LeaseSigning.EXPIRED,
+             LeaseSigning.DECLINED, LeaseSigning.COMPLETED)
 
 
 def _who(user):
@@ -85,6 +97,11 @@ def lease_signing_detail(request, pk):
         'current_lease': current if current else None,
         'current_lease_name': (current.name.rsplit('/', 1)[-1]
                                if current else ''),
+        # ES-7b - the delete card: a superuser, a closed envelope, and the
+        # count of signatures it would destroy, said out loud.
+        'can_delete': bool(request.user.is_superuser
+                           and env.status in DELETABLE),
+        'signed_count': sum(1 for p in parties if p.signed_at),
     })
 
 
@@ -203,3 +220,75 @@ def lease_signing_approve(request, pk):
 
     messages.error(request, 'Choose Approve or Decline.')
     return back
+
+
+# ==========================================================================
+# DELETE - ES-7b, 25 Oct 2026
+# ==========================================================================
+def _stored_names(env):
+    """Every file this envelope owns, by storage name."""
+    from ..services import lease_sealing
+    names = []
+    for f in (env.original_pdf, env.sealed_pdf):
+        if f:
+            names.append(f.name)
+    for n in range(1, (env.page_count or 0) + 1):
+        names.append(lease_sealing.page_name(env, n))
+    for p in env.parties.all():
+        if p.signature_image:
+            names.append(p.signature_image.name)
+    return names
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@require_POST
+def lease_signing_delete(request, pk):
+    """Delete an envelope and everything it owns. Superuser only.
+
+    HIS DECISIONS OF 25 OCTOBER: any envelope that is no longer live may go
+    - signed or not - with a WARNING when it holds signatures, because
+    those are the only evidence that a person signed; superuser only; and
+    NO TRACE LEFT - no tombstone row, the number simply goes.
+
+    THE CHECKS AND BALANCES:
+      - POST only, superuser only;
+      - never a live envelope (draft / out / part-signed): cancel first;
+      - the envelope NUMBER must be typed back, so a misclick deletes
+        nothing;
+      - the rows go in one transaction, and the files only AFTER it has
+        committed - UO-1's order: a failed delete leaves everything.
+
+    THE TENANT'S LEASE IS NOT TOUCHED. An approved envelope's sealed copy
+    was COPIED onto the tenant (ES-6), so it stays on the tenant record.
+    """
+    env = get_object_or_404(LeaseSigning, pk=pk)
+    back = redirect('lease_signing_detail', pk=env.pk)
+    if env.status not in DELETABLE:
+        messages.error(request, 'This envelope is %s. Cancel it first - an '
+                       'envelope can only be deleted once its links no '
+                       'longer work.' % env.get_status_display().lower())
+        return back
+    if (request.POST.get('confirm') or '').strip() != str(env.pk):
+        messages.error(request, 'Type the envelope number, %s, to confirm. '
+                       'Nothing was deleted.' % env.pk)
+        return back
+
+    number = env.pk
+    names = _stored_names(env)
+    with transaction.atomic():
+        env.delete()      # parties and events go with it (CASCADE)
+
+    def _remove_files():
+        for name in names:
+            try:
+                default_storage.delete(name)
+            except Exception:                           # noqa: BLE001
+                # A FILE THAT WILL NOT GO IS NOT A FAILED DELETE. The
+                # envelope is gone; an orphan on the volume is a cleanup
+                # matter, and nothing points at it any more.
+                pass
+    transaction.on_commit(_remove_files)
+    messages.success(request, 'Envelope %s has been deleted, with its '
+                     'signers, history and files.' % number)
+    return redirect('lease_signing_list')

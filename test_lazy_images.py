@@ -190,7 +190,9 @@ for p in sorted(alv_tree.templates()):
 # aspect-ratio - an unloaded lazy image is zero pixels tall, and that
 # let the end-of-document marker into the viewport on arrival and
 # unlocked the Sign button before a word had been read.
-ok(len(lazy) == 13, '%d image(s) wait, on %d page(s)' % (len(lazy), len(pages)),
+# ES-7, 25 Oct 2026 - 14 ON 9. The Signature and Stamp screen shows one
+# preview per mark from a loop, so they wait like every list does.
+ok(len(lazy) == 14, '%d image(s) wait, on %d page(s)' % (len(lazy), len(pages)),
    '\n'.join('%s %s' % (r, t[:60]) for r, t in lazy[:4]))
 ok(len(eager) >= 20, 'and %d do not' % len(eager))
 

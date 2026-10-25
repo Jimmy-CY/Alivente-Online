@@ -202,7 +202,8 @@ def lease_signing_extend(request, pk):
 
     now = timezone.now()
     with transaction.atomic():
-        env.expires_at = now + timezone.timedelta(days=env.SIGNING_DAYS)
+        # ES-7, 25 Oct 2026 - to the END of that day, Cyprus time.
+        env.expires_at = LeaseSigning.closing_moment(env.SIGNING_DAYS, now)
         if env.status == LeaseSigning.EXPIRED:
             tenant_signed = env.parties.filter(
                 role=LeaseSigningParty.ROLE_TENANT,

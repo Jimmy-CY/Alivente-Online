@@ -263,8 +263,9 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # ES-4, 24 Oct 2026 - the four public signing templates. They are ordinary pages/templates files, so they join every tree-wide count; they cannot extend base, which is why they are standalone.
 # ES-3b, 24 Oct 2026 - the Send for Signature screen sits flat in pages/templates, so it joins the walk and the flat listing alike.
 # ES-6, 25 Oct 2026 - lease_signing_detail.html, the envelope page, an ordinary pages/templates page that joins every tree-wide count.
-ok(len(tree) == 159, 'a WALK finds 159 templates', len(tree))
-ok(len(top) == 133, '  a flat listing finds 133 - 120 was what H7 '
+# ES-7, 25 Oct 2026 - house_marks.html, the Signature and Stamp screen, an ordinary pages/templates page that joins every tree-wide count.
+ok(len(tree) == 160, 'a WALK finds 160 templates', len(tree))
+ok(len(top) == 134, '  a flat listing finds 134 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',

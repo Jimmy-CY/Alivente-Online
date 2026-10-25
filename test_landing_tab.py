@@ -100,7 +100,7 @@ HELPER = os.path.join('pages', 'services', 'landing_tabs.py')
 ADMIN_VIEW = os.path.join('pages', 'views', 'administration.py')
 FIN_VIEW = os.path.join('pages', 'views', 'finance.py')
 CONVERTED_NOW = 84
-N_BACKS = 25   # ES-3a, 23 Oct 2026 - lease_signing_list.html, the envelope register. An ordinary pages/templates page, so it joins every tree-wide count.   # (was 24)
+N_BACKS = 26   # ES-7, 25 Oct 2026 - house_marks.html, the Signature and Stamp screen, whose Back names the System tab.   # (was 25)   # ES-3a, 23 Oct 2026 - lease_signing_list.html, the envelope register. An ordinary pages/templates page, so it joins every tree-wide count.   # (was 24)
 
 # The three landing pages: template, url name, tabs, default.
 LANDING = (
@@ -115,6 +115,20 @@ LANDING = (
 # not evidence about TB-1b's past. ES-3a, 23 Oct 2026.
 CREATED_LATER = {
     'lease_signing_list.html',
+    # ES-7, 25 Oct 2026 - the Signature and Stamp screen.
+    'house_marks.html',
+}
+
+# TILES ADDED AFTER THIS ROUND FROZE ITS COPY OF A LANDING PAGE - ES-7,
+# 25 Oct 2026. panel_owner() reads each landing page AS THIS ROUND LEFT
+# IT, so a tile added since is invisible to it, and a Back that names
+# that tile's own panel would read as UNEXPLAINED. ES-3a's tile sat on
+# the default panel and could be named in BY_DEFAULT; a tile on the
+# OTHER panel cannot. So it is named here WITH its panel - and the
+# claim is checked against the LIVE landing page below, so this register
+# cannot say a tile is somewhere it is not.
+ADDED_AFTER = {
+    ('admin_apms', 'house_marks'): 'system',
 }
 
 BY_DEFAULT = {
@@ -411,6 +425,20 @@ def panel_owner():
 
 
 OWNER = panel_owner()
+# ES-7 - the register above, each entry proved against the LIVE page.
+for (_land, _dest), _key in sorted(ADDED_AFTER.items()):
+    _page = [p for p, u, _t, _d in LANDING if u == _land][0]
+    _live = re.sub(r'\{% comment %\}.*?\{% endcomment %\}', '',
+                   read(alv_tree.path_of(_page)), flags=re.S)
+    _m = re.search(r'<div id="(?:panel-)?%s(?:-panel)?" class="tab-panel'
+                   % _key, _live)
+    _seg = _live[_m.end():] if _m else ''
+    _nxt = _seg.find('class="tab-panel')
+    _seg = _seg[:_nxt] if _nxt > 0 else _seg
+    ok(_dest in re.findall(URL_IN, _seg),
+       '%s is on the LIVE %s page\'s %s panel - added after this round, '
+       'and named in ADDED_AFTER' % (_dest, _page, _key))
+    OWNER[(_land, _dest)] = _key
 ok(len(OWNER) >= 14,
    'the three landing pages claim %d destination(s) between their panels'
    % len(OWNER), len(OWNER))

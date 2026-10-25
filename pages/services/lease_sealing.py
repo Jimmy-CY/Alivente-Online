@@ -208,6 +208,14 @@ def _in_blue(raw):
         return raw
 
 
+def _when(moment, fmt):
+    """A stored (UTC) moment, in the project's own time zone."""
+    local = timezone.localtime(moment)
+    # THE ZONE OF THAT MOMENT, not of today: a lease signed in July
+    # reads EEST and one signed in January reads EET.
+    return ('%s %s' % (local.strftime(fmt), local.tzname() or '')).strip()
+
+
 def build_sealed(signing, parties=None, events=None):
     """The original, plus ONE appended page, as bytes.
 
@@ -253,13 +261,23 @@ def build_sealed(signing, parties=None, events=None):
         for p in parties:
             if not p.signed_at:
                 continue
-            # THE MARK ITSELF, drawn or typed.
+            # THE MARK ITSELF, drawn, typed or saved.
             box_top = y
-            if p.signature_image:
+            # A SAVED SIGNATURE - ES-7, 25 Oct 2026 - is the house mark
+            # copied onto THIS party when he signed, so a later change to
+            # the stored mark can never change a lease already signed.
+            # It lives in the database, never in media.
+            saved = (bytes(p.mark_signature)
+                     if p.signature_kind == 'saved'
+                     and getattr(p, 'mark_signature', None) else b'')
+            if saved or p.signature_image:
                 try:
-                    p.signature_image.open('rb')
-                    img = p.signature_image.read()
-                    p.signature_image.close()
+                    if saved:
+                        img = saved
+                    else:
+                        p.signature_image.open('rb')
+                        img = p.signature_image.read()
+                        p.signature_image.close()
                     rect = pymupdf.Rect(56, y, 56 + 190, y + 52)
                     page.insert_image(rect, stream=_in_blue(img),
                                       keep_proportion=True)
@@ -272,6 +290,23 @@ def build_sealed(signing, parties=None, events=None):
                           size=13)
             else:
                 _line(page, 56, y + 34, p.typed_name or p.name, size=13)
+            # THE COMPANY STAMP BESIDE THE HOUSE SIGNATURE - ES-7, 25 Oct
+            # 2026. His decisions: "ALIVENTE LIMITED" only (the company
+            # number left off), and ONLY when he signed as himself - which
+            # the signing view decided when it copied the stamp onto this
+            # party. Nothing here re-decides it: a party without a copied
+            # stamp prints none, whoever it is.
+            stamp = (bytes(p.mark_stamp)
+                     if p.role == 'alivente'
+                     and getattr(p, 'mark_stamp', None) else b'')
+            if stamp:
+                try:
+                    srect = pymupdf.Rect(56 + 240, box_top + 2,
+                                         56 + 240 + 170, box_top + 54)
+                    page.insert_image(srect, stream=stamp,
+                                      keep_proportion=True)
+                except Exception:                       # noqa: BLE001
+                    pass
             page.draw_line(pymupdf.Point(56, box_top + 56),
                            pymupdf.Point(56 + 220, box_top + 56),
                            color=(0.6, 0.66, 0.69), width=0.7)
@@ -286,8 +321,12 @@ def build_sealed(signing, parties=None, events=None):
                 _line(page, 56, y, p.email, size=8.5,
                       colour=(0.35, 0.4, 0.43))
                 y += 12
+            # CYPRUS TIME, SAID SO - 25 Oct 2026. The first renders
+            # printed UTC: a tenant who signed at 09:12 read 07:12 on
+            # her own signature page. timezone.localtime() uses the
+            # project's TIME_ZONE, and the page names the zone.
             _line(page, 56, y,
-                  'Signed %s' % p.signed_at.strftime('%d %B %Y at %H:%M'),
+                  'Signed %s' % _when(p.signed_at, '%d %B %Y at %H:%M'),
                   size=8.5, colour=(0.35, 0.4, 0.43))
             y += 12
             how = {'session': 'signed in to Alivente',
@@ -308,24 +347,31 @@ def build_sealed(signing, parties=None, events=None):
         page.draw_line(pymupdf.Point(56, y), pymupdf.Point(w - 56, y),
                        color=(0.88, 0.91, 0.92), width=0.6)
         y += 16
+        # FOUR COLUMNS AT FIXED POSITIONS - 25 Oct 2026. The first
+        # renders padded with spaces in a proportional font, so nothing
+        # lined up, and cut every event name at 22 characters ("Agreed
+        # to sign electro"). A trail that is the evidence has to be
+        # readable by somebody who was not there.
+        cols = (56, 162, 310, w - 56 - 76)
+        for label, x in zip(('When', 'What', 'Who', 'From'), cols):
+            _line(page, x, y, label, size=7.5, bold=True,
+                  colour=(0.35, 0.4, 0.43))
+        y += 12
         for e in events:
             if y > h - 70:
                 page = doc.new_page(width=w, height=h)
                 y = 64
             who = e.party.name if e.party_id and e.party else 'Alivente'
-            _line(page, 56, y,
-                  '%s   %s   %s%s'
-                  % (e.at.strftime('%d %b %Y %H:%M'),
-                     e.get_kind_display().ljust(22)[:22], who,
-                     ('   ' + e.ip) if e.ip else ''),
-                  size=8, colour=(0.25, 0.3, 0.33))
+            for text, x in zip((_when(e.at, '%d %b %Y %H:%M'),
+                                e.get_kind_display(), who, e.ip or ''),
+                               cols):
+                _line(page, x, y, text, size=8, colour=(0.25, 0.3, 0.33))
             y += 11
 
         y += 16
         _line(page, 56, y,
               'Envelope %s   sealed %s'
-              % (signing.pk,
-                 timezone.now().strftime('%d %B %Y at %H:%M')),
+              % (signing.pk, _when(timezone.now(), '%d %B %Y at %H:%M')),
               size=8, colour=(0.45, 0.5, 0.53))
 
         out = doc.tobytes()

@@ -314,6 +314,16 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE TWENTY-FIFTH - ES-7b, 25 Oct 2026 - REVEALED, NOT BROKEN. ES-6
+    # CREATED pages/views/lease_signing_approve.py WITH _attach letting go
+    # of the old lease before the save; no version has ever lacked it.
+    # ES-7b (envelope delete) is the first round since to back that file
+    # up, so the row is proven blind the day it ships - pinned in the
+    # same round, so the gate meets it already explained.
+    "let_go_of_file(ten, 'tenant_le":
+        'approval lets go of the old lease BEFORE the save - ES-6 created '
+        'lease_signing_approve.py WITH it, and ES-7b is the first round '
+        'since to back that file up',
     # THE SIXTEENTH AND SEVENTEENTH - ES-6c, 25 Oct 2026 - REVEALED,
     # NOT BROKEN. ES-3b CREATED pages/views/lease_signing_create.py on 24
     # October WITH its import of ES-4's _invite (one spelling of

@@ -1488,6 +1488,10 @@ ROUNDS = [
     '.bak_blueink',
     # ES-6c, 25 Oct 2026 - a second tenant signs only when there is one.
     '.bak_secondsigner',
+    # ES-7, 25 Oct 2026 - his signature and the stamp; the address.
+    '.bak_housemarks',
+    # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
+    '.bak_envdelete',
 ]
 
 

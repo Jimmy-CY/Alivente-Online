@@ -63,7 +63,8 @@ from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_deny
 from django.views.decorators.csrf import csrf_protect
 
-from ..models import LeaseSigning, LeaseSigningEvent, LeaseSigningParty
+from ..models import (HouseMark, LeaseSigning, LeaseSigningEvent,
+                      LeaseSigningParty)
 from ..services import lease_sealing
 
 __all__ = [
@@ -189,6 +190,17 @@ def _state(env, party):
     }
 
 
+def _place(env):
+    """Where the lease is, as a TENANT may read it - ES-7, 25 Oct 2026.
+
+    The short address (first line and city), or '' - never prop_name,
+    which is internal. Every email a tenant receives names the place
+    through this one function.
+    """
+    prop = getattr(env.tenant, 'prop', None)
+    return (getattr(prop, 'tenant_address_short', '') or '') if prop else ''
+
+
 def _signed_copy(env):
     """Email the sealed lease to everybody on the tenancy.
 
@@ -204,7 +216,8 @@ def _signed_copy(env):
     are reached alike, and this view does not keep a second opinion
     about who is on a tenancy.
     """
-    from django.core.mail import EmailMessage
+    # ES-7, 25 Oct 2026 - branded, small, no contact details: his decision.
+    from ..services.lease_email import BrandedEmail as EmailMessage
 
     to = list(getattr(env.tenant, 'tenant_emails', None) or [])
     # AND TO ALIVENTE - ES-6, 25 Oct 2026, his decision of 23 October:
@@ -221,7 +234,8 @@ def _signed_copy(env):
     if not to:
         return 0
     who = getattr(env.tenant, 'tenant_display_name', '') or ''
-    prop = getattr(getattr(env.tenant, 'prop', None), 'prop_name', '') or ''
+    # THE ADDRESS, NEVER THE INTERNAL NAME - ES-7, 25 Oct 2026.
+    prop = _place(env)
     msg = EmailMessage(
         subject='Your signed lease agreement%s' % ((' - ' + prop) if prop else ''),
         body=('Dear %s,\n\n'
@@ -254,7 +268,8 @@ def _invite(env, party, request=None, why='sent'):
     answer to what any of them does to the old link. `why` chooses the
     words: 'sent', 'reminder' or 'extended'.
     """
-    from django.core.mail import EmailMessage
+    # ES-7, 25 Oct 2026 - branded, small, no contact details: his decision.
+    from ..services.lease_email import BrandedEmail as EmailMessage
 
     raw = party.issue_token()
     party.save(update_fields=['token_hash', 'token_issued_at'])
@@ -278,9 +293,15 @@ def _invite(env, party, request=None, why='sent'):
         # plausible and wrong; the caller records the failure instead.
         raise RuntimeError('envelope %s has no link_base, so a link cannot '
                            'be built without a request' % env.pk)
-    prop = getattr(getattr(env.tenant, 'prop', None), 'prop_name', '') or ''
-    when = env.expires_at.strftime('%d %B %Y') if env.expires_at else ''
-    expiry = ('This link expires on %s.\n\n' % when) if when else ''
+    # THE ADDRESS, NEVER THE INTERNAL NAME - ES-7, 25 Oct 2026.
+    prop = _place(env)
+    # LOCAL TIME, AND THE WHOLE DAY - ES-7, 25 Oct 2026. The date was
+    # read in UTC, so near midnight it could name the wrong day; and the
+    # link now stays open to the end of the day it names.
+    when = (timezone.localtime(env.expires_at).strftime('%d %B %Y')
+            if env.expires_at else '')
+    expiry = ('This link stays open until the end of %s (Cyprus time).'
+              '\n\n' % when) if when else ''
     name = party.name or 'Tenant'
     if why == 'reminder':
         subject = 'Reminder: please sign your lease agreement'
@@ -426,7 +447,8 @@ def _decline(env, party, request):
 
 def _tell_house_declined(env, party, when):
     """Email the person who sent the envelope that it was declined."""
-    from django.core.mail import EmailMessage
+    # ES-7, 25 Oct 2026 - branded, small, no contact details: his decision.
+    from ..services.lease_email import BrandedEmail as EmailMessage
 
     to = []
     if env.created_by_id and getattr(env.created_by, 'email', ''):
@@ -453,9 +475,44 @@ def _tell_house_declined(env, party, when):
     return len(to)
 
 
-def _store_signature(party, request):
+def _house_mark(party, request, how, kind):
+    """A house mark's bytes for THIS signature, or None - ES-7, 25 Oct 2026.
+
+    HIS RULE: only when Demetri Manias is the signatory, decided by the
+    signed-in account and never by a typed name. So: signing by SESSION,
+    as the Alivente party, and the account at the keyboard owns the mark.
+    A link holder never qualifies, whatever name the envelope carries.
+    """
+    if how != 'session' or party.role != LeaseSigningParty.ROLE_ALIVENTE:
+        return None
+    return HouseMark.for_signer(request.user, kind)
+
+
+def _offers_saved(party, request, how):
+    """Should the page offer "Use my saved signature"? (no bytes read)"""
+    return bool(how == 'session'
+                and party.role == LeaseSigningParty.ROLE_ALIVENTE
+                and request.user.is_authenticated
+                and HouseMark.objects.filter(kind=HouseMark.SIGNATURE,
+                                             owner=request.user).exists())
+
+
+def _store_signature(party, request, how='token'):
     """Read the signature off the form onto the party. Raises ValueError."""
     kind = (request.POST.get('signature_kind') or '').strip()
+
+    if kind == LeaseSigningParty.KIND_SAVED:
+        # ES-7 - THE SAME TEST AS THE PAGE, asked again here, because a
+        # hand-made POST can say 'saved' from anywhere.
+        mark = _house_mark(party, request, how, HouseMark.SIGNATURE)
+        if not mark:
+            raise ValueError('There is no saved signature you can use '
+                             'here. Draw your signature, or type your '
+                             'name.')
+        party.signature_kind = LeaseSigningParty.KIND_SAVED
+        party.mark_signature = mark
+        party.typed_name = ''
+        return
 
     if kind == LeaseSigningParty.KIND_TYPED:
         typed = (request.POST.get('typed_name') or '').strip()
@@ -525,7 +582,7 @@ def _sign_view(request, party, how):
                      'screen.')
         if error is None:
             try:
-                _store_signature(party, request)
+                _store_signature(party, request, how)
             except ValueError as exc:
                 error = str(exc)
 
@@ -546,6 +603,10 @@ def _sign_view(request, party, how):
                                  else LeaseSigningParty.AUTH_TOKEN)
             if how == 'session' and request.user.is_authenticated:
                 party.signed_by_user = request.user
+            # THE COMPANY STAMP - ES-7, 25 Oct 2026. Whenever he signs as
+            # himself, however he signs; for anybody else, nothing.
+            party.mark_stamp = _house_mark(party, request, how,
+                                           HouseMark.STAMP)
             try:
                 party.seconds_open = min(
                     MAX_SECONDS_OPEN,
@@ -620,6 +681,15 @@ def _page_context(request, env, party, how, error=None):
         # ES-6b, 25 Oct 2026 - the pad draws in the ink the signature
         # page prints in, named once in lease_sealing.
         'ink': lease_sealing.SIGNATURE_INK_HEX,
+        # ES-7, 25 Oct 2026 - his saved signature and the stamp, offered
+        # only to the account that owns them, signing by session.
+        'saved_signature': _offers_saved(party, request, how),
+        'house_stamp': bool(
+            how == 'session'
+            and party.role == LeaseSigningParty.ROLE_ALIVENTE
+            and request.user.is_authenticated
+            and HouseMark.objects.filter(kind=HouseMark.STAMP,
+                                         owner=request.user).exists()),
     }
 
 

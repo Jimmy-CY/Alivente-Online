@@ -273,7 +273,8 @@ def lease_signing_create(request):
                 # SEVEN DAYS STORED, NOT COMPUTED - 22 October. An
                 # extension moves this date, and sent_at + 7 would
                 # then disagree with what the tenant was told.
-                expires_at=timezone.now() + dt.timedelta(days=days))
+                # ES-7, 25 Oct 2026 - to the END of that day, Cyprus time.
+                expires_at=LeaseSigning.closing_moment(days))
 
             if use_stored:
                 # COPIED, NOT POINTED AT. The file on the tenant record

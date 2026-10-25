@@ -1028,6 +1028,10 @@ CONVERTED = [
     'test_blue_ink.py',
     # ES-6c, 25 Oct 2026 - a second tenant signs only when there is one.
     'test_second_signer.py',
+    # ES-7, 25 Oct 2026 - his signature and the stamp; the address.
+    'test_house_marks.py',
+    # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
+    'test_envelope_delete.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

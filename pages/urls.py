@@ -74,6 +74,13 @@ urlpatterns = [
          name='lease_signing_sealed'),
     path('lease-signing/<int:pk>/approve/', views.lease_signing_approve,
          name='lease_signing_approve'),
+    # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
+    path('lease-signing/<int:pk>/delete/', views.lease_signing_delete,
+         name='lease_signing_delete'),
+    # ES-7, 25 Oct 2026 - his saved signature and the company stamp,
+    # superuser only. No route serves the images themselves.
+    path('administration/signature-and-stamp/', views.house_marks,
+         name='house_marks'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),

@@ -39,7 +39,8 @@
       {% endif %}
     </h1>
     <p class="ls-sub">
-      {% if prop %}{{ prop.prop_name }}{% endif %}
+      {# THE ADDRESS, NEVER THE INTERNAL NAME - ES-7, 25 Oct 2026. #}
+      {% if prop.tenant_address %}{{ prop.tenant_address }}{% endif %}
     </p>
   </div>
 </header>
@@ -96,7 +97,7 @@
     </p>
     <p style="margin:0;color:var(--alv-ink-soft);font-size:14.5px">
       Please quote
-      {% if prop %}the property <b>{{ prop.prop_name }}</b>{% else %}your
+      {% if prop.tenant_address %}the address <b>{{ prop.tenant_address }}</b>{% else %}your
       tenancy{% endif %} when you do.
     </p>
   </div>

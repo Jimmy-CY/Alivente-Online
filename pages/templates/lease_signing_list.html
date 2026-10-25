@@ -80,7 +80,10 @@
 {% endif %}
 
 <div class="table-container">
-    <table class="alv-table">
+    {# `table` AS WELL AS alv-table - ES-7b, 25 Oct 2026, his catch: Bootstrap's #}
+    {# .table is what stretches a list from the first button to Back, as   #}
+    {# every other list in the system does.                                #}
+    <table class="table alv-table">
         <thead>
             <tr>
                 <th style="text-align: left; width: 24%">Tenant</th>

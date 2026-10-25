@@ -22,9 +22,9 @@
 <h2 class="page-title-h2">LEASE SIGNING</h2>
 <h4 class="page-subtitle-h4">{{ tenant.tenant_display_name }}{% if prop %} &mdash; {{ prop.prop_name }}{% endif %}</h4>
 
-{# ONE BAR, Back last and uncoloured - base 3.4. A POST control has to #}
-{# be a form, and display: contents keeps the button where a link     #}
-{# would have been.                                                   #}
+{# ONE BAR, Back last and uncoloured - base 3.4. The two POST buttons #}
+{# name forms that sit below the bar (form="..."), so the bar holds    #}
+{# house controls only - test_bar_order; ES-7, 25 Oct 2026.            #}
 <div class="page-action-buttons">
     {% if awaiting and perms.auth.can_edit_tenants %}
     {# THE BUTTONS SIT IN THE BAR; THEIR FORMS SIT BELOW IT - 25 Oct  #}
@@ -127,7 +127,8 @@
     </div>
     <div class="alv-card-body">
         <div class="table-container">
-        <table class="alv-table">
+        {# `table` as well - ES-7b, 25 Oct 2026: full width, like every list. #}
+        <table class="table alv-table">
             <thead>
                 <tr>
                     <th style="text-align: left; width: 26%">Name</th>
@@ -182,6 +183,42 @@
     </div>
 </div>
 
+{# DELETE THIS ENVELOPE - ES-7b, 25 Oct 2026. Superuser only, and only  #}
+{# once it is no longer live. His decisions: signed envelopes may go    #}
+{# too, WITH A WARNING that the signatures are the evidence; and no     #}
+{# trace is kept. The number has to be typed back.                      #}
+{% if can_delete %}
+<div class="alv-card lsd-danger">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0"><i class="fas fa-trash-alt"></i> Delete this envelope</h4>
+    </div>
+    <div class="alv-card-body">
+        {% if signed_count %}
+        <p class="lsd-warn">
+            <b>This envelope holds {{ signed_count }} signature{{ signed_count|pluralize }}.</b>
+            They are the only record that {% if signed_count == 1 %}this person{% else %}these people{% endif %}
+            signed, when, and from where. Deleting removes them permanently and
+            leaves no trace.{% if env.approved_at %} The signed lease already
+            attached to the tenant is a separate copy and stays.{% endif %}
+        </p>
+        {% endif %}
+        <p>Deleting removes the envelope, its signers, its history and its files.
+           It cannot be undone.</p>
+        <form method="post" action="{% url 'lease_signing_delete' env.pk %}">
+            {% csrf_token %}
+            <label for="lsd-confirm"><strong>Type {{ env.pk }} to confirm</strong></label>
+            <input type="text" id="lsd-confirm" name="confirm" class="form-control lsd-confirm"
+                   autocomplete="off" inputmode="numeric">
+            <div class="lsd-danger-actions">
+                <button type="submit" class="btn action-secondary action-danger">
+                    <i class="fas fa-trash-alt"></i> Delete envelope {{ env.pk }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
 {# The SAME viewer Receipt Details, act_expense and asset_detail use. #}
 {% include 'components/pdf_viewer.html' %}
 
@@ -218,6 +255,10 @@
 .lsd-event-when { color: var(--alv-ink); }
 .lsd-event-who { color: var(--alv-ink-soft); }
 .lsd-event-note { flex-basis: 100%; color: var(--alv-ink-soft); }
+/* ES-7b, 25 Oct 2026 - the delete card. Tokens only. */
+.lsd-warn { color: var(--alv-bad-ink); margin: 0 0 10px; }
+.lsd-confirm { max-width: 220px; }
+.lsd-danger-actions { margin-top: 10px; }
 
 /* `screen and`, NOT A BARE max-width - test_print_queries: a bare
    max-width block fires on paper too. 768px is the house breakpoint. */

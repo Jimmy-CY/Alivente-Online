@@ -239,6 +239,21 @@
         <h6>Menu Preference</h6>
       </a>
 
+      <!-- Signature and Stamp - ES-7, 25 Oct 2026. Superuser only, like
+           User Administration beside it: his saved signature and the
+           company stamp, placed on a lease only when he signs himself. -->
+      {% if user.is_superuser %}
+        <a href="{% url 'house_marks' %}" class="admin-btn">
+          <i class="fas fa-stamp"></i>
+          <h6>Signature and Stamp</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="Signature and Stamp is restricted to superusers">
+          <i class="fas fa-stamp"></i>
+          <h6>Signature and Stamp</h6>
+        </div>
+      {% endif %}
+
       <!-- Reserved for growth, AD-1 8 Oct 2026. Empty on purpose:
            it holds the second row so the panel keeps its height.
            aria-hidden because there is nothing here to announce. -->

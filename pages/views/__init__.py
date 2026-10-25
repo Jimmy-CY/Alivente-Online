@@ -58,6 +58,9 @@ from .lease_signing_create import *  # noqa: F401, F403
 # ES-6, 25 Oct 2026 - one envelope in full, and the approval of a
 # signed lease onto its tenant.
 from .lease_signing_approve import *  # noqa: F401, F403
+# ES-7, 25 Oct 2026 - his saved signature and the company stamp,
+# superuser only.
+from .house_marks import *  # noqa: F401, F403
 from .recipes import *  # noqa: F401, F403
 from .help import *  # noqa: F401, F403
 from .household import *

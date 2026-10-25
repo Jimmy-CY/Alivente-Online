@@ -471,10 +471,15 @@ if have_db:
             ok(env.status == M.LeaseSigning.PART,
                'FROM EXPIRED IT REOPENS AS PART-SIGNED, because Andreas\'s '
                'signature was kept', env.status)
-            span = (env.expires_at - before).total_seconds() / 86400.0
-            ok(6.99 < span < 7.01,
-               '  with a new date seven days from now, STORED - it is the '
-               'date the email states', span)
+            # ES-7, 25 Oct 2026 - SEVEN DAYS FROM TODAY, TO THE END OF THAT
+            # DAY in local time: his decision that a link stays open to the
+            # end of the day the email names.
+            close = timezone.localtime(env.expires_at)
+            ok(close.date() == timezone.localdate(before)
+               + timezone.timedelta(days=7)
+               and (close.hour, close.minute, close.second) == (23, 59, 59),
+               '  with a new date seven days from now, open to the END of '
+               'that day, STORED - it is the date the email states', close)
             ok(to_whom() == ['maria@example.com'],
                'ONLY MARIA IS EMAILED. Andreas signed and gets nothing; the '
                'house signed and gets nothing', to_whom())

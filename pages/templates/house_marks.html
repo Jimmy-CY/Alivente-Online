@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{# THE TAB TITLE - RV-1's lesson: a screen with no title block fails  #}
+{# test_heading_prefix on the day it ships.                           #}
+{% block title %}Signature and Stamp{% endblock %}
+
+{# HIS SIGNATURE AND THE COMPANY STAMP - ES-7, 25 Oct 2026.            #}
+{#                                                                    #}
+{# SUPERUSER ONLY, and the marks belong to whoever uploads them. They #}
+{# are applied to a lease ONLY when that account signs for Alivente   #}
+{# itself - never for a name typed on the Send screen.                #}
+{#                                                                    #}
+{# THE PREVIEW IS AN INLINE IMAGE, not a link: nothing in the         #}
+{# application serves these by URL. Another superuser sees that a     #}
+{# mark exists and whose it is, not the mark.                         #}
+{#                                                                    #}
+{# NAMED hm-* for the reason lsd-* and rv-* are: nine templates own a #}
+{# detail row and base owns none.                                     #}
+{% block content %}
+
+<h2 class="page-title-h2">ADMINISTRATION</h2>
+<h4 class="page-subtitle-h4">SIGNATURE AND STAMP</h4>
+
+<div class="page-action-buttons">
+    <a href="{% url 'admin_apms' %}?tab=system" class="btn action-back"
+       role="button" aria-label="Back to Administration">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="hm-note">
+    <i class="fas fa-lock"></i>
+    These are placed on the signature page of a lease <b>only when you sign
+    for Alivente yourself</b>, signed in to your own account. Nobody else
+    signing for Alivente gets them. They are kept in the database and are
+    never available as a file or a link.
+</div>
+
+<div class="hm-grid">
+{% for c in cards %}
+<div class="alv-card">
+    <div class="alv-card-head">
+        <h4 class="alv-card-title mb-0">
+            <i class="fas {% if c.kind == 'stamp' %}fa-stamp{% else %}fa-signature{% endif %}"></i>
+            {{ c.label }}
+        </h4>
+    </div>
+    <div class="alv-card-body">
+        {% if c.row %}
+            {% if c.preview %}
+            <div class="hm-preview">
+                <img loading="lazy" decoding="async" src="{{ c.preview }}" alt="Your saved {{ c.label|lower }}">
+            </div>
+            {% endif %}
+            <p class="hm-meta">
+                Saved {{ c.row.uploaded_at|date:"j F Y, H:i" }}{% if not c.mine %} by {{ c.owner }}{% endif %}.
+                {% if not c.mine %}It is used only when {{ c.owner }} signs.{% endif %}
+            </p>
+        {% else %}
+            <p class="hm-meta">None saved yet.</p>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="hm-upload">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ c.kind }}">
+            <input type="hidden" name="action" value="upload">
+            <label for="hm-file-{{ c.kind }}">
+                <strong>{% if c.row %}Replace with a new image{% else %}Upload an image{% endif %}</strong>
+            </label>
+            <input type="file" id="hm-file-{{ c.kind }}" name="image"
+                   accept="image/png,image/jpeg" class="form-control">
+            <small class="form-text">
+                A PNG or a JPEG, up to 5MB. A scan or photo on white paper is
+                fine - the paper is made transparent.
+            </small>
+            <div class="hm-actions">
+                <button type="submit" class="btn action-primary">
+                    <i class="fas fa-upload"></i> Save {{ c.label|lower }}
+                </button>
+            </div>
+        </form>
+
+        {% if c.row %}
+        <form method="post" class="hm-remove"
+              onsubmit="return confirm('Remove the saved {{ c.label|lower|escapejs }}? Leases already signed keep the copy they were signed with.');">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="{{ c.kind }}">
+            <input type="hidden" name="action" value="remove">
+            <button type="submit" class="btn action-secondary action-danger">
+                <i class="fas fa-trash-alt"></i> Remove
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+</div>
+
+<style>
+/* ES-7, 25 Oct 2026 - hm-* for the reason in the header note. Tokens only. */
+.hm-note {
+    background: var(--alv-accent-soft);
+    border: 1px solid var(--alv-accent-line);
+    border-radius: var(--alv-radius-sm, 6px);
+    padding: 11px 14px;
+    margin: 0 0 16px;
+    color: var(--alv-ink);
+    font-size: 0.9rem;
+}
+.hm-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+.hm-preview {
+    border: 1px solid var(--alv-line);
+    border-radius: var(--alv-radius-sm, 6px);
+    background: var(--alv-paper);
+    padding: 14px;
+    margin: 0 0 10px;
+    text-align: center;
+}
+/* A FIXED BOX - the preview never changes the layout as it loads, and a
+   render that runs before the image arrives measures what one after does. */
+.hm-preview img { display: block; width: 100%; height: 120px; object-fit: contain; }
+.hm-meta { color: var(--alv-ink-soft); margin: 0 0 14px; }
+.hm-actions { margin-top: 10px; }
+.hm-remove { margin-top: 12px; }
+@media screen and (max-width: 768px) {
+    .hm-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}

@@ -42,7 +42,8 @@
     <p class="ls-brand">Alivente Limited</p>
     <h1>Lease agreement for {{ tenant.tenant_display_name }}</h1>
     <p class="ls-sub">
-      {% if prop %}{{ prop.prop_name }} &middot; {% endif %}
+      {# THE ADDRESS, NEVER THE INTERNAL NAME - ES-7, 25 Oct 2026. #}
+      {% if prop.tenant_address %}{{ prop.tenant_address }} &middot; {% endif %}
       Signing as <strong>{{ party.name }}</strong>
     </p>
   </div>
@@ -77,7 +78,7 @@
     <h2>What you are signing</h2>
     <dl style="margin:0">
       <div class="ls-row"><dt>Property</dt>
-        <dd>{% if prop %}{{ prop.prop_name }}{% else %}&mdash;{% endif %}</dd></div>
+        <dd>{% if prop.tenant_address %}{{ prop.tenant_address }}{% else %}&mdash;{% endif %}</dd></div>
       <div class="ls-row"><dt>Tenancy</dt>
         <dd>{{ tenant.tenant_display_name }}</dd></div>
       <div class="ls-row"><dt>Lease period</dt>
@@ -130,15 +131,24 @@
     {% csrf_token %}
     <input type="hidden" name="read_to_end" id="ls-read" value="0">
     <input type="hidden" name="seconds_open" id="ls-seconds" value="0">
-    <input type="hidden" name="signature_kind" id="ls-kind" value="drawn">
+    <input type="hidden" name="signature_kind" id="ls-kind" value="{% if saved_signature %}saved{% else %}drawn{% endif %}">
     <input type="hidden" name="signature_data" id="ls-data" value="">
 
     <div class="ls-card">
       <h2>Your signature</h2>
 
       <div class="ls-tabs" role="tablist">
+        {# HIS SAVED SIGNATURE - ES-7, 25 Oct 2026. Offered ONLY when the #}
+        {# person signing is signed in as the account that owns it, and  #}
+        {# chosen by default. The image itself is never shown here.      #}
+        {% if saved_signature %}
+        <button type="button" class="ls-tab" id="ls-tab-saved"
+                role="tab" aria-selected="true" aria-controls="ls-panel-saved">
+          Use my saved signature
+        </button>
+        {% endif %}
         <button type="button" class="ls-tab" id="ls-tab-draw"
-                role="tab" aria-selected="true" aria-controls="ls-panel-draw">
+                role="tab" aria-selected="{% if saved_signature %}false{% else %}true{% endif %}" aria-controls="ls-panel-draw">
           Draw it
         </button>
         <button type="button" class="ls-tab" id="ls-tab-type"
@@ -147,7 +157,15 @@
         </button>
       </div>
 
-      <div id="ls-panel-draw" role="tabpanel" aria-labelledby="ls-tab-draw">
+      {% if saved_signature %}
+      <div id="ls-panel-saved" role="tabpanel" aria-labelledby="ls-tab-saved">
+        <p class="ls-saved-note">
+          Your saved signature{% if house_stamp %} and the company stamp{% endif %}
+          will be placed on the signature page.
+        </p>
+      </div>
+      {% endif %}
+      <div id="ls-panel-draw" role="tabpanel" aria-labelledby="ls-tab-draw"{% if saved_signature %} hidden{% endif %}>
         <div class="ls-pad" id="ls-pad">
           <canvas id="ls-canvas"></canvas>
           <span class="ls-pad-hint">Sign here with your finger or mouse</span>
@@ -243,6 +261,9 @@
   var tabType = document.getElementById('ls-tab-type');
   var panDraw = document.getElementById('ls-panel-draw');
   var panType = document.getElementById('ls-panel-type');
+  // ES-7, 25 Oct 2026 - absent unless he is signing as himself.
+  var tabSaved = document.getElementById('ls-tab-saved');
+  var panSaved = document.getElementById('ls-panel-saved');
 
   var TOTAL = {{ env.page_count|default:0 }};
   var started = Date.now();
@@ -384,19 +405,28 @@
   // on a laptop is awkward, and refusing there just stalls the lease.
   function mode(which) {
     kind.value = which;
-    var isDraw = (which === 'drawn');
-    tabDraw.setAttribute('aria-selected', isDraw ? 'true' : 'false');
-    tabType.setAttribute('aria-selected', isDraw ? 'false' : 'true');
-    panDraw.hidden = !isDraw;
-    panType.hidden = isDraw;
+    // THREE WAYS NOW - ES-7, 25 Oct 2026. Each tab shows its own panel
+    // and hides the others; the saved tab exists only for him.
+    [[tabDraw, panDraw, 'drawn'], [tabType, panType, 'typed'],
+     [tabSaved, panSaved, 'saved']].forEach(function (r) {
+      if (!r[0]) return;
+      var on = (r[2] === which);
+      r[0].setAttribute('aria-selected', on ? 'true' : 'false');
+      r[1].hidden = !on;
+    });
+    // A PAD THAT WAS HIDDEN HAS NO SIZE, so it is measured again the
+    // moment it is shown - otherwise the line draws away from the finger.
+    if (which === 'drawn') sizePad();
     paint();
   }
   tabDraw.addEventListener('click', function () { mode('drawn'); });
   tabType.addEventListener('click', function () { mode('typed'); });
+  if (tabSaved) tabSaved.addEventListener('click', function () { mode('saved'); });
   if (typed) typed.addEventListener('input', paint);
   if (consent) consent.addEventListener('change', paint);
 
   function hasSignature() {
+    if (kind.value === 'saved') return true;
     if (kind.value === 'typed') {
       return !!(typed && typed.value.trim().length >= 2);
     }

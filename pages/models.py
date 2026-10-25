@@ -667,6 +667,29 @@ class props(models.Model):
     def __str__(self):
         return self.prop_name or f"Property {self.prop_id}"
 
+    # THE ADDRESS A TENANT SEES - ES-7, 25 Oct 2026. His instruction: the
+    # property NAME is internal ("Apolloneon - Demetri") and must never
+    # reach a tenant. Built the way Generate Lease builds the address it
+    # writes into the lease, so the email, the signing page and the lease
+    # itself describe the place in the same words. Empty when no address
+    # is recorded - and then a tenant sees no place at all, never the name.
+    ADDRESS_FIELDS = ('prop_address1', 'prop_address2', 'prop_suburb',
+                      'prop_city', 'prop_province', 'prop_country',
+                      'prop_pcode')
+
+    @property
+    def tenant_address(self):
+        return ', '.join(p.strip() for p in
+                         (getattr(self, f) or '' for f in self.ADDRESS_FIELDS)
+                         if p and p.strip())
+
+    @property
+    def tenant_address_short(self):
+        """First line and city - short enough for an email subject."""
+        return ', '.join(p.strip() for p in
+                         (self.prop_address1 or '', self.prop_city or '')
+                         if p and p.strip())
+
     class Meta:
         db_table = "prop"
         verbose_name = "Property"
@@ -4997,6 +5020,36 @@ class LeaseSigning(models.Model):
         return [p for p in self.parties.order_by('order', 'party_id')
                 if not p.signed_at and not p.declined_at]
 
+    @classmethod
+    def closing_moment(cls, days, now=None):
+        """The last moment a link works: END of the day, Cyprus time.
+
+        ES-7, 25 Oct 2026, his decision. A link sent at 15:00 on the 24th
+        used to die at 15:00 on the 31st while the email said only
+        "31 October", so a tenant signing that evening found it closed.
+        Now it closes at 23:59:59 local time on the date the email names.
+        Used by the Send screen and by Extend, so both say the same.
+        """
+        import datetime as _dt
+        day = timezone.localdate(now or timezone.now()) + \
+            _dt.timedelta(days=days)
+        return timezone.make_aware(_dt.datetime.combine(
+            day, _dt.time(23, 59, 59)))
+
+    def _last_reminder_at(self):
+        """The start of the day before the closing date, local time.
+
+        ES-7 - with links open to the end of the day, "the day before it
+        lapses" measured back 24 hours from 23:59 would land on the last
+        day itself. Counted from the start of the previous day, it stays
+        the day before.
+        """
+        import datetime as _dt
+        close_day = timezone.localtime(self.expires_at).date()
+        return timezone.make_aware(_dt.datetime.combine(
+            close_day - _dt.timedelta(days=self.LAST_REMINDER_DAYS_BEFORE),
+            _dt.time(0, 0)))
+
     def window_start(self):
         """When the current signing window opened - ES-6, 25 Oct 2026.
 
@@ -5031,14 +5084,25 @@ class LeaseSigning(models.Model):
         if start is None:
             return None
         due = None
+        close_day = timezone.localtime(self.expires_at).date()
         for at in (start + timezone.timedelta(days=self.FIRST_REMINDER_DAY),
-                   self.expires_at - timezone.timedelta(
-                       days=self.LAST_REMINDER_DAYS_BEFORE)):
-            if not (start < at < self.expires_at):
+                   self._last_reminder_at()):
+            # NEVER ON THE CLOSING DAY ITSELF - ES-7, 25 Oct 2026. With
+            # the link open all of that day, "day 3" of a three-day window
+            # would fall on the deadline, the day after the "day before"
+            # reminder: two emails on consecutive days, which is not his
+            # rule. A reminder has to land on a day BEFORE the closing date.
+            if not (start < at
+                    and timezone.localtime(at).date() < close_day):
                 continue
             if now >= at and (self.last_reminder_at is None
                               or self.last_reminder_at < at):
-                due = int(round((at - start).total_seconds() / 86400.0))
+                # CALENDAR DAYS, LOCAL - ES-7, 25 Oct 2026. With links
+                # open to the end of the day, the last reminder is counted
+                # from midnight, so measuring in hours would call the day
+                # before a 14-day deadline "day 12". People count days.
+                due = (timezone.localtime(at).date()
+                       - timezone.localtime(start).date()).days
         return due
 
 
@@ -5065,7 +5129,13 @@ class LeaseSigningParty(models.Model):
 
     KIND_DRAWN = 'drawn'
     KIND_TYPED = 'typed'
-    KIND_CHOICES = [(KIND_DRAWN, 'Drawn'), (KIND_TYPED, 'Typed')]
+    # ES-7, 25 Oct 2026 - HIS SAVED SIGNATURE, applied when he signs as
+    # himself and chooses it. Recorded as its own kind so the record says
+    # how the mark got there; the printed page says only "Signed", as it
+    # does for drawn and typed - his decision of 25 October.
+    KIND_SAVED = 'saved'
+    KIND_CHOICES = [(KIND_DRAWN, 'Drawn'), (KIND_TYPED, 'Typed'),
+                    (KIND_SAVED, 'Saved signature')]
 
     party_id = models.AutoField(primary_key=True)
     signing = models.ForeignKey(LeaseSigning, on_delete=models.CASCADE,
@@ -5096,6 +5166,15 @@ class LeaseSigningParty(models.Model):
         upload_to=lease_signature_upload_path, max_length=255,
         blank=True, null=True)
     typed_name = models.CharField(max_length=255, blank=True)
+    # THE HOUSE MARKS, COPIED - ES-7, 25 Oct 2026. When he signs as
+    # himself the stored signature (if he chose it) and the company stamp
+    # are COPIED onto this party, in the database. A copy and not a
+    # pointer: replacing the stored mark next year must not change a
+    # lease already signed, and the sealed page must be rebuildable from
+    # the envelope alone. Never media - nothing serves these by URL.
+    mark_signature = models.BinaryField(null=True, blank=True,
+                                        editable=False)
+    mark_stamp = models.BinaryField(null=True, blank=True, editable=False)
 
     signed_ip = models.CharField(max_length=45, blank=True)
     signed_user_agent = models.CharField(max_length=400, blank=True)
@@ -5214,3 +5293,57 @@ class LeaseSigningEvent(models.Model):
         ordering = ['at', 'event_id']
         verbose_name = 'Lease signing event'
 
+
+# ==========================================================================
+# HOUSE MARKS - ES-7, 25 Oct 2026
+# ==========================================================================
+class HouseMark(models.Model):
+    """His signature and the company stamp, stored once, securely.
+
+    HIS DECISIONS OF 25 OCTOBER. The stamp is the company NAME only
+    ("ALIVENTE LIMITED" - the company number left off). Both are used
+    ONLY when Demetri Manias is the signatory, decided by the signed-in
+    account that signs and never by a typed name. Stored securely: in the
+    database, never in media, never served by any URL, and managed by a
+    superuser only.
+
+    ONE OF EACH KIND, BELONGING TO WHOEVER UPLOADED IT. The upload screen
+    is superuser-only and the owner is the uploader, so there is exactly
+    one account the marks can ever be applied for. Another superuser
+    uploading would REPLACE them, visibly, not add a second set.
+
+    PNG BYTES, ALPHA KEPT. The upload screen normalises whatever it is
+    given into a transparent PNG, so the sealed page never has to.
+    """
+    SIGNATURE = 'signature'
+    STAMP = 'stamp'
+    KIND_CHOICES = [(SIGNATURE, 'Signature'), (STAMP, 'Company stamp')]
+
+    house_mark_id = models.AutoField(primary_key=True)
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, unique=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE,
+                              related_name='house_marks')
+    image = models.BinaryField(editable=False)
+    sha256 = models.CharField(max_length=64)
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    uploaded_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'house_marks'
+        verbose_name = 'House mark'
+
+    def __str__(self):
+        return '%s (%s)' % (self.get_kind_display(), self.owner)
+
+    @classmethod
+    def for_signer(cls, user, kind):
+        """The mark's bytes if THIS user owns it, else None.
+
+        THE ONE QUESTION THE SIGNING PAGE ASKS. Ownership is the account,
+        so a name typed into "Signing for Alivente" can never reach it.
+        """
+        if user is None or not getattr(user, 'is_authenticated', False):
+            return None
+        row = cls.objects.filter(kind=kind, owner=user).first()
+        return bytes(row.image) if row and row.image else None

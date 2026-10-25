@@ -518,30 +518,43 @@ if have_db:
                     tenant_lease_end_date=(timezone.now()
                                            + timezone.timedelta(days=365)
                                            ).date(), tenant_current='Yes')
-                start = timezone.now()
+                # ES-7, 25 Oct 2026 - SENT AT 10:00 LOCAL AND CLOSING AT THE
+                # END OF THE LAST DAY, the way the Send screen now makes
+                # every envelope; probes are local clock times, so the
+                # answer cannot depend on what hour the suite runs at.
+                import datetime as _dt
+                day0 = timezone.localdate()
+                start = timezone.make_aware(
+                    _dt.datetime.combine(day0, _dt.time(10, 0)))
                 e = M.LeaseSigning.objects.create(
                     tenant=t, status='sent', sent_at=start,
-                    expires_at=start + timezone.timedelta(days=days),
+                    expires_at=M.LeaseSigning.closing_moment(days, start),
                     original_pdf='x.pdf')
-                at = lambda d: start + timezone.timedelta(days=d)  # noqa
+
+                def at(d, hh=11, mm=0):
+                    return timezone.make_aware(_dt.datetime.combine(
+                        day0 + _dt.timedelta(days=d), _dt.time(hh, mm)))
                 return e, at
 
             e14, at14 = window(14)
-            ok(e14.reminder_due(at14(3.01)) == 3
-               and e14.reminder_due(at14(6.01)) == 3
-               and e14.reminder_due(at14(13.01)) == 13,
+            ok(e14.reminder_due(at14(3)) == 3
+               and e14.reminder_due(at14(6)) == 3
+               and e14.reminder_due(at14(13, 0, 30)) == 13,
                'FOURTEEN DAYS: day 3 and day 13 - not day 6, which is what '
                'ES-5\'s fixed pair would have sent',
-               [e14.reminder_due(at14(d)) for d in (3.01, 6.01, 13.01)])
+               [e14.reminder_due(x) for x in (at14(3), at14(6),
+                                              at14(13, 0, 30))])
             e3, at3 = window(3)
-            ok(e3.reminder_due(at3(1.5)) is None
-               and e3.reminder_due(at3(2.01)) == 2,
+            ok(e3.reminder_due(at3(1, 12)) is None
+               and e3.reminder_due(at3(2, 0, 30)) == 2
+               and e3.reminder_due(at3(3, 12)) == 2,
                'THREE DAYS: only the day before it lapses - day 3 is the '
-               'deadline itself', [e3.reminder_due(at3(d))
-                                   for d in (1.5, 2.01)])
+               'deadline itself, and since ES-7 the link is open all of it',
+               [e3.reminder_due(x) for x in (at3(1, 12), at3(2, 0, 30),
+                                             at3(3, 12))])
             e7, at7 = window(7)
-            ok(e7.reminder_due(at7(3.01)) == 3
-               and e7.reminder_due(at7(6.01)) == 6,
+            ok(e7.reminder_due(at7(3)) == 3
+               and e7.reminder_due(at7(6)) == 6,
                'SEVEN DAYS: still day 3 and day 6, exactly as he decided')
             M.LeaseSigningEvent.objects.create(signing=e7, kind='extended')
             e7.expires_at = timezone.now() + timezone.timedelta(days=7)

@@ -26,7 +26,8 @@
     <p class="ls-brand">Alivente Limited</p>
     <h1>Thank you &mdash; your signature is recorded</h1>
     <p class="ls-sub">
-      {% if prop %}{{ prop.prop_name }} &middot; {% endif %}
+      {# THE ADDRESS, NEVER THE INTERNAL NAME - ES-7, 25 Oct 2026. #}
+      {% if prop.tenant_address %}{{ prop.tenant_address }} &middot; {% endif %}
       Signed by {{ party.name }} on {{ party.signed_at|date:"j F Y, H:i" }}
     </p>
   </div>
