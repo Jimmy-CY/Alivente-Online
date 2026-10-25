@@ -30,7 +30,9 @@
   <div class="ls-wrap">
     <p class="ls-brand">Alivente Limited</p>
     <h1>
-      {% if cancelled %}
+      {% if declined %}
+        {% if party.declined_at %}You declined to sign this agreement{% else %}This agreement was declined{% endif %}
+      {% elif cancelled %}
         This agreement was withdrawn
       {% else %}
         The signing period for this agreement has ended
@@ -46,7 +48,20 @@
 
   <div class="ls-note ls-note-read">
     <span>
-      {% if cancelled %}
+      {# DECLINED - ES-5, 25 Oct 2026. One refusal ends the envelope  #}
+      {# for everybody, his decision, so the OTHER tenant arriving    #}
+      {# later is told plainly rather than shown a page to sign.      #}
+      {% if declined %}
+        {% if party.declined_at %}
+        <b>You declined to sign on {{ party.declined_at|date:"j F Y" }}.</b>
+        Alivente Limited has been told. If anything needs to change, a new
+        agreement can be sent to you.
+        {% else %}
+        <b>One of the parties declined to sign this lease agreement</b>, so
+        it can no longer be signed by anybody. Alivente Limited has been
+        told, and will be in touch if a new agreement is to be sent.
+        {% endif %}
+      {% elif cancelled %}
         <b>This lease agreement was withdrawn by Alivente Limited</b>
         and can no longer be signed. If you were expecting to sign it,
         please get in touch and a new one can be sent.

@@ -140,14 +140,33 @@
                         <span class="icon-action-btn icon-view" title="View this envelope">
                             <i class="fas fa-eye"></i>
                         </span>
+                        {# EXTEND AND CANCEL - ES-5, 25 Oct 2026. Drawn on 23  #}
+                        {# October as icons that did nothing; now they POST.   #}
+                        {# WHICH ROWS OFFER THEM IS THE VIEW'S ANSWER         #}
+                        {# (can_extend / can_cancel, from the same tuples the  #}
+                        {# views check), never re-decided here.               #}
+                        {#                                                    #}
+                        {# THE SEND GLYPH STAYS, because what Extend does is  #}
+                        {# send: another seven days and a fresh link to        #}
+                        {# whoever has not signed, and nobody who has.        #}
                         {% if perms.auth.can_edit_tenants %}
-                            {% if r.env.is_open %}
-                            <span class="icon-action-btn icon-send" title="Resend">
-                                <i class="fas fa-paper-plane"></i>
-                            </span>
-                            <span class="icon-action-btn icon-cancel" title="Cancel">
-                                <i class="fas fa-times"></i>
-                            </span>
+                            {% if r.can_extend %}
+                            <form method="post" action="{% url 'lease_signing_extend' r.env.pk %}" class="ls-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="icon-action-btn icon-send"
+                                        title="Extend 7 days and resend to whoever has not signed">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if r.can_cancel %}
+                            <form method="post" action="{% url 'lease_signing_cancel' r.env.pk %}" class="ls-inline"
+                                  onsubmit="return confirm('Cancel this envelope? Its links stop working at once. Signatures already given are kept.');">
+                                {% csrf_token %}
+                                <button type="submit" class="icon-action-btn icon-cancel" title="Cancel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -159,11 +178,15 @@
                         <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
                         <span class="mobile-action-label">View</span>
                     </span>
-                    {% if perms.auth.can_edit_tenants and r.env.is_open %}
-                    <span class="mobile-action-btn">
-                        <i class="fas fa-paper-plane mobile-action-icon icon-color-upload"></i>
-                        <span class="mobile-action-label">Resend</span>
-                    </span>
+                    {% if perms.auth.can_edit_tenants and r.can_extend %}
+                    {# ES-5 - the phone's Resend becomes the same Extend. #}
+                    <form method="post" action="{% url 'lease_signing_extend' r.env.pk %}" class="ls-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="mobile-action-btn">
+                            <i class="fas fa-paper-plane mobile-action-icon icon-color-upload"></i>
+                            <span class="mobile-action-label">Resend</span>
+                        </button>
+                    </form>
                     {% else %}
                     <span class="mobile-action-btn mobile-action-disabled">
                         <i class="fas fa-paper-plane mobile-action-icon"></i>
@@ -205,6 +228,12 @@
     margin-top: 2px;
 }
 .ls-over { color: var(--alv-warn); }
+/* ES-5, 25 Oct 2026 - A POST CONTROL HAS TO BE A FORM, and a form in
+   a flex row or the phone's grid becomes the item instead of the
+   button inside it. display: contents takes the form out of the box
+   tree, so the button is laid out exactly where the inert icon was -
+   and the form still submits. */
+.ls-inline { display: contents; }
 .ls-attn { color: var(--alv-warn); font-weight: 600; }
 
 /* THE SIGNER DOTS. Who are we waiting for, without opening a second

@@ -4588,9 +4588,13 @@ table.alv-matrix {
         </div>
         <div class="col-md-4">
           <div class="form-group">
-            <label for="tenant_2_email"><strong>Second Tenant Email Address(es)</strong></label>
-            <input type="text" class="form-control" id="tenant_2_email" name="tenant_2_email"
-                   value="" placeholder="One or more emails, separated by commas">
+            
+            
+            
+            
+            <label for="tenant_2_email"><strong>Second Tenant Email Address</strong> <span class="alv-req">*</span></label>
+            <input type="email" class="form-control" id="tenant_2_email" name="tenant_2_email"
+                   value="" placeholder="name@example.com">
           </div>
         </div>
       </div>
@@ -4667,6 +4671,20 @@ table.alv-matrix {
     sect.style.display = (individual && open) ? '' : 'none';
     addRow.style.display = (individual && !open) ? '' : 'none';
     paintContact();
+    paintSecondEmail();
+  }
+
+  // REQUIRED WHILE THERE IS A SECOND TENANT - T2-8, 25 Oct 2026.
+  // THE NAME DECIDES, as named() and has_second_tenant do. A hidden,
+  // emptied section must not leave `required` behind on its address:
+  // the browser would refuse the form and could not show where.
+  function paintSecondEmail() {
+    if (!document.getElementById('tenant_2_email')) return;
+    if (named()) {
+      document.getElementById('tenant_2_email').required = true;
+    } else {
+      document.getElementById('tenant_2_email').required = false;
+    }
   }
 
   addBtn.addEventListener('click', function () {
@@ -4692,6 +4710,10 @@ table.alv-matrix {
     if (sel.value !== 'Individual') clearAll();
     paint(named());
   });
+
+  // T2-8 - typing or clearing the second name moves the requirement.
+  var t2NameIn = document.getElementById('tenant_2_name');
+  if (t2NameIn) t2NameIn.addEventListener('input', paintSecondEmail);
 
   document.addEventListener('DOMContentLoaded', function () {
     paint(named());

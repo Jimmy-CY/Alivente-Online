@@ -314,6 +314,30 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE THIRTEENTH TO FIFTEENTH, 25 OCT 2026 - REVEALED, NOT BROKEN,
+    # and the same story as the twelfth.
+    #
+    # ES-4 CREATED pages/views/lease_signing_sign.py on 24 October WITH
+    # lease_sign_page (the page images behind the token check) and
+    # read_to_end (the server's refusal to accept an unread signature);
+    # ES-3a CREATED pages/views/lease_signing.py on 23 October WITH its
+    # opening paragraph. No version of either file has ever lacked them.
+    # ES-5 is the first round since to back the two files up, so the
+    # verdict is provable rather than untested.
+    #
+    # The day either guard goes, its row fails.
+    'def lease_sign_page':
+        'the page images come back through the token check - ES-4 '
+        'created lease_signing_sign.py WITH it on 24 Oct, and ES-5 is '
+        'the first round since to back that file up',
+    'read_to_end':
+        'the server refuses an unread signature - ES-4 created '
+        'lease_signing_sign.py WITH it, and ES-5 is the first round '
+        'since to back that file up',
+    'ONE ROW PER ENVELOPE':
+        'why the register is not a tab on Manage Lease Agreements - '
+        'ES-3a created lease_signing.py WITH it on 23 Oct, and ES-5 is '
+        'the first round since to back that file up',
     # THE TWELFTH, 24 OCT 2026 - REVEALED, NOT BROKEN, and the third
     # of its kind today after T2-4's two and PG-2's one.
     #

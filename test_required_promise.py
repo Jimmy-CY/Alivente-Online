@@ -451,7 +451,16 @@ for d, _s, fs in T.walk3():
 # draft starred the tenant picker, which navigates on change and is
 # never posted, and starred the upload with no `required` behind it
 # at all. This suite caught both - which is what it is for.
-TOTAL = 221
+#
+# T2-8, 25 Oct 2026 - 221 -> 225. One email address per tenant: the
+# Tenant Email Address and the Second Tenant Email Address on BOTH
+# Add Tenant and Edit Tenant now wear the star, and this census finds
+# `required` in the markup for all four. The second address carries it
+# only while there is a second tenant - the page's script adds or lifts
+# it as the name is typed, and the form refuses a missing one
+# server-side. Missed by the T2-8 sweep and caught by the gate, which
+# is what it is for.
+TOTAL = 225
 ok(len(rows) == TOTAL,
    'the corpus is %d starred labels' % len(rows),
    'pinned at %d. THE MARKER IS THE alv-req SPAN, not a bare asterisk - '
@@ -493,7 +502,8 @@ ok(control_for(_near, _lab2) is not None,
 head('3. FIVE MECHANISMS, AND THE RESIDUE IS THE ASSERTION')
 # ==========================================================================
 EXPECT = {
-    '1 static required': 184,
+    # T2-8, 25 Oct 2026 - 184 -> 188, the four email stars above.
+    '1 static required': 188,
     # ES-3b, 24 Oct 2026 - 7 -> 8. The lease upload on the Send for
     # Signature screen, the fifth of that screen's five stars. The
     # script writes it through getElementById with a literal on the

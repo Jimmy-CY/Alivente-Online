@@ -56,6 +56,14 @@ urlpatterns = [
     # one from. Driving the flow found that; reading it did not.
     path('lease-signing/<int:pk>/page/<int:number>/',
          views.lease_sign_page_session, name='lease_sign_page_session'),
+    # ES-5, 25 Oct 2026 - THE TWO REGISTER CONTROLS. POST only, behind
+    # the tenants edit permission: one gives everybody still to sign
+    # another seven days and a fresh link, the other withdraws the
+    # envelope and keeps every signature already given.
+    path('lease-signing/<int:pk>/extend/', views.lease_signing_extend,
+         name='lease_signing_extend'),
+    path('lease-signing/<int:pk>/cancel/', views.lease_signing_cancel,
+         name='lease_signing_cancel'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),

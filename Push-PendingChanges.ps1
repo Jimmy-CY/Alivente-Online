@@ -1278,6 +1278,9 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'ContentFile(stored.read())'; What = 'ES-3b: the lease already on the tenant record is COPIED onto the envelope, never referenced - that file can be replaced or deleted from Manage Lease Agreements, and a document that changed under a signature is the one thing ES-2 hash exists to make impossible' },
+    @{ File = 'pages/forms.py'; Text = 'def clean_tenant_email(self):'; What = 'T2-8: one email address per tenant, required - a signing link is a credential for one person, and a box holding two hands one link to two people; ON THE FORM so a legacy record is refused only when a person saves it, never by the cron' },
+    @{ File = 'pages/models.py'; Text = 'def outstanding(self):'; What = 'ES-5: ONE answer to who are we waiting for - reminders, extend and the expiry record all ask it, and whoever has signed is never emailed again; a second spelling is how a co-operative tenant gets chased for somebody else silence' },
+    @{ File = 'pages/management/commands/check_lease_renewal_and_invoices.py'; Text = "call_command('lease_signing_tick'"; What = 'ES-5: the five-minute job writes expiry and sends the day 3 and day 6 reminders - without this line envelopes never expire and nobody is ever reminded, silently' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3076,7 +3079,11 @@ $suites = @(
     # ES-4, 24 Oct 2026 - a lease can be read and signed.
     'test_lease_sign.py',
     # ES-3b, 24 Oct 2026 - an envelope can be made.
-    'test_send_lease.py'
+    'test_send_lease.py',
+    # T2-8, 25 Oct 2026 - one email address per person.
+    'test_one_email.py',
+    # ES-5, 25 Oct 2026 - what happens to an envelope after it is sent.
+    'test_signing_lifecycle.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

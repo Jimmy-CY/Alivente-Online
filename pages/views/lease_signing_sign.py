@@ -171,11 +171,18 @@ def _state(env, party):
     """
     expired = env.has_expired or env.status == LeaseSigning.EXPIRED
     dead = env.status in (LeaseSigning.CANCELLED,)
+    # ES-5, 25 Oct 2026 - A DECLINE ENDS IT FOR EVERYBODY, his decision:
+    # the envelope stops accepting signatures from anybody, including
+    # the other tenant. A live link after a decline would leave the
+    # register unable to answer "is this going to happen".
+    declined = env.status == LeaseSigning.DECLINED
     return {
         'expired': expired,
         'cancelled': dead,
+        'declined': declined,
         'already': bool(party.signed_at),
-        'signable': (not expired and not dead and not party.signed_at
+        'signable': (not expired and not dead and not declined
+                     and not party.signed_at
                      and env.status in (LeaseSigning.DRAFT,
                                         LeaseSigning.SENT,
                                         LeaseSigning.PART)),
@@ -223,40 +230,80 @@ def _signed_copy(env):
     return len(to)
 
 
-def _invite(env, party, request):
+def _invite(env, party, request=None, why='sent'):
     """Mint this party a link and send it.
 
     A NEW TOKEN EVERY TIME, which is ES-1's rule: the emailed link is
     the credential, and a resend that left the old one working would
     mean a link that expired and then did not.
+
+    ONE SPELLING FOR EVERY KIND OF SEND - ES-5, 25 Oct 2026. The first
+    invitation, a reminder from the cron and the fresh link an
+    extension sends are three emails and ONE function, so there is one
+    answer to what any of them does to the old link. `why` chooses the
+    words: 'sent', 'reminder' or 'extended'.
     """
     from django.core.mail import EmailMessage
 
     raw = party.issue_token()
     party.save(update_fields=['token_hash', 'token_issued_at'])
-    # THE LINK IS BUILT FROM THE REQUEST, not from a setting. There is
-    # no SITE_URL in this project, and inventing one with a production
-    # default would make every link mailed from a laptop point at Live.
-    # ALLOWED_HOSTS is what keeps a forged Host header out of it.
-    link = request.build_absolute_uri(
-        reverse('lease_sign', kwargs={'token': raw}))
+    path = reverse('lease_sign', kwargs={'token': raw})
+    if request is not None:
+        # THE LINK IS BUILT FROM THE REQUEST, not from a setting. There
+        # is no SITE_URL in this project, and inventing one with a
+        # production default would make every link mailed from a laptop
+        # point at Live. ALLOWED_HOSTS is what keeps a forged Host
+        # header out of it.
+        link = request.build_absolute_uri(path)
+        # ES-5 - AND IT IS REMEMBERED, because a reminder is sent by the
+        # cron and the cron has no request to build one from.
+        if not env.link_base:
+            env.link_base = request.build_absolute_uri('/').rstrip('/')[:200]
+            env.save(update_fields=['link_base'])
+    elif env.link_base:
+        link = env.link_base.rstrip('/') + path
+    else:
+        # NO GUESS. A link built from nothing would point somewhere
+        # plausible and wrong; the caller records the failure instead.
+        raise RuntimeError('envelope %s has no link_base, so a link cannot '
+                           'be built without a request' % env.pk)
     prop = getattr(getattr(env.tenant, 'prop', None), 'prop_name', '') or ''
     when = env.expires_at.strftime('%d %B %Y') if env.expires_at else ''
-    EmailMessage(
-        subject='Please sign your lease agreement%s'
-                % ((' - ' + prop) if prop else ''),
-        body=('Dear %s,\n\n'
-              'Your lease agreement is ready for signature. It has '
-              'already been signed by Alivente Limited.\n\n'
-              'Open this link to read it and sign:\n\n%s\n\n'
-              '%s'
-              'Please read the agreement to the end before signing.\n\n'
-              'Alivente Limited\n'
-              % (party.name or 'Tenant', link,
-                 ('This link expires on %s.\n\n' % when) if when else '')),
-        to=[party.email]).send(fail_silently=False)
-    _event(env, 'sent', party=party,
-           detail='link sent to %s' % party.email, request=request)
+    expiry = ('This link expires on %s.\n\n' % when) if when else ''
+    name = party.name or 'Tenant'
+    if why == 'reminder':
+        subject = 'Reminder: please sign your lease agreement'
+        body = ('Dear %s,\n\n'
+                'This is a reminder that your lease agreement is waiting '
+                'for your signature.\n\n'
+                'Open this link to read it and sign:\n\n%s\n\n'
+                '%s'
+                'This link replaces the one sent to you earlier.\n\n'
+                'Alivente Limited\n' % (name, link, expiry))
+    elif why == 'extended':
+        subject = 'More time to sign your lease agreement'
+        body = ('Dear %s,\n\n'
+                'The time to sign your lease agreement has been '
+                'extended.\n\n'
+                'Open this link to read it and sign:\n\n%s\n\n'
+                '%s'
+                'This link replaces any you were sent before.\n\n'
+                'Alivente Limited\n' % (name, link, expiry))
+    else:
+        subject = 'Please sign your lease agreement'
+        body = ('Dear %s,\n\n'
+                'Your lease agreement is ready for signature. It has '
+                'already been signed by Alivente Limited.\n\n'
+                'Open this link to read it and sign:\n\n%s\n\n'
+                '%s'
+                'Please read the agreement to the end before signing.\n\n'
+                'Alivente Limited\n' % (name, link, expiry))
+    EmailMessage(subject=subject + ((' - ' + prop) if prop else ''),
+                 body=body, to=[party.email]).send(fail_silently=False)
+    _event(env, 'reminded' if why == 'reminder' else 'sent', party=party,
+           detail='%s to %s' % ('reminder' if why == 'reminder'
+                                else 'link sent', party.email),
+           request=request)
 
 
 def _advance(env, party, request):
@@ -314,6 +361,87 @@ def _advance(env, party, request):
     return 'part'
 
 
+def _closed(request, env, party, state, status=410):
+    """The plain page a link shows once it can no longer be signed.
+
+    ONE RENDER FOR EVERY WAY AN ENVELOPE ENDS - expired, withdrawn or
+    declined - so the three cannot drift into three pages that each
+    show a little of the document.
+    """
+    return render(request, 'lease_sign_closed.html', {
+        'env': env, 'party': party,
+        'prop': getattr(env.tenant, 'prop', None),
+        'cancelled': state['cancelled'],
+        'declined': state.get('declined', False),
+    }, status=status)
+
+
+def _decline(env, party, request):
+    """A tenant refuses. ES-5, 25 Oct 2026 - his decisions.
+
+    THE ENVELOPE DIES: it stops accepting signatures from anybody,
+    including the other tenant. If the lease needs changing he sends a
+    new one - attempt one and attempt two, not one envelope that
+    changed its mind.
+
+    HE IS TOLD, naming who declined and when. NO REASON FIELD - a
+    reason is a product feature in its own right and he did not ask
+    for one; the trail records who and when, which is what the
+    register needs.
+
+    SIGNATURES ALREADY GIVEN ARE KEPT, the house policy settled three
+    times now: a signature is proof that a real person signed on a
+    real date, and with no certificate the trail is all there is.
+    """
+    now = timezone.now()
+    with transaction.atomic():
+        party.declined_at = now
+        party.save(update_fields=['declined_at'])
+        env.status = LeaseSigning.DECLINED
+        env.save(update_fields=['status'])
+        _event(env, 'declined', party=party,
+               detail='%s declined to sign' % (party.name or 'a tenant'),
+               request=request)
+    try:
+        _tell_house_declined(env, party, now)
+    except Exception as exc:                          # noqa: BLE001
+        # THE DECLINE IS THE RECORD; THE EMAIL IS A COURTESY - the same
+        # rule ES-4 wrote for the signed copy. A mail server refusing
+        # must not leave the envelope open.
+        _event(env, 'declined',
+               detail='Alivente NOT told by email: %s' % type(exc).__name__,
+               request=request)
+
+
+def _tell_house_declined(env, party, when):
+    """Email the person who sent the envelope that it was declined."""
+    from django.core.mail import EmailMessage
+
+    to = []
+    if env.created_by_id and getattr(env.created_by, 'email', ''):
+        to.append(env.created_by.email)
+    house = env.parties.filter(role=LeaseSigningParty.ROLE_ALIVENTE).first()
+    if house and house.email and house.email.lower() not in \
+            [t.lower() for t in to]:
+        to.append(house.email)
+    if not to:
+        return 0
+    prop = getattr(getattr(env.tenant, 'prop', None), 'prop_name', '') or ''
+    stamp = timezone.localtime(when).strftime('%d %B %Y at %H:%M')
+    EmailMessage(
+        subject='Lease declined%s' % ((' - ' + prop) if prop else ''),
+        body=('%s declined to sign the lease agreement%s on %s.\n\n'
+              'The envelope is closed and can no longer be signed by '
+              'anybody. If the lease needs changing, send a new one from '
+              'Lease Signing.\n\n'
+              'Tenancy: %s\n'
+              % (party.name or 'A tenant',
+                 (' for ' + prop) if prop else '', stamp,
+                 getattr(env.tenant, 'tenant_display_name', '') or '')),
+        to=to).send(fail_silently=False)
+    return len(to)
+
+
 def _store_signature(party, request):
     """Read the signature off the form onto the party. Raises ValueError."""
     kind = (request.POST.get('signature_kind') or '').strip()
@@ -357,23 +485,22 @@ def _sign_view(request, party, how):
     env = party.signing
     state = _state(env, party)
 
-    if state['expired'] or state['cancelled']:
+    if state['expired'] or state['cancelled'] or state['declined']:
         # NO DOCUMENT AND NO CONTROLS, naming the property and who to
         # contact - decided 24 October. Showing the lease after expiry
         # turns a seven-day link into a permanent read link.
-        return render(request, 'lease_sign_closed.html', {
-            'env': env, 'party': party,
-            'prop': getattr(env.tenant, 'prop', None),
-            'cancelled': state['cancelled'],
-        }, status=410)
+        return _closed(request, env, party, state)
+
+    if request.method == 'POST' and request.POST.get('action') == 'decline':
+        if not state['signable'] or party.role != LeaseSigningParty.ROLE_TENANT:
+            return _closed(request, env, party, state)
+        _decline(env, party, request)
+        state = _state(env, party)
+        return _closed(request, env, party, state, status=200)
 
     if request.method == 'POST':
         if not state['signable']:
-            return render(request, 'lease_sign_closed.html', {
-                'env': env, 'party': party,
-                'prop': getattr(env.tenant, 'prop', None),
-                'cancelled': state['cancelled'],
-            }, status=410)
+            return _closed(request, env, party, state)
 
         error = None
         if not request.POST.get('consent'):
@@ -512,7 +639,8 @@ def _page_image(env, number):
     about what a page is or when it stops being available.
     """
     if env.has_expired or env.status in (LeaseSigning.EXPIRED,
-                                         LeaseSigning.CANCELLED):
+                                         LeaseSigning.CANCELLED,
+                                         LeaseSigning.DECLINED):
         raise Http404('this signing period has ended')
     if number < 1 or number > (env.page_count or 0):
         raise Http404('no such page')

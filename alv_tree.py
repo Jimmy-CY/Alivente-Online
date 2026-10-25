@@ -1018,6 +1018,10 @@ CONVERTED = [
     'test_lease_sign.py',
     # ES-3b, 24 Oct 2026 - an envelope can be made.
     'test_send_lease.py',
+    # T2-8, 25 Oct 2026 - one email address per person.
+    'test_one_email.py',
+    # ES-5, 25 Oct 2026 - what happens to an envelope after it is sent.
+    'test_signing_lifecycle.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

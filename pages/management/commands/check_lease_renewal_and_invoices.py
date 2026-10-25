@@ -116,6 +116,18 @@ class Command(BaseCommand):
                 self.stdout.write(f'\u26a0\ufe0f  send_physical_invoices failed: {e}')
                 logger.error(f'send_physical_invoices failed: {e}', exc_info=True)
 
+            # LEASE SIGNING - ES-5, 25 Oct 2026. Envelopes past their date
+            # become expired, and the day 3 and day 6 reminders go to
+            # whoever has not signed. Beside the physical-invoice send
+            # because this is the job that already runs every five
+            # minutes and already sends tenant mail; guarded the same way,
+            # so a failure here never stops the reports below.
+            try:
+                call_command('lease_signing_tick', dry_run=self.dry_run)
+            except Exception as e:
+                self.stdout.write(f'\u26a0\ufe0f  lease_signing_tick failed: {e}')
+                logger.error(f'lease_signing_tick failed: {e}', exc_info=True)
+
             # Then get all the data with property details
             vacant_properties, expiring_leases, declined_renewals, overdue_invoices = self.get_all_property_details()
 

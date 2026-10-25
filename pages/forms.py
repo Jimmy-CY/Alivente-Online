@@ -54,6 +54,82 @@ class TenantForm(forms.ModelForm):
             'tenant_current', 'prop'
         ]
 
+    # ONE ADDRESS PER PERSON - T2-8, 25 Oct 2026. His rule, in his
+    # words: "we will have problems in the e-signing function and
+    # other email areas". A signing link is a credential for ONE
+    # person; a box holding two addresses hands one link to two
+    # people and the trail cannot tell them apart.
+    #
+    # ON THE FORM AND NOT IN tenant.clean(). save() calls full_clean(),
+    # so a model rule would refuse every save of a record that still
+    # holds two addresses - including the ones the five-minute cron
+    # makes. His decision was BLOCK ON NEXT SAVE: stored values keep
+    # working, and the refusal meets a person, with the screen in
+    # front of them, when they open that tenant and press Save.
+    #
+    # REQUIRED, both of them - the second only when there IS a second
+    # tenant, decided by the name exactly as has_second_tenant decides
+    # it. Send for Signature should never meet a tenant it cannot
+    # reach; refusing there moves the complaint to the moment he is
+    # trying to get something done.
+    ONE_ADDRESS_SPLIT = r'[\s,;]+'
+
+    @classmethod
+    def one_address(cls, raw, who):
+        """The single address in `raw`, or a ValidationError saying why not.
+
+        AN EMPTY VALUE IS RETURNED EMPTY - whether it is ALLOWED to be
+        empty is the caller's question, because for the second tenant
+        it depends on another field.
+        """
+        import re as _re
+        from django.core.exceptions import ValidationError
+        from django.core.validators import validate_email
+        parts = [p for p in _re.split(cls.ONE_ADDRESS_SPLIT, raw or '') if p]
+        if not parts:
+            return ''
+        found = [p for p in parts if '@' in p]
+        if len(found) > 1:
+            raise ValidationError(
+                '%s holds %d addresses (%s). Keep exactly one - each '
+                'person gets their own signing link and their own '
+                'email, and one box cannot be two people.'
+                % (who, len(found), ', '.join(found)))
+        if len(parts) != 1:
+            raise ValidationError('%s "%s" is not a valid email address.'
+                                  % (who, ' '.join(parts)))
+        try:
+            validate_email(parts[0])
+        except ValidationError:
+            raise ValidationError('%s "%s" is not a valid email address.'
+                                  % (who, parts[0]))
+        return parts[0]
+
+    def clean_tenant_email(self):
+        from django.core.exceptions import ValidationError
+        got = self.one_address(self.cleaned_data.get('tenant_email'),
+                               'Tenant Email Address')
+        if not got:
+            raise ValidationError('Tenant Email Address is required.')
+        return got
+
+    def clean_tenant_2_email(self):
+        return self.one_address(self.cleaned_data.get('tenant_2_email'),
+                                'Second Tenant Email Address')
+
+    def clean(self):
+        data = super().clean()
+        # THE NAME DECIDES, as has_second_tenant does on the model. An
+        # address with no name is a half-typed form; a name with no
+        # address is a liable person nobody can reach.
+        if ((data.get('tenant_2_name') or '').strip()
+                and not data.get('tenant_2_email')
+                and 'tenant_2_email' not in self.errors):
+            self.add_error('tenant_2_email',
+                           'Second Tenant Email Address is required when '
+                           'there is a second tenant.')
+        return data
+
 class SupplierForm(forms.ModelForm):
 	class Meta:
 		model = models.supplier

@@ -290,10 +290,19 @@ for p, nm in ((ADD, 'tenant_add.html'), (EDIT, 'tenant_edit.html')):
     # case; a `required` on any of the three refuses every ordinary
     # save the moment the section is open.
     upto = b[:b.find('id="t2-remove-btn"')]
-    ok('required' not in upto,
-       '  and not one of the three fields is required')
-    ok('alv-req' not in upto,
-       '  nor wears the star that says required to a reader')
+    # T2-8, 25 Oct 2026 - THE ADDRESS, AND ONLY THE ADDRESS, and
+    # only while there IS a second tenant: his decision, so Send for
+    # Signature never meets a joint tenant it cannot reach. The name
+    # and number stay optional, and the address's requirement is
+    # painted from the name - an open, untouched section still saves.
+    # DJANGO COMMENTS STRIPPED TOO - nocomment() takes the HTML ones,
+    # and T2-8's own note on Edit says the word it counts.
+    _u = re.sub(r'\{#.*?#\}', '', upto)
+    ok(_u.count('required') == 1
+       and _u.count(' required{% endif %}') == 1,
+       '  and only the address is required, and only conditionally')
+    ok(_u.count('alv-req') == 1,
+       '  and it alone wears the star')
 
     # THE HOUSE BUTTON CLASSES. E11's census over 142 pages says
     # nothing is left wearing Bootstrap's; two new buttons are
@@ -330,7 +339,8 @@ for p, nm in ((ADD, 'tenant_add.html'), (EDIT, 'tenant_edit.html')):
     # they are. Measured at col-md-4 and at 390px before choosing:
     # both longer labels take one line at both widths.
     ok('<strong>Second Tenant Contact Number</strong>' in b
-       and '<strong>Second Tenant Email Address(es)</strong>' in b,
+       # T2-8, 25 Oct 2026 - one address, so no (es).
+       and '<strong>Second Tenant Email Address</strong>' in b,
        '  and the second set of labels names its owner, because on a '
        'phone every field is its own line')
 

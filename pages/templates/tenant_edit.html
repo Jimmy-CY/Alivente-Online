@@ -107,20 +107,24 @@
              restores exactly what was there. -->
         <div class="col-md-4" id="contact-person-field"{% if tresults.tenant_type != 'Company' %} style="display: none;"{% endif %}>
           <div class="form-group">
-            <label for="tenant_contact_person"><strong>Contact Person</strong> <span class="alv-req">*</span></label>
+            <label for="tenant_contact_person"><strong>Tenant Contact Person</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person" placeholder="Name of Contact Person" value="{{tresults.tenant_contact_person}}"{% if tresults.tenant_type == 'Company' %} required{% endif %}>
           </div>
         </div>
         <div class="col-md-4">
           <div class="form-group">
-            <label for="tenant_contact_number"><strong>Contact Number</strong> <span class="alv-req">*</span></label>
+            <label for="tenant_contact_number"><strong>Tenant Contact Number</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number" placeholder="Contact Number" value="{{tresults.tenant_contact_number}}" required>
           </div>
         </div>
         <div class="col-md-4">
           <div class="form-group">
-            <label for="tenant_email"><strong>Email Address(es)</strong></label>
-            <input type="text" class="form-control" id="tenant_email" name="tenant_email" placeholder="One or more emails, separated by commas" value="{{tresults.tenant_email}}">
+            {# T2-8, 25 Oct 2026 - ONE ADDRESS, REQUIRED. A record     #}
+            {# saved before this round may still hold two; it keeps   #}
+            {# working, and this form refuses to save it until it     #}
+            {# holds one - his decision: block on next save.          #}
+            <label for="tenant_email"><strong>Tenant Email Address</strong> <span class="alv-req">*</span></label>
+            <input type="email" class="form-control" id="tenant_email" name="tenant_email" placeholder="name@example.com" value="{{tresults.tenant_email}}" required>
           </div>
         </div>
     </div>
@@ -160,8 +164,11 @@
         </div>
         <div class="col-md-4">
           <div class="form-group">
-            <label for="tenant_2_email"><strong>Second Tenant Email Address(es)</strong></label>
-            <input type="text" class="form-control" id="tenant_2_email" name="tenant_2_email" placeholder="One or more emails, separated by commas" value="{{tresults.tenant_2_email}}">
+            {# T2-8, 25 Oct 2026 - required while there is a second   #}
+            {# tenant; has_second_tenant decides on arrival, as it    #}
+            {# decides whether this section opens at all.             #}
+            <label for="tenant_2_email"><strong>Second Tenant Email Address</strong> <span class="alv-req">*</span></label>
+            <input type="email" class="form-control" id="tenant_2_email" name="tenant_2_email" placeholder="name@example.com" value="{{tresults.tenant_2_email}}"{% if tresults.has_second_tenant %} required{% endif %}>
           </div>
         </div>
       </div>
@@ -603,6 +610,20 @@
     sect.style.display = (individual && open) ? '' : 'none';
     addRow.style.display = (individual && !open) ? '' : 'none';
     paintContact();
+    paintSecondEmail();
+  }
+
+  // REQUIRED WHILE THERE IS A SECOND TENANT - T2-8, 25 Oct 2026.
+  // THE NAME DECIDES, as named() and has_second_tenant do. A hidden,
+  // emptied section must not leave `required` behind on its address:
+  // the browser would refuse the form and could not show where.
+  function paintSecondEmail() {
+    if (!document.getElementById('tenant_2_email')) return;
+    if (named()) {
+      document.getElementById('tenant_2_email').required = true;
+    } else {
+      document.getElementById('tenant_2_email').required = false;
+    }
   }
 
   addBtn.addEventListener('click', function () {
@@ -628,6 +649,10 @@
     if (sel.value !== 'Individual') clearAll();
     paint(named());
   });
+
+  // T2-8 - typing or clearing the second name moves the requirement.
+  var t2NameIn = document.getElementById('tenant_2_name');
+  if (t2NameIn) t2NameIn.addEventListener('input', paintSecondEmail);
 
   document.addEventListener('DOMContentLoaded', function () {
     paint(named());

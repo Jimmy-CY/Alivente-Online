@@ -191,6 +191,26 @@
       </div>
     </div>
   </form>
+
+  {# DECLINE - ES-5, 25 Oct 2026. A TENANT MAY REFUSE, and the refusal #}
+  {# ends the envelope for everybody - his decision. A SEPARATE FORM, #}
+  {# so nothing the signing form requires (the read-to-end lock, the  #}
+  {# consent box, a signature) stands between a person and saying no. #}
+  {# NOT FOR THE HOUSE SIGNER, who withdraws an envelope with Cancel   #}
+  {# on the register instead. No reason field: he did not ask for one.#}
+  {% if party.role == 'tenant' %}
+  <form method="post" id="ls-decline" class="ls-decline"
+        onsubmit="return confirm('Decline to sign this lease agreement? It will no longer be possible for anybody to sign it, and Alivente Limited will be told.');">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="decline">
+    <p class="ls-foot">
+      Not able to agree to this lease?
+      <button type="submit" class="ls-btn ls-btn-quiet" id="ls-decline-btn">
+        Decline to sign
+      </button>
+    </p>
+  </form>
+  {% endif %}
 </div>
 
 <script>

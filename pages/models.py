@@ -4834,6 +4834,13 @@ class LeaseSigning(models.Model):
     COMPLETED = 'completed'
     EXPIRED = 'expired'
     CANCELLED = 'cancelled'
+    # ES-5, 25 Oct 2026 - A TENANT WHO REFUSES ENDS THE ENVELOPE. His
+    # decision: it stops accepting signatures from anybody, he is
+    # told, and a changed lease goes out as a NEW envelope - a clean
+    # record of attempt one and attempt two rather than one envelope
+    # that changed its mind. ES-1 gave the trail a `declined` event on
+    # 23 October and left what a decline DOES undecided until now.
+    DECLINED = 'declined'
     STATUS_CHOICES = [
         (DRAFT, 'Draft'),
         (SENT, 'Out for signature'),
@@ -4841,7 +4848,15 @@ class LeaseSigning(models.Model):
         (COMPLETED, 'Signed'),
         (EXPIRED, 'Expired'),
         (CANCELLED, 'Cancelled'),
+        (DECLINED, 'Declined'),
     ]
+
+    # THE SIGNING WINDOW AND ITS REMINDERS - ES-5, 25 Oct 2026, his
+    # decisions. Seven days (22 October); a nudge on day 3 and on day
+    # 6, the day before it lapses. Day 6 alone finds a wrong address
+    # on day 6; day 1/3/6 is three emails in a week.
+    SIGNING_DAYS = 7
+    REMINDER_DAYS = (3, 6)
 
     lease_signing_id = models.AutoField(primary_key=True)
     tenant = models.ForeignKey(tenant, on_delete=models.PROTECT,
@@ -4891,6 +4906,16 @@ class LeaseSigning(models.Model):
         related_name='lease_signings_cancelled')
     cancel_reason = models.CharField(max_length=255, blank=True)
 
+    # WHERE A LINK POINTS - ES-5, 25 Oct 2026. ES-4 builds every link
+    # from the request, deliberately: there is no SITE_URL in this
+    # project and inventing one with a production default would make
+    # a link mailed from a laptop point at Live. But a REMINDER is
+    # sent by the cron, and the cron has no request. So the first
+    # send records the address the envelope was sent FROM, and a
+    # reminder points where the original did - which is the only
+    # answer that is right on Live and on a laptop alike.
+    link_base = models.CharField(max_length=200, blank=True)
+
     class Meta:
         db_table = 'lease_signings'
         ordering = ['-created_at']
@@ -4908,6 +4933,39 @@ class LeaseSigning(models.Model):
     def has_expired(self):
         """Past its date - which is not the same as marked expired."""
         return bool(self.expires_at and timezone.now() > self.expires_at)
+
+    def outstanding(self):
+        """The parties who have not signed and have not declined.
+
+        ES-5, 25 Oct 2026. THE ONE ANSWER TO "WHO ARE WE WAITING FOR",
+        which reminders, extend and the expiry record all ask. Anyone
+        who has already signed is never emailed again - a co-operative
+        tenant is not chased for somebody else's silence.
+        """
+        return [p for p in self.parties.order_by('order', 'party_id')
+                if not p.signed_at and not p.declined_at]
+
+    def reminder_due(self, now=None):
+        """The reminder day that has come and not been sent, or None.
+
+        ES-5, 25 Oct 2026. MEASURED FROM THE WINDOW, NOT FROM sent_at:
+        an extension moves expires_at, and the reminders follow it.
+        AT MOST ONE A RUN, and a cron that was down across both days
+        sends one email rather than two in the same minute.
+        """
+        if not (self.is_open and self.expires_at):
+            return None
+        now = now or timezone.now()
+        if now >= self.expires_at:
+            return None
+        start = self.expires_at - timezone.timedelta(days=self.SIGNING_DAYS)
+        due = None
+        for day in self.REMINDER_DAYS:
+            at = start + timezone.timedelta(days=day)
+            if now >= at and (self.last_reminder_at is None
+                              or self.last_reminder_at < at):
+                due = day
+        return due
 
 
 class LeaseSigningParty(models.Model):
@@ -5049,6 +5107,10 @@ class LeaseSigningEvent(models.Model):
         ('delivered', 'Copy emailed'),
         ('expired', 'Expired'),
         ('cancelled', 'Cancelled'),
+        # ES-5, 25 Oct 2026 - another seven days, who gave them and to
+        # when. The fresh links it sends are recorded as `sent`, one
+        # per outstanding party; this row is the decision itself.
+        ('extended', 'Extended'),
     ]
 
     event_id = models.AutoField(primary_key=True)

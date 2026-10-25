@@ -150,8 +150,14 @@ ok("permission_required('auth.can_access_tenants'" in v,
    '  and requires what the tile promises')
 
 # READ ONLY, ASSERTED IN THE SOURCE AS WELL AS DRIVEN IN SECTION 5.
+# ES-5, 25 Oct 2026 - THE LIST VIEW, NOT THE MODULE. Extend and Cancel
+# now live in this file and write by design; the claim was always that
+# LOOKING at the register writes nothing.
+_lv = v[v.find('def lease_signing_list('):]
+_nx = _lv.find('\ndef ', 1)
+_lv = _lv[:_nx] if _nx > 0 else _lv
 writes = [w for w in ('.save(', '.delete(', '.update(', '.create(')
-          if w in v]
+          if w in _lv]
 ok(not writes,
    'the view writes nothing - expiring a row as a side effect of '
    'listing it would belong to ES-5, not here', writes)

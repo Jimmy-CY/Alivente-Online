@@ -1478,6 +1478,10 @@ ROUNDS = [
     '.bak_leasesign',
     # ES-3b, 24 Oct 2026 - an envelope can be made.
     '.bak_sendlease',
+    # T2-8, 25 Oct 2026 - one email address per person.
+    '.bak_oneemail',
+    # ES-5, 25 Oct 2026 - what happens to an envelope after it is sent.
+    '.bak_signlife',
 ]
 
 

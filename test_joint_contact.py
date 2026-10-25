@@ -316,8 +316,11 @@ head('4. THE CENSUS - and no fourth screen prints one unguarded')
 # every tenancy that has one person, and nothing but a count notices.
 EXPECTED = {
     'generate_lease_agreement.html': 8,
-    'tenant_add.html': 19,
-    'tenant_edit.html': 17,
+    # T2-8, 25 Oct 2026 - 19 -> 24 and 17 -> 21: the script that
+    # makes the second address required reads it by id, and the
+    # server paints it from the name on Add. Inside the form, both.
+    'tenant_add.html': 24,
+    'tenant_edit.html': 21,
     'lease_renewal_report.html': 3,
     'property_detail.html': 3,
     'tenant_report.html': 3,
