@@ -339,7 +339,13 @@ _alone = [rel_of(p) for p in TEMPLATES
           if '{% extends' not in read(p) and rel_of(p) != 'base.html']
 print('        %d standalone template(s) do not inherit the tab: %s'
       % (len(_alone), ', '.join(_alone)))
-check('  the standalone set is small and known', len(_alone) <= 12,
+# ES-4, 24 Oct 2026 - 12 -> 16. The four public signing pages cannot
+# extend base: a tenant holding a signing link is not signed in, and
+# base carries the authenticated navbar and queries the database for
+# it. So they set their own <title>, which is what the check below
+# this one is really about - "do not inherit the tab" is a statement
+# about where the title comes from, not a complaint.
+check('  the standalone set is small and known', len(_alone) <= 16,
       '%d' % len(_alone))
 
 # ===========================================================================

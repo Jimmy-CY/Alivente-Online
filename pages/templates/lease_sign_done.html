@@ -1,0 +1,88 @@
+{# AFTER SIGNING - ES-4, 24 Oct 2026.                                 #}
+{#                                                                     #}
+{# WHAT HAPPENS NEXT, SAID PLAINLY, and it differs by outcome. The     #}
+{# house signature has just sent the thing to the tenants; the last    #}
+{# tenant signature has just completed it; anything between leaves     #}
+{# somebody still to sign and the person reading this should know      #}
+{# that rather than assume it is finished.                             #}
+{#                                                                     #}
+{# NO DOCUMENT ON THIS PAGE. The link is for signing, and once it has  #}
+{# been used it stops being a way to read a contract - the same rule   #}
+{# the expired page keeps.                                             #}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Signed</title>
+{% include 'lease_sign_styles.html' %}
+</head>
+<body>
+
+<header class="ls-top">
+  <div class="ls-wrap">
+    <p class="ls-brand">Alivente Limited</p>
+    <h1>Thank you &mdash; your signature is recorded</h1>
+    <p class="ls-sub">
+      {% if prop %}{{ prop.prop_name }} &middot; {% endif %}
+      Signed by {{ party.name }} on {{ party.signed_at|date:"j F Y, H:i" }}
+    </p>
+  </div>
+</header>
+
+<div class="ls-wrap">
+
+  <div class="ls-note ls-note-done">
+    <span>
+      {% if outcome == 'completed' %}
+        <b>Everybody has now signed.</b>
+        The agreement has been sealed with a signature page recording who
+        signed, when and from where. A copy is on its way to you by email.
+      {% elif outcome == 'sent' %}
+        <b>The agreement has gone out for signature.</b>
+        {{ env.tenant.tenant_display_name }} has been emailed a link, and
+        you will be told as each person signs.
+      {% else %}
+        <b>Your part is done.</b>
+        The agreement is not complete until everybody has signed. You will
+        be emailed a copy once they have.
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="ls-card">
+    <h2>Who has signed</h2>
+    <dl style="margin:0">
+      {% for p in env.parties.all %}
+      <div class="ls-row">
+        <dt>{{ p.name }}</dt>
+        <dd>
+          {% if p.signed_at %}
+            Signed {{ p.signed_at|date:"j M Y, H:i" }}
+          {% else %}
+            Not yet signed
+          {% endif %}
+        </dd>
+      </div>
+      {% endfor %}
+    </dl>
+  </div>
+
+  {% if outcome != 'completed' and env.expires_at %}
+  <div class="ls-note ls-note-info">
+    <span>Signing closes on <b>{{ env.expires_at|date:"j F Y" }}</b>.
+      If anybody still to sign misses that date, contact Alivente Limited
+      and the period can be extended.</span>
+  </div>
+  {% endif %}
+
+  <p class="ls-foot">
+    You can close this page. The link you used will not show the agreement
+    again.
+  </p>
+</div>
+
+</body>
+</html>

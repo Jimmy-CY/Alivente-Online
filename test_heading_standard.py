@@ -313,6 +313,15 @@ OUT_OF_SCOPE = {
     'home.html',                   # the portfolio dashboard
     'map_view.html',                         # the map page
     'tenant_payment_days.html',    # tenant payment behaviour
+    # ES-4, 24 Oct 2026 - THE PUBLIC SIGNING PAGES, and this is not
+    # a debt like the rest of this set. The house heading standard is
+    # an h2 page title over an h4 mode label, inside the application
+    # chrome. These three are standalone pages served to a tenant who
+    # is not signed in, with no navbar, no module and no mode - they
+    # open on an h1 naming the agreement, as a public page should.
+    'lease_sign.html',             # the signing page
+    'lease_sign_done.html',        # after signing
+    'lease_sign_closed.html',      # the period has ended
 }
 print('        %d page(s) are outside this standard, by name, each against '
       'the round\n        that owns it. That is a debt, not a pass.'

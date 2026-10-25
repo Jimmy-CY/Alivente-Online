@@ -29,6 +29,33 @@ urlpatterns = [
     # Lease Agreements: that screen is one row per tenant, and one
     # tenant can have four attempts.
     path('lease-signing/', views.lease_signing_list, name='lease_signing_list'),
+    # ES-3b, 24 Oct 2026 - the screen that MAKES an envelope. Under
+    # lease-signing/ with the register it belongs to, and therefore
+    # NOT covered by ES-4's 'sign/' exemption: this is a staff screen
+    # and keeps its permission check.
+    path('lease-signing/new/', views.lease_signing_create,
+         name='lease_signing_create'),
+    # ES-4, 24 Oct 2026 - THE SIGNING PAGE, and no login on the first
+    # two: the token IS the credential, which is why it is stored
+    # hashed and why a resend kills the old link.
+    #
+    # SHORT, AND AT THE ROOT, because it goes in an email and somebody
+    # may retype it off a phone screen.
+    path('sign/<str:token>/', views.lease_sign, name='lease_sign'),
+    # THE DOCUMENT COMES BACK THROUGH THE SAME CHECK. A media URL for
+    # a lease is a permanent read link to a contract, and it would
+    # outlive the expiry the rest of this round takes seriously.
+    path('sign/<str:token>/page/<int:number>/', views.lease_sign_page,
+         name='lease_sign_page'),
+    # AND THE SAME PAGE FOR THE HOUSE SIGNER, signed in rather than
+    # emailed - decided 23 October. One page, two ways in.
+    path('lease-signing/<int:pk>/sign/', views.lease_sign_session,
+         name='lease_sign_session'),
+    # AND ITS PAGES. The signing page is one page reached two ways,
+    # but it is not one URL: the session route has no token to build
+    # one from. Driving the flow found that; reading it did not.
+    path('lease-signing/<int:pk>/page/<int:number>/',
+         views.lease_sign_page_session, name='lease_sign_page_session'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),

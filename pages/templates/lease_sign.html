@@ -1,0 +1,417 @@
+{# THE SIGNING PAGE - ES-4, 24 Oct 2026.                              #}
+{#                                                                     #}
+{# NO EXTENDS TAG, DELIBERATELY - and the tag is not named here,      #}
+{# because a tag-shaped thing in a comment is a tag to any text       #}
+{# instrument. base.html carries the signed-in                        #}
+{# navbar and queries for it; a tenant holding a link is not signed in #}
+{# and is not somebody this application should run those queries for.  #}
+{# The styles live in one included partial so the three public pages   #}
+{# of this round share a single copy.                                  #}
+{#                                                                     #}
+{# THE DOCUMENT IS IMAGES, NOT AN EMBEDDED PDF. ES-2 wrote the reason  #}
+{# into render_pages(): a phone browser handed an embedded PDF may     #}
+{# render it, may offer to download it, or may show nothing, and which #}
+{# of those happens is not something this application can test on a    #}
+{# device it does not have.                                            #}
+{#                                                                     #}
+{# READ TO THE END, AND TOLD SO - his words of 24 October. The         #}
+{# requirement is stated BEFORE the document, the progress is visible  #}
+{# while reading, and the button says what is still outstanding. A     #}
+{# greyed control with no explanation is the thing he asked against.   #}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{# NOT INDEXED, EVER. The URL holds a credential and the page holds a #}
+{# contract. #}
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Sign your lease agreement</title>
+{% include 'lease_sign_styles.html' %}
+</head>
+<body>
+
+<header class="ls-top">
+  <div class="ls-wrap">
+    <p class="ls-brand">Alivente Limited</p>
+    <h1>Lease agreement for {{ tenant.tenant_display_name }}</h1>
+    <p class="ls-sub">
+      {% if prop %}{{ prop.prop_name }} &middot; {% endif %}
+      Signing as <strong>{{ party.name }}</strong>
+    </p>
+  </div>
+</header>
+
+<div class="ls-wrap">
+
+  {% if error %}
+  <div class="ls-note ls-note-bad" role="alert">
+    <span><b>That did not go through.</b> {{ error }}</span>
+  </div>
+  {% endif %}
+
+  {% if house and house.signed_at %}
+  {# ALIVENTE SIGNS FIRST - decision 2 of 22 October - and the whole #}
+  {# point of that order is that the tenant can SEE it has.          #}
+  <div class="ls-note ls-note-done">
+    <span>Already signed by <b>{{ house.name }}</b> for Alivente Limited
+      on {{ house.signed_at|date:"j F Y" }}.</span>
+  </div>
+  {% endif %}
+
+  {# THE REQUIREMENT, STATED BEFORE ANYBODY STARTS READING. #}
+  <div class="ls-note ls-note-read" id="ls-readnote">
+    <span><b>Please read the whole agreement.</b>
+      The signing box at the bottom of this page stays locked until the
+      last page has been on screen &mdash; all
+      {{ env.page_count }} page{{ env.page_count|pluralize }} of it.</span>
+  </div>
+
+  <div class="ls-card">
+    <h2>What you are signing</h2>
+    <dl style="margin:0">
+      <div class="ls-row"><dt>Property</dt>
+        <dd>{% if prop %}{{ prop.prop_name }}{% else %}&mdash;{% endif %}</dd></div>
+      <div class="ls-row"><dt>Tenancy</dt>
+        <dd>{{ tenant.tenant_display_name }}</dd></div>
+      <div class="ls-row"><dt>Lease period</dt>
+        <dd>{{ tenant.tenant_lease_start_date|date:"j M Y"|default:"&mdash;" }}
+          &ndash;
+          {{ tenant.tenant_lease_end_date|date:"j M Y"|default:"&mdash;" }}</dd></div>
+      {% if env.expires_at %}
+      <div class="ls-row"><dt>Signing closes</dt>
+        <dd>{{ env.expires_at|date:"j F Y" }}</dd></div>
+      {% endif %}
+      {% if others %}
+      <div class="ls-row"><dt>Also signing</dt>
+        <dd>{% for o in others %}{{ o.name }}{% if o.signed_at %}
+            (signed){% endif %}{% if not forloop.last %}, {% endif %}
+          {% endfor %}</dd></div>
+      {% endif %}
+    </dl>
+  </div>
+
+  <div class="ls-progress" aria-hidden="true">
+    <span id="ls-progress-text">Page 1 of {{ env.page_count }}</span>
+    <span class="ls-meter"><i id="ls-meter"></i></span>
+  </div>
+
+  <div class="ls-doc">
+    {# THE VIEW BUILDS THE URL, because it is the only thing that    #}
+    {# knows which way in this is. This template had a {% url %} tag  #}
+    {# naming the token route, and the session route has no token -   #}
+    {# so the house signer got NoReverseMatch and a page with no      #}
+    {# document on it. One page, two ways in, but not one URL.        #}
+    {% for p in pages %}
+    <img class="ls-page" alt="Lease agreement page {{ p.n }}"
+         src="{{ p.url }}" loading="lazy" data-page="{{ p.n }}">
+    <div class="ls-pagenum">Page {{ p.n }} of {{ env.page_count }}</div>
+    {% empty %}
+    <div class="ls-note ls-note-bad">
+      <span>This agreement has no pages to show. Please contact Alivente
+        Limited before signing anything.</span>
+    </div>
+    {% endfor %}
+    {# THE SENTINEL THE OBSERVER WATCHES. It sits AFTER the last page #}
+    {# rather than on it, so a tall page counts as read only when its #}
+    {# bottom has been reached - and on a one-page lease that fits on #}
+    {# screen it is already visible, which is correct: they have seen #}
+    {# the end of it.                                                 #}
+    <div id="ls-end" style="height:1px"></div>
+  </div>
+
+  <form method="post" id="ls-form" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="read_to_end" id="ls-read" value="0">
+    <input type="hidden" name="seconds_open" id="ls-seconds" value="0">
+    <input type="hidden" name="signature_kind" id="ls-kind" value="drawn">
+    <input type="hidden" name="signature_data" id="ls-data" value="">
+
+    <div class="ls-card">
+      <h2>Your signature</h2>
+
+      <div class="ls-tabs" role="tablist">
+        <button type="button" class="ls-tab" id="ls-tab-draw"
+                role="tab" aria-selected="true" aria-controls="ls-panel-draw">
+          Draw it
+        </button>
+        <button type="button" class="ls-tab" id="ls-tab-type"
+                role="tab" aria-selected="false" aria-controls="ls-panel-type">
+          Type my name
+        </button>
+      </div>
+
+      <div id="ls-panel-draw" role="tabpanel" aria-labelledby="ls-tab-draw">
+        <div class="ls-pad" id="ls-pad">
+          <canvas id="ls-canvas"></canvas>
+          <span class="ls-pad-hint">Sign here with your finger or mouse</span>
+        </div>
+        <p style="margin:10px 0 0">
+          <button type="button" class="ls-btn ls-btn-quiet" id="ls-clear">
+            Clear and start again
+          </button>
+        </p>
+      </div>
+
+      <div id="ls-panel-type" role="tabpanel" aria-labelledby="ls-tab-type"
+           hidden>
+        <label for="ls-typed" style="display:block;margin:0 0 6px;
+               font-size:14px;color:var(--alv-ink-soft)">
+          Your full name, exactly as it should appear on the agreement
+        </label>
+        <input type="text" id="ls-typed" name="typed_name"
+               value="{{ party.name }}" autocomplete="name">
+      </div>
+
+      <label class="ls-consent">
+        <input type="checkbox" name="consent" id="ls-consent" value="1">
+        <span>I agree to sign this lease agreement electronically, and I
+          understand that my electronic signature is as binding as a
+          signature on paper.</span>
+      </label>
+    </div>
+
+    <p class="ls-foot">
+      A copy of the fully signed agreement will be emailed to you once
+      everybody has signed.
+    </p>
+
+    <div class="ls-bar">
+      <div class="ls-bar-in">
+        {# THE CONTROL SAYS WHAT IS OUTSTANDING. Locked and silent is  #}
+        {# the thing he asked against on 24 October.                   #}
+        <span class="ls-why" id="ls-why">
+          Read to the end of the agreement to unlock signing.
+        </span>
+        <button type="submit" class="ls-btn ls-btn-primary" id="ls-sign"
+                disabled>
+          Sign the agreement
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('ls-form');
+  if (!form) return;
+
+  var read = document.getElementById('ls-read');
+  var secs = document.getElementById('ls-seconds');
+  var kind = document.getElementById('ls-kind');
+  var data = document.getElementById('ls-data');
+  var why = document.getElementById('ls-why');
+  var btn = document.getElementById('ls-sign');
+  var consent = document.getElementById('ls-consent');
+  var typed = document.getElementById('ls-typed');
+  var pad = document.getElementById('ls-pad');
+  var canvas = document.getElementById('ls-canvas');
+  var clear = document.getElementById('ls-clear');
+  var endMark = document.getElementById('ls-end');
+  var meter = document.getElementById('ls-meter');
+  var ptext = document.getElementById('ls-progress-text');
+  var tabDraw = document.getElementById('ls-tab-draw');
+  var tabType = document.getElementById('ls-tab-type');
+  var panDraw = document.getElementById('ls-panel-draw');
+  var panType = document.getElementById('ls-panel-type');
+
+  var TOTAL = {{ env.page_count|default:0 }};
+  var started = Date.now();
+  var drawn = false;
+  var atEnd = false;
+
+  // ---- SECONDS OPEN. Evidence, bounded on the server too - a
+  // browser left open overnight must not write a number that reads
+  // like fraud.
+  setInterval(function () {
+    secs.value = String(Math.round((Date.now() - started) / 1000));
+  }, 5000);
+
+  // ---- READING TO THE END.
+  //
+  // AN OBSERVER ON A SENTINEL AFTER THE LAST PAGE, not a scroll
+  // position compared against document height. A scroll sum is wrong
+  // the moment an image finishes loading and the page grows under it,
+  // and on a short lease that fits the window it never fires at all.
+  // An observer on an element already in view fires immediately,
+  // which is the correct answer for a one-page agreement.
+  function markRead() {
+    if (atEnd) return;
+    atEnd = true;
+    read.value = '1';
+    paint();
+  }
+
+  if (endMark && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) markRead();
+      }
+    }, { rootMargin: '0px 0px -8px 0px' }).observe(endMark);
+  } else {
+    // NO OBSERVER, NO LOCK. A browser too old for this would
+    // otherwise be a browser that can never sign, and refusing
+    // somebody a lease over their browser version is not a position
+    // this application should take. The server still records that
+    // the end was reached; it simply believes the page.
+    markRead();
+  }
+
+  // ---- WHICH PAGE AM I ON. Decoration, so it fails quietly.
+  if (TOTAL > 0 && 'IntersectionObserver' in window) {
+    var seen = 1;
+    var io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isIntersecting) continue;
+        var n = parseInt(entries[i].target.getAttribute('data-page'), 10);
+        if (n > seen) seen = n;
+      }
+      if (ptext) ptext.textContent = 'Page ' + seen + ' of ' + TOTAL;
+      if (meter) meter.style.width = Math.round(seen * 100 / TOTAL) + '%';
+    }, { threshold: 0.25 });
+    var imgs = document.querySelectorAll('.ls-page');
+    for (var i = 0; i < imgs.length; i++) io.observe(imgs[i]);
+  }
+
+  // ---- THE SIGNATURE PAD.
+  //
+  // THE BACKING STORE IS SIZED FROM THE MEASURED BOX, not from CSS. A
+  // canvas whose CSS size and drawing size disagree draws the line
+  // away from the finger, and on a phone that gap is most of the box.
+  var ctx = canvas ? canvas.getContext('2d') : null;
+  var drawing = false;
+
+  function sizePad() {
+    if (!ctx) return;
+    var r = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var keep = drawn ? canvas.toDataURL('image/png') : null;
+    canvas.width = Math.max(1, Math.round(r.width * dpr));
+    canvas.height = Math.max(1, Math.round(r.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#21343c';
+    if (keep) {
+      var img = new Image();
+      img.onload = function () { ctx.drawImage(img, 0, 0, r.width, r.height); };
+      img.src = keep;
+    }
+  }
+
+  function at(e) {
+    var r = canvas.getBoundingClientRect();
+    var p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+
+  function down(e) {
+    if (!ctx) return;
+    e.preventDefault();
+    drawing = true;
+    var p = at(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function move(e) {
+    if (!drawing || !ctx) return;
+    e.preventDefault();
+    var p = at(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    if (!drawn) { drawn = true; pad.classList.add('is-drawn'); paint(); }
+  }
+
+  function up() { drawing = false; }
+
+  if (canvas) {
+    canvas.addEventListener('pointerdown', down);
+    canvas.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    canvas.addEventListener('touchstart', down, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', up);
+    window.addEventListener('resize', sizePad);
+    sizePad();
+  }
+
+  if (clear) {
+    clear.addEventListener('click', function () {
+      if (!ctx) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sizePad();
+      drawn = false;
+      pad.classList.remove('is-drawn');
+      paint();
+    });
+  }
+
+  // ---- DRAW OR TYPE. His decision of 24 October: a mouse signature
+  // on a laptop is awkward, and refusing there just stalls the lease.
+  function mode(which) {
+    kind.value = which;
+    var isDraw = (which === 'drawn');
+    tabDraw.setAttribute('aria-selected', isDraw ? 'true' : 'false');
+    tabType.setAttribute('aria-selected', isDraw ? 'false' : 'true');
+    panDraw.hidden = !isDraw;
+    panType.hidden = isDraw;
+    paint();
+  }
+  tabDraw.addEventListener('click', function () { mode('drawn'); });
+  tabType.addEventListener('click', function () { mode('typed'); });
+  if (typed) typed.addEventListener('input', paint);
+  if (consent) consent.addEventListener('change', paint);
+
+  function hasSignature() {
+    if (kind.value === 'typed') {
+      return !!(typed && typed.value.trim().length >= 2);
+    }
+    return drawn;
+  }
+
+  // ---- THE CONTROL SAYS WHAT IS STILL OUTSTANDING.
+  function paint() {
+    var want = [];
+    if (!atEnd) want.push('read to the end of the agreement');
+    if (!hasSignature()) {
+      want.push(kind.value === 'typed' ? 'type your full name'
+                                       : 'draw your signature');
+    }
+    if (consent && !consent.checked) want.push('tick the box to agree');
+
+    btn.disabled = want.length > 0;
+    why.classList.toggle('is-ready', want.length === 0);
+    if (!want.length) {
+      why.textContent = 'Ready to sign.';
+    } else if (want.length === 1) {
+      why.textContent = 'To sign, ' + want[0] + '.';
+    } else {
+      why.textContent = 'To sign, ' + want.slice(0, -1).join(', ')
+                      + ' and ' + want[want.length - 1] + '.';
+    }
+  }
+
+  form.addEventListener('submit', function (e) {
+    if (kind.value === 'drawn') {
+      if (!drawn) { e.preventDefault(); paint(); return; }
+      data.value = canvas.toDataURL('image/png');
+    } else {
+      data.value = '';
+    }
+    secs.value = String(Math.round((Date.now() - started) / 1000));
+    btn.disabled = true;
+    why.textContent = 'Sending your signature...';
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>

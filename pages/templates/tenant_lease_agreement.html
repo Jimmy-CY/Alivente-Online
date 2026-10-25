@@ -177,6 +177,29 @@
                     </span>
                 {% endif %}
 
+                {# ES-3b, 24 Oct 2026 - SEND FOR SIGNATURE, from the   #}
+                {# screen that already tells you who has a lease and   #}
+                {# who has not. Always offered, with or without a      #}
+                {# stored file: the send screen takes an upload too,   #}
+                {# so a disabled twin here would refuse something that #}
+                {# works.                                              #}
+                {#                                                     #}
+                {# BEFORE delete AND BEFORE upload, which the          #}
+                {# instrument decided: send and upload are both        #}
+                {# ADVANCE, delete is DESTROY, and send after the pair #}
+                {# would read 0-4-3 on every row that has a lease.     #}
+                {% if perms.auth.can_edit_tenants %}
+                    <a href="{% url 'lease_signing_create' %}?tenant={{ tenant.tenant_id }}"
+                       class="icon-action-btn icon-send" role="button"
+                       title="Send for Signature">
+                        <i class="fas fa-paper-plane"></i>
+                    </a>
+                {% else %}
+                    <span class="icon-action-btn icon-disabled" title="No edit permission">
+                        <i class="fas fa-paper-plane"></i>
+                    </span>
+                {% endif %}
+
                 {% if perms.auth.can_edit_tenants %}
                     {% if tenant.tenant_lease_agreement %}
                         <button type="button" class="icon-action-btn icon-delete" title="Delete Lease Agreement" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name|escapejs }}')">
@@ -196,7 +219,10 @@
         </td>
 
         <!-- Mobile-only action bar (hidden on desktop) -->
-        <td class="mobile-action-bar cols-2">
+        {# ES-3b - cols-3, because there are three now. base sizes  #}
+        {# the bar from this class and a bar that said two would     #}
+        {# draw the third at the wrong width.                        #}
+        <td class="mobile-action-bar cols-3">
             {% if tenant.tenant_lease_agreement %}
                 <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url|escapejs }}', '{{ tenant.tenant_lease_agreement.name|escapejs }}', '{{ tenant.tenant_name|escapejs }}')">
                     <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
@@ -206,6 +232,19 @@
                 <span class="mobile-action-btn mobile-action-disabled">
                     <i class="fas fa-file-contract mobile-action-icon"></i>
                     <span class="mobile-action-label">View</span>
+                </span>
+            {% endif %}
+
+            {% if perms.auth.can_edit_tenants %}
+                <a href="{% url 'lease_signing_create' %}?tenant={{ tenant.tenant_id }}"
+                   class="mobile-action-btn" role="button">
+                    <i class="fas fa-paper-plane mobile-action-icon icon-color-send"></i>
+                    <span class="mobile-action-label">Send</span>
+                </a>
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-paper-plane mobile-action-icon"></i>
+                    <span class="mobile-action-label">Send</span>
                 </span>
             {% endif %}
 

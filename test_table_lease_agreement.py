@@ -172,14 +172,24 @@ check('  column widths were redistributed to sum to 100',
           SRC[SRC.find('<thead'):SRC.find('</thead>')])) == 100)
 
 # The risk in a cell merge is losing a permission branch with the cell.
-check('  both slots keep a disabled twin, so the cluster never shifts (%d)'
-      % SRC.count('icon-disabled'), SRC.count('icon-disabled') == 2)
+# ES-3b, 24 Oct 2026 - THREE SLOTS, THREE TWINS. Send for Signature
+# joins the row between View and the delete/upload pair, and it wears
+# a twin for the same reason the other two do: a slot that disappears
+# on some rows walks the whole cluster sideways down the page.
+check('  all three slots keep a disabled twin, so the cluster never '
+      'shifts (%d)' % SRC.count('icon-disabled'),
+      SRC.count('icon-disabled') == 3)
 check('  and the document viewer keeps its three arguments',
       SRC.count('viewDocument(') >= 2
       and 'tenant_lease_agreement.url' in SRC
       and 'tenant_lease_agreement.name' in SRC)
 
-check('the mobile bar declares two columns', 'cols-2' in SRC)
+# ES-3b, 24 Oct 2026 - THREE. base.html's default grid is three wide,
+# so the class is now saying what the default already does - and it
+# still has to say it, because the next round to add a fourth action
+# has to change a number here rather than discover a wrapped button
+# on a phone.
+check('the mobile bar declares three columns', 'cols-3' in SRC)
 
 
 # ------------------------------------------- the expired date, on the token
@@ -206,8 +216,11 @@ for gone in ('btn-sm btn-success', 'btn-sm btn-danger',
 # FIVE, not four: View, View-disabled, Delete, Upload, Upload-disabled. Only
 # two are ever drawn at once - Delete and Upload are mutually exclusive, and
 # each slot has a twin for the branch where it is unavailable.
+#
+# ES-3b, 24 Oct 2026 - SEVEN. Send and Send-disabled. Still one
+# button per slot on any given row: three drawn, four standing by.
 check('  the row buttons are house icon buttons now (%d)'
-      % SRC.count('icon-action-btn'), SRC.count('icon-action-btn') == 5)
+      % SRC.count('icon-action-btn'), SRC.count('icon-action-btn') == 7)
 check('  Upload carries the new tone', 'icon-upload' in SRC)
 check('  and base.html defines it', '.icon-upload' in BASE_SRC)
 check('  .icon-upload is an ALIAS, not a seventh colour',
@@ -221,21 +234,35 @@ check('  CONTROL: the local Bootstrap upload blue is gone', '#007bff' not in CSS
 # Two slots, both always drawn. Without the disabled twins the first slot
 # would be empty on rows with no agreement and filled on rows with one, and
 # the cluster would step sideways down the page.
+#
+# ES-3b, 24 Oct 2026 - THREE SLOTS, FOUR GLYPHS. The paper plane is
+# the third slot; the pair that share the last slot is still a pair.
+# THE SET, NOT THE COUNT, is what this asks: a round that swapped one
+# glyph for another would keep any count and fail this.
 _icons = re.findall(r'row-actions(.*?)</span>\s*</td>', SRC, re.S)
 _glyphs = re.findall(r'<i class="fas (fa-[a-z-]+)"', _icons[0] if _icons else '')
-check('  the row draws three possible glyphs across two slots (%s)'
+check('  the row draws four possible glyphs across three slots (%s)'
       % ', '.join(sorted(set(_glyphs))),
-      set(_glyphs) == {'fa-file-contract', 'fa-trash', 'fa-upload'})
+      set(_glyphs) == {'fa-file-contract', 'fa-paper-plane',
+                       'fa-trash', 'fa-upload'})
 
 # ------------------------------------------------- the permission gates again
 # Counted against the backup rather than pinned to a literal - I have picked
 # the wrong literal for this check twice. The invariant is that the collapse
 # does not CHANGE the count.
+#
+# ES-3b, 24 Oct 2026 - AND A NAMED DELTA, not a new literal. Send for
+# Signature is gated on the desktop row and again in the phone bar, so
+# the count is two higher than the backup's - and it is still counted
+# against the backup, because the thing being proved is that nothing
+# was LOST, and a bare number proves that only until the next round.
 _bak = PAGE + '.bak_tablelease'
+SINCE = 2
 if os.path.exists(_bak):
     _g = '{% if perms.auth.can_edit_tenants %}'
-    check('every can_edit_tenants gate survived the collapse (%d)'
-          % SRC.count(_g), SRC.count(_g) == read(_bak).count(_g))
+    check('every can_edit_tenants gate survived the collapse, and ES-3b '
+          'added %d (%d)' % (SINCE, SRC.count(_g)),
+          SRC.count(_g) == read(_bak).count(_g) + SINCE)
     check('  CONTROL: there were gates to preserve in the first place',
           read(_bak).count(_g) > 0)
 
@@ -550,10 +577,14 @@ else:
             ra = cs(pg, '.row-actions', ['display', 'gap'])
             check('  the three buttons sit inline with a gap',
                   ra['display'] == 'inline-flex' and ra['gap'] == '6px')
-            check('  and there are exactly TWO of them in the row',
+            # ES-3b, 24 Oct 2026 - THREE. Send for Signature is the
+            # third slot, and this is the claim that proves the twins
+            # work: whatever the row's permissions and whether or not
+            # it holds a lease, three buttons are drawn.
+            check('  and there are exactly THREE of them in the row',
                   pg.evaluate("()=>document.querySelectorAll("
                               "'tbody tr:first-child .row-actions "
-                              ".icon-action-btn').length") == 2)
+                              ".icon-action-btn').length") == 3)
             check('  one actions cell per row, not four',
                   pg.evaluate("()=>document.querySelectorAll("
                               "'tbody tr:first-child td').length")
@@ -613,10 +644,15 @@ else:
             # markup declares cols-4 so base.html's default three-column grid
             # does not wrap the last button onto a second row - a break that
             # would only ever appear on a phone.
-            check('mobile: the action bar is a 2-up grid (cols-2)',
+            #
+            # ES-3b, 24 Oct 2026 - THREE here, and MEASURED IN A
+            # BROWSER rather than read off the class: cols-3 and
+            # base.html's default happen to agree now, so the class
+            # alone would pass even if the rule behind it had gone.
+            check('mobile: the action bar is a 3-up grid (cols-3)',
                   len(cs(pg, '.mobile-action-bar',
                          ['grid-template-columns'])
-                      ['grid-template-columns'].split()) == 2)
+                      ['grid-template-columns'].split()) == 3)
             check('mobile: the per-action cells step aside',
                   cs(pg, '.desktop-action-cell', ['display'])['display']
                   == 'none')

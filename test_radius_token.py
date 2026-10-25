@@ -137,9 +137,14 @@ N_RETIRED = 3
 # saw. meal_plan_print.html gives .pp-week a var(--alv-radius-sm),
 # which is the house radius and not a literal - the right thing for
 # it to do, and one more in the live corpus.
-N_ADDED = 1
+# ES-4, 24 Oct 2026 - AND THREE MORE, on a page that declares the
+# token itself. The public signing pages cannot extend base, so they
+# carry their own :root - colours and shape alike - which is why the
+# standalone check above asks whether a page DECLARES the token rather
+# than naming pages that may not use it.
+N_ADDED = 3
 N_TOTAL = N_RADIUS + N_PRE - N_RETIRED + N_ADDED
-N_STYLE, N_ATTR, N_SCRIPT = 156, 4, 9   # PP-1, 20 Oct 2026 - the printable plan's .pp-week   # (was 155, 4, 9)   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
+N_STYLE, N_ATTR, N_SCRIPT = 158, 4, 9   # ES-4, 24 Oct 2026 - three in the public signing pages' own stylesheet. They DECLARE the token as well as using it, which is why the standalone check above now asks whether a page declares it rather than naming pages.   # (was 156, 4, 9)   # PP-1, 20 Oct 2026 - the printable plan's .pp-week   # (was 155, 4, 9)   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
 N_CHIP, N_CHIP_PAGES = 5, 4
 
 passed = failed = skipped = 0
@@ -272,6 +277,9 @@ ok(len(standalone) > 0, 'alv_tree names %d standalone template(s)'
    % len(standalone))
 
 
+DECLARES = re.compile(r'--alv-radius-sm\s*:')
+
+
 def inside(spans, i):
     return any(a <= i < b for a, b in spans)
 
@@ -294,14 +302,28 @@ for p in sorted(T.templates()):
             n_script += 1
         else:
             n_other += 1
-        if rel in standalone:
+        # ES-4, 24 Oct 2026 - UNLESS THE PAGE DEFINES THE TOKEN
+        # ITSELF, which is a case this check could not previously
+        # arise. The rule's reason is written below it: a standalone
+        # page renders without base, so a custom property resolves to
+        # nothing and the corner silently squares off. That is true of
+        # a page that merely USES the token and false of one that
+        # declares it in its own :root - which the public signing
+        # pages do, for the same reason they copy base's colour
+        # values, and which test_lease_sign checks against base.
+        #
+        # ASKED OF THE PAGE, NOT OF A LIST. A name here would have to
+        # be edited every time another standalone page carries its own
+        # tokens; the declaration is the thing that makes it safe, so
+        # the declaration is what is looked for.
+        if rel in standalone and not DECLARES.search(code):
             on_standalone.append(rel)
 
 ok(not on_standalone,
-   'NOT ONE of them is on a standalone template. This is the check that '
-   'matters: a standalone page renders without base, every custom '
-   'property resolves to nothing, and var() there would quietly square '
-   'off a corner', sorted(set(on_standalone)))
+   'NOT ONE of them is on a standalone template that does not DECLARE '
+   'the token. That is the check that matters: such a page renders '
+   'without base, every custom property resolves to nothing, and var() '
+   'there would quietly square off a corner', sorted(set(on_standalone)))
 ok(n_style == N_STYLE,
    '%d in a <style> rule (143 of them this round\'s, 13 already there)'
    % n_style, 'pinned at %d' % N_STYLE)

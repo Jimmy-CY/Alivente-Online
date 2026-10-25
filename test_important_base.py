@@ -267,7 +267,18 @@ ok(not any(d[0] == 'manual_pdf.html' for d in drift),
    '  and it is therefore NOT counted as drift. Including it read 23 '
    'where the answer is %d' % len(drift))
 # 12 -> 14 - RD-1, 19 Oct 2026, the quick-look pair.
-ok(len(stand) == 14, '  fourteen templates are standalone',
+#
+# 14 -> 18 - ES-4, 24 Oct 2026, THE PUBLIC SIGNING PAGES. A tenant
+# holding a signing link is not signed in, and base.html carries the
+# authenticated navbar and queries the database for it - so the
+# signing page, the page after it, the closed page and the partial
+# holding their shared styles all stand alone, as
+# connectivity_error.html does for the same kind of reason.
+#
+# FIVE SUITES PIN THIS NUMBER AND ES-4 FIRST FOUND ONE. The sweep
+# turned up the other four one at a time, which is the register
+# working: a count nobody checks is a count that drifts.
+ok(len(stand) == 18, '  eighteen templates are standalone',
    sorted(stand))
 
 # (b) a grouped selector is one declaration, not two

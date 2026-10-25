@@ -57,6 +57,39 @@
                         </div>
                     </div>
 
+                    {# SECOND TENANT - T2-7, 24 Oct 2026. #}
+                    {# #}
+                    {# A JOINTLY LIABLE PERSON WITH NO TELEPHONE #}
+                    {# NUMBER ANYWHERE. T2-4 gave this report the #}
+                    {# joined NAME in its heading and left the #}
+                    {# contact rows showing one person, which is a #}
+                    {# heading naming two people over the details #}
+                    {# of one. Found on Live, 24 October. #}
+                    {# #}
+                    {# has_second_tenant AND NOT tenant_2_name - one #}
+                    {# predicate, on the model, T2-1. #}
+                    {# #}
+                    {# NO CONTACT PERSON ROW: that is a Company #}
+                    {# field, and a second tenant can only exist on #}
+                    {# an Individual. #}
+                    {% if tenant.has_second_tenant %}
+                    <div class="detail-group">
+                        <h4 class="section-title">Second Tenant</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Contact Number:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_contact_number }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_email }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Lease Dates Section -->
                     <div class="detail-group">
                         <h4 class="section-title">Lease Period</h4>

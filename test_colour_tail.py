@@ -192,7 +192,18 @@ STAND = set(alv_tree.standalone())
 BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
           for q in alv_tree.templates()}
 # 12 -> 14 - RD-1, 19 Oct 2026, the quick-look pair.
-ok(len(STAND) == 14, '%d standalone template(s)' % len(STAND))
+#
+# 14 -> 18 - ES-4, 24 Oct 2026, THE PUBLIC SIGNING PAGES. A tenant
+# holding a signing link is not signed in, and base.html carries the
+# authenticated navbar and queries the database for it - so the
+# signing page, the page after it, the closed page and the partial
+# holding their shared styles all stand alone, as
+# connectivity_error.html does for the same kind of reason.
+#
+# FIVE SUITES PIN THIS NUMBER AND ES-4 FIRST FOUND ONE. The sweep
+# turned up the other four one at a time, which is the register
+# working: a count nobody checks is a count that drifts.
+ok(len(STAND) == 18, '%d standalone template(s)' % len(STAND))
 bad = [s for s in sorted(STAND) if os.path.exists(BYNAME[s] + SUFFIX)]
 ok(not bad,
    '  none of them was rewritten - with no {% extends %} a var() there '

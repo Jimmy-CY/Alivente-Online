@@ -37,7 +37,10 @@
 {# Exactly one .action-primary, which is the thing you came to do.   #}
 <div class="page-action-buttons">
     {% if perms.auth.can_edit_tenants %}
-    <a href="{% url 'lease_signing_list' %}" class="btn action-primary"
+    {# ES-3b, 24 Oct 2026 - and now it goes somewhere. ES-3a drew #}
+    {# this button pointing back at its own page, because the      #}
+    {# screen it wanted did not exist yet.                         #}
+    <a href="{% url 'lease_signing_create' %}" class="btn action-primary"
        role="button">
         <i class="fas fa-paper-plane"></i> Send a lease for signature
     </a>

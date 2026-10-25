@@ -183,7 +183,14 @@ for p in sorted(alv_tree.templates()):
 # screens MN-1 retired, and the planner that replaced them brought
 # two: 14 - 4 + 2. This counts the live tree, which is what a
 # reader's browser actually loads.
-ok(len(lazy) == 12, '%d image(s) wait, on %d page(s)' % (len(lazy), len(pages)),
+# ES-4, 24 Oct 2026 - 13 ON 8. The signing page renders the lease one
+# page image per page, and they are lazy for the reason every list is:
+# a ten-page lease on a phone should not fetch ten images before the
+# first one is on screen. They are ALSO the reason .ls-page carries an
+# aspect-ratio - an unloaded lazy image is zero pixels tall, and that
+# let the end-of-document marker into the viewport on arrival and
+# unlocked the Sign button before a word had been read.
+ok(len(lazy) == 13, '%d image(s) wait, on %d page(s)' % (len(lazy), len(pages)),
    '\n'.join('%s %s' % (r, t[:60]) for r, t in lazy[:4]))
 ok(len(eager) >= 20, 'and %d do not' % len(eager))
 

@@ -1,0 +1,273 @@
+{# THE PUBLIC SIGNING PAGES' OWN STYLES - ES-4, 24 Oct 2026.          #}
+{#                                                                     #}
+{# ONE COPY, INCLUDED BY THREE PAGES. These pages cannot extend        #}
+{# base.html: base carries the signed-in navbar and queries the        #}
+{# database for it, and a tenant holding a link is neither signed in   #}
+{# nor somebody this application should run those queries for. The     #}
+{# house already keeps connectivity_error.html standalone for the      #}
+{# same kind of reason.                                                #}
+{#                                                                     #}
+{# SO THE TOKEN VALUES ARE REPEATED HERE, AND THAT IS A COST WORTH     #}
+{# NAMING. alv_tree.standalone() excludes these pages from every       #}
+{# colour census in the tree - test_amber, test_brights, the four      #}
+{# test_colour_* suites, test_cssrules_outside and test_dead_weight    #}
+{# all skip them - so nothing else will notice if a value here drifts  #}
+{# from base. They are copied EXACTLY, and ES-4's own suite compares   #}
+{# each one against base.html rather than trusting this comment.       #}
+<style>
+  :root {
+    --alv-paper:       #ffffff;
+    --alv-surface:     #f8f9fa;
+    --alv-ink:         #21343c;
+    --alv-ink-soft:    #5b6b73;
+    --alv-ink-faint:   #8a979d;
+    --alv-line:        #e3e8ea;
+    --alv-accent:      #0e7c8b;
+    --alv-accent-ink:  #0a5e6a;
+    --alv-accent-soft: #e4f3f5;
+    --alv-accent-line: #a8d8de;
+    --alv-on-accent:   #ffffff;
+    --alv-good:        #1e7d4f;
+    --alv-good-soft:   #e6f4ec;
+    --alv-good-ink:    #155737;
+    --alv-good-line:   #bfe0cd;
+    --alv-warn:        #8e6207;
+    --alv-warn-soft:   #fdf3dd;
+    --alv-warn-ink:    #6a4a05;
+    --alv-warn-line:   #ecd39e;
+    --alv-bad:         #b3261e;
+    --alv-bad-soft:    #fbeae9;
+    --alv-bad-ink:     #8f1d17;
+    --alv-bad-line:    #f2cecb;
+    /* SHAPE, FOR THE SAME REASON AS THE COLOURS. D-12 moved 158
+       `border-radius` pixel literals onto this token on 9 October and
+       test_radius_token has held the line since. A standalone page
+       cannot read base's copy, so it carries its own - and the gate
+       that proves the colour values still match base covers this
+       one too. */
+    --alv-radius:      8px;
+    --alv-radius-sm:   6px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--alv-surface);
+    color: var(--alv-ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .ls-wrap { max-width: 860px; margin: 0 auto; padding: 0 16px 140px; }
+
+  .ls-top {
+    background: var(--alv-paper);
+    border-bottom: 1px solid var(--alv-line);
+    padding: 18px 0;
+    margin-bottom: 18px;
+  }
+  .ls-top .ls-wrap { padding-bottom: 0; }
+  .ls-brand {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--alv-accent); font-weight: 700; margin: 0 0 6px;
+  }
+  h1 { margin: 0; font-size: 22px; line-height: 1.25; }
+  .ls-sub { margin: 6px 0 0; color: var(--alv-ink-soft); font-size: 14.5px; }
+
+  .ls-card {
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 0 0 16px;
+  }
+  .ls-card h2 {
+    margin: 0 0 10px; font-size: 12px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--alv-ink-soft); font-weight: 700;
+  }
+
+  .ls-note {
+    display: flex; gap: 10px; align-items: flex-start;
+    border-radius: 10px; padding: 13px 15px; margin: 0 0 16px;
+    font-size: 15px;
+  }
+  .ls-note b { font-weight: 700; }
+  .ls-note-read {
+    background: var(--alv-warn-soft);
+    border: 1px solid var(--alv-warn-line);
+    color: var(--alv-warn-ink);
+  }
+  .ls-note-done {
+    background: var(--alv-good-soft);
+    border: 1px solid var(--alv-good-line);
+    color: var(--alv-good-ink);
+  }
+  .ls-note-bad {
+    background: var(--alv-bad-soft);
+    border: 1px solid var(--alv-bad-line);
+    color: var(--alv-bad-ink);
+  }
+  .ls-note-info {
+    background: var(--alv-accent-soft);
+    border: 1px solid var(--alv-accent-line);
+    color: var(--alv-accent-ink);
+  }
+
+  .ls-row { display: flex; gap: 10px; padding: 5px 0; font-size: 15px; }
+  .ls-row dt { margin: 0; min-width: 150px; color: var(--alv-ink-soft); }
+  .ls-row dd { margin: 0; font-weight: 600; }
+
+  .ls-doc { margin: 0 0 16px; }
+  /* THE SHAPE IS RESERVED BEFORE THE IMAGE ARRIVES, and that is not
+     a polish detail - it is the lock.
+
+     These images are lazy, and a lazy image that has not loaded is
+     zero pixels tall. All three pages of a lease therefore stacked at
+     the same y, the end-of-document sentinel sat in the viewport on
+     arrival, the observer fired, and the Sign button unlocked before
+     anybody had read a word. The progress strip said "Page 3 of 3" on
+     load for the same reason.
+
+     Caught in a desktop render, not in the suite - which is why the
+     suite now drives this in a browser as well.
+
+     A4 IS 1:1.414, which is what render_pages rasterises. */
+  .ls-page {
+    display: block; width: 100%; height: auto;
+    aspect-ratio: 1 / 1.414;
+    object-fit: contain;
+    border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm);
+    background: var(--alv-paper); margin: 0 0 12px;
+  }
+  .ls-pagenum {
+    font-size: 12px; color: var(--alv-ink-faint); text-align: right;
+    margin: -6px 0 14px;
+  }
+
+  /* THE SIGNATURE BOX. A canvas has no intrinsic size that survives a
+     phone rotation, so its drawing surface is set in script from its
+     measured box - a canvas sized in CSS alone draws at the wrong
+     scale and the line lands away from the finger. */
+  .ls-pad {
+    position: relative;
+    border: 2px dashed var(--alv-accent-line);
+    border-radius: 8px;
+    background: var(--alv-paper);
+    height: 180px;
+    touch-action: none;
+  }
+  .ls-pad canvas { display: block; width: 100%; height: 100%; border-radius: var(--alv-radius-sm); }
+  .ls-pad-hint {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; pointer-events: none;
+    color: var(--alv-ink-faint); font-size: 14px;
+  }
+  .ls-pad.is-drawn .ls-pad-hint { display: none; }
+
+  .ls-tabs { display: flex; gap: 8px; margin: 0 0 12px; }
+  .ls-tab {
+    flex: 1 1 0; min-height: 44px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--alv-line); background: var(--alv-paper);
+    color: var(--alv-ink-soft); font: inherit; font-size: 15px;
+  }
+  .ls-tab[aria-selected="true"] {
+    background: var(--alv-accent-soft); border-color: var(--alv-accent-line);
+    color: var(--alv-accent-ink); font-weight: 700;
+  }
+
+  input[type="text"] {
+    width: 100%; min-height: 48px; padding: 10px 12px; font: inherit;
+    border: 1px solid var(--alv-line); border-radius: 8px;
+    background: var(--alv-paper); color: var(--alv-ink);
+  }
+  input[type="text"]:focus-visible,
+  .ls-tab:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--alv-accent-line); outline-offset: 2px;
+  }
+
+  .ls-consent {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin: 14px 0 0; font-size: 15px; line-height: 1.45;
+  }
+  .ls-consent input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; }
+
+  /* THE BAR IS PINNED, because on a phone the signature controls are
+     eight hundred pixels below the last page of the lease and a
+     control you have to hunt for reads as a control that is not
+     there. */
+  .ls-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: var(--alv-paper);
+    border-top: 1px solid var(--alv-line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 10px rgba(33, 52, 60, .07);
+  }
+  .ls-bar-in {
+    max-width: 860px; margin: 0 auto;
+    display: flex; gap: 12px; align-items: center; justify-content: space-between;
+  }
+  .ls-why { font-size: 13.5px; color: var(--alv-warn-ink); flex: 1 1 auto; }
+  .ls-why.is-ready { color: var(--alv-good-ink); }
+
+  .ls-btn {
+    min-height: 48px; padding: 0 22px; border-radius: 8px; border: 1px solid;
+    font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+    flex: none;
+  }
+  .ls-btn-primary {
+    background: var(--alv-accent); border-color: var(--alv-accent);
+    color: var(--alv-on-accent);
+  }
+  .ls-btn-primary:hover:not([disabled]) {
+    background: var(--alv-accent-ink); border-color: var(--alv-accent-ink);
+  }
+  .ls-btn-quiet {
+    background: var(--alv-paper); border-color: var(--alv-line);
+    color: var(--alv-ink-soft); min-height: 44px; font-weight: 400;
+    font-size: 14.5px; padding: 0 14px;
+  }
+  .ls-btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .ls-progress {
+    position: sticky; top: 0; z-index: 4;
+    background: var(--alv-surface); padding: 8px 0 10px;
+    font-size: 13px; color: var(--alv-ink-soft);
+  }
+  .ls-meter {
+    height: 6px; border-radius: 3px; background: var(--alv-line);
+    overflow: hidden; margin-top: 5px;
+  }
+  .ls-meter i { display: block; height: 100%; width: 0; background: var(--alv-accent); }
+
+  .ls-foot {
+    color: var(--alv-ink-faint); font-size: 13px; text-align: center;
+    padding: 6px 0 0;
+  }
+
+  /* `screen and`, WHICH THE SWEEP INSISTED ON. test_print_queries
+     holds that only base may carry a bare max-width clause: a phone
+     query with no media type also matches PAPER, and a printed page
+     is narrow, so the phone layout lands on the printout. The round
+     that found that renamed 98 clauses across 76 files, and this is
+     the 99th. It applies here even though nobody is likely to print
+     a signing page - a rule with an exception for "unlikely" is a
+     rule that stops being checkable. */
+  @media screen and (max-width: 560px) {
+    h1 { font-size: 19px; }
+    .ls-row { flex-direction: column; gap: 2px; }
+    .ls-row dt { min-width: 0; }
+    .ls-bar-in { flex-wrap: wrap; }
+    .ls-why { flex: 1 0 100%; order: 2; }
+    .ls-btn-primary { flex: 1 1 auto; }
+  }
+
+  /* NO prefers-reduced-motion BLOCK, and that is the honest answer
+     rather than an omission: these three pages declare no transition
+     and no animation anywhere, so a rule turning them off would be
+     two !important declarations protecting nothing - dead CSS, which
+     is what test_dead_weight exists to find. The first draft carried
+     one out of habit and test_important_base counted it: 772 became
+     774. The census was right. */
+</style>

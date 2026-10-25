@@ -59,6 +59,25 @@
                             <span class="detail-value">{{ tenant.tenant_email }}</span>
                         </div>
 
+                        {# SECOND TENANT - T2-7, 24 Oct 2026. The rows #}
+                        {# here are FLAT, with no heading above them to #}
+                        {# carry the word, so each label says it. T2-2 #}
+                        {# measured the same thing on the forms. #}
+                        {% if tenant.has_second_tenant %}
+                        <div class="detail-row">
+                            <span class="detail-label">Second Tenant:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Second Tenant Number:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_contact_number }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Second Tenant Email:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_email }}</span>
+                        </div>
+                        {% endif %}
+
                         <!-- Lease Period -->
                         <div class="detail-row">
                             <span class="detail-label">Lease Start:</span>

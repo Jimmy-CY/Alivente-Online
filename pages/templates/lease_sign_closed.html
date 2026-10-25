@@ -1,0 +1,95 @@
+{# THE SIGNING PERIOD HAS ENDED - ES-4, 24 Oct 2026.                  #}
+{#                                                                     #}
+{# HIS DECISION OF 24 OCTOBER, AND BOTH HALVES OF IT MATTER.           #}
+{#                                                                     #}
+{# NOT A SILENT 404, because a tenant who was merely slow would have   #}
+{# no idea whether they had the wrong link or missed a deadline. The   #}
+{# page names the property, says when the period ended, and says who   #}
+{# to contact.                                                         #}
+{#                                                                     #}
+{# AND NOT THE DOCUMENT EITHER. Showing the lease after expiry turns   #}
+{# a seven-day link into a permanent read link to a contract. There    #}
+{# are no page images on this page and no controls of any kind.        #}
+{#                                                                     #}
+{# 410 AND NOT 404 - the view says so. The thing was here and is no    #}
+{# longer, which is exactly what Gone means, and it keeps a crawler    #}
+{# or a mail scanner from treating the address as a mistake.           #}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>This signing link has closed</title>
+{% include 'lease_sign_styles.html' %}
+</head>
+<body>
+
+<header class="ls-top">
+  <div class="ls-wrap">
+    <p class="ls-brand">Alivente Limited</p>
+    <h1>
+      {% if cancelled %}
+        This agreement was withdrawn
+      {% else %}
+        The signing period for this agreement has ended
+      {% endif %}
+    </h1>
+    <p class="ls-sub">
+      {% if prop %}{{ prop.prop_name }}{% endif %}
+    </p>
+  </div>
+</header>
+
+<div class="ls-wrap">
+
+  <div class="ls-note ls-note-read">
+    <span>
+      {% if cancelled %}
+        <b>This lease agreement was withdrawn by Alivente Limited</b>
+        and can no longer be signed. If you were expecting to sign it,
+        please get in touch and a new one can be sent.
+      {% else %}
+        <b>This link was open for signature until
+          {% if env.expires_at %}{{ env.expires_at|date:"j F Y" }}{% else %}a
+          set date{% endif %}</b>, and that date has passed. The agreement
+        can no longer be signed through this link.
+      {% endif %}
+    </span>
+  </div>
+
+  {% if party.signed_at %}
+  {# SIGNATURES ARE KEPT, NOT VOIDED - decided 24 October. With no    #}
+  {# certificate the captured trail is the only evidence there is,    #}
+  {# and discarding proof that a real person signed on a real date    #}
+  {# because a DIFFERENT person was slow is destroying evidence for   #}
+  {# tidiness. So this page tells them their signature still counts.  #}
+  <div class="ls-note ls-note-done">
+    <span>Your own signature of
+      <b>{{ party.signed_at|date:"j F Y" }}</b> has been kept on the
+      record. You do not need to sign again.</span>
+  </div>
+  {% endif %}
+
+  <div class="ls-card">
+    <h2>What to do next</h2>
+    <p style="margin:0 0 10px">
+      Contact Alivente Limited and the signing period can be extended, or
+      a fresh agreement sent. Nobody who has already signed will be asked
+      to sign a second time.
+    </p>
+    <p style="margin:0;color:var(--alv-ink-soft);font-size:14.5px">
+      Please quote
+      {% if prop %}the property <b>{{ prop.prop_name }}</b>{% else %}your
+      tenancy{% endif %} when you do.
+    </p>
+  </div>
+
+  <p class="ls-foot">
+    Alivente Limited
+  </p>
+</div>
+
+</body>
+</html>

@@ -1472,6 +1472,12 @@ ROUNDS = [
     '.bak_contactco',
     # PG-3, 24 Oct 2026 - the gate does not walk a virtualenv.
     '.bak_gatewalk',
+    # T2-7, 24 Oct 2026 - the second tenant has contact details.
+    '.bak_jointcontact',
+    # ES-4, 24 Oct 2026 - a lease can be read and signed.
+    '.bak_leasesign',
+    # ES-3b, 24 Oct 2026 - an envelope can be made.
+    '.bak_sendlease',
 ]
 
 

@@ -261,7 +261,21 @@ VAR = re.compile(r"\{%\s*(include|extends)\s+(?!['\"])")
 targets = {}
 withvar = []
 for p in TEMPLATES:
-    src = read(p)
+    # ES-4, 24 Oct 2026 - COMMENTS STRIPPED FIRST, which is what every
+    # other gate in this tree does and what this one did not.
+    #
+    # lease_sign.html opens with a Django comment explaining that it
+    # deliberately has no extends tag - and it names the tag to say so.
+    # VAR matches `{% extends` not followed by a quote, so a page
+    # explaining in prose that it does not extend anything was read as
+    # a page extending a variable.
+    #
+    # THE SAME SHAPE AS SB-2's, FROM THE OTHER SIDE. That round put a
+    # live-looking tag inside a JavaScript comment and Django parsed
+    # it; this one put a tag inside a Django comment and the INSTRUMENT
+    # parsed it. A text instrument reads comments unless it is told not
+    # to - three times in one week, now four.
+    src = T.code_only(read(p))
     for m in REF.finditer(src):
         targets.setdefault(m.group(2), set()).add(RELS[p])
     if VAR.search(src):

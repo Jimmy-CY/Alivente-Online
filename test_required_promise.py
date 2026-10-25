@@ -439,7 +439,19 @@ for d, _s, fs in T.walk3():
             how[mech] += 1
             rows.append((rel, mech, note, ' '.join(lab[2].split())[:50]))
 
-TOTAL = 216
+# ES-3b, 24 Oct 2026 - 216 -> 221. The Send for Signature screen
+# carries five starred labels: the Alivente signer, the tenant
+# signer and their address, the second signer's pair, and the days
+# to sign. FOUR of them are statically required; the fifth is the
+# lease upload, which is required only when it is the chosen
+# source, so the script sets it with the reveal - T2-6's rule for
+# the contact person, in the other direction.
+#
+# TWO MORE STARS WERE REMOVED BEFORE THIS NUMBER SETTLED. The first
+# draft starred the tenant picker, which navigates on change and is
+# never posted, and starred the upload with no `required` behind it
+# at all. This suite caught both - which is what it is for.
+TOTAL = 221
 ok(len(rows) == TOTAL,
    'the corpus is %d starred labels' % len(rows),
    'pinned at %d. THE MARKER IS THE alv-req SPAN, not a bare asterisk - '
@@ -481,8 +493,12 @@ ok(control_for(_near, _lab2) is not None,
 head('3. FIVE MECHANISMS, AND THE RESIDUE IS THE ASSERTION')
 # ==========================================================================
 EXPECT = {
-    '1 static required': 180,
-    '2 required set in script': 7,
+    '1 static required': 184,
+    # ES-3b, 24 Oct 2026 - 7 -> 8. The lease upload on the Send for
+    # Signature screen, the fifth of that screen's five stars. The
+    # script writes it through getElementById with a literal on the
+    # right, which is the one script shape this census recognises.
+    '2 required set in script': 8,
     '3 stopped by a submit guard': 9,
     '4 cannot be empty': 2,
     '5 django form field': 18,

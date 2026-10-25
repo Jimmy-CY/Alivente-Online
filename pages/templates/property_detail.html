@@ -307,6 +307,23 @@
                                             <!-- Basic Info Section -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Tenant Information</h4>
+                                                {# T2-7, 25 Oct 2026 - THE FIRST TENANT'S OWN NAME.   #}
+                                                {# HIS, on the render: the Second Tenant group named  #}
+                                                {# its person and this one did not, so on a joint     #}
+                                                {# tenancy the only first name on the panel was       #}
+                                                {# inside the combined heading - and the Contact      #}
+                                                {# Information below belonged to nobody you could     #}
+                                                {# point at.                                          #}
+                                                {#                                                    #}
+                                                {# tenant_name, NOT tenant_display_name. The heading   #}
+                                                {# is the tenancy and says "A & B"; this row is the   #}
+                                                {# person whose number and email are underneath it.   #}
+                                                {# Using the display name here would print "A & B"    #}
+                                                {# twice and still not answer whose address that is.  #}
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Name:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_name }}</span>
+                                                </div>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Type:</span>
                                                     <span class="detail-value">{{ active_tenant.tenant_type }}</span>
@@ -332,6 +349,28 @@
                                                     <span class="detail-value">{{ active_tenant.tenant_email }}</span>
                                                 </div>
                                             </div>
+
+                                            {# SECOND TENANT - T2-7, 24 Oct 2026. #}
+                                            {# The panel that tells you who is in #}
+                                            {# a property could name two people #}
+                                            {# and reach one. #}
+                                            {% if active_tenant.has_second_tenant %}
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Second Tenant</h4>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Name:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_2_name }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Contact Number:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_2_contact_number }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Email:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_2_email }}</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
 
                                             <!-- Lease Dates Section -->
                                             <div class="detail-group">
@@ -471,7 +510,14 @@
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
                                         <p class="highlight-green"><strong>{{ lease_renewal_data.message }}</strong></p>
                                         <div class="renewal-details-block">
-                                            <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
+                                            {# T2-7, 25 Oct 2026 - DISPLAY NAME. This panel and the #}
+                                            {# one below it were the two sites this round walked    #}
+                                            {# past: the sweep looked for tenant.tenant_name and    #}
+                                            {# these read lease_renewal_data.tenant.tenant_name,    #}
+                                            {# which is the same field down a different path. FOUND #}
+                                            {# BY HIM, not by me - the Lease Renewals panel named   #}
+                                            {# one of two tenants on a property that has both.      #}
+                                            <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_display_name }}</p>
                                             <p><strong>Previous Lease End:</strong> {{ lease_renewal_data.tenant.tenant_lease_end_date }}</p>
                                         </div>
                                     </div>
@@ -522,7 +568,9 @@
                                             <i class="fas fa-check-circle"></i> Current lease is active. No renewal action required at this time.
                                         </div>
                                         <div class="renewal-details-block">
-                                            <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
+                                            {# T2-7, 25 Oct 2026 - DISPLAY NAME, the second of the  #}
+                                            {# two. See the note on the renewed-lease panel above.  #}
+                                            <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_display_name }}</p>
                                             <p><strong>Lease End Date:</strong> {{ lease_renewal_data.tenant.tenant_lease_end_date }}</p>
                                         </div>
                                     </div>
@@ -1222,16 +1270,51 @@
     display: flex;
     margin-bottom: 10px;
     line-height: 1.5;
+    /* T2-7, 25 Oct 2026 - see the note on .detail-value. A value that
+       cannot fit beside its label drops to its own line instead of
+       running out of the column. */
+    flex-wrap: wrap;
 }
 
 .detail-label {
     font-weight: 600;
     color: var(--alv-ink);
     min-width: 150px;
+    /* T2-7, 25 Oct 2026 - and it does not grow past that either.
+       min-width alone sets a floor; without a flex basis the label
+       could also take space the value needs. */
+    flex: 0 0 auto;
 }
 
+/* T2-7, 25 Oct 2026 - THE EMAIL THAT LANDED ON TOP OF "End Date:".
+   .detail-row is a flex and .detail-value is a flex item, and a flex
+   item's min-width is auto - it REFUSES to shrink below its own
+   content. The column is 377px at 1280, the label takes 150px, and
+   the address needs 244px. 150 + 244 does not fit, will not shrink,
+   and so the row runs wider than its track and paints over whatever
+   is in the next column. Swept 360px to 1600px: it overflowed at 36
+   widths of 63, all of them 780 and up, which is why this never
+   showed on a phone.
+
+   MEASURED BEFORE IT WAS FIXED, and the measurement decided the fix.
+   The second tenant's address needs 259px and the widest label needs
+   132px: 391px. AN ADDRESS CANNOT SIT BESIDE ITS LABEL in a
+   three-column grid at any width this page is drawn at, so the rule
+   does not try to make it. flex-basis auto with no shrink means each
+   value asks for its own content width; one that does not fit wraps
+   to its own line (.detail-row is flex-wrap: wrap) and grows to the
+   full column, where it fits whole. Short values stay on the line
+   with their label exactly as before - at 1280, 5 rows of 17 move.
+
+   overflow-wrap stays as the last resort, for an address longer than
+   a whole column. This panel carries FOUR address rows on a joint
+   tenancy where it carried one, so the odds of meeting a long one
+   went up with the round that added them. */
 .detail-value {
     color: var(--alv-ink-strong);
+    flex: 1 0 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 .detail-value.money {
     font-family: 'Courier New', monospace;

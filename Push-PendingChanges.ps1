@@ -1273,6 +1273,11 @@ $sentinels = @(
     @{ File = 'pages/templates/tenant_add.html'; Text = 'contact-person-field'; What = 'T2-6: the contact person is a COMPANY field, and the id is Generate the same one so that one grep finds every screen that knows it - Generate has made it required for a Company and written N/A into the lease for an Individual for months, while this screen asked everybody and for a person only repeated the name above' },
     @{ File = 'pages/views/invoices.py'; Text = 'tenant_obj.tenant_type'; What = 'T2-6: and the open-invoices card is built in JavaScript, so it could not ask whether a contact person applies until the payload carried the type - the one place where hiding a field needed a new ingredient rather than a new condition' },
     @{ File = 'alv_tree.py'; Text = 'def prune'; What = 'PG-3: a virtualenv inside the repository is not part of the tree, and four instruments walked one. Demetri push gate timed out at suite 448 of 448 on 24 October after running clean for 447 - check_gates was doing a recursive glob of site-packages once per patcher, 525 times. The test is pyvenv.cfg and not a name, because his venv is called code and the next one will be called something else' },
+    @{ File = 'pages/templates/tenant_report.html'; Text = 'tenant.tenant_2_contact_number'; What = 'T2-7: a joint tenant is liable and could not be reached - T2-4 gave this report the joined NAME in its heading and left the contact rows showing one person, which Demetri saw on Live on 24 October after splitting two tenancies by hand' },
+    @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def lease_sign_page'; What = 'ES-4: the rendered lease comes back through the same token check as the page itself - a media URL for a lease is a permanent read link to a contract, and it would outlive the seven-day expiry that the rest of this round takes seriously' },
+    @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
+    @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
+    @{ File = 'pages/views/lease_signing_create.py'; Text = 'ContentFile(stored.read())'; What = 'ES-3b: the lease already on the tenant record is COPIED onto the envelope, never referenced - that file can be replaced or deleted from Manage Lease Agreements, and a document that changed under a signature is the one thing ES-2 hash exists to make impossible' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3065,7 +3070,13 @@ $suites = @(
     # T2-6, 24 Oct 2026 - the contact person is a Company field.
     'test_contact_company.py',
     # PG-3, 24 Oct 2026 - the gate does not walk a virtualenv.
-    'test_gate_walk.py'
+    'test_gate_walk.py',
+    # T2-7, 24 Oct 2026 - the second tenant has contact details.
+    'test_joint_contact.py',
+    # ES-4, 24 Oct 2026 - a lease can be read and signed.
+    'test_lease_sign.py',
+    # ES-3b, 24 Oct 2026 - an envelope can be made.
+    'test_send_lease.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

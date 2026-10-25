@@ -1,0 +1,687 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Sign your lease agreement</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+  :root {
+    --alv-paper:       #ffffff;
+    --alv-surface:     #f8f9fa;
+    --alv-ink:         #21343c;
+    --alv-ink-soft:    #5b6b73;
+    --alv-ink-faint:   #8a979d;
+    --alv-line:        #e3e8ea;
+    --alv-accent:      #0e7c8b;
+    --alv-accent-ink:  #0a5e6a;
+    --alv-accent-soft: #e4f3f5;
+    --alv-accent-line: #a8d8de;
+    --alv-on-accent:   #ffffff;
+    --alv-good:        #1e7d4f;
+    --alv-good-soft:   #e6f4ec;
+    --alv-good-ink:    #155737;
+    --alv-good-line:   #bfe0cd;
+    --alv-warn:        #8e6207;
+    --alv-warn-soft:   #fdf3dd;
+    --alv-warn-ink:    #6a4a05;
+    --alv-warn-line:   #ecd39e;
+    --alv-bad:         #b3261e;
+    --alv-bad-soft:    #fbeae9;
+    --alv-bad-ink:     #8f1d17;
+    --alv-bad-line:    #f2cecb;
+    /* SHAPE, FOR THE SAME REASON AS THE COLOURS. D-12 moved 158
+       `border-radius` pixel literals onto this token on 9 October and
+       test_radius_token has held the line since. A standalone page
+       cannot read base's copy, so it carries its own - and the gate
+       that proves the colour values still match base covers this
+       one too. */
+    --alv-radius:      8px;
+    --alv-radius-sm:   6px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--alv-surface);
+    color: var(--alv-ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .ls-wrap { max-width: 860px; margin: 0 auto; padding: 0 16px 140px; }
+
+  .ls-top {
+    background: var(--alv-paper);
+    border-bottom: 1px solid var(--alv-line);
+    padding: 18px 0;
+    margin-bottom: 18px;
+  }
+  .ls-top .ls-wrap { padding-bottom: 0; }
+  .ls-brand {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--alv-accent); font-weight: 700; margin: 0 0 6px;
+  }
+  h1 { margin: 0; font-size: 22px; line-height: 1.25; }
+  .ls-sub { margin: 6px 0 0; color: var(--alv-ink-soft); font-size: 14.5px; }
+
+  .ls-card {
+    background: var(--alv-paper);
+    border: 1px solid var(--alv-line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 0 0 16px;
+  }
+  .ls-card h2 {
+    margin: 0 0 10px; font-size: 12px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--alv-ink-soft); font-weight: 700;
+  }
+
+  .ls-note {
+    display: flex; gap: 10px; align-items: flex-start;
+    border-radius: 10px; padding: 13px 15px; margin: 0 0 16px;
+    font-size: 15px;
+  }
+  .ls-note b { font-weight: 700; }
+  .ls-note-read {
+    background: var(--alv-warn-soft);
+    border: 1px solid var(--alv-warn-line);
+    color: var(--alv-warn-ink);
+  }
+  .ls-note-done {
+    background: var(--alv-good-soft);
+    border: 1px solid var(--alv-good-line);
+    color: var(--alv-good-ink);
+  }
+  .ls-note-bad {
+    background: var(--alv-bad-soft);
+    border: 1px solid var(--alv-bad-line);
+    color: var(--alv-bad-ink);
+  }
+  .ls-note-info {
+    background: var(--alv-accent-soft);
+    border: 1px solid var(--alv-accent-line);
+    color: var(--alv-accent-ink);
+  }
+
+  .ls-row { display: flex; gap: 10px; padding: 5px 0; font-size: 15px; }
+  .ls-row dt { margin: 0; min-width: 150px; color: var(--alv-ink-soft); }
+  .ls-row dd { margin: 0; font-weight: 600; }
+
+  .ls-doc { margin: 0 0 16px; }
+  /* THE SHAPE IS RESERVED BEFORE THE IMAGE ARRIVES, and that is not
+     a polish detail - it is the lock.
+
+     These images are lazy, and a lazy image that has not loaded is
+     zero pixels tall. All three pages of a lease therefore stacked at
+     the same y, the end-of-document sentinel sat in the viewport on
+     arrival, the observer fired, and the Sign button unlocked before
+     anybody had read a word. The progress strip said "Page 3 of 3" on
+     load for the same reason.
+
+     Caught in a desktop render, not in the suite - which is why the
+     suite now drives this in a browser as well.
+
+     A4 IS 1:1.414, which is what render_pages rasterises. */
+  .ls-page {
+    display: block; width: 100%; height: auto;
+    aspect-ratio: 1 / 1.414;
+    object-fit: contain;
+    border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm);
+    background: var(--alv-paper); margin: 0 0 12px;
+  }
+  .ls-pagenum {
+    font-size: 12px; color: var(--alv-ink-faint); text-align: right;
+    margin: -6px 0 14px;
+  }
+
+  /* THE SIGNATURE BOX. A canvas has no intrinsic size that survives a
+     phone rotation, so its drawing surface is set in script from its
+     measured box - a canvas sized in CSS alone draws at the wrong
+     scale and the line lands away from the finger. */
+  .ls-pad {
+    position: relative;
+    border: 2px dashed var(--alv-accent-line);
+    border-radius: 8px;
+    background: var(--alv-paper);
+    height: 180px;
+    touch-action: none;
+  }
+  .ls-pad canvas { display: block; width: 100%; height: 100%; border-radius: var(--alv-radius-sm); }
+  .ls-pad-hint {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; pointer-events: none;
+    color: var(--alv-ink-faint); font-size: 14px;
+  }
+  .ls-pad.is-drawn .ls-pad-hint { display: none; }
+
+  .ls-tabs { display: flex; gap: 8px; margin: 0 0 12px; }
+  .ls-tab {
+    flex: 1 1 0; min-height: 44px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--alv-line); background: var(--alv-paper);
+    color: var(--alv-ink-soft); font: inherit; font-size: 15px;
+  }
+  .ls-tab[aria-selected="true"] {
+    background: var(--alv-accent-soft); border-color: var(--alv-accent-line);
+    color: var(--alv-accent-ink); font-weight: 700;
+  }
+
+  input[type="text"] {
+    width: 100%; min-height: 48px; padding: 10px 12px; font: inherit;
+    border: 1px solid var(--alv-line); border-radius: 8px;
+    background: var(--alv-paper); color: var(--alv-ink);
+  }
+  input[type="text"]:focus-visible,
+  .ls-tab:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--alv-accent-line); outline-offset: 2px;
+  }
+
+  .ls-consent {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin: 14px 0 0; font-size: 15px; line-height: 1.45;
+  }
+  .ls-consent input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; }
+
+  /* THE BAR IS PINNED, because on a phone the signature controls are
+     eight hundred pixels below the last page of the lease and a
+     control you have to hunt for reads as a control that is not
+     there. */
+  .ls-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: var(--alv-paper);
+    border-top: 1px solid var(--alv-line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 10px rgba(33, 52, 60, .07);
+  }
+  .ls-bar-in {
+    max-width: 860px; margin: 0 auto;
+    display: flex; gap: 12px; align-items: center; justify-content: space-between;
+  }
+  .ls-why { font-size: 13.5px; color: var(--alv-warn-ink); flex: 1 1 auto; }
+  .ls-why.is-ready { color: var(--alv-good-ink); }
+
+  .ls-btn {
+    min-height: 48px; padding: 0 22px; border-radius: 8px; border: 1px solid;
+    font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+    flex: none;
+  }
+  .ls-btn-primary {
+    background: var(--alv-accent); border-color: var(--alv-accent);
+    color: var(--alv-on-accent);
+  }
+  .ls-btn-primary:hover:not([disabled]) {
+    background: var(--alv-accent-ink); border-color: var(--alv-accent-ink);
+  }
+  .ls-btn-quiet {
+    background: var(--alv-paper); border-color: var(--alv-line);
+    color: var(--alv-ink-soft); min-height: 44px; font-weight: 400;
+    font-size: 14.5px; padding: 0 14px;
+  }
+  .ls-btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .ls-progress {
+    position: sticky; top: 0; z-index: 4;
+    background: var(--alv-surface); padding: 8px 0 10px;
+    font-size: 13px; color: var(--alv-ink-soft);
+  }
+  .ls-meter {
+    height: 6px; border-radius: 3px; background: var(--alv-line);
+    overflow: hidden; margin-top: 5px;
+  }
+  .ls-meter i { display: block; height: 100%; width: 0; background: var(--alv-accent); }
+
+  .ls-foot {
+    color: var(--alv-ink-faint); font-size: 13px; text-align: center;
+    padding: 6px 0 0;
+  }
+
+  /* `screen and`, WHICH THE SWEEP INSISTED ON. test_print_queries
+     holds that only base may carry a bare max-width clause: a phone
+     query with no media type also matches PAPER, and a printed page
+     is narrow, so the phone layout lands on the printout. The round
+     that found that renamed 98 clauses across 76 files, and this is
+     the 99th. It applies here even though nobody is likely to print
+     a signing page - a rule with an exception for "unlikely" is a
+     rule that stops being checkable. */
+  @media screen and (max-width: 560px) {
+    h1 { font-size: 19px; }
+    .ls-row { flex-direction: column; gap: 2px; }
+    .ls-row dt { min-width: 0; }
+    .ls-bar-in { flex-wrap: wrap; }
+    .ls-why { flex: 1 0 100%; order: 2; }
+    .ls-btn-primary { flex: 1 1 auto; }
+  }
+
+  /* NO prefers-reduced-motion BLOCK, and that is the honest answer
+     rather than an omission: these three pages declare no transition
+     and no animation anywhere, so a rule turning them off would be
+     two !important declarations protecting nothing - dead CSS, which
+     is what test_dead_weight exists to find. The first draft carried
+     one out of habit and test_important_base counted it: 772 became
+     774. The census was right. */
+</style>
+
+</head>
+<body>
+
+<header class="ls-top">
+  <div class="ls-wrap">
+    <p class="ls-brand">Alivente Limited</p>
+    <h1>Lease agreement for Mr. Dorian Tirouard &amp; Mr. Antoine Madelbos</h1>
+    <p class="ls-sub">
+      Flat 7, Palikaridi &middot; 
+      Signing as <strong>Mr. Antoine Madelbos</strong>
+    </p>
+  </div>
+</header>
+
+<div class="ls-wrap">
+
+  
+
+  
+  
+  
+  <div class="ls-note ls-note-done">
+    <span>Already signed by <b>Demetri Manias</b> for Alivente Limited
+      on 25 October 2026.</span>
+  </div>
+  
+
+  
+  <div class="ls-note ls-note-read" id="ls-readnote">
+    <span><b>Please read the whole agreement.</b>
+      The signing box at the bottom of this page stays locked until the
+      last page has been on screen &mdash; all
+      2 pages of it.</span>
+  </div>
+
+  <div class="ls-card">
+    <h2>What you are signing</h2>
+    <dl style="margin:0">
+      <div class="ls-row"><dt>Property</dt>
+        <dd>Flat 7, Palikaridi</dd></div>
+      <div class="ls-row"><dt>Tenancy</dt>
+        <dd>Mr. Dorian Tirouard &amp; Mr. Antoine Madelbos</dd></div>
+      <div class="ls-row"><dt>Lease period</dt>
+        <dd>1 Sep 2026
+          &ndash;
+          31 Aug 2028</dd></div>
+      
+      <div class="ls-row"><dt>Signing closes</dt>
+        <dd>1 November 2026</dd></div>
+      
+      
+      <div class="ls-row"><dt>Also signing</dt>
+        <dd>Demetri Manias
+            (signed), 
+          Mr. Dorian Tirouard
+            (signed)
+          </dd></div>
+      
+    </dl>
+  </div>
+
+  <div class="ls-progress" aria-hidden="true">
+    <span id="ls-progress-text">Page 1 of 2</span>
+    <span class="ls-meter"><i id="ls-meter"></i></span>
+  </div>
+
+  <div class="ls-doc">
+    
+    
+    
+    
+    
+    
+    <img class="ls-page" alt="Lease agreement page 1"
+         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+AAAAV8CAIAAAA0MWIoAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAx4ElEQVR4nOzdefBVdeH/cRAEJTdUBBfcUqnGpNI0MVNCbdHKqTSX0txqNMstnTRr1MyJxNKs0cmkRRMrLazM0MFcyI0sUlADcyMqywQhBWT7vofz8/xun+V+PrJcXvV5PP5o7ud93uec9732x/Nezj231zIAACBGrzW9AAAA4P8T6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIFOtyxZsuSZZ56ZPHnyk08+uWDBgjW9nFVg/vz506dPf+CBB2bMmPHyyy+v6eUAAPw/Ar2lzj777K2XmzZtWjd3Oeigg7butp///OdNDlW21jMvuOCC7pz9pZdeGj169Ote97p+/fr1arDbbrt97Wtfmzt37upecxMjR46sjrD99tvPnj27m3vNmzfv8ssv33333fv27Vs/nbXWWmubbbb52Mc+9thjjzXZ95hjjmnyRHbcccf99tvvE5/4xI9+9KOlS5e2333ixIndf1nKs1tV+x566KH1prvuuqvLl2jq1Kn1/P33339VLaO8vNX4Oeec03wBkyZNqmb+5Cc/qUZGjBjR/fNWylK7fKYAkEmgt1Spt6oI//CHP3Rzl7e85S29um3cuHFNDnXwwQfXM4cOHdphRDb61a9+NWTIkCane+1rX/vggw+u1jV35o9//GPjQb7zne90Z68JEyZsscUWTRbTu3fvI444orPcf+9739vNJ/XmN7+5/X/iX/ziF91/WXbaaadVte873vGOetMnP/nJLl+lc889t57/hje8YVUt44ADDqjGy9uhyZMnN1nAbbfdVs387ne/W42U4O7+eStlqV0+UwDIJNBbamUC/RPd0KR7SnS2+RS8+Yep06dPX3/99auZ++yzzw9/+MMHHnigDE6cOPFb3/rW6173umrThhtuOHPmzNW05ibOPPPMxufS5sPaDt14440lDav5m266aTn1NddcU1rwhhtuGD169KhRo+qjlee7cOHC9keoA/2oo45q/0QOOeSQt73tbfVBtt122zb/wlDX7W677dbly/LFL35xVe3bGOjliS9evLj5CzVs2LB6fmeBvgLLqAO9GD58+KJFizpbQPtAP/vss9sff7vttqumHX744e23PvTQQ82fJgDEEugt9YkVDfRSlit56quuuqo6dV2izT9MffOb31xNKznefuuSJUs++9nPVhPe8573rKY1d2bp0qVbbbVVOcUmm2xSUq/X8k++Z82a1WSX22+/fe21164WfNppp82bN6/9nPIOZPvtt6/mHHnkke0n1IH+z3/+s7MTlf+ym2++eTWtvESNm+q6/dKXvtTt57oK9q0CvU+fPtURSv42mfzwww9X06r5nQX6CiyjMdCLr3zlK53NbB/oHfrgBz9YTXvyySdf7WIAIJlAb6k1GOj77LNPdZynn356ww03LI833njjzr4cWV9A8u53v7uzA5ZGrz8w/vOf/7w61tyZO+64ozrvSSedNHr06Orx1772tc7ml6e5ww47VNMuu+yyJkd+6qmnttxyy2rmI4880mZrdwJ9WUPFltenw/E1EuhbbLFFqe3y4Ljjjmsyubq+ZciQITvvvPPqCPT11ltv6NCh5cE666wzY8aMDmcKdAB6OIHeUmsq0GfOnFmdt0RS+fPoo4+u/vzlL3/Z4fxx48Z1+TFncdFFF1XTfvzjH6/yNTdRErM677333lvirHq86667djb/61//ejVn77337vLg3/72t6vJ7b/L2M1Anz9/fnUtzfrrr984vsYD/fzzzy8PBg4c2OSuNdX1LZ/61Kd22WWX1RHo5W3hzTffXB2kswuTBDoAPZxAb6k1Fej1x8zXXHPNsuXf/qz+PPzwwzucf+2111YTzj333CaHffjhh09f7ne/+90qX3NnFixYUP0LwGtf+9pq5K1vfWu12unTp3e4y0477VRNeOCBB7o8/r///e999tlnxIgR7a9y6WagF5tsskmZ1r9//8bBNR7ojz32WHWQ8n+ADmc+9NBD1YS77rpr9QV6efyRj3ykOs7YsWPbzxToAPRwAr2l1lSgv/GNbywHGTBgQKnPZcsv+Rg4cGA18uKLL7aff99991XrHDRoUPvvgLZmzZ356U9/Wq2t/g7imDFjqpHzzjuv/fwZM2ZUW9/3vvet5Km7Gehz586tpg0bNqxxfI0HenlcZfdRRx3V4czq+pbNN9986dKlqzXQn3322er/gRtttNHf//73NjMFOgA9nEBvqTUS6PXX/ho/Ej7mmGOqweuuu679LosWLdpxxx2rCRtssMGFF174qhpotQZ6nWX1FczPPPNMNVLW3H7+FVdcUW3t8Nuur0o3A72+oqa8bo3jCYH+5S9/ufpv2uFtaqrrWz796U8veyXlV1OgF2PHjq0Odeihh7aZKdAB6OEEekutcKD37t378q50eLVAcdZZZ1Un/fWvf10PTpgwoRo88MADO9xr4sSJAwYM6NXgjW9842mnnXbLLbd0+KH7ql1zZ+bMmVPdLHKPPfZoHK+/rtrmYpvic5/7XLVp0qRJr+pc7XUZ6P/4xz8uuOCCddZZp1ph9e8Vtbpuy2ve5SszderUVbVvY6A//vjj1XHa/z5UfX3L3XffvayrQF+BZbQJ9OKd73xndbQ29ywX6AD0cAK9pVY40Ltjs802a7/70qVLq5tmDB48uPEG2IsWLaquk+7bt++//vWvDk89ZcqU6t4vbay99tql+UaPHt3+4oRVsuYmvvOd71Q7fvOb32wcrz+0Lm8h2uxS/1tBZ78SWp7I6Z1oc1F7HehbbbVV+5+ubHw/c9RRR7X/taNX9Ss/V1xxxaratzHQl71yA80jjjiizfKq61vKtOoXrJoH+goso32gl3cL1ZuZ8no23jNeoAPQwwn0lmp9oN95553V1lNPPbXNpuOPP77adOWVVzZZQInUr371q/vvv3/VUo1K3JdntGDBglW75ib23Xff6rxtPsP+y1/+Uh2w9OWSJUsaN334wx+uNpUc7PCY9VdI22tzy/Bu/pLokCFDbr755vYnCgn06hvD66233vz58xunVde3fOYzn6n+bEGgF1/5yleqySeffHI9KNAB6OEEekutzDXo87rS4ZUnJ5xwQnXGBx98sM2mOoO6c/PBZctvn/Kb3/zmnHPOadPfe+65Z5tGX8k1d6ZUeO/evcuRDzrooPZbR4wYUa3n9ttv7/AVuO+++zo87F577bXZfyoRWe3SWaAfe+yxJ7VTBksK1z9WOmbMmDYnquv23HPP7fKVafNDmyuzb5tAr29MeeONN9Zz6utbfvvb31YjzQN9BZbRYaCXOfVPTd17773VoEAHoIcT6C3V4i+JLly4cKONNqrOuFk7gwYNqiP71d6q5fHHHz/xxBOrXC5Gjx69qtbcxFe/+tXqdAMGDGj/dNZdd91qa5sf4qmu3Ciuvfbabp6ovJlpHuhNviQ6efLk6i6Q5ek/99xzjZsSviRaqW5Mecghh9Qj1au05ZZbVte3LFv9XxKt/e53v6ve1ZRzVTdoF+gA9HACvaVaHOg/+9nPenVPad8VOP51111X7b711luvqjU3USVjl8p7ksZblNx0003V+AknnNDNE91yyy0rHOjLXrlTSjFu3LjG8ZxAv+SSS8pIeUtTf421ur7llFNOqee0LNCL0047rTrsBRdcsEygA9DjCfSWanGgf+hDH6pOd/rpp3+9I5/97GerCcOHD6/3Wrx48QYbbDBgwIBjjjmmy1PU0dx4x5LVEehTp06tTlSSscPnUlS/Tl+MHz++3nH27NnVJ/2DBg1qf7l8h6pf3FzhQL/jjjuqaRdffHHjeE6g178se/311y9ruL7lnnvuqee0MtBffPHFbbfdtmzt16/fo48+KtAB6OEEeku1MtBfeOGF/v3791p+cUvj/VsaLVmyZPDgwdWSHnnkkXp86623LiO77757l2cZNWpUtXvjTUtWR6DXd0u8/PLLO5vzzW9+s5rTePFG8f73v78a//a3v93liUosbrfddisT6PVPI5199tmN4zmBXuy5555l8OCDDy6PP//5z/dafiuV+vqWZa0N9GUN9/18+9vffuuttwp0AHoygd5SrQz0q6++ujpX9bsznfnUpz5VTSuVVg++613vqgYnT57cZN+XX365urdgm5uxrPJAL+FYvWfo06fPP/7xj86mPfvss9XVzOuss868efPq8UmTJlVPZ8MNN3z66aebn+vkk0/u9YoVC/Tp06dX0xrvTLIsLNAvu+yyMljews2dO7e6j02bO1S2ONCLI488sjp4/S8/Ah2Ankmgt1QrA33kyJHVuTq7e0nl7rvvrqZtv/329eAvf/nLanD48OHPPPNMZ/ueccYZHb4HWOWBftddd1UnKu8cms+sf/vmBz/4QeP4scceW42X0G9zm5fakiVLLr300l4NVvIT9KOPPrpxPCrQ//rXv1ZX/px55pnVkeubqFRaH+jlVa3uzV8T6AD0TAK9pepAP/XUUy/u3CWXXFLvUv8qZ5P5tfqO5rNmzaryqzG7O7R06dKtttqqfcpXVddr+c/CX3311W1+FHPatGn1bdTLhL/97W+NW1dszd153dpkd3tXXXVVhylf1v+mN72pLr+TTjrp0UcfrbeWNJ80adIee+xRbT3xxBNXJtBnz55dTdtrr70ax+u6LWvrzivz0EMPrZJ9Owz0Yu+9967eR5X/HTp0aJutzQN9BZbRZaAX11xzjUAHAIHeUnVoNtf42XP3f/SnMcLGjBlTjTReuNKZ008/vZrc+EH4nDlzqp+crPTp02eHHXbYbbfdhg0bVoq8Hu/fv/+tt97a5oArtubOvPzyywMHDuzV7sKVDj3//PN9+/bt1dHFMC+88EKbH0YdNGhQqfadd965ujFir+U/gVT9Rmn1pmXFAr2oDljW0Pjzpa/qV36K8mZjlezbWaB/61vfqueX/w+02bryP1TUZhndCfR6WkWgA9AzCfSWalmgVz/+UjR+TtyZyZMnV5MHDx7c+HXS+fPnX3jhheutt16H5+rXr195Oh3+POeqDfTx48dXMw899NDuvMh1RpcAbbNpyZIlJRmHDBnS4UpGjhw5bdq0auZhhx3WayUCvf750lL/9WBaoNeX7Bf3339/m61rKtBLbde3tBfoAPRMAp0uLFiwYMKECV/4whdKjh9yyCEnn3zymDFjbrjhhjaXtfwXKZl+5513nn/++ccff3yJ/vKMLr300ieeeKJxzuzZs0v2lbcoa2qRAECPJdABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItBb5+mnn77mP40fP37atGlLly5d00tbNmXKlL///e8reZA77rjjqquu+uc//9nZhAULFvz+979/4oknlixZspLnAgD4XyXQW+cnP/lJr47sueeejz/++BpcWOnmDTbYoLxhWJmDnHfeeeW59O/f/7777mu/dc6cOQceeGDfvn2rp7z11lvffPPNK3M6AID/VQK9dapAHz169IxX3HvvvSeddFIZ3GOPPdbU5+gLFy48+eSTyxpWMtCHDRu26667ltZvv2nRokXDhw/v3bv3F7/4xXvuuedHP/rRDjvssPbaa0+ZMmVlzggA8D9JoLdOFejf/e5324y/+93vLuOt/xD9ueee23///TfeeOPqU+2VDPQtttjiiCOO6HDT+PHjy/EvuuiieuTPf/5znz59PvrRj67MGQEA/icJ9NbpLNDPOeecMn7bbbdVfz777LOnnHLK3nvvPWzYsH333ffyyy9ftGhR4/wyMnLkyBEjRpTknT179rHHHvuHP/yh3jphwoSPfOQjb3jDG8oRLr300oULF3a2nn/961+fWe6DH/xgdwJ9/vz555133jvf+c5ddtmltPjdd99djc+aNausYd11191+++3LgxkzZrTZ8YILLijHf+KJJxoHy7MbPnx48zMCAPRAAr11Ogv0/fbbr4xPnz592fLYHThw4Prrr3/00UeXdN5jjz3KprPOOqueXAq4jLzrXe86/vjjN99884MOOqj8+bOf/azaOmbMmPJnCegTTzyxlHR5PGrUqMWLFzdf2G9+85suA/3f//53OWzv3r0PPPDAE044Ydttt11rrbXGjh1bNs2cObP0egn0Mlge/OlPf2qz75QpU8pzb3ybMWfOnL59+5Zn0XxhAAA9kEBvnSrQL7zwwodfMXHixGOOOab6nmh1DXpV2OPGjat2KYNl04477lj9ef/995etX/rSl6o///a3v5VGrwP9qaee6tev35FHHlnfI+WSSy4pW6+88srmC+tOoJeTljnXX3999efcuXN322238l7ihRdeqEaaXOLSxssvv1xmlqOVF6Q78wEAehSB3jqd3cVl9913L21dzXnyyScnTZrUeBfCAw44YLPNNqsen3DCCa95zWtefPHFeusXvvCFOtCr+6iUaq+3luNsuummXX5Q3Z1A32GHHXbdddfGkZtuuqnxvUQ3A33atGl777132fGUU07pcjIAQA8k0FunCvRPfvKT415xww03TJkypc39W0pV33///VdeeeUZZ5wxatSosksd6Pvss88uu+zSOPnGG2+sA/2www5bd911z/pPQ4YM2WmnnZovrMtAX7x4cd++fcvKGwdnzZpV/YNA9WeXgb5gwYIzzzyzT58+gwcPrj+JBwCgDYHeOp1dg97oqaee2nXXXcu0bbbZ5qCDDjrnnHP23XffOtB33nnnvfbaq3H+bbfdVgf6fvvtN2DAgAPaOfLII5svrMtAnzt3bplQ8rpx8KWXXiqDp556avVn80CfOXPm61//+lL5Z5999rx585qvBwCgJxPordOdQH/f+9638cYbT548uR456qij6kB/73vfu9122zXO//73v18H+nHHHVfPfFW6c4nLRhttdNhhhzWOPPbYY2Wvyy67rPqzSaDPnz+/1PngwYMffPDBFVgeAECPItBbpzuBXur84IMPbhwZMWJEnd3VFedTp06tt1Z3SKwC/corryyP77rrrnrro48+WrL4/PPPb76w7gT6qFGjNthgg/orocteueS9vtlik0C/+uqrG79gCgBAEwK9dboT6G95y1vWXXfde+65Z8mSJTNnzjz66KPLLq95zWuqX+h8/vnnN9pooze96U0PP/zwnDlzLrnkkvXWW69MuOmmm5Ytv8h76NChm2yyyS9+8YtS0hMnTixH69+//yOPPNJ8Yd0J9DvvvLPMGTlyZIn+cvDS3OXI++67bz2hSaCXtxxl3+OOO+4T/2n06NHNFwYA0AMJ9NbpTqCXDt5www3LtH79+pX/Pfzww7/xjW+UB2Ww+vT69ttvLwle3f5lm222GTt2bHlw6623VruXcH/9619f3x9m4403vvHGG7tcWHcCvbjqqqvWWWed+uClzv/617/WW5sEenmfsFZHRowY0eXaAAB6GoEe57nnnvvpT3963XXXVb/4s3jx4ttuu+3666+vf+jn+eefHz9+/K9//euXXnrp2muvLa1curzefeHChQ888MD3vve9W265pfGKlFW1tgkTJpSUf+ihhxrvBQkAwKoi0P+bjB07drPNNrv33nvrkUMOOWTo0KGNP9IJAMB/NYH+32TWrFmbbrrpsGHDLr744uuvv/7jH/94r169rrjiijW9LgAAVhmB/l9m6tSpH/jABwYNGjRw4MB3vOMd3bnEHACA/yICHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0/q/dOhYAAAAAGORvPY0dRREAACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjgg4AACOCDgAAI4IOAAAjAYXN2pNV/QyNAAAAAElFTkSuQmCC" loading="lazy" data-page="1">
+    <div class="ls-pagenum">Page 1 of 2</div>
+    
+    <img class="ls-page" alt="Lease agreement page 2"
+         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+AAAAV8CAIAAAA0MWIoAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAya0lEQVR4nOzde9RVdYH/cRAEJC+gctHEWypNmVSajjimhFmTVq5mMC+ThpdaknlLXaNjLTWnFYqpYy1dmTQzOEKlhVNm6MLxQt7Q8gJqYN6ISitBSEHggd93sX/uOfPceORy+NTzev3ROs93f/fe33Psj/c57LNPj1UAAECMHht7AQAAwP8S6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIFOl7S0tLz44oszZ8587rnnli5durGXsx4sWbJkzpw5Dz300Ny5c5ctW7axlwMA8P8J9KY677zzdlxt9uzZXdzl8MMP37HL/vu//7uTQ5Wt9cyLL764K2d//fXXx48f/853vrNPnz49Guyzzz7f+MY3Fi1atKHX3IlRo0ZVR9h1110XLFjQxb0WL1589dVX77vvvr17966fziabbLLTTjt95jOfefrppzvZd+zYsZ08kd133/2QQw753Oc+973vfW/lypVtd58+fXrXX5by7NbXvkceeWS96Z577lnjSzRr1qx6/oc//OH1tYzy8lbj559/fucLmDFjRjXzBz/4QTUycuTIrp+3Upa6xmcKAJkEelOVequK8Je//GUXd3n/+9/fo8smT57cyaGOOOKIeuawYcPajchGP/3pT4cOHdrJ6d7xjnc88sgjG3TNHXnssccaD/Kd73ynK3tNmzZt++2372QxPXv2POaYYzrK/Y997GNdfFLve9/72v4n/vGPf9z1l2WPPfZYX/t+8IMfrDd9/vOfX+OrdMEFF9Tz3/Wud62vZRx66KHVeHk7NHPmzE4WcMcdd1Qzv/vd71YjJbi7ft5KWeoanykAZBLoTbUugf65Luike0p0tvoUvPMPU+fMmbPFFltUMw866KD/+q//euihh8rg9OnTv/Wtb73zne+sNm211Vbz5s3bQGvuxDnnnNP4XFp9WNuum2++uaRhNX/bbbctp540aVJpwZtuumn8+PGjR4+uj1ae7xtvvNH2CHWgH3fccW2fyJgxY/72b/+2PsjOO+/c6l8Y6rrdZ5991viyfOUrX1lf+zYGenniK1as6PyFGj58eD2/o0Bfi2XUgV6MGDFi+fLlHS2gbaCfd955bY+/yy67VNOOPvrotlsff/zxzp8mAMQS6E31ubUN9FKW63jq6667rjp1XaKdf5j6vve9r5pWcrzt1paWlrPPPrua8Pd///cbaM0dWbly5Q477FBOsc0225TU67H6k+/58+d3ssudd9656aabVgs+88wzFy9e3HZOeQey6667VnOOPfbYthPqQP/DH/7Q0YnKf9ntttuumlZeosZNdd1+9atf7fJzXQ/7VoHeq1ev6gglfzuZ/MQTT1TTqvkdBfpaLKMx0Iuvf/3rHc1sG+jt+tSnPlVNe+65597qYgAgmUBvqo0Y6AcddFB1nBdeeGGrrbYqj7feeuuOvhxZX0Dy0Y9+tKMDlkavPzD+9a9/vSHW3JG77rqrOu+4cePGjx9fPf7GN77R0fzyNHfbbbdq2lVXXdXJkZ9//vm3v/3t1cwnn3yy1dauBPqqhootr0+74xsl0LfffvtS2+XBiSee2Mnk6vqWoUOH7rnnnhsi0DfffPNhw4aVB/369Zs7d267MwU6AN2cQG+qjRXo8+bNq85bIqn8efzxx1d//uQnP2l3/uTJk9f4MWfxta99rZr2/e9/f72vuRMlMavz3n///SXOqsd77713R/OvuOKKas6BBx64xoN/+9vfria3/S5jFwN9yZIl1bU0W2yxReP4Rg/0iy66qDwYOHBgJ3etqa5v+cIXvrDXXnttiEAvbwtvvfXW6iAdXZgk0AHo5gR6U22sQK8/Zp40adKq1d/+rP48+uij251/ww03VBMuuOCCTg77xBNPnLXaww8/vN7X3JGlS5dW/wLwjne8oxr5wAc+UK12zpw57e6yxx57VBMeeuihNR7/z3/+80EHHTRy5Mi2V7l0MdCLbbbZpkzr27dv4+BGD/Snn366Okj5P0C7Mx9//PFqwj333LPhAr08/vSnP10dZ+LEiW1nCnQAujmB3lQbK9Df8573lIP079+/1Oeq1Zd8DBw4sBp57bXX2s5/4IEHqnUOGjSo7XdAm7Pmjvzwhz+s1lZ/B3HChAnVyIUXXth2/ty5c6utH//4x9fx1F0M9EWLFlXThg8f3ji+0QO9PK6y+7jjjmt3ZnV9y3bbbbdy5coNGugvvfRS9f/AAQMG/P73v281U6AD0M0J9KbaKIFef+2v8SPhsWPHVoM33nhj212WL1++++67VxO23HLLSy655C010AYN9DrL6iuYX3zxxWqkrLnt/Guuuaba2u63Xd+SLgZ6fUVNed0axxMC/V//9V+r/6bt3qamur7li1/84qo3U34DBXoxceLE6lBHHnlkq5kCHYBuTqA31VoHes+ePa9ek3avFijOPffc6qQ/+9nP6sFp06ZVg4cddli7e02fPr1///49GrznPe8588wzb7vttnY/dF+/a+7IwoULq5tF7rfffo3j9ddVW11sU/zzP/9ztWnGjBlv6VxtrTHQX3755Ysvvrhfv37VCqt/r6jVdVte8zW+MrNmzVpf+zYG+jPPPFMdp+3vQ9XXt9x7772r1hToa7GMVoFefOhDH6qO1uqe5QIdgG5OoDfVWgd6VwwePLjt7itXrqxumjFkyJDGG2AvX768uk66d+/ef/rTn9o99aOPPlrd+6WVTTfdtDTf+PHj216csF7W3InvfOc71Y7f/OY3G8frD63LW4hWu9T/VtDRr4SWJ3JWB1pd1F4H+g477ND2pysb388cd9xxbX/t6C39ys8111yzvvZtDPRVb95A85hjjmm1vOr6ljKt+gWrzgN9LZbRNtDLu4XqzUx5PRvvGS/QAejmBHpTNT/Q77777mrrGWec0WrTSSedVG269tprO1lAidRLL730wx/+cNVSjUrcl2e0dOnS9bvmThx88MHVeVt9hv2b3/ymOmDpy5aWlsZN//iP/1htKjnY7jHrr5C21eqW4V38JdGhQ4feeuutbU8UEujVN4Y333zzJUuWNE6rrm857bTTqj+bEOjF17/+9WryqaeeWg8KdAC6OYHeVOtyDfriNWn3ypOTTz65OuMjjzzSalOdQV25+eCq1bdP+Z//+Z/zzz+/VX/vv//+rRp9HdfckVLhPXv2LEc+/PDD224dOXJktZ4777yz3VfggQceaPewBxxwwOD/q0RktUtHgX7CCSeMa6MMlhSuf6x0woQJrU5U1+0FF1ywxlem1Q9trsu+rQK9vjHlzTffXM+pr2/5+c9/Xo10HuhrsYx2A73MqX9q6v77768GBToA3ZxAb6omf0n0jTfeGDBgQHXGwW0MGjSojuy3equWZ5555pRTTqlyuRg/fvz6WnMnLr300up0/fv3b/t0Nttss2prqx/iqa7cKG644YYunqi8mek80Dv5kujMmTOru0CWp//HP/6xcVPCl0Qr1Y0px4wZU49Ur9Lb3/726vqWVRv+S6K1hx9+uHpXU85V3aBdoAPQzQn0pmpyoP/oRz/q0TWlfdfi+DfeeGO1+4477ri+1tyJKhnXqLwnabxFyS233FKNn3zyyV080W233bbWgb7qzTulFJMnT24czwn0yy+/vIyUtzT111ir61tOP/30ek7TAr0488wzq8NefPHFqwQ6AN2eQG+qJgf6P/zDP1SnO+uss65oz9lnn11NGDFiRL3XihUrttxyy/79+48dO3aNp6ijufGOJRsi0GfNmlWdqCRju8+lqH6dvpg6dWq944IFC6pP+gcNGtT2cvl2Vb+4udaBftddd1XTLrvsssbxnECvf1l2ypQpqxqub7nvvvvqOc0M9Ndee23nnXcuW/v06fPUU08JdAC6OYHeVM0M9FdffbVv3749Vl/c0nj/lkYtLS1DhgyplvTkk0/W4zvuuGMZ2Xfffdd4ltGjR1e7N960ZEMEen23xKuvvrqjOd/85jerOY0XbxSf+MQnqvFvf/vbazxRicVddtllXQK9/mmk8847r3E8J9CL/fffvwweccQR5fG//Mu/9Fh9K5X6+pZVzQ30VQ33/fy7v/u722+/XaAD0J0J9KZqZqBff/311bmq353pyBe+8IVqWqm0evAjH/lINThz5sxO9l22bFl1b8FWN2NZ74FewrF6z9CrV6+XX365o2kvvfRSdTVzv379Fi9eXI/PmDGjejpbbbXVCy+80Pm5Tj311B5vWrtAnzNnTjWt8c4kq8IC/aqrriqD5S3cokWLqvvYtLpDZZMDvTj22GOrg9f/8iPQAeieBHpTNTPQR40aVZ2ro7uXVO69995q2q677loP/uQnP6kGR4wY8eKLL3a075e+9KV23wOs90C/5557qhOVdw6dz6x/++Y///M/G8dPOOGEaryEfqvbvNRaWlquvPLKHg3W8RP0448/vnE8KtB/+9vfVlf+nHPOOdWR65uoVJof6OVVre7NXxPoAHRPAr2p6kA/44wzLuvY5ZdfXu9S/ypnJ/Nr9R3N58+fX+VXY3a3a+XKlTvssEPblK+qrsfqn4W//vrrW/0o5uzZs+vbqJcJv/vd7xq3rt2au/K6tcrutq677rp2U76s/73vfW9dfuPGjXvqqafqrSXNZ8yYsd9++1VbTznllHUJ9AULFlTTDjjggMbxum7L2rryyjz++OPrZd92A7048MADq/dR5X+HDRvWamvngb4Wy1hjoBeTJk0S6AAg0JuqDs3ONX723PUf/WmMsAkTJlQjjReudOSss86qJjd+EL5w4cLqJycrvXr12m233fbZZ5/hw4eXIq/H+/bte/vtt7c64NqtuSPLli0bOHBgjzYXrrTrlVde6d27d4/2LoZ59dVXW/0w6qBBg0q177nnntWNEXus/gmk6jdKqzctaxfoRXXAsobGny99S7/yU5Q3G+tl344C/Vvf+lY9v/x/oNXWdf+holbL6Eqg19MqAh2A7kmgN1XTAr368Zei8XPijsycObOaPGTIkMavky5ZsuSSSy7ZfPPN2z1Xnz59ytNp9+c512+gT506tZp55JFHduVFrjO6BGirTS0tLSUZhw4d2u5KRo0aNXv27GrmUUcd1WMdAr3++dJS//VgWqDXl+wXDz74YKutGyvQS23Xt7QX6AB0TwKdNVi6dOm0adO+/OUvlxwfM2bMqaeeOmHChJtuuqnVZS1/QUqm33333RdddNFJJ51Uor88oyuvvPLZZ59tnLNgwYKSfeUtysZaJADQbQl0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggh0AAAIItABACCIQAcAgCACHQAAggj05nnhhRcm/V9Tp06dPXv2ypUrN+7C5s2b9/DDD7/66qvreJy77rrruuuu+8Mf/tDRhKVLl/7iF7949tlnW1pa1vFcAAB/rQR68/zgBz/o0Z7999//mWee2ShL+v73vz948OB6JWPHjl3rTL/wwgvLEfr27fvAAw+03bpw4cLDDjusd+/e1Yl23HHHW2+9dd3WDgDw10mgN08V6OPHj5/7pvvvv3/cuHFlcL/99mv+5+ilznv27Ln33nvfdNNN991332mnnVZWcuSRR67d0YYPH14OtXTp0rabli9fPmLEiHKur3zlK+VE3/ve93bbbbdNN9300UcfXbdnAADwV0igN08V6N/97ndbjX/0ox8t483/EL1E85AhQ1555ZV6ZOzYsWUlv/71r9fiaNtvv/0xxxzT7qapU6eWw37ta1+rR8opevXq9U//9E9rcSIAgL9uAr15Ogr0888/v4zfcccd1Z8vvfTS6aeffuCBBw4fPvzggw+++uqrly9f3ji/jIwaNWrkyJEleRcsWHDCCSf88pe/rLdOmzbt05/+9Lve9a5yhCuvvPKNN95odzEtLS29e/f+zGc+0zg4ZcqUspLS0+3usmTJkgsvvPBDH/rQXnvtVVr83nvvrcbnz59f1rDZZpvtuuuu5cHcuXNb7XjxxReXwz777LONg+XZlXcI7Z4IAKA7E+jN01GgH3LIIWV8zpw5q1bH7sCBA7fYYovjjz/+tNNO22+//cqmc889t55cCriMfOQjHznppJO22267ww8/vPz5ox/9qNo6YcKE8mcJ6FNOOaWUdHk8evToFStWtF3MsmXLynoee+yxxsGzzz677NLuReR//vOfy2F79ux52GGHnXzyyTvvvPMmm2wyceLEVau/Y1p6vQR6GSwPfvWrX7Xa99FHHy3nanybsXDhwvL2oDyLLr94AADdhUBvnirQL7nkkifeNH369Oqqkv3337+6Br0q7MmTJ1e7lMGyaffdd6/+fPDBB8vWr371q9Wfv/vd70qj14H+/PPP9+nT59hjj63vkXL55ZeXrddee21Xlvfzn/98wIAB7373u9u9Gr6ctBxqypQp1Z+LFi3aZ599ynuJ+kulnVzi0kp5b1BmlqOVF6Qr8wEAuhWB3jwd3cVl3333LW1dzXnuuedmzJjReBfCQw89dPDgwdXjk08++W1ve9trr71Wb/3yl79cB3p1H5VS7fXWcpxtt912jR9UL1++/IorrujXr1850dNPP93unN12223vvfduHLnlllsa30t0MdBnz5594IEHlh1PP/30NU4GAOiGBHrzVIH++c9/fvKbbrrppkcffbTVJ9alqh988MFrr732S1/60ujRo8sudaAfdNBBe+21V+Pkm2++uQ70o446arPNNjv3/xo6dOgee+zRyaoeeOCBv/mbvykHGTNmzMsvv9zunBUrVvTu3busvHFw/vz51T8IVH+uMdCXLl16zjnn9OrVa8iQIfUn8QAAtCLQm6eja9AbPf/883vvvXeZttNOOx1++OHnn3/+wQcfXAf6nnvuecABBzTOv+OOO+pAP+SQQ/r3739oG8cee2xHp7v00ks32WSTESNG1N/4bNeiRYvKWUpeNw6+/vrrZfCMM86o/uw80OfNm1feBpTKP++88xYvXtzJuQAAujmB3jxdCfSPf/zjW2+99cyZM+uR4447rg70j33sY7vsskvj/P/4j/+oA/3EE0+sZ3ZFte+4ceOWLVu2xskDBgw46qijGkeefvrpsvtVV11V/dlJoC9ZsqTU+ZAhQx555JGuLw8AoHsS6M3TlUAvdX7EEUc0jowcObLO7uqK81mzZtVbP/WpT9WBfu2115bH99xzT731qaeeKll80UUXtT1RS0vLTjvtVLq5iz+QNHr06C233LLxd0arS97rj947CfTrr7++8QumAAB0QqA3T1cC/f3vf/9mm2123333lYCeN2/e8ccfX3Z529veVv1C5yuvvDJgwID3vve9TzzxxMKFCy+//PLNN9+8TLjllltWrb7Ie9iwYdtss82Pf/zjUtLTp08vR+vbt++TTz7Z9kSPPfZY2bEc6nNtzJ49u+38u+++u8wfNWpUif5y8NLc5cgHH3xwPaGTQC9vOcq+J554YqsTjR8//q28fgAA3YJAb56uBHrp4K222qpM69OnT/nfo48++t/+7d/KgzJYfXp95513lgSvbv+y0047TZw4sTy4/fbbq91LuFff+KxsvfXWN998c7snKk2/SQemTZvW7i7XXXddv3796oOXOv/tb39bb+0k0Mv7hHZPNHLkyC68bAAA3YtAj/PHP/7xhz/84Y033lj94s+KFSvuuOOOKVOm1D/088orr0ydOvVnP/vZ66+/fsMNN5RWLl1e7/7GG2889NBD//7v/37bbbc1XpGyvtZW8n3SpEmPP/54470gAQBYXwT6X5KJEycOHjz4/vvvr0fGjBkzbNiwxh/pBADgL5pA/0syf/78bbfddvjw4ZdddtmUKVM++9nP9ujR45prrtnY6wIAYL0R6H9hZs2a9clPfnLQoEEDBw784Ac/2NEl5gAA/IUS6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgAwBAEIEOAABBBDoAAAQR6AAAEESgA/y/dutYAAAAAGCQv/U0dhRFADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMCLoAAAwIugAADAi6AAAMBLipJnUWCXC4AAAAABJRU5ErkJggg==" loading="lazy" data-page="2">
+    <div class="ls-pagenum">Page 2 of 2</div>
+    
+    
+    
+    
+    
+    
+    <div id="ls-end" style="height:1px"></div>
+  </div>
+
+  <form method="post" id="ls-form" novalidate>
+    <input type="hidden" name="csrfmiddlewaretoken" value="CoM1zrrqo8510svDH4UNg9l0353IOVozclsETtaFbCdKZvwSMxN5A9imm9KO5XlP">
+    <input type="hidden" name="read_to_end" id="ls-read" value="0">
+    <input type="hidden" name="seconds_open" id="ls-seconds" value="0">
+    <input type="hidden" name="signature_kind" id="ls-kind" value="drawn">
+    <input type="hidden" name="signature_data" id="ls-data" value="">
+
+    <div class="ls-card">
+      <h2>Your signature</h2>
+
+      <div class="ls-tabs" role="tablist">
+        <button type="button" class="ls-tab" id="ls-tab-draw"
+                role="tab" aria-selected="true" aria-controls="ls-panel-draw">
+          Draw it
+        </button>
+        <button type="button" class="ls-tab" id="ls-tab-type"
+                role="tab" aria-selected="false" aria-controls="ls-panel-type">
+          Type my name
+        </button>
+      </div>
+
+      <div id="ls-panel-draw" role="tabpanel" aria-labelledby="ls-tab-draw">
+        <div class="ls-pad" id="ls-pad">
+          <canvas id="ls-canvas"></canvas>
+          <span class="ls-pad-hint">Sign here with your finger or mouse</span>
+        </div>
+        <p style="margin:10px 0 0">
+          <button type="button" class="ls-btn ls-btn-quiet" id="ls-clear">
+            Clear and start again
+          </button>
+        </p>
+      </div>
+
+      <div id="ls-panel-type" role="tabpanel" aria-labelledby="ls-tab-type"
+           hidden>
+        <label for="ls-typed" style="display:block;margin:0 0 6px;
+               font-size:14px;color:var(--alv-ink-soft)">
+          Your full name, exactly as it should appear on the agreement
+        </label>
+        <input type="text" id="ls-typed" name="typed_name"
+               value="Mr. Antoine Madelbos" autocomplete="name">
+      </div>
+
+      <label class="ls-consent">
+        <input type="checkbox" name="consent" id="ls-consent" value="1">
+        <span>I agree to sign this lease agreement electronically, and I
+          understand that my electronic signature is as binding as a
+          signature on paper.</span>
+      </label>
+    </div>
+
+    <p class="ls-foot">
+      A copy of the fully signed agreement will be emailed to you once
+      everybody has signed.
+    </p>
+
+    <div class="ls-bar">
+      <div class="ls-bar-in">
+        
+        
+        <span class="ls-why" id="ls-why">
+          Read to the end of the agreement to unlock signing.
+        </span>
+        <button type="submit" class="ls-btn ls-btn-primary" id="ls-sign"
+                disabled>
+          Sign the agreement
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('ls-form');
+  if (!form) return;
+
+  var read = document.getElementById('ls-read');
+  var secs = document.getElementById('ls-seconds');
+  var kind = document.getElementById('ls-kind');
+  var data = document.getElementById('ls-data');
+  var why = document.getElementById('ls-why');
+  var btn = document.getElementById('ls-sign');
+  var consent = document.getElementById('ls-consent');
+  var typed = document.getElementById('ls-typed');
+  var pad = document.getElementById('ls-pad');
+  var canvas = document.getElementById('ls-canvas');
+  var clear = document.getElementById('ls-clear');
+  var endMark = document.getElementById('ls-end');
+  var meter = document.getElementById('ls-meter');
+  var ptext = document.getElementById('ls-progress-text');
+  var tabDraw = document.getElementById('ls-tab-draw');
+  var tabType = document.getElementById('ls-tab-type');
+  var panDraw = document.getElementById('ls-panel-draw');
+  var panType = document.getElementById('ls-panel-type');
+
+  var TOTAL = 2;
+  var started = Date.now();
+  var drawn = false;
+  var atEnd = false;
+
+  // ---- SECONDS OPEN. Evidence, bounded on the server too - a
+  // browser left open overnight must not write a number that reads
+  // like fraud.
+  setInterval(function () {
+    secs.value = String(Math.round((Date.now() - started) / 1000));
+  }, 5000);
+
+  // ---- READING TO THE END.
+  //
+  // AN OBSERVER ON A SENTINEL AFTER THE LAST PAGE, not a scroll
+  // position compared against document height. A scroll sum is wrong
+  // the moment an image finishes loading and the page grows under it,
+  // and on a short lease that fits the window it never fires at all.
+  // An observer on an element already in view fires immediately,
+  // which is the correct answer for a one-page agreement.
+  function markRead() {
+    if (atEnd) return;
+    atEnd = true;
+    read.value = '1';
+    paint();
+  }
+
+  if (endMark && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isIntersecting) markRead();
+      }
+    }, { rootMargin: '0px 0px -8px 0px' }).observe(endMark);
+  } else {
+    // NO OBSERVER, NO LOCK. A browser too old for this would
+    // otherwise be a browser that can never sign, and refusing
+    // somebody a lease over their browser version is not a position
+    // this application should take. The server still records that
+    // the end was reached; it simply believes the page.
+    markRead();
+  }
+
+  // ---- WHICH PAGE AM I ON. Decoration, so it fails quietly.
+  if (TOTAL > 0 && 'IntersectionObserver' in window) {
+    var seen = 1;
+    var io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (!entries[i].isIntersecting) continue;
+        var n = parseInt(entries[i].target.getAttribute('data-page'), 10);
+        if (n > seen) seen = n;
+      }
+      if (ptext) ptext.textContent = 'Page ' + seen + ' of ' + TOTAL;
+      if (meter) meter.style.width = Math.round(seen * 100 / TOTAL) + '%';
+    }, { threshold: 0.25 });
+    var imgs = document.querySelectorAll('.ls-page');
+    for (var i = 0; i < imgs.length; i++) io.observe(imgs[i]);
+  }
+
+  // ---- THE SIGNATURE PAD.
+  //
+  // THE BACKING STORE IS SIZED FROM THE MEASURED BOX, not from CSS. A
+  // canvas whose CSS size and drawing size disagree draws the line
+  // away from the finger, and on a phone that gap is most of the box.
+  var ctx = canvas ? canvas.getContext('2d') : null;
+  var drawing = false;
+
+  function sizePad() {
+    if (!ctx) return;
+    var r = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var keep = drawn ? canvas.toDataURL('image/png') : null;
+    canvas.width = Math.max(1, Math.round(r.width * dpr));
+    canvas.height = Math.max(1, Math.round(r.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#21343c';
+    if (keep) {
+      var img = new Image();
+      img.onload = function () { ctx.drawImage(img, 0, 0, r.width, r.height); };
+      img.src = keep;
+    }
+  }
+
+  function at(e) {
+    var r = canvas.getBoundingClientRect();
+    var p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+
+  function down(e) {
+    if (!ctx) return;
+    e.preventDefault();
+    drawing = true;
+    var p = at(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function move(e) {
+    if (!drawing || !ctx) return;
+    e.preventDefault();
+    var p = at(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    if (!drawn) { drawn = true; pad.classList.add('is-drawn'); paint(); }
+  }
+
+  function up() { drawing = false; }
+
+  if (canvas) {
+    canvas.addEventListener('pointerdown', down);
+    canvas.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    canvas.addEventListener('touchstart', down, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', up);
+    window.addEventListener('resize', sizePad);
+    sizePad();
+  }
+
+  if (clear) {
+    clear.addEventListener('click', function () {
+      if (!ctx) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sizePad();
+      drawn = false;
+      pad.classList.remove('is-drawn');
+      paint();
+    });
+  }
+
+  // ---- DRAW OR TYPE. His decision of 24 October: a mouse signature
+  // on a laptop is awkward, and refusing there just stalls the lease.
+  function mode(which) {
+    kind.value = which;
+    var isDraw = (which === 'drawn');
+    tabDraw.setAttribute('aria-selected', isDraw ? 'true' : 'false');
+    tabType.setAttribute('aria-selected', isDraw ? 'false' : 'true');
+    panDraw.hidden = !isDraw;
+    panType.hidden = isDraw;
+    paint();
+  }
+  tabDraw.addEventListener('click', function () { mode('drawn'); });
+  tabType.addEventListener('click', function () { mode('typed'); });
+  if (typed) typed.addEventListener('input', paint);
+  if (consent) consent.addEventListener('change', paint);
+
+  function hasSignature() {
+    if (kind.value === 'typed') {
+      return !!(typed && typed.value.trim().length >= 2);
+    }
+    return drawn;
+  }
+
+  // ---- THE CONTROL SAYS WHAT IS STILL OUTSTANDING.
+  function paint() {
+    var want = [];
+    if (!atEnd) want.push('read to the end of the agreement');
+    if (!hasSignature()) {
+      want.push(kind.value === 'typed' ? 'type your full name'
+                                       : 'draw your signature');
+    }
+    if (consent && !consent.checked) want.push('tick the box to agree');
+
+    btn.disabled = want.length > 0;
+    why.classList.toggle('is-ready', want.length === 0);
+    if (!want.length) {
+      why.textContent = 'Ready to sign.';
+    } else if (want.length === 1) {
+      why.textContent = 'To sign, ' + want[0] + '.';
+    } else {
+      why.textContent = 'To sign, ' + want.slice(0, -1).join(', ')
+                      + ' and ' + want[want.length - 1] + '.';
+    }
+  }
+
+  form.addEventListener('submit', function (e) {
+    if (kind.value === 'drawn') {
+      if (!drawn) { e.preventDefault(); paint(); return; }
+      data.value = canvas.toDataURL('image/png');
+    } else {
+      data.value = '';
+    }
+    secs.value = String(Math.round((Date.now() - started) / 1000));
+    btn.disabled = true;
+    why.textContent = 'Sending your signature...';
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>

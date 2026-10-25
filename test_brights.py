@@ -194,7 +194,12 @@ for p in sorted(T.templates()):
     for a, b in R.script_spans(js):
         for s, _e, _l in R.colour_spans(js, a, b):
             ctx[R.js_colour_context(js, s, a)] += 1
-ok(ctx.get('canvas', 0) == 27,
+# ES-4, 24 Oct 2026 - 27 -> 28, AND IT IS NOT A CHART. The signing
+# page captures a drawn signature on a real <canvas>; the colour it
+# strokes with is set in script, which is the same place a charting
+# library sets its own and the same reason var() cannot reach it.
+# The claim below is unchanged: no chart colour was touched.
+ok(ctx.get('canvas', 0) == 28,
    'canvas is still %d - not one chart colour was touched'
    % ctx.get('canvas', 0))
 ok(ctx.get('unknown', 0) == 91,

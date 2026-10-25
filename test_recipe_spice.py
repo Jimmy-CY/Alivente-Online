@@ -225,6 +225,9 @@ ok('preview_imported_recipe.html' not in P.MAP,
    're-point a decision that had already been taken')
 nspice = sum(1 for v in P.MAP.values() for e in v if e[4] == P.SPICE_FAM)
 nwarn = sum(1 for v in P.MAP.values() for e in v if e[4] == P.WARN_FAM)
+# ES-4, 24 Oct 2026 - this reads test_pair_contrast's figure, which
+# moved by eleven for the public signing pages. The claim here is
+# unchanged: RC-2 took nothing out of the census.
 ok(nspice == 28 and nwarn == 13,
    '%d spice and %d warn - TWO FAMILIES, because the rules themselves '
    'declare which' % (nspice, nwarn))

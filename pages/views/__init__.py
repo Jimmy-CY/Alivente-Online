@@ -48,6 +48,13 @@ from .lease_template import *  # noqa: F401, F403
 # __all__, so a view missing from that list does not exist to the
 # URLconf no matter how correct it is - RV-1 learned that on 23 Oct.
 from .lease_signing import *  # noqa: F401, F403
+# ES-4, 24 Oct 2026 - the signing page itself. Same note as above: a
+# view missing from __all__ does not exist to the URLconf.
+from .lease_signing_sign import *  # noqa: F401, F403
+# ES-3b, 24 Oct 2026 - the send screen. AFTER lease_signing_sign,
+# because it imports _invite from it; the other order is an import
+# cycle that fails at startup rather than at the first request.
+from .lease_signing_create import *  # noqa: F401, F403
 from .recipes import *  # noqa: F401, F403
 from .help import *  # noqa: F401, F403
 from .household import *

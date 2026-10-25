@@ -1012,6 +1012,12 @@ CONVERTED = [
     'test_contact_company.py',
     # PG-3, 24 Oct 2026 - the gate does not walk a virtualenv.
     'test_gate_walk.py',
+    # T2-7, 24 Oct 2026 - the second tenant has contact details.
+    'test_joint_contact.py',
+    # ES-4, 24 Oct 2026 - a lease can be read and signed.
+    'test_lease_sign.py',
+    # ES-3b, 24 Oct 2026 - an envelope can be made.
+    'test_send_lease.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

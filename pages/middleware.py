@@ -715,6 +715,19 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # reading it.                   [test_auth_flow.py]
             'forgot-password/',
             'set-password/',
+            # ES-4, 24 Oct 2026 - THE SIGNING LINK, and it is the same
+            # sentence as the two lines above. A tenant signing a
+            # lease is anonymous; that is the entire reason they were
+            # emailed a link. The token is the credential and it is
+            # checked by the view, which is the only thing that can
+            # check it - the middleware has no idea what a lease is.
+            #
+            # 'sign/' AND NOT 'lease-signing/'. The register and the
+            # send screen live under lease-signing/ and are staff
+            # pages that must keep their permission check; only the
+            # public route is exempt, and it was given a short name of
+            # its own partly so that this line could be narrow.
+            'sign/',
             'accounts/',
             'api/',  # If you have API endpoints
             # DP-1, 22 Oct 2026 - THE DEPLOY PROBE.

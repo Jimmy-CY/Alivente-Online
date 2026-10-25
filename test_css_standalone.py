@@ -102,7 +102,21 @@ ok(hasattr(alv_tree, 'inherits_base'), '  and inherits_base() beside it')
 
 sa = alv_tree.standalone()
 # 12 -> 14 - RD-1, 19 Oct 2026, the quick-look pair.
-ok(len(sa) == 14, 'it names %d template(s)' % len(sa), sa)
+#
+# 14 -> 18 - ES-4, 24 Oct 2026, THE PUBLIC SIGNING PAGES. A tenant
+# holding a signing link is not signed in, and base.html carries the
+# authenticated navbar and queries the database for it. So the signing
+# page, the page after signing, the closed page and the one partial
+# that holds their shared styles all stand alone - the same reason
+# connectivity_error.html does, which has to render when the database
+# is down.
+#
+# THE COST OF THAT IS NAMED RATHER THAN HIDDEN: standalone() is the
+# skip set for every colour census in this tree, so those four pages
+# are outside test_amber, test_brights, the four test_colour_* suites,
+# test_cssrules_outside and test_dead_weight. test_lease_sign.py takes
+# the job instead and compares each token value against base.html.
+ok(len(sa) == 18, 'it names %d template(s)' % len(sa), sa)
 for s in sa:
     print('      %s' % s)
 
