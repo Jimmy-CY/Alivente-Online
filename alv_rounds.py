@@ -1498,6 +1498,8 @@ ROUNDS = [
     '.bak_housekeep',
     # TI-1, 26 Oct 2026 - identity numbers on the tenant.
     '.bak_tenantid',
+    # SY-1, 26 Oct 2026 - permissions on migrate; two workers.
+    '.bak_sysround',
 ]
 
 

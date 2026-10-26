@@ -314,6 +314,15 @@ if nobak:
 # pinned here so the set cannot quietly grow: a fifth is reported the day
 # it is written.
 PINNED = {
+    # THE TWENTY-SIXTH - SY-1, 26 Oct 2026 - REVEALED, NOT BROKEN. The
+    # round that made Receipts its own module wrote pages/permissions.py, and no
+    # version has lacked it since; SY-1 (ensure_permissions) is the
+    # first round to back that file up, so the row is proven blind the
+    # day it ships - pinned in the same round.
+    "can_access_receipts":
+        'Receipts is its own grantable module - the file was written '
+        'WITH it, and SY-1 is the first round since '
+        'to back that file up',
     # THE TWENTY-FIFTH - ES-7b, 25 Oct 2026 - REVEALED, NOT BROKEN. ES-6
     # CREATED pages/views/lease_signing_approve.py WITH _attach letting go
     # of the old lease before the save; no version has ever lacked it.

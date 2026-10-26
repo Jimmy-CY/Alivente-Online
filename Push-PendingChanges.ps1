@@ -87,7 +87,12 @@ param(
     # ZERO MEANS SAY NOTHING. The argument is only added when it is
     # asked for, so a push that does not mention workers behaves
     # exactly as every push before this round did.
-    [int]$Workers = 0,
+    #
+    # SY-1, 26 Oct 2026 - TWO BY DEFAULT, his decision. Pushes have been
+    # typed with -Workers 2 or 3, because 6 (alv_run.py's
+    # own default) crashes this laptop with 0xC0000374. -Workers 0 still
+    # means say nothing and let the runner choose.
+    [int]$Workers = 2,
     # DP-1, 22 Oct 2026 - WAIT FOR THE DEPLOY, DO NOT ANNOUNCE IT.
     # Push 4 and push 5 both ended by saying Railway would build and
     # deploy, and in both cases it did not. -Site is where to ask,
@@ -1292,6 +1297,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = "_tell_house_signed(env, party, 'completed', request)"; What = 'ES-8: the last signature tells Alivente the lease is ready for approval - without it a signed lease waits unnoticed' },
     @{ File = 'Push-PendingChanges.ps1'; Text = '& python manage.py migrate --check 2>&1'; What = 'HK-1: the push refuses to run its suites against a local database with a migration unapplied - without it, a forgotten migrate costs a twenty-minute gate of false failures' },
     @{ File = 'pages/forms.py'; Text = 'tenant_2_id_number'; What = 'TI-1: the tenant form saves the identity numbers - a column missing from the fields list is dropped without a word' },
+    @{ File = 'pages/apps.py'; Text = 'post_migrate.connect(_ensure_permissions'; What = 'SY-1: every module permission is created on every migrate - without it a fresh database refuses every Edit screen until a superuser opens User Administration' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3136,7 +3142,9 @@ $suites = @(
     # HK-1, 26 Oct 2026 - Release 19 housekeeping.
     'test_housekeeping.py',
     # TI-1, 26 Oct 2026 - identity numbers on the tenant.
-    'test_tenant_identity.py'
+    'test_tenant_identity.py',
+    # SY-1, 26 Oct 2026 - permissions on migrate; two workers.
+    'test_system_round.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

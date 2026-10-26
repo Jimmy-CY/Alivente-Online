@@ -1038,6 +1038,8 @@ CONVERTED = [
     'test_housekeeping.py',
     # TI-1, 26 Oct 2026 - identity numbers on the tenant.
     'test_tenant_identity.py',
+    # SY-1, 26 Oct 2026 - permissions on migrate; two workers.
+    'test_system_round.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

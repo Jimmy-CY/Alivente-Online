@@ -1099,43 +1099,10 @@ class ModuleAccessMiddleware(MiddlewareMixin):
                 "Access Denied: Insufficient permissions")
 
 
-# Add this function to help create permissions programmatically
+# SY-1, 26 Oct 2026 - THE OLD HELPER, KEPT FOR ANYONE WHO CALLS IT FROM
+# A SHELL, now the shared one: its own ten-row list had no can_edit_* and
+# looked rows up by name, which fails on a row whose name has drifted.
 def create_module_permissions():
-    """
-    Helper function to create module permissions.
-    Run this in Django shell or create a management command.
-    """
-    from django.contrib.auth.models import Permission
-    from django.contrib.contenttypes.models import ContentType
-    from django.contrib.auth.models import User
-    
-    # Get content type (you can use any model, or create a custom one)
-    content_type = ContentType.objects.get_for_model(User)
-    
-    permissions = [
-        ('can_access_properties', 'Can access Properties module'),
-        ('can_access_tenants', 'Can access Tenants module'),
-        ('can_access_suppliers', 'Can access Suppliers module'),
-        ('can_access_expenses', 'Can access Expenses module'),
-        ('can_access_petty_cash', 'Can access Petty Cash module'),
-        ('can_access_financials', 'Can access Financials module'),
-        ('can_access_invoices', 'Can access Invoices module'),
-        ('can_access_projects', 'Can access Projects module'),
-        ('can_access_issues', 'Can access Issues module'),
-        ('can_access_dashboard', 'Can access Dashboard module'),
-    ]
-    
-    created_permissions = []
-    for codename, name in permissions:
-        permission, created = Permission.objects.get_or_create(
-            codename=codename,
-            name=name,
-            content_type=content_type,
-        )
-        if created:
-            created_permissions.append(permission)
-            print(f"Created permission: {permission.name}")
-        else:
-            print(f"Permission already exists: {permission.name}")
-    
-    return created_permissions
+    """Create any missing module permission; returns the codenames made."""
+    from pages.permissions import ensure_permissions
+    return ensure_permissions()

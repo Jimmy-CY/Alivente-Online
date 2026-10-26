@@ -23,11 +23,14 @@ def setup_permissions(request):
         # system checks.
         permissions_data = all_codenames()
         
+        # SY-1, 26 Oct 2026 - by codename, the name only a default: a row
+        # whose name had drifted made the old lookup try a duplicate
+        # codename and stop the whole page on the unique constraint.
         for codename, name in permissions_data:
             permission, created = Permission.objects.get_or_create(
                 codename=codename,
-                name=name,
                 content_type=content_type,
+                defaults={'name': name},
             )
             if created:
                 output.append(f"✓ Created: {name}")

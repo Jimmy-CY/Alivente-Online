@@ -57,3 +57,31 @@ def all_codenames():
             out.append((m['edit_codename'], "Can edit %s" % m['label']))
     out.extend(EXTRA_PERMISSIONS)
     return out
+
+
+# SY-1, 26 Oct 2026 - EVERY PERMISSION EXISTS AFTER EVERY MIGRATE.
+#
+# Until this round the rows were made only when a superuser opened User
+# Administration (views/users.py) or the setup page (views_setup.py). A
+# fresh or rebuilt database therefore came up with none of them, and the
+# first sign was a 403 on an Edit screen somebody could reach yesterday.
+# pages/apps.py now calls this from post_migrate, so `python manage.py
+# migrate` - which every deploy runs - leaves every codename in place.
+#
+# LOOKED UP BY CODENAME, THE NAME ONLY A DEFAULT. A row whose name has
+# drifted ("Can access Tenants module" from the old seeder) is the same
+# permission; a lookup that included the name would try to create a
+# second row with the same codename and hit the unique constraint.
+# Existing rows are never renamed or removed.
+def ensure_permissions(using='default'):
+    """Create any missing permission row. Returns the codenames created."""
+    from django.contrib.auth.models import Permission, User
+    from django.contrib.contenttypes.models import ContentType
+    ct = ContentType.objects.db_manager(using).get_for_model(User)
+    made = []
+    for codename, name in all_codenames():
+        _p, created = Permission.objects.using(using).get_or_create(
+            codename=codename, content_type=ct, defaults={'name': name})
+        if created:
+            made.append(codename)
+    return made

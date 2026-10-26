@@ -21,19 +21,12 @@ class Command(BaseCommand):
         # Get content type (using User model as base)
         content_type = ContentType.objects.get_for_model(User)
         
-        # Define permissions
-        permissions_data = [
-            ('can_access_properties', 'Can access Properties module'),
-            ('can_access_tenants', 'Can access Tenants module'),
-            ('can_access_suppliers', 'Can access Suppliers module'),
-            ('can_access_expenses', 'Can access Expenses module'),
-            ('can_access_petty_cash', 'Can access Petty Cash module'),
-            ('can_access_financials', 'Can access Financials module'),
-            ('can_access_invoices', 'Can access Invoices module'),
-            ('can_access_projects', 'Can access Projects module'),
-            ('can_access_issues', 'Can access Issues module'),
-            ('can_access_dashboard', 'Can access Dashboard module'),
-        ]
+        # SY-1, 26 Oct 2026 - THE ONE LIST (pages/permissions.py), not a
+        # ten-row copy of it that had no can_edit_* and none of the five
+        # modules added since. migrate now does this anyway; the command
+        # stays for --create-groups.
+        from pages.permissions import all_codenames
+        permissions_data = all_codenames()
         
         created_permissions = []
         existing_permissions = []
@@ -41,8 +34,8 @@ class Command(BaseCommand):
         for codename, name in permissions_data:
             permission, created = Permission.objects.get_or_create(
                 codename=codename,
-                name=name,
                 content_type=content_type,
+                defaults={'name': name},
             )
             
             if created:

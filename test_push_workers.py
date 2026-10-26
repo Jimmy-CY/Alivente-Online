@@ -134,10 +134,12 @@ def claims(d):
     blk = arg_lines(g)
     par = param_block(g)
     return {
+        # SY-1, 26 Oct 2026 - DEFAULT 2, his decision: every push was
+        # being typed with -Workers 2 or 3. -Workers 0 still says nothing.
         'the push script takes a -Workers parameter':
-            '[int]$Workers = 0,' in par,
-        '  defaulting to zero, so a push that says nothing is unchanged':
-            bool(re.search(r'\[int\]\$Workers\s*=\s*0\s*,', par)),
+            '[int]$Workers = 2,' in par,
+        '  defaulting to two since SY-1, so a bare push sweeps at 2':
+            bool(re.search(r'\[int\]\$Workers\s*=\s*2\s*,', par)),
         'and it reaches the runner':
             '--workers' in blk,
         '  only when it is greater than zero':
@@ -241,10 +243,11 @@ try:
            % (f_, r_, w_, ' '.join(want[1:]) or '(nothing)'), got)
 
     # THE ONE THAT MATTERS: zero adds nothing at all.
+    # SY-1, 26 Oct 2026 - a push that does not mention workers now
+    # passes 2; -Workers 0 is how to leave the choice to the runner.
     ok('--workers' not in simulate(False, True, 0),
-       'A PUSH THAT DOES NOT MENTION WORKERS IS BYTE-FOR-BYTE THE PUSH '
-       'IT WAS BEFORE THIS ROUND - which is what makes the parameter '
-       'safe to add to a script that runs every delivery')
+       '-Workers 0 adds nothing at all, so the runner own default is '
+       'still one word away')
 
     # AND THE SIMULATOR CAN FAIL. A comparison that cannot fail is
     # not a check - the lesson of 20 October.
