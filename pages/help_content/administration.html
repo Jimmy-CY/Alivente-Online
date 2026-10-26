@@ -1840,7 +1840,7 @@
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-tachometer-alt"></i> What is this dashboard?</h6>
-    <p>The Notifications Dashboard is a <strong>single-glance health check</strong> of your property portfolio. It surfaces six key indicators that need attention &mdash; from vacant properties and expiring leases through to overdue invoices and pending expenses.</p>
+    <p>The Notifications Dashboard is a <strong>single-glance health check</strong> of your property portfolio. It surfaces eight key indicators that need attention, four across and two high &mdash; from vacant properties and expiring leases through to overdue invoices, invoices and leases waiting for you, and pending expenses.</p>
 
     <p>It's the visual companion to the <strong>Daily Property Management Report</strong> email &mdash; the same data, rendered as clickable cards you can drill into.</p>
 
@@ -1856,7 +1856,7 @@
   <article data-tab-slug="nd-cards"
            data-tab-name="Status Cards"
            data-tab-icon="fa-th">
-    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-th"></i> The six status cards</h6>
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-th"></i> The eight status cards</h6>
     <p>Each card shows a count and is colour-coded by urgency. Click any card to see the underlying records.</p>
 
     <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
@@ -1884,6 +1884,22 @@
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><i class="fas fa-exclamation-triangle" style="color:#0e7c8b;"></i> <strong>Overdue Invoices</strong></h6>
         <p class="mb-0" style="font-size:13px;">Tenant invoices past their due date. Drill in to see the amount, the tenant and how many days overdue.</p>
+      </div>
+    </div>
+
+    <!-- NB-1, 26 Oct 2026 - draft physical invoices, his request. -->
+    <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-file-invoice" style="color:#0e7c8b;"></i> <strong>Invoices Waiting for Approval</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Physical invoices still in <strong>Draft</strong> &mdash; tenant and customer. Nothing is sent until it is approved; the same drafts are in the daily approval e-mail. Click the card to see them and open <strong>Review and approve</strong>. It also appears on Home, under Arrears, for anyone who can open Physical Invoices.</p>
+      </div>
+    </div>
+
+    <!-- ES-9, 26 Oct 2026 - the eighth box. -->
+    <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-file-signature" style="color:#0e7c8b;"></i> <strong>Leases Needing Action</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Every e-signing envelope that needs someone to act: <strong>signed and waiting for approval</strong>, or <strong>declined</strong> or <strong>expired</strong> and not dealt with yet. A declined or expired one stops counting once its tenancy has a lease attached, a newer envelope is started for it, or the envelope is deleted. Superusers only &mdash; everybody else sees the box greyed out.</p>
       </div>
     </div>
 
@@ -1921,6 +1937,8 @@
         <p class="mb-1">There are items needing attention soon, but they aren't urgent yet. Used for:</p>
         <ul class="mb-0" style="font-size:13px;">
           <li>Expiring Leases</li>
+          <li>Invoices Waiting for Approval</li>
+          <li>Leases Needing Action</li>
           <li>Expenses Waiting for Approval</li>
           <li>Expenses Waiting for Payment</li>
         </ul>
@@ -1989,7 +2007,7 @@
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
     <ul>
       <li><strong>Make this your morning page</strong> &mdash; open it first thing each day. A 10-second scan tells you whether anything needs immediate action.</li>
-      <li><strong>Aim for all-green</strong> &mdash; the goal is six green cards. Each red or yellow card is a piece of work to close out.</li>
+      <li><strong>Aim for all-green</strong> &mdash; the goal is eight green cards. Each red or yellow card is a piece of work to close out.</li>
       <li><strong>Click before you act</strong> &mdash; don't act on the count alone. Click the card first to see <em>which</em> properties / leases / invoices are affected.</li>
       <li><strong>Refresh after actioning</strong> &mdash; once you've paid an invoice or approved an expense, click Refresh Data to confirm the count has dropped.</li>
       <li><strong>Pair with the email report</strong> &mdash; the Daily Property Management Report email gives you the same data passively. Use email to stay aware on the move; use this dashboard for action.</li>
@@ -2848,7 +2866,7 @@
       <li><strong>Alivente signs first</strong> &mdash; a tenant never sees a lease Alivente has not already committed to.</li>
       <li><strong>The tenants are emailed a link</strong> the moment Alivente signs &mdash; one link each, no login needed.</li>
       <li><strong>Each tenant reads to the end and signs.</strong></li>
-      <li><strong>The last signature seals the lease</strong> &mdash; a signature page is added and everybody is emailed a copy.</li>
+      <li><strong>The last signature seals the lease</strong> &mdash; a signature page is added and everybody who signed is emailed a copy, at the address their link went to, with Alivente copied. The addresses on the tenant record are not used for this.</li>
       <li><strong>You approve it</strong> &mdash; only then does the signed PDF become the tenant&rsquo;s lease agreement.</li>
     </ol>
 
@@ -2957,9 +2975,13 @@
     <p>A fully signed lease is <strong>not</strong> written onto the tenant by itself. It waits for you, and you are told in three places: the <strong>Home</strong> page, <strong>Notifications</strong>, and a note at the top of the register.</p>
     <p>Open the envelope (the <strong>awaiting approval</strong> link or the <i class="fas fa-eye"></i> icon). It shows the signed lease, who signed, when and from where, the full trail, and what is attached to the tenancy now.</p>
     <ul style="line-height:1.8;">
-      <li><strong>Approve and attach</strong> &mdash; the signed PDF becomes the tenant&rsquo;s lease agreement on Manage Lease Agreements, <em>replacing</em> any lease attached before.</li>
+      <!-- ES-9, 26 Oct 2026 - a lease is never overwritten. -->
+      <li><strong>Approve and attach</strong> &mdash; choose the tenancy under <strong>Attach to</strong> and the signed PDF becomes its lease agreement on Manage Lease Agreements. Only tenancies at that property with <strong>no lease attached</strong> are offered: a lease is <strong>never replaced</strong>. The envelope&rsquo;s own tenancy is chosen first when it is free.</li>
       <li><strong>Decline</strong> &mdash; nothing is attached. This is final: to attach that lease later, start a new envelope.</li>
     </ul>
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-redo"></i> <strong>A renewal is a new tenancy.</strong> Add it first (Add Tenant, with the new dates), then <strong>Start e-signing</strong> and pick it &mdash; each tenancy is listed with its dates, and one that already has a lease says so. The old tenancy keeps its signed lease. If every tenancy at the property already has a lease, Approve is greyed out until you delete one on Manage Lease Agreements.
+    </div>
     <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-file-pdf"></i> Viewing, downloading and sharing</h6>
     <p><strong>View signed lease</strong> on the envelope page, or the <i class="fas fa-file-pdf"></i> icon on its register row, opens the signed PDF. <strong>Download</strong> is always there; on a phone, <strong>Share</strong> opens the phone&rsquo;s own share menu (WhatsApp, Mail and so on) with the PDF attached.</p>
   </article>

@@ -3,9 +3,13 @@
 
 HIS DECISION OF 25 OCTOBER: "add the Alivente branding (small) to the
 emails", and NO contact details. So every e-signing email is sent as
-plain text AND as a small HTML version carrying the Alivente logo at the
-top - the same words in both, so a mail program that shows only text
-loses nothing but the logo.
+plain text AND as a small HTML version carrying the Alivente logo - the
+same words in both, so a mail program that shows only text loses nothing
+but the logo.
+
+NB-1, 26 Oct 2026 - THE LOGO SIGNS OFF, his decision on Live: under
+"Alivente Limited" at the foot of the email, not above "Dear ...", and a
+little bigger.
 
 THE LOGO TRAVELS WITH THE MESSAGE (an inline cid: image), not as a link
 to the website: a tenant's mail program that blocks remote images still
@@ -31,7 +35,8 @@ from django.utils.html import escape
 LOGO_CID = 'alivente_logo'
 # SMALL - his word. The invoice footer draws it at 90px; a header that
 # introduces a lease link wants to be a line, not a letterhead.
-LOGO_HEIGHT = 56
+# NB-1, 26 Oct 2026 - "slightly bigger", under the sign-off. (was 56)
+LOGO_HEIGHT = 72
 
 
 def _logo():
@@ -53,13 +58,13 @@ def html_for(text, with_logo):
                   r'<a href="\1" style="color:#0e7c8b;">\1</a>', body)
     body = body.replace('\n', '<br>\n')
     logo = ('<img src="cid:%s" alt="Alivente Limited" height="%d" '
-            'style="height:%dpx;width:auto;display:block;margin:0 0 18px;">'
+            'style="height:%dpx;width:auto;display:block;margin:10px 0 0;">'
             % (LOGO_CID, LOGO_HEIGHT, LOGO_HEIGHT)) if with_logo else ''
     return ('<!DOCTYPE html>\n<html><body style="margin:0;padding:24px;'
             'font-family:Arial,Helvetica,sans-serif;font-size:15px;'
             'line-height:1.5;color:#21343c;">\n'
-            '<div style="max-width:600px;">%s\n<div>%s</div></div>\n'
-            '</body></html>' % (logo, body))
+            '<div style="max-width:600px;"><div>%s</div>\n%s</div>\n'
+            '</body></html>' % (body, logo))
 
 
 class BrandedEmail(EmailMessage):

@@ -946,10 +946,11 @@ class tenant(models.Model):
     def tenant_display_name(self):
         """Who is on this tenancy, as one line.
 
-        THE STORED NAME IS UNCHANGED AND STILL THE ONE THAT FILTERS.
-        The Tenants register's own dropdown filters on tenant_name
-        exactly - this is for reading, never for matching, and nothing
-        here is written back to the column.
+        THE STORED NAME IS UNCHANGED, and nothing here is written back
+        to the column. NB-1, 26 Oct 2026: the Tenants register and Open
+        Invoices filters now OFFER and MATCH this name (his decision, so
+        a joint tenancy is chosen as the table shows it); joins and
+        lookups elsewhere still go by tenant_name.
 
         A BLANK FIRST NAME IS NOT A REASON TO PRINT A SEPARATOR. It
         should not happen - the form requires the first name - but a

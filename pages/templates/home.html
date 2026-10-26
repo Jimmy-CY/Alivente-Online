@@ -281,6 +281,8 @@ Home
           <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
         </button>
         {% endif %}{% endwith %}
+
+        {# NB-1's drafts row moved to Waiting for you - ES-9, 26 Oct 2026. #}
       </section>
 
       <!-- Lease expiries (no successor) + expiring / declined drill-downs -->
@@ -347,62 +349,75 @@ Home
         {% endif %}{% endwith %}
       </section>
 
-      <!-- Churn-risk (analytical) -->
+      {# WAITING FOR YOU - ES-9, 26 Oct 2026, his decision: it replaces  #}
+      {# the Churn-risk flags card ("I don't like the churn risk flags     #}
+      {# box"). Everything that needs somebody's OK, in one place: signed #}
+      {# leases (superuser - the context processor's count), physical     #}
+      {# invoices in draft, expenses to approve and to pay. Each row is   #}
+      {# the same permission-gated drill the rest of Home uses; the       #}
+      {# leases row goes to the register. Shown even when empty, so the   #}
+      {# grid keeps its shape and "nothing waiting" is said out loud.     #}
       <section class="ins-card ins-card--half">
         <h3 class="ins-card__title">
-          <span class="ins-ic ins-ic--churn"><i class="fas fa-magnifying-glass-chart"></i></span>
-          Churn-risk flags
+          <span class="ins-ic ins-ic--wait"><i class="fas fa-inbox"></i></span>
+          Waiting for you
         </h3>
-        <p class="ins-card__sub">Explainable score &mdash; every flag shows why.</p>
+        <p class="ins-card__sub">Everything that needs your OK &mdash; tap one to open it.</p>
 
-        {% for c in insights.churn|slice:":4" %}
-          <div class="ins-row">
-            <div>
-              <div class="ins-who">
-                {{ c.tenant_display_name|default:c.tenant_name }}
-                <span class="ins-tag ins-tag--{{ c.level }}">{{ c.level|upper }}</span>
-              </div>
-              <div class="ins-reasons">{{ c.reasons|join:" &middot; " }}</div>
-            </div>
-            <span class="ins-tag ins-tag--grey">{{ c.score }}</span>
-          </div>
-        {% empty %}
-          <p class="ins-empty"><i class="fas fa-check-circle"></i> No churn-risk flags right now.</p>
-        {% endfor %}
+        {% if lease_approvals_waiting %}
+        <button type="button" class="today-row today-row--warning ins-drill print-keep"
+                data-href="{% url 'lease_signing_list' %}"
+                aria-label="{{ lease_approvals_waiting }} signed lease{{ lease_approvals_waiting|pluralize }} awaiting approval, tap to open">
+          <span class="today-row__icon" aria-hidden="true"><i class="fas fa-file-signature"></i></span>
+          <span class="today-row__count">{{ lease_approvals_waiting }}</span>
+          <span class="today-row__label">Signed lease{{ lease_approvals_waiting|pluralize }} awaiting approval</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}
+        {% with it=today_by_category.invoices_approval %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+        {% with it=today_by_category.approval %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+        {% with it=today_by_category.payment %}{% if it %}
+        <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
+                data-category="{{ it.category }}"
+                aria-label="{{ it.count }} {{ it.label }}, tap for details">
+          <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
+          <span class="today-row__count">{{ it.count }}</span>
+          <span class="today-row__label">{{ it.label }}</span>
+          <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+        </button>
+        {% endif %}{% endwith %}
+        {% if not lease_approvals_waiting and not today_by_category.invoices_approval and not today_by_category.approval and not today_by_category.payment %}
+          <p class="ins-empty"><i class="fas fa-check-circle"></i> Nothing is waiting for you.</p>
+        {% endif %}
       </section>
 
       <!-- Action items: operational to-dos with no forward-looking metric -->
-      {% if today_by_category.approval or today_by_category.payment or insights.expenses.top3 %}
+      {# ES-9, 26 Oct 2026 - the expense approval and payment rows moved #}
+      {# to Waiting for you; this card is the non-budgeted spend now.    #}
+      {% if insights.expenses.top3 %}
       <section class="ins-card ins-card--full">
         <h3 class="ins-card__title">
           <span class="ins-ic ins-ic--act"><i class="fas fa-list-check"></i></span>
           Action items
         </h3>
-        {% if today_by_category.approval or today_by_category.payment %}
-        <div class="ins-actions">
-          {% with it=today_by_category.approval %}{% if it %}
-          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
-                  data-category="{{ it.category }}"
-                  aria-label="{{ it.count }} {{ it.label }}, tap for details">
-            <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
-            <span class="today-row__count">{{ it.count }}</span>
-            <span class="today-row__label">{{ it.label }}</span>
-            <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-          </button>
-          {% endif %}{% endwith %}
-          {% with it=today_by_category.payment %}{% if it %}
-          <button type="button" class="today-row today-row--{{ it.severity }} ins-drill print-keep"
-                  data-category="{{ it.category }}"
-                  aria-label="{{ it.count }} {{ it.label }}, tap for details">
-            <span class="today-row__icon" aria-hidden="true"><i class="{{ it.icon }}"></i></span>
-            <span class="today-row__count">{{ it.count }}</span>
-            <span class="today-row__label">{{ it.label }}</span>
-            <span class="today-row__chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-          </button>
-          {% endif %}{% endwith %}
-        </div>
-        {% endif %}
-
         {% if insights.expenses.top3 %}
         <div class="exp-block">
           <div class="exp-head">
@@ -620,6 +635,8 @@ Home
     .ins-ic--exp   { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
     .ins-ic--arr   { background: var(--alv-bad-soft); color: var(--alv-bad); }
     .ins-ic--churn { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
+    /* ES-9, 26 Oct 2026 - Waiting for you. */
+    .ins-ic--wait { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
     .ins-ic--act   { background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
 
     .ins-kpis { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -783,6 +800,8 @@ Home
       // Wire up every drill-down (.today-row) to open the appropriate modal.
       document.querySelectorAll('.today-row').forEach(function(row) {
         row.addEventListener('click', function() {
+          // ES-9 - the signed-leases row opens the register itself.
+          if (row.dataset.href) { window.location.href = row.dataset.href; return; }
           const category = row.dataset.category;
           if (!category) return;
           showTodayModal(category, notificationData);
@@ -837,6 +856,8 @@ Home
           return { title: 'Declined Renewals (' + (summary.declinedRenewals || 0) + ')', icon: 'fas fa-times-circle', content: buildDeclinedContent(data.declinedRenewals || []) };
         case 'overdue':
           return { title: 'Overdue Invoices (' + (summary.overdueInvoices || 0) + ')', icon: 'fas fa-exclamation-triangle', content: buildOverdueContent(data.overdueInvoices || []) };
+        case 'invoices_approval':
+          return { title: 'Invoices Waiting for Approval (' + (summary.invoicesWaitingApproval || 0) + ')', icon: 'fas fa-file-invoice', content: buildInvoiceApprovalContent(data.invoicesWaitingApproval || []) };
         case 'approval':
           return { title: 'Expenses Waiting for Approval (' + (summary.expensesWaitingApproval || 0) + ')', icon: 'fas fa-clipboard-check', content: buildApprovalContent(data.expensesWaitingApproval || []) };
         case 'payment':
@@ -920,6 +941,25 @@ Home
       return '<div class="table-container"><table class="table alv-table">' +
         '<thead><tr><th>Property Name</th><th>Country</th><th>Tenant</th><th class="num">Amount</th><th>Due Date</th><th class="num">Days Overdue</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table></div>';
+    }
+
+    // NB-1, 26 Oct 2026 - draft physical invoices, with the way to approve.
+    function buildInvoiceApprovalContent(items) {
+      if (items.length === 0) return emptyState('invoices waiting approval');
+      const esc = function(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function(c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); };
+      const rows = items.map(function(item) {
+        return '<tr>' +
+          '<td>' + esc(item.name) + '</td>' +
+          '<td data-label="Type" class="text-center">' + esc(item.kind) + '</td>' +
+          '<td data-label="Property">' + (esc(item.property_name) || '&mdash;') + '</td>' +
+          '<td data-label="Invoice Date">' + esc(item.invoice_date) + '</td>' +
+          '<td data-label="Amount" class="num">' + esc(item.currency) + ' ' + parseFloat(item.total || 0).toFixed(2) + '</td>' +
+          '<td data-label="Status" class="text-center"><span class="alv-pill alv-pill-attn">Draft</span></td></tr>';
+      }).join('');
+      return '<div class="table-container"><table class="table alv-table">' +
+        '<thead><tr><th>Name</th><th class="col-center">Type</th><th>Property</th><th>Invoice Date</th><th class="num">Amount</th><th class="col-center">Status</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table></div>' +
+        '<div class="mt-3"><a href="{% url "physical_invoice_list" %}?status=draft" class="btn action-primary btn-sm"><i class="fas fa-check"></i> Review and approve</a></div>';
     }
 
     function buildApprovalContent(items) {

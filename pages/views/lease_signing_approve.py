@@ -13,11 +13,15 @@ this page shows everything a person needs to decide: the sealed PDF,
 who signed and from where, the full audit trail, the tenancy it would
 be attached to, and WHAT IS ATTACHED TO THAT TENANCY NOW.
 
-    APPROVE - the sealed copy becomes the tenant's lease agreement. If
-    one is already attached it is REPLACED - his decision of 25 October,
-    one lease per tenant per period - and the old file is let go of
-    BEFORE the save and deleted only AFTER it, which is UO-1's rule for
-    this exact field: a save that fails must cost nothing.
+    APPROVE - the sealed copy becomes the lease agreement of ONE
+    TENANCY, chosen on this page. ES-9, 26 Oct 2026 - A LEASE IS NEVER
+    OVERWRITTEN, his decision ("I don't think we must EVER overwrite a
+    lease"): only a tenancy with NO lease attached can receive it. One
+    that has one is not offered, and the server refuses it too; the
+    old lease is removed by hand, on Manage Lease Agreements, or the
+    signed copy goes to another tenancy at the same property - a
+    renewal's new one. (Until ES-9 approval REPLACED the attached lease
+    and deleted the old file.)
 
     DECLINE - nothing is written to the tenant, and the decline is
     recorded with who and when. FINAL, his decision of 25 October:
@@ -35,6 +39,7 @@ from django.contrib.auth.decorators import (login_required,
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
+from django.db.models import Q as models_Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -44,7 +49,7 @@ from django.views.decorators.http import require_POST
 # and the approval are superuser only, with the rest of Lease Signing.
 from .lease_signing import PILLS, superuser_only
 from ..models import (LeaseSigning, LeaseSigningEvent, LeaseSigningParty,
-                      delete_unheld, let_go_of_file, tenant)
+                      tenant)
 
 __all__ = [
     # __init__.py re-exports with `import *`, which obeys __all__ - the
@@ -69,6 +74,41 @@ def _who(user):
     return (user.get_full_name() or user.get_username() or 'someone').strip()
 
 
+class LeaseAlreadyAttached(Exception):
+    """The chosen tenancy has a lease. ES-9: nothing ever replaces one."""
+
+
+def _free_tenancies(env):
+    """Where this signed lease may go - ES-9, 26 Oct 2026, his decision.
+
+    The tenancies AT THE ENVELOPE'S PROPERTY with NO lease attached,
+    current first, then newest first. A renewal is a new tenancy record
+    (Add Tenant, new dates), so this is where it appears; the tenancy the
+    envelope was sent for is among them only while it has no lease.
+    """
+    t = env.tenant
+    if not getattr(t, 'prop_id', None):
+        return [t] if not t.tenant_lease_agreement else []
+    qs = (tenant.objects.filter(prop_id=t.prop_id)
+          .filter(models_Q(tenant_lease_agreement='')
+                  | models_Q(tenant_lease_agreement__isnull=True))
+          .order_by('-tenant_current', '-tenant_lease_start_date',
+                    'tenant_id'))
+    return list(qs)
+
+
+def tenancy_label(t):
+    """Name · lease dates, the way Generate and Start e-signing say it."""
+    s = t.tenant_display_name or t.tenant_name or ('tenancy %s' % t.pk)
+    if t.tenant_lease_start_date:
+        # NOT %-d: Windows' strftime refuses it, and the suites run there.
+        def day(d):
+            return '%d %s' % (d.day, d.strftime('%b %Y')) if d else '?'
+        s += ' \u00b7 %s to %s' % (day(t.tenant_lease_start_date),
+                                   day(t.tenant_lease_end_date))
+    return s
+
+
 @login_required
 @superuser_only
 def lease_signing_detail(request, pk):
@@ -82,7 +122,16 @@ def lease_signing_detail(request, pk):
     events = list(env.events.select_related('party').order_by('at',
                                                                'event_id'))
     current = env.tenant.tenant_lease_agreement
+    # ES-9 - WHERE IT CAN GO, and which one is chosen to begin with: the
+    # envelope's own tenancy if it is free, otherwise the first free one.
+    free = _free_tenancies(env) if env.awaiting_approval else []
+    default_target = (env.tenant_id if any(t.pk == env.tenant_id
+                                           for t in free)
+                      else (free[0].pk if free else None))
     return render(request, 'lease_signing_detail.html', {
+        'targets': [(t.pk, tenancy_label(t)) for t in free],
+        'default_target': default_target,
+        'can_approve': bool(free),
         'env': env,
         'tenant': env.tenant,
         'prop': getattr(env.tenant, 'prop', None),
@@ -132,22 +181,31 @@ def lease_signing_sealed(request, pk):
     return resp
 
 
-def _attach(env, user):
-    """Write the sealed copy onto the tenant. Raises; writes nothing on failure.
+def _attach(env, user, target_id=None):
+    """Write the sealed copy onto ONE free tenancy. Raises; writes nothing
+    on failure.
 
-    UO-1's ORDER, on the field it was written for. The old file is let
-    go of before the save and deleted after it; the NEW bytes written
-    here are removed again if the save raises, so a failure leaves the
-    tenant exactly as it was - old lease attached, nothing orphaned.
+    ES-9, 26 Oct 2026 - NEVER OVER A LEASE. The row is read under a lock
+    and refused if it holds a lease, so two tabs, or an upload in
+    between, cannot get one replaced; nothing here deletes a file that
+    was there before. The NEW bytes are removed again if the save
+    raises, so a failure leaves the tenancy exactly as it was.
     """
-    ten = tenant.objects.get(pk=env.tenant_id)
+    ten = tenant.objects.select_for_update().get(
+        pk=target_id or env.tenant_id)
+    if ten.tenant_lease_agreement:
+        raise LeaseAlreadyAttached(
+            '%s already has a lease agreement attached (%s). Nothing '
+            'replaces a lease - delete it on Manage Lease Agreements first, '
+            'or choose another tenancy.'
+            % (tenancy_label(ten),
+               ten.tenant_lease_agreement.name.rsplit('/', 1)[-1]))
     env.sealed_pdf.open('rb')
     try:
         data = env.sealed_pdf.read()
     finally:
         env.sealed_pdf.close()
 
-    released = [let_go_of_file(ten, 'tenant_lease_agreement')]
     ten.tenant_lease_agreement.save('signed-lease-%s.pdf' % env.pk,
                                     ContentFile(data), save=False)
     written = ten.tenant_lease_agreement.name
@@ -160,8 +218,7 @@ def _attach(env, user):
         except Exception:                                 # noqa: BLE001
             pass
         raise
-    delete_unheld(tenant, released, ('tenant_lease_agreement',))
-    return written
+    return ten, written
 
 
 @login_required
@@ -183,25 +240,49 @@ def lease_signing_approve(request, pk):
 
     now = timezone.now()
     if action == 'approve':
+        # ES-9 - THE TENANCY IS CHOSEN ON THE PAGE, and asked again here:
+        # it must be one of the free tenancies at this property, whatever
+        # the form says.
+        try:
+            target_id = int(request.POST.get('target') or env.tenant_id)
+        except (TypeError, ValueError):
+            target_id = None
+        free_ids = [t.pk for t in _free_tenancies(env)]
+        if target_id not in free_ids:
+            messages.error(request, 'That tenancy cannot receive this lease '
+                           '- it already has one attached, or it is not at '
+                           'this property. Nothing was changed.')
+            return back
         try:
             with transaction.atomic():
-                name = _attach(env, request.user)
+                ten, name = _attach(env, request.user, target_id)
+                moved = ten.pk != env.tenant_id
+                was = tenancy_label(env.tenant)
                 env.approved_at = now
                 env.approved_by = request.user
-                env.save(update_fields=['approved_at', 'approved_by'])
+                fields = ['approved_at', 'approved_by']
+                if moved:
+                    # THE ENVELOPE NOW NAMES WHERE IT WENT, and the trail
+                    # keeps where it was sent for.
+                    env.tenant = ten
+                    fields.append('tenant')
+                env.save(update_fields=fields)
                 LeaseSigningEvent.objects.create(
                     signing=env, kind='approved',
-                    detail='approved by %s; attached to the tenant as %s'
-                           % (_who(request.user), name.rsplit('/', 1)[-1]))
+                    detail='approved by %s; attached to %s as %s%s'
+                           % (_who(request.user), tenancy_label(ten),
+                              name.rsplit('/', 1)[-1],
+                              ('; sent for %s' % was) if moved else ''))
+        except LeaseAlreadyAttached as exc:
+            messages.error(request, '%s Nothing was changed.' % exc)
+            return back
         except Exception as exc:                          # noqa: BLE001
             messages.error(request, 'The signed lease could not be attached '
                            '- nothing was changed. (%s: %s)'
                            % (type(exc).__name__, exc))
             return back
         messages.success(request, 'Approved. The signed lease is now the '
-                         'lease agreement for %s.'
-                         % (env.tenant.tenant_display_name
-                            or env.tenant.tenant_name))
+                         'lease agreement for %s.' % tenancy_label(ten))
         return back
 
     if action == 'decline':

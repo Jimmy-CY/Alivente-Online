@@ -63,7 +63,15 @@ def generate_lease_agreement_view(request):
     """
     # Get properties and tenants from your actual models
     properties = props.objects.filter(prop_available_for_rent='Yes').order_by('prop_name')
-    tenants = tenant.objects.select_related('prop').all().order_by('tenant_name')
+    # NB-1, 26 Oct 2026 - ONE TENANCY PER LINE, SAID SO. A tenant record is
+    # per lease, and this list printed tenant_name alone, so a property
+    # with three terms showed three near-identical names (his screenshot:
+    # "Chrystalla Katelari" and twice "... and Antigoni Andreou"). Current
+    # tenancies first, then the rest newest first; the template names each
+    # by tenant_display_name and its lease dates.
+    tenants = (tenant.objects.select_related('prop').all()
+               .order_by('-tenant_current', '-tenant_lease_start_date',
+                         'tenant_name'))
 
     context = {
         'properties': properties,

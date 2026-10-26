@@ -383,9 +383,14 @@ if have_db:
             ok(r.status_code == 200 and 'Approve and attach' in page
                and 'value="decline"' in page,
                'the envelope page offers Approve and Decline', r.status_code)
-            ok('replace' in page and 'old' in page,
-               '  and says plainly that approving REPLACES the lease attached '
-               'now, naming it')
+            # ES-9, 26 Oct 2026 - NEVER OVER A LEASE: with the envelope's
+            # tenancy holding one and no other free at the property,
+            # Approve is greyed out and the note names the lease and the
+            # way to remove it.
+            ok('old' in page and 'disabled' in page
+               and 'Manage Lease Agreements' in page,
+               '  and, the tenancy holding a lease and nothing else free, '
+               'Approve is greyed and the note names the lease - ES-9')
             # ES-8, 25 Oct 2026 - NOBODY BUT A SUPERUSER SEES IT AT ALL.
             # This said a look-only account saw the page without the
             # controls; his decision made the whole page superuser only.
@@ -405,9 +410,55 @@ if have_db:
                '  and not to anybody signed out', r.status_code)
 
             # ==============================================================
-            head('4. APPROVE REPLACES - AND A FAILED SAVE COSTS NOTHING')
+            head('4. APPROVE NEVER REPLACES - ES-9 - AND A FAILED SAVE COSTS NOTHING')
             # ==============================================================
+            # ES-9, 26 Oct 2026 - his decision on Live: "we must NEVER
+            # overwrite a lease". Until ES-9 this section asserted the
+            # opposite - approve REPLACED the attached lease and deleted
+            # the old file.
             old_name = ten.tenant_lease_agreement.name
+            r = staff.post('/lease-signing/%s/approve/' % env.pk,
+                           {'action': 'approve'})
+            ten.refresh_from_db()
+            env.refresh_from_db()
+            ok(r.status_code == 302 and env.approved_at is None
+               and env.awaiting_approval
+               and ten.tenant_lease_agreement.name == old_name
+               and default_storage.exists(old_name),
+               'APPROVE OVER A LEASE IS REFUSED: nothing attached, the old '
+               'lease attached and on disk, the envelope still waiting')
+            # THE RENEWAL: a new tenancy at the same property, no lease.
+            renew = M.tenant.objects.create(
+                prop=ten.prop, tenant_type='Individual',
+                tenant_name=ten.tenant_name, tenant_email=ten.tenant_email,
+                tenant_lease_start_date=ten.tenant_lease_end_date
+                + timezone.timedelta(days=1),
+                tenant_lease_end_date=ten.tenant_lease_end_date
+                + timezone.timedelta(days=366), tenant_current='No')
+            page = staff.get('/lease-signing/%s/' % env.pk).content.decode(
+                'utf-8', 'replace')
+            ok('name="target"' in page and 'value="%d"' % renew.pk in page
+               and 'value="%d"' % ten.pk not in page.split('name="target"')[1]
+               .split('</select>')[0],
+               '  and the page offers the FREE tenancy at that property under '
+               'Attach to - not the one holding a lease')
+            r = staff.post('/lease-signing/%s/approve/' % env.pk,
+                           {'action': 'approve', 'target': ten.pk})
+            env.refresh_from_db()
+            ok(env.approved_at is None,
+               '  and a POST that names the leased tenancy anyway is refused')
+            other = M.props.objects.create(prop_name='Elsewhere',
+                                           prop_country='Cyprus')
+            stray = M.tenant.objects.create(
+                prop=other, tenant_type='Individual', tenant_name='Stray',
+                tenant_current='Yes')
+            staff.post('/lease-signing/%s/approve/' % env.pk,
+                       {'action': 'approve', 'target': stray.pk})
+            env.refresh_from_db()
+            stray.refresh_from_db()
+            ok(env.approved_at is None and not stray.tenant_lease_agreement,
+               '  and so is one at another property')
+
             real_save = M.tenant.save
 
             def boom(self, *a, **k):
@@ -416,19 +467,15 @@ if have_db:
             try:
                 with transaction.atomic():
                     r = staff.post('/lease-signing/%s/approve/' % env.pk,
-                                   {'action': 'approve'})
+                                   {'action': 'approve', 'target': renew.pk})
             finally:
                 M.tenant.save = real_save
-            ten.refresh_from_db()
+            renew.refresh_from_db()
             env.refresh_from_db()
-            ok(ten.tenant_lease_agreement.name == old_name
-               and default_storage.exists(old_name),
-               'WHEN THE SAVE RAISES, THE OLD LEASE IS STILL ATTACHED AND '
-               'STILL ON DISK - UO-1\'s order, on the second door into this '
-               'field', ten.tenant_lease_agreement.name)
-            # EVERYTHING IN THE FOLDER BUT THE OLD LEASE. upload_to names
-            # every lease after its tenant, so the old file is not called
-            # old.pdf on disk - it is excluded by its stored name.
+            ok(not renew.tenant_lease_agreement and env.approved_at is None
+               and env.awaiting_approval,
+               'WHEN THE SAVE RAISES, nothing is attached and the envelope is '
+               'still waiting')
             _dir = os.path.join(tmp, 'tenants', 'lease_agreements')
             leftovers = [f for f in (os.listdir(_dir)
                                      if os.path.isdir(_dir) else [])
@@ -436,28 +483,31 @@ if have_db:
             ok(not leftovers,
                '  and the new bytes it wrote were removed again - nothing '
                'orphaned', leftovers)
-            ok(env.approved_at is None and env.awaiting_approval,
-               '  and the envelope is still waiting')
 
             mail.outbox = []
             r = staff.post('/lease-signing/%s/approve/' % env.pk,
-                           {'action': 'approve'})
+                           {'action': 'approve', 'target': renew.pk})
             ten.refresh_from_db()
+            renew.refresh_from_db()
             env.refresh_from_db()
             ok(r.status_code == 302 and env.approved_at is not None
                and env.approved_by_id == boss.pk,
-               'APPROVED, by whom and when', r.status_code)
-            ten.tenant_lease_agreement.open('rb')
+               'APPROVED onto the renewal, by whom and when', r.status_code)
+            renew.tenant_lease_agreement.open('rb')
             try:
-                attached = ten.tenant_lease_agreement.read()
+                attached = renew.tenant_lease_agreement.read()
             finally:
-                ten.tenant_lease_agreement.close()
+                renew.tenant_lease_agreement.close()
             ok(attached == sealed_bytes(env),
-               '  and the tenant\'s lease IS the sealed copy, byte for byte')
-            ok(not default_storage.exists(old_name),
-               '  and the old one is gone - REPLACED, his decision', old_name)
-            ok(env.events.filter(kind='approved').exists(),
-               '  in the trail')
+               '  and the renewal\'s lease IS the sealed copy, byte for byte')
+            ok(ten.tenant_lease_agreement.name == old_name
+               and default_storage.exists(old_name),
+               '  and the OLD tenancy keeps its lease, attached and on disk')
+            ok(env.tenant_id == renew.pk
+               and env.events.filter(kind='approved',
+                                     detail__contains='sent for').exists(),
+               '  and the envelope now names where it went; the trail keeps '
+               'where it was sent for')
             ok(not env.awaiting_approval and not M.LeaseSigning
                .pending_approval().filter(pk=env.pk).exists(),
                '  and it is no longer waiting')

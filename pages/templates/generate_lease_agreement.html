@@ -339,9 +339,11 @@
             <select class="form-control" id="tenant-select" name="tenant" required>
               <option value="">Select Tenant</option>
               <option value="new_tenant">+ New Tenant</option>
+              {# NB-1, 26 Oct 2026 - the name as the Tenants list shows it, #}
+              {# and the lease it belongs to, so two terms never look alike. #}
               {% for tenant in tenants %}
                 <option value="{{ tenant.tenant_id }}" data-property="{{ tenant.prop.prop_id }}">
-                  {{ tenant.tenant_name }}
+                  {{ tenant.tenant_display_name }}{% if tenant.tenant_lease_start_date %} &middot; {{ tenant.tenant_lease_start_date|date:"j M Y" }} to {{ tenant.tenant_lease_end_date|date:"j M Y" }}{% endif %}{% if tenant.tenant_current != 'Yes' %} (past){% endif %}
                 </option>
               {% endfor %}
             </select>
@@ -522,6 +524,13 @@
             <!-- Row 4: Address -->
             <div class="col-12 mb-3">
               <label for="second-tenant-address" class="form-label"><strong>Address:</strong> <span class="alv-req">*</span></label>
+              {# NB-1, 26 Oct 2026 - SAME AS TENANT 1, his request: ticking #}
+              {# copies the first tenant's address in; it stays editable,   #}
+              {# and unticking leaves what was copied for him to change.    #}
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="second-tenant-same-address">
+                <label class="form-check-label" for="second-tenant-same-address">Same as Tenant 1's address</label>
+              </div>
               <textarea class="form-control" id="second-tenant-address" name="second_tenant_address" rows="2"></textarea>
             </div>
           </div>
@@ -846,6 +855,33 @@ const languageOptions = {
 
 // Global variables
 let propertyData = {};
+
+// NB-1, 26 Oct 2026 - "SAME AS TENANT 1'S ADDRESS". The first tenant's
+// address is whatever this page already shows for them: typed in on
+// New Tenant, or the property's address on an existing tenancy (the
+// Address line of the summary above). Copied, not linked - the box is
+// still the one the document reads, and still editable.
+function firstTenantAddress() {
+  const newSection = document.getElementById('new-tenant-section');
+  if (newSection && newSection.style.display !== 'none') {
+    return (document.getElementById('new-tenant-address').value || '').trim();
+  }
+  return (propertyData && propertyData.full_address) || '';
+}
+document.addEventListener('DOMContentLoaded', function () {
+  const same = document.getElementById('second-tenant-same-address');
+  if (!same) return;
+  same.addEventListener('change', function () {
+    if (!same.checked) return;
+    const addr = firstTenantAddress();
+    if (addr) {
+      document.getElementById('second-tenant-address').value = addr;
+    } else {
+      same.checked = false;
+      alert("Tenant 1's address is not filled in yet.");
+    }
+  });
+});
 let tenantData = {};
 let additionalDataCompleted = false;
 
@@ -987,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('second-tenant-email').value = '';
     document.getElementById('second-tenant-phone').value = '';
     document.getElementById('second-tenant-address').value = '';
+    document.getElementById('second-tenant-same-address').checked = false;  // NB-1
     document.getElementById('second-tenant-passport').value = '';
     document.getElementById('second-tenant-passport-country').value = '';
   });

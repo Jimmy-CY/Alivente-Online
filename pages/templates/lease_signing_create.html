@@ -59,7 +59,9 @@
                     onchange="if(this.value){window.location='?tenant='+this.value;}">
               <option value="" selected disabled>Select a tenant</option>
               {% for t in tenants %}
-              <option value="{{ t.tenant_id }}">{{ t.tenant_display_name }}{% if t.prop %} &mdash; {{ t.prop.prop_name }}{% endif %}</option>
+              {# ES-9, 26 Oct 2026 - one TENANCY per line: its dates, #}
+              {# and whether a lease is already attached to it.       #}
+              <option value="{{ t.tenant_id }}">{{ t.tenant_display_name }}{% if t.prop %} &mdash; {{ t.prop.prop_name }}{% endif %}{% if t.tenant_lease_start_date %} &middot; {{ t.tenant_lease_start_date|date:"j M Y" }} to {{ t.tenant_lease_end_date|date:"j M Y" }}{% endif %}{% if t.tenant_lease_agreement %} (lease attached){% endif %}</option>
               {% endfor %}
             </select>
           </div>
@@ -102,6 +104,20 @@
     </div>
     <div class="form-row">
         <div class="col-md-12">
+          {% if chosen.tenant_lease_agreement %}
+          {# ES-9, 26 Oct 2026 - ALLOWED, AND SAID: his decision. The   #}
+          {# signed copy cannot go onto this tenancy while it holds a   #}
+          {# lease - nothing replaces one - so approval will offer the  #}
+          {# free tenancies at this property, or wait for the old lease #}
+          {# to be deleted by hand.                                     #}
+          <small class="form-text">
+            <i class="fas fa-circle-exclamation"></i>
+            This tenancy already has a lease agreement attached. You can
+            send for signature, but the signed copy will not replace it:
+            at approval you choose a tenancy at this property with no
+            lease, or delete this one on Manage Lease Agreements first.
+          </small>
+          {% endif %}
           {% if open_already %}
           {# A WARNING, NOT A REFUSAL. A renewal arrives with no lease  #}
           {# because duplicate_tenant clears the field, so a second     #}

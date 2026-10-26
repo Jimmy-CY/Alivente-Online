@@ -146,12 +146,13 @@ def invoices_page(request):
                       .order_by('prop_name')
                       .values_list('prop_name', flat=True)
                       .distinct())
-    all_tenant_names = (tenant.objects
-                        .exclude(tenant_name__isnull=True)
-                        .exclude(tenant_name__exact='')
-                        .order_by('tenant_name')
-                        .values_list('tenant_name', flat=True)
-                        .distinct())
+    # NB-1, 26 Oct 2026 - NAMED AS THE TENANTS LIST NAMES THEM: a joint
+    # tenancy is "A & B", not its first name. Past tenancies stay here,
+    # unlike the Tenants register - an unpaid invoice outlives its lease.
+    all_tenant_names = sorted(
+        set(t.tenant_display_name for t in tenant.objects.all()
+            if (t.tenant_name or '').strip()),
+        key=lambda n: n.lower())
 
     # Still the ROW sources for the table below - a different question
     # from "what may be chosen", which is what used to be answered with
@@ -170,7 +171,10 @@ def invoices_page(request):
 
     # Filter tenants based on selection
     if tenant_output and tenant_output != "All":
-        filtered_tenants = tenant.objects.filter(tenant_name=tenant_output)
+        # NB-1 - by the name the choice shows.
+        filtered_tenants = tenant.objects.filter(pk__in=[
+            t.pk for t in tenant.objects.all()
+            if t.tenant_display_name == tenant_output])
     else:
         filtered_tenants = all_tenants
 

@@ -346,9 +346,17 @@ def lease_signing_create(request):
     # CURRENT TENANTS UNLESS ONE WAS NAMED. Manage Lease Agreements can
     # send you here for a past tenancy - a renewal being re-signed - and
     # a picker that then could not show it would be a dead end.
-    tenants = Tenant.objects.select_related('prop').order_by('tenant_name')
+    # ES-9, 26 Oct 2026 - AND UPCOMING ONES, newest first per person: a
+    # renewal is a NEW tenancy, often not current yet, and it is the one
+    # a renewal's lease belongs to. Each is labelled with its dates.
+    from django.db.models import Q
+    import datetime as _dt
+    tenants = Tenant.objects.select_related('prop').order_by(
+        'tenant_name', '-tenant_lease_start_date')
     if chosen is None:
-        tenants = tenants.filter(tenant_current='Yes')
+        tenants = tenants.filter(
+            Q(tenant_current='Yes')
+            | Q(tenant_lease_start_date__gt=_dt.date.today()))
 
     ctx = {
         'chosen': chosen,

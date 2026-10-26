@@ -162,19 +162,36 @@ def tenant_page(request):
                       .order_by('prop_name')
                       .values_list('prop_name', flat=True)
                       .distinct())
-    all_tenant_names = (tenant.objects
-                        .exclude(tenant_name__isnull=True)
-                        .exclude(tenant_name__exact='')
-                        .order_by('tenant_name')
-                        .values_list('tenant_name', flat=True)
-                        .distinct())
+    # THE TENANT CHOICES MATCH THE TABLE - NB-1, 26 Oct 2026, his
+    # decision ("doesn't look right" on Live). They were every
+    # tenant_name ever saved: past leases, old joint names typed into
+    # one box before T2-1, and a joint tenancy under its first name
+    # only, beside a table that says "A & B". Now:
+    #   - the SAME rows the table would show for the status/toggle
+    #     (current only, unless Include past tenants or a Status is
+    #     chosen) - but never narrowed by the tenant or property
+    #     chosen, so F3's way back out still stands;
+    #   - each named as the table names it, tenant_display_name, once.
+    # The filter matches on that same display name, so the choice and
+    # the row cannot disagree about who "A & B" is.
+    _choice_rows = all_tenants
+    if selected_status:
+        _choice_rows = _choice_rows.filter(tenant_current=selected_status)
+    elif not show_all:
+        _choice_rows = _choice_rows.filter(tenant_current='Yes')
+    all_tenant_names = sorted(
+        set(t.tenant_display_name for t in _choice_rows
+            if (t.tenant_name or '').strip()),
+        key=lambda n: n.lower())
 
     # Filter tenants based on the selected criteria
     filtered_tenants = all_tenants
 
-    # Apply tenant name filter
+    # Apply tenant name filter - by the name the table shows (NB-1).
     if selected_tenant:
-        filtered_tenants = filtered_tenants.filter(tenant_name=selected_tenant)
+        filtered_tenants = filtered_tenants.filter(pk__in=[
+            t.pk for t in all_tenants
+            if t.tenant_display_name == selected_tenant])
 
     # Apply status filter
     #
@@ -417,6 +434,15 @@ def tenant_lease_agreement(request):
                     messages.warning(request, 'No lease agreement found to delete.')
 
             elif action == 'upload':
+                # ES-9, 26 Oct 2026 - NEVER OVER A LEASE, his decision. The
+                # page only offers Upload where there is none; the server
+                # now says the same, so a stale page or a hand-made POST
+                # cannot replace one. Delete it first, on purpose.
+                if tenant_obj.tenant_lease_agreement:
+                    messages.error(request, 'This tenancy already has a lease '
+                                   'agreement attached. Delete it first - a '
+                                   'lease is never replaced.')
+                    return redirect(request.get_full_path())
                 if 'lease_agreement' in request.FILES:
                     uploaded_file = request.FILES['lease_agreement']
 

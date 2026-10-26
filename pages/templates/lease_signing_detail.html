@@ -12,8 +12,9 @@
 {# would be attached to, and WHAT IS ATTACHED TO THAT TENANCY NOW.    #}
 {#                                                                    #}
 {# APPROVE AND DECLINE APPEAR ONLY WHEN THERE IS SOMETHING TO DECIDE  #}
-{# (awaiting, from the model's one answer). Approve replaces whatever #}
-{# is attached; Decline is final - both his decisions of 25 October. #}
+{# (awaiting, from the model's one answer). Decline is final - his   #}
+{# decision of 25 October. ES-9, 26 Oct 2026: Approve NEVER replaces  #}
+{# a lease - it attaches to a tenancy chosen here that has none.      #}
 {#                                                                    #}
 {# NAMED lsd-* - the same reason RV-1 took rv-*: nine templates own a  #}
 {# .detail-row and base owns none. Promoting one is its own round.    #}
@@ -31,9 +32,17 @@
     {# 2026. A <form> inside .page-action-buttons is a container the  #}
     {# bar census does not know (test_bar_order), so each button      #}
     {# names its form with form="..." - cash_receipt_add's pattern.   #}
+    {% if can_approve %}
     <button type="submit" form="lsd-approve-form" class="btn action-primary">
         <i class="fas fa-check"></i> Approve and attach
     </button>
+    {% else %}
+    {# ES-9 - NOWHERE FREE TO PUT IT: greyed, and the note says why. #}
+    <button type="button" class="btn action-primary disabled-btn" disabled
+            title="Every tenancy at this property already has a lease attached">
+        <i class="fas fa-check"></i> Approve and attach
+    </button>
+    {% endif %}
     <button type="submit" form="lsd-decline-form" class="btn action-secondary action-danger">
         <i class="fas fa-times"></i> Decline
     </button>
@@ -67,12 +76,36 @@
 {# THE DECISION, SAID WHERE IT IS MADE. The note names what approving  #}
 {# will REPLACE, because that is the one consequence a person cannot  #}
 {# see from the signed PDF itself.                                    #}
+{# ES-9, 26 Oct 2026 - WHERE IT GOES, CHOSEN HERE, and never over a  #}
+{# lease. Only tenancies at this property with no lease are offered; #}
+{# the envelope's own is chosen to begin with when it is one of them. #}
 <div class="lsd-note">
     <i class="fas fa-circle-exclamation"></i>
-    Everybody has signed. <b>Approve</b> to make this the lease agreement for
-    {{ tenant.tenant_display_name }}{% if current_lease %} &mdash; it will
-    <b>replace</b> the lease attached now ({{ current_lease_name }}){% endif %}.
+    Everybody has signed.
+    {% if can_approve %}
+    <b>Approve</b> to attach this signed lease to the tenancy chosen below.
+    A lease already attached anywhere is never replaced.
+    {% if current_lease %}The tenancy it was sent for already has one
+    ({{ current_lease_name }}), so it is not offered.{% endif %}
+    {% else %}
+    It cannot be attached yet: the tenancy it was sent for already has a
+    lease ({{ current_lease_name }}) and no other tenancy at this property
+    is free. Delete that lease on
+    <a href="{% url 'tenant_lease_agreement' %}?all=1">Manage Lease Agreements</a>
+    first, or add the new tenancy (Add Tenant) if this is a renewal.
+    {% endif %}
     <b>Decline</b> to attach nothing; that is final.
+    {% if can_approve and user.is_superuser %}
+    <div class="lsd-target">
+        <label for="lsd-target"><strong>Attach to:</strong></label>
+        <select id="lsd-target" name="target" form="lsd-approve-form"
+                class="form-control">
+            {% for pk, label in targets %}
+            <option value="{{ pk }}"{% if pk == default_target %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
 </div>
 {% endif %}
 
@@ -235,6 +268,12 @@
     color: var(--alv-ink);
     font-size: 0.9rem;
 }
+/* ES-9, 26 Oct 2026 - the tenancy the signed lease will go to. */
+.lsd-target {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 10px;
+}
+.lsd-target select { max-width: 480px; flex: 1 1 260px; }
 .lsd-groups {
     display: grid;
     grid-template-columns: 1fr 1fr;

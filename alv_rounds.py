@@ -1500,6 +1500,10 @@ ROUNDS = [
     '.bak_tenantid',
     # SY-1, 26 Oct 2026 - permissions on migrate; two workers.
     '.bak_sysround',
+    # NB-1, 26 Oct 2026 - tenant names as shown; drafts on the dashboards.
+    '.bak_namesdrafts',
+    # ES-9, 26 Oct 2026 - a lease is never overwritten.
+    '.bak_neveroverwrite',
 ]
 
 

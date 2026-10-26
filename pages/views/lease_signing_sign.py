@@ -211,15 +211,20 @@ def _signed_copy(env):
     decides - which is also the only way a suite can read what was
     sent instead of trying to send it.
 
-    tenant_emails IS THE ONE EXPRESSION - T2-5, on the model. A joint
-    tenant typed into the free-text box and one in the proper column
-    are reached alike, and this view does not keep a second opinion
-    about who is on a tenancy.
+    ES-9, 26 Oct 2026 - TO THE PEOPLE WHO SIGNED, AT THE ADDRESSES THEIR
+    LINKS WENT TO, and to Alivente - his finding on Live. This read the
+    tenant RECORD's addresses (tenant_emails), so an envelope sent to a
+    test address still delivered the signed lease to the real tenant.
+    The envelope's parties are who signed; the record is not consulted.
     """
     # ES-7, 25 Oct 2026 - branded, small, no contact details: his decision.
     from ..services.lease_email import BrandedEmail as EmailMessage
 
-    to = list(getattr(env.tenant, 'tenant_emails', None) or [])
+    to = []
+    for p in env.parties.order_by('order', 'party_id'):
+        e = (p.email or '').strip()
+        if e and e.lower() not in [t.lower() for t in to]:
+            to.append(e)
     # AND TO ALIVENTE - ES-6, 25 Oct 2026, his decision of 23 October:
     # "the signed copy is emailed to Demetri as well as to each tenant
     # who signed". The person who sent the envelope and the house

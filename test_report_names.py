@@ -137,9 +137,13 @@ MATCHES = (
      'the Edit Tenant form value'),
     (TPL('tenant.html'), '{% for name in all_tenant_names %}',
      'the register filter list'),
-    (TENANTS_V, 'filtered_tenants.filter(tenant_name=selected_tenant)',
+    # NB-1, 26 Oct 2026 - THE TWO FILTERS MATCH ON THE SHOWN NAME NOW,
+    # his decision: the choices became tenant_display_name ("A & B"),
+    # so the match moved with them - choice and match are one name,
+    # which is this table's rule from the other side.
+    (TENANTS_V, 'if t.tenant_display_name == selected_tenant',
      'the register filter'),
-    (INVOICES, 'tenant.objects.filter(tenant_name=tenant_output)',
+    (INVOICES, 'if t.tenant_display_name == tenant_output',
      'the invoices filter'),
     (INSIGHTS, '_norm(x.tenant_name) == _norm(l.tenant_name)',
      'the arrears join'),
@@ -147,6 +151,12 @@ MATCHES = (
      "search_fields = ['tenant_name', 'tenant_2_name']",
      'the admin search'),
 )
+
+# NB-1, 26 Oct 2026 - the two match sites it moved, and what each was.
+MOVED_BY_NB1 = {
+    TENANTS_V: 'filtered_tenants.filter(tenant_name=selected_tenant)',
+    INVOICES: 'tenant.objects.filter(tenant_name=tenant_output)',
+}
 
 passed = failed = skipped = 0
 
@@ -281,7 +291,8 @@ for p, lit, what in MATCHES:
            '  CONTROL: and this round has no backup of that file at '
            'all, so it never opened it')
     else:
-        ok(lit in before,
+        # NB-1 moved two of them; their "before" is what they replaced.
+        ok(MOVED_BY_NB1.get(p, lit) in before,
            '  CONTROL: and it was there before this round too')
 
 # AND THE ROUND ADDED A KEY RATHER THAN RENAMING ONE.

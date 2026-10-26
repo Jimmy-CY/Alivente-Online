@@ -550,9 +550,10 @@ if not up:
 else:
     from pages.views.home import (_filter_notification_data,
                                   _TODAY_CANDIDATES)
-    ok(len(_TODAY_CANDIDATES) == 6
-       and len(set(c['key'] for c in _TODAY_CANDIDATES)) == 6,
-       'the table has six distinct categories',
+    # NB-1, 26 Oct 2026 - SEVEN: invoicesWaitingApproval joined.
+    ok(len(_TODAY_CANDIDATES) == 7
+       and len(set(c['key'] for c in _TODAY_CANDIDATES)) == 7,
+       'the table has seven distinct categories',
        [c['key'] for c in _TODAY_CANDIDATES])
     PAYLOAD = {
         'summary': {'vacantProperties': 2, 'overdueInvoices': 1,

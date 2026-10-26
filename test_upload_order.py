@@ -284,17 +284,26 @@ else:
         first = t1.tenant_lease_agreement.name
         ok(default_storage.exists(first),
            'a tenant starts with a lease agreement on disk', first)
+        # ES-9, 26 Oct 2026 - AN UPLOAD OVER A LEASE IS REFUSED, his
+        # decision: "we must NEVER overwrite a lease". This used to
+        # assert the replacement; now the lease is deleted on purpose
+        # first, and only then can another be uploaded.
         post_upload(cli, t1)
         t1.refresh_from_db()
-        ok(t1.tenant_lease_agreement.name != first,
-           'uploading a replacement moves the row to the new file',
+        ok(t1.tenant_lease_agreement.name == first
+           and default_storage.exists(first)
+           and default_storage.open(first, 'rb').read() == OLD_BYTES,
+           'an upload over a lease is REFUSED - the row and the file are '
+           'exactly as they were (ES-9)', t1.tenant_lease_agreement.name)
+        cli.post('/tenant_lease_agreement/', {
+            'action': 'delete', 'tenant_id': str(t1.pk)})
+        post_upload(cli, t1)
+        t1.refresh_from_db()
+        ok(t1.tenant_lease_agreement
+           and default_storage.open(t1.tenant_lease_agreement.name,
+                                    'rb').read() == NEW_BYTES,
+           '  and after Delete, on purpose, the upload attaches',
            t1.tenant_lease_agreement.name)
-        ok(default_storage.exists(t1.tenant_lease_agreement.name),
-           '  and the new bytes are on disk')
-        ok(not default_storage.exists(first),
-           '  and the old ones are gone, because nothing holds them')
-        print('       (the broken order passes all four of those, which '
-              'is why they are not the test)')
 
         # ---- THE TEST. A save that raises.
         t2 = fresh_tenant('Maria Georgiou')
@@ -393,8 +402,9 @@ else:
         post_upload(cli, ta)
         ta.refresh_from_db()
         tb.refresh_from_db()
-        ok(ta.tenant_lease_agreement.name != shared,
-           'replacing one tenant lease moves that row')
+        # ES-9 - refused, so nothing moves: a lease is never replaced.
+        ok(ta.tenant_lease_agreement.name == shared,
+           'an upload over one tenant lease is refused, so that row stays')
         ok(default_storage.exists(shared),
            '  AND LEAVES THE OTHER TENANT FILE STANDING - delete_unheld '
            'counts holders first, which is the half that stops one '

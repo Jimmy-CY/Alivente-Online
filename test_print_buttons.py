@@ -241,7 +241,11 @@ ok(len(rows) >= 6 and all(KEEP in r.split() for r in rows),
 keeps = [(rel, len(re.findall(r'class="[^"]*\bprint-keep\b', read(p))))
          for rel, p in pages()]
 keeps = [(r, k) for r, k in keeps if k]
-ok(keeps == [('home.html', len(rows))],
+# NB-1, 26 Oct 2026 - counted on home AS IT IS NOW: rows above is home
+# as this round left it, and later rounds (NB-1's drafts row) add rows
+# that wear the class too. The claim is WHICH page keeps buttons.
+ok(keeps == [('home.html', len(re.findall(
+    r'class="[^"]*\bprint-keep\b', read(HOME))))],
    'and home is the only page that keeps a button on paper',
    ', '.join('%s %d' % x for x in keeps))
 if os.path.isfile(HOME + SUFFIX):

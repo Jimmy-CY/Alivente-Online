@@ -130,7 +130,10 @@
 
 .indicator-cards {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    /* NB-1, 26 Oct 2026 - SEVEN: Invoices Waiting for Approval joined.
+       ES-9, 26 Oct 2026 - EIGHT, four across and two high, his layout:
+       Leases Needing Action joined. */
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -160,6 +163,14 @@
     border-color: var(--alv-bad);
     background-color: var(--alv-bad-soft);
 }
+
+.indicator-card.locked {
+    /* ES-9, 26 Oct 2026 - a box this user cannot open: Leases Needing
+       Action for anybody but a superuser. Faded, and not clickable. */
+    opacity: 0.55;
+    cursor: default;
+}
+.indicator-card.locked:hover { transform: none; box-shadow: none; }
 
 .indicator-card.warning {
     border-color: var(--alv-warn);
@@ -221,7 +232,8 @@
 
 @media screen and (max-width: 1200px) {
     .indicator-cards {
-        grid-template-columns: repeat(3, 1fr);
+        /* ES-9 - still four: eight boxes in rows of three leave two. */
+        grid-template-columns: repeat(4, 1fr);
         gap: 10px;
     }
 }
@@ -341,6 +353,38 @@ class SimpleNotificationDashboard {
                         <div class="indicator-value">${s.overdueInvoices || 0}</div>
                     </div>
 
+                    {# NB-1, 26 Oct 2026 - physical invoices waiting for approval, #}
+                    {# his request: the daily e-mail lists them, and now this.     #}
+                    <div class="indicator-card ${(s.invoicesWaitingApproval || 0) === 0 ? 'success' : 'warning'}" data-category="invoices_approval">
+                        <div class="indicator-icon">
+                            <i class="fas fa-file-invoice" style="color: ${(s.invoicesWaitingApproval || 0) === 0 ? 'var(--alv-good)' : 'var(--alv-warn)'};"></i>
+                        </div>
+                        <div class="indicator-label">Invoices Waiting for Approval</div>
+                        <div class="indicator-value">${s.invoicesWaitingApproval || 0}</div>
+                    </div>
+
+                    {# ES-9, 26 Oct 2026 - LEASES NEEDING ACTION, his eighth box:     #}
+                    {# signed and awaiting approval, or declined / expired and not  #}
+                    {# yet dealt with. Superuser only, like the rest of Lease       #}
+                    {# Signing; anybody else sees it greyed, with no count.         #}
+                    {% if user.is_superuser %}
+                    <div class="indicator-card ${(s.leasesNeedingAction || 0) === 0 ? 'success' : 'warning'}" data-category="lease_action">
+                        <div class="indicator-icon">
+                            <i class="fas fa-file-signature" style="color: ${(s.leasesNeedingAction || 0) === 0 ? 'var(--alv-good)' : 'var(--alv-warn)'};"></i>
+                        </div>
+                        <div class="indicator-label">Leases Needing Action</div>
+                        <div class="indicator-value">${s.leasesNeedingAction || 0}</div>
+                    </div>
+                    {% else %}
+                    <div class="indicator-card locked" title="Lease Signing is for superusers">
+                        <div class="indicator-icon">
+                            <i class="fas fa-file-signature"></i>
+                        </div>
+                        <div class="indicator-label">Leases Needing Action</div>
+                        <div class="indicator-value">&mdash;</div>
+                    </div>
+                    {% endif %}
+
                     <div class="indicator-card ${s.expensesWaitingApproval === 0 ? 'success' : 'warning'}" data-category="approval">
                         <div class="indicator-icon">
                             <i class="fas fa-clipboard-check" style="color: ${s.expensesWaitingApproval === 0 ? '#28a745' : '#ffc107'};"></i>
@@ -365,6 +409,7 @@ class SimpleNotificationDashboard {
         document.querySelectorAll('.indicator-card').forEach(card => {
             card.addEventListener('click', () => {
                 const category = card.dataset.category;
+                if (!category) return;   // ES-9 - a locked box opens nothing
                 this.showModal(category);
             });
         });
@@ -425,6 +470,18 @@ class SimpleNotificationDashboard {
                     title: `Overdue Invoices (${data.summary?.overdueInvoices || 0})`,
                     icon: 'fas fa-exclamation-triangle',
                     content: this.buildOverdueContent()
+                };
+            case 'lease_action':
+                return {
+                    title: `Leases Needing Action (${data.summary?.leasesNeedingAction || 0})`,
+                    icon: 'fas fa-file-signature',
+                    content: this.buildLeaseActionContent()
+                };
+            case 'invoices_approval':
+                return {
+                    title: `Invoices Waiting for Approval (${data.summary?.invoicesWaitingApproval || 0})`,
+                    icon: 'fas fa-file-invoice',
+                    content: this.buildInvoiceApprovalContent()
                 };
             case 'approval':
                 return {
@@ -562,6 +619,71 @@ class SimpleNotificationDashboard {
         `;
     }
     
+    // NB-1, 26 Oct 2026 - draft physical invoices, oldest first, with the
+    // way to the list that approves them already filtered to drafts.
+    // ES-9, 26 Oct 2026 - every envelope that needs somebody to act,
+    // each with the way to its own page.
+    buildLeaseActionContent() {
+        const items = this.data.leasesNeedingAction || [];
+        if (items.length === 0) {
+            return '<div style="text-align: center; padding: 40px;"><i class="fas fa-check-circle" style="color: var(--alv-good); font-size: 48px; margin-bottom: 20px;"></i><h4 style="color: var(--alv-good);">No leases need action</h4><p>Nothing is waiting for approval, and nothing declined or expired is left undealt with.</p></div>';
+        }
+        const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+        const rows = items.map(item => `
+            <tr>
+                <td><a href="${esc(item.url)}">${esc(item.tenant)}</a></td>
+                <td data-label="Property">${esc(item.property_name) || '&mdash;'}</td>
+                <td data-label="Envelope">${esc(item.envelope_id)}</td>
+                <td data-label="Date">${esc(item.date) || '&mdash;'}</td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-attn">${esc(item.status)}</span></td>
+            </tr>
+        `).join('');
+        return `
+            <div class="table-container">
+                <table class="table alv-table">
+                    <thead>
+                        <tr><th>Tenant</th><th>Property</th><th>Envelope</th><th>Date</th><th class="col-center">Status</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <div class="mt-3">
+                <a href="{% url 'lease_signing_list' %}" class="btn action-primary btn-sm"><i class="fas fa-file-signature"></i> Open Lease Signing</a>
+            </div>
+        `;
+    }
+
+    buildInvoiceApprovalContent() {
+        const items = this.data.invoicesWaitingApproval || [];
+        if (items.length === 0) {
+            return '<div style="text-align: center; padding: 40px;"><i class="fas fa-check-circle" style="color: var(--alv-good); font-size: 48px; margin-bottom: 20px;"></i><h4 style="color: var(--alv-good);">No invoices waiting approval</h4><p>Every physical invoice has been approved or sent.</p></div>';
+        }
+        const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+        const rows = items.map(item => `
+            <tr>
+                <td>${esc(item.name)}</td>
+                <td data-label="Type" class="text-center">${esc(item.kind)}</td>
+                <td data-label="Property">${esc(item.property_name) || '&mdash;'}</td>
+                <td data-label="Invoice Date">${esc(item.invoice_date)}</td>
+                <td data-label="Amount" class="num">${esc(item.currency)} ${parseFloat(item.total || 0).toFixed(2)}</td>
+                <td data-label="Status" class="text-center"><span class="alv-pill alv-pill-attn">Draft</span></td>
+            </tr>
+        `).join('');
+        return `
+            <div class="table-container">
+                <table class="table alv-table">
+                    <thead>
+                        <tr><th>Name</th><th class="col-center">Type</th><th>Property</th><th>Invoice Date</th><th class="num">Amount</th><th class="col-center">Status</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <div class="mt-3">
+                <a href="{% url 'physical_invoice_list' %}?status=draft" class="btn action-primary btn-sm"><i class="fas fa-check"></i> Review and approve</a>
+            </div>
+        `;
+    }
+
     buildApprovalContent() {
         const items = this.data.expensesWaitingApproval || [];
         if (items.length === 0) {

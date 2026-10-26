@@ -1040,6 +1040,10 @@ CONVERTED = [
     'test_tenant_identity.py',
     # SY-1, 26 Oct 2026 - permissions on migrate; two workers.
     'test_system_round.py',
+    # NB-1, 26 Oct 2026 - tenant names as shown; drafts on the dashboards.
+    'test_names_and_drafts.py',
+    # ES-9, 26 Oct 2026 - a lease is never overwritten.
+    'test_never_overwrite.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

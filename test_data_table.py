@@ -136,8 +136,12 @@ EXE = '/opt/pw-browsers/chromium'
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 CONVERTED_NOW, ALIAS_NOW = 91, 93
-N_TABLES = {'home.html': 7, 'notifications.html': 6}
-N_PILLS = {'home.html': 6, 'notifications.html': 5}
+# NB-1, 26 Oct 2026 - +1 table and +1 pill on each page: Invoices
+# Waiting for Approval, built the same way on both. (was 7/6 and 6/5)
+# ES-9, 26 Oct 2026 - +1 table and +1 pill on Notifications: Leases
+# Needing Action, which has no Home twin. (was 8/7 and 7/6)
+N_TABLES = {'home.html': 8, 'notifications.html': 8}
+N_PILLS = {'home.html': 7, 'notifications.html': 7}
 N_CSS_WAS = {'home.html': 12, 'notifications.html': 13}
 TONES = ('bad', 'attn', 'info')
 NUM_COLS = {'Amount', 'Rent', 'Communal', 'Days to End', 'Days Overdue'}
@@ -273,12 +277,13 @@ head('2. THE SIX PANELS EXIST TWICE, AND NOW AGAINST ONE STANDARD')
 # does stop the two copies disagreeing about how a table looks.
 h, n = heads_of(B_NOW['home.html']), heads_of(B_NOW['notifications.html'])
 shared = [c for c in n if c in h]
-ok(len(shared) == 6,
-   'the two pages draw %d IDENTICAL head rows - the same six panels, '
+# NB-1, 26 Oct 2026 - SEVEN: the drafts panel is the seventh pair.
+ok(len(shared) == 7,
+   'the two pages draw %d IDENTICAL head rows - the same seven panels, '
    'built twice' % len(shared),
    [' | '.join(c) for c in n])
-ok(len(h) == 7,
-   'home.html has a seventh, in the income pop-up', len(h))
+ok(len(h) == 8,
+   'home.html has an eighth, in the income pop-up', len(h))
 for cols in shared:
     ok(True, '  %s' % ' | '.join(cols))
 # AND THE DUPLICATED STYLESHEET IS GONE FROM BOTH.
@@ -368,7 +373,10 @@ n_num = len(re.findall(r'class="num"', ALL))
 n_head = len(re.findall(r'col-center', ALL))
 n_cell = len(re.findall(r'class="[^"]*text-center', ALL))
 ok(n_num >= 14, '%d cell(s) and head(s) are .num' % n_num, n_num)
-ok(n_head == 11, '%d HEADS are .col-center' % n_head, n_head)
+# NB-1, 26 Oct 2026 - +4: the drafts panel's Type and Status heads, on
+# each page - its columns take the class their names earn, like the rest.
+# ES-9, 26 Oct 2026 - +1: the Leases Needing Action Status head. (was 15)
+ok(n_head == 16, '%d HEADS are .col-center' % n_head, n_head)
 # ASKED AS A DELTA, because three cells on these pages already carried
 # text-center for reasons of their own and a flat count would claim them.
 n_cell_was = len(re.findall(r'class="[^"]*text-center', WASALL))

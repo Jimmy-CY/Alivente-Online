@@ -26,6 +26,7 @@ obsolete - main.py no longer exists - and has been removed).
 """
 
 import json
+import logging
 
 from django.core.cache import cache
 from django.shortcuts import render
@@ -84,6 +85,19 @@ _TODAY_CANDIDATES = [
             'icon': 'fas fa-calendar-times',
             'severity': 'warning',
             'permission': 'tenants',
+        },
+        # NB-1, 26 Oct 2026 - draft physical invoices, his request. Behind
+        # can_access_invoices, the permission the Physical Invoices list
+        # itself asks for, so the row and its totals reach only people who
+        # could open that list.
+        {
+            'key': 'invoicesWaitingApproval',
+            'category': 'invoices_approval',
+            'label': 'Invoice awaiting approval',
+            'label_plural': 'Invoices awaiting approval',
+            'icon': 'fas fa-file-invoice',
+            'severity': 'warning',
+            'permission': 'invoices',
         },
         {
             'key': 'expensesWaitingApproval',
@@ -252,6 +266,10 @@ def home(request):
                 # 30-second TTL - fast page loads, ~minute-fresh counts.
                 cache.set(cache_key, notification_data, 30)
             except Exception:
+                # ES-9, 26 Oct 2026 - SAID IN THE LOG, not only swallowed:
+                # a Home with no rows and no reason cost a push to find.
+                logging.getLogger(__name__).exception(
+                    'Home: the notification data did not build')
                 notification_data = None
 
         if notification_data:
@@ -304,6 +322,10 @@ def home(request):
             insights = portfolio_insights(today_summary=summary,
                                           income=bool(perms.get('financials')))
         except Exception:
+            # ES-9 - and the cards: without insights Home draws none of
+            # them, so the reason belongs in the log.
+            logging.getLogger(__name__).exception(
+                'Home: the portfolio insights did not build')
             insights = None
 
     return render(request, "home.html", {

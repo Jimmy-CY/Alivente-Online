@@ -21,6 +21,9 @@ Functions
 - get_expiring_leases           : SQL helper.
 - get_declined_renewals         : SQL helper.
 - get_overdue_invoices          : SQL helper.
+- get_invoices_waiting_approval : ORM helper (NB-1, 26 Oct 2026) - draft
+                                  physical invoices, the ones his daily
+                                  approval e-mail lists.
 
 The 5 SQL helpers run raw mysql.connector queries (legacy from when
 this logic lived in a management command). A future pass could migrate
@@ -50,6 +53,13 @@ def notifications_dashboard(request):
         # AJAX request - return JSON data
         try:
             notification_data = get_notification_data()
+            # ES-9, 26 Oct 2026 - Lease Signing is superuser only (ES-8),
+            # so nobody else is handed its rows or its count; their box
+            # is drawn greyed.
+            if not request.user.is_superuser:
+                notification_data.pop('leasesNeedingAction', None)
+                notification_data.get('summary', {}).pop(
+                    'leasesNeedingAction', None)
             return JsonResponse(notification_data)
         except Exception as e:
             return JsonResponse({
@@ -61,6 +71,116 @@ def notifications_dashboard(request):
 
 
 def get_notification_data():
+    """Every count and detail list the dashboards show.
+
+    NB-1, 26 Oct 2026 - PHYSICAL INVOICES WAITING FOR APPROVAL join the
+    legacy six, his request: "I do receive an email, but would like to see
+    it there." They come from the ORM, OUTSIDE the mysql.connector block
+    below, so a failure there (it returns zeros) does not also hide the
+    drafts, and a failure here does not take the six down with it.
+    """
+    data = _get_legacy_notification_data()
+    try:
+        drafts = get_invoices_waiting_approval()
+    except Exception as e:                                   # noqa: BLE001
+        logging.getLogger(__name__).error(
+            'invoices waiting approval: %s', e)
+        drafts = []
+    data.setdefault('summary', {})['invoicesWaitingApproval'] = len(drafts)
+    data['invoicesWaitingApproval'] = drafts
+    # ES-9, 26 Oct 2026 - LEASES NEEDING ACTION, his eighth box. Kept out
+    # of anything a non-superuser receives: notifications_dashboard drops
+    # it for them, and Home's payload filter drops every key it does not
+    # know, this one included.
+    try:
+        leases = get_leases_needing_action()
+    except Exception as e:                                   # noqa: BLE001
+        logging.getLogger(__name__).error('leases needing action: %s', e)
+        leases = []
+    data['summary']['leasesNeedingAction'] = len(leases)
+    data['leasesNeedingAction'] = leases
+    return data
+
+
+def get_leases_needing_action():
+    """Envelopes that need somebody to DO something - ES-9, 26 Oct 2026.
+
+    His decision: signed and waiting for approval, and declined or expired
+    ones - "any lease that needs some sort of action". A declined or
+    expired envelope STOPS COUNTING once it has been dealt with: its
+    tenancy has a lease attached, a newer envelope was started for that
+    tenancy, or the envelope was deleted.
+    """
+    from django.urls import reverse
+    from pages.models import LeaseSigning
+    rows = []
+    for env in (LeaseSigning.pending_approval()
+                .select_related('tenant', 'tenant__prop')
+                .order_by('completed_at', 'pk')):
+        rows.append(_lease_row(env, 'Signed - awaiting approval',
+                               env.completed_at, reverse))
+    closed = (LeaseSigning.objects
+              .filter(status__in=(LeaseSigning.EXPIRED,
+                                  LeaseSigning.DECLINED))
+              .select_related('tenant', 'tenant__prop')
+              .order_by('pk'))
+    for env in closed:
+        t = env.tenant
+        if t.tenant_lease_agreement:
+            continue
+        if LeaseSigning.objects.filter(tenant_id=t.pk, pk__gt=env.pk).exists():
+            continue
+        what = ('Declined by the tenant' if env.status == LeaseSigning.DECLINED
+                else 'Expired before everybody signed')
+        rows.append(_lease_row(env, what, env.expires_at
+                               if env.status == LeaseSigning.EXPIRED
+                               else None, reverse))
+    return rows
+
+
+def _lease_row(env, what, when, reverse):
+    t = env.tenant
+    return {
+        'envelope_id': env.pk,
+        'tenant': t.tenant_display_name or t.tenant_name or '',
+        'property_name': (getattr(t.prop, 'prop_name', '') or '')
+        if t.prop_id else '',
+        'status': what,
+        'date': when.strftime('%Y-%m-%d') if when else '',
+        'url': reverse('lease_signing_detail', args=[env.pk]),
+    }
+
+
+def get_invoices_waiting_approval():
+    """Draft physical invoices - tenant and customer - oldest first.
+
+    STATUS DRAFT IS THE WHOLE TEST, the same one the Physical Invoices list
+    pills as Draft and the approval reminder counts: nothing is sent until
+    it is approved, so every draft is waiting on somebody.
+    """
+    from pages.models import PhysicalInvoice
+    rows = []
+    qs = (PhysicalInvoice.objects
+          .filter(status=PhysicalInvoice.STATUS_DRAFT)
+          .select_related('tenant', 'tenant__prop')
+          .order_by('invoice_date', 'physical_invoice_id'))
+    for pi in qs:
+        t = pi.tenant if pi.tenant_id else None
+        rows.append({
+            'invoice_id': pi.pk,
+            'invoice_date': pi.invoice_date.strftime('%Y-%m-%d')
+            if pi.invoice_date else '',
+            'name': pi.bill_name or (t.tenant_display_name if t else ''),
+            'kind': 'Tenant' if t else 'Customer',
+            'property_name': (getattr(t.prop, 'prop_name', '') or '')
+            if t else '',
+            'total': float(pi.total or 0),
+            'currency': pi.currency or 'EUR',
+        })
+    return rows
+
+
+def _get_legacy_notification_data():
     """
     Get notification data by running similar queries to the management command
     """
@@ -307,6 +427,12 @@ def get_declined_renewals(cursor, today):
     } for row in renewal_due(today=today, status='declined')]
 
 
+def _tenant_model():
+    """The tenant model, imported late - .properties imports this module."""
+    from pages.models import tenant
+    return tenant
+
+
 def get_overdue_invoices(cursor, today):
     """Get properties with overdue invoices"""
     cursor.execute("""
@@ -327,19 +453,30 @@ def get_overdue_invoices(cursor, today):
     # Create a flat list of overdue invoices instead of grouping
     overdue_invoices_list = []
 
+    # ES-9, 26 Oct 2026 - THE COLUMNS WHERE THE SELECT PUTS THEM. T2-4 (24
+    # Oct) added tenant.tenant_2_name to the SELECT at position 3 and left
+    # these reads where they were: payment terms read the second tenant's
+    # name, the invoice date read the RENT, and `invoice_date + timedelta`
+    # raised int + timedelta - which get_notification_data swallowed by
+    # returning ZERO FOR ALL SIX BOXES, whenever any current tenant had an
+    # unpaid invoice. Found by his push gate, on his local data.
+    # ES-9 - and the model the display name asks was never imported here,
+    # so its line raised NameError the first time it was reached.
+    tenant = _tenant_model()
     for row in invoice_data:
         prop_name = row[0]
         prop_country = row[1]
         tenant_name = row[2]
-        payment_terms = int(row[3]) if row[3] else 0
-        tenant_rent = row[4]
-        invoice_date = row[5]
-        invoice_id = row[6]
+        tenant_2_name = row[3]
+        payment_terms = int(row[4]) if row[4] else 0
+        tenant_rent = row[5]
+        invoice_date = row[6]
+        invoice_id = row[7]
         # Effective billed amount: prefer the stored per-invoice amount (the
         # physical-invoice total, or rent + communal fees when Bill Communal
         # Fees is on) and fall back to bare rent only when nothing was stored.
         # Mirrors invoices.effective_amount and the daily report's COALESCE.
-        invoice_amount = row[7]
+        invoice_amount = row[8]
         effective_amount = invoice_amount if invoice_amount is not None else tenant_rent
 
         # Calculate due date based on invoice date and payment terms
