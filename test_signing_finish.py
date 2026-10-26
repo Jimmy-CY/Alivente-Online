@@ -161,9 +161,15 @@ def claims(src):
         ("{% if user.is_superuser %}\n        <a href=\"{% url 'lease_signing_list' %}\"" in adm
          and 'Lease signing is for superusers' in adm,
          '  the Administration tile greys out for anybody else'),
-        ("{% if user.is_superuser %}\n                    <a href=\"{% url 'lease_signing_create' %}" in tla
-         and 'E-signing is for superusers' in tla,
-         '  and so does the paper-plane on Manage Lease Agreements'),
+        # HK-1, 26 Oct 2026 - or it is not there at all: the paper-plane
+        # left Manage Lease Agreements, his decision. Either way nobody
+        # but a superuser can start e-signing from that page.
+        (("{% if user.is_superuser %}\n                    <a href=\"{% url 'lease_signing_create' %}" in tla
+          and 'E-signing is for superusers' in tla)
+         or ('lease_signing_create' not in tla
+             and 'HK-1, 26 Oct 2026' in src[TLA_T]),
+         '  and so does the paper-plane on Manage Lease Agreements - or, '
+         'since HK-1, it is gone'),
         ('Start e-signing' in lt and 'Send a lease for signature' not in lt,
          'the button reads Start e-signing'),
         ("{% if user.is_superuser %}" in dn
@@ -199,7 +205,10 @@ head('1. THE SOURCE')
 # ==========================================================================
 for cond, msg in claims(NOW):
     ok(cond, msg)
-missing = [os.path.relpath(p, ROOT) for p in EDITED if MARK not in NOW[p]]
+# HK-1, 26 Oct 2026 took this round's block off Manage Lease Agreements,
+# date and all; that file now carries HK-1's date instead.
+missing = [os.path.relpath(p, ROOT) for p in EDITED if MARK not in NOW[p]
+           and not (p == TLA_T and 'HK-1, 26 Oct 2026' in NOW[p])]
 ok(not missing, 'the round dates itself in every file it touched',
    ', '.join(missing))
 

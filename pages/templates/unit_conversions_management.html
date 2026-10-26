@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_recipes, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_recipes) would have allowed them. #}
 {% load static %}
 {% load custom_filters %}
 {% block title %}Unit Conversions Management{% endblock %}
@@ -317,7 +318,7 @@
     <!-- Page Header -->
     <h2 class="page-title-h2">UNIT CONVERSIONS MANAGEMENT</h2>
 <div class="page-action-buttons">
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_recipes %}
         <button onclick="openAddModal()" class="btn action-primary">
             <i class="fas fa-plus"></i> Add New Conversion
         </button>
@@ -329,7 +330,7 @@
 
         {% if missing_count > 0 %}
             <!-- Desktop secondary (hidden on mobile, accessed via More menu) -->
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_recipes %}
             <button onclick="openMissingConversionsModal()" class="btn action-secondary">
                 <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
             </button>
@@ -346,7 +347,7 @@
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
-                    {% if perms.auth.can_edit_personal %}
+                    {% if perms.auth.can_edit_recipes %}
                     <button type="button" class="action-more-item" role="menuitem" onclick="openMissingConversionsModal()">
                         <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
                     </button>
@@ -535,7 +536,7 @@
                     
                     <!-- Actions -->
                     <td class="actions-cell cell-actions" style="text-align: center;">
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <span class="row-actions"><button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name|escapejs }}', '{{ conversion.to_unit.name|escapejs }}', '{{ conversion.multiplier|escapejs }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name|escapejs }}{% endif %}')" 
                                 class="icon-action-btn icon-edit" 
                                 title="Edit">
@@ -573,7 +574,7 @@
         <div class="empty-state">
             <i class="fas fa-exchange-alt"></i>
             <h3>No Conversions Defined</h3>
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_recipes %}
             <p>Click "Add New Conversion" to create your first unit conversion.</p>
             {% else %}
             <p>No conversions have been set up yet.</p>
@@ -584,7 +585,7 @@
 
 </div>
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 <!-- Add Conversion Modal -->
 <div class="modal fade" id="addConversionModal" tabindex="-1">
     <div class="modal-dialog">
@@ -865,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 // ==================== END FILTER FUNCTIONALITY ====================
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 
 // Preview conversion formula while typing
 document.addEventListener('DOMContentLoaded', function() {

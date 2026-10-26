@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_recipes, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_recipes) would have allowed them. #}
 {% load static %}
 {% block title %}Measurement Units Management{% endblock %}
 {% block content %}
@@ -336,7 +337,7 @@
     <!-- Page Header -->
     <h2 class="page-title-h2">MEASUREMENT UNITS MANAGEMENT</h2>
 <div class="page-action-buttons">
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_recipes %}
         <button type="button" class="btn action-primary" data-toggle="modal" data-target="#addUnitModal">
             <i class="fas fa-plus"></i> Add Measurement Unit
         </button>
@@ -458,7 +459,7 @@
                             <br><small style="color: var(--alv-neutral);">Plural: {{ item.unit.name_plural }}</small>
                             {% endif %}
                         </span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <div class="unit-name-edit">
                             <div class="edit-field-label">Singular</div>
                             <input type="text" 
@@ -490,7 +491,7 @@
                             <span style="color: var(--alv-neutral); font-style: italic;">-</span>
                             {% endif %}
                         </span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <div class="unit-abbr-edit">
                             <div class="edit-field-label">Singular</div>
                             <input type="text" 
@@ -517,7 +518,7 @@
                                 {{ item.unit.get_unit_type_display }}
                             </span>
                         </span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <select class="unit-type-edit unit-input" data-original-value="{{ item.unit.unit_type }}">
                             {% for value, label in unit_types %}
                             <option value="{{ value }}" {% if item.unit.unit_type == value %}selected{% endif %}>
@@ -579,7 +580,7 @@
                     <!-- Actions -->
                     <td style="text-align: center;" class="cell-actions">
                         <div class="action-buttons">
-                            {% if perms.auth.can_edit_personal %}
+                            {% if perms.auth.can_edit_recipes %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
                                 <span class="row-actions"><button class="icon-action-btn icon-edit" onclick="enterEditMode({{ item.unit.measurement_unit_id }})" title="Edit">
@@ -621,7 +622,7 @@
         <div class="empty-state" id="emptyState">
             <i class="fas fa-ruler"></i>
             <h3>No Measurement Units Yet</h3>
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_recipes %}
             <p>Click "Add Measurement Unit" to create your first unit.</p>
             {% else %}
             <p>No measurement units have been set up yet.</p>
@@ -632,7 +633,7 @@
 
 </div>
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 <!-- Add Unit Modal -->
 <div class="modal fade" id="addUnitModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -728,7 +729,7 @@
 
 
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 // Enter edit mode
 function enterEditMode(unitId) {
     const row = document.getElementById(`unit-row-${unitId}`);

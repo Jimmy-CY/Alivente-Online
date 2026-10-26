@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_passports, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_passports) would have allowed them. #}
 {% load static %}
 {% load humanize %}
 {% load help_modal_tags %}
@@ -25,7 +26,7 @@
 
 <!-- Action Buttons (Help + Back) — Back+1 standard -->
 <div class="page-action-buttons">
-    {% if perms.auth.can_edit_personal %}
+    {% if perms.auth.can_edit_passports %}
     <button type="button" class="btn action-primary" onclick="addNewDocument()">
         <i class="fas fa-plus"></i> Add New Passport/ID
     </button>
@@ -188,7 +189,7 @@
             <div class="row-actions">
             {% if passport.document_file %}
                 <button type="button" class="icon-action-btn icon-view" onclick="viewDocument('{{ passport.document_file.url|escapejs }}', '{{ passport.document_file.name|escapejs }}', '{{ passport.holder_name|escapejs }}')" title="View Document"><i class="fas fa-eye"></i></button>
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_passports %}
                     <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
                     <button type="button" class="icon-action-btn icon-delete" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}')" title="Delete"><i class="fas fa-trash"></i></button>
                 {% else %}
@@ -196,7 +197,7 @@
                     <button type="button" class="icon-action-btn icon-delete icon-disabled" disabled title="Delete"><i class="fas fa-trash"></i></button>
                 {% endif %}
             {% else %}
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_passports %}
                     <button type="button" class="icon-action-btn icon-upload" onclick="uploadDocument({{ passport.id }})" title="Upload Document"><i class="fas fa-upload"></i></button>
                     <button type="button" class="icon-action-btn icon-edit" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')" title="Edit"><i class="fas fa-pencil-alt"></i></button>
                 {% else %}
@@ -215,7 +216,7 @@
                     <span class="mobile-action-label">View</span>
                 </button>
             {% else %}
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_passports %}
                     <button type="button" class="mobile-action-btn" onclick="uploadDocument({{ passport.id }})">
                         <i class="fas fa-upload mobile-action-icon icon-color-upload"></i>
                         <span class="mobile-action-label">Upload</span>
@@ -228,7 +229,7 @@
                 {% endif %}
             {% endif %}
 
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_passports %}
                 <button type="button" class="mobile-action-btn" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}', '{{ passport.document_type|escapejs }}', '{{ passport.document_number|escapejs }}', '{{ passport.country_of_issue|escapejs }}', '{{ passport.date_of_issue|date:'Y-m-d'|escapejs }}', '{{ passport.expiry_date|date:'Y-m-d'|escapejs }}', '{{ passport.status|escapejs }}')">
                     <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                     <span class="mobile-action-label">Edit</span>
@@ -240,7 +241,7 @@
                 </span>
             {% endif %}
 
-            {% if passport.document_file and perms.auth.can_edit_personal %}
+            {% if passport.document_file and perms.auth.can_edit_passports %}
                 <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name|escapejs }}')">
                     <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
                     <span class="mobile-action-label">Delete</span>
@@ -263,7 +264,7 @@
 </table>
 </div>
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_passports %}
 <!-- Add/Edit Modal -->
 <div class="modal fade" id="addEditModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-fullscreen-mobile" role="document">

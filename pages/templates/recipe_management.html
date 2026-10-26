@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_recipes, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_recipes) would have allowed them. #}
 {% load static %}
 {% load humanize %}
 {% load help_modal_tags %}
@@ -1748,7 +1749,7 @@
 
 <div class="page-action-buttons">
             <!-- Add Recipe Dropdown (PRIMARY) -->
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_recipes %}
         <div class="dropdown-btn-container">
             <button class="btn action-primary dropdown-btn">
                 <i class="fas fa-plus"></i> Add Recipe
@@ -2227,7 +2228,7 @@
                 <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
                     <i class="fas fa-eye"></i>
                 </a>
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_recipes %}
                 <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -2331,7 +2332,7 @@
                 <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-view-btn" title="View Recipe">
                     <i class="fas fa-eye"></i>
                 </a>
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_recipes %}
                 <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -2482,7 +2483,7 @@
             <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
                 <i class="fas fa-eye"></i>
             </a>
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_recipes %}
             <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
                 <i class="fas fa-pencil-alt"></i>
             </a>
@@ -2575,7 +2576,7 @@
 </div>
 {% endif %}
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -2934,7 +2935,7 @@ function handleLetterClick(event, letter) {
 }
 
 // Permission flag for JS-generated cards
-const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_personal %}true{% else %}false{% endif %};
+const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_recipes %}true{% else %}false{% endif %};
 // AP-1, 20 Oct 2026 - the permission add_meal_entry really asks for.
 const USER_CAN_EDIT_RECIPES = {% if perms.auth.can_edit_recipes %}true{% else %}false{% endif %};
 

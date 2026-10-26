@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_recipes, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_recipes) would have allowed them. #}
 {% load static %}
 {% block title %}Categories Management{% endblock %}
 {% block content %}
@@ -239,7 +240,7 @@
     <!-- Page Header -->
     <h2 class="page-title-h2">CATEGORIES MANAGEMENT</h2>
 <div class="page-action-buttons">
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_recipes %}
         <button type="button" class="btn action-primary" data-toggle="modal" data-target="#addCategoryModal">
             <i class="fas fa-plus"></i> Add Category
         </button>
@@ -329,7 +330,7 @@
                     <!-- Category Name -->
                     <td data-label="Category Name">
                         <span class="category-name-display">{{ item.category.name }}</span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <input type="text" 
                                class="category-name-edit" 
                                value="{{ item.category.name }}"
@@ -364,7 +365,7 @@
                     <!-- Actions -->
                     <td style="text-align: center;" class="cell-actions">
                         <div class="action-buttons">
-                            {% if perms.auth.can_edit_personal %}
+                            {% if perms.auth.can_edit_recipes %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
                                 <span class="row-actions"><button class="icon-action-btn icon-edit" onclick="enterEditMode({{ item.category.ingredient_category_id }})" title="Edit">
@@ -406,7 +407,7 @@
         <div class="empty-state" id="emptyState">
             <i class="fas fa-tags"></i>
             <h3>No Categories Yet</h3>
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_recipes %}
             <p>Click "Add Category" to create your first category.</p>
             {% else %}
             <p>No categories have been set up yet.</p>
@@ -417,7 +418,7 @@
 
 </div>
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 <!-- Add Category Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -457,7 +458,7 @@
 
 
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 // Enter edit mode
 function enterEditMode(categoryId) {
     const row = document.getElementById(`category-row-${categoryId}`);

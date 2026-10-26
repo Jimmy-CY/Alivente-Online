@@ -176,9 +176,13 @@ check('  column widths were redistributed to sum to 100',
 # joins the row between View and the delete/upload pair, and it wears
 # a twin for the same reason the other two do: a slot that disappears
 # on some rows walks the whole cluster sideways down the page.
-check('  all three slots keep a disabled twin, so the cluster never '
+#
+# HK-1, 26 Oct 2026 - TWO AGAIN. The paper-plane left this page, his
+# decision ("if a Lease Agreement is in here, it has already been
+# signed"), and its twin with it.
+check('  both slots keep a disabled twin, so the cluster never '
       'shifts (%d)' % SRC.count('icon-disabled'),
-      SRC.count('icon-disabled') == 3)
+      SRC.count('icon-disabled') == 2)
 check('  and the document viewer keeps its three arguments',
       SRC.count('viewDocument(') >= 2
       and 'tenant_lease_agreement.url' in SRC
@@ -189,7 +193,10 @@ check('  and the document viewer keeps its three arguments',
 # still has to say it, because the next round to add a fourth action
 # has to change a number here rather than discover a wrapped button
 # on a phone.
-check('the mobile bar declares three columns', 'cols-3' in SRC)
+#
+# HK-1, 26 Oct 2026 - TWO, Send gone.
+check('the mobile bar declares two columns',
+      'cols-2' in SRC and 'cols-3' not in SRC)
 
 
 # ------------------------------------------- the expired date, on the token
@@ -219,8 +226,10 @@ for gone in ('btn-sm btn-success', 'btn-sm btn-danger',
 #
 # ES-3b, 24 Oct 2026 - SEVEN. Send and Send-disabled. Still one
 # button per slot on any given row: three drawn, four standing by.
+#
+# HK-1, 26 Oct 2026 - FIVE again: Send and Send-disabled went.
 check('  the row buttons are house icon buttons now (%d)'
-      % SRC.count('icon-action-btn'), SRC.count('icon-action-btn') == 7)
+      % SRC.count('icon-action-btn'), SRC.count('icon-action-btn') == 5)
 check('  Upload carries the new tone', 'icon-upload' in SRC)
 check('  and base.html defines it', '.icon-upload' in BASE_SRC)
 check('  .icon-upload is an ALIAS, not a seventh colour',
@@ -241,10 +250,11 @@ check('  CONTROL: the local Bootstrap upload blue is gone', '#007bff' not in CSS
 # glyph for another would keep any count and fail this.
 _icons = re.findall(r'row-actions(.*?)</span>\s*</td>', SRC, re.S)
 _glyphs = re.findall(r'<i class="fas (fa-[a-z-]+)"', _icons[0] if _icons else '')
-check('  the row draws four possible glyphs across three slots (%s)'
+#
+# HK-1, 26 Oct 2026 - THREE GLYPHS ACROSS TWO SLOTS: the paper plane went.
+check('  the row draws three possible glyphs across two slots (%s)'
       % ', '.join(sorted(set(_glyphs))),
-      set(_glyphs) == {'fa-file-contract', 'fa-paper-plane',
-                       'fa-trash', 'fa-upload'})
+      set(_glyphs) == {'fa-file-contract', 'fa-trash', 'fa-upload'})
 
 # ------------------------------------------------- the permission gates again
 # Counted against the backup rather than pinned to a literal - I have picked
@@ -579,16 +589,17 @@ else:
                   % ('%+.1fpx' % _off if _off is not None else 'not measured'),
                   _off is not None and abs(_off) <= 1.5)
             ra = cs(pg, '.row-actions', ['display', 'gap'])
-            check('  the three buttons sit inline with a gap',
+            check('  the buttons sit inline with a gap',
                   ra['display'] == 'inline-flex' and ra['gap'] == '6px')
             # ES-3b, 24 Oct 2026 - THREE. Send for Signature is the
             # third slot, and this is the claim that proves the twins
             # work: whatever the row's permissions and whether or not
             # it holds a lease, three buttons are drawn.
-            check('  and there are exactly THREE of them in the row',
+            # HK-1, 26 Oct 2026 - TWO: Send left the row.
+            check('  and there are exactly TWO of them in the row',
                   pg.evaluate("()=>document.querySelectorAll("
                               "'tbody tr:first-child .row-actions "
-                              ".icon-action-btn').length") == 3)
+                              ".icon-action-btn').length") == 2)
             check('  one actions cell per row, not four',
                   pg.evaluate("()=>document.querySelectorAll("
                               "'tbody tr:first-child td').length")
@@ -653,10 +664,11 @@ else:
             # BROWSER rather than read off the class: cols-3 and
             # base.html's default happen to agree now, so the class
             # alone would pass even if the rule behind it had gone.
-            check('mobile: the action bar is a 3-up grid (cols-3)',
+            # HK-1, 26 Oct 2026 - 2-up, Send gone.
+            check('mobile: the action bar is a 2-up grid (cols-2)',
                   len(cs(pg, '.mobile-action-bar',
                          ['grid-template-columns'])
-                      ['grid-template-columns'].split()) == 3)
+                      ['grid-template-columns'].split()) == 2)
             check('mobile: the per-action cells step aside',
                   cs(pg, '.desktop-action-cell', ['display'])['display']
                   == 'none')

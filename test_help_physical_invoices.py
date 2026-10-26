@@ -138,12 +138,17 @@ for stale in ('A nightly job prepares', 'A nightly job seeds',
 
 # ====================================== EVERY NUMBER AGAINST ITS REAL SOURCE
 # --- the cadence
-check('the help says every five minutes',
-      'every five minutes' in OV and 'every five minutes' in TEN)
-check('  and railway.json really schedules */5',
-      '"*/5 * * * *"' in RAIL_SRC)
-check('  on the command that drives this',
-      'check_lease_renewals' in RAIL_SRC)
+# HK-1, 26 Oct 2026 - ONCE A DAY. His Railway screenshot: the cron
+# service runs cron-service/start.sh at 06:00 UTC daily. The */5 in
+# railway.json is not what Railway runs - the schedule lives in the
+# service settings, which no file in this tree can show - so the help is
+# asked for the daily wording and start.sh for the command it runs.
+check('the help says once a day, each morning',
+      'once a day, each morning' in OV and 'once a day, each morning' in TEN
+      and 'every five minutes' not in OV + TEN)
+check('  and the cron service runs the command that drives this',
+      'check_lease_renewals' in read(os.path.join(ROOT, 'cron-service',
+                                                  'start.sh')))
 check('  which calls the prepare command',
       "call_command('prepare_physical_invoices')" in RUN_SRC)
 check('  and the send command', "'send_physical_invoices'" in RUN_SRC)
@@ -251,8 +256,10 @@ check('the help says re-running creates nothing twice',
 check('  and the command uses get_or_create on tenant + period',
       re.search(r'get_or_create\(\s*\n?\s*tenant=t, period_year=', PREP_SRC)
       is not None)
+# HK-1, 26 Oct 2026 - "straight back" assumed a five-minute cycle; on the
+# daily schedule it comes back the next morning, and the help says so.
 check('the help says a deleted draft comes back',
-      'comes straight back' in TEN)
+      'a deleted draft comes back' in TEN and 'the next morning' in TEN)
 check('  and warns that leaving it unapproved is the real control',
       'Leave it unapproved instead' in TEN)
 

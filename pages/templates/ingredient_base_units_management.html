@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_recipes, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_recipes) would have allowed them. #}
 {% load static %}
 {% load custom_filters %}
 {% block title %}Ingredient Shopping Units{% endblock %}
@@ -1088,7 +1089,7 @@
                         <span class="ingredient-name-display">
                             <strong>{{ item.ingredient.name }}</strong>
                         </span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <input type="text" 
                                class="ingredient-name-edit ingredient-name-input" 
                                value="{{ item.ingredient.name }}"
@@ -1105,7 +1106,7 @@
                             <span style="color: #6c757d; font-style: italic;">No category</span>
                             {% endif %}
                         </span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <select class="category-edit category-input" data-original-value="{% if item.ingredient.category %}{{ item.ingredient.category.ingredient_category_id }}{% endif %}"></select>
                         {% endif %}
                     </td>
@@ -1119,7 +1120,7 @@
                             <span style="color: #6c757d; font-style: italic;">Not set</span>
                             {% endif %}
                         </span>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <select class="unit-edit unit-select" data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}"></select>
                         {% endif %}
                     </td>
@@ -1171,14 +1172,14 @@
                                   data-tip-protein="{{ item.nutrition_values.protein|default_if_none:'' }}"
                                   data-tip-carbs="{{ item.nutrition_values.carbs|default_if_none:'' }}"
                                   data-tip-fat="{{ item.nutrition_values.fat|default_if_none:'' }}"
-                                  {% if perms.auth.can_edit_personal %}onclick="openNutritionMappingModal({{ item.ingredient.ingredient_id }})" style="cursor: pointer;"{% endif %}>
+                                  {% if perms.auth.can_edit_recipes %}onclick="openNutritionMappingModal({{ item.ingredient.ingredient_id }})" style="cursor: pointer;"{% endif %}>
                                 <i class="fas fa-check-circle"></i> Mapped{% if item.nutrition_source == 'manual' %}<span class="nutrition-source-pill source-manual">M</span>{% endif %}
                             </span>
                         {% else %}
                             <span class="nutrition-badge nutrition-unmapped"
                                   data-tip-type="nutrition"
                                   data-tip-source="none"
-                                  {% if perms.auth.can_edit_personal %}onclick="openNutritionMappingModal({{ item.ingredient.ingredient_id }})" style="cursor: pointer;"{% endif %}>
+                                  {% if perms.auth.can_edit_recipes %}onclick="openNutritionMappingModal({{ item.ingredient.ingredient_id }})" style="cursor: pointer;"{% endif %}>
                                 <i class="fas fa-exclamation-triangle"></i> Not mapped
                             </span>
                         {% endif %}
@@ -1187,7 +1188,7 @@
                     <!-- Actions -->
                     <td style="text-align: center;" class="cell-actions">
                         <div class="action-buttons">
-                            {% if perms.auth.can_edit_personal %}
+                            {% if perms.auth.can_edit_recipes %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
                                 <span class="row-actions"><button class="icon-action-btn icon-edit" onclick="enterEditMode({{ item.ingredient.ingredient_id }})" title="Edit">
@@ -1261,7 +1262,7 @@
 <template id="unitOptionsTpl"><option value="">-- Select Unit --</option>{% for unit in all_units %}<option value="{{ unit.measurement_unit_id }}">{{ unit.name }}</option>{% endfor %}</template>
 
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 <!-- ============================================================
      SINGLE-INGREDIENT NUTRITION MAPPING MODAL
      ============================================================ -->
@@ -1589,7 +1590,7 @@ window._nmUnitTypes = {
     window.addEventListener('resize', hideTooltip);
 })();
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 // ============================================================
 // EXISTING ROW EDIT/DELETE FUNCTIONS
 // ============================================================

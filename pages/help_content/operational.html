@@ -1895,7 +1895,7 @@
     <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><strong>Tenant invoices &mdash; automatic</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A background job runs <strong>every five minutes</strong>. It does nothing for most of the month, then in the <strong>last five days</strong> it drafts an invoice for each flagged tenant for the <em>month ahead</em>. You review and approve; a second job numbers, e-mails and files them. Your only job is approving.</p>
+        <p class="mb-0" style="font-size:13px;">A background job runs <strong>once a day, each morning at about 08:00 Cyprus time</strong>. It does nothing for most of the month, then in the <strong>last five days</strong> it drafts an invoice for each flagged tenant for the <em>month ahead</em>. You review and approve; a second job numbers, e-mails and files them. Your only job is approving.</p>
       </div>
     </div>
     <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
@@ -1960,7 +1960,8 @@
            data-tab-name="Tenant Invoices"
            data-tab-icon="fa-users">
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-users"></i> The automatic monthly cycle</h6>
-    <p>Tenant rent invoices are handled on a schedule, so you never draft them by hand. A background job runs <strong>every five minutes</strong>, all month; for most of the month it has nothing to do. The cycle:</p>
+    <p>Tenant rent invoices are handled on a schedule, so you never draft them by hand. A background job runs <strong>once a day, each morning at about 08:00 Cyprus time</strong> (06:00 UTC), all month; for most of the month it has nothing to do. The cycle:</p>
+    <!-- HK-1, 26 Oct 2026 - ONCE A DAY, not on a five-minute cycle: what the Railway cron service actually runs. Each run also sends the daily digests, so it cannot run more often. -->
 
     <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
       <div class="card-body" style="padding:12px 15px;">
@@ -1999,7 +2000,7 @@
     <p>So a missing draft is nearly always the flag rather than a fault. Check the tenant first.</p>
 
     <div class="alert alert-light" style="border-left:4px solid #6c757d;">
-      <i class="fas fa-redo"></i> <strong>Running every five minutes creates nothing twice.</strong> A draft is keyed on the tenant and the month, so the job finds the existing one and leaves it alone &mdash; including any edits you have made to it.
+      <i class="fas fa-redo"></i> <strong>Running every day creates nothing twice.</strong> A draft is keyed on the tenant and the month, so the job finds the existing one and leaves it alone &mdash; including any edits you have made to it.
     </div>
 
     <h6 style="color:#0e7c8b; font-weight:700; margin-top:15px;"><i class="fas fa-edit"></i> Editing the lines</h6>
@@ -2013,7 +2014,7 @@
     </div>
 
     <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
-      <i class="fas fa-trash"></i> <strong>Deleting a tenant draft:</strong> a deleted draft comes straight back &mdash; the job runs again within five minutes and re-creates it, and will keep doing so until the month turns. Deleting is therefore not how you stop an invoice. <strong>Leave it unapproved instead:</strong> nothing unapproved is ever sent, and on the 1st it is simply passed over.
+      <i class="fas fa-trash"></i> <strong>Deleting a tenant draft:</strong> a deleted draft comes back &mdash; the job runs again the next morning and re-creates it, and will keep doing so until the month turns. Deleting is therefore not how you stop an invoice. <strong>Leave it unapproved instead:</strong> nothing unapproved is ever sent, and on the 1st it is simply passed over.
     </div>
   </article>
 

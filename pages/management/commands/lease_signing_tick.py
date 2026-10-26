@@ -2,8 +2,15 @@
 """lease_signing_tick - ES-5, 25 Oct 2026.
 
 WHAT HAPPENS TO AN ENVELOPE WHILE NOBODY IS LOOKING AT IT. Two jobs,
-run from check_lease_renewal_and_invoices every five minutes, beside
-the physical-invoice send that already lives there.
+run from check_lease_renewal_and_invoices, beside the physical-invoice
+send that already lives there.
+
+HK-1, 26 Oct 2026 - ONCE A DAY, NOT EVERY FIVE MINUTES. This said five
+minutes; the Railway cron service runs that job once a day at 06:00 UTC
+(his screenshot), and it cannot run more often because each run also
+sends the daily digests. So expiry is written, and reminders go, with
+the morning run. The LINK closes on time regardless: the signing page
+asks has_expired itself.
 
 1. EXPIRY IS WRITTEN HERE AND NOWHERE ELSE. ES-3a's register reads
    "past its date" and deliberately writes nothing - a list view that
@@ -113,7 +120,7 @@ class Command(BaseCommand):
                 emails += len(waiting)
                 continue
             # MARKED BEFORE SENDING. A send that half-fails must not be
-            # retried every five minutes until the mail server recovers
+            # retried on every run until the mail server recovers
             # - one reminder per day it is due, and the trail records
             # any address it could not reach.
             env.last_reminder_at = now

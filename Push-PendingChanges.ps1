@@ -1290,6 +1290,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_approve.py'; Text = 'transaction.on_commit(_remove_files)'; What = 'ES-7b: an envelope is deleted rows first and files only after the commit - a failed delete leaves everything' },
     @{ File = 'pages/views/lease_signing.py'; Text = 'def superuser_only(view):'; What = 'ES-8: every staff Lease Signing screen is superuser only - without the gate, anybody who can edit tenants sees the register, the signed leases and the approval again, silently' },
     @{ File = 'pages/views/lease_signing_sign.py'; Text = "_tell_house_signed(env, party, 'completed', request)"; What = 'ES-8: the last signature tells Alivente the lease is ready for approval - without it a signed lease waits unnoticed' },
+    @{ File = 'Push-PendingChanges.ps1'; Text = '& python manage.py migrate --check 2>&1'; What = 'HK-1: the push refuses to run its suites against a local database with a migration unapplied - without it, a forgotten migrate costs a twenty-minute gate of false failures' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -1525,6 +1526,31 @@ if ($mmCode -eq 0 -or $mmText -match 'No changes detected') {
     Warn 'makemigrations could not run (settings or database) - check this by hand'
 } else {
     Bad 'Django wants a migration.  Generate and review it before pushing.'
+    if (-not $Force) { exit 1 }
+}
+
+# HK-1, 26 Oct 2026 - IS THE LOCAL DATABASE MIGRATED? makemigrations above
+# asks whether the MODELS need a new migration; this asks whether THIS
+# DATABASE has every migration applied. Release 15 lost a twenty-minute
+# gate to a missing local migration: dozens of suites failed against a
+# table that was not there, and the cause was one command he had not run.
+# migrate --check exits non-zero while anything is unapplied and changes
+# nothing. Like makemigrations, its exit code alone is not trusted - a
+# command that could not start is reported as that, not as a refusal.
+Head 'Is your local database up to date?'
+$miOut = & python manage.py migrate --check 2>&1
+$miCode = $LASTEXITCODE
+$miText = ($miOut | Out-String)
+if ($miCode -eq 0) {
+    Good 'every migration is applied to your local database'
+} elseif ($miText -match 'Traceback|ImproperlyConfigured|OperationalError|Unknown command') {
+    $miOut | ForEach-Object { Say ('  ' + $_) }
+    Warn 'migrate --check could not run (settings or database) - check this by hand'
+} else {
+    $miOut | ForEach-Object { Say ('  ' + $_) }
+    Bad 'your local database is missing a migration - the suites would fail against it.'
+    Say  '        Run this, then push again:'
+    Say  '            python manage.py migrate'
     if (-not $Force) { exit 1 }
 }
 
@@ -3105,7 +3131,9 @@ $suites = @(
     'test_envelope_delete.py',
     # ES-8, 25 Oct 2026 - Lease Signing finished: superuser only, told as
     # each person signs, Start e-signing, and its Help.
-    'test_signing_finish.py'
+    'test_signing_finish.py',
+    # HK-1, 26 Oct 2026 - Release 19 housekeeping.
+    'test_housekeeping.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

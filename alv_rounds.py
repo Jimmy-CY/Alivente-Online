@@ -1494,6 +1494,8 @@ ROUNDS = [
     '.bak_envdelete',
     # ES-8, 25 Oct 2026 - Lease Signing finished.
     '.bak_signfinish',
+    # HK-1, 26 Oct 2026 - Release 19 housekeeping.
+    '.bak_housekeep',
 ]
 
 

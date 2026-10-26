@@ -148,7 +148,6 @@ def claims(d):
     code = T.python_code_only(d.get(VIEW, ''), payloads=True)
     mk = T.code_only_js(d.get(PAGE, ''))
     u = T.python_code_only(d[URLS], payloads=True)
-    cell = row_cell(T.code_only_js(d[MANAGE]))
     return {
         'an envelope can be made at all':
             "name='lease_signing_create'" in u
@@ -180,18 +179,11 @@ def claims(d):
         'the register button goes somewhere':
             "{% url 'lease_signing_create' %}" in T.code_only_js(
                 d[REGISTER]),
-        'Manage Lease Agreements gains a Send row action':
-            'icon-send' in cell,
-        '  in house order, which alv_rowactions decides':
-            # 'send' IN IT, AND THEN IN ORDER. in_order() alone was
-            # true of the OLD cell too - view then delete is perfectly
-            # ordered - so the control reported this round's own claim
-            # as holding before it. A claim has to be about the thing
-            # the round did.
-            bool(cell) and 'send' in RA.verbs_of(cell)
-            and RA.in_order(RA.verbs_of(cell)),
-        '  and the phone bar says it holds three':
-            'mobile-action-bar cols-3' in T.code_only_js(d[MANAGE]),
+        # HK-1, 26 Oct 2026 - THE SEND ROW ACTION ON MANAGE LEASE
+        # AGREEMENTS IS GONE, his decision ("if a Lease Agreement is in
+        # here, it has already been signed"). Its three claims went with
+        # it; test_housekeeping.py asserts the absence. The way in is the
+        # register button above.
     }
 
 
@@ -207,12 +199,14 @@ ok("'lease_signing_create'" in T.python_code_only(NOW[VIEW], payloads=True),
 # THE ORDER, PRINTED RATHER THAN ASSERTED BLIND - the house rule since
 # the planter ceiling of 21 October: print the measurement, assert the
 # shape.
+#
+# HK-1, 26 Oct 2026 - send left the row, his decision; what remains must
+# still be in house order.
 verbs = RA.verbs_of(row_cell(T.code_only_js(NOW[MANAGE])))
 print('       row actions now: %s' % ' -> '.join(verbs))
-ok('send' in verbs and verbs.index('send') < verbs.index('delete')
-   if 'delete' in verbs else 'send' in verbs,
-   '  and send comes before delete, because ADVANCE precedes DESTROY',
-   verbs)
+ok('send' not in verbs and RA.in_order(verbs),
+   '  Manage Lease Agreements offers no send since HK-1, and what is left '
+   'is in house order', verbs)
 
 
 # ==========================================================================
@@ -608,25 +602,26 @@ else:
 # ==========================================================================
 head('6. THE WAYS IN')
 # ==========================================================================
-cell = row_cell(T.code_only_js(NOW[MANAGE]))
-ok('{% url \'lease_signing_create\' %}?tenant=' in cell,
-   'the row action carries the tenancy with it, so the screen opens on '
-   'the right one')
+# HK-1, 26 Oct 2026 - ONE WAY IN NOW: Lease Signing > Start e-signing.
+# The Manage Lease Agreements row action and its phone twin went, his
+# decision; the phone bar says two again, because base sizes it from that.
+ok('lease_signing_create' not in T.code_only_js(NOW[MANAGE]),
+   'Manage Lease Agreements no longer starts e-signing (HK-1)')
 bar_i = T.code_only_js(NOW[MANAGE]).find('mobile-action-bar')
 bar = T.code_only_js(NOW[MANAGE])[bar_i:bar_i + 2400]
-ok('fa-paper-plane' in bar and 'Send' in bar,
-   'and the phone bar has it too, labelled')
-ok('cols-3' in bar[:60],
-   '  and says it holds three, because base sizes the bar from that '
-   'class', bar[:60])
+ok('fa-paper-plane' not in bar and 'cols-2' in bar[:60],
+   '  nor its phone bar, which says it holds two', bar[:60])
 
 # THE ICON VOCABULARY IS NOT A FREE CHOICE. icon-send wears
 # fa-paper-plane everywhere in this tree and test_icon_names fails any
 # class that wears two glyphs.
-i_s = cell.find('icon-send')
-ok(i_s >= 0 and 'fa-paper-plane' in cell[i_s:i_s + 320],
-   'the send action wears the house glyph for send, which the register '
-   'already uses for Resend')
+#
+# HK-1, 26 Oct 2026 - asked of the register's Resend now, the one
+# icon-send left in this flow.
+reg = T.code_only_js(NOW[REGISTER])
+i_s = reg.find('icon-send')
+ok(i_s >= 0 and 'fa-paper-plane' in reg[i_s:i_s + 320],
+   'the register Resend wears the house glyph for send')
 
 
 # ==========================================================================

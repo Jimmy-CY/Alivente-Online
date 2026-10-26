@@ -192,8 +192,9 @@ if os.path.exists(ADMIN_HELP):
           and 'Four cards covering lease, deed and invoice' not in AH_SRC)
     check('  the Overview drops invoice generation from Functional',
           'lease agreements, title deeds and invoice generation' not in AH_SRC)
-    check('  it explains the job runs every five minutes instead',
-          'every five minutes' in AH_SRC and 'self-healing' in AH_SRC)
+    # HK-1, 26 Oct 2026 - ONCE A DAY: the schedule Railway really runs.
+    check('  it explains the job runs once a day instead',
+          'once a day, each morning' in AH_SRC and 'self-healing' in AH_SRC)
     check('  and points at the real places to look',
           'Financial Management &rarr; Invoices' in AH_SRC
           and 'Physical Invoices' in AH_SRC)

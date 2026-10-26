@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{# HK-1, 26 Oct 2026 - can_edit_recipes, not can_edit_personal: migration 0065 split Personal into Passports, Recipes, Celebrations and CRS and DELETED can_edit_personal, so these controls had been invisible to everybody but a superuser while the views (which check can_edit_recipes) would have allowed them. #}
 {% load static %}
 {% block title %}{{ recipe.recipe_name }}{% endblock %}
 {% block content %}
@@ -1611,7 +1612,7 @@
          Edit (primary) + secondaries hidden on mobile in More menu + Back -->
     <div class="page-action-buttons">
         <!-- PRIMARY: Edit Recipe -->
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_recipes %}
         <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="btn action-primary">
             <i class="fas fa-edit"></i> Edit Recipe
         </a>
@@ -2428,7 +2429,7 @@
                         <label for="emailSelect">
                             <i class="fas fa-envelope"></i> Email this list to:
                         </label>
-                        <select id="emailSelect" class="form-control" {% if not perms.auth.can_edit_personal %}disabled{% endif %}>
+                        <select id="emailSelect" class="form-control" {% if not perms.auth.can_edit_recipes %}disabled{% endif %}>
                             <option value="">Select email address...</option>
                             <option value="demetrimanias@gmail.com">demetrimanias@gmail.com</option>
                             <option value="angmaniasbakers@gmail.com">angmaniasbakers@gmail.com</option>
@@ -2444,7 +2445,7 @@
                         <button class="btn action-secondary" onclick="copyToClipboard()">
                             <i class="fas fa-copy"></i> Copy
                         </button>
-                        {% if perms.auth.can_edit_personal %}
+                        {% if perms.auth.can_edit_recipes %}
                         <button class="btn action-secondary" onclick="sendEmail()">
                             <i class="fas fa-envelope"></i> Email
                         </button>
@@ -2464,7 +2465,7 @@
                         <i class="fas fa-exchange-alt"></i> Unit Conversions Needed
                     </h5>
 
-                    {% if perms.auth.can_edit_personal %}
+                    {% if perms.auth.can_edit_recipes %}
                     <div class="alert alert-warning">
                         <i class="fas fa-info-circle"></i>
                         <strong>We need your help!</strong> Some ingredients use different units that need to be converted.
@@ -2514,7 +2515,7 @@ const recipeData = {
 };
 
 // Permission flag for JS
-const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_personal %}true{% else %}false{% endif %};
+const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_recipes %}true{% else %}false{% endif %};
 
 // ========== SHOPPING LIST STATE ==========
 let currentStep = 1;
@@ -4020,7 +4021,7 @@ function copyToClipboard() {
     });
 }
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_recipes %}
 function sendEmail() {
     const email = document.getElementById('emailSelect').value;
 
