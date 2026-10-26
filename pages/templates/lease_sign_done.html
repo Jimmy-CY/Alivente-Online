@@ -79,6 +79,16 @@
   </div>
   {% endif %}
 
+  {# BACK, FOR SOMEBODY SIGNED IN WHO CAN USE IT - ES-8, 25 Oct 2026. #}
+  {# His request: after signing for Alivente there was no way back to #}
+  {# the register. Only a superuser sees it, because only a superuser #}
+  {# can open the register; a tenant on a link never does.            #}
+  {% if user.is_superuser %}
+  <p class="ls-back">
+    <a href="{% url 'lease_signing_list' %}" class="ls-btn ls-btn-quiet">&larr;&nbsp;Back to Lease Signing</a>
+  </p>
+  {% endif %}
+
   <p class="ls-foot">
     You can close this page. The link you used will not show the agreement
     again.

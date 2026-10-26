@@ -301,6 +301,10 @@ if have_db:
                     codename=code,
                     defaults={'name': code, 'content_type': ct})[0]
                 user.user_permissions.add(perm)
+            # ES-8, 25 Oct 2026 - LEASE SIGNING IS SUPERUSER ONLY (his
+            # decision), so the account driving these screens is one.
+            user.is_superuser = True
+            user.save()
             staff = Client(**HOST)
             staff.force_login(user)
 

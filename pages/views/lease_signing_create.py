@@ -55,7 +55,7 @@ import datetime as dt
 import os
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -69,6 +69,8 @@ from ..services import lease_sealing
 # together, and a second copy here would be a second answer to what a
 # resend does to the old link.
 from .lease_signing_sign import _invite
+# ES-8, 25 Oct 2026 - superuser only, the family's one gate.
+from .lease_signing import superuser_only
 
 __all__ = [
     # __init__.py re-exports this module with `import *`, which obeys
@@ -173,7 +175,7 @@ def _is_me(party_name, party_email, user):
 
 
 @login_required
-@permission_required('auth.can_edit_tenants', raise_exception=True)
+@superuser_only
 def lease_signing_create(request):
     """Build an envelope: a document, a tenant, and up to three signers."""
     raw_id = (request.GET.get('tenant') or request.POST.get('tenant_id')

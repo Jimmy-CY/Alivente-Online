@@ -14,9 +14,13 @@ def notification_count(request):
     # on the Home dashboard. Counted with the ORM on its own, OUTSIDE the
     # raw-SQL block below, so a MySQL hiccup there cannot hide work that
     # is waiting, and only for somebody who can see tenants at all.
+    #
+    # ES-8, 25 Oct 2026 - SUPERUSERS ONLY, with the rest of Lease Signing.
+    # A notice pointing at a register the reader is refused would be a
+    # link to a 403.
     approvals = 0
     try:
-        if request.user.has_perm('auth.can_access_tenants'):
+        if request.user.is_superuser:
             from pages.models import LeaseSigning
             approvals = LeaseSigning.pending_approval().count()
     except Exception:

@@ -295,6 +295,10 @@ if have_db:
                 last_name='Manias')
             for code in ('can_edit_tenants', 'can_access_tenants'):
                 boss.user_permissions.add(perm(code))
+            # ES-8, 25 Oct 2026 - LEASE SIGNING IS SUPERUSER ONLY (his
+            # decision), so the account driving these screens is one.
+            boss.is_superuser = True
+            boss.save()
             viewer = User.objects.create_user(
                 username='es6viewer', password='not-a-real-password')
             viewer.user_permissions.add(perm('can_access_tenants'))
@@ -382,10 +386,13 @@ if have_db:
             ok('replace' in page and 'old' in page,
                '  and says plainly that approving REPLACES the lease attached '
                'now, naming it')
+            # ES-8, 25 Oct 2026 - NOBODY BUT A SUPERUSER SEES IT AT ALL.
+            # This said a look-only account saw the page without the
+            # controls; his decision made the whole page superuser only.
             r = look.get('/lease-signing/%s/' % env.pk)
-            ok(r.status_code == 200 and 'Approve and attach' not in
-               r.content.decode('utf-8', 'replace'),
-               'somebody who may only LOOK sees the page without the controls')
+            ok(r.status_code == 403,
+               'somebody who is not a superuser is refused the page '
+               'outright - ES-8', r.status_code)
 
             r = staff.get('/lease-signing/%s/signed.pdf' % env.pk)
             ok(r.status_code == 200 and r['Content-Type'] == 'application/pdf'

@@ -1288,6 +1288,8 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def _house_mark(party, request, how, kind):'; What = 'ES-7: the ONE place that decides who gets his signature and the stamp - the Alivente party, signing by session, as the account that owns them; a typed name never reaches it' },
     @{ File = 'pages/templates/lease_sign.html'; Text = 'content="same-origin"'; What = 'Live fix of 25 Oct: with no-referrer the browser sends Origin: null and Django refused every signature' },
     @{ File = 'pages/views/lease_signing_approve.py'; Text = 'transaction.on_commit(_remove_files)'; What = 'ES-7b: an envelope is deleted rows first and files only after the commit - a failed delete leaves everything' },
+    @{ File = 'pages/views/lease_signing.py'; Text = 'def superuser_only(view):'; What = 'ES-8: every staff Lease Signing screen is superuser only - without the gate, anybody who can edit tenants sees the register, the signed leases and the approval again, silently' },
+    @{ File = 'pages/views/lease_signing_sign.py'; Text = "_tell_house_signed(env, party, 'completed', request)"; What = 'ES-8: the last signature tells Alivente the lease is ready for approval - without it a signed lease waits unnoticed' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3100,7 +3102,10 @@ $suites = @(
     # ES-7, 25 Oct 2026 - his signature and the stamp; the address.
     'test_house_marks.py',
     # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
-    'test_envelope_delete.py'
+    'test_envelope_delete.py',
+    # ES-8, 25 Oct 2026 - Lease Signing finished: superuser only, told as
+    # each person signs, Start e-signing, and its Help.
+    'test_signing_finish.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

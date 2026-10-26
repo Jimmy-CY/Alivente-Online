@@ -160,7 +160,8 @@ function generateTenantHTML(tenant, showTenantLine) {
     } else {
         // Desktop: traditional table
         html += '<div class="table-container desktop-only-invoices">';
-        html += '<table class="alv-table">';
+        // ES-8 - `table` too, so it stretches like every other list.
+        html += '<table class="table alv-table">';
         html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th class="num">Days Overdue</th><th class="num">Amount</th></tr></thead>';
         html += '<tbody>';
 
@@ -258,7 +259,8 @@ console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataLi
                  desktop-only, so nothing is left drawing an empty shell on a
                  phone; the cards below replace the whole thing there. -->
             <div class="table-container desktop-only-table">
-            <table class="alv-table">
+            {# ES-8, 25 Oct 2026 - `table` AS WELL AS alv-table, his catch: Bootstrap's .table is what stretches a list from the first button to Back. #}
+            <table class="table alv-table">
                 <thead>
                     <tr>
                         <th>Tenant Name</th>

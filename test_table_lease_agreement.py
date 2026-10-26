@@ -257,11 +257,15 @@ check('  the row draws four possible glyphs across three slots (%s)'
 # against the backup, because the thing being proved is that nothing
 # was LOST, and a bare number proves that only until the next round.
 _bak = PAGE + '.bak_tablelease'
-SINCE = 2
+# ES-8, 25 Oct 2026 - AND THE SAME TWO MOVED TO THE SUPERUSER GATE, his
+# decision that Lease Signing is superuser only. The delta goes back to
+# nought for can_edit_tenants: ES-3b's two now read user.is_superuser,
+# which the ES-8 suite counts.
+SINCE = 0
 if os.path.exists(_bak):
     _g = '{% if perms.auth.can_edit_tenants %}'
     check('every can_edit_tenants gate survived the collapse, and ES-3b '
-          'added %d (%d)' % (SINCE, SRC.count(_g)),
+          'added %d after ES-8 (%d)' % (SINCE, SRC.count(_g)),
           SRC.count(_g) == read(_bak).count(_g) + SINCE)
     check('  CONTROL: there were gates to preserve in the first place',
           read(_bak).count(_g) > 0)

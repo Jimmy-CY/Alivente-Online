@@ -153,9 +153,12 @@ def claims(d):
         'an envelope can be made at all':
             "name='lease_signing_create'" in u
             and 'def lease_signing_create(' in code,
+        # ES-8, 25 Oct 2026 - or the superuser gate that replaced it,
+        # his decision: Lease Signing is superuser only.
         '  behind a login and the tenants edit permission':
             bool(code) and '@login_required' in code
-            and 'permission_required' in code,
+            and ('permission_required' in code
+                 or '@superuser_only' in code),
         '  and NOT under the public sign/ prefix ES-4 opened':
             "path('lease-signing/new/'" in u,
         'the signers prefill from the tenancy T2-1 made real':
@@ -381,6 +384,10 @@ else:
                and user.has_perm('auth.can_access_tenants'),
                'and the fixture holds both, so what follows is about '
                'the screen and not about permissions')
+            # ES-8, 25 Oct 2026 - LEASE SIGNING IS SUPERUSER ONLY (his
+            # decision), so the account driving these screens is one.
+            user.is_superuser = True
+            user.save()
 
             c = Client(**HOST)
             c.force_login(user)

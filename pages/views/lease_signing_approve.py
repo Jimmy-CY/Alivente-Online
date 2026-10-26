@@ -31,7 +31,6 @@ controls appear only when there is something to approve.
 """
 from django.contrib import messages
 from django.contrib.auth.decorators import (login_required,
-                                            permission_required,
                                             user_passes_test)
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -41,7 +40,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .lease_signing import PILLS
+# ES-8, 25 Oct 2026 - superuser_only: the envelope page, the signed PDF
+# and the approval are superuser only, with the rest of Lease Signing.
+from .lease_signing import PILLS, superuser_only
 from ..models import (LeaseSigning, LeaseSigningEvent, LeaseSigningParty,
                       delete_unheld, let_go_of_file, tenant)
 
@@ -69,7 +70,7 @@ def _who(user):
 
 
 @login_required
-@permission_required('auth.can_access_tenants', raise_exception=True)
+@superuser_only
 def lease_signing_detail(request, pk):
     """Everything about one envelope, and the approval when one is due."""
     env = get_object_or_404(
@@ -106,7 +107,7 @@ def lease_signing_detail(request, pk):
 
 
 @login_required
-@permission_required('auth.can_access_tenants', raise_exception=True)
+@superuser_only
 def lease_signing_sealed(request, pk):
     """The sealed PDF, inline, for staff. Never from a media URL.
 
@@ -164,7 +165,7 @@ def _attach(env, user):
 
 
 @login_required
-@permission_required('auth.can_edit_tenants', raise_exception=True)
+@superuser_only
 @require_POST
 def lease_signing_approve(request, pk):
     """Approve or decline a signed lease. POST, with action=approve|decline."""

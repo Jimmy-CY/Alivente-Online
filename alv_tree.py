@@ -1032,6 +1032,8 @@ CONVERTED = [
     'test_house_marks.py',
     # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.
     'test_envelope_delete.py',
+    # ES-8, 25 Oct 2026 - Lease Signing finished.
+    'test_signing_finish.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

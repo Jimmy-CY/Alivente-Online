@@ -23,14 +23,42 @@ That belongs to the job that also sends the last reminder - ES-5 -
 and a list view that quietly mutates rows as a side effect of being
 looked at is a list view nobody can reason about.
 """
+from functools import wraps
+
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from ..models import LeaseSigning, LeaseSigningEvent, LeaseSigningParty
+
+
+def superuser_only(view):
+    """Lease Signing is for superusers - ES-8, 25 Oct 2026, his decision.
+
+    "for now, only Superusers can see the register and an envelope's page
+    or start the e-signing, etc." ONE GATE, imported by every staff view
+    in the family (register, envelope page, signed PDF, Start, Extend,
+    Cancel, Approve), so the rule has one spelling.
+
+    A REFUSAL, NOT A LOGIN PAGE. user_passes_test sends a signed-in user
+    who fails it to the login screen, which reads as "you were logged
+    out". A 403 says what happened. login_required still runs first, so
+    somebody signed out is sent to log in as before.
+
+    THE SIGNING PAGE IS NOT GATED HERE. A tenant, or a member of staff
+    named to sign for Alivente, signs from an emailed link - his decision
+    of 25 October keeps that open to anybody named, superuser or not.
+    """
+    @wraps(view)
+    def inner(request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        return view(request, *args, **kwargs)
+    return inner
 
 __all__ = [
     # __init__.py re-exports this module with `import *`, which obeys
@@ -94,8 +122,24 @@ def _mark(party):
     return 'wait'
 
 
+def _mark_text(party):
+    """The words behind a dot, for its hover - ES-8, 25 Oct 2026.
+
+    His request: hovering a tick or a dot should say who it is and where
+    they are. Local time, because "signed 14:05" means Cyprus time to
+    everybody reading this register.
+    """
+    if party.declined_at:
+        return 'declined %s' % timezone.localtime(
+            party.declined_at).strftime('%d %b %Y, %H:%M')
+    if party.signed_at:
+        return 'signed %s' % timezone.localtime(
+            party.signed_at).strftime('%d %b %Y, %H:%M')
+    return 'still to sign'
+
+
 @login_required
-@permission_required('auth.can_access_tenants', raise_exception=True)
+@superuser_only
 def lease_signing_list(request):
     """Every envelope, newest first, live ones unless asked otherwise."""
     show_all = request.GET.get('all') == '1'
@@ -116,7 +160,10 @@ def lease_signing_list(request):
         parties = sorted(env.parties.all(),
                          key=lambda p: (p.order, p.party_id))
         marks = [{'state': _mark(p), 'name': p.name,
-                  'role': p.get_role_display()} for p in parties]
+                  'role': p.get_role_display(),
+                  # ES-8 - what the hover says, decided here with the
+                  # state it describes so the two cannot disagree.
+                  'state_text': _mark_text(p)} for p in parties]
         signed = sum(1 for m in marks if m['state'] == 'done')
 
         # PAST ITS DATE IS NOT THE SAME AS MARKED EXPIRED, and the
@@ -168,7 +215,7 @@ def _who(user):
 
 
 @login_required
-@permission_required('auth.can_edit_tenants', raise_exception=True)
+@superuser_only
 @require_POST
 def lease_signing_extend(request, pk):
     """Another seven days, and a fresh link to whoever has not signed.
@@ -239,7 +286,7 @@ def lease_signing_extend(request, pk):
 
 
 @login_required
-@permission_required('auth.can_edit_tenants', raise_exception=True)
+@superuser_only
 @require_POST
 def lease_signing_cancel(request, pk):
     """Withdraw an envelope. Links stop working at once.

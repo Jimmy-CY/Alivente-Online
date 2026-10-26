@@ -136,8 +136,12 @@ check('CONTROL: .alv-matrix DOES pin its footer, so the two are deliberately '
 # ===========================================================================
 head('2. both tables joined the standard')
 # ===========================================================================
-check('the debtors table is an .alv-table', 'class="alv-table"' in PC)
-check('the modal table is too', "'<table class=\"alv-table\">'" in PC)
+# ES-8, 25 Oct 2026 - with Bootstrap's .table beside it, which is what
+# stretches a list full width (his catch); either spelling is the house's.
+check('the debtors table is an .alv-table', 'class="alv-table"' in PC
+      or 'class="table alv-table"' in PC)
+check('the modal table is too', "'<table class=\"alv-table\">'" in PC
+      or "'<table class=\"table alv-table\">'" in PC)
 check('both sit in a container', PC.count('table-container') == 2,
       '%d' % PC.count('table-container'))
 check('NO WRAPPER AROUND A CONTAINER SCROLLS - overflow-x makes it the scroll '

@@ -184,8 +184,11 @@ if os.path.exists(ADMIN_HELP):
           'Generate Invoices</strong></h6>' not in AH_SRC)
     check('  and no longer tells you to click it',
           'click <strong>Generate Invoices</strong>' not in AH_SRC)
+    # ES-8, 25 Oct 2026 - FOUR AGAIN, but not the invoice four: the
+    # Manage Lease Signing tile joined the panel and its help.
     check('  the Functional tab says three cards, not four',
-          'Three cards covering lease and title-deed' in AH_SRC
+          ('Three cards covering lease and title-deed' in AH_SRC
+           or 'Four cards covering lease and title-deed' in AH_SRC)
           and 'Four cards covering lease, deed and invoice' not in AH_SRC)
     check('  the Overview drops invoice generation from Functional',
           'lease agreements, title deeds and invoice generation' not in AH_SRC)

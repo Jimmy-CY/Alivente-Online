@@ -2201,7 +2201,7 @@
            data-tab-name="Functional"
            data-tab-icon="fa-building">
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-building"></i> Functional cards</h6>
-    <p>Three cards covering lease and title-deed document workflows:</p>
+    <p>Four cards covering lease and title-deed document workflows:</p>
 
     <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
       <div class="card-body">
@@ -2236,6 +2236,13 @@
       </div>
     </div>
 
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-file-signature"></i> <strong>Manage Lease Signing</strong> <small class="text-muted">(Superuser only)</small></h6>
+        <p class="mb-0">Opens the <em>Lease Signing</em> register: every lease sent out to be signed online, who has signed, and what is waiting for your approval. See the <em>Lease Signing</em> help for the whole process.</p>
+      </div>
+    </div>
+
     <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <i class="fas fa-robot"></i> <strong>There is no Generate Invoices card any more &mdash; and nothing to press.</strong>
       <p class="mb-1 mt-2">Rent invoices for collection are created by a background job that runs <strong>every five minutes</strong>, all month. It always dates them the <strong>1st of the current month</strong> and skips any tenant who already has one, so it is <em>self-healing</em>: add a tenant on the 15th and their invoice appears within five minutes, correctly dated the 1st.</p>
@@ -2253,7 +2260,7 @@
            data-tab-name="System"
            data-tab-icon="fa-cog">
     <h6 style="color:#6c757d; font-weight:700;"><i class="fas fa-cog"></i> System cards</h6>
-    <p>Four cards (two active, two reserved for the future) covering account and application settings:</p>
+    <p>Five cards (three active, two reserved for the future) covering account and application settings:</p>
 
     <div class="card mb-3" style="border-left:4px solid #6c757d;">
       <div class="card-body">
@@ -2274,6 +2281,13 @@
       <div class="card-body">
         <h6 style="color:#6c757d;"><i class="fas fa-columns"></i> <strong>Menu Preference</strong></h6>
         <p class="mb-0">A shortcut to your <strong>My Profile</strong> page where you can switch between the <em>Top Menu</em> and <em>Sidebar</em> navigation styles.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><i class="fas fa-stamp"></i> <strong>Signature and Stamp</strong> <small class="text-muted">(Superuser only)</small></h6>
+        <p class="mb-0">Your saved signature and the company stamp, placed on a lease only when you sign it for Alivente yourself. Kept in the database, never as a file or a link. See the <em>Lease Signing</em> help.</p>
       </div>
     </div>
 
@@ -2808,5 +2822,177 @@
 
 </section>
 <!-- ======= END WORKSPACES ======= -->
+
+<!-- ======= LEASE SIGNING ======= -->
+<!-- ES-8, 25 Oct 2026 - his request: "I also think that we need to
+     create a Help section for Manage Lease Signing Module !!!"
+     Its permission, "superuser", is deliberately one no ordinary
+     account holds: help_page shows superusers everything and
+     everybody else only what they hold, so this module is visible to
+     superusers alone - the same people who can open the register. -->
+<section data-module-slug="lease_signing"
+         data-module-group="Administration"
+         data-module-parent="Administration"
+         data-module-permission="superuser"
+         data-module-name="Lease Signing"
+         data-module-icon="fa-file-signature"
+         data-module-category="Functional"
+         data-module-subtitle="Get a lease signed online: Alivente first, then the tenants, then your approval">
+
+  <article data-tab-slug="lsg-overview" data-tab-name="Overview" data-tab-icon="fa-info-circle">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-file-signature"></i> What is Lease Signing?</h6>
+    <p>Lease Signing sends a lease agreement out to be <strong>signed online</strong>. Each attempt is called an <strong>envelope</strong>: one lease, one tenancy, signed once. The order is always the same:</p>
+    <ol>
+      <li><strong>You start e-signing</strong> &mdash; choose the tenancy and the lease PDF.</li>
+      <li><strong>Alivente signs first</strong> &mdash; a tenant never sees a lease Alivente has not already committed to.</li>
+      <li><strong>The tenants are emailed a link</strong> the moment Alivente signs &mdash; one link each, no login needed.</li>
+      <li><strong>Each tenant reads to the end and signs.</strong></li>
+      <li><strong>The last signature seals the lease</strong> &mdash; a signature page is added and everybody is emailed a copy.</li>
+      <li><strong>You approve it</strong> &mdash; only then does the signed PDF become the tenant&rsquo;s lease agreement.</li>
+    </ol>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-route"></i> How to get here</h6>
+    <p>Administration <i class="fas fa-arrow-right"></i> Functional <i class="fas fa-arrow-right"></i> <strong>Manage Lease Signing</strong>. You can also start e-signing for one tenant from the paper-plane icon on <strong>Manage Lease Agreements</strong>.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> the register, the envelope pages, the signed leases and every action on them are for Superusers. Anybody else sees the tile and the paper-plane icon greyed out. Signing itself is different: whoever is <em>named</em> to sign &mdash; a tenant, or a member of staff signing for Alivente &mdash; signs from their emailed link.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-fingerprint"></i> <strong>The original is never touched.</strong> Signatures go on a page added at the end, so the lease everybody signed is exactly the lease that was sent. The signed file&rsquo;s fingerprint (SHA-256) is recorded, so any later change to it can be detected.
+    </div>
+  </article>
+
+  <article data-tab-slug="lsg-start" data-tab-name="Start E-signing" data-tab-icon="fa-play-circle">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-play-circle"></i> Starting an envelope</h6>
+    <p>Press <strong>Start e-signing</strong> on the register (or the paper-plane on a tenant&rsquo;s row of Manage Lease Agreements, which picks the tenancy for you).</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Tenant</strong> &mdash; the tenancy the lease is for. If it already has an envelope open you are warned: starting another does not cancel the first.</li>
+      <li><strong>The document</strong> &mdash; use the lease already on the tenant record, or attach a different PDF (PDF only, up to 15MB). The file is <em>copied</em> onto the envelope, so replacing the tenant&rsquo;s lease later cannot change what was signed.</li>
+      <li><strong>Signing for Alivente</strong> &mdash; leave it as yourself and you sign on the next screen. Name somebody else and they are emailed a link instead.</li>
+      <li><strong>Tenants</strong> &mdash; filled in from the tenant record; at most two, with two different email addresses so the record can tell who signed. A second signer appears only when the tenancy has a second tenant.</li>
+      <li><strong>Days to sign</strong> &mdash; 7 unless you change it (1 to 60). The link stays open until the <strong>end of the closing day, Cyprus time</strong>.</li>
+    </ul>
+    <p>Press <strong>Create and sign</strong>. The envelope is a <strong>Draft</strong> until Alivente signs; nothing reaches a tenant before then.</p>
+  </article>
+
+  <article data-tab-slug="lsg-signing" data-tab-name="Signing" data-tab-icon="fa-signature">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-signature"></i> The signing page</h6>
+    <p>Everybody signs on the same page. It shows the property <strong>address</strong> (never the internal property name), the tenancy, the lease period and the closing date, then every page of the lease.</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Read to the end</strong> &mdash; the signing box stays locked until the last page has been on screen.</li>
+      <li><strong>Sign</strong> &mdash; <em>Draw it</em> with a finger or mouse, or <em>Type my name</em>. Drawn signatures print in blue.</li>
+      <li><strong>Agree</strong> &mdash; tick that the electronic signature is as binding as one on paper, then <strong>Sign the agreement</strong>.</li>
+    </ul>
+
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-user-check"></i> <strong>Signing for Alivente yourself</strong></h6>
+        <p class="mb-0">A third tab, <strong>Use my saved signature</strong>, is offered and already selected &mdash; but only to the account that saved it, signed in. Your saved signature and the company stamp are placed on the signature page, which simply says <em>Signed</em>. There is no Decline button for Alivente. Afterwards, <strong>Back to Lease Signing</strong> returns you to the register.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-envelope-open-text"></i> <strong>What the tenant receives</strong></h6>
+        <p class="mb-0">An email, <em>&ldquo;Please sign your lease agreement&rdquo;</em> with the address, carrying the small Alivente logo and no contact details. It says Alivente has already signed, gives their own link, and the date it stays open until. On the page they see who signed for Alivente and who else is signing, and a <strong>Decline to sign</strong> button.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-bell"></i> <strong>You are told as each person signs.</strong> Alivente gets a short email each time somebody signs; the last one says the lease is <strong>ready for approval</strong> and links to the envelope.
+    </div>
+  </article>
+
+  <article data-tab-slug="lsg-register" data-tab-name="The Register" data-tab-icon="fa-table">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-table"></i> Reading the register</h6>
+    <p>One row per envelope, newest first. Live envelopes only, until you press <strong>Include finished</strong>.</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Status</strong> &mdash; Draft &middot; Out for signature &middot; Partly signed &middot; Signed &middot; Expired &middot; Cancelled &middot; Declined.</li>
+      <li><strong>Signers</strong> &mdash; how many have signed, then one dot per person, Alivente first: a <strong>tick</strong> has signed, a <strong>dot</strong> is still to sign, a <strong>cross</strong> declined. <em>Hover</em> over one to see the name and when they signed.</li>
+      <li><strong>Expires</strong> &mdash; the closing date; &ldquo;past its date&rdquo; until the next check marks it Expired; <strong>awaiting approval</strong> once everybody has signed.</li>
+    </ul>
+    <p><strong>Row actions:</strong> <i class="fas fa-eye"></i> view the envelope &middot; <i class="fas fa-file-pdf"></i> view the signed lease (once there is one) &middot; <i class="fas fa-paper-plane"></i> Extend &middot; <i class="fas fa-times"></i> Cancel.</p>
+  </article>
+
+  <article data-tab-slug="lsg-lifecycle" data-tab-name="Reminders &amp; Expiry" data-tab-icon="fa-hourglass-half">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-hourglass-half"></i> What happens while you wait</h6>
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-bell"></i> <strong>Reminders</strong></h6>
+        <p class="mb-0">On <strong>day 3</strong> and on <strong>the day before the closing day</strong> (day 3 and day 6 of the usual seven), to whoever has not signed &mdash; never to somebody who has. Each reminder carries a <strong>fresh link</strong>; the earlier one stops working.</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #ffc107;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-calendar-times"></i> <strong>Expiry</strong></h6>
+        <p class="mb-0">After the end of the closing day the envelope becomes <strong>Expired</strong> and its links show &ldquo;the signing period has ended&rdquo;. Every signature already given is <strong>kept</strong>.</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-paper-plane"></i> <strong>Extend</strong></h6>
+        <p class="mb-0">Available before <em>and</em> after expiry. The new closing date is the end of the day <strong>seven days from today</strong>, and only the people still to sign get <em>&ldquo;More time to sign&rdquo;</em> with a fresh link. An expired envelope reopens as it was &mdash; nobody signs twice.</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-times"></i> <strong>Cancel</strong></h6>
+        <p class="mb-0">Withdraws an envelope at any point before everybody has signed. Its links show &ldquo;This agreement was withdrawn&rdquo;. Signatures already given are kept on the record.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="lsg-decline" data-tab-name="Declines" data-tab-icon="fa-ban">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-ban"></i> When a tenant declines</h6>
+    <p>A tenant who presses <strong>Decline to sign</strong> ends the envelope for <strong>everybody</strong>: its status becomes <strong>Declined</strong>, the other tenant&rsquo;s link stops working, and Alivente is emailed who declined and when. There is no reason field.</p>
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-redo"></i> If the lease needs changing, <strong>start a new envelope</strong>. Attempt one and attempt two stay separate on the register, which is a cleaner record than one envelope that changed its mind.
+    </div>
+  </article>
+
+  <article data-tab-slug="lsg-approval" data-tab-name="Approval &amp; the Signed Lease" data-tab-icon="fa-check-circle">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-check-circle"></i> Approving a signed lease</h6>
+    <p>A fully signed lease is <strong>not</strong> written onto the tenant by itself. It waits for you, and you are told in three places: the <strong>Home</strong> page, <strong>Notifications</strong>, and a note at the top of the register.</p>
+    <p>Open the envelope (the <strong>awaiting approval</strong> link or the <i class="fas fa-eye"></i> icon). It shows the signed lease, who signed, when and from where, the full trail, and what is attached to the tenancy now.</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Approve and attach</strong> &mdash; the signed PDF becomes the tenant&rsquo;s lease agreement on Manage Lease Agreements, <em>replacing</em> any lease attached before.</li>
+      <li><strong>Decline</strong> &mdash; nothing is attached. This is final: to attach that lease later, start a new envelope.</li>
+    </ul>
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-file-pdf"></i> Viewing, downloading and sharing</h6>
+    <p><strong>View signed lease</strong> on the envelope page, or the <i class="fas fa-file-pdf"></i> icon on its register row, opens the signed PDF. <strong>Download</strong> is always there; on a phone, <strong>Share</strong> opens the phone&rsquo;s own share menu (WhatsApp, Mail and so on) with the PDF attached.</p>
+  </article>
+
+  <article data-tab-slug="lsg-admin" data-tab-name="Delete, Signature &amp; Stamp" data-tab-icon="fa-user-shield">
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-trash"></i> <strong>Deleting an envelope</strong></h6>
+        <p class="mb-1">From the bottom of the envelope page, and only for a <strong>closed</strong> envelope &mdash; Cancelled, Expired, Declined or Signed. A live one must be cancelled first.</p>
+        <p class="mb-0">The page warns you how many signatures it holds; type the envelope number to confirm. Everything is removed &mdash; the envelope, its signers, its trail and its files. A lease already approved onto the tenant is a separate copy and <strong>stays</strong> on the tenant record.</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-stamp"></i> <strong>Signature and Stamp</strong></h6>
+        <p class="mb-1">Administration <i class="fas fa-arrow-right"></i> System <i class="fas fa-arrow-right"></i> <strong>Signature and Stamp</strong>. Upload your signature and the company stamp as a PNG or JPEG (a scan on white paper is fine &mdash; the paper is made transparent).</p>
+        <p class="mb-0">They are kept in the database, never as a file or a link, and they are used <strong>only when the account that saved them signs for Alivente while signed in</strong>. Nobody else signing for Alivente gets them, whatever name is typed. Leases already signed keep the copy they were signed with.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="lsg-tips" data-tab-name="Tips" data-tab-icon="fa-lightbulb">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-lightbulb"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Check the tenant record first</strong> &mdash; the signers come from it, so a wrong email there is a link sent to the wrong person.</li>
+      <li><strong>Sign straight away</strong> &mdash; nothing reaches the tenant until Alivente has signed, and the closing date is counted from the day you start.</li>
+      <li><strong>Use Extend rather than starting again</strong> when somebody is simply slow &mdash; signatures already given are kept.</li>
+      <li><strong>Start a new envelope when the lease changes</strong> &mdash; after a decline, or a correction to the document.</li>
+      <li><strong>Approve promptly</strong> &mdash; until you do, the tenant record still holds the old lease.</li>
+    </ul>
+  </article>
+
+</section>
+<!-- ======= END LEASE SIGNING ======= -->
+
 
 

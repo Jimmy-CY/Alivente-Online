@@ -321,6 +321,22 @@ def _invite(env, party, request=None, why='sent'):
                 '%s'
                 'This link replaces any you were sent before.\n\n'
                 'Alivente Limited\n' % (name, link, expiry))
+    elif party.role == LeaseSigningParty.ROLE_ALIVENTE:
+        # SIGNING FOR ALIVENTE - ES-8, 25 Oct 2026. Found while writing
+        # the test plan: the house signer got the tenant's email, which
+        # told them the lease "has already been signed by Alivente
+        # Limited" - the very signature being asked for. Their own words:
+        # whose lease, and that nothing reaches the tenant until they sign.
+        who = getattr(env.tenant, 'tenant_display_name', '') or 'a tenant'
+        subject = 'Please sign a lease agreement for Alivente Limited'
+        body = ('Dear %s,\n\n'
+                'A lease agreement for %s is ready for you to sign on '
+                'behalf of Alivente Limited. Nothing is sent to the tenant '
+                'until you have signed.\n\n'
+                'Open this link to read it and sign:\n\n%s\n\n'
+                '%s'
+                'Please read the agreement to the end before signing.\n\n'
+                'Alivente Limited\n' % (name, who, link, expiry))
     else:
         subject = 'Please sign your lease agreement'
         body = ('Dear %s,\n\n'
@@ -359,6 +375,7 @@ def _advance(env, party, request):
         for p in outstanding:
             if p.email:
                 _invite(env, p, request)
+        _tell_house_signed(env, party, 'sent', request)
         return 'sent'
 
     if not outstanding:
@@ -385,12 +402,100 @@ def _advance(env, party, request):
                 _event(env, 'delivered',
                        detail='copy emailed to %d address(es)' % n,
                        request=request)
+        _tell_house_signed(env, party, 'completed', request)
         return 'completed'
 
     if env.status != LeaseSigning.PART:
         env.status = LeaseSigning.PART
         env.save(update_fields=['status'])
+    _tell_house_signed(env, party, 'part', request)
     return 'part'
+
+
+def _house_recipients(env, exclude=()):
+    """Who at Alivente hears about an envelope: its creator and its signer.
+
+    One spelling for the declined and the signed emails. `exclude` drops
+    the person the news is about - nobody is emailed that they signed.
+    """
+    to = []
+    if env.created_by_id and getattr(env.created_by, 'email', ''):
+        to.append(env.created_by.email.strip())
+    house = env.parties.filter(role=LeaseSigningParty.ROLE_ALIVENTE).first()
+    if house and house.email and house.email.strip().lower() not in \
+            [t.lower() for t in to]:
+        to.append(house.email.strip())
+    gone = {(e or '').strip().lower() for e in exclude}
+    return [t for t in to if t and t.lower() not in gone]
+
+
+def _tell_house_signed(env, party, outcome, request=None):
+    """Email Alivente that somebody has signed - ES-8, 25 Oct 2026.
+
+    HIS DECISION: "Yes, email me". The Done page has promised "you will be
+    told as each person signs" since ES-4, and until now nothing did. One
+    short email per signature; the last one says it is READY FOR APPROVAL
+    and links to the envelope page, where Approve is.
+
+    NEVER ABOUT YOURSELF. Signing for Alivente as the person who created
+    the envelope sends nothing - you know. Somebody else signing for
+    Alivente tells the creator that the tenants have now been emailed.
+
+    THE SIGNATURE IS THE RECORD; THE EMAIL IS A COURTESY - the rule ES-4
+    wrote for the signed copy. A failure is written to the trail and
+    never raised over the signature that worked.
+    """
+    try:
+        from ..services.lease_email import BrandedEmail as EmailMessage
+
+        # THE SIGNER, by the address they were asked at AND, signing by
+        # session, by their account's address - the two can differ.
+        me = getattr(getattr(party, 'signed_by_user', None), 'email', '')
+        to = _house_recipients(env, exclude=(party.email, me))
+        if not to:
+            return 0
+        path = reverse('lease_signing_detail', kwargs={'pk': env.pk})
+        if request is not None:
+            link = request.build_absolute_uri(path)
+        elif env.link_base:
+            link = env.link_base.rstrip('/') + path
+        else:
+            link = ''
+        # THE INTERNAL NAME IS FINE HERE: this email goes to Alivente
+        # staff, the way the declined email always has.
+        prop = getattr(getattr(env.tenant, 'prop', None), 'prop_name',
+                       '') or ''
+        tenancy = getattr(env.tenant, 'tenant_display_name', '') or ''
+        who = party.name or 'A signer'
+        stamp = timezone.localtime(party.signed_at or timezone.now()) \
+            .strftime('%d %B %Y at %H:%M')
+        waiting = [p.name or p.email for p in env.outstanding()]
+        if outcome == 'completed':
+            subject = 'Lease signed by everybody - ready for approval'
+            lead = ('%s signed on %s, and everybody has now signed.\n\n'
+                    'The signed lease is waiting for your approval before '
+                    'it is attached to the tenant.' % (who, stamp))
+        elif outcome == 'sent':
+            subject = 'Lease signed for Alivente - sent to the tenant'
+            lead = ('%s signed for Alivente Limited on %s, and the tenant '
+                    'has been emailed a link to sign.' % (who, stamp))
+        else:
+            subject = 'Lease signed by %s' % who
+            lead = ('%s signed on %s.\n\nStill to sign: %s.'
+                    % (who, stamp, ', '.join(waiting) or 'nobody'))
+        EmailMessage(
+            subject=subject + ((' - ' + prop) if prop else ''),
+            body=('%s\n\nTenancy: %s\n%s\nAlivente Limited\n'
+                  % (lead, tenancy,
+                     ('Open the envelope: %s\n' % link) if link else '')),
+            to=to).send(fail_silently=False)
+        return len(to)
+    except Exception as exc:                          # noqa: BLE001
+        _event(env, 'delivered',
+               detail='Alivente NOT told %s signed: %s'
+                      % (party.name or 'a signer', type(exc).__name__),
+               request=request)
+        return 0
 
 
 def _closed(request, env, party, state, status=410):

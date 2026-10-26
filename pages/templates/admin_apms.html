@@ -194,20 +194,23 @@
         </div>
       {% endif %}
 
-      <!-- Manage Lease Signing (requires Tenants access) - ES-3a,
+      <!-- Manage Lease Signing (superuser only since ES-8) - ES-3a,
            23 Oct 2026. The fourth tile closes the 2x2 grid; the cell
            was genuinely empty, since the two admin-btn--reserved
            placeholders are in the SYSTEM panel and not this one.
            fa-file-signature reads as distinct from fa-file-contract
            on Manage Lease Agreements and fa-plus-circle on Generate.
            Access matches the two lease tiles beside it. -->
-      {% if perms.auth.can_access_tenants %}
+      {# ES-8, 25 Oct 2026 - SUPERUSER ONLY, his decision: "for now, #}
+      {# only Superusers can see the register ... or start the       #}
+      {# e-signing". The greyed twin keeps the 2x2 grid whole.        #}
+      {% if user.is_superuser %}
         <a href="{% url 'lease_signing_list' %}" class="admin-btn">
           <i class="fas fa-file-signature"></i>
           <h6>Manage Lease Signing</h6>
         </a>
       {% else %}
-        <div class="admin-btn btn-perm-disabled" title="You do not have permission to access Tenants">
+        <div class="admin-btn btn-perm-disabled" title="Lease signing is for superusers">
           <i class="fas fa-file-signature"></i>
           <h6>Manage Lease Signing</h6>
         </div>

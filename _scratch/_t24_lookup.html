@@ -63,7 +63,8 @@ function generateTenantHTML(tenant, showTenantLine) {
     } else {
         // Desktop: traditional table
         html += '<div class="table-container desktop-only-invoices">';
-        html += '<table class="alv-table">';
+        // ES-8 - `table` too, so it stretches like every other list.
+        html += '<table class="table alv-table">';
         html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th class="num">Days Overdue</th><th class="num">Amount</th></tr></thead>';
         html += '<tbody>';
 

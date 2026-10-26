@@ -3,7 +3,7 @@
 {# THE TAB TITLE - RV-1's lesson, 23 Oct 2026. That round shipped a  #}
 {# screen with no title block and test_heading_prefix said so the    #}
 {# same day: 1 of 116 bad. Inherited rather than rediscovered.       #}
-{% block title %}Send for Signature{% endblock %}
+{% block title %}Start E-signing{% endblock %}
 
 {# SEND FOR SIGNATURE - ES-3b, 24 Oct 2026. The screen that makes an #}
 {# envelope. ES-3a listed them and had no way to put a row in the    #}
@@ -24,7 +24,8 @@
 {# CAPITALS - test_heading_standard holds that an h4 is a MODE LABEL #}
 {# and a label shouts. Its sibling reads SEND / TRACK / RESEND /     #}
 {# CANCEL, so this one names the mode within that.                   #}
-<h4 class="page-subtitle-h4">SEND FOR SIGNATURE</h4>
+{# ES-8, 25 Oct 2026 - START E-SIGNING, the button's new name. #}
+<h4 class="page-subtitle-h4">START E-SIGNING</h4>
 
 <form method="post" enctype="multipart/form-data" id="ls-new">
 {% csrf_token %}

@@ -594,8 +594,14 @@ else:
             ok(env.status == M.LeaseSigning.PART,
                'the envelope is PART SIGNED, not complete - one of two '
                'tenants has signed', env.status)
-            ok(mail.outbox == [],
-               '  and nothing was emailed, because nothing finished')
+            # ES-8, 25 Oct 2026 - ALIVENTE IS TOLD SHE SIGNED, his
+            # decision; nobody else is emailed, because nothing finished.
+            ok(len(mail.outbox) == 1
+               and list(mail.outbox[0].to) == ['signer@example.com']
+               and mail.outbox[0].subject.startswith('Lease signed by'),
+               '  and nothing went to the tenants, because nothing '
+               'finished - only Alivente is told she signed (ES-8)',
+               [(m.subject, m.to) for m in mail.outbox])
 
             # A SIGNED LINK IS SPENT.
             r = pub.get('/sign/%s/' % tok1)
@@ -757,8 +763,12 @@ else:
                '  on the name ES-2a gave it, built from the primary key',
                env.sealed_pdf.name)
 
-            ok(len(mail.outbox) == 1,
-               'one copy of the signed agreement goes out', len(mail.outbox))
+            # ES-8 - the copy is the one WITH the PDF; beside it goes
+            # Alivente's ready-for-approval note, which carries none.
+            ok(len([m for m in mail.outbox if m.attachments]) == 1
+               and mail.outbox[0].attachments,
+               'one copy of the signed agreement goes out',
+               [m.subject for m in mail.outbox])
             if mail.outbox:
                 m = mail.outbox[0]
                 # ES-6, 25 Oct 2026 - AND TO ALIVENTE. Decision 2 of 23

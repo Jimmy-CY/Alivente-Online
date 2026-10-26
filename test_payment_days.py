@@ -169,8 +169,12 @@ check('the template no longer interpolates a class name it cannot be '
 # ===========================================================================
 head('2. the tables, the pills, the tiles')
 # ===========================================================================
+# ES-8, 25 Oct 2026 - `table alv-table` counts too: his catch that the
+# report tables did not stretch like every other list; .table sets width.
 check('both tables are .alv-table',
-      PC.count('class="alv-table') == 2, '%d' % PC.count('class="alv-table'))
+      PC.count('class="alv-table') + PC.count('class="table alv-table') == 2,
+      '%d' % (PC.count('class="alv-table')
+              + PC.count('class="table alv-table')))
 check('  in a container', PC.count('table-container') == 2)
 check('  and no scrolling wrapper survives', 'overflow-x: auto' not in PC)
 for _dead in ('.pd-table', '.pd-table thead th', '.pd-table tbody td',

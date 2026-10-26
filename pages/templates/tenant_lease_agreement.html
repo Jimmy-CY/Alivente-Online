@@ -188,14 +188,16 @@
                 {# instrument decided: send and upload are both        #}
                 {# ADVANCE, delete is DESTROY, and send after the pair #}
                 {# would read 0-4-3 on every row that has a lease.     #}
-                {% if perms.auth.can_edit_tenants %}
+                {# ES-8, 25 Oct 2026 - LEASE SIGNING IS SUPERUSER ONLY, #}
+                {# his decision; the greyed twin keeps the row's shape. #}
+                {% if user.is_superuser %}
                     <a href="{% url 'lease_signing_create' %}?tenant={{ tenant.tenant_id }}"
                        class="icon-action-btn icon-send" role="button"
-                       title="Send for Signature">
+                       title="Start e-signing">
                         <i class="fas fa-paper-plane"></i>
                     </a>
                 {% else %}
-                    <span class="icon-action-btn icon-disabled" title="No edit permission">
+                    <span class="icon-action-btn icon-disabled" title="E-signing is for superusers">
                         <i class="fas fa-paper-plane"></i>
                     </span>
                 {% endif %}
@@ -235,7 +237,7 @@
                 </span>
             {% endif %}
 
-            {% if perms.auth.can_edit_tenants %}
+            {% if user.is_superuser %}
                 <a href="{% url 'lease_signing_create' %}?tenant={{ tenant.tenant_id }}"
                    class="mobile-action-btn" role="button">
                     <i class="fas fa-paper-plane mobile-action-icon icon-color-send"></i>

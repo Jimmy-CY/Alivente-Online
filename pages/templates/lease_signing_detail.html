@@ -26,7 +26,7 @@
 {# name forms that sit below the bar (form="..."), so the bar holds    #}
 {# house controls only - test_bar_order; ES-7, 25 Oct 2026.            #}
 <div class="page-action-buttons">
-    {% if awaiting and perms.auth.can_edit_tenants %}
+    {% if awaiting and user.is_superuser %}
     {# THE BUTTONS SIT IN THE BAR; THEIR FORMS SIT BELOW IT - 25 Oct  #}
     {# 2026. A <form> inside .page-action-buttons is a container the  #}
     {# bar census does not know (test_bar_order), so each button      #}
@@ -50,7 +50,8 @@
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
-{% if awaiting and perms.auth.can_edit_tenants %}
+{# ES-8, 25 Oct 2026 - user.is_superuser: the page itself is superuser only now. #}
+{% if awaiting and user.is_superuser %}
 <form method="post" action="{% url 'lease_signing_approve' env.pk %}" id="lsd-approve-form">
     {% csrf_token %}
     <input type="hidden" name="action" value="approve">

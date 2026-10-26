@@ -72,7 +72,8 @@
 
     {% if rows %}
     <div class="table-container">
-      <table class="alv-table">
+      {# ES-8, 25 Oct 2026 - `table` AS WELL AS alv-table, his catch: Bootstrap's .table is what stretches a list from the first button to Back. #}
+      <table class="table alv-table">
         <thead>
           <tr>
             <th class="pd-col-name">Tenant</th>
@@ -180,7 +181,7 @@
         <span class="pd-section-note">&mdash; oldest first, &euro;{{ summary.outstanding_total|floatformat:2 }} in total</span>
       </h4>
       <div class="table-container">
-        <table class="alv-table pd-table-compact">
+        <table class="table alv-table pd-table-compact">
           <thead>
             <tr>
               <th>Tenant</th><th>Property</th><th>Invoiced</th>

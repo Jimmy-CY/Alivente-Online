@@ -146,7 +146,10 @@ v = T.python_code_only(read(VIEW), payloads=True)
 ok('__all__' in v and '"lease_signing_list"' in v,
    'the view is in __all__ - `import *` obeys it, so a view missing '
    'from that list does not exist to the URLconf however correct it is')
-ok("permission_required('auth.can_access_tenants'" in v,
+# ES-8, 25 Oct 2026 - the tile and the view moved together to
+# SUPERUSER ONLY, his decision; either spelling keeps the promise.
+ok("permission_required('auth.can_access_tenants'" in v
+   or '@superuser_only' in v,
    '  and requires what the tile promises')
 
 # READ ONLY, ASSERTED IN THE SOURCE AS WELL AS DRIVEN IN SECTION 5.
