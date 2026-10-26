@@ -493,9 +493,11 @@ ok('pantry_staples.html' in ra.NAMED
 # register in this round rather than being read from a backup: MN-1
 # retired the page, and an exemption for a control nobody can reach is
 # a line nobody can check. This counts the register as it stands.
-ok(len(ra.NAMED) == 2
-   and sum(v['count'] for v in ra.NAMED.values()) == 2,
-   '  which makes two such controls on two pages',
+# ES-10, 26 Oct 2026 - THREE AND THREE: the viewer icon beside the
+# attached lease on Start e-signing, named by his ask.
+ok(len(ra.NAMED) == 3
+   and sum(v['count'] for v in ra.NAMED.values()) == 3,
+   '  which makes three such controls on three pages',
    {k: v['count'] for k, v in ra.NAMED.items()})
 ok(ra.FAMILY.get('edit') < ra.FAMILY.get('delete'),
    '  CONTROL: and FAMILY already sorts edit before delete, so the pair '

@@ -1504,6 +1504,8 @@ ROUNDS = [
     '.bak_namesdrafts',
     # ES-9, 26 Oct 2026 - a lease is never overwritten.
     '.bak_neveroverwrite',
+    # ES-10, 26 Oct 2026 - Start e-signing attaches the lease, always.
+    '.bak_attachonly',
 ]
 
 

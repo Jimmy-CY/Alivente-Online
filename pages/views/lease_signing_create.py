@@ -23,16 +23,17 @@ the one this screen offers.
     send a lease to the right two people without first rewriting the
     tenancy.
 
-THE DOCUMENT: UPLOAD ONE, OR USE THE ONE ALREADY ON THE RECORD. His
-decision of 24 October. Re-uploading a file the system already holds
-is work for no reason, and the second copy is a second thing that can
-drift from the first.
+THE DOCUMENT IS ATTACHED, ALWAYS. ES-10, 26 Oct 2026, his decision,
+reversing the 24 October one that offered the lease already on the
+tenant record. Since ES-9 a lease is never overwritten, so the file on
+a record is either the lease that tenancy already signed or nothing -
+and sending a signed lease out to be signed again is never what he
+means. A lease for signature is a PDF he attaches (or, once it is
+unparked, one Generate makes).
 
-    AND IT IS COPIED, NOT POINTED AT. tenant_lease_agreement can be
-    replaced or deleted from Manage Lease Agreements; an envelope
-    that merely referenced it would have the document change under a
-    signature. ES-2 hashes what was signed precisely so that cannot
-    happen quietly, and this is the other half of it.
+    THE UPLOAD IS STILL A FILE OF THE ENVELOPE'S OWN. Nothing here
+    points at tenant_lease_agreement, so Manage Lease Agreements can
+    replace or delete that file without changing what was signed.
 
 PDF ONLY, and not because of taste. ES-2 rasterises the original so
 the signing page can show it; a JPEG of a lease has no pages to
@@ -56,7 +57,6 @@ import os
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -118,17 +118,6 @@ def _clean_int(raw, fallback, low, high):
     return max(low, min(high, n))
 
 
-def _stored_pdf(ten):
-    """The lease already on the record, when it is one we can use."""
-    f = getattr(ten, 'tenant_lease_agreement', None)
-    if not f:
-        return None
-    name = getattr(f, 'name', '') or ''
-    if os.path.splitext(name)[1].lower() != '.pdf':
-        return None
-    return f
-
-
 def _prefill(ten, user):
     """Who this envelope would go to, read off the record.
 
@@ -187,33 +176,25 @@ def lease_signing_create(request):
             messages.error(request, 'Choose a tenant first.')
             return redirect('lease_signing_create')
 
-        # ---- THE DOCUMENT
-        use_stored = request.POST.get('document') == 'stored'
-        stored = _stored_pdf(chosen)
+        # ---- THE DOCUMENT - ATTACHED, ALWAYS. ES-10, 26 Oct 2026.
+        # The lease on the tenant record is never offered: since ES-9
+        # it is either the one this tenancy already signed or nothing.
+        # A hand-made POST naming it gets the same answer as an empty
+        # upload.
         uploaded = request.FILES.get('lease_pdf')
-
-        if use_stored:
-            if stored is None:
-                messages.error(
-                    request, 'There is no PDF lease on this tenant record '
-                             'to use. Attach one instead.')
-                return redirect(request.get_full_path())
-            source_name = os.path.basename(stored.name)
-        else:
-            if not uploaded:
-                messages.error(request,
-                               'Attach the lease agreement as a PDF.')
-                return redirect(request.get_full_path())
-            if os.path.splitext(uploaded.name)[1].lower() not in ALLOWED:
-                messages.error(
-                    request, 'The lease must be a PDF. The signing page '
-                             'shows the document itself, and an image has '
-                             'no pages to show.')
-                return redirect(request.get_full_path())
-            if uploaded.size > MAX_BYTES:
-                messages.error(request, 'That file is over 15MB.')
-                return redirect(request.get_full_path())
-            source_name = uploaded.name
+        if not uploaded:
+            messages.error(request,
+                           'Attach the lease agreement as a PDF.')
+            return redirect(request.get_full_path())
+        if os.path.splitext(uploaded.name)[1].lower() not in ALLOWED:
+            messages.error(
+                request, 'The lease must be a PDF. The signing page '
+                         'shows the document itself, and an image has '
+                         'no pages to show.')
+            return redirect(request.get_full_path())
+        if uploaded.size > MAX_BYTES:
+            messages.error(request, 'That file is over 15MB.')
+            return redirect(request.get_full_path())
 
         # ---- THE SIGNERS
         house_name = (request.POST.get('house_name') or '').strip()
@@ -278,21 +259,7 @@ def lease_signing_create(request):
                 # ES-7, 25 Oct 2026 - to the END of that day, Cyprus time.
                 expires_at=LeaseSigning.closing_moment(days))
 
-            if use_stored:
-                # COPIED, NOT POINTED AT. The file on the tenant record
-                # can be replaced or deleted from Manage Lease
-                # Agreements, and a document that changed under a
-                # signature is the one thing ES-2's hash exists to
-                # make impossible.
-                stored.open('rb')
-                try:
-                    env.original_pdf.save(source_name,
-                                          ContentFile(stored.read()),
-                                          save=True)
-                finally:
-                    stored.close()
-            else:
-                env.original_pdf.save(uploaded.name, uploaded, save=True)
+            env.original_pdf.save(uploaded.name, uploaded, save=True)
 
             # THE PAGES, NOW. ES-4 shows these and asks page_count how
             # many there are; rendering at creation means a slow lease
@@ -313,7 +280,7 @@ def lease_signing_create(request):
                 signing=env, kind='created',
                 detail='%d signer(s), %s, expires in %d day(s)'
                        % (1 + len(signers),
-                          'stored lease' if use_stored else 'uploaded',
+                          'uploaded',
                           days),
                 ip=(request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0]
                     .strip() or request.META.get('REMOTE_ADDR') or '')[:45])
@@ -366,14 +333,6 @@ def lease_signing_create(request):
         'max_tenant_signers': MAX_TENANT_SIGNERS,
         'min_expiry': MIN_EXPIRY_DAYS,
         'max_expiry': MAX_EXPIRY_DAYS,
-        'stored_pdf': _stored_pdf(chosen) if chosen else None,
-        # THE FILENAME, NOT THE STORAGE KEY. Django has no basename
-        # filter and a template `cut` on one folder name left
-        # `e_agreements/tenant_1_mr-dorian-...` on screen - a path
-        # chopped mid-word, which tells the reader nothing and reads
-        # like a bug. The view knows how to take a basename.
-        'stored_name': (os.path.basename(_stored_pdf(chosen).name)
-                        if chosen and _stored_pdf(chosen) else ''),
         # A WARNING, NOT A REFUSAL. A renewal arrives with no lease
         # because duplicate_tenant clears the field, so an envelope on
         # a tenancy that already has one is worth remarking on and not

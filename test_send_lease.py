@@ -18,11 +18,13 @@ hand on the Tenants screen is the person this screen must offer, and
 the suite asks it over a tenancy that has one and a tenancy that
 does not.
 
-SECTION 5 IS THE DOCUMENT, AND THE CLAIM IS THAT IT IS COPIED. A
-stored lease that was merely REFERENCED could be replaced or deleted
-from Manage Lease Agreements afterwards, and the document would
-change under a signature. The suite deletes the original out from
-under the envelope and requires the envelope to still have its own.
+SECTION 5 IS THE DOCUMENT. Until ES-10 (26 Oct 2026) it proved that
+the lease already on the tenant record was COPIED onto the envelope.
+His decision that day removed that choice - since ES-9 the file on a
+record is the lease that tenancy already signed, or nothing - so the
+section now proves the opposite door is shut: a tenancy WITH a lease
+on its record and a POST that names it, with nothing attached, makes
+no envelope. test_attach_only.py is that round's own suite.
 
 SECTION 6 ASKS THE INSTRUMENT where the new row action goes.
 alv_rowactions owns LOOK, CHANGE, COPY, ADVANCE, DESTROY; this suite
@@ -166,10 +168,9 @@ def claims(d):
             'has_second_tenant' in code,
         '  and reading the first address through tenant_emails':
             'tenant_emails' in code,
-        'the lease already on the record can be used':
-            'tenant_lease_agreement' in code and 'stored' in mk,
-        '  and is COPIED onto the envelope, never referenced':
-            'ContentFile(stored.read())' in code,
+        # ES-10, 26 Oct 2026 - THE LEASE ALREADY ON THE RECORD IS NO
+        # LONGER OFFERED, his decision. Its two claims went with it;
+        # test_attach_only.py asserts the absence.
         'the pages are rendered when the envelope is made':
             'render_pages' in code,
         'no tenant link is minted here':
@@ -414,8 +415,11 @@ else:
             ok('Antoine' not in body,
                'a tenancy with one person offers one signer, not a blank '
                'second one pretending to be somebody')
-            ok('already on this tenant record' in body,
-               '  and the lease already on the record is offered')
+            # ES-10, 26 Oct 2026 - and the lease on the record is NOT
+            # offered, whatever is there.
+            ok('already on this tenant record' not in body,
+               '  and the lease already on the record is not offered - '
+               'a lease for signature is always attached (ES-10)')
 
             # ---- (d) THE REFUSALS
             n0 = M.LeaseSigning.objects.count()
@@ -540,13 +544,13 @@ else:
 
 
             # ==========================================================
-            head('5. THE STORED LEASE IS COPIED, NOT REFERENCED')
+            head('5. THE LEASE ON THE RECORD IS NEVER THE DOCUMENT')
             # ==========================================================
             #
-            # A reference would let Manage Lease Agreements replace or
-            # delete the document AFTER it had been signed, and a lease
-            # that changed under a signature is the one thing ES-2's
-            # hash exists to make impossible.
+            # ES-10, 26 Oct 2026. Until today this section proved the
+            # stored lease was COPIED onto the envelope. That choice is
+            # gone: a record's lease is the one already signed, and a
+            # hand-made POST that names it gets the empty-upload answer.
             alone2 = M.tenant.objects.create(
                 prop=a_prop(9), tenant_type='Individual',
                 tenant_name='Anastasia Spiropoulou',
@@ -556,8 +560,6 @@ else:
                 tenant_current='Yes')
             alone2.tenant_lease_agreement.save(
                 'spiropoulou.pdf', ContentFile(a_pdf(3)), save=True)
-            stored_name = alone2.tenant_lease_agreement.name
-
             r = c.post('/lease-signing/new/?tenant=%d' % alone2.pk, {
                 'tenant_id': alone2.pk, 'document': 'stored',
                 'house_name': 'Demetri Manias',
@@ -565,31 +567,13 @@ else:
                 'signer_1_name': 'Anastasia Spiropoulou',
                 'signer_1_email': 'anastasia@example.com',
                 'expiry_days': '7'})
-            env2 = M.LeaseSigning.objects.filter(tenant=alone2).first()
-            ok(env2 is not None,
-               'the lease already on the record makes an envelope with '
-               'no upload at all', r.status_code)
-            if env2 is not None:
-                ok(env2.page_count == 3,
-                   '  and it is really that document, three pages of it',
-                   env2.page_count)
-                ok(env2.original_pdf.name != stored_name,
-                   '  stored under its OWN name, not the record one',
-                   env2.original_pdf.name)
-
-                # NOW TAKE THE ORIGINAL AWAY.
-                alone2.tenant_lease_agreement.delete(save=True)
-                env2.refresh_from_db()
-                env2.original_pdf.open('rb')
-                try:
-                    kept = env2.original_pdf.read()
-                finally:
-                    env2.original_pdf.close()
-                ok(kept[:4] == b'%PDF',
-                   '  and DELETING the lease off the tenant record leaves '
-                   'the envelope intact - which a reference would not '
-                   'have done, and a signature over a vanished document '
-                   'is the failure ES-2 hash exists to prevent')
+            ok(r.status_code == 302 and not M.LeaseSigning.objects.filter(
+                   tenant=alone2).exists(),
+               'a POST naming the lease already on the record, with '
+               'nothing attached, makes NO envelope - it comes back to '
+               'the form (ES-10)', r.status_code)
+            ok(bool(alone2.tenant_lease_agreement),
+               '  and the lease on the record is untouched')
 
             raise Rollback
     except Rollback:
@@ -633,9 +617,10 @@ ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 ok(ME in T.CONVERTED, '%s is in alv_tree.CONVERTED' % ME)
 gate = read(GATE)
 ok("'%s'" % ME in gate, '  and on the push gate suite list')
-ok('ContentFile(stored.read())' in gate,
-   '  with a sentinel that would notice the stored lease becoming a '
-   'reference')
+# ES-10, 26 Oct 2026 - the stored-lease copy went with the choice; the
+# row that guarded it now guards its absence.
+ok("request.POST.get('document') == 'stored'" in gate,
+   '  with a sentinel that would notice the stored lease coming back')
 ok('from .lease_signing_sign import _invite' in gate,
    '  and one that would notice a second spelling of mint-and-send')
 

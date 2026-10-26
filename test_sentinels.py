@@ -338,10 +338,10 @@ PINNED = {
         'one spelling of mint-and-send - ES-3b created '
         'lease_signing_create.py WITH it on 24 Oct, and ES-6 is the '
         'first round since to back that file up',
-    'ContentFile(stored.read())':
-        'a stored lease is COPIED onto the envelope - ES-3b created '
-        'lease_signing_create.py WITH it, and ES-6 is the first round '
-        'since to back that file up',
+    # (THE SEVENTEENTH - the COPY of a stored lease - WENT WITH THE
+    # CODE, ES-10, 26 Oct 2026: Start e-signing no longer offers the
+    # lease on the record, and its row now asks for the ABSENCE of that
+    # choice, which every earlier version had, so it is not blind.)
     # THE THIRTEENTH TO FIFTEENTH, 25 OCT 2026 - REVEALED, NOT BROKEN,
     # and the same story as the twelfth.
     #

@@ -2887,7 +2887,8 @@
     <p>Press <strong>Start e-signing</strong> on the register.</p>
     <ul style="line-height:1.8;">
       <li><strong>Tenant</strong> &mdash; the tenancy the lease is for. If it already has an envelope open you are warned: starting another does not cancel the first.</li>
-      <li><strong>The document</strong> &mdash; use the lease already on the tenant record, or attach a different PDF (PDF only, up to 15MB). The file is <em>copied</em> onto the envelope, so replacing the tenant&rsquo;s lease later cannot change what was signed.</li>
+      <!-- ES-10, 26 Oct 2026 - the document is always attached. -->
+      <li><strong>The document</strong> &mdash; attach the lease to be signed as a PDF (PDF only, up to 15MB). The lease already on the tenant record is never offered: it is the one that tenancy has already signed. A lease made in <strong>Generate</strong> downloads as a Word file &mdash; check it, save it as a PDF, and attach that. The file belongs to the envelope, so anything done on Manage Lease Agreements later cannot change what was signed.</li>
       <li><strong>Signing for Alivente</strong> &mdash; leave it as yourself and you sign on the next screen. Name somebody else and they are emailed a link instead.</li>
       <li><strong>Tenants</strong> &mdash; filled in from the tenant record; at most two, with two different email addresses so the record can tell who signed. A second signer appears only when the tenancy has a second tenant.</li>
       <li><strong>Days to sign</strong> &mdash; 7 unless you change it (1 to 60). The link stays open until the <strong>end of the closing day, Cyprus time</strong>.</li>

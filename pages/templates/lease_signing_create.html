@@ -148,41 +148,17 @@
 <div class="form-card">
     <h3 class="form-section-title"><i class="fas fa-file-contract"></i> The document</h3>
 
-    {# TWO WAYS IN, AND THE STORED ONE IS OFFERED FIRST WHEN IT      #}
-    {# EXISTS - his decision of 24 October. Re-uploading a file the  #}
-    {# system already holds is work for no reason.                   #}
-    <div class="form-row">
-        <div class="col-md-12">
-          <div class="form-group">
-            {% if stored_pdf %}
-            <label class="alv-choice">
-              <input type="radio" name="document" value="stored" checked
-                     onchange="lsDoc()">
-              {# THE FILENAME THE VIEW TOOK, not the storage key. A   #}
-              {# template `cut` on one folder name left a path chopped #}
-              {# mid-word on screen the first time this rendered.      #}
-              <span>Use the lease already on this tenant record
-                &mdash; <code>{{ stored_name }}</code></span>
-            </label>
-            {% endif %}
-            <label class="alv-choice">
-              <input type="radio" name="document" value="upload"
-                     {% if not stored_pdf %}checked{% endif %}
-                     onchange="lsDoc()">
-              <span>Attach a different PDF</span>
-            </label>
-          </div>
-        </div>
-    </div>
-
-    <div class="form-row" id="ls-upload-row"
-         {% if stored_pdf %}style="display: none;"{% endif %}>
+    {# ONE WAY IN - ES-10, 26 Oct 2026, his decision. The lease on   #}
+    {# the tenant record is never offered: since ES-9 it is the one  #}
+    {# that tenancy already signed, or nothing. A lease for          #}
+    {# signature is attached here (Generate joins when unparked).    #}
+    <div class="form-row" id="ls-upload-row">
         <div class="col-md-8">
           <div class="form-group">
             <label for="lease_pdf"><strong>Lease agreement</strong>
               <span class="alv-req">*</span></label>
             <input type="file" class="form-control" id="lease_pdf"
-                   name="lease_pdf" accept="application/pdf,.pdf">
+                   name="lease_pdf" accept="application/pdf,.pdf" required>
             {# PDF ONLY, AND THE REASON IS SAID RATHER THAN ENFORCED #}
             {# IN SILENCE. ES-2 rasterises the original so the       #}
             {# signing page can show it, and a photograph of a lease #}
@@ -191,6 +167,17 @@
               PDF only, up to 15MB. The signing page shows the document
               itself, page by page.
             </small>
+            {# LOOK BEFORE YOU SEND - ES-10, 26 Oct 2026, his ask. Once  #}
+            {# a PDF is chosen, its name and a viewer icon appear; the   #}
+            {# icon opens THAT file, from this browser, in the app's own #}
+            {# PDF viewer modal (his ask: like the rest of the viewers) -#}
+            {# nothing is uploaded until Create and sign.                #}
+            <div id="ls-pdf-picked" class="ls-pdf-picked" style="display: none;">
+              <a href="#" id="ls-pdf-view" class="icon-action-btn icon-pdf"
+                 title="View the attached PDF"
+                 aria-label="View the attached PDF"><i class="fas fa-file-pdf"></i></a>
+              <span id="ls-pdf-name"></span>
+            </div>
           </div>
         </div>
     </div>
@@ -312,32 +299,37 @@
 
 <script>
 (function () {
-  // THE UPLOAD BOX FOLLOWS THE CHOICE, and the SERVER decides which
-  // one it read - this only keeps the screen honest while you look
-  // at it. Same rule as T2-2's reveal: '' and not 'block', so the
-  // stylesheet keeps deciding.
-  window.lsDoc = function () {
-    var row = document.getElementById('ls-upload-row');
-    if (!row) return;
-    var pick = document.querySelector('input[name="document"]:checked');
-    var upload = (!pick || pick.value !== 'stored');
-    row.style.display = upload ? '' : 'none';
-    // REQUIRED FOLLOWS THE REVEAL - T2-6's rule for the contact
-    // person, in the other direction. The label carries a star, and a
-    // star has to mean a `required` somebody can satisfy; a hidden
-    // required field refuses the form with nothing on screen to
-    // explain where. test_required_promise is what holds the two
-    // together.
-    // AND WRITTEN SO THE INSTRUMENT CAN SEE IT. A star on a label is
-    // a promise, and test_required_promise sorts every starred label
-    // in the tree into one of five mechanisms; `el.required = upload`
-    // through a local variable is none of them, so the promise read
-    // as unkept. The id sits next to the assignment and the value is
-    // a literal, which is the shape that census recognises.
-    if (upload) { document.getElementById('lease_pdf').required = true; }
-    else { document.getElementById('lease_pdf').required = false; }
-  };
-  lsDoc();
+  // THE ATTACHED PDF, VIEWABLE BEFORE IT IS SENT - ES-10, 26 Oct 2026.
+  // A blob URL of the chosen file, shown in components/pdf_viewer.html
+  // like every other PDF in the app: the browser reads it from memory,
+  // so the check costs no upload. The old URL is released on every
+  // change so a second choice never shows the first file.
+  var pdfIn = document.getElementById('lease_pdf');
+  var picked = document.getElementById('ls-pdf-picked');
+  var viewA = document.getElementById('ls-pdf-view');
+  var nameEl = document.getElementById('ls-pdf-name');
+  var blobUrl = null;
+  if (pdfIn && picked && viewA && nameEl) {
+    pdfIn.addEventListener('change', function () {
+      if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+      var f = pdfIn.files && pdfIn.files[0];
+      if (f && /\.pdf$/i.test(f.name)) {
+        blobUrl = URL.createObjectURL(f);
+        nameEl.textContent = f.name;
+        picked.style.display = '';
+      } else {
+        nameEl.textContent = '';
+        picked.style.display = 'none';
+      }
+    });
+    viewA.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var f = pdfIn.files && pdfIn.files[0];
+      if (blobUrl && f && typeof window.openPdfViewer === 'function') {
+        window.openPdfViewer(blobUrl, 'Attached lease', f.name);
+      }
+    });
+  }
 
   // ONE SUBMIT. Rendering the pages of a long lease takes a moment,
   // and a button that still looks pressable is a button somebody
@@ -353,5 +345,16 @@
   }
 })();
 </script>
+
+{# ES-10, 26 Oct 2026 - the app's PDF viewer, for the attached lease. #}
+{% include 'components/pdf_viewer.html' %}
+
+<style>
+/* ES-10, 26 Oct 2026 - the attached PDF, with its viewer icon. */
+.ls-pdf-picked {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; overflow-wrap: anywhere;
+}
+</style>
 
 {% endblock %}

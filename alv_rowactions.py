@@ -144,6 +144,17 @@ NAMED = {
                'it, beside the ingredient it removes. VC-1, and the same '
                'ruling as edit_asset.',
     },
+    # ES-10, 26 Oct 2026 - the sixth of this shape, by his ask: once a
+    # lease PDF is chosen on Start e-signing, a viewer icon appears
+    # beside its file name and opens THAT file in the PDF viewer modal.
+    'lease_signing_create.html': {
+        'count': 1,
+        'classes': ('icon-pdf',),
+        'since': '.bak_attachonly',
+        'why': 'View the attached PDF - one control beside the name of the '
+               'file just chosen, opening it in the PDF viewer before it is '
+               'sent. ES-10, his ask.',
+    },
 }
 
 

@@ -1044,6 +1044,8 @@ CONVERTED = [
     'test_names_and_drafts.py',
     # ES-9, 26 Oct 2026 - a lease is never overwritten.
     'test_never_overwrite.py',
+    # ES-10, 26 Oct 2026 - Start e-signing attaches the lease, always.
+    'test_attach_only.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

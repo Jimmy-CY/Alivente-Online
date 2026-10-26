@@ -1282,7 +1282,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def lease_sign_page'; What = 'ES-4: the rendered lease comes back through the same token check as the page itself - a media URL for a lease is a permanent read link to a contract, and it would outlive the seven-day expiry that the rest of this round takes seriously' },
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
-    @{ File = 'pages/views/lease_signing_create.py'; Text = 'ContentFile(stored.read())'; What = 'ES-3b: the lease already on the tenant record is COPIED onto the envelope, never referenced - that file can be replaced or deleted from Manage Lease Agreements, and a document that changed under a signature is the one thing ES-2 hash exists to make impossible' },
+    @{ File = 'pages/views/lease_signing_create.py'; Text = "request.POST.get('document') == 'stored'"; Absent = $true; Code = $true; What = 'ES-10: Start e-signing never uses the lease already on the tenant record - since ES-9 that is the lease the tenancy already signed, and offering it would send a signed lease out to be signed again' },
     @{ File = 'pages/forms.py'; Text = 'def clean_tenant_email(self):'; What = 'T2-8: one email address per tenant, required - a signing link is a credential for one person, and a box holding two hands one link to two people; ON THE FORM so a legacy record is refused only when a person saves it, never by the cron' },
     @{ File = 'pages/models.py'; Text = 'def outstanding(self):'; What = 'ES-5: ONE answer to who are we waiting for - reminders, extend and the expiry record all ask it, and whoever has signed is never emailed again; a second spelling is how a co-operative tenant gets chased for somebody else silence' },
     @{ File = 'pages/management/commands/check_lease_renewal_and_invoices.py'; Text = "call_command('lease_signing_tick'"; What = 'ES-5: the five-minute job writes expiry and sends the day 3 and day 6 reminders - without this line envelopes never expire and nobody is ever reminded, silently' },
@@ -3149,7 +3149,9 @@ $suites = @(
     # NB-1, 26 Oct 2026 - tenant names as shown; drafts on the dashboards.
     'test_names_and_drafts.py',
     # ES-9, 26 Oct 2026 - a lease is never overwritten.
-    'test_never_overwrite.py'
+    'test_never_overwrite.py',
+    # ES-10, 26 Oct 2026 - Start e-signing attaches the lease, always.
+    'test_attach_only.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

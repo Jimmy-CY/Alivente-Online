@@ -503,12 +503,17 @@ head('3. FIVE MECHANISMS, AND THE RESIDUE IS THE ASSERTION')
 # ==========================================================================
 EXPECT = {
     # T2-8, 25 Oct 2026 - 184 -> 188, the four email stars above.
-    '1 static required': 188,
+    # ES-10, 26 Oct 2026 - 188 -> 189: the lease upload on Start
+    # e-signing moved here from row 2. With no stored lease to choose
+    # instead, the field is always shown and `required` sits in the
+    # markup.
+    '1 static required': 189,
     # ES-3b, 24 Oct 2026 - 7 -> 8. The lease upload on the Send for
     # Signature screen, the fifth of that screen's five stars. The
     # script writes it through getElementById with a literal on the
     # right, which is the one script shape this census recognises.
-    '2 required set in script': 8,
+    # ES-10, 26 Oct 2026 - 8 -> 7: that upload is static now (row 1).
+    '2 required set in script': 7,
     '3 stopped by a submit guard': 9,
     '4 cannot be empty': 2,
     '5 django form field': 18,

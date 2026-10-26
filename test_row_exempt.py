@@ -181,7 +181,9 @@ total = sum(e['count'] for e in RA.NAMED.values())
 # in the tree any more, so the entry was a line nobody could check.
 # The same argument took the placeholder card off
 # test_pair_contrast's WCAG exemption in this round.
-ok(total == 2, 'it names %d control(s) on %d page(s)'
+# ES-10, 26 Oct 2026 - TWO BECAME THREE: the viewer icon beside the
+# attached lease on Start e-signing, named by his ask.
+ok(total == 3, 'it names %d control(s) on %d page(s)'
    % (total, len(RA.NAMED)), total)
 for pg, e in sorted(RA.NAMED.items()):
     ok(e['why'] and len(e['why']) > 40,
@@ -207,8 +209,10 @@ out = subprocess.run([sys.executable, REPORT], capture_output=True,
 # MD-1, 18 Oct 2026 - and the report's own line says three now.
 # RT-1, 18 Oct 2026 - TWO ON TWO. The report walks the live tree, as a
 # report should, so the line it prints followed the register down.
-ok('NAMED, NOT IN A WRAPPER - 2 button(s) on 2 page(s)' in out,
-   'the report names both', out[-500:])
+# ES-10, 26 Oct 2026 - THREE ON THREE, the viewer icon on Start
+# e-signing joining.
+ok('NAMED, NOT IN A WRAPPER - 3 button(s) on 3 page(s)' in out,
+   'the report names all three', out[-500:])
 for pg, e in sorted(RA.NAMED.items()):
     ok(pg in out, '  %s appears in it' % pg)
     ok(e['why'].split(' - ')[0][:28] in out,

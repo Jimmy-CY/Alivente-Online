@@ -130,7 +130,11 @@ def claims(src):
          and 'One tenant on this tenancy.' in page,
          'the note under the signers says which case this is'),
         ("'from .lease_signing_sign import _invite':" in sent
-         and "'ContentFile(stored.read())':" in sent,
+         # ES-10, 26 Oct 2026 - the second pin went with the code it
+         # pinned; its retirement note stands in its place.
+         and ("'ContentFile(stored.read())':" in sent
+              or 'THE SEVENTEENTH - the COPY of a stored lease - WENT'
+                 in src[SENT]),
          'ES-3b\'s two sentinels on lease_signing_create.py are pinned, '
          'revealed by ES-6\'s first backup of that file'),
     ]
