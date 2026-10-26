@@ -326,10 +326,12 @@ for p, nm in ((ADD, 'tenant_add.html'), (EDIT, 'tenant_edit.html')):
        'counts over 142 pages')
 
     # THE ROW IS A COPY OF THE ONE ABOVE IT.
-    ok(b.count('class="col-md-4"') == 3 and 'class="form-row"' in b,
-       '  three col-md-4 in a form-row, the same vocabulary as the '
-       'Contact row above it')
-    ok(b.count('<strong>') == 3 and 'class="form-control"' in b,
+    # TI-1, 26 Oct 2026 - FOUR NOW: the Passport/ID joined the row, his
+    # layout ("just like the second tenant" for the first), so the row
+    # shares four auto-width columns rather than three thirds.
+    ok(b.count('class="col-md"') == 4 and 'class="form-row"' in b,
+       '  four col-md in a form-row - name, Passport/ID, number, email')
+    ok(b.count('<strong>') == 4 and 'class="form-control"' in b,
        '  with the same label and control classes')
 
     # AND THE SECOND SET OF LABELS NAMES ITS OWNER. The 24 October

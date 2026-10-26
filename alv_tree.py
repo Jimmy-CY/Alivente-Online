@@ -1036,6 +1036,8 @@ CONVERTED = [
     'test_signing_finish.py',
     # HK-1, 26 Oct 2026 - Release 19 housekeeping.
     'test_housekeeping.py',
+    # TI-1, 26 Oct 2026 - identity numbers on the tenant.
+    'test_tenant_identity.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -27,8 +27,15 @@
   </div>
 <div class="form-card">
     <h3 class="form-section-title"><i class="fas fa-user"></i> Tenant</h3>
-    <div class="form-row">
-        <div class="col-md-4">
+    {# TI-1, 26 Oct 2026 - ONE GRID, TWO LAYOUTS, his design.          #}
+    {# Company:    Type | Tenant Name | Status                          #}
+    {#             Company Reg Number | Contact Person | Number | Email #}
+    {# Individual: Type | Status                                        #}
+    {#             Tenant Name | Tenant Passport/ID | Number | Email    #}
+    {# - the first tenant on one line, exactly like the second. The     #}
+    {# fields are written once; the class on the grid places them.      #}
+    <div class="form-row ti-grid {% if form_data.tenant_type == 'Company' %}is-company{% else %}is-individual{% endif %}" id="ti-grid">
+        <div class="col-12 ti-type">
           <div class="form-group">
             <label for="tenant_type"><strong>Tenant Type</strong> <span class="alv-req">*</span></label>
             <select id="tenant_type" class="form-control" name="tenant_type" required>
@@ -38,18 +45,14 @@
             </select>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 ti-name">
           <div class="form-group">
-            {# T2-6, 24 Oct 2026 - TENANT NAME, not Tenant. Between #}
-            {# "Tenant Type" and "Tenant Status" the bare word reads #}
-            {# as a third attribute of something rather than as the #}
-            {# name of the thing. #}
             <label for="tenant_name"><strong>Tenant Name</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_name" name="tenant_name"
-                   value="{{ form_data.tenant_name }}" placeholder="Company or Tenant Name" required>
+                   value="{{ form_data.tenant_name }}" placeholder="{% if form_data.tenant_type == 'Company' %}Company name{% else %}Full name{% endif %}" required>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 ti-status">
           <div class="form-group">
             <label for="tenant_current"><strong>Tenant Status</strong> <span class="alv-req">*</span></label>
             <select id="tenant_current" class="form-control" name="tenant_current" required>
@@ -59,56 +62,65 @@
             </select>
           </div>
         </div>
-    </div>
-    <div class="form-row">
-        <!-- CONTACT PERSON IS A COMPANY FIELD - T2-6, 24 Oct 2026.
-
-             Generate Lease Agreement has always known this. Its
-             updateTenantFields() hides #contact-person-field for an
-             Individual and flips `required` with it, and
-             lease_template.py writes 'N/A' into the document. This
-             screen was the only place that asked everybody for it,
-             and for a person it just repeated the Tenant Name above.
-
-             THE SAME ID AS GENERATE, deliberately: one grep for
-             contact-person-field now finds every screen that knows
-             the rule.
-
-             THE WHOLE COLUMN HIDES, not the input alone - a label
-             standing over nothing is worse than either.
-
-             AND THE SERVER PAINTS IT FIRST. Doing it in script alone
-             shows the column for as long as the page takes to run,
-             and worse: tenant_edit.html's listener returns early if
-             the second-tenant controls are missing, which would
-             leave a hidden-by-nobody field carrying `required` and a
-             form that refuses to save with nothing on screen to
-             explain why. The server decides; the script keeps up. -->
-        <div class="col-md-4" id="contact-person-field"{% if form_data.tenant_type != 'Company' %} style="display: none;"{% endif %}>
+        <div class="ti-break" aria-hidden="true"></div>
+        <div class="col-12 ti-reg" id="company-reg-field">
+          <div class="form-group">
+            <label for="tenant_company_reg_no"><strong>Company Reg Number</strong></label>
+            <input type="text" class="form-control" id="tenant_company_reg_no" name="tenant_company_reg_no"
+                   value="{{ form_data.tenant_company_reg_no }}" placeholder="e.g. HE 123456">
+          </div>
+        </div>
+        <div class="col-12 ti-id" id="id-number-field">
+          <div class="form-group">
+            <label for="tenant_id_number"><strong>Tenant Passport/ID</strong></label>
+            <input type="text" class="form-control" id="tenant_id_number" name="tenant_id_number"
+                   value="{{ form_data.tenant_id_number }}" placeholder="Passport or ID card number">
+          </div>
+        </div>
+        <div class="col-12 ti-person" id="contact-person-field"{% if form_data.tenant_type != 'Company' %} style="display: none;"{% endif %}>
           <div class="form-group">
             <label for="tenant_contact_person"><strong>Tenant Contact Person</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person"
                    value="{{ form_data.tenant_contact_person }}" placeholder="Name of Contact Person"{% if form_data.tenant_type == 'Company' %} required{% endif %}>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 ti-number">
           <div class="form-group">
             <label for="tenant_contact_number"><strong>Tenant Contact Number</strong> <span class="alv-req">*</span></label>
             <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number"
                    value="{{ form_data.tenant_contact_number }}" placeholder="Contact Number" required>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 ti-email">
           <div class="form-group">
-            {# T2-8, 25 Oct 2026 - ONE ADDRESS, REQUIRED. The old    #}
-            {# placeholder promised a list and the form kept the      #}
-            {# promise; a signing link is a credential for one person. #}
             <label for="tenant_email"><strong>Tenant Email Address</strong> <span class="alv-req">*</span></label>
             <input type="email" class="form-control" id="tenant_email" name="tenant_email"
                    value="{{ form_data.tenant_email }}" placeholder="name@example.com" required>
           </div>
         </div>
     </div>
+    <style>
+    /* TI-1, 26 Oct 2026 - the grid places the fields; nothing moves in
+       the markup. Phone: one column, in markup order. */
+    .ti-grid .ti-break { display: none; }
+    .ti-grid.is-company .ti-id,
+    .ti-grid.is-individual .ti-reg,
+    .ti-grid.is-individual .ti-person { display: none; }
+    .ti-grid.is-individual .ti-type   { order: 1; }
+    .ti-grid.is-individual .ti-status { order: 2; }
+    .ti-grid.is-individual .ti-break  { order: 3; }
+    .ti-grid.is-individual .ti-name   { order: 4; }
+    .ti-grid.is-individual .ti-id     { order: 5; }
+    .ti-grid.is-individual .ti-number { order: 6; }
+    .ti-grid.is-individual .ti-email  { order: 7; }
+    @media screen and (min-width: 768px) {
+      .ti-grid > .col-12 { flex: 0 0 25%; max-width: 25%; }
+      .ti-grid.is-company .ti-type,
+      .ti-grid.is-company .ti-name,
+      .ti-grid.is-company .ti-status { flex-basis: 33.3333%; max-width: 33.3333%; }
+      .ti-grid.is-individual .ti-break { display: block; flex: 0 0 100%; max-width: 100%; height: 0; }
+    }
+    </style>
 
     <!-- A SECOND TENANT - T2-2, 24 Oct 2026.
 
@@ -145,21 +157,28 @@
 
     <div id="t2-section"{% if not form_data.tenant_2_name %} style="display: none;"{% endif %}>
       <div class="form-row">
-        <div class="col-md-4">
+        <div class="col-md">
           <div class="form-group">
             <label for="tenant_2_name"><strong>Second Tenant</strong></label>
             <input type="text" class="form-control" id="tenant_2_name" name="tenant_2_name"
                    value="{{ form_data.tenant_2_name }}" placeholder="Name of Second Tenant">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md">
+          <div class="form-group">
+            <label for="tenant_2_id_number"><strong>Second Tenant Passport/ID</strong></label>
+            <input type="text" class="form-control" id="tenant_2_id_number" name="tenant_2_id_number"
+                   value="{{ form_data.tenant_2_id_number }}" placeholder="Passport or ID card number">
+          </div>
+        </div>
+        <div class="col-md">
           <div class="form-group">
             <label for="tenant_2_contact_number"><strong>Second Tenant Contact Number</strong></label>
             <input type="text" class="form-control" id="tenant_2_contact_number" name="tenant_2_contact_number"
                    value="{{ form_data.tenant_2_contact_number }}" placeholder="Contact Number">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md">
           <div class="form-group">
             {# T2-8, 25 Oct 2026 - REQUIRED WHILE THERE IS A SECOND   #}
             {# TENANT. The server paints it on arrival from the name, #}
@@ -524,8 +543,10 @@ $(document).ready(function() {
   var remBtn = document.getElementById('t2-remove-btn');
   if (!sel || !addRow || !addBtn || !sect || !remBtn) return;
 
-  var FIELDS = ['tenant_2_name', 'tenant_2_contact_number',
-                'tenant_2_email'];
+  // TI-1, 26 Oct 2026 - and the second tenant's Passport/ID, which
+  // Remove Second Tenant clears with the rest.
+  var FIELDS = ['tenant_2_name', 'tenant_2_id_number',
+                'tenant_2_contact_number', 'tenant_2_email'];
 
   // THE NAME DECIDES, matching has_second_tenant on the model. A
   // telephone number with no name is a half-typed form, not a person.
@@ -566,6 +587,17 @@ $(document).ready(function() {
     // REQUIRED COMES OFF WITH IT. A hidden required field refuses
     // the form and the browser cannot show the user where.
     if (contactIn) contactIn.required = company;
+    // TI-1, 26 Oct 2026 - THE GRID FOLLOWS THE TYPE: a Company keeps
+    // Type | Name | Status over Reg Number | Contact Person | Number |
+    // Email; an Individual is Type | Status over Name | Passport/ID |
+    // Number | Email. The class places the fields; none of them moves.
+    var grid = document.getElementById('ti-grid');
+    if (grid) {
+      grid.classList.toggle('is-company', company);
+      grid.classList.toggle('is-individual', !company);
+    }
+    var nameIn = document.getElementById('tenant_name');
+    if (nameIn) nameIn.placeholder = company ? 'Company name' : 'Full name';
   }
 
   function paint(open) {

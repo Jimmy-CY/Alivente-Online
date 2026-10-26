@@ -4486,6 +4486,28 @@ table.alv-matrix {
 
 
 
+    /* TI-1, 26 Oct 2026 - the grid places the fields; nothing moves in
+       the markup. Phone: one column, in markup order. */
+    .ti-grid .ti-break { display: none; }
+    .ti-grid.is-company .ti-id,
+    .ti-grid.is-individual .ti-reg,
+    .ti-grid.is-individual .ti-person { display: none; }
+    .ti-grid.is-individual .ti-type   { order: 1; }
+    .ti-grid.is-individual .ti-status { order: 2; }
+    .ti-grid.is-individual .ti-break  { order: 3; }
+    .ti-grid.is-individual .ti-name   { order: 4; }
+    .ti-grid.is-individual .ti-id     { order: 5; }
+    .ti-grid.is-individual .ti-number { order: 6; }
+    .ti-grid.is-individual .ti-email  { order: 7; }
+    @media screen and (min-width: 768px) {
+      .ti-grid > .col-12 { flex: 0 0 25%; max-width: 25%; }
+      .ti-grid.is-company .ti-type,
+      .ti-grid.is-company .ti-name,
+      .ti-grid.is-company .ti-status { flex-basis: 33.3333%; max-width: 33.3333%; }
+      .ti-grid.is-individual .ti-break { display: block; flex: 0 0 100%; max-width: 100%; height: 0; }
+    }
+    
+
     .pi-divider { margin: 1.5rem 0 1rem; border-top: 2px solid var(--alv-line); }
     .pi-check { display: flex; align-items: flex-start; }
     .pi-check-label { font-weight: 400; margin: 0; cursor: pointer; }
@@ -4572,21 +4594,28 @@ table.alv-matrix {
 
     <div id="t2-section" style="display: none;">
       <div class="form-row">
-        <div class="col-md-4">
+        <div class="col-md">
           <div class="form-group">
             <label for="tenant_2_name"><strong>Second Tenant</strong></label>
             <input type="text" class="form-control" id="tenant_2_name" name="tenant_2_name"
                    value="" placeholder="Name of Second Tenant">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md">
+          <div class="form-group">
+            <label for="tenant_2_id_number"><strong>Second Tenant Passport/ID</strong></label>
+            <input type="text" class="form-control" id="tenant_2_id_number" name="tenant_2_id_number"
+                   value="" placeholder="Passport or ID card number">
+          </div>
+        </div>
+        <div class="col-md">
           <div class="form-group">
             <label for="tenant_2_contact_number"><strong>Second Tenant Contact Number</strong></label>
             <input type="text" class="form-control" id="tenant_2_contact_number" name="tenant_2_contact_number"
                    value="" placeholder="Contact Number">
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md">
           <div class="form-group">
             
             
@@ -4622,8 +4651,10 @@ table.alv-matrix {
   var remBtn = document.getElementById('t2-remove-btn');
   if (!sel || !addRow || !addBtn || !sect || !remBtn) return;
 
-  var FIELDS = ['tenant_2_name', 'tenant_2_contact_number',
-                'tenant_2_email'];
+  // TI-1, 26 Oct 2026 - and the second tenant's Passport/ID, which
+  // Remove Second Tenant clears with the rest.
+  var FIELDS = ['tenant_2_name', 'tenant_2_id_number',
+                'tenant_2_contact_number', 'tenant_2_email'];
 
   // THE NAME DECIDES, matching has_second_tenant on the model. A
   // telephone number with no name is a half-typed form, not a person.
@@ -4664,6 +4695,17 @@ table.alv-matrix {
     // REQUIRED COMES OFF WITH IT. A hidden required field refuses
     // the form and the browser cannot show the user where.
     if (contactIn) contactIn.required = company;
+    // TI-1, 26 Oct 2026 - THE GRID FOLLOWS THE TYPE: a Company keeps
+    // Type | Name | Status over Reg Number | Contact Person | Number |
+    // Email; an Individual is Type | Status over Name | Passport/ID |
+    // Number | Email. The class places the fields; none of them moves.
+    var grid = document.getElementById('ti-grid');
+    if (grid) {
+      grid.classList.toggle('is-company', company);
+      grid.classList.toggle('is-individual', !company);
+    }
+    var nameIn = document.getElementById('tenant_name');
+    if (nameIn) nameIn.placeholder = company ? 'Company name' : 'Full name';
   }
 
   function paint(open) {

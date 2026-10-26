@@ -193,7 +193,10 @@ def col_tag(src):
     i = t.find('name="tenant_contact_person"')
     if i < 0:
         return ''
-    a = t.rfind('<div class="col-md-4"', 0, i)
+    # TI-1, 26 Oct 2026 - ANY BOOTSTRAP COLUMN, not col-md-4 alone: the
+    # tenant grid sizes its columns by type now (col-12 plus an order
+    # rule), and the column is still the nearest one around the input.
+    a = t.rfind('<div class="col-', 0, i)
     if a < 0:
         return ''
     return t[a:t.index('>', a) + 1]

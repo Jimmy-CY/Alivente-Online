@@ -303,23 +303,20 @@
                                     <div class="property-card mt-3">
                                         <h3 class="property-name">{{ active_tenant.tenant_display_name }}</h3>
 
+                                        {# TI-1, 26 Oct 2026 - THE SAME LAYOUT AS THE TENANT DETAILS #}
+                                        {# REPORT, his design: a Company keeps Tenant Information +   #}
+                                        {# Contact Information; an Individual has Type above, and one #}
+                                        {# block per person - Name, Passport/ID, Number, Email.       #}
+                                        {% if active_tenant.tenant_type != 'Company' %}
+                                        <div class="detail-row ti-type-row">
+                                            <span class="detail-label">Type:</span>
+                                            <span class="detail-value">{{ active_tenant.tenant_type }}</span>
+                                        </div>
+                                        {% endif %}
                                         <div class="tenant-details detail-groups">
-                                            <!-- Basic Info Section -->
+                                            {% if active_tenant.tenant_type == 'Company' %}
                                             <div class="detail-group">
                                                 <h4 class="section-title">Tenant Information</h4>
-                                                {# T2-7, 25 Oct 2026 - THE FIRST TENANT'S OWN NAME.   #}
-                                                {# HIS, on the render: the Second Tenant group named  #}
-                                                {# its person and this one did not, so on a joint     #}
-                                                {# tenancy the only first name on the panel was       #}
-                                                {# inside the combined heading - and the Contact      #}
-                                                {# Information below belonged to nobody you could     #}
-                                                {# point at.                                          #}
-                                                {#                                                    #}
-                                                {# tenant_name, NOT tenant_display_name. The heading   #}
-                                                {# is the tenancy and says "A & B"; this row is the   #}
-                                                {# person whose number and email are underneath it.   #}
-                                                {# Using the display name here would print "A & B"    #}
-                                                {# twice and still not answer whose address that is.  #}
                                                 <div class="detail-row">
                                                     <span class="detail-label">Name:</span>
                                                     <span class="detail-value">{{ active_tenant.tenant_name }}</span>
@@ -328,12 +325,15 @@
                                                     <span class="detail-label">Type:</span>
                                                     <span class="detail-value">{{ active_tenant.tenant_type }}</span>
                                                 </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Company Reg No:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_company_reg_no|default:"&mdash;" }}</span>
+                                                </div>
                                             </div>
-
-                                            <!-- Contact Info Section -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Contact Information</h4>
-                                                {# T2-6, 24 Oct 2026 - a Company field. #}
+                                                {# T2-6's own guard, kept inside the Company branch so each #}
+                                                {# printing site still asks the type itself (TI-1).         #}
                                                 {% if active_tenant.tenant_type == 'Company' %}
                                                 <div class="detail-row">
                                                     <span class="detail-label">Contact Person:</span>
@@ -349,17 +349,36 @@
                                                     <span class="detail-value">{{ active_tenant.tenant_email }}</span>
                                                 </div>
                                             </div>
-
-                                            {# SECOND TENANT - T2-7, 24 Oct 2026. #}
-                                            {# The panel that tells you who is in #}
-                                            {# a property could name two people #}
-                                            {# and reach one. #}
+                                            {% else %}
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Tenant Information</h4>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Name:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_name }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Passport/ID:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_id_number|default:"&mdash;" }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Contact Number:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_contact_number }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Email:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_email }}</span>
+                                                </div>
+                                            </div>
                                             {% if active_tenant.has_second_tenant %}
                                             <div class="detail-group">
                                                 <h4 class="section-title">Second Tenant</h4>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Name:</span>
                                                     <span class="detail-value">{{ active_tenant.tenant_2_name }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Passport/ID:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_2_id_number|default:"&mdash;" }}</span>
                                                 </div>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Contact Number:</span>
@@ -370,6 +389,7 @@
                                                     <span class="detail-value">{{ active_tenant.tenant_2_email }}</span>
                                                 </div>
                                             </div>
+                                            {% endif %}
                                             {% endif %}
 
                                             <!-- Lease Dates Section -->
@@ -1258,6 +1278,10 @@
     margin-bottom: 0;
 }
 
+/* TI-1, 26 Oct 2026 - Type above the tenant blocks, as on the report. */
+.detail-row.ti-type-row {
+    margin: 0 0 22px;
+}
 .section-title {
     font-size: 1.2rem;
     color: var(--alv-ink-strong);

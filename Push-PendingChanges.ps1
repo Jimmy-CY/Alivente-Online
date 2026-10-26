@@ -1291,6 +1291,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing.py'; Text = 'def superuser_only(view):'; What = 'ES-8: every staff Lease Signing screen is superuser only - without the gate, anybody who can edit tenants sees the register, the signed leases and the approval again, silently' },
     @{ File = 'pages/views/lease_signing_sign.py'; Text = "_tell_house_signed(env, party, 'completed', request)"; What = 'ES-8: the last signature tells Alivente the lease is ready for approval - without it a signed lease waits unnoticed' },
     @{ File = 'Push-PendingChanges.ps1'; Text = '& python manage.py migrate --check 2>&1'; What = 'HK-1: the push refuses to run its suites against a local database with a migration unapplied - without it, a forgotten migrate costs a twenty-minute gate of false failures' },
+    @{ File = 'pages/forms.py'; Text = 'tenant_2_id_number'; What = 'TI-1: the tenant form saves the identity numbers - a column missing from the fields list is dropped without a word' },
     @{ File = 'mysite/cron-requirements.txt'; Text = 'pymupdf'; What = 'ES-2: and the pin lives HERE because railway.json installs from this file, not requirements.txt - the same line in the other file would deploy nothing and fail at the first import on Live' },
     @{ File = 'pages/views/tenants.py'; Text = 'let_go_of_file'; What = 'UO-1: the old lease is RELEASED before the save and its bytes deleted after it, because delete-then-save destroys the file whenever the save raises - which is how two recipe photos were lost on 22 October, and a signed lease cannot be taken again' },
     @{ File = 'Show-RequirementsAudit.py'; Text = 'font faces resolved by name at runtime'; What = 'CF-2: pymupdf-fonts is named by pymupdf at runtime and imported by nothing, so the audit called it tooling-only - a verdict that, acted on, prints a row of dots where the tenant signed, on Live and nowhere else' },
@@ -3133,7 +3134,9 @@ $suites = @(
     # each person signs, Start e-signing, and its Help.
     'test_signing_finish.py',
     # HK-1, 26 Oct 2026 - Release 19 housekeeping.
-    'test_housekeeping.py'
+    'test_housekeeping.py',
+    # TI-1, 26 Oct 2026 - identity numbers on the tenant.
+    'test_tenant_identity.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

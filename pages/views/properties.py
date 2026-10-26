@@ -412,6 +412,14 @@ def get_property_tenant_data(request):
                     'tenant_2_contact_number':
                         tenant_obj.tenant_2_contact_number or '',
                     'tenant_2_email': tenant_obj.tenant_2_email or '',
+                    # TI-1, 26 Oct 2026 - THE IDENTITY NUMBERS, now on the
+                    # record (his decision), so Generate fills them in
+                    # instead of asking afresh. Country and address stay
+                    # per-document.
+                    'tenant_company_reg_no':
+                        tenant_obj.tenant_company_reg_no or '',
+                    'tenant_id_number': tenant_obj.tenant_id_number or '',
+                    'tenant_2_id_number': tenant_obj.tenant_2_id_number or '',
                     'tenant_lease_start_date': tenant_obj.tenant_lease_start_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_start_date else '',
                     'tenant_lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
                     'tenant_rent': float(tenant_obj.tenant_rent) if tenant_obj.tenant_rent else 0,

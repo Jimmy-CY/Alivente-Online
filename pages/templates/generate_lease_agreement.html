@@ -1368,6 +1368,10 @@ function populateModal() {
             tenantData.tenant_2_contact_number || '';
           document.getElementById('second-tenant-email').value =
             tenantData.tenant_2_email || '';
+          // TI-1, 26 Oct 2026 - and the second tenant's Passport/ID,
+          // now that the record holds it. Still editable here.
+          document.getElementById('second-tenant-passport').value =
+            tenantData.tenant_2_id_number || '';
           secondTenantSection.style.display = 'block';
           addSecondTenantBtn.style.display = 'none';
         }
@@ -1381,6 +1385,13 @@ function populateModal() {
       const existingPassportCountryField = document.getElementById('existing-passport-country-field');
       const existingRegistrationField = document.getElementById('existing-registration-field');
       
+      // TI-1, 26 Oct 2026 - FILLED FROM THE RECORD when it holds them
+      // (his decision to store them on the tenant); still editable, and
+      // still required here, because the document needs them.
+      document.getElementById('existing-tenant-passport').value =
+        tenantData.tenant_id_number || '';
+      document.getElementById('existing-tenant-registration').value =
+        tenantData.tenant_company_reg_no || '';
       if (tenantType === 'Company') {
         existingPassportField.style.display = 'none';
         existingPassportCountryField.style.display = 'none';

@@ -24,17 +24,23 @@
                 </div>
                 <div class="alv-card-body">
 
+                {# HK-1, 26 Oct 2026 named the first tenant on this report; #}
+                {# TI-1 the same day gave each person a block of their own. #}
+                {# TI-1, 26 Oct 2026 - HIS LAYOUT. A Company keeps Tenant  #}
+                {# Information + Contact Information ("perfect"). An        #}
+                {# Individual gets Type ABOVE the sections, and each person #}
+                {# one block - Name, Passport/ID, Contact Number, Email -   #}
+                {# the first tenant exactly like the second.                #}
+                {% if tenant.tenant_type != 'Company' %}
+                <div class="detail-row ti-type-row">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">{{ tenant.tenant_type }}</span>
+                </div>
+                {% endif %}
                 <div class="detail-groups">
-                    <!-- Basic Info Section -->
+                    {% if tenant.tenant_type == 'Company' %}
                     <div class="detail-group">
                         <h4 class="section-title">Tenant Information</h4>
-                        {# HK-1, 26 Oct 2026 - THE FIRST TENANT'S OWN NAME, as #}
-                        {# T2-7 gave the property page on 25 October and this  #}
-                        {# report missed. His words on Live: "We don't have   #}
-                        {# the name of the first tenant." The heading is the  #}
-                        {# tenancy ("A & B"); this row is the person whose    #}
-                        {# number and email sit beside it - tenant_name, not  #}
-                        {# tenant_display_name.                               #}
                         <div class="detail-row">
                             <span class="detail-label">Name:</span>
                             <span class="detail-value">{{ tenant.tenant_name }}</span>
@@ -43,15 +49,15 @@
                             <span class="detail-label">Type:</span>
                             <span class="detail-value">{{ tenant.tenant_type }}</span>
                         </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Company Reg No:</span>
+                            <span class="detail-value">{{ tenant.tenant_company_reg_no|default:"&mdash;" }}</span>
+                        </div>
                     </div>
-
-                    <!-- Contact Info Section -->
                     <div class="detail-group">
                         <h4 class="section-title">Contact Information</h4>
-                        {# T2-6, 24 Oct 2026 - a Company field. An #}
-                        {# Individual has no contact person distinct #}
-                        {# from themselves, and the lease document has #}
-                        {# always written N/A there. #}
+                        {# T2-6's own guard, kept inside the Company branch so each #}
+                        {# printing site still asks the type itself (TI-1).         #}
                         {% if tenant.tenant_type == 'Company' %}
                         <div class="detail-row">
                             <span class="detail-label">Contact Person:</span>
@@ -67,28 +73,40 @@
                             <span class="detail-value">{{ tenant.tenant_email }}</span>
                         </div>
                     </div>
-
-                    {# SECOND TENANT - T2-7, 24 Oct 2026. #}
-                    {# #}
-                    {# A JOINTLY LIABLE PERSON WITH NO TELEPHONE #}
-                    {# NUMBER ANYWHERE. T2-4 gave this report the #}
-                    {# joined NAME in its heading and left the #}
-                    {# contact rows showing one person, which is a #}
-                    {# heading naming two people over the details #}
-                    {# of one. Found on Live, 24 October. #}
-                    {# #}
-                    {# has_second_tenant AND NOT tenant_2_name - one #}
-                    {# predicate, on the model, T2-1. #}
-                    {# #}
-                    {# NO CONTACT PERSON ROW: that is a Company #}
-                    {# field, and a second tenant can only exist on #}
-                    {# an Individual. #}
+                    {% else %}
+                    <div class="detail-group">
+                        <h4 class="section-title">Tenant Information</h4>
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value">{{ tenant.tenant_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Passport/ID:</span>
+                            <span class="detail-value">{{ tenant.tenant_id_number|default:"&mdash;" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Contact Number:</span>
+                            <span class="detail-value">{{ tenant.tenant_contact_number }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value">{{ tenant.tenant_email }}</span>
+                        </div>
+                    </div>
+                    {# SECOND TENANT - T2-7, 24 Oct 2026: a jointly liable #}
+                    {# person shown with a way to reach them, only when    #}
+                    {# has_second_tenant says there is one. TI-1 adds the  #}
+                    {# Passport/ID row, the same four as the first tenant. #}
                     {% if tenant.has_second_tenant %}
                     <div class="detail-group">
                         <h4 class="section-title">Second Tenant</h4>
                         <div class="detail-row">
                             <span class="detail-label">Name:</span>
                             <span class="detail-value">{{ tenant.tenant_2_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Passport/ID:</span>
+                            <span class="detail-value">{{ tenant.tenant_2_id_number|default:"&mdash;" }}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Contact Number:</span>
@@ -99,6 +117,7 @@
                             <span class="detail-value">{{ tenant.tenant_2_email }}</span>
                         </div>
                     </div>
+                    {% endif %}
                     {% endif %}
 
                     <!-- Lease Dates Section -->
@@ -243,6 +262,9 @@
 
 
 /* Grid layout for the 5 detail sections — 2 columns on desktop */
+.detail-row.ti-type-row {
+    margin: 0 0 22px;
+}
 .detail-groups {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

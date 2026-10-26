@@ -1496,6 +1496,8 @@ ROUNDS = [
     '.bak_signfinish',
     # HK-1, 26 Oct 2026 - Release 19 housekeeping.
     '.bak_housekeep',
+    # TI-1, 26 Oct 2026 - identity numbers on the tenant.
+    '.bak_tenantid',
 ]
 
 

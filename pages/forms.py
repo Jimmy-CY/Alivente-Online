@@ -47,6 +47,9 @@ class TenantForm(forms.ModelForm):
             # ignores - the user types a joint tenant and the save
             # drops them without a word.
             'tenant_2_name', 'tenant_2_contact_number', 'tenant_2_email',
+            # TI-1, 26 Oct 2026 - the three identity numbers, optional.
+            # In this list or the form drops them without a word (T2-1).
+            'tenant_company_reg_no', 'tenant_id_number', 'tenant_2_id_number',
             'tenant_lease_start_date',
             'tenant_lease_end_date', 'tenant_rental_type', 'tenant_deposit',
             'tenant_rent', 'tenant_levies', 'tenant_payment_terms',

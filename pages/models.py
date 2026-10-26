@@ -736,6 +736,18 @@ class tenant(models.Model):
     tenant_2_name = models.CharField(max_length=255, blank=True)
     tenant_2_contact_number = models.CharField(max_length=255, blank=True)
     tenant_2_email = models.CharField(max_length=255, blank=True)
+    # IDENTITY NUMBERS - TI-1, 26 Oct 2026, his decision. Optional, all
+    # three: the Company Reg Number for a Company, a Passport/ID for each
+    # Individual tenant. T2-1 left them out on purpose - "the first
+    # tenant stores no passport either; those live in Generate's
+    # per-document data" - and he has now asked for them on the record,
+    # for both people alike, so Generate can read them instead of asking.
+    #
+    # BLANK BY DEFAULT, so every existing row is correct the moment the
+    # migration lands; nothing is back-filled.
+    tenant_company_reg_no = models.CharField(max_length=50, blank=True)
+    tenant_id_number = models.CharField(max_length=50, blank=True)
+    tenant_2_id_number = models.CharField(max_length=50, blank=True)
     tenant_deposit = models.IntegerField(blank=True, null=True)
     tenant_lease_start_date = models.DateField(blank=True, null=True)
     tenant_lease_end_date = models.DateField(blank=True, null=True)
