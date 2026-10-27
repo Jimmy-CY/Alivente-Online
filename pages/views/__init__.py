@@ -48,6 +48,7 @@ from .lease_template import *  # noqa: F401, F403
 # __all__, so a view missing from that list does not exist to the
 # URLconf no matter how correct it is - RV-1 learned that on 23 Oct.
 from .lease_signing import *  # noqa: F401, F403
+from .lease_signing_status import *  # noqa: F401, F403  LS-1, 27 Oct 2026
 # ES-4, 24 Oct 2026 - the signing page itself. Same note as above: a
 # view missing from __all__ does not exist to the URLconf.
 from .lease_signing_sign import *  # noqa: F401, F403

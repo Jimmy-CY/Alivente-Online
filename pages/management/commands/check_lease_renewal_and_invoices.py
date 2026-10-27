@@ -902,11 +902,9 @@ class Command(BaseCommand):
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
                 return False
 
-            # Create message
-            # Get recipients with TO/CC split
-            recipients = get_email_recipients('new_lease_upload')
-
-            # Create message
+            # Create message. LS-1, 27 Oct 2026 (backlog) - the recipients are the
+            # ones read above; the second lookup that stood here asked the
+            # same question twice.
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
             msg['To'] = format_email_recipients_for_header(recipients['to'])
@@ -1010,24 +1008,12 @@ Automated Lease Management"""
             msg.attach(part1)
             msg.attach(part2)
 
-            # SMTP setup
-            if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
-            else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
-                smtp_object.ehlo()
-                if email_use_tls:
-                    smtp_object.starttls()
-
-            smtp_object.login(email_user, email_password)
-
-            # Send email
-            text = msg.as_string()
-            smtp_object.sendmail(email_user, recipients['all'], text)
-
-            self.stdout.write('✅ New lease upload reminder email sent successfully!')
-            logger.info('New lease upload reminder email sent successfully')
-            return True
+            # LS-1, 27 Oct 2026 (backlog) - THROUGH THE ONE SENDER, so a slow or
+            # dropped SMTP connection is retried with backoff like the main
+            # notification, instead of losing the day's reminder.
+            return self._send_email_with_retry(
+                msg, email_user, recipients['all'],
+                label='New lease upload reminder')
 
         except smtplib.SMTPAuthenticationError as e:
             error_msg = f"SMTP Authentication Error: {e}"
@@ -1265,20 +1251,10 @@ Automated Passport/ID Monitoring"""
             msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
             msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
-            if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
-            else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
-                smtp_object.ehlo()
-                if email_use_tls:
-                    smtp_object.starttls()
-
-            smtp_object.login(email_user, email_password)
-            smtp_object.sendmail(email_user, recipients['all'], msg.as_string())
-
-            self.stdout.write(f'    ✅ Sent to workspace "{workspace.name}"')
-            logger.info(f'Passport expiry email sent for workspace {workspace.name}')
-            return True
+            # LS-1, 27 Oct 2026 (backlog) - through the one sender, with its retry.
+            return self._send_email_with_retry(
+                msg, email_user, recipients['all'],
+                label='Passport expiry email (%s)' % workspace.name)
 
         except smtplib.SMTPAuthenticationError as e:
             logger.error(f"SMTP Authentication Error: {e}")

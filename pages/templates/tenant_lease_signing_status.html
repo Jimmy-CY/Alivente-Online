@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Lease Signing Status{% endblock %}
+
+{# LEASE SIGNING STATUS - LS-1, 27 Oct 2026. A Tenants report, read only: #}
+{# where every lease out for signature stands, in words. No links to the #}
+{# envelopes, no documents, nothing that acts - Lease Signing itself     #}
+{# stays superuser only.                                                 #}
+{% block content %}
+<div class="report-container">
+  <div class="report-content">
+
+    <div class="alv-report-head">
+      <div class="alv-report-titles">
+        <div class="alv-report-brand">ALIVENTE ONLINE</div>
+        <h2 class="alv-report-title">Lease Signing Status</h2>
+        <h3 class="alv-report-sub">Leases out for signature &middot; {{ today }}</h3>
+      </div>
+      <div class="alv-report-actions">
+        {% if show_all %}
+          <a href="{% url 'lease_signing_status' %}" class="btn action-secondary" role="button">
+            <i class="fas fa-hourglass-half"></i> Open only
+          </a>
+        {% else %}
+          <a href="{% url 'lease_signing_status' %}?all=1" class="btn action-secondary" role="button">
+            <i class="fas fa-history"></i> Include finished
+          </a>
+        {% endif %}
+        <a href="{% url 'tenant' %}" class="btn back-button" role="button">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+
+    <div class="alv-stats">
+      <div class="alv-stat">
+        <div class="alv-stat-value">{{ summary.tenant }}</div>
+        <div class="alv-stat-label">with tenants to sign</div>
+      </div>
+      <div class="alv-stat">
+        <div class="alv-stat-value">{{ summary.alivente }}</div>
+        <div class="alv-stat-label">waiting for Alivente</div>
+      </div>
+      <div class="alv-stat {% if summary.attention %}alv-stat-attn{% endif %}">
+        <div class="alv-stat-value">{{ summary.attention }}</div>
+        <div class="alv-stat-label">declined or lapsed</div>
+      </div>
+      <div class="alv-stat">
+        <div class="alv-stat-value">{{ summary.done_month }}</div>
+        <div class="alv-stat-label">completed this month</div>
+      </div>
+    </div>
+
+    {% if rows %}
+    <div class="table-container">
+      <table class="table alv-table">
+        <thead>
+          <tr>
+            <th>Tenant</th>
+            <th>Property</th>
+            <th>Lease period</th>
+            <th>Where it stands</th>
+            <th>Still to sign</th>
+            <th>Link expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td data-label="Tenant">{{ r.tenant.tenant_display_name }}</td>
+            <td data-label="Property">{{ r.prop.prop_name }}</td>
+            <td data-label="Lease period"><span class="ls-nowrap">{{ r.start|date:"d M y" }}</span> &ndash; <span class="ls-nowrap">{{ r.end|date:"d M y" }}</span></td>
+            <td data-label="Where it stands"><span class="alv-pill {{ r.pill }}">{{ r.words }}</span>
+              <div class="ls-sub">{{ r.sent_word }} {{ r.sent|date:"d M" }}{% if r.reminded %} &middot; reminded {{ r.reminded|date:"d M" }}{% endif %}</div></td>
+            <td data-label="Still to sign">{% for n in r.waiting_for %}{{ n }}{% if not forloop.last %}<br>{% endif %}{% empty %}&mdash;{% endfor %}</td>
+            <td data-label="Link expires">{% if r.expires %}<span class="ls-nowrap">{{ r.expires|date:"d M y" }}</span>{% else %}&mdash;{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No leases are out for signature right now.</p>
+    {% endif %}
+
+    <p class="ls-note">Reminders go out automatically on day 3 and the day before the link lapses.
+      Anything a tenant asks about an envelope - a lost email, a lapsed link, a change to the lease - goes to Demetri.</p>
+  </div>
+</div>
+<style>
+/* LS-1, 27 Oct 2026. */
+.ls-nowrap { white-space: nowrap; }
+.ls-sub { margin-top: 4px; font-size: 0.8rem; color: var(--alv-ink-soft, var(--alv-ink)); }
+.ls-note { margin-top: 14px; font-size: 0.85rem; color: var(--alv-ink-soft, var(--alv-ink)); }
+</style>
+{% endblock %}

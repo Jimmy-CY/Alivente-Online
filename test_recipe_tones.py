@@ -682,8 +682,9 @@ ok('--strict --recipes' in ps1,
 # ES-3b, 24 Oct 2026 - the Send for Signature screen, an ordinary page that joins both halves.
 # ES-7, 25 Oct 2026 - the Signature and Stamp screen joins both. (was 125, 150)
 # ES-6, 25 Oct 2026 - the envelope page joins both counts. (was 124, 149)
-ok(len(sb.templates(False)) == 126 and len(sb.templates(True)) == 151,
-   '  which is %d of %d' % (126, 151),
+# LS-1, 27 Oct 2026 - tenant_lease_signing_status.html, the Lease Signing Status report, an ordinary pages/templates page that joins every tree-wide count.
+ok(len(sb.templates(False)) == 127 and len(sb.templates(True)) == 152,
+   '  which is %d of %d' % (127, 152),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

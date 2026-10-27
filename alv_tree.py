@@ -1048,6 +1048,8 @@ CONVERTED = [
     'test_attach_only.py',
     # ES-11, 26 Oct 2026 - the yellow bar goes; the toggle says non-active.
     'test_strip_gone.py',
+    # LS-1, 27 Oct 2026 - Lease Signing Status, and three backlog fixes.
+    'test_lease_status.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

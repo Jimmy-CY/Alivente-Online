@@ -195,18 +195,23 @@ def fsr_add(request):
 @login_required
 @permission_required('auth.can_edit_issues', raise_exception=True)
 def fsr_commit(request):
-    if request.method == "POST":
-        form = IssuesForm(request.POST or None)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Issue Added Successfully")
-    temp_results = issues.objects.all().order_by('-issues_id')
-    latest_issue = temp_results.first()
-    if latest_issue is None:
-        messages.error(request, "No issue could be found to display.")
-        return redirect("fsr")
-    is_id = latest_issue.issues_id
-    return redirect(reverse("fsr_details", args=[is_id]) + "?from=fsr_add&origin=fsr")
+    # LS-1, 27 Oct 2026 (backlog) - THE ISSUE THIS REQUEST SAVED, not the newest one
+    # in the table: two people adding at once were each sent to whichever
+    # row landed last. And a form that did not validate used to be
+    # dropped without a word and land on somebody else's issue; it now
+    # says so and goes back to the form.
+    if request.method != "POST":
+        return redirect("fsr_add")
+    form = IssuesForm(request.POST)
+    if not form.is_valid():
+        problems = '; '.join(
+            '%s: %s' % (k, ' '.join(v)) for k, v in form.errors.items())
+        messages.error(request, "The issue was not saved - %s" % problems)
+        return redirect("fsr_add")
+    saved = form.save()
+    messages.success(request, "Issue Added Successfully")
+    return redirect(reverse("fsr_details", args=[saved.pk])
+                    + "?from=fsr_add&origin=fsr")
 
 
 @login_required

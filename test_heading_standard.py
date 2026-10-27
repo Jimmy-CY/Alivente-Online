@@ -313,6 +313,9 @@ OUT_OF_SCOPE = {
     'home.html',                   # the portfolio dashboard
     'map_view.html',                         # the map page
     'tenant_payment_days.html',    # tenant payment behaviour
+    # LS-1, 27 Oct 2026 - Lease Signing Status wears the same report head
+    # as Payment Behaviour (.alv-report-title), so it sits beside it.
+    'tenant_lease_signing_status.html',
     # ES-4, 24 Oct 2026 - THE PUBLIC SIGNING PAGES, and this is not
     # a debt like the rest of this set. The house heading standard is
     # an h2 page title over an h4 mode label, inside the application

@@ -748,7 +748,7 @@
       <li><strong>Delete</strong> a tenant (superuser only, with a strong confirmation prompt)</li>
       <li><strong>View</strong> a full Tenant Details Report as a print-friendly summary</li>
       <li><strong>View</strong> the scanned lease agreement PDF inline in a popup</li>
-      <li><strong>Jump</strong> to related screens: Lease Timeline, Open Invoices, Lease Renewals, Payment Behaviour</li>
+      <li><strong>Jump</strong> to related screens: Lease Timeline, Open Invoices, Lease Renewals, Payment Behaviour, Lease Signing Status</li>
     </ul>
 
     <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
@@ -969,6 +969,19 @@
         </ul>
 
         <p class="mb-0" style="font-size:13px; margin-top:8px;"><!-- ES-11, 26 Oct 2026 --><em>Include non-active tenants</em> widens the list to tenancies that are not active &mdash; ended ones, and ones that have not started yet. It will do little until a current lease ends, since a tenancy finishing before August contributes nothing.</p>
+      </div>
+    </div>
+    <!-- LS-1, 27 Oct 2026 - the read-only Lease Signing Status report. -->
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body">
+        <h6 style="color:#0e7c8b;"><i class="fas fa-file-signature"></i> <strong>Lease Signing Status</strong> <small class="text-muted">(top-right button)</small></h6>
+        <p class="mb-1">Where every lease out for e-signing stands, in plain words &mdash; for anyone who can see Tenants. It is read only: it does not open the envelopes, show the documents, or act on them; Lease Signing itself stays with the superuser.</p>
+        <ul class="mb-0" style="font-size:13px;">
+          <li><strong>The four boxes</strong> &mdash; with tenants to sign &middot; waiting for Alivente (to sign first, or to approve) &middot; declined or lapsed &middot; completed this month.</li>
+          <li><strong>Each row</strong> &mdash; tenant, property and lease period; where it stands, with the date it was sent and the last reminder; who still has to sign; when the link expires.</li>
+          <li><strong>Include finished</strong> adds the completed and cancelled ones; by default you see what is still open, and anything declined or lapsed.</li>
+          <li>Reminders go out automatically on day 3 and the day before the link lapses. A tenant's question about an envelope &mdash; a lost email, a lapsed link, a change to the lease &mdash; goes to Demetri.</li>
+        </ul>
       </div>
     </div>
   </article>

@@ -51,6 +51,10 @@ Tenants
           <a href="{% url 'tenant_payment_days' %}" class="ui-menu-item" role="menuitem">
             <i class="fas fa-stopwatch"></i> Payment Behaviour
           </a>
+          {# LS-1, 27 Oct 2026 - the read-only Lease Signing Status report. #}
+          <a href="{% url 'lease_signing_status' %}" class="ui-menu-item" role="menuitem">
+            <i class="fas fa-file-signature"></i> Lease Signing Status
+          </a>
         </div>
       </div>
 
@@ -74,6 +78,9 @@ Tenants
           </a>
           <a href="{% url 'tenant_payment_days' %}" class="action-more-item" role="menuitem">
             <i class="fas fa-stopwatch"></i> Payment Behaviour
+          </a>
+          <a href="{% url 'lease_signing_status' %}" class="action-more-item" role="menuitem">
+            <i class="fas fa-file-signature"></i> Lease Signing Status
           </a>
         </div>
       </div>

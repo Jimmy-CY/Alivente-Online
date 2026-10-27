@@ -1508,6 +1508,8 @@ ROUNDS = [
     '.bak_attachonly',
     # ES-11, 26 Oct 2026 - the yellow bar goes; the toggle says non-active.
     '.bak_stripgone',
+    # LS-1, 27 Oct 2026 - Lease Signing Status, and three backlog fixes.
+    '.bak_leasestatus',
 ]
 
 

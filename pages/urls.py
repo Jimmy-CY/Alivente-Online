@@ -267,6 +267,9 @@ urlpatterns = [
     path('tenant_commit/', views.tenant_commit, name='tenant_commit'),
     path('tenant_lease_agreement/', views.tenant_lease_agreement, name='tenant_lease_agreement'),
     path('lease-timeline/', views.lease_timeline_view, name='lease_timeline'),
+    # LS-1, 27 Oct 2026 - the read-only Lease Signing Status report.
+    path('tenant-lease-signing/', views.lease_signing_status,
+         name='lease_signing_status'),
     path('tenant-payment-days/', views.tenant_payment_days_view,
          name='tenant_payment_days'),
     path('tenant/duplicate/<int:tenant_id>/', views.duplicate_tenant_view, name='duplicate_tenant'),
