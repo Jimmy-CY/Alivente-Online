@@ -1050,6 +1050,8 @@ CONVERTED = [
     'test_strip_gone.py',
     # LS-1, 27 Oct 2026 - Lease Signing Status, and three backlog fixes.
     'test_lease_status.py',
+    # HK-2, 27 Oct 2026 - housekeeping from the September backlog.
+    'test_housekeeping_two.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

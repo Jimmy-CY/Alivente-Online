@@ -1282,6 +1282,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def lease_sign_page'; What = 'ES-4: the rendered lease comes back through the same token check as the page itself - a media URL for a lease is a permanent read link to a contract, and it would outlive the seven-day expiry that the rest of this round takes seriously' },
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
+    @{ File = 'pages/help_content/administration.html'; Text = 'data-module-permission="can_access_personal"'; Absent = $true; What = 'HK-2: no help section asks for can_access_personal - migration 0065 deleted it, and a section that asks for it is hidden from everybody but a superuser' },
     @{ File = 'pages/views/lease_signing_status.py'; Text = "@permission_required('auth.can_access_tenants'"; What = 'LS-1: Lease Signing Status is a Tenants report, behind the Tenants permission - without it the read-only summary is either open to everybody or closed to the person it was built for' },
     @{ File = 'pages/templates/home.html'; Text = 'lsa-strip'; Absent = $true; Code = $true; What = 'ES-11: the yellow signed-leases bar is gone from Home (and Notifications) - the Waiting for you row and the Leases Needing Action box carry that count; the bar only said it twice' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = "request.POST.get('document') == 'stored'"; Absent = $true; Code = $true; What = 'ES-10: Start e-signing never uses the lease already on the tenant record - since ES-9 that is the lease the tenancy already signed, and offering it would send a signed lease out to be signed again' },
@@ -3157,7 +3158,9 @@ $suites = @(
     # ES-11, 26 Oct 2026 - the yellow bar goes; the toggle says non-active.
     'test_strip_gone.py',
     # LS-1, 27 Oct 2026 - Lease Signing Status, and three backlog fixes.
-    'test_lease_status.py'
+    'test_lease_status.py',
+    # HK-2, 27 Oct 2026 - housekeeping from the September backlog.
+    'test_housekeeping_two.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

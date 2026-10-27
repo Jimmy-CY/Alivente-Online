@@ -186,7 +186,9 @@ urlpatterns = [
     path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='project_assignees'),
     path('projects/<int:project_id>/task-list/', views.project_task_list, name='project_task_list'),
     path('translate/', views.translate_text, name='translate_text'),
-    path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='get_project_assignees'),
+    # HK-2, 27 Oct 2026 - a second route for projects/<id>/assignees/ named
+    # get_project_assignees stood here. Django only ever matched the first
+    # (project_assignees, above) and nothing reverses either name.
     path('projects/ajax/delete-task/', views.ajax_delete_task, name='ajax_delete_task'),
 
 

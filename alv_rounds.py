@@ -1510,6 +1510,8 @@ ROUNDS = [
     '.bak_stripgone',
     # LS-1, 27 Oct 2026 - Lease Signing Status, and three backlog fixes.
     '.bak_leasestatus',
+    # HK-2, 27 Oct 2026 - housekeeping from the September backlog.
+    '.bak_housekeep2',
 ]
 
 

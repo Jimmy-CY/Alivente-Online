@@ -347,9 +347,10 @@
 
 
 <!-- ======= PASSPORT MANAGEMENT ======= -->
+<!-- HK-2, 27 Oct 2026 - can_access_personal was deleted (0065); the module's own permission now decides who sees this help. -->
 <section data-module-slug="passport_management"
          data-module-group="Personal"
-         data-module-permission="can_access_personal"
+         data-module-permission="can_access_passports"
          data-module-name="Passport / ID Management"
          data-module-icon="fa-id-card"
          data-module-category="Administration"
@@ -1101,9 +1102,10 @@
 
 </section>
 
+<!-- HK-2, 27 Oct 2026 - as above: the Recipes permission, not the deleted can_access_personal. -->
 <section data-module-slug="recipe_management"
          data-module-group="Personal"
-         data-module-permission="can_access_personal"
+         data-module-permission="can_access_recipes"
          data-module-name="Recipe Management"
          data-module-icon="fa-utensils"
          data-module-category="Personal"
