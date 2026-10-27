@@ -159,7 +159,12 @@ def claims(src):
          'the register\'s View icon goes somewhere at last'),
         ("'awaiting_approval': env.awaiting_approval" in py[REG_VIEW],
          '  and the register asks the model whether a row is waiting'),
-        ('lsa-strip' in mk[HOME] and 'lsa-strip' in mk[NOTIF],
+        # ES-11, 26 Oct 2026 - THE YELLOW BAR WENT, his decision: the
+        # count is shown by Home's Waiting for you row and the
+        # Notifications Leases Needing Action box instead.
+        ('Signed lease{{ lease_approvals_waiting|pluralize }} awaiting '
+         'approval' in mk[HOME]
+         and 'data-category="lease_action"' in mk[NOTIF],
          'Home and Notifications both show the waiting count'),
         ('pending_approval().count()' in py[CTX]
          and "'lease_approvals_waiting'" in py[CTX],

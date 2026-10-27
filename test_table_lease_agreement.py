@@ -337,7 +337,8 @@ check('  KEPT the action bar, and base still declares the -single modifier',
       and re.search(r'[.]page-action-buttons-single\s*[{]',
                     BASE_SRC) is not None)
 check('    and the bar is no longer a lone Back - T4 put two beside it',
-      'action-filter' in SRC and 'Include past tenants' in SRC
+      # ES-11, 26 Oct 2026 - the toggle reads "non-active" now.
+      'action-filter' in SRC and 'Include non-active tenants' in SRC
       and 'page-action-buttons-single' not in SRC)
 
 

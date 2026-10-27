@@ -173,7 +173,10 @@ for frag in ('Include past tenants', 'Current tenants only',
              'fas fa-users', 'fas fa-user-check'):
     ok(frag in TPL_NOW, 'tenant.html carries %r' % frag)
 ref = read(REF)
-for frag in ('Include past tenants', 'Current tenants only'):
+# ES-11, 26 Oct 2026 - REF IS READ LIVE, and the words are "non-active" /
+# "Active" now (his wording: the wider list holds future tenancies too).
+# tenant.html above is read as TN-1 left it, so it keeps the old words.
+for frag in ('Include non-active tenants', 'Active tenants only'):
     ok(frag in ref,
        '  and tenant_lease_agreement says it the same way: %r' % frag)
 

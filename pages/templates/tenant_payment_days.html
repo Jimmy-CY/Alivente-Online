@@ -14,13 +14,15 @@
         <h3 class="alv-report-sub">Days from invoice to payment &middot; {{ today }}</h3>
       </div>
       <div class="alv-report-actions">
+        {# ES-11, 26 Oct 2026 - "non-active", his wording: the wider list #}
+        {# also holds future tenancies, not only past ones.               #}
         {% if show_all %}
           <a href="{% url 'tenant_payment_days' %}" class="btn action-secondary">
-            <i class="fas fa-user-check"></i> Current tenants only
+            <i class="fas fa-user-check"></i> Active tenants only
           </a>
         {% else %}
           <a href="{% url 'tenant_payment_days' %}?all=1" class="btn action-secondary">
-            <i class="fas fa-users"></i> Include past tenants
+            <i class="fas fa-users"></i> Include non-active tenants
           </a>
         {% endif %}
         <a href="{% url 'tenant' %}" class="btn back-button" role="button">

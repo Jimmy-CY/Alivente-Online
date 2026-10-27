@@ -1506,6 +1506,8 @@ ROUNDS = [
     '.bak_neveroverwrite',
     # ES-10, 26 Oct 2026 - Start e-signing attaches the lease, always.
     '.bak_attachonly',
+    # ES-11, 26 Oct 2026 - the yellow bar goes; the toggle says non-active.
+    '.bak_stripgone',
 ]
 
 

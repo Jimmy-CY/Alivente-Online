@@ -82,13 +82,15 @@ Tenants
         {# TN-1, 2 Oct 2026. Hidden when a status has been chosen from the  #}
         {# filter panel: that choice beats the default, so the toggle would #}
         {# describe something other than what is on screen.                 #}
+        {# ES-11, 26 Oct 2026 - "non-active", his wording: the wider list #}
+        {# also holds future tenancies, not only past ones.               #}
         {% if show_all %}
           <a href="{% url 'tenant' %}?{{ filter_qs }}" class="btn action-secondary" role="button">
-            <i class="fas fa-user-check"></i> Current tenants only
+            <i class="fas fa-user-check"></i> Active tenants only
           </a>
         {% else %}
           <a href="{% url 'tenant' %}?{{ filter_qs }}all=1" class="btn action-secondary" role="button">
-            <i class="fas fa-users"></i> Include past tenants
+            <i class="fas fa-users"></i> Include non-active tenants
           </a>
         {% endif %}
       {% endif %}

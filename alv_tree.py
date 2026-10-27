@@ -1046,6 +1046,8 @@ CONVERTED = [
     'test_never_overwrite.py',
     # ES-10, 26 Oct 2026 - Start e-signing attaches the lease, always.
     'test_attach_only.py',
+    # ES-11, 26 Oct 2026 - the yellow bar goes; the toggle says non-active.
+    'test_strip_gone.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -13,13 +13,15 @@
      third control: it exists to push a lone Back to the right, and base
      already puts Back on the right when there is something beside it. -->
 <div class="page-action-buttons">
+    {# ES-11, 26 Oct 2026 - "non-active", his wording: the wider list #}
+    {# also holds future tenancies, not only past ones.               #}
     {% if show_all %}
       <a href="{% url 'tenant_lease_agreement' %}?{{ filter_qs }}" class="btn action-secondary" role="button">
-        <i class="fas fa-user-check"></i> Current tenants only
+        <i class="fas fa-user-check"></i> Active tenants only
       </a>
     {% else %}
       <a href="{% url 'tenant_lease_agreement' %}?{{ filter_qs }}all=1" class="btn action-secondary" role="button">
-        <i class="fas fa-users"></i> Include past tenants
+        <i class="fas fa-users"></i> Include non-active tenants
       </a>
     {% endif %}
 
