@@ -1580,6 +1580,20 @@
         font-weight: 600;
       }
       .alv-ref-link:hover { text-decoration: underline; }
+      /* GS-1, 27 Oct 2026 - A FINGER-SIZED TARGET ON A PHONE. The link
+         measured 78x20 at 375px, under the 44px the house asks of every
+         control (test_tap_target). The same answer as Edit Asset's photo
+         buttons: the TAP AREA grows, the layout does not - 12px of
+         padding above and below is cancelled by the same negative
+         margin, so the row is exactly as tall as it was. Screen-only, so
+         it never reaches paper. [test_gate_speed_two.py] */
+      @media screen and (max-width: 768px) {
+        .alv-ref-link {
+          display: inline-block;
+          padding: 12px 4px;
+          margin: -12px -4px;
+        }
+      }
 
       /* ============================================ ICON ACTION BUTTONS */
       /* One definition. Previously three, differing by `padding: 0`. */

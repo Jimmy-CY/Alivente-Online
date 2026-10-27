@@ -453,17 +453,25 @@ else:
     exe = '/opt/pw-browsers/chromium'
     n = [0]
 
+    _PAGES = {}
+
     def render(br, html, width):
         n[0] += 1
         fx = os.path.join(SCRATCH, '_zg_%04d.html' % n[0])
         with open(fx, 'w', encoding='utf-8') as f:
             f.write(html)
-        ctx = br.new_context(viewport={'width': width, 'height': 900})
-        pg = ctx.new_page()
+        # GS-1, 27 Oct 2026 - ONE PAGE PER WIDTH, REUSED. Opening a fresh
+        # browser context for every render was most of this suite's time
+        # (3m41s -> 48s for test_small_controls, measured, every result
+        # line identical). Each navigation replaces the document, so no
+        # state carries from one fixture to the next.
+        key = (id(br), width)
+        pg = _PAGES.get(key)
+        if pg is None:
+            ctx = br.new_context(viewport={'width': width, 'height': 900})
+            pg = _PAGES[key] = ctx.new_page()
         _goto(pg, fx)
-        r = pg.evaluate(MEASURE)
-        ctx.close()
-        return r
+        return pg.evaluate(MEASURE)
 
     counted = 0
     small_after = []

@@ -348,39 +348,30 @@ head('4. AND THE GUARD CAN SEE THEM NOW')
 ok('alv_tree.walk3()' in gt,
    '%s walks the house tree, not one hard-coded root' % GUARD)
 ok('os.walk(ROOT)' not in gt, '  and no longer walks its own', )
-import subprocess                                             # noqa: E402
-r = subprocess.run([sys.executable, GUARD], capture_output=True, text=True,
-                   env=dict(os.environ, PYTHONIOENCODING='utf-8'))
-out = (r.stdout or '') + (r.stderr or '')
-m = re.search(r'(\d+) template\(s\) read', out)
-ok(m is not None and int(m.group(1)) >= N_TEMPLATES_MIN,
-   '  and reading it reports %s template(s), up from the 143 it saw '
-   'before' % (m.group(1) if m else '?'),
+# GS-1, 27 Oct 2026 - THE GUARD'S WALK, COUNTED HERE, NOT RE-RUN.
+#
+# This used to start the whole of test_print_queries.py in a subprocess -
+# three minutes of browser work - to read one number off its output: how
+# many templates it walks. CP-1 had already taken the verdict away from
+# that nested run (the gate runs the guard by name every push), so all it
+# still bought was the count. The count is the guard's own walk, and
+# the claim above holds the guard to walking alv_tree.walk3(); so the same
+# walk, done here with the guard's own filter, is the same number, at
+# none of the cost.
+_walked = 0
+for _d, _, _fs in T.walk3():
+    for _f in _fs:
+        if _f.endswith('.html') and 'OLD DO NOT USE' not in _f \
+                and '.bak_' not in _f:
+            _walked += 1
+ok(_walked >= N_TEMPLATES_MIN,
+   '  and its walk reaches %d template(s), up from the 143 it saw '
+   'before' % _walked,
    'pinned at >= %d' % N_TEMPLATES_MIN)
-# CP-1, 17 Oct 2026 - THE VERDICT IS NOT THIS SUITE'S TO GIVE.
-#
-# This line used to assert, on the nested return code, that
-# test_print_queries.py passes - which the gate asserts every push, by
-# running it as one of its 366 suites. The duplicate flaked twice in
-# one day (suite 365 of 366, then 223 of 366) and passed every time it
-# was run alone: a browser suite launched from inside a browser suite
-# inside a pool of six is the seventh Chromium, and that says nothing
-# about the tree.
-#
-# So the nested run is a READING now, not a verdict, and whatever it
-# says is printed in full rather than compressed into a tally.
-print('')
-print('  the guard, run here to be READ - its verdict belongs to the')
-print('  gate, which runs it as a suite of its own every push:')
-_tally = [l.strip() for l in out.split('\n') if 'passed,' in l]
-print('     %s' % (_tally[-1] if _tally else '(no tally printed)'))
-if r.returncode != 0:
-    print('     IT DID NOT PASS WHEN RUN FROM HERE. Its own words:')
-    for _l in out.split('\n'):
-        if _l.strip().startswith('FAIL'):
-            print('       %s' % _l.strip()[:150])
-    print('     The gate runs it by name; believe that run, not this')
-    print('     one. If the gate agrees, it is a real failure.')
+ok("if f.endswith('.html') and 'OLD DO NOT USE' not in f" in gt
+   and "'.bak_' not in f" in gt,
+   '  CONTROL: and the guard still filters its walk exactly as counted '
+   'here - if it stops, this count stops being its count')
 
 # AND THE CLAIM THAT REPLACES IT. Dropping an assertion because
 # something else makes it is only honest if the something else is

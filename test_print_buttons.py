@@ -296,19 +296,27 @@ else:
     exe = '/opt/pw-browsers/chromium'
     n = [0]
 
+    _PAGES = {}
+
     def render(br, html, w, media, js, arg=None):
         n[0] += 1
         fx = os.path.join(SCRATCH, '_pb_%04d.html' % n[0])
         with open(fx, 'w', encoding='utf-8') as f:
             f.write(html)
-        ctx = br.new_context(viewport={'width': w, 'height': 1000})
-        ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
-        pg = ctx.new_page()
-        pg.emulate_media(media=media)
+        # GS-1, 27 Oct 2026 - ONE PAGE PER WIDTH AND MEDIA, REUSED. Opening a fresh
+        # browser context for every render was most of this suite's time
+        # (3m41s -> 48s for test_small_controls, measured, every result
+        # line identical). Each navigation replaces the document, so no
+        # state carries from one fixture to the next.
+        key = (id(br), w, media)
+        pg = _PAGES.get(key)
+        if pg is None:
+            ctx = br.new_context(viewport={'width': w, 'height': 1000})
+            ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
+            pg = _PAGES[key] = ctx.new_page()
+            pg.emulate_media(media=media)
         _goto(pg, fx)
-        r = pg.evaluate(js, arg) if arg is not None else pg.evaluate(js)
-        ctx.close()
-        return r
+        return pg.evaluate(js, arg) if arg is not None else pg.evaluate(js)
 
     with sync_playwright() as pw:
         br = pw.chromium.launch(**({'executable_path': exe}

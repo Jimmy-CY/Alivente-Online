@@ -1512,6 +1512,8 @@ ROUNDS = [
     '.bak_leasestatus',
     # HK-2, 27 Oct 2026 - housekeeping from the September backlog.
     '.bak_housekeep2',
+    # GS-1, 27 Oct 2026 - the gate, faster, and one tap target.
+    '.bak_gatespeed2',
 ]
 
 
