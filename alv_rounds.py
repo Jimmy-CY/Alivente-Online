@@ -1520,6 +1520,8 @@ ROUNDS = [
     '.bak_housekeep3',
     # PC-1, 28 Oct 2026 - the Passport/ID country; one block per person.
     '.bak_passcountry',
+    # HK-4, 28 Oct 2026 - Project Help, Financial Indicators, the gate.
+    '.bak_housekeep4',
 ]
 
 

@@ -304,7 +304,9 @@ for p in T.templates():
     rel = T.rel(p).replace(os.sep, '/')
     if rel in STAND or rel == 'base.html':
         continue
-    n_now = len(brights(read(p)))
+    # HK-4, 28 Oct 2026 - AS THIS ROUND LEFT THE PAGE: Financial
+    # Indicators' twelve went in a later round, by his decision.
+    n_now = len(brights(as_left_by(p, SUFFIX, read)))
     n_was = len(brights(OLD[p])) if p in OLD else n_now
     if n_now:
         left[rel] = n_now

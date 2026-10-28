@@ -72,7 +72,7 @@ PS1 = 'Push-PendingChanges.ps1'
 MARK = 'B-4, 7 Oct 2026'
 
 EXPECT_PAGES = 23
-EXPECT_REFUSED = 6   # HK-3, 28 Oct 2026 - four were Notifications icons and edit-form borders a later round read by eye and took to var(--alv-warn); the round this suite judges still refused them   # (was 10)
+EXPECT_REFUSED = 3   # HK-4, 28 Oct 2026 - Financial Indicators took the house shades: the Rent card's amber and the bar chart's two, now read from --alv-warn   # (was 6)   # HK-3, 28 Oct 2026 - four were Notifications icons and edit-form borders a later round read by eye and took to var(--alv-warn); the round this suite judges still refused them   # (was 10)
 WARN, SOFT, INK, LINE = ('--alv-warn', '--alv-warn-soft',
                          '--alv-warn-ink', '--alv-warn-line')
 

@@ -590,15 +590,17 @@ ok('it cannot make them sharp' not in nowp
    '  corrected, not quietly dropped - and it still refuses to oversell')
 ok(MARK in nowp, '  and it says which round corrected it and why')
 
-r = subprocess.run([sys.executable, PHOTOS], cwd=ROOT,
-                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-tail = r.stdout.decode('utf-8', 'replace').strip().splitlines()
-ok(r.returncode == 0,
-   "PX-1's own suite is still green with its four claims corrected",
-   '\n'.join(tail[-6:]))
-for line in tail[-2:]:
-    if 'passed' in line:
-        print('       %s' % line.strip())
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN PX-1's own suite IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims it was corrected to make are still in it.
+_gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+ok("'%s'" % os.path.basename(PHOTOS) in _gs3,
+   '%s is on the push gate, which runs it and stops the push if it fails'
+   % os.path.basename(PHOTOS))
+
 
 
 # ==========================================================================

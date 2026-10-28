@@ -1060,6 +1060,8 @@ CONVERTED = [
     'test_housekeeping_three.py',
     # PC-1, 28 Oct 2026 - the Passport/ID country; one block per person.
     'test_passport_country.py',
+    # HK-4, 28 Oct 2026 - Project Help, Financial Indicators, the gate.
+    'test_housekeeping_four.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

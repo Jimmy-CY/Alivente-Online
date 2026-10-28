@@ -987,7 +987,6 @@ class PropertyFinancialDashboard {
                 key: 'grossROI', 
                 label: 'Gross ROI (%)', 
                 icon: 'fas fa-chart-line', 
-                color: '#0e7c8b', 
                 format: (val) => `${val.toFixed(2)}%`,
                 description: 'Total revenue as a percentage of purchase price. Higher values indicate better return on investment.',
                 sortable: true
@@ -996,7 +995,6 @@ class PropertyFinancialDashboard {
                 key: 'netROI', 
                 label: 'Net ROI (%)', 
                 icon: 'fas fa-bullseye', 
-                color: '#28a745', 
                 format: (val) => `${val.toFixed(2)}%`,
                 description: 'Revenue minus expenses as a percentage of purchase price. Shows profitability after costs.',
                 sortable: true
@@ -1005,7 +1003,6 @@ class PropertyFinancialDashboard {
                 key: 'expensesToRevenue',
                 label: 'Expenses to Revenue (%)',
                 icon: 'fas fa-chart-pie',
-                color: '#dc3545',
                 format: (val) => val >= 1000000 ? '∞' : `${val.toFixed(2)}%`,
                 description: 'Operating expenses as a percentage of revenue. Lower values indicate better efficiency.',
                 sortable: true
@@ -1014,7 +1011,6 @@ class PropertyFinancialDashboard {
                 key: 'rentPerSqm', 
                 label: 'Rent (€/m²)', 
                 icon: 'fas fa-euro-sign', 
-                color: '#ffc107', 
                 format: (val) => `€${val.toFixed(2)}`,
                 description: 'Average monthly rent per square meter. Useful for comparing properties of different sizes.',
                 sortable: true
@@ -1023,7 +1019,6 @@ class PropertyFinancialDashboard {
                 key: 'valueIncrease', 
                 label: 'Value Increase (%)', 
                 icon: 'fas fa-chart-bar', 
-                color: '#6f42c1', 
                 format: (val) => `${val.toFixed(2)}%`,
                 description: 'Property appreciation from purchase price to current value.',
                 sortable: true
@@ -1049,10 +1044,10 @@ class PropertyFinancialDashboard {
 
         // Two extra columns shown ONLY in the detailed table (not as cards/charts).
         this.tableColumns = this.indicators.concat([
-            { key: 'occupancy', label: 'Occupancy (%)', icon: 'fas fa-door-open', color: '#20c997',
+            { key: 'occupancy', label: 'Occupancy (%)', icon: 'fas fa-door-open',
               format: (v) => `${(v || 0).toFixed(1)}%`, higherIsBetter: true, inComposite: true,
               sortable: true, description: 'Share of the selected year the property was let (signed leases).' },
-            { key: 'rentGrowth', label: 'Rent Growth (%)', icon: 'fas fa-arrow-up', color: '#0f766e',
+            { key: 'rentGrowth', label: 'Rent Growth (%)', icon: 'fas fa-arrow-up',
               format: (v) => `${(v || 0).toFixed(1)}%`, higherIsBetter: true, inComposite: true,
               sortable: true, description: "This year's lease revenue vs last year's." },
         ]);
@@ -1107,7 +1102,7 @@ class PropertyFinancialDashboard {
                                         <i class="${indicator.icon}"></i>
                                     </div>
                                     <div class="indicator-label">${indicator.label}</div>
-                                    <div class="indicator-value" style="color: ${indicator.color}">
+                                    <div class="indicator-value">
                                         ${indicator.format(portfolioValue)}
                                     </div>
                                 </div>
@@ -1172,7 +1167,7 @@ class PropertyFinancialDashboard {
                                 ${indicator.label}
                             </h6>
                             <p class="chart-subtitle">
-                                Portfolio Average: <strong style="color: ${indicator.color};">
+                                Portfolio Average: <strong>
                                     ${indicator.format(
                                         indicator.key === 'vacancyCost' 
                                             ? (this.portfolioIndicators['vacancyCostAverage'] || 0)
@@ -1587,7 +1582,7 @@ class PropertyFinancialDashboard {
         `;
         document.getElementById('modalIndicatorDescription').textContent = indicator.description;
         document.getElementById('modalPortfolioAverage').innerHTML = `
-            <span style="color: ${indicator.color};">${indicator.format(portfolioAverage)}</span>
+            <span>${indicator.format(portfolioAverage)}</span>
         `;
         
         let propertiesToShow = this.properties;
@@ -1845,14 +1840,20 @@ class PropertyFinancialDashboard {
         data = combined.map(item => item.value);
         labels = combined.map(item => item.label);
         
+        // HK-4, 28 Oct 2026 - his decision: the house shades. A bar is
+        // painted on a canvas, where var() means nothing, so each colour
+        // is READ from base's token and the literal is only the fallback.
+        const fiCs = getComputedStyle(document.documentElement);
+        const fiTok = (n, fb) => (fiCs.getPropertyValue('--alv-' + n) || '').trim() || fb;
+        const GOOD = fiTok('good', '#1e7d4f'), WARN = fiTok('warn', '#8e6207'), BAD = fiTok('bad', '#b3261e');
         const backgroundColors = data.map(value => {
             if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
                 if ((indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') && value === 0) {
-                    return '#28a745';
+                    return GOOD;
                 }
-                return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
+                return value <= portfolioAverage ? GOOD : value <= portfolioAverage * 1.2 ? WARN : BAD;
             } else {
-                return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
+                return value >= portfolioAverage ? GOOD : value >= portfolioAverage * 0.8 ? WARN : BAD;
             }
         });
             

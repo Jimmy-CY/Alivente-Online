@@ -483,21 +483,18 @@ head('5. WT-1 OWN SUITE, RUN')
 # ==========================================================================
 # This round corrects two of its claims in the same patcher. A claim
 # moved is a claim that has to still fit.
-try:
-    rr = subprocess.run([sys.executable, BAND], cwd=ROOT,
-                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                        timeout=900)
-    out = rr.stdout.decode('utf-8', 'replace')
-    tail = [ln for ln in out.strip().split('\n') if 'passed' in ln][-1:]
-    print('')
-    print('  %s' % (tail[0].strip() if tail else '(no summary)'))
-    print('')
-    ok(rr.returncode == 0, 'test_week_band passes with the correction in',
-       out[-700:])
-    ok('AND THE ONE WF-1 FOUND' in out,
-       '  and it now records that a fourth fill was found')
-except Exception as e:
-    skip('WT-1 suite', str(e)[:80])
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN test_week_band IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims it was corrected to make are still in it.
+_gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+ok("'%s'" % os.path.basename(BAND) in _gs3,
+   '%s is on the push gate, which runs it and stops the push if it fails'
+   % os.path.basename(BAND))
+ok('AND THE ONE WF-1 FOUND' in read(os.path.join(ROOT, BAND)),
+   '  and it records that a fourth fill was found')
 
 
 # ==========================================================================

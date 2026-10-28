@@ -496,17 +496,25 @@ if sync_playwright and os.path.isfile(os.path.join(ROOT, BOOT)):
                                        for c in styles_of(t)),
                    FREEZE, body_markup(t)))
 
+    # GS-3, 28 Oct 2026 - GATE SPEED, as GS-1 did for three suites: ONE
+    # page per width for the whole run instead of a fresh context per
+    # picture. Each picture is still its own navigation, so no document
+    # outlives the screenshot taken of it, and the COVERAGE control
+    # below still has to see a deliberately wrong colour change one.
+    _PAGES = {}
+
     def shoot(br, html, w, tag):
         fx = os.path.join(SCRATCH, 'r_%s_%d.html' % (tag, w))
         with open(fx, 'w', encoding='utf-8') as fh:
             fh.write(html)
-        ctx = br.new_context(viewport={'width': w, 'height': 900},
-                            device_scale_factor=1)
-        ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
-        pg = ctx.new_page()
+        pg = _PAGES.get(w)
+        if pg is None:
+            ctx = br.new_context(viewport={'width': w, 'height': 900},
+                                device_scale_factor=1)
+            ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
+            pg = _PAGES[w] = ctx.new_page()
         _goto(pg, fx)
         png = pg.screenshot(full_page=True)
-        ctx.close()
         return png
 
     seen = equal = moved = 0

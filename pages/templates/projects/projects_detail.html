@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}
 Project Details - {{ project.project_name }}
@@ -36,6 +37,12 @@ Project Details - {{ project.project_name }}
     </span>
   {% endif %}
 
+  {# HK-4, 28 Oct 2026 - his finding: the Projects page had Help and the #}
+  {# page you land on from it did not. The same module, opened here.    #}
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#projectsHelpModal">
+    <i class="fas fa-question-circle"></i> Help
+  </button>
+
   <!-- Mobile More menu -->
   <div class="action-more-wrapper" data-menu>
     <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false">
@@ -50,6 +57,9 @@ Project Details - {{ project.project_name }}
           <i class="fas fa-copy"></i> Duplicate Project
         </button>
       {% endif %}
+      <button type="button" class="action-more-item" data-toggle="modal" data-target="#projectsHelpModal" role="menuitem">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
     </div>
   </div>
 
@@ -1659,6 +1669,7 @@ $(document).ready(function() {
 });
 </script>
 
+{% render_help_modal "projects" %}
 {% endblock %}
 
 {# P3, 1 Oct 2026 - Project Detail joins the standard. Ten buttons in #}

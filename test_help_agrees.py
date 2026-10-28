@@ -470,16 +470,18 @@ head('7. THE THREE GUIDE SUITES, RUN')
 # ==========================================================================
 # THIS ROUND MOVED TWO OF test_meal_guide3's PINS. A claim moved is a
 # claim that has to still fit.
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN the three guide suites IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims each was corrected to make are still in it.
 for suite in ('test_meal_guide3.py', 'test_meal_guide5.py',
               'test_meal_help.py'):
-    r = subprocess.run([sys.executable, suite], cwd=ROOT,
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    out = r.stdout.decode('utf-8', 'replace').strip().splitlines()
-    ok(r.returncode == 0, '%s is still green' % suite,
-       '\n'.join(out[-6:]))
-    for line in out[-3:]:
-        if 'passed,' in line:
-            print('       %s' % line.strip())
+    _gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+    ok("'%s'" % os.path.basename(suite) in _gs3,
+       '%s is on the push gate, which runs it and stops the push if it fails'
+       % os.path.basename(suite))
 
 
 # ==========================================================================

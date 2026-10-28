@@ -206,23 +206,21 @@ head('3. THE INSTRUMENT, RUN')
 # ==========================================================================
 # A REPAIRED INSTRUMENT THAT FAILS IS WORSE THAN A BLIND ONE: it
 # stops a push and teaches nobody. So it is executed here, not read.
-try:
-    r = subprocess.run([sys.executable, BO], cwd=ROOT,
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                       timeout=900)
-    out = r.stdout.decode('utf-8', 'replace')
-    tail = [l for l in out.strip().split('\n') if 'passed' in l][-1:]
-    print('')
-    print('  %s' % (tail[0].strip() if tail else '(no summary)'))
-    print('')
-    ok(r.returncode == 0, 'test_bar_order passes with the repairs in',
-       out[-700:])
-    ok('read LIVE' in out,
-       '  and says so: its section 1 reports reading live')
-    ok('two action bars' in out,
-       '  and the two-bar census ran')
-except Exception as e:
-    skip('the instrument', str(e)[:80])
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN test_bar_order IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims it was corrected to make are still in it.
+_gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+ok("'%s'" % os.path.basename(BO) in _gs3,
+   '%s is on the push gate, which runs it and stops the push if it fails'
+   % os.path.basename(BO))
+_bo = read(os.path.join(ROOT, BO))
+ok('read LIVE' in _bo,
+   '  and it still says so: its section 1 reports reading live')
+ok('two action bars' in _bo,
+   '  and the two-bar census is still in it')
 
 
 # ==========================================================================

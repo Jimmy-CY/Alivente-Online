@@ -358,7 +358,12 @@ ok(t_new * 10 < t_old,
    '%.2fs vs %.2fs' % (t_new, t_old))
 
 # THE PREFILTER IS THE WHOLE OF IT, shown by taking it away.
-sample = [nm for nm, _p in names[:60]]
+# GS-3, 28 Oct 2026 - FIFTEEN NAMES, NOT SIXTY. The claim is a ratio
+# per name - the lookbehind scans every byte every time - and the
+# slow half of it was most of this suite's 90 seconds on the gate. A
+# quarter of the names makes the same ratio; the seconds were never
+# the claim.
+sample = [nm for nm, _p in names[:15]]
 texts = [t for _n, _p, t in CG._tools(ROOT)]
 t0 = time.time()
 for nm in sample:

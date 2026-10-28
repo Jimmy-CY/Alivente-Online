@@ -430,13 +430,15 @@ cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
 # HK-3, 28 Oct 2026 - SCRIPT 146 -> 125 and PAGES 33 -> 32, unknown
 # 91 -> 70: 21 Bootstrap brights the classifier could not read, read by
 # eye and taken to tokens. canvas did not move.
-for want in ('MARKUP_STYLE = 80', 'SCRIPT = 125', 'PAGES = 32',
+# HK-4, 28 Oct 2026 - SCRIPT 125 -> 114, unknown 70 -> 59: Financial
+# Indicators took the house shades.
+for want in ('MARKUP_STYLE = 80', 'SCRIPT = 114', 'PAGES = 32',
              "'style-attr': 20", "'style-prop': 8",
              'safe == 28'):
     ok(want in cr, '  CR-1 census now reads %s' % want)
-ok("'canvas': 27" in cr and "'unknown': 70" in cr,
-   '  and canvas 27 did NOT move; unknown is 70 because HK-3 read 21 of '
-   'the 91 by eye - every automatic refusal was honoured')
+ok("'canvas': 27" in cr and "'unknown': 59" in cr,
+   '  and canvas 27 did NOT move; unknown is 59 because HK-3 and HK-4 '
+   'read 32 of the 91 by eye - every automatic refusal was honoured')
 
 print('')
 print('=' * 74)

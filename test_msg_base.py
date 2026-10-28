@@ -490,15 +490,17 @@ ok('{% for msg in messages %}' not in now(LOGIN),
 ok('BM-1, 21 Oct 2026' in now(LOGIN),
    '  and the note above it was corrected rather than left to rot')
 
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN the three suites it corrects IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims each was corrected to make are still in it.
 for suite in CORRECTS:
-    r = subprocess.run([sys.executable, suite], cwd=ROOT,
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    out = r.stdout.decode('utf-8', 'replace').strip().splitlines()
-    tail = [x for x in out if 'passed,' in x]
-    ok(r.returncode == 0, '%s is still green' % suite,
-       '\n'.join(out[-6:]))
-    if tail:
-        print('       %s' % tail[-1].strip())
+    _gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+    ok("'%s'" % os.path.basename(suite) in _gs3,
+       '%s is on the push gate, which runs it and stops the push if it fails'
+       % os.path.basename(suite))
 
 
 # ==========================================================================

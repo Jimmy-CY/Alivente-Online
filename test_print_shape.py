@@ -494,21 +494,18 @@ head('5. PP-1 OWN SUITE, RUN')
 # rewrote the page test_print_plan measures and edited that suite in
 # the same patcher; running it is the only way to know the two
 # descriptions have not come apart.
-try:
-    r = subprocess.run([sys.executable, PPT], cwd=ROOT,
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                       timeout=900)
-    out = r.stdout.decode('utf-8', 'replace')
-    tail = [ln for ln in out.strip().split('\n') if 'passed' in ln][-1:]
-    print('')
-    print('  %s' % (tail[0].strip() if tail else '(no summary)'))
-    print('')
-    ok(r.returncode == 0, 'test_print_plan passes against the new page',
-       out[-800:])
-    ok('A DAY DRAWS NO GRID AT ALL' in out,
-       '  and it says so: its day claim is the inverted one')
-except Exception as e:
-    skip('PP-1 suite', str(e)[:80])
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN test_print_plan IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims it was corrected to make are still in it.
+_gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+ok("'%s'" % os.path.basename(PPT) in _gs3,
+   '%s is on the push gate, which runs it and stops the push if it fails'
+   % os.path.basename(PPT))
+ok('A DAY DRAWS NO GRID AT ALL' in read(os.path.join(ROOT, PPT)),
+   '  and its day claim is the inverted one')
 
 
 # ==========================================================================

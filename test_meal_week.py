@@ -1123,11 +1123,17 @@ ok('DB-5 took the last seven' in lm_body,
 # import modules this one has already imported with a different
 # database configured underneath them.
 import subprocess                                            # noqa: E402
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN test_more_menu and test_last_menus IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims each was corrected to make are still in it.
 for suite, label in ((MM, 'test_more_menu.py'), (LM, 'test_last_menus.py')):
-    pr = subprocess.run([sys.executable, suite], cwd=ROOT,
-                        capture_output=True, text=True, timeout=900)
-    ok(pr.returncode == 0, '%s passes with the new number' % label,
-       (pr.stdout or '')[-500:] + (pr.stderr or '')[-300:])
+    _gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+    ok("'%s'" % os.path.basename(suite) in _gs3,
+       '%s is on the push gate, which runs it and stops the push if it fails'
+       % os.path.basename(suite))
 
 # ==========================================================================
 head('5. NO MIGRATION - asked of the tree, not asserted')

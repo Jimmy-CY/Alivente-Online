@@ -416,21 +416,18 @@ head('5. RG-1 OWN SUITE, RUN')
 # ==========================================================================
 # This round corrects three of its claims in the same patcher. A
 # claim moved is a claim that has to still fit.
-try:
-    r = subprocess.run([sys.executable, SHAPE], cwd=ROOT,
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                       timeout=1800)
-    out = r.stdout.decode('utf-8', 'replace')
-    tail = [ln for ln in out.strip().split('\n') if 'passed' in ln][-1:]
-    print('')
-    print('  %s' % (tail[0].strip() if tail else '(no summary)'))
-    print('')
-    ok(r.returncode == 0,
-       'test_print_shape passes with the correction in', out[-700:])
-    ok('the date, the meals and nothing else' in out,
-       '  and it records that the Notes block went')
-except Exception as e:
-    skip('RG-1 suite', str(e)[:80])
+# GS-3, 28 Oct 2026 - GATE SPEED, the lesson GS-1 drew from
+# test_crs_print: THIS RAN test_print_shape IN A SUBPROCESS, which the gate
+# also runs by name, to read a verdict the gate already reaches - and a
+# failure there stops the push exactly as hard as one here. So it asks
+# the two things that verdict stood for: that the suite is on the gate,
+# and that the claims it was corrected to make are still in it.
+_gs3 = read(os.path.join(ROOT, 'Push-PendingChanges.ps1'))
+ok("'%s'" % os.path.basename(SHAPE) in _gs3,
+   '%s is on the push gate, which runs it and stops the push if it fails'
+   % os.path.basename(SHAPE))
+ok('the date, the meals and nothing else' in read(os.path.join(ROOT, SHAPE)),
+   '  and it records that the Notes block went')
 
 
 # ==========================================================================
