@@ -349,6 +349,8 @@ urlpatterns = [
     path("receipts/<int:cash_receipt_id>/edit/", views.cash_receipt_edit, name="cash_receipt_edit"),
     path("receipts/<int:cash_receipt_id>/update/", views.cash_receipt_update, name="cash_receipt_update"),
     path("receipts/<int:cash_receipt_id>/pdf/", views.cash_receipt_pdf, name="cash_receipt_pdf"),
+    # CR-2, 27 Oct 2026 - email the receipt to its payer.
+    path("receipts/<int:cash_receipt_id>/send/", views.cash_receipt_send, name="cash_receipt_send"),
 
     # ============================================================================
     # SUPPLIERS

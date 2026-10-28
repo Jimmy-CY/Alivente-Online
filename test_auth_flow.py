@@ -966,13 +966,21 @@ ok(TYPE not in re.search(r'PERSONAL_NOTIFICATION_TYPES = frozenset\(\{[^}]*\}',
 if django_up:
     from pages.models import NotificationRecipient as NR
     codes = [c for c, _ in NR.NOTIFICATION_TYPES]
-    ok(TYPE in codes and len(codes) == 16,
-       'the model really offers 16 types, with this one among them',
+    # CR-2, 27 Oct 2026 - SEVENTEEN: Cash Receipt to Payer joined.
+    ok(TYPE in codes and len(codes) == 17,
+       'the model really offers 17 types, with this one among them',
        '%d: %s' % (len(codes), codes[-2:]))
     ok(len(set(codes)) == len(codes), '  and no code appears twice')
     # ONLY the choices list. The first version of this read the whole
     # file and matched ('pages', '0095_none_columns') out of dependencies,
     # then reported the migration as having a type the model did not.
+    # CR-2, 27 Oct 2026 - ASKED OF THE NEWEST notification-type
+    # migration, which is the one makemigrations compares against;
+    # 0096 is still asked above whether it carries this type.
+    _mdir = abspath('pages/migrations')
+    _newest = sorted(n for n in os.listdir(_mdir)
+                     if n.endswith('.py') and 'notification_type' in n)[-1]
+    mig = read(os.path.join(_mdir, _newest))
     choice_block = mig[mig.index('choices=['):mig.index('max_length=50')]
     mig_codes = re.findall(r"\('([a-z_]+)', '", choice_block)
     ok(set(mig_codes) == set(codes),

@@ -3566,6 +3566,10 @@ class NotificationRecipient(models.Model):
         ('issue_comment_urgent', 'Urgent Issue Comment Alert'),
         ('physical_invoice_review', 'Physical Invoices Awaiting Approval'),
         ('physical_invoice_client', 'Physical Invoice to Client'),
+        # CR-2, 27 Oct 2026 - a cash receipt emailed to its payer. The
+        # payer's own address is always a To; this card adds any further
+        # To and any CC.
+        ('cash_receipt_payer', 'Cash Receipt to Payer'),
         # THE 16TH, added by Section A round A1: who hears about it
         # when somebody asks for a password link. Configurable from
         # Administration -> Notification Settings rather than
@@ -4751,6 +4755,10 @@ class CashReceipt(models.Model):
                                   blank=True, related_name='edited_cash_receipts')
 
     sent_at = models.DateTimeField(null=True, blank=True)
+    # CR-2, 27 Oct 2026 - WHO THE LAST EMAIL WENT TO, as sent (To and Cc),
+    # so the history can say "Emailed to ..." rather than only "Emailed".
+    sent_to = models.TextField(blank=True, default='',
+        help_text='The addresses the receipt was last emailed to.')
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
                                    blank=True, related_name='issued_cash_receipts')
@@ -4772,6 +4780,27 @@ class CashReceipt(models.Model):
     def address_lines(self):
         return [l.strip() for l in (self.payer_address or '').splitlines()
                 if l.strip()]
+
+    # CR-2, 27 Oct 2026 - EMAILING A RECEIPT.
+    @property
+    def email_list(self):
+        """The payer's addresses - comma or semicolon separated, deduped."""
+        out, seen = [], set()
+        for part in (self.payer_email or '').replace(';', ',').split(','):
+            a = part.strip()
+            if a and a.lower() not in seen:
+                seen.add(a.lower())
+                out.append(a)
+        return out
+
+    @property
+    def is_sent(self):
+        """Emailed, and not edited since - his decision of 27 October: an
+        edit after sending puts the receipt back to plain Issued, so it is
+        plain that the corrected copy has not gone out yet."""
+        if not self.sent_at or self.is_void:
+            return False
+        return not self.edited_at or self.edited_at <= self.sent_at
 
 # ==========================================================================
 # E-SIGNING - ES-1, 23 Oct 2026

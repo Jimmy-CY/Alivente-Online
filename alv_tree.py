@@ -1054,6 +1054,8 @@ CONVERTED = [
     'test_housekeeping_two.py',
     # GS-1, 27 Oct 2026 - the gate, faster, and one tap target.
     'test_gate_speed_two.py',
+    # CR-2, 27 Oct 2026 - emailing a cash receipt.
+    'test_receipt_email.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

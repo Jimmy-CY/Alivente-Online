@@ -141,6 +141,10 @@ def get_email_recipients(notification_type, workspace=None):
         # row and no card. Relying on that means a change to the
         # catch-all silently moves this type too.
         'password_reset_requested': {'to': ['demetrimanias@gmail.com'], 'cc': []},
+        # CR-2, 27 Oct 2026 - NAMED AS EMPTY, not left to the catch-all:
+        # with no card saved a receipt goes to its payer and nobody else.
+        # The catch-all would quietly add a To on every receipt sent.
+        'cash_receipt_payer': {'to': [], 'cc': []},
     }
 
     defaults = default_recipients.get(notification_type, {'to': ['demetrimanias@gmail.com'], 'cc': []})

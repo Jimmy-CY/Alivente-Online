@@ -85,6 +85,8 @@ __all__ = [
     # `import *`, which obeys __all__ - so a view missing from this
     # list is invisible to the URLconf no matter how correct it is.
     "cash_receipt_detail",
+    # CR-2, 27 Oct 2026 - emailing a receipt.
+    "cash_receipt_send",
     "render_cash_receipt_pdf",
     "amount_in_words",
 ]
@@ -288,6 +290,7 @@ def cash_receipt_list(request):
     elif status_q == 'void':
         qs = qs.filter(is_void=True)
 
+    card = _receipt_card()
     rows = []
     for r in qs:
         rows.append({
@@ -307,9 +310,22 @@ def cash_receipt_list(request):
             'is_void': r.is_void,
             'is_edited': bool(r.edited_at),
             'edited_display': r.edited_at.strftime('%Y-%m-%d') if r.edited_at else '',
-            'status_pill': 'alv-pill-neutral' if r.is_void else 'alv-pill-good',
-            'status_display': 'Void' if r.is_void else 'Issued',
+            'status_pill': _status(r)[0],
+            'status_display': _status(r)[1],
+            'status_title': _status(r)[2],
             'has_pdf': bool(r.pdf_file),
+            # CR-2, 27 Oct 2026 - what the email button needs: whether it
+            # can send at all, and the To / Cc it WOULD use, worked out
+            # here once so the pop-up shows exactly what Send will do.
+            'can_send': bool(r.email_list) and not r.is_void,
+            'send_to': ', '.join(_send_lists(r, card)[0]),
+            'send_cc': ', '.join(_send_lists(r, card)[1]),
+            'is_printed': r.doc_format == CashReceipt.FORMAT_PRINTED,
+            'was_sent': bool(r.sent_at),
+            'email_subject': receipt_email_text(r)[0],
+            'email_body': receipt_email_text(r)[1],
+            'amount_text': '%s %s' % (money_symbol(r.currency),
+                                      _money(r.amount)),
             # A PLAIN STRING FOR THE BROWSER TO ADD UP. Written here with
             # %.2f rather than left to a template filter, so no locale and
             # no thousands separator can ever get into it - the script
@@ -667,8 +683,11 @@ def cash_receipt_detail(request, cash_receipt_id):
                       'who': _who(r.created_by), 'note': '',
                       'tone': ''})
     if r.sent_at:
+        # CR-2, 27 Oct 2026 - and to whom, now that it is recorded.
         trail.append({'what': 'Emailed', 'when': r.sent_at,
-                      'who': '', 'note': '', 'tone': ''})
+                      'who': '', 'note': ('to %s' % r.sent_to
+                                          if r.sent_to else ''),
+                      'tone': ''})
     if r.edited_at:
         trail.append({'what': 'Edited', 'when': r.edited_at,
                       'who': _who(r.edited_by),
@@ -682,16 +701,139 @@ def cash_receipt_detail(request, cash_receipt_id):
                       'tone': 'void'})
     trail.sort(key=lambda e: e['when'])
 
+    card = _receipt_card()
     return render(request, 'cash_receipt_detail.html', {
         'r': r,
         'trail': trail,
         # THE SAME TWO THE LIST ROW USES, from the same helper - a
         # second idea about what a void receipt is called is a second
         # thing to keep in agreement.
+        # CR-2, 27 Oct 2026 - from _status(), which the list uses too.
         'symbol': money_symbol(r.currency),
-        'status_pill': 'alv-pill-neutral' if r.is_void else 'alv-pill-good',
-        'status_display': 'Void' if r.is_void else 'Issued',
+        'status_pill': _status(r)[0],
+        'status_display': _status(r)[1],
+        'can_send': bool(r.email_list) and not r.is_void,
+        'send_to': ', '.join(_send_lists(r, card)[0]),
+        'send_cc': ', '.join(_send_lists(r, card)[1]),
+        'is_printed': r.doc_format == CashReceipt.FORMAT_PRINTED,
+        'amount_text': '%s %s' % (money_symbol(r.currency), _money(r.amount)),
+        'email_subject': receipt_email_text(r)[0],
+        'email_body': receipt_email_text(r)[1],
     })
+
+
+# ---------------------------------------------------------------- email
+# CR-2, 27 Oct 2026 - EMAILING A RECEIPT. His decisions of 27 October:
+#
+#   - The paper-plane sits in the row beside Duplicate (and on the Receipt
+#     Details bar), greyed while the receipt has no email address or is
+#     void. A confirmation pop-up shows exactly who it goes to first.
+#   - TO is always the receipt's own address(es). The "Cash Receipt to
+#     Payer" card in Notification Settings adds any further To and any Cc;
+#     with only a Cc set it goes To the payer, Cc the people named.
+#   - Once sent the status reads "Issued - Sent". An edit afterwards puts
+#     it back to Issued (CashReceipt.is_sent), so it is plain that the
+#     corrected copy has not gone out yet. "Send again" is always there.
+#   - Printed-format receipts may be emailed too, with a warning.
+#   - The email is the e-signing kind: branded, the logo under the
+#     sign-off, no contact details.
+RECEIPT_CARD = 'cash_receipt_payer'
+
+
+def _receipt_card():
+    """(to, cc) from the Notification Settings card - empty if unset."""
+    from pages.email_utils import get_email_recipients
+    got = get_email_recipients(RECEIPT_CARD)
+    return list(got.get('to') or []), list(got.get('cc') or [])
+
+
+def _send_lists(r, card):
+    """The To and Cc one send would use: the payer first, then the card;
+    nobody twice, and nobody on Cc who is already on To."""
+    to, seen = [], set()
+    for a in list(r.email_list) + list(card[0]):
+        if a.lower() not in seen:
+            seen.add(a.lower())
+            to.append(a)
+    cc = []
+    for a in card[1]:
+        if a.lower() not in seen:
+            seen.add(a.lower())
+            cc.append(a)
+    return to, cc
+
+
+def _status(r):
+    """(pill, words, hover) - one answer for the list and the details."""
+    if r.is_void:
+        return 'alv-pill-neutral', 'Void', ''
+    if r.is_sent:
+        return ('alv-pill-info', 'Issued \u00b7 Sent',
+                'Emailed %s' % timezone.localtime(r.sent_at).strftime(
+                    '%d %b %Y, %H:%M'))
+    if r.sent_at:
+        return ('alv-pill-good', 'Issued',
+                'Edited after it was emailed - the corrected copy has not '
+                'been sent')
+    return 'alv-pill-good', 'Issued', ''
+
+
+def receipt_email_text(r):
+    """(subject, body) - the words of the email, also shown in the pop-up."""
+    subject = 'Receipt %s - Alivente Limited' % r.receipt_number
+    body = ('Dear %s,\n\n'
+            'Please find attached receipt %s for %s %s, received on %s, '
+            'being payment for %s.\n\n'
+            'Kind regards,\n\nAlivente Limited'
+            % (r.payer_name, r.receipt_number, money_symbol(r.currency),
+               _money(r.amount), r.receipt_date.strftime('%d %B %Y'),
+               (r.description or '').strip().rstrip('.')))
+    return subject, body
+
+
+@login_required
+@permission_required('auth.can_edit_receipts', raise_exception=True)
+@require_POST
+def cash_receipt_send(request, cash_receipt_id):
+    """Email the stored receipt PDF to its payer (and the card's people)."""
+    from pages.services.lease_email import BrandedEmail
+    r = get_object_or_404(CashReceipt, pk=cash_receipt_id)
+    back = (redirect('cash_receipt_detail', cash_receipt_id=r.pk)
+            if request.POST.get('next') == 'detail'
+            else redirect('cash_receipt_list'))
+    if r.is_void:
+        messages.error(request, 'Receipt %s is void - it cannot be emailed.'
+                       % r.receipt_number)
+        return back
+    to, cc = _send_lists(r, _receipt_card())
+    if not r.email_list:
+        messages.error(request, 'Receipt %s has no email address. Edit the '
+                       'receipt and add one under Received from.'
+                       % r.receipt_number)
+        return back
+    if not r.pdf_file:
+        store_pdf(r)
+        r.refresh_from_db()
+    r.pdf_file.open('rb')
+    try:
+        pdf = r.pdf_file.read()
+    finally:
+        r.pdf_file.close()
+    subject, body = receipt_email_text(r)
+    msg = BrandedEmail(subject=subject, body=body, to=to, cc=cc)
+    msg.attach('%s.pdf' % r.receipt_number, pdf, 'application/pdf')
+    try:
+        msg.send(fail_silently=False)
+    except Exception as e:                                  # noqa: BLE001
+        messages.error(request, 'Receipt %s was NOT sent - the mail server '
+                       'said: %s' % (r.receipt_number, str(e)[:160]))
+        return back
+    sent_to = ', '.join(to) + ((' (cc %s)' % ', '.join(cc)) if cc else '')
+    CashReceipt.objects.filter(pk=r.pk).update(sent_at=timezone.now(),
+                                               sent_to=sent_to)
+    messages.success(request, 'Receipt %s emailed to %s.'
+                     % (r.receipt_number, sent_to))
+    return back
 
 
 @login_required

@@ -137,7 +137,8 @@ EXE = '/opt/pw-browsers/chromium'
 BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 
 CONVERTED_NOW, ALIAS_NOW = 92, 95
-N_CARDS = 14
+N_CARDS = 15   # CR-2, 27 Oct 2026 - Cash Receipt to Payer  # (was 14)
+ADDED_SINCE = 1   # CR-2, 27 Oct 2026 - cards added after this round
 PHONES = (320, 360, 390, 414)
 
 passed = failed = skipped = 0
@@ -298,7 +299,9 @@ def titles(body):
                       body, re.S)
 tn, tw = titles(B_NOW[NOTIF]), titles(B_WAS[NOTIF])
 ok(len(tn) == N_CARDS, 'each one has a heading', len(tn))
-ok(not APPLIED or tn == tw,
+# CR-2, 27 Oct 2026 - the markup is what it was PLUS the one card added
+# since, which sorts in the browser like every other.
+ok(not APPLIED or [x for x in tn if x.strip() != 'Cash Receipt to Payer'] == tw,
    'and the MARKUP order is byte-for-byte what it was - the sort happens '
    'in the browser, so card %d sorts too' % (N_CARDS + 1))
 ok(tn != sorted(tn, key=lambda s: s.strip().lower()),
@@ -513,10 +516,14 @@ else:
                 ctx.close()
 
             a, b = seen['now'], seen['was']
-            ok(a['n'] == b['n'] == N_CARDS,
-               'the page draws %d cards, before and after' % N_CARDS,
+            # CR-2, 27 Oct 2026 - ONE CARD JOINED SINCE (Cash Receipt to
+            # Payer), so the page before this round drew one fewer.
+            ok(a['n'] == N_CARDS and b['n'] == N_CARDS - ADDED_SINCE,
+               'the page draws %d cards, %d before this round and the one '
+               'added since' % (N_CARDS, N_CARDS - ADDED_SINCE),
                (b['n'], a['n']))
-            ok(a['collapsible'] == b['collapsible'] == N_CARDS,
+            ok(a['collapsible'] == N_CARDS
+               and b['collapsible'] == N_CARDS - ADDED_SINCE,
                'and every one of them is collapsible, before and after',
                (b['collapsible'], a['collapsible']))
             ok(a['open'] == 0,
@@ -542,7 +549,9 @@ else:
                    'CONTROL: BEFORE, they were not', b['titles'][:4])
             else:
                 skip('CONTROL: they were not sorted', 'not applied')
-            ok(sorted(a['titles']) == sorted(b['titles']),
+            ok(sorted(x for x in a['titles']
+                      if x.strip() != 'Cash Receipt to Payer')
+               == sorted(b['titles']),
                'and it is the SAME %d cards, reordered - none lost, none '
                'invented' % N_CARDS)
             print('         first four now: %s'

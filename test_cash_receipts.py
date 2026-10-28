@@ -291,7 +291,9 @@ _expected = {'cash_receipt_list', 'cash_receipt_add', 'cash_receipt_commit',
              'cash_receipt_edit', 'cash_receipt_update', 'cash_receipt_void',
              'cash_receipt_unvoid', 'cash_receipt_pdf',
              # RV-1, 23 Oct 2026 - the record behind the receipt. G2.
-             'cash_receipt_detail'}
+             'cash_receipt_detail',
+             # CR-2, 27 Oct 2026 - email the receipt to its payer.
+             'cash_receipt_send'}
 # Was five. The edit/unvoid round added edit, update and unvoid, so the floor
 # moved with the decision - and it names them rather than counting, because a
 # count tells you something changed and not which.
@@ -655,9 +657,10 @@ check('  which exists in this tree',
       exists(os.path.join(TPL, 'components', 'pdf_viewer.html')))
 check('  and carries the share sheet that reaches WhatsApp on a phone',
       'navigator.share' in read(os.path.join(TPL, 'components', 'pdf_viewer.html')))
-check('four actions, so the mobile bar declares four columns',
-      'mobile-action-bar cols-4' in LIST_T and 'cols-2' not in LIST_T)
-check('  and base defines cols-4', '.mobile-action-bar.cols-4' in css_of(BASE))
+# CR-2, 27 Oct 2026 - FIVE: View, Edit, Duplicate, Email, Void.
+check('five actions, so the mobile bar declares five columns',
+      'mobile-action-bar cols-5' in LIST_T and 'cols-2' not in LIST_T)
+check('  and base defines cols-5', '.mobile-action-bar.cols-5' in css_of(BASE))
 
 
 asyncio.run(main())

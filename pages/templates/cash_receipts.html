@@ -152,7 +152,7 @@ Receipts
             {# euro, which would have contradicted that block.           #}
             <td data-label="Amount" class="num">{{ row.symbol }} {{ row.amount|floatformat:2|intcomma }}</td>
             <td data-label="Status">
-              <span class="alv-pill {{ row.status_pill }}">{{ row.status_display }}</span>
+              <span class="alv-pill {{ row.status_pill }}"{% if row.status_title %} title="{{ row.status_title }}"{% endif %}>{{ row.status_display }}</span>
             </td>
             <td data-label="Actions" class="desktop-action-cell cell-actions">
               {# RA-1, 4 Oct 2026 - the action column is in house order:  #}
@@ -186,6 +186,24 @@ Receipts
                     <i class="fas fa-copy"></i>
                   </span>
                 {% endif %}
+                {# CR-2, 27 Oct 2026 - EMAIL IT. Grey until the receipt has an #}
+                {# email address; never on a void one. ADVANCE, before Void.  #}
+                {% if row.can_send and perms.auth.can_edit_receipts %}
+                  <button type="button" class="icon-action-btn icon-send"
+                          title="{% if row.was_sent %}Email this receipt again{% else %}Email this receipt{% endif %}"
+                          data-url="{% url 'cash_receipt_send' row.pk %}" data-number="{{ row.number }}"
+                          data-to="{{ row.send_to }}" data-cc="{{ row.send_cc }}"
+                          data-subject="{{ row.email_subject }}" data-body="{{ row.email_body }}"
+                          data-printed="{% if row.is_printed %}1{% endif %}" data-sent="{% if row.was_sent %}1{% endif %}"
+                          onclick="return openReceiptSend(this, '');">
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                {% else %}
+                  <span class="icon-action-btn icon-disabled"
+                        title="{% if row.is_void %}A void receipt is not emailed{% elif not perms.auth.can_edit_receipts %}No permission to email receipts{% else %}No email address - edit the receipt to add one{% endif %}">
+                    <i class="fas fa-paper-plane"></i>
+                  </span>
+                {% endif %}
                 {% if row.is_void and perms.auth.can_edit_receipts %}
                   <form method="post" action="{% url 'cash_receipt_unvoid' row.pk %}"
                         class="rec-inline-form"
@@ -213,7 +231,7 @@ Receipts
             </td>
 
             <!-- Mobile-only action bar -->
-            <td class="mobile-action-bar cols-4">
+            <td class="mobile-action-bar cols-5">
               <a href="{% url 'cash_receipt_pdf' row.pk %}"
                  onclick="openPdfViewer('{% url 'cash_receipt_pdf' row.pk %}', 'Receipt {{ row.number|escapejs }} &mdash; {{ row.payer|escapejs }}', '{{ row.number|escapejs }}.pdf'); return false;"
                  class="mobile-action-btn">
@@ -240,6 +258,22 @@ Receipts
                 <span class="mobile-action-btn mobile-action-disabled">
                   <i class="fas fa-copy mobile-action-icon"></i>
                   <span class="mobile-action-label">Duplicate</span>
+                </span>
+              {% endif %}
+              {% if row.can_send and perms.auth.can_edit_receipts %}
+                <button type="button" class="mobile-action-btn"
+                        data-url="{% url 'cash_receipt_send' row.pk %}" data-number="{{ row.number }}"
+                        data-to="{{ row.send_to }}" data-cc="{{ row.send_cc }}"
+                        data-subject="{{ row.email_subject }}" data-body="{{ row.email_body }}"
+                        data-printed="{% if row.is_printed %}1{% endif %}" data-sent="{% if row.was_sent %}1{% endif %}"
+                        onclick="return openReceiptSend(this, '');">
+                  <i class="fas fa-paper-plane mobile-action-icon icon-color-view"></i>
+                  <span class="mobile-action-label">Email</span>
+                </button>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-paper-plane mobile-action-icon"></i>
+                  <span class="mobile-action-label">Email</span>
                 </span>
               {% endif %}
               {% if perms.auth.can_edit_receipts %}
@@ -540,6 +574,81 @@ Receipts
         body, {attributes: true, attributeFilter: ['style'], subtree: true});
     } catch (e) { /* no observer: the server's total stands, which is right */ }
     recount();
+  }
+})();
+</script>
+
+{# EMAIL THIS RECEIPT - CR-2, 27 Oct 2026. One pop-up, filled from the #}
+{# button that opened it, showing exactly who Send will reach.         #}
+<div class="modal fade" id="receiptSendModal" tabindex="-1" role="dialog"
+     aria-labelledby="receiptSendTitle" aria-hidden="true" style="display:none;">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form method="post" id="rsm-form" action="">
+        {% csrf_token %}
+        <input type="hidden" name="next" id="rsm-next" value="">
+        <div class="modal-header alv-modal-head">
+          <h5 class="modal-title" id="receiptSendTitle"><i class="fas fa-paper-plane"></i> Email receipt <span id="rsm-number"></span></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body rsm-body">
+          <div class="rsm-row"><span class="rsm-label">To</span><span class="rsm-value" id="rsm-to"></span></div>
+          <div class="rsm-row" id="rsm-cc-row"><span class="rsm-label">Cc</span><span class="rsm-value" id="rsm-cc"></span></div>
+          <div class="rsm-row"><span class="rsm-label">Subject</span><span class="rsm-value" id="rsm-subject"></span></div>
+          <div class="rsm-row"><span class="rsm-label">Attached</span><span class="rsm-value"><i class="fas fa-file-pdf"></i> <span id="rsm-file"></span></span></div>
+          <div class="rsm-message" id="rsm-body"></div>
+          <div class="rsm-note" id="rsm-printed"><i class="fas fa-exclamation-triangle"></i> This receipt is in the <strong>Printed</strong> format, with signature and date lines. It will be sent exactly as it is.</div>
+          <div class="rsm-note" id="rsm-again"><i class="fas fa-info-circle"></i> This receipt has been emailed before. Send it again?</div>
+          <div class="rsm-hint">Who else receives receipts is set in <strong>Administration &rsaquo; Notification Settings &rsaquo; Cash Receipt to Payer</strong>.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn action-primary" id="rsm-send"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<style>
+/* CR-2, 27 Oct 2026 - the email pop-up. Tokens only. */
+.rsm-body { font-size: 14px; }
+.rsm-row { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--alv-line); }
+.rsm-label { min-width: 70px; font-weight: 600; color: var(--alv-ink); }
+.rsm-value { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: var(--alv-ink-strong); }
+.rsm-message { white-space: pre-line; margin: 12px 0; padding: 12px 14px; border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm, 6px); background: var(--alv-surface); color: var(--alv-ink-strong); }
+.rsm-note { margin: 8px 0; padding: 9px 12px; border-left: 4px solid var(--alv-warn); background: var(--alv-warn-soft); color: var(--alv-ink); border-radius: var(--alv-radius-sm, 6px); }
+.rsm-hint { margin-top: 10px; font-size: 12.5px; color: var(--alv-ink-soft, var(--alv-ink)); }
+</style>
+<script>
+(function () {
+  // Fill the pop-up from the button's data-* and open it. The server
+  // decides who is written on those attributes; this only shows them.
+  window.openReceiptSend = function (btn, next) {
+    var d = btn.dataset, el = function (id) { return document.getElementById(id); };
+    el('rsm-form').action = d.url;
+    el('rsm-next').value = next || '';
+    el('rsm-number').textContent = d.number;
+    el('rsm-to').textContent = d.to;
+    el('rsm-cc').textContent = d.cc;
+    el('rsm-cc-row').style.display = d.cc ? '' : 'none';
+    el('rsm-subject').textContent = d.subject;
+    el('rsm-file').textContent = d.number + '.pdf';
+    el('rsm-body').textContent = d.body;
+    el('rsm-printed').style.display = d.printed === '1' ? '' : 'none';
+    el('rsm-again').style.display = d.sent === '1' ? '' : 'none';
+    el('rsm-send').innerHTML = '<i class="fas fa-paper-plane"></i> ' + (d.sent === '1' ? 'Send again' : 'Send');
+    if (window.jQuery) { window.jQuery('#receiptSendModal').modal('show'); }
+    return false;
+  };
+  var f = document.getElementById('rsm-form');
+  if (f) {
+    f.addEventListener('submit', function () {
+      var b = document.getElementById('rsm-send');
+      b.disabled = true;
+      b.innerHTML = '<i class="fas fa-paper-plane"></i> Sending...';
+    });
   }
 })();
 </script>

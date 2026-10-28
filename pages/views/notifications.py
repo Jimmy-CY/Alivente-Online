@@ -85,6 +85,8 @@ def notification_settings(request):
         'invoice_paid',
         'physical_invoice_review',
         'physical_invoice_client',
+        # CR-2, 27 Oct 2026 - its card, or the choice renders nowhere.
+        'cash_receipt_payer',
         'expense_needs_approval',
         'expense_approved',
         'expense_paid',

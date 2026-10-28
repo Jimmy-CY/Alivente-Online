@@ -2145,3 +2145,108 @@
 </section>
 <!-- ======= END PHYSICAL INVOICES ======= -->
 
+<!-- ======= CASH RECEIPTS - CR-2, 27 Oct 2026 ======= -->
+<section data-module-slug="cash_receipts"
+         data-module-group="Financial Management"
+         data-module-permission="can_access_receipts"
+         data-module-name="Receipts"
+         data-module-icon="fa-receipt"
+         data-module-category="Operational"
+         data-module-subtitle="Issue, email, edit and void numbered cash receipts for money received">
+
+  <article data-tab-slug="crOverview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-receipt"></i> What is a Receipt?</h6>
+    <p>A <strong>Receipt</strong> is the document you give somebody to confirm that Alivente has received their money &mdash; rent, a deposit, or any other payment. Each one carries a <strong>CR-number</strong> (for example <em>CR-00376</em>) that is given out in order and never changes, and the system stores the PDF the moment the receipt is issued.</p>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-plus"></i> Issuing a receipt</h6>
+    <p>Press <strong>Issue Receipt</strong>. The next number is shown above the list before you start. Fill in:</p>
+    <ul>
+      <li><strong>The payment</strong> &mdash; date received, amount, method (cash, bank transfer, cheque, card), an optional reference, and what it is <em>being payment for</em>.</li>
+      <li><strong>Received from</strong> &mdash; pick a tenant or customer to fill in their details, or type a name. Address, telephone and <strong>email</strong> are optional; the email is what <strong>Email receipt</strong> sends to, so add it if you will email the receipt. Several addresses can be separated with commas.</li>
+      <li><strong>Property</strong> &mdash; optional.</li>
+    </ul>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-file-pdf"></i> Electronic or Printed</h6>
+    <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Electronic</strong></h6>
+        <p class="mb-0" style="font-size:13px;">No signature block; the receipt states that it is valid without one. Meant for emailing or sharing.</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Printed</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Carries ruled signature and date lines instead, for handing over on paper. It can still be emailed &mdash; you are warned first.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="crList"
+           data-tab-name="The List"
+           data-tab-icon="fa-table">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-table"></i> Reading the list</h6>
+    <p>Newest first. Columns: <strong>Receipt #</strong> (click it to open the Receipt Details page), <strong>Date</strong>, <strong>Received From</strong>, <strong>Being Payment For</strong>, <strong>Amount</strong> and <strong>Status</strong>. A receipt changed after it was issued is marked <em>EDITED</em> under its number. The total at the bottom counts issued receipts only, one line per currency.</p>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-tag"></i> Status</h6>
+    <ul>
+      <li><strong>Issued</strong> &mdash; a live receipt.</li>
+      <li><strong>Issued &middot; Sent</strong> &mdash; emailed, and not changed since. Hover over it to see when.</li>
+      <li><strong>Void</strong> &mdash; cancelled. It keeps its number and stays in the list.</li>
+    </ul>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-hand-pointer"></i> The actions on each row</h6>
+    <ul>
+      <li><i class="fas fa-file-pdf"></i> <strong>View</strong> &mdash; the stored PDF, in the viewer.</li>
+      <li><i class="fas fa-pencil-alt"></i> <strong>Edit</strong> &mdash; change anything but the number. The PDF is re-made and the receipt is marked edited.</li>
+      <li><i class="fas fa-copy"></i> <strong>Duplicate</strong> &mdash; a new receipt with the same details, including the email address, ready to adjust and issue.</li>
+      <li><i class="fas fa-paper-plane"></i> <strong>Email</strong> &mdash; send it to the payer (see the next tab). Greyed out when the receipt has no email address, and on a void receipt.</li>
+      <li><i class="fas fa-ban"></i> <strong>Void</strong> / <i class="fas fa-undo"></i> <strong>Unvoid</strong> &mdash; cancel a receipt, or bring it back. Voiding stamps VOID on its PDF; unvoiding takes the stamp off.</li>
+    </ul>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-filter"></i> Filtering</h6>
+    <p><strong>Filter</strong> narrows the list by date range and status; <strong>Received From</strong> narrows as you type.</p>
+  </article>
+
+  <article data-tab-slug="crEmail"
+           data-tab-name="Emailing"
+           data-tab-icon="fa-paper-plane">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-paper-plane"></i> Emailing a receipt</h6>
+    <p>Press the <i class="fas fa-paper-plane"></i> on a row, or <strong>Email receipt</strong> on the Receipt Details page. A pop-up shows exactly what will happen before anything is sent: who it goes <strong>To</strong>, who is <strong>Cc</strong>&rsquo;d, the subject, the attached PDF and the message itself. Press <strong>Send</strong> to send it, or Cancel.</p>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-users"></i> Who receives it</h6>
+    <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>To</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Always the email address(es) on the receipt (Received from &rsaquo; Email).</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Anyone else</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Set once in <strong>Administration &rsaquo; Notification Settings &rsaquo; Cash Receipt to Payer</strong>. Addresses in its <em>TO</em> box are added beside the payer; addresses in its <em>CC</em> box are copied. Leave TO blank and fill in CC to send To the payer and copy, say, yourself. With nothing saved there, the receipt goes to the payer alone.</p>
+      </div>
+    </div>
+
+    <h6 style="color:#0e7c8b; font-weight:700; margin-top:20px;"><i class="fas fa-check-circle"></i> After sending</h6>
+    <ul>
+      <li>The status reads <strong>Issued &middot; Sent</strong>, and the Receipt Details history says when and to whom it was emailed.</li>
+      <li>The button stays &mdash; as <strong>Send again</strong> &mdash; for when a payer says it did not arrive.</li>
+      <li><strong>Editing a sent receipt puts it back to Issued</strong>, so it is clear the corrected copy has not gone out. Email it again to send the correction.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-info-circle"></i> The email is short and branded &mdash; the Alivente logo under the sign-off &mdash; and carries no contact details. The receipt itself is the attachment.
+    </div>
+  </article>
+
+  <article data-tab-slug="crDetails"
+           data-tab-name="Receipt Details"
+           data-tab-icon="fa-search">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-search"></i> The record behind a receipt</h6>
+    <p>Click a receipt number to open <strong>Receipt Details</strong>: the payment, the payer&rsquo;s address, telephone and email, the property, and a <strong>history</strong> &mdash; issued, emailed (and to whom), edited, voided (and why) &mdash; oldest first. From here you can view the PDF, edit the receipt or email it.</p>
+  </article>
+
+</section>
+<!-- ======= END CASH RECEIPTS ======= -->
