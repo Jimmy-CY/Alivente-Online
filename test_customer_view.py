@@ -306,7 +306,10 @@ if key in J_NOW:
     ok('textContent' in hs,
        '  writing the title with textContent, because a customer name is '
        'data somebody typed')
-ok('code.jquery.com/jquery-3.6.0' in NOW,
+# HK-3, 28 Oct 2026 - the page no longer loads its own copy; base.html
+# loads the one jQuery in <head>, ahead of every page's scripts.
+_bsrc = read(alv_tree.path_of('base.html'))
+ok(0 <= _bsrc.find('code.jquery.com/jquery-3.6.0') < _bsrc.find('</head>'),
    'jQuery really is on the page, so window.jQuery is not a hope')
 
 

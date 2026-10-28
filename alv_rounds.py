@@ -1516,6 +1516,8 @@ ROUNDS = [
     '.bak_gatespeed2',
     # CR-2, 27 Oct 2026 - emailing a cash receipt.
     '.bak_receiptemail',
+    # HK-3, 28 Oct 2026 - one jQuery, a faster gate, the house colours.
+    '.bak_housekeep3',
 ]
 
 

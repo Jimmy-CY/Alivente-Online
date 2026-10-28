@@ -427,13 +427,16 @@ cr = read(os.path.join(ROOT, 'test_cssrules_outside.py'))
 # every literal that went was a var-safe one.
 # VR-1, 21 Oct 2026 - MARKUP_STYLE was 86 and the cooking schedule
 # readout gave up six of them.
-for want in ('MARKUP_STYLE = 80', 'SCRIPT = 146', 'PAGES = 33',
+# HK-3, 28 Oct 2026 - SCRIPT 146 -> 125 and PAGES 33 -> 32, unknown
+# 91 -> 70: 21 Bootstrap brights the classifier could not read, read by
+# eye and taken to tokens. canvas did not move.
+for want in ('MARKUP_STYLE = 80', 'SCRIPT = 125', 'PAGES = 32',
              "'style-attr': 20", "'style-prop': 8",
              'safe == 28'):
     ok(want in cr, '  CR-1 census now reads %s' % want)
-ok("'canvas': 27" in cr and "'unknown': 91" in cr,
-   '  and canvas 27 / unknown 91 did NOT move - 201 - 83 = 118 = 27 + 91, '
-   'which is the arithmetic saying every refusal was honoured')
+ok("'canvas': 27" in cr and "'unknown': 70" in cr,
+   '  and canvas 27 did NOT move; unknown is 70 because HK-3 read 21 of '
+   'the 91 by eye - every automatic refusal was honoured')
 
 print('')
 print('=' * 74)

@@ -137,7 +137,7 @@ INCLUDE = "{% include 'components/pdf_viewer.html' %}"
 PHONE = 390
 N_INCLUDERS = 13
 N_HANDROLLED = 0
-N_DUP_JQUERY = 33   # MD-1, 18 Oct 2026 - E31 took meal_plan_calendar's second copy out; base already loads the same file from the same CDN   # (was 34)
+N_DUP_JQUERY = 0   # HK-3, 28 Oct 2026 - base loads jQuery once, in <head>, and every page's own copy is gone   # (was 33)
 CONVERTED_NOW, ALIAS_NOW = 79, 69
 
 passed = failed = skipped = 0

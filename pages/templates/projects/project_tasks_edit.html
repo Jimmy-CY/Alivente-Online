@@ -390,8 +390,6 @@ Edit Task - {{ task.task_name }}
 </div>
 </form>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>    /* B-2, 6 Oct 2026 - 4 literal(s) on this page became a var(), and
@@ -666,7 +664,7 @@ $(document).ready(function() {
     function autoTranslateField(text, targetFieldId, fieldName) {
         const targetField = $('#' + targetFieldId);
         const originalBorder = targetField.css('border-color');
-        targetField.css('border-color', '#ffc107');
+        targetField.css('border-color', 'var(--alv-warn)');
 
         fetch('/translate/', {
             method: 'POST',
@@ -680,7 +678,7 @@ $(document).ready(function() {
         .then(data => {
             if (data.success) {
                 targetField.val(data.translated_text);
-                targetField.css('border-color', '#28a745');
+                targetField.css('border-color', 'var(--alv-good)');
                 setTimeout(() => targetField.css('border-color', originalBorder), 2000);
                 showAutoTranslationNotice(`${fieldName} automatically updated in Greek`);
             } else {

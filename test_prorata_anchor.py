@@ -214,8 +214,14 @@ if django is not None:
     with open(os.path.join(_stub, 'base.html'), 'w', encoding='utf-8') as f:
         # A base that carries the blocks and nothing else. The page under
         # test supplies its own <style> and <script>.
+        # HK-3, 28 Oct 2026 - AND jQUERY, IN <head>, as the real base now
+        # loads it: the page stopped loading its own copy, so a stub
+        # without one would leave the harness nothing to swap for the
+        # local file and the page's script nothing to run on.
         f.write('<!doctype html><html><head><title>'
-                '{% block title %}{% endblock %}</title></head><body>'
+                '{% block title %}{% endblock %}</title>'
+                '<script src="https://code.jquery.com/jquery-3.6.0.min.js">'
+                '</script></head><body>'
                 '{% block content %}{% endblock %}</body></html>')
 
     if not settings.configured:

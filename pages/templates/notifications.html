@@ -68,7 +68,6 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
@@ -292,9 +291,12 @@ class SimpleNotificationDashboard {
                 </div>
                 
                 <div class="indicator-cards">
+                    {# HK-3, 28 Oct 2026 - his eye: the two newest boxes were the   #}
+                    {# standard and these six were not. All eight icons now take   #}
+                    {# the house tokens their own card borders already use.        #}
                     <div class="indicator-card ${s.vacantProperties === 0 ? 'success' : 'urgent'}" data-category="vacant">
                         <div class="indicator-icon">
-                            <i class="fas fa-home" style="color: ${s.vacantProperties === 0 ? '#28a745' : '#dc3545'};"></i>
+                            <i class="fas fa-home" style="color: ${s.vacantProperties === 0 ? 'var(--alv-good)' : 'var(--alv-bad)'};"></i>
                         </div>
                         <div class="indicator-label">Vacant Properties</div>
                         <div class="indicator-value">${s.vacantProperties || 0}</div>
@@ -302,7 +304,7 @@ class SimpleNotificationDashboard {
 
                     <div class="indicator-card ${s.expiringLeases === 0 ? 'success' : 'warning'}" data-category="expiring">
                         <div class="indicator-icon">
-                            <i class="fas fa-calendar-times" style="color: ${s.expiringLeases === 0 ? '#28a745' : '#ffc107'};"></i>
+                            <i class="fas fa-calendar-times" style="color: ${s.expiringLeases === 0 ? 'var(--alv-good)' : 'var(--alv-warn)'};"></i>
                         </div>
                         <div class="indicator-label">Expiring Leases</div>
                         <div class="indicator-value">${s.expiringLeases || 0}</div>
@@ -310,7 +312,7 @@ class SimpleNotificationDashboard {
 
                     <div class="indicator-card ${s.declinedRenewals === 0 ? 'success' : 'urgent'}" data-category="declined">
                         <div class="indicator-icon">
-                            <i class="fas fa-times-circle" style="color: ${s.declinedRenewals === 0 ? '#28a745' : '#dc3545'};"></i>
+                            <i class="fas fa-times-circle" style="color: ${s.declinedRenewals === 0 ? 'var(--alv-good)' : 'var(--alv-bad)'};"></i>
                         </div>
                         <div class="indicator-label">Declined Renewals</div>
                         <div class="indicator-value">${s.declinedRenewals || 0}</div>
@@ -318,7 +320,7 @@ class SimpleNotificationDashboard {
 
                     <div class="indicator-card ${s.overdueInvoices === 0 ? 'success' : 'urgent'}" data-category="overdue">
                         <div class="indicator-icon">
-                            <i class="fas fa-exclamation-triangle" style="color: ${s.overdueInvoices === 0 ? '#28a745' : '#dc3545'};"></i>
+                            <i class="fas fa-exclamation-triangle" style="color: ${s.overdueInvoices === 0 ? 'var(--alv-good)' : 'var(--alv-bad)'};"></i>
                         </div>
                         <div class="indicator-label">Overdue Invoices</div>
                         <div class="indicator-value">${s.overdueInvoices || 0}</div>
@@ -358,7 +360,7 @@ class SimpleNotificationDashboard {
 
                     <div class="indicator-card ${s.expensesWaitingApproval === 0 ? 'success' : 'warning'}" data-category="approval">
                         <div class="indicator-icon">
-                            <i class="fas fa-clipboard-check" style="color: ${s.expensesWaitingApproval === 0 ? '#28a745' : '#ffc107'};"></i>
+                            <i class="fas fa-clipboard-check" style="color: ${s.expensesWaitingApproval === 0 ? 'var(--alv-good)' : 'var(--alv-warn)'};"></i>
                         </div>
                         <div class="indicator-label">Expenses Waiting for Approval</div>
                         <div class="indicator-value">${s.expensesWaitingApproval || 0}</div>
@@ -366,7 +368,7 @@ class SimpleNotificationDashboard {
 
                     <div class="indicator-card ${s.expensesWaitingPayment === 0 ? 'success' : 'warning'}" data-category="payment">
                         <div class="indicator-icon">
-                            <i class="fas fa-credit-card" style="color: ${s.expensesWaitingPayment === 0 ? '#28a745' : '#0e7c8b'};"></i>
+                            <i class="fas fa-credit-card" style="color: ${s.expensesWaitingPayment === 0 ? 'var(--alv-good)' : 'var(--alv-accent)'};"></i>
                         </div>
                         <div class="indicator-label">Expenses Waiting for Payment</div>
                         <div class="indicator-value">${s.expensesWaitingPayment || 0}</div>

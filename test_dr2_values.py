@@ -211,38 +211,77 @@ else:
         br = pw.chromium.launch(**({'executable_path': exe}
                                    if os.path.exists(exe) else {}))
 
-        def computed(page_css, width, klass, props):
-            pg = br.new_page(viewport={'width': width, 'height': 900})
+        # HK-3, 28 Oct 2026 - GATE SPEED. This was the gate's second
+        # slowest suite (182s in a pool of three): three fresh pages, each
+        # parsing Bootstrap and base.html, for every class at every width.
+        # Now a document carries ALL of a page's classes, each in its own
+        # bar-table-cell scaffold exactly as before (a separate table, so
+        # no cell sizes another), and is loaded once and RESIZED through
+        # the four widths. Base alone is one document for every class of
+        # every page. The same properties are read from the same
+        # scaffolds; the "really moved" CONTROL still has to see a change.
+        #
+        # THE INTEGERS ARE THE OLD ONES IN THE OLD ORDER, because
+        # test_retired holds this suite to every integer it had - which
+        # is why the code below is laid out the way it is.
+        def computed_all(page_css, klasses):
+            """{(klass, width): {prop: value}} for every klass."""
+            H = 900
+            ks = sorted(klasses)
+            cells = ''.join(
+                '<div class="mobile-action-bar alv-table"><table '
+                'class="alv-table"><tbody><tr><td class="%s" '
+                'id="probe%d">x</td></tr></tbody></table></div>' % (k, i)
+                for i, k in enumerate(ks))
+            pg = br.new_page(viewport={'width': min(WIDTHS), 'height': H})
             pg.set_content(
                 '<!doctype html><html><head><meta charset="utf-8">'
                 '<style>%s</style><style>%s</style><style>%s</style></head>'
-                '<body style="margin:0"><div class="mobile-action-bar '
-                'alv-table"><table class="alv-table"><tbody><tr>'
-                '<td class="%s" id="probe">x</td></tr></tbody></table>'
-                '</div></body></html>'
-                % (read(BOOTF), bcss, page_css, klass))
-            r = pg.evaluate(
-                '(ps) => { const e = document.getElementById("probe");'
-                ' const s = getComputedStyle(e); const o = {};'
-                ' for (const p of ps) o[p] = s.getPropertyValue(p);'
-                ' return o; }', props)
+                '<body style="margin:0">%s</body></html>'
+                % (read(BOOTF), bcss, page_css, cells))
+            out = {}
+            for w in WIDTHS:
+                pg.set_viewport_size({'width': w, 'height': H})
+                got = pg.evaluate(
+                    '(job) => job.map(([i, ps]) => {'
+                    ' const s = getComputedStyle('
+                    'document.getElementById("probe" + i)); const o = {};'
+                    ' for (const p of ps) o[p] = s.getPropertyValue(p);'
+                    ' return o; })',
+                    [[i, sorted(set(klasses[k]))] for i, k in enumerate(ks)])
+                for k, o in zip(ks, got):
+                    out[(k, w)] = o
             pg.close()
-            return r
+            return out
 
         drifted, moved, painted = [], 0, 0
+
+        def klasses_of(page):
+            """{klass: [prop, ...]} - the page's PLAIN drops, by class."""
+            klasses = {}
+            for _p, sel, prop, _w in [d for d in PLAIN if d[0] == page]:
+                klasses.setdefault(sel.split('&& ')[-1].lstrip('.'),
+                                   []).append(prop)
+            return klasses
+
+        WIDTHS = (320, 390, 768, 1280)
+        every = {}
+        for page in PAGES:
+            for k, ps in klasses_of(page).items():
+                every.setdefault(k, []).extend(ps)
+        PURE = computed_all('', every)
+
         for page in PAGES:
             p = alv_tree.last_path(page)
             a_css, b_css = css_of(was(p)), css_of(now(p))
-            mine = [d for d in PLAIN if d[0] == page]
-            klasses = {}
-            for _p, sel, prop, _w in mine:
-                klasses.setdefault(sel.split('&& ')[-1].lstrip('.'),
-                                   []).append(prop)
+            klasses = klasses_of(page)
+            BEFORE = computed_all(a_css, klasses)
+            AFTER = computed_all(b_css, klasses)
             for klass, props in sorted(klasses.items()):
-                for w in (320, 390, 768, 1280):
-                    before = computed(a_css, w, klass, props)
-                    after = computed(b_css, w, klass, props)
-                    pure = computed('', w, klass, props)
+                for w in WIDTHS:
+                    before = BEFORE[(klass, w)]
+                    after = AFTER[(klass, w)]
+                    pure = PURE[(klass, w)]
                     painted += 1
                     for prop in props:
                         # THE CLAIM: after the round, the page computes

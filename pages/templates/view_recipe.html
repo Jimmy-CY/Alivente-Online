@@ -3618,7 +3618,7 @@ function populateIngredientReview() {
     shoppingListData.scaledIngredients.forEach((ing, index) => {
         if (ing.group && ing.group !== currentGroup) {
             const groupHeader = document.createElement('div');
-            groupHeader.style.cssText = 'font-weight: 600; color: #28a745; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
+            groupHeader.style.cssText = 'font-weight: 600; color: var(--alv-good); margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
             groupHeader.textContent = ing.group;
             container.appendChild(groupHeader);
             currentGroup = ing.group;
@@ -3965,7 +3965,7 @@ function displayFinalShoppingList(categorizedItems) {
     if (Object.keys(categorizedItems).length === 0) {
         const emptyMsg = document.createElement('p');
         emptyMsg.textContent = '✅ You have all ingredients!';
-        emptyMsg.style.cssText = 'font-style: italic; color: #28a745; font-size: 16px; text-align: center; padding: 20px;';
+        emptyMsg.style.cssText = 'font-style: italic; color: var(--alv-good); font-size: 16px; text-align: center; padding: 20px;';
         container.appendChild(emptyMsg);
         return;
     }

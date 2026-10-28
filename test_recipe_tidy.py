@@ -357,7 +357,12 @@ ok('var(--alv-spice-ink)' in [i.strip() for i in icons]
 
 # NOTHING ELSE ON THE PAGE MOVED. This round touched one table.
 oldlits = sorted(re.findall(r'#[0-9a-fA-F]{3,6}\b', T.code_only(BEFORE)))
-newlits = sorted(re.findall(r'#[0-9a-fA-F]{3,6}\b', CODE))
+# HK-3, 28 Oct 2026 - AS THIS ROUND LEFT THE PAGE. A later round took
+# two shopping-list greens to tokens, and "nothing else moved" is a claim
+# about this round's edit, not about every edit since.
+from alv_rounds import as_left_by as _alb                 # noqa: E402
+newlits = sorted(re.findall(r'#[0-9a-fA-F]{3,6}\b',
+                            T.code_only(_alb(TPL, SUFFIX, read))))
 ok(len(oldlits) - len(newlits) == 2,
    'exactly TWO hex literals left the page - %d before, %d after. This '
    'round is one table, not a sweep' % (len(oldlits), len(newlits)),

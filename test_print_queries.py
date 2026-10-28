@@ -360,26 +360,50 @@ else:
     exe = '/opt/pw-browsers/chromium'
     n = [0]
 
+    # HK-3, 28 Oct 2026 - GATE SPEED. This suite was the slowest on the
+    # gate (215s in a pool of three): every measurement opened a new
+    # browser context, a new page and a fresh parse of Bootstrap and
+    # base.html. Now there is ONE page per media for the whole run - each
+    # fixture is still a fresh navigation, so no document outlives its
+    # measurement - and a fixture probed at several sizes is loaded once
+    # and RESIZED, which is what a media query answers to. The verdicts
+    # are the same ones; the CONTROLS below still have to see a leak and
+    # a move, so a reuse that blinded the probe would fail them.
+    pages_ = {}
+
+    class _Kept(object):
+        def close(self):
+            pass
+
     def load(br, html, w, h, media):
         n[0] += 1
         fx = os.path.join(SCRATCH, '_pq_%04d.html' % n[0])
         with open(fx, 'w', encoding='utf-8') as f:
             f.write(html)
-        ctx = br.new_context(viewport={'width': w, 'height': h})
-        ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
-        pg = ctx.new_page()
-        pg.emulate_media(media=media)
+        pg = pages_.get(media)
+        if pg is None:
+            ctx = br.new_context(viewport={'width': w, 'height': h})
+            ctx.route(re.compile(r'^https?://'), lambda r: r.abort())
+            pg = ctx.new_page()
+            pg.emulate_media(media=media)
+            pages_[media] = pg
+        else:
+            pg.set_viewport_size({'width': w, 'height': h})
         _goto(pg, fx)
-        return ctx, pg
+        return _Kept(), pg
 
     def probe(br, styles, probes, media):
         got = {}
-        for w, h in sorted(set((p[1], p[2]) for p in probes)):
+        sizes = sorted(set((p[1], p[2]) for p in probes))
+        if not sizes:
+            return got
+        ctx, pg = load(br, fixture(boot, base_css, styles),
+                       sizes[0][0], sizes[0][1], media)
+        for w, h in sizes:
             names = [p[0] for p in probes if (p[1], p[2]) == (w, h)]
-            ctx, pg = load(br, fixture(boot, base_css, styles), w, h, media)
+            pg.set_viewport_size({'width': w, 'height': h})
             for nm, v in zip(names, pg.evaluate(PROBE_JS, names)):
                 got[nm] = v == '1'
-            ctx.close()
         return got
 
     with sync_playwright() as pw:

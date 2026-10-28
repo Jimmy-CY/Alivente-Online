@@ -1056,6 +1056,8 @@ CONVERTED = [
     'test_gate_speed_two.py',
     # CR-2, 27 Oct 2026 - emailing a cash receipt.
     'test_receipt_email.py',
+    # HK-3, 28 Oct 2026 - one jQuery, a faster gate, the house colours.
+    'test_housekeeping_three.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

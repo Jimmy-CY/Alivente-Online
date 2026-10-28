@@ -544,13 +544,15 @@ function initTimelineIfNeeded() {
         const endDate = item.end_date ? new Date(item.end_date) : new Date();
         const isExpired = item.end_date && new Date(item.end_date) < today && item.is_active;
 
+        // HK-3, 28 Oct 2026 - the house tokens, not Bootstrap's brights:
+        // the colour lands in the bar's style attribute, where var() resolves.
         let color;
         if (isExpired) {
-            color = '#dc3545';
+            color = 'var(--alv-bad)';
         } else if (item.is_active) {
-            color = '#28a745';
+            color = 'var(--alv-good)';
         } else {
-            color = '#6c757d';
+            color = 'var(--alv-ink-soft)';
         }
 
         const tooltip = `
