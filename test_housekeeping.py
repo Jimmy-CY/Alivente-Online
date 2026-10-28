@@ -126,8 +126,13 @@ def head(t):
 print(__doc__.strip().splitlines()[0])
 
 import alv_tree as T                                        # noqa: E402
+from alv_rounds import as_left_by                          # noqa: E402
 
-NOW = dict((p, read(p)) for p in EDITED)
+# AS THIS ROUND LEFT THEM - GL-1, 28 Oct 2026. Company Details took the
+# reserved System cell, so the live panel no longer holds the cell this
+# round's claim counts; the claim is about HK-1's tree, read as HK-1 left
+# it (alv_rounds.as_left_by, the RC-2 mechanism).
+NOW = dict((p, as_left_by(p, SUFFIX, read)) for p in EDITED)
 OLD = dict((p, was(p)) for p in EDITED)
 
 

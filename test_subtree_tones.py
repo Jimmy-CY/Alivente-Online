@@ -265,8 +265,9 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # ES-6, 25 Oct 2026 - lease_signing_detail.html, the envelope page, an ordinary pages/templates page that joins every tree-wide count.
 # ES-7, 25 Oct 2026 - house_marks.html, the Signature and Stamp screen, an ordinary pages/templates page that joins every tree-wide count.
 # LS-1, 27 Oct 2026 - tenant_lease_signing_status.html, the Lease Signing Status report, an ordinary pages/templates page that joins every tree-wide count.
-ok(len(tree) == 161, 'a WALK finds 161 templates', len(tree))
-ok(len(top) == 135, '  a flat listing finds 135 - 120 was what H7 '
+# GL-1, 28 Oct 2026 - company_details.html, the Company Details screen, an ordinary pages/templates page that joins every tree-wide count.
+ok(len(tree) == 162, 'a WALK finds 162 templates', len(tree))
+ok(len(top) == 136, '  a flat listing finds 136 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',

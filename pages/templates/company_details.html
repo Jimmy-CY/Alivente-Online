@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{# THE TAB TITLE - RV-1's lesson: a screen with no title block fails  #}
+{# test_heading_prefix on the day it ships.                           #}
+{% block title %}Company Details{% endblock %}
+
+{# ALIVENTE'S OWN DETAILS - GL-1, 28 Oct 2026. Superuser only. Every  #}
+{# lease reads the landlord from here: the Generate pop-up prefills   #}
+{# from it and the Greek lease names the passport from it.            #}
+{% block content %}
+
+<h2 class="page-title-h2">ADMINISTRATION</h2>
+<h4 class="page-subtitle-h4">COMPANY DETAILS</h4>
+
+<form method="post" id="company-details-form">
+  {% csrf_token %}
+  <div class="page-action-buttons page-action-buttons-edit">
+      <button class="btn action-primary" type="submit">
+          <i class="fas fa-save"></i> Save
+      </button>
+      <a href="{% url 'admin_apms' %}?tab=system" class="btn action-back"
+         role="button" aria-label="Back to Administration">
+          <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+      </a>
+  </div>
+
+  {% if form.errors %}
+  <div class="alert alert-danger">Please correct the fields marked below.</div>
+  {% endif %}
+  {% if expires_soon %}
+  <div class="alert alert-warning">
+      <i class="fas fa-exclamation-triangle"></i>
+      The passport expires on <strong>{{ row.passport_expires|date:"j F Y" }}</strong>.
+      Greek leases name it - enter the new one here when it is renewed.
+  </div>
+  {% endif %}
+
+  <div class="form-card">
+    <h3 class="form-section-title"><i class="fas fa-building"></i> The Company</h3>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_company_name"><strong>Company Name</strong></label>
+            <input type="text" class="form-control" id="id_company_name" name="company_name" value="{{ form.company_name.value|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_registration_number"><strong>Registration Number</strong></label>
+            <input type="text" class="form-control" id="id_registration_number" name="registration_number" placeholder="HE..." value="{{ form.registration_number.value|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_contact_person"><strong>Contact Person</strong></label>
+            <input type="text" class="form-control" id="id_contact_person" name="contact_person" value="{{ form.contact_person.value|default:'' }}">
+          </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_phone"><strong>Phone</strong></label>
+            <input type="text" class="form-control" id="id_phone" name="phone" value="{{ form.phone.value|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="form-group">
+            <label for="id_email"><strong>Email Address</strong></label>
+            <input type="email" class="form-control" id="id_email" name="email" value="{{ form.email.value|default:'' }}">
+          </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="id_address"><strong>Address</strong></label>
+            <textarea class="form-control" id="id_address" name="address" rows="2">{{ form.address.value|default:'' }}</textarea>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-section-title"><i class="fas fa-passport"></i> The Contact Person's Passport</h3>
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_passport_number"><strong>Passport Number</strong></label>
+            <input type="text" class="form-control" id="id_passport_number" name="passport_number" value="{{ form.passport_number.value|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_passport_issued"><strong>Issued</strong></label>
+            <input type="date" class="form-control" id="id_passport_issued" name="passport_issued" value="{{ form.passport_issued.value|date:'Y-m-d'|default:form.passport_issued.value|default:'' }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="id_passport_expires"><strong>Expires</strong></label>
+            <input type="date" class="form-control" id="id_passport_expires" name="passport_expires" value="{{ form.passport_expires.value|date:'Y-m-d'|default:form.passport_expires.value|default:'' }}">
+            {% for e in form.passport_expires.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+          </div>
+        </div>
+    </div>
+    <small class="text-muted">The Greek lease names this passport. Changing it here changes every lease generated from now on; leases already generated keep what they said.</small>
+  </div>
+</form>
+
+{% endblock %}

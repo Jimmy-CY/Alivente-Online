@@ -100,7 +100,7 @@ HELPER = os.path.join('pages', 'services', 'landing_tabs.py')
 ADMIN_VIEW = os.path.join('pages', 'views', 'administration.py')
 FIN_VIEW = os.path.join('pages', 'views', 'finance.py')
 CONVERTED_NOW = 84
-N_BACKS = 26   # ES-7, 25 Oct 2026 - house_marks.html, the Signature and Stamp screen, whose Back names the System tab.   # (was 25)   # ES-3a, 23 Oct 2026 - lease_signing_list.html, the envelope register. An ordinary pages/templates page, so it joins every tree-wide count.   # (was 24)
+N_BACKS = 27   # GL-1, 28 Oct 2026 - company_details.html, the Company Details screen, whose Back names the System tab.   # (was 26)   # ES-7, 25 Oct 2026 - house_marks.html, the Signature and Stamp screen, whose Back names the System tab.   # (was 25)   # ES-3a, 23 Oct 2026 - lease_signing_list.html, the envelope register. An ordinary pages/templates page, so it joins every tree-wide count.   # (was 24)
 
 # The three landing pages: template, url name, tabs, default.
 LANDING = (
@@ -117,6 +117,8 @@ CREATED_LATER = {
     'lease_signing_list.html',
     # ES-7, 25 Oct 2026 - the Signature and Stamp screen.
     'house_marks.html',
+    # GL-1, 28 Oct 2026 - the Company Details screen.
+    'company_details.html',
 }
 
 # TILES ADDED AFTER THIS ROUND FROZE ITS COPY OF A LANDING PAGE - ES-7,
@@ -129,6 +131,8 @@ CREATED_LATER = {
 # cannot say a tile is somewhere it is not.
 ADDED_AFTER = {
     ('admin_apms', 'house_marks'): 'system',
+    # GL-1, 28 Oct 2026 - Company Details, in the cell AD-1 reserved.
+    ('admin_apms', 'company_details'): 'system',
 }
 
 BY_DEFAULT = {

@@ -460,7 +460,11 @@ for d, _s, fs in T.walk3():
 # it as the name is typed, and the form refuses a missing one
 # server-side. Missed by the T2-8 sweep and caught by the gate, which
 # is what it is for.
-TOTAL = 225
+# GL-1, 28 Oct 2026 - 225 -> 231. The Greek-lease section of Generate
+# stars six boxes (father's name, ΑΦΜ, ΔΟΥ, floor, parking, ΔΕΗ). They are
+# required only for a Greek lease, so the save guard reads each by id and
+# stops on a blank one - row 3.
+TOTAL = 231
 ok(len(rows) == TOTAL,
    'the corpus is %d starred labels' % len(rows),
    'pinned at %d. THE MARKER IS THE alv-req SPAN, not a bare asterisk - '
@@ -514,7 +518,8 @@ EXPECT = {
     # right, which is the one script shape this census recognises.
     # ES-10, 26 Oct 2026 - 8 -> 7: that upload is static now (row 1).
     '2 required set in script': 7,
-    '3 stopped by a submit guard': 9,
+    # GL-1, 28 Oct 2026 - 9 -> 15, the six Greek-lease boxes above.
+    '3 stopped by a submit guard': 15,
     '4 cannot be empty': 2,
     '5 django form field': 18,
 }

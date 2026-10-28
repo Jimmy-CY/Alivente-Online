@@ -380,6 +380,11 @@ def get_property_tenant_data(request):
                     'prop_refuse': property_obj.prop_refuse or '',
                     'prop_sewerage': property_obj.prop_sewerage or '',
                     'prop_insurance': property_obj.prop_insurance or '',
+                    # GL-1, 28 Oct 2026 - the flat, for a Greek lease.
+                    'prop_floor': property_obj.prop_floor or '',
+                    'prop_parking_space':
+                        property_obj.prop_parking_space or '',
+                    'prop_deh_number': property_obj.prop_deh_number or '',
                 }
             except props.DoesNotExist:
                 response_data['property_error'] = 'Property not found'
@@ -426,6 +431,10 @@ def get_property_tenant_data(request):
                     'tenant_id_country': tenant_obj.tenant_id_country or '',
                     'tenant_2_id_country':
                         tenant_obj.tenant_2_id_country or '',
+                    # GL-1, 28 Oct 2026 - what a Greek lease names.
+                    'tenant_father_name': tenant_obj.tenant_father_name or '',
+                    'tenant_afm': tenant_obj.tenant_afm or '',
+                    'tenant_doy': tenant_obj.tenant_doy or '',
                     'tenant_lease_start_date': tenant_obj.tenant_lease_start_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_start_date else '',
                     'tenant_lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
                     'tenant_rent': float(tenant_obj.tenant_rent) if tenant_obj.tenant_rent else 0,

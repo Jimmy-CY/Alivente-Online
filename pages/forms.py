@@ -19,6 +19,10 @@ class PropForm(forms.ModelForm):
             "prop_year_built",
             # OF-3, 28 Oct 2026 - in this list or the form drops it (T2-1).
             "prop_owned_from",
+            # GL-1, 28 Oct 2026 - the flat, for a Greek lease.
+            "prop_floor",
+            "prop_parking_space",
+            "prop_deh_number",
             "prop_status",
             "prop_available_for_rent",
             "prop_title_deed",
@@ -54,6 +58,10 @@ class TenantForm(forms.ModelForm):
             'tenant_company_reg_no', 'tenant_id_number', 'tenant_2_id_number',
             # PC-1, 28 Oct 2026 - the country that issued each Passport/ID.
             'tenant_id_country', 'tenant_2_id_country',
+            # GL-1, 28 Oct 2026 - for a Greek lease. Tenant Edit carries
+            # them (visible for Greece, hidden elsewhere); Tenant Add does
+            # not, which leaves a new tenant's blank - correct.
+            'tenant_father_name', 'tenant_afm', 'tenant_doy',
             'tenant_lease_start_date',
             'tenant_lease_end_date', 'tenant_rental_type', 'tenant_deposit',
             'tenant_rent', 'tenant_levies', 'tenant_payment_terms',

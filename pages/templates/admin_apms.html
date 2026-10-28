@@ -257,13 +257,21 @@
         </div>
       {% endif %}
 
-      <!-- Reserved for growth, AD-1 8 Oct 2026. Empty on purpose:
-           it holds the second row so the panel keeps its height.
-           aria-hidden because there is nothing here to announce.
-           HK-1, 26 Oct 2026 - ONE now, not two: Signature and Stamp took a
-           cell, and two blanks after three tiles made a third row. His
+      <!-- Company Details - GL-1, 28 Oct 2026. Superuser only, like the
+           two beside it: what every lease says about Alivente. It takes
+           the cell AD-1 reserved, so the panel stays four buttons - his
            words: "The tab should only be big enough for 4 buttons". -->
-      <div class="admin-btn admin-btn--reserved" aria-hidden="true"></div>
+      {% if user.is_superuser %}
+        <a href="{% url 'company_details' %}" class="admin-btn">
+          <i class="fas fa-building"></i>
+          <h6>Company Details</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="Company Details is restricted to superusers">
+          <i class="fas fa-building"></i>
+          <h6>Company Details</h6>
+        </div>
+      {% endif %}
 
     </div>
   </div>

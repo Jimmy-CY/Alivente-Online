@@ -625,32 +625,74 @@
             </div>
           </div>
 
+          {# FOR A GREEK LEASE - GL-1, 28 Oct 2026. Shown only for Greece. #}
+          {# Each box shows what the tenant or the property holds; a known #}
+          {# value is locked (change it on Tenant Edit / Property Edit), a #}
+          {# blank one is asked for here and saved back - as Passport/ID.  #}
+          <div id="gl-greek" style="display: none;">
+          <h3 class="form-section-title"><i class="fas fa-landmark"></i> For the Greek Lease</h3>
+          <div class="row">
+            <div class="col-md-4 mb-3 gl-gr-person">
+              <label for="gr-father-name" class="form-label"><strong>Tenant's Father's Name:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-father-name" name="gr_father_name">
+            </div>
+            <div class="col-md-4 mb-3 gl-gr-person">
+              <label for="gr-afm" class="form-label"><strong>Tenant's ΑΦΜ:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-afm" name="gr_afm">
+            </div>
+            <div class="col-md-4 mb-3 gl-gr-person">
+              <label for="gr-doy" class="form-label"><strong>Tenant's ΔΟΥ:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-doy" name="gr_doy">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="gr-floor" class="form-label"><strong>Floor:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-floor" name="gr_floor">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="gr-parking" class="form-label"><strong>Parking Space:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-parking" name="gr_parking">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label for="gr-deh" class="form-label"><strong>ΔΕΗ Supply Number:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-deh" name="gr_deh">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="gr-third-rent" class="form-label"><strong>Rent After the Initial Term (€ / month):</strong></label>
+              <input type="number" class="form-control" id="gr-third-rent" name="third_year_rent" min="0" step="1">
+              <small class="text-muted">For the extension period. Leave blank and the lease does not mention a different rent.</small>
+            </div>
+          </div>
+          <p class="text-muted small" id="gr-locked-note" style="display: none;">A greyed box shows what is already on the tenant or the property - change it on Tenant Edit or Property Edit.</p>
+          </div>
+
+          {# GL-1, 28 Oct 2026 - the landlord comes from Company Details, #}
+          {# stored once; it prefilled a placeholder number before.      #}
           <!-- Landlord Information Section -->
           <h3 class="form-section-title"><i class="fas fa-user-tie"></i> Landlord Information</h3>
           <div class="row">
             <div class="col-md-6 mb-3">
               <label for="modal-landlord-name" class="form-label"><strong>Landlord Name:</strong></label>
-              <input type="text" class="form-control" id="modal-landlord-name" name="landlord_name" value="Alivente Limited">
+              <input type="text" class="form-control" id="modal-landlord-name" name="landlord_name" value="{{ company.company_name }}">
             </div>
             <div class="col-md-6 mb-3">
               <label for="modal-landlord-contact" class="form-label"><strong>Contact Person:</strong></label>
-              <input type="text" class="form-control" id="modal-landlord-contact" name="landlord_contact_person" value="Demetri Manias">
+              <input type="text" class="form-control" id="modal-landlord-contact" name="landlord_contact_person" value="{{ company.contact_person }}">
             </div>
             <div class="col-md-6 mb-3">
               <label for="modal-landlord-registration" class="form-label"><strong>Company Registration Number:</strong></label>
-              <input type="text" class="form-control" id="modal-landlord-registration" name="landlord_registration_number" value="HE123456">
+              <input type="text" class="form-control" id="modal-landlord-registration" name="landlord_registration_number" value="{{ company.registration_number }}">
             </div>
             <div class="col-md-6 mb-3">
               <label for="modal-landlord-phone" class="form-label"><strong>Phone:</strong></label>
-              <input type="text" class="form-control" id="modal-landlord-phone" name="landlord_phone" value="+357-96668557">
+              <input type="text" class="form-control" id="modal-landlord-phone" name="landlord_phone" value="{{ company.phone }}">
             </div>
             <div class="col-12 mb-3">
               <label for="modal-landlord-email" class="form-label"><strong>Email:</strong></label>
-              <input type="email" class="form-control" id="modal-landlord-email" name="landlord_email" value="demetri.manias@alivente.com">
+              <input type="email" class="form-control" id="modal-landlord-email" name="landlord_email" value="{{ company.email }}">
             </div>
             <div class="col-12 mb-3">
               <label for="modal-landlord-address" class="form-label"><strong>Address:</strong></label>
-              <textarea class="form-control" id="modal-landlord-address" name="landlord_address" rows="2">Alivente House, Dikaiosynis 13A, Engomi, Nicosia, Cyprus, 2412</textarea>
+              <textarea class="form-control" id="modal-landlord-address" name="landlord_address" rows="2">{{ company.address }}</textarea>
             </div>
           </div>
 
@@ -979,6 +1021,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Modal handlers
   document.getElementById('review-data-btn').addEventListener('click', function() {
     populateModal();
+    glGreek();
     $('#additionalDataModal').modal('show');
   });
 
@@ -1604,6 +1647,38 @@ function glLayout() {
     (real && boxes) ? '' : 'none';
 }
 
+// FOR A GREEK LEASE - GL-1, 28 Oct 2026. Shown for Greece only; a value
+// the record holds is filled and locked, a blank one is asked for.
+function glGreek() {
+  const box = document.getElementById('gl-greek');
+  const greek = document.getElementById('country-select').value === 'greece';
+  box.style.display = greek ? '' : 'none';
+  const t = (typeof tenantData === 'object' && tenantData) || {};
+  const p = (typeof propertyData === 'object' && propertyData) || {};
+  const company = (t.tenant_type || 'Individual') === 'Company';
+  let locked = false;
+  [['gr-father-name', t.tenant_father_name, true],
+   ['gr-afm', t.tenant_afm, true],
+   ['gr-doy', t.tenant_doy, true],
+   ['gr-floor', p.prop_floor, false],
+   ['gr-parking', p.prop_parking_space, false],
+   ['gr-deh', p.prop_deh_number, false]].forEach(function (f) {
+    const el = document.getElementById(f[0]);
+    const v = (f[1] || '').toString().trim();
+    el.value = v;
+    el.readOnly = !!v;
+    if (v) { locked = true; }
+    el.required = greek && !(f[2] && company);
+  });
+  document.querySelectorAll('.gl-gr-person').forEach(function (c) {
+    c.style.display = company ? 'none' : '';
+  });
+  document.getElementById('gr-locked-note').style.display = locked ? '' : 'none';
+}
+
+// A box glGreek() made required and nobody filled.
+function glGap(el) { return el.required && !el.value.trim(); }
+
 function saveAdditionalData() {
   const formData = new FormData(document.getElementById('additional-data-form'));
   const additionalData = {};
@@ -1652,6 +1727,21 @@ function saveAdditionalData() {
   if (rentalIncrease === '' || rentalIncrease === null) {
     alert('Please fill in the Rental Increase field (enter 0 if not applicable).');
     return false;
+  }
+  // GL-1, 28 Oct 2026 - a Greek lease cannot leave these blank. Each box
+  // is read by name here, so the guard is visible where it stops the save.
+  if (document.getElementById('country-select').value === 'greece') {
+    const grNeed = [];
+    if (glGap(document.getElementById('gr-father-name'))) { grNeed.push("Tenant's Father's Name"); }
+    if (glGap(document.getElementById('gr-afm'))) { grNeed.push("Tenant's ΑΦΜ"); }
+    if (glGap(document.getElementById('gr-doy'))) { grNeed.push("Tenant's ΔΟΥ"); }
+    if (glGap(document.getElementById('gr-floor'))) { grNeed.push('Floor'); }
+    if (glGap(document.getElementById('gr-parking'))) { grNeed.push('Parking Space'); }
+    if (glGap(document.getElementById('gr-deh'))) { grNeed.push('ΔΕΗ Supply Number'); }
+    if (grNeed.length) {
+      alert('For the Greek lease, please fill in: ' + grNeed.join(', ') + '.');
+      return false;
+    }
   }
   
   const tenantId = document.getElementById('tenant-select').value;

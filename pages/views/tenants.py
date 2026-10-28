@@ -614,6 +614,11 @@ def duplicate_tenant_view(request, tenant_id):
         new_tenant.tenant_id_country = original_tenant.tenant_id_country
         new_tenant.tenant_2_id_number = original_tenant.tenant_2_id_number
         new_tenant.tenant_2_id_country = original_tenant.tenant_2_id_country
+        # GL-1, 28 Oct 2026 - and what a Greek lease names: the same
+        # person renewing has the same father, tax number and tax office.
+        new_tenant.tenant_father_name = original_tenant.tenant_father_name
+        new_tenant.tenant_afm = original_tenant.tenant_afm
+        new_tenant.tenant_doy = original_tenant.tenant_doy
 
         new_tenant.tenant_deposit = original_tenant.tenant_deposit
         new_tenant.tenant_rental_type = original_tenant.tenant_rental_type

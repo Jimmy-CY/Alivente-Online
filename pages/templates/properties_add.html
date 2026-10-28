@@ -57,6 +57,19 @@
             <small class="text-muted">Budgets and revenue count from this month. Blank uses the first lease once there is one.</small>
           </div>
         </div>
+        {# GL-1, 28 Oct 2026 - the flat, for a Greek lease: floor and parking space. #}
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_floor"><strong>Floor</strong></label>
+            <input type="text" class="form-control" id="prop_floor" name="prop_floor" placeholder="e.g. 3">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_parking_space"><strong>Parking Space</strong></label>
+            <input type="text" class="form-control" id="prop_parking_space" name="prop_parking_space" placeholder="e.g. P3">
+          </div>
+        </div>
     </div>
 </div>
 <div class="form-card">
@@ -224,6 +237,15 @@
           <div class="form-group">
             <label for="prop_insurance"><strong>Insurance Details</strong></label>
             <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details">
+          </div>
+        </div>
+    </div>
+    {# GL-1, 28 Oct 2026 - the ΔΕΗ supply number a Greek lease names. #}
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_deh_number"><strong>ΔΕΗ Supply Number</strong></label>
+            <input type="text" class="form-control" id="prop_deh_number" name="prop_deh_number" placeholder="Greek properties">
           </div>
         </div>
     </div>

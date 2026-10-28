@@ -232,6 +232,36 @@
       </div>
     </div>
     <!-- /A SECOND TENANT - T2-2 -->
+    {# FOR A GREEK LEASE - GL-1, 28 Oct 2026. Shown for a property in #}
+    {# Greece, where the lease names them; elsewhere they still travel #}
+    {# as hidden fields, because TenantForm lists them and a field the #}
+    {# form lists but the page omits is saved as blank (T2-1).         #}
+    {% if tresults.prop.prop_country|lower == 'greece' %}
+    <div class="form-row" id="gl-tenant-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tenant_father_name"><strong>Father's Name</strong></label>
+            <input type="text" class="form-control" id="tenant_father_name" name="tenant_father_name" placeholder="As written in the lease" value="{{ tresults.tenant_father_name }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tenant_afm"><strong>Tax Number (ΑΦΜ)</strong></label>
+            <input type="text" class="form-control" id="tenant_afm" name="tenant_afm" placeholder="ΑΦΜ" value="{{ tresults.tenant_afm }}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="tenant_doy"><strong>Tax Office (ΔΟΥ)</strong></label>
+            <input type="text" class="form-control" id="tenant_doy" name="tenant_doy" placeholder="ΔΟΥ" value="{{ tresults.tenant_doy }}">
+          </div>
+        </div>
+    </div>
+    {% else %}
+    <input type="hidden" name="tenant_father_name" value="{{ tresults.tenant_father_name }}">
+    <input type="hidden" name="tenant_afm" value="{{ tresults.tenant_afm }}">
+    <input type="hidden" name="tenant_doy" value="{{ tresults.tenant_doy }}">
+    {% endif %}
 </div>
 <div class="form-card">
     <h3 class="form-section-title"><i class="fas fa-file-signature"></i> Lease</h3>

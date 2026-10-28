@@ -81,6 +81,9 @@ urlpatterns = [
     # superuser only. No route serves the images themselves.
     path('administration/signature-and-stamp/', views.house_marks,
          name='house_marks'),
+    # GL-1, 28 Oct 2026 - Alivente's own details, which every lease names.
+    path('administration/company-details/', views.company_details,
+         name='company_details'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),

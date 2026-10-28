@@ -45,7 +45,7 @@ from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from ..models import props, tenant
+from ..models import props, tenant, CompanyDetails
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +76,8 @@ def generate_lease_agreement_view(request):
     context = {
         'properties': properties,
         'tenants': tenants,
+        # GL-1, 28 Oct 2026 - the landlord, stored once.
+        'company': CompanyDetails.current(),
     }
 
     if request.method == 'POST':
@@ -166,6 +168,8 @@ def generate_lease_agreement_view(request):
                 # PC-1, 28 Oct 2026 - and a Passport/ID or country the
                 # record was missing, for either person.
                 _save_identity_back(tenant_id, tenant_obj, additional_data)
+                _save_greek_back(country, tenant_id, tenant_obj,
+                                 property_obj, additional_data)
 
                 # Create filename
                 filename = f'lease_agreement_{property_obj.prop_name}_{tenant_obj.tenant_name}_{country}_{language}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
@@ -273,6 +277,101 @@ def _save_second_tenant_back(tenant_id, tenant_obj, additional_data):
 
     tenant.objects.filter(pk=tenant_obj.pk).update(**fields)
     return fields
+
+
+def _save_greek_back(country, tenant_id, tenant_obj, property_obj,
+                     additional_data):
+    """Fill the blanks a Greek lease asked for - GL-1, 28 Oct 2026.
+
+    The pop-up's Greek section shows what the tenant and the property
+    already hold and asks for what they lack; what is typed goes back,
+    BLANKS ONLY, as _save_identity_back does and for its reason - a value
+    on the record is changed on the screen that owns it (Tenant Edit,
+    Property Edit), not by a lease.
+
+    The tenant's three only for an existing Individual; the flat's
+    whenever there is a property. Returns {'tenant': {...}, 'prop': {...}}
+    of what was written.
+    """
+    if country != 'greece':
+        return None
+
+    def clean(v, cap):
+        return (v or '').strip()[:cap]
+
+    out = {}
+    if (tenant_id != 'new_tenant' and getattr(tenant_obj, 'pk', None)
+            and (tenant_obj.tenant_type or 'Individual') == 'Individual'):
+        row = tenant.objects.filter(pk=tenant_obj.pk).values(
+            'tenant_father_name', 'tenant_afm', 'tenant_doy').first() or {}
+        f = {}
+        for col, key, cap in (('tenant_father_name', 'gr_father_name', 100),
+                              ('tenant_afm', 'gr_afm', 20),
+                              ('tenant_doy', 'gr_doy', 100)):
+            typed = clean(additional_data.get(key), cap)
+            if typed and not clean(row.get(col), cap):
+                f[col] = typed
+        if f:
+            tenant.objects.filter(pk=tenant_obj.pk).update(**f)
+            out['tenant'] = f
+    if property_obj is not None and getattr(property_obj, 'pk', None):
+        row = props.objects.filter(pk=property_obj.pk).values(
+            'prop_floor', 'prop_parking_space', 'prop_deh_number').first() or {}
+        f = {}
+        for col, key, cap in (('prop_floor', 'gr_floor', 20),
+                              ('prop_parking_space', 'gr_parking', 20),
+                              ('prop_deh_number', 'gr_deh', 30)):
+            typed = clean(additional_data.get(key), cap)
+            if typed and not clean(row.get(col), cap):
+                f[col] = typed
+        if f:
+            props.objects.filter(pk=property_obj.pk).update(**f)
+            out['prop'] = f
+    return out or None
+
+
+def greek_lease_terms(start, end):
+    """The lease's length in the words a Greek lease uses - GL-1.
+
+    Worked out from the dates, so the clause can never disagree with
+    them (the template said "δύο (2) έτη" whatever the dates were).
+    Returns (term, term_for_rent, next_period):
+        2 years  -> 'δύο (2) έτη', 'τα πρώτα δύο (2) μισθωτικά έτη',
+                    'το τρίτο μισθωτικό έτος'
+        1 year   -> 'ένα (1) έτος', 'το πρώτο μισθωτικό έτος',
+                    'το δεύτερο μισθωτικό έτος'
+        18 months-> 'δεκαοκτώ (18) μήνες', 'τους πρώτους δεκαοκτώ (18)
+                    μήνες', 'την περίοδο της παράτασης'
+    """
+    if not (start and end):
+        return ('', '', 'την περίοδο της παράτασης')
+    # Counted to the day AFTER the end: a lease 1 Jul - 30 Jun is twelve
+    # months, and so is 15 Jul - 14 Jul.
+    from datetime import timedelta as _td
+    e = end + _td(days=1)
+    months = (e.year - start.year) * 12 + (e.month - start.month)
+    if e.day < start.day:
+        months -= 1
+    months = max(1, months)
+    if months % 12 == 0:
+        y = months // 12
+        w = number_to_words_greek(y).lower()
+        ordinals = {1: 'δεύτερο', 2: 'τρίτο', 3: 'τέταρτο', 4: 'πέμπτο',
+                    5: 'έκτο'}
+        nxt = ('το %s μισθωτικό έτος' % ordinals[y] if y in ordinals
+               else 'την περίοδο της παράτασης')
+        if y == 1:
+            return ('ένα (1) έτος', 'το πρώτο μισθωτικό έτος', nxt)
+        return ('%s (%d) έτη' % (w, y),
+                'τα πρώτα %s (%d) μισθωτικά έτη' % (w, y), nxt)
+    w = number_to_words_greek(months).lower()
+    # μήνες is masculine: three and four change, one is "έναν μήνα".
+    w = w.replace('τρία', 'τρεις').replace('τέσσερα', 'τέσσερις')
+    if months == 1:
+        return ('έναν (1) μήνα', 'τον πρώτο μήνα', 'την περίοδο της παράτασης')
+    return ('%s (%d) μήνες' % (w, months),
+            'τους πρώτους %s (%d) μήνες' % (w, months),
+            'την περίοδο της παράτασης')
 
 
 def _save_identity_back(tenant_id, tenant_obj, additional_data):
@@ -925,6 +1024,32 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
             key_name_greek = translate_to_greek(pluralized_key)
             keys_list_greek.append(f"{count} x {key_name_greek}")
 
+    # FOR A GREEK LEASE, AND THE LANDLORD - GL-1, 28 Oct 2026. The pop-up's
+    # Greek section wins; the record fills what it left blank.
+    _co = CompanyDetails.current()
+
+    def _gr(key, obj, attr):
+        v = (additional_data.get(key) or '').strip()
+        return v or (getattr(obj, attr, '') or '').strip()
+    gr_father = _gr('gr_father_name', tenant_obj, 'tenant_father_name')
+    gr_afm = _gr('gr_afm', tenant_obj, 'tenant_afm')
+    gr_doy = _gr('gr_doy', tenant_obj, 'tenant_doy')
+    gr_floor = _gr('gr_floor', property_obj, 'prop_floor')
+    gr_parking = _gr('gr_parking', property_obj, 'prop_parking_space')
+    gr_deh = _gr('gr_deh', property_obj, 'prop_deh_number')
+    _term, _term_rent, _next = greek_lease_terms(start_date_obj, end_date_obj)
+    try:
+        third_year_rent = int(float(additional_data.get('third_year_rent')
+                                    or 0))
+    except (TypeError, ValueError):
+        third_year_rent = 0
+    from datetime import timedelta as _td
+    _third_start = (end_date_obj + _td(days=1)) if end_date_obj else None
+    if (tenant_address in ('', 'N/A')
+            and (additional_data.get('existing_tenant_data') or {})
+            .get('tenant_address')):
+        tenant_address = additional_data['existing_tenant_data']['tenant_address']
+
     # Prepare template data
     template_data = {
         # Current date components with ordinal day
@@ -945,14 +1070,14 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'language': language.title(),
 
         # Landlord information
-        'landlord_name': additional_data.get('landlord_name', 'Alivente Limited'),
-        'landlord_contact_person': additional_data.get('landlord_contact_person', 'Demetri Manias'),
-        'landlord_contact_person_greek': translate_to_greek(additional_data.get('landlord_contact_person', 'Demetri Manias')),
-        'landlord_registration_number': additional_data.get('landlord_registration_number', 'HE123456'),
-        'landlord_phone': additional_data.get('landlord_phone', '+357-96668557'),
-        'landlord_phone_number': additional_data.get('landlord_phone', '+357-96668557'),
-        'landlord_email': additional_data.get('landlord_email', 'demetri.manias@alivente.com'),
-        'landlord_address': additional_data.get('landlord_address', 'Alivente House, Dikaiosynis 13A, Engomi, Nicosia, Cyprus, 2412'),
+        'landlord_name': additional_data.get('landlord_name') or _co.company_name,
+        'landlord_contact_person': additional_data.get('landlord_contact_person') or _co.contact_person,
+        'landlord_contact_person_greek': translate_to_greek(additional_data.get('landlord_contact_person') or _co.contact_person),
+        'landlord_registration_number': additional_data.get('landlord_registration_number') or _co.registration_number,
+        'landlord_phone': additional_data.get('landlord_phone') or _co.phone,
+        'landlord_phone_number': additional_data.get('landlord_phone') or _co.phone,
+        'landlord_email': additional_data.get('landlord_email') or _co.email,
+        'landlord_address': additional_data.get('landlord_address') or _co.address,
 
         # Tenant information
         'tenant_name': tenant_name,
@@ -1063,6 +1188,35 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'start_date': start_date_obj.strftime('%B %d, %Y') if start_date_obj else 'N/A',
         'end_date': end_date_obj.strftime('%B %d, %Y') if end_date_obj else 'N/A',
         'monthly_rent': monthly_rent,
+
+        # GL-1, 28 Oct 2026 - Alivente from Company Details; the pop-up
+        # can still override a line for one document.
+        'landlord_passport_number': _co.passport_number or '',
+        'landlord_passport_issued': (_co.passport_issued.strftime('%d-%m-%Y')
+                                     if _co.passport_issued else ''),
+        'landlord_passport_expires': (_co.passport_expires.strftime('%d-%m-%Y')
+                                      if _co.passport_expires else ''),
+
+        # GL-1 - what the Greek lease names.
+        'tenant_father_name': gr_father,
+        'tenant_afm': gr_afm,
+        'tenant_doy': gr_doy,
+        'property_floor': gr_floor,
+        'property_floor_greek': (gr_floor + 'ου') if gr_floor.isdigit()
+                                else gr_floor,
+        'property_parking_space': gr_parking,
+        'property_deh_number': gr_deh,
+        'lease_term_greek': _term,
+        'lease_term_rent_greek': _term_rent,
+        'next_period_greek': _next,
+        'third_year_rent': f'{third_year_rent:,}' if third_year_rent else '',
+        'third_year_rent_words_greek': (number_to_words_greek(third_year_rent)
+                                        if third_year_rent else ''),
+        'third_year_start_greek': (format_date_greek(_third_start)
+                                   if _third_start else ''),
+        # Release 35 sets this for the e-signing version.
+        'signed_electronically': bool(additional_data.get(
+            'signed_electronically')),
 
         # Generation metadata
         'generation_timestamp': current_date.strftime('%Y-%m-%d %H:%M:%S'),

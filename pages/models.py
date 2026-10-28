@@ -676,6 +676,17 @@ class props(models.Model):
         blank=True, null=True, verbose_name="Owned From",
         help_text="Budgets and revenue count from this month. Blank = the first lease start.")
 
+    # THE FLAT, FOR A GREEK LEASE - GL-1, 28 Oct 2026. The three Athens
+    # floors are identical, so the template keeps the building's
+    # description and asks the property for what differs: which floor,
+    # which parking space, which ΔΕΗ supply.
+    prop_floor = models.CharField(max_length=20, blank=True,
+                                  verbose_name="Floor")
+    prop_parking_space = models.CharField(max_length=20, blank=True,
+                                          verbose_name="Parking Space")
+    prop_deh_number = models.CharField(max_length=30, blank=True,
+                                       verbose_name="ΔΕΗ Supply Number")
+
     def __str__(self):
         return self.prop_name or f"Property {self.prop_id}"
 
@@ -767,6 +778,14 @@ class tenant(models.Model):
     # one way. Blank by default; nothing is back-filled.
     tenant_id_country = models.CharField(max_length=100, blank=True)
     tenant_2_id_country = models.CharField(max_length=100, blank=True)
+    # FOR A GREEK LEASE - GL-1, 28 Oct 2026, his decision. The Greece
+    # template carried one tenant's father's name, tax number and tax
+    # office in every lease it produced. They are the first tenant's own
+    # facts, so they live here; Generate shows them and saves back a
+    # blank one, as it does the Passport/ID.
+    tenant_father_name = models.CharField(max_length=100, blank=True)
+    tenant_afm = models.CharField(max_length=20, blank=True)
+    tenant_doy = models.CharField(max_length=100, blank=True)
     tenant_deposit = models.IntegerField(blank=True, null=True)
     tenant_lease_start_date = models.DateField(blank=True, null=True)
     tenant_lease_end_date = models.DateField(blank=True, null=True)
@@ -5498,3 +5517,65 @@ class HouseMark(models.Model):
             return None
         row = cls.objects.filter(kind=kind, owner=user).first()
         return bytes(row.image) if row and row.image else None
+
+
+# =============================================================================
+# ALIVENTE'S OWN DETAILS - GL-1, 28 Oct 2026.
+#
+# One row, edited by a superuser on Administration -> System -> Company
+# Details. Every lease reads the landlord from here. Two reasons, both found
+# on 28 October:
+#   - the Generate pop-up prefilled the registration number as HE123456, a
+#     placeholder, so any Cyprus lease nobody corrected by hand printed it;
+#   - the Greek lease carried his passport number and its dates as literal
+#     text in the template, and the passport expires on 25-02-2027.
+# Stored once, it is correct once.
+# =============================================================================
+class CompanyDetails(models.Model):
+    company_name = models.CharField(max_length=200, blank=True)
+    registration_number = models.CharField(max_length=50, blank=True)
+    contact_person = models.CharField(max_length=200, blank=True)
+    phone = models.CharField(max_length=50, blank=True)
+    email = models.CharField(max_length=200, blank=True)
+    address = models.TextField(blank=True)
+    # The contact person's passport, which the Greek lease names.
+    passport_number = models.CharField(max_length=50, blank=True)
+    passport_issued = models.DateField(blank=True, null=True)
+    passport_expires = models.DateField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='+')
+
+    # What the row holds before anybody has saved it - his figures of
+    # 28 October. The migration writes exactly these.
+    DEFAULTS = {
+        'company_name': 'Alivente Limited',
+        'registration_number': 'HE283373',
+        'contact_person': 'Demetri Manias',
+        'phone': '+357-96668557',
+        'email': 'demetri.manias@alivente.com',
+        'address': 'Alivente House, Dikaiosynis 13A, Engomi, Nicosia, '
+                   'Cyprus, 2412',
+        'passport_number': 'ΑΤ4635239',
+    }
+
+    @classmethod
+    def current(cls):
+        """The one row, or an unsaved one holding DEFAULTS. Never None."""
+        row = cls.objects.order_by('pk').first()
+        if row is None:
+            row = cls(**cls.DEFAULTS)
+        return row
+
+    def passport_expires_soon(self, days=120):
+        from datetime import date as _d, timedelta as _td
+        return bool(self.passport_expires
+                    and self.passport_expires <= _d.today() + _td(days=days))
+
+    def __str__(self):
+        return self.company_name or 'Company details'
+
+    class Meta:
+        db_table = 'company_details'
+        verbose_name = 'Company Details'
+        verbose_name_plural = 'Company Details'

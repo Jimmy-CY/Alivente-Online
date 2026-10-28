@@ -683,8 +683,9 @@ ok('--strict --recipes' in ps1,
 # ES-7, 25 Oct 2026 - the Signature and Stamp screen joins both. (was 125, 150)
 # ES-6, 25 Oct 2026 - the envelope page joins both counts. (was 124, 149)
 # LS-1, 27 Oct 2026 - tenant_lease_signing_status.html, the Lease Signing Status report, an ordinary pages/templates page that joins every tree-wide count.
-ok(len(sb.templates(False)) == 127 and len(sb.templates(True)) == 152,
-   '  which is %d of %d' % (127, 152),
+# GL-1, 28 Oct 2026 - 128 of 153: company_details.html joins both halves.
+ok(len(sb.templates(False)) == 128 and len(sb.templates(True)) == 153,
+   '  which is %d of %d' % (128, 153),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================
