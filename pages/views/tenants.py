@@ -604,6 +604,16 @@ def duplicate_tenant_view(request, tenant_id):
         new_tenant.tenant_2_contact_number = \
             original_tenant.tenant_2_contact_number
         new_tenant.tenant_2_email = original_tenant.tenant_2_email
+        # PC-1, 28 Oct 2026 - AND WHO THEY ARE. TI-1 put the identity
+        # numbers on the record and this list never learned them, so a
+        # renewal came back without its Passport/IDs or Company Reg
+        # Number - the same silent drop T2-2 describes above. The
+        # issuing countries come with them.
+        new_tenant.tenant_company_reg_no = original_tenant.tenant_company_reg_no
+        new_tenant.tenant_id_number = original_tenant.tenant_id_number
+        new_tenant.tenant_id_country = original_tenant.tenant_id_country
+        new_tenant.tenant_2_id_number = original_tenant.tenant_2_id_number
+        new_tenant.tenant_2_id_country = original_tenant.tenant_2_id_country
 
         new_tenant.tenant_deposit = original_tenant.tenant_deposit
         new_tenant.tenant_rental_type = original_tenant.tenant_rental_type

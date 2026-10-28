@@ -1518,6 +1518,8 @@ ROUNDS = [
     '.bak_receiptemail',
     # HK-3, 28 Oct 2026 - one jQuery, a faster gate, the house colours.
     '.bak_housekeep3',
+    # PC-1, 28 Oct 2026 - the Passport/ID country; one block per person.
+    '.bak_passcountry',
 ]
 
 

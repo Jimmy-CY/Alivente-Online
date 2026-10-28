@@ -163,6 +163,9 @@ def generate_lease_agreement_view(request):
                 # who is on a tenancy.
                 _save_second_tenant_back(
                     tenant_id, tenant_obj, additional_data)
+                # PC-1, 28 Oct 2026 - and a Passport/ID or country the
+                # record was missing, for either person.
+                _save_identity_back(tenant_id, tenant_obj, additional_data)
 
                 # Create filename
                 filename = f'lease_agreement_{property_obj.prop_name}_{tenant_obj.tenant_name}_{country}_{language}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
@@ -268,6 +271,67 @@ def _save_second_tenant_back(tenant_id, tenant_obj, additional_data):
     if all((getattr(tenant_obj, k) or '') == v for k, v in fields.items()):
         return None
 
+    tenant.objects.filter(pk=tenant_obj.pk).update(**fields)
+    return fields
+
+
+def _save_identity_back(tenant_id, tenant_obj, additional_data):
+    """Fill the record's blank Passport/IDs and countries from Generate.
+
+    PC-1, 28 Oct 2026, his decision: the pop-up shows what the record
+    holds as text and asks only for what it lacks, and what is typed
+    there goes back, so the next lease does not ask again.
+
+    BLANKS ONLY, NEVER AN OVERWRITE. A value on the record was shown,
+    not offered for editing; changing one is an Edit Tenant action, on
+    the screen that owns the record - the same line T2-3 draws for the
+    joint tenant's name.
+
+    THE SECOND PERSON'S ONLY WHEN THEY ARE THE RECORD'S SECOND PERSON.
+    Read after _save_second_tenant_back, so a joint tenant just saved
+    counts; one the user chose to keep off the record (Cancel on the
+    confirm) does not, and their passport is not pinned to somebody
+    else's name.
+
+    INDIVIDUALS ONLY, and never a new tenant (no row). .update(), for
+    the reason _save_second_tenant_back gives. Returns the fields
+    written, or None.
+    """
+    if tenant_id == 'new_tenant' or not getattr(tenant_obj, 'pk', None):
+        return None
+    if (tenant_obj.tenant_type or 'Individual') != 'Individual':
+        return None
+    row = tenant.objects.filter(pk=tenant_obj.pk).values(
+        'tenant_id_number', 'tenant_id_country', 'tenant_2_name',
+        'tenant_2_id_number', 'tenant_2_id_country').first()
+    if not row:
+        return None
+
+    def clean(v):
+        return (v or '').strip()[:100]
+
+    fields = {}
+    first = additional_data.get('existing_tenant_data') or {}
+    for col, key, cap in (('tenant_id_number', 'tenant_passport_id', 50),
+                          ('tenant_id_country', 'tenant_passport_country',
+                           100)):
+        typed = clean(first.get(key))[:cap]
+        if typed and not clean(row[col]):
+            fields[col] = typed
+
+    second = additional_data.get('second_tenant_data') or {}
+    if (additional_data.get('has_second_tenant')
+            and clean(second.get('tenant_name'))
+            and clean(second.get('tenant_name')) == clean(row['tenant_2_name'])):
+        for col, key, cap in (('tenant_2_id_number', 'tenant_passport_id', 50),
+                              ('tenant_2_id_country',
+                               'tenant_passport_country', 100)):
+            typed = clean(second.get(key))[:cap]
+            if typed and not clean(row[col]):
+                fields[col] = typed
+
+    if not fields:
+        return None
     tenant.objects.filter(pk=tenant_obj.pk).update(**fields)
     return fields
 

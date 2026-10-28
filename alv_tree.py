@@ -1058,6 +1058,8 @@ CONVERTED = [
     'test_receipt_email.py',
     # HK-3, 28 Oct 2026 - one jQuery, a faster gate, the house colours.
     'test_housekeeping_three.py',
+    # PC-1, 28 Oct 2026 - the Passport/ID country; one block per person.
+    'test_passport_country.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

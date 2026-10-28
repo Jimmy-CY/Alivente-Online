@@ -420,6 +420,12 @@ def get_property_tenant_data(request):
                         tenant_obj.tenant_company_reg_no or '',
                     'tenant_id_number': tenant_obj.tenant_id_number or '',
                     'tenant_2_id_number': tenant_obj.tenant_2_id_number or '',
+                    # PC-1, 28 Oct 2026 - AND THE COUNTRIES, now on the
+                    # record too: Generate shows them and asks only for
+                    # a blank one, which it then saves back.
+                    'tenant_id_country': tenant_obj.tenant_id_country or '',
+                    'tenant_2_id_country':
+                        tenant_obj.tenant_2_id_country or '',
                     'tenant_lease_start_date': tenant_obj.tenant_lease_start_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_start_date else '',
                     'tenant_lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
                     'tenant_rent': float(tenant_obj.tenant_rent) if tenant_obj.tenant_rent else 0,

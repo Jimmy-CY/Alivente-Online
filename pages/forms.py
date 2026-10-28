@@ -50,6 +50,8 @@ class TenantForm(forms.ModelForm):
             # TI-1, 26 Oct 2026 - the three identity numbers, optional.
             # In this list or the form drops them without a word (T2-1).
             'tenant_company_reg_no', 'tenant_id_number', 'tenant_2_id_number',
+            # PC-1, 28 Oct 2026 - the country that issued each Passport/ID.
+            'tenant_id_country', 'tenant_2_id_country',
             'tenant_lease_start_date',
             'tenant_lease_end_date', 'tenant_rental_type', 'tenant_deposit',
             'tenant_rent', 'tenant_levies', 'tenant_payment_terms',

@@ -748,6 +748,13 @@ class tenant(models.Model):
     tenant_company_reg_no = models.CharField(max_length=50, blank=True)
     tenant_id_number = models.CharField(max_length=50, blank=True)
     tenant_2_id_number = models.CharField(max_length=50, blank=True)
+    # THE COUNTRY THAT ISSUED IT - PC-1, 28 Oct 2026, his decision. The
+    # lease names it beside the number, and Generate asked for it afresh
+    # on every document and kept none of it. Now it lives here, for both
+    # people, chosen from one list (pages/countries.py) so it is spelt
+    # one way. Blank by default; nothing is back-filled.
+    tenant_id_country = models.CharField(max_length=100, blank=True)
+    tenant_2_id_country = models.CharField(max_length=100, blank=True)
     tenant_deposit = models.IntegerField(blank=True, null=True)
     tenant_lease_start_date = models.DateField(blank=True, null=True)
     tenant_lease_end_date = models.DateField(blank=True, null=True)

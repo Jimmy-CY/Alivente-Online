@@ -94,6 +94,10 @@ TEMPLATES = [
                 "mysite.context_processors.user_preferences", 
                 "mysite.context_processors.map_provider",
             ],
+            # PC-1, 28 Oct 2026 - {% id_country_options %} on every
+            # template without a {% load %}, including the pieces of a
+            # page the suites render on their own.
+            "builtins": ["pages.templatetags.alv_countries"],
         },
     },
 ]

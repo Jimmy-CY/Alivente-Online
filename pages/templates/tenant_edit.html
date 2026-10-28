@@ -1,9 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load alv_countries %}
 
 {% block title %}Edit Tenant{% endblock %}
 
 {% block content %}
+{# PC-1, 28 Oct 2026 - the number and its country share one box, his    #}
+{# option A: the row stays four columns and nothing else moves.        #}
+<style>
+.alv-id-pair { flex-wrap: nowrap; }
+.alv-id-pair > input.form-control { flex: 1 1 52%; min-width: 0; }
+.alv-id-pair > select.form-control { flex: 1 1 48%; min-width: 0; margin-left: -1px; }
+</style>
+
 
 <h2 class="page-title-h2">TENANTS</h2>
 <h4 class="page-subtitle-h4">EDIT EXISTING TENANT</h4>
@@ -109,7 +118,10 @@
         <div class="col-12 ti-id" id="id-number-field">
           <div class="form-group">
             <label for="tenant_id_number"><strong>Tenant Passport/ID</strong></label>
+            <div class="input-group alv-id-pair">
             <input type="text" class="form-control" id="tenant_id_number" name="tenant_id_number" placeholder="Passport or ID card number" value="{{tresults.tenant_id_number}}">
+            <select class="form-control" id="tenant_id_country" name="tenant_id_country" aria-label="Passport/ID country">{% id_country_options tresults.tenant_id_country %}</select>
+            </div>
           </div>
         </div>
         <div class="col-12 ti-person" id="contact-person-field"{% if tresults.tenant_type != 'Company' %} style="display: none;"{% endif %}>
@@ -187,7 +199,10 @@
         <div class="col-md">
           <div class="form-group">
             <label for="tenant_2_id_number"><strong>Second Tenant Passport/ID</strong></label>
+            <div class="input-group alv-id-pair">
             <input type="text" class="form-control" id="tenant_2_id_number" name="tenant_2_id_number" placeholder="Passport or ID card number" value="{{tresults.tenant_2_id_number}}">
+            <select class="form-control" id="tenant_2_id_country" name="tenant_2_id_country" aria-label="Second tenant Passport/ID country">{% id_country_options tresults.tenant_2_id_country %}</select>
+            </div>
           </div>
         </div>
         <div class="col-md">
@@ -596,7 +611,8 @@
   if (!sel || !addRow || !addBtn || !sect || !remBtn) return;
 
   // TI-1, 26 Oct 2026 - and the second tenant's Passport/ID.
-  var FIELDS = ['tenant_2_name', 'tenant_2_id_number',
+  // PC-1, 28 Oct 2026 - and its country.
+  var FIELDS = ['tenant_2_name', 'tenant_2_id_number', 'tenant_2_id_country',
                 'tenant_2_contact_number', 'tenant_2_email'];
 
   // THE NAME DECIDES, matching has_second_tenant on the model. A

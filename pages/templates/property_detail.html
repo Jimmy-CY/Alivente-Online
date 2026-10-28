@@ -358,7 +358,7 @@
                                                 </div>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Passport/ID:</span>
-                                                    <span class="detail-value">{{ active_tenant.tenant_id_number|default:"&mdash;" }}</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_id_number|default:"&mdash;" }} <span class="alv-id-country">{{ active_tenant.tenant_id_country|default:"" }}</span></span>
                                                 </div>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Contact Number:</span>
@@ -378,7 +378,7 @@
                                                 </div>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Passport/ID:</span>
-                                                    <span class="detail-value">{{ active_tenant.tenant_2_id_number|default:"&mdash;" }}</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_2_id_number|default:"&mdash;" }} <span class="alv-id-country">{{ active_tenant.tenant_2_id_country|default:"" }}</span></span>
                                                 </div>
                                                 <div class="detail-row">
                                                     <span class="detail-label">Contact Number:</span>
@@ -1332,6 +1332,11 @@
    a whole column. This panel carries FOUR address rows on a joint
    tenancy where it carried one, so the odds of meeting a long one
    went up with the round that added them. */
+/* PC-1, 28 Oct 2026 - the issuing country, quieter than the number. The
+   dot is drawn here and only when there is a country, so the markup needs
+   no condition of its own. */
+.alv-id-country { color: var(--alv-ink-soft); }
+.alv-id-country:not(:empty)::before { content: "\00B7\00A0"; }
 .detail-value {
     color: var(--alv-ink-strong);
     flex: 1 0 auto;

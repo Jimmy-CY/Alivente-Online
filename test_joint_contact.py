@@ -315,19 +315,23 @@ head('4. THE CENSUS - and no fourth screen prints one unguarded')
 # printed tenant_2_ outside a guard would show three blank rows to
 # every tenancy that has one person, and nothing but a count notices.
 EXPECTED = {
-    'generate_lease_agreement.html': 9,
+    'generate_lease_agreement.html': 10,   # PC-1 - its country (was 9)
     # T2-8, 25 Oct 2026 - 19 -> 24 and 17 -> 21: the script that
     # makes the second address required reads it by id, and the
     # server paints it from the name on Add. Inside the form, both.
-    'tenant_add.html': 29,
-    'tenant_edit.html': 26,
+    'tenant_add.html': 33,    # PC-1 (was 29)
+    'tenant_edit.html': 30,   # PC-1 (was 26)
     'lease_renewal_report.html': 3,
     # TI-1, 26 Oct 2026 - +1 on the report and the property panel (the
     # second tenant's Passport/ID row), +1 on Generate (its prefill),
     # +5 on Add and on Edit (the Passport/ID column and the script that
     # clears it with the rest of the second tenant).
-    'property_detail.html': 4,
-    'tenant_report.html': 4,
+    # PC-1, 28 Oct 2026 - +1 on the report, the property panel and
+    # Generate (the second tenant's Passport/ID country), +4 on Add and
+    # on Edit (its select's id, name and saved value, and the script
+    # that clears it with the rest of the second tenant).
+    'property_detail.html': 5,
+    'tenant_report.html': 5,
 }
 census = {}
 for p in T.templates():
@@ -340,9 +344,10 @@ ok(census == EXPECTED,
 
 ok(sum(EXPECTED[k] for k in
        ('tenant_report.html', 'lease_renewal_report.html',
-        'property_detail.html')) == 11,
+        'property_detail.html')) == 13,   # PC-1, 28 Oct 2026 - (was 11)
    '  nine of them are this round - three screens, three details each - '
-   'and two are TI-1, the Passport/ID row on the report and the panel')
+   'two are TI-1, the Passport/ID row on the report and the panel, and '
+   'two are PC-1, the country beside it')
 
 
 # ==========================================================================

@@ -1142,7 +1142,11 @@ def tenant_report(request, tenant_id):
         'tenant_email', 'tenant_deposit', 'tenant_lease_start_date', 'tenant_lease_end_date',
         'tenant_rental_type', 'tenant_renewal', 'tenant_renewal_period',
         'tenant_rent', 'tenant_levies',
-        'tenant_payment_terms', 'tenant_current', 'tenant_lease_agreement'
+        'tenant_payment_terms', 'tenant_current', 'tenant_lease_agreement',
+        # PC-1, 28 Oct 2026 - the identity numbers and their countries,
+        # which this report shows; named, or each is a second query.
+        'tenant_company_reg_no', 'tenant_id_number', 'tenant_2_id_number',
+        'tenant_id_country', 'tenant_2_id_country',
     ), pk=tenant_id)
     context = {
         'today': today,
