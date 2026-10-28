@@ -1062,6 +1062,8 @@ CONVERTED = [
     'test_passport_country.py',
     # HK-4, 28 Oct 2026 - Project Help, Financial Indicators, the gate.
     'test_housekeeping_four.py',
+    # OF-3, 28 Oct 2026 - Owned From, and Option B for pro-rata lines.
+    'test_owned_from.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

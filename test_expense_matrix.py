@@ -329,9 +329,23 @@ exec(compile(lift(_MD_SRC, 'resolve_year_months_bulk'), 'resolver', 'exec'),
      _res_ns)
 resolve_year_months_bulk = _res_ns['resolve_year_months_bulk']
 
+# OF-3, 28 Oct 2026 - the matrix counts through budget_year_months now, the
+# helper the P&L uses. Lifted for real, like the resolver above. This stub
+# schema has no lease table and no Owned From column, so owned_from_map is
+# the one piece stood in for: every property here is owned all along, and
+# what Owned From does to a figure is test_owned_from.py's to prove.
+_of_ns = {'resolve_year_months_bulk': resolve_year_months_bulk,
+          'FinancialFigureHistory': FinancialFigureHistory,
+          '_FH_MONTHS': _FH_MONTHS, '_fh_Decimal': Decimal,
+          'owned_from_map': lambda ids: {}}
+for _fn in ('owned_months', 'apply_owned_from', 'budget_year_months'):
+    exec(compile(lift(_MD_SRC, _fn), _fn, 'exec'), _of_ns)
+budget_year_months = _of_ns['budget_year_months']
+
 _ns = {'expense': expense, 'expense_line_types': expense_line_types,
        'props': props, 'FinancialFigureHistory': FinancialFigureHistory,
        'resolve_year_months_bulk': resolve_year_months_bulk,
+       'budget_year_months': budget_year_months,
        'FH_BASELINE_DATE': FH_BASELINE_DATE,
        'Decimal': Decimal, 'date': date, 'MONTHS': MONTHS}
 exec(compile(lift(VS, 'expense_matrix'), 'matrix', 'exec'), _ns)
@@ -385,7 +399,7 @@ def seed():
 
 
 # ===========================================================================
-head('2. the figures - resolved from history, and NOT pro-rated')
+head('2. the figures - resolved from history, counted from Owned From')
 # ===========================================================================
 
 MADE, LT, OTHER = seed()
@@ -503,8 +517,11 @@ check('the grand total is the sum of the columns',
 check('  and of the rows - the two agree',
       M['grand_total'] == sum((r['total'] for r in M['rows']), Decimal('0')))
 
-# THE DECISION THAT MOVES MONEY.
-check('NO PRO-RATING: a full twelve months is counted in every year',
+# THE DECISION THAT MOVES MONEY. OF-3, 28 Oct 2026: the matrix now counts
+# from each property's Owned From, as the P&L does (his Option B). Villa 24
+# has no lease and no date in this fixture, so it is owned all along and
+# still carries a full twelve months - which is what this asks.
+check('OWNED ALL YEAR: a full twelve months is counted in every year',
       _by['Ionion - Villa 24']['cells'][2] == Decimal('2400'))
 # The DOCSTRING names the pro-rating helper while explaining why the matrix
 # does not use it, and ast.unparse includes docstrings - thirteenth instance
@@ -512,7 +529,8 @@ check('NO PRO-RATING: a full twelve months is counted in every year',
 _h = ast.parse(lift(VS, 'expense_matrix')).body[0]
 _called = {n.func.id for n in ast.walk(_h)
            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
-check('  and the helper calls no in-service helper at all',
+check('  and the helper calls no annual in-service total - it shares the '
+      'P&L\'s monthly helper instead',
       'property_annual_budgeted_expenses' not in _called,
       str(sorted(_called))[:70])
 
@@ -598,8 +616,9 @@ check('  and there ARE gaps, so that check is not passing on an empty set',
       _gaps > 0)
 check('  no cell renders a bare 0.00 - absent is absent, not zero',
       not re.search(r'<td>0\.00</td>', HTML))
-check('the note says the figures are not pro-rated',
-      'not pro-rated' in HTML and 'P&amp;L pro-rates' in HTML)
+check('the note says the figures count from Owned From, as the P&L does',
+      'Owned From</strong> month' in HTML and 'the P&amp;L does' in HTML
+      and 'not pro-rated' not in HTML)
 check('  and says what a dash means',
       'not that it cost nothing' in HTML)
 check('the by-property view still renders', 'alv-matrix-scroll'

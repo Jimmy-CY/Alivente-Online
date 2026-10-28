@@ -347,6 +347,14 @@ FALSE_POSITIVE = {
         'application/json, a data island - and markup_of strips '
         'script blocks by design, so the reader cannot see what is '
         'really there. One step on from the entry above it.',
+    # OF-3, 28 Oct 2026 - the same data island as physical_invoice_edit:
+    # #alv-owned-from is written by json_script, and read inside a try.
+    'finance_expense_add.html':
+        '#alv-owned-from is emitted by Django\'s json_script filter at '
+        'render time, and the read is inside a try/catch',
+    'finance_revenue_add.html':
+        '#alv-owned-from is emitted by Django\'s json_script filter at '
+        'render time, and the read is inside a try/catch',
 }
 suspects = []
 for d, _s, fs in alv_tree.walk3():

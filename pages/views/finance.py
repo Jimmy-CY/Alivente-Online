@@ -64,6 +64,7 @@ from pages.models import (
     purge_figure_history, prorata_reconcile,
     record_valuation_history, property_value_as_of,
     resolve_year_months_bulk, lease_revenue_rows, current_lease_revenue,
+    budget_year_months,
     property_annual_lease_revenue, property_annual_budgeted_expenses,
     property_annual_actual_expenses, _lease_month,
 )
@@ -105,6 +106,20 @@ def _fh_date_or_today(raw):
         except ValueError:
             pass
     return date.today()
+
+
+def _owned_info(model):
+    """{prop_id: {'from': 'YYYY-MM-01' or None, 'lines': bool}} for the Add
+    screens - OF-3, 28 Oct 2026. `lines` says whether the property already
+    has rows of `model` (expense or revenue); the screen suggests Owned
+    From as the Applies-from date for a property's FIRST lines."""
+    from pages.models import owned_from_map
+    ids = list(props.objects.values_list('prop_id', flat=True))
+    ofm = owned_from_map(ids)
+    has = set(model.objects.values_list('prop_id', flat=True).distinct())
+    return {str(i): {'from': (ofm[i].replace(day=1).isoformat()
+                              if ofm.get(i) else None),
+                     'lines': i in has} for i in ids}
 
 
 def _fh_eff_date(request):
@@ -360,6 +375,7 @@ def finance_revenue_add(request):
     # (rent/levies come from the lease). Seasonal / no-lease keep them selectable.
     _leased_ids = list(tenant.objects.values_list('prop_id', flat=True).distinct())
     return render(request, "finance_revenue_add.html", {
+        "owned_info": _owned_info(revenue),
         "props_data": props.objects.all().order_by('prop_country', 'prop_name'),
         "revenue_types": revenue_types.objects.all(),
         "revenue_line_types": revenue_line_types.objects.all(),
@@ -686,13 +702,13 @@ def expense_matrix(line_type_id, today_year=None):
     effective dating. Two answers to "what did this row carry in 2024" is one
     more than this system can afford.
 
-    IT DOES NOT PRO-RATE. property_annual_budgeted_expenses counts a
-    property's budget only from the month it came into service, which is
-    right for the P&L - it is answering "what did this cost me". This screen
-    answers "how is this charge split", and the charge is distributed by
-    value whether or not the property was owned all year. Pro-rating here
-    would leave a column summing to less than the charge under a footer
-    claiming to be the charge. The template says so under the table.
+    IT COUNTS FROM OWNED FROM - OF-3, 28 Oct 2026, which reverses the old
+    "does not pro-rate" decision. That decision was right while the P&L
+    drew a full charge and only Financial Indicators trimmed a first year:
+    the matrix had to match the charge. His Option B changes the charge
+    itself - a property not yet owned carries no share, and the P&L shows
+    the smaller total - so the matrix follows, through budget_year_months,
+    and each column is still exactly the charge the P&L draws.
 
     Carries no decorators: it is a helper, not a view.
     """
@@ -772,8 +788,12 @@ def expense_matrix(line_type_id, today_year=None):
     cells = {pid: [] for pid in prop_ids}
     blended = []
     for y in years:
-        vals_map, prov_map = resolve_year_months_bulk(
-            prop_ids, FinancialFigureHistory.KIND_BUDGET, y, with_sources=True)
+        # OF-3, 28 Oct 2026: the same helper the P&L uses, so a property
+        # carries nothing here before its Owned From either (Option B) and
+        # each column is the charge the P&L draws for that year.
+        vals_map, prov_map = budget_year_months(
+            [e for _v in by_prop.values() for e in _v['sources']], y,
+            with_sources=True)
         # DOES THIS YEAR STRADDLE A CHANGE?
         #
         # Company Tax is charged in January and July; the rate changed on
@@ -910,6 +930,7 @@ def finance_expense_add(request):
         )
     )
     return render(request, "finance_expense_add.html", {
+        "owned_info": _owned_info(expense),
         "props_data": props_data,
         "expense_types": expense_types.objects.all(),
         "expense_line_types": expense_line_types.objects.all().order_by('expense_line_types_name'),
@@ -3030,9 +3051,9 @@ def budget_expense_details_view(request):
         _year_int = int(year)
     except (TypeError, ValueError):
         _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(expenses.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_BUDGET, _year_int) if _year_int is not None else None)
+    # OF-3, 28 Oct 2026: the same months the P&L cell it opened from drew.
+    _year_map = (budget_year_months(expenses, _year_int)
+                 if _year_int is not None else None)
 
     # Create a list of expense items with monthly breakdown
     expense_items = []
@@ -3114,9 +3135,9 @@ def total_expense_details_view(request):
         _year_int = int(year)
     except (TypeError, ValueError):
         _year_int = None
-    _year_map = (resolve_year_months_bulk(
-        list(budget_expenses.values_list('prop_id', flat=True).distinct()),
-        FinancialFigureHistory.KIND_BUDGET, _year_int) if _year_int is not None else None)
+    # OF-3, 28 Oct 2026: the same months the P&L cell it opened from drew.
+    _year_map = (budget_year_months(budget_expenses, _year_int)
+                 if _year_int is not None else None)
 
     # Create budget expense items with monthly breakdown (similar to budget_expense_details_view)
     budget_expense_items = []
@@ -3262,7 +3283,10 @@ def finance_pl_act(request):
         revenues.extend(lease_revenue_rows(prop, selected_year, _rental_lt, _levies_lt))
         expenses.extend(prop.expense_set.all())
 
-    _fh_exp_map = resolve_year_months_bulk(selected_prop_ids, FinancialFigureHistory.KIND_BUDGET, selected_year)
+    # OF-3, 28 Oct 2026: every row resolved AND held to its property's
+    # Owned From - nothing before it counts, a pro-rata share included
+    # (Option B). Rows with no history keep their live cells, as before.
+    _fh_exp_map = budget_year_months(expenses, selected_year)
     for _e in expenses:
         _vals = _fh_exp_map.get(_e.expense_id)
         if _vals is not None:

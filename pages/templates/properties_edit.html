@@ -73,6 +73,16 @@
           </div>
         </div>
     </div>
+    {# OF-3, 28 Oct 2026 - Owned From: budgets and revenue count from this month. #}
+    <div class="form-row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prop_owned_from"><strong>Owned From</strong></label>
+            <input type="date" class="form-control" id="prop_owned_from" name="prop_owned_from" value="{{ results.prop_owned_from|date:'Y-m-d' }}">
+            <small class="text-muted">Budgets and revenue count from this month.{% if first_lease %} The first lease started {{ first_lease|date:'j M Y' }}.{% endif %} Blank uses the first lease.</small>
+          </div>
+        </div>
+    </div>
 </div>
 <div class="form-card">
     <h3 class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address</h3>

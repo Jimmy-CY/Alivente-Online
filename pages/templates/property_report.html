@@ -55,6 +55,11 @@
                         <span class="detail-label">Year Built:</span>
                         <span class="detail-value">{{ property.prop_year_built }}</span>
                     </div>
+                    {# OF-3, 28 Oct 2026 - Owned From: budgets and revenue count from this month. #}
+                    <div class="detail-row">
+                        <span class="detail-label">Owned From:</span>
+                        <span class="detail-value">{{ property.prop_owned_from|date:'j M Y'|default:'First lease' }}</span>
+                    </div>
                 </div>
 
                 <!-- Utility Accounts -->

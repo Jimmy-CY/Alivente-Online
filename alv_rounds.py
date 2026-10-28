@@ -1522,6 +1522,8 @@ ROUNDS = [
     '.bak_passcountry',
     # HK-4, 28 Oct 2026 - Project Help, Financial Indicators, the gate.
     '.bak_housekeep4',
+    # OF-3, 28 Oct 2026 - Owned From, and Option B for pro-rata lines.
+    '.bak_ownedfrom',
 ]
 
 

@@ -183,6 +183,46 @@
     apply();
 })();
 </script>
+{{ owned_info|json_script:"alv-owned-from" }}
+<script>
+/* APPLIES FROM FOLLOWS OWNED FROM - OF-3, 28 Oct 2026. His decision: when
+   the first budget lines go onto a property, suggest its Owned From month,
+   so a property bought in March and entered in June still counts from
+   March. A property that already has lines keeps 1 January unless it was
+   not owned yet then. Never overrides a date the user has typed. */
+(function () {
+    var info = {};
+    try { info = JSON.parse(document.getElementById('alv-owned-from').textContent) || {}; }
+    catch (e) { info = {}; }
+    var sel = document.getElementById('prop');
+    var eff = document.getElementById('effective_date');
+    if (!sel || !eff) { return; }
+    var dflt = eff.value, touched = false;
+    var note = document.createElement('p');
+    note.className = 'alv-applies-help alv-owned-note';
+    note.hidden = true;
+    eff.parentNode.insertBefore(note, eff.nextSibling);
+    eff.addEventListener('input', function () { touched = true; note.hidden = true; });
+    sel.addEventListener('change', function () {
+        if (touched) { return; }
+        var o = info[sel.value], want = dflt, why = '';
+        if (o && o.from) {
+            if (!o.lines) { want = o.from; why = 'it has no revenue lines yet'; }
+            else if (o.from > dflt) { want = o.from; why = 'it was not owned before then'; }
+        }
+        eff.value = want;
+        if (why) {
+            var d = new Date(want + 'T00:00:00');
+            note.textContent = 'Set to this property\u2019s Owned From month, ' +
+                d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) +
+                ', because ' + why + '. Change it if you need to.';
+            note.hidden = false;
+        } else {
+            note.hidden = true;
+        }
+    });
+})();
+</script>
 
 {% endif %}
 

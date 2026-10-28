@@ -402,10 +402,11 @@
         </div>
         <div class="expense-matrix-note">
             A dash means the property was not in this distribution that year &mdash;
-            not that it cost nothing. Figures are <strong>budgeted</strong>, and are
-            <strong>not pro-rated</strong> to the months a property was owned, so
-            each column is the whole charge for that year. The P&amp;L pro-rates a
-            property&rsquo;s first year and will show less for it.
+            {# OF-3, 28 Oct 2026 - the matrix counts from Owned From, as the P&L does. #}
+            not that it cost nothing. Figures are <strong>budgeted</strong>, and count
+            only from each property&rsquo;s <strong>Owned From</strong> month, exactly as
+            the P&amp;L does &mdash; a property not yet owned carries no share, so an
+            early column can be smaller than the charge set today.
             {% if matrix.blended %}
             A year marked &#8225; <strong>straddles a change</strong>: the charge
             moved part-way through it, so the months before the change carry the

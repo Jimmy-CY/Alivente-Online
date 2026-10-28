@@ -577,7 +577,14 @@ def properties_edit(request, prop_id):
 
     # Worked out on load, so Save can refuse in a dialog on this page rather
     # than storing a message that surfaces on whatever renders next.
+    # OF-3, 28 Oct 2026 - shown under Owned From, so the date it falls
+    # back to is on the screen rather than in the reader's memory.
+    _first_lease = (tenant.objects.filter(prop_id=prop_id)
+                    .exclude(tenant_lease_start_date__isnull=True)
+                    .order_by('tenant_lease_start_date')
+                    .values_list('tenant_lease_start_date', flat=True).first())
     return render(request, "properties_edit.html", {
+        "first_lease": _first_lease,
         "props": [current_property],  # Maintain your existing structure
         "existing_names": list(existing_names),  # Add this for client-side validation
         "prorata_blockers": [{'name': n, 'amount': a}
@@ -696,7 +703,8 @@ def property_report(request, prop_id):
         'prop_floor_area', 'prop_year_built', 'prop_status',
         'prop_available_for_rent', 'prop_title_deed',
         'prop_title_deed_status', 'prop_electricity', 'prop_water',
-        'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance'
+        'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance',
+        'prop_owned_from',     # OF-3, 28 Oct 2026 - deferred = a 2nd query
     ), pk=prop_id)
 
     # Get asset summary for this property

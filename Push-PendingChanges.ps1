@@ -1282,6 +1282,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def lease_sign_page'; What = 'ES-4: the rendered lease comes back through the same token check as the page itself - a media URL for a lease is a permanent read link to a contract, and it would outlive the seven-day expiry that the rest of this round takes seriously' },
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
+    @{ File = 'pages/models.py'; Text = 'def budget_year_months('; What = 'OF-3: the one helper that holds every budget figure to its property Owned From - without it the P&L counts years before the property was owned' },
     @{ File = 'pages/templates/projects/projects_detail.html'; Text = 'data-target="#projectsHelpModal"'; What = 'HK-4: Project Details opens the Projects help - without it the page the Projects list opens has no Help, his finding of 28 Oct' },
     @{ File = 'pages/views/lease_template.py'; Text = 'def _save_identity_back('; What = 'PC-1: a Passport/ID or country typed in Generate goes back to the tenant record - without it the pop-up asks for the same country on every lease' },
     @{ File = 'pages/templates/tenant_add.html'; Text = 'code.jquery.com/jquery-3.5.1'; Absent = $true; What = 'HK-3: base loads the one jQuery in head - a page that brings its own back puts two on the page, and this was the one on an older version' },
@@ -3175,7 +3176,9 @@ $suites = @(
     # PC-1, 28 Oct 2026 - the Passport/ID country; one block per person.
     'test_passport_country.py',
     # HK-4, 28 Oct 2026 - Project Help, Financial Indicators, the gate.
-    'test_housekeeping_four.py'
+    'test_housekeeping_four.py',
+    # OF-3, 28 Oct 2026 - Owned From, and Option B for pro-rata lines.
+    'test_owned_from.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

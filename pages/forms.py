@@ -17,6 +17,8 @@ class PropForm(forms.ModelForm):
             "prop_longitude",
             "prop_floor_area",
             "prop_year_built",
+            # OF-3, 28 Oct 2026 - in this list or the form drops it (T2-1).
+            "prop_owned_from",
             "prop_status",
             "prop_available_for_rent",
             "prop_title_deed",

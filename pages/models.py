@@ -664,6 +664,18 @@ class props(models.Model):
         help_text="Uncheck to exclude this property from occupancy rate and days-to-fill calculations (e.g., for seasonal rentals)"
     )
 
+    # OWNED FROM - OF-3, 28 Oct 2026. His rule, in his words: "We could
+    # use the date of the first rental for that property as the date that
+    # we owned it from" - the gap between buying and first letting is
+    # accepted. Filled from the first lease by migration 0112 and editable
+    # on the property. Blank means "use the first lease", and a property
+    # with no lease and no date counts as owned all along (seasonal).
+    # Nothing - no budget line, no share of a pro-rata line, no revenue -
+    # counts in a month before this one. See property_owned_from().
+    prop_owned_from = models.DateField(
+        blank=True, null=True, verbose_name="Owned From",
+        help_text="Budgets and revenue count from this month. Blank = the first lease start.")
+
     def __str__(self):
         return self.prop_name or f"Property {self.prop_id}"
 
@@ -4472,6 +4484,88 @@ def _lease_month(leases, y, m, today):
     return ('vacant', None, 0, 0)
 
 
+# =============================================================================
+# OWNED FROM - OF-3, 28 Oct 2026.
+#
+# His rules, agreed 28 October:
+#   - a property is owned from its first lease start (or the date typed on
+#     the property, which wins); the gap between buying and first letting
+#     is accepted;
+#   - no budget, no revenue, in a month before the Owned-from month (any
+#     part of a month counts as the month);
+#   - OPTION B for pro-rata lines: each owned property keeps its own share,
+#     and the share of a property not yet owned simply drops. His words:
+#     "the earlier years would be more accurate because we don't burden
+#     them with the full amount."
+#
+# ONE implementation, used by the P&L, its drill-downs, the expense matrix
+# and Financial Indicators - so no two screens can disagree about a month.
+# =============================================================================
+def property_owned_from(prop):
+    """The date `prop` counts from, or None for "owned all along"."""
+    if getattr(prop, 'prop_owned_from', None):
+        return prop.prop_owned_from
+    return tenant.objects.filter(prop_id=prop.pk).exclude(
+        tenant_lease_start_date__isnull=True).aggregate(
+            _m=Min('tenant_lease_start_date'))['_m']
+
+
+def owned_from_map(prop_ids):
+    """{prop_id: date or None} for many properties, in two queries."""
+    ids = [i for i in set(prop_ids) if i is not None]
+    if not ids:
+        return {}
+    out = dict(props.objects.filter(prop_id__in=ids)
+               .values_list('prop_id', 'prop_owned_from'))
+    need = [i for i, d in out.items() if not d]
+    if need:
+        for pid, d in (tenant.objects.filter(prop_id__in=need)
+                       .exclude(tenant_lease_start_date__isnull=True)
+                       .values('prop_id')
+                       .annotate(_m=Min('tenant_lease_start_date'))
+                       .values_list('prop_id', '_m')):
+            out[pid] = d
+    return out
+
+
+def owned_months(owned_from, year):
+    """Twelve booleans: is the property owned in each month of `year`?"""
+    if owned_from is None:
+        return [True] * 12
+    return [(year, m) >= (owned_from.year, owned_from.month)
+            for m in range(1, 13)]
+
+
+def apply_owned_from(values, owned_from, year):
+    """`values` (twelve months) with every month before Owned From as 0."""
+    mask = owned_months(owned_from, year)
+    return [v if mask[i] else _fh_Decimal('0') for i, v in enumerate(values)]
+
+
+def budget_year_months(expense_rows, year, with_sources=False):
+    """{expense_id: twelve figures} for `year`, for EVERY row given.
+
+    Each row resolved from its effective-dated history exactly as before
+    (rows with no history keep their live cells), then every month before
+    the property's Owned From set to 0. Pro-rata rows are no exception:
+    that IS Option B - the unowned share drops, the owned shares stay.
+    With with_sources=True also returns the resolver's provenance map.
+    """
+    rows = list(expense_rows)
+    pids = sorted({r.prop_id for r in rows if r.prop_id is not None})
+    res = resolve_year_months_bulk(pids, FinancialFigureHistory.KIND_BUDGET,
+                                   year, with_sources=with_sources)
+    vmap, prov = res if with_sources else (res, None)
+    ofm = owned_from_map(pids)
+    out = {}
+    for r in rows:
+        v = vmap.get(r.expense_id)
+        if v is None:
+            v = [getattr(r, 'expense_' + m, 0) or 0 for m in _FH_MONTHS]
+        out[r.expense_id] = apply_owned_from(list(v), ofm.get(r.prop_id), year)
+    return (out, prov) if with_sources else out
+
+
 def lease_monthly_rent_levies(prop, year, today=None):
     """(rent[12], levies[12], has_leases) for a property/year from its leases."""
     today = today or _fh_date.today()
@@ -4514,8 +4608,16 @@ def lease_revenue_rows(prop, year, rental_lt=None, levies_lt=None, today=None):
     Leased: a Rental row (lease rent/mo) + a Levies row (lease levies/mo) + any
     non rental/levies revenue-table rows. Seasonal: the revenue-table rows as-is."""
     rent, lev, has = lease_monthly_rent_levies(prop, year, today)
+    # OF-3, 28 Oct 2026: nothing counts before the property's Owned From.
+    # Lease rent cannot predate the first lease anyway; this is for the
+    # revenue table (seasonal and ancillary rows) and a typed date that is
+    # later than the first lease. Table rows are handed back as unsaved
+    # COPIES when a month is masked - never save what this returns.
+    _mask = owned_months(property_owned_from(prop), year)
     if not has:
-        return list(prop.revenue_set.all())
+        return [_owned_copy(r, _mask) for r in prop.revenue_set.all()]
+    rent = [v if _mask[i] else 0 for i, v in enumerate(rent)]
+    lev = [v if _mask[i] else 0 for i, v in enumerate(lev)]
     if rental_lt is None:
         rental_lt = lease_line_type(LEASE_ROLE_RENT)
     if levies_lt is None:
@@ -4533,8 +4635,21 @@ def lease_revenue_rows(prop, year, rental_lt=None, levies_lt=None, today=None):
         rows.append(r)
     for r in prop.revenue_set.all():
         if not (r.revenue_line_types and r.revenue_line_types.lease_role):
-            rows.append(r)
+            rows.append(_owned_copy(r, _mask))
     return rows
+
+
+def _owned_copy(r, mask):
+    """`r` itself when every month is owned, else an unsaved copy with the
+    unowned months at 0 - the database row is never touched."""
+    if all(mask):
+        return r
+    import copy as _copy
+    c = _copy.copy(r)
+    for i, mm in enumerate(_FH_REV_MON):
+        if not mask[i]:
+            setattr(c, 'revenue_' + mm, _fh_Decimal('0'))
+    return c
 
 
 def current_lease_revenue(prop, today=None):
@@ -4583,27 +4698,14 @@ def property_annual_budgeted_expenses(prop, year=None):
     later years -> the full 12. A property with no leases (seasonal / no-lease)
     is treated as in service all year, unchanged."""
     year = year or _fh_date.today().year
-    _first_lease = tenant.objects.filter(prop=prop).exclude(
-        tenant_lease_start_date__isnull=True).aggregate(
-            _m=Min('tenant_lease_start_date'))['_m']
-    if _first_lease is None:
-        _start_month = 1                     # no leases -> owned/active all year
-    elif _first_lease.year > year:
-        return _fh_Decimal('0')              # not yet in service this year
-    elif _first_lease.year == year:
-        _start_month = _first_lease.month    # first (partial) year
-    else:
-        _start_month = 1                     # full year
-    vals_map = resolve_year_months_bulk([prop.prop_id], FinancialFigureHistory.KIND_BUDGET, year)
+    # OF-3, 28 Oct 2026: "in service from" is now the property's Owned From
+    # (the first lease start unless a date is typed on the property), and
+    # the months come from the same helper the P&L uses - so the two
+    # cannot disagree about a single month.
     total = _fh_Decimal('0')
-    for e in prop.expense_set.all():
-        vals = vals_map.get(e.expense_id)
-        if vals is not None:
-            for _i in range(_start_month - 1, 12):
-                total += (vals[_i] or 0)
-        else:
-            for _i in range(_start_month - 1, 12):
-                total += (getattr(e, 'expense_' + _FH_REV_MON[_i], 0) or 0)
+    for vals in budget_year_months(prop.expense_set.all(), year).values():
+        for v in vals:
+            total += (v or 0)
     return total
 
 

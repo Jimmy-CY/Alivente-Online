@@ -261,10 +261,23 @@ _ns = {'FinancialFigureHistory': FinancialFigureHistory,
 exec(compile(lift(MD, 'resolve_year_months_bulk'), 'r', 'exec'), _ns)
 resolve = _ns['resolve_year_months_bulk']
 
+# OF-3, 28 Oct 2026 - the matrix counts through budget_year_months now, the
+# helper the P&L uses. Lifted for real; this stub schema has no lease table
+# and no Owned From column, so owned_from_map is the one piece stood in for
+# and every property here is owned all along. test_owned_from.py proves
+# what Owned From does to a figure.
+_ofns = {'resolve_year_months_bulk': resolve,
+         'FinancialFigureHistory': FinancialFigureHistory,
+         '_FH_MONTHS': _FH_MONTHS, '_fh_Decimal': Decimal,
+         'owned_from_map': lambda ids: {}}
+for _fn in ('owned_months', 'apply_owned_from', 'budget_year_months'):
+    exec(compile(lift(MD, _fn), _fn, 'exec'), _ofns)
+
 _vns = {'expense': expense, 'expense_line_types': expense_line_types,
         'FinancialFigureHistory': FinancialFigureHistory,
         'FH_BASELINE_DATE': FH_BASELINE_DATE,
         'resolve_year_months_bulk': resolve, 'MONTHS': MONTHS,
+        'budget_year_months': _ofns['budget_year_months'],
         'Decimal': Decimal, 'date': date}
 exec(compile(lift(VS, 'expense_matrix'), 'm', 'exec'), _vns)
 matrix = _vns['expense_matrix']
