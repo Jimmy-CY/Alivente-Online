@@ -4,7 +4,8 @@
 {% block content %}
 
 <!-- Add SortableJS for drag and drop -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+{# VS-1, 29 Oct 2026 - served from the app (static/vendor), not the CDN. #}
+<script src="{% static 'vendor/sortablejs/Sortable.min.js' %}"></script>
 
 <style>
     /* B-7, 9 Oct 2026 - 7 Bootstrap literal(s) on this page

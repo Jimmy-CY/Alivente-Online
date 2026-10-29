@@ -90,7 +90,8 @@ ME = 'test_day_order.py'
 PATCHER = 'apply_day_order.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'RO-1, 21 Oct 2026'
-SORTABLE = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js'
+# VS-1, 29 Oct 2026 - the library is served from the app now, not the CDN.
+SORTABLE = "{% static 'vendor/sortablejs/Sortable.min.js' %}"
 
 VIEW = os.path.join(ROOT, 'pages', 'views', 'recipes', 'meal_planning.py')
 URLS = os.path.join(ROOT, 'pages', 'urls.py')
@@ -441,7 +442,10 @@ head('4. RENDERED - THE GRIP, WITH THE LIBRARY AND WITHOUT IT')
 # 1.15.0 really served, once with the CDN failing. A stylesheet rule
 # read out of the file would not have caught a script that added the
 # class before checking.
-LOCAL = '/tmp/claude-0/drive/node_modules/sortablejs/Sortable.min.js'
+# VS-1, 29 Oct 2026 - THE FILE THE APP SERVES, so this section runs on any
+# machine with the repo; it used to read a sandbox-only path and skipped
+# everywhere else.
+LOCAL = os.path.join(ROOT, 'static', 'vendor', 'sortablejs', 'Sortable.min.js')
 try:
     from playwright.sync_api import sync_playwright
 except Exception:

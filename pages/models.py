@@ -4168,11 +4168,54 @@ class FinancialFigureHistory(models.Model):
 
 # ---- Write-hook helpers. Called AFTER commit via transaction.on_commit(); they
 #      NEVER raise, so a history-write problem can't break the user's save. -----
+def _fh_unchanged(kind, source_pk, effective_date, amount, months):
+    """The snapshot already in force at `effective_date`, if a new one with
+    these figures would be identical to it - else None. VS-1, 29 Oct 2026.
+
+    SNAPSHOT CHURN: one expense collected seven snapshots in a day, four of
+    them identical, because every save appended one whether or not anything
+    had changed. Skipping an identical one changes no month the resolver
+    reports: a new snapshot only wins the months where the row in force at
+    its date (latest effective_date on or before it, then latest entered -
+    the resolver's own order) used to win, and its figures are those.
+
+    FAILS OPEN: any problem here means "write the snapshot", never "lose
+    it" - a duplicate row is churn, a missing one is lost history.
+    """
+    try:
+        from decimal import Decimal
+
+        def same(a, b):
+            if a is None or b is None:
+                return a is None and b is None
+            return Decimal(str(a)) == Decimal(str(b))
+
+        prev = (FinancialFigureHistory.objects
+                .filter(kind=kind, source_pk=source_pk,
+                        effective_date__lte=effective_date)
+                .order_by('-effective_date', '-changed_at')
+                .first())
+        if prev is None or not same(prev.amount, amount):
+            return None
+        if all(same(getattr(prev, m), v) for m, v in months.items()):
+            return prev
+        return None
+    except Exception:
+        _fh_log.exception('_fh_unchanged failed - writing the snapshot')
+        return None
+
+
 def record_expense_history(exp, effective_date, *, source='budget', user=None):
     """Snapshot a budgeted `expense` row into history. Fail-safe (logs, returns
-    None on any error)."""
+    None on any error). VS-1: an identical snapshot is not appended - the one
+    already in force is returned instead."""
     try:
         months = {m: getattr(exp, 'expense_' + m) for m in _FH_MONTHS}
+        prev = _fh_unchanged(FinancialFigureHistory.KIND_BUDGET,
+                             exp.expense_id, effective_date,
+                             exp.expense_amount, months)
+        if prev is not None:
+            return prev
         return FinancialFigureHistory.objects.create(
             prop=exp.prop, kind=FinancialFigureHistory.KIND_BUDGET,
             source_pk=exp.expense_id, line_type=str(exp.expense_line_types),
@@ -4185,9 +4228,15 @@ def record_expense_history(exp, effective_date, *, source='budget', user=None):
 
 
 def record_revenue_history(rev, effective_date, *, source='direct', user=None):
-    """Snapshot a `revenue` row into history. Fail-safe."""
+    """Snapshot a `revenue` row into history. Fail-safe. VS-1: an identical
+    snapshot is not appended."""
     try:
         months = {m: getattr(rev, 'revenue_' + m) for m in _FH_MONTHS}
+        prev = _fh_unchanged(FinancialFigureHistory.KIND_REVENUE,
+                             rev.revenue_id, effective_date,
+                             rev.revenue_amount, months)
+        if prev is not None:
+            return prev
         return FinancialFigureHistory.objects.create(
             prop=rev.prop, kind=FinancialFigureHistory.KIND_REVENUE,
             source_pk=rev.revenue_id, line_type=str(rev.revenue_line_types),

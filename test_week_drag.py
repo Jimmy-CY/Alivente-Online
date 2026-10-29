@@ -122,7 +122,8 @@ ME = 'test_week_drag.py'
 PATCHER = 'apply_week_drag.py'
 PS1 = 'Push-PendingChanges.ps1'
 MARK = 'WD-1, 22 Oct 2026'
-SORTABLE = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js'
+# VS-1, 29 Oct 2026 - the library is served from the app now, not the CDN.
+SORTABLE = "{% static 'vendor/sortablejs/Sortable.min.js' %}"
 
 TPL = os.path.join(ROOT, 'pages', 'templates', 'meal_planner.html')
 VIEW = os.path.join(ROOT, 'pages', 'views', 'recipes', 'meal_planning.py')
@@ -530,7 +531,10 @@ if django_up:
 # ==========================================================================
 head('4. RENDERED - A REAL DRAG IN A REAL COLUMN')
 # ==========================================================================
-LOCAL = '/tmp/claude-0/drive/node_modules/sortablejs/Sortable.min.js'
+# VS-1, 29 Oct 2026 - THE FILE THE APP SERVES, so this section runs on any
+# machine with the repo; it used to read a sandbox-only path and skipped
+# everywhere else.
+LOCAL = os.path.join(ROOT, 'static', 'vendor', 'sortablejs', 'Sortable.min.js')
 try:
     from playwright.sync_api import sync_playwright
 except Exception:

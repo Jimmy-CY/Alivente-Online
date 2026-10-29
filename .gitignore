@@ -22,7 +22,13 @@ env/
 db.sqlite3
 *.sqlite3
 media/
-staticfiles/
+# VS-1, 29 Oct 2026 - staticfiles/* and not staticfiles/: WhiteNoise serves
+# this folder on Live, so a library the app ships (SortableJS) must be
+# committed in it. git cannot re-include anything under an ignored
+# DIRECTORY, so the folder's contents are ignored instead, with vendor/
+# let through. Files already tracked here are unaffected either way.
+staticfiles/*
+!staticfiles/vendor/
 static_root/
 
 # IDEs

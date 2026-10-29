@@ -128,8 +128,15 @@ class HQS(list):
     def order_by(self, *keys):
         cur = list(self)
         for k in reversed(keys):
-            cur = sorted(cur, key=lambda r, k=k: getattr(r, k))
+            # VS-1, 29 Oct 2026 - '-key' sorts descending, as the ORM does;
+            # _fh_unchanged asks for the newest snapshot that way.
+            name, desc = k.lstrip('-'), k.startswith('-')
+            cur = sorted(cur, key=lambda r, n=name: getattr(r, n),
+                         reverse=desc)
         return HQS(cur)
+
+    def first(self):
+        return self[0] if self else None
 
     def exists(self):
         return len(self) > 0
@@ -317,8 +324,9 @@ NS = {
     'FH_BASELINE_DATE': date(2000, 1, 1),
     'Decimal': Decimal,
 }
+# VS-1, 29 Oct 2026 - and the churn guard record_expense_history now asks.
 for name in ('_ensure_baseline', 'ensure_expense_baseline',
-             '_open_baseline', 'ensure_expense_opening',
+             '_open_baseline', 'ensure_expense_opening', '_fh_unchanged',
              'record_expense_history', 'resolve_year_months_bulk'):
     exec(compile(grab(MODELS_SRC, name, 'models.py'), name, 'exec'), NS)
 

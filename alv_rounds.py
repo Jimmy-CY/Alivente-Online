@@ -1533,6 +1533,8 @@ ROUNDS = [
     # HK-5, 29 Oct 2026 - housekeeping: the daily job, the Cyprus Greek
     # premises line, admin_clear and api/.
     '.bak_housekeep5',
+    # VS-1, 29 Oct 2026 - SortableJS from the app; no snapshot churn.
+    '.bak_vendorsort',
 ]
 
 

@@ -1072,6 +1072,8 @@ CONVERTED = [
     'test_greek_pair.py',
     # HK-5, 29 Oct 2026 - housekeeping.
     'test_housekeeping_five.py',
+    # VS-1, 29 Oct 2026 - SortableJS from the app; no snapshot churn.
+    'test_vendor_sort.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
