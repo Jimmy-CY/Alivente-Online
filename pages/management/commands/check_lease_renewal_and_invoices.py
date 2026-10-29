@@ -637,8 +637,15 @@ class Command(BaseCommand):
             return {}
 
     def send_celebration_notification(self, celebrations_by_recipient):
-        """Send email notification for today's celebrations - personalized per recipient"""
-        smtp_object = None
+        """Send email notification for today's celebrations - personalized per recipient
+
+        CX-1, 29 Oct 2026 - THROUGH _send_email_with_retry, like every other
+        email this job sends. It opened one SMTP connection of its own with
+        no retry, so a mail-server hiccup at 06:00 UTC lost every
+        celebration email for the day while the others tried again. Each
+        recipient is now sent - and retried - on their own, and one failure
+        no longer stops the rest.
+        """
 
         if not celebrations_by_recipient:
             self.stdout.write('No celebrations today')
@@ -656,28 +663,10 @@ class Command(BaseCommand):
         try:
             self.stdout.write('=== SENDING CELEBRATION NOTIFICATIONS ===')
 
-            # Get email settings from environment variables
-            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-            email_port = int(os.environ.get('EMAIL_PORT', 465))
+            # The sender; connection, login and retries are
+            # _send_email_with_retry's (CX-1).
             email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
-            email_password = os.environ.get('EMAIL_PASSWORD')
-            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
-            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
-
-            if not email_password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
-                return False
-
-            # SMTP setup (reuse connection for all emails)
-            if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
-            else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
-                smtp_object.ehlo()
-                if email_use_tls:
-                    smtp_object.starttls()
-
-            smtp_object.login(email_user, email_password)
+            sent, failed = 0, []
 
             today = date.today()
             formatted_date = f"{today.day}{get_ordinal_suffix(today.day)} {today.strftime('%B %Y')}"
@@ -806,36 +795,26 @@ class Command(BaseCommand):
                 msg.attach(part1)
                 msg.attach(part2)
 
-                # Send email to this recipient
-                text = msg.as_string()
-                smtp_object.sendmail(email_user, [recipient_email], text)
+                # Send email to this recipient - with retries (CX-1)
+                if self._send_email_with_retry(
+                        msg, email_user, [recipient_email],
+                        label='Celebration email to %s' % recipient_email):
+                    sent += 1
+                else:
+                    failed.append(recipient_email)
 
-                self.stdout.write(f'✅ Celebration email sent to {recipient_email}')
-
-            logger.info(f'Celebration notifications sent to {len(celebrations_by_recipient)} recipient(s)')
+            logger.info(f'Celebration notifications sent to {sent} recipient(s)')
+            if failed:
+                self.stdout.write(
+                    '❌ Celebration email failed for: %s' % ', '.join(failed))
+                return False
             return True
 
-        except smtplib.SMTPAuthenticationError as e:
-            error_msg = f"SMTP Authentication Error: {e}"
-            logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
-            return False
-        except smtplib.SMTPException as e:
-            error_msg = f"SMTP Error: {e}"
-            logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
-            return False
         except Exception as e:
             error_msg = f"Error sending celebration notification email: {e}"
             logger.error(error_msg, exc_info=True)
             self.stdout.write(f'❌ {error_msg}')
             return False
-        finally:
-            if smtp_object:
-                try:
-                    smtp_object.quit()
-                except Exception:
-                    pass
 
     def send_issue_comments_notification(self, comments, report_date):
         """Send daily email with previous day's issue comments. Delegates rendering to email_utils."""

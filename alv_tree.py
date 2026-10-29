@@ -1074,6 +1074,8 @@ CONVERTED = [
     'test_housekeeping_five.py',
     # VS-1, 29 Oct 2026 - SortableJS from the app; no snapshot churn.
     'test_vendor_sort.py',
+    # CX-1, 29 Oct 2026 - celebrations retry; Help on Task List and Gantt.
+    'test_celebration_help.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -150,7 +150,7 @@ N_NAMED = 3
 # shipped decisions instead of ten. The refusal gets stronger, not
 # weaker, which is why this count is read and not frozen.
 N_NAV_RULE_HITS, N_NAV_RULE_PRIMARY = 12, 10   # PP-1, 20 Oct 2026 - the planner leaves the set. The rule needs a bar whose only non-Back item is a link, and the planner bar now holds Print as well as Shopping List.   # (was 13, 11)   # (was 12, 10)
-N_COND_LABEL, N_COND_LABEL_PRIMARY = 10, 7   # CR-2, 27 Oct 2026 - Email again / Email receipt on Receipt Details, a secondary  # (was 9, 7)
+N_COND_LABEL, N_COND_LABEL_PRIMARY = 11, 7   # CX-1, 29 Oct 2026 - Help on the Task List, which reads Greek or English like its neighbours, a secondary   # (was 10, 7)   # CR-2, 27 Oct 2026 - Email again / Email receipt on Receipt Details, a secondary  # (was 9, 7)
 
 # Buttons the scan cannot see at all: no Bootstrap colour it LISTS, no
 # house class. Counted, not described.

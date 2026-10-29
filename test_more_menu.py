@@ -307,7 +307,8 @@ head('1. THE CENSUS')
 # cannot change again; 26 is the part of H8's work still on a
 # page the tree serves. Section 3 measures the round from the
 # backups and nobody should read any of these as its size.
-ok(len(pages) == 32, '32 pages carry the More menu in markup', len(pages))
+# CX-1, 29 Oct 2026 - 32 -> 33: the Gantt Chart gains a More menu (Help).
+ok(len(pages) == 33, '33 pages carry the More menu in markup', len(pages))
 ok(len(TOUCHED) == 27, '  27 of them are this round\'s, from its backups',
    len(TOUCHED))
 ok(GONE == ['view_meal_plan.html'],
@@ -315,9 +316,9 @@ ok(GONE == ['view_meal_plan.html'],
    % (GONE[0] if GONE else 'none'), GONE)
 ok(len(mine) == 26, '  so 26 of this round\'s pages are still in the tree',
    len(mine))
-ok(LATER == ['meal_planner.html'],
-   '  and 1 page was put on the binder by a LATER round - %s, MW-1, '
-   '19 Oct 2026' % (LATER[0] if LATER else 'none'), LATER)
+ok(LATER == ['meal_planner.html', 'projects/project_gantt.html'],
+   '  and 2 pages were put on the binder by LATER rounds - the planner '
+   '(MW-1, 19 Oct 2026) and the Gantt Chart (CX-1, 29 Oct 2026)', LATER)
 ok(len(DEFERRED) == 3, '  3 keep a hand-inlined handler, on purpose')
 ok(len(ALREADY) == 2, '  2 were already on the binder before it started')
 for n in DEFERRED + ALREADY:

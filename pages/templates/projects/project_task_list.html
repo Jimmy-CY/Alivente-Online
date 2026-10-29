@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}
 Task List - {{ project.project_name }}
@@ -24,6 +25,11 @@ Task List - {{ project.project_name }}
       <i class="fas fa-file-excel"></i> {% if language == 'greek' %}Εξαγωγή Excel{% else %}Export Excel{% endif %}
     </button>
 
+    {# CX-1, 29 Oct 2026 - Help, as on Projects and Project Detail. #}
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#projectsHelpModal" data-help-views>
+      <i class="fas fa-question-circle"></i> {% if language == 'greek' %}Βοήθεια{% else %}Help{% endif %}
+    </button>
+
     <!-- Mobile: More menu (hidden on desktop) -->
     <div class="action-more-wrapper" data-menu>
       <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle aria-label="More actions" aria-expanded="false">
@@ -32,6 +38,9 @@ Task List - {{ project.project_name }}
       <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
         <button type="button" class="action-more-item" id="exportBtnMobile" role="menuitem">
           <i class="fas fa-file-excel"></i> {% if language == 'greek' %}Εξαγωγή Excel{% else %}Export Excel{% endif %}
+        </button>
+        <button type="button" class="action-more-item" data-toggle="modal" data-target="#projectsHelpModal" data-help-views role="menuitem">
+          <i class="fas fa-question-circle"></i> {% if language == 'greek' %}Βοήθεια{% else %}Help{% endif %}
         </button>
       </div>
     </div>
@@ -739,6 +748,16 @@ if (exportBtnMobile) {
 
 </script>
 
+<script>
+// CX-1, 29 Oct 2026 - Help opens the Projects guide on its Views tab,
+// which is the one about this page.
+document.querySelectorAll('[data-help-views]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    if (window.jQuery) { jQuery('#projects__prjReports-tab').tab('show'); }
+  });
+});
+</script>
+{% render_help_modal "projects" %}
 {% endblock %}
 
 {# P2, 1 Oct 2026 - this page used to rebuild base's table standard #}

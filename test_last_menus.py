@@ -282,7 +282,8 @@ def today(p):
     return read(p)
 
 
-ok(len(pages) == 32, '32 pages carry a More menu', len(pages))
+# CX-1, 29 Oct 2026 - 32 -> 33: the Gantt Chart gains a More menu (Help).
+ok(len(pages) == 33, '33 pages carry a More menu', len(pages))
 off = [rel for rel, p in pages
        if not all(a in markup(today(p)) for a in ATTRS)]
 ok(not off, '  and every one of them is on base\'s binder', off)

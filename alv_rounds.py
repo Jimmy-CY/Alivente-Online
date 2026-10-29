@@ -1535,6 +1535,8 @@ ROUNDS = [
     '.bak_housekeep5',
     # VS-1, 29 Oct 2026 - SortableJS from the app; no snapshot churn.
     '.bak_vendorsort',
+    # CX-1, 29 Oct 2026 - celebrations retry; Help on Task List and Gantt.
+    '.bak_celebhelp',
 ]
 
 
