@@ -1915,7 +1915,7 @@
     <div class="card mb-2" style="border-left:4px solid #0e7c8b;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><strong>Tenant invoices &mdash; automatic</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A background job runs <strong>once a day, each morning at about 08:00 Cyprus time</strong>. It does nothing for most of the month, then in the <strong>last five days</strong> it drafts an invoice for each flagged tenant for the <em>month ahead</em>. You review and approve; a second job numbers, e-mails and files them. Your only job is approving.</p>
+        <p class="mb-0" style="font-size:13px;">A background job runs <strong>once a day, each morning at 06:00 UTC</strong> (08:00 Cyprus time in winter, 09:00 in summer). It does nothing for most of the month, then in the <strong>last five days</strong> it drafts an invoice for each flagged tenant for the <em>month ahead</em>. You review and approve; a second job numbers, e-mails and files them. Your only job is approving.</p>
       </div>
     </div>
     <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
@@ -1980,7 +1980,7 @@
            data-tab-name="Tenant Invoices"
            data-tab-icon="fa-users">
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-users"></i> The automatic monthly cycle</h6>
-    <p>Tenant rent invoices are handled on a schedule, so you never draft them by hand. A background job runs <strong>once a day, each morning at about 08:00 Cyprus time</strong> (06:00 UTC), all month; for most of the month it has nothing to do. The cycle:</p>
+    <p>Tenant rent invoices are handled on a schedule, so you never draft them by hand. A background job runs <strong>once a day, each morning at 06:00 UTC</strong> &mdash; 08:00 Cyprus time in winter, 09:00 in summer &mdash; all month; for most of the month it has nothing to do. The cycle:</p>
     <!-- HK-1, 26 Oct 2026 - ONCE A DAY, not on a five-minute cycle: what the Railway cron service actually runs. Each run also sends the daily digests, so it cannot run more often. -->
 
     <div class="card mb-2" style="border-left:4px solid #0e7c8b;">

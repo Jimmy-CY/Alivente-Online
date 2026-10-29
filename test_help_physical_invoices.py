@@ -146,9 +146,13 @@ for stale in ('A nightly job prepares', 'A nightly job seeds',
 check('the help says once a day, each morning',
       'once a day, each morning' in OV and 'once a day, each morning' in TEN
       and 'every five minutes' not in OV + TEN)
+# HK-5, 29 Oct 2026 - CORRECTED: Railway does not run start.sh. The
+# cron-service's Custom Start Command loops and calls the job at 06:00 UTC
+# (his screenshot and run log, 29 Oct). start.sh named check_lease_renewals,
+# which does not exist; it now names the command that does.
 check('  and the cron service runs the command that drives this',
-      'check_lease_renewals' in read(os.path.join(ROOT, 'cron-service',
-                                                  'start.sh')))
+      'python manage.py check_lease_renewal_and_invoices' in read(
+          os.path.join(ROOT, 'cron-service', 'start.sh')))
 check('  which calls the prepare command',
       "call_command('prepare_physical_invoices')" in RUN_SRC)
 check('  and the send command', "'send_physical_invoices'" in RUN_SRC)

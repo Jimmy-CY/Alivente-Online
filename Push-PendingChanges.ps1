@@ -1282,6 +1282,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'def lease_sign_page'; What = 'ES-4: the rendered lease comes back through the same token check as the page itself - a media URL for a lease is a permanent read link to a contract, and it would outlive the seven-day expiry that the rest of this round takes seriously' },
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
+    @{ File = 'cron-service/start.sh'; Text = 'python manage.py check_lease_renewal_and_invoices'; What = 'HK-5: the daily job runs the command that exists - without it the 06:00 UTC run fails and physical invoices, e-signing expiry and reminders never happen' },
     @{ File = 'pages/services/greek_lease_plural.py'; Text = 'def pluralise('; What = 'GL-3: a Greek lease with a second tenant names both and is written in the plural - without it the second tenant is left out of the lease' },
     @{ File = 'pages/views/lease_template.py'; Text = 'def _prepare_for_esign('; What = 'GE-1: Send for e-signing builds the lease without signature lines, makes the PDF and opens the Send screen with it - without it Generate only downloads Word' },
     @{ File = 'pages/views/lease_template.py'; Text = 'def _save_greek_back('; What = 'GL-1: what Generate is told for a Greek lease goes back onto the tenant and the flat, blanks only - without it the Greek boxes are asked again on every lease' },
@@ -3187,7 +3188,10 @@ $suites = @(
     # GE-1, 28 Oct 2026 - Generate -> e-signing; Greek leases in Greek.
     'test_generate_esign.py',
     # GL-3, 29 Oct 2026 - Greek details per tenant; no second ΔΕΗ field.
-    'test_greek_pair.py'
+    'test_greek_pair.py',
+    # HK-5, 29 Oct 2026 - housekeeping: the daily job, the Cyprus Greek
+    # premises line, admin_clear and api/.
+    'test_housekeeping_five.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

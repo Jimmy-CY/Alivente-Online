@@ -2265,7 +2265,7 @@
 
     <div class="alert" style="background:#e7f5f8; border-left:4px solid #0e7c8b;">
       <i class="fas fa-robot"></i> <strong>There is no Generate Invoices card any more &mdash; and nothing to press.</strong>
-      <p class="mb-1 mt-2">Rent invoices for collection are created by a background job that runs <strong>once a day, each morning at about 08:00 Cyprus time</strong> (06:00 UTC), all month. It always dates them the <strong>1st of the current month</strong> and skips any tenant who already has one, so it is <em>self-healing</em>: add a tenant on the 15th and their invoice appears the next morning, correctly dated the 1st.</p>
+      <p class="mb-1 mt-2">Rent invoices for collection are created by a background job that runs <strong>once a day, each morning at 06:00 UTC</strong> &mdash; 08:00 Cyprus time in winter, 09:00 in summer &mdash; all month. It always dates them the <strong>1st of the current month</strong> and skips any tenant who already has one, so it is <em>self-healing</em>: add a tenant on the 15th and their invoice appears the next morning, correctly dated the 1st.</p>
       <!-- HK-1, 26 Oct 2026 - ONCE A DAY, not on a five-minute cycle: that is what the Railway cron service actually runs (his screenshot). It cannot run more often, because each run also sends the daily digest emails. -->
       <p class="mb-0">The button that used to sit here duplicated that job, and did it worse &mdash; it created invoices without an amount, which the job always sets. It was removed on 25 Aug 2026, having never created an invoice that survives on Live.</p>
     </div>
@@ -2395,7 +2395,7 @@
         </ul>
         <p class="mb-1"><strong>Language</strong> options depend on the country chosen:</p>
         <ul class="mb-1">
-          <li><strong>Cyprus</strong> &rarr; English or Greek</li>
+          <li><strong>Cyprus</strong> &rarr; English or Greek. The Greek lease writes the premises from the property's <strong>Address (Greek)</strong> when it is filled in; otherwise the address parts are translated word by word.</li>
           <li><strong>Greece</strong> &rarr; Greek</li>
           <li><strong>Spain</strong> &rarr; Spanish (when launched)</li>
         </ul>
@@ -2953,7 +2953,7 @@
     <div class="card mb-3" style="border-left:4px solid #0e7c8b;">
       <div class="card-body">
         <h6 style="color:#0e7c8b;"><i class="fas fa-bell"></i> <strong>Reminders</strong></h6>
-        <p class="mb-0">On <strong>day 3</strong> and on <strong>the day before the closing day</strong> (day 3 and day 6 of the usual seven), to whoever has not signed &mdash; never to somebody who has. They go out with the <strong>morning run, at about 08:00 Cyprus time</strong>. Each reminder carries a <strong>fresh link</strong>; the earlier one stops working.</p>
+        <p class="mb-0">On <strong>day 3</strong> and on <strong>the day before the closing day</strong> (day 3 and day 6 of the usual seven), to whoever has not signed &mdash; never to somebody who has. They go out with the <strong>morning run, at 06:00 UTC</strong> (08:00 Cyprus time in winter, 09:00 in summer). Each reminder carries a <strong>fresh link</strong>; the earlier one stops working.</p>
       </div>
     </div>
     <div class="card mb-3" style="border-left:4px solid #ffc107;">

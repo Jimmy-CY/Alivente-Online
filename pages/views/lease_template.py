@@ -1280,6 +1280,22 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'property_suburb_greek': translate_to_greek(property_obj.prop_suburb or ''),
         'property_city_greek': translate_to_greek(property_obj.prop_city or ''),
         'property_province_greek': translate_to_greek(property_obj.prop_province or ''),
+        # HK-5, 29 Oct 2026 - THE PREMISES LINE OF THE CYPRUS GREEK LEASE,
+        # built once. The template joined six parts with commas, so a blank
+        # part printed ", ," ("Λευκωσία, , 2054"). The property's Address
+        # (Greek), when filled, is written as typed - his wording, not a
+        # word-by-word translation; otherwise the translated parts that
+        # are not blank, then the post code.
+        'property_address_line_greek': (
+            (getattr(property_obj, 'prop_address_greek', '') or '').strip()
+            or ', '.join(p for p in (
+                translate_to_greek((v or '').strip()) for v in (
+                    property_obj.prop_address1, property_obj.prop_address2,
+                    property_obj.prop_suburb, property_obj.prop_city,
+                    property_obj.prop_province))
+                if p and p.strip())
+            + (', ' + property_obj.prop_pcode.strip()
+               if (property_obj.prop_pcode or '').strip() else '')),
 
         # Lease terms
         'lease_start_date': start_date_obj.strftime('%B %d, %Y') if start_date_obj else 'N/A',

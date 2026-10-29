@@ -1530,6 +1530,9 @@ ROUNDS = [
     '.bak_genesign',
     # GL-3, 29 Oct 2026 - Greek details per tenant; no second ΔΕΗ field.
     '.bak_greekpair',
+    # HK-5, 29 Oct 2026 - housekeeping: the daily job, the Cyprus Greek
+    # premises line, admin_clear and api/.
+    '.bak_housekeep5',
 ]
 
 

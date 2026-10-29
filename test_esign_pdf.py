@@ -238,6 +238,12 @@ ok(PATCHER in os.listdir(ROOT) and 'CREATES' in read(
 # Removing three packages is a different claim from adding two, so
 # this round leaves them exactly where they are - and says so here,
 # so the finding is not lost between rounds.
+#
+# HK-5, 29 Oct 2026 - AND THEY MUST STAY. xhtml2pdf 0.2.16 (receipts and
+# the PDF reports) declares Requires-Dist pyHanko >=0.12.1 and
+# pyhanko-certvalidator >=0.19.5. Nothing imports them because xhtml2pdf
+# does; taking the pins out would not remove them, it would only let pip
+# choose their versions.
 ok('pyHanko' in NOW[REQ] and 'pyHanko' in OLD[REQ],
    'CONTROL: the unused pyHanko pins are left alone - removing them '
    'is its own round, named here so it is not forgotten')

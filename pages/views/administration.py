@@ -22,12 +22,12 @@ Functions
                            (mirrors the tenant_lease_agreement view).
 - upload_title_deed      : Upload a property title-deed PDF to
                            STATIC_ROOT/title_deeds.
-- admin_clear            : Delete generated report PDFs from
-                           STATIC_ROOT/reports.
+
+HK-5, 29 Oct 2026 - admin_clear is gone: no page linked to it, nothing
+writes to STATIC_ROOT/reports any more, and it deleted files on a GET.
 
 Auth tiers
 ----------
-superuser only            -> admin_clear (@user_passes_test is_superuser)
 login only                -> my_profile
 can_access_administration -> admin_apms
 login only                -> personal_page (tile-level gating in template)
@@ -37,14 +37,12 @@ can_access_properties     -> title_deeds_management
 can_edit_properties       -> upload_title_deed
 """
 
-import glob
 import os
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
-    user_passes_test,
 )
 from django.contrib.auth.models import User
 from django.http import FileResponse, Http404
@@ -350,15 +348,3 @@ def upload_title_deed(request):
 
     return redirect('admin_apms')
 
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def admin_clear(request):
-    # Clear generated report PDFs. Path derived from STATIC_ROOT (same
-    # pattern as the lease/title-deed dirs above) so this works on Live;
-    # the previous hard-coded local Windows path made this a no-op there.
-    file_path = os.path.join(settings.STATIC_ROOT, 'reports', '*.pdf')
-    files = glob.glob(file_path)
-    for f in files:
-        os.remove(f)
-    return redirect("admin_apms")

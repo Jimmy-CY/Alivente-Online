@@ -267,10 +267,10 @@ _i = NOW[MID].find("'version/',")
 ok(_i > 0 and 'DP-1' in NOW[MID][max(0, _i - 900):_i],
    'the exempt line carries its reason, so the next person to read '
    'that list knows what it is for')
-ok("'api/'" in NOW[MID],
-   'GUARD: api/ is still exempt and this round did not quietly change '
-   'it - nothing is mounted there, which is worth knowing and is not '
-   'this round to decide')
+# HK-5, 29 Oct 2026 - decided: the dead 'api/' prefix is gone. Asked of
+# the code, so a comment naming it does not count.
+ok("'api/'" not in T.python_code_only(NOW[MID]),
+   'api/ is no longer exempt - nothing was mounted there (HK-5)')
 
 
 # ==========================================================================

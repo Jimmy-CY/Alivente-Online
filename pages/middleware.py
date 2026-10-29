@@ -729,7 +729,9 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # its own partly so that this line could be narrow.
             'sign/',
             'accounts/',
-            'api/',  # If you have API endpoints
+            # HK-5, 29 Oct 2026 - 'api/' removed: nothing is mounted under
+            # it, and an exempt prefix with nothing behind it is a door
+            # left open for whatever is added there next.
             # DP-1, 22 Oct 2026 - THE DEPLOY PROBE.
             #
             # /version/ answers seven characters of hex and nothing
@@ -738,12 +740,9 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # bounce it to the login page and the probe would read a
             # login form as the running version for ever.
             #
-            # ON ITS OWN LINE RATHER THAN UNDER 'api/'. That prefix is
-            # already exempt and would have carried this for free - but
-            # nothing is mounted under api/ anywhere in the tree, so it
-            # is dead configuration, and hiding a deliberate public
-            # endpoint inside dead configuration is how the reason gets
-            # lost. This one says what it is.
+            # ON ITS OWN LINE, with its own reason. (The 'api/' prefix
+            # that could have carried it was dead configuration and HK-5
+            # removed it.)
             'version/',
             'media/',  # Media files
             'static/',  # Static files
@@ -840,7 +839,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
 
             # ---------- ADMINISTRATION ----------
             ('admin_apms', 'auth.can_access_administration'),
-            ('admin_clear', 'auth.can_access_administration'),
             ('user-administration', 'auth.can_access_administration'),
             ('setup-permissions', 'auth.can_access_administration'),
 

@@ -1070,6 +1070,8 @@ CONVERTED = [
     'test_generate_esign.py',
     # GL-3, 29 Oct 2026 - Greek details per tenant; no second ΔΕΗ field.
     'test_greek_pair.py',
+    # HK-5, 29 Oct 2026 - housekeeping.
+    'test_housekeeping_five.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
