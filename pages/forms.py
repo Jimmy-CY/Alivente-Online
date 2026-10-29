@@ -23,6 +23,8 @@ class PropForm(forms.ModelForm):
             "prop_floor",
             "prop_parking_space",
             "prop_deh_number",
+            # GL-2, 28 Oct 2026 - the address a Greek lease writes.
+            "prop_address_greek",
             "prop_status",
             "prop_available_for_rent",
             "prop_title_deed",

@@ -152,13 +152,31 @@
     {# the tenant record is never offered: since ES-9 it is the one  #}
     {# that tenancy already signed, or nothing. A lease for          #}
     {# signature is attached here (Generate joins when unparked).    #}
-    <div class="form-row" id="ls-upload-row">
+    {# THE LEASE GENERATE BUILT - GE-1, 28 Oct 2026, his decision. It  #}
+    {# arrives attached; read it here before anything is sent. An      #}
+    {# attached PDF still wins: "Attach a different PDF instead".       #}
+    {% if generated %}
+    <input type="hidden" name="generated_id" id="ls-generated-id" value="{{ generated.pk }}">
+    <div class="ls-gen-card" id="ls-gen-card">
+      {% if generated_thumb %}<img class="ls-gen-thumb" src="data:image/png;base64,{{ generated_thumb }}" alt="Page 1 of the generated lease">{% endif %}
+      <div class="ls-gen-body">
+        <div class="ls-gen-name"><i class="fas fa-file-pdf"></i> Lease agreement - {{ chosen.prop.prop_name }} - {{ chosen.tenant_name }}.pdf</div>
+        <p class="ls-gen-meta">Generated from <strong>Generate Lease Agreement</strong> &middot; {{ generated.label }} &middot; {{ generated.page_count }} page{{ generated.page_count|pluralize }}, plus the signature page added when everyone has signed.</p>
+        <div class="ls-gen-actions">
+          <a href="{% url 'generated_lease_file' generated.pk 'pdf' %}" class="btn action-secondary btn-sm" id="ls-gen-read"><i class="fas fa-eye"></i> Read it before sending</a>
+          <a href="{% url 'generated_lease_file' generated.pk 'docx' %}" class="btn action-secondary btn-sm"><i class="fas fa-file-word"></i> Word version</a>
+          <a href="#" class="ls-gen-other" id="ls-gen-other">Attach a different PDF instead</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="form-row" id="ls-upload-row"{% if generated %} style="display: none;"{% endif %}>
         <div class="col-md-8">
           <div class="form-group">
             <label for="lease_pdf"><strong>Lease agreement</strong>
               <span class="alv-req">*</span></label>
             <input type="file" class="form-control" id="lease_pdf"
-                   name="lease_pdf" accept="application/pdf,.pdf" required>
+                   name="lease_pdf" accept="application/pdf,.pdf"{% if not generated %} required{% endif %}>
             {# PDF ONLY, AND THE REASON IS SAID RATHER THAN ENFORCED #}
             {# IN SILENCE. ES-2 rasterises the original so the       #}
             {# signing page can show it, and a photograph of a lease #}
@@ -331,6 +349,33 @@
     });
   }
 
+  // THE GENERATED LEASE - GE-1, 28 Oct 2026. Read in the app's own PDF
+  // viewer, like the attached one above; or set aside for an upload, which
+  // then becomes required and the generated one is no longer sent.
+  var genRead = document.getElementById('ls-gen-read');
+  if (genRead) {
+    genRead.addEventListener('click', function (ev) {
+      if (typeof window.openPdfViewer === 'function') {
+        ev.preventDefault();
+        window.openPdfViewer(genRead.getAttribute('href'), 'Generated lease',
+                             'Lease agreement.pdf');
+      }
+    });
+  }
+  var genOther = document.getElementById('ls-gen-other');
+  if (genOther) {
+    genOther.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var card = document.getElementById('ls-gen-card');
+      var gid = document.getElementById('ls-generated-id');
+      var row = document.getElementById('ls-upload-row');
+      if (card) { card.style.display = 'none'; }
+      if (gid) { gid.value = ''; }
+      if (row) { row.style.display = ''; }
+      if (pdfIn) { pdfIn.required = true; }
+    });
+  }
+
   // ONE SUBMIT. Rendering the pages of a long lease takes a moment,
   // and a button that still looks pressable is a button somebody
   // presses twice - which would be two envelopes and two sets of
@@ -350,6 +395,19 @@
 {% include 'components/pdf_viewer.html' %}
 
 <style>
+/* GE-1, 28 Oct 2026 - the generated lease's card. */
+.ls-gen-card {
+    display: flex; gap: 18px; align-items: flex-start; padding: 14px;
+    border: 1px solid var(--alv-line); border-radius: 10px;
+    background: var(--alv-surface);
+}
+.ls-gen-thumb { width: 120px; border: 1px solid var(--alv-line); }
+.ls-gen-body { flex: 1; min-width: 0; }
+.ls-gen-name { font-weight: 700; overflow-wrap: anywhere; }
+.ls-gen-meta { margin: 4px 0 10px; }
+.ls-gen-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.ls-gen-other { color: var(--alv-accent); font-weight: 600; }
+@media screen and (max-width: 575.98px) { .ls-gen-thumb { display: none; } }
 /* ES-10, 26 Oct 2026 - the attached PDF, with its viewer icon. */
 .ls-pdf-picked {
     display: flex; align-items: center; gap: 10px;

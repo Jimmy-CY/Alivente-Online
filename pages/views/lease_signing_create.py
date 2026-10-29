@@ -62,7 +62,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from ..models import (LeaseSigning, LeaseSigningEvent, LeaseSigningParty,
-                      tenant as Tenant)
+                      GeneratedLease, tenant as Tenant)
 from ..services import lease_sealing
 # THE ONE SPELLING OF "MINT A LINK AND SEND IT", imported rather than
 # copied. It is ES-4's, it issues the token and records the event
@@ -78,6 +78,10 @@ __all__ = [
     # URLconf however correct it is. RV-1 shipped exactly that, and
     # this is the third module in the family to carry the note.
     "lease_signing_create",
+    # GE-1, 28 Oct 2026 - the generated lease's files, and an envelope's
+    # Word version.
+    "generated_lease_file",
+    "lease_signing_word",
 ]
 
 # HIS DECISIONS OF 22 OCTOBER, AND THEY ARE NOT THE SAME KIND OF
@@ -102,6 +106,24 @@ MAX_TENANT_SIGNERS = 2
 
 ALLOWED = ('.pdf',)
 MAX_BYTES = 15 * 1024 * 1024
+
+
+def _generated(raw, chosen):
+    """The GeneratedLease named by `raw`, if it may be used here.
+
+    GE-1, 28 Oct 2026. Generate -> Send for e-signing lands here with
+    ?generated=<id>. It counts only for THIS tenancy and only once: a used
+    one already became an envelope, and a lease built for one tenancy must
+    never be sent for another.
+    """
+    try:
+        pk = int(raw or 0)
+    except (TypeError, ValueError):
+        return None
+    if not pk or chosen is None:
+        return None
+    return GeneratedLease.objects.filter(pk=pk, tenant=chosen,
+                                         envelope__isnull=True).first()
 
 
 def _clean_int(raw, fallback, low, high):
@@ -182,17 +204,22 @@ def lease_signing_create(request):
         # A hand-made POST naming it gets the same answer as an empty
         # upload.
         uploaded = request.FILES.get('lease_pdf')
-        if not uploaded:
+        # GE-1, 28 Oct 2026 - OR THE LEASE GENERATE BUILT, when that is
+        # what the screen was opened with and nothing else was attached.
+        # An attached PDF always wins: "Attach a different PDF instead".
+        gen = None if uploaded else _generated(
+            request.POST.get('generated_id'), chosen)
+        if not uploaded and gen is None:
             messages.error(request,
                            'Attach the lease agreement as a PDF.')
             return redirect(request.get_full_path())
-        if os.path.splitext(uploaded.name)[1].lower() not in ALLOWED:
+        if uploaded and os.path.splitext(uploaded.name)[1].lower() not in ALLOWED:
             messages.error(
                 request, 'The lease must be a PDF. The signing page '
                          'shows the document itself, and an image has '
                          'no pages to show.')
             return redirect(request.get_full_path())
-        if uploaded.size > MAX_BYTES:
+        if uploaded and uploaded.size > MAX_BYTES:
             messages.error(request, 'That file is over 15MB.')
             return redirect(request.get_full_path())
 
@@ -250,7 +277,8 @@ def lease_signing_create(request):
         with transaction.atomic():
             env = LeaseSigning.objects.create(
                 tenant=chosen,
-                source=LeaseSigning.SOURCE_UPLOADED,
+                source=(LeaseSigning.SOURCE_GENERATED if gen
+                        else LeaseSigning.SOURCE_UPLOADED),
                 created_by=request.user,
                 status=LeaseSigning.DRAFT,
                 # SEVEN DAYS STORED, NOT COMPUTED - 22 October. An
@@ -259,7 +287,31 @@ def lease_signing_create(request):
                 # ES-7, 25 Oct 2026 - to the END of that day, Cyprus time.
                 expires_at=LeaseSigning.closing_moment(days))
 
-            env.original_pdf.save(uploaded.name, uploaded, save=True)
+            if gen is not None:
+                # GE-1 - the generated PDF becomes the original, and the
+                # Word version is kept with the envelope. Copies of their
+                # own, like an upload: the envelope never points at the
+                # staging row's files.
+                from django.core.files.base import ContentFile
+                base = os.path.basename(gen.pdf.name)
+                gen.pdf.open('rb')
+                try:
+                    env.original_pdf.save(base, ContentFile(gen.pdf.read()),
+                                          save=False)
+                finally:
+                    gen.pdf.close()
+                gen.docx.open('rb')
+                try:
+                    env.word_docx.save(os.path.basename(gen.docx.name),
+                                       ContentFile(gen.docx.read()),
+                                       save=False)
+                finally:
+                    gen.docx.close()
+                env.save()
+                gen.envelope = env
+                gen.save(update_fields=['envelope'])
+            else:
+                env.original_pdf.save(uploaded.name, uploaded, save=True)
 
             # THE PAGES, NOW. ES-4 shows these and asks page_count how
             # many there are; rendering at creation means a slow lease
@@ -280,7 +332,7 @@ def lease_signing_create(request):
                 signing=env, kind='created',
                 detail='%d signer(s), %s, expires in %d day(s)'
                        % (1 + len(signers),
-                          'uploaded',
+                          'generated' if gen else 'uploaded',
                           days),
                 ip=(request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0]
                     .strip() or request.META.get('REMOTE_ADDR') or '')[:45])
@@ -325,8 +377,27 @@ def lease_signing_create(request):
             Q(tenant_current='Yes')
             | Q(tenant_lease_start_date__gt=_dt.date.today()))
 
+    # GE-1, 28 Oct 2026 - the lease Generate built, with a picture of its
+    # first page for the document card.
+    gen = _generated(request.GET.get('generated'), chosen)
+    gen_thumb = ''
+    if gen is not None:
+        try:
+            import base64
+            from ..services import lease_generated as LG
+            gen.pdf.open('rb')
+            try:
+                gen_thumb = base64.b64encode(
+                    LG.first_page_png(gen.pdf.read())).decode('ascii')
+            finally:
+                gen.pdf.close()
+        except Exception:                               # noqa: BLE001
+            gen_thumb = ''
+
     ctx = {
         'chosen': chosen,
+        'generated': gen,
+        'generated_thumb': gen_thumb,
         'tenants': tenants,
         'default_expiry': DEFAULT_EXPIRY_DAYS,
         'reminder_rule': LeaseSigning.REMINDER_RULE,
@@ -351,3 +422,53 @@ def lease_signing_create(request):
                                     or request.user.get_username()),
                      'house_email': request.user.email or ''})
     return render(request, 'lease_signing_create.html', ctx)
+
+
+def _file_response(field, filename, content_type, inline):
+    from django.http import HttpResponse
+    field.open('rb')
+    try:
+        data = field.read()
+    finally:
+        field.close()
+    resp = HttpResponse(data, content_type=content_type)
+    resp['Content-Disposition'] = '%s; filename="%s"' % (
+        'inline' if inline else 'attachment', filename)
+    resp['Cache-Control'] = 'no-store, private, must-revalidate'
+    resp['X-Content-Type-Options'] = 'nosniff'
+    return resp
+
+
+DOCX_TYPE = ('application/vnd.openxmlformats-officedocument.'
+             'wordprocessingml.document')
+
+
+@login_required
+@superuser_only
+def generated_lease_file(request, pk, kind):
+    """A lease Generate built - its PDF (inline, for the viewer) or its
+    Word version (a download). GE-1, 28 Oct 2026. Behind the same gate as
+    the Send screen that shows it; never a media URL."""
+    from django.http import Http404
+    gen = get_object_or_404(GeneratedLease, pk=pk)
+    if kind == 'pdf':
+        return _file_response(gen.pdf, 'lease-agreement-%s.pdf' % gen.pk,
+                              'application/pdf', True)
+    if kind == 'docx':
+        return _file_response(gen.docx, 'lease-agreement-%s.docx' % gen.pk,
+                              DOCX_TYPE, False)
+    raise Http404('no such file')
+
+
+@login_required
+@superuser_only
+def lease_signing_word(request, pk):
+    """The Word version kept with an envelope - GE-1, 28 Oct 2026, his
+    "Absolutely". Only a lease that came from Generate has one."""
+    from django.http import Http404
+    env = get_object_or_404(LeaseSigning, pk=pk)
+    if not env.word_docx:
+        raise Http404('this envelope has no Word version')
+    return _file_response(env.word_docx,
+                          'lease-agreement-%s.docx' % env.pk, DOCX_TYPE,
+                          False)

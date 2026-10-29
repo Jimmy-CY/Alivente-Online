@@ -54,6 +54,12 @@
         <i class="fas fa-file-pdf"></i> View signed lease
     </a>
     {% endif %}
+    {# GE-1, 28 Oct 2026 - the Word version, kept for a generated lease. #}
+    {% if env.word_docx %}
+    <a href="{% url 'lease_signing_word' env.pk %}" class="btn action-secondary">
+        <i class="fas fa-file-word"></i> Word version
+    </a>
+    {% endif %}
     <a href="{% url 'lease_signing_list' %}?all=1" class="btn action-back"
        role="button" aria-label="Back to Lease Signing">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>

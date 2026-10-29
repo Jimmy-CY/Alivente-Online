@@ -121,7 +121,12 @@ print(__doc__.strip().splitlines()[0])
 
 import alv_tree as T                                        # noqa: E402
 
-NOW = dict((p, read(p)) for p in EDITED)
+# AS THIS ROUND LEFT THEM - GE-1, 28 Oct 2026. Generate now reaches the
+# Send screen with its own lease attached, which ES-10 planned for ("Generate
+# joins when unparked"), so the live view reads a second source. This
+# round's claims are about ES-10's screen, read as ES-10 left it.
+from alv_rounds import as_left_by                          # noqa: E402
+NOW = dict((p, as_left_by(p, SUFFIX, read)) for p in EDITED)
 OLD = dict((p, was(p)) for p in EDITED)
 
 

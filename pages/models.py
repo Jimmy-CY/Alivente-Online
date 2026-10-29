@@ -686,6 +686,11 @@ class props(models.Model):
                                           verbose_name="Parking Space")
     prop_deh_number = models.CharField(max_length=30, blank=True,
                                        verbose_name="ΔΕΗ Supply Number")
+    # THE ADDRESS IN GREEK - GL-2, 28 Oct 2026, his decision: a Greek
+    # lease writes the address in Greek. Blank falls back to the address
+    # as stored (in Latin letters for the Athens flats).
+    prop_address_greek = models.CharField(max_length=255, blank=True,
+                                          verbose_name="Address (Greek)")
 
     def __str__(self):
         return self.prop_name or f"Property {self.prop_id}"
@@ -5079,6 +5084,13 @@ class LeaseSigning(models.Model):
     # place at all.
     sealed_pdf = models.FileField(upload_to=lease_sealed_upload_path,
                                   max_length=255, blank=True, null=True)
+    # THE WORD VERSION, KEPT - GE-1, 28 Oct 2026, his decision ("Absolutely").
+    # Set only for a lease that came from Generate: the editable copy of
+    # what was sent, so a typo is fixed in Word and re-sent rather than
+    # regenerated from scratch. Never signed, never sealed, never the
+    # evidence - original_pdf is.
+    word_docx = models.FileField(upload_to=lease_signing_upload_path,
+                                 max_length=255, blank=True, null=True)
 
     # THE TAMPER-EVIDENCE, because there is no certificate. Taken of
     # the sealed bytes at the moment of sealing. A year from now the
@@ -5579,3 +5591,52 @@ class CompanyDetails(models.Model):
         db_table = 'company_details'
         verbose_name = 'Company Details'
         verbose_name_plural = 'Company Details'
+
+
+# =============================================================================
+# A LEASE GENERATED FOR E-SIGNING, WAITING FOR ITS ENVELOPE - GE-1, 28 Oct 2026.
+#
+# Generate -> Send for e-signing builds two files: the e-signing PDF (no
+# hand-signature or witness lines) and the Word version. They wait here until
+# Create and sign on the Send screen turns them into an envelope; the row is
+# then marked used and points at it. Nothing is sent from here - the Send
+# screen is still where the signers are checked and the envelope is made.
+# =============================================================================
+def generated_lease_upload_path(instance, filename):
+    ext = (filename.rsplit('.', 1)[-1] or 'pdf').lower()[:8]
+    who = slugify(getattr(instance.tenant, 'tenant_name', '')
+                  or 'tenant')[:NAME_SLUG_CAP]
+    stamp = timezone.now().strftime('%Y%m%d%H%M%S')
+    return os.path.join('lease_generated',
+                        'generated-%s-%s.%s' % (who, stamp, ext))
+
+
+class GeneratedLease(models.Model):
+    tenant = models.ForeignKey(tenant, on_delete=models.CASCADE,
+                               related_name='generated_leases')
+    country = models.CharField(max_length=20)
+    language = models.CharField(max_length=20)
+    pdf = models.FileField(upload_to=generated_lease_upload_path,
+                           max_length=255)
+    docx = models.FileField(upload_to=generated_lease_upload_path,
+                            max_length=255)
+    page_count = models.PositiveSmallIntegerField(default=0)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    envelope = models.ForeignKey('LeaseSigning', on_delete=models.SET_NULL,
+                                 null=True, blank=True, related_name='+')
+
+    @property
+    def used(self):
+        return self.envelope_id is not None
+
+    def label(self):
+        return '%s · %s' % (self.country.title(), self.language.title())
+
+    def __str__(self):
+        return 'Generated lease for %s (%s)' % (self.tenant, self.label())
+
+    class Meta:
+        db_table = 'generated_lease'
+        ordering = ['-created_at']

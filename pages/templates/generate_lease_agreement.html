@@ -299,14 +299,22 @@
 
 <body>
   <div class="page-action-buttons" style="display: flex; justify-content: flex-end">
-    <button type="submit" form="lease-generation-form" class="btn action-primary btn-lg" id="generate-btn" disabled>
-    <i class="fas fa-file-contract"></i> Generate Lease Agreement
+    {# TWO WAYS OUT - GE-1, 28 Oct 2026, his decision. Send for e-signing #}
+    {# builds the PDF without the hand-signature lines and opens the Send #}
+    {# screen with it attached; Download Word is the document as before. #}
+    <button type="submit" form="lease-generation-form" name="action" value="esign" class="btn action-primary btn-lg" id="esign-btn" disabled>
+    <i class="fas fa-file-signature"></i> Send for e-signing
+    </button>
+    <button type="submit" form="lease-generation-form" name="action" value="word" class="btn action-secondary btn-lg" id="generate-btn" disabled>
+    <i class="fas fa-file-word"></i> Download Word
     </button>
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#generate_lease_agreementHelpModal" style="margin-right:16px">
       <i class="fas fa-question-circle"></i> Help
     </button>
     <a href="{% url 'admin_apms' %}?tab=functional" class="btn action-back" style="margin-right:16px" role="button">Back</a>
   </div>
+  {# GE-1, 28 Oct 2026 - why Send for e-signing is off, when it is. #}
+  <p class="text-muted small text-right" id="esign-why" style="display: none;"></p>
   <br>
 
   {% if perms.auth.can_edit_tenants %}
@@ -1072,6 +1080,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.disabled = false;
             btn.classList.remove('btn-secondary');
             btn.classList.add('btn-info');
+            glEsign();
         }, 500);
       }
       // If isValid is false, modal stays open and user must fix the errors
@@ -1217,6 +1226,34 @@ function updateGenerateButton() {
         generateBtn.classList.remove('btn-info');
         generateBtn.classList.add('btn-secondary');
     }
+    glEsign();
+}
+
+// SEND FOR E-SIGNING FOLLOWS DOWNLOAD WORD - GE-1, 28 Oct 2026 - and is
+// off, with the reason beside it, for what e-signing cannot take: a new
+// tenant (the signed lease is approved onto a tenant record) and a
+// Spanish lease (its template is not finished). His words: "We need to
+// give a warning for someone trying to do something different." The
+// server refuses the same cases (esign_refusal).
+const GL_ESIGN_ALLOWED = {{ user.is_superuser|yesno:"true,false" }};
+function glEsign() {
+  const word = document.getElementById('generate-btn');
+  const es = document.getElementById('esign-btn');
+  const why = document.getElementById('esign-why');
+  if (!word || !es || !why) { return; }
+  const tenant = document.getElementById('tenant-select').value;
+  const country = document.getElementById('country-select').value;
+  let reason = '';
+  if (!GL_ESIGN_ALLOWED) {
+    reason = 'Sending a lease for e-signing is restricted to superusers - use Download Word.';
+  } else if (tenant === 'new_tenant') {
+    reason = 'Send for e-signing needs the tenant on record - add them first (Tenants > Add Tenant), then choose them here. Download Word works for a new tenant.';
+  } else if (country === 'spain') {
+    reason = 'Spanish leases are not ready for e-signing yet - use Download Word.';
+  }
+  es.disabled = word.disabled || !!reason;
+  why.textContent = reason;
+  why.style.display = (reason && !word.disabled) ? '' : 'none';
 }
 
 async function loadPropertyTenantData() {

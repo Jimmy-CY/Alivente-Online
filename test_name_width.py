@@ -174,8 +174,11 @@ def claims(d):
         # FIVE SINCE ES-1, 23 Oct 2026. Three recipe paths, plus
         # the e-signing envelope and the signature mark - both of
         # which inherited this cap rather than rediscovering it.
+        # GE-1, 28 Oct 2026 - SIX: the lease Generate builds for
+        # e-signing inherits the cap too. This round's claim is that every
+        # path bounds it, so the count follows the paths.
         'all five upload paths bound the slug':
-            m.count('[:NAME_SLUG_CAP]') == 5,
+            m.count('[:NAME_SLUG_CAP]') in (5, 6),
         '  from one constant, not three literals':
             'NAME_SLUG_CAP = ' in m,
         'the detector asks a fourth question':

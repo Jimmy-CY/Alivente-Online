@@ -1526,6 +1526,8 @@ ROUNDS = [
     '.bak_ownedfrom',
     # GL-1, 28 Oct 2026 - the Greek lease fields, and Company Details.
     '.bak_greeklease',
+    # GE-1, 28 Oct 2026 - Generate -> e-signing; Greek leases in Greek.
+    '.bak_genesign',
 ]
 
 

@@ -42,10 +42,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import FileResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from ..models import props, tenant, CompanyDetails
+from ..models import props, tenant, CompanyDetails, GeneratedLease
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +150,21 @@ def generate_lease_agreement_view(request):
                     return render(request, 'generate_lease_agreement.html', context)
 
             # Generate the lease agreement
+            # SEND FOR E-SIGNING - GE-1, 28 Oct 2026, his decisions: the
+            # lease is built without the hand-signature lines, turned into
+            # a PDF here, and the Send screen opens with it attached.
+            # Existing tenants only, with a warning for anything else.
+            if request.POST.get('action') == 'esign':
+                refusal = esign_refusal(country, tenant_id,
+                                        request.user.is_superuser)
+                if refusal:
+                    messages.error(request, refusal)
+                    return render(request, 'generate_lease_agreement.html',
+                                  context)
+                return _prepare_for_esign(request, context, country,
+                                          language, property_obj, tenant_obj,
+                                          tenant_id, additional_data)
+
             document_path = generate_lease_document(
                 country=country,
                 language=language,
@@ -277,6 +292,88 @@ def _save_second_tenant_back(tenant_id, tenant_obj, additional_data):
 
     tenant.objects.filter(pk=tenant_obj.pk).update(**fields)
     return fields
+
+
+def esign_refusal(country, tenant_id, superuser=True):
+    """Why this lease cannot go to e-signing, or None - GE-1, 28 Oct 2026.
+
+    His decision: existing tenants only, and "a warning for someone trying
+    to do something different" - each refusal says why and what to do.
+    The page disables the button for the same cases; this is the same rule
+    where a hand-made POST meets it.
+    """
+    if not superuser:
+        # The Send screen is superuser-only (ES-8); a lease built for it
+        # that nobody here could open would be a dead end.
+        return ('Sending a lease for e-signing is restricted to '
+                'superusers. Use Download Word.')
+    if tenant_id == 'new_tenant':
+        return ('Send for e-signing needs the tenant on record - the signed '
+                'lease is approved onto that record, and the signers come '
+                'from it. Add the tenant first (Tenants > Add Tenant), then '
+                'choose them here. To send this lease as it is, use Download '
+                'Word.')
+    if country == 'spain':
+        return ('Spanish leases are not ready for e-signing yet - the '
+                'template still has placeholders to finish. Use Download '
+                'Word.')
+    return None
+
+
+def _prepare_for_esign(request, context, country, language, property_obj,
+                       tenant_obj, tenant_id, additional_data):
+    """Build both versions, keep them, and open the Send screen.
+
+    The WORD version is the ordinary document, kept with the envelope (his
+    "Absolutely"). The E-SIGNING version is the same lease with
+    signed_electronically set and its signature block replaced, as a PDF.
+    Nothing is sent from here: Create and sign on the Send screen makes the
+    envelope, after the person has read what is attached.
+    """
+    from django.core.files.base import ContentFile
+    from django.urls import reverse
+    from ..services import lease_generated as LG
+
+    word_path = generate_lease_document(country, language, property_obj,
+                                        tenant_obj, additional_data)
+    es_path = generate_lease_document(
+        country, language, property_obj, tenant_obj,
+        dict(additional_data, signed_electronically=True))
+    try:
+        if not (word_path and es_path):
+            messages.error(request, 'The lease could not be generated. '
+                                    'Please check the template exists.')
+            return render(request, 'generate_lease_agreement.html', context)
+        _save_second_tenant_back(tenant_id, tenant_obj, additional_data)
+        _save_identity_back(tenant_id, tenant_obj, additional_data)
+        _save_greek_back(country, tenant_id, tenant_obj, property_obj,
+                         additional_data)
+        try:
+            LG.strip_signature_block(es_path, language)
+            pdf = LG.docx_to_pdf(es_path)
+        except (ValueError, LG.LeasePdfError) as exc:
+            messages.error(request, str(exc))
+            return render(request, 'generate_lease_agreement.html', context)
+
+        stem = ('Lease agreement - %s - %s' % (
+            property_obj.prop_name or 'property',
+            tenant_obj.tenant_name or 'tenant')).replace('/', '-')
+        gl = GeneratedLease(tenant=tenant_obj, country=country,
+                            language=language, created_by=request.user,
+                            page_count=LG.page_count(pdf))
+        gl.pdf.save(stem + '.pdf', ContentFile(pdf), save=False)
+        with open(word_path, 'rb') as fh:
+            gl.docx.save(stem + '.docx', ContentFile(fh.read()), save=False)
+        gl.save()
+        return redirect('%s?tenant=%d&generated=%d' % (
+            reverse('lease_signing_create'), tenant_obj.pk, gl.pk))
+    finally:
+        for pth in (word_path, es_path):
+            if pth and os.path.exists(pth):
+                try:
+                    os.remove(pth)
+                except OSError:
+                    pass
 
 
 def _save_greek_back(country, tenant_id, tenant_obj, property_obj,
@@ -1050,6 +1147,19 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
             .get('tenant_address')):
         tenant_address = additional_data['existing_tenant_data']['tenant_address']
 
+    # THE THOUSANDS SEPARATOR - GL-2, 28 Oct 2026, his decision: a Greek
+    # lease writes €1.000, the Greek way; an English one keeps €1,000.
+    def _n(v):
+        s = f'{v:,}'
+        return s.replace(',', '.') if language == 'greek' else s
+
+    # THE ADDRESS IN GREEK - GL-2, 28 Oct 2026. For a Greek-language lease
+    # the property's Greek address, when it has one, is where an existing
+    # tenant lives (the tenant line reads "κάτοικος ...").
+    if (language == 'greek' and not additional_data.get('is_new_tenant')
+            and (getattr(property_obj, 'prop_address_greek', '') or '').strip()):
+        tenant_address = property_obj.prop_address_greek.strip()
+
     # Prepare template data
     template_data = {
         # Current date components with ordinal day
@@ -1146,17 +1256,17 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'communal_expenses_words_greek': number_to_words_greek(communal_expenses),
 
         # Financial terms - with thousand separators (the template uses the raw numbers)
-        'rental_amount': f'{monthly_rent:,}',
-        'communal_expenses': f'{communal_expenses:,}',
-        'security_deposit': f'{security_deposit:,}',
+        'rental_amount': f'{_n(monthly_rent)}',
+        'communal_expenses': f'{_n(communal_expenses)}',
+        'security_deposit': f'{_n(security_deposit)}',
 
         # Additional formatted versions for compatibility
-        'rental_amount_formatted': f'{currency}{monthly_rent:,}',
-        'communal_expenses_formatted': f'{currency}{communal_expenses:,}',
-        'deposit_amount_formatted': f'{currency}{security_deposit:,}',
-        'security_deposit_formatted': f'{currency}{security_deposit:,}',
-        'total_rent_formatted': f'{currency}{(monthly_rent * duration_months):,}' if duration_months else f'{currency}0',
-        'monthly_rent_formatted': f'{currency}{monthly_rent:,}',
+        'rental_amount_formatted': f'{currency}{_n(monthly_rent)}',
+        'communal_expenses_formatted': f'{currency}{_n(communal_expenses)}',
+        'deposit_amount_formatted': f'{currency}{_n(security_deposit)}',
+        'security_deposit_formatted': f'{currency}{_n(security_deposit)}',
+        'total_rent_formatted': f'{currency}{_n((monthly_rent * duration_months))}' if duration_months else f'{currency}0',
+        'monthly_rent_formatted': f'{currency}{_n(monthly_rent)}',
 
         # Extension and increase terms
         'lease_extension_period': extension_period,
@@ -1209,7 +1319,7 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'lease_term_greek': _term,
         'lease_term_rent_greek': _term_rent,
         'next_period_greek': _next,
-        'third_year_rent': f'{third_year_rent:,}' if third_year_rent else '',
+        'third_year_rent': f'{_n(third_year_rent)}' if third_year_rent else '',
         'third_year_rent_words_greek': (number_to_words_greek(third_year_rent)
                                         if third_year_rent else ''),
         'third_year_start_greek': (format_date_greek(_third_start)

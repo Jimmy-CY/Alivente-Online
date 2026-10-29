@@ -334,7 +334,11 @@ if have_db and have_docx:
                and 'για τα πρώτα δύο (2) μισθωτικά έτη ήτοι' in out,
                '  a term worked out from the dates')
             ok('ενώ για το τρίτο μισθωτικό έτος ήτοι από την 1η Δεκεμβρίου '
-               '2028' in out and '€1,000 (Χίλια Ευρώ)' in out,
+               '2028' in out
+               # GL-2, 28 Oct 2026 - his decision: a Greek lease writes
+               # €1.000 with a dot. Either is this round's claim.
+               and ('€1,000 (Χίλια Ευρώ)' in out
+                    or '€1.000 (Χίλια Ευρώ)' in out),
                '  and the later rent, from the day after the term ends')
             ok('ΑΤ4635239 με ημερομηνία έκδοσης 26-02-2022 και ημερομηνία '
                'λήξης 25-02-2027' in out,

@@ -72,6 +72,12 @@ urlpatterns = [
          name='lease_signing_detail'),
     path('lease-signing/<int:pk>/signed.pdf', views.lease_signing_sealed,
          name='lease_signing_sealed'),
+    # GE-1, 28 Oct 2026 - the Word version kept with an envelope, and the
+    # files of a lease Generate built for e-signing.
+    path('lease-signing/<int:pk>/word/', views.lease_signing_word,
+         name='lease_signing_word'),
+    path('lease-signing/generated/<int:pk>/<str:kind>/',
+         views.generated_lease_file, name='generated_lease_file'),
     path('lease-signing/<int:pk>/approve/', views.lease_signing_approve,
          name='lease_signing_approve'),
     # ES-7b, 25 Oct 2026 - deleting an envelope, superuser only.

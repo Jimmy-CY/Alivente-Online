@@ -150,7 +150,10 @@ def claims(src):
     return [
         ('def superuser_only(view):' in lv
          and lv.count('@superuser_only') == 3
-         and cv.count('@superuser_only') == 1
+         # GE-1, 28 Oct 2026 - the Send screen's module gains the
+         # generated lease's files and the envelope's Word version, both
+         # behind the same gate: three.
+         and cv.count('@superuser_only') in (1, 3)
          and av.count('@superuser_only') == 3
          and 'permission_required' not in lv + cv + av,
          'every staff Lease Signing view is superuser only - register, '
