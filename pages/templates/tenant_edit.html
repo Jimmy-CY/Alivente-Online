@@ -122,6 +122,9 @@
             <input type="text" class="form-control" id="tenant_id_number" name="tenant_id_number" placeholder="Passport or ID card number" value="{{tresults.tenant_id_number}}">
             <select class="form-control" id="tenant_id_country" name="tenant_id_country" aria-label="Passport/ID country">{% id_country_options tresults.tenant_id_country %}</select>
             </div>
+            {# GL-3, 29 Oct 2026 - this person's Greek Details: a property in #}
+            {# Greece only; painted by the Greek Details script below.       #}
+            <button type="button" class="btn action-secondary btn-sm gd-btn" id="gd-btn-1" style="display: none;"><i class="fas fa-landmark"></i> Greek Details<i class="fas fa-check-circle gd-ok" aria-label="Complete" style="display: none;"></i><span class="gd-state alv-pill alv-pill-attn" style="display: none;"></span></button>
           </div>
         </div>
         <div class="col-12 ti-person" id="contact-person-field"{% if tresults.tenant_type != 'Company' %} style="display: none;"{% endif %}>
@@ -203,6 +206,9 @@
             <input type="text" class="form-control" id="tenant_2_id_number" name="tenant_2_id_number" placeholder="Passport or ID card number" value="{{tresults.tenant_2_id_number}}">
             <select class="form-control" id="tenant_2_id_country" name="tenant_2_id_country" aria-label="Second tenant Passport/ID country">{% id_country_options tresults.tenant_2_id_country %}</select>
             </div>
+            {# GL-3, 29 Oct 2026 - this person's Greek Details: a property in #}
+            {# Greece only; painted by the Greek Details script below.       #}
+            <button type="button" class="btn action-secondary btn-sm gd-btn" id="gd-btn-2" style="display: none;"><i class="fas fa-landmark"></i> Greek Details<i class="fas fa-check-circle gd-ok" aria-label="Complete" style="display: none;"></i><span class="gd-state alv-pill alv-pill-attn" style="display: none;"></span></button>
           </div>
         </div>
         <div class="col-md">
@@ -232,36 +238,150 @@
       </div>
     </div>
     <!-- /A SECOND TENANT - T2-2 -->
-    {# FOR A GREEK LEASE - GL-1, 28 Oct 2026. Shown for a property in #}
-    {# Greece, where the lease names them; elsewhere they still travel #}
-    {# as hidden fields, because TenantForm lists them and a field the #}
-    {# form lists but the page omits is saved as blank (T2-1).         #}
-    {% if tresults.prop.prop_country|lower == 'greece' %}
-    <div class="form-row" id="gl-tenant-row">
-        <div class="col-md-4">
-          <div class="form-group">
-            <label for="tenant_father_name"><strong>Father's Name</strong></label>
-            <input type="text" class="form-control" id="tenant_father_name" name="tenant_father_name" placeholder="As written in the lease" value="{{ tresults.tenant_father_name }}">
-          </div>
+    {# FOR A GREEK LEASE - GL-3, 29 Oct 2026. GL-1's open row of three  #}
+    {# boxes is gone: each person has a Greek Details button under their #}
+    {# Passport/ID, and the six values travel hidden in the component.   #}
+    {# GREEK DETAILS - GL-3, 29 Oct 2026, his decisions: captured for a     #}
+{# property in GREECE only, PER TENANT, minimised behind a Greek Details  #}
+{# button under each person's Passport/ID ("One per person"). The six     #}
+{# values travel as hidden fields on every tenant in every country,       #}
+{# because TenantForm lists them and a field the form lists but the page  #}
+{# omits is saved as blank (T2-1). The pop-up's boxes have no name: Done  #}
+{# copies them into the hidden fields and Save saves them. The same block #}
+{# is on Tenant Edit and Tenant Add, each reading its own source.         #}
+<input type="hidden" id="gd-1-father" name="tenant_father_name" value="{{ tresults.tenant_father_name|default:'' }}">
+<input type="hidden" id="gd-1-afm" name="tenant_afm" value="{{ tresults.tenant_afm|default:'' }}">
+<input type="hidden" id="gd-1-doy" name="tenant_doy" value="{{ tresults.tenant_doy|default:'' }}">
+<input type="hidden" id="gd-2-father" name="tenant_2_father_name" value="{{ tresults.tenant_2_father_name|default:'' }}">
+<input type="hidden" id="gd-2-afm" name="tenant_2_afm" value="{{ tresults.tenant_2_afm|default:'' }}">
+<input type="hidden" id="gd-2-doy" name="tenant_2_doy" value="{{ tresults.tenant_2_doy|default:'' }}">
+
+<div class="modal fade" id="greekDetailsModal" tabindex="-1" role="dialog"
+     aria-labelledby="gd-title" aria-hidden="true" style="display:none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content gd-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title gd-title" id="gd-title">
+          <i class="fas fa-landmark"></i> Greek Details &mdash; <span id="gd-who"></span>
+        </h5>
+        <button type="button" class="close gd-close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">What the Greek lease names for this tenant. Saved with the tenant when you press Save.</p>
+        <div class="form-group">
+          <label for="gd-father"><strong>Father's Name</strong></label>
+          <input type="text" class="form-control" id="gd-father" maxlength="100" placeholder="As written in the lease, e.g. Γεωργίου">
         </div>
-        <div class="col-md-4">
-          <div class="form-group">
-            <label for="tenant_afm"><strong>Tax Number (ΑΦΜ)</strong></label>
-            <input type="text" class="form-control" id="tenant_afm" name="tenant_afm" placeholder="ΑΦΜ" value="{{ tresults.tenant_afm }}">
-          </div>
+        <div class="form-group">
+          <label for="gd-afm"><strong>Tax Number (ΑΦΜ)</strong></label>
+          <input type="text" class="form-control" id="gd-afm" maxlength="20" placeholder="ΑΦΜ">
         </div>
-        <div class="col-md-4">
-          <div class="form-group">
-            <label for="tenant_doy"><strong>Tax Office (ΔΟΥ)</strong></label>
-            <input type="text" class="form-control" id="tenant_doy" name="tenant_doy" placeholder="ΔΟΥ" value="{{ tresults.tenant_doy }}">
-          </div>
+        <div class="form-group mb-0">
+          <label for="gd-doy"><strong>Tax Office (ΔΟΥ)</strong></label>
+          <input type="text" class="form-control" id="gd-doy" maxlength="100" placeholder="ΔΟΥ">
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn action-primary" id="gd-done"><i class="fas fa-check"></i> Done</button>
+      </div>
     </div>
-    {% else %}
-    <input type="hidden" name="tenant_father_name" value="{{ tresults.tenant_father_name }}">
-    <input type="hidden" name="tenant_afm" value="{{ tresults.tenant_afm }}">
-    <input type="hidden" name="tenant_doy" value="{{ tresults.tenant_doy }}">
-    {% endif %}
+  </div>
+</div>
+
+<style>
+/* GL-3, 29 Oct 2026 - the Greek Details button and its pop-up. */
+.gd-btn { margin-top: 6px; }
+.gd-btn .gd-state { margin-left: 6px; }
+.gd-btn .gd-ok { color: var(--alv-good, #2e7d32); margin-left: 6px; }
+.gd-content { border-radius: 12px; border: none; }
+.gd-title { color: var(--alv-on-accent); font-weight: 600; }
+.gd-close { color: var(--alv-on-accent); opacity: .9; text-shadow: none; }
+</style>
+
+<script>
+(function () {
+  // GREEK DETAILS - GL-3, 29 Oct 2026. See the note above the hidden
+  // fields.
+  var KEYS = ['father', 'afm', 'doy'];
+  var who = 1;
+
+  function hid(n, k) { return document.getElementById('gd-' + n + '-' + k); }
+
+  // THE PROPERTY DECIDES - his answer: "Property being in Greece". Read
+  // off the option chosen, so changing the property changes the answer.
+  function greek() {
+    var s = document.getElementById('prop');
+    if (!s || s.selectedIndex < 0) return false;
+    var o = s.options[s.selectedIndex];
+    return (o.getAttribute('data-country') || '').toLowerCase() === 'greece';
+  }
+  function individual() {
+    var t = document.getElementById('tenant_type');
+    return !t || t.value === 'Individual';
+  }
+  function named(n) {
+    var e = document.getElementById(n === 1 ? 'tenant_name' : 'tenant_2_name');
+    return e ? e.value.trim() : '';
+  }
+
+  function paint() {
+    var on = greek() && individual();
+    [1, 2].forEach(function (n) {
+      var b = document.getElementById('gd-btn-' + n);
+      if (!b) return;
+      b.style.display = (on && (n === 1 || !!named(2))) ? '' : 'none';
+      var miss = KEYS.filter(function (k) { return !hid(n, k).value.trim(); }).length;
+      var st = b.querySelector('.gd-state');
+      var okIcon = b.querySelector('.gd-ok');
+      if (st) {
+        st.textContent = miss ? (miss + ' missing') : '';
+        st.style.display = miss ? '' : 'none';
+      }
+      if (okIcon) okIcon.style.display = miss ? 'none' : '';
+    });
+  }
+
+  function open(n) {
+    who = n;
+    document.getElementById('gd-who').textContent =
+      named(n) || (n === 1 ? 'Tenant' : 'Second Tenant');
+    KEYS.forEach(function (k) {
+      document.getElementById('gd-' + k).value = hid(n, k).value;
+    });
+    var m = document.getElementById('greekDetailsModal');
+    if (window.jQuery && jQuery.fn.modal) { jQuery(m).modal('show'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    [1, 2].forEach(function (n) {
+      var b = document.getElementById('gd-btn-' + n);
+      if (b) b.addEventListener('click', function () { open(n); });
+    });
+    document.getElementById('gd-done').addEventListener('click', function () {
+      KEYS.forEach(function (k) {
+        hid(who, k).value = document.getElementById('gd-' + k).value.trim();
+      });
+      paint();
+      var m = document.getElementById('greekDetailsModal');
+      if (window.jQuery && jQuery.fn.modal) { jQuery(m).modal('hide'); }
+    });
+    ['prop', 'tenant_type'].forEach(function (id) {
+      var e = document.getElementById(id);
+      if (e) e.addEventListener('change', paint);
+    });
+    var t2 = document.getElementById('tenant_2_name');
+    if (t2) t2.addEventListener('input', paint);
+    // Remove Second Tenant empties gd-2-* (they are in its field list);
+    // this runs after that handler and repaints.
+    var rem = document.getElementById('t2-remove-btn');
+    if (rem) rem.addEventListener('click', function () { setTimeout(paint, 0); });
+    paint();
+  });
+})();
+</script>
 </div>
 <div class="form-card">
     <h3 class="form-section-title"><i class="fas fa-file-signature"></i> Lease</h3>
@@ -273,10 +393,10 @@
               <option disabled>Select Property</option>
               {% for results in props %}
                 {% if results.prop_id == tresults.prop_id %}
-                  <option selected value="{{results.prop_id}}">{{results.prop_name}}</option>
+                  <option selected value="{{results.prop_id}}" data-country="{{ results.prop_country|lower }}">{{results.prop_name}}</option>
                 {% else %}
                   {% if results.prop_available_for_rent == "Yes" %}
-                    <option value="{{results.prop_id}}">{{results.prop_name}}</option>
+                    <option value="{{results.prop_id}}" data-country="{{ results.prop_country|lower }}">{{results.prop_name}}</option>
                   {% endif %}
                 {% endif %}
               {% endfor %}
@@ -642,8 +762,10 @@
 
   // TI-1, 26 Oct 2026 - and the second tenant's Passport/ID.
   // PC-1, 28 Oct 2026 - and its country.
+  // GL-3, 29 Oct 2026 - and the second tenant's Greek Details.
   var FIELDS = ['tenant_2_name', 'tenant_2_id_number', 'tenant_2_id_country',
-                'tenant_2_contact_number', 'tenant_2_email'];
+                'tenant_2_contact_number', 'tenant_2_email',
+                'gd-2-father', 'gd-2-afm', 'gd-2-doy'];
 
   // THE NAME DECIDES, matching has_second_tenant on the model. A
   // telephone number with no name is a half-typed form, not a person.

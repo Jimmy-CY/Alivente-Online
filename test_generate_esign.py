@@ -290,7 +290,7 @@ if have_db:
                 prop_name='GE1 Athens', prop_country='Greece',
                 prop_available_for_rent='Yes', prop_address1='Afaias 15',
                 prop_floor='3', prop_parking_space='P3',
-                prop_deh_number='3138574',
+                prop_electricity='Meter: 3138574',   # GL-3
                 prop_address_greek='οδός Αφαίας αρ. 15, Παλαιό Ψυχικό, '
                                    '154 52')
             L = dict(tenant_type='Individual', tenant_current='Yes',

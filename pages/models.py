@@ -676,16 +676,20 @@ class props(models.Model):
         blank=True, null=True, verbose_name="Owned From",
         help_text="Budgets and revenue count from this month. Blank = the first lease start.")
 
-    # THE FLAT, FOR A GREEK LEASE - GL-1, 28 Oct 2026. The three Athens
-    # floors are identical, so the template keeps the building's
-    # description and asks the property for what differs: which floor,
-    # which parking space, which ΔΕΗ supply.
+    # THE FLAT - GL-1, 28 Oct 2026. The three Athens floors are
+    # identical, so the Greek template keeps the building's description
+    # and asks the property for what differs: which floor, which parking
+    # space. Shown on both property reports since GL-3.
     prop_floor = models.CharField(max_length=20, blank=True,
                                   verbose_name="Floor")
     prop_parking_space = models.CharField(max_length=20, blank=True,
                                           verbose_name="Parking Space")
-    prop_deh_number = models.CharField(max_length=30, blank=True,
-                                       verbose_name="ΔΕΗ Supply Number")
+    # GL-3, 29 Oct 2026 - THERE IS NO ΔΕΗ FIELD. GL-1 added one and it
+    # duplicated Electricity Details, which already held the meter number
+    # ("Meter: 3138572"). His words: "ΔΕΗ is only for Greece. This is why
+    # we had the Electricity Details field which was generic across all
+    # properties and countries." Migration 0115 removed the column; a
+    # Greek lease reads the number from Electricity Details (deh_number).
     # THE ADDRESS IN GREEK - GL-2, 28 Oct 2026, his decision: a Greek
     # lease writes the address in Greek. Blank falls back to the address
     # as stored (in Latin letters for the Athens flats).
@@ -709,6 +713,30 @@ class props(models.Model):
     def tenant_address(self):
         return ', '.join(p.strip() for p in
                          (getattr(self, f) or '' for f in self.ADDRESS_FIELDS)
+                         if p and p.strip())
+
+    # GL-3, 29 Oct 2026 - the number in Electricity Details without its
+    # label: "Meter: 3138572" -> "3138572". What a Greek lease calls the
+    # ΔΕΗ supply number. Anything not shaped like a label is kept whole.
+    @property
+    def deh_number(self):
+        import re
+        v = (self.prop_electricity or '').strip()
+        if v.lower() in ('not available', 'n/a', 'na', '-'):
+            return ''
+        return re.sub(r'^(?:meter|μετρητής|παροχή|supply|δεη)'
+                      r'(?:\s*(?:no\.?|number|αρ\.?))?\s*[:#.]?\s*',
+                      '', v, flags=re.I).strip()
+
+    # GL-3, 29 Oct 2026 - THE STREET LINE ON THE PROPERTY REPORTS. The
+    # templates joined the parts with "{% if %}, " on separate lines, so
+    # every comma came out with a space in front of it ("Apartment ,
+    # Afaias 15 , Palaio Psychiko"). Joined here, each part trimmed.
+    @property
+    def street_address(self):
+        return ', '.join(p.strip() for p in
+                         (self.prop_address1 or '', self.prop_address2 or '',
+                          self.prop_suburb or '')
                          if p and p.strip())
 
     @property
@@ -791,6 +819,12 @@ class tenant(models.Model):
     tenant_father_name = models.CharField(max_length=100, blank=True)
     tenant_afm = models.CharField(max_length=20, blank=True)
     tenant_doy = models.CharField(max_length=100, blank=True)
+    # GL-3, 29 Oct 2026 - AND THE SECOND TENANT'S, his decision: "we need
+    # these fields PER tenant". A joint tenancy in Greece names both
+    # people in the lease, each with a father's name, ΑΦΜ and ΔΟΥ.
+    tenant_2_father_name = models.CharField(max_length=100, blank=True)
+    tenant_2_afm = models.CharField(max_length=20, blank=True)
+    tenant_2_doy = models.CharField(max_length=100, blank=True)
     tenant_deposit = models.IntegerField(blank=True, null=True)
     tenant_lease_start_date = models.DateField(blank=True, null=True)
     tenant_lease_end_date = models.DateField(blank=True, null=True)

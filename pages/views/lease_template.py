@@ -411,13 +411,37 @@ def _save_greek_back(country, tenant_id, tenant_obj, property_obj,
         if f:
             tenant.objects.filter(pk=tenant_obj.pk).update(**f)
             out['tenant'] = f
+        # GL-3, 29 Oct 2026 - THE SECOND TENANT'S, onto the record only
+        # when the record names the same second tenant as the lease (read
+        # after _save_second_tenant_back, so one just saved counts).
+        # Blanks only, as above.
+        row2 = tenant.objects.filter(pk=tenant_obj.pk).values(
+            'tenant_2_name', 'tenant_2_father_name', 'tenant_2_afm',
+            'tenant_2_doy').first() or {}
+        typed2 = clean((additional_data.get('second_tenant_data') or {})
+                       .get('tenant_name'), 255)
+        if (additional_data.get('has_second_tenant') and typed2
+                and typed2 == clean(row2.get('tenant_2_name'), 255)):
+            f2 = {}
+            for col, key, cap in (
+                    ('tenant_2_father_name', 'gr_2_father_name', 100),
+                    ('tenant_2_afm', 'gr_2_afm', 20),
+                    ('tenant_2_doy', 'gr_2_doy', 100)):
+                typed = clean(additional_data.get(key), cap)
+                if typed and not clean(row2.get(col), cap):
+                    f2[col] = typed
+            if f2:
+                tenant.objects.filter(pk=tenant_obj.pk).update(**f2)
+                out['tenant_2'] = f2
     if property_obj is not None and getattr(property_obj, 'pk', None):
+        # GL-3, 29 Oct 2026 - a typed ΔΕΗ number fills a blank Electricity
+        # Details; there is no ΔΕΗ column any more.
         row = props.objects.filter(pk=property_obj.pk).values(
-            'prop_floor', 'prop_parking_space', 'prop_deh_number').first() or {}
+            'prop_floor', 'prop_parking_space', 'prop_electricity').first() or {}
         f = {}
         for col, key, cap in (('prop_floor', 'gr_floor', 20),
                               ('prop_parking_space', 'gr_parking', 20),
-                              ('prop_deh_number', 'gr_deh', 30)):
+                              ('prop_electricity', 'gr_deh', 255)):
             typed = clean(additional_data.get(key), cap)
             if typed and not clean(row.get(col), cap):
                 f[col] = typed
@@ -892,6 +916,22 @@ def generate_lease_document(country, language, property_obj, tenant_obj, additio
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.docx')
         doc.save(temp_file.name)
 
+        # TWO TENANTS IN THE GREEK LEASE - GL-3, 29 Oct 2026. The template
+        # is written for one; with a second tenant both are named and
+        # every reference becomes plural. A template that has changed
+        # shape stops here (ValueError) rather than send half of it.
+        if (country == 'greece' and language == 'greek'
+                and template_data.get('has_second_tenant')
+                and (template_data.get('second_tenant_name') or '').strip()):
+            from pages.services.greek_lease_plural import pluralise
+            pluralise(temp_file.name, {
+                'name': template_data['second_tenant_name'],
+                'father_name': template_data.get('tenant_2_father_name'),
+                'address': template_data.get('tenant_address'),
+                'afm': template_data.get('tenant_2_afm'),
+                'doy': template_data.get('tenant_2_doy'),
+            }, template_data.get('tenant_name'))
+
         logger.info(f"Lease document generated successfully: {temp_file.name}")
         return temp_file.name
 
@@ -1131,9 +1171,20 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
     gr_father = _gr('gr_father_name', tenant_obj, 'tenant_father_name')
     gr_afm = _gr('gr_afm', tenant_obj, 'tenant_afm')
     gr_doy = _gr('gr_doy', tenant_obj, 'tenant_doy')
+    # GL-3, 29 Oct 2026 - the second tenant's, from the pop-up or, when
+    # the pop-up names the same second tenant as the record, the record.
+    _same2 = (has_second_tenant and tenant_obj is not None
+              and ((second_tenant_data or {}).get('tenant_name') or '')
+              .strip() == (getattr(tenant_obj, 'tenant_2_name', '') or '')
+              .strip())
+    gr2_father = _gr('gr_2_father_name', tenant_obj if _same2 else None,
+                     'tenant_2_father_name')
+    gr2_afm = _gr('gr_2_afm', tenant_obj if _same2 else None, 'tenant_2_afm')
+    gr2_doy = _gr('gr_2_doy', tenant_obj if _same2 else None, 'tenant_2_doy')
     gr_floor = _gr('gr_floor', property_obj, 'prop_floor')
     gr_parking = _gr('gr_parking', property_obj, 'prop_parking_space')
-    gr_deh = _gr('gr_deh', property_obj, 'prop_deh_number')
+    # GL-3, 29 Oct 2026 - from Electricity Details, label stripped.
+    gr_deh = _gr('gr_deh', property_obj, 'deh_number')
     _term, _term_rent, _next = greek_lease_terms(start_date_obj, end_date_obj)
     try:
         third_year_rent = int(float(additional_data.get('third_year_rent')
@@ -1311,6 +1362,10 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'tenant_father_name': gr_father,
         'tenant_afm': gr_afm,
         'tenant_doy': gr_doy,
+        # GL-3 - and the second tenant's.
+        'tenant_2_father_name': gr2_father,
+        'tenant_2_afm': gr2_afm,
+        'tenant_2_doy': gr2_doy,
         'property_floor': gr_floor,
         'property_floor_greek': (gr_floor + 'ου') if gr_floor.isdigit()
                                 else gr_floor,

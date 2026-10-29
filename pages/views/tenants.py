@@ -619,6 +619,10 @@ def duplicate_tenant_view(request, tenant_id):
         new_tenant.tenant_father_name = original_tenant.tenant_father_name
         new_tenant.tenant_afm = original_tenant.tenant_afm
         new_tenant.tenant_doy = original_tenant.tenant_doy
+        # GL-3, 29 Oct 2026 - and the second tenant's.
+        new_tenant.tenant_2_father_name = original_tenant.tenant_2_father_name
+        new_tenant.tenant_2_afm = original_tenant.tenant_2_afm
+        new_tenant.tenant_2_doy = original_tenant.tenant_2_doy
 
         new_tenant.tenant_deposit = original_tenant.tenant_deposit
         new_tenant.tenant_rental_type = original_tenant.tenant_rental_type

@@ -464,7 +464,10 @@ for d, _s, fs in T.walk3():
 # stars six boxes (father's name, ΑΦΜ, ΔΟΥ, floor, parking, ΔΕΗ). They are
 # required only for a Greek lease, so the save guard reads each by id and
 # stops on a blank one - row 3.
-TOTAL = 231
+# GL-3, 29 Oct 2026 - 231 -> 234. The second tenant's father's name, ΑΦΜ
+# and ΔΟΥ on Generate, each kept by the same glGap guard as the first
+# tenant's.
+TOTAL = 234
 ok(len(rows) == TOTAL,
    'the corpus is %d starred labels' % len(rows),
    'pinned at %d. THE MARKER IS THE alv-req SPAN, not a bare asterisk - '
@@ -519,7 +522,8 @@ EXPECT = {
     # ES-10, 26 Oct 2026 - 8 -> 7: that upload is static now (row 1).
     '2 required set in script': 7,
     # GL-1, 28 Oct 2026 - 9 -> 15, the six Greek-lease boxes above.
-    '3 stopped by a submit guard': 15,
+    # GL-3, 29 Oct 2026 - 15 -> 18, the second tenant's three.
+    '3 stopped by a submit guard': 18,
     '4 cannot be empty': 2,
     '5 django form field': 18,
 }

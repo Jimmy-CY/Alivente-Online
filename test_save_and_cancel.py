@@ -72,6 +72,10 @@ SINGLE = 'page-action-buttons-single'
 # The screens whose Cancel is NOT a way out of the form. Named, with the
 # reason, because a count cannot tell a new one from an old one.
 KEEP_CANCEL = {
+    # GL-3, 29 Oct 2026 - the Greek Details pop-up on both tenant forms:
+    # its Cancel dismisses that dialog, not the form.
+    'tenant_edit.html': 'it dismisses a dialog',
+    'tenant_add.html': 'it dismisses a dialog',
     'finance_expense_add.html': 'it dismisses a dialog',
     'finance_expense_edit.html': 'it dismisses a dialog',
     'generate_lease_agreement.html': 'it dismisses a dialog',

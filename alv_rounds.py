@@ -1528,6 +1528,8 @@ ROUNDS = [
     '.bak_greeklease',
     # GE-1, 28 Oct 2026 - Generate -> e-signing; Greek leases in Greek.
     '.bak_genesign',
+    # GL-3, 29 Oct 2026 - Greek details per tenant; no second ΔΕΗ field.
+    '.bak_greekpair',
 ]
 
 

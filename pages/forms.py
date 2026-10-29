@@ -22,7 +22,6 @@ class PropForm(forms.ModelForm):
             # GL-1, 28 Oct 2026 - the flat, for a Greek lease.
             "prop_floor",
             "prop_parking_space",
-            "prop_deh_number",
             # GL-2, 28 Oct 2026 - the address a Greek lease writes.
             "prop_address_greek",
             "prop_status",
@@ -64,6 +63,9 @@ class TenantForm(forms.ModelForm):
             # them (visible for Greece, hidden elsewhere); Tenant Add does
             # not, which leaves a new tenant's blank - correct.
             'tenant_father_name', 'tenant_afm', 'tenant_doy',
+            # GL-3, 29 Oct 2026 - per tenant: the second tenant's too. Both
+            # pages carry all six (Greek Details pop-up, or hidden).
+            'tenant_2_father_name', 'tenant_2_afm', 'tenant_2_doy',
             'tenant_lease_start_date',
             'tenant_lease_end_date', 'tenant_rental_type', 'tenant_deposit',
             'tenant_rent', 'tenant_levies', 'tenant_payment_terms',

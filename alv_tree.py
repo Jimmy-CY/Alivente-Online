@@ -1068,6 +1068,8 @@ CONVERTED = [
     'test_greek_lease.py',
     # GE-1, 28 Oct 2026 - Generate -> e-signing; Greek leases in Greek.
     'test_generate_esign.py',
+    # GL-3, 29 Oct 2026 - Greek details per tenant; no second ΔΕΗ field.
+    'test_greek_pair.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.

@@ -652,6 +652,20 @@
               <label for="gr-doy" class="form-label"><strong>Tenant's ΔΟΥ:</strong> <span class="alv-req">*</span></label>
               <input type="text" class="form-control" id="gr-doy" name="gr_doy">
             </div>
+            {# GL-3, 29 Oct 2026 - PER TENANT: the second tenant's own three, #}
+            {# shown when the lease names a second tenant.                    #}
+            <div class="col-md-4 mb-3 gl-gr-2">
+              <label for="gr-2-father-name" class="form-label"><strong>2nd Tenant's Father:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-2-father-name" name="gr_2_father_name">
+            </div>
+            <div class="col-md-4 mb-3 gl-gr-2">
+              <label for="gr-2-afm" class="form-label"><strong>2nd Tenant's ΑΦΜ:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-2-afm" name="gr_2_afm">
+            </div>
+            <div class="col-md-4 mb-3 gl-gr-2">
+              <label for="gr-2-doy" class="form-label"><strong>2nd Tenant's ΔΟΥ:</strong> <span class="alv-req">*</span></label>
+              <input type="text" class="form-control" id="gr-2-doy" name="gr_2_doy">
+            </div>
             <div class="col-md-4 mb-3">
               <label for="gr-floor" class="form-label"><strong>Floor:</strong> <span class="alv-req">*</span></label>
               <input type="text" class="form-control" id="gr-floor" name="gr_floor">
@@ -1710,6 +1724,26 @@ function glGreek() {
   document.querySelectorAll('.gl-gr-person').forEach(function (c) {
     c.style.display = company ? 'none' : '';
   });
+  // GL-3, 29 Oct 2026 - THE SECOND TENANT'S. Shown when the lease names
+  // one; filled from the record only when it names the same person.
+  const s2 = document.getElementById('second-tenant-section');
+  const has2 = !company && !!s2 && s2.style.display !== 'none' &&
+    !!document.getElementById('second-tenant-name').value.trim();
+  const same2 = has2 && document.getElementById('second-tenant-name').value.trim() ===
+    (t.tenant_2_name || '').trim();
+  [['gr-2-father-name', t.tenant_2_father_name],
+   ['gr-2-afm', t.tenant_2_afm],
+   ['gr-2-doy', t.tenant_2_doy]].forEach(function (f) {
+    const el = document.getElementById(f[0]);
+    const v = same2 ? (f[1] || '').toString().trim() : '';
+    el.value = v;
+    el.readOnly = !!v;
+    if (v) { locked = true; }
+    el.required = greek && has2;
+  });
+  document.querySelectorAll('.gl-gr-2').forEach(function (c) {
+    c.style.display = has2 ? '' : 'none';
+  });
   document.getElementById('gr-locked-note').style.display = locked ? '' : 'none';
 }
 
@@ -1772,6 +1806,9 @@ function saveAdditionalData() {
     if (glGap(document.getElementById('gr-father-name'))) { grNeed.push("Tenant's Father's Name"); }
     if (glGap(document.getElementById('gr-afm'))) { grNeed.push("Tenant's ΑΦΜ"); }
     if (glGap(document.getElementById('gr-doy'))) { grNeed.push("Tenant's ΔΟΥ"); }
+    if (glGap(document.getElementById('gr-2-father-name'))) { grNeed.push("Second Tenant's Father's Name"); }
+    if (glGap(document.getElementById('gr-2-afm'))) { grNeed.push("Second Tenant's ΑΦΜ"); }
+    if (glGap(document.getElementById('gr-2-doy'))) { grNeed.push("Second Tenant's ΔΟΥ"); }
     if (glGap(document.getElementById('gr-floor'))) { grNeed.push('Floor'); }
     if (glGap(document.getElementById('gr-parking'))) { grNeed.push('Parking Space'); }
     if (glGap(document.getElementById('gr-deh'))) { grNeed.push('ΔΕΗ Supply Number'); }

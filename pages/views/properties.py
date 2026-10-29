@@ -384,7 +384,8 @@ def get_property_tenant_data(request):
                     'prop_floor': property_obj.prop_floor or '',
                     'prop_parking_space':
                         property_obj.prop_parking_space or '',
-                    'prop_deh_number': property_obj.prop_deh_number or '',
+                    # GL-3, 29 Oct 2026 - from Electricity Details.
+                    'prop_deh_number': property_obj.deh_number,
                 }
             except props.DoesNotExist:
                 response_data['property_error'] = 'Property not found'
@@ -435,6 +436,11 @@ def get_property_tenant_data(request):
                     'tenant_father_name': tenant_obj.tenant_father_name or '',
                     'tenant_afm': tenant_obj.tenant_afm or '',
                     'tenant_doy': tenant_obj.tenant_doy or '',
+                    # GL-3, 29 Oct 2026 - and the second tenant's.
+                    'tenant_2_father_name':
+                        tenant_obj.tenant_2_father_name or '',
+                    'tenant_2_afm': tenant_obj.tenant_2_afm or '',
+                    'tenant_2_doy': tenant_obj.tenant_2_doy or '',
                     'tenant_lease_start_date': tenant_obj.tenant_lease_start_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_start_date else '',
                     'tenant_lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
                     'tenant_rent': float(tenant_obj.tenant_rent) if tenant_obj.tenant_rent else 0,

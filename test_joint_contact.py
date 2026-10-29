@@ -315,12 +315,16 @@ head('4. THE CENSUS - and no fourth screen prints one unguarded')
 # printed tenant_2_ outside a guard would show three blank rows to
 # every tenancy that has one person, and nothing but a count notices.
 EXPECTED = {
-    'generate_lease_agreement.html': 10,   # PC-1 - its country (was 9)
+    # GL-3, 29 Oct 2026 - +4 on Generate (the second tenant's Greek
+    # father's name, ΑΦΜ and ΔΟΥ, read from the record), +8 on Add and on
+    # Edit (the same three as hidden fields - name and saved value - which
+    # carry blank for a tenancy with one person, exactly as T2-1 asks).
+    'generate_lease_agreement.html': 14,   # GL-3 (was 10)
     # T2-8, 25 Oct 2026 - 19 -> 24 and 17 -> 21: the script that
     # makes the second address required reads it by id, and the
     # server paints it from the name on Add. Inside the form, both.
-    'tenant_add.html': 33,    # PC-1 (was 29)
-    'tenant_edit.html': 30,   # PC-1 (was 26)
+    'tenant_add.html': 41,    # GL-3 (was 33)
+    'tenant_edit.html': 38,   # GL-3 (was 30)
     'lease_renewal_report.html': 3,
     # TI-1, 26 Oct 2026 - +1 on the report and the property panel (the
     # second tenant's Passport/ID row), +1 on Generate (its prefill),

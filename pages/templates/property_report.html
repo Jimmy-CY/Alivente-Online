@@ -24,11 +24,8 @@
                     <h4 class="section-title">Property Address</h4>
                     <div class="detail-row">
                         <span class="detail-label">Address:</span>
-                        <span class="detail-value">
-                            {{ property.prop_address1 }}
-                            {% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
-                            {% if property.prop_suburb %}, {{ property.prop_suburb }}{% endif %}
-                        </span>
+                        {# GL-3, 29 Oct 2026 - joined on the model; no space before a comma. #}
+                        <span class="detail-value">{{ property.street_address }}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">City/Province:</span>
@@ -59,6 +56,15 @@
                     <div class="detail-row">
                         <span class="detail-label">Owned From:</span>
                         <span class="detail-value">{{ property.prop_owned_from|date:'j M Y'|default:'First lease' }}</span>
+                    </div>
+                    {# GL-3, 29 Oct 2026 - Floor and Parking, on every property report. #}
+                    <div class="detail-row">
+                        <span class="detail-label">Floor:</span>
+                        <span class="detail-value">{{ property.prop_floor|default:'Not Available' }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Parking:</span>
+                        <span class="detail-value">{{ property.prop_parking_space|default:'Not Available' }}</span>
                     </div>
                 </div>
 
@@ -328,6 +334,8 @@
         display: flex;
         margin-bottom: 10px;
         line-height: 1.5;
+        /* GL-3, 29 Oct 2026 - "Country/Post Code:" ran into its value. */
+        column-gap: 8px;
     }
 
     .detail-label {

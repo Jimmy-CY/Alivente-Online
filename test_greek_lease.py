@@ -362,14 +362,15 @@ if have_db and have_docx:
             got = LT._save_greek_back('greece', str(ten.pk), ten, flat, ad)
             ten.refresh_from_db()
             flat.refresh_from_db()
-            ok(ten.tenant_afm == '123456789' and flat.prop_deh_number ==
+            # GL-3 - a typed ΔΕΗ number fills a blank Electricity Details.
+            ok(ten.tenant_afm == '123456789' and flat.prop_electricity ==
                '3138573' and flat.prop_parking_space == 'P2',
                'what Generate was told goes onto the tenant and the flat')
             LT._save_greek_back('greece', str(ten.pk), ten, flat,
                                 dict(ad, gr_afm='999', gr_deh='111'))
             ten.refresh_from_db()
             flat.refresh_from_db()
-            ok(ten.tenant_afm == '123456789' and flat.prop_deh_number ==
+            ok(ten.tenant_afm == '123456789' and flat.prop_electricity ==
                '3138573', '  blanks only - a value already there is never '
                           'overwritten')
             ok(LT._save_greek_back('cyprus', str(ten.pk), ten, flat, ad)
