@@ -1,0 +1,48 @@
+{% extends "wellness/base.html" %}
+{% comment %} WL-4a, 30 Oct 2026 - Your badges, as approved on the design canvas. Earned badges are kept for good; nothing is ever taken away. {% endcomment %}
+{% block title %}Badges · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:today' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</a>{% endblock %}
+{% block content %}
+<h1 class="w-title">Your badges</h1>
+
+{% for b in newest %}
+<section class="w-card sand" style="flex-direction:row;align-items:center;gap:16px">
+  <span class="w-badge {{ b.family }} big" aria-hidden="true">{{ b.mark }}</span>
+  <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+    <span class="w-label">New</span>
+    <span style="font-size:18px;font-weight:600">{{ b.name }}</span>
+    <span class="w-small w-quiet">{{ b.line }}</span>
+  </div>
+</section>
+{% endfor %}
+
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+  <h2 class="w-h2">Earned</h2>
+  <span class="w-small w-quiet">{{ earned|length }} of {{ total }}</span>
+</div>
+{% if earned %}
+<div class="w-badges">
+  {% for b in earned %}
+  <div class="w-badge-cell" title="{{ b.line }}">
+    <span class="w-badge {{ b.family }}" aria-hidden="true">{{ b.mark }}</span>
+    <span class="w-small">{{ b.name }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<section class="w-card soft"><p class="w-quiet" style="margin:0">Your first tick earns your first badge. They mark what you have done - never what you missed.</p></section>
+{% endif %}
+
+{% if next %}
+<h2 class="w-h2">Up next</h2>
+<div class="w-list">
+  {% for b in next %}
+  <div class="w-row">
+    <span style="display:flex;align-items:center;gap:12px"><span class="w-badge todo" aria-hidden="true">{{ b.mark }}</span><span class="w-row-name">{{ b.name }}</span></span>
+    <span class="w-row-side">{{ b.need }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+<p class="w-small w-quiet" style="margin:0">Badges are yours to keep. Missing a day never takes one away.</p>
+{% endblock %}

@@ -1547,6 +1547,8 @@ ROUNDS = [
     '.bak_wellness3',
     # CY-1, 30 Oct 2026 - Wellness: the cycle tracker.
     '.bak_cycle1',
+    # WL-4a, 30 Oct 2026 - Wellness: badges and the Monday summary.
+    '.bak_wellness4',
 ]
 
 

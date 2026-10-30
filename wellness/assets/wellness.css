@@ -29,6 +29,11 @@
   --w-rose-wash: #EFE3E0;
   --w-sky: #9FB8C9;
   --w-sky-soft: #E3EBF1;
+  /* WL-4a - the badge families: habits sage, journal slate, body and
+     workouts sand. */
+  --w-badge-sage: #E3ECE5;
+  --w-badge-sand: #EFE6D6;
+  --w-badge-slate: #E6E9EE;
   --w-radius: 20px;
   --w-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
   --w-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -55,6 +60,9 @@
     --w-tint-morning: #1C2427;
     --w-tint-afternoon: #1C2427;
     --w-tint-evening: #192124;
+    --w-badge-sage: #2F3D38;
+    --w-badge-sand: #3A352C;
+    --w-badge-slate: #2C343C;
     --w-rose: #B98D86;
     --w-rose-deep: #D1A39B;
     --w-rose-soft: #4A3633;
@@ -597,3 +605,12 @@ label.w-mood:has(input:checked) { background: var(--w-sage-deep); color: var(--w
   .w-report { padding: 0; border-radius: 0; }
 }
 .w-radio { width: 20px; height: 20px; accent-color: var(--w-sage-deep); }
+
+/* WL-4a, 30 Oct 2026 - badges. */
+.w-badges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.w-badge-cell { background: var(--w-card); border-radius: 18px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.w-badge { width: 48px; height: 48px; border-radius: 24px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; flex: none; color: var(--w-ink); background: var(--w-badge-sage); }
+.w-badge.big { width: 60px; height: 60px; border-radius: 30px; font-size: 18px; }
+.w-badge.sand { background: var(--w-badge-sand); }
+.w-badge.slate { background: var(--w-badge-slate); }
+.w-badge.todo { background: transparent; box-shadow: inset 0 0 0 1.5px var(--w-ring-off); color: var(--w-quiet); width: 40px; height: 40px; font-size: 13px; }

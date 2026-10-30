@@ -128,6 +128,16 @@ class Command(BaseCommand):
                 self.stdout.write(f'\u26a0\ufe0f  lease_signing_tick failed: {e}')
                 logger.error(f'lease_signing_tick failed: {e}', exc_info=True)
 
+            # WELLNESS WEEKLY - WL-4a, 30 Oct 2026. The Monday summary for
+            # the people who turned it on; it does nothing on other days.
+            # Guarded like the jobs above, so a failure here never stops
+            # the property reports below.
+            try:
+                call_command('wellness_weekly', dry_run=self.dry_run)
+            except Exception as e:
+                self.stdout.write(f'\u26a0\ufe0f  wellness_weekly failed: {e}')
+                logger.error(f'wellness_weekly failed: {e}', exc_info=True)
+
             # Then get all the data with property details
             vacant_properties, expiring_leases, declined_renewals, overdue_invoices = self.get_all_property_details()
 

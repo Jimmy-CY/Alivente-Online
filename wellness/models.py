@@ -29,6 +29,10 @@ class WellnessProfile(models.Model):
     # weights they own: {"barbell_max": 30, "dumbbells": [1, 2, 4, 6, 8],
     # "kettlebells": [], "plate_step": 2.5}.
     equipment = models.JSONField(default=dict, blank=True)
+    # WL-4a - small personal settings and kept milestones:
+    # {"weekly_email": false, "weekly_sent": "2026-11-02",
+    #  "badges": {"first_step": "2026-10-30"}, "badges_seen": [...]}.
+    prefs = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

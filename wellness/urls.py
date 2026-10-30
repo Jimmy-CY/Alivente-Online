@@ -57,6 +57,10 @@ urlpatterns = [
     path('cycle/report/', CY.report, name='cycle_report'),
     path('cycle/export/', CY.export, name='cycle_export'),
     path('cycle/delete/', CY.delete_all, name='cycle_delete'),
+    # WL-4a, 30 Oct 2026 - badges and Wellness settings.
+    path('badges/', views.badges_page, name='badges'),
+    path('badges/seen/', views.badges_seen, name='badges_seen'),
+    path('settings/', views.settings_page, name='settings'),
     path('guide/', views.guide_page, name='guide'),
     path('tips/', views.tip_seen, name='tip_seen'),
     # The app shell - answered without a login; nothing personal in it.

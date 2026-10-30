@@ -163,6 +163,14 @@ HOWTO = [
      'a': 'In the cycle tracker\'s settings: Download my log saves it all '
           'as a file, and Delete everything removes every day and setting '
           'at once.'},
+    {'q': 'How do badges work?',
+     'a': 'A badge marks something you did - a first tick, four good '
+          'weeks, ten workouts. Once earned it is yours for good: missing '
+          'a day never takes one away. See them all under Your badges.'},
+    {'q': 'What is in the Monday email?',
+     'a': 'If you turn it on in Settings: last week\'s habits, workouts, '
+          'your weight trend and any new badges. Never your journal and '
+          'never your cycle log. It goes only to your own address.'},
     {'q': 'How do I put Wellness on my phone?',
      'a': 'iPhone: open Wellness in Safari, tap Share, then "Add to Home '
           'Screen". Android: open it in Chrome and tap "Install app" or '

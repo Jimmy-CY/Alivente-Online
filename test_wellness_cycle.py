@@ -152,9 +152,12 @@ ok('not contraception' in read(J(APP, 'cycle.py')),
 base = read(J(WT, 'base.html'))
 ok('{% cycle_on as cy_on %}{% if cy_on %}' in base,
    'the bottom bar shows Cycle only when it is on')
-ok('?v=cy1-1' in base and base.count('?v=cy1-1') == 2 and
-   "SW_VERSION = 'cy1-1'" in read(J(APP, 'views.py')),
-   'the asset version moved together (cy1-1): phones fetch the new css')
+# Later rounds move the version on (WL-4a: wl4-1); what must hold is that
+# the page and the service worker always name the same one.
+_v = re.findall(r'\?v=([\w-]+)', base)
+ok(len(_v) == 2 and len(set(_v)) == 1 and "SW_VERSION = '%s'" % _v[0]
+   in read(J(APP, 'views.py')),
+   'the asset version moved together (cy1-1): phones fetch the new css', _v)
 today = read(J(WT, 'today.html'))
 ok('{% if cycle %}' in today and 'data-cycle-card' in today,
    'Today has a cycle card, only when there is one')

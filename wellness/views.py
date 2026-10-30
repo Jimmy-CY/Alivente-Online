@@ -154,6 +154,8 @@ def today(request):
         'workout': _workout_card(request.user, day),
         # CY-1 - the cycle line, or nothing (off by default).
         'cycle': _cycle_card(request.user, day),
+        # WL-4a - a badge earned and not yet seen, one at a time.
+        'new_badge': _new_badge(profile, request.user, day),
         'evening': now.hour >= 17,
         'wrote_today': JournalEntry.objects.filter(
             user=request.user, date=day).exists(),
@@ -168,6 +170,70 @@ def today(request):
 def _workout_card(user, day):
     from .views_workouts import today_card
     return today_card(user, day)
+
+
+def _new_badge(profile, user, day):
+    from . import badges as BG
+    try:
+        fresh = BG.update(profile, BG.facts(user, day), day)
+    except Exception:  # noqa: BLE001 - a badge must never break Today
+        return None
+    if not fresh:
+        return None
+    k, mark, name, line = BG.BY_KEY[fresh[0]][:4]
+    return {'key': k, 'mark': mark, 'name': name, 'line': line,
+            'family': BG.FAMILY[k], 'more': len(fresh) - 1}
+
+
+@wellness_view
+def badges_page(request):
+    """WL-4a - Your badges: earned (kept for good) and up next."""
+    from . import badges as BG
+    profile = _profile(request.user)
+    day = _today()
+    f = BG.facts(request.user, day)
+    fresh = BG.update(profile, f, day)
+    kept = (profile.prefs or {}).get('badges') or {}
+    earned = [{'key': k, 'mark': BG.BY_KEY[k][1], 'name': BG.BY_KEY[k][2],
+               'line': BG.BY_KEY[k][3], 'family': BG.FAMILY[k],
+               'on': kept[k], 'new': k in fresh}
+              for k in BG.KEYS if k in kept]
+    newest = [e for e in earned if e['new']]
+    if fresh:
+        BG.mark_seen(profile)
+    return render(request, 'wellness/badges.html', {
+        'tab': 'today',
+        'earned': earned,
+        'newest': newest[:1],
+        'total': len(BG.KEYS),
+        'next': BG.up_next(f, set(kept)),
+    })
+
+
+@wellness_view
+@require_POST
+def badges_seen(request):
+    from . import badges as BG
+    BG.mark_seen(_profile(request.user))
+    return redirect(request.POST.get('next') or reverse('wellness:today'))
+
+
+@wellness_view
+def settings_page(request):
+    """WL-4a - Wellness settings: the weekly summary (off by default)."""
+    profile = _profile(request.user)
+    prefs = dict(profile.prefs or {})
+    if request.method == 'POST':
+        prefs['weekly_email'] = bool(request.POST.get('weekly_email'))
+        profile.prefs = prefs
+        profile.save(update_fields=['prefs', 'updated_at'])
+        return redirect('%s?saved=1' % reverse('wellness:settings'))
+    return render(request, 'wellness/settings.html', {
+        'tab': 'today',
+        'weekly': bool(prefs.get('weekly_email')),
+        'email': request.user.email,
+        'saved': bool(request.GET.get('saved')),
+    })
 
 
 def _cycle_card(user, day):
@@ -575,7 +641,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'cy1-1'
+SW_VERSION = 'wl4-1'
 
 
 def service_worker(request):
@@ -863,8 +929,10 @@ def body_home(request):
     if profile.height_cm and 'waist' in latest:
         whtr = (latest['waist'].value / profile.height_cm).quantize(
             Decimal('0.01'))
+    # WL-4a - Demetri, 30 Oct: a wrong weigh-in must be findable to
+    # delete; 14 rows was too few. Thirty, about a month of daily ones.
     history = list(BodyMetric.objects.filter(user=request.user,
-                                             kind='weight')[:14])
+                                             kind='weight')[:30])
     return render(request, 'wellness/body.html', {
         'tab': 'body', 's': body_summary(request.user, day),
         'chart': B.chart(readings, tr, rng), 'range': rng,

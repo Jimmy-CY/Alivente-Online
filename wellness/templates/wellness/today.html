@@ -6,6 +6,19 @@
   <h1 class="w-hello">{{ hello }}, {{ name }}</h1>
 </header>
 
+{# WL-4a - a badge just earned, one at a time, until it is seen. #}
+{% if new_badge %}
+<section class="w-card sand" style="flex-direction:row;align-items:center;gap:14px" data-new-badge>
+  <span class="w-badge {{ new_badge.family }}" aria-hidden="true">{{ new_badge.mark }}</span>
+  <a href="{% url 'wellness:badges' %}" style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;text-decoration:none;color:inherit">
+    <span class="w-label">New badge{% if new_badge.more %} · and {{ new_badge.more }} more{% endif %}</span>
+    <span style="font-size:17px;font-weight:600">{{ new_badge.name }}</span>
+    <span class="w-small w-quiet">{{ new_badge.line }}</span>
+  </a>
+  <form method="post" action="{% url 'wellness:badges_seen' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn ghost" style="min-width:64px;background:var(--w-card)">Nice</button></form>
+</section>
+{% endif %}
+
 <section class="w-card sand" aria-label="Today's quote">
   <p class="w-quote">“{{ quote.text }}”</p>
   <div class="w-quote-by">{{ quote.author }}{% if quote.source %} · {{ quote.source }}{% endif %}</div>
@@ -117,4 +130,6 @@
   <span>{{ preview|default:e.get_kind_display }}</span>
 </a>
 {% endfor %}
+
+<a class="w-btn quiet full" href="{% url 'wellness:badges' %}">Your badges</a>
 {% endblock %}
