@@ -3197,7 +3197,9 @@ $suites = @(
     # VS-1, 29 Oct 2026 - SortableJS from the app; no snapshot churn.
     'test_vendor_sort.py',
     # CX-1, 29 Oct 2026 - celebrations retry; Help on Task List and Gantt.
-    'test_celebration_help.py'
+    'test_celebration_help.py',
+    # 30 Oct 2026 - the colour-literal census: no template gains a hex colour.
+    'test_colour_census.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

@@ -1076,6 +1076,8 @@ CONVERTED = [
     'test_vendor_sort.py',
     # CX-1, 29 Oct 2026 - celebrations retry; Help on Task List and Gantt.
     'test_celebration_help.py',
+    # 30 Oct 2026 - the colour-literal census walks every root.
+    'test_colour_census.py',
 ]
 
 # Passed the experiment, but walk the REPO, not the template directory.
