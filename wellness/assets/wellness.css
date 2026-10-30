@@ -282,7 +282,7 @@ button { font: inherit; color: inherit; }
 .w-day.done { background: var(--w-sage-deep); color: var(--w-on-accent); }
 .w-day.done .d-label { color: inherit; opacity: .85; }
 .w-day.grace { box-shadow: inset 0 0 0 2px var(--w-sage-track); }
-.w-day.before { opacity: .35; cursor: default; }
+.w-day.before { opacity: .6; }
 
 /* ---- the 12-week calendar */
 .w-cal {
@@ -297,7 +297,11 @@ button { font: inherit; color: inherit; }
 .w-cell.grace { background: var(--w-empty); box-shadow: inset 0 0 0 2px var(--w-sage); }
 .w-cell.comeback { background: #E8DCC8; box-shadow: inset 0 0 0 2px #C9A96E; }
 .w-cell.open { box-shadow: inset 0 0 0 2px var(--w-ring-off); }
-.w-cell.before, .w-cell.future { background: transparent; }
+/* WL-1b - a new habit's calendar was a blank card: every day before it
+   began was transparent. They are faint squares now, so the grid is there
+   from day one and fills in. */
+.w-cell.before { background: var(--w-empty); opacity: .45; }
+.w-cell.future { background: transparent; }
 .w-key { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--w-quiet); }
 .w-key span { display: inline-flex; align-items: center; gap: 6px; }
 .w-key i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }

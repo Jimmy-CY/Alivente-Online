@@ -52,6 +52,13 @@
         </div>
     </div>
     <button type="submit" class="btn action-primary">Login</button>
+    {# PK-1, 30 Oct 2026 - SIGN IN WITH A FINGERPRINT. Hidden until the   #}
+    {# script below finds a browser that can do it, so nobody is offered  #}
+    {# a button that cannot work. The password form above is untouched.   #}
+    <button type="button" class="btn action-secondary" id="passkeyLogin" hidden>
+        <i class="fas fa-fingerprint"></i> Sign in with fingerprint
+    </button>
+    <span class="login-help-note" id="passkeyStatus" role="status" aria-live="polite"></span>
     {# A PERMANENT LINE, NOT A CONDITIONAL HINT. An invited person who has  #}
     {# never set a password would otherwise be told their credentials are   #}
     {# incorrect, which is true and useless. Saying so only when the        #}
@@ -79,6 +86,64 @@ document.getElementById('togglePassword').addEventListener('click', function() {
         eyeIcon.classList.add('fa-eye');
     }
 });
+
+// PK-1, 30 Oct 2026 - passkeys. The browser speaks bytes; the server
+// speaks base64url. These two turn one into the other.
+function pkB64u(buf) {
+    var s = '', b = new Uint8Array(buf);
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function pkBytes(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var raw = atob(s), b = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) b[i] = raw.charCodeAt(i);
+    return b.buffer;
+}
+function pkPost(url, data) {
+    var f = new FormData();
+    f.append('csrfmiddlewaretoken', document.querySelector('input[name=csrfmiddlewaretoken]').value);
+    Object.keys(data).forEach(function (k) { f.append(k, data[k]); });
+    return fetch(url, {method: 'POST', body: f, credentials: 'same-origin'})
+        .then(function (r) { return r.json(); });
+}
+(function () {
+    var btn = document.getElementById('passkeyLogin');
+    var say = document.getElementById('passkeyStatus');
+    if (!btn || !window.PublicKeyCredential || !navigator.credentials) return;
+    btn.hidden = false;
+    btn.addEventListener('click', function () {
+        say.textContent = '';
+        btn.disabled = true;
+        pkPost('{% url 'passkey_login_begin' %}', {}).then(function (o) {
+            o.challenge = pkBytes(o.challenge);
+            (o.allowCredentials || []).forEach(function (c) { c.id = pkBytes(c.id); });
+            return navigator.credentials.get({publicKey: o});
+        }).then(function (c) {
+            var r = c.response;
+            var cred = {id: c.id, rawId: pkB64u(c.rawId), type: c.type,
+                response: {clientDataJSON: pkB64u(r.clientDataJSON),
+                           authenticatorData: pkB64u(r.authenticatorData),
+                           signature: pkB64u(r.signature),
+                           userHandle: r.userHandle ? pkB64u(r.userHandle) : null},
+                clientExtensionResults: c.getClientExtensionResults ? c.getClientExtensionResults() : {}};
+            var data = {credential: JSON.stringify(cred)};
+            var nxt = document.querySelector('input[name=next]');
+            if (nxt) data.next = nxt.value;
+            return pkPost('{% url 'passkey_login_finish' %}', data);
+        }).then(function (res) {
+            if (res.redirect) { window.location.href = res.redirect; return; }
+            say.textContent = res.error || 'That did not work. Please log in with your password.';
+            btn.disabled = false;
+        }).catch(function (e) {
+            say.textContent = (e && e.name === 'NotAllowedError')
+                ? 'Cancelled. Try again, or log in with your password.'
+                : 'Your fingerprint could not be used here. Please log in with your password.';
+            btn.disabled = false;
+        });
+    });
+})();
 </script>
 
 {% endblock %}

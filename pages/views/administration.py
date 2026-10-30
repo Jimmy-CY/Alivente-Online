@@ -142,8 +142,11 @@ def my_profile(request):
         messages.success(request, 'Your profile has been updated successfully!')
         return redirect('my_profile')
 
+    # PK-1, 30 Oct 2026 - this person's passkeys, and only theirs.
+    from passkeys.models import Passkey
     context = {
         'profile': profile,
+        'passkeys': Passkey.objects.filter(user=request.user),
     }
     return render(request, 'my_profile.html', context)
 

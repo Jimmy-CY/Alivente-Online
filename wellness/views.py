@@ -240,7 +240,14 @@ def habit_detail(request, pk):
     if got >= target and target:
         week_words = 'This week is whole. Lovely.'
     elif target:
-        week_words = '%d of %d this week.' % (got, target)
+        # WL-1b - "0 of 3 this week" read as nonsense on an every-day
+        # habit begun on a Friday. Say what the 3 is.
+        if H.is_flexible(habit):
+            week_words = '%d of %d this week.' % (got, target)
+        else:
+            week_words = '%d of %d day%s this week%s.' % (
+                got, target, '' if target == 1 else 's',
+                ' so far' if habit.started_on > H.monday(day) else '')
     else:
         week_words = ''
     days_in = (day - habit.started_on).days + 1
@@ -257,6 +264,7 @@ def habit_detail(request, pk):
         'amount': H.amount_words(habit),
         'can_establish': H.can_establish(habit, done, day),
         'days_to_go': max(0, H.ESTABLISHED_DAYS - days_in),
+        'days_in': days_in,
         'comebacks': len(H.comebacks(habit, done, day)),
         'tip': _tip(profile, ['detail_week', 'detail_calendar']),
     })
@@ -380,8 +388,14 @@ def habit_check(request, pk):
                  full target when ticked).
     op=set     - value=<n> for a measured habit; done when it reaches the
                  target, the row removed at 0.
-    Only today and the BACKFILL_DAYS before it, never the future or a day
-    before the habit began.
+    Only today and the BACKFILL_DAYS before it, never the future.
+
+    WL-1b, 30 Oct 2026 - A DAY BEFORE THE HABIT BEGAN CAN BE TICKED.
+    Demetri, the morning it went live: "Can't tick on any of the previous
+    days." A habit made today was locked to today, though the walk he made
+    it for was done on Monday too. Ticking an earlier day now moves the
+    start back to that day - the habit began when it was first done, not
+    when it was typed in.
     """
     habit = get_object_or_404(Habit, pk=pk, user=request.user)
     day = _today()
@@ -389,9 +403,12 @@ def habit_check(request, pk):
         d = dt.date.fromisoformat(request.POST.get('date') or day.isoformat())
     except ValueError:
         return HttpResponseBadRequest('bad date')
-    if d > day or (day - d).days >= BACKFILL_DAYS or d < habit.started_on:
+    if d > day or (day - d).days >= BACKFILL_DAYS:
         return HttpResponseBadRequest('that day cannot be changed here')
     op = request.POST.get('op', 'toggle')
+    if d < habit.started_on:
+        habit.started_on = d
+        habit.save(update_fields=['started_on', 'updated_at'])
     log = HabitLog.objects.filter(habit=habit, date=d).first()
     if op == 'set':
         if not habit.measured:
@@ -521,7 +538,10 @@ def manifest(request):
                         content_type='application/manifest+json')
 
 
-SW_VERSION = 'wl1-1'
+# WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
+# or script changes: the installed app keeps the old files until the
+# version moves. test_wellness_one.py checks the two agree.
+SW_VERSION = 'wl1-2'
 
 
 def service_worker(request):

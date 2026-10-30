@@ -22,6 +22,8 @@ babel==2.17.0
 beautifulsoup4>=4.12.0,<5.0
 billiard==4.2.1
 celery==5.4.0
+# PK-1, 30 Oct 2026 - passkeys (webauthn) need cbor2 and pyOpenSSL.
+cbor2==5.6.5
 certifi==2025.8.3
 cffi==1.17.1
 chardet==3.0.4
@@ -81,6 +83,9 @@ pymupdf-fonts==1.0.5
 PyMySQL==1.1.1
 pypdf==6.0.0
 PyPDF2==3.0.1
+# PK-1 - 24.3.0 because it accepts cryptography 44.0.0, which pyHanko
+# above keeps; pyOpenSSL 25 wants a newer cryptography.
+pyOpenSSL==24.3.0
 pyspellchecker==0.8.1
 python-bidi==0.6.6
 python-crontab==3.2.0
@@ -105,6 +110,9 @@ uritools==5.0.0
 urllib3==2.5.0
 vine==5.1.0
 wcwidth==0.2.13
+# PK-1, 30 Oct 2026 - sign in with a fingerprint. 2.4.0, not 3.x, for the
+# same reason: 3.x needs cryptography 49 and pyHanko's pins stay.
+webauthn==2.4.0
 webencodings==0.5.1
 whitenoise==6.9.0
 xhtml2pdf==0.2.16

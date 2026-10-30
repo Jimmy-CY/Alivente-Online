@@ -159,6 +159,12 @@ ok(not reds, 'no red anywhere - a miss is simply empty', reds)
 small = [m for m in re.findall(r'min-height:\s*(\d+)px', css)
          if int(m) < 44]
 ok(not small, 'every control is at least 44px tall', small)
+ok('.w-cell.before { background: var(--w-empty)' in css,
+   'WL-1b: the days before a habit began are faint squares, not blank')
+_v = re.search(r"SW_VERSION = '([^']+)'", read(J(APP, 'views.py')))
+ok(_v and base.count('?v=%s"' % _v.group(1)) == 2,
+   'the stylesheet and script carry the worker\'s version, so an installed '
+   'app picks up a change', _v and _v.group(1))
 js = read(J(APP, 'assets', 'wellness.js'))
 ok("register('/wellness/app/sw.js', {scope: '/wellness/'})" in js,
    'the service worker is registered for the whole of /wellness/')
@@ -329,6 +335,8 @@ head('5. DRIVEN')
 # ==========================================================================
 have_db = False
 try:
+    os.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
     import django
     django.setup()
     from django.db import connection, transaction
@@ -342,6 +350,16 @@ try:
 except Exception as _e:                                       # noqa: BLE001
     skip('section 5', 'no database, or migrate not run yet: %s'
          % str(_e).split('\n')[0][:70])
+
+
+# NO PERIODIC CLEANUP WHILE THIS SUITE DRIVES THE APP. The site's
+# DatabaseConnectionMiddleware closes every connection each
+# DB_FORCE_CLEANUP_INTERVAL requests (25). This suite makes more than that
+# inside one rolled-back transaction, and a close in the middle of it ends
+# the transaction under the suite's feet. Set before the first request,
+# because the middleware reads it once, when it is built.
+from django.conf import settings as _dj                     # noqa: E402
+_dj.DB_FORCE_CLEANUP_INTERVAL = 10 ** 9
 
 
 class Rollback(Exception):
@@ -406,6 +424,24 @@ if have_db:
                         {'date': (day - dt.timedelta(7)).isoformat()},
                         HTTP_X_REQUESTED_WITH='fetch')
             ok(r.status_code == 400, '  seven days ago cannot')
+            # WL-1b - a habit made today can still have Monday ticked.
+            fresh = Habit.objects.create(user=a, name='Fresh walk',
+                                         started_on=day)
+            t = ca.get('/wellness/habits/%d/' % fresh.pk).content.decode()
+            ok('class="w-day before"' in t and 'disabled' not in t,
+               'WL-1b: a new habit shows the six days before it began, '
+               'and none of them is locked')
+            r = ca.post('/wellness/habits/%d/check/' % fresh.pk,
+                        {'date': (day - dt.timedelta(4)).isoformat()},
+                        HTTP_X_REQUESTED_WITH='fetch')
+            fresh.refresh_from_db()
+            ok(r.status_code == 200
+               and fresh.started_on == day - dt.timedelta(4),
+               '  ticking one moves the start back to that day')
+            ok('fills in day by day' in ca.get(
+                '/wellness/habits/%d/' % fresh.pk).content.decode(),
+               '  and a new calendar says it fills in, rather than '
+               'looking empty')
             r = ca.post('/wellness/habits/%d/check/' % water.pk,
                         {'date': (day + dt.timedelta(1)).isoformat()},
                         HTTP_X_REQUESTED_WITH='fetch')
@@ -471,8 +507,14 @@ if have_db:
             t = r.content.decode()
             ok(t.count('class="w-step"') == 4,
                'a new habit is four short questions')
-            ok('data-fill="f-name"' in t and 'data-fill="f-cue"' in t,
+            ok('data-preset=' in t and 'data-fill="f-cue"' in t,
                '  with examples to tap')
+            ok('"name":"No sugar","kind":"avoid"' in t,
+               'WL-1b: "No sugar" sets something to AVOID, not a count')
+            ok('If you slip, how will you start again?' in t
+               and 'When is it hardest?' in t,
+               '  and an avoid habit is asked about slips and hard moments, '
+               'not minutes')
             r = ca.post('/wellness/habits/new/', {'name': '', 'kind':
                                                   'count'})
             ok(b'Give it a short name' in r.content,
@@ -491,6 +533,9 @@ if have_db:
             ok(Habit.objects.get(pk=g.pk).paused, 'Pause')
             ca.post('/wellness/habits/%d/archive/' % g.pk)
             ok(Habit.objects.get(pk=g.pk).archived_at, 'Archive')
+            ok('Delete this habit' in ca.get('/wellness/habits/%d/'
+                                             % read_h.pk).content.decode(),
+               'WL-1b: Delete is on every habit, not only archived ones')
             r = ca.post('/wellness/habits/%d/delete/' % g.pk)
             ok(r.status_code == 400 and Habit.objects.filter(pk=g.pk)
                .exists(), 'Delete without the tick box does nothing')

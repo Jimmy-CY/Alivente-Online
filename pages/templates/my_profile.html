@@ -50,6 +50,17 @@
 
 
 
+/* Passkeys - PK-1, 30 Oct 2026: one row per passkey, Remove at the end. */
+.passkey-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--alv-line);
+}
+.passkey-row:last-of-type { margin-bottom: 12px; }
+
 /* Profile Photo */
 .photo-section {
     display: flex;
@@ -340,6 +351,37 @@
 
 
     </form>
+
+    <!-- Passkeys - PK-1, 30 Oct 2026. OUTSIDE the profile form on purpose:
+         adding or removing a passkey is its own action, not part of Save
+         Profile, and a form cannot sit inside another. -->
+    <div class="form-card" id="passkeys">
+        <h3 class="form-section-title"><i class="fas fa-fingerprint"></i> Passkeys</h3>
+        <p class="text-muted" style="font-size:13px; margin-bottom:12px;">
+            Sign in with your fingerprint or face instead of typing your password.
+            Add one on each phone or computer you use. Your password keeps working.
+        </p>
+        {% for k in passkeys %}
+        <div class="passkey-row">
+            <span>
+                <strong>{{ k.name }}</strong><br/>
+                <small class="text-muted">Added {{ k.created_at|date:"d M Y" }}{% if k.last_used_at %} &middot; last used {{ k.last_used_at|date:"d M Y" }}{% endif %}</small>
+            </span>
+            <form method="POST" action="{% url 'passkey_remove' k.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn action-secondary action-danger btn-sm" aria-label="Remove the passkey on {{ k.name }}">
+                    <i class="fas fa-trash-alt"></i> Remove
+                </button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="text-muted" style="font-size:13px;">No passkeys yet.</p>
+        {% endfor %}
+        <button type="button" class="btn action-secondary btn-sm" id="passkeyAdd" hidden>
+            <i class="fas fa-plus"></i> Add a passkey on this device
+        </button>
+        <small class="text-muted" id="passkeyAddStatus" role="status" aria-live="polite"></small>
+    </div>
 </div>
 
 {% render_help_modal "my_profile" %}
@@ -350,6 +392,65 @@ function selectMenu(element, value) {
     element.classList.add('selected');
     element.querySelector('input[type="radio"]').checked = true;
 }
+
+// PK-1, 30 Oct 2026 - passkeys. The browser speaks bytes; the server
+// speaks base64url. These two turn one into the other.
+function pkB64u(buf) {
+    var s = '', b = new Uint8Array(buf);
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function pkBytes(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var raw = atob(s), b = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) b[i] = raw.charCodeAt(i);
+    return b.buffer;
+}
+function pkPost(url, data) {
+    var f = new FormData();
+    f.append('csrfmiddlewaretoken', document.querySelector('input[name=csrfmiddlewaretoken]').value);
+    Object.keys(data).forEach(function (k) { f.append(k, data[k]); });
+    return fetch(url, {method: 'POST', body: f, credentials: 'same-origin'})
+        .then(function (r) { return r.json(); });
+}
+(function () {
+    var btn = document.getElementById('passkeyAdd');
+    var say = document.getElementById('passkeyAddStatus');
+    if (!btn) return;
+    if (!window.PublicKeyCredential || !navigator.credentials) {
+        say.textContent = 'This browser cannot make passkeys.';
+        return;
+    }
+    btn.hidden = false;
+    btn.addEventListener('click', function () {
+        say.textContent = '';
+        btn.disabled = true;
+        pkPost('{% url 'passkey_add_begin' %}', {}).then(function (o) {
+            o.challenge = pkBytes(o.challenge);
+            o.user.id = pkBytes(o.user.id);
+            (o.excludeCredentials || []).forEach(function (c) { c.id = pkBytes(c.id); });
+            return navigator.credentials.create({publicKey: o});
+        }).then(function (c) {
+            var r = c.response;
+            var cred = {id: c.id, rawId: pkB64u(c.rawId), type: c.type,
+                response: {clientDataJSON: pkB64u(r.clientDataJSON),
+                           attestationObject: pkB64u(r.attestationObject),
+                           transports: r.getTransports ? r.getTransports() : []},
+                clientExtensionResults: c.getClientExtensionResults ? c.getClientExtensionResults() : {}};
+            return pkPost('{% url 'passkey_add_finish' %}', {credential: JSON.stringify(cred)});
+        }).then(function (res) {
+            if (res.ok) { window.location.hash = 'passkeys'; window.location.reload(); return; }
+            say.textContent = res.error || 'The passkey could not be added.';
+            btn.disabled = false;
+        }).catch(function (e) {
+            say.textContent = (e && e.name === 'InvalidStateError')
+                ? 'This device already has a passkey here.'
+                : (e && e.name === 'NotAllowedError') ? 'Cancelled.' : 'The passkey could not be added.';
+            btn.disabled = false;
+        });
+    });
+})();
 
 function previewPhoto(input) {
     if (input.files && input.files[0]) {

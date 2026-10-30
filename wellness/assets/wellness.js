@@ -111,6 +111,29 @@
     input.dispatchEvent(new Event('input', {bubbles: true}));
   });
 
+  // ---- WL-1b: an example sets the whole habit - kind, amount, schedule.
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-preset]');
+    if (!c) return;
+    e.preventDefault();
+    var form = c.closest('form'), p = JSON.parse(c.getAttribute('data-preset'));
+    function set(name, val) {
+      var els = form.querySelectorAll('[name="' + name + '"]');
+      els.forEach(function (el) {
+        if (el.type === 'radio' || el.type === 'checkbox') el.checked = (String(el.value) === String(val));
+        else el.value = val;
+      });
+    }
+    set('name', p.name || '');
+    set('kind', p.kind || 'yes_no');
+    set('target', p.target || '');
+    set('unit', p.unit || '');
+    set('schedule', p.schedule || 'daily');
+    if (p.per_week) set('per_week', p.per_week);
+    if (p.time_of_day) set('time_of_day', p.time_of_day);
+    form.dispatchEvent(new Event('change', {bubbles: true}));
+  });
+
   // ---- The habit form shows only the fields its choices need.
   function sync(form) {
     var kind = (form.querySelector('[name=kind]:checked') || {}).value;

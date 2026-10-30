@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     "crs",
     # WL-1, 30 Oct 2026 - Wellness: its own app, outside the house standard.
     "wellness",
+    # PK-1, 30 Oct 2026 - sign in with a fingerprint. No templates.
+    "passkeys",
     "whitenoise.runserver_nostatic",
     "django.contrib.humanize",
     

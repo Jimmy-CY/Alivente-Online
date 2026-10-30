@@ -42,7 +42,7 @@
       <input type="hidden" name="date" value="{{ d.iso }}">
       <input type="hidden" name="op" value="toggle">
       <input type="hidden" name="next" value="{% url 'wellness:habit_detail' habit.pk %}">
-      <button type="submit" class="w-day {{ d.state }}" style="flex:1"{% if d.state == 'before' %} disabled{% endif %} aria-pressed="{% if d.state == 'done' %}true{% else %}false{% endif %}" aria-label="{{ d.date|date:'l j F' }}{% if d.state == 'done' %}, done{% elif d.state == 'grace' %}, forgiven{% endif %}">
+      <button type="submit" class="w-day {{ d.state }}" style="flex:1" aria-pressed="{% if d.state == 'done' %}true{% else %}false{% endif %}" aria-label="{{ d.date|date:'l j F' }}{% if d.state == 'done' %}, done{% elif d.state == 'grace' %}, forgiven{% endif %}">
         <span class="d-label">{{ d.label }}</span>
         <span class="d-num">{{ d.num }}</span>
       </button>
@@ -72,6 +72,7 @@
   <div class="w-cal" role="img" aria-label="A calendar of the last twelve weeks, one column per week">
     {% for col in calendar %}{% for c in col %}<div class="w-cell {{ c.state }}{% if c.comeback %} comeback{% endif %}" title="{{ c.date|date:'D j M' }}"></div>{% endfor %}{% endfor %}
   </div>
+  {% if days_in < 14 %}<p class="w-small w-quiet" style="margin:0">Your calendar fills in day by day. Faint squares are the days before this habit began.</p>{% endif %}
   <div class="w-key">
     <span><i style="background:var(--w-sage)"></i>Done</span>
     <span><i style="background:#E8DCC8;box-shadow:inset 0 0 0 2px #C9A96E"></i>Comeback</span>
@@ -82,8 +83,8 @@
 
 {% if habit.cue or habit.tiny_version %}
 <section class="w-list">
-  {% if habit.cue %}<div class="w-row"><span class="w-quiet">After I…</span><span>{{ habit.cue }}</span></div>{% endif %}
-  {% if habit.tiny_version %}<div class="w-row"><span class="w-quiet">On a hard day, just</span><span>{{ habit.tiny_version }}</span></div>{% endif %}
+  {% if habit.cue %}<div class="w-row"><span class="w-quiet">{% if habit.kind == 'avoid' %}Hardest{% else %}After I…{% endif %}</span><span>{{ habit.cue }}</span></div>{% endif %}
+  {% if habit.tiny_version %}<div class="w-row"><span class="w-quiet">{% if habit.kind == 'avoid' %}If I slip, I will{% else %}On a hard day, just{% endif %}</span><span>{{ habit.tiny_version }}</span></div>{% endif %}
 </section>
 {% endif %}
 
@@ -116,14 +117,16 @@
   {% endif %}
 </div>
 
-{% if habit.archived_at %}
+{% comment %} WL-1b - DELETE ON EVERY HABIT. It used to appear only once a
+  habit was archived, which nobody would guess. Still folded away, and
+  still behind a tick box: archiving keeps the history, deleting does not. {% endcomment %}
 <details class="w-card">
-  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Delete for good</summary>
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Delete this habit</summary>
+  <p class="w-small w-quiet" style="margin:0">To stop without losing its history, use Archive instead.</p>
   <form method="post" action="{% url 'wellness:habit_action' habit.pk 'delete' %}" style="display:flex;flex-direction:column;gap:12px">
     {% csrf_token %}
     <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" name="confirm" value="yes" required style="width:22px;height:22px"> Yes, delete {{ habit.name }} and all its history</label>
     <button class="w-btn ghost" type="submit">Delete</button>
   </form>
 </details>
-{% endif %}
 {% endblock %}

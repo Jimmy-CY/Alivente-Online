@@ -82,6 +82,10 @@ urlpatterns = [
     # WL-1, 30 Oct 2026 - Wellness. wellness/app/ (the installable-app
     # shell) answers without a login; everything else needs one.
     path("wellness/", include("wellness.urls")),
+    # PK-1, 30 Oct 2026 - passkeys. Under login/ (public, like the
+    # password form) and my-profile/ (login only), so the middleware's
+    # existing rules already cover them.
+    path('', include('passkeys.urls')),
     path('robots.txt', robots_txt),
     # DP-1, 22 Oct 2026. Public on purpose - see deploy_version and the
     # matching line in ModuleAccessMiddleware.EXEMPT_URL_PATTERNS.

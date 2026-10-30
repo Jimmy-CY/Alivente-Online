@@ -283,8 +283,11 @@ ok(not lost,
 # pillow-heif; ES-2 adds the PDF renderer and the font faces it
 # draws with. The number moves with the round that moved it
 # rather than being loosened to a range.
-ok(sorted(set(PK) - set(OLDPK)) == ['pillow-heif', 'pymupdf',
-                                    'pymupdf-fonts'],
+# PK-1, 30 Oct 2026 - six now: passkeys bring webauthn and the two it
+# needs that were not here, cbor2 and pyOpenSSL.
+ok(sorted(set(PK) - set(OLDPK)) == ['cbor2', 'pillow-heif', 'pymupdf',
+                                    'pymupdf-fonts', 'pyopenssl',
+                                    'webauthn'],
    'CONTROL: exactly one was added, and it is the one this round is '
    'about', sorted(set(PK) - set(OLDPK)))
 same = [n for n in OLDPK if n in PK and OLDPK[n] != PK[n]]
