@@ -58,6 +58,13 @@ TIPS = {
     'detail_calendar': 'Sand squares are comebacks - the days you returned '
                        'after a break. They count double in our book.',
     'new_examples': 'Tap an example to use it, or type your own.',
+    # WL-2
+    'journal_private': 'Your journal is locked before it is saved. Nobody '
+                       'else can read it - not even an administrator.',
+    'journal_mood': 'Add a mood when you write, and a gentle line of your '
+                    'month appears here after a few days.',
+    'body_trend': 'The big number is your trend, not today\'s scale. A '
+                  'heavy morning barely moves it - that is the point.',
 }
 
 HOWTO = [
@@ -90,6 +97,20 @@ HOWTO = [
     {'q': 'Can anyone else see my Wellness?',
      'a': 'No. Everything here belongs to your login alone - not other '
           'members of the household, and not an administrator.'},
+    {'q': 'Who can read my journal?',
+     'a': 'Only you. Every entry is locked (encrypted) before it is saved, '
+          'so even someone looking at the database sees scrambled text. '
+          'Summary emails will only ever say how often you wrote, never '
+          'what.'},
+    {'q': 'Why is my trend weight not my scale weight?',
+     'a': 'Your weight swings by a kilo or more from day to day with water '
+          'and food. The trend is a smoothed average where each day counts '
+          'a little, recent days most. It tells you which way you are '
+          'really going; one heavy morning hardly moves it.'},
+    {'q': 'How often should I weigh in?',
+     'a': 'Daily gives the smoothest trend, three times a week is plenty. '
+          'What matters most is the same conditions: morning, after the '
+          'bathroom, before food.'},
     {'q': 'Why does Wellness keep me logged in?',
      'a': 'On your phone, Wellness stays logged in for 30 days from your '
           'last visit, so a morning tick is one tap. The rest of Alivente '

@@ -1,0 +1,25 @@
+{% extends "wellness/base.html" %}
+{% block title %}Weigh in · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:body' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Body</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:18px">
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">Weigh in</h1>
+  <label for="w-val" class="w-small w-quiet">Kilos{% if last %} - last time {{ last.value|floatformat:1 }} on {{ last.date|date:"j M" }}{% endif %}</label>
+  <input class="w-input w-num" id="w-val" name="value" inputmode="decimal" autocomplete="off" value="{% if last %}{{ last.value|floatformat:1 }}{% endif %}" autofocus>
+  <div class="w-chips" style="justify-content:center" aria-label="Nudge the number">
+    <button type="button" class="w-chip" data-nudge="-0.5">−0.5</button>
+    <button type="button" class="w-chip" data-nudge="-0.1">−0.1</button>
+    <button type="button" class="w-chip" data-nudge="0.1">+0.1</button>
+    <button type="button" class="w-chip" data-nudge="0.5">+0.5</button>
+  </div>
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <details>
+    <summary class="w-small w-quiet" style="cursor:pointer;min-height:44px;display:flex;align-items:center">A different day</summary>
+    <input class="w-input" name="date" type="date" value="{{ date }}" aria-label="Date of this weigh-in">
+  </details>
+  <p class="w-small w-quiet" style="margin:0">Same time each day is what matters - mornings, before food, are the steadiest.</p>
+  <button type="submit" class="w-btn full">Save</button>
+</form>
+{% endblock %}

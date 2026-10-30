@@ -18,6 +18,13 @@ class WellnessProfile(models.Model):
     onboarded = models.BooleanField(default=False)
     # One-time tips already dismissed, as a list of tip keys.
     tips_seen = models.JSONField(default=list, blank=True)
+    # WL-2, 30 Oct 2026 - Body. Height for the waist-to-height ratio; a
+    # goal weight and an optional date for "on pace for".
+    height_cm = models.DecimalField(max_digits=5, decimal_places=1,
+                                    null=True, blank=True)
+    weight_goal = models.DecimalField(max_digits=5, decimal_places=1,
+                                      null=True, blank=True)
+    goal_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -117,3 +124,84 @@ class HabitLog(models.Model):
 
     def __str__(self):
         return '%s on %s' % (self.habit, self.date)
+
+
+class JournalEntry(models.Model):
+    """WL-2, 30 Oct 2026 - one journal entry.
+
+    THE WORDS ARE ENCRYPTED (decision 5, 30 Oct). `body` holds a Fernet
+    token of the entry's JSON - {"text": ...} for a free write or a note,
+    {"best", "let_go", "intention"} for the evening check-in, {"lines":
+    [...]} for gratitude. Only wellness/crypto.py reads or writes it. Mood,
+    energy, kind, tags and the date stay plain so the list, the filters and
+    the mood line work without opening anything; tags are the person's own
+    short words and say nothing a heading would not.
+    """
+    KINDS = [
+        ('checkin', 'Evening check-in'),
+        ('free', 'Free write'),
+        ('gratitude', 'Gratitude'),
+        ('note', 'Quick note'),
+    ]
+    MOODS = [(1, 'Low'), (2, 'A bit low'), (3, 'Okay'), (4, 'Good'),
+             (5, 'Great')]
+    ENERGY = [(1, 'Drained'), (2, 'Low'), (3, 'Steady'), (4, 'High')]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_journal')
+    date = models.DateField()
+    kind = models.CharField(max_length=10, choices=KINDS, default='free')
+    mood = models.PositiveSmallIntegerField(choices=MOODS, null=True,
+                                            blank=True)
+    energy = models.PositiveSmallIntegerField(choices=ENERGY, null=True,
+                                              blank=True)
+    tags = models.JSONField(default=list, blank=True)
+    prompt = models.CharField(max_length=200, blank=True)
+    body = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'wellness_journal_entry'
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return '%s - %s' % (self.date, self.get_kind_display())
+
+
+class BodyMetric(models.Model):
+    """WL-2, 30 Oct 2026 - one measurement on one day. A second reading of
+    the same kind on the same day replaces the first."""
+    KINDS = [
+        ('weight', 'Weight'),
+        ('waist', 'Waist'),
+        ('hips', 'Hips'),
+        ('chest', 'Chest'),
+        ('arm', 'Arm'),
+        ('thigh', 'Thigh'),
+        ('neck', 'Neck'),
+        ('bodyfat', 'Body fat'),
+    ]
+    UNITS = {'weight': 'kg', 'bodyfat': '%'}
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_body')
+    date = models.DateField()
+    kind = models.CharField(max_length=10, choices=KINDS)
+    value = models.DecimalField(max_digits=6, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'wellness_body_metric'
+        unique_together = [('user', 'date', 'kind')]
+        ordering = ['-date']
+
+    def __str__(self):
+        return '%s %s on %s' % (self.kind, self.value, self.date)
+
+    @property
+    def unit(self):
+        return self.UNITS.get(self.kind, 'cm')

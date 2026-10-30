@@ -1541,6 +1541,8 @@ ROUNDS = [
     '.bak_wellness1',
     # PK-1, 30 Oct 2026 - sign in with a fingerprint (passkeys).
     '.bak_passkeys',
+    # WL-2, 30 Oct 2026 - Wellness, part two: Journal and Body.
+    '.bak_wellness2',
 ]
 
 

@@ -1,0 +1,42 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ entry.date|date:"j F" }} · Journal · Wellness{% endblock %}
+{% block top_left %}
+<a class="w-home" href="{% url 'wellness:journal_list' %}">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Journal
+</a>
+{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px">
+  <div class="w-eyebrow">{{ entry.date|date:"l, j F Y" }} · {{ entry.get_kind_display }}</div>
+  {% if mood_word or energy_word %}<div class="w-small w-quiet">{% if mood_word %}<i class="w-dot m{{ entry.mood }}"></i>{{ mood_word }}{% endif %}{% if mood_word and energy_word %} · {% endif %}{% if energy_word %}Energy: {{ energy_word }}{% endif %}</div>{% endif %}
+</header>
+
+<article class="w-card" style="gap:16px">
+  {% if w.locked %}
+  <p class="w-locked" style="margin:0">{{ w.preview }}</p>
+  {% elif entry.kind == 'checkin' %}
+  {% if w.best %}<div><div class="w-label">The best thing today</div><p style="margin:6px 0 0;white-space:pre-line">{{ w.best }}</p></div>{% endif %}
+  {% if w.let_go %}<div><div class="w-label">Letting go of</div><p style="margin:6px 0 0;white-space:pre-line">{{ w.let_go }}</p></div>{% endif %}
+  {% if w.intention %}<div><div class="w-label">Tomorrow's intention</div><p style="margin:6px 0 0;white-space:pre-line">{{ w.intention }}</p></div>{% endif %}
+  {% elif entry.kind == 'gratitude' %}
+  <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">{% for l in w.lines %}{% if l %}<li>{{ l }}</li>{% endif %}{% endfor %}</ol>
+  {% else %}
+  {% if entry.prompt %}<p class="w-quiet" style="margin:0;font-family:var(--w-serif)">{{ entry.prompt }}</p>{% endif %}
+  <p style="margin:0;white-space:pre-line;font-size:17px;line-height:1.6">{{ w.text }}</p>
+  {% endif %}
+  {% if entry.tags %}<div class="w-small w-quiet">{% for t in entry.tags %}#{{ t }} {% endfor %}</div>{% endif %}
+</article>
+
+<div class="w-btn-row">
+  <a class="w-btn ghost" href="{% url 'wellness:journal_edit' entry.pk %}">Edit</a>
+</div>
+<details class="w-card">
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Delete this entry</summary>
+  <form method="post" action="{% url 'wellness:journal_delete' entry.pk %}" style="display:flex;flex-direction:column;gap:12px">
+    {% csrf_token %}
+    <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" name="confirm" value="yes" required style="width:22px;height:22px"> Yes, delete it for good</label>
+    <button class="w-btn ghost" type="submit">Delete</button>
+  </form>
+</details>
+{% endblock %}

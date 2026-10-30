@@ -1,0 +1,89 @@
+{% extends "wellness/base.html" %}
+{% block title %}Body · Wellness{% endblock %}
+{% block content %}
+<h1 class="w-title">Body</h1>
+
+{% if s.has %}
+<section class="w-card" aria-labelledby="trend-h">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+    <div>
+      <div class="w-small w-quiet" id="trend-h">Trend weight</div>
+      <div class="w-big">{{ s.current }} <small>kg</small></div>
+    </div>
+    <div style="text-align:right">
+      {% if s.c7 is not None %}<div style="font-weight:600;color:var(--w-sage-deep)">{% if s.c7 > 0 %}+{% endif %}{{ s.c7 }} kg this week</div>{% endif %}
+      {% if s.c30 is not None %}<div class="w-small w-quiet">{% if s.c30 > 0 %}+{% endif %}{{ s.c30 }} kg in 30 days</div>{% endif %}
+    </div>
+  </div>
+  {% if chart %}
+  <svg class="w-chart" viewBox="0 0 {{ chart.w }} {{ chart.h }}" width="100%" role="img" aria-label="Weight over the last {{ range }} days: the trend line, with each weigh-in as a faint dot">
+    <line class="grid" x1="10" x2="310" y1="10" y2="10"/><line class="grid" x1="10" x2="310" y1="75" y2="75"/><line class="grid" x1="10" x2="310" y1="140" y2="140"/>
+    <path class="dots" d="{{ chart.dots }}"/>
+    <path class="line" d="{{ chart.line }}"/>
+  </svg>
+  <div style="display:flex;justify-content:space-between" class="w-small w-quiet"><span>{{ chart.hi|floatformat:1 }} kg</span><span>{{ chart.lo|floatformat:1 }} kg</span></div>
+  {% endif %}
+  <nav class="w-seg" aria-label="Chart range">
+    <a href="?range=30"{% if range == 30 %} class="is-on" aria-current="true"{% endif %}>30 days</a>
+    <a href="?range=90"{% if range == 90 %} class="is-on" aria-current="true"{% endif %}>90 days</a>
+    <a href="?range=365"{% if range == 365 %} class="is-on" aria-current="true"{% endif %}>Year</a>
+  </nav>
+  <p class="w-small w-quiet" style="margin:0">{{ s.words }} The line is a smoothed average, so one heavy morning barely moves it.</p>
+</section>
+{% else %}
+<section class="w-card soft">
+  <h2 class="w-h2">Your first weigh-in</h2>
+  <p class="w-quiet" style="margin:0">Weigh yourself in the morning, after the bathroom and before food. Three times a week is plenty; daily is best for a smooth trend.</p>
+</section>
+{% endif %}
+
+<section class="w-card">
+  {% if profile.weight_goal %}
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+    <span style="font-weight:600">Goal {{ profile.weight_goal }} kg</span>
+    <span class="w-small w-quiet">{% if s.goal_pace %}On pace for {{ s.goal_pace|date:"j F Y" }}{% elif s.has %}Pace appears after two weeks{% endif %}</span>
+  </div>
+  {% if s.progress is not None %}<div class="w-bar" role="img" aria-label="{{ s.progress|floatformat:2 }} of the way"><i style="width:{% widthratio s.progress 1 100 %}%"></i></div>{% endif %}
+  {% if s.rate is not None %}<div class="w-small w-quiet">{% if s.rate > 0 %}+{% endif %}{{ s.rate }} kg a week, from the last two weeks of the trend.</div>{% endif %}
+  {% else %}
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+    <span class="w-quiet">No goal set - that is fine.</span>
+  </div>
+  {% endif %}
+  <a class="w-btn quiet" href="{% url 'wellness:body_goal' %}" style="align-self:flex-start;padding:0">Goal and height</a>
+</section>
+
+<section class="w-list" aria-labelledby="tape-h">
+  <h2 class="w-h2" id="tape-h" style="font-size:16px;padding-top:16px">Measurements</h2>
+  {% for m in measures %}
+  <div class="w-row">
+    <span class="w-row-main"><span class="w-row-name">{{ m.label }}</span><span class="w-row-sub">{{ m.date|date:"j M" }}</span></span>
+    <span><strong>{{ m.value|floatformat:"-1" }} {{ m.unit }}</strong>{% if m.delta is not None and m.delta != 0 %} <span class="w-small" style="color:var(--w-sage-deep)">{% if m.delta > 0 %}+{% endif %}{{ m.delta|floatformat:"-1" }} since {{ m.since|date:"M" }}</span>{% endif %}</span>
+  </div>
+  {% empty %}
+  <p class="w-small w-quiet" style="margin:0 0 16px">A tape measure catches progress the scale misses, especially while you build strength.</p>
+  {% endfor %}
+  {% if whtr %}
+  <div class="w-row"><span class="w-row-main"><span class="w-row-name">Waist to height</span><span class="w-row-sub">Under 0.5 is the common guide</span></span><strong>{{ whtr }}</strong></div>
+  {% endif %}
+</section>
+
+{% if history %}
+<details class="w-list">
+  <summary class="w-h2" style="font-size:16px;cursor:pointer;min-height:56px;display:flex;align-items:center">Recent weigh-ins</summary>
+  {% for h in history %}
+  <div class="w-row">
+    <span>{{ h.date|date:"D j M" }}</span>
+    <span style="display:flex;align-items:center;gap:6px">{{ h.value|floatformat:1 }} kg
+      <form method="post" action="{% url 'wellness:body_delete' h.pk %}">{% csrf_token %}<button class="w-icon-btn" type="submit" aria-label="Remove the weigh-in of {{ h.date|date:'j F' }}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></form>
+    </span>
+  </div>
+  {% endfor %}
+</details>
+{% endif %}
+
+<div class="w-btn-row">
+  <a class="w-btn ghost" href="{% url 'wellness:body_measure' %}">Measure</a>
+  <a class="w-btn" href="{% url 'wellness:body_weigh' %}">Weigh in</a>
+</div>
+{% endblock %}

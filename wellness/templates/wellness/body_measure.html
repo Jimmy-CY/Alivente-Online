@@ -1,0 +1,26 @@
+{% extends "wellness/base.html" %}
+{% block title %}Measure · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:body' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Body</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">Measure</h1>
+  <p class="w-quiet" style="margin:0">Fill in only the ones you measured. Same place each time - the waist at the belly button, say.</p>
+  <div class="w-card" style="gap:12px">
+    {% for f in fields %}
+    <label style="display:flex;align-items:center;gap:12px">
+      <span style="flex:1">{{ f.label }}{% if f.last %}<span class="w-small w-quiet" style="display:block">last {{ f.last|floatformat:"-1" }} {{ f.unit }}</span>{% endif %}</span>
+      <input class="w-input" name="{{ f.kind }}" inputmode="decimal" autocomplete="off" style="width:110px;text-align:right">
+      <span class="w-quiet" style="width:24px">{{ f.unit }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <details>
+    <summary class="w-small w-quiet" style="cursor:pointer;min-height:44px;display:flex;align-items:center">A different day</summary>
+    <input class="w-input" name="date" type="date" value="{{ date }}" aria-label="Date of these measurements">
+  </details>
+  <button type="submit" class="w-btn full">Save</button>
+</form>
+{% endblock %}

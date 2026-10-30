@@ -1,0 +1,87 @@
+{% extends "wellness/base.html" %}
+{% block title %}Journal · Wellness{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <h1 class="w-title">Journal</h1>
+  <a class="w-btn" href="{% url 'wellness:journal_new' %}" style="min-height:44px;padding:0 18px;font-size:15px">Write</a>
+</div>
+
+{% if key_missing %}
+<div class="w-notice">For the administrator: WELLNESS_JOURNAL_KEY is not set, so entries are locked with a key made from the site's secret. Set the variable in Railway before anyone writes much here.</div>
+{% endif %}
+
+<section class="w-card sand" aria-label="Ways to write">
+  <p class="w-quote" style="font-size:19px">{{ prompt }}</p>
+  <div class="w-chips">
+    <a class="w-chip" href="{% url 'wellness:journal_new' %}?kind=checkin" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">Evening check-in</a>
+    <a class="w-chip" href="{% url 'wellness:journal_new' %}?kind=free" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">Free write</a>
+    <a class="w-chip" href="{% url 'wellness:journal_new' %}?kind=gratitude" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">Three good things</a>
+    <a class="w-chip" href="{% url 'wellness:journal_new' %}?kind=note" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">Quick note</a>
+  </div>
+</section>
+
+{% if mood_line %}
+<section class="w-card" aria-labelledby="mood-h">
+  <div style="display:flex;justify-content:space-between;align-items:baseline">
+    <h2 class="w-h2" id="mood-h" style="font-size:16px">Mood, last 30 days</h2>
+    <span class="w-small w-quiet">{{ mood_line.days }} days with a mood</span>
+  </div>
+  <svg class="w-chart" viewBox="0 0 {{ mood_line.w }} {{ mood_line.h }}" width="100%" role="img" aria-label="Your mood over the last thirty days, smoothed">
+    <line class="grid" x1="10" x2="310" y1="10" y2="10"/><line class="grid" x1="10" x2="310" y1="45" y2="45"/><line class="grid" x1="10" x2="310" y1="80" y2="80"/>
+    <path class="line" d="{{ mood_line.line }}"/>
+  </svg>
+  <div style="display:flex;justify-content:space-between" class="w-small w-quiet"><span>30 days ago</span><span>Today</span></div>
+</section>
+{% endif %}
+
+{% for lbl, e, preview in on_this_day %}
+<a class="w-card soft" href="{% url 'wellness:journal_detail' e.pk %}" style="text-decoration:none;color:inherit;gap:4px">
+  <span class="w-label">On this day · {{ lbl }}</span>
+  <span>{{ preview|default:e.get_kind_display }}</span>
+</a>
+{% endfor %}
+
+<details class="w-card"{% if filtered %} open{% endif %}>
+<summary class="w-label" style="cursor:pointer;min-height:44px;display:flex;align-items:center">Search your journal</summary>
+<form method="get" style="display:flex;flex-direction:column;gap:10px" role="search">
+  <label for="j-q" class="w-small w-quiet">A word, a mood or a tag</label>
+  <input class="w-input" id="j-q" name="q" value="{{ q }}" placeholder="A word, a name, a place" autocomplete="off">
+  <div class="w-chips" aria-label="Filter by mood">
+    {% for n, label in moods %}
+    <label class="w-chip"><input type="radio" name="mood" value="{{ n }}"{% if mood == n %} checked{% endif %}><span>{{ label }}</span></label>
+    {% endfor %}
+  </div>
+  {% if tags %}
+  <div class="w-chips" aria-label="Filter by tag">
+    {% for t in tags %}<label class="w-chip"><input type="radio" name="tag" value="{{ t }}"{% if tag == t %} checked{% endif %}><span>#{{ t }}</span></label>{% endfor %}
+  </div>
+  {% endif %}
+  <div class="w-btn-row">
+    <button class="w-btn" type="submit">Search</button>
+    {% if filtered %}<a class="w-btn ghost" href="{% url 'wellness:journal_list' %}">Clear</a>{% endif %}
+  </div>
+</form>
+</details>
+
+{% if rows %}
+<div class="w-list" style="padding:0 20px">
+  {% for r in rows %}
+  <a class="w-entry" href="{% url 'wellness:journal_detail' r.e.pk %}">
+    <span class="w-entry-date"><b>{{ r.e.date|date:"j" }}</b><span>{{ r.e.date|date:"M" }}</span></span>
+    <span class="w-entry-main">
+      <span class="w-entry-kind">{% if r.e.mood %}<i class="w-dot m{{ r.e.mood }}"></i>{{ r.mood_word }} · {% endif %}{{ r.e.get_kind_display }}{% for t in r.e.tags %} · #{{ t }}{% endfor %}</span>
+      <span class="w-entry-text" style="display:block">{{ r.preview }}</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+{% elif filtered %}
+<p class="w-quiet" style="margin:0;padding:0 4px">Nothing matches. Try another word.</p>
+{% else %}
+<section class="w-card soft">
+  <h2 class="w-h2">Your first page</h2>
+  <p class="w-quiet" style="margin:0">A line is enough. Try the evening check-in - three questions, about a minute.</p>
+  <a class="w-btn full" href="{% url 'wellness:journal_new' %}?kind=checkin">Start the check-in</a>
+</section>
+{% endif %}
+{% endblock %}

@@ -150,6 +150,16 @@
     sync(form);
   });
 
+  // ---- WL-2: nudge the weigh-in by a tenth or a half.
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-nudge]');
+    if (!b) return;
+    e.preventDefault();
+    var input = document.getElementById('w-val');
+    var v = parseFloat((input.value || '0').replace(',', '.')) || 0;
+    input.value = (Math.round((v + parseFloat(b.getAttribute('data-nudge'))) * 10) / 10).toFixed(1);
+  });
+
   // ---- The installable app.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

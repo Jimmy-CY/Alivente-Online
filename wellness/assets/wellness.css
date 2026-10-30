@@ -53,6 +53,10 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+/* WL-2 - the installed app is confined to Wellness: no way out to the
+   main app. On a computer or in the browser the link stays. */
+.in-app .w-out { display: none !important; }
+@media (display-mode: standalone) { .w-out { display: none !important; } }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -396,7 +400,7 @@ label.w-chip span { display: inline-flex; align-items: center; min-height: 44px;
   border-top: 1px solid var(--w-line);
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 8px;
   z-index: 10;
 }
 .w-tab {
@@ -404,7 +408,7 @@ label.w-chip span { display: inline-flex; align-items: center; min-height: 44px;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  min-width: 72px;
+  min-width: 64px;
   min-height: 48px;
   padding-top: 4px;
   font-size: 11px;
@@ -425,3 +429,49 @@ label.w-chip span { display: inline-flex; align-items: center; min-height: 44px;
 @media (min-width: 720px) {
   .w-hello { font-size: 38px; }
 }
+
+/* ---- WL-2: journal and body ------------------------------------------ */
+.w-moods { display: flex; justify-content: space-between; gap: 6px; }
+.w-mood {
+  flex: 1 1 0;
+  min-height: 56px;
+  border-radius: 16px;
+  border: 1px solid var(--w-line);
+  background: var(--w-card);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; font-size: 11px; color: var(--w-quiet); cursor: pointer;
+}
+label.w-mood input { position: absolute; opacity: 0; pointer-events: none; }
+label.w-mood:has(input:checked) { background: var(--w-sage-deep); color: var(--w-on-accent); border-color: var(--w-sage-deep); }
+.w-mood svg { width: 26px; height: 26px; }
+.w-textarea {
+  width: 100%; min-height: 120px; resize: vertical;
+  border: 1.5px solid var(--w-line); border-radius: 16px;
+  background: var(--w-card); color: var(--w-ink);
+  font: inherit; font-size: 17px; line-height: 1.55; padding: 14px 16px;
+}
+.w-textarea.short { min-height: 64px; }
+.w-textarea:focus { border-color: var(--w-sage); outline: none; }
+.w-entry { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--w-line); color: inherit; text-decoration: none; min-height: 56px; }
+.w-entry:last-child { border-bottom: none; }
+.w-entry-date { flex: none; width: 44px; text-align: center; }
+.w-entry-date b { display: block; font-size: 20px; font-weight: 600; line-height: 1.1; }
+.w-entry-date span { font-size: 11px; color: var(--w-quiet); text-transform: uppercase; letter-spacing: .05em; }
+.w-entry-main { flex: 1 1 auto; min-width: 0; }
+.w-entry-kind { font-size: 12px; color: var(--w-quiet); }
+.w-entry-text { font-size: 15px; overflow-wrap: anywhere; }
+.w-dot { display: inline-block; width: 10px; height: 10px; border-radius: 5px; background: var(--w-sage); vertical-align: middle; margin-right: 4px; }
+.w-dot.m1 { opacity: .35; } .w-dot.m2 { opacity: .5; } .w-dot.m3 { opacity: .65; } .w-dot.m4 { opacity: .85; }
+.w-chart .dots { fill: var(--w-ring-off); }
+.w-chart .line { fill: none; stroke: var(--w-sage-deep); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.w-chart .grid { stroke: var(--w-line); }
+.w-big { font-size: 40px; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
+.w-big small { font-size: 18px; font-weight: 500; color: var(--w-quiet); }
+.w-bar { height: 10px; border-radius: 5px; background: var(--w-sage-track); overflow: hidden; }
+.w-bar i { display: block; height: 10px; border-radius: 5px; background: var(--w-sage); }
+.w-seg { display: flex; gap: 8px; }
+.w-seg a { flex: 1; min-height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; text-decoration: none; background: var(--w-bg); color: var(--w-ink); font-size: 14px; }
+.w-seg a.is-on { background: var(--w-ink); color: var(--w-bg); font-weight: 600; }
+.w-num { font-size: 44px; font-weight: 600; text-align: center; min-height: 80px; }
+.w-locked { color: var(--w-quiet); font-style: italic; }
+.w-notice { background: var(--w-sand); border-radius: 16px; padding: 14px 16px; font-size: 14px; }

@@ -148,7 +148,25 @@ def today(request):
         'mood': mood,
         'has_any': has_any,
         'tip': _tip(profile, ['today_tap', 'today_ring']) if total else None,
+        # WL-2 - the weigh-in card, the evening card, On this day.
+        'body': body_summary(request.user, day),
+        'evening': now.hour >= 17,
+        'wrote_today': JournalEntry.objects.filter(
+            user=request.user, date=day).exists(),
+        'checkin_today': JournalEntry.objects.filter(
+            user=request.user, date=day, kind='checkin').exists(),
+        'on_this_day': [(lbl, e, JN.words(e).get('preview', ''))
+                        for lbl, e in JN.on_this_day(_entries_by_date(
+                            request.user, day), day)],
     })
+
+
+def _entries_by_date(user, day):
+    out = {}
+    wanted = {JN._months_back(day, 1), JN._months_back(day, 12)}
+    for e in JournalEntry.objects.filter(user=user, date__in=wanted):
+        out.setdefault(e.date, []).append(e)
+    return out
 
 
 def _ring(n, of, r):
@@ -541,7 +559,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl1-2'
+SW_VERSION = 'wl2-1'
 
 
 def service_worker(request):
@@ -595,3 +613,358 @@ def asset(request, name):
         resp = HttpResponse(f.read(), content_type=ASSET_TYPES[name])
     resp['Cache-Control'] = 'public, max-age=3600'
     return resp
+
+
+# ================================================================ JOURNAL
+# WL-2, 30 Oct 2026. Every lookup filtered by request.user, as above; the
+# words go through crypto.seal / crypto.open_ and nowhere else.
+from decimal import Decimal, InvalidOperation              # noqa: E402
+
+from . import body as B                                    # noqa: E402
+from . import crypto                                       # noqa: E402
+from . import journal as JN                                # noqa: E402
+from .models import BodyMetric, JournalEntry               # noqa: E402
+
+
+def _entry_data(post, kind):
+    if kind == 'checkin':
+        return {'best': post.get('best', '').strip(),
+                'let_go': post.get('let_go', '').strip(),
+                'intention': post.get('intention', '').strip()}
+    if kind == 'gratitude':
+        return {'lines': [post.get('line%d' % i, '').strip()
+                          for i in (1, 2, 3)]}
+    return {'text': post.get('text', '').strip()}
+
+
+def _empty(data):
+    vals = data.get('lines') if 'lines' in data else list(data.values())
+    return not any((v or '').strip() for v in vals)
+
+
+def _int_or_none(v, lo, hi):
+    try:
+        n = int(v)
+    except (TypeError, ValueError):
+        return None
+    return n if lo <= n <= hi else None
+
+
+@wellness_view
+def journal_list(request):
+    profile = _profile(request.user)
+    day = _today()
+    qs = JournalEntry.objects.filter(user=request.user)
+    all_entries = list(qs)
+    q = (request.GET.get('q') or '').strip().lower()
+    tag = (request.GET.get('tag') or '').strip().lower()
+    mood = _int_or_none(request.GET.get('mood'), 1, 5)
+    rows = []
+    for e in all_entries:
+        if tag and tag not in (e.tags or []):
+            continue
+        if mood and e.mood != mood:
+            continue
+        w = JN.words(e)
+        if q and q not in (w.get('all_text', '') + ' ' +
+                           ' '.join(e.tags or [])).lower():
+            continue
+        rows.append({'e': e, 'preview': w.get('preview', ''),
+                     'mood_word': JN.MOOD_WORDS.get(e.mood, '')})
+    tags = sorted({t for e in all_entries for t in (e.tags or [])})
+    by_date = {}
+    for e in all_entries:
+        by_date.setdefault(e.date, []).append(e)
+    return render(request, 'wellness/journal_list.html', {
+        'tab': 'journal', 'rows': rows, 'q': q, 'tag': tag, 'mood': mood,
+        'tags': tags, 'moods': JournalEntry.MOODS,
+        'filtered': bool(q or tag or mood),
+        'mood_line': JN.mood_line(all_entries, day),
+        'on_this_day': [(lbl, e, JN.words(e).get('preview', ''))
+                        for lbl, e in JN.on_this_day(by_date, day)],
+        'prompt': JN.prompt_for(request.user.pk, day),
+        'key_missing': request.user.is_superuser and not crypto.configured(),
+        'tip': _tip(profile, ['journal_private', 'journal_mood']),
+    })
+
+
+@wellness_view
+def journal_new(request):
+    return _journal_form(request, None)
+
+
+@wellness_view
+def journal_edit(request, pk):
+    entry = get_object_or_404(JournalEntry, pk=pk, user=request.user)
+    return _journal_form(request, entry)
+
+
+def _journal_form(request, entry):
+    day = _today()
+    kinds = dict(JournalEntry.KINDS)
+    kind = (entry.kind if entry else
+            request.GET.get('kind') or request.POST.get('kind') or 'free')
+    if kind not in kinds:
+        kind = 'free'
+    offset = _int_or_none(request.GET.get('another'), 0, 99) or 0
+    prompt = (entry.prompt if entry else
+              request.POST.get('prompt') or JN.prompt_for(
+                  request.user.pk, day, offset))
+    error = ''
+    if request.method == 'POST':
+        data = _entry_data(request.POST, kind)
+        if _empty(data):
+            error = 'Write a word or two first - even one line is plenty.'
+        else:
+            try:
+                d = dt.date.fromisoformat(request.POST.get('date') or '')
+            except ValueError:
+                d = entry.date if entry else day
+            if d > day:
+                d = day
+            e = entry or JournalEntry(user=request.user, kind=kind)
+            e.date = d
+            e.mood = _int_or_none(request.POST.get('mood'), 1, 5)
+            e.energy = _int_or_none(request.POST.get('energy'), 1, 4)
+            e.tags = JN.clean_tags(request.POST.get('tags'))
+            e.prompt = prompt if kind == 'free' else ''
+            e.body = crypto.seal(data)
+            e.save()
+            return redirect('wellness:journal_detail', pk=e.pk)
+        values = data
+    else:
+        values = JN.words(entry) if entry else {}
+    return render(request, 'wellness/journal_form.html', {
+        'tab': 'journal', 'entry': entry, 'kind': kind,
+        'kind_label': kinds[kind], 'kinds': JournalEntry.KINDS,
+        'v': values, 'prompt': prompt, 'offset': offset + 1,
+        'mood': (entry.mood if entry else
+                 _int_or_none(request.POST.get('mood'), 1, 5)),
+        'energy': (entry.energy if entry else
+                   _int_or_none(request.POST.get('energy'), 1, 4)),
+        'tags': ' '.join(entry.tags) if entry else
+                request.POST.get('tags', ''),
+        'date': (entry.date if entry else day).isoformat(),
+        'moods': JournalEntry.MOODS, 'energies': JournalEntry.ENERGY,
+        'error': error, 'part': 'evening' if kind == 'checkin' else '',
+    })
+
+
+@wellness_view
+def journal_detail(request, pk):
+    entry = get_object_or_404(JournalEntry, pk=pk, user=request.user)
+    return render(request, 'wellness/journal_detail.html', {
+        'tab': 'journal', 'entry': entry, 'w': JN.words(entry),
+        'mood_word': JN.MOOD_WORDS.get(entry.mood, ''),
+        'energy_word': dict(JournalEntry.ENERGY).get(entry.energy, ''),
+    })
+
+
+@wellness_view
+@require_POST
+def journal_delete(request, pk):
+    entry = get_object_or_404(JournalEntry, pk=pk, user=request.user)
+    if request.POST.get('confirm') != 'yes':
+        return HttpResponseBadRequest('not confirmed')
+    entry.delete()
+    return redirect('wellness:journal_list')
+
+
+# =================================================================== BODY
+def _readings(user, kind='weight'):
+    return {m.date: m.value for m in
+            BodyMetric.objects.filter(user=user, kind=kind)}
+
+
+def body_summary(user, day):
+    """What Today and the Body page both need about weight."""
+    profile = _profile(user)
+    readings = _readings(user)
+    tr = B.trend(readings)
+    if not tr:
+        return {'has': False, 'today_done': False}
+    current = tr[max(tr)]
+    start = tr[min(tr)]
+    rate = B.weekly_rate(tr)
+    c7 = B.change(tr, 7)
+    goal = float(profile.weight_goal) if profile.weight_goal else None
+    return {
+        'has': True,
+        'current': B.kg(current),
+        'last_reading': readings[max(readings)],
+        'last_date': max(readings),
+        'today_done': day in readings,
+        'c7': B.kg(c7), 'c30': B.kg(B.change(tr, 30)),
+        'rate': B.kg(rate),
+        'goal': profile.weight_goal,
+        'goal_pace': B.pace(current, goal, rate, day),
+        'progress': B.progress(start, current, goal),
+        'words': _trend_words(c7),
+    }
+
+
+def _trend_words(c7):
+    if c7 is None:
+        return 'Keep weighing in - the trend settles after a week.'
+    if abs(c7) < 0.15:
+        return 'Holding steady this week.'
+    return '%s %.1f kg this week.' % (
+        'Trending down' if c7 < 0 else 'Trending up', abs(c7))
+
+
+MEASURES = [k for k, _ in BodyMetric.KINDS if k != 'weight']
+
+
+@wellness_view
+def body_home(request):
+    profile = _profile(request.user)
+    day = _today()
+    rng = _int_or_none(request.GET.get('range'), 7, 400) or 30
+    if rng not in (30, 90, 365):
+        rng = 30
+    readings = _readings(request.user)
+    tr = B.trend(readings)
+    latest = {}
+    first = {}
+    for m in BodyMetric.objects.filter(user=request.user).order_by('date'):
+        if m.kind == 'weight':
+            continue
+        first.setdefault(m.kind, m)
+        latest[m.kind] = m
+    labels = dict(BodyMetric.KINDS)
+    measures = []
+    for k in MEASURES:
+        if k in latest:
+            delta = latest[k].value - first[k].value
+            measures.append({'kind': k, 'label': labels[k],
+                             'value': latest[k].value,
+                             'unit': latest[k].unit,
+                             'date': latest[k].date,
+                             'delta': delta if latest[k] != first[k]
+                             else None,
+                             'since': first[k].date})
+    whtr = None
+    if profile.height_cm and 'waist' in latest:
+        whtr = (latest['waist'].value / profile.height_cm).quantize(
+            Decimal('0.01'))
+    history = list(BodyMetric.objects.filter(user=request.user,
+                                             kind='weight')[:14])
+    return render(request, 'wellness/body.html', {
+        'tab': 'body', 's': body_summary(request.user, day),
+        'chart': B.chart(readings, tr, rng), 'range': rng,
+        'measures': measures, 'whtr': whtr, 'profile': profile,
+        'history': history,
+        'tip': _tip(profile, ['body_trend']) if tr else None,
+    })
+
+
+def _decimal(v, lo, hi):
+    try:
+        d = Decimal(str(v).replace(',', '.').strip())
+    except (InvalidOperation, ValueError):
+        return None
+    return d if lo <= d <= hi else None
+
+
+@wellness_view
+def body_weigh(request):
+    day = _today()
+    last = BodyMetric.objects.filter(user=request.user,
+                                     kind='weight').first()
+    error = ''
+    if request.method == 'POST':
+        v = _decimal(request.POST.get('value'), Decimal('20'),
+                     Decimal('400'))
+        try:
+            d = dt.date.fromisoformat(request.POST.get('date') or '')
+        except ValueError:
+            d = day
+        if d > day:
+            d = day
+        if v is None:
+            error = 'That does not look like a weight in kilos.'
+        else:
+            BodyMetric.objects.update_or_create(
+                user=request.user, date=d, kind='weight',
+                defaults={'value': v})
+            return redirect('wellness:body')
+    return render(request, 'wellness/body_weigh.html', {
+        'tab': 'body', 'last': last, 'date': day.isoformat(),
+        'error': error,
+    })
+
+
+@wellness_view
+def body_measure(request):
+    day = _today()
+    labels = dict(BodyMetric.KINDS)
+    error = ''
+    if request.method == 'POST':
+        try:
+            d = dt.date.fromisoformat(request.POST.get('date') or '')
+        except ValueError:
+            d = day
+        if d > day:
+            d = day
+        saved = 0
+        for k in MEASURES:
+            raw = (request.POST.get(k) or '').strip()
+            if not raw:
+                continue
+            lo, hi = ((Decimal('2'), Decimal('70')) if k == 'bodyfat'
+                      else (Decimal('10'), Decimal('250')))
+            v = _decimal(raw, lo, hi)
+            if v is None:
+                error = '%s does not look right.' % labels[k]
+                break
+            BodyMetric.objects.update_or_create(
+                user=request.user, date=d, kind=k, defaults={'value': v})
+            saved += 1
+        if not error:
+            return redirect('wellness:body')
+    last = {}
+    for m in BodyMetric.objects.filter(user=request.user).exclude(
+            kind='weight'):
+        last.setdefault(m.kind, m.value)
+    fields = [{'kind': k, 'label': labels[k], 'last': last.get(k),
+               'unit': '%' if k == 'bodyfat' else 'cm'} for k in MEASURES]
+    return render(request, 'wellness/body_measure.html', {
+        'tab': 'body', 'fields': fields, 'date': day.isoformat(),
+        'error': error,
+    })
+
+
+@wellness_view
+def body_goal(request):
+    profile = _profile(request.user)
+    error = ''
+    if request.method == 'POST':
+        h = (request.POST.get('height_cm') or '').strip()
+        g = (request.POST.get('weight_goal') or '').strip()
+        gd = (request.POST.get('goal_date') or '').strip()
+        hv = _decimal(h, Decimal('80'), Decimal('250')) if h else None
+        gv = _decimal(g, Decimal('20'), Decimal('400')) if g else None
+        if h and hv is None:
+            error = 'Height in centimetres, please.'
+        elif g and gv is None:
+            error = 'A goal weight in kilos, please.'
+        else:
+            profile.height_cm = hv
+            profile.weight_goal = gv
+            try:
+                profile.goal_date = dt.date.fromisoformat(gd) if gd else None
+            except ValueError:
+                profile.goal_date = None
+            profile.save()
+            return redirect('wellness:body')
+    return render(request, 'wellness/body_goal.html', {
+        'tab': 'body', 'profile': profile, 'error': error,
+    })
+
+
+@wellness_view
+@require_POST
+def body_delete(request, pk):
+    m = get_object_or_404(BodyMetric, pk=pk, user=request.user)
+    m.delete()
+    return redirect('wellness:body')

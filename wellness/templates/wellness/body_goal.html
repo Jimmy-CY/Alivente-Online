@@ -1,0 +1,19 @@
+{% extends "wellness/base.html" %}
+{% block title %}Goal · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:body' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Body</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">Goal and height</h1>
+  <label for="g-w" class="w-small w-quiet">Goal weight in kilos (leave empty for none)</label>
+  <input class="w-input" id="g-w" name="weight_goal" inputmode="decimal" value="{{ profile.weight_goal|default_if_none:'' }}" autocomplete="off">
+  <label for="g-d" class="w-small w-quiet">By when, if you like</label>
+  <input class="w-input" id="g-d" name="goal_date" type="date" value="{{ profile.goal_date|date:'Y-m-d' }}">
+  <label for="g-h" class="w-small w-quiet">Height in centimetres - for the waist-to-height ratio</label>
+  <input class="w-input" id="g-h" name="height_cm" inputmode="decimal" value="{{ profile.height_cm|default_if_none:'' }}" autocomplete="off">
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <p class="w-small w-quiet" style="margin:0">Half a kilo to a kilo a week is a steady, sustainable pace for most people.</p>
+  <button type="submit" class="w-btn full">Save</button>
+</form>
+{% endblock %}

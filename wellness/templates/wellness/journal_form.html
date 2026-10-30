@@ -1,0 +1,83 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ kind_label }} · Wellness{% endblock %}
+{% block top_left %}
+<a class="w-home" href="{% if entry %}{% url 'wellness:journal_detail' entry.pk %}{% else %}{% url 'wellness:journal_list' %}{% endif %}">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Journal
+</a>
+{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+{% comment %} WL-2, 30 Oct 2026. One page for every kind of entry. Mood,
+  energy and tags are optional and sit at the top and the foot; the words
+  are what matter, and they are encrypted before they are saved. {% endcomment %}
+<form method="post" style="display:flex;flex-direction:column;gap:18px">
+  {% csrf_token %}
+  <input type="hidden" name="kind" value="{{ kind }}">
+  <input type="hidden" name="prompt" value="{{ prompt }}">
+  <header style="display:flex;flex-direction:column;gap:4px">
+    <div class="w-eyebrow">{{ kind_label }}</div>
+    <h1 class="w-hello" style="font-size:28px">{% if kind == 'checkin' %}How was today?{% elif kind == 'gratitude' %}Three good things{% elif kind == 'note' %}A quick note{% else %}Write freely{% endif %}</h1>
+  </header>
+
+  <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
+    <legend class="w-label" style="margin-bottom:10px">Mood</legend>
+    <div class="w-moods">
+      {% for n, label in moods %}
+      <label class="w-mood"><input type="radio" name="mood" value="{{ n }}"{% if mood == n %} checked{% endif %}>{% include "wellness/includes/face.html" %}<span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
+    <legend class="w-label" style="margin-bottom:10px">Energy</legend>
+    <div class="w-chips">
+      {% for n, label in energies %}
+      <label class="w-chip"><input type="radio" name="energy" value="{{ n }}"{% if energy == n %} checked{% endif %}><span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  {% if kind == 'checkin' %}
+  <label for="j-best" class="w-q" style="font-size:20px">The best thing today</label>
+  <textarea class="w-textarea short" id="j-best" name="best" rows="2">{{ v.best|default:'' }}</textarea>
+  <label for="j-let" class="w-q" style="font-size:20px">One thing to let go of</label>
+  <textarea class="w-textarea short" id="j-let" name="let_go" rows="2" placeholder="Write as much or as little as you like">{{ v.let_go|default:'' }}</textarea>
+  <label for="j-int" class="w-q" style="font-size:20px">Tomorrow's one intention</label>
+  <textarea class="w-textarea short" id="j-int" name="intention" rows="1" placeholder="Just one">{{ v.intention|default:'' }}</textarea>
+  {% elif kind == 'gratitude' %}
+  {% for i in "123" %}
+  <label class="w-small w-quiet" for="j-l{{ i }}">Good thing {{ i }}</label>
+  <input class="w-input" id="j-l{{ i }}" name="line{{ i }}" value="{% if i == '1' %}{{ v.lines.0|default:'' }}{% elif i == '2' %}{{ v.lines.1|default:'' }}{% else %}{{ v.lines.2|default:'' }}{% endif %}" autocomplete="off">
+  {% endfor %}
+  {% elif kind == 'note' %}
+  <label for="j-text" class="w-small w-quiet">One line is enough.</label>
+  <input class="w-input" id="j-text" name="text" value="{{ v.text|default:'' }}" maxlength="280" autocomplete="off">
+  {% else %}
+  <div class="w-card sand" style="gap:8px">
+    <p style="margin:0;font-family:var(--w-serif);font-size:19px">{{ prompt }}</p>
+    {% if not entry %}<a class="w-small" href="?kind=free&amp;another={{ offset }}">Another prompt</a>{% endif %}
+    <span class="w-small w-quiet">Or ignore it and write about anything.</span>
+  </div>
+  <label for="j-text" class="w-label">Your words</label>
+  <textarea class="w-textarea" id="j-text" name="text" rows="8">{{ v.text|default:'' }}</textarea>
+  {% endif %}
+
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+
+  <details>
+    <summary class="w-small w-quiet" style="cursor:pointer;min-height:44px;display:flex;align-items:center">Tags and date</summary>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label for="j-tags" class="w-small w-quiet">Tags, separated by spaces (work, family, sleep…)</label>
+      <input class="w-input" id="j-tags" name="tags" value="{{ tags }}" autocomplete="off">
+      <label for="j-date" class="w-small w-quiet">Date</label>
+      <input class="w-input" id="j-date" name="date" type="date" value="{{ date }}">
+    </div>
+  </details>
+
+  <div style="display:flex;align-items:center;gap:8px" class="w-small w-quiet">
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+    Only you can read this. It is locked before it is saved.
+  </div>
+  <button type="submit" class="w-btn full">{% if entry %}Save{% elif kind == 'checkin' %}Done for today{% else %}Save{% endif %}</button>
+</form>
+{% endblock %}
