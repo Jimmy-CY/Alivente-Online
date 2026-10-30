@@ -19,6 +19,14 @@
   {% endfor %}
 </div>
 
+{# CY-1, 30 Oct 2026 - the optional cycle tracker starts here. #}
+<a class="w-list" href="{% url 'wellness:cycle' %}" style="text-decoration:none;color:inherit">
+  <span class="w-row" style="border-bottom:none">
+    <span class="w-row-main"><span class="w-row-name">Cycle tracker</span><span class="w-row-sub">Optional, off until you turn it on. Private and locked.</span></span>
+    <span class="w-row-side" aria-hidden="true">›</span>
+  </span>
+</a>
+
 <form method="post" action="{% url 'wellness:tip_seen' %}">
   {% csrf_token %}
   <input type="hidden" name="reset" value="all">

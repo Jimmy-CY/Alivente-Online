@@ -1,0 +1,58 @@
+{% extends "wellness/base.html" %}
+{% comment %} CY-1, 30 Oct 2026 - log a day: flow, symptoms, pain, a private note. Everything optional; an empty day is removed. {% endcomment %}
+{% block title %}Log a day · Cycle · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:cycle' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Cycle</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <a class="w-small" href="?date={{ yesterday }}" aria-label="The day before" style="min-width:44px;min-height:44px;display:flex;align-items:center">‹ Day before</a>
+      {% if tomorrow %}<a class="w-small" href="?date={{ tomorrow }}" aria-label="The day after" style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:flex-end">Day after ›</a>{% endif %}
+    </div>
+    <span class="w-eyebrow">{{ day|date:"l j F" }}{% if cycle_day %} · day {{ cycle_day }}{% endif %}</span>
+    <h1 class="w-hello" style="font-size:28px">{% if is_today %}How is today?{% else %}How was this day?{% endif %}</h1>
+  </div>
+
+  <section class="w-card" aria-labelledby="flow-h">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 class="w-h2" id="flow-h">Period</h2>
+      {% if starting %}<span class="w-small w-quiet">Started this day</span>{% endif %}
+    </div>
+    <div class="w-flow" role="radiogroup" aria-labelledby="flow-h">
+      {% for key, label in flows %}
+      <label><input type="radio" name="flow" value="{{ key }}"{% if e.flow == key %} checked{% endif %}><span><i>{% if key == 'spotting' %}<b style="width:6px;height:6px"></b>{% elif key == 'light' %}<b></b>{% elif key == 'medium' %}<b></b><b></b>{% else %}<b></b><b></b><b></b>{% endif %}</i>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+    <label class="w-small w-quiet" style="display:flex;align-items:center;gap:8px;min-height:44px"><input class="w-radio" type="radio" name="flow" value=""{% if not e.flow %} checked{% endif %}> No bleeding</label>
+  </section>
+
+  <section class="w-card" aria-labelledby="sym-h">
+    <h2 class="w-h2" id="sym-h">Anything else? <span class="w-small w-quiet" style="font-weight:400">Optional</span></h2>
+    <div class="w-chips w-sym">
+      {% for key, label in symptoms %}
+      <label class="w-chip"><input type="checkbox" name="sym" value="{{ key }}"{% if key in e.sym %} checked{% endif %}><span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="w-card" aria-labelledby="pain-h">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <h2 class="w-h2" id="pain-h">Pain</h2>
+      <span style="font-weight:600"><output data-pain-out>{{ pain }}</output> <span class="w-small w-quiet" style="font-weight:400">of 10</span></span>
+    </div>
+    <input class="w-pain" type="range" name="pain" min="0" max="10" step="1" value="{{ pain }}" aria-labelledby="pain-h" data-pain>
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="relief" value="1"{% if e.relief %} checked{% endif %} style="width:22px;height:22px;accent-color:var(--w-sage-deep)"> Took pain relief</label>
+  </section>
+
+  <details class="w-card"{% if e.note %} open{% endif %}>
+    <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:15px">A private note <span class="w-quiet">+</span></summary>
+    <textarea class="w-textarea" name="note" rows="3" maxlength="1000" aria-label="A private note">{{ e.note }}</textarea>
+  </details>
+
+  <div class="w-private"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg> Locked before it is saved. Never in emails.</div>
+  <button type="submit" class="w-btn full">Save</button>
+</form>
+{% endblock %}

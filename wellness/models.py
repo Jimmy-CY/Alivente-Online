@@ -329,3 +329,29 @@ class WorkoutSet(models.Model):
     class Meta:
         db_table = 'wellness_workout_set'
         ordering = ['position', 'set_no']
+
+
+class CycleRecord(models.Model):
+    """CY-1, 30 Oct 2026 - the cycle tracker's whole record, one row per
+    person who has turned it on.
+
+    EVERYTHING IS LOCKED (decision 3 of 30 Oct, "encrypt the whole
+    record"). `prefs` is a Fernet token of {"on", "fertile", "mode",
+    "remind"}; `days` is a Fernet token of {"days": {"2026-10-07": {"flow",
+    "sym", "pain", "relief", "note"}}}. There is deliberately no date
+    column: a plain list of dates would give a period away on its own.
+    Only wellness/cycle.py opens or closes these.
+    """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                related_name='wellness_cycle')
+    prefs = models.TextField(blank=True)
+    days = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'wellness_cycle_record'
+
+    def __str__(self):
+        return 'Cycle record of %s' % self.user

@@ -71,6 +71,11 @@ TIPS = {
                        'start in one tap, with last time\'s numbers waiting.',
     'workout_previous': 'The grey numbers are last time. Beat them by a rep '
                         'or a little weight and you are making progress.',
+    # CY-1
+    'cycle_private': 'Your cycle log is locked before it is saved - every '
+                     'day and every setting. Only you can open it.',
+    'cycle_log': 'Log the first day you bleed, then each day after. '
+                 'Symptoms are optional - log only what helps you.',
 }
 
 HOWTO = [
@@ -137,6 +142,27 @@ HOWTO = [
           'last visit, so a morning tick is one tap. The rest of Alivente '
           'still asks you to log in again after an hour - property and '
           'finance stay as protected as they were.'},
+    {'q': 'Is there a cycle tracker?',
+     'a': 'Yes, and it is off until you turn it on. Open the Cycle tracker '
+          'link at the bottom of this guide. It then gets its own tab. '
+          'Turning it off hides it again and keeps your log, locked.'},
+    {'q': 'Who can see my cycle log?',
+     'a': 'Only you. The whole log - every day, every symptom, every '
+          'setting - is locked before it is saved. It never appears in an '
+          'email, and a reminder only ever says "A Wellness reminder".'},
+    {'q': 'How does Wellness predict my next period?',
+     'a': 'From the middle of your last six cycles, shown as a window of '
+          'a few days that widens when your cycles vary. It needs two '
+          'cycles before it guesses. Pregnancy and hormonal-contraception '
+          'modes switch predictions off.'},
+    {'q': 'What is the fertile estimate?',
+     'a': 'A rough window of days counted back from your next expected '
+          'period. It is off unless you turn it on, and it is an estimate, '
+          'not contraception - never rely on it to prevent a pregnancy.'},
+    {'q': 'How do I keep or delete my cycle log?',
+     'a': 'In the cycle tracker\'s settings: Download my log saves it all '
+          'as a file, and Delete everything removes every day and setting '
+          'at once.'},
     {'q': 'How do I put Wellness on my phone?',
      'a': 'iPhone: open Wellness in Safari, tap Share, then "Add to Home '
           'Screen". Android: open it in Chrome and tap "Install app" or '

@@ -1,0 +1,26 @@
+{% extends "wellness/base.html" %}
+{% comment %} CY-1, 30 Oct 2026 - the cycle tracker, before it is turned on. Off by default (decision 1). {% endcomment %}
+{% block title %}Cycle tracker · Wellness{% endblock %}
+{% block content %}
+<h1 class="w-title">Cycle tracker</h1>
+<span class="w-private"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg> Optional and private</span>
+
+<section class="w-card">
+  <h2 class="w-h2">Know what to expect</h2>
+  <p class="w-quiet" style="margin:0">Log your period and anything you notice. After two cycles, Wellness shows when the next one is likely, as a window of a few days, and over time the patterns around it.</p>
+</section>
+
+<section class="w-card soft">
+  <h2 class="w-h2">Only yours</h2>
+  <p class="w-quiet" style="margin:0">Every day and every setting is locked before it is saved. It never appears in an email, and you can download or delete it all at any time.</p>
+</section>
+
+{% if had %}<p class="w-small w-quiet" style="margin:0">Your earlier log is still here, locked. Turning the tracker back on brings it back.</p>{% endif %}
+
+<form method="post" action="{% url 'wellness:cycle_settings' %}">
+  {% csrf_token %}
+  <input type="hidden" name="turn" value="on">
+  <button type="submit" class="w-btn full">Turn on the cycle tracker</button>
+</form>
+<p class="w-small w-quiet" style="margin:0">You can turn it off again in its settings. A fertile-window estimate is available there too, off unless you choose it.</p>
+{% endblock %}

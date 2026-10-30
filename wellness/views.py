@@ -152,6 +152,8 @@ def today(request):
         'body': body_summary(request.user, day),
         # WL-3 - the planned or open workout.
         'workout': _workout_card(request.user, day),
+        # CY-1 - the cycle line, or nothing (off by default).
+        'cycle': _cycle_card(request.user, day),
         'evening': now.hour >= 17,
         'wrote_today': JournalEntry.objects.filter(
             user=request.user, date=day).exists(),
@@ -165,6 +167,11 @@ def today(request):
 
 def _workout_card(user, day):
     from .views_workouts import today_card
+    return today_card(user, day)
+
+
+def _cycle_card(user, day):
+    from .views_cycle import today_card
     return today_card(user, day)
 
 
@@ -568,7 +575,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl3-1'
+SW_VERSION = 'cy1-1'
 
 
 def service_worker(request):

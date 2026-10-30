@@ -1,0 +1,64 @@
+{% extends "wellness/base.html" %}
+{% comment %} CY-1, 30 Oct 2026 - your patterns, the gentle doctor note, and the printable report. {% endcomment %}
+{% block title %}Your patterns · Cycle · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:cycle' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Cycle</a>{% endblock %}
+{% block content %}
+<h1 class="w-title">Your patterns</h1>
+
+<section class="w-card" aria-labelledby="bars-h">
+  <div style="display:flex;justify-content:space-between;align-items:baseline">
+    <h2 class="w-h2" id="bars-h">Last {{ bars|length|default:6 }} cycle{{ bars|length|pluralize }}</h2>
+    <span class="w-small w-quiet">days</span>
+  </div>
+  {% if bars %}
+  <div class="w-bars" role="img" aria-label="{{ bar_words }}">
+    {% for b in bars %}
+    <div>
+      <span style="font-size:13px;font-weight:600">{{ b.len }}</span>
+      <span class="bar" style="height:{{ b.h }}px"><i style="height:{{ b.p }}px"></i></span>
+      <span class="w-small w-quiet" style="font-size:11px">{{ b.m }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="w-legend"><span><i class="period"></i>Period days</span><span><i style="background:var(--w-sage-track)"></i>Rest of the cycle</span></div>
+  <p class="w-small" style="margin:0">{{ bar_words }}</p>
+  {% else %}
+  <p class="w-quiet" style="margin:0">Your first full cycle appears here once your next period starts.</p>
+  {% endif %}
+</section>
+
+<section class="w-card" aria-labelledby="around-h">
+  <h2 class="w-h2" id="around-h">Around your period</h2>
+  {% if rows %}
+  <div class="w-around" aria-hidden="true">
+    <span></span>{% for lbl in around %}<span style="text-align:center"{% if lbl == '1' %} class="d1"{% endif %}>{{ lbl }}</span>{% endfor %}
+  </div>
+  {% for name, cells in rows %}
+  <div class="w-around" role="img" aria-label="{{ name }} around day 1 of your period">
+    <span class="name">{{ name }}</span>{% for c in cells %}<span class="cell" style="opacity:{{ c.o }}"></span>{% endfor %}
+  </div>
+  {% endfor %}
+  {% if words %}<div class="w-card sand" style="padding:12px 14px;font-size:14px">{{ words }}</div>{% endif %}
+  {% else %}
+  <p class="w-quiet" style="margin:0">After three periods with symptoms logged, this shows what tends to come when - for example headaches a couple of days before.</p>
+  {% endif %}
+</section>
+
+{% if mode == 'normal' %}
+<div class="w-note-flag">
+  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div>{% if flags %}{% for f in flags %}{{ f }} {% endfor %}It may be worth mentioning to your doctor.{% else %}Nothing to flag. If cycles often fall under 21 or over 35 days, a period lasts more than 7 days, or three months pass without one, this note will gently suggest mentioning it to your doctor.{% endif %}</div>
+</div>
+{% endif %}
+
+<form class="w-card" method="get" action="{% url 'wellness:cycle_report' %}" style="gap:12px">
+  <h2 class="w-h2">For a doctor's visit</h2>
+  <p class="w-small w-quiet" style="margin:0">One printable page: cycle and period lengths, heavy days, common symptoms, and your notes only if you include them.</p>
+  <div class="w-chips">
+    <label class="w-chip"><input type="radio" name="n" value="6" checked><span>6 cycles</span></label>
+    <label class="w-chip"><input type="radio" name="n" value="12"><span>12 cycles</span></label>
+    <label class="w-chip"><input type="checkbox" name="notes" value="1"><span>Include my notes</span></label>
+  </div>
+  <button type="submit" class="w-btn full">Make the report</button>
+</form>
+{% endblock %}

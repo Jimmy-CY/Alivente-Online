@@ -1,0 +1,33 @@
+{% extends "wellness/base.html" %}
+{% comment %} CY-1, 30 Oct 2026 - the printable doctor report. Opened only by its owner; never emailed. {% endcomment %}
+{% block title %}Cycle report · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:cycle_patterns' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Patterns</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<div class="w-btn-row w-noprint">
+  <button type="button" class="w-btn" data-print>Print or save as PDF</button>
+</div>
+<article class="w-report">
+  <h1 style="font-family:var(--w-serif);font-weight:400;font-size:24px;margin:0 0 4px">Cycle summary</h1>
+  <p style="margin:0 0 14px;color:#5E6A6E">{{ name }} · last {{ r.rows|length }} cycle{{ r.rows|length|pluralize }} · printed {{ printed|date:"j F Y" }}{% if mode %} · {{ mode }}{% endif %}</p>
+  {% if r.rows %}
+  <p style="margin:0 0 14px">{% if r.avg_cycle %}Typical cycle <strong>{{ r.avg_cycle }} days</strong> {% if r.range.0 != r.range.1 %}(range {{ r.range.0 }}–{{ r.range.1 }}){% endif %}. {% endif %}Typical period <strong>{{ r.avg_period }} days</strong>.</p>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">Started</th><th scope="col">Cycle</th><th scope="col">Period</th><th scope="col">Heaviest</th><th scope="col">Heavy days</th><th scope="col">Worst pain</th><th scope="col">Common symptoms</th></tr></thead>
+    <tbody>
+    {% for row in r.rows %}
+    <tr><td>{{ row.start|date:"j M Y" }}</td><td>{% if row.length %}{{ row.length }} d{% else %}current{% endif %}</td><td>{{ row.period }} d</td><td>{% if row.heaviest %}{{ row.heaviest|capfirst }}{% else %}-{% endif %}</td><td>{{ row.heavy }}</td><td>{% if row.pain %}{{ row.pain }}/10{% else %}-{% endif %}</td><td>{{ row.common|join:", "|default:"-" }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p style="margin:0">No periods logged yet.</p>
+  {% endif %}
+  {% if flags %}<p style="margin:14px 0 0"><strong>Noted:</strong> {% for f in flags %}{{ f }} {% endfor %}</p>{% endif %}
+  {% if r.notes %}
+  <h2 style="font-size:15px;margin:16px 0 6px">Notes</h2>
+  {% for d, note in r.notes %}<p style="margin:0 0 6px"><strong>{{ d|date:"j M" }}</strong> {{ note }}</p>{% endfor %}
+  {% endif %}
+  <p style="margin:16px 0 0;font-size:12px;color:#5E6A6E">Logged by the patient in a personal app. Predictions and estimates are not a diagnosis.</p>
+</article>
+{% endblock %}

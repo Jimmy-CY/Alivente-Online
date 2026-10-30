@@ -136,7 +136,9 @@ ok('from wellness' not in seed and 'import wellness' not in seed,
 ok('def unseed' in seed and "exclude(id__in=used)" in seed,
    '  and reversing it never removes an exercise somebody used')
 base = read(J(WT, 'base.html'))
-ok("wellness:workouts" in base and base.count('class="w-tab{%') == 5,
+# CY-1 (Release 46) adds a sixth tab, Cycle, shown only to a person who
+# turned the tracker on - so at least five.
+ok("wellness:workouts" in base and base.count('class="w-tab{%') >= 5,
    'the bottom bar has Workouts: five tabs', base.count('class="w-tab{%'))
 v = read(J(APP, 'views_workouts.py'))
 gets = [m.group(0) for m in re.finditer(

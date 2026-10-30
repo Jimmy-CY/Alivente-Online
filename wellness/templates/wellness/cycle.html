@@ -1,0 +1,67 @@
+{% extends "wellness/base.html" %}
+{% comment %} CY-1, 30 Oct 2026 - the cycle overview, as approved on the design canvas (row 2). {% endcomment %}
+{% block title %}Cycle · Wellness{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+  <h1 class="w-title">Cycle</h1>
+  <a class="w-icon-btn" href="{% url 'wellness:cycle_settings' %}" aria-label="Cycle tracker settings">
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 2.5v2.2M11 17.3v2.2M2.5 11h2.2M17.3 11h2.2M5 5l1.6 1.6M15.4 15.4L17 17M5 17l1.6-1.6M15.4 6.6L17 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+  </a>
+</div>
+<span class="w-private"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg> Only you</span>
+
+{% if locked %}
+<section class="w-card soft"><p class="w-quiet" style="margin:0">Your log could not be opened with this server's key. Nothing has been changed or lost.</p></section>
+{% endif %}
+
+<section class="w-card">
+  <div class="w-cy-head">
+    {% if s.cycle_day %}
+    <svg class="w-cy-ring" width="112" height="112" viewBox="0 0 112 112" role="img" aria-label="Cycle day {{ s.cycle_day }} of about {{ ring.of }}" style="flex:none">
+      <circle class="track" cx="56" cy="56" r="46" fill="none" stroke-width="10"/>
+      <circle class="per" cx="56" cy="56" r="46" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="{{ ring.period }}" transform="rotate(-90 56 56)"/>
+      <circle class="now" cx="56" cy="56" r="46" fill="none" stroke-width="3" stroke-dasharray="{{ ring.today }}" transform="rotate(-90 56 56)" opacity="0.7"/>
+      <text x="56" y="54" text-anchor="middle" font-size="26" font-weight="600">{{ s.cycle_day }}</text>
+      <text class="sub" x="56" y="73" text-anchor="middle" font-size="12">cycle day</text>
+    </svg>
+    {% endif %}
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <div class="w-cy-big" data-cycle-headline>{{ big }}</div>
+      <div class="w-small w-quiet">{{ small }}</div>
+    </div>
+  </div>
+</section>
+
+<a class="w-btn full" href="{% url 'wellness:cycle_log' %}">{% if logged_today %}Change today{% else %}Log today{% endif %}</a>
+
+<section class="w-card" aria-labelledby="cal-h">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <a class="w-small" href="?m={{ prev_m|date:'Y-m' }}" aria-label="Previous month" style="min-width:44px;min-height:44px;display:flex;align-items:center">‹ {{ prev_m|date:'M' }}</a>
+    <h2 class="w-h2" id="cal-h">{{ month|date:'F Y' }}</h2>
+    {% if show_next %}<a class="w-small" href="?m={{ next_m|date:'Y-m' }}" aria-label="Next month" style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:flex-end">{{ next_m|date:'M' }} ›</a>{% else %}<span style="min-width:44px"></span>{% endif %}
+  </div>
+  <div class="w-month">
+    <span class="dow">M</span><span class="dow">T</span><span class="dow">W</span><span class="dow">T</span><span class="dow">F</span><span class="dow">S</span><span class="dow">S</span>
+    {% for week in weeks %}{% for c in week %}{% if c.future %}<span class="day{% if not c.in %} out{% endif %}{% if c.kind %} {{ c.kind }}{% endif %}">{{ c.n }}</span>{% else %}<a href="{% url 'wellness:cycle_log' %}?date={{ c.date|date:'Y-m-d' }}" class="{% if not c.in %}out{% endif %}{% if c.kind %} {{ c.kind }}{% endif %}{% if c.today %} today{% endif %}{% if c.logged %} logged{% endif %}" aria-label="{{ c.date|date:'j F' }}{% if c.kind == 'period' %}, period{% endif %}{% if c.logged %}, logged{% endif %}">{{ c.n }}</a>{% endif %}{% endfor %}{% endfor %}
+  </div>
+  <div class="w-legend">
+    <span><i class="period"></i>Period</span>
+    {% if s.window %}<span><i class="expected"></i>Expected</span>{% endif %}
+    {% if s.fertile %}<span><i class="fertile"></i>Fertile estimate</span>{% endif %}
+  </div>
+  {% if s.fertile %}<div class="w-small w-quiet">The fertile estimate is shown because you turned it on. {{ fertile_label }}</div>{% endif %}
+  <div class="w-small w-quiet">Tap any past day to fill it in or change it.</div>
+</section>
+
+{% if s.avg_cycle or s.avg_period %}
+<div class="w-list">
+  {% if s.avg_cycle %}<div class="w-row"><span class="w-row-name">Average cycle</span><span class="w-row-side">{{ s.avg_cycle }} days</span></div>{% endif %}
+  {% if s.avg_period %}<div class="w-row"><span class="w-row-name">Average period</span><span class="w-row-side">{{ s.avg_period }} days</span></div>{% endif %}
+  <a class="w-row" href="{% url 'wellness:cycle_patterns' %}" style="text-decoration:none;color:inherit"><span class="w-row-name">Patterns and doctor report</span><span class="w-row-side" aria-hidden="true">›</span></a>
+</div>
+{% endif %}
+
+{% for f in s.flags %}
+<div class="w-note-flag">{{ f }} It may be worth mentioning to your doctor.</div>
+{% endfor %}
+{% endblock %}

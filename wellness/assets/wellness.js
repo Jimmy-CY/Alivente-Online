@@ -224,6 +224,16 @@
     });
   }
 
+  // ---- CY-1, 30 Oct 2026 - the cycle log's pain number, and Print.
+  var pain = document.querySelector('[data-pain]');
+  var painOut = document.querySelector('[data-pain-out]');
+  if (pain && painOut) {
+    pain.addEventListener('input', function () { painOut.textContent = pain.value; });
+  }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-print]')) window.print();
+  });
+
   // ---- The installable app.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

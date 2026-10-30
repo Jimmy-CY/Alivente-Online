@@ -1,0 +1,46 @@
+{% extends "wellness/base.html" %}
+{% comment %} CY-1, 30 Oct 2026 - the tracker's settings: on/off, mode, the fertile estimate (off by default, always labelled), reminders, download, delete. {% endcomment %}
+{% block title %}Cycle settings · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:cycle' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Cycle</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<h1 class="w-title">Cycle settings</h1>
+
+{% if prefs.on %}
+<form method="post" class="w-card" style="gap:16px">
+  {% csrf_token %}
+  <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+    <legend class="w-h2" style="margin-bottom:8px">Right now I am</legend>
+    {% for key, label in modes %}
+    <label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px"><input type="radio" name="mode" value="{{ key }}"{% if prefs.mode == key %} checked{% endif %} style="width:20px;height:20px;accent-color:var(--w-sage-deep)"> {{ label }}</label>
+    {% endfor %}
+    <p class="w-small w-quiet" style="margin:0">Pregnancy and hormonal contraception switch predictions off. You can still log anything.</p>
+  </fieldset>
+  <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="fertile" value="1"{% if prefs.fertile %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Show a fertile-window estimate<br><span class="w-small w-quiet">{{ fertile_label }} Never rely on it to prevent a pregnancy.</span></span></label>
+  <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="remind" value="1"{% if prefs.remind %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Remind me a day before it is expected<br><span class="w-small w-quiet">The reminder only says "A Wellness reminder". Reminders arrive with a later update.</span></span></label>
+  <button type="submit" class="w-btn full">Save</button>
+</form>
+{% endif %}
+
+<section class="w-card">
+  <h2 class="w-h2">Your log</h2>
+  <p class="w-quiet" style="margin:0">{{ n_days }} day{{ n_days|pluralize }} logged, all locked.</p>
+  <a class="w-btn ghost full" href="{% url 'wellness:cycle_export' %}">Download my log</a>
+  {% if prefs.on %}
+  <form method="post">{% csrf_token %}<input type="hidden" name="turn" value="off"><button type="submit" class="w-btn ghost full">Turn the tracker off</button></form>
+  <p class="w-small w-quiet" style="margin:0">Turning it off hides the tab and keeps your log, locked.</p>
+  {% else %}
+  <form method="post">{% csrf_token %}<input type="hidden" name="turn" value="on"><button type="submit" class="w-btn full">Turn the tracker on</button></form>
+  {% endif %}
+</section>
+
+<details class="w-card">
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:15px">Delete everything</summary>
+  <p class="w-quiet" style="margin:0">Every logged day and every setting is removed at once. This cannot be undone - download your log first if you want a copy.</p>
+  <form method="post" action="{% url 'wellness:cycle_delete' %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="delete">
+    <button type="submit" class="w-btn quiet full">Yes, delete my cycle log</button>
+  </form>
+</details>
+{% endblock %}
