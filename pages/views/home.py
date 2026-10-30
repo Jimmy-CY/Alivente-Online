@@ -241,11 +241,15 @@ def home(request):
                 'recipes':      request.user.has_perm('auth.can_access_recipes'),
                 'celebrations': request.user.has_perm('auth.can_access_celebrations'),
                 'crs':          request.user.has_perm('auth.can_access_crs'),
+                'wellness':     request.user.has_perm('auth.can_access_wellness'),
+                # WL-1, 30 Oct 2026 - Wellness lives on Personal, so a
+                # login with only Wellness still needs the way in.
                 'personal': (
                     request.user.has_perm('auth.can_access_passports')
                     or request.user.has_perm('auth.can_access_recipes')
                     or request.user.has_perm('auth.can_access_celebrations')
                     or request.user.has_perm('auth.can_access_crs')
+                    or request.user.has_perm('auth.can_access_wellness')
                 ),
                 'administration': request.user.has_perm('auth.can_access_administration'),
             }

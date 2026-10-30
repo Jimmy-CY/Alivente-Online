@@ -1,0 +1,66 @@
+{% extends "wellness/base.html" %}
+{% block title %}Today · Wellness{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px;padding:0 4px 8px">
+  <div class="w-eyebrow">{{ date|date:"l, j F" }}</div>
+  <h1 class="w-hello">{{ hello }}, {{ name }}</h1>
+</header>
+
+<section class="w-card sand" aria-label="Today's quote">
+  <p class="w-quote">“{{ quote.text }}”</p>
+  <div class="w-quote-by">{{ quote.author }}{% if quote.source %} · {{ quote.source }}{% endif %}</div>
+</section>
+
+{% if total %}
+<section class="w-card" aria-labelledby="habits-h">
+  <div class="w-ring-row">
+    <svg class="w-ring" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="{{ done_n }} of {{ total }} habits done" data-today-ring data-circ="{{ ring.circ }}">
+      <circle class="track" cx="32" cy="32" r="27" fill="none" stroke-width="7"/>
+      <circle class="fill" cx="32" cy="32" r="27" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="{{ ring.dash }}" transform="rotate(-90 32 32)"/>
+      <text x="32" y="37" text-anchor="middle" font-size="15" font-weight="600">{{ done_n }}/{{ total }}</text>
+    </svg>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <h2 class="w-h2" id="habits-h">Today's habits</h2>
+      <div class="w-small w-quiet" data-today-mood>{{ mood }}</div>
+    </div>
+  </div>
+
+  {% for s in sections %}
+  <div class="w-label">{{ s.label }}</div>
+  {% for c in s.cards %}
+  <div class="w-habit-wrap">
+    <form method="post" action="{% url 'wellness:habit_check' c.habit.pk %}" data-tick style="flex:1 1 auto;display:flex">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+      <input type="hidden" name="op" value="toggle">
+      <input type="hidden" name="next" value="{% url 'wellness:today' %}">
+      <button type="submit" class="w-habit{% if c.done %} is-done{% endif %}" data-habit-row aria-pressed="{% if c.done %}true{% else %}false{% endif %}">
+        <span class="w-check"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="w-habit-name">{{ c.habit.name }}</span>
+        {% if c.flexible %}
+        <span class="w-habit-meta" data-week>{{ c.week_got }} of {{ c.week_target }} this week</span>
+        {% elif c.amount %}
+        <span class="w-habit-meta">{{ c.amount }}</span>
+        {% endif %}
+      </button>
+    </form>
+    <a class="w-habit-open" href="{% url 'wellness:habit_detail' c.habit.pk %}" aria-label="Open {{ c.habit.name }}">
+      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+  {% endfor %}
+  {% endfor %}
+</section>
+{% elif has_any %}
+<section class="w-card soft">
+  <h2 class="w-h2">A free day</h2>
+  <p class="w-quiet" style="margin:0">Nothing is planned for today. Rest counts too.</p>
+</section>
+{% else %}
+<section class="w-card soft">
+  <h2 class="w-h2">No habits yet</h2>
+  <p class="w-quiet" style="margin:0">Start with one small thing you would like to do most days.</p>
+  <a class="w-btn full" href="{% url 'wellness:habit_new' %}">Add your first habit</a>
+</section>
+{% endif %}
+{% endblock %}

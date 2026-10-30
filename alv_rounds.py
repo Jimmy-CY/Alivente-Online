@@ -1537,6 +1537,8 @@ ROUNDS = [
     '.bak_vendorsort',
     # CX-1, 29 Oct 2026 - celebrations retry; Help on Task List and Gantt.
     '.bak_celebhelp',
+    # WL-1, 30 Oct 2026 - Wellness, part one: Today and Habits.
+    '.bak_wellness1',
 ]
 
 

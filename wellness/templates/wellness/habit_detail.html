@@ -1,0 +1,129 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ habit.name }} · Wellness{% endblock %}
+{% block top_left %}
+<a class="w-home" href="{% url 'wellness:habit_list' %}">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Habits
+</a>
+{% endblock %}
+{% block content %}
+<header style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <h1 class="w-title">{{ habit.name }}</h1>
+  <span class="w-small w-quiet">{% if amount %}{{ amount }} · {% endif %}{{ schedule }}</span>
+</header>
+
+{% if habit.archived_at %}
+<section class="w-card soft"><p style="margin:0">Archived on {{ habit.archived_at|date:"j F Y" }}. Its history is kept.</p></section>
+{% elif habit.paused %}
+<section class="w-card soft"><p style="margin:0">Paused. It stays off Today and nothing counts against it until you resume.</p></section>
+{% endif %}
+
+<section class="w-card" style="flex-direction:row;align-items:center;gap:20px">
+  <svg class="w-ring" width="104" height="104" viewBox="0 0 104 104" role="img" aria-label="{% if rate is not None %}Consistency {{ rate }} percent over 30 days{% else %}Just started{% endif %}">
+    <circle class="track" cx="52" cy="52" r="44" fill="none" stroke-width="10"/>
+    <circle class="fill" cx="52" cy="52" r="44" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="{{ ring.dash }}" transform="rotate(-90 52 52)"/>
+    <text x="52" y="58" text-anchor="middle" font-size="22" font-weight="600">{% if rate is not None %}{{ rate }}%{% else %}New{% endif %}</text>
+  </svg>
+  <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+    <div class="w-small w-quiet">Consistency, last 30 days</div>
+    {% if streak %}<div style="font-size:17px;font-weight:600">{{ streak }} week{{ streak|pluralize }} in a row</div>
+    {% else %}<div style="font-size:17px;font-weight:600">Building</div>{% endif %}
+    <div class="w-small w-quiet">{{ week_words }}</div>
+  </div>
+</section>
+
+{% if not habit.archived_at %}
+<section class="w-card" aria-labelledby="week-h">
+  <h2 class="w-h2" id="week-h" style="font-size:16px">The last seven days</h2>
+  <div class="w-week">
+    {% for d in week %}
+    <form method="post" action="{% url 'wellness:habit_check' habit.pk %}" style="display:flex">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ d.iso }}">
+      <input type="hidden" name="op" value="toggle">
+      <input type="hidden" name="next" value="{% url 'wellness:habit_detail' habit.pk %}">
+      <button type="submit" class="w-day {{ d.state }}" style="flex:1"{% if d.state == 'before' %} disabled{% endif %} aria-pressed="{% if d.state == 'done' %}true{% else %}false{% endif %}" aria-label="{{ d.date|date:'l j F' }}{% if d.state == 'done' %}, done{% elif d.state == 'grace' %}, forgiven{% endif %}">
+        <span class="d-label">{{ d.label }}</span>
+        <span class="d-num">{{ d.num }}</span>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+  {% if habit.measured %}
+  <form method="post" action="{% url 'wellness:habit_check' habit.pk %}" style="display:flex;gap:10px;align-items:flex-end">
+    {% csrf_token %}
+    <input type="hidden" name="op" value="set">
+    <input type="hidden" name="next" value="{% url 'wellness:habit_detail' habit.pk %}">
+    <label style="flex:1;display:flex;flex-direction:column;gap:6px">
+      <span class="w-small w-quiet">Today, in {% if habit.kind == 'duration' %}minutes{% else %}{{ habit.unit|default:'times' }}{% endif %} (aim {{ habit.target }})</span>
+      <input class="w-input" type="number" name="value" min="0" inputmode="numeric" value="{{ week.6.value|default_if_none:'' }}">
+    </label>
+    <button type="submit" class="w-btn" style="min-height:56px">Save</button>
+  </form>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="w-card" aria-labelledby="cal-h">
+  <div style="display:flex;justify-content:space-between;align-items:baseline">
+    <h2 class="w-h2" id="cal-h" style="font-size:16px">Last 12 weeks</h2>
+    {% if comebacks %}<span class="w-small w-quiet">{{ comebacks }} comeback{{ comebacks|pluralize }}</span>{% endif %}
+  </div>
+  <div class="w-cal" role="img" aria-label="A calendar of the last twelve weeks, one column per week">
+    {% for col in calendar %}{% for c in col %}<div class="w-cell {{ c.state }}{% if c.comeback %} comeback{% endif %}" title="{{ c.date|date:'D j M' }}"></div>{% endfor %}{% endfor %}
+  </div>
+  <div class="w-key">
+    <span><i style="background:var(--w-sage)"></i>Done</span>
+    <span><i style="background:#E8DCC8;box-shadow:inset 0 0 0 2px #C9A96E"></i>Comeback</span>
+    {% if habit.schedule != 'per_week' %}<span><i style="box-shadow:inset 0 0 0 2px var(--w-sage)"></i>Forgiven</span>{% endif %}
+    <span><i style="background:var(--w-empty)"></i>Rest</span>
+  </div>
+</section>
+
+{% if habit.cue or habit.tiny_version %}
+<section class="w-list">
+  {% if habit.cue %}<div class="w-row"><span class="w-quiet">After I…</span><span>{{ habit.cue }}</span></div>{% endif %}
+  {% if habit.tiny_version %}<div class="w-row"><span class="w-quiet">On a hard day, just</span><span>{{ habit.tiny_version }}</span></div>{% endif %}
+</section>
+{% endif %}
+
+{% if can_establish %}
+<section class="w-card sand">
+  <h2 class="w-h2">This one is part of you now</h2>
+  <p style="margin:0" class="w-quiet">Sixty-six days at eighty per cent or better. Mark it established and it moves to a quiet list.</p>
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'establish' %}">{% csrf_token %}<button class="w-btn full" type="submit">Mark it established</button></form>
+</section>
+{% elif not habit.established_at and not habit.archived_at and days_to_go %}
+<section class="w-card soft" style="flex-direction:row;align-items:center;gap:14px">
+  <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--w-sage)" stroke-width="2" stroke-dasharray="4 4"/><path d="M12 18.5l4 4 8-9" fill="none" stroke="var(--w-sage-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="w-small">Habits usually settle in at around 66 days. {{ days_to_go }} to go - no rush.</div>
+</section>
+{% endif %}
+
+<div class="w-btn-row">
+  <a class="w-btn ghost" href="{% url 'wellness:habit_edit' habit.pk %}">Edit</a>
+  {% if habit.archived_at %}
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'restore' %}" style="flex:1;display:flex">{% csrf_token %}<button class="w-btn ghost" type="submit" style="flex:1">Restore</button></form>
+  {% elif habit.paused %}
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'resume' %}" style="flex:1;display:flex">{% csrf_token %}<button class="w-btn ghost" type="submit" style="flex:1">Resume</button></form>
+  {% else %}
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'pause' %}" style="flex:1;display:flex">{% csrf_token %}<button class="w-btn ghost" type="submit" style="flex:1">Pause</button></form>
+  {% endif %}
+  {% if habit.established_at %}
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'unestablish' %}" style="flex:1;display:flex">{% csrf_token %}<button class="w-btn ghost" type="submit" style="flex:1">Bring back to Today</button></form>
+  {% elif not habit.archived_at %}
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'archive' %}" style="flex:1;display:flex">{% csrf_token %}<button class="w-btn ghost" type="submit" style="flex:1">Archive</button></form>
+  {% endif %}
+</div>
+
+{% if habit.archived_at %}
+<details class="w-card">
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Delete for good</summary>
+  <form method="post" action="{% url 'wellness:habit_action' habit.pk 'delete' %}" style="display:flex;flex-direction:column;gap:12px">
+    {% csrf_token %}
+    <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" name="confirm" value="yes" required style="width:22px;height:22px"> Yes, delete {{ habit.name }} and all its history</label>
+    <button class="w-btn ghost" type="submit">Delete</button>
+  </form>
+</details>
+{% endif %}
+{% endblock %}

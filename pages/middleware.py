@@ -744,6 +744,13 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # that could have carried it was dead configuration and HK-5
             # removed it.)
             'version/',
+            # WL-1, 30 Oct 2026 - THE WELLNESS APP SHELL: the manifest,
+            # the service worker, the stylesheet, the script and the
+            # icons. A phone fetches the manifest and icons with no
+            # session, so a login redirect here would make Wellness
+            # uninstallable. Nothing personal is served under it - the
+            # pages themselves are under wellness/ and keep their check.
+            'wellness/app/',
             'media/',  # Media files
             'static/',  # Static files
             # Removed empty string '' that was matching everything
@@ -850,6 +857,11 @@ class ModuleAccessMiddleware(MiddlewareMixin):
 
             # ---------- CRS REPORTING ----------
             ('crs/', 'auth.can_access_crs'),
+
+            # ---------- WELLNESS (WL-1, 30 Oct 2026) ----------
+            # No trailing slash: the path is matched with its slash
+            # stripped, so 'wellness/' would miss /wellness/ itself.
+            ('wellness', 'auth.can_access_wellness'),
 
             # ---------- RECIPES ----------
             ('recipe_management', 'auth.can_access_recipes'),

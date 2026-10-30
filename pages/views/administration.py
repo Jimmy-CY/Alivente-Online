@@ -92,6 +92,8 @@ def personal_page(request):
         'recipes':      request.user.has_perm('auth.can_access_recipes'),
         'celebrations': request.user.has_perm('auth.can_access_celebrations'),
         'crs':          request.user.has_perm('auth.can_access_crs'),
+        # WL-1, 30 Oct 2026 - the fourth tile.
+        'wellness':     request.user.has_perm('auth.can_access_wellness'),
     }
     return render(request, "personal.html", {
         'perms_map': perms_map,

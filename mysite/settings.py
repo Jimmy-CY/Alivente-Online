@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "pages",
     "crs",
+    # WL-1, 30 Oct 2026 - Wellness: its own app, outside the house standard.
+    "wellness",
     "whitenoise.runserver_nostatic",
     "django.contrib.humanize",
     
@@ -70,6 +72,10 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     'pages.workspace.WorkspaceMiddleware',    
+    # WL-1, 30 Oct 2026 - 30 days for Wellness on a phone, the main app's
+    # hour kept. Before ModuleAccessMiddleware, so an expired hour goes to
+    # the login page before any permission is looked at.
+    "wellness.session.WellnessSessionMiddleware",
     "pages.middleware.ModuleAccessMiddleware",  # Add this line
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",

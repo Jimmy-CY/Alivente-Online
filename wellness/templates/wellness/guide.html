@@ -1,0 +1,29 @@
+{% extends "wellness/base.html" %}
+{% block title %}Guide · Wellness{% endblock %}
+{% block top_left %}
+<a class="w-home" href="{% url 'wellness:today' %}">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Today
+</a>
+{% endblock %}
+{% block content %}
+<h1 class="w-title">How Wellness works</h1>
+<p class="w-quiet" style="margin:0">Short answers. Tap a question to open it.</p>
+
+<div class="w-list" style="padding:4px 20px">
+  {% for h in howto %}
+  <details style="border-bottom:1px solid var(--w-line)">
+    <summary style="cursor:pointer;min-height:56px;display:flex;align-items:center;font-size:16px">{{ h.q }}</summary>
+    <p style="margin:0 0 16px" class="w-quiet">{{ h.a }}</p>
+  </details>
+  {% endfor %}
+</div>
+
+<form method="post" action="{% url 'wellness:tip_seen' %}">
+  {% csrf_token %}
+  <input type="hidden" name="reset" value="all">
+  <button type="submit" class="w-btn ghost full">Show me the tips again</button>
+</form>
+
+<a class="w-btn quiet" href="{% url 'personal_page' %}">Back to Alivente</a>
+{% endblock %}

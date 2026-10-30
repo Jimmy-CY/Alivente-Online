@@ -37,6 +37,11 @@ MODULE_PERMISSIONS = [
     {'codename': 'can_access_recipes',        'edit_codename': 'can_edit_recipes',        'label': 'Recipes',               'icon': 'fa-utensils'},
     {'codename': 'can_access_celebrations',   'edit_codename': 'can_edit_celebrations',   'label': 'Celebrations',          'icon': 'fa-birthday-cake'},
     {'codename': 'can_access_crs',            'edit_codename': 'can_edit_crs',            'label': 'CRS Reporting',         'icon': 'fa-landmark'},
+    # WL-1, 30 Oct 2026 - Wellness. NO EDIT TIER: everything in it is the
+    # person's own, so seeing it and changing it are the same right. And
+    # access is never access to anyone else's - every query is filtered
+    # by the login, superusers included.
+    {'codename': 'can_access_wellness',       'edit_codename': None,                      'label': 'Wellness',              'icon': 'fa-spa'},
 ]
 
 # `can_access_fsr` is checked in the Issues module and granted to the Property

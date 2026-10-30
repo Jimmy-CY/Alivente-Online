@@ -1,0 +1,124 @@
+{% extends "wellness/base.html" %}
+{% block title %}{% if new %}New habit{% else %}Edit {{ habit.name }}{% endif %} · Wellness{% endblock %}
+{% block top_left %}
+<a class="w-home" href="{% if new %}{% url 'wellness:habit_list' %}{% else %}{% url 'wellness:habit_detail' habit.pk %}{% endif %}">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  {% if new %}Habits{% else %}Back{% endif %}
+</a>
+{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+{% comment %}
+  WL-1 - ONE QUESTION AT A TIME for a new habit (the guide's layer 2):
+  four short steps, each with examples to tap, which teaches the cue and
+  the hard-day version without explaining them. Editing shows all four
+  at once. Without JavaScript every step is on the page and it is one
+  ordinary form.
+{% endcomment %}
+<form method="post" data-habit-form {% if new %}data-steps=".w-step" data-focus{% endif %} style="display:flex;flex-direction:column;gap:20px" novalidate>
+  {% csrf_token %}
+  {% if new %}<div class="w-progress" data-step-bar aria-hidden="true"><i></i><i></i><i></i><i></i></div>{% else %}<h1 class="w-title">Edit habit</h1>{% endif %}
+
+  <section class="{% if new %}w-step{% else %}w-card{% endif %}"{% if errors.name or errors.target %} data-has-error{% endif %}>
+    <h2 class="w-q"><label for="f-name">What would you like to do?</label></h2>
+    <input class="w-input" id="f-name" name="name" maxlength="80" value="{{ v.name|default:'' }}" placeholder="Walk, read, stretch…" autocomplete="off" data-required>
+    {% if errors.name %}<div class="w-error">{{ errors.name }}</div>{% endif %}
+    {% if new %}
+    <div class="w-chips" aria-label="Examples">
+      <button type="button" class="w-chip" data-fill="f-name" data-value="Walk">Walk</button>
+      <button type="button" class="w-chip" data-fill="f-name" data-value="Read">Read</button>
+      <button type="button" class="w-chip" data-fill="f-name" data-value="Drink water">Drink water</button>
+      <button type="button" class="w-chip" data-fill="f-name" data-value="Meditate">Meditate</button>
+      <button type="button" class="w-chip" data-fill="f-name" data-value="No sugar">No sugar</button>
+    </div>
+    {% endif %}
+    <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
+      <legend class="w-label" style="margin-bottom:10px">How do you count it?</legend>
+      <div class="w-chips">
+        {% for k, label in kinds %}
+        <label class="w-chip"><input type="radio" name="kind" value="{{ k }}"{% if v.kind|default:'yes_no' == k %} checked{% endif %}><span>{{ label }}</span></label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div data-when-kind="count duration" style="display:flex;gap:10px;align-items:flex-end">
+      <label style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <span class="w-small w-quiet">Done when I reach</span>
+        <input class="w-input" type="number" name="target" min="1" inputmode="numeric" value="{{ v.target|default_if_none:'' }}" placeholder="30">
+      </label>
+      <label style="flex:1;display:flex;flex-direction:column;gap:6px" data-when-kind="count">
+        <span class="w-small w-quiet">of what</span>
+        <input class="w-input" name="unit" maxlength="20" value="{{ v.unit|default:'' }}" placeholder="pages">
+      </label>
+      <span data-when-kind="duration" class="w-quiet" style="padding-bottom:16px">minutes</span>
+    </div>
+    {% if errors.target %}<div class="w-error">{{ errors.target }}</div>{% endif %}
+    {% if new %}<div class="w-btn-row"><button type="button" class="w-btn" data-next>Next</button></div>{% endif %}
+  </section>
+
+  <section class="{% if new %}w-step{% else %}w-card{% endif %}"{% if errors.weekdays or errors.per_week %} data-has-error{% endif %}>
+    <h2 class="w-q">How often?</h2>
+    <div class="w-chips">
+      <label class="w-chip"><input type="radio" name="schedule" value="daily"{% if v.schedule|default:'daily' == 'daily' %} checked{% endif %}><span>Every day</span></label>
+      <label class="w-chip"><input type="radio" name="schedule" value="per_week"{% if v.schedule == 'per_week' %} checked{% endif %}><span>Times a week</span></label>
+      <label class="w-chip"><input type="radio" name="schedule" value="weekdays"{% if v.schedule == 'weekdays' %} checked{% endif %}><span>On chosen days</span></label>
+    </div>
+    <div data-when-schedule="per_week" style="display:flex;flex-direction:column;gap:8px">
+      <span class="w-small w-quiet">Times a week - any days you like. Kinder than every day.</span>
+      <div class="w-chips">
+        {% for n in "1234567" %}
+        <label class="w-chip"><input type="radio" name="per_week" value="{{ n }}"{% if v.per_week|stringformat:'s' == n %} checked{% endif %}><span>{{ n }}</span></label>
+        {% endfor %}
+      </div>
+      {% if errors.per_week %}<div class="w-error">{{ errors.per_week }}</div>{% endif %}
+    </div>
+    <div data-when-schedule="weekdays" style="display:flex;flex-direction:column;gap:8px">
+      <span class="w-small w-quiet">Which days?</span>
+      <div class="w-chips">
+        {% for d in weekday_names %}
+        <label class="w-chip"><input type="checkbox" name="weekdays" value="{{ d.num }}"{% if d.on %} checked{% endif %}><span>{{ d.name }}</span></label>
+        {% endfor %}
+      </div>
+      {% if errors.weekdays %}<div class="w-error">{{ errors.weekdays }}</div>{% endif %}
+    </div>
+    {% if new %}<div class="w-btn-row"><button type="button" class="w-btn ghost" data-back>Back</button><button type="button" class="w-btn" data-next>Next</button></div>{% endif %}
+  </section>
+
+  <section class="{% if new %}w-step{% else %}w-card{% endif %}">
+    <h2 class="w-q">When does it fit?</h2>
+    <div class="w-chips">
+      {% for k, label in times %}
+      <label class="w-chip"><input type="radio" name="time_of_day" value="{{ k }}"{% if v.time_of_day|default:'anytime' == k %} checked{% endif %}><span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+    <label for="f-cue" class="w-small w-quiet">Tie it to something you already do. After I…</label>
+    <input class="w-input" id="f-cue" name="cue" maxlength="120" value="{{ v.cue|default:'' }}" placeholder="finish lunch" autocomplete="off">
+    {% if new %}
+    <div class="w-chips" aria-label="Examples">
+      <button type="button" class="w-chip" data-fill="f-cue" data-value="wake up">wake up</button>
+      <button type="button" class="w-chip" data-fill="f-cue" data-value="have my morning coffee">morning coffee</button>
+      <button type="button" class="w-chip" data-fill="f-cue" data-value="finish lunch">finish lunch</button>
+      <button type="button" class="w-chip" data-fill="f-cue" data-value="brush my teeth at night">brush my teeth</button>
+    </div>
+    <div class="w-btn-row"><button type="button" class="w-btn ghost" data-back>Back</button><button type="button" class="w-btn" data-next>Next</button></div>
+    {% endif %}
+  </section>
+
+  <section class="{% if new %}w-step{% else %}w-card{% endif %}">
+    <h2 class="w-q"><label for="f-tiny">On a hard day, what is the smallest version?</label></h2>
+    <p class="w-quiet" style="margin:0">It still counts. Small days keep the habit alive.</p>
+    <input class="w-input" id="f-tiny" name="tiny_version" maxlength="120" value="{{ v.tiny_version|default:'' }}" placeholder="10 minutes" autocomplete="off">
+    {% if new %}
+    <div class="w-chips" aria-label="Examples">
+      <button type="button" class="w-chip" data-fill="f-tiny" data-value="2 minutes">2 minutes</button>
+      <button type="button" class="w-chip" data-fill="f-tiny" data-value="10 minutes">10 minutes</button>
+      <button type="button" class="w-chip" data-fill="f-tiny" data-value="one page">one page</button>
+      <button type="button" class="w-chip" data-fill="f-tiny" data-value="one set">one set</button>
+    </div>
+    {% endif %}
+    <div class="w-btn-row">
+      {% if new %}<button type="button" class="w-btn ghost" data-back>Back</button>{% endif %}
+      <button type="submit" class="w-btn">{% if new %}Start this habit{% else %}Save{% endif %}</button>
+    </div>
+  </section>
+</form>
+{% endblock %}

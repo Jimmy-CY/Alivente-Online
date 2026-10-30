@@ -1,0 +1,34 @@
+{% extends "wellness/base.html" %}
+{% block title %}Welcome · Wellness{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" action="{% url 'wellness:welcome' %}" data-steps=".w-slide" style="display:flex;flex-direction:column;gap:20px">
+  {% csrf_token %}
+  {% for c in cards %}
+  <section class="w-slide w-card w-welcome-card" style="gap:18px">
+    <h1 class="w-hello" style="font-size:30px">{{ c.title }}</h1>
+    <p style="margin:0;font-size:17px" class="w-quiet">{{ c.body }}</p>
+    <div class="w-dots" aria-hidden="true">{% for x in cards %}<i{% if forloop.counter == forloop.parentloop.counter %} class="on"{% endif %}></i>{% endfor %}<i></i></div>
+    <div class="w-btn-row">
+      {% if not forloop.first %}<button type="button" class="w-btn ghost" data-back>Back</button>{% endif %}
+      <button type="button" class="w-btn" data-next>{% if forloop.last %}Choose a few habits{% else %}Next{% endif %}</button>
+    </div>
+  </section>
+  {% endfor %}
+
+  <section class="w-slide w-card" style="gap:16px">
+    <h1 class="w-title">Pick two or three to begin</h1>
+    <p class="w-quiet" style="margin:0">Small is the secret. You can change, pause or add more at any time.</p>
+    <div class="w-chips" role="group" aria-label="Starter habits">
+      {% for s in starters %}
+      <label class="w-chip"><input type="checkbox" name="starter" value="{{ s.key }}"><span>{{ s.name }}</span></label>
+      {% endfor %}
+    </div>
+    <div class="w-btn-row">
+      <button type="button" class="w-btn ghost" data-back>Back</button>
+      <button type="submit" class="w-btn">Begin</button>
+    </div>
+    <button type="submit" class="w-btn quiet" name="skip" value="1">Skip - I will make my own</button>
+  </section>
+</form>
+{% endblock %}

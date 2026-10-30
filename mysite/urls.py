@@ -79,6 +79,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('pages.urls')),
     path("crs/", include("crs.urls")),
+    # WL-1, 30 Oct 2026 - Wellness. wellness/app/ (the installable-app
+    # shell) answers without a login; everything else needs one.
+    path("wellness/", include("wellness.urls")),
     path('robots.txt', robots_txt),
     # DP-1, 22 Oct 2026. Public on purpose - see deploy_version and the
     # matching line in ModuleAccessMiddleware.EXEMPT_URL_PATTERNS.

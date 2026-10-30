@@ -1,0 +1,65 @@
+{% extends "wellness/base.html" %}
+{% block title %}Habits · Wellness{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <h1 class="w-title">Habits</h1>
+  <a class="w-btn" href="{% url 'wellness:habit_new' %}" style="min-height:44px;padding:0 18px;font-size:15px">Add a habit</a>
+</div>
+
+{% if empty %}
+<section class="w-card soft">
+  <h2 class="w-h2">No habits yet</h2>
+  <p class="w-quiet" style="margin:0">Start with one small thing. A two-minute version of something you care about is plenty.</p>
+  <a class="w-btn full" href="{% url 'wellness:habit_new' %}">Add your first habit</a>
+</section>
+{% endif %}
+
+{% if rows.active %}
+<div class="w-list">
+  {% for r in rows.active %}
+  <a class="w-row" href="{% url 'wellness:habit_detail' r.habit.pk %}">
+    <span class="w-row-main">
+      <span class="w-row-name">{{ r.habit.name }}</span>
+      <span class="w-row-sub">{{ r.schedule }}{% if r.amount %} · {{ r.amount }}{% endif %}{% if r.streak %} · {{ r.streak }} week{{ r.streak|pluralize }} in a row{% endif %}</span>
+    </span>
+    <span class="w-row-side">{% if r.rate is not None %}{{ r.rate }}%{% else %}New{% endif %}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if rows.paused %}
+<div class="w-label" style="padding:8px 4px 0">Paused</div>
+<div class="w-list">
+  {% for r in rows.paused %}
+  <a class="w-row" href="{% url 'wellness:habit_detail' r.habit.pk %}">
+    <span class="w-row-main"><span class="w-row-name">{{ r.habit.name }}</span><span class="w-row-sub">Resting - nothing counts against it</span></span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if rows.established %}
+<div class="w-label" style="padding:8px 4px 0">Established</div>
+<div class="w-list">
+  {% for r in rows.established %}
+  <a class="w-row" href="{% url 'wellness:habit_detail' r.habit.pk %}">
+    <span class="w-row-main"><span class="w-row-name">{{ r.habit.name }}</span><span class="w-row-sub">Part of you since {{ r.habit.established_at|date:"j M Y" }}</span></span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if rows.archived %}
+<details>
+  <summary class="w-label" style="padding:8px 4px;cursor:pointer;min-height:44px;display:flex;align-items:center">Archived ({{ rows.archived|length }})</summary>
+  <div class="w-list">
+    {% for r in rows.archived %}
+    <a class="w-row" href="{% url 'wellness:habit_detail' r.habit.pk %}">
+      <span class="w-row-main"><span class="w-row-name">{{ r.habit.name }}</span><span class="w-row-sub">Put away {{ r.habit.archived_at|date:"j M Y" }}</span></span>
+    </a>
+    {% endfor %}
+  </div>
+</details>
+{% endif %}
+{% endblock %}
