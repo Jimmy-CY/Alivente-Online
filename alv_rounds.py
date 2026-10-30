@@ -1551,6 +1551,8 @@ ROUNDS = [
     '.bak_wellness4',
     # WL-4b, 30 Oct 2026 - Wellness: phone reminders.
     '.bak_wellness5',
+    # WL-4c, 30 Oct 2026 - Wellness: a line from Claude under the quote.
+    '.bak_wellness6',
 ]
 
 

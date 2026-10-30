@@ -198,9 +198,11 @@ small = [m for m in re.findall(r'min-height:\s*(\d+)px', css) if int(m) < 44
 ok(not small, 'every control is still at least 44px', small)
 base = read(J(WT, 'base.html'))
 _v = re.findall(r'\?v=([\w-]+)', base)
-ok(_v == ['wl5-1', 'wl5-1'] and "SW_VERSION = 'wl5-1'" in views,
-   'the asset version moved together (wl5-1): phones fetch the new worker',
-   _v)
+# Later rounds move the version on (WL-4c: wl6-1); what must hold is that
+# the page and the service worker always name the same one.
+ok(len(_v) == 2 and len(set(_v)) == 1 and "SW_VERSION = '%s'" % _v[0]
+   in views, 'the asset version moved together (wl5-1): phones fetch the '
+   'new worker', _v)
 ok('name="remind_at"' in read(J(WT, 'habit_form.html')),
    'the habit form has a reminder time')
 for p in EDITED:

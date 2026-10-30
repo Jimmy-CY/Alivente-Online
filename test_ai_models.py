@@ -137,6 +137,10 @@ CALL_SITES = {
     # caught it joining the list the same hour it was written, which is
     # exactly what the list is for.
     'pages/translation_service.py': 'English to Greek translation',
+    # WL-4c, 30 Oct 2026 - the sixth: one short line under the Wellness
+    # quote, made ahead by the reminder job. Same small model as invoice
+    # verification, changeable through WELLNESS_LINE_MODEL.
+    'wellness/daily_line.py': 'the line under the Wellness daily quote',
 }
 
 passed = failed = skipped = 0

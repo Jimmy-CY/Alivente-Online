@@ -39,6 +39,9 @@
   <input class="w-input" id="r-weigh" type="time" name="remind_weigh" value="{{ remind_weigh }}" style="max-width:160px">
   <p class="w-small w-quiet" style="margin:0">Leave a time empty for no reminder. A habit gets its own reminder time when you edit it.{% if reminded_habits %} Now: {% for h in reminded_habits %}{{ h.name }} at {{ h.remind_at|time:"H:i" }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %} Nothing is sent once it is done.</p>
 
+  {# WL-4c - the line from Claude under the daily quote. #}
+  <h2 class="w-h2">The daily quote</h2>
+  <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="claude_line" value="1"{% if claude_line %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Let Claude pick the quote and add a line for me<br><span class="w-small w-quiet">Claude chooses from the same library of real quotes and writes one short line under it. It sees only your first name, today's habit names and how the week has gone - never your journal, your weight or your cycle log.</span></span></label>
   <h2 class="w-h2">Weekly summary</h2>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="weekly_email" value="1"{% if weekly %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Email me a summary every Monday morning<br><span class="w-small w-quiet">Your habits, workouts, weight trend and any new badges. Never your journal, and never your cycle log.</span></span></label>
   {% if email %}<p class="w-small w-quiet" style="margin:0">It goes to {{ email }} - only you.</p>{% else %}<p class="w-small w-quiet" style="margin:0">There is no email address on your account yet. Add one in My Profile first.</p>{% endif %}

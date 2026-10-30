@@ -178,6 +178,12 @@ HOWTO = [
           'Nothing is sent once a thing is done, and each reminder comes '
           'once a day at most. On iPhone, use the Wellness app on your '
           'home screen.'},
+    {'q': 'Where does the line under the quote come from?',
+     'a': 'Claude picks one quote from the same library of real quotes and '
+          'writes one short line under it, labelled "A line from Claude". '
+          'It sees only your first name, today\'s habit names and how the '
+          'week has gone - never your journal, weight or cycle log. Turn '
+          'it off in Settings.'},
     {'q': 'How do I put Wellness on my phone?',
      'a': 'iPhone: open Wellness in Safari, tap Share, then "Add to Home '
           'Screen". Android: open it in Chrome and tap "Install app" or '

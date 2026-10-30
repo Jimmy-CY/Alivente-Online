@@ -22,6 +22,8 @@
 <section class="w-card sand" aria-label="Today's quote">
   <p class="w-quote">“{{ quote.text }}”</p>
   <div class="w-quote-by">{{ quote.author }}{% if quote.source %} · {{ quote.source }}{% endif %}</div>
+  {# WL-4c - one labelled line from Claude, who picked the quote above from the library. #}
+  {% if claude_line %}<p class="w-claude-line" data-claude-line><span class="w-label">A line from Claude</span>{{ claude_line }}</p>{% endif %}
 </section>
 
 {% if total %}

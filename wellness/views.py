@@ -121,6 +121,9 @@ def today(request):
     sections = [{'key': k, 'label': label, 'cards': groups[k]}
                 for k, label in Habit.TIMES if groups[k]]
     hello, part = _greeting(now)
+    from . import daily_line as DL
+    DL.seen(profile, day)
+    quote, claude_line = DL.for_today(request.user, day, profile)
     left = total - done_n
     if total == 0:
         mood = ''
@@ -140,7 +143,9 @@ def today(request):
         'part': part,
         'name': _first_name(request.user),
         'date': day,
-        'quote': for_day(request.user.pk, day),
+        'quote': quote,
+        # WL-4c - Claude's line under the quote, when one was made today.
+        'claude_line': claude_line,
         'sections': sections,
         'total': total,
         'done_n': done_n,
@@ -227,6 +232,8 @@ def settings_page(request):
     prefs = dict(profile.prefs or {})
     if request.method == 'POST':
         prefs['weekly_email'] = bool(request.POST.get('weekly_email'))
+        # WL-4c - the line from Claude is on unless turned off here.
+        prefs['line_off'] = not request.POST.get('claude_line')
         # WL-4b - the evening and weigh-in reminder times, or none.
         for k in ('remind_checkin', 'remind_weigh'):
             v = (request.POST.get(k) or '').strip()
@@ -237,6 +244,7 @@ def settings_page(request):
     return render(request, 'wellness/settings.html', {
         'tab': 'today',
         'weekly': bool(prefs.get('weekly_email')),
+        'claude_line': not prefs.get('line_off'),
         'email': request.user.email,
         'saved': bool(request.GET.get('saved')),
         'push_ready': P.configured(),
@@ -720,7 +728,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl5-1'
+SW_VERSION = 'wl6-1'
 
 
 def service_worker(request):
