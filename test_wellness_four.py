@@ -176,8 +176,10 @@ ok("def badges_page" in views and "def settings_page" in views,
    'the badges page and the settings page')
 base = read(J(WT, 'base.html'))
 _v = re.findall(r'\?v=([\w-]+)', base)
-ok(_v == ['wl4-1', 'wl4-1'] and "SW_VERSION = 'wl4-1'" in views,
-   'the asset version moved together (wl4-1)', _v)
+# Later rounds move the version on (WL-4b: wl5-1); what must hold is that
+# the page and the service worker always name the same one.
+ok(len(_v) == 2 and len(set(_v)) == 1 and "SW_VERSION = '%s'" % _v[0]
+   in views, 'the asset version moved together (wl4-1)', _v)
 today = read(J(WT, 'today.html'))
 ok('{% if new_badge %}' in today and 'data-new-badge' in today,
    'Today shows a new badge only when there is one')

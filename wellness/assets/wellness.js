@@ -234,6 +234,55 @@
     if (e.target.closest && e.target.closest('[data-print]')) window.print();
   });
 
+  // ---- WL-4b, 30 Oct 2026 - turn on reminders on this phone. The phone
+  // asks the person first; nothing is sent until they say yes.
+  var pushBox = document.querySelector('[data-push]');
+  var pushBtn = pushBox && pushBox.querySelector('[data-push-on]');
+  if (pushBtn) {
+    var say = function (t) { var el = pushBox.querySelector('[data-push-state]'); if (el) el.textContent = t; };
+    var keyBytes = function (b64) {
+      var pad = '='.repeat((4 - b64.length % 4) % 4);
+      var raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+      var out = new Uint8Array(raw.length);
+      for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    };
+    pushBtn.addEventListener('click', function () {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        say('This browser cannot show reminders. On iPhone, open Wellness from its home-screen icon.');
+        return;
+      }
+      pushBtn.disabled = true;
+      Notification.requestPermission().then(function (perm) {
+        if (perm !== 'granted') {
+          throw new Error('Reminders were not allowed. You can allow them in the phone\'s settings for this app.');
+        }
+        return navigator.serviceWorker.register('/wellness/app/sw.js', {scope: '/wellness/'}).then(function () {
+          return navigator.serviceWorker.ready;
+        });
+      }).then(function (reg) {
+        return reg.pushManager.getSubscription().then(function (old) {
+          return old || reg.pushManager.subscribe({userVisibleOnly: true,
+            applicationServerKey: keyBytes(pushBox.getAttribute('data-key'))});
+        });
+      }).then(function (sub) {
+        var tok = document.querySelector('[name=csrfmiddlewaretoken]');
+        return fetch(pushBox.getAttribute('data-subscribe'), {
+          method: 'POST', credentials: 'same-origin',
+          headers: {'Content-Type': 'application/json', 'X-CSRFToken': tok ? tok.value : ''},
+          body: JSON.stringify({subscription: sub.toJSON()})
+        });
+      }).then(function (r) {
+        if (!r.ok) throw new Error('Something went wrong saving this phone. Please try again.');
+        say('Reminders are on for this phone.');
+        window.location.reload();
+      }).catch(function (err) {
+        say(err && err.message ? err.message : 'Reminders could not be turned on.');
+        pushBtn.disabled = false;
+      });
+    });
+  }
+
   // ---- The installable app.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

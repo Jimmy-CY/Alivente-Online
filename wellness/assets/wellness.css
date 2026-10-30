@@ -114,6 +114,10 @@ button { font: inherit; color: inherit; }
   justify-content: space-between;
   min-height: 44px;
 }
+/* WL-4b - Demetri, 30 Oct: the ? stays top right on every page. In the
+   installed app the back link is hidden, and with nothing on its left the
+   ? slid over; pinned to the right it stays where help is expected. */
+.w-top > .w-icon-btn:last-child { margin-left: auto; }
 .w-icon-btn {
   width: 44px; height: 44px;
   border-radius: 22px;

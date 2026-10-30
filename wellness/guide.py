@@ -171,6 +171,13 @@ HOWTO = [
      'a': 'If you turn it on in Settings: last week\'s habits, workouts, '
           'your weight trend and any new badges. Never your journal and '
           'never your cycle log. It goes only to your own address.'},
+    {'q': 'How do reminders work?',
+     'a': 'In Settings, tap "Turn on reminders here" on each phone and '
+          'allow it. Then give a habit a reminder time when you edit it, '
+          'or set times for the evening check-in and the weigh-in. '
+          'Nothing is sent once a thing is done, and each reminder comes '
+          'once a day at most. On iPhone, use the Wellness app on your '
+          'home screen.'},
     {'q': 'How do I put Wellness on my phone?',
      'a': 'iPhone: open Wellness in Safari, tap Share, then "Add to Home '
           'Screen". Android: open it in Chrome and tap "Install app" or '

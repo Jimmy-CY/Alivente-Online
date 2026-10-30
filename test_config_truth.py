@@ -285,9 +285,14 @@ ok(not lost,
 # rather than being loosened to a range.
 # PK-1, 30 Oct 2026 - six now: passkeys bring webauthn and the two it
 # needs that were not here, cbor2 and pyOpenSSL.
-ok(sorted(set(PK) - set(OLDPK)) == ['cbor2', 'pillow-heif', 'pymupdf',
-                                    'pymupdf-fonts', 'pyopenssl',
-                                    'webauthn'],
+# WL-4b, 30 Oct 2026 - seventeen: phone reminders bring pywebpush and
+# what it needs (aiohttp and its family, http-ece, py-vapid).
+ok(sorted(set(PK) - set(OLDPK)) == ['aiohappyeyeballs', 'aiohttp',
+                                    'aiosignal', 'attrs', 'cbor2',
+                                    'frozenlist', 'http-ece', 'multidict',
+                                    'pillow-heif', 'propcache', 'py-vapid',
+                                    'pymupdf', 'pymupdf-fonts', 'pyopenssl',
+                                    'pywebpush', 'webauthn', 'yarl'],
    'CONTROL: exactly one was added, and it is the one this round is '
    'about', sorted(set(PK) - set(OLDPK)))
 same = [n for n in OLDPK if n in PK and OLDPK[n] != PK[n]]

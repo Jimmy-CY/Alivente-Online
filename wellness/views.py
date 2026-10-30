@@ -221,10 +221,16 @@ def badges_seen(request):
 @wellness_view
 def settings_page(request):
     """WL-4a - Wellness settings: the weekly summary (off by default)."""
+    from . import push as P
+    from .models import PushDevice
     profile = _profile(request.user)
     prefs = dict(profile.prefs or {})
     if request.method == 'POST':
         prefs['weekly_email'] = bool(request.POST.get('weekly_email'))
+        # WL-4b - the evening and weigh-in reminder times, or none.
+        for k in ('remind_checkin', 'remind_weigh'):
+            v = (request.POST.get(k) or '').strip()
+            prefs[k] = v if _valid_hm(v) else ''
         profile.prefs = prefs
         profile.save(update_fields=['prefs', 'updated_at'])
         return redirect('%s?saved=1' % reverse('wellness:settings'))
@@ -233,7 +239,69 @@ def settings_page(request):
         'weekly': bool(prefs.get('weekly_email')),
         'email': request.user.email,
         'saved': bool(request.GET.get('saved')),
+        'push_ready': P.configured(),
+        'push_key': P.raw_key_words(P.public_key()),
+        'devices': PushDevice.objects.filter(user=request.user),
+        'remind_checkin': prefs.get('remind_checkin') or '',
+        'remind_weigh': prefs.get('remind_weigh') or '',
+        'reminded_habits': Habit.objects.filter(
+            user=request.user, archived_at__isnull=True,
+            remind_at__isnull=False),
+        'tested': request.GET.get('tested'),
     })
+
+
+def _valid_hm(v):
+    try:
+        h, m = [int(x) for x in v.split(':')[:2]]
+        return 0 <= h < 24 and 0 <= m < 60
+    except (ValueError, AttributeError):
+        return False
+
+
+@wellness_view
+@require_POST
+def push_subscribe(request):
+    """WL-4b - the phone allowed reminders; keep its address and keys."""
+    from . import push as P
+    try:
+        data = json.loads(request.body.decode('utf-8') or '{}')
+    except ValueError:
+        return HttpResponseBadRequest('not json')
+    ua = request.META.get('HTTP_USER_AGENT', '')
+    label = ('iPhone' if 'iPhone' in ua else 'Android phone'
+             if 'Android' in ua else 'This browser')
+    dev = P.subscribe(request.user, data.get('subscription') or data, label)
+    if dev is None:
+        return HttpResponseBadRequest('not a subscription')
+    return JsonResponse({'ok': True})
+
+
+@wellness_view
+@require_POST
+def push_unsubscribe(request):
+    from . import push as P
+    from .models import PushDevice
+    pk = request.POST.get('device')
+    if pk:
+        PushDevice.objects.filter(user=request.user, pk=pk).delete()
+        return redirect('wellness:settings')
+    try:
+        data = json.loads(request.body.decode('utf-8') or '{}')
+    except ValueError:
+        data = {}
+    P.unsubscribe(request.user, data.get('endpoint', ''))
+    return JsonResponse({'ok': True})
+
+
+@wellness_view
+@require_POST
+def push_test(request):
+    from . import push as P
+    n = P.send_to_user(request.user, 'Wellness',
+                       'Reminders are on. This is how they will look.',
+                       '/wellness/', tag='test')
+    return redirect('%s?tested=%d' % (reverse('wellness:settings'), n))
 
 
 def _cycle_card(user, day):
@@ -414,8 +482,18 @@ def _form_values(post):
         'cue': (post.get('cue') or '').strip()[:120],
         'auto_from': 'workout' if post.get('auto_from') == 'workout' else '',
         'tiny_version': (post.get('tiny_version') or '').strip()[:120],
+        # WL-4b - an optional reminder time, "HH:MM" or none.
+        'remind_at': _time_or_none(post.get('remind_at')),
     }
     return values, errors
+
+
+def _time_or_none(v):
+    v = (v or '').strip()
+    if not _valid_hm(v):
+        return None
+    h, m = [int(x) for x in v.split(':')[:2]]
+    return dt.time(h, m)
 
 
 @wellness_view
@@ -453,7 +531,8 @@ def habit_edit(request, pk):
     else:
         values = {f: getattr(habit, f) for f in (
             'name', 'kind', 'target', 'unit', 'schedule', 'weekdays',
-            'per_week', 'time_of_day', 'cue', 'tiny_version', 'auto_from')}
+            'per_week', 'time_of_day', 'cue', 'tiny_version', 'auto_from',
+            'remind_at')}
     return render(request, 'wellness/habit_form.html', {
         'tab': 'habits', 'new': False, 'habit': habit, 'v': values,
         'errors': errors,
@@ -641,14 +720,14 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl4-1'
+SW_VERSION = 'wl5-1'
 
 
 def service_worker(request):
     """The installable-app worker. W-1 keeps the shell (style, script,
     icons) for a fast start and shows a calm page when there is no
     network. Pages are always fetched fresh: they hold today's data.
-    W-4 adds the push handler here."""
+    WL-4b adds the push handler below."""
     body = r"""// Wellness service worker - WL-1, 30 Oct 2026. Version %(v)s.
 const SHELL = 'wellness-shell-%(v)s';
 const FILES = ['/wellness/app/wellness.css?v=%(v)s', '/wellness/app/wellness.js?v=%(v)s',
@@ -677,6 +756,29 @@ self.addEventListener('fetch', e => {
       '<p style="color:#5E6A6E;margin:0">Take a breath. Wellness will be here when the connection returns.</p></div>',
       {headers: {'Content-Type': 'text/html; charset=utf-8'}})));
   }
+});
+// WL-4b, 30 Oct 2026 - a reminder arrives: show it; a tap opens Wellness
+// at the page it names (only ever a Wellness page).
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = {}; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Wellness', {
+    body: d.body || 'A Wellness reminder',
+    tag: d.tag || 'wellness',
+    icon: '/wellness/app/icon-192.png',
+    badge: '/wellness/app/icon-192.png',
+    data: {url: (d.url && d.url.indexOf('/wellness/') === 0) ? d.url : '/wellness/'}
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/wellness/';
+  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(list => {
+    for (const c of list) {
+      if (c.url.indexOf('/wellness/') !== -1 && 'focus' in c) { c.navigate(url); return c.focus(); }
+    }
+    return self.clients.openWindow(url);
+  }));
 });
 """ % {'v': SW_VERSION}
     resp = HttpResponse(body, content_type='application/javascript')

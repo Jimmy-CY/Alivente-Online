@@ -61,6 +61,11 @@ urlpatterns = [
     path('badges/', views.badges_page, name='badges'),
     path('badges/seen/', views.badges_seen, name='badges_seen'),
     path('settings/', views.settings_page, name='settings'),
+    # WL-4b, 30 Oct 2026 - phone reminders.
+    path('push/subscribe/', views.push_subscribe, name='push_subscribe'),
+    path('push/unsubscribe/', views.push_unsubscribe,
+         name='push_unsubscribe'),
+    path('push/test/', views.push_test, name='push_test'),
     path('guide/', views.guide_page, name='guide'),
     path('tips/', views.tip_seen, name='tip_seen'),
     # The app shell - answered without a login; nothing personal in it.

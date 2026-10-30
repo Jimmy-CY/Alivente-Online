@@ -6,8 +6,39 @@
 {% block content %}
 <h1 class="w-title">Settings</h1>
 {% if saved %}<div class="w-card soft" role="status" style="padding:12px 16px">Saved.</div>{% endif %}
+{% if tested %}<div class="w-card soft" role="status" style="padding:12px 16px">{% if tested == '0' %}The test could not reach a phone. Turn reminders on again on the phone, then try once more.{% else %}Test sent - it should arrive in a few seconds.{% endif %}</div>{% endif %}
+
+{# WL-4b, 30 Oct 2026 - phone reminders. #}
+<section class="w-card" style="gap:12px" data-push data-key="{{ push_key }}" data-subscribe="{% url 'wellness:push_subscribe' %}">
+  <h2 class="w-h2">Reminders on this phone</h2>
+  {% if push_ready %}
+  <p class="w-small w-quiet" style="margin:0">Gentle nudges at the times you choose. On iPhone, reminders work in the Wellness app on your home screen, not in Safari.</p>
+  <button type="button" class="w-btn full" data-push-on>Turn on reminders here</button>
+  <p class="w-small w-quiet" style="margin:0" data-push-state role="status"></p>
+  {% else %}
+  <p class="w-small w-quiet" style="margin:0">Reminders are not switched on for Alivente yet. They arrive with a short setup on the server.</p>
+  {% endif %}
+  {% if devices %}
+  <div class="w-label">Phones that get reminders</div>
+  {% for d in devices %}
+  <div class="w-row" style="padding:0">
+    <span class="w-row-main"><span class="w-row-name">{{ d.label|default:"A phone" }}</span><span class="w-row-sub">Added {{ d.created_at|date:"j M" }}</span></span>
+    <form method="post" action="{% url 'wellness:push_unsubscribe' %}">{% csrf_token %}<input type="hidden" name="device" value="{{ d.pk }}"><button type="submit" class="w-btn ghost">Stop</button></form>
+  </div>
+  {% endfor %}
+  <form method="post" action="{% url 'wellness:push_test' %}">{% csrf_token %}<button type="submit" class="w-btn ghost full">Send me a test</button></form>
+  {% endif %}
+</section>
+
 <form method="post" class="w-card" style="gap:14px">
   {% csrf_token %}
+  <h2 class="w-h2">What to remind me about</h2>
+  <label for="r-checkin" class="w-small w-quiet">The evening check-in, at</label>
+  <input class="w-input" id="r-checkin" type="time" name="remind_checkin" value="{{ remind_checkin }}" style="max-width:160px">
+  <label for="r-weigh" class="w-small w-quiet">The weigh-in, at</label>
+  <input class="w-input" id="r-weigh" type="time" name="remind_weigh" value="{{ remind_weigh }}" style="max-width:160px">
+  <p class="w-small w-quiet" style="margin:0">Leave a time empty for no reminder. A habit gets its own reminder time when you edit it.{% if reminded_habits %} Now: {% for h in reminded_habits %}{{ h.name }} at {{ h.remind_at|time:"H:i" }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %} Nothing is sent once it is done.</p>
+
   <h2 class="w-h2">Weekly summary</h2>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="weekly_email" value="1"{% if weekly %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Email me a summary every Monday morning<br><span class="w-small w-quiet">Your habits, workouts, weight trend and any new badges. Never your journal, and never your cycle log.</span></span></label>
   {% if email %}<p class="w-small w-quiet" style="margin:0">It goes to {{ email }} - only you.</p>{% else %}<p class="w-small w-quiet" style="margin:0">There is no email address on your account yet. Add one in My Profile first.</p>{% endif %}

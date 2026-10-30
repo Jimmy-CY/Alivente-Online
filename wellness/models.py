@@ -97,6 +97,9 @@ class Habit(models.Model):
     tiny_version = models.CharField('On a hard day, just...',
                                     max_length=120, blank=True)
     started_on = models.DateField()
+    # WL-4b - a gentle reminder at this time on the days it is due, if
+    # the person has turned reminders on for a phone. Empty means none.
+    remind_at = models.TimeField(null=True, blank=True)
     paused = models.BooleanField(default=False)
     established_at = models.DateField(null=True, blank=True)
     archived_at = models.DateTimeField(null=True, blank=True)
@@ -359,3 +362,32 @@ class CycleRecord(models.Model):
 
     def __str__(self):
         return 'Cycle record of %s' % self.user
+
+
+class PushDevice(models.Model):
+    """WL-4b, 30 Oct 2026 - one phone (or browser) a person allowed to
+    receive Wellness reminders. The endpoint is the push service's address
+    for that phone; p256dh and auth are the phone's keys, so only it can
+    read what is sent. A dead endpoint (404/410 from the push service) is
+    removed the first time it answers so.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_push_devices')
+    # The endpoint can be long; MySQL indexes at most 255 characters of a
+    # unique column, so uniqueness is on its SHA-256 instead.
+    endpoint = models.TextField()
+    endpoint_hash = models.CharField(max_length=64, unique=True)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=64)
+    label = models.CharField(max_length=80, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_ok_at = models.DateTimeField(null=True, blank=True)
+    failures = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        db_table = 'wellness_push_device'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return 'Push device of %s' % self.user
