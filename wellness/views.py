@@ -150,6 +150,8 @@ def today(request):
         'tip': _tip(profile, ['today_tap', 'today_ring']) if total else None,
         # WL-2 - the weigh-in card, the evening card, On this day.
         'body': body_summary(request.user, day),
+        # WL-3 - the planned or open workout.
+        'workout': _workout_card(request.user, day),
         'evening': now.hour >= 17,
         'wrote_today': JournalEntry.objects.filter(
             user=request.user, date=day).exists(),
@@ -159,6 +161,11 @@ def today(request):
                         for lbl, e in JN.on_this_day(_entries_by_date(
                             request.user, day), day)],
     })
+
+
+def _workout_card(user, day):
+    from .views_workouts import today_card
+    return today_card(user, day)
 
 
 def _entries_by_date(user, day):
@@ -196,6 +203,7 @@ def welcome(request):
             schedule=s['schedule'], per_week=s.get('per_week'),
             weekdays=s.get('weekdays', ''), time_of_day=s['time_of_day'],
             cue=s.get('cue', ''), tiny_version=s.get('tiny_version', ''),
+            auto_from=s.get('auto_from', ''),
             started_on=day, position=pos)
         pos += 1
     profile.onboarded = True
@@ -331,6 +339,7 @@ def _form_values(post):
         'weekdays': weekdays if schedule == Habit.SCHEDULE_WEEKDAYS else '',
         'per_week': per_week, 'time_of_day': tod,
         'cue': (post.get('cue') or '').strip()[:120],
+        'auto_from': 'workout' if post.get('auto_from') == 'workout' else '',
         'tiny_version': (post.get('tiny_version') or '').strip()[:120],
     }
     return values, errors
@@ -371,7 +380,7 @@ def habit_edit(request, pk):
     else:
         values = {f: getattr(habit, f) for f in (
             'name', 'kind', 'target', 'unit', 'schedule', 'weekdays',
-            'per_week', 'time_of_day', 'cue', 'tiny_version')}
+            'per_week', 'time_of_day', 'cue', 'tiny_version', 'auto_from')}
     return render(request, 'wellness/habit_form.html', {
         'tab': 'habits', 'new': False, 'habit': habit, 'v': values,
         'errors': errors,
@@ -559,7 +568,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl2-1'
+SW_VERSION = 'wl3-1'
 
 
 def service_worker(request):

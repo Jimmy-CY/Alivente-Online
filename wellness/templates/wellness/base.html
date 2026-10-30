@@ -29,7 +29,7 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
-<link rel="stylesheet" href="{% url 'wellness:asset' 'wellness.css' %}?v=wl2-1">
+<link rel="stylesheet" href="{% url 'wellness:asset' 'wellness.css' %}?v=wl3-1">
 </head>
 <body class="part-{{ part|default:'morning' }}">
 <div class="w-wrap">
@@ -70,12 +70,16 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l1-4L16 5l3 3L9 18z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
     Journal
   </a>
+  <a class="w-tab{% if tab == 'workouts' %} is-on{% endif %}" href="{% url 'wellness:workouts' %}"{% if tab == 'workouts' %} aria-current="page"{% endif %}>
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M6 8v8M18 8v8M3.5 10v4M20.5 10v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    Workouts
+  </a>
   <a class="w-tab{% if tab == 'body' %} is-on{% endif %}" href="{% url 'wellness:body' %}"{% if tab == 'body' %} aria-current="page"{% endif %}>
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18l5-6 4 3 7-8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Body
   </a>
 </nav>
 {% endblock %}
-<script src="{% url 'wellness:asset' 'wellness.js' %}?v=wl2-1" defer></script>
+<script src="{% url 'wellness:asset' 'wellness.js' %}?v=wl3-1" defer></script>
 </body>
 </html>

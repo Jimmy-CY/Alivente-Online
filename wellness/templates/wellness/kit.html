@@ -1,0 +1,21 @@
+{% extends "wellness/base.html" %}
+{% block title %}My equipment · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">My equipment</h1>
+  <p class="w-quiet" style="margin:0">Suggestions only ever offer weights you own. Leave anything you do not have empty.</p>
+  <label for="k-db" class="w-small w-quiet">Dumbbells you have, in kilos (for example: 1 2 4 6 8)</label>
+  <input class="w-input" id="k-db" name="dumbbells" value="{{ dumbbells }}" autocomplete="off">
+  <label for="k-bb" class="w-small w-quiet">Heaviest barbell load you can make, in kilos</label>
+  <input class="w-input" id="k-bb" name="barbell_max" value="{{ barbell_max }}" inputmode="decimal" autocomplete="off">
+  <label for="k-step" class="w-small w-quiet">Smallest jump on the barbell, in kilos</label>
+  <input class="w-input" id="k-step" name="plate_step" value="{{ plate_step }}" inputmode="decimal" autocomplete="off">
+  <label for="k-kb" class="w-small w-quiet">Kettlebells, in kilos</label>
+  <input class="w-input" id="k-kb" name="kettlebells" value="{{ kettlebells }}" autocomplete="off">
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <button class="w-btn full" type="submit">Save</button>
+</form>
+{% endblock %}

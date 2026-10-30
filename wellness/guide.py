@@ -45,7 +45,8 @@ STARTERS = [
      'schedule': 'daily', 'time_of_day': 'evening'},
     {'key': 'strength', 'name': 'Strength training', 'kind': 'duration',
      'target': 15, 'schedule': 'per_week', 'per_week': 3,
-     'time_of_day': 'morning', 'tiny_version': 'one set'},
+     'time_of_day': 'morning', 'tiny_version': 'one set',
+     'auto_from': 'workout'},
 ]
 
 # key -> words. The view shows the first unseen tip the page qualifies for.
@@ -65,6 +66,11 @@ TIPS = {
                     'month appears here after a few days.',
     'body_trend': 'The big number is your trend, not today\'s scale. A '
                   'heavy morning barely moves it - that is the point.',
+    # WL-3
+    'workout_routine': 'Start with a routine: a saved workout you can '
+                       'start in one tap, with last time\'s numbers waiting.',
+    'workout_previous': 'The grey numbers are last time. Beat them by a rep '
+                        'or a little weight and you are making progress.',
 }
 
 HOWTO = [
@@ -111,6 +117,21 @@ HOWTO = [
      'a': 'Daily gives the smoothest trend, three times a week is plenty. '
           'What matters most is the same conditions: morning, after the '
           'bathroom, before food.'},
+    {'q': 'How does Wellness suggest the next weight?',
+     'a': 'Each exercise in a routine has a rep range, say 8 to 12. When you '
+          'reach the top of the range on every set, the next workout suggests '
+          'the next weight up that you own (set your kit under My '
+          'equipment). Until then it suggests the same weight and one more '
+          'rep. This is called double progression.'},
+    {'q': 'What counts as a record?',
+     'a': 'Your heaviest weight on an exercise, the most reps at a weight, '
+          'your best estimated one-rep max, or your longest time or distance. '
+          'The first time you do an exercise sets the bar; after that, '
+          'beating it gets a star.'},
+    {'q': 'Can a habit tick itself when I train?',
+     'a': 'Yes. On the habit\'s page choose Edit and tick "Tick it for me '
+          'when I finish a workout". Finishing any workout then ticks it for '
+          'that day.'},
     {'q': 'Why does Wellness keep me logged in?',
      'a': 'On your phone, Wellness stays logged in for 30 days from your '
           'last visit, so a morning tick is one tap. The rest of Alivente '

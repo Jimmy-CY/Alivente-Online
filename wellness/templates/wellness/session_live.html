@@ -1,0 +1,93 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ s.name }} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+{% comment %} WL-3, 30 Oct 2026 - THE LIVE LOGGER. Last time's numbers beside
+  every set; tick a set and the rest timer starts; a record is celebrated
+  the moment it happens. Big rows for sweaty thumbs, the screen kept awake.
+  Every tick is saved as it happens, so leaving the page loses nothing.
+{% endcomment %}
+<div data-live data-started="{{ started_ms }}" style="display:flex;flex-direction:column;gap:16px">
+<header style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+  <h1 class="w-title" style="font-size:26px">{{ s.name }}</h1>
+  <span class="w-clock" data-elapsed>0:00</span>
+</header>
+
+{% for b in blocks %}
+<section class="w-card" style="gap:10px" aria-label="{{ b.exercise.name }}">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+    <a href="{% url 'wellness:exercise_detail' b.exercise.pk %}" style="font-family:var(--w-serif);font-size:20px;color:inherit;text-decoration:none">{{ b.exercise.name }}</a>
+    {% if b.item %}<span class="w-small w-quiet">{% if b.exercise.kind == 'time' %}{{ b.item.seconds }} s{% else %}{{ b.item.rep_min }}–{{ b.item.rep_max }} reps{% endif %} · rest {{ b.rest }} s</span>{% endif %}
+  </div>
+  {% if b.hint %}<div class="w-small" style="color:var(--w-sage-deep)">{{ b.hint }}</div>{% endif %}
+  <div class="w-sets">
+    <div class="w-set head"><span class="n">Set</span><span>Last time</span>
+      {% if b.exercise.kind == 'weight' %}<span style="text-align:center">kg</span><span style="text-align:center">Reps</span>
+      {% elif b.exercise.kind == 'reps' %}<span></span><span style="text-align:center">Reps</span>
+      {% elif b.exercise.kind == 'time' %}<span></span><span style="text-align:center">Sec</span>
+      {% else %}<span style="text-align:center">km</span><span style="text-align:center">Min</span>{% endif %}<span></span></div>
+    {% for r in b.rows %}
+    <form class="w-set{% if r.set.done %} is-done{% endif %}" method="post" action="{% url 'wellness:set_save' r.set.pk %}" data-set data-rest="{{ b.rest }}">
+      {% csrf_token %}
+      <input type="hidden" name="done" value="{% if r.set.done %}0{% else %}1{% endif %}">
+      <span class="n">{{ r.set.set_no }}</span>
+      <span class="prev">{% if r.prev %}{% if r.prev.weight is not None %}{{ r.prev.weight|floatformat:"-2" }} × {{ r.prev.reps }}{% elif r.prev.reps %}{{ r.prev.reps }} reps{% elif r.prev.seconds %}{{ r.prev.seconds }} s{% elif r.prev.distance_m %}{% widthratio r.prev.distance_m 1000 1 %} km{% endif %}{% else %}—{% endif %}</span>
+      {% if b.exercise.kind == 'weight' %}
+      <input name="weight" inputmode="decimal" value="{{ r.set.weight|default_if_none:''|floatformat:'-2' }}" aria-label="Set {{ r.set.set_no }} weight in kilos">
+      <input name="reps" inputmode="numeric" value="{{ r.set.reps|default_if_none:'' }}" aria-label="Set {{ r.set.set_no }} reps">
+      {% elif b.exercise.kind == 'reps' %}
+      <span></span><input name="reps" inputmode="numeric" value="{{ r.set.reps|default_if_none:'' }}" aria-label="Set {{ r.set.set_no }} reps">
+      {% elif b.exercise.kind == 'time' %}
+      <span></span><input name="seconds" inputmode="numeric" value="{{ r.set.seconds|default_if_none:'' }}" aria-label="Set {{ r.set.set_no }} seconds">
+      {% else %}
+      <input name="km" inputmode="decimal" value="" aria-label="Distance in kilometres">
+      <input name="minutes" inputmode="numeric" value="" aria-label="Minutes" placeholder="min">
+      {% endif %}
+      <button type="submit" class="w-tick" aria-label="Set {{ r.set.set_no }} done" aria-pressed="{% if r.set.done %}true{% else %}false{% endif %}"><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </form>
+    {% endfor %}
+  </div>
+  <form method="post" action="{% url 'wellness:set_add' s.pk %}">{% csrf_token %}<input type="hidden" name="exercise" value="{{ b.exercise.pk }}"><button class="w-btn quiet" type="submit">+ Add a set</button></form>
+</section>
+{% empty %}
+<section class="w-card soft"><p style="margin:0">An empty workout. Add your first exercise below.</p></section>
+{% endfor %}
+
+<form method="post" action="{% url 'wellness:set_add' s.pk %}" class="w-card" style="gap:10px">
+  {% csrf_token %}
+  <label for="l-add" class="w-small w-quiet">Add an exercise</label>
+  <select class="w-select w-input" id="l-add" name="exercise">
+    {% for g in groups %}<optgroup label="{{ g.label }}">{% for e in g.exercises %}<option value="{{ e.pk }}">{{ e.name }}</option>{% endfor %}</optgroup>{% endfor %}
+  </select>
+  <button class="w-btn ghost" type="submit">Add it</button>
+</form>
+
+<form method="post" action="{% url 'wellness:session_finish' s.pk %}" class="w-card" style="gap:12px">
+  {% csrf_token %}
+  <h2 class="w-h2" style="font-size:16px">How hard did it feel?</h2>
+  <div class="w-effort" role="radiogroup" aria-label="Effort from 1 to 10">{% for n in "123456789" %}<label><input type="radio" name="effort" value="{{ n }}"><span>{{ n }}</span></label>{% endfor %}<label><input type="radio" name="effort" value="10"><span>10</span></label></div>
+  <input class="w-input" name="note" maxlength="280" placeholder="A note, if you like" aria-label="A note about this workout">
+  <button class="w-btn full" type="submit">Finish workout</button>
+  <p class="w-small w-quiet" style="margin:0">Sets you did not tick are left out.</p>
+</form>
+<details class="w-card">
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Discard this workout</summary>
+  <form method="post" action="{% url 'wellness:session_finish' s.pk %}">{% csrf_token %}<input type="hidden" name="discard" value="yes"><button class="w-btn ghost full" type="submit">Discard - nothing is saved</button></form>
+</details>
+</div>
+
+<div class="w-record" data-record hidden role="status" aria-live="polite">
+  <svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5l4.4 9 9.6 1.3-7 6.7 1.7 9.6L20 27l-8.7 4.6 1.7-9.6-7-6.7 9.6-1.3z" fill="#E8DCC8" stroke="#A0824F" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <span data-record-text></span>
+</div>
+<div class="w-rest" data-rest-bar hidden role="timer" aria-live="off">
+  <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:600">Rest</span><span class="clock" data-rest-clock>0:00</span></div>
+  <div class="w-bar"><i data-rest-fill style="width:0%"></i></div>
+  <div class="w-btn-row">
+    <button type="button" class="w-btn ghost" data-rest-add="-15" style="min-height:44px">−15 s</button>
+    <button type="button" class="w-btn ghost" data-rest-add="15" style="min-height:44px">+15 s</button>
+    <button type="button" class="w-btn ghost" data-rest-skip style="min-height:44px">Skip</button>
+  </div>
+</div>
+{% endblock %}

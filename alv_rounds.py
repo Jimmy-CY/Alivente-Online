@@ -1543,6 +1543,8 @@ ROUNDS = [
     '.bak_passkeys',
     # WL-2, 30 Oct 2026 - Wellness, part two: Journal and Body.
     '.bak_wellness2',
+    # WL-3, 30 Oct 2026 - Wellness, part three: Workouts.
+    '.bak_wellness3',
 ]
 
 

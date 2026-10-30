@@ -1283,6 +1283,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
     @{ File = 'pages/management/commands/check_lease_renewal_and_invoices.py'; Text = 'Celebration email to %s'; What = 'CX-1: the celebrations email retries like the others - without it one mail-server hiccup loses every celebration email for the day' },
+    @{ File = 'wellness/training.py'; Text = 'def suggest('; What = 'WL-3: the workout rules are on disk - without them no workout can start' },
     @{ File = 'wellness/body.py'; Text = 'def trend('; What = 'WL-2: the trend weight is on disk - without it Body and Today cannot be drawn' },
     @{ File = 'pages/templates/login.html'; Text = 'id="passkeyLogin"'; What = 'PK-1: the login page offers the fingerprint - without it nobody can use the passkey they added' },
     @{ File = 'wellness/habits.py'; Text = 'def can_establish('; What = 'WL-1: the Wellness habit rules are on disk - without them Today cannot be drawn' },
@@ -3208,7 +3209,9 @@ $suites = @(
     # PK-1, 30 Oct 2026 - sign in with a fingerprint (passkeys).
     'test_passkeys.py',
     # WL-2, 30 Oct 2026 - Wellness, part two: Journal and Body.
-    'test_wellness_two.py'
+    'test_wellness_two.py',
+    # WL-3, 30 Oct 2026 - Wellness, part three: Workouts.
+    'test_wellness_three.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

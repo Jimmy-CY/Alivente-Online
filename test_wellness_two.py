@@ -135,8 +135,10 @@ ok("ENV = 'WELLNESS_JOURNAL_KEY'" in cr and 'MultiFernet' in cr,
 base = read(J(WT, 'base.html'))
 ok(all(u in base for u in ("wellness:journal_list", "wellness:body")),
    'the bottom bar has Journal and Body')
-ok(base.count('class="w-tab{%') == 4, '  four tabs: Today, Habits, '
-   'Journal, Body', base.count('class="w-tab{%'))
+# WL-3 added Workouts as a fifth; this round's claim is that Journal and
+# Body are there, not how many others sit beside them.
+ok(base.count('class="w-tab{%') >= 4, '  at least four tabs: Today, '
+   'Habits, Journal, Body', base.count('class="w-tab{%'))
 bad = [f for f in NEW_FILES if f.endswith('.html') and 'includes' not in f
        and '{% extends "wellness/base.html" %}' not in read(J(APP, f))]
 ok(not bad, 'every new page is a Wellness page', bad)

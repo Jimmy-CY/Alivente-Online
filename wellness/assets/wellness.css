@@ -408,7 +408,7 @@ label.w-chip span { display: inline-flex; align-items: center; min-height: 44px;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  min-width: 64px;
+  min-width: 58px;
   min-height: 48px;
   padding-top: 4px;
   font-size: 11px;
@@ -475,3 +475,51 @@ label.w-mood:has(input:checked) { background: var(--w-sage-deep); color: var(--w
 .w-num { font-size: 44px; font-weight: 600; text-align: center; min-height: 80px; }
 .w-locked { color: var(--w-quiet); font-style: italic; }
 .w-notice { background: var(--w-sand); border-radius: 16px; padding: 14px 16px; font-size: 14px; }
+
+/* ---- WL-3: workouts --------------------------------------------------- */
+.w-sets { display: flex; flex-direction: column; gap: 6px; }
+.w-set {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) 70px 58px 48px;
+  gap: 6px; align-items: center; min-height: 56px; border-radius: 12px; padding: 0 4px;
+}
+.w-set.head { min-height: 0; height: 28px; font-size: 11px; font-weight: 600; color: var(--w-quiet); letter-spacing: .04em; text-transform: uppercase; }
+.w-set.is-done { background: var(--w-soft); }
+.w-set .n { text-align: center; font-weight: 600; }
+.w-set .prev { font-size: 13px; color: var(--w-quiet); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-set input {
+  width: 100%; height: 44px; border: 1.5px solid var(--w-line); border-radius: 10px;
+  text-align: center; font: inherit; font-size: 17px; font-weight: 600;
+  background: var(--w-card); color: var(--w-ink);
+}
+.w-set input:focus { border-color: var(--w-sage); outline: none; }
+.w-tick {
+  width: 44px; height: 44px; border-radius: 22px; border: 2px solid var(--w-ring-off);
+  background: var(--w-card); display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.w-tick svg { opacity: 0; }
+.is-done .w-tick { background: var(--w-sage-deep); border-color: var(--w-sage-deep); }
+.is-done .w-tick svg { opacity: 1; }
+.w-tick svg path { stroke: var(--w-on-accent); }
+.w-rest {
+  position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  max-width: 528px; margin: 0 auto; z-index: 15;
+  background: var(--w-card); border-radius: 20px; padding: 14px 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.14); display: flex; flex-direction: column; gap: 10px;
+}
+.w-rest[hidden] { display: none; }
+.w-rest .clock { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.w-record {
+  position: fixed; left: 16px; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 16px);
+  max-width: 528px; margin: 0 auto; z-index: 25;
+  background: var(--w-sand); border-radius: 18px; padding: 14px 16px; font-weight: 600;
+  display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.12);
+  animation: w-rise .4s ease;
+}
+.w-record[hidden] { display: none; }
+.w-clock { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.w-effort { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+.w-effort label { display: flex; }
+.w-effort input { position: absolute; opacity: 0; pointer-events: none; }
+.w-effort span { flex: 1; min-height: 44px; border-radius: 10px; background: var(--w-bg); display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; }
+.w-effort input:checked + span { background: var(--w-sage-deep); color: var(--w-on-accent); }
+.w-select { appearance: auto; }

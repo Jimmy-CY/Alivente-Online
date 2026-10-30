@@ -1,0 +1,36 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ ex.name }} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px">
+  <h1 class="w-title">{{ ex.name }}</h1>
+  <div class="w-small w-quiet">{{ ex.get_muscle_display }} · {{ ex.get_equipment_display }}</div>
+</header>
+<section class="w-card" style="gap:10px">
+  <h2 class="w-h2" style="font-size:16px">Your best</h2>
+  {% if best.weight is not None %}<div class="w-row" style="min-height:44px"><span>Heaviest</span><strong>{{ best.weight|floatformat:"-2" }} kg</strong></div>{% endif %}
+  {% if best.e1rm %}<div class="w-row" style="min-height:44px"><span>Estimated one-rep max</span><strong>{{ best.e1rm|floatformat:1 }} kg</strong></div>{% endif %}
+  {% if best.reps %}<div class="w-row" style="min-height:44px"><span>Most reps</span><strong>{{ best.reps }}</strong></div>{% endif %}
+  {% if best.seconds %}<div class="w-row" style="min-height:44px"><span>Longest</span><strong>{{ best.seconds }} s</strong></div>{% endif %}
+  {% if best.metres %}<div class="w-row" style="min-height:44px"><span>Furthest</span><strong>{% widthratio best.metres 1000 1 %} km</strong></div>{% endif %}
+  {% if best.weight is None and not best.reps and not best.seconds and not best.metres %}<p class="w-quiet" style="margin:0">No sets logged yet.</p>{% endif %}
+</section>
+{% if chart %}
+<section class="w-card" style="gap:8px">
+  <h2 class="w-h2" style="font-size:16px">{{ measure }}, by workout</h2>
+  <svg class="w-chart" viewBox="0 0 {{ chart.w }} {{ chart.h }}" width="100%" role="img" aria-label="{{ measure }} for each workout, oldest to newest">
+    <line class="grid" x1="12" x2="308" y1="12" y2="12"/><line class="grid" x1="12" x2="308" y1="128" y2="128"/>
+    <path class="line" d="{{ chart.line }}"/><path class="dots" d="{{ chart.dots }}"/>
+  </svg>
+  <div style="display:flex;justify-content:space-between" class="w-small w-quiet"><span>{{ chart.hi|floatformat:1 }}</span><span>{{ chart.lo|floatformat:1 }}</span></div>
+</section>
+{% endif %}
+{% if history %}
+<section class="w-list">
+  <h2 class="w-h2" style="font-size:16px;padding-top:16px">History</h2>
+  {% for h in history %}
+  <div class="w-row"><span class="w-row-main"><span class="w-row-name">{{ h.date|date:"D j M" }}</span><span class="w-row-sub">{% for st in h.sets %}{% if st.weight is not None %}{{ st.weight|floatformat:"-2" }}×{{ st.reps }}{% elif st.reps %}{{ st.reps }}{% elif st.seconds %}{{ st.seconds }}s{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</span></span></div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

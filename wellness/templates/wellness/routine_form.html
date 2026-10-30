@@ -1,0 +1,66 @@
+{% extends "wellness/base.html" %}
+{% block title %}{% if routine %}{{ routine.name }}{% else %}New routine{% endif %} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">{% if routine %}Edit routine{% else %}New routine{% endif %}</h1>
+  <label for="r-name" class="w-small w-quiet">Name</label>
+  <input class="w-input" id="r-name" name="name" value="{{ routine.name|default:'' }}" placeholder="15-minute upper body" maxlength="80" autocomplete="off">
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+    <legend class="w-small w-quiet" style="margin-bottom:8px">Show it on Today on…</legend>
+    <div class="w-chips">{% for d in weekdays %}<label class="w-chip"><input type="checkbox" name="weekdays" value="{{ d.num }}"{% if d.on %} checked{% endif %}><span>{{ d.name }}</span></label>{% endfor %}</div>
+  </fieldset>
+
+  {% if routine %}
+  <section class="w-card" style="gap:14px">
+    <h2 class="w-h2" style="font-size:16px">Exercises</h2>
+    {% for it in items %}
+    <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--w-line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <strong>{{ it.exercise.name }}</strong>
+        <span style="display:flex;gap:2px">
+          <button class="w-icon-btn" name="action" value="up:{{ it.pk }}" aria-label="Move {{ it.exercise.name }} up">↑</button>
+          <button class="w-icon-btn" name="action" value="down:{{ it.pk }}" aria-label="Move {{ it.exercise.name }} down">↓</button>
+          <button class="w-icon-btn" name="action" value="remove:{{ it.pk }}" aria-label="Remove {{ it.exercise.name }}">×</button>
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">Sets<input class="w-input" name="sets_{{ it.pk }}" value="{{ it.sets }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+        {% if it.exercise.kind == 'time' %}
+        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px;grid-column:span 2">Seconds<input class="w-input" name="seconds_{{ it.pk }}" value="{{ it.seconds|default_if_none:'' }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+        {% else %}
+        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">Reps from<input class="w-input" name="rep_min_{{ it.pk }}" value="{{ it.rep_min }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">to<input class="w-input" name="rep_max_{{ it.pk }}" value="{{ it.rep_max }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+        {% endif %}
+        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">Rest (s)<input class="w-input" name="rest_{{ it.pk }}" value="{{ it.rest }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+      </div>
+    </div>
+    {% empty %}
+    <p class="w-small w-quiet" style="margin:0">No exercises yet. Add the first below.</p>
+    {% endfor %}
+    <label for="r-add" class="w-small w-quiet">Add an exercise</label>
+    <select class="w-select w-input" id="r-add" name="exercise">
+      {% for g in groups %}<optgroup label="{{ g.label }}">{% for e in g.exercises %}<option value="{{ e.pk }}">{{ e.name }}</option>{% endfor %}</optgroup>{% endfor %}
+    </select>
+    <button class="w-btn ghost" name="action" value="add">Add it</button>
+    <a class="w-small" href="{% url 'wellness:exercise_new' %}?next={{ request.path|urlencode }}">Not in the list? Make your own</a>
+    <p class="w-small w-quiet" style="margin:0">The rep range drives progress: reach the top on every set and the next workout suggests a little more weight - one you own.</p>
+  </section>
+  {% endif %}
+
+  <button class="w-btn full" name="action" value="{% if routine %}save{% else %}add-first{% endif %}">{% if routine %}Save routine{% else %}Next: add exercises{% endif %}</button>
+</form>
+{% if routine %}
+<details class="w-card">
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Delete this routine</summary>
+  <form method="post" action="{% url 'wellness:routine_delete' routine.pk %}" style="display:flex;flex-direction:column;gap:12px">
+    {% csrf_token %}
+    <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" name="confirm" value="yes" required style="width:22px;height:22px"> Yes - past workouts are kept</label>
+    <button class="w-btn ghost" type="submit">Delete</button>
+  </form>
+</details>
+{% endif %}
+{% endblock %}

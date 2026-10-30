@@ -64,6 +64,28 @@
 </section>
 {% endif %}
 
+{# WL-3 - the planned or open workout. #}
+{% if workout.open %}
+<a class="w-card sand" href="{% url 'wellness:session_live' workout.open.pk %}" style="gap:6px;text-decoration:none;color:inherit">
+  <span class="w-label">Workout in progress</span>
+  <span style="font-size:17px;font-weight:600">{{ workout.open.name }}</span>
+  <span class="w-small w-quiet">Tap to carry on.</span>
+</a>
+{% elif workout.done %}
+<a class="w-card soft" href="{% url 'wellness:session_detail' workout.done.pk %}" style="gap:6px;text-decoration:none;color:inherit">
+  <span style="font-size:17px;font-weight:600">Trained today: {{ workout.done.name }}</span>
+  <span class="w-small w-quiet">Nice work. See how it went.</span>
+</a>
+{% else %}{% for r in workout.planned %}
+<section class="w-card" style="gap:12px">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+    <h2 class="w-h2">{{ r.name }}</h2>
+    <span class="w-small w-quiet">{{ r.items.count }} exercise{{ r.items.count|pluralize }}</span>
+  </div>
+  <form method="post" action="{% url 'wellness:session_start' %}">{% csrf_token %}<input type="hidden" name="routine" value="{{ r.pk }}"><button class="w-btn full" type="submit">Start workout</button></form>
+</section>
+{% endfor %}{% endif %}
+
 {# WL-2 - the weigh-in card, the evening card, On this day. #}
 <a class="w-card" href="{% url 'wellness:body_weigh' %}" style="flex-direction:row;align-items:center;gap:16px;text-decoration:none;color:inherit">
   <span style="width:48px;height:48px;border-radius:24px;background:var(--w-soft);display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="4" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6"/><path d="M9 9.5a4 4 0 0 1 6 0l-2 2.5" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6" stroke-linecap="round"/></svg></span>

@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import views_workouts as W
 
 app_name = 'wellness'
 
@@ -26,6 +27,26 @@ urlpatterns = [
     path('body/measure/', views.body_measure, name='body_measure'),
     path('body/goal/', views.body_goal, name='body_goal'),
     path('body/<int:pk>/delete/', views.body_delete, name='body_delete'),
+    # WL-3, 30 Oct 2026 - Workouts.
+    path('workouts/', W.home, name='workouts'),
+    path('workouts/kit/', W.kit, name='kit'),
+    path('workouts/routines/new/', W.routine_edit, name='routine_new'),
+    path('workouts/routines/<int:pk>/', W.routine_edit, name='routine_edit'),
+    path('workouts/routines/<int:pk>/delete/', W.routine_delete,
+         name='routine_delete'),
+    path('workouts/start/', W.session_start, name='session_start'),
+    path('workouts/<int:pk>/live/', W.session_live, name='session_live'),
+    path('workouts/<int:pk>/', W.session_detail, name='session_detail'),
+    path('workouts/<int:pk>/add/', W.set_add, name='set_add'),
+    path('workouts/<int:pk>/finish/', W.session_finish,
+         name='session_finish'),
+    path('workouts/<int:pk>/delete/', W.session_delete,
+         name='session_delete'),
+    path('workouts/sets/<int:pk>/', W.set_save, name='set_save'),
+    path('workouts/sets/<int:pk>/delete/', W.set_delete, name='set_delete'),
+    path('workouts/exercises/new/', W.exercise_new, name='exercise_new'),
+    path('workouts/exercises/<int:pk>/', W.exercise_detail,
+         name='exercise_detail'),
     path('guide/', views.guide_page, name='guide'),
     path('tips/', views.tip_seen, name='tip_seen'),
     # The app shell - answered without a login; nothing personal in it.

@@ -1,0 +1,37 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ s.name }} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px">
+  <div class="w-eyebrow">{{ s.date|date:"l, j F" }}</div>
+  <h1 class="w-title">{% if s.finished_at %}Nice work.{% else %}{{ s.name }}{% endif %}</h1>
+</header>
+<section class="w-card" style="flex-direction:row;justify-content:space-around;text-align:center">
+  <div><div class="w-big" style="font-size:26px">{{ duration }}</div><div class="w-small w-quiet">time</div></div>
+  <div><div class="w-big" style="font-size:26px">{{ volume }}</div><div class="w-small w-quiet">kg lifted</div></div>
+  <div><div class="w-big" style="font-size:26px">{{ records|length }}</div><div class="w-small w-quiet">record{{ records|length|pluralize }}</div></div>
+</section>
+{% for r in records %}
+<div class="w-card sand" style="flex-direction:row;align-items:center;gap:12px;padding:14px 18px">
+  <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5l4.4 9 9.6 1.3-7 6.7 1.7 9.6L20 27l-8.7 4.6 1.7-9.6-7-6.7 9.6-1.3z" fill="#E8DCC8" stroke="#A0824F" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <span><strong>{{ r.exercise.name }}</strong> · {% if r.weight is not None %}{{ r.weight|floatformat:"-2" }} kg × {{ r.reps }}{% elif r.reps %}{{ r.reps }} reps{% elif r.seconds %}{{ r.seconds }} s{% endif %}</span>
+</div>
+{% endfor %}
+{% for b in blocks %}
+<section class="w-list">
+  <a href="{% url 'wellness:exercise_detail' b.exercise.pk %}" class="w-h2" style="font-size:16px;display:flex;min-height:52px;align-items:center;color:inherit;text-decoration:none">{{ b.exercise.name }}</a>
+  {% for st in b.sets %}
+  <div class="w-row" style="min-height:44px"><span class="w-quiet">Set {{ st.set_no }}</span><span>{% if st.weight is not None %}{{ st.weight|floatformat:"-2" }} kg × {{ st.reps }}{% elif st.reps %}{{ st.reps }} reps{% elif st.distance_m %}{% widthratio st.distance_m 1000 1 %} km{% endif %}{% if st.seconds %} · {{ st.seconds }} s{% endif %}{% if st.is_pr %} ★{% endif %}</span></div>
+  {% endfor %}
+</section>
+{% endfor %}
+{% if s.effort or s.note %}<p class="w-quiet" style="margin:0 4px">{% if s.effort %}Effort {{ s.effort }}/10. {% endif %}{{ s.note }}</p>{% endif %}
+<a class="w-btn full" href="{% url 'wellness:workouts' %}">Done</a>
+<details class="w-card">
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">Delete this workout</summary>
+  <form method="post" action="{% url 'wellness:session_delete' s.pk %}" style="display:flex;flex-direction:column;gap:12px">{% csrf_token %}
+    <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" name="confirm" value="yes" required style="width:22px;height:22px"> Yes, delete it and its sets</label>
+    <button class="w-btn ghost" type="submit">Delete</button>
+  </form>
+</details>
+{% endblock %}

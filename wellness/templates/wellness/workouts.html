@@ -1,0 +1,75 @@
+{% extends "wellness/base.html" %}
+{% block title %}Workouts · Wellness{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <h1 class="w-title">Workouts</h1>
+  <span class="w-small w-quiet">{{ this_week }} this week</span>
+</div>
+
+{% if open_session %}
+<a class="w-card sand" href="{% url 'wellness:session_live' open_session.pk %}" style="text-decoration:none;color:inherit;gap:6px">
+  <span class="w-label">In progress</span>
+  <span style="font-size:18px;font-weight:600">{{ open_session.name }}</span>
+  <span class="w-small w-quiet">Tap to carry on where you left off.</span>
+</a>
+{% endif %}
+
+{% for r in today_routines %}
+<section class="w-card" style="gap:12px">
+  <div class="w-label">Planned for today</div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+    <h2 class="w-h2">{{ r.name }}</h2>
+    <span class="w-small w-quiet">{{ r.items.count }} exercise{{ r.items.count|pluralize }}</span>
+  </div>
+  {% if not open_session %}<form method="post" action="{% url 'wellness:session_start' %}">{% csrf_token %}<input type="hidden" name="routine" value="{{ r.pk }}"><button class="w-btn full" type="submit">Start workout</button></form>{% endif %}
+</section>
+{% endfor %}
+
+<section class="w-list" aria-labelledby="rt-h">
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:56px">
+    <h2 class="w-h2" id="rt-h" style="font-size:16px">Routines</h2>
+    <a class="w-btn quiet" href="{% url 'wellness:routine_new' %}" style="padding:0">New routine</a>
+  </div>
+  {% for r in routines %}
+  <div class="w-row">
+    <a href="{% url 'wellness:routine_edit' r.pk %}" class="w-row-main" style="color:inherit;text-decoration:none;flex:1">
+      <span class="w-row-name">{{ r.name }}</span>
+      <span class="w-row-sub">{{ r.items.count }} exercise{{ r.items.count|pluralize }}{% if r.weekdays %} · {% for d in r.weekdays %}{% if d == '0' %}Mon {% elif d == '1' %}Tue {% elif d == '2' %}Wed {% elif d == '3' %}Thu {% elif d == '4' %}Fri {% elif d == '5' %}Sat {% else %}Sun {% endif %}{% endfor %}{% endif %}</span>
+    </a>
+    {% if not open_session %}<form method="post" action="{% url 'wellness:session_start' %}">{% csrf_token %}<input type="hidden" name="routine" value="{{ r.pk }}"><button class="w-btn ghost" type="submit" style="min-height:44px;padding:0 16px;font-size:14px">Start</button></form>{% endif %}
+  </div>
+  {% empty %}
+  <p class="w-small w-quiet" style="margin:0 0 16px">A routine is a saved workout - say "15-minute upper body". Start it and the exercises, sets and last time's numbers are waiting.</p>
+  {% endfor %}
+</section>
+
+{% if not open_session %}
+<form method="post" action="{% url 'wellness:session_start' %}">{% csrf_token %}<button class="w-btn ghost full" type="submit">Start an empty workout</button></form>
+{% endif %}
+
+{% if prs %}
+<section class="w-card" style="gap:8px">
+  <h2 class="w-h2" style="font-size:16px">Recent records</h2>
+  {% for p in prs %}
+  <a href="{% url 'wellness:exercise_detail' p.exercise.pk %}" class="w-row" style="min-height:44px">
+    <span>{{ p.exercise.name }}</span>
+    <span class="w-small w-quiet">{% if p.weight is not None %}{{ p.weight|floatformat:"-2" }} kg × {{ p.reps }}{% elif p.reps %}{{ p.reps }} reps{% elif p.seconds %}{{ p.seconds }} s{% endif %} · {{ p.session.date|date:"j M" }}</span>
+  </a>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if recent %}
+<section class="w-list">
+  <h2 class="w-h2" style="font-size:16px;padding-top:16px">Recent workouts</h2>
+  {% for s in recent %}
+  <a class="w-row" href="{% url 'wellness:session_detail' s.pk %}">
+    <span class="w-row-main"><span class="w-row-name">{{ s.name }}</span><span class="w-row-sub">{{ s.date|date:"D j M" }}{% if s.effort %} · effort {{ s.effort }}/10{% endif %}</span></span>
+    <span class="w-quiet">›</span>
+  </a>
+  {% endfor %}
+</section>
+{% endif %}
+
+<a class="w-btn quiet" href="{% url 'wellness:kit' %}" style="align-self:flex-start;padding:0">My equipment</a>
+{% endblock %}

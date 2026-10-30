@@ -1,0 +1,21 @@
+{% extends "wellness/base.html" %}
+{% block title %}New exercise · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% if next %}{{ next }}{% else %}{% url 'wellness:workouts' %}{% endif %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Back</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <h1 class="w-hello" style="font-size:28px">Your own exercise</h1>
+  <label for="x-name" class="w-small w-quiet">Name</label>
+  <input class="w-input" id="x-name" name="name" maxlength="80" autocomplete="off">
+  <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">How is it counted?</legend>
+    <div class="w-chips">{% for k, l in types %}<label class="w-chip"><input type="radio" name="kind" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
+  <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">Mostly works</legend>
+    <div class="w-chips">{% for k, l in muscles %}<label class="w-chip"><input type="radio" name="muscle" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
+  <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">With</legend>
+    <div class="w-chips">{% for k, l in equipment %}<label class="w-chip"><input type="radio" name="equipment" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <button class="w-btn full" type="submit">Save</button>
+</form>
+{% endblock %}

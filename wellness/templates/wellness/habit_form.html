@@ -84,6 +84,11 @@
       </div>
       {% if errors.weekdays %}<div class="w-error">{{ errors.weekdays }}</div>{% endif %}
     </div>
+    {# WL-3 - a training habit can tick itself when a workout is finished. #}
+    <label style="display:flex;gap:10px;align-items:center;min-height:44px" data-when-kind="yes_no count duration">
+      <input type="checkbox" name="auto_from" value="workout"{% if v.auto_from == 'workout' %} checked{% endif %} style="width:22px;height:22px">
+      <span>Tick it for me when I finish a workout</span>
+    </label>
     {% if new %}<div class="w-btn-row"><button type="button" class="w-btn ghost" data-back>Back</button><button type="button" class="w-btn" data-next>Next</button></div>{% endif %}
   </section>
 

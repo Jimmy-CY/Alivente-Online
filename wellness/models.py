@@ -25,6 +25,10 @@ class WellnessProfile(models.Model):
     weight_goal = models.DecimalField(max_digits=5, decimal_places=1,
                                       null=True, blank=True)
     goal_date = models.DateField(null=True, blank=True)
+    # WL-3 - the kit this person trains with, so suggestions only offer
+    # weights they own: {"barbell_max": 30, "dumbbells": [1, 2, 4, 6, 8],
+    # "kettlebells": [], "plate_step": 2.5}.
+    equipment = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -80,6 +84,11 @@ class Habit(models.Model):
     per_week = models.PositiveSmallIntegerField(null=True, blank=True)
     time_of_day = models.CharField(max_length=10, choices=TIMES,
                                    default='anytime')
+    # WL-3, 30 Oct 2026 - a habit that ticks itself: 'workout' is done on
+    # any day a workout is finished.
+    auto_from = models.CharField(max_length=10, blank=True, default='',
+                                 choices=[('', 'Ticked by hand'),
+                                          ('workout', 'A finished workout')])
     cue = models.CharField('After I...', max_length=120, blank=True)
     tiny_version = models.CharField('On a hard day, just...',
                                     max_length=120, blank=True)
@@ -205,3 +214,118 @@ class BodyMetric(models.Model):
     @property
     def unit(self):
         return self.UNITS.get(self.kind, 'cm')
+
+
+class Exercise(models.Model):
+    """WL-3, 30 Oct 2026. user=None is the shared library (seeded by
+    migration 0003); a row with a user is that person's own exercise."""
+    TYPES = [
+        ('weight', 'Weight and reps'),
+        ('reps', 'Reps only'),
+        ('time', 'Time'),
+        ('distance', 'Distance and time'),
+    ]
+    MUSCLES = [
+        ('chest', 'Chest'), ('back', 'Back'), ('shoulders', 'Shoulders'),
+        ('arms', 'Arms'), ('legs', 'Legs'), ('core', 'Core'),
+        ('full', 'Full body'), ('cardio', 'Cardio'),
+    ]
+    EQUIPMENT = [
+        ('dumbbell', 'Dumbbells'), ('barbell', 'Barbell'),
+        ('kettlebell', 'Kettlebell'), ('bodyweight', 'Bodyweight'),
+        ('machine', 'Machine or cable'), ('band', 'Band'),
+        ('none', 'Nothing'),
+    ]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_exercises')
+    name = models.CharField(max_length=80)
+    kind = models.CharField(max_length=10, choices=TYPES, default='weight')
+    muscle = models.CharField(max_length=10, choices=MUSCLES)
+    equipment = models.CharField(max_length=12, choices=EQUIPMENT)
+
+    class Meta:
+        db_table = 'wellness_exercise'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Routine(models.Model):
+    """A saved workout: its exercises, targets and rest. `weekdays` puts it
+    on Today on those days (Monday = 0)."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_routines')
+    name = models.CharField(max_length=80)
+    weekdays = models.CharField(max_length=7, blank=True)
+    archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'wellness_routine'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def weekday_set(self):
+        return {int(c) for c in self.weekdays if c.isdigit()}
+
+
+class RoutineItem(models.Model):
+    routine = models.ForeignKey(Routine, on_delete=models.CASCADE,
+                                related_name='items')
+    exercise = models.ForeignKey(Exercise, on_delete=models.PROTECT)
+    position = models.PositiveSmallIntegerField(default=0)
+    sets = models.PositiveSmallIntegerField(default=3)
+    rep_min = models.PositiveSmallIntegerField(default=8)
+    rep_max = models.PositiveSmallIntegerField(default=12)
+    seconds = models.PositiveIntegerField(null=True, blank=True)
+    rest = models.PositiveSmallIntegerField(default=60)
+
+    class Meta:
+        db_table = 'wellness_routine_item'
+        ordering = ['position', 'id']
+
+
+class WorkoutSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_sessions')
+    routine = models.ForeignKey(Routine, null=True, blank=True,
+                                on_delete=models.SET_NULL)
+    name = models.CharField(max_length=80)
+    date = models.DateField()
+    started_at = models.DateTimeField()
+    finished_at = models.DateTimeField(null=True, blank=True)
+    effort = models.PositiveSmallIntegerField(null=True, blank=True)
+    note = models.CharField(max_length=280, blank=True)
+
+    class Meta:
+        db_table = 'wellness_workout_session'
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return '%s on %s' % (self.name, self.date)
+
+
+class WorkoutSet(models.Model):
+    session = models.ForeignKey(WorkoutSession, on_delete=models.CASCADE,
+                                related_name='sets')
+    exercise = models.ForeignKey(Exercise, on_delete=models.PROTECT)
+    position = models.PositiveSmallIntegerField(default=0)
+    set_no = models.PositiveSmallIntegerField(default=1)
+    weight = models.DecimalField(max_digits=6, decimal_places=2, null=True,
+                                 blank=True)
+    reps = models.PositiveSmallIntegerField(null=True, blank=True)
+    seconds = models.PositiveIntegerField(null=True, blank=True)
+    distance_m = models.PositiveIntegerField(null=True, blank=True)
+    done = models.BooleanField(default=False)
+    is_pr = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'wellness_workout_set'
+        ordering = ['position', 'set_no']

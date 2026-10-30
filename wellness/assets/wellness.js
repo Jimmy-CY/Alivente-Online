@@ -160,6 +160,70 @@
     input.value = (Math.round((v + parseFloat(b.getAttribute('data-nudge'))) * 10) / 10).toFixed(1);
   });
 
+  // ---- WL-3: the live workout logger.
+  var live = document.querySelector('[data-live]');
+  if (live) {
+    var started = parseInt(live.getAttribute('data-started'), 10);
+    var clock = live.querySelector('[data-elapsed]');
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function fmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + pad(s % 60); }
+    setInterval(function () { clock.textContent = fmt((Date.now() - started) / 1000); }, 1000);
+    // Keep the screen awake while training, where the phone allows it.
+    var lock = null;
+    function wake() { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {}); }
+    wake();
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') wake(); });
+
+    var bar = document.querySelector('[data-rest-bar]');
+    var rclock = bar.querySelector('[data-rest-clock]');
+    var fill = bar.querySelector('[data-rest-fill]');
+    var restEnd = 0, restTotal = 0, timer = null;
+    function tick() {
+      var left = (restEnd - Date.now()) / 1000;
+      if (left <= 0) {
+        clearInterval(timer); timer = null; bar.hidden = true;
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        return;
+      }
+      rclock.textContent = fmt(left);
+      fill.style.width = (100 * (1 - left / restTotal)).toFixed(1) + '%';
+    }
+    function rest(seconds) {
+      if (!seconds) return;
+      restTotal = seconds; restEnd = Date.now() + seconds * 1000;
+      bar.hidden = false; tick();
+      if (!timer) timer = setInterval(tick, 250);
+    }
+    bar.addEventListener('click', function (e) {
+      var a = e.target.closest('[data-rest-add]');
+      if (a) { var d = parseInt(a.getAttribute('data-rest-add'), 10); restEnd += d * 1000; restTotal = Math.max(1, restTotal + d); tick(); }
+      if (e.target.closest('[data-rest-skip]')) { restEnd = Date.now(); tick(); }
+    });
+    var rec = document.querySelector('[data-record]');
+    function celebrate(text) {
+      rec.querySelector('[data-record-text]').textContent = 'New record! ' + text;
+      rec.hidden = false;
+      setTimeout(function () { rec.hidden = true; }, 4500);
+    }
+    live.addEventListener('submit', function (e) {
+      var f = e.target;
+      if (!f.matches('[data-set]')) return;
+      e.preventDefault();
+      var flag = f.querySelector('input[name=done]');
+      var nowDone = flag.value === '1';
+      f.classList.toggle('is-done', nowDone);
+      post(f).then(function (res) {
+        f.classList.toggle('is-done', res.done);
+        flag.value = res.done ? '0' : '1';
+        f.querySelector('.w-tick').setAttribute('aria-pressed', String(res.done));
+        if (res.done) {
+          if (res.record) celebrate(res.record);
+          rest(parseInt(f.getAttribute('data-rest'), 10) || res.rest);
+        }
+      }).catch(function () { f.classList.toggle('is-done', !nowDone); f.submit(); });
+    });
+  }
+
   // ---- The installable app.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
