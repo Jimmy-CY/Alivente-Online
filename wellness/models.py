@@ -102,6 +102,14 @@ class Habit(models.Model):
     # WL-4b - a gentle reminder at this time on the days it is due, if
     # the person has turned reminders on for a phone. Empty means none.
     remind_at = models.TimeField(null=True, blank=True)
+    # WL-8, 31 Oct 2026 - a challenge: this many done days from
+    # challenge_from (7, 14, 21 or 30). challenge_seen is the last missed
+    # day the person answered ("Carry on"); challenge_done_on the day the
+    # last one was done. See challenge.py.
+    challenge_days = models.PositiveSmallIntegerField(null=True, blank=True)
+    challenge_from = models.DateField(null=True, blank=True)
+    challenge_seen = models.DateField(null=True, blank=True)
+    challenge_done_on = models.DateField(null=True, blank=True)
     paused = models.BooleanField(default=False)
     established_at = models.DateField(null=True, blank=True)
     archived_at = models.DateTimeField(null=True, blank=True)

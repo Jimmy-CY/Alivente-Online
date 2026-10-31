@@ -18,6 +18,34 @@
 <section class="w-card soft"><p style="margin:0">Paused. It stays off Today and nothing counts against it until you resume.</p></section>
 {% endif %}
 
+{% if challenge %}
+{% comment %} WL-8, 31 Oct 2026 - the challenge: a square for each day to do. {% endcomment %}
+<section class="w-card" aria-labelledby="ch-h" data-challenge-card>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+    <h2 class="w-h2" id="ch-h">{% if challenge.finished %}Challenge finished{% else %}{{ challenge.words }}{% endif %}</h2>
+    <span class="w-small w-quiet">{{ challenge.days }}-day challenge</span>
+  </div>
+  {% for row in challenge.rows %}
+  <div class="w-strip" style="grid-template-columns:repeat({{ row|length }},minmax(0,1fr));max-width:{% widthratio row|length 15 100 %}%" role="img" aria-label="{{ challenge.got }} of {{ challenge.days }} days done">{% for s in row %}<i class="{{ s }}"></i>{% endfor %}</div>
+  {% endfor %}
+  <p class="w-small w-quiet" style="margin:0">{% if challenge.finished %}All {{ challenge.days }} days done, finished on {{ challenge.finished|date:"l j F" }}.{% else %}{{ challenge.got }} done · finishes on {{ challenge.finish_words }} if every day from now is done{% if challenge.misses %} · {{ challenge.misses }} day{{ challenge.misses|pluralize }} added{% endif %}.{% endif %}</p>
+  {% if challenge.ask and not habit.archived_at %}
+  <p style="margin:0">{{ challenge.ask_words }}</p>
+  <div class="w-btn-row">
+    <form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_carry' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<button type="submit" class="w-btn" style="flex:1">Carry on</button></form>
+    <form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_restart' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<button type="submit" class="w-btn ghost" style="flex:1">Start again today</button></form>
+  </div>
+  {% if challenge.can_pause %}<form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_pause' %}">{% csrf_token %}<button type="submit" class="w-btn quiet">Pause it for now</button></form>{% endif %}
+  {% elif challenge.finished and not habit.archived_at %}
+  <div class="w-btn-row">
+    {% for act, label in challenge_finish_actions %}
+    <form method="post" action="{% url 'wellness:habit_action' habit.pk act %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<button type="submit" class="w-btn{% if not forloop.first %} ghost{% endif %}" style="flex:1">{{ label }}</button></form>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
 <section class="w-card" style="flex-direction:row;align-items:center;gap:20px">
   <svg class="w-ring" width="104" height="104" viewBox="0 0 104 104" role="img" aria-label="{% if rate is not None %}Consistency {{ rate }} percent over 30 days{% else %}Just started{% endif %}">
     <circle class="track" cx="52" cy="52" r="44" fill="none" stroke-width="10"/>

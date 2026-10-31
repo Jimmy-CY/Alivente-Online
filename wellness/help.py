@@ -60,13 +60,16 @@ SCREENS = {
             'Edit changes its name, schedule or reminder time.',
             'Pause takes it off Today for a while without losing anything.',
             'After 66 good days you can mark it established.',
+            'A challenge shows a square for each day to do. Miss one and '
+            'you choose: carry on, or start again.',
         ],
         'signs': [
             ('--w-sage-deep', 'Sage squares: done.'),
             ('--w-sand', 'Sand squares: comebacks - the days you returned '
                          'after a break. They count more than a perfect run.'),
             ('--w-empty', 'Faint squares: days before the habit began, or '
-                          'days it was not planned.'),
+                          'days it was not planned - or, for a challenge, '
+                          'the days still to do.'),
         ],
     },
     'habit_form': {
@@ -79,6 +82,7 @@ SCREENS = {
             'Pick when: every day, chosen days, or a number of times a week.',
             'Optionally tie it to something you already do, let a workout '
             'or Calm tick it, and set a reminder time.',
+            'Make it a challenge: 7, 14, 21 or 30 days, every day.',
         ],
         'signs': [],
     },

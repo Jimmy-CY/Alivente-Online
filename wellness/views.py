@@ -19,6 +19,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from . import challenge as CH
 from . import guide
 from . import habits as H
 from .models import Habit, HabitLog, WellnessProfile
@@ -91,6 +92,8 @@ def _habit_card(habit, done, today):
         'week_got': got,
         'week_target': target,
         'flexible': H.is_flexible(habit),
+        # WL-8 - "Day 12 of 30" for a challenge.
+        'challenge': CH.state(habit, done, today) if CH.has(habit) else None,
     }
 
 
@@ -110,8 +113,18 @@ def today(request):
     total = done_n = 0
     active = Habit.objects.filter(user=request.user, archived_at__isnull=True,
                                   paused=False)
+    finishes, asks = [], []
     for habit in active:
         done = _done_dates(habit)
+        # WL-8 - a challenge just finished is noted once; a missed day is
+        # asked about once.
+        if CH.has(habit):
+            CH.note_finished(habit, done, day, profile)
+            cs = CH.state(habit, done, day)
+            if habit.challenge_done_on:
+                finishes.append({'habit': habit, 'c': cs})
+            elif cs and cs['ask']:
+                asks.append({'habit': habit, 'c': cs})
         if not H.due_today(habit, done, day):
             continue
         card = _habit_card(habit, done, day)
@@ -161,6 +174,10 @@ def today(request):
         'cycle': _cycle_card(request.user, day),
         # WL-4a - a badge earned and not yet seen, one at a time.
         'new_badge': _new_badge(profile, request.user, day),
+        # WL-8 - challenges finished (keep, again, let go) and missed days.
+        'finishes': finishes,
+        'challenge_finish_actions': CH.FINISH_ACTIONS,
+        'asks': asks,
         # WL-7 - Calm minutes today, for the "Take a breath" card.
         'calm_today': _calm_today(request.user, day),
         'evening': now.hour >= 17,
@@ -450,6 +467,9 @@ def habit_detail(request, pk):
         'days_in': days_in,
         'comebacks': len(H.comebacks(habit, done, day)),
         'tip': _tip(profile, ['detail_week', 'detail_calendar']),
+        # WL-8 - the challenge, if it is one.
+        'challenge': CH.state(habit, done, day) if CH.has(habit) else None,
+        'challenge_finish_actions': CH.FINISH_ACTIONS,
     })
 
 
@@ -472,6 +492,9 @@ def _form_values(post):
             errors['target'] = 'How many makes it done?'
     schedule = post.get('schedule') or Habit.SCHEDULE_DAILY
     if schedule not in dict(Habit.SCHEDULES):
+        schedule = Habit.SCHEDULE_DAILY
+    # WL-8 - a challenge is every day.
+    if _challenge_choice(post):
         schedule = Habit.SCHEDULE_DAILY
     weekdays = ''.join(sorted({d for d in post.getlist('weekdays')
                                if d in '0123456' and len(d) == 1}))
@@ -525,9 +548,15 @@ def habit_new(request):
             habit = Habit.objects.create(user=request.user,
                                          started_on=_today(), position=pos,
                                          **values)
+            _set_challenge(habit, request.POST, _today())
+            habit.save()
             return redirect('wellness:habit_detail', pk=habit.pk)
+        values['challenge'] = _challenge_choice(request.POST)
     return render(request, 'wellness/habit_form.html', {
         'tab': 'habits', 'new': True, 'v': values, 'errors': errors,
+        'challenge_days': CH.DAYS,
+        'challenge_starters': [(lbl, json.dumps(pr))
+                               for lbl, pr in CH.STARTERS],
         'weekday_names': _weekday_names(values.get('weekdays', '')),
         'tip': _tip(profile, ['new_examples']),
         'kinds': Habit.KINDS, 'times': Habit.TIMES,
@@ -543,20 +572,42 @@ def habit_edit(request, pk):
         if not errors:
             for k, v in values.items():
                 setattr(habit, k, v)
+            _set_challenge(habit, request.POST, _today())
             habit.save()
             _resync(habit)
             return redirect('wellness:habit_detail', pk=habit.pk)
+        values['challenge'] = _challenge_choice(request.POST)
     else:
         values = {f: getattr(habit, f) for f in (
             'name', 'kind', 'target', 'unit', 'schedule', 'weekdays',
             'per_week', 'time_of_day', 'cue', 'tiny_version', 'auto_from',
             'remind_at')}
+        values['challenge'] = habit.challenge_days if CH.has(habit) else None
     return render(request, 'wellness/habit_form.html', {
         'tab': 'habits', 'new': False, 'habit': habit, 'v': values,
-        'errors': errors,
+        'errors': errors, 'challenge_days': CH.DAYS,
         'weekday_names': _weekday_names(values.get('weekdays') or ''),
         'tip': None, 'kinds': Habit.KINDS, 'times': Habit.TIMES,
     })
+
+
+def _challenge_choice(post):
+    """7, 14, 21 or 30 from the form, or None."""
+    try:
+        n = int(post.get('challenge') or 0)
+    except ValueError:
+        return None
+    return n if n in CH.DAYS else None
+
+
+def _set_challenge(habit, post, day):
+    """Begin, change or end the habit's challenge from the form. Editing
+    anything else leaves a running (or finished) one as it is."""
+    want = _challenge_choice(post)
+    if want and (not CH.has(habit) or habit.challenge_days != want):
+        CH.begin(habit, want, day)
+    elif not want and CH.has(habit):
+        CH.clear(habit)
 
 
 def _resync(habit):
@@ -676,10 +727,32 @@ def habit_action(request, pk, action):
             return HttpResponseBadRequest('not confirmed')
         habit.delete()
         return redirect('wellness:habit_list')
+    elif action.startswith('challenge_') and CH.has(habit):
+        # WL-8 - the answers a challenge asks for. Never "failed".
+        day = _today()
+        if action == 'challenge_carry':
+            CH.carry_on(habit, day)
+        elif action == 'challenge_restart':
+            CH.start_again(habit, day)
+        elif action == 'challenge_pause':
+            CH.carry_on(habit, day)
+            habit.paused = True
+        elif action == 'challenge_keep':
+            CH.clear(habit)
+        elif action == 'challenge_again':
+            CH.start_again(habit, day)
+        elif action == 'challenge_letgo':
+            CH.clear(habit)
+            habit.archived_at = timezone.now()
+        else:
+            raise Http404
     else:
         raise Http404
     habit.save()
-    if action in ('archive',):
+    nxt = request.POST.get('next') or ''
+    if nxt.startswith('/wellness/') and '//' not in nxt:
+        return redirect(nxt)
+    if action in ('archive', 'challenge_letgo'):
         return redirect('wellness:habit_list')
     return redirect('wellness:habit_detail', pk=habit.pk)
 
@@ -738,7 +811,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl9-1'
+SW_VERSION = 'wl10-1'
 
 
 def service_worker(request):

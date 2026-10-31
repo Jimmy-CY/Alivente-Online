@@ -6,6 +6,35 @@
   <h1 class="w-hello">{{ hello }}, {{ name }}</h1>
 </header>
 
+{% comment %}
+  WL-8, 31 Oct 2026 - a challenge finished: keep it, go again, or let it
+  go. A missed day: carry on (the finish moves out a day) or start again -
+  Demetri's choice of 31 Oct 14:26. No word of blame.
+{% endcomment %}
+{% for f in finishes %}
+<section class="w-card sand" data-challenge-finish>
+  <span class="w-label">Challenge finished</span>
+  <h2 class="w-h2" style="font-size:20px">You finished {{ f.c.days }} days of {{ f.habit.name }}</h2>
+  <p class="w-small w-quiet" style="margin:0">Every one of them done. What next?</p>
+  <div class="w-btn-row">
+    {% for act, label in challenge_finish_actions %}
+    <form method="post" action="{% url 'wellness:habit_action' f.habit.pk act %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn{% if not forloop.first %} ghost{% endif %}" style="flex:1;background-color:{% if forloop.first %}var(--w-sage-deep){% else %}var(--w-card){% endif %}">{{ label }}</button></form>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% for a in asks %}
+<section class="w-card soft" data-challenge-ask>
+  <span class="w-label">{{ a.habit.name }} · {{ a.c.words }}</span>
+  <p style="margin:0">{{ a.c.ask_words }}</p>
+  <div class="w-btn-row">
+    <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_carry' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn" style="flex:1">Carry on</button></form>
+    <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_restart' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn ghost" style="flex:1;background:var(--w-card)">Start again today</button></form>
+  </div>
+  <span class="w-small w-quiet">Carry on and it finishes on {{ a.c.finish_words }}.{% if a.c.can_pause %} Or <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_pause' %}" style="display:inline">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-linkbtn">pause it for now</button></form>.{% endif %}</span>
+</section>
+{% endfor %}
+
 {# WL-4a - a badge just earned, one at a time, until it is seen. #}
 {% if new_badge %}
 <section class="w-card sand" style="flex-direction:row;align-items:center;gap:14px" data-new-badge>
@@ -52,7 +81,9 @@
       <button type="submit" class="w-habit{% if c.done %} is-done{% endif %}" data-habit-row aria-pressed="{% if c.done %}true{% else %}false{% endif %}">
         <span class="w-check"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span class="w-habit-name">{{ c.habit.name }}</span>
-        {% if c.flexible %}
+        {% if c.challenge and not c.challenge.finished %}
+        <span class="w-habit-meta" data-challenge-day>{{ c.challenge.words }}</span>
+        {% elif c.flexible %}
         <span class="w-habit-meta" data-week>{{ c.week_got }} of {{ c.week_target }} this week</span>
         {% elif c.amount %}
         <span class="w-habit-meta">{{ c.amount }}</span>

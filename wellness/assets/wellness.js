@@ -131,7 +131,24 @@
     set('schedule', p.schedule || 'daily');
     if (p.per_week) set('per_week', p.per_week);
     if (p.time_of_day) set('time_of_day', p.time_of_day);
+    // WL-7, WL-8 - an example can tick itself, or be a challenge.
+    set('auto_from', p.auto_from || '');
+    set('challenge', p.challenge || '');
     form.dispatchEvent(new Event('change', {bubbles: true}));
+  });
+
+  // ---- WL-8: a challenge is every day; another schedule ends the choice.
+  document.querySelectorAll('[data-habit-form]').forEach(function (form) {
+    form.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.name === 'challenge' && t.value) {
+        var daily = form.querySelector('[name=schedule][value=daily]');
+        if (daily) daily.checked = true;
+      } else if (t.name === 'schedule' && t.value !== 'daily') {
+        var none = form.querySelector('[name=challenge][value=""]');
+        if (none) none.checked = true;
+      }
+    }, true);
   });
 
   // ---- The habit form shows only the fields its choices need.

@@ -707,3 +707,10 @@ details[data-voice-box] > :not(summary) { margin-top: 12px; }
 @media (prefers-color-scheme: dark) {
   .w-breath-orb { background: radial-gradient(circle at 40% 35%, #8FB39A, #5E8A6E); }
 }
+
+/* ---- WL-8, 31 Oct 2026 - challenges: a square for each day to do. */
+.w-strip { display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); gap: 4px; }
+.w-strip i { aspect-ratio: 1; border-radius: 4px; background: var(--w-empty); }
+.w-strip i.done { background: var(--w-sage-deep); }
+.w-strip i.today { box-shadow: inset 0 0 0 2px var(--w-sage); background: transparent; }
+.w-linkbtn { background: none; border: none; padding: 0; font: inherit; color: var(--w-sage-deep); text-decoration: underline; cursor: pointer; }

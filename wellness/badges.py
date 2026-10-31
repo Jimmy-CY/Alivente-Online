@@ -83,6 +83,9 @@ BADGES = [
     ('calm_100', '100', '100 calm minutes', 'A hundred quiet minutes, '
      'given to yourself.', lambda f: f['calm_minutes'] >= 100,
      lambda f: (f['calm_minutes'], 100, 'minute')),
+    # WL-8, 31 Oct 2026 - a challenge done to the end.
+    ('challenge_1', '✓', 'Challenge finished', 'You finished a challenge, '
+     'every day of it.', lambda f: f['challenges'] >= 1, lambda f: None),
 ]
 KEYS = [b[0] for b in BADGES]
 BY_KEY = {b[0]: b for b in BADGES}
@@ -101,7 +104,7 @@ EMPTY = {'ticks': 0, 'streak': 0, 'comebacks': 0, 'established': 0,
          'habit_days': 0, 'entries': 0, 'checkins': 0, 'weighins': 0,
          'progress': None, 'kg_done': 0.0, 'kg_half': 0.0, 'kg_total': 0.0,
          'sessions': 0, 'records': 0, 'calm_sessions': 0,
-         'calm_minutes': 0}
+         'calm_minutes': 0, 'challenges': 0}
 
 
 def earned(f):
@@ -191,6 +194,8 @@ def facts(user, today):
     f['calm_sessions'] = CalmSession.objects.filter(user=user).count()
     f['calm_minutes'] = CALM.total_minutes(user) if f['calm_sessions'] \
         else 0
+    f['challenges'] = len(((prof.prefs if prof else None) or {})
+                          .get('challenges') or [])
     return f
 
 

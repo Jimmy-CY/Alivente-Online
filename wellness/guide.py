@@ -141,6 +141,17 @@ HOWTO = [
      'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
           'me" choose "When I finish a workout". Finishing any workout then '
           'ticks it for that day.'},
+    # WL-8, 31 Oct 2026 - challenges.
+    {'q': 'How do challenges work?',
+     'a': 'A challenge is a habit with a finish line: 7, 14, 21 or 30 days, '
+          'every day. Choose "Make it a challenge" when you add or edit a '
+          'habit, or tap one of the challenges to try. Only the days you do '
+          'count, so Today shows "Day 12 of 30".'},
+    {'q': 'What happens if I miss a day of a challenge?',
+     'a': 'Nothing is lost. Wellness asks once: carry on, and the finish '
+          'moves out by a day, or start again from today. Missed a few in a '
+          'row? You can pause it for now too. When you finish, keep it as a '
+          'habit, go again, or let it go.'},
     # WL-7, 31 Oct 2026 - Calm.
     {'q': 'What is Calm?',
      'a': 'A few quiet minutes: Breathe, with a circle to breathe along '

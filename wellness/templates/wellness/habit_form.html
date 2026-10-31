@@ -31,8 +31,13 @@
       <button type="button" class="w-chip" data-preset='{"name":"Walk","kind":"duration","target":30,"schedule":"per_week","per_week":5,"time_of_day":"afternoon"}'>Walk</button>
       <button type="button" class="w-chip" data-preset='{"name":"Read","kind":"count","target":10,"unit":"pages","schedule":"daily","time_of_day":"evening"}'>Read</button>
       <button type="button" class="w-chip" data-preset='{"name":"Drink water","kind":"count","target":8,"unit":"glasses","schedule":"daily","time_of_day":"anytime"}'>Drink water</button>
-      <button type="button" class="w-chip" data-preset='{"name":"Meditate","kind":"duration","target":10,"schedule":"daily","time_of_day":"morning"}'>Meditate</button>
+      <button type="button" class="w-chip" data-preset='{"name":"Meditate","kind":"duration","target":10,"schedule":"daily","time_of_day":"morning","auto_from":"calm"}'>Meditate</button>
       <button type="button" class="w-chip" data-preset='{"name":"No sugar","kind":"avoid","schedule":"daily","time_of_day":"anytime"}'>No sugar</button>
+    </div>
+    {% comment %} WL-8 - or a challenge to try: each sets the habit and its days. {% endcomment %}
+    <span class="w-label">Or try a challenge</span>
+    <div class="w-chips" aria-label="Challenges to try">
+      {% for label, preset in challenge_starters %}<button type="button" class="w-chip" data-preset="{{ preset }}">{{ label }}</button>{% endfor %}
     </div>
     {% endif %}
     <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">
@@ -83,6 +88,16 @@
         {% endfor %}
       </div>
       {% if errors.weekdays %}<div class="w-error">{{ errors.weekdays }}</div>{% endif %}
+    </div>
+    {% comment %} WL-8, 31 Oct 2026 - a challenge: every day, with a finish line. {% endcomment %}
+    <div style="display:flex;flex-direction:column;gap:8px" data-challenge-pick>
+      <span class="w-label">Make it a challenge</span>
+      <div class="w-chips">
+        <label class="w-chip"><input type="radio" name="challenge" value=""{% if not v.challenge %} checked{% endif %}><span>No</span></label>
+        {% for n in challenge_days %}<label class="w-chip"><input type="radio" name="challenge" value="{{ n }}"{% if v.challenge == n %} checked{% endif %}><span>{{ n }} days</span></label>{% endfor %}
+      </div>
+      <span class="w-small w-quiet">A challenge is every day, with a finish line. Miss a day and you choose: carry on, or start again.</span>
+      {% if habit.challenge_from and v.challenge %}<span class="w-small w-quiet">Changing the number of days starts it again from today.</span>{% endif %}
     </div>
     {# WL-3, WL-7 - a habit can tick itself: a finished workout, or Calm minutes. #}
     <label style="display:flex;flex-direction:column;gap:6px" data-when-kind="yes_no count duration">
