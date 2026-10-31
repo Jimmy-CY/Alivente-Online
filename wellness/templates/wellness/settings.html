@@ -1,11 +1,24 @@
 {% extends "wellness/base.html" %}
 {% comment %} WL-4a, 30 Oct 2026 - Wellness settings. The weekly summary is off by default and never carries the journal or the cycle tracker. {% endcomment %}
 {% block title %}Settings · Wellness{% endblock %}
-{% block top_left %}<a class="w-home" href="{% url 'wellness:guide' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Guide</a>{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:today' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</a>{% endblock %}
 {% block tabs %}{% endblock %}
 {% block content %}
 <h1 class="w-title">Settings</h1>
 {% if saved %}<div class="w-card soft" role="status" style="padding:12px 16px">Saved.</div>{% endif %}
+{% comment %} WL-5, 31 Oct 2026 - Demetri: badges and the cycle tracker live here,
+   behind the cog, not in the ? guide. {% endcomment %}
+<div class="w-list">
+  <a class="w-row" href="{% url 'wellness:badges' %}" style="text-decoration:none;color:inherit">
+    <span class="w-row-main"><span class="w-row-name">Your badges</span><span class="w-row-sub">Quiet milestones, kept for good.</span></span>
+    <span class="w-row-side" aria-hidden="true">›</span>
+  </a>
+  <a class="w-row" href="{% url 'wellness:cycle' %}" style="text-decoration:none;color:inherit">
+    <span class="w-row-main"><span class="w-row-name">Cycle tracker</span><span class="w-row-sub">Optional, off until you turn it on. Private and locked.</span></span>
+    <span class="w-row-side" aria-hidden="true">›</span>
+  </a>
+</div>
+
 {% if tested %}<div class="w-card soft" role="status" style="padding:12px 16px">{% if tested == '0' %}The test could not reach a phone. Turn reminders on again on the phone, then try once more.{% else %}Test sent - it should arrive in a few seconds.{% endif %}</div>{% endif %}
 
 {# WL-4b, 30 Oct 2026 - phone reminders. #}

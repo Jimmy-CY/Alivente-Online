@@ -143,8 +143,8 @@ HOWTO = [
           'still asks you to log in again after an hour - property and '
           'finance stay as protected as they were.'},
     {'q': 'Is there a cycle tracker?',
-     'a': 'Yes, and it is off until you turn it on. Open the Cycle tracker '
-          'link at the bottom of this guide. It then gets its own tab. '
+     'a': 'Yes, and it is off until you turn it on. Tap the cog at the top '
+          'right, then Cycle tracker. It then gets its own tab. '
           'Turning it off hides it again and keeps your log, locked.'},
     {'q': 'Who can see my cycle log?',
      'a': 'Only you. The whole log - every day, every symptom, every '
@@ -183,7 +183,7 @@ HOWTO = [
           'writes one short line under it, labelled "A line from Claude". '
           'It sees only your first name, today\'s habit names and how the '
           'week has gone - never your journal, weight or cycle log. Turn '
-          'it off in Settings.'},
+          'it off in Settings (the cog at the top right).'},
     {'q': 'How do I put Wellness on my phone?',
      'a': 'iPhone: open Wellness in Safari, tap Share, then "Add to Home '
           'Screen". Android: open it in Chrome and tap "Install app" or '

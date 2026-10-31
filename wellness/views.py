@@ -728,7 +728,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl6-1'
+SW_VERSION = 'wl7-1'
 
 
 def service_worker(request):

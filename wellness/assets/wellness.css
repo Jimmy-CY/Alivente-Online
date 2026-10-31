@@ -118,6 +118,8 @@ button { font: inherit; color: inherit; }
    installed app the back link is hidden, and with nothing on its left the
    ? slid over; pinned to the right it stays where help is expected. */
 .w-top > .w-icon-btn:last-child { margin-left: auto; }
+/* WL-5 - the cog and the ? together, top right. */
+.w-top-icons { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
 .w-icon-btn {
   width: 44px; height: 44px;
   border-radius: 22px;

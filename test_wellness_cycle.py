@@ -177,7 +177,8 @@ guide = read(J(APP, 'guide.py'))
 ok('Who can see my cycle log?' in guide and
    'What is the fertile estimate?' in guide,
    'the guide answers who can see it and what the estimate is')
-ok("url 'wellness:cycle'" in read(J(WT, 'guide.html')),
+# WL-5 (Release 50) moved it behind the cog, into settings.
+ok("url 'wellness:cycle'" in read(J(WT, 'settings.html')),
    '  and the guide is where it is turned on')
 for p in EDITED:
     ok(os.path.isfile(p + SUFFIX), 'CONTROL: %s has its backup'

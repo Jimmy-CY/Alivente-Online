@@ -31,14 +31,13 @@ class Command(BaseCommand):
         if not opts['dry_run']:
             try:
                 from wellness import daily_line as DL
-                made = DL.run(timezone.localtime())
-                if made:
-                    self.stdout.write('Wellness daily line: %d made.' % made)
+                DL.run(timezone.localtime(), write=self.stdout.write)
             except Exception as exc:                      # noqa: BLE001
                 self.stdout.write('Wellness daily line failed: %s' % exc)
         if not P.configured() and not opts['dry_run']:
-            self.stdout.write('Wellness reminders: the push keys are not '
-                              'set - nothing sent.')
+            self.stdout.write('Wellness reminders: WELLNESS_VAPID_PUBLIC and '
+                              'WELLNESS_VAPID_PRIVATE are not set on this '
+                              'service - nothing sent.')
             return
         sent, people = R.run(timezone.localtime(), dry_run=opts['dry_run'],
                              write=self.stdout.write)

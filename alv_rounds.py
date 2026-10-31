@@ -1553,6 +1553,8 @@ ROUNDS = [
     '.bak_wellness5',
     # WL-4c, 30 Oct 2026 - Wellness: a line from Claude under the quote.
     '.bak_wellness6',
+    # WL-5, 31 Oct 2026 - Wellness: the cog.
+    '.bak_wellness7',
 ]
 
 

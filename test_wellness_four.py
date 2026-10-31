@@ -187,8 +187,10 @@ css = read(J(APP, 'assets', 'wellness.css'))
 small = [m for m in re.findall(r'min-height:\s*(\d+)px', css) if int(m) < 44
          and m != '0']
 ok(not small, 'every control is still at least 44px', small)
-ok("url 'wellness:settings'" in read(J(WT, 'guide.html')) and
-   "url 'wellness:badges'" in read(J(WT, 'guide.html')),
+# WL-5 (Release 50) moved both behind the cog: settings is in the top bar
+# on every page, and badges is listed in settings.
+ok("url 'wellness:settings'" in read(J(WT, 'base.html')) and
+   "url 'wellness:badges'" in read(J(WT, 'settings.html')),
    'the guide leads to badges and settings')
 for p in EDITED:
     ok(os.path.isfile(p + SUFFIX), 'CONTROL: %s has its backup'

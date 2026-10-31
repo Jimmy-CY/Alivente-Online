@@ -193,16 +193,38 @@ def due_people(now):
     out = []
     for p in WellnessProfile.objects.select_related('user').filter(
             onboarded=True, user__is_active=True):
-        if (p.prefs or {}).get('seen', '') >= since and \
+        seen_on = (p.prefs or {}).get('seen', '')
+        # WL-5, 31 Oct - a recent login counts too, so the first night
+        # after a release does not wait for Today to be opened once.
+        login = p.user.last_login
+        recent_login = bool(login and login.date().isoformat() >= since)
+        if (seen_on >= since or recent_login) and \
                 p.user.has_perm('auth.can_access_wellness'):
             out.append(p)
     return out
 
 
+def key_present():
+    from django.conf import settings
+    return bool(getattr(settings, 'ANTHROPIC_API_KEY', None))
+
+
 def run(now, client=None, write=print):
-    """One pass: make the lines that are missing for today."""
-    made = 0
+    """One pass: make the lines that are missing for today. Says plainly
+    when the key is missing rather than spending the day's tries."""
+    if client is None and not key_present():
+        write('Wellness daily line: ANTHROPIC_API_KEY is not set on this '
+              'service - no lines made.')
+        return 0
+    made = waiting = 0
     for p in due_people(now):
+        if (p.prefs or {}).get('daily_line', {}).get('date') == \
+                now.date().isoformat() or (p.prefs or {}).get('line_off'):
+            continue
+        waiting += 1
         if make(p, now.date(), client=client):
             made += 1
+    if waiting:
+        write('Wellness daily line: %d made, %d waiting for one.'
+              % (made, waiting))
     return made

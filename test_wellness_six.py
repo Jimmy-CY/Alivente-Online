@@ -167,8 +167,10 @@ ok('name="claude_line"' in s and 'never your journal, your weight or your '
    'Claude sees')
 base = read(J(WT, 'base.html'))
 _v = re.findall(r'\?v=([\w-]+)', base)
-ok(_v == ['wl6-1', 'wl6-1'] and "SW_VERSION = 'wl6-1'" in views,
-   'the asset version moved together (wl6-1)', _v)
+# Later rounds move the version on (WL-5: wl7-1); what must hold is that
+# the page and the service worker always name the same one.
+ok(len(_v) == 2 and len(set(_v)) == 1 and "SW_VERSION = '%s'" % _v[0]
+   in views, 'the asset version moved together (wl6-1)', _v)
 css = read(J(APP, 'assets', 'wellness.css'))
 small = [m for m in re.findall(r'min-height:\s*(\d+)px', css) if int(m) < 44
          and m != '0']
@@ -347,7 +349,11 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def parse('" in gate, '  with a sentinel on the answer check')
+# WL-5 (Release 50) moved the sentinel to 'def key_present(': once
+# daily_line.py had a backup, 'def parse(' was in it too and could no
+# longer fail (test_sentinels, section 4).
+ok("File = 'wellness/daily_line.py'" in gate,
+   '  with a sentinel on the line rules')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')
