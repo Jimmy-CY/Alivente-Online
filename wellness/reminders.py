@@ -52,12 +52,18 @@ def items_for(user, now):
     """Everything that could remind this person today, with its time."""
     from . import cycle as CY
     from . import habits as H
+    from . import modules as MOD
     from .models import BodyMetric, Habit, JournalEntry, WellnessProfile
     day = now.date()
     out = []
-    for habit in Habit.objects.filter(user=user, archived_at__isnull=True,
-                                      paused=False,
-                                      remind_at__isnull=False):
+    prof = WellnessProfile.objects.filter(user=user).first()
+    # WL-9 - a section switched off sends no reminders.
+    mods = MOD.on_set(user, prof)
+    habits = Habit.objects.filter(user=user, archived_at__isnull=True,
+                                  paused=False, remind_at__isnull=False)
+    if 'habits' not in mods:
+        habits = habits.none()
+    for habit in habits:
         done = set(habit.logs.filter(done=True)
                    .values_list('date', flat=True))
         if day in done or not H.due_today(habit, done, day):
@@ -66,16 +72,15 @@ def items_for(user, now):
                     'title': TITLE,
                     'body': '%s - whenever you are ready.' % habit.name,
                     'url': '/wellness/'})
-    prof = WellnessProfile.objects.filter(user=user).first()
     prefs = (prof.prefs if prof else None) or {}
-    at = _hm(prefs.get('remind_checkin'))
+    at = _hm(prefs.get('remind_checkin')) if MOD.checkin_on(mods) else None
     if at and not JournalEntry.objects.filter(user=user, date=day,
                                               kind='checkin').exists():
         out.append({'key': 'checkin', 'at': at, 'title': TITLE,
                     'body': 'How was today? Three questions, about a '
                             'minute.',
                     'url': '/wellness/journal/new/?kind=checkin'})
-    at = _hm(prefs.get('remind_weigh'))
+    at = _hm(prefs.get('remind_weigh')) if 'body' in mods else None
     if at and not BodyMetric.objects.filter(user=user, date=day,
                                             kind='weight').exists():
         out.append({'key': 'weigh', 'at': at, 'title': TITLE,

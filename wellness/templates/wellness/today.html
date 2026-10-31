@@ -55,6 +55,7 @@
   {% if claude_line %}<p class="w-claude-line" data-claude-line><span class="w-label">A line from Claude</span>{{ claude_line }}</p>{% endif %}
 </section>
 
+{% if 'habits' in mods %}
 {% if total %}
 <section class="w-card" aria-labelledby="habits-h">
   <div class="w-ring-row">
@@ -109,8 +110,10 @@
   <a class="w-btn full" href="{% url 'wellness:habit_new' %}">Add your first habit</a>
 </section>
 {% endif %}
+{% endif %}
 
 {# WL-3 - the planned or open workout. #}
+{% if 'workouts' in mods %}
 {% if workout.open %}
 <a class="w-card sand" href="{% url 'wellness:session_live' workout.open.pk %}" style="gap:6px;text-decoration:none;color:inherit">
   <span class="w-label">Workout in progress</span>
@@ -131,6 +134,7 @@
   <form method="post" action="{% url 'wellness:session_start' %}">{% csrf_token %}<input type="hidden" name="routine" value="{{ r.pk }}"><button class="w-btn full" type="submit">Start workout</button></form>
 </section>
 {% endfor %}{% endif %}
+{% endif %}
 
 {# CY-1 - one discreet line, only for a person who turned the tracker on. #}
 {% if cycle %}
@@ -144,13 +148,16 @@
 {% endif %}
 
 {# WL-7 - a breath in one tap: Breathe, with the pattern last used. #}
+{% if 'calm' in mods %}
 <a class="w-card soft w-calm-pick" href="{% url 'wellness:calm_breathe' %}" data-calm-card>
   <span class="w-calm-ico" style="background:var(--w-card)">{% include "wellness/includes/calm_icons.html" with i="breathe" %}</span>
   <span class="w-row-main" style="flex:1"><span class="w-h2">Take a breath</span><span class="w-row-sub">{% if calm_today %}Calm today: {{ calm_today }} minute{{ calm_today|pluralize }}{% else %}Calm · a minute or two, whenever you like{% endif %}</span></span>
   <span class="w-quiet">{% include "wellness/includes/calm_icons.html" with i="chev" %}</span>
 </a>
+{% endif %}
 
 {# WL-2 - the weigh-in card, the evening card, On this day. #}
+{% if 'body' in mods %}
 <a class="w-card" href="{% url 'wellness:body_weigh' %}" style="flex-direction:row;align-items:center;gap:16px;text-decoration:none;color:inherit">
   <span style="width:48px;height:48px;border-radius:24px;background:var(--w-soft);display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="4" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6"/><path d="M9 9.5a4 4 0 0 1 6 0l-2 2.5" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6" stroke-linecap="round"/></svg></span>
   <span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
@@ -158,7 +165,9 @@
     <span class="w-small w-quiet">{% if body.has %}Trend {{ body.current }} kg · {{ body.words }}{% else %}Mornings, before food, are the steadiest.{% endif %}</span>
   </span>
 </a>
+{% endif %}
 
+{% if 'journal' in mods %}
 <a class="w-card{% if evening and not checkin_today %} sand{% endif %}" href="{% if checkin_today %}{% url 'wellness:journal_list' %}{% else %}{% url 'wellness:journal_new' %}?kind=checkin{% endif %}" style="gap:6px;text-decoration:none;color:inherit">
   <span style="font-size:17px;font-weight:600">{% if checkin_today %}Today is written{% elif evening %}How was today?{% else %}A minute to write?{% endif %}</span>
   <span class="w-small w-quiet">{% if checkin_today %}Your evening check-in is saved. Sleep well.{% elif evening %}Three questions, about a minute.{% elif wrote_today %}You have written today. The evening check-in opens after five.{% else %}The evening check-in is three questions. Or jot a quick note any time.{% endif %}</span>
@@ -170,6 +179,15 @@
   <span>{{ preview|default:e.get_kind_display }}</span>
 </a>
 {% endfor %}
+{% endif %}
+
+{% if not mods %}
+<section class="w-card soft" data-no-sections>
+  <h2 class="w-h2">A quiet Today</h2>
+  <p class="w-quiet" style="margin:0">Every section is switched off. Choose what Wellness shows you in Settings, under Your sections.</p>
+  <a class="w-btn ghost full" href="{% url 'wellness:settings' %}?s=1#sections">Your sections</a>
+</section>
+{% endif %}
 
 <a class="w-btn quiet full" href="{% url 'wellness:badges' %}">Your badges</a>
 {% endblock %}

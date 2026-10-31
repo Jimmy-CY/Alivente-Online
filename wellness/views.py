@@ -8,6 +8,7 @@ habit is a 404 - for a superuser too. That is decision 1 of 30 Oct
 forgotten: in the lookup, not in a template.
 """
 import datetime as dt
+import functools
 import json
 import os
 
@@ -39,7 +40,21 @@ ASSET_TYPES = {
 
 
 def wellness_view(fn):
-    return login_required(permission_required(PERM, raise_exception=True)(fn))
+    """Signed in, with Wellness access - and, WL-9, the section switched
+    on: a switched-off section's pages send the person to Settings."""
+    @functools.wraps(fn)
+    def guarded(request, *args, **kwargs):
+        from . import modules as MOD
+        sec = MOD.section_of(request.path)
+        name = getattr(getattr(request, 'resolver_match', None),
+                       'url_name', '')
+        if sec and name not in MOD.ALWAYS and \
+                not MOD.is_on(request.user, sec):
+            return redirect('%s?off=%s#sections'
+                            % (reverse('wellness:settings'), sec))
+        return fn(request, *args, **kwargs)
+    return login_required(permission_required(PERM, raise_exception=True)(
+        guarded))
 
 
 def _today():
@@ -111,8 +126,13 @@ def today(request):
     day = now.date()
     groups = {k: [] for k, _ in Habit.TIMES}
     total = done_n = 0
+    # WL-9 - only the sections this person has switched on.
+    from . import modules as MOD
+    mods = MOD.on_set(request.user, profile)
     active = Habit.objects.filter(user=request.user, archived_at__isnull=True,
                                   paused=False)
+    if 'habits' not in mods:
+        active = active.none()
     finishes, asks = [], []
     for habit in active:
         done = _done_dates(habit)
@@ -167,9 +187,11 @@ def today(request):
         'has_any': has_any,
         'tip': _tip(profile, ['today_tap', 'today_ring']) if total else None,
         # WL-2 - the weigh-in card, the evening card, On this day.
-        'body': body_summary(request.user, day),
+        'mods': mods,
+        'body': body_summary(request.user, day) if 'body' in mods else None,
         # WL-3 - the planned or open workout.
-        'workout': _workout_card(request.user, day),
+        'workout': _workout_card(request.user, day)
+        if 'workouts' in mods else {},
         # CY-1 - the cycle line, or nothing (off by default).
         'cycle': _cycle_card(request.user, day),
         # WL-4a - a badge earned and not yet seen, one at a time.
@@ -179,7 +201,8 @@ def today(request):
         'challenge_finish_actions': CH.FINISH_ACTIONS,
         'asks': asks,
         # WL-7 - Calm minutes today, for the "Take a breath" card.
-        'calm_today': _calm_today(request.user, day),
+        'calm_today': _calm_today(request.user, day)
+        if 'calm' in mods else 0,
         'evening': now.hour >= 17,
         'wrote_today': JournalEntry.objects.filter(
             user=request.user, date=day).exists(),
@@ -187,7 +210,8 @@ def today(request):
             user=request.user, date=day, kind='checkin').exists(),
         'on_this_day': [(lbl, e, JN.words(e).get('preview', ''))
                         for lbl, e in JN.on_this_day(_entries_by_date(
-                            request.user, day), day)],
+                            request.user, day), day)]
+        if 'journal' in mods else [],
     })
 
 
@@ -253,8 +277,24 @@ def settings_page(request):
     """WL-4a - Wellness settings: the weekly summary (off by default)."""
     from . import push as P
     from .models import PushDevice
+    from . import cycle as CY
+    from . import modules as MOD
     profile = _profile(request.user)
     prefs = dict(profile.prefs or {})
+    if request.method == 'POST' and request.POST.get('form') == 'sections':
+        # WL-9 - Your sections. Nothing is deleted by switching off.
+        wanted = set(request.POST.getlist('module'))
+        MOD.save(profile, wanted)
+        cy_on = CY.is_on(request.user)
+        if 'cycle' in wanted and not cy_on:
+            # Its welcome page first, as always.
+            return redirect('wellness:cycle')
+        if 'cycle' not in wanted and cy_on:
+            _rec, cprefs, cdays = CY.load(request.user)
+            cprefs['on'] = False
+            CY.save(request.user, cprefs, cdays)
+        return redirect('%s?saved=1&s=1#sections'
+                        % reverse('wellness:settings'))
     if request.method == 'POST':
         prefs['weekly_email'] = bool(request.POST.get('weekly_email'))
         # WL-4c - the line from Claude is on unless turned off here.
@@ -266,8 +306,16 @@ def settings_page(request):
         profile.prefs = prefs
         profile.save(update_fields=['prefs', 'updated_at'])
         return redirect('%s?saved=1' % reverse('wellness:settings'))
+    on = MOD.on_set(request.user, profile)
+    off_key = request.GET.get('off')
     return render(request, 'wellness/settings.html', {
         'tab': 'today',
+        # WL-9 - Your sections.
+        'modules': [{'key': k, 'name': n, 'line': ln, 'on': k in on}
+                    for k, n, ln in MOD.MODULES],
+        'off_name': MOD.name_of(off_key) if off_key in MOD.KEYS else '',
+        'sections_open': bool(request.GET.get('s') or off_key),
+        'on_names': ', '.join(n for k, n, _l in MOD.MODULES if k in on),
         'weekly': bool(prefs.get('weekly_email')),
         'claude_line': not prefs.get('line_off'),
         'email': request.user.email,
@@ -811,7 +859,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl10-1'
+SW_VERSION = 'wl11-1'
 
 
 def service_worker(request):

@@ -1561,6 +1561,8 @@ ROUNDS = [
     '.bak_wellness9',
     # WL-8, 31 Oct 2026 - Wellness: challenges.
     '.bak_wellness10',
+    # WL-9, 31 Oct 2026 - Wellness: your sections.
+    '.bak_wellness11',
 ]
 
 

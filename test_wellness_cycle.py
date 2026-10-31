@@ -150,7 +150,10 @@ ok('FERTILE_LABEL' in read(J(WT, 'cycle.html')) or
 ok('not contraception' in read(J(APP, 'cycle.py')),
    '  and the label says "not contraception"')
 base = read(J(WT, 'base.html'))
-ok('{% cycle_on as cy_on %}{% if cy_on %}' in base,
+# WL-9 (Release 54) folds the cycle switch into "Your sections":
+# modules.on_set() adds 'cycle' only when the tracker is on.
+ok('{% cycle_on as cy_on %}{% if cy_on %}' in base or
+   "{% if 'cycle' in mods %}" in base,
    'the bottom bar shows Cycle only when it is on')
 # Later rounds move the version on (WL-4a: wl4-1); what must hold is that
 # the page and the service worker always name the same one.

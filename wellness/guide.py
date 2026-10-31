@@ -141,6 +141,13 @@ HOWTO = [
      'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
           'me" choose "When I finish a workout". Finishing any workout then '
           'ticks it for that day.'},
+    # WL-9, 31 Oct 2026 - your sections.
+    {'q': 'Can I hide the parts I do not use?',
+     'a': 'Yes. Tap the cog, open Your sections and switch off any of '
+          'Habits, Journal, Calm, Workouts, Body and the cycle tracker. A '
+          'section switched off leaves Today and the bottom bar and sends '
+          'no reminders. Nothing is deleted - switch it back on and it is '
+          'all there.'},
     # WL-8, 31 Oct 2026 - challenges.
     {'q': 'How do challenges work?',
      'a': 'A challenge is a habit with a finish line: 7, 14, 21 or 30 days, '

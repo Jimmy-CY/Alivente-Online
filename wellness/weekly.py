@@ -40,13 +40,18 @@ def summary(user, monday):
     from . import badges as BG
     from . import body as B
     from . import habits as H
+    from . import modules as MOD
     from .models import (BodyMetric, Habit, WellnessProfile,
                          WorkoutSession, WorkoutSet)
     sunday = monday + dt.timedelta(days=6)
+    # WL-9 - a section switched off is left out of the email.
+    mods = MOD.on_set(user)
     habits = []
-    for habit in Habit.objects.filter(user=user, archived_at__isnull=True,
-                                      paused=False,
-                                      started_on__lte=sunday):
+    hq = Habit.objects.filter(user=user, archived_at__isnull=True,
+                              paused=False, started_on__lte=sunday)
+    if 'habits' not in mods:
+        hq = hq.none()
+    for habit in hq:
         done = set(habit.logs.filter(done=True)
                    .values_list('date', flat=True))
         got = sum(1 for d in done if monday <= d <= sunday)
@@ -56,7 +61,7 @@ def summary(user, monday):
                        'met': bool(met)})
     sessions = list(WorkoutSession.objects.filter(
         user=user, finished_at__isnull=False, date__gte=monday,
-        date__lte=sunday).order_by('date'))
+        date__lte=sunday).order_by('date')) if 'workouts' in mods else []
     minutes = 0
     for s in sessions:
         if s.finished_at and s.started_at:
@@ -65,7 +70,8 @@ def summary(user, monday):
     records = WorkoutSet.objects.filter(
         session__in=sessions, is_pr=True, done=True).count()
     readings = {m.date: float(m.value) for m in BodyMetric.objects.filter(
-        user=user, kind='weight', date__lte=sunday)}
+        user=user, kind='weight', date__lte=sunday)} if 'body' in mods \
+        else {}
     weight = None
     if readings:
         tr = B.trend(readings)

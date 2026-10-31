@@ -19,6 +19,25 @@
   </a>
 </div>
 
+{% comment %}
+  WL-9, 31 Oct 2026 - Your sections (Demetri, 17:05): switch any of the six
+  on or off. Off: gone from Today and the bottom bar, reminders stop -
+  nothing deleted. The cycle tracker keeps its welcome page.
+{% endcomment %}
+<details class="w-card" id="sections" data-sections{% if sections_open %} open{% endif %}>
+  <summary class="w-voice-sum"><span>Your sections</span><span class="w-quiet w-small">{{ on_names|default:"All off" }}</span></summary>
+  <form method="post" style="display:flex;flex-direction:column;gap:4px;margin-top:8px">
+    {% csrf_token %}
+    <input type="hidden" name="form" value="sections">
+    {% if off_name %}<p class="w-notice" role="status" style="margin:0 0 6px" data-off-note>{{ off_name }} is switched off. Switch it on here to see it again - everything in it is kept.</p>{% endif %}
+    <p class="w-small w-quiet" style="margin:0 0 6px">Choose what Wellness shows you. A section you switch off leaves Today and the bottom bar, and its reminders stop. Nothing is deleted - switch it back on and it is all there.</p>
+    {% for m in modules %}
+    <label class="w-toggle" style="align-items:flex-start;padding:6px 0"><span style="display:flex;flex-direction:column;gap:2px"><span>{{ m.name }}</span><span class="w-small w-quiet">{{ m.line }}</span></span><input type="checkbox" name="module" value="{{ m.key }}"{% if m.on %} checked{% endif %} style="margin-top:2px"></label>
+    {% endfor %}
+    <button type="submit" class="w-btn full" style="margin-top:8px">Save my sections</button>
+  </form>
+</details>
+
 {% if tested %}<div class="w-card soft" role="status" style="padding:12px 16px">{% if tested == '0' %}The test could not reach a phone. Turn reminders on again on the phone, then try once more.{% else %}Test sent - it should arrive in a few seconds.{% endif %}</div>{% endif %}
 
 {# WL-4b, 30 Oct 2026 - phone reminders. #}

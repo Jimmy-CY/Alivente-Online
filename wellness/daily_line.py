@@ -54,11 +54,17 @@ def facts(user, day):
     """The few plain facts Claude may see. Never journal, body or cycle."""
     from . import habits as H
     from .models import Habit, WorkoutSession
+    from . import modules as MOD
     name = (user.first_name or user.get_username()).split(' ')[0]
     today_names, y_due, y_done, best = [], 0, 0, 0
     yesterday = day - dt.timedelta(days=1)
-    for habit in Habit.objects.filter(user=user, archived_at__isnull=True,
-                                      paused=False):
+    # WL-9 - a section switched off is not mentioned.
+    mods = MOD.on_set(user)
+    habits = Habit.objects.filter(user=user, archived_at__isnull=True,
+                                  paused=False)
+    if 'habits' not in mods:
+        habits = habits.none()
+    for habit in habits:
         done = set(habit.logs.filter(done=True)
                    .values_list('date', flat=True))
         if H.due_today(habit, done, day):
@@ -71,7 +77,7 @@ def facts(user, day):
     monday = day - dt.timedelta(days=day.weekday())
     workouts = WorkoutSession.objects.filter(
         user=user, finished_at__isnull=False, date__gte=monday,
-        date__lte=day).count()
+        date__lte=day).count() if 'workouts' in mods else 0
     return {'name': name, 'weekday': day.strftime('%A'),
             'today': today_names[:6], 'yesterday_done': y_done,
             'yesterday_due': y_due, 'good_weeks': best,

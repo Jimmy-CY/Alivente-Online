@@ -343,9 +343,11 @@ SCREENS = {
     },
     'settings': {
         'title': 'Settings',
-        'purpose': 'Your badges, the cycle tracker, reminders, the daily '
-                   'quote and the Monday email.',
+        'purpose': 'Your sections, badges, the cycle tracker, reminders, the '
+                   'daily quote and the Monday email.',
         'steps': [
+            'Open Your sections to switch any of the six on or off. Off '
+            'hides it from Today and the bottom bar; nothing is deleted.',
             'Turn on reminders on each phone - the phone asks you first.',
             'Set times for the evening check-in and the weigh-in.',
             'Turn Claude\'s line under the quote on or off.',
