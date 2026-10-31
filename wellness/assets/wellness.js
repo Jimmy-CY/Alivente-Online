@@ -283,6 +283,47 @@
     });
   }
 
+  // ---- WL-6, 31 Oct 2026 - the ? slides the help sheet up over the
+  // screen. Without <dialog> support the link opens the guide page.
+  var sheet = document.querySelector('[data-help-sheet]');
+  if (sheet && typeof sheet.showModal === 'function') {
+    document.addEventListener('click', function (e) {
+      var open = e.target.closest('[data-help-open]');
+      if (open) {
+        e.preventDefault();
+        sheet.showModal();
+        document.body.classList.add('w-sheet-on');
+        return;
+      }
+      var outside = false;
+      if (e.target === sheet) {
+        var r = sheet.getBoundingClientRect();
+        outside = e.clientY < r.top || e.clientY > r.bottom ||
+                  e.clientX < r.left || e.clientX > r.right;
+      }
+      if (e.target.closest('[data-help-close]') || outside) {
+        sheet.close();
+        return;
+      }
+      var tab = e.target.closest('[data-help-tab]');
+      if (tab && sheet.contains(tab)) {
+        e.preventDefault();
+        var which = tab.getAttribute('data-help-tab');
+        sheet.querySelectorAll('[data-help-tab]').forEach(function (t) {
+          var on = t === tab;
+          t.classList.toggle('is-on', on);
+          t.setAttribute('aria-selected', String(on));
+        });
+        sheet.querySelectorAll('[data-help-panel]').forEach(function (p) {
+          p.hidden = p.getAttribute('data-help-panel') !== which;
+        });
+      }
+    });
+    sheet.addEventListener('close', function () {
+      document.body.classList.remove('w-sheet-on');
+    });
+  }
+
   // ---- The installable app.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

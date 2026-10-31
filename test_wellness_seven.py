@@ -109,7 +109,10 @@ top = base[base.index('<div class="w-top">'):base.index('{% block content %}')]
 ok('<span class="w-top-icons">' in top and
    top.index("url 'wellness:settings'") < top.index("url 'wellness:guide'"),
    'THE COG: settings and then the ?, together in the top bar')
-ok('aria-label="Settings"' in top and 'aria-label="Guide and help"' in top,
+# WL-6 (Release 51) renamed the ? for what it now opens.
+ok('aria-label="Settings"' in top and ('aria-label="Guide and help"' in top
+                                       or 'aria-label="Help for this screen"'
+                                       in top),
    '  each named for a screen reader')
 ok('{% block top_left %}' in top and top.index('{% endblock %}') <
    top.index('w-top-icons'), '  outside the back-link block, so every page '
@@ -133,7 +136,9 @@ ok("url 'wellness:today'" in st.split('{% endblock %}')[1] or
    '  and its back link goes to Today, not the guide')
 v = re.findall(r'\?v=([\w-]+)', base)
 views = read(J(APP, 'views.py'))
-ok(v == ['wl7-1', 'wl7-1'] and "SW_VERSION = 'wl7-1'" in views,
+# Later rounds move the version on (WL-6: wl8-1); the page and the
+# service worker must always name the same one.
+ok(len(v) == 2 and len(set(v)) == 1 and "SW_VERSION = '%s'" % v[0] in views,
    'the asset version moved together (wl7-1)', v)
 small = [m for m in re.findall(r'min-height:\s*(\d+)px', css) if int(m) < 44
          and m != '0']

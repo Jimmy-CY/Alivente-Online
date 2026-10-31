@@ -3,7 +3,7 @@
   house base.html: decision of 29 Oct, the one module outside the house
   standard. The house suites never walk this folder (it is not one of
   alv_tree.TEMPLATE_ROOTS); test_wellness_one.py holds it to account.
-{% endcomment %}{% load wellness_cycle %}<!doctype html>
+{% endcomment %}{% load wellness_cycle wellness_help %}<!doctype html>
 <html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
@@ -29,7 +29,7 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
-<link rel="stylesheet" href="{% url 'wellness:asset' 'wellness.css' %}?v=wl7-1">
+<link rel="stylesheet" href="{% url 'wellness:asset' 'wellness.css' %}?v=wl8-1">
 </head>
 <body class="part-{{ part|default:'morning' }}">
 <div class="w-wrap">
@@ -46,13 +46,57 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
     <a class="w-icon-btn" href="{% url 'wellness:settings' %}" aria-label="Settings">
       <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
     </a>
-    <a class="w-icon-btn" href="{% url 'wellness:guide' %}" aria-label="Guide and help">
+    <a class="w-icon-btn" href="{% url 'wellness:guide' %}" aria-label="Help for this screen" data-help-open aria-haspopup="dialog">
       <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 8.6a2.4 2.4 0 1 1 3.4 2.2c-.7.3-1 .8-1 1.5v.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="15.4" r="1" fill="currentColor"/></svg>
     </a>
     </span>
   </div>
   {% block content %}{% endblock %}
 </div>
+
+{% comment %} WL-6, 31 Oct 2026 - the ? opens this sheet over the screen: help for
+   THIS SCREEN first, then GENERAL (the guide's questions), the same
+   everywhere. Without script the ? still opens the guide page. {% endcomment %}
+{% screen_help as hp %}
+<dialog class="w-sheet" data-help-sheet aria-labelledby="help-title">
+  <div class="w-sheet-grab" aria-hidden="true"></div>
+  <div class="w-sheet-head">
+    <h2 class="w-h2" id="help-title">Help</h2>
+    <button type="button" class="w-icon-btn" data-help-close aria-label="Close help">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <nav class="w-seg" role="tablist" aria-label="Help sections">
+    {% if hp.screen %}<a href="#help-screen" role="tab" class="is-on" aria-selected="true" data-help-tab="screen">This screen</a>{% endif %}
+    <a href="#help-general" role="tab"{% if not hp.screen %} class="is-on" aria-selected="true"{% else %} aria-selected="false"{% endif %} data-help-tab="general">General</a>
+  </nav>
+  {% if hp.screen %}
+  <section class="w-sheet-body" id="help-screen" role="tabpanel" data-help-panel="screen">
+    <h3 class="w-sheet-title">{{ hp.screen.title }}</h3>
+    <p class="w-quiet" style="margin:0">{{ hp.screen.purpose }}</p>
+    {% if hp.screen.steps %}
+    <ol class="w-sheet-steps">{% for s in hp.screen.steps %}<li>{{ s }}</li>{% endfor %}</ol>
+    {% endif %}
+    {% if hp.screen.signs %}
+    <div class="w-label">What you see</div>
+    <ul class="w-sheet-signs">{% for sw, words in hp.screen.signs %}<li>{% if sw %}<span class="w-swatch" style="background:var({{ sw }})" aria-hidden="true"></span>{% else %}<span class="w-swatch none" aria-hidden="true"></span>{% endif %}<span>{{ words }}</span></li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+  {% endif %}
+  <section class="w-sheet-body" id="help-general" role="tabpanel" data-help-panel="general"{% if hp.screen %} hidden{% endif %}>
+    {% for h in hp.general %}
+    <details class="w-sheet-q">
+      <summary>{{ h.q }}</summary>
+      <p class="w-quiet">{{ h.a }}</p>
+    </details>
+    {% endfor %}
+    <form method="post" action="{% url 'wellness:tip_seen' %}" style="margin-top:12px">
+      {% csrf_token %}
+      <input type="hidden" name="reset" value="all">
+      <button type="submit" class="w-btn ghost full">Show me the tips again</button>
+    </form>
+  </section>
+</dialog>
 
 {% if tip %}
 <form class="w-tip" method="post" action="{% url 'wellness:tip_seen' %}" role="status">
@@ -94,6 +138,6 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
   {% endif %}
 </nav>
 {% endblock %}
-<script src="{% url 'wellness:asset' 'wellness.js' %}?v=wl7-1" defer></script>
+<script src="{% url 'wellness:asset' 'wellness.js' %}?v=wl8-1" defer></script>
 </body>
 </html>

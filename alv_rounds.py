@@ -1555,6 +1555,8 @@ ROUNDS = [
     '.bak_wellness6',
     # WL-5, 31 Oct 2026 - Wellness: the cog.
     '.bak_wellness7',
+    # WL-6, 31 Oct 2026 - Wellness: help for each screen.
+    '.bak_wellness8',
 ]
 
 

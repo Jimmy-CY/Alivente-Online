@@ -1289,6 +1289,7 @@ $sentinels = @(
     @{ File = 'wellness/reminders.py'; Text = 'def due('; What = 'WL-4b: the reminder rules are on disk - without them the reminder job cannot run' },
     @{ File = 'wellness/daily_line.py'; Text = 'def key_present('; What = 'WL-4c/WL-5: the line rules are on disk, with the missing-key check - without them Today cannot open' },
     @{ File = 'wellness/templates/wellness/base.html'; Text = 'w-top-icons'; What = 'WL-5: the cog is in the Wellness top bar - without it settings cannot be reached' },
+    @{ File = 'wellness/help.py'; Text = 'def for_url_name('; What = 'WL-6: the help for each screen is on disk - without it every Wellness page fails' },
     @{ File = 'wellness/body.py'; Text = 'def trend('; What = 'WL-2: the trend weight is on disk - without it Body and Today cannot be drawn' },
     @{ File = 'pages/templates/login.html'; Text = 'id="passkeyLogin"'; What = 'PK-1: the login page offers the fingerprint - without it nobody can use the passkey they added' },
     @{ File = 'wellness/habits.py'; Text = 'def can_establish('; What = 'WL-1: the Wellness habit rules are on disk - without them Today cannot be drawn' },
@@ -3226,7 +3227,9 @@ $suites = @(
     # WL-4c, 30 Oct 2026 - Wellness: a line from Claude under the quote.
     'test_wellness_six.py',
     # WL-5, 31 Oct 2026 - Wellness: the cog.
-    'test_wellness_seven.py'
+    'test_wellness_seven.py',
+    # WL-6, 31 Oct 2026 - Wellness: help for each screen.
+    'test_wellness_eight.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
