@@ -127,7 +127,9 @@ small = [m for m in re.findall(r'min-height:\s*(\d+)px', css) if int(m) < 44
 ok(not small, 'every control is still at least 44px', small)
 v = re.findall(r'\?v=([\w-]+)', base)
 views = read(J(APP, 'views.py'))
-ok(v == ['wl8-1', 'wl8-1'] and "SW_VERSION = 'wl8-1'" in views,
+# Later rounds move the version on (WL-7: wl9-1); the page and the
+# service worker must always name the same one.
+ok(len(v) == 2 and len(set(v)) == 1 and "SW_VERSION = '%s'" % v[0] in views,
    'the asset version moved together (wl8-1)', v)
 import glob as _g                                            # noqa: E402
 multi = []
@@ -242,7 +244,8 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def for_url_name('" in gate, '  with a sentinel on the help')
+# WL-7 moved the row's text on (the backup now holds the old one).
+ok("File = 'wellness/help.py'; Text = " in gate, '  with a sentinel on the help')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')

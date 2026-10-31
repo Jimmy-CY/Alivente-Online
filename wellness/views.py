@@ -161,6 +161,8 @@ def today(request):
         'cycle': _cycle_card(request.user, day),
         # WL-4a - a badge earned and not yet seen, one at a time.
         'new_badge': _new_badge(profile, request.user, day),
+        # WL-7 - Calm minutes today, for the "Take a breath" card.
+        'calm_today': _calm_today(request.user, day),
         'evening': now.hour >= 17,
         'wrote_today': JournalEntry.objects.filter(
             user=request.user, date=day).exists(),
@@ -170,6 +172,12 @@ def today(request):
                         for lbl, e in JN.on_this_day(_entries_by_date(
                             request.user, day), day)],
     })
+
+
+def _calm_today(user, day):
+    from .models import CalmSession
+    return sum(CalmSession.objects.filter(user=user, date=day)
+               .values_list('seconds', flat=True)) // 60
 
 
 def _workout_card(user, day):
@@ -488,7 +496,9 @@ def _form_values(post):
         'weekdays': weekdays if schedule == Habit.SCHEDULE_WEEKDAYS else '',
         'per_week': per_week, 'time_of_day': tod,
         'cue': (post.get('cue') or '').strip()[:120],
-        'auto_from': 'workout' if post.get('auto_from') == 'workout' else '',
+        # WL-7 - or ticked by Calm minutes.
+        'auto_from': post.get('auto_from')
+        if post.get('auto_from') in ('workout', 'calm') else '',
         'tiny_version': (post.get('tiny_version') or '').strip()[:120],
         # WL-4b - an optional reminder time, "HH:MM" or none.
         'remind_at': _time_or_none(post.get('remind_at')),
@@ -728,7 +738,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl8-1'
+SW_VERSION = 'wl9-1'
 
 
 def service_worker(request):
@@ -738,6 +748,7 @@ def service_worker(request):
     WL-4b adds the push handler below."""
     body = r"""// Wellness service worker - WL-1, 30 Oct 2026. Version %(v)s.
 const SHELL = 'wellness-shell-%(v)s';
+const CALM = 'wellness-calm-%(v)s';
 const FILES = ['/wellness/app/wellness.css?v=%(v)s', '/wellness/app/wellness.js?v=%(v)s',
                '/wellness/app/icon-192.png'];
 self.addEventListener('install', e => {
@@ -745,7 +756,8 @@ self.addEventListener('install', e => {
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(
-    keys.filter(k => k.startsWith('wellness-shell-') && k !== SHELL).map(k => caches.delete(k))
+    keys.filter(k => (k.startsWith('wellness-shell-') && k !== SHELL) ||
+                     (k.startsWith('wellness-calm-') && k !== CALM)).map(k => caches.delete(k))
   )).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
@@ -755,16 +767,30 @@ self.addEventListener('fetch', e => {
     e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
     return;
   }
+  // WL-7, 31 Oct 2026 - the Calm sessions work without a connection: the
+  // Breathe, Sit and Guided pages are kept as last fetched (they hold no
+  // one's data) and shown when there is no network.
+  if (e.request.mode === 'navigate' && /^\/wellness\/calm\/(breathe|sit|guided)\//.test(url.pathname)) {
+    e.respondWith(fetch(e.request).then(r => {
+      if (r.ok && !r.redirected) { const copy = r.clone(); caches.open(CALM).then(c => c.put(url.pathname, copy)); }
+      return r;
+    }).catch(() => caches.match(url.pathname).then(r => r || offline())));
+    return;
+  }
   if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request).catch(() => new Response(
+    e.respondWith(fetch(e.request).catch(() => offline()));
+  }
+});
+function offline() {
+  return new Response(
       '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">' +
       '<body style="margin:0;font-family:system-ui,sans-serif;background:#F7F5F0;color:#2F3A3F;' +
       'display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:24px">' +
       '<div><p style="font-size:22px;margin:0 0 8px">You are offline</p>' +
-      '<p style="color:#5E6A6E;margin:0">Take a breath. Wellness will be here when the connection returns.</p></div>',
-      {headers: {'Content-Type': 'text/html; charset=utf-8'}})));
-  }
-});
+      '<p style="color:#5E6A6E;margin:0">Take a breath. Wellness will be here when the connection returns.</p>' +
+      '<p style="margin:20px 0 0"><a href="/wellness/calm/breathe/" style="color:#4F7A5E">Breathe now - it works offline</a></p></div>',
+      {headers: {'Content-Type': 'text/html; charset=utf-8'}});
+}
 // WL-4b, 30 Oct 2026 - a reminder arrives: show it; a tap opens Wellness
 // at the page it names (only ever a Wellness page).
 self.addEventListener('push', e => {

@@ -1,0 +1,40 @@
+{% extends "wellness/base.html" %}
+{% block title %}Guided · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:calm' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Calm</a>{% endblock %}
+{% block content %}
+{% comment %}
+  WL-7, 31 Oct 2026 - Guided: short practices, read aloud by the phone's
+  own voice (Demetri: "use a female built in voice from the phone"). The
+  voice is chosen per phone - each phone has its own voices - and kept on
+  that phone only.
+{% endcomment %}
+<div>
+  <h1 class="w-title">Guided</h1>
+  <p class="w-quiet" style="margin:6px 0 0">Spoken by your phone's voice. Earphones help.</p>
+</div>
+<div class="w-list">
+  {% for g in practices %}
+  <a class="w-row" href="{% url 'wellness:calm_practice' g.key %}">
+    <span class="w-row-main"><span class="w-row-name">{{ g.name }}</span><span class="w-row-sub">{{ g.sub }}</span></span>
+    <span class="w-row-side">{{ g.minutes }} min</span>
+  </a>
+  {% endfor %}
+</div>
+
+<details class="w-card" data-voice-box id="voice">
+  <summary class="w-voice-sum"><span>Voice</span><span class="w-quiet w-small" data-voice-name>Your phone's voice</span></summary>
+  <p class="w-quiet w-small" style="margin:0" data-voice-none hidden>This phone cannot read aloud in Wellness. The practices still run, with the words on screen.</p>
+  <label style="display:flex;flex-direction:column;gap:6px" data-voice-pick>
+    <span class="w-label">Choose a voice</span>
+    <select class="w-select" data-voice-select></select>
+  </label>
+  <span class="w-label">Speed</span>
+  <div class="w-chips even">
+    <label class="w-chip"><input type="radio" name="voice_rate" value="0.8"><span>Slower</span></label>
+    <label class="w-chip"><input type="radio" name="voice_rate" value="0.9" checked><span>Calm</span></label>
+    <label class="w-chip"><input type="radio" name="voice_rate" value="1"><span>Usual</span></label>
+  </div>
+  <button type="button" class="w-btn ghost full" data-voice-try>Hear it</button>
+  <p class="w-quiet w-small" style="margin:0">More voices: on a Samsung, phone Settings, General management, Text-to-speech, Google, Install voice data, English - then pick a female voice.</p>
+</details>
+{% endblock %}

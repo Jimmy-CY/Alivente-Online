@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import views_calm as CALM
 from . import views_cycle as CY
 from . import views_workouts as W
 
@@ -57,6 +58,13 @@ urlpatterns = [
     path('cycle/report/', CY.report, name='cycle_report'),
     path('cycle/export/', CY.export, name='cycle_export'),
     path('cycle/delete/', CY.delete_all, name='cycle_delete'),
+    # WL-7, 31 Oct 2026 - Calm: breathe, sit, guided (spoken).
+    path('calm/', CALM.home, name='calm'),
+    path('calm/breathe/', CALM.breathe, name='calm_breathe'),
+    path('calm/sit/', CALM.sit, name='calm_sit'),
+    path('calm/guided/', CALM.guided, name='calm_guided'),
+    path('calm/guided/<slug:key>/', CALM.practice, name='calm_practice'),
+    path('calm/done/', CALM.done, name='calm_done'),
     # WL-4a, 30 Oct 2026 - badges and Wellness settings.
     path('badges/', views.badges_page, name='badges'),
     path('badges/seen/', views.badges_seen, name='badges_seen'),

@@ -89,10 +89,12 @@ class Habit(models.Model):
     time_of_day = models.CharField(max_length=10, choices=TIMES,
                                    default='anytime')
     # WL-3, 30 Oct 2026 - a habit that ticks itself: 'workout' is done on
-    # any day a workout is finished.
+    # any day a workout is finished. WL-7, 31 Oct 2026 - 'calm' is done
+    # by Calm minutes (a minutes habit when they reach its target).
     auto_from = models.CharField(max_length=10, blank=True, default='',
                                  choices=[('', 'Ticked by hand'),
-                                          ('workout', 'A finished workout')])
+                                          ('workout', 'A finished workout'),
+                                          ('calm', 'Calm minutes')])
     cue = models.CharField('After I...', max_length=120, blank=True)
     tiny_version = models.CharField('On a hard day, just...',
                                     max_length=120, blank=True)
@@ -338,6 +340,34 @@ class WorkoutSet(models.Model):
         ordering = ['position', 'set_no']
 
 
+class CalmSession(models.Model):
+    """WL-7, 31 Oct 2026 - a few quiet minutes in Calm: a breath, a sit or a
+    guided practice. Only how long and which - nothing is said or heard
+    back. Kept so the week's minutes can be shown and a habit ticked.
+    """
+    KINDS = [
+        ('breathe', 'Breathe'),
+        ('sit', 'Sit'),
+        ('guided', 'Guided'),
+    ]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_calm_sessions')
+    date = models.DateField()
+    kind = models.CharField(max_length=10, choices=KINDS)
+    # A breath pattern ('calm', 'box'...) or a guided practice's key.
+    practice = models.CharField(max_length=24, blank=True)
+    seconds = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'wellness_calm_session'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return '%s, %s' % (self.get_kind_display(), self.date)
+
+
 class CycleRecord(models.Model):
     """CY-1, 30 Oct 2026 - the cycle tracker's whole record, one row per
     person who has turned it on.
@@ -391,3 +421,4 @@ class PushDevice(models.Model):
 
     def __str__(self):
         return 'Push device of %s' % self.user
+

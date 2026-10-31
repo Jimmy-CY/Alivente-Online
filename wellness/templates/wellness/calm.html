@@ -1,0 +1,38 @@
+{% extends "wellness/base.html" %}
+{% block title %}Calm · Wellness{% endblock %}
+{% block content %}
+{% comment %} WL-7, 31 Oct 2026 - Calm: three ways to a few quiet minutes, and the week's minutes. Approved screen, 31 Oct 14:41. {% endcomment %}
+<div>
+  <div class="w-eyebrow">{{ date|date:"l j F" }}</div>
+  <h1 class="w-hello">Calm</h1>
+</div>
+<p class="w-quiet" style="margin:-6px 0 0">A few quiet minutes. Nothing to get right.</p>
+
+<a class="w-card w-calm-pick" href="{% url 'wellness:calm_breathe' %}">
+  <span class="w-calm-ico">{% include "wellness/includes/calm_icons.html" with i="breathe" %}</span>
+  <span class="w-row-main" style="flex:1"><span class="w-h2">Breathe</span><span class="w-row-sub">A circle to breathe with · 1 to 5 minutes</span></span>
+  <span class="w-quiet">{% include "wellness/includes/calm_icons.html" with i="chev" %}</span>
+</a>
+<a class="w-card w-calm-pick" href="{% url 'wellness:calm_guided' %}">
+  <span class="w-calm-ico">{% include "wellness/includes/calm_icons.html" with i="guided" %}</span>
+  <span class="w-row-main" style="flex:1"><span class="w-h2">Guided</span><span class="w-row-sub">Spoken practices · 3 to 15 minutes</span></span>
+  <span class="w-quiet">{% include "wellness/includes/calm_icons.html" with i="chev" %}</span>
+</a>
+<a class="w-card w-calm-pick" href="{% url 'wellness:calm_sit' %}">
+  <span class="w-calm-ico">{% include "wellness/includes/calm_icons.html" with i="sit" %}</span>
+  <span class="w-row-main" style="flex:1"><span class="w-h2">Sit</span><span class="w-row-sub">A quiet timer with bells</span></span>
+  <span class="w-quiet">{% include "wellness/includes/calm_icons.html" with i="chev" %}</span>
+</a>
+
+<section class="w-card soft" style="gap:8px" data-calm-week>
+  <span class="w-label">This week</span>
+  {% if week.minutes %}
+  <span class="w-big">{{ week.minutes }}<small> minute{{ week.minutes|pluralize }}</small></span>
+  <span class="w-quiet w-small">On {{ week.days }} day{{ week.days|pluralize }}{% if week.last %} · last: {{ week.last }}{% endif %}</span>
+  {% else %}
+  <span class="w-quiet">Nothing yet this week. Even one minute counts.</span>
+  {% endif %}
+  {% if tick_words %}<span class="w-quiet w-small">{{ tick_words }}</span>
+  {% else %}<span class="w-quiet w-small">Calm can tick a habit for you - choose it under "Tick it for me" when you edit the habit.</span>{% endif %}
+</section>
+{% endblock %}

@@ -27,7 +27,8 @@ SCREENS = {
         'steps': [
             'Tap a habit when it is done. Tap again to undo.',
             'Tap the arrow beside a habit to see its calendar and streak.',
-            'Weigh in, or write a few lines, from the cards below.',
+            'Take a breath, weigh in, or write a few lines, from the cards '
+            'below.',
             'Badges you earn appear at the top until you tap Nice.',
         ],
         'signs': [
@@ -76,8 +77,8 @@ SCREENS = {
             'Choose what kind it is: yes or no, a count, minutes, or '
             'something to avoid.',
             'Pick when: every day, chosen days, or a number of times a week.',
-            'Optionally tie it to something you already do, and set a '
-            'reminder time.',
+            'Optionally tie it to something you already do, let a workout '
+            'or Calm tick it, and set a reminder time.',
         ],
         'signs': [],
     },
@@ -273,6 +274,69 @@ SCREENS = {
                   'if you chose them.'],
         'signs': [],
     },
+    # WL-7, 31 Oct 2026 - Calm.
+    'calm': {
+        'title': 'Calm',
+        'purpose': 'A few quiet minutes: breathe along with a circle, '
+                   'follow a spoken practice, or sit with bells.',
+        'steps': [
+            'Breathe is the quickest - a minute or two is enough.',
+            'Guided practices are read aloud by your phone\'s voice.',
+            'Sit is a quiet timer with a bell to begin and end.',
+            'Your minutes this week are kept here, and can tick a habit.',
+        ],
+        'signs': [('--w-soft', 'This week: your Calm minutes. No streaks, '
+                               'and nothing to keep up.')],
+    },
+    'calm_breathe': {
+        'title': 'Breathe',
+        'purpose': 'Breathe along with a circle that grows and shrinks.',
+        'steps': [
+            'Pick a pattern - Calm suits most moments, Sleep is for bedtime.',
+            'Pick how long, then tap Begin.',
+            'Breathe in as the circle grows, out as it shrinks.',
+            'End stops at any time. A minute or more is added to your week.',
+        ],
+        'signs': [
+            ('--w-sage', 'The circle: in as it grows, hold when it rests, '
+                         'out as it shrinks.'),
+            ('--w-sage-deep', 'If your phone is set to reduce motion, the '
+                              'circle stays still and a ring fills instead.'),
+        ],
+    },
+    'calm_sit': {
+        'title': 'Sit',
+        'purpose': 'A quiet timer with a soft bell to begin and to end.',
+        'steps': [
+            'Choose how long, and whether a bell rings part-way.',
+            'Turn the sound up a little to hear the bells.',
+            'If your mind wanders, simply come back to the breath.',
+        ],
+        'signs': [],
+    },
+    'calm_guided': {
+        'title': 'Guided',
+        'purpose': 'Short practices, read aloud by your phone\'s own voice.',
+        'steps': [
+            'Tap a practice to open it, then Begin.',
+            'Open Voice to choose a voice and hear it.',
+            'Words only turns the voice off - the words stay on screen.',
+            'Nothing you hear is sent anywhere. Only the minutes are kept.',
+        ],
+        'signs': [],
+    },
+    'calm_practice': {
+        'title': 'A guided practice',
+        'purpose': 'One practice, spoken by your phone, with the words on '
+                   'screen.',
+        'steps': [
+            'Tap Begin. A soft bell rings, then the voice begins.',
+            'Pause stops the voice and the clock. Carry on picks it up.',
+            'Words only turns the voice off and keeps the words.',
+            'End stops at any time.',
+        ],
+        'signs': [('--w-sage', 'The thin line: how far through you are.')],
+    },
     'settings': {
         'title': 'Settings',
         'purpose': 'Your badges, the cycle tracker, reminders, the daily '
@@ -315,6 +379,7 @@ NOT_SCREENS = {
     'session_delete', 'set_save', 'set_delete', 'cycle_export',
     'cycle_delete', 'tip_seen', 'manifest', 'service_worker', 'asset',
     'badges_seen', 'push_subscribe', 'push_unsubscribe', 'push_test',
+    'calm_done',
 }
 
 

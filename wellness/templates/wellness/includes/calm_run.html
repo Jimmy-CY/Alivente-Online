@@ -1,0 +1,49 @@
+{% comment %}
+  WL-7, 31 Oct 2026 - the running session, over the whole screen. Hidden
+  until Begin; wellness.js fills it. The same frame serves Breathe, Sit
+  and Guided: `kind` chooses what goes in the middle.
+{% endcomment %}
+<div class="w-run" data-calm-run data-done-url="{% url 'wellness:calm_done' %}" hidden role="region" aria-label="Calm session">
+  <div class="w-top">
+    <button type="button" class="w-home w-run-end" data-calm-end>
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      End
+    </button>
+    <span class="w-speaking" data-calm-voice-state aria-live="off"></span>
+  </div>
+  <div class="w-run-stage" data-calm-stage>
+    {% if kind == 'breathe' %}
+    <div class="w-breath" data-breath>
+      <div class="w-breath-halo"></div>
+      <svg class="w-breath-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" class="track"/><circle cx="50" cy="50" r="46" class="fill" pathLength="100" data-breath-ring/></svg>
+      <div class="w-breath-orb" data-breath-orb></div>
+      <div class="w-breath-words"><span class="w-breath-word" data-breath-word aria-live="polite">Ready</span><span class="w-breath-count" data-breath-count></span></div>
+    </div>
+    {% elif kind == 'sit' %}
+    <div class="w-sit-clock" data-sit-clock aria-live="off">10:00</div>
+    <p class="w-quiet" style="margin:0;text-align:center" data-sit-line>Settle in. The bell will ring to begin.</p>
+    {% else %}
+    <span class="w-label" data-calm-title></span>
+    <p class="w-guided-line" data-guided-line aria-live="polite"></p>
+    <p class="w-guided-next" data-guided-next></p>
+    {% endif %}
+    <div class="w-run-meta">
+      {% if kind != 'guided' %}<div class="w-h2" data-calm-title></div>{% endif %}
+      <div class="w-thin" aria-hidden="true"><b data-calm-bar></b></div>
+      <div class="w-quiet w-small w-run-times"><span data-calm-gone>0:00</span><span data-calm-left></span></div>
+    </div>
+    <div class="w-btn-row" style="width:100%">
+      <button type="button" class="w-btn ghost" data-calm-pause>Pause</button>
+      {% if kind == 'guided' %}<button type="button" class="w-btn ghost" data-calm-mute aria-pressed="false">Words only</button>{% endif %}
+    </div>
+  </div>
+  <div class="w-run-done" data-calm-done hidden>
+    <h2 class="w-title" data-calm-done-title>Done</h2>
+    <p class="w-quiet" data-calm-done-line style="margin:0"></p>
+    <div class="w-btn-row" style="width:100%">
+      <a class="w-btn ghost" href="{% url 'wellness:calm' %}">Back to Calm</a>
+      <button type="button" class="w-btn" data-calm-again>Again</button>
+    </div>
+  </div>
+</div>
+{{ calm_data|json_script:"calm-data" }}

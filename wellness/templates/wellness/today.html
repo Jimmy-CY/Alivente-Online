@@ -112,6 +112,13 @@
 </a>
 {% endif %}
 
+{# WL-7 - a breath in one tap: Breathe, with the pattern last used. #}
+<a class="w-card soft w-calm-pick" href="{% url 'wellness:calm_breathe' %}" data-calm-card>
+  <span class="w-calm-ico" style="background:var(--w-card)">{% include "wellness/includes/calm_icons.html" with i="breathe" %}</span>
+  <span class="w-row-main" style="flex:1"><span class="w-h2">Take a breath</span><span class="w-row-sub">{% if calm_today %}Calm today: {{ calm_today }} minute{{ calm_today|pluralize }}{% else %}Calm · a minute or two, whenever you like{% endif %}</span></span>
+  <span class="w-quiet">{% include "wellness/includes/calm_icons.html" with i="chev" %}</span>
+</a>
+
 {# WL-2 - the weigh-in card, the evening card, On this day. #}
 <a class="w-card" href="{% url 'wellness:body_weigh' %}" style="flex-direction:row;align-items:center;gap:16px;text-decoration:none;color:inherit">
   <span style="width:48px;height:48px;border-radius:24px;background:var(--w-soft);display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="4" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6"/><path d="M9 9.5a4 4 0 0 1 6 0l-2 2.5" fill="none" stroke="var(--w-sage-deep)" stroke-width="1.6" stroke-linecap="round"/></svg></span>

@@ -226,7 +226,8 @@ ok('halfway' in BG.earned(f3) and 'goal' not in BG.earned(f3),
    'halfway to the goal weight, not yet the goal')
 ok([n['need'] for n in BG.up_next(f3, set(BG.earned(f3)))
     if n['key'] == 'goal'] == ['2.4 kg to go'], '  and "2.4 kg to go"')
-ok(len(BG.KEYS) == len(set(BG.KEYS)) == 22, 'twenty-two badges, no repeats')
+# WL-7 (Release 52) adds two quiet Calm badges: 24 from then on.
+ok(len(BG.KEYS) == len(set(BG.KEYS)) >= 22, 'twenty-two badges or more, no repeats')
 ok(WK.week_before(dt.date(2026, 11, 2)) == (dt.date(2026, 10, 26),
                                              dt.date(2026, 11, 1)),
    'on Monday 2 November the summary is about 26 October - 1 November')
@@ -307,7 +308,7 @@ if have_db:
                '  "Nice" puts it away')
             HabitLog.objects.filter(habit=h).delete()
             t = ca.get('/wellness/badges/').content.decode()
-            ok('First step' in t and '1 of 22' in t,
+            ok('First step' in t and ('1 of %d' % len(BG.KEYS)) in t,
                'NEVER TAKEN AWAY: the tick undone, the badge stays')
             ok('First step' not in cb.get('/wellness/badges/').content
                .decode(), "another member's badges are their own")
@@ -366,7 +367,9 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def earned('" in gate, '  with a sentinel on the badge rules')
+# WL-7 moved the row's text on (the backup now holds the old one).
+ok("File = 'wellness/badges.py'; Text = " in gate,
+   '  with a sentinel on the badge rules')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')

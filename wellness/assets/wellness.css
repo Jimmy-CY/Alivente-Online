@@ -444,6 +444,10 @@ label.w-chip span { display: inline-flex; align-items: center; min-height: 44px;
   text-decoration: none;
 }
 .w-tab.is-on { color: var(--w-sage-deep); font-weight: 600; }
+/* WL-7 - seven tabs (with Calm and the cycle tracker) share the width
+   evenly: they fit at 360px, the narrowest common Samsung. */
+.w-tabs { gap: 0; padding-left: 4px; padding-right: 4px; }
+.w-tabs .w-tab { flex: 1 1 0; min-width: 0; max-width: 76px; white-space: nowrap; }
 
 /* ---- the settle when a habit is ticked */
 @keyframes w-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -646,3 +650,60 @@ label.w-mood:has(input:checked) { background: var(--w-sage-deep); color: var(--w
 .w-sheet-q summary { cursor: pointer; min-height: 52px; display: flex; align-items: center; font-size: 16px; }
 .w-sheet-q p { margin: 0 0 14px; }
 body.w-sheet-on { overflow: hidden; }
+
+/* ---- WL-7, 31 Oct 2026 - Calm. Approved screens, 31 Oct 14:41. */
+.w-calm-pick { flex-direction: row; align-items: center; gap: 16px; text-decoration: none; color: inherit; }
+.w-calm-ico { width: 52px; height: 52px; border-radius: 26px; background: var(--w-soft); color: var(--w-sage-deep); display: flex; align-items: center; justify-content: center; flex: none; }
+.w-chips.even { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.w-chips.even label.w-chip span { justify-content: center; width: 100%; padding: 0 6px; }
+.w-pick { cursor: pointer; }
+.w-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.w-pick-dot { width: 14px; height: 14px; border-radius: 7px; flex: none; }
+.w-pick input:checked ~ .w-pick-dot { background: var(--w-sage-deep); }
+.w-pick input:checked ~ .w-row-main .w-row-name { font-weight: 600; }
+.w-pick input:focus-visible ~ .w-row-main { outline: 2px solid var(--w-sage); outline-offset: 2px; }
+.w-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 16px; cursor: pointer; }
+.w-toggle input { width: 22px; height: 22px; accent-color: var(--w-sage-deep); }
+.w-voice-sum { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; font-weight: 600; list-style: none; }
+.w-voice-sum::-webkit-details-marker { display: none; }
+details[data-voice-box] > :not(summary) { margin-top: 12px; }
+.w-speaking { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--w-quiet); }
+.w-speaking i { display: inline-block; width: 3px; height: 10px; border-radius: 2px; background: var(--w-sage); }
+.w-speaking i:nth-child(2) { height: 15px; }
+.w-speaking i:last-of-type { margin-right: 4px; }
+.w-calm-on .w-tabs, .w-calm-on .w-wrap > :not(.w-run) { display: none; }
+.w-run { position: fixed; inset: 0; z-index: 20; background: var(--w-bg); overflow-y: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  display: flex; flex-direction: column; gap: 16px; max-width: 560px; margin: 0 auto; }
+.w-run[hidden] { display: none; }
+.w-run .w-top { justify-content: space-between; }
+.w-run-end { background: none; border: none; cursor: pointer; font: inherit; font-size: 15px; }
+.w-run-stage, .w-run-done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+.w-run-stage[hidden], .w-run-done[hidden] { display: none; }
+.w-run-done { text-align: center; }
+.w-run-meta { width: 100%; display: flex; flex-direction: column; gap: 8px; text-align: center; }
+.w-run-times { display: flex; justify-content: space-between; }
+.w-thin { height: 4px; border-radius: 2px; background: var(--w-sage-track); width: 100%; overflow: hidden; }
+.w-thin b { display: block; height: 4px; width: 0; background: var(--w-sage); transition: width .3s linear; }
+.w-breath { width: 260px; height: 260px; max-width: 72vw; max-height: 72vw; position: relative; display: flex; align-items: center; justify-content: center; }
+.w-breath-halo { position: absolute; inset: 0; border-radius: 50%; background: var(--w-sage-track); }
+.w-breath-orb { position: absolute; width: 73%; height: 73%; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #A9C4B1, var(--w-sage));
+  box-shadow: 0 0 0 14px rgba(127, 162, 138, .18);
+  transform: scale(.55); transition-property: transform; transition-timing-function: ease-in-out; }
+.w-breath-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); display: none; }
+.w-breath-ring circle { fill: none; stroke-width: 4; }
+.w-breath-ring .track { stroke: var(--w-ring-off); }
+.w-breath-ring .fill { stroke: var(--w-sage-deep); stroke-dasharray: 100; stroke-dashoffset: 100; stroke-linecap: round; transition-property: stroke-dashoffset; transition-timing-function: linear; }
+.w-breath-words { position: relative; text-align: center; color: #fff; }
+.w-breath-word { display: block; font-family: var(--w-serif); font-size: 34px; }
+.w-breath-count { display: block; font-size: 15px; opacity: .85; height: 20px; }
+/* Reduce motion: the circle stays still and a ring fills instead. */
+.w-still .w-breath-orb { transform: scale(.8) !important; transition: none !important; }
+.w-still .w-breath-ring { display: block; }
+.w-sit-clock { font-size: 56px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.w-guided-line { font-family: var(--w-serif); font-size: 26px; line-height: 1.4; text-align: center; margin: 0; min-height: 4.2em; }
+.w-guided-next { font-size: 15px; text-align: center; color: var(--w-quiet); margin: 0; opacity: .7; min-height: 1.4em; }
+@media (prefers-color-scheme: dark) {
+  .w-breath-orb { background: radial-gradient(circle at 40% 35%, #8FB39A, #5E8A6E); }
+}

@@ -1,0 +1,21 @@
+{% extends "wellness/base.html" %}
+{% block title %}Sit · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:calm' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Calm</a>{% endblock %}
+{% block content %}
+{% comment %} WL-7, 31 Oct 2026 - Sit: a quiet timer, a bell to begin and a bell to end. No voice. {% endcomment %}
+<h1 class="w-title">Sit</h1>
+<p class="w-quiet" style="margin:-6px 0 0">Sit comfortably and rest with your breath. A soft bell begins and ends it.</p>
+<form class="w-card" data-calm-setup onsubmit="return false">
+  <span class="w-label">How long</span>
+  <div class="w-chips even">
+    {% for m in minutes %}<label class="w-chip"><input type="radio" name="minutes" value="{{ m }}"{% if m == 10 %} checked{% endif %}><span>{{ m }} min</span></label>{% endfor %}
+  </div>
+  <span class="w-label">A bell part-way</span>
+  <div class="w-chips even">
+    {% for k, label in bells %}<label class="w-chip"><input type="radio" name="bell" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}
+  </div>
+</form>
+<button type="button" class="w-btn full" data-calm-begin>Begin</button>
+<p class="w-quiet w-small" style="margin:0;text-align:center">Turn the sound up a little to hear the bells. The screen stays on.</p>
+{% include "wellness/includes/calm_run.html" with kind="sit" %}
+{% endblock %}

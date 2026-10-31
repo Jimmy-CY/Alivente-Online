@@ -77,6 +77,12 @@ BADGES = [
      lambda f: f['records'] >= 1, lambda f: None),
     ('records_10', '10', '10 records', 'Ten personal records.',
      lambda f: f['records'] >= 10, lambda f: (f['records'], 10, 'record')),
+    # WL-7, 31 Oct 2026 - Calm: two quiet ones, and no streaks.
+    ('calm_1', '~', 'First breath', 'Your first quiet minutes in Calm.',
+     lambda f: f['calm_sessions'] >= 1, lambda f: None),
+    ('calm_100', '100', '100 calm minutes', 'A hundred quiet minutes, '
+     'given to yourself.', lambda f: f['calm_minutes'] >= 100,
+     lambda f: (f['calm_minutes'], 100, 'minute')),
 ]
 KEYS = [b[0] for b in BADGES]
 BY_KEY = {b[0]: b for b in BADGES}
@@ -94,7 +100,8 @@ for _k in KEYS:
 EMPTY = {'ticks': 0, 'streak': 0, 'comebacks': 0, 'established': 0,
          'habit_days': 0, 'entries': 0, 'checkins': 0, 'weighins': 0,
          'progress': None, 'kg_done': 0.0, 'kg_half': 0.0, 'kg_total': 0.0,
-         'sessions': 0, 'records': 0}
+         'sessions': 0, 'records': 0, 'calm_sessions': 0,
+         'calm_minutes': 0}
 
 
 def earned(f):
@@ -179,6 +186,11 @@ def facts(user, today):
         user=user, finished_at__isnull=False).count()
     f['records'] = WorkoutSet.objects.filter(
         session__user=user, is_pr=True, done=True).count()
+    from . import calm as CALM
+    from .models import CalmSession
+    f['calm_sessions'] = CalmSession.objects.filter(user=user).count()
+    f['calm_minutes'] = CALM.total_minutes(user) if f['calm_sessions'] \
+        else 0
     return f
 
 

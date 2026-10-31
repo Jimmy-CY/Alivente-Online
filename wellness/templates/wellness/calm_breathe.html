@@ -1,0 +1,28 @@
+{% extends "wellness/base.html" %}
+{% block title %}Breathe · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:calm' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Calm</a>{% endblock %}
+{% block content %}
+{% comment %} WL-7, 31 Oct 2026 - Breathe: choose a pattern and a length; the circle runs on the phone. {% endcomment %}
+<h1 class="w-title">Breathe</h1>
+<form class="w-card" data-calm-setup onsubmit="return false">
+  <span class="w-label">Pattern</span>
+  <div class="w-list w-pick-list" style="padding:0">
+    {% for p in patterns %}
+    <label class="w-row w-pick">
+      <input type="radio" name="pattern" value="{{ p.key }}"{% if forloop.first %} checked{% endif %}>
+      <span class="w-row-main"><span class="w-row-name">{{ p.name }}</span><span class="w-row-sub">{{ p.words }} · {{ p.for }}</span></span>
+      <span class="w-pick-dot" aria-hidden="true"></span>
+    </label>
+    {% endfor %}
+  </div>
+  <span class="w-label">How long</span>
+  <div class="w-chips even">
+    {% for m in minutes %}<label class="w-chip"><input type="radio" name="minutes" value="{{ m }}"{% if m == 2 %} checked{% endif %}><span>{{ m }} min</span></label>{% endfor %}
+  </div>
+  <label class="w-toggle"><span>Say “in” and “out”</span><input type="checkbox" name="say"></label>
+  <label class="w-toggle"><span>Gentle vibration</span><input type="checkbox" name="buzz" checked></label>
+</form>
+<button type="button" class="w-btn full" data-calm-begin>Begin</button>
+<p class="w-quiet w-small" style="margin:0;text-align:center">The screen stays on while you breathe. It works without a connection, too.</p>
+{% include "wellness/includes/calm_run.html" with kind="breathe" %}
+{% endblock %}

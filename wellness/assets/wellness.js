@@ -324,6 +324,421 @@
     });
   }
 
+  // ---- WL-7, 31 Oct 2026 - Calm: Breathe, Sit and Guided.
+  // Everything runs here, on the phone: the circle, the bells (made with
+  // Web Audio) and the voice (the phone's own speech synthesis - Demetri:
+  // "use a female built in voice from the phone"). Nothing said or heard
+  // leaves the phone; when a session ends only its length is sent, or
+  // queued here until there is a connection.
+  var calm = (function () {
+    var KEY = 'wl.calm.';
+    function load(k, d) {
+      try { var v = localStorage.getItem(KEY + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; }
+    }
+    function keep(k, v) {
+      try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) { /* private window: forget it */ }
+    }
+    var synth = ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) ? window.speechSynthesis : null;
+    // Voice names differ by phone. These name the female voices the common
+    // ones offer (Google's on Android, Apple's, Microsoft's); a male match
+    // is passed over when a choice is being made for the person.
+    var FEMALE = /female|woman|samantha|serena|karen|moira|tessa|fiona|victoria|zira|hazel|susan|libby|sonia|emma|kate|aria|jenny|amy|en-gb-x-gba|en-gb-x-gbc|en-gb-x-gbg|en-us-x-sfg|en-us-x-tpc|en-us-x-tpf|en-us-x-iob|en-us-x-iog|en-au-x-afa|en-au-x-afc/i;
+    var MALE = /\bmale\b|daniel|\balex\b|fred|george|ryan|\bguy\b|david|\bmark\b|james|en-gb-x-gbb|en-gb-x-gbd|en-gb-x-rjs|en-us-x-iol|en-us-x-iom|en-us-x-tpd/i;
+    function lang(v) { return (v.lang || '').replace('_', '-').toLowerCase(); }
+    function english() {
+      if (!synth) return [];
+      var all = synth.getVoices() || [];
+      var en = all.filter(function (v) { return /^en(-|$)/.test(lang(v)); });
+      return en.length ? en : all;
+    }
+    function score(v) {
+      var s = 0, id = v.name + ' ' + (v.voiceURI || '');
+      if (FEMALE.test(id)) s += 10;
+      if (MALE.test(id)) s -= 10;
+      if (lang(v) === 'en-gb') s += 3;
+      if (v.localService) s += 2;
+      if (v['default']) s += 1;
+      return s;
+    }
+    function voice() {
+      var list = english(), want = load('voice', '');
+      if (want) {
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].voiceURI === want || list[i].name === want) return list[i];
+        }
+      }
+      return list.slice().sort(function (a, b) { return score(b) - score(a); })[0] || null;
+    }
+    function label(v) {
+      if (!v) return 'your phone\'s voice';
+      return v.name.replace(/\s*\(.*?\)\s*/g, ' ').replace(/^(Google|Microsoft|Samsung)\s+/i, '').trim() || v.name;
+    }
+    var talk = 0;
+    function hush() { talk++; if (synth) synth.cancel(); }
+    // One line, sentence by sentence: Android can cut a long utterance off.
+    // Resolves when it has been said (or could not be).
+    function say(text) {
+      var me = ++talk;
+      if (!synth) return Promise.resolve();
+      var parts = String(text).match(/[^.?!]+[.?!]*/g) || [text];
+      var v = voice(), rate = parseFloat(load('rate', 0.9)) || 0.9;
+      return parts.reduce(function (p, part) {
+        return p.then(function () {
+          if (me !== talk) return null;
+          return new Promise(function (done) {
+            var u = new SpeechSynthesisUtterance(part.trim());
+            if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-GB'; }
+            u.rate = rate;
+            u.pitch = 1;
+            // onend is not always sent on Android: a generous stop-watch.
+            var guard = setTimeout(done, (part.split(/\s+/).length * 700) / rate + 2500);
+            u.onend = u.onerror = function () { clearTimeout(guard); done(); };
+            synth.speak(u);
+          });
+        });
+      }, Promise.resolve());
+    }
+    // A singing-bowl bell, made here: a few partials that fade slowly.
+    var audio = null;
+    function wakeAudio() {
+      var A = window.AudioContext || window.webkitAudioContext;
+      if (!A) return;
+      if (!audio) { try { audio = new A(); } catch (e) { audio = null; return; } }
+      if (audio.state === 'suspended') audio.resume();
+    }
+    function bell() {
+      if (!audio) return;
+      var now = audio.currentTime;
+      [[1, 0.32], [2.01, 0.12], [2.76, 0.1], [5.4, 0.04]].forEach(function (pt) {
+        var o = audio.createOscillator(), g = audio.createGain();
+        o.type = 'sine';
+        o.frequency.value = 396 * pt[0];
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.exponentialRampToValueAtTime(pt[1], now + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 7 / Math.sqrt(pt[0]));
+        o.connect(g); g.connect(audio.destination);
+        o.start(now); o.stop(now + 7.5);
+      });
+    }
+    // Keep the screen on while a session runs.
+    var lock = null, wanted = false;
+    function stayAwake(on) {
+      wanted = on;
+      if (on && navigator.wakeLock && !lock) {
+        navigator.wakeLock.request('screen').then(function (l) { lock = l; l.addEventListener('release', function () { lock = null; }); }).catch(function () {});
+      } else if (!on && lock) { lock.release().catch(function () {}); lock = null; }
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && wanted) stayAwake(true);
+    });
+    function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) { /* not allowed */ } } }
+    function clock(s) { s = Math.max(0, Math.round(s)); var m = Math.floor(s / 60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; }
+    function today() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+    function token() { var t = document.querySelector('[name=csrfmiddlewaretoken]'); return t ? t.value : ''; }
+    function send(url, item) {
+      var data = new FormData();
+      Object.keys(item).forEach(function (k) { data.set(k, item[k]); });
+      data.set('csrfmiddlewaretoken', token());
+      return fetch(url, {method: 'POST', body: data, credentials: 'same-origin',
+                         headers: {'X-Requested-With': 'fetch'}})
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+    }
+    // A session finished offline waits here, and goes when Calm next opens.
+    function flush(url) {
+      var q = load('queue', []);
+      if (!q.length || !navigator.onLine) return;
+      keep('queue', []);
+      q.forEach(function (item) { send(url, item).catch(function () { var r = load('queue', []); r.push(item); keep('queue', r); }); });
+    }
+    return {load: load, keep: keep, synth: synth, english: english, voice: voice, label: label,
+            say: say, hush: hush, bell: bell, wakeAudio: wakeAudio, stayAwake: stayAwake,
+            buzz: buzz, clock: clock, today: today, send: send, flush: flush};
+  })();
+
+  // The voice: name it wherever it is shown; choose it on the Guided page.
+  function nameVoice() {
+    document.querySelectorAll('[data-voice-name]').forEach(function (el) {
+      el.textContent = calm.synth ? calm.label(calm.voice()) : 'words on screen only';
+    });
+  }
+  if (calm.synth) {
+    nameVoice();
+    if ('onvoiceschanged' in calm.synth) calm.synth.addEventListener('voiceschanged', function () { nameVoice(); fillVoices(); });
+  } else { nameVoice(); }
+  var vbox = document.querySelector('[data-voice-box]');
+  function fillVoices() {
+    if (!vbox) return;
+    var sel = vbox.querySelector('[data-voice-select]');
+    if (!calm.synth) {
+      vbox.querySelector('[data-voice-none]').hidden = false;
+      vbox.querySelector('[data-voice-pick]').hidden = true;
+      vbox.querySelector('[data-voice-try]').hidden = true;
+      return;
+    }
+    var want = calm.load('voice', '');
+    sel.innerHTML = '';
+    var auto = document.createElement('option');
+    auto.value = '';
+    auto.textContent = 'Automatic - a female English voice if the phone has one';
+    sel.appendChild(auto);
+    calm.english().forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v.voiceURI || v.name;
+      o.textContent = v.name + ' (' + v.lang + ')';
+      if (o.value === want) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  if (vbox) {
+    fillVoices();
+    if (location.hash === '#voice') vbox.open = true;
+    var rate = String(calm.load('rate', 0.9));
+    vbox.querySelectorAll('[name=voice_rate]').forEach(function (r) { r.checked = (r.value === rate || (rate === '0.9' && r.value === '0.9')); });
+    vbox.addEventListener('change', function (e) {
+      if (e.target.matches('[data-voice-select]')) { calm.keep('voice', e.target.value); nameVoice(); }
+      if (e.target.name === 'voice_rate') calm.keep('rate', parseFloat(e.target.value));
+    });
+    vbox.querySelector('[data-voice-try]').addEventListener('click', function () {
+      calm.hush();
+      calm.say('Hello. Let us take a slow breath together.');
+    });
+  }
+
+  // The running session.
+  var run = document.querySelector('[data-calm-run]');
+  var dataEl = document.getElementById('calm-data');
+  var doneUrl = run ? run.getAttribute('data-done-url') : null;
+  var weekBox = document.querySelector('[data-calm-week]');
+  if (doneUrl) calm.flush(doneUrl);
+  else if (weekBox) calm.flush('/wellness/calm/done/');
+  if (run && dataEl) {
+    var D = JSON.parse(dataEl.textContent);
+    var setup = document.querySelector('[data-calm-setup]');
+    var $ = function (s) { return run.querySelector(s); };
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still) run.classList.add('w-still');
+
+    // Remember the last choices on this phone.
+    if (setup) {
+      var saved = calm.load(D.kind, null);
+      if (saved) {
+        Object.keys(saved).forEach(function (k) {
+          setup.querySelectorAll('[name="' + k + '"]').forEach(function (el) {
+            if (el.type === 'checkbox') el.checked = !!saved[k];
+            else el.checked = (el.value === String(saved[k]));
+          });
+        });
+      }
+    }
+    function choices() {
+      var c = {};
+      if (!setup) return c;
+      setup.querySelectorAll('input').forEach(function (el) {
+        if (el.type === 'checkbox') c[el.name] = el.checked;
+        else if (el.checked) c[el.name] = el.value;
+      });
+      return c;
+    }
+
+    var S = null;   // the session now running
+    var loop = null;
+    function now() { return Date.now() / 1000; }
+    function gone() { return S ? S.banked + (S.since ? now() - S.since : 0) : 0; }
+    function showTimes() {
+      var g = gone(), left = Math.max(0, S.planned - g);
+      $('[data-calm-gone]').textContent = calm.clock(g);
+      $('[data-calm-left]').textContent = calm.clock(left) + ' left';
+      $('[data-calm-bar]').style.width = Math.min(100, 100 * g / S.planned) + '%';
+    }
+    function voiceState() {
+      var el = $('[data-calm-voice-state]');
+      if (!el) return;
+      if (D.kind === 'sit' || !S) { el.textContent = ''; return; }
+      var on = S && S.voice && calm.synth;
+      el.innerHTML = on ? '<i></i><i></i><i></i> Voice on' : (calm.synth ? 'Voice off' : 'Words on screen');
+      el.classList.toggle('is-on', !!on);
+    }
+
+    // --- Breathe
+    function phaseAt(t) {
+      var steps = S.pattern.steps, cyc = 0, i;
+      for (i = 0; i < steps.length; i++) cyc += steps[i][1];
+      var into = t % cyc, n = Math.floor(t / cyc);
+      for (i = 0; i < steps.length; i++) {
+        if (into < steps[i][1]) return {i: i, n: n, left: steps[i][1] - into, ph: steps[i][0], len: steps[i][1], cyc: cyc};
+        into -= steps[i][1];
+      }
+      return {i: 0, n: n + 1, left: steps[0][1], ph: steps[0][0], len: steps[0][1], cyc: cyc};
+    }
+    var WORD = {'in': 'In', hold: 'Hold', out: 'Out'};
+    function breatheTick() {
+      var t = gone(), p = phaseAt(t), key = p.n + ':' + p.i;
+      // Finish at the end of a whole breath once the time is up.
+      if (t >= S.planned && p.i === 0 && key !== S.key) { finish(true); return; }
+      if (key !== S.key) {
+        S.key = key;
+        var orb = $('[data-breath-orb]'), ring = $('[data-breath-ring]');
+        $('[data-breath-word]').textContent = WORD[p.ph];
+        var size = p.ph === 'in' ? 1 : (p.ph === 'out' ? 0.55 : null);
+        if (size !== null) {
+          orb.style.transitionDuration = p.left + 's';
+          orb.style.transform = 'scale(' + size + ')';
+          ring.style.transitionDuration = p.left + 's';
+          ring.style.strokeDashoffset = p.ph === 'in' ? '0' : '100';
+        }
+        if (S.choices.buzz) calm.buzz(p.ph === 'hold' ? 15 : 35);
+        if (S.choices.say) calm.say(WORD[p.ph]);
+      }
+      $('[data-breath-count]').textContent = Math.ceil(p.left);
+      showTimes();
+    }
+
+    // --- Sit
+    function sitTick() {
+      var t = gone();
+      if (!S.rang) { S.rang = true; calm.bell(); }
+      if (t >= S.planned) { finish(true); return; }
+      var b = S.choices.bell;
+      var marks = b === 'half' ? [S.planned / 2] : (b === 'five' ? (function () { var m = [], x; for (x = 300; x < S.planned; x += 300) m.push(x); return m; })() : []);
+      marks.forEach(function (m) { if (t >= m && S.bells.indexOf(m) === -1) { S.bells.push(m); calm.bell(); } });
+      $('[data-sit-clock]').textContent = calm.clock(S.planned - t);
+      $('[data-sit-line]').textContent = t < 20 ? 'Settle in. Rest with your breath.' : 'Resting with the breath. When you wander, come back.';
+      showTimes();
+    }
+
+    // --- Guided: each line at its second, after a soft bell and a pause,
+    // and never over the line before it.
+    var LEAD = 5;
+    function guidedTick() {
+      var t = gone() - LEAD, lines = D.lines;
+      if (!S.rang) { S.rang = true; calm.bell(); }
+      var due = -1;
+      for (var i = 0; i < lines.length; i++) if (t >= lines[i][0]) due = i;
+      if (due > S.line && !S.talking) {
+        S.line = S.line + 1;
+        var words = lines[S.line][1];
+        $('[data-guided-line]').textContent = words;
+        var next = lines[S.line + 1];
+        $('[data-guided-next]').textContent = next ? next[1].split(' ').slice(0, 6).join(' ') + '…' : '';
+        if (S.voice && calm.synth) {
+          S.talking = true;
+          var mine = S.id;
+          calm.say(words).then(function () { if (S && S.id === mine) S.talking = false; });
+        }
+      }
+      if (gone() >= S.planned && S.line >= lines.length - 1 && !S.talking) { finish(true); return; }
+      showTimes();
+    }
+
+    var TICK = {breathe: breatheTick, sit: sitTick, guided: guidedTick};
+    function begin() {
+      var c = choices();
+      if (setup) calm.keep(D.kind, c);
+      calm.wakeAudio();
+      // A first, silent word inside the tap: some phones only allow speech
+      // that a tap began.
+      if (calm.synth) { try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; calm.synth.speak(u); } catch (e) { /* fine */ } }
+      var planned = D.kind === 'guided' ? D.seconds + LEAD
+                  : parseInt(c.minutes || '2', 10) * 60;
+      S = {id: Date.now(), choices: c, planned: planned, banked: 0, since: now(), key: null,
+           line: -1, talking: false, rang: false, bells: [],
+           voice: D.kind === 'guided' ? !calm.load('mute', false) : !!c.say};
+      if (D.kind === 'breathe') {
+        S.pattern = D.patterns.filter(function (p) { return p.key === c.pattern; })[0] || D.patterns[0];
+        $('[data-calm-title]').textContent = S.pattern.name + ' · ' + S.pattern.words.toLowerCase();
+        var orb = $('[data-breath-orb]'), ring = $('[data-breath-ring]');
+        orb.style.transitionDuration = '0s'; orb.style.transform = 'scale(0.55)';
+        ring.style.transitionDuration = '0s'; ring.style.strokeDashoffset = '100';
+      } else if (D.kind === 'sit') {
+        $('[data-calm-title]').textContent = 'Sit · ' + (planned / 60) + ' minutes';
+      } else {
+        $('[data-calm-title]').textContent = D.name;
+        $('[data-guided-line]').textContent = 'Settle in…';
+        $('[data-guided-next]').textContent = '';
+        var mute = $('[data-calm-mute]');
+        if (mute) { mute.setAttribute('aria-pressed', String(!S.voice)); mute.textContent = S.voice ? 'Words only' : 'Voice on'; mute.hidden = !calm.synth; }
+      }
+      $('[data-calm-pause]').textContent = 'Pause';
+      $('[data-calm-stage]').hidden = false;
+      $('[data-calm-done]').hidden = true;
+      run.hidden = false;
+      document.body.classList.add('w-calm-on');
+      voiceState();
+      calm.stayAwake(true);
+      clearInterval(loop);
+      loop = setInterval(function () { if (S && S.since) TICK[D.kind](); }, 200);
+      TICK[D.kind]();
+    }
+    function pause() {
+      if (!S) return;
+      var btn = $('[data-calm-pause]');
+      if (S.since) {
+        S.banked += now() - S.since; S.since = 0;
+        var cut = S.talking;
+        calm.hush(); S.talking = false;
+        // A line cut off part-way is said again on Carry on.
+        if (D.kind === 'guided' && S.line >= 0 && cut) S.line -= 1;
+        var orb = $('[data-breath-orb]');
+        if (orb) { var tr = getComputedStyle(orb).transform; orb.style.transitionDuration = '0s'; orb.style.transform = tr; }
+        btn.textContent = 'Carry on';
+      } else {
+        S.since = now(); S.key = null;
+        btn.textContent = 'Pause';
+      }
+    }
+    function finish(whole) {
+      if (!S) return;
+      clearInterval(loop);
+      var secs = Math.round(Math.min(gone(), S.planned) - (D.kind === 'guided' ? LEAD : 0));
+      if (whole) secs = Math.round(S.planned - (D.kind === 'guided' ? LEAD : 0));
+      if (whole && D.kind !== 'breathe') calm.bell();
+      calm.hush();
+      calm.stayAwake(false);
+      if (whole && S.choices.buzz) calm.buzz([40, 80, 40]);
+      var mins = Math.floor(secs / 60);
+      var pkey = S.pattern ? S.pattern.key : '';
+      S = null;
+      $('[data-calm-stage]').hidden = true;
+      $('[data-calm-done]').hidden = false;
+      voiceState();
+      var title = $('[data-calm-done-title]'), line = $('[data-calm-done-line]');
+      if (secs < 60) {
+        title.textContent = 'A short pause';
+        line.textContent = 'That counts too. Sessions under a minute are not added up.';
+        return;
+      }
+      title.textContent = 'Done – ' + mins + ' minute' + (mins === 1 ? '' : 's');
+      line.textContent = 'Well done for taking the time.';
+      var item = {kind: D.kind, practice: D.kind === 'breathe' ? pkey : (D.key || ''),
+                  seconds: secs, date: calm.today()};
+      calm.send(doneUrl, item).then(function (r) {
+        if (r.ticked) line.textContent = r.ticked + (r.ticked.indexOf(' and ') > -1 ? ' are' : ' is') + ' ticked for today.';
+        else if (r.minutes_week) line.textContent = r.minutes_week + ' minute' + (r.minutes_week === 1 ? '' : 's') + ' of calm this week.';
+      }).catch(function () {
+        var q = calm.load('queue', []); q.push(item); calm.keep('queue', q);
+        line.textContent = 'Saved on this phone - it will be added when you are back online.';
+      });
+    }
+    run.addEventListener('click', function (e) {
+      if (e.target.closest('[data-calm-pause]')) pause();
+      else if (e.target.closest('[data-calm-end]')) {
+        if (S) finish(false);
+        else { run.hidden = true; document.body.classList.remove('w-calm-on'); }
+      } else if (e.target.closest('[data-calm-again]')) begin();
+      else if (e.target.closest('[data-calm-mute]') && S) {
+        S.voice = !S.voice;
+        calm.keep('mute', !S.voice);
+        if (!S.voice) { calm.hush(); S.talking = false; }
+        var m = e.target.closest('[data-calm-mute]');
+        m.setAttribute('aria-pressed', String(!S.voice));
+        m.textContent = S.voice ? 'Words only' : 'Voice on';
+        voiceState();
+      }
+    });
+    var go = document.querySelector('[data-calm-begin]');
+    if (go) go.addEventListener('click', begin);
+  }
+
   // ---- The installable app.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

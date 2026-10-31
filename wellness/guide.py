@@ -47,6 +47,10 @@ STARTERS = [
      'target': 15, 'schedule': 'per_week', 'per_week': 3,
      'time_of_day': 'morning', 'tiny_version': 'one set',
      'auto_from': 'workout'},
+    # WL-7 - ticked by Calm minutes.
+    {'key': 'meditate', 'name': 'Meditate', 'kind': 'duration',
+     'target': 10, 'schedule': 'daily', 'time_of_day': 'morning',
+     'tiny_version': 'one minute of breathing', 'auto_from': 'calm'},
 ]
 
 # key -> words. The view shows the first unseen tip the page qualifies for.
@@ -134,9 +138,25 @@ HOWTO = [
           'The first time you do an exercise sets the bar; after that, '
           'beating it gets a star.'},
     {'q': 'Can a habit tick itself when I train?',
-     'a': 'Yes. On the habit\'s page choose Edit and tick "Tick it for me '
-          'when I finish a workout". Finishing any workout then ticks it for '
-          'that day.'},
+     'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
+          'me" choose "When I finish a workout". Finishing any workout then '
+          'ticks it for that day.'},
+    # WL-7, 31 Oct 2026 - Calm.
+    {'q': 'What is Calm?',
+     'a': 'A few quiet minutes: Breathe, with a circle to breathe along '
+          'to; Guided, short practices read aloud by your phone; and Sit, '
+          'a quiet timer with bells. It all runs on your phone - nothing '
+          'you hear is sent anywhere, and only the minutes are kept.'},
+    {'q': 'How do I choose the voice for Guided practices?',
+     'a': 'Wellness uses your phone\'s own voice. On the Guided page tap '
+          '"Voice" to pick one and hear it. On a Samsung, more voices are '
+          'in the phone\'s Settings, General management, Text-to-speech: '
+          'choose Google, then Install voice data, English, and pick a '
+          'female voice. Earphones help.'},
+    {'q': 'Can Calm tick a habit?',
+     'a': 'Yes. Edit the habit and under "Tick it for me" choose "When I '
+          'spend time in Calm". A minutes habit counts your Calm minutes '
+          'towards its target; any other habit is ticked by a session.'},
     {'q': 'Why does Wellness keep me logged in?',
      'a': 'On your phone, Wellness stays logged in for 30 days from your '
           'last visit, so a morning tick is one tap. The rest of Alivente '

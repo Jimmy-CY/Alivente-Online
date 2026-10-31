@@ -1,0 +1,18 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ g.name }} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:calm_guided' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Guided</a>{% endblock %}
+{% block content %}
+{% comment %} WL-7, 31 Oct 2026 - one guided practice: begin, and the phone reads it aloud. {% endcomment %}
+<div>
+  <span class="w-label">{{ g.minutes }} minutes</span>
+  <h1 class="w-title">{{ g.name }}</h1>
+  <p class="w-quiet" style="margin:6px 0 0">{{ g.sub }}.</p>
+</div>
+<section class="w-card soft" style="gap:10px">
+  <p style="margin:0">Find a comfortable place. When you begin, a soft bell rings and your phone's voice guides you. The words show on screen too.</p>
+  <p class="w-quiet w-small" style="margin:0">Voice: <span data-voice-name>your phone's voice</span> · <a href="{% url 'wellness:calm_guided' %}#voice" style="color:var(--w-sage-deep)">change</a></p>
+</section>
+<button type="button" class="w-btn full" data-calm-begin>Begin</button>
+<p class="w-quiet w-small" style="margin:0;text-align:center">The screen stays on. Earphones help.</p>
+{% include "wellness/includes/calm_run.html" with kind="guided" %}
+{% endblock %}
