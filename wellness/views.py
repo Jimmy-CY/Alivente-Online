@@ -851,6 +851,17 @@ def manifest(request):
              'sizes': '512x512', 'type': 'image/png',
              'purpose': 'maskable'},
         ],
+        # CY-2, 31 Oct 2026 - long-press the Wellness icon. (Android does
+        # not let web apps add home-screen widgets; these are the nearest.)
+        # Nothing about the cycle here: anyone can long-press a phone.
+        'shortcuts': [
+            {'name': 'Breathe', 'short_name': 'Breathe',
+             'url': '/wellness/calm/breathe/?source=shortcut'},
+            {'name': 'Evening check-in', 'short_name': 'Check-in',
+             'url': '/wellness/journal/new/?kind=checkin'},
+            {'name': 'Weigh in', 'short_name': 'Weigh in',
+             'url': '/wellness/body/weigh/'},
+        ],
     }
     return HttpResponse(json.dumps(data),
                         content_type='application/manifest+json')
@@ -859,7 +870,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl11-1'
+SW_VERSION = 'wl12-1'
 
 
 def service_worker(request):

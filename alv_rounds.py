@@ -1563,6 +1563,8 @@ ROUNDS = [
     '.bak_wellness10',
     # WL-9, 31 Oct 2026 - Wellness: your sections.
     '.bak_wellness11',
+    # CY-2, 31 Oct 2026 - Wellness: cycle phases.
+    '.bak_wellness12',
 ]
 
 

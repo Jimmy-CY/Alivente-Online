@@ -222,16 +222,25 @@ SCREENS = {
     },
     'cycle': {
         'title': 'Cycle',
-        'purpose': 'Where you are in your cycle, and when the next period '
-                   'is likely.',
+        'purpose': 'Where you are in your cycle, its phase, and when the '
+                   'next period is likely.',
         'steps': [
-            'Tap Log today on the first day you bleed, and each day after.',
+            'The card at the top shows the day of your cycle and its phase '
+            'on a soft wave. Tomorrow shows the next day.',
+            'Tap My period started on day one, and My period ended when it '
+            'stops - the days between are filled in for you.',
+            'Ideas for today: things to do, move and eat for the phase. '
+            'Tap one for why and how; hide any you do not want.',
+            'Or tap Log today to add flow, symptoms and a note.',
             'Tap any past day on the calendar to fill it in or change it.',
             'Predictions start after two cycles, as a window of a few days.',
             'The cog opens settings: modes, the fertile estimate, download '
             'and delete.',
         ],
         'signs': [
+            ('--w-rose-deep', 'The dot on the wave: where you are. The '
+                              'phases are estimates from your own '
+                              'averages.'),
             ('--w-rose-soft', 'Rose days: your period.'),
             ('--w-rose', 'Outlined days: when the next one is expected.'),
             ('--w-sky-soft', 'Pale blue: the fertile estimate, only if you '
@@ -385,7 +394,7 @@ NOT_SCREENS = {
     'session_delete', 'set_save', 'set_delete', 'cycle_export',
     'cycle_delete', 'tip_seen', 'manifest', 'service_worker', 'asset',
     'badges_seen', 'push_subscribe', 'push_unsubscribe', 'push_test',
-    'calm_done',
+    'calm_done', 'cycle_quick',
 }
 
 

@@ -141,6 +141,19 @@ HOWTO = [
      'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
           'me" choose "When I finish a workout". Finishing any workout then '
           'ticks it for that day.'},
+    # CY-2, 31 Oct 2026 - cycle phases.
+    {'q': 'What are the cycle phases?',
+     'a': 'Four stretches of a cycle: menstrual (your period), follicular '
+          '(energy often rises), ovulation (often the most energetic days) '
+          'and luteal (winding down before the next period). Wellness '
+          'estimates them from your own averages, so they sharpen as you '
+          'log. With very irregular cycles, pregnancy or hormonal '
+          'contraception it shows the day only.'},
+    {'q': 'What are the ideas on the cycle page?',
+     'a': 'A few things to do, move and eat that suit the phase - each '
+          'with why and how. They are ideas, not rules, and nothing in them '
+          'is medical advice. Hide any you do not want; "Show the ideas you '
+          'hid" brings them back.'},
     # WL-9, 31 Oct 2026 - your sections.
     {'q': 'Can I hide the parts I do not use?',
      'a': 'Yes. Tap the cog, open Your sections and switch off any of '

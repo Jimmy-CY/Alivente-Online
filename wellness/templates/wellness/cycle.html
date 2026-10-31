@@ -32,6 +32,66 @@
   </div>
 </section>
 
+{% comment %}
+  CY-2, 31 Oct 2026 - the phase card (Demetri, sharing Lively, 15:41): the
+  day of the cycle and its phase on a soft wave, Today or Tomorrow; one tap
+  for "My period started" and "My period ended"; a line for the day; and
+  the Do - Move - Eat board (15:46). Ideas, not rules. Phases are estimates.
+{% endcomment %}
+{% if card %}
+<section class="w-card w-phase" data-phase-card>
+  <nav class="w-seg" aria-label="Which day">
+    <a href="{% url 'wellness:cycle' %}"{% if when == 'today' %} class="is-on" aria-current="true"{% endif %}>Today</a>
+    <a href="{% url 'wellness:cycle' %}?when=tomorrow"{% if when == 'tomorrow' %} class="is-on" aria-current="true"{% endif %}>Tomorrow</a>
+  </nav>
+  <p class="w-quiet" style="margin:0;text-align:center">{% if when == 'tomorrow' %}Tomorrow is day {{ card.day }}{% else %}Day {{ card.day }}{% endif %} of your cycle{% if open_day and when == 'today' %} · day {{ open_day }} of your period{% endif %}</p>
+  {% if card.phase %}
+  <h2 class="w-phase-name">{{ card.name }}</h2>
+  <svg class="w-wave" viewBox="0 0 {{ wave.w }} {{ wave.h }}" role="img" aria-label="{{ card.name }}, day {{ card.day }}"><path d="{{ wave.d }}"/><circle cx="{{ wave.cx }}" cy="{{ wave.cy }}" r="8"/></svg>
+  {% if card.estimated %}<p class="w-small w-quiet" style="margin:0;text-align:center">An estimate until a couple of cycles are logged.</p>{% elif card.late %}<p class="w-small w-quiet" style="margin:0;text-align:center">Longer than your usual cycle - your period may be on its way.</p>{% endif %}
+  {% else %}
+  <p class="w-small w-quiet" style="margin:0;text-align:center">{{ card.why_none }}</p>
+  {% endif %}
+  {% if when == 'today' and not locked %}
+  {% if open_from %}
+  <form method="post" action="{% url 'wellness:cycle_quick' %}" class="w-btn-row">{% csrf_token %}<input type="hidden" name="do" value="end"><button type="submit" class="w-btn w-sand-btn" style="flex:1">My period ended</button></form>
+  <form method="post" action="{% url 'wellness:cycle_quick' %}" style="text-align:center">{% csrf_token %}<input type="hidden" name="do" value="end"><input type="hidden" name="on" value="yesterday"><button type="submit" class="w-linkbtn w-small">It ended yesterday</button></form>
+  {% elif can_start %}
+  <form method="post" action="{% url 'wellness:cycle_quick' %}" class="w-btn-row">{% csrf_token %}<input type="hidden" name="do" value="start"><button type="submit" class="w-btn w-sand-btn" style="flex:1">My period started</button></form>
+  {% endif %}
+  {% endif %}
+</section>
+{% if card.title %}
+<section class="w-card soft" style="gap:6px" data-phase-line>
+  <span class="w-label">{{ card.title }}</span>
+  <p style="margin:0">{{ card.line }}</p>
+</section>
+{% endif %}
+{% if board %}
+<section class="w-card" id="board" aria-labelledby="board-h" data-board>
+  <h2 class="w-h2" id="board-h">Ideas for {% if when == 'tomorrow' %}tomorrow{% else %}today{% endif %}</h2>
+  <p class="w-small w-quiet" style="margin:0">Ideas, not rules. Tap one to see why and how; hide any you do not want.</p>
+  {% for g, gname, items in board %}{% if items %}
+  <div class="w-label">{{ gname }}</div>
+  <div class="w-ideas">
+    {% for it in items %}
+    <details class="w-idea">
+      <summary>{{ it.name }}</summary>
+      <p><b>Why</b> {{ it.why }}</p>
+      <p><b>How</b> {{ it.how }}</p>
+      <div class="w-idea-acts">
+        {% if it.link %}<a class="w-btn ghost" href="{{ it.link }}">Open</a>{% endif %}
+        <form method="post" action="{% url 'wellness:cycle_quick' %}">{% csrf_token %}<input type="hidden" name="do" value="hide"><input type="hidden" name="tip" value="{{ it.key }}"><input type="hidden" name="when" value="{{ when }}"><button type="submit" class="w-btn quiet">Hide this idea</button></form>
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}{% endfor %}
+  {% if hidden_n %}<form method="post" action="{% url 'wellness:cycle_quick' %}">{% csrf_token %}<input type="hidden" name="do" value="unhide"><input type="hidden" name="when" value="{{ when }}"><button type="submit" class="w-linkbtn w-small">Show the {{ hidden_n }} idea{{ hidden_n|pluralize }} you hid</button></form>{% endif %}
+</section>
+{% endif %}
+{% endif %}
+
 <a class="w-btn full" href="{% url 'wellness:cycle_log' %}">{% if logged_today %}Change today{% else %}Log today{% endif %}</a>
 
 <section class="w-card" aria-labelledby="cal-h">

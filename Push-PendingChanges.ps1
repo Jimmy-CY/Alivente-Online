@@ -1284,7 +1284,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
     @{ File = 'pages/management/commands/check_lease_renewal_and_invoices.py'; Text = 'Celebration email to %s'; What = 'CX-1: the celebrations email retries like the others - without it one mail-server hiccup loses every celebration email for the day' },
     @{ File = 'wellness/training.py'; Text = 'def suggest('; What = 'WL-3: the workout rules are on disk - without them no workout can start' },
-    @{ File = 'wellness/cycle.py'; Text = 'def summary('; What = 'CY-1: the cycle rules are on disk - without them the tracker cannot open' },
+    @{ File = 'wellness/cycle.py'; Text = 'open_period'; What = 'CY-1/CY-2: the cycle rules are on disk, with the one-tap period - without them the tracker cannot open' },
     @{ File = 'wellness/badges.py'; Text = 'First breath'; What = 'WL-4a/WL-7: the badge rules are on disk, with the Calm badges - without them Today cannot open' },
     @{ File = 'wellness/reminders.py'; Text = 'MOD.checkin_on(mods)'; What = 'WL-4b/WL-9: the reminder rules are on disk, skipping switched-off sections - without them the reminder job cannot run' },
     @{ File = 'wellness/daily_line.py'; Text = 'def key_present('; What = 'WL-4c/WL-5: the line rules are on disk, with the missing-key check - without them Today cannot open' },
@@ -1293,6 +1293,7 @@ $sentinels = @(
     @{ File = 'wellness/calm.py'; Text = 'def tick_value('; What = 'WL-7: the Calm practices and minutes are on disk - without them the Calm tab cannot open' },
     @{ File = 'wellness/challenge.py'; Text = 'def carry_on('; What = 'WL-8: the challenge rules are on disk - without them Today cannot open' },
     @{ File = 'wellness/modules.py'; Text = 'def section_of('; What = 'WL-9: the section switches are on disk - without them no Wellness page opens' },
+    @{ File = 'wellness/phases.py'; Text = 'def place('; What = 'CY-2: the cycle phases are on disk - without them the cycle tracker cannot open' },
     @{ File = 'wellness/body.py'; Text = 'def trend('; What = 'WL-2: the trend weight is on disk - without it Body and Today cannot be drawn' },
     @{ File = 'pages/templates/login.html'; Text = 'id="passkeyLogin"'; What = 'PK-1: the login page offers the fingerprint - without it nobody can use the passkey they added' },
     @{ File = 'wellness/habits.py'; Text = 'def can_establish('; What = 'WL-1: the Wellness habit rules are on disk - without them Today cannot be drawn' },
@@ -3238,7 +3239,9 @@ $suites = @(
     # WL-8, 31 Oct 2026 - Wellness: challenges.
     'test_wellness_ten.py',
     # WL-9, 31 Oct 2026 - Wellness: your sections.
-    'test_wellness_eleven.py'
+    'test_wellness_eleven.py',
+    # CY-2, 31 Oct 2026 - Wellness: cycle phases.
+    'test_wellness_twelve.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

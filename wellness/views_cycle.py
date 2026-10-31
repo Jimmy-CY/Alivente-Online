@@ -34,12 +34,21 @@ def _off():
 
 @wellness_view
 def home(request):
+    from . import phases as PH
     rec, prefs, days = C.load(request.user)
     if not prefs['on']:
         return render(request, 'wellness/cycle_intro.html', {
             'tab': 'cycle', 'had': bool(days)})
     today = _today()
     s = C.summary(days, today, prefs)
+    # CY-2 - a period begun with one tap closes itself if nobody ends it.
+    if not prefs.get('locked') and PH.tidy(prefs, days, today,
+                                           s.get('avg_period')):
+        C.save(request.user, prefs, days)
+        s = C.summary(days, today, prefs)
+    when = 'tomorrow' if request.GET.get('when') == 'tomorrow' else 'today'
+    card = PH.place(s, when)
+    open_from = PH.open_start(prefs)
     month = request.GET.get('m', '')
     try:
         y, m = [int(x) for x in month.split('-')]
@@ -67,7 +76,50 @@ def home(request):
         'today': today,
         'logged_today': today.isoformat() in days,
         'locked': prefs.get('locked'),
+        # CY-2 - the phase card, the one-tap buttons and the board.
+        'when': when,
+        'card': card,
+        'wave': PH.wave(card['frac']) if card else None,
+        'open_from': open_from,
+        'open_day': (today - open_from).days + 1 if open_from else None,
+        'can_start': not open_from and not s.get('in_period') and
+        s['state'] not in ('pregnant',),
+        'board': PH.board(card['phase'], prefs.get('hidden_tips'))
+        if card and card['phase'] else [],
+        'hidden_n': len([k for k in (prefs.get('hidden_tips') or ())
+                         if k in PH.ALL_KEYS]),
     })
+
+
+@wellness_view
+@require_POST
+def quick(request):
+    """CY-2 - one tap: started, ended (today or yesterday), hide or show
+    an idea on the board."""
+    from . import phases as PH
+    rec, prefs, days = C.load(request.user)
+    if not prefs['on'] or prefs.get('locked'):
+        return _off()
+    today = _today()
+    what = request.POST.get('do', '')
+    if what == 'start':
+        PH.start(prefs, days, today)
+    elif what == 'end':
+        on = today - dt.timedelta(days=1) \
+            if request.POST.get('on') == 'yesterday' else today
+        PH.end(prefs, days, today, on)
+    elif what == 'hide' and request.POST.get('tip') in PH.ALL_KEYS:
+        hidden = list(prefs.get('hidden_tips') or ())
+        if request.POST['tip'] not in hidden:
+            hidden.append(request.POST['tip'])
+        prefs['hidden_tips'] = hidden
+    elif what == 'unhide':
+        prefs['hidden_tips'] = []
+    C.save(request.user, prefs, days)
+    back = reverse('wellness:cycle')
+    if request.POST.get('when') == 'tomorrow':
+        back += '?when=tomorrow'
+    return redirect(back + ('#board' if what in ('hide', 'unhide') else ''))
 
 
 @wellness_view

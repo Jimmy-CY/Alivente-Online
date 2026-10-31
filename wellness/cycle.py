@@ -60,7 +60,10 @@ MODES = [
 MODE_NAMES = dict(MODES)
 
 DEFAULT_SETTINGS = {'on': False, 'fertile': False, 'mode': 'normal',
-                    'remind': False}
+                    'remind': False,
+                    # CY-2 - a period begun with one tap and not yet
+                    # ended (an ISO date), and the board ideas hidden.
+                    'open_period': '', 'hidden_tips': ()}
 
 # A gap of one dry day inside a period does not end it.
 JOIN_GAP = 2

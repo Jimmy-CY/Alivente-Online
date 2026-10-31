@@ -53,6 +53,8 @@ urlpatterns = [
     # every page is the signed-in person's own record.
     path('cycle/', CY.home, name='cycle'),
     path('cycle/log/', CY.log_day, name='cycle_log'),
+    # CY-2, 31 Oct 2026 - one tap: started, ended, hide an idea.
+    path('cycle/quick/', CY.quick, name='cycle_quick'),
     path('cycle/settings/', CY.settings_page, name='cycle_settings'),
     path('cycle/patterns/', CY.patterns, name='cycle_patterns'),
     path('cycle/report/', CY.report, name='cycle_report'),
