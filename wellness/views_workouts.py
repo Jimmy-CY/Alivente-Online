@@ -11,6 +11,7 @@ from decimal import Decimal, InvalidOperation
 from django.db.models import Q
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -68,6 +69,10 @@ def home(request):
     this_week = WorkoutSession.objects.filter(
         user=request.user, finished_at__isnull=False,
         date__gte=week_start).count()
+    week_cal = sum(WorkoutSession.objects.filter(
+        user=request.user, finished_at__isnull=False,
+        date__gte=week_start, calories__isnull=False)
+        .values_list('calories', flat=True))
     prs = WorkoutSet.objects.filter(session__user=request.user,
                                     is_pr=True).select_related(
         'exercise', 'session').order_by('-session__started_at')[:5]
@@ -75,6 +80,7 @@ def home(request):
         'tab': 'workouts', 'routines': routines,
         'today_routines': today_routines, 'open_session': open_session,
         'recent': recent, 'this_week': this_week, 'prs': prs,
+        'week_cal': week_cal,
         'weekday_names': WEEKDAYS,
         'tip': _tip(profile, ['workout_routine']) if not routines else None,
     })
@@ -413,7 +419,47 @@ def session_detail(request, pk):
         'duration': TR.duration(secs),
         'volume': int(TR.volume([(x.weight, x.reps) for x in sets])),
         'records': [x for x in sets if x.is_pr],
+        'cal_open': request.GET.get('calories') == '1' or bool(
+            request.GET.get('cal_error')),
+        'cal_error': request.GET.get('cal_error') == '1',
+        'cal_max': CAL_MAX,
     })
+
+
+# WL-11, 1 Nov 2026. Demetri: "When I do a workout I want to be able to
+# optionally capture the Calories that I burnt during that workout."
+# Typed in from the watch (a web app cannot read the watch, and an estimate
+# from weight and time is far rougher than the watch's heart-rate figure).
+# Blank clears it. Can be added or changed any time after.
+CAL_MAX = 5000
+
+
+def clean_calories(raw):
+    """'285' -> 285, '' -> None; ValueError for anything else."""
+    raw = (raw or '').strip().replace(',', '').replace(' ', '')
+    if raw.lower().endswith('kcal'):
+        raw = raw[:-4]
+    if not raw:
+        return None
+    if not raw.isdigit():
+        raise ValueError('not a whole number')
+    n = int(raw)
+    if n < 1 or n > CAL_MAX:
+        raise ValueError('out of range')
+    return n
+
+
+@wellness_view
+@require_POST
+def session_calories(request, pk):
+    s = get_object_or_404(WorkoutSession, pk=pk, user=request.user)
+    try:
+        s.calories = clean_calories(request.POST.get('calories'))
+    except ValueError:
+        return redirect(reverse('wellness:session_detail', args=[s.pk]) +
+                        '?cal_error=1#w-cal')
+    s.save(update_fields=['calories'])
+    return redirect('wellness:session_detail', pk=s.pk)
 
 
 @wellness_view

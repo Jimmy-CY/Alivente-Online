@@ -1294,6 +1294,7 @@ $sentinels = @(
     @{ File = 'wellness/challenge.py'; Text = 'def valid_days('; What = 'WL-8/CY-3: the challenge rules are on disk, with your own number of days - without them Today cannot open' },
     @{ File = 'wellness/modules.py'; Text = 'def section_of('; What = 'WL-9: the section switches are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
+    @{ File = 'wellness/views_workouts.py'; Text = 'def clean_calories('; What = 'WL-11: workout calories are checked - without it a finished workout cannot save its calories' },
     @{ File = 'wellness/views_cycle.py'; Text = 'def _hm_ok('; What = 'CY-3: the pill reminder time is checked - without it Cycle settings cannot save' },
     @{ File = 'wellness/body.py'; Text = 'def trend('; What = 'WL-2: the trend weight is on disk - without it Body and Today cannot be drawn' },
     @{ File = 'pages/templates/login.html'; Text = 'id="passkeyLogin"'; What = 'PK-1: the login page offers the fingerprint - without it nobody can use the passkey they added' },
@@ -3246,7 +3247,9 @@ $suites = @(
     # CY-3, 31 Oct 2026 - Wellness: deeper cycle tracking.
     'test_wellness_thirteen.py',
     # CY-4, 1 Nov 2026 - Wellness: honest wording for the cycle ideas.
-    'test_wellness_fourteen.py'
+    'test_wellness_fourteen.py',
+    # WL-11, 1 Nov 2026 - Wellness: calories on a workout.
+    'test_wellness_fifteen.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

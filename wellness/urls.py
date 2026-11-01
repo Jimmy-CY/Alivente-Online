@@ -42,6 +42,8 @@ urlpatterns = [
     path('workouts/<int:pk>/add/', W.set_add, name='set_add'),
     path('workouts/<int:pk>/finish/', W.session_finish,
          name='session_finish'),
+    path('workouts/<int:pk>/calories/', W.session_calories,
+         name='session_calories'),
     path('workouts/<int:pk>/delete/', W.session_delete,
          name='session_delete'),
     path('workouts/sets/<int:pk>/', W.set_save, name='set_save'),

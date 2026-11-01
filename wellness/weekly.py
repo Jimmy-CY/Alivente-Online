@@ -62,6 +62,8 @@ def summary(user, monday):
     sessions = list(WorkoutSession.objects.filter(
         user=user, finished_at__isnull=False, date__gte=monday,
         date__lte=sunday).order_by('date')) if 'workouts' in mods else []
+    # WL-11: calories typed in from the watch, where there are any.
+    calories = sum(s.calories for s in sessions if s.calories)
     minutes = 0
     for s in sessions:
         if s.finished_at and s.started_at:
@@ -90,6 +92,7 @@ def summary(user, monday):
             'met': sum(1 for h in habits if h['met']),
             'sessions': [{'name': s.name, 'date': s.date} for s in sessions],
             'minutes': minutes, 'records': records, 'weight': weight,
+            'calories': calories,
             'badges': new_badges}
 
 
@@ -126,6 +129,8 @@ def render(s, first_name):
         head = 'Workouts: %d' % len(s['sessions'])
         if s['minutes']:
             head += ', %d minutes' % s['minutes']
+        if s.get('calories'):
+            head += ', %d kcal' % s['calories']
         if s['records']:
             head += ', %d new record%s' % (s['records'],
                                            '' if s['records'] == 1 else 's')

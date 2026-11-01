@@ -8,7 +8,8 @@ here for now).
 One page that puts the sections side by side over the last eight weeks
 and says, carefully, what goes with what:
 
-    - week by week: habits done, Calm minutes, workouts, mood;
+    - week by week: habits done, Calm minutes, workouts, mood, and
+      (WL-11) the calories typed in for workouts, once there are any;
     - the weight trend over the eight weeks;
     - findings such as "On days you did Calm, your mood averaged 3.9,
       against 3.4 on other days" - only with enough days on both sides
@@ -58,7 +59,8 @@ def compare(mood_by_day, flag_days, what):
             'up': a > b}
 
 
-def weekly(today, mood_by_day, habit_days, calm_secs, workout_days):
+def weekly(today, mood_by_day, habit_days, calm_secs, workout_days,
+           workout_cal=None):
     """Rows per week, oldest first. habit_days: date -> (done, due)."""
     out = []
     for m in week_starts(today):
@@ -73,6 +75,7 @@ def weekly(today, mood_by_day, habit_days, calm_secs, workout_days):
             'habits_pct': int(round(100.0 * done / due)) if due else None,
             'calm_min': sum(calm_secs.get(d, 0) for d in days) // 60,
             'workouts': sum(1 for d in days if d in workout_days),
+            'kcal': sum((workout_cal or {}).get(d, 0) for d in days),
             'mood': round(avg(moods), 1) if moods else None,
         })
     return out
@@ -164,11 +167,16 @@ def gather(user, today, on):
                 user=user, date__gte=since).values_list('date', 'seconds'):
             calm_secs[d] = calm_secs.get(d, 0) + s
     workout_days = set()
+    workout_cal = {}
     if 'workouts' in on:
-        workout_days = set(WorkoutSession.objects.filter(
-            user=user, finished_at__isnull=False, date__gte=since)
-            .values_list('date', flat=True))
-    rows = weekly(today, mood_by_day, habit_days, calm_secs, workout_days)
+        for d, c in WorkoutSession.objects.filter(
+                user=user, finished_at__isnull=False, date__gte=since
+        ).values_list('date', 'calories'):
+            workout_days.add(d)
+            if c:
+                workout_cal[d] = workout_cal.get(d, 0) + c
+    rows = weekly(today, mood_by_day, habit_days, calm_secs, workout_days,
+                  workout_cal)
     weight = None
     if 'body' in on:
         readings = {m.date: float(m.value) for m in BodyMetric.objects.filter(
@@ -196,6 +204,7 @@ def gather(user, today, on):
         'habits': bars(rows, 'habits_pct', 100) if 'habits' in on else None,
         'calm': bars(rows, 'calm_min') if 'calm' in on else None,
         'workouts': bars(rows, 'workouts') if 'workouts' in on else None,
+        'kcal': bars(rows, 'kcal') if workout_cal else None,
         'mood': bars(rows, 'mood', 5) if 'journal' in on else None,
         'findings': findings(mood_by_day, habit_days, set(calm_secs),
                              workout_days, on),

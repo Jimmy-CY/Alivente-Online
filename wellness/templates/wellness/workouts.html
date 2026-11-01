@@ -3,7 +3,7 @@
 {% block content %}
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
   <h1 class="w-title">Workouts</h1>
-  <span class="w-small w-quiet">{{ this_week }} this week</span>
+  <span class="w-small w-quiet">{{ this_week }} this week{% if week_cal %} · {{ week_cal }} kcal{% endif %}</span>
 </div>
 
 {% if open_session %}
@@ -64,7 +64,7 @@
   <h2 class="w-h2" style="font-size:16px;padding-top:16px">Recent workouts</h2>
   {% for s in recent %}
   <a class="w-row" href="{% url 'wellness:session_detail' s.pk %}">
-    <span class="w-row-main"><span class="w-row-name">{{ s.name }}</span><span class="w-row-sub">{{ s.date|date:"D j M" }}{% if s.effort %} · effort {{ s.effort }}/10{% endif %}</span></span>
+    <span class="w-row-main"><span class="w-row-name">{{ s.name }}</span><span class="w-row-sub">{{ s.date|date:"D j M" }}{% if s.effort %} · effort {{ s.effort }}/10{% endif %}{% if s.calories %} · {{ s.calories }} kcal{% endif %}</span></span>
     <span class="w-quiet">›</span>
   </a>
   {% endfor %}

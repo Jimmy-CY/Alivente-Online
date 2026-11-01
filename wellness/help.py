@@ -196,8 +196,14 @@ SCREENS = {
     },
     'session_detail': {
         'title': 'A finished workout',
-        'purpose': 'What you did, how long it took and any records.',
-        'steps': ['Delete removes the whole workout.'],
+        'purpose': 'What you did, how long it took, any records and, if '
+                   'you add them, the calories you burnt.',
+        'steps': ['Tap + Add calories and type the number your watch shows '
+                  'for this workout. It is optional, and you can add or '
+                  'change it later from Recent workouts.',
+                  'Your calories add up on the Workouts page, in the '
+                  'Monday email and on Insights.',
+                  'Delete removes the whole workout.'],
         'signs': [('--w-sand', 'A star marks a personal record.')],
     },
     'exercise_detail': {
@@ -427,7 +433,7 @@ NOT_SCREENS = {
     'session_delete', 'set_save', 'set_delete', 'cycle_export',
     'cycle_delete', 'tip_seen', 'manifest', 'service_worker', 'asset',
     'badges_seen', 'push_subscribe', 'push_unsubscribe', 'push_test',
-    'calm_done', 'cycle_quick',
+    'calm_done', 'cycle_quick', 'session_calories',
 }
 
 

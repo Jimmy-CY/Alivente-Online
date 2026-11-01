@@ -320,6 +320,8 @@ class WorkoutSession(models.Model):
     finished_at = models.DateTimeField(null=True, blank=True)
     effort = models.PositiveSmallIntegerField(null=True, blank=True)
     note = models.CharField(max_length=280, blank=True)
+    # WL-11, 1 Nov 2026: calories burnt, typed in from the watch. Optional.
+    calories = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         db_table = 'wellness_workout_session'

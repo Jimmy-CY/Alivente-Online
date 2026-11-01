@@ -10,7 +10,22 @@
   <div><div class="w-big" style="font-size:26px">{{ duration }}</div><div class="w-small w-quiet">time</div></div>
   <div><div class="w-big" style="font-size:26px">{{ volume }}</div><div class="w-small w-quiet">kg lifted</div></div>
   <div><div class="w-big" style="font-size:26px">{{ records|length }}</div><div class="w-small w-quiet">record{{ records|length|pluralize }}</div></div>
+  {% if s.finished_at %}<a href="?calories=1#w-cal" data-cal-tile style="color:inherit;text-decoration:none;min-height:44px">{% if s.calories %}<div class="w-big" style="font-size:26px">{{ s.calories }}</div><div class="w-small w-quiet">kcal</div>{% else %}<div class="w-big" style="font-size:26px;color:var(--w-sage-deep)">+ Add</div><div class="w-small w-quiet">calories</div>{% endif %}</a>{% endif %}
 </section>
+{% if s.finished_at and cal_open %}
+<details class="w-card" id="w-cal" open>
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">{% if s.calories %}Calories burnt: {{ s.calories }} kcal - change{% else %}Add calories from your watch{% endif %}</summary>
+  <form method="post" action="{% url 'wellness:session_calories' s.pk %}" style="display:flex;flex-direction:column;gap:10px">{% csrf_token %}
+    <label for="w-cal-in" class="w-small w-quiet">The calories your watch shows for this workout. Optional - leave it empty to clear it.</label>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input id="w-cal-in" name="calories" type="number" inputmode="numeric" min="1" max="{{ cal_max }}" step="1" value="{{ s.calories|default_if_none:'' }}" placeholder="e.g. 285" style="flex:1;min-height:48px;font-size:18px"{% if cal_open %} autofocus{% endif %}>
+      <span class="w-quiet">kcal</span>
+    </div>
+    {% if cal_error %}<p class="w-small" role="alert" style="margin:0;color:var(--w-rose-deep, #9A4A4A)">Please type a whole number from 1 to {{ cal_max }}.</p>{% endif %}
+    <button class="w-btn" type="submit">Save</button>
+  </form>
+</details>
+{% endif %}
 {% for r in records %}
 <div class="w-card sand" style="flex-direction:row;align-items:center;gap:12px;padding:14px 18px">
   <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5l4.4 9 9.6 1.3-7 6.7 1.7 9.6L20 27l-8.7 4.6 1.7-9.6-7-6.7 9.6-1.3z" fill="#E8DCC8" stroke="#A0824F" stroke-width="1.6" stroke-linejoin="round"/></svg>

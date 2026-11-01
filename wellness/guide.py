@@ -137,6 +137,14 @@ HOWTO = [
           'your best estimated one-rep max, or your longest time or distance. '
           'The first time you do an exercise sets the bar; after that, '
           'beating it gets a star.'},
+    # WL-11, 1 Nov 2026 - workout calories.
+    {'q': 'Can I record the calories I burnt in a workout?',
+     'a': 'Yes. When you finish, tap + Add calories at the top and type '
+          'the number your watch shows. It is optional; you can add or '
+          'change it later by opening the workout from Recent workouts. '
+          'Wellness does not estimate calories itself - a guess from weight '
+          'and time is far rougher than your watch, which measures your '
+          'heart rate.'},
     {'q': 'Can a habit tick itself when I train?',
      'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
           'me" choose "When I finish a workout". Finishing any workout then '

@@ -1569,6 +1569,8 @@ ROUNDS = [
     '.bak_wellness13',
     # CY-4, 1 Nov 2026 - Wellness: honest wording for the cycle ideas.
     '.bak_wellness14',
+    # WL-11, 1 Nov 2026 - Wellness: calories on a workout.
+    '.bak_wellness15',
 ]
 
 

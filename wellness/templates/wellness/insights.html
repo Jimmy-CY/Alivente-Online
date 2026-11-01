@@ -43,6 +43,11 @@
 <section class="w-card" aria-labelledby="ins-w"><h2 class="w-h2" id="ins-w">Workouts</h2>
   <div class="w-ins-bars train">{% for b in i.workouts %}<span title="{{ b.label }}: {{ b.v }}"><b>{{ b.v }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div></section>
 {% endif %}
+{% if i.kcal %}
+<section class="w-card" aria-labelledby="ins-k" data-ins-kcal><h2 class="w-h2" id="ins-k">Workout calories</h2>
+  <div class="w-ins-bars train">{% for b in i.kcal %}<span title="{{ b.label }}: {{ b.v }} kcal"><b>{% if b.v %}{{ b.v }}{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
+  <p class="w-small w-quiet" style="margin:0">Each week: the calories you typed in from your watch.</p></section>
+{% endif %}
 {% if i.weight %}
 <section class="w-card" style="gap:6px" data-ins-weight><h2 class="w-h2">Weight trend</h2>
   <p style="margin:0">{% if i.weight.dir == 'steady' %}Steady at about {{ i.weight.end }} kg over these weeks.{% else %}{{ i.weight.start }} to {{ i.weight.end }} kg - {{ i.weight.dir }} {{ i.weight.change }} kg over these weeks.{% endif %}</p></section>
