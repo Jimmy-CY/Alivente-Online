@@ -197,7 +197,9 @@ t = run(D(2026, 10, 29))          # a Thursday
 ok(CH.week_target(t, D(2026, 10, 26), D(2026, 10, 29)) == 2,
    'A THURSDAY START: the first week asks for its share - 2 of 4')
 s = CH.state(t, {D(2026, 10, 30), D(2026, 11, 1)}, D(2026, 11, 1))
-ok(s['strip'][0]['cls'] == 'done' and s['this_words'] == '2 of 2 this week',
+# WL-13: a met week adds "- week 2 starts on Monday" (test_wellness_seventeen).
+ok(s['strip'][0]['cls'] == 'done' and
+   s['this_words'].startswith('2 of 2 this week'),
    '  two runs by Sunday and it counts', (s['words'], s['this_words']))
 g = Habit(name='Gym', kind='yes_no', schedule='weekdays', weekdays='024',
           started_on=D(2026, 10, 1))

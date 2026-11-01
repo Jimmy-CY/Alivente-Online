@@ -25,10 +25,16 @@ SCREENS = {
                    'workout if one is planned, a weigh-in and a minute to '
                    'write.',
         'steps': [
-            'Tap a habit when it is done. Tap again to undo.',
+            'Tap a habit when it is done. Tap again to undo. A minutes or '
+            'count habit records its aim - open it to type another amount.',
+            'A times-a-week habit leaves Today once that week\'s number is '
+            'done, and is back on Monday.',
             'Tap the arrow beside a habit to see its calendar and streak.',
             'Take a breath, weigh in, or write a few lines, from the cards '
             'below.',
+            'A challenge shows its day or week beside the habit, and asks '
+            'here once if one slipped by.',
+            'At the bottom: Your insights and Your badges.',
             'Badges you earn appear at the top until you tap Nice.',
         ],
         'signs': [
@@ -44,11 +50,14 @@ SCREENS = {
             'Tap Add a habit to start a new one - an example fills it in '
             'for you.',
             'Tap a habit to see its calendar, streak and history.',
-            'Paused habits stay here but leave Today until you resume them.',
+            'Paused habits stay here but leave Today until you resume them; '
+            'paused days count as Rest.',
+            'Established habits sit in their own quiet list, off Today.',
         ],
         'signs': [
-            ('--w-sage-deep', 'The percentage is how often it was done over '
-                              'the last 30 days. There is no prize for 100%.'),
+            ('--w-sage-deep', 'The percentage is how often it was done (or '
+                              'forgiven) over the last 30 days. There is no '
+                              'prize for 100%.'),
         ],
     },
     'habit_detail': {
@@ -64,7 +73,10 @@ SCREENS = {
             'as Missed, but never spoil your streak.',
             'Edit changes its name, schedule or reminder time.',
             'Pause takes it off Today for a while without losing anything.',
-            'After 66 good days you can mark it established.',
+            'After 66 days at 80% or better you can mark it established: it '
+            'moves to a quiet list, off Today, with no reminders.',
+            'Pause takes it off Today and stops its reminders; paused days '
+            'are Rest, so nothing counts against it.',
             'A challenge on an every-day habit shows a square for each day: '
             '"Day 12 of 30". Miss one and you choose: carry on, or start '
             'again.',
@@ -89,12 +101,14 @@ SCREENS = {
         'title': 'Adding or changing a habit',
         'purpose': 'Set up a habit in four short steps.',
         'steps': [
-            'Name it, or tap an example to fill everything in.',
-            'Choose what kind it is: yes or no, a count, minutes, or '
-            'something to avoid.',
-            'Pick when: every day, chosen days, or a number of times a week.',
-            'Optionally tie it to something you already do, let a workout '
-            'or Calm tick it, and set a reminder time.',
+            'Step 1: name it (or tap an example) and choose how you count '
+            'it: yes or no, a count, minutes, or something to avoid.',
+            'Step 2, How often: every day, chosen days, or times a week - '
+            'with a challenge if you like, and Tick it for me (a workout or '
+            'Calm).',
+            'Step 3, When does it fit: time of day, an optional reminder '
+            'time, and what you will do it after.',
+            'Step 4: the smallest version for a hard day - it still counts.',
             'Make it a challenge. Every day: 7, 14, 21 or 30 days, or your '
             'own number (2 to 365). Times a week or chosen days: 4, 6, 8 or '
             '12 weeks, or your own number (2 to 52).',
@@ -111,9 +125,10 @@ SCREENS = {
         'purpose': 'Your entries, newest first, with your mood over the '
                    'last month.',
         'steps': [
-            'Tap Write to start - a free write, gratitude or a quick note.',
-            'After five in the evening, the check-in asks three short '
-            'questions.',
+            'Tap Write to start - a free write, three good things or a quick '
+            'note.',
+            'The evening check-in (three short questions and a mood) is '
+            'there any time; after five, Today invites you to it.',
             'Open Search to find an entry by a word or a tag.',
         ],
         'signs': [
@@ -172,9 +187,12 @@ SCREENS = {
     },
     'body_goal': {
         'title': 'Your goal',
-        'purpose': 'A goal weight, your height and, if you like, a date.',
-        'steps': ['Height is used for the waist-to-height ratio.',
-                  'Leave the date empty to simply see the pace you are on.'],
+        'purpose': 'A goal weight, your height and, if you like, a date to '
+                   'keep in mind.',
+        'steps': ['Height is used for the waist-to-height ratio - under 0.5 '
+                  'is the usual guide.',
+                  'The pace you are on shows on Body after two weeks of '
+                  'weigh-ins.'],
         'signs': [],
     },
     'workouts': {
@@ -183,7 +201,9 @@ SCREENS = {
         'steps': [
             'Make a routine once - then start it in one tap.',
             'Or start an empty workout and add exercises as you go.',
-            'My kit tells Wellness which weights you own.',
+            'My equipment tells Wellness which weights you own.',
+            'The heading shows workouts this week, and their calories if you '
+            'added them.',
         ],
         'signs': [('--w-sand', 'A star marks a personal record.')],
     },
@@ -207,6 +227,8 @@ SCREENS = {
             'Change the weight or reps if you need to, then tick the set.',
             'A tick starts the rest timer. Skip it whenever you are ready.',
             'Finish when you are done - unticked sets are left out.',
+            'The screen stays awake while you train, where the phone allows '
+            'it.',
         ],
         'signs': [
             ('--w-sage-deep', 'A filled circle: the set is done.'),
@@ -239,7 +261,7 @@ SCREENS = {
         'signs': [],
     },
     'kit': {
-        'title': 'My kit',
+        'title': 'My equipment',
         'purpose': 'The weights you own, so suggestions never ask for one '
                    'you do not have.',
         'steps': ['List your dumbbells and kettlebells, and the heaviest '
@@ -259,7 +281,8 @@ SCREENS = {
             'the phase. Tap one for why and how; hide any you do not want.',
             'Or tap Log today to add flow, symptoms and a note.',
             'Tap any past day on the calendar to fill it in or change it.',
-            'Predictions start after two cycles, as a window of a few days.',
+            'A first guess at the next period appears after one full cycle, '
+            'as a window of a few days; it gets steadier from two.',
             'The cog opens settings: modes, the fertile estimate, download '
             'and delete.',
         ],
@@ -373,7 +396,8 @@ SCREENS = {
         'steps': [
             'Tap a practice to open it, then Begin.',
             'Open Voice to choose a voice and hear it.',
-            'Words only turns the voice off - the words stay on screen.',
+            'Inside a practice, Words only turns the voice off - the words '
+            'stay on screen.',
             'Nothing you hear is sent anywhere. Only the minutes are kept.',
         ],
         'signs': [],
@@ -397,7 +421,7 @@ SCREENS = {
                    'with your better days.',
         'steps': [
             'Each chart is a week: habits done, mood, Calm minutes, '
-            'workouts.',
+            'workouts - and workout calories, once you have typed some in.',
             'What goes with what compares your mood on days you did '
             'something with days you did not.',
             'It needs moods from your journal, and at least four days on '
@@ -455,6 +479,134 @@ NOT_SCREENS = {
     'calm_done', 'cycle_quick', 'session_calories',
 }
 
+
+# WL-13, 1 Nov 2026 - Demetri, 17:26: "Can we improve the Help by giving
+# even more how-to's tips and help to set up tricky items?" Good to know:
+# the tricky bits of each screen, shown under its steps. The step-by-step
+# set-ups are in guide.HOWTO (the General tab).
+TIPS = {
+    'today': [
+        'Minutes or count habits: open the habit to type an amount, or for '
+        'an earlier day.',
+        'Want fewer things here? Cog > Your sections switches whole '
+        'sections off.',
+        'Press and hold the Wellness icon on your home screen for Breathe, '
+        'the check-in and Weigh in.',
+    ],
+    'habit_detail': [
+        'Less than your aim is kept, but the day is not Done - the green '
+        'needs the full amount.',
+        'Changing an every-day habit to times a week? Pick the weeks for '
+        'its challenge in the same edit, or the challenge ends.',
+        'Undo a wrong tick by tapping the day again. Minutes or count: tap '
+        'the day, type 0, Save.',
+        'Ticking a day before the habit began moves its start back to that '
+        'day.',
+    ],
+    'habit_form': [
+        'Not sure? Start small - the smallest version still counts on a '
+        'hard day.',
+        'Times a week is kinder than every day: any days you like, no '
+        'missed days.',
+        'Picking a challenge never changes how often - every day counts '
+        'days, the others count weeks.',
+        'A reminder time needs reminders turned on for this phone (cog > '
+        'Turn on reminders here).',
+    ],
+    'journal_form': [
+        'Another prompt gives a different question - or ignore it and write '
+        'about anything.',
+        'Wrote it a day late? Open Tags and date to change the date.',
+    ],
+    'journal_list': [
+        'On this day shows what you wrote on this date before - on Today '
+        'too.',
+        'Add a mood most days - Insights needs moods to say what goes with '
+        'your better days.',
+        'The evening check-in appears after five; a reminder time for it '
+        'is set in Settings.',
+    ],
+    'body': [
+        'Switch the chart between 30 days, 90 days and a year.',
+        'Same conditions each time: morning, after the bathroom, before '
+        'food.',
+        'Daily gives the smoothest trend; three times a week is plenty.',
+    ],
+    'workouts': [
+        'Set My equipment first, so suggestions only ask for weights you '
+        'own.',
+        'A workout left open is kept - tap In progress to carry on.',
+    ],
+    'routine_form': [
+        'A rep range like 8 to 12 works for most: reach 12 on every set and '
+        'the next weight up is suggested.',
+        'Rest of 60 to 90 seconds suits most lifts; 2 to 3 minutes for the '
+        'heaviest.',
+    ],
+    'session_live': [
+        'Tick a set even if you changed nothing - only ticked sets count.',
+        '+ Add a set for one more; -15 s and +15 s change the rest timer.',
+        'How hard did it feel? is asked when you finish - it is optional.',
+        'Discard this workout removes it without saving anything.',
+    ],
+    'calm_breathe': [
+        'Box (4-4-4-4) and Even suit focus; Calm and Sleep have a longer '
+        'breath out.',
+        'Say "in" and "out", and Gentle vibration, help with your eyes '
+        'closed.',
+        'Breathe, Sit and Guided work offline. Under a minute is not '
+        'kept.',
+    ],
+    'cycle_patterns': [
+        'Choose 6 or 12 cycles before you make the report.',
+    ],
+    'session_detail': [
+        'Watches often show calories only after you stop them - add it '
+        'later from Recent workouts.',
+    ],
+    'kit': [
+        'Type dumbbells as numbers with spaces: 2 4 6 8 10.',
+        'Smallest jump on the barbell: usually 2.5 (two 1.25 kg plates).',
+    ],
+    'calm': [
+        'Earphones help, and the voice plays at media volume - fine with '
+        'the ringer silent.',
+        'A Calm habit (Edit > Tick it for me > Calm) is ticked as you go.',
+    ],
+    'calm_guided': [
+        'Try a practice first - change the voice only if it sounds wrong.',
+        'On a Samsung: Settings > General management > Text-to-speech > '
+        'Google > Install voice data for more voices.',
+    ],
+    'cycle': [
+        'A first guess appears after one full cycle and gets steadier with '
+        'each one.',
+        'Period ended yesterday? Use "It ended yesterday" rather than '
+        'today.',
+        'In perimenopause? Cycle settings > Right now I am - forecasts '
+        'become a wider guide.',
+    ],
+    'cycle_settings': [
+        'Every reminder only ever says "A Wellness reminder" - nothing on '
+        'the lock screen gives it away.',
+        'Download my log before deleting, if you want a copy.',
+    ],
+    'insights': [
+        'A finding needs four days on each side and a real difference - '
+        'give it a couple of weeks.',
+        'It shows what goes together, not what causes what.',
+    ],
+    'settings': [
+        'Reminders are per phone: tap "Turn on reminders here" on each one.',
+        'Samsung: Settings > Apps > Chrome > Battery > Unrestricted, or '
+        'reminders may arrive late.',
+        'Tap "Send me a test" to check this phone; Stop turns a phone off.',
+        'Reminders are checked every 15 minutes, so one can come a little '
+        'after its time. Cycle reminders come at 9:00.',
+    ],
+}
+for _k, _tips in TIPS.items():
+    SCREENS[_k]['tips'] = _tips
 
 def for_url_name(name):
     """The entry for this screen, or None."""

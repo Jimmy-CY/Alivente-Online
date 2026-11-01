@@ -107,25 +107,26 @@ HOWTO = [
           'have no missed days at all.'},
     {'q': 'What does "established" mean?',
      'a': 'After 66 days at 80% or better, a habit is usually part of you. '
-          'We offer to mark it established; it moves to a quiet list and '
-          'stops asking for attention.'},
+          'We offer to mark it established; it moves to a quiet list, off '
+          'Today and with no reminders. "Bring back to Today" undoes it.'},
     {'q': 'How do I fill in a day I forgot?',
      'a': 'Open the habit. The row of the last seven days takes a tap on '
           'any day. For a minutes or count habit, the tap puts that day in '
-          'the box below - type the amount and Save; 0 clears it. Up to '
-          'seven days back.'},
+          'the box below - type the amount and Save; 0 clears it. Today and '
+          'the six days before it. Ticking a day before the habit began '
+          'moves its start back to that day.'},
     {'q': 'How do I take a break from a habit?',
-     'a': 'Open the habit and choose Pause. It leaves Today and nothing '
-          'counts against it until you resume. Archive puts it away '
-          'altogether, history kept.'},
+     'a': 'Open the habit and choose Pause. It leaves Today, its reminders '
+          'stop, and the paused days are Rest - nothing counts against it, '
+          'not even a challenge, until you resume. Archive puts it away '
+          'altogether, history kept; Restore brings it back.'},
     {'q': 'Can anyone else see my Wellness?',
      'a': 'No. Everything here belongs to your login alone - not other '
           'members of the household, and not an administrator.'},
     {'q': 'Who can read my journal?',
      'a': 'Only you. Every entry is locked (encrypted) before it is saved, '
           'so even someone looking at the database sees scrambled text. '
-          'Summary emails will only ever say how often you wrote, never '
-          'what.'},
+          'The Monday email never mentions your journal at all.'},
     {'q': 'Why is my trend weight not my scale weight?',
      'a': 'Your weight swings by a kilo or more from day to day with water '
           'and food. The trend is a smoothed average where each day counts '
@@ -156,8 +157,8 @@ HOWTO = [
           'heart rate.'},
     {'q': 'Can a habit tick itself when I train?',
      'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
-          'me" choose "When I finish a workout". Finishing any workout then '
-          'ticks it for that day.'},
+          'me" choose "When I finish a workout". Finishing a workout with at '
+          'least one ticked set then ticks it for that day.'},
     # CY-3, 31 Oct 2026 - deeper cycle tracking.
     {'q': 'Can I log my mood, sleep or my own things in the cycle tracker?',
      'a': 'Yes. In Cycle settings, under More to log, switch on mood, '
@@ -181,7 +182,8 @@ HOWTO = [
           'Log today and to Patterns.'},
     {'q': 'What is Insights?',
      'a': 'A page with your last eight weeks side by side - habits done, '
-          'mood, Calm minutes, workouts and your weight trend - and, once '
+          'mood, Calm minutes, workouts, workout calories, your weight trend '
+          'and, with the cycle tracker on, mood by phase - and, once '
           'you have added moods in the journal, what goes with your better '
           'days. Patterns, not proof. Find it at the bottom of Today or in '
           'Settings.'},
@@ -269,8 +271,9 @@ HOWTO = [
           'email, and a reminder only ever says "A Wellness reminder".'},
     {'q': 'How does Wellness predict my next period?',
      'a': 'From the middle of your last six cycles, shown as a window of '
-          'a few days that widens when your cycles vary. It needs two '
-          'cycles before it guesses. Pregnancy and hormonal-contraception '
+          'a few days that widens when your cycles vary. A first guess '
+          'appears after one full cycle and steadies from two. Pregnancy '
+          'and hormonal-contraception '
           'modes switch predictions off.'},
     {'q': 'What is the fertile estimate?',
      'a': 'A rough window of days counted back from your next expected '
@@ -285,8 +288,9 @@ HOWTO = [
           'weeks, ten workouts. Once earned it is yours for good: missing '
           'a day never takes one away. See them all under Your badges.'},
     {'q': 'What is in the Monday email?',
-     'a': 'If you turn it on in Settings: last week\'s habits, workouts, '
-          'your weight trend and any new badges. Never your journal and '
+     'a': 'If you turn it on in Settings: last week\'s habits, workouts '
+          '(with calories, if you added them), your weight trend and any new '
+          'badges. Never your journal and '
           'never your cycle log. It goes only to your own address.'},
     {'q': 'How do reminders work?',
      'a': 'In Settings, tap "Turn on reminders here" on each phone and '
@@ -307,3 +311,211 @@ HOWTO = [
           '"Add to Home screen" in the menu. It then opens full screen, '
           'like an app.'},
 ]
+
+
+# ==========================================================================
+# WL-13, 1 Nov 2026 - deeper help. Demetri, 17:26: "Make sure that all the
+# Help is relevant and updated. Can we improve the Help by giving even more
+# how-to's tips and help to set up tricky items?"
+#
+#   - Step-by-step set-ups for the tricky things ('steps': numbered, said
+#     with the real button names), and a "When something is not working"
+#     group for the problems people actually hit on a Samsung.
+#   - Every question belongs to a topic, so the guide and the General tab
+#     read as groups instead of one long list.
+# ==========================================================================
+HOWTO += [
+    # ---- Getting set up
+    {'q': 'Set up: put Wellness on a Samsung phone',
+     'a': 'About a minute. Once it is on your home screen it opens full '
+          'screen, like an app.',
+     'steps': [
+         'Open Chrome and go to www.alivente.online. Log in.',
+         'Tap the three lines at the top right, then Personal, then '
+         'Wellness.',
+         'Tap Chrome\'s menu (the three dots), then "Add to Home screen" '
+         'and Install.',
+         'Open Wellness from the new icon from now on - not from Chrome.']},
+    {'q': 'Set up: sign in with your fingerprint',
+     'a': 'Do this once on each phone. After that, the login page offers '
+          '"Sign in with fingerprint" - no password to type.',
+     'steps': [
+         'Make sure your phone itself unlocks with a fingerprint.',
+         'On www.alivente.online, tap the three lines at the top right, '
+         'then your initials (or photo) to open your profile.',
+         'Tap "Add a passkey on this device" and follow the phone\'s '
+         'prompt.',
+         'Next time, on the login page tap "Sign in with fingerprint".']},
+    {'q': 'Set up: reminders on a Samsung',
+     'a': 'Reminders are switched on phone by phone. Samsung phones also '
+          'put apps to sleep to save battery, which can hold reminders '
+          'back - step 4 stops that.',
+     'steps': [
+         'In Wellness, tap the cog, then "Turn on reminders here", and '
+         'tap Allow when the phone asks.',
+         'Tap "Send me a test". It should arrive within a minute.',
+         'Under "What to remind me about", set the evening check-in and '
+         'weigh-in times. For a habit, give it a reminder time when you '
+         'edit it.',
+         'Phone Settings > Apps > Chrome > Battery: choose Unrestricted. '
+         'Do the same for Wellness if it is listed.']},
+    {'q': 'Set up: the long-press shortcuts',
+     'a': 'Press and hold the Wellness icon for Breathe, the evening '
+          'check-in and Weigh in. If nothing appears, your icon is older '
+          'than the shortcuts.',
+     'steps': [
+         'Press and hold the Wellness icon and choose Uninstall or Remove. '
+         'Nothing in Wellness is lost - it all lives on Alivente.',
+         'Add it to the home screen again (see "Put Wellness on a Samsung '
+         'phone").',
+         'Press and hold the new icon - the shortcuts are there.']},
+    # ---- Habits and challenges
+    {'q': 'Set up: a weekly challenge (Run 4 times a week)',
+     'a': 'A challenge on a times-a-week habit counts weeks.',
+     'steps': [
+         'Habits > Add a habit. Name it Run.',
+         'How do you count it? Minutes, and "Done when I reach" 30.',
+         'How often? Times a week, then 4.',
+         'Make it a challenge: 8 or 12 weeks, or Own and type a number.',
+         'Each day you run, tap Run on Today - that records your 30 '
+         'minutes. Ran longer? Open Run, type the minutes, Save.',
+         'Four runs in a Monday-to-Sunday week and that week is done; Run '
+         'leaves Today until Monday. Begun mid-week? The first week asks '
+         'for its share.']},
+    {'q': 'Set up: a habit that ticks itself',
+     'a': 'A habit can be ticked for you by a finished workout or by Calm.',
+     'steps': [
+         'Open the habit and tap Edit (or make a new one).',
+         'Under "Tick it for me", choose "When I finish a workout" or "When '
+         'I spend time in Calm".',
+         'Save. A minutes habit counts your Calm minutes towards its aim; '
+         'any other habit is ticked by the session.']},
+    {'q': 'How do I change a minutes habit for an earlier day?',
+     'a': 'Open the habit and tap the day in "The last seven days". The box '
+          'below changes to that day - type the minutes and Save. 0 clears '
+          'it. Less than your aim is kept, but the day is not Done.'},
+    # ---- Workouts
+    {'q': 'Set up: a routine that tells you when to go heavier',
+     'a': 'Wellness suggests the next weight once you reach the top of the '
+          'rep range on every set - but only weights you own.',
+     'steps': [
+         'Workouts > My equipment: type your dumbbells (for example 2 4 6 '
+         '8), kettlebells, and your heaviest barbell load. Save.',
+         'Workouts > New routine. Give it a name.',
+         'Add an exercise, then set Sets, Reps from - to (say 8 to 12) and '
+         'Rest.',
+         'Under "Show it on Today on...", pick its days. Save.',
+         'Start it from Today or Workouts. Grey numbers are last time.']},
+    {'q': 'Set up: log a workout and its calories',
+     'a': 'Log as you go; add calories from your watch at the end.',
+     'steps': [
+         'Start a routine, or "Start an empty workout" and add exercises.',
+         'For each set, adjust the weight or reps and tick it. The rest '
+         'timer starts - Skip whenever you are ready.',
+         'Tap Finish workout. Unticked sets are left out.',
+         'On "Nice work.", tap + Add calories and type your watch\'s '
+         'number.']},
+    # ---- Journal, Insights
+    {'q': 'How do I get the most out of Insights?',
+     'a': 'Insights compares your mood on days you did something with days '
+          'you did not, so it needs moods. Add one in the evening check-in '
+          'or when you write - most days for a couple of weeks. A finding '
+          'appears once there are at least four days on each side and a '
+          'real difference. Calories appear once you have typed some in.'},
+    # ---- Cycle
+    {'q': 'Set up: the cycle tracker',
+     'a': 'Private and locked; off until you turn it on.',
+     'steps': [
+         'Tap the cog > Your sections and switch on Cycle tracker, then '
+         'follow its welcome page.',
+         'Log your last period or two - a first guess appears after one '
+         'full cycle.',
+         'In Cycle settings, under "Right now I am", choose Tracking my '
+         'cycle, In perimenopause, Pregnant or On hormonal contraception.',
+         'Optional: a day-before reminder, a nudge to log, a daily pill '
+         'time. Each only ever says "A Wellness reminder".',
+         'Optional: More to log - mood, energy, sleep, discharge or your '
+         'own tags.']},
+    # ---- When something is not working
+    {'q': 'Reminders do not arrive',
+     'a': 'Usually the phone, not Wellness.',
+     'steps': [
+         'In Wellness Settings, check this phone shows under "Phones that '
+         'get reminders". If not, tap "Turn on reminders here" again.',
+         'Phone Settings > Apps > Chrome > Notifications: allowed.',
+         'Phone Settings > Apps > Chrome > Battery: Unrestricted.',
+         'Check Do not disturb is off, then tap "Send me a test".']},
+    {'q': 'Wellness looks out of date after an update',
+     'a': 'Your phone keeps a copy so Wellness opens fast and works '
+          'offline. Close Wellness fully (swipe it away from recent apps) '
+          'and open it again - it fetches the new version. If it still '
+          'looks old, pull down on the page to refresh.'},
+    {'q': 'The guided voice sounds wrong, or there is no sound',
+     'a': 'Check the media volume (not the ringer) is up, and try '
+          'earphones. On the Guided page tap Voice and pick another. Still '
+          'wrong? See "How do I choose the voice for Guided practices?".'},
+    {'q': 'Wellness asks me to sign in again',
+     'a': 'It does after 30 days without a visit. Tap "Sign in with '
+          'fingerprint" if you set one up - otherwise your password, or '
+          '"Forgot your password?" on the login page.'},
+    {'q': 'I ticked the wrong day or the wrong habit',
+     'a': 'Tap it again to undo - on Today for today, or in "The last seven '
+          'days" on the habit for an earlier day. Minutes or count habits: '
+          'tap the day, type 0 and Save. A wrong weigh-in: Body > Recent '
+          'weigh-ins, then the ×.'},
+]
+
+# Every question's topic, in the order the guide shows them.
+TOPICS = [
+    ('setup', 'Getting set up'),
+    ('habits', 'Habits and challenges'),
+    ('journal', 'Journal, check-in and Insights'),
+    ('calm', 'Calm'),
+    ('workouts', 'Workouts'),
+    ('body', 'Body'),
+    ('cycle', 'Cycle tracker'),
+    ('privacy', 'Privacy, badges and emails'),
+    ('fix', 'When something is not working'),
+]
+
+_TOPIC_WORDS = [
+    ('fix', ('do not arrive', 'out of date', 'sounds wrong',
+             'sign in again', 'wrong day')),
+    ('setup', ('Samsung phone', 'fingerprint', 'reminders on a Samsung',
+               'shortcuts', 'put Wellness on my phone', 'hide the parts',
+               'keep me logged in', 'How do reminders work')),
+    ('cycle', ('cycle', 'period', 'PMS', 'pill', 'perimenopause',
+               'fertile')),
+    ('calm', ('Calm', 'voice', 'Guided')),
+    ('body', ('trend weight', 'weigh in')),
+    ('workouts', ('weight', 'record', 'calories', 'train', 'routine',
+                  'workout')),
+    ('journal', ('journal', 'Insights', 'line under the quote')),
+    ('privacy', ('see my Wellness', 'badges', 'Monday email')),
+    ('habits', ('streak', 'Done, Missed', 'missed day', 'established',
+                'forgot', 'break from', 'challenge', 'habit',
+                'minutes habit')),
+]
+
+
+def topic_of(q):
+    """The topic a question belongs to (habits if nothing else fits)."""
+    for key, words in _TOPIC_WORDS:
+        if any(w.lower() in q.lower() for w in words):
+            return key
+    return 'habits'
+
+
+for _h in HOWTO:
+    _h.setdefault('topic', topic_of(_h['q']))
+
+
+def grouped():
+    """[(topic name, [questions])] in TOPICS order; set-ups first."""
+    out = []
+    for key, name in TOPICS:
+        qs = [h for h in HOWTO if h['topic'] == key]
+        qs.sort(key=lambda h: 0 if h['q'].startswith('Set up:') else 1)
+        if qs:
+            out.append((name, qs))
+    return out

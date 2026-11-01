@@ -1294,11 +1294,12 @@ $sentinels = @(
     @{ File = 'wellness/challenge.py'; Text = 'def week_state('; What = 'WL-8/CY-3/WL-12: the challenge rules are on disk, weekly challenges included - without them Today cannot open' },
     @{ File = 'wellness/modules.py'; Text = 'def section_of('; What = 'WL-9: the section switches are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
+    @{ File = 'wellness/guide.py'; Text = 'def grouped('; What = 'WL-13: the guide questions are on disk in their topics - without them the help sheet on every Wellness page fails' },
     @{ File = 'wellness/views_workouts.py'; Text = 'def clean_calories('; What = 'WL-11: workout calories are checked - without it a finished workout cannot save its calories' },
     @{ File = 'wellness/views_cycle.py'; Text = 'def _hm_ok('; What = 'CY-3: the pill reminder time is checked - without it Cycle settings cannot save' },
     @{ File = 'wellness/body.py'; Text = 'def trend('; What = 'WL-2: the trend weight is on disk - without it Body and Today cannot be drawn' },
     @{ File = 'pages/templates/login.html'; Text = 'id="passkeyLogin"'; What = 'PK-1: the login page offers the fingerprint - without it nobody can use the passkey they added' },
-    @{ File = 'wellness/habits.py'; Text = 'def can_establish('; What = 'WL-1: the Wellness habit rules are on disk - without them Today cannot be drawn' },
+    @{ File = 'wellness/habits.py'; Text = 'def is_paused_on('; What = 'WL-1/WL-13: the Wellness habit rules are on disk, paused days as Rest - without them Today cannot be drawn' },
     @{ File = 'pages/models.py'; Text = 'def _fh_unchanged('; What = 'VS-1: a budget or revenue save that changes nothing appends no snapshot - without it every save adds an identical history row' },
     @{ File = 'cron-service/start.sh'; Text = 'python manage.py check_lease_renewal_and_invoices'; What = 'HK-5: the daily job runs the command that exists - without it the 06:00 UTC run fails and physical invoices, e-signing expiry and reminders never happen' },
     @{ File = 'pages/services/greek_lease_plural.py'; Text = 'def pluralise('; What = 'GL-3: a Greek lease with a second tenant names both and is written in the plural - without it the second tenant is left out of the lease' },
@@ -3251,7 +3252,9 @@ $suites = @(
     # WL-11, 1 Nov 2026 - Wellness: calories on a workout.
     'test_wellness_fifteen.py',
     # WL-12, 1 Nov 2026 - Wellness: weekly challenges, three marks.
-    'test_wellness_sixteen.py'
+    'test_wellness_sixteen.py',
+    # WL-13, 1 Nov 2026 - Wellness: deeper help.
+    'test_wellness_seventeen.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

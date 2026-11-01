@@ -21,6 +21,15 @@ reason for each rule:
       the habit is offered the "established" mark (UCL's average).
 
 TODAY IS NEVER A MISS. The day is not over; it is "open".
+
+WL-13, 1 Nov 2026 - the Help review found the app breaking two promises
+its own screens make (Demetri, 17:40: "Fix the app"):
+    - PAUSED DAYS ARE REST. "Nothing counts against it until you resume":
+      the days from a pause to the resume are not due, so they are never
+      Missed, never shorten a week and never touch the 30-day percentage
+      or a challenge. Kept in habit.pauses.
+    - ESTABLISHED HABITS LEAVE TODAY. "It moves to a quiet list": off
+      Today and its reminders stop, until "Bring back to Today".
 """
 import datetime as dt
 
@@ -41,9 +50,54 @@ def is_flexible(habit):
     return habit.schedule == 'per_week'
 
 
+def pause_spans(habit):
+    """[(from, to or None)] - the days the habit was paused."""
+    out = []
+    for item in (getattr(habit, 'pauses', None) or []):
+        try:
+            a = dt.date.fromisoformat(item[0])
+            b = dt.date.fromisoformat(item[1]) if item[1] else None
+        except (TypeError, ValueError, IndexError):
+            continue
+        out.append((a, b))
+    return out
+
+
+def is_paused_on(habit, d):
+    for a, b in pause_spans(habit):
+        if a <= d and (b is None or d <= b):
+            return True
+    return False
+
+
+def start_pause(habit, today):
+    """Paused from today (today itself is Rest)."""
+    spans = list(getattr(habit, 'pauses', None) or [])
+    if not spans or spans[-1][1]:
+        spans.append([today.isoformat(), None])
+    habit.pauses = spans
+
+
+def end_pause(habit, today):
+    """Resumed today: today counts again; paused to yesterday. A pause
+    begun and ended the same day leaves nothing behind."""
+    spans = list(getattr(habit, 'pauses', None) or [])
+    if spans and not spans[-1][1]:
+        start = dt.date.fromisoformat(spans[-1][0])
+        end = today - ONE
+        if end < start:
+            spans.pop()
+        else:
+            spans[-1] = [spans[-1][0], end.isoformat()]
+    habit.pauses = spans
+
+
 def scheduled(habit, d):
-    """Is d one of the habit's days? Times-a-week habits: every day is."""
+    """Is d one of the habit's days? Times-a-week habits: every day is.
+    WL-13 - never a paused day."""
     if d < habit.started_on:
+        return False
+    if is_paused_on(habit, d):
         return False
     if habit.schedule == 'weekdays':
         return d.weekday() in habit.weekday_set()
@@ -59,7 +113,12 @@ def weekly_target(habit, week_start, upto=None):
     if first > last:
         return 0
     if is_flexible(habit):
-        available = (last - first).days + 1
+        # WL-13 - paused days are not available.
+        available, d = 0, first
+        while d <= last:
+            if not is_paused_on(habit, d):
+                available += 1
+            d += ONE
         return min(habit.per_week or 1, available)
     n, d = 0, first
     while d <= last:
@@ -229,6 +288,9 @@ def can_establish(habit, done, today):
 def due_today(habit, done, today):
     """Should Today list this habit? Paused and archived never are."""
     if habit.paused or habit.archived_at or habit.started_on > today:
+        return False
+    # WL-13 - an established habit has moved to the quiet list.
+    if getattr(habit, 'established_at', None):
         return False
     if today in done:
         return True

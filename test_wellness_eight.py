@@ -112,7 +112,10 @@ ok('data-help-open' in base and "href=\"{% url 'wellness:guide' %}\"" in base,
    '  opened by the ? - which still opens the guide page without script')
 ok(base.index('data-help-tab="screen"') < base.index('data-help-tab="general"'),
    '  This screen first, General second')
-ok('{% if hp.screen %}' in base and 'hp.general' in base,
+# WL-13, 1 Nov 2026: the General tab reads the questions in topics
+# (hp.groups) - test_wellness_seventeen.
+ok('{% if hp.screen %}' in base and ('hp.general' in base or
+                                     'hp.groups' in base),
    '  This screen only when the screen has its own help')
 js = read(J(APP, 'assets', 'wellness.js'))
 ok('sheet.showModal()' in js and "typeof sheet.showModal === 'function'" in js,

@@ -29,7 +29,7 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&amp;family=Inter:wght@400;500;600&amp;display=swap">
-<link rel="stylesheet" href="{% url 'wellness:asset' 'wellness.css' %}?v=wl15-1">
+<link rel="stylesheet" href="{% url 'wellness:asset' 'wellness.css' %}?v=wl16-1">
 </head>
 <body class="part-{{ part|default:'morning' }}">
 <div class="w-wrap">
@@ -77,6 +77,11 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
     {% if hp.screen.steps %}
     <ol class="w-sheet-steps">{% for s in hp.screen.steps %}<li>{{ s }}</li>{% endfor %}</ol>
     {% endif %}
+    {% if hp.screen.tips %}
+    {% comment %} WL-13, 1 Nov 2026 - good to know: the tricky bits of this screen. {% endcomment %}
+    <div class="w-label">Good to know</div>
+    <ul class="w-sheet-tips" data-help-tips>{% for t in hp.screen.tips %}<li>{{ t }}</li>{% endfor %}</ul>
+    {% endif %}
     {% if hp.screen.signs %}
     <div class="w-label">What you see</div>
     <ul class="w-sheet-signs">{% for sw, words in hp.screen.signs %}<li>{% if sw %}<span class="w-swatch" style="background:var({{ sw }})" aria-hidden="true"></span>{% else %}<span class="w-swatch none" aria-hidden="true"></span>{% endif %}<span>{{ words }}</span></li>{% endfor %}</ul>
@@ -84,11 +89,15 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
   </section>
   {% endif %}
   <section class="w-sheet-body" id="help-general" role="tabpanel" data-help-panel="general"{% if hp.screen %} hidden{% endif %}>
-    {% for h in hp.general %}
+    {% for name, qs in hp.groups %}
+    <div class="w-label w-sheet-topic">{{ name }}</div>
+    {% for h in qs %}
     <details class="w-sheet-q">
       <summary>{{ h.q }}</summary>
       <p class="w-quiet">{{ h.a }}</p>
+      {% if h.steps %}<ol class="w-sheet-steps w-q-steps">{% for s in h.steps %}<li>{{ s }}</li>{% endfor %}</ol>{% endif %}
     </details>
+    {% endfor %}
     {% endfor %}
     <form method="post" action="{% url 'wellness:tip_seen' %}" style="margin-top:12px">
       {% csrf_token %}
@@ -155,6 +164,6 @@ document.documentElement.className = 'js' + ((window.navigator.standalone ||
   {% endif %}
 </nav>
 {% endblock %}
-<script src="{% url 'wellness:asset' 'wellness.js' %}?v=wl15-1" defer></script>
+<script src="{% url 'wellness:asset' 'wellness.js' %}?v=wl16-1" defer></script>
 </body>
 </html>

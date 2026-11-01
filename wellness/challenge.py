@@ -126,9 +126,11 @@ def state(habit, done, today):
     finished = habit.challenge_done_on or (got_days[total - 1]
                                            if got >= total else None)
     today_done = today in done
+    # WL-13 - a paused day is never a miss.
+    from .habits import is_paused_on
     misses, d = [], start
     while d < today:
-        if d not in done:
+        if d not in done and not is_paused_on(habit, d):
             misses.append(d)
         d += ONE
     left = max(0, total - got)
@@ -138,7 +140,8 @@ def state(habit, done, today):
                           if left else today)
     in_a_row, d = 0, today - ONE
     while d >= start and d not in done:
-        in_a_row += 1
+        if not is_paused_on(habit, d):
+            in_a_row += 1
         d -= ONE
     seen = habit.challenge_seen or (start - ONE)
     ask = misses[-1] if (misses and misses[-1] > seen and not finished) \
@@ -211,6 +214,7 @@ def week_target(habit, week_start, start):
     """What meets the week starting week_start, for a challenge begun on
     `start`: times a week - the number, or the days left if fewer;
     chosen days - each chosen day from `start` on."""
+    from .habits import is_paused_on
     first = max(week_start, start)
     last = week_start + dt.timedelta(days=6)
     if first > last:
@@ -219,13 +223,21 @@ def week_target(habit, week_start, start):
         chosen = habit.weekday_set()
         n, d = 0, first
         while d <= last:
-            if d.weekday() in chosen:
+            if d.weekday() in chosen and not is_paused_on(habit, d):
                 n += 1
             d += ONE
         return n
     # A first week begun mid-week asks for its share of the number:
-    # 4 a week begun on a Thursday (4 days left) asks for 2.
-    per, avail = habit.per_week or 1, (last - first).days + 1
+    # 4 a week begun on a Thursday (4 days left) asks for 2. WL-13 -
+    # paused days are not available either.
+    per, avail = habit.per_week or 1, 0
+    d = first
+    while d <= last:
+        if not is_paused_on(habit, d):
+            avail += 1
+        d += ONE
+    if avail == 0:
+        return 0
     if avail >= 7:
         return per
     return max(1, min(avail, int(per * avail / 7.0 + 0.5)))
@@ -314,6 +326,10 @@ def week_state(habit, done, today):
             strip.append({'cls': 'todo', 'pct': 0})
     if finished:
         words = 'Finished: %d weeks.' % total
+    elif now_met:
+        # WL-13 - Demetri, 17:43, on "Week 1 of 8" with the week already
+        # met: say it is done and when the next one begins.
+        words = 'Week %d of %d done' % (good, total)
     else:
         words = 'Week %d of %d' % (week_no, total)
     this_words = ''
@@ -323,6 +339,13 @@ def week_state(habit, done, today):
             now['got'], now['target'],
             (' %s%s' % (noun, '' if now['target'] == 1 else 's'))
             if noun else '')
+        if now_met:
+            this_words += ' - week %d starts on Monday' % (good + 1)
+        full = (habit.per_week or 1) if habit.schedule != 'weekdays' \
+            else len(habit.weekday_set())
+        if now['target'] < full and now['monday'] < start:
+            this_words += ' (a short first week: you began on a %s)' \
+                % start.strftime('%A')
     if ask:
         ask_text = ('A few weeks fell short. That happens.' if in_a_row >= 2
                     else ('Last week fell short. That happens.'

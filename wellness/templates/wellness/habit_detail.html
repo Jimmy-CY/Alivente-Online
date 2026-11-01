@@ -125,7 +125,7 @@
     {% if habit.schedule != 'per_week' %}<span><i class="miss"></i>Missed</span>{% endif %}
     <span><i style="background:var(--w-empty)"></i>Rest</span>
   </div>
-  {% if habit.schedule != 'per_week' %}<p class="w-small w-quiet" style="margin:0">The first two missed days each month are forgiven - they never spoil your streak.</p>{% endif %}
+  {% if habit.schedule != 'per_week' %}<p class="w-small w-quiet" style="margin:0">The first two missed days each month are forgiven - they never spoil your streak.</p>{% else %}<p class="w-small w-quiet" style="margin:0" data-no-missed>Times a week has no missed days: any day without it is Rest. Only reaching the number each week counts.</p>{% endif %}
 </section>
 
 {% if habit.cue or habit.tiny_version %}

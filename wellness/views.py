@@ -138,8 +138,9 @@ def today(request):
     # WL-9 - only the sections this person has switched on.
     from . import modules as MOD
     mods = MOD.on_set(request.user, profile)
+    # WL-13 - established habits have moved to the quiet list.
     active = Habit.objects.filter(user=request.user, archived_at__isnull=True,
-                                  paused=False)
+                                  paused=False, established_at__isnull=True)
     if 'habits' not in mods:
         active = active.none()
     finishes, asks = [], []
@@ -825,12 +826,16 @@ def habit_action(request, pk, action):
     habit = get_object_or_404(Habit, pk=pk, user=request.user)
     if action == 'pause':
         habit.paused = True
+        H.start_pause(habit, _today())
     elif action == 'resume':
         habit.paused = False
+        H.end_pause(habit, _today())
     elif action == 'archive':
         habit.archived_at = timezone.now()
     elif action == 'restore':
         habit.archived_at = None
+        if habit.paused:
+            H.end_pause(habit, _today())
         habit.paused = False
     elif action == 'establish':
         habit.established_at = _today()
@@ -851,6 +856,7 @@ def habit_action(request, pk, action):
         elif action == 'challenge_pause':
             CH.carry_on(habit, day)
             habit.paused = True
+            H.start_pause(habit, day)
         elif action == 'challenge_keep':
             CH.clear(habit)
         elif action == 'challenge_again':
@@ -875,7 +881,7 @@ def habit_action(request, pk, action):
 @wellness_view
 def guide_page(request):
     return render(request, 'wellness/guide.html', {
-        'tab': '', 'howto': guide.HOWTO,
+        'tab': '', 'howto': guide.HOWTO, 'groups': guide.grouped(),
     })
 
 
@@ -936,7 +942,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl15-1'
+SW_VERSION = 'wl16-1'
 
 
 def service_worker(request):

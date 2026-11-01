@@ -115,6 +115,9 @@ class Habit(models.Model):
     challenge_seen = models.DateField(null=True, blank=True)
     challenge_done_on = models.DateField(null=True, blank=True)
     paused = models.BooleanField(default=False)
+    # WL-13, 1 Nov 2026: when it was paused - [[from, to or None], ...] as
+    # ISO dates - so paused days are Rest, never Missed. See habits.py.
+    pauses = models.JSONField(default=list, blank=True)
     established_at = models.DateField(null=True, blank=True)
     archived_at = models.DateTimeField(null=True, blank=True)
     position = models.PositiveIntegerField(default=0)

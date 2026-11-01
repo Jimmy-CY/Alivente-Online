@@ -599,7 +599,11 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def can_establish('" in gate, '  with a sentinel on the rules')
+# WL-13, 1 Nov 2026: the row moved to 'def is_paused_on(' when habits.py
+# was backed up again (a Text in every backup can never fail).
+ok("Text = 'def can_establish('" in gate or
+   "File = 'wellness/habits.py'; Text = 'def is_paused_on('" in gate,
+   '  with a sentinel on the rules')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')

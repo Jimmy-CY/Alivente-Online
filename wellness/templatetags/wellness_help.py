@@ -16,5 +16,6 @@ def screen_help(context):
     request = context.get('request')
     match = getattr(request, 'resolver_match', None)
     name = getattr(match, 'url_name', '') or ''
+    # WL-13 - the general questions in their topics, set-ups first.
     return {'screen': HELP.for_url_name(name), 'general': guide.HOWTO,
-            'name': name}
+            'groups': guide.grouped(), 'name': name}
