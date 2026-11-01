@@ -85,7 +85,7 @@ BADGES = [
      lambda f: (f['calm_minutes'], 100, 'minute')),
     # WL-8, 31 Oct 2026 - a challenge done to the end.
     ('challenge_1', '✓', 'Challenge finished', 'You finished a challenge, '
-     'every day of it.', lambda f: f['challenges'] >= 1, lambda f: None),
+     'all the way to the end.', lambda f: f['challenges'] >= 1, lambda f: None),
 ]
 KEYS = [b[0] for b in BADGES]
 BY_KEY = {b[0]: b for b in BADGES}

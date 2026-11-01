@@ -21,6 +21,26 @@ with its history kept). Each finished challenge is kept in the profile's
 prefs for the "Challenge finished" badge.
 
 All of it is pure here, given the habit and its done dates; the views save.
+
+WEEKLY CHALLENGES - WL-12, 1 Nov 2026. Demetri, 12:13: "If I create a Habit
+to Run 4 times a week for 30 minutes a time... The challenge should almost
+be a weekly challenge. i.e. 8 week challenge, where I do 4 times running a
+week for 30 minutes. We should be able to customise. If my challenge is
+daily, then we go with what we have now." 12:20: weeks for "times a week"
+and chosen days; 4, 6, 8 or 12 weeks or your own number.
+
+    - The challenge follows the habit: every day counts DAYS (as before);
+      times a week and chosen days count WEEKS (challenge_unit 'week').
+    - Weeks run Monday to Sunday. A week is met when it has the habit's
+      number of done days (times a week), or every chosen day done or
+      forgiven (chosen days). A first week begun mid-week asks for its
+      share: 4 a week begun on a Thursday asks for 2.
+    - "Week 3 of 8 · 2 of 4 this week". One square per week, filling as
+      the week fills.
+    - A week that ends short asks, once: Carry on (the finish moves out a
+      week) or Start again (week 1 is this week, from today).
+    - Before WL-12 choosing a challenge silently turned the habit into an
+      every-day one. It no longer does.
 """
 import datetime as dt
 
@@ -33,6 +53,13 @@ STRIP_MAX = 90
 ONE = dt.timedelta(days=1)
 # Misses in a row before "Pause it for now" is offered too.
 PAUSE_AFTER = 3
+
+# WL-12 - weekly challenges.
+WEEKS = [4, 6, 8, 12]
+OWN_W_MIN, OWN_W_MAX = 2, 52
+SEVEN = dt.timedelta(days=7)
+# Short weeks in a row before "Pause it for now" is offered too.
+PAUSE_AFTER_WEEKS = 2
 
 # Starters on the new-habit screen: (name, preset).
 STARTERS = [
@@ -91,6 +118,8 @@ def state(habit, done, today):
     """
     if not has(habit):
         return None
+    if is_weekly(habit):
+        return week_state(habit, done, today)
     total, start = habit.challenge_days, habit.challenge_from
     got_days = sorted(d for d in done if start <= d <= today)
     got = len(got_days)
@@ -127,7 +156,7 @@ def state(habit, done, today):
         words = 'Finished: %d days.' % total
     else:
         words = 'Day %d of %d' % (day, total)
-    return {'days': total, 'got': min(got, total), 'day': day,
+    return {'unit': 'day', 'days': total, 'got': min(got, total), 'day': day,
             'pct': int(round(100.0 * min(got, total) / total)),
             'today_done': today_done, 'finished': finished,
             'misses': len(misses), 'finish': finish,
@@ -156,6 +185,171 @@ def valid_days(n):
     return n in DAYS or OWN_MIN <= n <= OWN_MAX
 
 
+# --------------------------------------------------------------------------
+# WL-12 - weekly challenges
+# --------------------------------------------------------------------------
+def valid_weeks(n):
+    """A number of weeks a weekly challenge may have."""
+    return n in WEEKS or OWN_W_MIN <= n <= OWN_W_MAX
+
+
+def unit_for(habit):
+    """'day' for an every-day habit, 'week' for times a week or chosen
+    days."""
+    return 'day' if habit.schedule == 'daily' else 'week'
+
+
+def is_weekly(habit):
+    return getattr(habit, 'challenge_unit', 'day') == 'week'
+
+
+def monday(d):
+    return d - dt.timedelta(days=d.weekday())
+
+
+def week_target(habit, week_start, start):
+    """What meets the week starting week_start, for a challenge begun on
+    `start`: times a week - the number, or the days left if fewer;
+    chosen days - each chosen day from `start` on."""
+    first = max(week_start, start)
+    last = week_start + dt.timedelta(days=6)
+    if first > last:
+        return 0
+    if habit.schedule == 'weekdays':
+        chosen = habit.weekday_set()
+        n, d = 0, first
+        while d <= last:
+            if d.weekday() in chosen:
+                n += 1
+            d += ONE
+        return n
+    # A first week begun mid-week asks for its share of the number:
+    # 4 a week begun on a Thursday (4 days left) asks for 2.
+    per, avail = habit.per_week or 1, (last - first).days + 1
+    if avail >= 7:
+        return per
+    return max(1, min(avail, int(per * avail / 7.0 + 0.5)))
+
+
+def week_got(habit, done, week_start, start, today, states=None):
+    """Done days counted in the week (up to today). Chosen days: the
+    chosen days done or forgiven; times a week: any done day."""
+    first = max(week_start, start)
+    last = min(week_start + dt.timedelta(days=6), today)
+    if habit.schedule == 'weekdays':
+        chosen = habit.weekday_set()
+        n, d = 0, first
+        while d <= last:
+            if d.weekday() in chosen and (
+                    d in done or (states or {}).get(d) == 'grace'):
+                n += 1
+            d += ONE
+        return n
+    return sum(1 for d in done if first <= d <= last)
+
+
+def nice_week(w):
+    return 'the week of %d %s' % (w.day, w.strftime('%b'))
+
+
+def week_state(habit, done, today):
+    """The weekly challenge: the same keys as state(), in weeks."""
+    total, start = habit.challenge_days, habit.challenge_from
+    states = None
+    if habit.schedule == 'weekdays':
+        from . import habits as H
+        states = H.day_states(habit, done, today)
+    weeks, w = [], monday(start)
+    good = 0
+    finished = habit.challenge_done_on
+    this_w = monday(today)
+    while w <= this_w:
+        target = week_target(habit, w, start)
+        if target:
+            got = week_got(habit, done, w, start, today, states)
+            ended = w + dt.timedelta(days=6) < today
+            met = got >= target
+            weeks.append({'monday': w, 'target': target, 'got': got,
+                          'met': met, 'ended': ended})
+            if met and not finished:
+                good += 1
+                if good >= total:
+                    last = min(w + dt.timedelta(days=6), today)
+                    hit = sorted(d for d in done
+                                 if max(w, start) <= d <= last)
+                    finished = hit[-1] if hit else last
+        w += SEVEN
+    short = [x for x in weeks if x['ended'] and not x['met']]
+    now = weeks[-1] if weeks and weeks[-1]['monday'] == this_w else None
+    now_met = bool(now and now['met'])
+    left = max(0, total - good)
+    # The finish if every week from now on is met: the Sunday of the last.
+    if finished:
+        finish = finished
+    elif left:
+        first_open = this_w if not now_met else this_w + SEVEN
+        finish = first_open + SEVEN * (left - 1) + dt.timedelta(days=6)
+    else:
+        finish = today
+    in_a_row = 0
+    for x in reversed([x for x in weeks if x['ended']]):
+        if x['met']:
+            break
+        in_a_row += 1
+    seen = habit.challenge_seen or (start - ONE)
+    ask = None
+    if short and not finished:
+        end = short[-1]['monday'] + dt.timedelta(days=6)
+        if end > seen:
+            ask = short[-1]['monday']
+    week_no = min(total, good + (0 if now_met else 1))
+    strip = []
+    for i in range(total):
+        if i < good:
+            strip.append({'cls': 'done', 'pct': 100})
+        elif i == good and now and not now_met and not finished:
+            pct = int(round(100.0 * now['got'] / now['target']))
+            strip.append({'cls': 'now', 'pct': pct})
+        else:
+            strip.append({'cls': 'todo', 'pct': 0})
+    if finished:
+        words = 'Finished: %d weeks.' % total
+    else:
+        words = 'Week %d of %d' % (week_no, total)
+    this_words = ''
+    if now and not finished:
+        noun = 'day' if habit.schedule == 'weekdays' else ''
+        this_words = '%d of %d%s this week' % (
+            now['got'], now['target'],
+            (' %s%s' % (noun, '' if now['target'] == 1 else 's'))
+            if noun else '')
+    if ask:
+        ask_text = ('A few weeks fell short. That happens.' if in_a_row >= 2
+                    else ('Last week fell short. That happens.'
+                          if ask == this_w - SEVEN else
+                          '%s fell short. That happens.'
+                          % nice_week(ask).capitalize()))
+    else:
+        ask_text = ''
+    return {'unit': 'week', 'days': total, 'got': min(good, total),
+            'day': week_no,
+            'pct': int(round(100.0 * min(good, total) / total)),
+            'today_done': today in done, 'finished': finished,
+            'misses': len(short), 'finish': finish,
+            'finish_words': nice_date(finish),
+            'ask': ask, 'ask_words': ask_text, 'in_a_row': in_a_row,
+            'can_pause': bool(ask) and in_a_row >= PAUSE_AFTER_WEEKS,
+            'strip': strip, 'rows': week_rows(strip), 'words': words,
+            'this_words': this_words}
+
+
+def week_rows(strip):
+    """One square per week, at most 13 to a row."""
+    if len(strip) <= 13:
+        return [strip]
+    return [strip[i:i + 13] for i in range(0, len(strip), 13)]
+
+
 def ask_words(ask, today, in_a_row):
     if not ask:
         return ''
@@ -177,14 +371,16 @@ def start_again(habit, today):
     habit.challenge_done_on = None
 
 
-def begin(habit, days, today):
+def begin(habit, days, today, unit='day'):
     habit.challenge_days = days
+    habit.challenge_unit = unit
     habit.challenge_from = today
     habit.challenge_seen = None
     habit.challenge_done_on = None
 
 
 def clear(habit):
+    habit.challenge_unit = 'day'
     habit.challenge_days = None
     habit.challenge_from = None
     habit.challenge_seen = None
@@ -204,7 +400,7 @@ def note_finished(habit, done, today, profile):
     prefs = dict(profile.prefs or {})
     kept = list(prefs.get('challenges') or [])
     kept.append({'name': habit.name, 'days': habit.challenge_days,
-                 'on': s['finished'].isoformat()})
+                 'unit': s['unit'], 'on': s['finished'].isoformat()})
     prefs['challenges'] = kept[-200:]
     profile.prefs = prefs
     profile.save(update_fields=['prefs', 'updated_at'])

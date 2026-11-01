@@ -86,6 +86,10 @@ class Habit(models.Model):
     weekdays = models.CharField(max_length=7, blank=True)
     # For SCHEDULE_PER_WEEK: how many times in a Monday-to-Sunday week.
     per_week = models.PositiveSmallIntegerField(null=True, blank=True)
+    # WL-12, 1 Nov 2026: a challenge counts days (every day) or weeks
+    # (times a week, chosen days). See challenge.py.
+    challenge_unit = models.CharField(max_length=4, default='day',
+                                      blank=True)
     time_of_day = models.CharField(max_length=10, choices=TIMES,
                                    default='anytime')
     # WL-3, 30 Oct 2026 - a habit that ticks itself: 'workout' is done on

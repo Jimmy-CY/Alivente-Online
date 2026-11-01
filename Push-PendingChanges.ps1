@@ -1291,7 +1291,7 @@ $sentinels = @(
     @{ File = 'wellness/templates/wellness/base.html'; Text = 'w-top-icons'; What = 'WL-5: the cog is in the Wellness top bar - without it settings cannot be reached' },
     @{ File = 'wellness/help.py'; Text = 'calm_practice'; What = 'WL-6/WL-7: the help for each screen is on disk, Calm included - without it every Wellness page fails' },
     @{ File = 'wellness/calm.py'; Text = 'def tick_value('; What = 'WL-7: the Calm practices and minutes are on disk - without them the Calm tab cannot open' },
-    @{ File = 'wellness/challenge.py'; Text = 'def valid_days('; What = 'WL-8/CY-3: the challenge rules are on disk, with your own number of days - without them Today cannot open' },
+    @{ File = 'wellness/challenge.py'; Text = 'def week_state('; What = 'WL-8/CY-3/WL-12: the challenge rules are on disk, weekly challenges included - without them Today cannot open' },
     @{ File = 'wellness/modules.py'; Text = 'def section_of('; What = 'WL-9: the section switches are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
     @{ File = 'wellness/views_workouts.py'; Text = 'def clean_calories('; What = 'WL-11: workout calories are checked - without it a finished workout cannot save its calories' },
@@ -3249,7 +3249,9 @@ $suites = @(
     # CY-4, 1 Nov 2026 - Wellness: honest wording for the cycle ideas.
     'test_wellness_fourteen.py',
     # WL-11, 1 Nov 2026 - Wellness: calories on a workout.
-    'test_wellness_fifteen.py'
+    'test_wellness_fifteen.py',
+    # WL-12, 1 Nov 2026 - Wellness: weekly challenges, three marks.
+    'test_wellness_sixteen.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

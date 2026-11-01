@@ -137,23 +137,23 @@
     form.dispatchEvent(new Event('change', {bubbles: true}));
   });
 
-  // ---- WL-8: a challenge is every day; another schedule ends the choice.
+  // ---- WL-8 / WL-12: a challenge follows the schedule - days for every
+  // day, weeks for times a week and chosen days. Choosing one no longer
+  // changes the schedule (it used to turn the habit into every day).
   document.querySelectorAll('[data-habit-form]').forEach(function (form) {
     form.addEventListener('change', function (e) {
       var t = e.target;
-      if (t.name === 'challenge' && t.value) {
-        var daily = form.querySelector('[name=schedule][value=daily]');
-        if (daily) daily.checked = true;
-        // CY-3 - "Own": the number box takes the focus.
-        if (t.value === 'own') { var box = form.querySelector('[name=challenge_own]'); if (box) box.focus(); }
+      // CY-3 - "Own": the number box takes the focus.
+      if (t.name === 'challenge' && t.value === 'own') {
+        var box = form.querySelector('[name=challenge_own]'); if (box) box.focus();
+      } else if (t.name === 'challenge_w' && t.value === 'own') {
+        var boxw = form.querySelector('[name=challenge_own_w]'); if (boxw) boxw.focus();
       } else if (t.name === 'challenge_own' && t.value) {
         var own = form.querySelector('[name=challenge][value=own]');
         if (own) own.checked = true;
-        var d2 = form.querySelector('[name=schedule][value=daily]');
-        if (d2) d2.checked = true;
-      } else if (t.name === 'schedule' && t.value !== 'daily') {
-        var none = form.querySelector('[name=challenge][value=""]');
-        if (none) none.checked = true;
+      } else if (t.name === 'challenge_own_w' && t.value) {
+        var ownw = form.querySelector('[name=challenge_w][value=own]');
+        if (ownw) ownw.checked = true;
       }
     }, true);
   });
@@ -166,7 +166,7 @@
       el.hidden = el.getAttribute('data-when-kind').split(' ').indexOf(kind) < 0;
     });
     form.querySelectorAll('[data-when-schedule]').forEach(function (el) {
-      el.hidden = el.getAttribute('data-when-schedule') !== sched;
+      el.hidden = el.getAttribute('data-when-schedule').split(' ').indexOf(sched) < 0;
     });
   }
   document.querySelectorAll('[data-habit-form]').forEach(function (form) {

@@ -23,8 +23,8 @@ WELCOME = [
              'On a hard day, the small version counts too.'},
     {'title': 'Missed a day? That is fine',
      'body': 'Nothing resets to zero and nothing turns red. Streaks are '
-             'counted in weeks, two days a month are forgiven, and coming '
-             'back is something we celebrate.'},
+             'counted in weeks, and the first two missed days each month '
+             'are forgiven.'},
 ]
 
 # The starter set: tap two or three and Today is never empty.
@@ -60,8 +60,9 @@ TIPS = {
                   'a good start is a good day.',
     'detail_week': 'Tap any of the last seven days to fill in one you '
                    'forgot.',
-    'detail_calendar': 'Sand squares are comebacks - the days you returned '
-                       'after a break. They count double in our book.',
+    'detail_calendar': 'Green is done, a grey outline is missed, faint is '
+                       'rest. The first two missed days a month are '
+                       'forgiven.',
     'new_examples': 'Tap an example to use it, or type your own.',
     # WL-2
     'journal_private': 'Your journal is locked before it is saved. Nobody '
@@ -85,26 +86,34 @@ TIPS = {
 HOWTO = [
     {'q': 'How do streaks work here?',
      'a': 'Streaks count whole weeks, not days. A week is met when you did '
-          'every planned day (allowing for grace days), or reached your '
+          'every planned day (the first two missed days a month are '
+          'forgiven), or reached your '
           'number for a "times a week" habit. This week can add to your '
           'streak, but never breaks it - it is not over yet.'},
-    {'q': 'What are grace days?',
-     'a': 'For daily and chosen-day habits, the first two missed days in '
-          'each month are forgiven automatically. They show as a soft '
-          'outline on the calendar and keep your week whole. "Times a '
-          'week" habits are flexible already, so they do not need them.'},
-    {'q': 'What is a comeback?',
-     'a': 'A day you did the habit after a real break - two or more missed '
-          'days in a row, or a week or more for a "times a week" habit. It '
-          'gets a sand-coloured mark, because coming back is the hardest '
-          'part.'},
+    # WL-12, 1 Nov 2026 - three marks (Demetri, 12:24).
+    {'q': 'What do Done, Missed and Rest mean?',
+     'a': 'You only ever tick a day or save its amount - Wellness marks the '
+          'rest once each day is over. Done (green): you did it, or reached '
+          'your amount. Missed (a grey outline, never red): a planned day '
+          'not done. Rest (faint): a day the habit was not due - outside '
+          'your chosen days, or any day of a "times a week" habit you did '
+          'not use. Today is never missed; it is not over yet.'},
+    {'q': 'Will a missed day spoil my streak?',
+     'a': 'Not the first two each month. For every-day and chosen-day '
+          'habits the first two missed days in a calendar month are '
+          'forgiven automatically: they still show as Missed, but your week '
+          'stays whole. From the third, a missed day ends that week\'s run. '
+          '"Times a week" habits only need the number each week, so they '
+          'have no missed days at all.'},
     {'q': 'What does "established" mean?',
      'a': 'After 66 days at 80% or better, a habit is usually part of you. '
           'We offer to mark it established; it moves to a quiet list and '
           'stops asking for attention.'},
     {'q': 'How do I fill in a day I forgot?',
-     'a': 'Open the habit. The row of the last seven days at the top takes '
-          'a tap on any day.'},
+     'a': 'Open the habit. The row of the last seven days takes a tap on '
+          'any day. For a minutes or count habit, the tap puts that day in '
+          'the box below - type the amount and Save; 0 clears it. Up to '
+          'seven days back.'},
     {'q': 'How do I take a break from a habit?',
      'a': 'Open the habit and choose Pause. It leaves Today and nothing '
           'counts against it until you resume. Archive puts it away '
@@ -202,15 +211,29 @@ HOWTO = [
           'all there.'},
     # WL-8, 31 Oct 2026 - challenges.
     {'q': 'How do challenges work?',
-     'a': 'A challenge is a habit with a finish line: 7, 14, 21 or 30 days, '
-          'or your own number (tap Own and type it, 2 to 365), every day. '
+     'a': 'A challenge is a habit with a finish line, and it follows how '
+          'often the habit is done. Every day: 7, 14, 21 or 30 days, or '
+          'your own number (2 to 365); only the days you do count, so '
+          'Today shows "Day 12 of 30". Times a week or chosen days: 4, 6, '
+          '8 or 12 weeks, or your own number (2 to 52), counted in weeks. '
           'Choose "Make it a challenge" when you add or edit a habit, or '
-          'tap one of the challenges to try. Only the days you do '
-          'count, so Today shows "Day 12 of 30".'},
+          'tap one of the challenges to try.'},
+    # WL-12, 1 Nov 2026 - weekly challenges.
+    {'q': 'How does a weekly challenge work?',
+     'a': 'Say Run, 30 minutes, 4 times a week, for 12 weeks. Weeks run '
+          'Monday to Sunday. A week counts once it has 4 runs of at least '
+          '30 minutes, on any days you like - "Week 3 of 12 - 2 of 4 this '
+          'week". One square per week fills as the week fills. Twelve '
+          'counted weeks and it is finished. Start mid-week and the first '
+          'week asks for its share (begun on a Thursday: 2 runs). For chosen days '
+          '(say Mon, Wed, Fri), a week counts when each chosen day is done '
+          '- the first two missed days a month are forgiven.'},
     {'q': 'What happens if I miss a day of a challenge?',
      'a': 'Nothing is lost. Wellness asks once: carry on, and the finish '
           'moves out by a day, or start again from today. Missed a few in a '
-          'row? You can pause it for now too. When you finish, keep it as a '
+          'row? You can pause it for now too. A weekly challenge asks the '
+          'same when a week falls short: carry on (the finish moves out a '
+          'week) or start again this week. When you finish, keep it as a '
           'habit, go again, or let it go.'},
     # WL-7, 31 Oct 2026 - Calm.
     {'q': 'What is Calm?',

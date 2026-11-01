@@ -53,23 +53,36 @@ SCREENS = {
     },
     'habit_detail': {
         'title': 'A habit',
-        'purpose': 'How one habit is going: its streak, the last 12 weeks, '
-                   'and the days you came back.',
+        'purpose': 'How one habit is going: its streak, the last seven '
+                   'days and the last 12 weeks.',
         'steps': [
-            'Tap any of the last seven days to fill in one you forgot.',
+            'Tap any of the last seven days to fill in one you forgot. For '
+            'minutes or a count, tapping a day puts its amount in the box '
+            'below - type it and Save (0 clears it).',
+            'Every day has one of three marks: Done, Missed or Rest.',
+            'The first two missed days each month are forgiven: they show '
+            'as Missed, but never spoil your streak.',
             'Edit changes its name, schedule or reminder time.',
             'Pause takes it off Today for a while without losing anything.',
             'After 66 good days you can mark it established.',
-            'A challenge shows a square for each day to do. Miss one and '
-            'you choose: carry on, or start again.',
+            'A challenge on an every-day habit shows a square for each day: '
+            '"Day 12 of 30". Miss one and you choose: carry on, or start '
+            'again.',
+            'A challenge on a times-a-week or chosen-days habit counts '
+            'weeks: "Week 3 of 12 - 2 of 4 this week", with a square for '
+            'each week that fills as the week fills.',
+            'Fall short in a week and you choose: carry on (the finish moves '
+            'out a week), or start again this week.',
         ],
         'signs': [
-            ('--w-sage-deep', 'Sage squares: done.'),
-            ('--w-sand', 'Sand squares: comebacks - the days you returned '
-                         'after a break. They count more than a perfect run.'),
-            ('--w-empty', 'Faint squares: days before the habit began, or '
-                          'days it was not planned - or, for a challenge, '
-                          'the days still to do.'),
+            ('--w-sage-deep', 'Done: green - you did it, or reached the '
+                              'amount you aim for.'),
+            ('--w-miss', 'Missed: a grey outline - a planned day not done. '
+                         'Never red. The first two each month are forgiven '
+                         'and keep your streak whole.'),
+            ('--w-empty', 'Rest: faint - a day the habit was not due (or '
+                          'before it began). For a challenge, faint squares '
+                          'are the days or weeks still to do.'),
         ],
     },
     'habit_form': {
@@ -82,8 +95,14 @@ SCREENS = {
             'Pick when: every day, chosen days, or a number of times a week.',
             'Optionally tie it to something you already do, let a workout '
             'or Calm tick it, and set a reminder time.',
-            'Make it a challenge: 7, 14, 21 or 30 days - or your own number, '
-            'from 2 to 365 - every day.',
+            'Make it a challenge. Every day: 7, 14, 21 or 30 days, or your '
+            'own number (2 to 365). Times a week or chosen days: 4, 6, 8 or '
+            '12 weeks, or your own number (2 to 52).',
+            'A weekly challenge, for example: Run, 30 minutes, 4 times a '
+            'week, 12 weeks. Each Monday to Sunday counts once you have done '
+            '4 runs of at least 30 minutes, on any days.',
+            'Twelve such weeks and it is finished. Started mid-week? The '
+            'first week asks for its share - begun on a Thursday, 2 runs.',
         ],
         'signs': [],
     },

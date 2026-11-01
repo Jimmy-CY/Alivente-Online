@@ -28,6 +28,11 @@ from .quotes import for_day
 
 PERM = 'auth.can_access_wellness'
 BACKFILL_DAYS = 7
+# WL-12, 1 Nov 2026 - Demetri, 12:24: "I would prefer to just have 3: Done,
+# Missed and Rest". A forgiven day is still forgiven behind the scenes (the
+# first two missed days a month never spoil a streak) but shows as Missed;
+# the comeback colour went.
+SHOWN = {'grace': 'miss'}
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 ASSET_TYPES = {
     'wellness.css': 'text/css; charset=utf-8',
@@ -499,9 +504,18 @@ def habit_detail(request, pk):
             'label': 'Today' if d == day else d.strftime('%a'),
             'num': d.day,
             'state': ('before' if d < habit.started_on
-                      else states.get(d, 'rest')),
+                      else SHOWN.get(states.get(d, 'rest'),
+                                     states.get(d, 'rest'))),
             'value': values.get(d),
         })
+    # WL-12 - Demetri, 12:13: "Why am I only able to enter the minutes for
+    # Today, but not for a previous day?" Tap a day of the seven and the
+    # box below is for that day.
+    entry = week[-1]
+    want = request.GET.get('day') or ''
+    for w in week:
+        if w['iso'] == want:
+            entry = w
     streak = H.week_streak(habit, done, day)
     if got >= target and target:
         week_words = 'This week is whole. Lovely.'
@@ -525,7 +539,14 @@ def habit_detail(request, pk):
         'streak': streak,
         'week_words': week_words,
         'week': week,
-        'calendar': H.calendar(habit, done, day),
+        'entry': entry,
+        'entry_words': ('Today' if entry['date'] == day else
+                        entry['date'].strftime('%A ') +
+                        str(entry['date'].day) +
+                        entry['date'].strftime(' %b')),
+        'calendar': [[dict(c, state=SHOWN.get(c['state'], c['state']))
+                      for c in col]
+                     for col in H.calendar(habit, done, day)],
         'schedule': H.schedule_words(habit),
         'amount': H.amount_words(habit),
         'can_establish': H.can_establish(habit, done, day),
@@ -559,9 +580,8 @@ def _form_values(post):
     schedule = post.get('schedule') or Habit.SCHEDULE_DAILY
     if schedule not in dict(Habit.SCHEDULES):
         schedule = Habit.SCHEDULE_DAILY
-    # WL-8 - a challenge is every day.
-    if _challenge_choice(post):
-        schedule = Habit.SCHEDULE_DAILY
+    # WL-12, 1 Nov 2026 - a challenge no longer turns the habit into an
+    # every-day one: times a week and chosen days get weekly challenges.
     weekdays = ''.join(sorted({d for d in post.getlist('weekdays')
                                if d in '0123456' and len(d) == 1}))
     per_week = None
@@ -617,10 +637,10 @@ def habit_new(request):
             _set_challenge(habit, request.POST, _today())
             habit.save()
             return redirect('wellness:habit_detail', pk=habit.pk)
-        values['challenge'] = _challenge_choice(request.POST)
+        values.update(_challenge_values(_challenge_choice(request.POST)))
     return render(request, 'wellness/habit_form.html', {
         'tab': 'habits', 'new': True, 'v': values, 'errors': errors,
-        'challenge_days': CH.DAYS,
+        'challenge_days': CH.DAYS, 'challenge_weeks': CH.WEEKS,
         'challenge_starters': [(lbl, json.dumps(pr))
                                for lbl, pr in CH.STARTERS],
         'weekday_names': _weekday_names(values.get('weekdays', '')),
@@ -642,40 +662,64 @@ def habit_edit(request, pk):
             habit.save()
             _resync(habit)
             return redirect('wellness:habit_detail', pk=habit.pk)
-        values['challenge'] = _challenge_choice(request.POST)
+        values.update(_challenge_values(_challenge_choice(request.POST)))
     else:
         values = {f: getattr(habit, f) for f in (
             'name', 'kind', 'target', 'unit', 'schedule', 'weekdays',
             'per_week', 'time_of_day', 'cue', 'tiny_version', 'auto_from',
             'remind_at')}
-        values['challenge'] = habit.challenge_days if CH.has(habit) else None
+        values.update(_challenge_values(
+            (habit.challenge_days, habit.challenge_unit or 'day')
+            if CH.has(habit) else None))
     return render(request, 'wellness/habit_form.html', {
         'tab': 'habits', 'new': False, 'habit': habit, 'v': values,
         'errors': errors, 'challenge_days': CH.DAYS,
+        'challenge_weeks': CH.WEEKS,
         'weekday_names': _weekday_names(values.get('weekdays') or ''),
         'tip': None, 'kinds': Habit.KINDS, 'times': Habit.TIMES,
     })
 
 
 def _challenge_choice(post):
-    """7, 14, 21 or 30 from the form - or, CY-3, your own number of days
-    (2 to 365) when "Own" is chosen - or None."""
-    raw = post.get('challenge') or ''
-    if raw == 'own':
-        raw = post.get('challenge_own') or ''
+    """(number, 'day' or 'week') from the form, or None.
+
+    Every day: 7, 14, 21 or 30 days, or (CY-3) your own 2 to 365.
+    WL-12 - times a week or chosen days: 4, 6, 8 or 12 weeks, or your own
+    2 to 52 - the week choices have their own names (challenge_w)."""
+    sched = post.get('schedule') or Habit.SCHEDULE_DAILY
+    if sched == Habit.SCHEDULE_DAILY:
+        raw = post.get('challenge') or ''
+        if raw == 'own':
+            raw = post.get('challenge_own') or ''
+        ok, unit = CH.valid_days, 'day'
+    else:
+        raw = post.get('challenge_w') or ''
+        if raw == 'own':
+            raw = post.get('challenge_own_w') or ''
+        ok, unit = CH.valid_weeks, 'week'
     try:
         n = int(raw)
     except ValueError:
         return None
-    return n if CH.valid_days(n) else None
+    return (n, unit) if ok(n) else None
+
+
+def _challenge_values(choice):
+    """What the form shows as chosen: v.challenge (days) or
+    v.challenge_w (weeks)."""
+    n, unit = choice or (None, None)
+    return {'challenge': n if unit == 'day' else None,
+            'challenge_w': n if unit == 'week' else None}
 
 
 def _set_challenge(habit, post, day):
     """Begin, change or end the habit's challenge from the form. Editing
-    anything else leaves a running (or finished) one as it is."""
+    anything else leaves a running (or finished) one as it is; a new
+    number - or days becoming weeks - starts it again from today."""
     want = _challenge_choice(post)
-    if want and (not CH.has(habit) or habit.challenge_days != want):
-        CH.begin(habit, want, day)
+    if want and (not CH.has(habit) or habit.challenge_days != want[0] or
+                 (habit.challenge_unit or 'day') != want[1]):
+        CH.begin(habit, want[0], day, want[1])
     elif not want and CH.has(habit):
         CH.clear(habit)
 
@@ -892,7 +936,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl14-1'
+SW_VERSION = 'wl15-1'
 
 
 def service_worker(request):

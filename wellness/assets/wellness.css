@@ -16,6 +16,8 @@
   --w-quiet: #5E6A6E;
   --w-line: #ECE8E0;
   --w-empty: #EEEBE4;
+  /* WL-12 - a missed day: a soft grey outline, never red. */
+  --w-miss: #C3BCAF;
   --w-ring-off: #B9C7BE;
   --w-on-accent: #FFFFFF;
   --w-tint-morning: #F7F5F0;
@@ -55,6 +57,7 @@
     --w-quiet: #A9B3B5;
     --w-line: #2F3B3F;
     --w-empty: #2A3438;
+    --w-miss: #5F6B6E;
     --w-ring-off: #55665D;
     --w-on-accent: #142018;
     --w-tint-morning: #1C2427;
@@ -314,6 +317,9 @@ button { font: inherit; color: inherit; }
 .w-day.done { background: var(--w-sage-deep); color: var(--w-on-accent); }
 .w-day.done .d-label { color: inherit; opacity: .85; }
 .w-day.grace { box-shadow: inset 0 0 0 2px var(--w-sage-track); }
+/* WL-12, 1 Nov 2026 - three marks: Done, Missed, Rest. */
+.w-day.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--w-miss); }
+.w-day.picked { outline: 2px solid var(--w-ink); outline-offset: 2px; }
 .w-day.before { opacity: .6; }
 
 /* ---- the 12-week calendar */
@@ -329,6 +335,7 @@ button { font: inherit; color: inherit; }
 .w-cell.grace { background: var(--w-empty); box-shadow: inset 0 0 0 2px var(--w-sage); }
 .w-cell.comeback { background: #E8DCC8; box-shadow: inset 0 0 0 2px #C9A96E; }
 .w-cell.open { box-shadow: inset 0 0 0 2px var(--w-ring-off); }
+.w-cell.miss, .w-key i.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--w-miss); }
 /* WL-1b - a new habit's calendar was a blank card: every day before it
    began was transparent. They are faint squares now, so the grid is there
    from day one and fills in. */
@@ -715,6 +722,13 @@ details[data-voice-box] > :not(summary) { margin-top: 12px; }
 .w-strip i { aspect-ratio: 1; border-radius: 4px; background: var(--w-empty); }
 .w-strip i.done { background: var(--w-sage-deep); }
 .w-strip i.today { box-shadow: inset 0 0 0 2px var(--w-sage); background: transparent; }
+/* WL-12 - a weekly challenge: one square per week, filling from the
+   bottom as the week fills. */
+.w-wstrip { gap: 6px; }
+.w-wstrip i { position: relative; overflow: hidden; display: block; }
+.w-wstrip i b { position: absolute; left: 0; right: 0; bottom: 0; display: block; background: var(--w-sage-deep); }
+.w-wstrip i.now { box-shadow: inset 0 0 0 2px var(--w-sage); }
+.w-wstrip i.now b { background: var(--w-sage); }
 .w-linkbtn { background: none; border: none; padding: 0; font: inherit; color: var(--w-sage-deep); text-decoration: underline; cursor: pointer; }
 
 /* ---- CY-2, 31 Oct 2026 - cycle phases: the card, the wave, the board. */

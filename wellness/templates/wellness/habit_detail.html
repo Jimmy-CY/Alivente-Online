@@ -23,18 +23,27 @@
 <section class="w-card" aria-labelledby="ch-h" data-challenge-card>
   <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
     <h2 class="w-h2" id="ch-h">{% if challenge.finished %}Challenge finished{% else %}{{ challenge.words }}{% endif %}</h2>
-    <span class="w-small w-quiet">{{ challenge.days }}-day challenge</span>
+    <span class="w-small w-quiet">{{ challenge.days }}-{{ challenge.unit }} challenge</span>
   </div>
+  {% if challenge.unit == 'week' %}
+  {% comment %} WL-12, 1 Nov 2026 - a weekly challenge: a square for each week, filling as the week fills. {% endcomment %}
+  {% if challenge.this_words %}<p style="margin:0;font-weight:600" data-this-week>{{ challenge.this_words }}</p>{% endif %}
+  {% for row in challenge.rows %}
+  <div class="w-strip w-wstrip" style="grid-template-columns:repeat({{ row|length }},minmax(0,1fr));max-width:{% widthratio row|length 13 100 %}%" role="img" aria-label="{{ challenge.got }} of {{ challenge.days }} weeks done">{% for s in row %}<i class="{{ s.cls }}"><b style="height:{{ s.pct }}%"></b></i>{% endfor %}</div>
+  {% endfor %}
+  <p class="w-small w-quiet" style="margin:0">{% if challenge.finished %}All {{ challenge.days }} weeks done, finished on {{ challenge.finished|date:"l j F" }}.{% else %}{{ challenge.got }} week{{ challenge.got|pluralize }} done · finishes on {{ challenge.finish_words }} if every week from now is met{% if challenge.misses %} · {{ challenge.misses }} week{{ challenge.misses|pluralize }} added{% endif %}.{% endif %}</p>
+  {% else %}
   {% if not challenge.rows %}<div class="w-bar" role="img" aria-label="{{ challenge.got }} of {{ challenge.days }} days done"><i style="width:{{ challenge.pct }}%"></i></div>{% endif %}
   {% for row in challenge.rows %}
   <div class="w-strip" style="grid-template-columns:repeat({{ row|length }},minmax(0,1fr));max-width:{% widthratio row|length 15 100 %}%" role="img" aria-label="{{ challenge.got }} of {{ challenge.days }} days done">{% for s in row %}<i class="{{ s }}"></i>{% endfor %}</div>
   {% endfor %}
   <p class="w-small w-quiet" style="margin:0">{% if challenge.finished %}All {{ challenge.days }} days done, finished on {{ challenge.finished|date:"l j F" }}.{% else %}{{ challenge.got }} done · finishes on {{ challenge.finish_words }} if every day from now is done{% if challenge.misses %} · {{ challenge.misses }} day{{ challenge.misses|pluralize }} added{% endif %}.{% endif %}</p>
+  {% endif %}
   {% if challenge.ask and not habit.archived_at %}
   <p style="margin:0">{{ challenge.ask_words }}</p>
   <div class="w-btn-row">
     <form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_carry' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<button type="submit" class="w-btn" style="flex:1">Carry on</button></form>
-    <form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_restart' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<button type="submit" class="w-btn ghost" style="flex:1">Start again today</button></form>
+    <form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_restart' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<button type="submit" class="w-btn ghost" style="flex:1">Start again {% if challenge.unit == 'week' %}this week{% else %}today{% endif %}</button></form>
   </div>
   {% if challenge.can_pause %}<form method="post" action="{% url 'wellness:habit_action' habit.pk 'challenge_pause' %}">{% csrf_token %}<button type="submit" class="w-btn quiet">Pause it for now</button></form>{% endif %}
   {% elif challenge.finished and not habit.archived_at %}
@@ -66,48 +75,57 @@
   <h2 class="w-h2" id="week-h" style="font-size:16px">The last seven days</h2>
   <div class="w-week">
     {% for d in week %}
+    {% if habit.measured %}
+    {% comment %} WL-12, 1 Nov 2026 - an amount habit: tap a day and the box below is for that day. {% endcomment %}
+    <a href="?day={{ d.iso }}#w-entry" class="w-day {{ d.state }}{% if d.iso == entry.iso %} picked{% endif %}" style="text-decoration:none;color:inherit" data-day-pick{% if d.iso == entry.iso %} aria-current="date"{% endif %} aria-label="{{ d.date|date:'l j F' }}{% if d.state == 'done' %}, done{% elif d.state == 'miss' %}, missed{% endif %}{% if d.value %}, {{ d.value }}{% endif %}">
+      <span class="d-label">{{ d.label }}</span>
+      <span class="d-num">{{ d.num }}</span>
+    </a>
+    {% else %}
     <form method="post" action="{% url 'wellness:habit_check' habit.pk %}" style="display:flex">
       {% csrf_token %}
       <input type="hidden" name="date" value="{{ d.iso }}">
       <input type="hidden" name="op" value="toggle">
       <input type="hidden" name="next" value="{% url 'wellness:habit_detail' habit.pk %}">
-      <button type="submit" class="w-day {{ d.state }}" style="flex:1" aria-pressed="{% if d.state == 'done' %}true{% else %}false{% endif %}" aria-label="{{ d.date|date:'l j F' }}{% if d.state == 'done' %}, done{% elif d.state == 'grace' %}, forgiven{% endif %}">
+      <button type="submit" class="w-day {{ d.state }}" style="flex:1" aria-pressed="{% if d.state == 'done' %}true{% else %}false{% endif %}" aria-label="{{ d.date|date:'l j F' }}{% if d.state == 'done' %}, done{% elif d.state == 'miss' %}, missed{% endif %}">
         <span class="d-label">{{ d.label }}</span>
         <span class="d-num">{{ d.num }}</span>
       </button>
     </form>
+    {% endif %}
     {% endfor %}
   </div>
   {% if habit.measured %}
-  <form method="post" action="{% url 'wellness:habit_check' habit.pk %}" style="display:flex;gap:10px;align-items:flex-end">
+  <form method="post" action="{% url 'wellness:habit_check' habit.pk %}" style="display:flex;gap:10px;align-items:flex-end" id="w-entry" data-entry>
     {% csrf_token %}
     <input type="hidden" name="op" value="set">
-    <input type="hidden" name="next" value="{% url 'wellness:habit_detail' habit.pk %}">
+    <input type="hidden" name="date" value="{{ entry.iso }}">
+    <input type="hidden" name="next" value="{% url 'wellness:habit_detail' habit.pk %}{% if entry.label != 'Today' %}?day={{ entry.iso }}{% endif %}">
     <label style="flex:1;display:flex;flex-direction:column;gap:6px">
-      <span class="w-small w-quiet">Today, in {% if habit.kind == 'duration' %}minutes{% else %}{{ habit.unit|default:'times' }}{% endif %} (aim {{ habit.target }})</span>
-      <input class="w-input" type="number" name="value" min="0" inputmode="numeric" value="{{ week.6.value|default_if_none:'' }}">
+      <span class="w-small w-quiet">{{ entry_words }}, in {% if habit.kind == 'duration' %}minutes{% else %}{{ habit.unit|default:'times' }}{% endif %} (aim {{ habit.target }})</span>
+      <input class="w-input" type="number" name="value" min="0" inputmode="numeric" value="{{ entry.value|default_if_none:'' }}"{% if entry.label != 'Today' %} autofocus{% endif %}>
     </label>
     <button type="submit" class="w-btn" style="min-height:56px">Save</button>
   </form>
   {% endif %}
+  {% if habit.measured %}<p class="w-small w-quiet" style="margin:0">Tap a day to enter or change its amount. 0 clears it.</p>{% endif %}
 </section>
 {% endif %}
 
 <section class="w-card" aria-labelledby="cal-h">
   <div style="display:flex;justify-content:space-between;align-items:baseline">
     <h2 class="w-h2" id="cal-h" style="font-size:16px">Last 12 weeks</h2>
-    {% if comebacks %}<span class="w-small w-quiet">{{ comebacks }} comeback{{ comebacks|pluralize }}</span>{% endif %}
   </div>
   <div class="w-cal" role="img" aria-label="A calendar of the last twelve weeks, one column per week">
-    {% for col in calendar %}{% for c in col %}<div class="w-cell {{ c.state }}{% if c.comeback %} comeback{% endif %}" title="{{ c.date|date:'D j M' }}"></div>{% endfor %}{% endfor %}
+    {% for col in calendar %}{% for c in col %}<div class="w-cell {{ c.state }}" title="{{ c.date|date:'D j M' }}"></div>{% endfor %}{% endfor %}
   </div>
   {% if days_in < 14 %}<p class="w-small w-quiet" style="margin:0">Your calendar fills in day by day. Faint squares are the days before this habit began.</p>{% endif %}
   <div class="w-key">
     <span><i style="background:var(--w-sage)"></i>Done</span>
-    <span><i style="background:#E8DCC8;box-shadow:inset 0 0 0 2px #C9A96E"></i>Comeback</span>
-    {% if habit.schedule != 'per_week' %}<span><i style="box-shadow:inset 0 0 0 2px var(--w-sage)"></i>Forgiven</span>{% endif %}
+    {% if habit.schedule != 'per_week' %}<span><i class="miss"></i>Missed</span>{% endif %}
     <span><i style="background:var(--w-empty)"></i>Rest</span>
   </div>
+  {% if habit.schedule != 'per_week' %}<p class="w-small w-quiet" style="margin:0">The first two missed days each month are forgiven - they never spoil your streak.</p>{% endif %}
 </section>
 
 {% if habit.cue or habit.tiny_version %}

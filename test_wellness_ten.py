@@ -116,7 +116,9 @@ today_t = read(J(WT, 'today.html'))
 ok('data-challenge-day' in today_t and 'data-challenge-finish' in today_t
    and 'data-challenge-ask' in today_t,
    'Today: "Day N of D", the finish card, and the missed-day question')
-ok('Carry on' in today_t and 'Start again today' in today_t,
+# WL-12, 1 Nov 2026: "Start again this week" for a weekly challenge.
+ok('Carry on' in today_t and 'Start again ' in today_t and
+   'today{% endif %}' in today_t,
    '  the question offers Carry on and Start again')
 det = read(J(WT, 'habit_detail.html'))
 ok('class="w-strip"' in det and 'data-challenge-card' in det,
@@ -127,9 +129,10 @@ small = [m for m in re.findall(r'min-height:\s*(\d+)px', css) if int(m) < 44
          and m != '0']
 ok(not small, 'every control is still at least 44px', small)
 js = read(J(APP, 'assets', 'wellness.js'))
-ok("set('challenge', p.challenge || '')" in js and
-   "[name=schedule][value=daily]" in js,
-   'a challenge to try fills the form; a challenge is every day')
+# WL-12, 1 Nov 2026: a challenge no longer forces every day - times a
+# week and chosen days get weekly challenges (test_wellness_sixteen).
+ok("set('challenge', p.challenge || '')" in js,
+   'a challenge to try fills the form')
 base = read(J(WT, 'base.html'))
 v = re.findall(r'\?v=([\w-]+)', base)
 views = read(J(APP, 'views.py'))
@@ -255,14 +258,16 @@ if have_db:
             ok('30 days of no sugar' in t and '&quot;challenge&quot;: 30' in t,
                'the new-habit screen offers challenges to try')
             r = ca.post('/wellness/habits/new/', {
-                'name': 'No sugar', 'kind': 'avoid', 'schedule': 'per_week',
-                'per_week': '3', 'time_of_day': 'anytime',
+                'name': 'No sugar', 'kind': 'avoid', 'schedule': 'daily',
+                'time_of_day': 'anytime',
                 'challenge': '7'})
             h = Habit.objects.get(user=a, name='No sugar')
+            # WL-12: an every-day habit's challenge counts days; times a
+            # week and chosen days count weeks (test_wellness_sixteen).
             ok(r.status_code == 302 and h.challenge_days == 7 and
                h.challenge_from == day and h.schedule == 'daily',
-               'A 7-DAY CHALLENGE begins today - and a challenge is every '
-               'day, whatever was picked', (h.challenge_days, h.schedule))
+               'A 7-DAY CHALLENGE on an every-day habit begins today',
+               (h.challenge_days, h.schedule))
             t = ca.get('/wellness/').content.decode()
             ok('data-challenge-day>Day 1 of 7<' in t,
                'Today: "Day 1 of 7"')

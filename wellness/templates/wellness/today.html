@@ -29,7 +29,7 @@
   <p style="margin:0">{{ a.c.ask_words }}</p>
   <div class="w-btn-row">
     <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_carry' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn" style="flex:1">Carry on</button></form>
-    <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_restart' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn ghost" style="flex:1;background:var(--w-card)">Start again today</button></form>
+    <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_restart' %}" style="flex:1 1 auto;display:flex">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-btn ghost" style="flex:1;background:var(--w-card)">Start again {% if a.c.unit == 'week' %}this week{% else %}today{% endif %}</button></form>
   </div>
   <span class="w-small w-quiet">Carry on and it finishes on {{ a.c.finish_words }}.{% if a.c.can_pause %} Or <form method="post" action="{% url 'wellness:habit_action' a.habit.pk 'challenge_pause' %}" style="display:inline">{% csrf_token %}<input type="hidden" name="next" value="{% url 'wellness:today' %}"><button type="submit" class="w-linkbtn">pause it for now</button></form>.{% endif %}</span>
 </section>
