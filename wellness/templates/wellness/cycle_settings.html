@@ -14,7 +14,7 @@
     {% for key, label in modes %}
     <label style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:15px"><input type="radio" name="mode" value="{{ key }}"{% if prefs.mode == key %} checked{% endif %} style="width:20px;height:20px;accent-color:var(--w-sage-deep)"> {{ label }}</label>
     {% endfor %}
-    <p class="w-small w-quiet" style="margin:0">Pregnancy and hormonal contraception switch predictions off. You can still log anything.</p>
+    <p class="w-small w-quiet" style="margin:0">In perimenopause, predictions become a rough, wider guide and the phases give way to ideas for these years; hot flushes, night sweats and more are added to Log today. Pregnancy and hormonal contraception switch predictions off. You can still log anything.</p>
   </fieldset>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="fertile" value="1"{% if prefs.fertile %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Show a fertile-window estimate<br><span class="w-small w-quiet">{{ fertile_label }} Never rely on it to prevent a pregnancy.</span></span></label>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="remind" value="1"{% if prefs.remind %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Remind me a day before it is expected<br><span class="w-small w-quiet">The reminder only says "A Wellness reminder", on the phones you turned reminders on for.</span></span></label>

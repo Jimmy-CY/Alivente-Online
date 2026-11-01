@@ -49,6 +49,19 @@ SYMPTOMS = [
     ('nausea', 'Nausea'),
     ('low_mood', 'Low mood'),
     ('poor_sleep', 'Poor sleep'),
+    # CY-4, 1 Nov 2026 - Demetri, 05:48: "let's add more symptoms to ours
+    # as well." Twenty-two in all, and six more in perimenopause.
+    ('mood_swings', 'Mood swings'),
+    ('irritable', 'Irritable'),
+    ('anxious', 'Anxious'),
+    ('tearful', 'Tearful'),
+    ('focus', 'Hard to focus'),
+    ('dizzy', 'Dizziness'),
+    ('pelvic_pain', 'Pelvic pain'),
+    ('constipation', 'Constipation'),
+    ('diarrhoea', 'Diarrhoea'),
+    ('swelling', 'Swollen hands or feet'),
+    ('hungry', 'Hungrier than usual'),
 ]
 SYMPTOM_NAMES = dict(SYMPTOMS)
 
@@ -75,17 +88,37 @@ MAX_TAGS, TAG_LEN = 12, 24
 # What counts towards the PMS window: the symptoms that tend to come
 # before a period, and a low mood however it was logged.
 PMS_KEYS = ('cramps', 'headache', 'bloating', 'tender', 'tired', 'acne',
-            'cravings', 'low_mood', 'poor_sleep', 'low_energy')
+            'cravings', 'low_mood', 'poor_sleep', 'low_energy',
+            'mood_swings', 'irritable', 'anxious', 'tearful', 'hungry',
+            'swelling')
 PMS_BACK = 7
 # The calendar looks this many months ahead.
 MONTHS_AHEAD = 6
 
 MODES = [
     ('normal', 'Tracking my cycle'),
+    # CY-4, 1 Nov 2026 - Demetri, 05:43: "Can we add a Perimenopause mode".
+    # Irregular cycles expected: predictions are a rough, wider window,
+    # never "late", no fertile estimate and no phases; the perimenopause
+    # symptoms are offered when logging.
+    ('perimenopause', 'In perimenopause'),
     ('pregnant', 'Pregnant'),
     ('hormonal', 'On hormonal contraception'),
 ]
+# The symptoms offered in perimenopause mode, as well as the usual ones.
+PERI_SYMPTOMS = [
+    ('hot_flush', 'Hot flushes'),
+    ('night_sweats', 'Night sweats'),
+    ('brain_fog', 'Brain fog'),
+    ('joint_aches', 'Joint aches'),
+    ('dryness', 'Vaginal dryness'),
+    ('palpitations', 'Palpitations'),
+]
+# Perimenopause: the expected window is at least this many days either side.
+PERI_SPREAD = 6
 MODE_NAMES = dict(MODES)
+SYMPTOM_NAMES.update(dict(PERI_SYMPTOMS))
+PREDICTING = ('normal', 'perimenopause')
 
 DEFAULT_SETTINGS = {'on': False, 'fertile': False, 'mode': 'normal',
                     'remind': False,
@@ -231,7 +264,8 @@ def has(e, key):
 
 def pattern_keys(tags=()):
     """(key, name) for everything Patterns can show."""
-    return list(SYMPTOMS) + [('low_energy', 'Low energy')] + \
+    return list(SYMPTOMS) + list(PERI_SYMPTOMS) + \
+        [('low_energy', 'Low energy')] + \
         [('tag:' + t, t) for t in (tags or ())]
 
 
@@ -323,12 +357,12 @@ def summary(days, today, settings):
     ps = periods(days)
     cs = cycles(ps)
     mode = settings.get('mode', 'normal')
-    out = {'state': 'empty', 'cycles': cs, 'cycle_day': None,
+    out = {'state': 'empty', 'cycles': cs, 'cycle_day': None, 'soft': False,
            'window': None, 'fertile': None, 'avg_cycle': None,
            'avg_period': None, 'range': None, 'in_period': False,
            'period_day': None, 'flags': flags(cs, today, mode)}
     if not ps:
-        if mode != 'normal':
+        if mode not in PREDICTING:
             out['state'] = mode
         return out
     last_a, last_b = ps[-1]
@@ -344,9 +378,10 @@ def summary(days, today, settings):
     if lengths:
         out['avg_cycle'] = int(round(median(lengths)))
         out['range'] = (min(lengths), max(lengths))
-    if mode != 'normal':
+    if mode not in PREDICTING:
         out['state'] = mode
         return out
+    out['soft'] = mode == 'perimenopause'
     if not lengths:
         out['state'] = 'learning'
         return out
@@ -358,15 +393,17 @@ def summary(days, today, settings):
         lo, hi = min(lengths), max(lengths)
         spread = max(1, min(4, int((hi - lo + 1) // 2)))
         out['state'] = 'predicted'
+    if out['soft']:
+        spread = max(spread, PERI_SPREAD)
     start = last_a + dt.timedelta(days=int(round(med)) - spread)
     end = last_a + dt.timedelta(days=int(round(med)) + spread)
-    if today > end and not out['in_period']:
+    if today > end and not out['in_period'] and not out['soft']:
         out['state'] = 'late'
         out['late_by'] = (today - (last_a + dt.timedelta(
             days=int(round(med))))).days
     out['window'] = (start, end)
-    if settings.get('fertile') and out['state'] in ('predicted',
-                                                     'first_guess'):
+    if settings.get('fertile') and not out['soft'] and \
+            out['state'] in ('predicted', 'first_guess'):
         mid = last_a + dt.timedelta(days=int(round(med)))
         ov = mid - dt.timedelta(days=14)
         out['fertile'] = (ov - dt.timedelta(days=5),
@@ -439,6 +476,11 @@ def headline(s):
              'From your last %d cycles. Usually %s days.'
              % (len([c for c in s['cycles'] if c['length']][-RECENT:]),
                 span_words(*s['range'], joint='–')))
+    if s.get('soft'):
+        # CY-4 - perimenopause: a rough guide, never "late".
+        return ('Perhaps around %s' % _span(a, b),
+                'In perimenopause cycles change a lot - this is a rough '
+                'guide from your recent cycles.')
     return ('Next period around %s' % _span(a, b), small)
 
 
@@ -577,7 +619,19 @@ _NOUNS = {'Cramps': ('Cramps', 'are'), 'Headache': ('Headaches', 'are'),
           'Back pain': ('Back pain', 'is'), 'Tired': ('Tiredness', 'is'),
           'Acne': ('Acne', 'is'), 'Cravings': ('Cravings', 'are'),
           'Nausea': ('Nausea', 'is'), 'Low mood': ('Low mood', 'is'),
-          'Poor sleep': ('Poor sleep', 'is')}
+          'Poor sleep': ('Poor sleep', 'is'),
+          # CY-4 - the new ones.
+          'Mood swings': ('Mood swings', 'are'),
+          'Irritable': ('Feeling irritable', 'is'),
+          'Anxious': ('Feeling anxious', 'is'),
+          'Tearful': ('Feeling tearful', 'is'),
+          'Hard to focus': ('Trouble focusing', 'is'),
+          'Swollen hands or feet': ('Swelling', 'is'),
+          'Hungrier than usual': ('Extra hunger', 'is'),
+          'Hot flushes': ('Hot flushes', 'are'),
+          'Night sweats': ('Night sweats', 'are'),
+          'Joint aches': ('Joint aches', 'are'),
+          'Palpitations': ('Palpitations', 'are')}
 
 
 def _noun(name):

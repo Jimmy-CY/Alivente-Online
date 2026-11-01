@@ -189,5 +189,8 @@
 </section>
 {% endif %}
 
-<a class="w-btn quiet full" href="{% url 'wellness:badges' %}">Your badges</a>
+<div class="w-btn-row">
+  <a class="w-btn quiet" href="{% url 'wellness:insights' %}" data-insights-link>Your insights</a>
+  <a class="w-btn quiet" href="{% url 'wellness:badges' %}">Your badges</a>
+</div>
 {% endblock %}

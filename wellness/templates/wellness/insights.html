@@ -1,0 +1,55 @@
+{% extends "wellness/base.html" %}
+{% block title %}Insights · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:today' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</a>{% endblock %}
+{% block content %}
+{% comment %}
+  WL-10, 1 Nov 2026 - Insights (Demetri, 05:43). The last eight weeks side
+  by side, and carefully, what goes with what. Patterns, not proof. Only
+  the sections switched on.
+{% endcomment %}
+<div>
+  <h1 class="w-title">Insights</h1>
+  <p class="w-quiet" style="margin:6px 0 0">Your last eight weeks, side by side.</p>
+</div>
+
+{% if i.findings %}
+<section class="w-card sand" style="gap:10px" data-findings>
+  <span class="w-label">What goes with what</span>
+  {% for f in i.findings %}<p style="margin:0">{{ f.words }}</p>{% endfor %}
+  <p class="w-small w-quiet" style="margin:0">Patterns, not proof - other things change from day to day too.</p>
+</section>
+{% elif 'journal' in on %}
+<section class="w-card soft" style="gap:6px" data-findings-none>
+  <span class="w-label">What goes with what</span>
+  <p class="w-quiet" style="margin:0">Add a mood when you write in your journal. With at least {{ min_days }} days on each side, Insights shows what goes with your better days.</p>
+</section>
+{% endif %}
+
+{% if i.habits %}
+<section class="w-card" aria-labelledby="ins-h"><h2 class="w-h2" id="ins-h">Habits done</h2>
+  <div class="w-ins-bars">{% for b in i.habits %}<span title="{{ b.label }}: {% if b.v is not None %}{{ b.v }}%{% else %}none due{% endif %}"><b>{% if b.v is not None %}{{ b.v }}%{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
+  <p class="w-small w-quiet" style="margin:0">Each week: the share of planned days done.</p></section>
+{% endif %}
+{% if i.mood %}
+<section class="w-card" aria-labelledby="ins-m"><h2 class="w-h2" id="ins-m">Mood</h2>
+  <div class="w-ins-bars mood">{% for b in i.mood %}<span title="{{ b.label }}: {{ b.v|default:'no moods' }}"><b>{{ b.v|default:'' }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
+  <p class="w-small w-quiet" style="margin:0">Each week: your average mood, 1 to 5, from the journal.</p></section>
+{% endif %}
+{% if i.calm %}
+<section class="w-card" aria-labelledby="ins-c"><h2 class="w-h2" id="ins-c">Calm minutes</h2>
+  <div class="w-ins-bars calm">{% for b in i.calm %}<span title="{{ b.label }}: {{ b.v }} min"><b>{{ b.v }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div></section>
+{% endif %}
+{% if i.workouts %}
+<section class="w-card" aria-labelledby="ins-w"><h2 class="w-h2" id="ins-w">Workouts</h2>
+  <div class="w-ins-bars train">{% for b in i.workouts %}<span title="{{ b.label }}: {{ b.v }}"><b>{{ b.v }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div></section>
+{% endif %}
+{% if i.weight %}
+<section class="w-card" style="gap:6px" data-ins-weight><h2 class="w-h2">Weight trend</h2>
+  <p style="margin:0">{% if i.weight.dir == 'steady' %}Steady at about {{ i.weight.end }} kg over these weeks.{% else %}{{ i.weight.start }} to {{ i.weight.end }} kg - {{ i.weight.dir }} {{ i.weight.change }} kg over these weeks.{% endif %}</p></section>
+{% endif %}
+{% if i.phase_moods %}
+<section class="w-card" style="gap:8px" data-phase-moods><h2 class="w-h2">Mood by cycle phase</h2>
+  <div class="w-list" style="padding:0">{% for name, m, n in i.phase_moods %}<div class="w-row"><span class="w-row-name">{{ name }}</span><span class="w-row-side">{{ m }} <span class="w-small">· {{ n }} day{{ n|pluralize }}</span></span></div>{% endfor %}</div>
+  <p class="w-small w-quiet" style="margin:0">Only you see this. People vary a lot - this is yours alone.</p></section>
+{% endif %}
+{% endblock %}

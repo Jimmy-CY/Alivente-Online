@@ -155,19 +155,36 @@ HOWTO = [
      'a': 'Yes. In Cycle settings set a daily pill reminder time. Like '
           'every cycle reminder it only says "A Wellness reminder". You can '
           'also ask for a nudge to log once your period is due.'},
+    # CY-4 / WL-10, 1 Nov 2026 - perimenopause mode and Insights.
+    {'q': 'Is there a perimenopause mode?',
+     'a': 'Yes. In Cycle settings choose In perimenopause. Predictions '
+          'become a rough, wider guide and never say late, the phases give '
+          'way to ideas for these years (strength, bones, cooler nights), '
+          'and hot flushes, night sweats, brain fog and more are added to '
+          'Log today and to Patterns.'},
+    {'q': 'What is Insights?',
+     'a': 'A page with your last eight weeks side by side - habits done, '
+          'mood, Calm minutes, workouts and your weight trend - and, once '
+          'you have added moods in the journal, what goes with your better '
+          'days. Patterns, not proof. Find it at the bottom of Today or in '
+          'Settings.'},
     # CY-2, 31 Oct 2026 - cycle phases.
     {'q': 'What are the cycle phases?',
      'a': 'Four stretches of a cycle: menstrual (your period), follicular '
-          '(energy often rises), ovulation (often the most energetic days) '
-          'and luteal (winding down before the next period). Wellness '
+          '(from your period to ovulation), ovulation, and luteal (from '
+          'ovulation to your next period). How you feel in each varies a '
+          'lot from person to person. Wellness '
           'estimates them from your own averages, so they sharpen as you '
           'log. With very irregular cycles, pregnancy or hormonal '
           'contraception it shows the day only.'},
     {'q': 'What are the ideas on the cycle page?',
-     'a': 'A few things to do, move and eat that suit the phase - each '
-          'with why and how. They are ideas, not rules, and nothing in them '
-          'is medical advice. Hide any you do not want; "Show the ideas you '
-          'hid" brings them back.'},
+     'a': 'A few things to do, move and eat, loosely matched to the phase - '
+          'each with why and how. Some are well supported (heat and gentle '
+          'exercise for period pain, iron while you bleed); most are simply '
+          'good habits on any day. Research shows people vary a lot, so go '
+          'by how you feel. They are ideas, not rules, and not medical '
+          'advice. Hide any you do not want; "Show the ideas you hid" '
+          'brings them back.'},
     # WL-9, 31 Oct 2026 - your sections.
     {'q': 'Can I hide the parts I do not use?',
      'a': 'Yes. Tap the cog, open Your sections and switch off any of '

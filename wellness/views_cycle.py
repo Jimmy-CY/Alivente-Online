@@ -92,9 +92,13 @@ def home(request):
         'can_start': not open_from and not s.get('in_period') and
         s['state'] not in ('pregnant',),
         'board': PH.board(card['phase'], prefs.get('hidden_tips'))
-        if card and card['phase'] else [],
+        if card and card['phase'] else
+        PH.board('peri', prefs.get('hidden_tips'))
+        if card and card.get('peri') else [],
         'hidden_n': len([k for k in (prefs.get('hidden_tips') or ())
                          if k in PH.ALL_KEYS]),
+        # CY-4 - what the ideas are, honestly (Demetri, 1 Nov 05:26).
+        'board_note': PH.DISCLAIMER,
     })
 
 
@@ -156,13 +160,16 @@ def log_day(request):
     s = C.summary(days, today, prefs)
     starting = (e.get('flow') in C.BLEED and
                 any(p[0] == day for p in C.periods(days)))
+    # CY-4 - perimenopause: its symptoms are offered too.
+    symptoms = C.SYMPTOMS + (C.PERI_SYMPTOMS
+                             if prefs.get('mode') == 'perimenopause' else [])
     return render(request, 'wellness/cycle_log.html', {
         'tab': 'cycle',
         'day': day,
         'is_today': day == today,
         'e': e,
         'flows': C.FLOWS,
-        'symptoms': C.SYMPTOMS,
+        'symptoms': symptoms,
         'cycle_day': ((day - C.periods(days)[-1][0]).days + 1)
         if C.periods(days) and day >= C.periods(days)[-1][0] else None,
         'starting': starting,

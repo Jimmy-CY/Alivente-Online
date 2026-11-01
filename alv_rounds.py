@@ -1567,6 +1567,8 @@ ROUNDS = [
     '.bak_wellness12',
     # CY-3, 31 Oct 2026 - Wellness: deeper cycle tracking.
     '.bak_wellness13',
+    # CY-4, 1 Nov 2026 - Wellness: honest wording for the cycle ideas.
+    '.bak_wellness14',
 ]
 
 

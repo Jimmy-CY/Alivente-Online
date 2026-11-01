@@ -19,6 +19,19 @@ and a board of things to do, move and eat. 15:46: "Do, Move and Eat".
 THE PHASES ARE ESTIMATES from the person's own averages: ovulation about
 14 days before the next period. They live only in the Cycle tab - Today's
 cycle line stays as discreet as before.
+
+CY-4, 1 Nov 2026 - HONEST WORDING. Demetri, 05:21: "Are these ideas
+scientifically or generally solid suggestions?" Mostly general good
+habits; the phase-matching ("energy rises", "strength peaks at
+ovulation") goes beyond the research - a 2020 meta-analysis (McNulty et
+al., Sports Medicine) found only trivial performance differences across
+the cycle, and people vary a lot. 05:26: reword for Release 57. So:
+    - well supported, kept plainly: heat and gentle exercise for period
+      pain, iron while bleeding, rest and sleep;
+    - everything else is said as a general habit or as "some people
+      find", never as what the phase does to the body;
+    - the board says so under its heading (DISCLAIMER).
+test_wellness_fourteen holds the words to this.
 """
 import datetime as dt
 
@@ -32,184 +45,241 @@ OPEN_GRACE = 3
 OPEN_MAX = 10
 
 PHASES = [
-    ('menstrual', 'Menstrual phase', 'Rest and go gently.'),
-    ('follicular', 'Follicular phase', 'Energy often starts to rise.'),
-    ('ovulation', 'Ovulation phase', 'Often the most energetic days.'),
-    ('luteal', 'Luteal phase', 'Winding down towards the next period.'),
+    ('menstrual', 'Menstrual phase', 'Your period.'),
+    ('follicular', 'Follicular phase', 'From your period to ovulation.'),
+    ('ovulation', 'Ovulation phase', 'Around ovulation - an estimate.'),
+    ('luteal', 'Luteal phase', 'From ovulation to your next period.'),
 ]
 PHASE_NAMES = {k: n for k, n, _w in PHASES}
+DISCLAIMER = ('General wellbeing ideas, loosely matched to the phase. '
+              'Research shows people vary a lot - go by how you feel.')
 
 # A line for the day: a few per phase, chosen by the day of the cycle.
 LINES = {
     'menstrual': [
         ('New cycle, new you', 'The first days often come with mixed '
          'feelings. Be as kind to yourself as you would be to a friend.'),
-        ('Slow is fine', 'Your body is doing real work. Rest counts.'),
+        ('Slow is fine', 'If you feel tired, rest counts. Gentle movement '
+         'and warmth can ease cramps.'),
         ('Warmth helps', 'A warm drink, a warm bath, an early night - '
-         'small comforts go a long way this week.'),
+         'small comforts go a long way.'),
     ],
     'follicular': [
-        ('Fresh start', 'Many people feel lighter and more curious now. '
-         'A good time to begin something.'),
-        ('Plan ahead', 'If energy is rising, use it to set up the weeks '
-         'ahead.'),
+        ('A fresh page', 'Some people feel lighter after their period. If '
+         'you do, it can be a good time to begin something.'),
+        ('Plan ahead', 'A few minutes setting up the weeks ahead can make '
+         'them easier.'),
         ('Try something new', 'A new route, a new recipe, a new class - '
-         'novelty often feels easier now.'),
+         'small changes keep things interesting.'),
     ],
     'ovulation': [
-        ('In your stride', 'Often a sociable, confident time. Say yes to '
-         'the call you have been putting off.'),
-        ('Lots to give', 'If you feel strong, enjoy it - and leave a '
-         'little in reserve.'),
+        ('However you feel', 'Some people feel more sociable around now, '
+         'others notice nothing different. Both are normal.'),
+        ('Go by your body', 'If you feel strong, enjoy it. If not, a '
+         'steady day is just as good.'),
+    ],
+    # CY-4 - perimenopause mode: no phases, these lines instead.
+    'peri': [
+        ('One day at a time', 'Perimenopause can bring changes in sleep, '
+         'mood and cycles. Be patient with yourself.'),
+        ('You are not alone', 'Most women go through this. Talking about it '
+         '- with friends or a doctor - helps.'),
+        ('Notice what helps', 'Your own tags can show what goes with your '
+         'better and harder days.'),
     ],
     'luteal': [
-        ('Turning inward', 'Energy often eases now. Finishing things can '
-         'feel better than starting them.'),
-        ('Steady wins', 'Regular meals, gentle movement and good sleep '
+        ('Steady days', 'Regular meals, gentle movement and good sleep '
          'help the days feel even.'),
-        ('Notice and allow', 'If moods shift, that is common. Name it, '
-         'and give yourself some room.'),
+        ('Notice and allow', 'Some people notice mood or energy shift '
+         'before a period. Name it, and give yourself some room.'),
+        ('Finish something', 'Tying up one loose end can feel good on any '
+         'day.'),
     ],
 }
 
 # The board: phase -> group -> [(key, name, why, how, link)]. link is a
 # Wellness page or ''. Ideas, not rules - nothing medical, no targets.
+# CY-4: the why says what is generally true or what some people find -
+# never what the phase does to the body.
 BOARD = {
     'menstrual': {
         'do': [
-            ('m_rest', 'An early night', 'Sleep often feels more needed '
-             'in these days.', 'Dim the lights an hour before bed and put '
-             'the phone in another room.', ''),
-            ('m_warm', 'A warm bath', 'Warmth can ease tension and '
-             'cramps for many people.', 'Twenty minutes, warm not hot, '
-             'with a book or music.', ''),
-            ('m_breathe', 'Breathe for two minutes', 'Slow breathing '
-             'settles the body when things feel heavy.', 'Calm, in 4 and '
-             'out 6.', '/wellness/calm/breathe/'),
+            ('m_rest', 'An early night', 'Good sleep helps with tiredness '
+             'and low mood on any day.', 'Dim the lights an hour before bed '
+             'and put the phone in another room.', ''),
+            ('m_warm', 'A warm bath or heat pack', 'Heat is one of the '
+             'best-studied ways to ease period cramps.', 'Twenty minutes, '
+             'warm not hot - a bath, a hot water bottle or a heat pad.', ''),
+            ('m_breathe', 'Breathe for two minutes', 'Slow breathing helps '
+             'many people feel calmer when things feel heavy.', 'Calm, in 4 '
+             'and out 6.', '/wellness/calm/breathe/'),
             ('m_write', 'Write a few lines', 'A new cycle is a natural '
              'moment to look back and look ahead.', 'What do you want '
              'more of this month?', '/wellness/journal/new/'),
         ],
         'move': [
-            ('m_walk', 'Walking', 'Gentle movement can lift mood and '
-             'ease cramps.', 'An easy pace, outdoors if you can.', ''),
-            ('m_yin', 'Yin or gentle yoga', 'Slow, held stretches suit '
-             'lower-energy days.', 'Five or ten minutes on the floor is '
-             'enough.', ''),
+            ('m_walk', 'Walking', 'Regular gentle exercise is shown to '
+             'reduce period pain for many people.', 'An easy pace, outdoors '
+             'if you can.', ''),
+            ('m_yin', 'Yin or gentle yoga', 'Gentle stretching and yoga can '
+             'ease cramps and tension.', 'Five or ten minutes on the floor '
+             'is enough.', ''),
             ('m_stretch', 'Stretching', 'Loosens the back and hips.',
              'Child\'s pose, a gentle twist, knees to chest.', ''),
         ],
         'eat': [
             ('m_iron', 'Iron-rich foods', 'You lose some iron while you '
-             'bleed.', 'Lentils, beans, spinach, red meat if you eat it.',
+             'bleed, and low iron is common - especially with heavy '
+             'periods.', 'Lentils, beans, spinach, red meat if you eat it.',
              ''),
-            ('m_soup', 'Warm, simple meals', 'Easy on the stomach and '
-             'comforting.', 'Soups, stews, porridge.', ''),
-            ('m_water', 'Water and herbal tea', 'Staying hydrated can '
-             'ease bloating and headaches.', 'Keep a bottle nearby; ginger '
-             'or peppermint tea.', ''),
-            ('m_choc', 'A little dark chocolate', 'Comforting, and it '
-             'brings some magnesium.', 'A square or two, enjoyed slowly.',
-             ''),
+            ('m_soup', 'Warm, simple meals', 'Easy to make and comforting '
+             'when you are tired.', 'Soups, stews, porridge.', ''),
+            ('m_water', 'Water and herbal tea', 'Staying hydrated is good '
+             'for headaches and energy on any day.', 'Keep a bottle nearby; '
+             'ginger or peppermint tea if you like them.', ''),
+            ('m_choc', 'A little dark chocolate', 'A comfort many people '
+             'enjoy, with no guilt attached.', 'A square or two, enjoyed '
+             'slowly.', ''),
         ],
     },
     'follicular': {
         'do': [
-            ('f_plan', 'Plan the month', 'Rising energy often makes '
-             'planning feel easy.', 'Three things you would like to do '
+            ('f_plan', 'Plan the month', 'A few minutes of planning makes '
+             'the weeks ahead easier.', 'Three things you would like to do '
              'before your next period.', ''),
-            ('f_new', 'Start something new', 'Curiosity often runs high '
-             'now.', 'A class, a book, a habit - or a challenge.',
-             '/wellness/habits/new/'),
-            ('f_social', 'See a friend', 'Many feel more sociable as '
-             'energy rises.', 'A walk and a coffee counts.', ''),
+            ('f_new', 'Start something new', 'Some people find it easier to '
+             'begin things after their period.', 'A class, a book, a habit '
+             '- or a challenge.', '/wellness/habits/new/'),
+            ('f_social', 'See a friend', 'Time with people you like is good '
+             'for mood on any day.', 'A walk and a coffee counts.', ''),
         ],
         'move': [
-            ('f_cardio', 'Something brisk', 'Many people feel ready for '
-             'more effort now.', 'A brisk walk, a jog, a swim or a bike '
-             'ride.', ''),
-            ('f_strength', 'Strength training', 'A good time to build.',
-             'A routine from Workouts, at your own pace.',
-             '/wellness/workouts/'),
-            ('f_dance', 'Dance', 'Fun, and it lifts the mood.', 'One song '
-             'in the kitchen is enough.', ''),
+            ('f_cardio', 'Something brisk', 'Regular aerobic exercise is '
+             'good for heart, mood and sleep.', 'A brisk walk, a jog, a swim '
+             'or a bike ride.', ''),
+            ('f_strength', 'Strength training', 'Strength training builds '
+             'muscle and bone at any point in your cycle.', 'A routine from '
+             'Workouts, at your own pace.', '/wellness/workouts/'),
+            ('f_dance', 'Dance', 'Fun, and a mood lifter.', 'One song in the '
+             'kitchen is enough.', ''),
         ],
         'eat': [
-            ('f_fresh', 'Fresh, colourful food', 'Variety brings a '
-             'spread of goodness.', 'Salads, fruit, crunchy vegetables.',
-             ''),
-            ('f_ferment', 'Fermented foods', 'Many find them good for '
+            ('f_fresh', 'Fresh, colourful food', 'Variety brings a spread '
+             'of goodness.', 'Salads, fruit, crunchy vegetables.', ''),
+            ('f_ferment', 'Fermented foods', 'Many people find them good for '
              'digestion.', 'Yoghurt, kefir, sauerkraut.', ''),
-            ('f_grains', 'Whole grains', 'Steady energy through the day.',
-             'Oats, brown rice, wholemeal bread.', ''),
+            ('f_grains', 'Whole grains', 'Fibre and steady energy through '
+             'the day.', 'Oats, brown rice, wholemeal bread.', ''),
         ],
     },
     'ovulation': {
         'do': [
-            ('o_talk', 'Have the conversation', 'Confidence often peaks '
-             'now.', 'The call or the ask you have been saving.', ''),
-            ('o_out', 'Get out and about', 'A sociable time for many.',
-             'Say yes to the invitation.', ''),
-            ('o_gratitude', 'A gratitude pause', 'Notice what is going '
-             'well while it is going well.', 'Five minutes, guided.',
+            ('o_talk', 'Have the conversation', 'If you have been putting '
+             'something off, today is as good a day as any.', 'The call or '
+             'the ask you have been saving.', ''),
+            ('o_out', 'Get out and about', 'Time outdoors and with others '
+             'is good for mood.', 'Say yes to the invitation, if you feel '
+             'like it.', ''),
+            ('o_gratitude', 'A gratitude pause', 'Noticing what is going '
+             'well can lift the day.', 'Five minutes, guided.',
              '/wellness/calm/guided/gratitude/'),
         ],
         'move': [
-            ('o_hard', 'Your hardest workout', 'Strength and stamina are '
-             'often at their best.', 'Go for the heavier weight or the '
-             'longer run - warm up well.', '/wellness/workouts/'),
-            ('o_class', 'A group class', 'Energy and company go well '
-             'together.', 'Spin, dance, a team game.', ''),
-            ('o_hike', 'A long walk or hike', 'Make the most of the good '
-             'days.', 'Somewhere green, with a friend.', ''),
+            ('o_hard', 'A harder workout, if you feel strong', 'Some people '
+             'feel strong around now; research finds little difference '
+             'across the cycle on average, so go by how you feel.', 'Warm '
+             'up well and add a little weight or distance.',
+             '/wellness/workouts/'),
+            ('o_class', 'A group class', 'Exercise with company is more fun '
+             'for many people.', 'Spin, dance, a team game.', ''),
+            ('o_hike', 'A long walk or hike', 'Time in green places is good '
+             'for body and mind.', 'Somewhere green, with a friend.', ''),
         ],
         'eat': [
-            ('o_fibre', 'Plenty of fibre', 'Keeps digestion easy.',
-             'Vegetables, fruit, beans and seeds.', ''),
-            ('o_light', 'Lighter meals', 'Many prefer them on high-energy '
-             'days.', 'Grilled fish or chicken, big salads.', ''),
+            ('o_fibre', 'Plenty of fibre', 'Keeps digestion easy on any '
+             'day.', 'Vegetables, fruit, beans and seeds.', ''),
+            ('o_light', 'Lighter meals, if you prefer them', 'Some people '
+             'like lighter food on busy days.', 'Grilled fish or chicken, '
+             'big salads.', ''),
             ('o_berries', 'Berries', 'Colourful and full of goodness.',
              'On yoghurt, oats, or on their own.', ''),
         ],
     },
     'luteal': {
         'do': [
-            ('l_finish', 'Finish things', 'Wrapping up often feels '
-             'better than starting now.', 'Pick one loose end and tie '
-             'it.', ''),
-            ('l_candle', 'A cosy evening', 'Comfort helps if moods dip.',
-             'A candle, a blanket, a film.', ''),
-            ('l_less', 'Ask a little less of yourself', 'Energy often '
-             'eases before a period.', 'Drop one thing from the list this '
-             'week.', ''),
-            ('l_sleep', 'Wind down for sleep', 'Sleep can feel lighter in '
-             'these days.', 'Sleep breathing, in 4, hold 7, out 8.',
-             '/wellness/calm/breathe/'),
+            ('l_finish', 'Finish things', 'Tying up loose ends feels good '
+             'on any day.', 'Pick one loose end and tie it.', ''),
+            ('l_candle', 'A cosy evening', 'Comfort helps if your mood '
+             'dips.', 'A candle, a blanket, a film.', ''),
+            ('l_less', 'Ask a little less of yourself', 'If you feel tired '
+             'or low before your period, lighten the load where you can.',
+             'Drop one thing from the list this week.', ''),
+            ('l_sleep', 'Wind down for sleep', 'Some people sleep less well '
+             'before a period; a calm wind-down helps.', 'Sleep breathing, '
+             'in 4, hold 7, out 8.', '/wellness/calm/breathe/'),
         ],
         'move': [
-            ('l_pilates', 'Pilates or gentle strength', 'Steady, '
-             'controlled movement suits these days.', 'Slower, with good '
-             'form.', ''),
+            ('l_pilates', 'Pilates or gentle strength', 'Steady, controlled '
+             'movement is good on any day.', 'Slower, with good form.', ''),
             ('l_walk', 'A daily walk', 'Gentle and good for mood.',
              'Twenty minutes, outdoors if you can.', ''),
-            ('l_yoga', 'Restorative yoga', 'Calms the body before a '
-             'period.', 'Legs up the wall for five minutes.', ''),
+            ('l_yoga', 'Restorative yoga', 'A calm way to move when energy '
+             'is low.', 'Legs up the wall for five minutes.', ''),
         ],
         'eat': [
-            ('l_complex', 'Slow, satisfying meals', 'Can help with '
-             'cravings and steady energy.', 'Sweet potato, brown rice, '
+            ('l_complex', 'Slow, satisfying meals', 'Regular meals can help '
+             'with cravings and steady energy.', 'Sweet potato, brown rice, '
              'oats, beans.', ''),
-            ('l_nuts', 'Nuts and seeds', 'A good snack when cravings '
-             'come.', 'A handful of almonds, pumpkin or sunflower seeds.',
-             ''),
-            ('l_greens', 'Leafy greens', 'Bring magnesium and calcium.',
-             'Spinach, kale, broccoli.', ''),
-            ('l_salt', 'Go easy on salt and caffeine', 'Many find it '
-             'eases bloating and helps sleep.', 'Herbal tea in the '
-             'afternoon.', ''),
+            ('l_nuts', 'Nuts and seeds', 'A good snack when cravings come.',
+             'A handful of almonds, pumpkin or sunflower seeds.', ''),
+            ('l_greens', 'Leafy greens', 'Bring magnesium and calcium - '
+             'there is some evidence these help with PMS.', 'Spinach, kale, '
+             'broccoli.', ''),
+            ('l_salt', 'Go easy on salt and caffeine', 'Some people find it '
+             'eases bloating and helps sleep; the evidence is mixed.',
+             'Herbal tea in the afternoon.', ''),
         ],
     },
 }
+# CY-4 - perimenopause mode: ideas for the years, not for a phase. The
+# well-supported ones: strength training and calcium/vitamin D for bone,
+# a cool bedroom and layers for night sweats and flushes.
+BOARD['peri'] = {
+    'do': [
+        ('p_layers', 'Dress in layers', 'Easy to cool down when a hot '
+         'flush comes.', 'Layers you can take off, and a fan nearby.', ''),
+        ('p_cool', 'A cool bedroom', 'A cooler room helps many people with '
+         'night sweats.', 'Light bedding, a window open or a fan.', ''),
+        ('p_breathe', 'Slow breathing', 'Some people find slow breathing '
+         'helps them ride out a hot flush; the evidence is mixed.',
+         'Calm, in 4 and out 6.', '/wellness/calm/breathe/'),
+        ('p_doctor', 'Talk to your doctor', 'There is good help for '
+         'perimenopause symptoms today - you do not have to put up with '
+         'them.', 'Take the one-page report from Patterns with you.',
+         '/wellness/cycle/patterns/'),
+    ],
+    'move': [
+        ('p_strength', 'Strength training', 'Helps keep muscle and bone '
+         'strong, which matters more as oestrogen falls.', 'Two or three '
+         'short sessions a week, at your own pace.', '/wellness/workouts/'),
+        ('p_walk', 'Brisk walking', 'Good for heart, bones and mood.',
+         'Most days, outdoors if you can.', ''),
+        ('p_yoga', 'Yoga or stretching', 'Some people find it helps with '
+         'sleep and mood.', 'Ten minutes in the evening.', ''),
+    ],
+    'eat': [
+        ('p_calcium', 'Calcium-rich foods', 'Bone health matters more in '
+         'these years.', 'Dairy, fortified plant milks, tinned fish with '
+         'bones, leafy greens.', ''),
+        ('p_vitd', 'Vitamin D', 'It helps your body use calcium, and many '
+         'people are low in winter.', 'Oily fish and eggs; ask your doctor '
+         'whether a supplement suits you.', ''),
+        ('p_triggers', 'Notice your triggers', 'Some people find alcohol, '
+         'caffeine or spicy food set off hot flushes.', 'Add them as your '
+         'own tags and watch Patterns.', ''),
+    ],
+}
+
 GROUPS = [('do', 'Do'), ('move', 'Move'), ('eat', 'Eat')]
 ALL_KEYS = {item[0] for p in BOARD.values() for g in p.values()
             for item in g}
@@ -248,6 +318,13 @@ def place(s, when):
            'frac': min(1.0, (n - 1) / float(max(L, 1))),
            'estimated': not s.get('avg_cycle'), 'late': n > L,
            'why_none': ''}
+    if s.get('soft'):
+        # CY-4 - perimenopause: the day only, its own lines and ideas.
+        title, line = LINES['peri'][(n - 1) % len(LINES['peri'])]
+        out.update({'why_none': 'In perimenopause cycles change a lot, so '
+                    'phases would be guesses. The day is still counted.',
+                    'peri': True, 'title': title, 'line': line})
+        return out
     if s['state'] in ('pregnant', 'hormonal'):
         out['why_none'] = ('Phases are paused while you are pregnant.'
                            if s['state'] == 'pregnant' else

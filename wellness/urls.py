@@ -69,6 +69,8 @@ urlpatterns = [
     path('calm/done/', CALM.done, name='calm_done'),
     # WL-4a, 30 Oct 2026 - badges and Wellness settings.
     path('badges/', views.badges_page, name='badges'),
+    # WL-10, 1 Nov 2026 - Insights.
+    path('insights/', views.insights_page, name='insights'),
     path('badges/seen/', views.badges_seen, name='badges_seen'),
     path('settings/', views.settings_page, name='settings'),
     # WL-4b, 30 Oct 2026 - phone reminders.

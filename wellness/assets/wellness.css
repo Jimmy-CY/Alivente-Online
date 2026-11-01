@@ -733,3 +733,14 @@ details[data-voice-box] > :not(summary) { margin-top: 12px; }
 .w-idea p { margin: 0 0 8px; font-size: 14px; color: var(--w-quiet); }
 .w-idea p b { color: var(--w-ink); font-weight: 600; margin-right: 4px; }
 .w-idea-acts { display: flex; gap: 8px; align-items: center; padding-bottom: 10px; flex-wrap: wrap; }
+
+/* ---- WL-10, 1 Nov 2026 - Insights: eight small weekly bars. */
+.w-ins-bars { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; height: 120px; align-items: end; }
+.w-ins-bars span { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+.w-ins-bars em { flex: 1 1 0; overflow: hidden; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.w-ins-bars i { display: block; width: 100%; max-width: 26px; border-radius: 6px 6px 3px 3px; background: var(--w-sage); }
+.w-ins-bars.mood i { background: var(--w-sand-line); }
+.w-ins-bars.calm i { background: var(--w-sky); }
+.w-ins-bars.train i { background: var(--w-sage-deep); }
+.w-ins-bars b { font-size: 11px; font-weight: 600; color: var(--w-ink); line-height: 1; }
+.w-ins-bars small { font-size: 10px; color: var(--w-quiet); white-space: nowrap; }

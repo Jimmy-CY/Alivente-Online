@@ -230,8 +230,8 @@ SCREENS = {
             'on a soft wave. Tomorrow shows the next day.',
             'Tap My period started on day one, and My period ended when it '
             'stops - the days between are filled in for you.',
-            'Ideas for today: things to do, move and eat for the phase. '
-            'Tap one for why and how; hide any you do not want.',
+            'Ideas for today: general wellbeing ideas, loosely matched to '
+            'the phase. Tap one for why and how; hide any you do not want.',
             'Or tap Log today to add flow, symptoms and a note.',
             'Tap any past day on the calendar to fill it in or change it.',
             'Predictions start after two cycles, as a window of a few days.',
@@ -256,7 +256,8 @@ SCREENS = {
         'purpose': 'How today is - everything is optional.',
         'steps': [
             'Pick the flow, or leave No bleeding.',
-            'Tick anything you notice, and move the pain slider if you '
+            'Tick anything you notice - from cramps to mood swings, with '
+            'more in perimenopause mode - and move the pain slider if you '
             'like.',
             'Mood, energy, sleep, discharge and your own tags appear here '
             'when you switch them on in Cycle settings.',
@@ -269,6 +270,8 @@ SCREENS = {
         'purpose': 'Modes, the fertile estimate, reminders, more to log, '
                    'and your log.',
         'steps': [
+            'Perimenopause makes predictions a rough guide, adds its '
+            'symptoms to Log today and shows ideas for these years.',
             'Pregnancy and hormonal contraception pause predictions.',
             'Reminders - a day before, a nudge to log, a daily pill time - '
             'only ever say "A Wellness reminder".',
@@ -362,6 +365,23 @@ SCREENS = {
         ],
         'signs': [('--w-sage', 'The thin line: how far through you are.')],
     },
+    # WL-10, 1 Nov 2026 - Insights.
+    'insights': {
+        'title': 'Insights',
+        'purpose': 'Your last eight weeks, side by side - and what goes '
+                   'with your better days.',
+        'steps': [
+            'Each chart is a week: habits done, mood, Calm minutes, '
+            'workouts.',
+            'What goes with what compares your mood on days you did '
+            'something with days you did not.',
+            'It needs moods from your journal, and at least four days on '
+            'each side.',
+            'Only the sections you have switched on are shown.',
+        ],
+        'signs': [('--w-sand', 'Patterns, not proof - other things change '
+                               'from day to day too.')],
+    },
     'settings': {
         'title': 'Settings',
         'purpose': 'Your sections, badges, the cycle tracker, reminders, the '
@@ -369,6 +389,7 @@ SCREENS = {
         'steps': [
             'Open Your sections to switch any of the six on or off. Off '
             'hides it from Today and the bottom bar; nothing is deleted.',
+            'Insights shows your last eight weeks side by side.',
             'Turn on reminders on each phone - the phone asks you first.',
             'Set times for the evening check-in and the weigh-in.',
             'Turn Claude\'s line under the quote on or off.',

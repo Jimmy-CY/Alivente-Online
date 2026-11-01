@@ -70,7 +70,7 @@
 {% if board %}
 <section class="w-card" id="board" aria-labelledby="board-h" data-board>
   <h2 class="w-h2" id="board-h">Ideas for {% if when == 'tomorrow' %}tomorrow{% else %}today{% endif %}</h2>
-  <p class="w-small w-quiet" style="margin:0">Ideas, not rules. Tap one to see why and how; hide any you do not want.</p>
+  <p class="w-small w-quiet" style="margin:0" data-board-note>Ideas, not rules. {{ board_note }} Tap one to see why and how; hide any you do not want.</p>
   {% for g, gname, items in board %}{% if items %}
   <div class="w-label">{{ gname }}</div>
   <div class="w-ideas">

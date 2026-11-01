@@ -244,6 +244,20 @@ def _new_badge(profile, user, day):
 
 
 @wellness_view
+def insights_page(request):
+    """WL-10, 1 Nov 2026 - Insights: the last eight weeks side by side,
+    and carefully, what goes with what. Only sections switched on."""
+    from . import insights as INS
+    from . import modules as MOD
+    on = MOD.on_set(request.user)
+    return render(request, 'wellness/insights.html', {
+        'tab': 'today', 'on': on,
+        'i': INS.gather(request.user, _today(), on),
+        'min_days': INS.MIN_DAYS,
+    })
+
+
+@wellness_view
 def badges_page(request):
     """WL-4a - Your badges: earned (kept for good) and up next."""
     from . import badges as BG
@@ -878,7 +892,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl13-1'
+SW_VERSION = 'wl14-1'
 
 
 def service_worker(request):
