@@ -351,7 +351,9 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def carry_on('" in gate, '  with a sentinel on the challenges')
+# CY-3 moved the row's text on (the backup now holds the old one).
+ok("File = 'wellness/challenge.py'; Text = " in gate,
+   '  with a sentinel on the challenges')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')

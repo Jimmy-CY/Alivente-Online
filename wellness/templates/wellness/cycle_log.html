@@ -38,6 +38,28 @@
     </div>
   </section>
 
+  {% comment %} CY-3, 31 Oct 2026 - only what is switched on in the tracker's settings. {% endcomment %}
+  {% if 'mood' in track %}
+  <section class="w-card" aria-labelledby="mood-h"><h2 class="w-h2" id="mood-h">Mood</h2>
+    <div class="w-chips">{% for k, label in moods %}<label class="w-chip"><input type="radio" name="mood" value="{{ k }}"{% if e.mood == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+  {% endif %}
+  {% if 'energy' in track %}
+  <section class="w-card" aria-labelledby="energy-h"><h2 class="w-h2" id="energy-h">Energy</h2>
+    <div class="w-chips">{% for k, label in energy %}<label class="w-chip"><input type="radio" name="energy" value="{{ k }}"{% if e.energy == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+  {% endif %}
+  {% if 'sleep' in track %}
+  <section class="w-card" aria-labelledby="sleep-h"><h2 class="w-h2" id="sleep-h">Sleep last night</h2>
+    <div class="w-chips">{% for k, label in sleep %}<label class="w-chip"><input type="radio" name="sleep" value="{{ k }}"{% if e.sleep == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+  {% endif %}
+  {% if 'discharge' in track %}
+  <section class="w-card" aria-labelledby="dis-h"><h2 class="w-h2" id="dis-h">Discharge</h2>
+    <div class="w-chips">{% for k, label in discharge %}<label class="w-chip"><input type="radio" name="discharge" value="{{ k }}"{% if e.discharge == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+  {% endif %}
+  {% if 'tags' in track and my_tags %}
+  <section class="w-card" aria-labelledby="tags-h"><h2 class="w-h2" id="tags-h">Your tags</h2>
+    <div class="w-chips">{% for tg in my_tags %}<label class="w-chip"><input type="checkbox" name="tag" value="{{ tg }}"{% if tg in e.tags %} checked{% endif %}><span>{{ tg }}</span></label>{% endfor %}</div></section>
+  {% endif %}
+
   <section class="w-card" aria-labelledby="pain-h">
     <div style="display:flex;justify-content:space-between;align-items:baseline">
       <h2 class="w-h2" id="pain-h">Pain</h2>

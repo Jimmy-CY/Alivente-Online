@@ -25,6 +25,11 @@ All of it is pure here, given the habit and its done dates; the views save.
 import datetime as dt
 
 DAYS = [7, 14, 21, 30]
+# CY-3, 31 Oct 2026 - Demetri, 20:06: "can we also have a field to enter
+# our own number of days?" Any number in this range.
+OWN_MIN, OWN_MAX = 2, 365
+# Longer than this shows a bar instead of a square for each day.
+STRIP_MAX = 90
 ONE = dt.timedelta(days=1)
 # Misses in a row before "Pause it for now" is offered too.
 PAUSE_AFTER = 3
@@ -123,6 +128,7 @@ def state(habit, done, today):
     else:
         words = 'Day %d of %d' % (day, total)
     return {'days': total, 'got': min(got, total), 'day': day,
+            'pct': int(round(100.0 * min(got, total) / total)),
             'today_done': today_done, 'finished': finished,
             'misses': len(misses), 'finish': finish,
             'finish_words': nice_date(finish),
@@ -133,11 +139,21 @@ def state(habit, done, today):
 
 
 def rows(strip):
-    """The strip in rows of at most 15, so 30 squares fit a phone."""
+    """The strip in rows of at most 15, so 30 squares fit a phone. Longer
+    than STRIP_MAX days: no squares (the page shows a bar)."""
+    if len(strip) > STRIP_MAX:
+        return []
     if len(strip) <= 15:
         return [strip]
-    half = (len(strip) + 1) // 2
-    return [strip[:half], strip[half:]]
+    if len(strip) <= 30:
+        half = (len(strip) + 1) // 2
+        return [strip[:half], strip[half:]]
+    return [strip[i:i + 15] for i in range(0, len(strip), 15)]
+
+
+def valid_days(n):
+    """A number of days a challenge may have: a preset or your own."""
+    return n in DAYS or OWN_MIN <= n <= OWN_MAX
 
 
 def ask_words(ask, today, in_a_row):

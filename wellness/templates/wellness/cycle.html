@@ -108,7 +108,9 @@
     <span><i class="period"></i>Period</span>
     {% if s.window %}<span><i class="expected"></i>Expected</span>{% endif %}
     {% if s.fertile %}<span><i class="fertile"></i>Fertile estimate</span>{% endif %}
+    {% if pms_days %}<span><i class="pms"></i>PMS days</span>{% endif %}
   </div>
+  {% if pms_days %}<div class="w-small w-quiet" data-pms-line>From what you have logged, the days before a period often bring symptoms - about {{ pms_days }} day{{ pms_days|pluralize }} before.</div>{% endif %}
   {% if s.fertile %}<div class="w-small w-quiet">The fertile estimate is shown because you turned it on. {{ fertile_label }}</div>{% endif %}
   <div class="w-small w-quiet">Tap any past day to fill it in or change it.</div>
 </section>

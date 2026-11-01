@@ -82,7 +82,8 @@ SCREENS = {
             'Pick when: every day, chosen days, or a number of times a week.',
             'Optionally tie it to something you already do, let a workout '
             'or Calm tick it, and set a reminder time.',
-            'Make it a challenge: 7, 14, 21 or 30 days, every day.',
+            'Make it a challenge: 7, 14, 21 or 30 days - or your own number, '
+            'from 2 to 365 - every day.',
         ],
         'signs': [],
     },
@@ -245,6 +246,9 @@ SCREENS = {
             ('--w-rose', 'Outlined days: when the next one is expected.'),
             ('--w-sky-soft', 'Pale blue: the fertile estimate, only if you '
                              'turned it on. An estimate, not contraception.'),
+            ('--w-rose-wash', 'Faint rose: PMS days - when symptoms usually '
+                              'come before a period, from what you logged. '
+                              'The calendar looks six months ahead.'),
         ],
     },
     'cycle_log': {
@@ -254,15 +258,22 @@ SCREENS = {
             'Pick the flow, or leave No bleeding.',
             'Tick anything you notice, and move the pain slider if you '
             'like.',
+            'Mood, energy, sleep, discharge and your own tags appear here '
+            'when you switch them on in Cycle settings.',
             'A private note is only for you.',
         ],
         'signs': [('', 'Locked before it is saved. Never in emails.')],
     },
     'cycle_settings': {
         'title': 'Cycle settings',
-        'purpose': 'Modes, the fertile estimate, reminders, and your log.',
+        'purpose': 'Modes, the fertile estimate, reminders, more to log, '
+                   'and your log.',
         'steps': [
             'Pregnancy and hormonal contraception pause predictions.',
+            'Reminders - a day before, a nudge to log, a daily pill time - '
+            'only ever say "A Wellness reminder".',
+            'More to log adds mood, energy, sleep, discharge or your own '
+            'tags to Log today, and to Patterns.',
             'Download my log saves everything as a file.',
             'Turning it off keeps your log, locked. Delete everything '
             'removes it for good.',
@@ -274,7 +285,8 @@ SCREENS = {
         'purpose': 'Your last cycles and what tends to come around your '
                    'period.',
         'steps': [
-            'Patterns appear after three periods with symptoms logged.',
+            'Patterns appear after three periods with symptoms logged. '
+            'Mood, sleep, energy and your own tags count too.',
             'Make the report for a one-page summary to show a doctor.',
         ],
         'signs': [('--w-rose-deep', 'Darker squares: a symptom that comes '

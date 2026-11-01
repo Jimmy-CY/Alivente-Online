@@ -25,6 +25,7 @@
     <h2 class="w-h2" id="ch-h">{% if challenge.finished %}Challenge finished{% else %}{{ challenge.words }}{% endif %}</h2>
     <span class="w-small w-quiet">{{ challenge.days }}-day challenge</span>
   </div>
+  {% if not challenge.rows %}<div class="w-bar" role="img" aria-label="{{ challenge.got }} of {{ challenge.days }} days done"><i style="width:{{ challenge.pct }}%"></i></div>{% endif %}
   {% for row in challenge.rows %}
   <div class="w-strip" style="grid-template-columns:repeat({{ row|length }},minmax(0,1fr));max-width:{% widthratio row|length 15 100 %}%" role="img" aria-label="{{ challenge.got }} of {{ challenge.days }} days done">{% for s in row %}<i class="{{ s }}"></i>{% endfor %}</div>
   {% endfor %}

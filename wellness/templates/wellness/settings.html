@@ -13,10 +13,6 @@
     <span class="w-row-main"><span class="w-row-name">Your badges</span><span class="w-row-sub">Quiet milestones, kept for good.</span></span>
     <span class="w-row-side" aria-hidden="true">›</span>
   </a>
-  <a class="w-row" href="{% url 'wellness:cycle' %}" style="text-decoration:none;color:inherit">
-    <span class="w-row-main"><span class="w-row-name">Cycle tracker</span><span class="w-row-sub">Optional, off until you turn it on. Private and locked.</span></span>
-    <span class="w-row-side" aria-hidden="true">›</span>
-  </a>
 </div>
 
 {% comment %}
@@ -25,7 +21,7 @@
   nothing deleted. The cycle tracker keeps its welcome page.
 {% endcomment %}
 <details class="w-card" id="sections" data-sections{% if sections_open %} open{% endif %}>
-  <summary class="w-voice-sum"><span>Your sections</span><span class="w-quiet w-small">{{ on_names|default:"All off" }}</span></summary>
+  <summary class="w-voice-sum"><span>Your sections</span><span class="w-quiet w-small" data-on-names>{% if on_names %}Switched on: {{ on_names }}{% else %}All switched off{% endif %}</span></summary>
   <form method="post" style="display:flex;flex-direction:column;gap:4px;margin-top:8px">
     {% csrf_token %}
     <input type="hidden" name="form" value="sections">
@@ -33,6 +29,7 @@
     <p class="w-small w-quiet" style="margin:0 0 6px">Choose what Wellness shows you. A section you switch off leaves Today and the bottom bar, and its reminders stop. Nothing is deleted - switch it back on and it is all there.</p>
     {% for m in modules %}
     <label class="w-toggle" style="align-items:flex-start;padding:6px 0"><span style="display:flex;flex-direction:column;gap:2px"><span>{{ m.name }}</span><span class="w-small w-quiet">{{ m.line }}</span></span><input type="checkbox" name="module" value="{{ m.key }}"{% if m.on %} checked{% endif %} style="margin-top:2px"></label>
+    {% if m.key == 'cycle' %}{% comment %} CY-3, 31 Oct 2026 - Demetri, 21:06: the cycle tracker only here, not twice. {% endcomment %}<a class="w-small" href="{% url 'wellness:cycle' %}" style="color:var(--w-sage-deep);min-height:44px;display:inline-flex;align-items:center;margin-top:-6px">{% if m.on %}Open the cycle tracker ›{% else %}What is the cycle tracker? ›{% endif %}</a>{% endif %}
     {% endfor %}
     <button type="submit" class="w-btn full" style="margin-top:8px">Save my sections</button>
   </form>

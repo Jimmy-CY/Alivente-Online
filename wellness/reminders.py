@@ -87,14 +87,34 @@ def items_for(user, now):
                     'body': 'Time to weigh in - before food is steadiest.',
                     'url': '/wellness/body/weigh/'})
     _rec, cprefs, days = CY.load(user)
-    if cprefs.get('on') and cprefs.get('remind') and \
-            not cprefs.get('locked'):
+    cy_ok = cprefs.get('on') and not cprefs.get('locked') and \
+        'cycle' in mods
+    if cy_ok and cprefs.get('remind'):
         s = CY.summary(days, day, cprefs)
         win = s.get('window')
         if win and win[0] - dt.timedelta(days=1) == day and \
                 s['state'] in ('predicted', 'first_guess'):
             out.append({'key': 'cycle', 'at': CYCLE_AT, 'title': TITLE,
                         'body': CYCLE_WORDS, 'url': '/wellness/'})
+    # CY-3, 31 Oct 2026 - a daily pill reminder at the chosen time, and a
+    # nudge to log once the expected days have begun and nothing is
+    # logged. Both say only "A Wellness reminder".
+    if cy_ok and _hm(cprefs.get('pill_at')):
+        out.append({'key': 'pill', 'at': _hm(cprefs.get('pill_at')),
+                    'title': TITLE, 'body': CYCLE_WORDS,
+                    'url': '/wellness/'})
+    if cy_ok and cprefs.get('nudge'):
+        s = CY.summary(days, day, cprefs)
+        win = s.get('window')
+        if win and win[0] < day <= win[1] + dt.timedelta(days=3) and \
+                s['state'] in ('predicted', 'first_guess', 'late') and \
+                not CY.bleeding_now(s) and \
+                not any(days.get((win[0] + dt.timedelta(days=i))
+                                 .isoformat(), {}).get('flow') in CY.BLEED
+                        for i in range((day - win[0]).days + 1)):
+            out.append({'key': 'cycle_log', 'at': CYCLE_AT,
+                        'title': TITLE, 'body': CYCLE_WORDS,
+                        'url': '/wellness/'})
     return out
 
 

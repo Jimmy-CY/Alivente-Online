@@ -141,6 +141,20 @@ HOWTO = [
      'a': 'Yes. On the habit\'s page choose Edit, and under "Tick it for '
           'me" choose "When I finish a workout". Finishing any workout then '
           'ticks it for that day.'},
+    # CY-3, 31 Oct 2026 - deeper cycle tracking.
+    {'q': 'Can I log my mood, sleep or my own things in the cycle tracker?',
+     'a': 'Yes. In Cycle settings, under More to log, switch on mood, '
+          'energy, sleep, discharge or your own tags (type them, separated '
+          'by commas). They appear in Log today, and Patterns shows how '
+          'they follow your cycle. All of it is locked like the rest.'},
+    {'q': 'What are PMS days?',
+     'a': 'After three periods with symptoms logged, the calendar shades '
+          'the days before each expected period when your symptoms usually '
+          'begin - faint rose. The calendar looks six months ahead.'},
+    {'q': 'Can Wellness remind me to take my pill?',
+     'a': 'Yes. In Cycle settings set a daily pill reminder time. Like '
+          'every cycle reminder it only says "A Wellness reminder". You can '
+          'also ask for a nudge to log once your period is due.'},
     # CY-2, 31 Oct 2026 - cycle phases.
     {'q': 'What are the cycle phases?',
      'a': 'Four stretches of a cycle: menstrual (your period), follicular '
@@ -164,8 +178,9 @@ HOWTO = [
     # WL-8, 31 Oct 2026 - challenges.
     {'q': 'How do challenges work?',
      'a': 'A challenge is a habit with a finish line: 7, 14, 21 or 30 days, '
-          'every day. Choose "Make it a challenge" when you add or edit a '
-          'habit, or tap one of the challenges to try. Only the days you do '
+          'or your own number (tap Own and type it, 2 to 365), every day. '
+          'Choose "Make it a challenge" when you add or edit a habit, or '
+          'tap one of the challenges to try. Only the days you do '
           'count, so Today shows "Day 12 of 30".'},
     {'q': 'What happens if I miss a day of a challenge?',
      'a': 'Nothing is lost. Wellness asks once: carry on, and the finish '
@@ -179,8 +194,10 @@ HOWTO = [
           'a quiet timer with bells. It all runs on your phone - nothing '
           'you hear is sent anywhere, and only the minutes are kept.'},
     {'q': 'How do I choose the voice for Guided practices?',
-     'a': 'Wellness uses your phone\'s own voice. On the Guided page tap '
-          '"Voice" to pick one and hear it. On a Samsung, more voices are '
+     'a': 'Wellness uses your phone\'s own voice. First just try a '
+          'practice - if the voice sounds right, there is nothing to do. '
+          'If not, on the Guided page tap "Voice" to pick another and hear '
+          'it. On a Samsung, more voices are '
           'in the phone\'s Settings, General management, Text-to-speech: '
           'choose Google, then Install voice data, English, and pick a '
           'female voice. Earphones help.'},
@@ -195,7 +212,8 @@ HOWTO = [
           'finance stay as protected as they were.'},
     {'q': 'Is there a cycle tracker?',
      'a': 'Yes, and it is off until you turn it on. Tap the cog at the top '
-          'right, then Cycle tracker. It then gets its own tab. '
+          'right, open Your sections and tick Cycle tracker. It then gets '
+          'its own tab. '
           'Turning it off hides it again and keeps your log, locked.'},
     {'q': 'Who can see my cycle log?',
      'a': 'Only you. The whole log - every day, every symptom, every '

@@ -36,6 +36,10 @@ ASSET_TYPES = {
     'icon-512.png': 'image/png',
     'icon-maskable-512.png': 'image/png',
     'apple-touch-icon.png': 'image/png',
+    # CY-3, 31 Oct 2026 - the small icon in the phone's top bar for a
+    # reminder: white on clear, as Android requires (a coloured square
+    # shows as a blank white block - Demetri, 18:23).
+    'badge-96.png': 'image/png',
 }
 
 
@@ -640,12 +644,16 @@ def habit_edit(request, pk):
 
 
 def _challenge_choice(post):
-    """7, 14, 21 or 30 from the form, or None."""
+    """7, 14, 21 or 30 from the form - or, CY-3, your own number of days
+    (2 to 365) when "Own" is chosen - or None."""
+    raw = post.get('challenge') or ''
+    if raw == 'own':
+        raw = post.get('challenge_own') or ''
     try:
-        n = int(post.get('challenge') or 0)
+        n = int(raw)
     except ValueError:
         return None
-    return n if n in CH.DAYS else None
+    return n if CH.valid_days(n) else None
 
 
 def _set_challenge(habit, post, day):
@@ -870,7 +878,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl12-1'
+SW_VERSION = 'wl13-1'
 
 
 def service_worker(request):
@@ -932,7 +940,7 @@ self.addEventListener('push', e => {
     body: d.body || 'A Wellness reminder',
     tag: d.tag || 'wellness',
     icon: '/wellness/app/icon-192.png',
-    badge: '/wellness/app/icon-192.png',
+    badge: '/wellness/app/badge-96.png',
     data: {url: (d.url && d.url.indexOf('/wellness/') === 0) ? d.url : '/wellness/'}
   }));
 });

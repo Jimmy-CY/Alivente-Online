@@ -52,6 +52,34 @@ SYMPTOMS = [
 ]
 SYMPTOM_NAMES = dict(SYMPTOMS)
 
+# CY-3, 31 Oct 2026 - more to log, each switched on in the tracker's
+# settings (Demetri, 15:46: mood, energy, sleep, cravings, discharge and
+# your own tags; cravings is already a symptom). No fertility signs.
+TRACK = [
+    ('mood', 'Mood'),
+    ('energy', 'Energy'),
+    ('sleep', 'Sleep'),
+    ('discharge', 'Discharge'),
+    ('tags', 'My own tags'),
+]
+TRACK_KEYS = [k for k, _n in TRACK]
+MOODS = [('great', 'Great'), ('good', 'Good'), ('okay', 'Okay'),
+         ('low', 'Low'), ('very_low', 'Very low')]
+ENERGY = [('low', 'Low'), ('steady', 'Steady'), ('high', 'High')]
+SLEEP = [('poor', 'Poor'), ('okay', 'Okay'), ('good', 'Good')]
+DISCHARGE = [('dry', 'Dry'), ('sticky', 'Sticky'), ('creamy', 'Creamy'),
+             ('watery', 'Watery'), ('clear', 'Clear and stretchy')]
+CHOICES = {'mood': dict(MOODS), 'energy': dict(ENERGY),
+           'sleep': dict(SLEEP), 'discharge': dict(DISCHARGE)}
+MAX_TAGS, TAG_LEN = 12, 24
+# What counts towards the PMS window: the symptoms that tend to come
+# before a period, and a low mood however it was logged.
+PMS_KEYS = ('cramps', 'headache', 'bloating', 'tender', 'tired', 'acne',
+            'cravings', 'low_mood', 'poor_sleep', 'low_energy')
+PMS_BACK = 7
+# The calendar looks this many months ahead.
+MONTHS_AHEAD = 6
+
 MODES = [
     ('normal', 'Tracking my cycle'),
     ('pregnant', 'Pregnant'),
@@ -63,7 +91,11 @@ DEFAULT_SETTINGS = {'on': False, 'fertile': False, 'mode': 'normal',
                     'remind': False,
                     # CY-2 - a period begun with one tap and not yet
                     # ended (an ISO date), and the board ideas hidden.
-                    'open_period': '', 'hidden_tips': ()}
+                    'open_period': '', 'hidden_tips': (),
+                    # CY-3 - more to log, your own tags, the pill
+                    # reminder time and the logging nudge.
+                    'track': (), 'tags': (), 'pill_at': '',
+                    'nudge': False}
 
 # A gap of one dry day inside a period does not end it.
 JOIN_GAP = 2
@@ -130,8 +162,20 @@ def _d(s):
     return dt.date.fromisoformat(s)
 
 
-def clean_day(post_like):
-    """A day's entry from a form: flow, symptoms, pain, relief, note.
+def clean_tags(raw):
+    """Your own tags from a comma-separated line: short, unique, at most
+    MAX_TAGS, in the order typed."""
+    out = []
+    for t in (raw or '').split(','):
+        t = ' '.join(t.split())[:TAG_LEN]
+        if t and t.lower() not in [x.lower() for x in out]:
+            out.append(t)
+    return out[:MAX_TAGS]
+
+
+def clean_day(post_like, tags=()):
+    """A day's entry from a form: flow, symptoms, pain, relief, note -
+    and, CY-3, mood, energy, sleep, discharge and your own tags.
     Returns {} when nothing was logged, which removes the day."""
     flow = post_like.get('flow') or ''
     flow = flow if flow in FLOW_NAMES else ''
@@ -157,6 +201,80 @@ def clean_day(post_like):
         out['relief'] = True
     if note:
         out['note'] = note
+    for k, names in CHOICES.items():
+        v = post_like.get(k) or ''
+        if v in names:
+            out[k] = v
+    got = post_like.getlist('tag') if hasattr(post_like, 'getlist') \
+        else post_like.get('tag', [])
+    mine = [t for t in got if t in set(tags or ())]
+    if mine:
+        out['tags'] = mine
+    return out
+
+
+def has(e, key):
+    """Does the day e show key? A symptom, a low mood or poor sleep however
+    logged, low energy, or 'tag:<name>' for your own tags."""
+    if key.startswith('tag:'):
+        return key[4:] in e.get('tags', [])
+    if key in e.get('sym', []):
+        return True
+    if key == 'low_mood':
+        return e.get('mood') in ('low', 'very_low')
+    if key == 'poor_sleep':
+        return e.get('sleep') == 'poor'
+    if key == 'low_energy':
+        return e.get('energy') == 'low'
+    return False
+
+
+def pattern_keys(tags=()):
+    """(key, name) for everything Patterns can show."""
+    return list(SYMPTOMS) + [('low_energy', 'Low energy')] + \
+        [('tag:' + t, t) for t in (tags or ())]
+
+
+def pms(days, cs, n=RECENT):
+    """How many days before a period the usual signs begin: the earliest
+    day (up to PMS_BACK before) from which, every day up to the period,
+    at least half of the last periods had one. None without three."""
+    starts = [c['start'] for c in cs][-n:]
+    if len(starts) < 3:
+        return None
+    first = None
+    for back in range(1, PMS_BACK + 1):
+        hit = 0
+        for a in starts:
+            e = days.get((a - dt.timedelta(days=back)).isoformat(), {})
+            if any(has(e, k) for k in PMS_KEYS):
+                hit += 1
+        if hit * 2 >= len(starts):
+            first = back
+        else:
+            break
+    return first
+
+
+def bleeding_now(s):
+    """From a summary: is today a bleeding day? (A function, so the
+    reminder code never names it - test_wellness_five holds reminders.py
+    to that.)"""
+    return bool(s.get('in_period'))
+
+
+def future_windows(s, months=MONTHS_AHEAD):
+    """The expected windows from now on, months ahead, each one usual
+    cycle after the last. Only with a prediction."""
+    win, med = s.get('window'), s.get('avg_cycle')
+    if not win or not med or s['state'] not in ('predicted', 'first_guess',
+                                                 'late'):
+        return []
+    out, i = [], 0
+    while i <= int(months * 31 / med) + 1:
+        step = dt.timedelta(days=med * i)
+        out.append((win[0] + step, win[1] + step))
+        i += 1
     return out
 
 
@@ -345,12 +463,16 @@ def today_line(s, today):
 # --------------------------------------------------------------------------
 # The calendar and the ring
 # --------------------------------------------------------------------------
-def month_grid(year, month, days, s, today):
-    """Weeks (Monday first) of cells: n, date, kind, today, logged."""
+def month_grid(year, month, days, s, today, windows=None, pms_days=None):
+    """Weeks (Monday first) of cells: n, date, kind, today, logged.
+    CY-3: windows (months ahead) and the PMS days before each."""
     first = dt.date(year, month, 1)
     start = first - dt.timedelta(days=first.weekday())
     win = s.get('window')
     fer = s.get('fertile')
+    wins = windows or ([win] if win else [])
+    pms_spans = [(w[0] - dt.timedelta(days=pms_days), w[0] -
+                  dt.timedelta(days=1)) for w in wins] if pms_days else []
     weeks = []
     d = start
     while True:
@@ -362,8 +484,10 @@ def month_grid(year, month, days, s, today):
                 kind = 'period'
             elif e.get('flow') == 'spotting':
                 kind = 'spotting'
-            elif win and win[0] <= d <= win[1] and d >= today:
+            elif d >= today and any(w[0] <= d <= w[1] for w in wins):
                 kind = 'expected'
+            elif d >= today and any(p[0] <= d <= p[1] for p in pms_spans):
+                kind = 'pms'
             elif fer and fer[0] <= d <= fer[1]:
                 kind = 'fertile'
             week.append({'n': d.day, 'date': d, 'in': d.month == month,
@@ -408,21 +532,22 @@ def bars(cs, n=RECENT):
     return out
 
 
-def around(days, cs, n=RECENT):
+def around(days, cs, n=RECENT, tags=()):
     """Symptoms around day 1 of the last n periods. Needs three periods.
-    Rows of (name, [share 0..1 per AROUND offset]) plus one plain line."""
+    Rows of (name, [share 0..1 per AROUND offset]) plus one plain line.
+    CY-3: mood, sleep, energy and your own tags count too."""
     starts = [c['start'] for c in cs][-n:]
     if len(starts) < 3:
         return [], ''
     rows = []
-    for key, name in SYMPTOMS:
+    for key, name in pattern_keys(tags):
         cells = []
         for off in AROUND:
             delta = off if off < 0 else off - 1
             hit = 0
             for a in starts:
                 e = days.get((a + dt.timedelta(days=delta)).isoformat(), {})
-                if key in e.get('sym', []):
+                if has(e, key):
                     hit += 1
             cells.append(hit / float(len(starts)))
         if any(cells):

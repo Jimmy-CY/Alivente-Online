@@ -144,6 +144,13 @@
       if (t.name === 'challenge' && t.value) {
         var daily = form.querySelector('[name=schedule][value=daily]');
         if (daily) daily.checked = true;
+        // CY-3 - "Own": the number box takes the focus.
+        if (t.value === 'own') { var box = form.querySelector('[name=challenge_own]'); if (box) box.focus(); }
+      } else if (t.name === 'challenge_own' && t.value) {
+        var own = form.querySelector('[name=challenge][value=own]');
+        if (own) own.checked = true;
+        var d2 = form.querySelector('[name=schedule][value=daily]');
+        if (d2) d2.checked = true;
       } else if (t.name === 'schedule' && t.value !== 'daily') {
         var none = form.querySelector('[name=challenge][value=""]');
         if (none) none.checked = true;

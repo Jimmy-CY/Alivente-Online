@@ -95,7 +95,11 @@
       <div class="w-chips">
         <label class="w-chip"><input type="radio" name="challenge" value=""{% if not v.challenge %} checked{% endif %}><span>No</span></label>
         {% for n in challenge_days %}<label class="w-chip"><input type="radio" name="challenge" value="{{ n }}"{% if v.challenge == n %} checked{% endif %}><span>{{ n }} days</span></label>{% endfor %}
+        <label class="w-chip"><input type="radio" name="challenge" value="own"{% if v.challenge and v.challenge not in challenge_days %} checked{% endif %} data-own-pick><span>Own</span></label>
       </div>
+      {% comment %} CY-3, 31 Oct 2026 - your own number of days (Demetri, 20:06). {% endcomment %}
+      <label class="w-small w-quiet" style="display:flex;align-items:center;gap:10px" data-own-days>Your own number of days
+        <input class="w-input" type="number" name="challenge_own" min="2" max="365" inputmode="numeric" value="{% if v.challenge and v.challenge not in challenge_days %}{{ v.challenge }}{% endif %}" placeholder="45" style="max-width:110px"></label>
       <span class="w-small w-quiet">A challenge is every day, with a finish line. Miss a day and you choose: carry on, or start again.</span>
       {% if habit.challenge_from and v.challenge %}<span class="w-small w-quiet">Changing the number of days starts it again from today.</span>{% endif %}
     </div>

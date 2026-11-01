@@ -217,6 +217,8 @@ if have_db:
             ok('WL-5' not in t and '{#' not in t and
                'WL-5' not in ca.get('/wellness/').content.decode(),
                'and no note of ours is printed on a page')
+            # CY-3 (Release 56, Demetri 31 Oct 21:06): the cycle tracker
+            # is reached from Your sections only, not a row of its own.
             ok('href="/wellness/badges/"' in t and
                'href="/wellness/cycle/"' in t,
                'Settings opens with Your badges and the Cycle tracker')

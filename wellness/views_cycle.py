@@ -55,8 +55,12 @@ def home(request):
         first = dt.date(y, m, 1)
     except (ValueError, TypeError):
         first = today.replace(day=1)
-    if first > today.replace(day=1) + dt.timedelta(days=62):
+    if first > today.replace(day=1) + dt.timedelta(
+            days=31 * C.MONTHS_AHEAD):
         first = today.replace(day=1)
+    # CY-3 - the months ahead, and the PMS days before each period.
+    wins = C.future_windows(s)
+    pms_days = C.pms(days, s['cycles']) if wins else None
     prev_m = (first - dt.timedelta(days=1)).replace(day=1)
     next_m = (first + dt.timedelta(days=32)).replace(day=1)
     big, small = C.headline(s)
@@ -66,11 +70,14 @@ def home(request):
         'big': big,
         'small': small,
         'ring': C.ring(s),
-        'weeks': C.month_grid(first.year, first.month, days, s, today),
+        'weeks': C.month_grid(first.year, first.month, days, s, today,
+                              wins, pms_days),
+        'pms_days': pms_days,
         'month': first,
         'prev_m': prev_m,
         'next_m': next_m,
-        'show_next': next_m <= today.replace(day=1) + dt.timedelta(days=40),
+        'show_next': next_m <= today.replace(day=1) + dt.timedelta(
+            days=31 * C.MONTHS_AHEAD),
         'prefs': prefs,
         'fertile_label': C.FERTILE_LABEL,
         'today': today,
@@ -137,7 +144,7 @@ def log_day(request):
         day = today
     key = day.isoformat()
     if request.method == 'POST':
-        entry = C.clean_day(request.POST)
+        entry = C.clean_day(request.POST, prefs.get('tags'))
         if entry:
             days[key] = entry
         else:
@@ -164,7 +171,19 @@ def log_day(request):
         'tomorrow': (day + dt.timedelta(days=1)).isoformat()
         if day < today else '',
         's': s,
+        # CY-3 - more to log, only what is switched on.
+        'track': list(prefs.get('track') or ()),
+        'moods': C.MOODS, 'energy': C.ENERGY, 'sleep': C.SLEEP,
+        'discharge': C.DISCHARGE, 'my_tags': list(prefs.get('tags') or ()),
     })
+
+
+def _hm_ok(v):
+    try:
+        h, m = [int(x) for x in v.split(':')[:2]]
+        return 0 <= h < 24 and 0 <= m < 60
+    except (ValueError, AttributeError):
+        return False
 
 
 @wellness_view
@@ -180,6 +199,13 @@ def settings_page(request):
             C.save(request.user, prefs, days)
             return redirect('wellness:cycle')
         prefs['fertile'] = bool(request.POST.get('fertile'))
+        # CY-3 - more to log, your own tags, the pill time, the nudge.
+        prefs['track'] = [k for k in request.POST.getlist('track')
+                          if k in C.TRACK_KEYS]
+        prefs['tags'] = C.clean_tags(request.POST.get('tags'))
+        pill = (request.POST.get('pill_at') or '').strip()
+        prefs['pill_at'] = pill if _hm_ok(pill) else ''
+        prefs['nudge'] = bool(request.POST.get('nudge'))
         mode = request.POST.get('mode', 'normal')
         prefs['mode'] = mode if mode in C.MODE_NAMES else 'normal'
         prefs['remind'] = bool(request.POST.get('remind'))
@@ -191,6 +217,9 @@ def settings_page(request):
         'modes': C.MODES,
         'n_days': len(days),
         'fertile_label': C.FERTILE_LABEL,
+        'track_opts': C.TRACK,
+        'tracked': list(prefs.get('track') or ()),
+        'tags_line': ', '.join(prefs.get('tags') or ()),
     })
 
 
@@ -201,7 +230,7 @@ def patterns(request):
         return _off()
     today = _today()
     s = C.summary(days, today, prefs)
-    rows, words = C.around(days, s['cycles'])
+    rows, words = C.around(days, s['cycles'], tags=prefs.get('tags'))
     bars = C.bars(s['cycles'])
     lens = [b['len'] for b in bars]
     pers = [b['period'] for b in bars]
