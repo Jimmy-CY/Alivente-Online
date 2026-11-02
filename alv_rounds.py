@@ -1577,6 +1577,8 @@ ROUNDS = [
     '.bak_wellness17',
     # WL-14, 2 Nov 2026 - Wellness: Insights without empty charts.
     '.bak_wellness18',
+    # WL-15, 2 Nov 2026 - Wellness: sounds, movement, Saved.
+    '.bak_wellness19',
 ]
 
 

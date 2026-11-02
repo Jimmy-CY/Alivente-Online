@@ -37,7 +37,7 @@
 
 {# WL-4a - a badge just earned, one at a time, until it is seen. #}
 {% if new_badge %}
-<section class="w-card sand" style="flex-direction:row;align-items:center;gap:14px" data-new-badge>
+<section class="w-card sand" style="flex-direction:row;align-items:center;gap:14px" data-new-badge data-badge-key="{{ new_badge.key }}" data-badge-name="{{ new_badge.name }}" data-badge-line="{{ new_badge.line }}" data-badge-mark="{{ new_badge.mark }}" data-badge-family="{{ new_badge.family }}">
   <span class="w-badge {{ new_badge.family }}" aria-hidden="true">{{ new_badge.mark }}</span>
   <a href="{% url 'wellness:badges' %}" style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;text-decoration:none;color:inherit">
     <span class="w-label">New badge{% if new_badge.more %} · and {{ new_badge.more }} more{% endif %}</span>

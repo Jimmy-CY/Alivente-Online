@@ -72,6 +72,9 @@
   <input class="w-input" id="r-weigh" type="time" name="remind_weigh" value="{{ remind_weigh }}" style="max-width:160px">
   <p class="w-small w-quiet" style="margin:0">Leave a time empty for no reminder. A habit gets its own reminder time when you edit it.{% if reminded_habits %} Now: {% for h in reminded_habits %}{{ h.name }} at {{ h.remind_at|time:"H:i" }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %} Nothing is sent once it is done.</p>
 
+  {# WL-15, 2 Nov 2026 - a sound, a little movement and a tap on the phone for a tick, a badge and a save. On by default. #}
+  <h2 class="w-h2">Sounds and vibration</h2>
+  <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="sounds" value="1"{% if sounds %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)" data-fx-switch> <span>A soft sound and a short vibration when you tick a habit, earn a badge or finish your day<br><span class="w-small w-quiet">Quiet, and at media volume. Vibration works on Android phones. If your phone is set to reduce motion, the animations become a simple fade.</span></span></label>
   {# WL-4c - the line from Claude under the daily quote. #}
   <h2 class="w-h2">The daily quote</h2>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="claude_line" value="1"{% if claude_line %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Let Claude pick the quote and add a line for me<br><span class="w-small w-quiet">Claude chooses from the same library of real quotes and writes one short line under it. It sees only your first name, today's habit names and how the week has gone - never your journal, your weight or your cycle log.</span></span></label>

@@ -1294,6 +1294,7 @@ $sentinels = @(
     @{ File = 'wellness/challenge.py'; Text = 'def week_state('; What = 'WL-8/CY-3/WL-12: the challenge rules are on disk, weekly challenges included - without them Today cannot open' },
     @{ File = 'wellness/modules.py'; Text = 'def section_of('; What = 'WL-9: the section switches are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
+    @{ File = 'wellness/templatetags/wellness_modules.py'; Text = 'def fx_state('; What = 'WL-15: the sounds-and-vibration switch is on disk - without it no Wellness page can be drawn' },
     @{ File = 'wellness/insights.py'; Text = 'def trim('; What = 'WL-14: Insights starts at your first week and drops empty charts - without it the Insights page cannot open' },
     @{ File = 'wellness/guide.py'; Text = 'def grouped('; What = 'WL-13: the guide questions are on disk in their topics - without them the help sheet on every Wellness page fails' },
     @{ File = 'wellness/views_workouts.py'; Text = 'def clean_calories('; What = 'WL-11: workout calories are checked - without it a finished workout cannot save its calories' },
@@ -3257,7 +3258,9 @@ $suites = @(
     # WL-13, 1 Nov 2026 - Wellness: deeper help.
     'test_wellness_seventeen.py',
     # WL-14, 2 Nov 2026 - Wellness: Insights without empty charts.
-    'test_wellness_eighteen.py'
+    'test_wellness_eighteen.py',
+    # WL-15, 2 Nov 2026 - Wellness: sounds, movement, Saved.
+    'test_wellness_nineteen.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

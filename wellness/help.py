@@ -27,6 +27,9 @@ SCREENS = {
         'steps': [
             'Tap a habit when it is done. Tap again to undo. A minutes or '
             'count habit records its aim - open it to type another amount.',
+            'A tick gives a soft ding and a short vibration; the last habit '
+            'of the day, a little chime and the ring glows. A new badge '
+            'appears in the middle of the screen.',
             'A times-a-week habit leaves Today once that week\'s number is '
             'done, and is back on Monday.',
             'Tap the arrow beside a habit to see its calendar and streak.',
@@ -445,6 +448,8 @@ SCREENS = {
             'Turn on reminders on each phone - the phone asks you first.',
             'Set times for the evening check-in and the weigh-in.',
             'Turn Claude\'s line under the quote on or off.',
+            'Sounds and vibration: the ding for a tick, the chime for the '
+            'whole day and a badge. On unless you turn it off.',
             'The Monday email is off unless you turn it on.',
         ],
         'signs': [],
@@ -604,6 +609,8 @@ TIPS = {
         'Samsung: Settings > Apps > Chrome > Battery > Unrestricted, or '
         'reminders may arrive late.',
         'Tap "Send me a test" to check this phone; Stop turns a phone off.',
+        'No sound? Turn up the media volume (not the ringer). iPhones do not '
+        'let websites vibrate.',
         'Reminders are checked every 15 minutes, so one can come a little '
         'after its time. Cycle reminders come at 9:00.',
     ],

@@ -17,6 +17,139 @@
     });
   }
 
+  // ---- WL-15, 2 Nov 2026 - a little joy (Demetri, 19:36-19:39): a soft
+  // sound, a short vibration and a little movement for a tick, the whole
+  // day done and a badge; Settings > Sounds and vibration (on by default).
+  // Sounds are made here, like the Calm bells - nothing to download.
+  var FX = (function () {
+    var ctx = null;
+    function on() { return document.body.getAttribute('data-fx') !== 'off'; }
+    function still() {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+    function audio() {
+      var A = window.AudioContext || window.webkitAudioContext;
+      if (!A) return null;
+      if (!ctx) { try { ctx = new A(); } catch (e) { return null; } }
+      if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) { /* later */ } }
+      return ctx;
+    }
+    // notes: [[frequency, start (s), length (s), loudness]]
+    function play(notes) {
+      if (!on()) return;
+      var c = audio();
+      if (!c) return;
+      var t0 = c.currentTime + 0.01;
+      notes.forEach(function (n) {
+        var o = c.createOscillator(), g = c.createGain();
+        o.type = 'sine';
+        o.frequency.value = n[0];
+        g.gain.setValueAtTime(0.0001, t0 + n[1]);
+        g.gain.exponentialRampToValueAtTime(n[3], t0 + n[1] + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
+        o.connect(g); g.connect(c.destination);
+        o.start(t0 + n[1]); o.stop(t0 + n[1] + n[2] + 0.05);
+      });
+    }
+    function buzz(pattern) {
+      if (!on() || !navigator.vibrate) return;
+      try { navigator.vibrate(pattern); } catch (e) { /* not allowed */ }
+    }
+    return {
+      on: on, still: still,
+      tick: function () {          // a soft two-note ding
+        play([[784, 0, 0.18, 0.07], [1175, 0.07, 0.32, 0.06]]);
+        buzz(12);
+      },
+      allDone: function () {       // three rising notes
+        play([[523, 0, 0.5, 0.07], [659, 0.12, 0.5, 0.07], [784, 0.24, 0.9, 0.08]]);
+        buzz([15, 40, 15]);
+      },
+      badge: function () {         // a warm chime, a little richer
+        play([[440, 0, 1.1, 0.06], [554, 0.1, 1.1, 0.06], [659, 0.2, 1.2, 0.06],
+              [880, 0.32, 1.6, 0.07], [1320, 0.32, 1.2, 0.02]]);
+        buzz([20, 40, 20]);
+      }
+    };
+  })();
+  window.WellnessFX = FX;
+
+  // A badge, celebrated: the medallion rises into the middle, a short burst
+  // of sage and sand behind it, the chime - then Nice.
+  function celebrate(b, onNice) {
+    if (!b || document.querySelector('.w-celebrate')) return;
+    var box = document.createElement('div');
+    box.className = 'w-celebrate' + (FX.still() ? ' is-still' : '');
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-label', 'New badge: ' + b.name);
+    var card = document.createElement('div');
+    card.className = 'w-celebrate-card';
+    var burst = document.createElement('div');
+    burst.className = 'w-burst';
+    burst.setAttribute('aria-hidden', 'true');
+    if (!FX.still()) {
+      var colours = ['var(--w-sage)', 'var(--w-sand-line)', 'var(--w-sage-deep)', 'var(--w-sky)'];
+      for (var i = 0; i < 18; i++) {
+        var bit = document.createElement('i');
+        var ang = (Math.PI * 2 * i) / 18 + Math.random() * 0.3;
+        var dist = 90 + Math.random() * 70;
+        bit.style.setProperty('--dx', Math.round(Math.cos(ang) * dist) + 'px');
+        bit.style.setProperty('--dy', Math.round(Math.sin(ang) * dist) + 'px');
+        bit.style.setProperty('--r', Math.round(Math.random() * 360) + 'deg');
+        bit.style.background = colours[i % colours.length];
+        burst.appendChild(bit);
+      }
+    }
+    var medal = document.createElement('span');
+    medal.className = 'w-badge w-medal ' + (b.family || '');
+    medal.setAttribute('aria-hidden', 'true');
+    medal.textContent = b.mark || '';
+    var lab = document.createElement('span');
+    lab.className = 'w-label';
+    lab.textContent = 'New badge';
+    var name = document.createElement('strong');
+    name.className = 'w-celebrate-name';
+    name.textContent = b.name;
+    var line = document.createElement('p');
+    line.className = 'w-quiet';
+    line.textContent = b.line || '';
+    var ok = document.createElement('button');
+    ok.type = 'button';
+    ok.className = 'w-btn full';
+    ok.textContent = 'Nice';
+    card.appendChild(burst); card.appendChild(medal); card.appendChild(lab);
+    card.appendChild(name); card.appendChild(line); card.appendChild(ok);
+    box.appendChild(card);
+    document.body.appendChild(box);
+    requestAnimationFrame(function () { box.classList.add('is-on'); });
+    FX.badge();
+    ok.focus();
+    function close() {
+      box.classList.remove('is-on');
+      setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 250);
+      if (onNice) onNice();
+    }
+    ok.addEventListener('click', close);
+    box.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  }
+
+  // Today: a badge earned since last time is celebrated once.
+  (function () {
+    var card = document.querySelector('[data-new-badge]');
+    if (!card) return;
+    var key = 'w-badge-shown-' + card.getAttribute('data-badge-key');
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) { /* show anyway */ }
+    setTimeout(function () {
+      celebrate({key: card.getAttribute('data-badge-key'), name: card.getAttribute('data-badge-name'),
+                 line: card.getAttribute('data-badge-line'), mark: card.getAttribute('data-badge-mark'),
+                 family: card.getAttribute('data-badge-family')}, function () {
+        var f = card.querySelector('form');
+        if (f) f.submit();
+      });
+    }, 350);
+  })();
+
   // ---- Today: a tick is instant, and the ring follows it.
   function updateRing() {
     var ring = document.querySelector('[data-today-ring]');
@@ -49,12 +182,35 @@
     row.classList.remove('w-settle');
     if (!was) { void row.offsetWidth; row.classList.add('w-settle'); }
     updateRing();
+    // WL-15 - a tick sounds and taps; the last one of the day, a little more.
+    if (!was) {
+      var all = document.querySelectorAll('[data-habit-row]').length;
+      var got = document.querySelectorAll('[data-habit-row].is-done').length;
+      var ring = document.querySelector('[data-today-ring]');
+      if (all && got === all) {
+        FX.allDone();
+        if (ring && !FX.still()) { ring.classList.remove('w-glow'); void ring.getBoundingClientRect(); ring.classList.add('w-glow'); }
+      } else {
+        FX.tick();
+      }
+    }
     post(form).then(function (res) {
       row.classList.toggle('is-done', res.done);
       row.setAttribute('aria-pressed', String(res.done));
       var meta = row.querySelector('[data-week]');
       if (meta && res.week_target) meta.textContent = res.week_got + ' of ' + res.week_target + ' this week';
       updateRing();
+      if (res.badge) {
+        setTimeout(function () {
+          celebrate(res.badge, function () {
+            var t = form.querySelector('[name=csrfmiddlewaretoken]');
+            var d = new FormData();
+            if (t) d.set('csrfmiddlewaretoken', t.value);
+            fetch(res.badges_seen, {method: 'POST', body: d, credentials: 'same-origin',
+                                    headers: {'X-Requested-With': 'fetch'}}).catch(function () {});
+          });
+        }, 500);
+      }
     }).catch(function () {
       // Could not reach the server: put it back and let the form do it.
       row.classList.toggle('is-done', was);
@@ -769,4 +925,73 @@
       navigator.serviceWorker.register('/wellness/app/sw.js', {scope: '/wellness/'}).catch(function () {});
     });
   }
+
+  // ---- WL-15, 2 Nov 2026 - Add and Save let you know (Demetri, 19:36):
+  // the button presses in, shows "Saving..." and cannot be tapped twice;
+  // the next screen says "Saved" for two seconds. Registered last, so a
+  // form another part of this file handles itself is left alone.
+  var SAVED = [
+    [/\/habits\/new\/$/, 'Habit added'], [/\/habits\/\d+\/edit\/$/, 'Habit saved'],
+    [/\/habits\/\d+\/check\/$/, 'Saved'], [/\/journal\/(new|\d+\/edit)\/$/, 'Entry saved'],
+    [/\/body\/weigh\/$/, 'Weigh-in saved'], [/\/body\/measure\/$/, 'Measurements saved'],
+    [/\/body\/goal\/$/, 'Goal saved'], [/\/workouts\/kit\/$/, 'Equipment saved'],
+    [/\/workouts\/routines\/(new|\d+)\/$/, 'Routine saved'], [/\/workouts\/\d+\/calories\/$/, 'Calories saved'],
+    [/\/workouts\/exercises\/new\/$/, 'Exercise added'], [/\/cycle\/log\/$/, 'Day saved'],
+    [/\/cycle\/settings\/$/, 'Cycle settings saved'], [/\/settings\/$/, 'Settings saved'],
+    [/\/delete\/$/, 'Deleted']
+  ];
+  function savedWords(form, btn) {
+    var path = (form.getAttribute('action') || location.pathname).split('?')[0];
+    for (var i = 0; i < SAVED.length; i++) if (SAVED[i][0].test(path)) return SAVED[i][1];
+    var t = (btn && btn.textContent || '').trim().toLowerCase();
+    if (/^save|^done for today/.test(t)) return 'Saved';
+    if (/^add|^\+ add/.test(t)) return 'Added';
+    return '';
+  }
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (e.defaultPrevented || !form.closest('.w-wrap, main, body')) return;
+    if ((form.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+    if (form.getAttribute('data-busy') === '1') { e.preventDefault(); return; }
+    var btn = e.submitter || form.querySelector('button[type=submit], button:not([type])');
+    form.setAttribute('data-busy', '1');
+    if (btn && btn.classList.contains('w-btn')) {
+      btn.classList.add('is-busy');
+      btn.setAttribute('aria-busy', 'true');
+      var words = (btn.textContent || '').trim();
+      if (/^(save|add|done for today|start this habit)/i.test(words)) {
+        btn.setAttribute('data-was', words);
+        btn.textContent = 'Saving...';
+      }
+    }
+    var say = savedWords(form, btn);
+    try { if (say) sessionStorage.setItem('w-saved', say); else sessionStorage.removeItem('w-saved'); } catch (err) { /* fine */ }
+  });
+  // Back to a page whose button was left pressing: put it back.
+  window.addEventListener('pageshow', function () {
+    document.querySelectorAll('form[data-busy]').forEach(function (f) { f.removeAttribute('data-busy'); });
+    document.querySelectorAll('.w-btn.is-busy').forEach(function (b) {
+      b.classList.remove('is-busy'); b.removeAttribute('aria-busy');
+      if (b.getAttribute('data-was')) b.textContent = b.getAttribute('data-was');
+    });
+  });
+  // The next screen: "Saved", only if the form really went through (the
+  // server answered with a redirect - a form with a mistake comes back
+  // without one, and says nothing).
+  (function () {
+    var say = null;
+    try { say = sessionStorage.getItem('w-saved'); sessionStorage.removeItem('w-saved'); } catch (e) { return; }
+    if (!say) return;
+    var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
+    if (nav && !nav.redirectCount) return;
+    var t = document.createElement('div');
+    t.className = 'w-toast';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    t.textContent = say;
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('is-on'); });
+    setTimeout(function () { t.classList.remove('is-on'); }, 2000);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2400);
+  })();
 })();

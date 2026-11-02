@@ -762,3 +762,77 @@ details[data-voice-box] > :not(summary) { margin-top: 12px; }
 .w-ins-bars.train i { background: var(--w-sage-deep); }
 .w-ins-bars b { font-size: 11px; font-weight: 600; color: var(--w-ink); line-height: 1; }
 .w-ins-bars small { font-size: 10px; color: var(--w-quiet); white-space: nowrap; }
+
+/* ==========================================================================
+   WL-15, 2 Nov 2026 - a little joy (Demetri, 19:36): a tick, the whole day,
+   a badge, and every Add or Save letting you know it was pressed.
+   ========================================================================== */
+/* A tick: the circle fills, the tick draws itself in. */
+.w-check svg path { stroke-dasharray: 16; stroke-dashoffset: 0; }
+.w-settle .w-check svg path { animation: w-draw .32s ease-out both; }
+@keyframes w-draw { from { stroke-dashoffset: 16; } to { stroke-dashoffset: 0; } }
+.w-settle .w-check { box-shadow: 0 0 0 0 var(--w-sage); animation: w-settle .45s ease, w-pulse .6s ease-out; }
+@keyframes w-pulse { from { box-shadow: 0 0 0 0 rgba(127, 162, 138, .55); } to { box-shadow: 0 0 0 12px rgba(127, 162, 138, 0); } }
+[data-today-ring] .fill { transition: stroke-dasharray .45s ease; }
+/* The whole day done: the ring glows. */
+.w-glow { animation: w-glow 1.2s ease-out; border-radius: 50%; }
+@keyframes w-glow {
+  0% { filter: drop-shadow(0 0 0 rgba(127, 162, 138, 0)); transform: scale(1); }
+  35% { filter: drop-shadow(0 0 10px rgba(127, 162, 138, .9)); transform: scale(1.08); }
+  100% { filter: drop-shadow(0 0 0 rgba(127, 162, 138, 0)); transform: scale(1); }
+}
+/* Every button presses in when tapped. */
+.w-btn, .w-habit, .w-chip, .w-day { transition: transform .08s ease, filter .08s ease, background-color .2s ease; }
+.w-btn:active, .w-habit:active, .w-day:active { transform: scale(.97); filter: brightness(.93); }
+/* Saving...: a small spinner, and it cannot be tapped twice. */
+.w-btn.is-busy { pointer-events: none; opacity: .85; }
+.w-btn.is-busy::before {
+  content: ''; width: 14px; height: 14px; margin-right: 8px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  display: inline-block; vertical-align: -2px; animation: w-spin .7s linear infinite;
+}
+@keyframes w-spin { to { transform: rotate(360deg); } }
+/* "Saved" on the next screen, for two seconds. */
+.w-toast {
+  position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  transform: translate(-50%, 16px); opacity: 0; transition: transform .25s ease, opacity .25s ease;
+  background: var(--w-ink); color: var(--w-bg); padding: 10px 18px; border-radius: 999px;
+  font-size: 15px; font-weight: 500; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); pointer-events: none;
+}
+.w-toast::before { content: '\2713'; margin-right: 8px; }
+.w-toast.is-on { transform: translate(-50%, 0); opacity: 1; }
+/* A badge: the medallion rises, a short burst behind it. */
+.w-celebrate {
+  position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center;
+  padding: 24px; background: rgba(20, 28, 30, .45); opacity: 0; transition: opacity .25s ease;
+}
+.w-celebrate.is-on { opacity: 1; }
+.w-celebrate-card {
+  position: relative; width: min(340px, 100%); background: var(--w-card); border-radius: var(--w-radius);
+  padding: 32px 24px 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  transform: translateY(24px) scale(.94); transition: transform .35s cubic-bezier(.2, .9, .3, 1.2);
+}
+.w-celebrate.is-on .w-celebrate-card { transform: none; }
+.w-celebrate-card p { margin: 0 0 10px; }
+.w-celebrate-card > :not(.w-burst) { position: relative; z-index: 1; }
+.w-celebrate-name { font-family: var(--w-serif); font-weight: 400; font-size: 24px; }
+.w-medal { width: 84px; height: 84px; font-size: 38px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; animation: w-medal .7s cubic-bezier(.2, .9, .3, 1.3) both, w-shine 1.6s ease-out .3s; }
+@keyframes w-medal { from { transform: scale(.3) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes w-shine { 0% { box-shadow: 0 0 0 0 rgba(220, 207, 184, .9); } 100% { box-shadow: 0 0 0 26px rgba(220, 207, 184, 0); } }
+.w-burst { position: absolute; left: 50%; top: 74px; width: 0; height: 0; pointer-events: none; }
+.w-burst i { position: absolute; left: -4px; top: -4px; width: 8px; height: 12px; border-radius: 2px; opacity: 0;
+  animation: w-bit 1.1s cubic-bezier(.15, .7, .3, 1) .15s forwards; }
+@keyframes w-bit {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; }
+}
+/* The phone set to reduce motion: a simple fade, nothing moving. */
+.w-celebrate.is-still .w-celebrate-card, .w-celebrate.is-still .w-medal { transform: none; animation: none; transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .w-settle .w-check, .w-settle .w-check svg path, .w-glow, .w-medal, .w-burst i { animation: none !important; }
+  .w-btn:active, .w-habit:active, .w-day:active { transform: none; }
+  .w-btn.is-busy::before { animation-duration: 1.6s; }
+}
+

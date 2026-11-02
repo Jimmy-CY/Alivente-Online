@@ -325,6 +325,8 @@ def settings_page(request):
         prefs['weekly_email'] = bool(request.POST.get('weekly_email'))
         # WL-4c - the line from Claude is on unless turned off here.
         prefs['line_off'] = not request.POST.get('claude_line')
+        # WL-15 - sounds and vibration are on unless turned off here.
+        prefs['sounds_off'] = not request.POST.get('sounds')
         # WL-4b - the evening and weigh-in reminder times, or none.
         for k in ('remind_checkin', 'remind_weigh'):
             v = (request.POST.get(k) or '').strip()
@@ -344,6 +346,7 @@ def settings_page(request):
         'on_names': ', '.join(n for k, n, _l in MOD.MODULES if k in on),
         'weekly': bool(prefs.get('weekly_email')),
         'claude_line': not prefs.get('line_off'),
+        'sounds': not prefs.get('sounds_off'),
         'email': request.user.email,
         'saved': bool(request.GET.get('saved')),
         'push_ready': P.configured(),
@@ -813,12 +816,18 @@ def habit_check(request, pk):
             nxt = reverse('wellness:today')
         return redirect(nxt)
     got, target = H.this_week(habit, done, day)
+    # WL-15, 2 Nov 2026 - a badge this tick earned is celebrated straight
+    # away, on the spot (Demetri, 19:36).
+    badge = _new_badge(_profile(request.user), request.user, day) \
+        if d in done else None
     return JsonResponse({
         'done': d in done,
         'value': log.value if log else None,
         'comeback': back,
         'week_got': got,
         'week_target': target,
+        'badge': badge,
+        'badges_seen': reverse('wellness:badges_seen'),
     })
 
 
@@ -944,7 +953,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl16-1'
+SW_VERSION = 'wl17-1'
 
 
 def service_worker(request):

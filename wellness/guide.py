@@ -448,6 +448,13 @@ HOWTO += [
          'Phone Settings > Apps > Chrome > Notifications: allowed.',
          'Phone Settings > Apps > Chrome > Battery: Unrestricted.',
          'Check Do not disturb is off, then tap "Send me a test".']},
+    {'q': 'Can I turn the sounds off?',
+     'a': 'Yes. Tap the cog and untick "Sounds and vibration", then Save. '
+          'It covers the soft ding when you tick a habit, the chime when '
+          'the whole day is done or you earn a badge, and the short '
+          'vibration (Android only). Every Add and Save still shows it was '
+          'pressed, and says Saved on the next screen. If your phone is set '
+          'to reduce motion, the animations become a simple fade.'},
     {'q': 'Wellness looks out of date after an update',
      'a': 'Your phone keeps a copy so Wellness opens fast and works '
           'offline. Close Wellness fully (swipe it away from recent apps) '
@@ -486,7 +493,8 @@ _TOPIC_WORDS = [
              'sign in again', 'wrong day')),
     ('setup', ('Samsung phone', 'fingerprint', 'reminders on a Samsung',
                'shortcuts', 'put Wellness on my phone', 'hide the parts',
-               'keep me logged in', 'How do reminders work')),
+               'keep me logged in', 'How do reminders work',
+               'turn the sounds off')),
     ('cycle', ('cycle', 'period', 'PMS', 'pill', 'perimenopause',
                'fertile')),
     ('calm', ('Calm', 'voice', 'Guided')),
