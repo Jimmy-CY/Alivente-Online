@@ -420,8 +420,11 @@ SCREENS = {
         'purpose': 'Your last eight weeks, side by side - and what goes '
                    'with your better days.',
         'steps': [
-            'Each chart is a week: habits done, mood, Calm minutes, '
-            'workouts - and workout calories, once you have typed some in.',
+            'Each chart shows one thing week by week: habits done, mood, '
+            'Calm minutes, workouts - and workout calories, once you have '
+            'typed some in.',
+            'The charts start from your first week and grow to eight weeks. '
+            'A chart with nothing in it yet says how to fill it.',
             'What goes with what compares your mood on days you did '
             'something with days you did not.',
             'It needs moods from your journal, and at least four days on '

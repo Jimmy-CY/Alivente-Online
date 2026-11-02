@@ -279,7 +279,11 @@ if have_db:
                'data-board-note' in t,
                'THE CYCLE PAGE shows the note above the ideas')
             ins = ca.get('/wellness/insights/').content.decode()
-            ok('Your last eight weeks' in ins and 'w-ins-bars' in ins and
+            # WL-14, 2 Nov 2026: from the first week with data, and an
+            # empty chart is one line (test_wellness_eighteen).
+            ok(('Your last eight weeks' in ins or
+                'Week by week since you started' in ins) and
+               ('w-ins-bars' in ins or 'data-ins-empty' in ins) and
                '<h3 class="w-sheet-title">Insights</h3>' in ins,
                'INSIGHTS opens, with its charts and its help')
             ok('href="/wellness/insights/"' in ca.get('/wellness/').content

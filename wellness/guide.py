@@ -181,7 +181,8 @@ HOWTO = [
           'and hot flushes, night sweats, brain fog and more are added to '
           'Log today and to Patterns.'},
     {'q': 'What is Insights?',
-     'a': 'A page with your last eight weeks side by side - habits done, '
+     'a': 'A page with up to eight weeks side by side (from your first '
+          'week, growing to eight) - habits done, '
           'mood, Calm minutes, workouts, workout calories, your weight trend '
           'and, with the cycle tracker on, mood by phase - and, once '
           'you have added moods in the journal, what goes with your better '
@@ -421,7 +422,9 @@ HOWTO += [
           'you did not, so it needs moods. Add one in the evening check-in '
           'or when you write - most days for a couple of weeks. A finding '
           'appears once there are at least four days on each side and a '
-          'real difference. Calories appear once you have typed some in.'},
+          'real difference. Calories appear once you have typed some in. A '
+          'chart with nothing in it yet shows one line saying how to fill '
+          'it.'},
     # ---- Cycle
     {'q': 'Set up: the cycle tracker',
      'a': 'Private and locked; off until you turn it on.',

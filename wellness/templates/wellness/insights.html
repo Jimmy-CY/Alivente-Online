@@ -9,7 +9,7 @@
 {% endcomment %}
 <div>
   <h1 class="w-title">Insights</h1>
-  <p class="w-quiet" style="margin:6px 0 0">Your last eight weeks, side by side.</p>
+  <p class="w-quiet" style="margin:6px 0 0">{% if i.weeks < 8 %}Week by week since you started - up to eight weeks, side by side.{% else %}Your last eight weeks, side by side.{% endif %}</p>
 </div>
 
 {% if i.findings %}
@@ -26,26 +26,31 @@
 {% endif %}
 
 {% if i.habits %}
+{% comment %} WL-14, 2 Nov 2026 - a chart with nothing in it is one line saying how to fill it. {% endcomment %}
 <section class="w-card" aria-labelledby="ins-h"><h2 class="w-h2" id="ins-h">Habits done</h2>
-  <div class="w-ins-bars">{% for b in i.habits %}<span title="{{ b.label }}: {% if b.v is not None %}{{ b.v }}%{% else %}none due{% endif %}"><b>{% if b.v is not None %}{{ b.v }}%{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
-  <p class="w-small w-quiet" style="margin:0">Each week: the share of planned days done.</p></section>
+  {% if i.empty.habits %}<p class="w-quiet" style="margin:0" data-ins-empty>No habits due in these weeks yet. Add one under Habits and it appears here.</p>{% else %}
+  <div class="w-ins-bars" style="{{ cols }}">{% for b in i.habits %}<span title="{{ b.label }}: {% if b.v is not None %}{{ b.v }}%{% else %}none due{% endif %}"><b>{% if b.v is not None %}{{ b.v }}%{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
+  <p class="w-small w-quiet" style="margin:0">Each week: the share of planned days done.</p>{% endif %}</section>
 {% endif %}
 {% if i.mood %}
 <section class="w-card" aria-labelledby="ins-m"><h2 class="w-h2" id="ins-m">Mood</h2>
-  <div class="w-ins-bars mood">{% for b in i.mood %}<span title="{{ b.label }}: {{ b.v|default:'no moods' }}"><b>{{ b.v|default:'' }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
-  <p class="w-small w-quiet" style="margin:0">Each week: your average mood, 1 to 5, from the journal.</p></section>
+  {% if i.empty.mood %}<p class="w-quiet" style="margin:0" data-ins-empty>No moods yet. Add one in the evening check-in, or when you write, and it appears here - and What goes with what can start.</p>{% else %}
+  <div class="w-ins-bars mood" style="{{ cols }}">{% for b in i.mood %}<span title="{{ b.label }}: {{ b.v|default:'no moods' }}"><b>{{ b.v|default:'' }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
+  <p class="w-small w-quiet" style="margin:0">Each week: your average mood, 1 to 5, from the journal.</p>{% endif %}</section>
 {% endif %}
 {% if i.calm %}
 <section class="w-card" aria-labelledby="ins-c"><h2 class="w-h2" id="ins-c">Calm minutes</h2>
-  <div class="w-ins-bars calm">{% for b in i.calm %}<span title="{{ b.label }}: {{ b.v }} min"><b>{{ b.v }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div></section>
+  {% if i.empty.calm %}<p class="w-quiet" style="margin:0" data-ins-empty>No Calm minutes yet. A minute of Breathe is enough to start.</p>{% else %}
+  <div class="w-ins-bars calm" style="{{ cols }}">{% for b in i.calm %}<span title="{{ b.label }}: {{ b.v }} min"><b>{% if b.v %}{{ b.v }}{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>{% endif %}</section>
 {% endif %}
 {% if i.workouts %}
 <section class="w-card" aria-labelledby="ins-w"><h2 class="w-h2" id="ins-w">Workouts</h2>
-  <div class="w-ins-bars train">{% for b in i.workouts %}<span title="{{ b.label }}: {{ b.v }}"><b>{{ b.v }}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div></section>
+  {% if i.empty.workouts %}<p class="w-quiet" style="margin:0" data-ins-empty>No workouts yet. Finish one and it appears here.</p>{% else %}
+  <div class="w-ins-bars train" style="{{ cols }}">{% for b in i.workouts %}<span title="{{ b.label }}: {{ b.v }}"><b>{% if b.v %}{{ b.v }}{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>{% endif %}</section>
 {% endif %}
 {% if i.kcal %}
 <section class="w-card" aria-labelledby="ins-k" data-ins-kcal><h2 class="w-h2" id="ins-k">Workout calories</h2>
-  <div class="w-ins-bars train">{% for b in i.kcal %}<span title="{{ b.label }}: {{ b.v }} kcal"><b>{% if b.v %}{{ b.v }}{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
+  <div class="w-ins-bars train" style="{{ cols }}">{% for b in i.kcal %}<span title="{{ b.label }}: {{ b.v }} kcal"><b>{% if b.v %}{{ b.v }}{% endif %}</b><em><i style="height:{{ b.h }}%"></i></em><small>{{ b.label }}</small></span>{% endfor %}</div>
   <p class="w-small w-quiet" style="margin:0">Each week: the calories you typed in from your watch.</p></section>
 {% endif %}
 {% if i.weight %}

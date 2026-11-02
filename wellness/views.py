@@ -256,10 +256,12 @@ def insights_page(request):
     from . import insights as INS
     from . import modules as MOD
     on = MOD.on_set(request.user)
+    i = INS.gather(request.user, _today(), on)
     return render(request, 'wellness/insights.html', {
-        'tab': 'today', 'on': on,
-        'i': INS.gather(request.user, _today(), on),
+        'tab': 'today', 'on': on, 'i': i,
         'min_days': INS.MIN_DAYS,
+        # WL-14 - as many columns as weeks shown.
+        'cols': 'grid-template-columns:repeat(%d,minmax(0,1fr))' % i['weeks'],
     })
 
 

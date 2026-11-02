@@ -18,6 +18,14 @@ and says, carefully, what goes with what:
 
 PATTERNS, NOT PROOF: the page says so. Only sections switched on are
 shown. Everything here is pure; the view gathers the data.
+
+WL-14, 2 Nov 2026 - Demetri, 05:18: "if a graph has NO data, should that
+graph not be hidden (like mood in this case)?" 05:19: "Build it".
+    - The charts start at the first week with anything in it, not eight
+      weeks back (up to eight as time goes on).
+    - A chart with nothing in it at all becomes one line saying how to
+      fill it - Mood above all, since the findings need moods.
+    - No "0" over an empty week: an empty bar already says it.
 """
 import datetime as dt
 
@@ -79,6 +87,33 @@ def weekly(today, mood_by_day, habit_days, calm_secs, workout_days,
             'mood': round(avg(moods), 1) if moods else None,
         })
     return out
+
+
+def has_data(row):
+    """Anything at all in this week?"""
+    return (row['habits_pct'] is not None or row['mood'] is not None or
+            row['calm_min'] > 0 or row['workouts'] > 0 or
+            row.get('kcal', 0) > 0)
+
+
+def trim(rows):
+    """From the first week with anything in it (the last week if none)."""
+    for i, r in enumerate(rows):
+        if has_data(r):
+            return rows[i:]
+    return rows[-1:]
+
+
+EMPTY_KEYS = {'habits': 'habits_pct', 'mood': 'mood', 'calm': 'calm_min',
+              'workouts': 'workouts'}
+
+
+def empty(rows):
+    """{chart: True} for each chart with nothing in any week."""
+    # Habits at 0% is something to see; only "nothing due" is empty.
+    return {name: not any((r[key] is not None) if name in ('habits', 'mood')
+                          else r[key] for r in rows)
+            for name, key in EMPTY_KEYS.items()}
 
 
 def bars(rows, key, top=None):
@@ -175,8 +210,8 @@ def gather(user, today, on):
             workout_days.add(d)
             if c:
                 workout_cal[d] = workout_cal.get(d, 0) + c
-    rows = weekly(today, mood_by_day, habit_days, calm_secs, workout_days,
-                  workout_cal)
+    rows = trim(weekly(today, mood_by_day, habit_days, calm_secs,
+                       workout_days, workout_cal))
     weight = None
     if 'body' in on:
         readings = {m.date: float(m.value) for m in BodyMetric.objects.filter(
@@ -201,6 +236,8 @@ def gather(user, today, on):
                                             s.get('avg_period') or 5)
     return {
         'rows': rows,
+        'weeks': len(rows),
+        'empty': empty(rows),
         'habits': bars(rows, 'habits_pct', 100) if 'habits' in on else None,
         'calm': bars(rows, 'calm_min') if 'calm' in on else None,
         'workouts': bars(rows, 'workouts') if 'workouts' in on else None,
