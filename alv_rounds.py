@@ -1585,6 +1585,8 @@ ROUNDS = [
     '.bak_wellness20',
     # WL-17, 12 Nov 2026 - Wellness: workouts - sports, starting numbers, your own exercises.
     '.bak_wellness21',
+    # SP-1, 12 Nov 2026 - the speed round.
+    '.bak_speed1',
 ]
 
 

@@ -744,6 +744,10 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # that could have carried it was dead configuration and HK-5
             # removed it.)
             'version/',
+            # SP-1, 12 Nov 2026 - base.html's stylesheets. The login page
+            # needs them before anyone is signed in, and they hold nothing
+            # but CSS that is already in the public login page.
+            'alv-css/',
             # WL-1, 30 Oct 2026 - THE WELLNESS APP SHELL: the manifest,
             # the service worker, the stylesheet, the script and the
             # icons. A phone fetches the manifest and icons with no

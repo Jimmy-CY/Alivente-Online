@@ -283,6 +283,12 @@ if have_db:
             for u in (a, b):
                 u.user_permissions.add(perm)
                 WellnessProfile.objects.create(user=u, onboarded=True)
+            # SP-1, 12 Nov 2026 - ONLY THIS SUITE'S PEOPLE. The job counts
+            # everybody who opened Wellness in the last two weeks, and on a
+            # laptop's own database that includes real people: the gate
+            # stopped on "2 made" when the suite expected 1. Inside this
+            # transaction (rolled back below) everyone else is set aside.
+            User.objects.exclude(pk__in=[a.pk, b.pk]).update(is_active=False)
             ca = Client(SERVER_NAME='localhost')
             ca.force_login(a)
             today = timezone.localdate()

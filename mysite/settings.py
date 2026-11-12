@@ -68,6 +68,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # SP-1, 12 Nov 2026 - straight after Security, as WhiteNoise asks:
+    # a stylesheet or an icon is answered before any session, login or
+    # permission check runs. It was last in the list.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "pages.middleware.DatabaseConnectionMiddleware",  # Re-enabled with fixes
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -81,8 +85,6 @@ MIDDLEWARE = [
     "pages.middleware.ModuleAccessMiddleware",  # Add this line
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-
 ]
 
 ROOT_URLCONF = "mysite.urls"
@@ -138,10 +140,21 @@ DATABASES = {
             'write_timeout': 30,    # Reduced from 60
             'autocommit': True,
         },
-        'CONN_MAX_AGE': 0,  # Back to no connection pooling - good for middleware
+        # SP-1, 12 Nov 2026 - keep a connection for a minute instead of
+        # opening a new one on every request; Django checks it is alive
+        # before reusing it, so a connection MySQL dropped is replaced.
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
         'ATOMIC_REQUESTS': False,
     }
 }
+
+# SP-1, 12 Nov 2026 - base.html's stylesheets as cached files, on Railway
+# only. On a laptop - runserver and every suite - they stay in the page as
+# before: many suites draw a page from its HTML alone, with no server to
+# ask for a stylesheet. pages/css_files.py explains the files.
+ALV_CSS_FILES = bool(os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production'
+                     or os.environ.get('RAILWAY_PROJECT_ID'))
 
 # ========== EMAIL CONFIGURATION ==========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

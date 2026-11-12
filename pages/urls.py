@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from . import views
+from . import css_files
 from .views_setup import setup_permissions
 
 
@@ -21,6 +22,8 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('admin_apms/', views.admin_apms, name='admin_apms'),
     path('personal/', views.personal_page, name='personal_page'),
+    # SP-1, 12 Nov 2026 - base.html's stylesheets as cached files.
+    path('alv-css/<str:digest>.css', css_files.stylesheet, name='alv_css'),
     # HK-5, 29 Oct 2026 - admin_clear/ removed: no page linked to it.
     path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
     path('title_deeds_management/', views.title_deeds_management, name='title_deeds_management'),

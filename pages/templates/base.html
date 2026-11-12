@@ -1,5 +1,5 @@
 <!doctype html>
-{% load static %}
+{% load static %}{% load alv_assets %}
 
 {% comment %}
 ===============================================================================
@@ -738,7 +738,7 @@
          old 2.9:1, so it is legible as text and as a border, not only as a
          filled button.
          =================================================================== -->
-    <style>
+    {% cached_css %}<style>
     /* B-7, 9 Oct 2026 - 1 Bootstrap literal(s) on this page
        became a var(). The ones in script blocks and in style
        attributes are converted because the browser reads them
@@ -878,12 +878,12 @@
       }
       .list-group-item-warning { background-color: var(--alv-warn-soft); color: var(--alv-warn-ink); }
       a.text-warning:hover, a.text-warning:focus { color: var(--alv-warn-ink) !important; }
-    </style>
+    </style>{% endcached_css %}
     <link rel="stylesheet" href="{% static 'css/my_style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>{% block title %}{% endblock %} | Alivente Online</title>
 
-    <style>
+    {% cached_css %}<style>
     /* ==================== SHARED ==================== */
     .notification-bell-container { position: relative; display: inline-block; }
     .notification-bell-icon { font-size: 16px; color: rgba(255,255,255,0.75); transition: color 0.3s ease; }
@@ -1023,7 +1023,7 @@
     @media (min-width: 992px) {
         body.has-sidebar .navbar.mobile-fallback-nav { display: none !important; }
     }
-    </style>
+    </style>{% endcached_css %}
 
     <!-- ===================================================================
          ALIVENTE TABLE STANDARD                          --alv-table-std
@@ -1048,7 +1048,7 @@
          test harness, which silently extracted the wrong CSS until this
          was caught.
          =================================================================== -->
-    <style>
+    {% cached_css %}<style>
       :root {
         /* Surfaces and ink. Held separate from the accent so a colour
            change never silently restyles text. */
@@ -2922,8 +2922,8 @@
         .action-more-item-danger { color: var(--alv-danger); }
         .action-more-item-danger i { color: var(--alv-danger); }
       }
-    </style>
-  <style>    /* B-2b, 6 Oct 2026 - 15 literal(s) on this page became a var().
+    </style>{% endcached_css %}
+  {% cached_css %}<style>    /* B-2b, 6 Oct 2026 - 15 literal(s) on this page became a var().
        The tail of tier B: everything within 25 RGB units of a
        token that was not one of B-2 four neutrals. Twenty-one
        spellings of a pale teal, fifty-three greys, and the
@@ -5261,7 +5261,7 @@ table.alv-matrix {
 
 
 
-</style>
+</style>{% endcached_css %}
 
   {# HK-3, 28 Oct 2026 - the one jQuery, Popper and Bootstrap for every page. #}
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -1295,6 +1295,7 @@ $sentinels = @(
     @{ File = 'wellness/challenge.py'; Text = 'def week_state('; What = 'WL-8/CY-3/WL-12: the challenge rules are on disk, weekly challenges included - without them Today cannot open' },
     @{ File = 'wellness/modules.py'; Text = 'def tz_or_none('; What = 'WL-9/WL-16: the section switches and the time zone reader are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
+    @{ File = 'pages/css_files.py'; Text = 'def stylesheet(request, digest):'; What = 'SP-1: base.html links its stylesheets from here - without it every page loses its styling' },
     @{ File = 'wellness/training.py'; Text = 'def in_minutes('; What = 'WL-17: the workout rules know minutes from seconds - without them no workout can be started' },
     @{ File = 'wellness/modules.py'; Text = 'def phone_now('; What = "WL-16: Wellness runs on the phone's clock - without it no Wellness page can be drawn" },
     @{ File = 'wellness/templatetags/wellness_modules.py'; Text = 'def fx_state('; What = 'WL-15: the sounds-and-vibration switch is on disk - without it no Wellness page can be drawn' },
@@ -3269,7 +3270,9 @@ $suites = @(
     # WL-16, 12 Nov 2026 - Wellness: catch up, the whole day done, the phone's clock.
     'test_wellness_twenty.py',
     # WL-17, 12 Nov 2026 - Wellness: workouts - sports, starting numbers, your own exercises.
-    'test_wellness_twentyone.py'
+    'test_wellness_twentyone.py',
+    # SP-1, 12 Nov 2026 - the speed round: base's CSS as cached files, kept connections, three workers.
+    'test_speed_one.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
