@@ -8,11 +8,12 @@
   the moment it happens. Big rows for sweaty thumbs, the screen kept awake.
   Every tick is saved as it happens, so leaving the page loses nothing.
 {% endcomment %}
-<div data-live data-started="{{ started_ms }}" style="display:flex;flex-direction:column;gap:16px">
+<div data-live data-started="{{ started_ms }}"{% if s.minutes %} data-past{% endif %} style="display:flex;flex-direction:column;gap:16px">
 <header style="display:flex;justify-content:space-between;align-items:center;gap:12px">
   <h1 class="w-title" style="font-size:26px">{{ s.name }}</h1>
-  <span class="w-clock" data-elapsed>0:00</span>
+  {% if s.minutes %}<span class="w-clock">{{ s.minutes }} min</span>{% else %}<span class="w-clock" data-elapsed>0:00</span>{% endif %}
 </header>
+{% if s.minutes %}<p class="w-small w-quiet" style="margin:-8px 0 0" data-past-note>Logging a workout from {{ s.started_at|date:"l j F, H:i" }}. Tick what you did, then Finish.</p>{% endif %}
 
 {% for b in blocks %}
 <section class="w-card" style="gap:10px" aria-label="{{ b.exercise.name }}">

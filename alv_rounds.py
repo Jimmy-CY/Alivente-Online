@@ -1593,6 +1593,8 @@ ROUNDS = [
     '.bak_wellness23',
     # MS-1, 12 Nov 2026 - one meal plan per person, shared with whom they choose.
     '.bak_mealshare',
+    # PT-1, 12 Nov 2026 - Personal Today inside Wellness; log a past workout.
+    '.bak_wellness24',
 ]
 
 

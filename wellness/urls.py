@@ -42,6 +42,8 @@ urlpatterns = [
     path('body/photos/<int:pk>/delete/', PH.photo_delete,
          name='photo_delete'),
     path('settings/export/', PH.export_page, name='export'),
+    # PT-1, 12 Nov 2026 - Personal Today, inside Wellness.
+    path('home/', views.home_page, name='home'),
     # WL-3, 30 Oct 2026 - Workouts.
     path('workouts/', W.home, name='workouts'),
     path('workouts/kit/', W.kit, name='kit'),
@@ -50,6 +52,8 @@ urlpatterns = [
     path('workouts/routines/<int:pk>/delete/', W.routine_delete,
          name='routine_delete'),
     path('workouts/start/', W.session_start, name='session_start'),
+    # PT-1, 12 Nov 2026 - log a workout you already did.
+    path('workouts/past/', W.session_past, name='session_past'),
     path('workouts/<int:pk>/live/', W.session_live, name='session_live'),
     path('workouts/<int:pk>/', W.session_detail, name='session_detail'),
     path('workouts/<int:pk>/add/', W.set_add, name='set_add'),

@@ -277,19 +277,26 @@ def session_start(request):
         user=request.user, finished_at__isnull=True).first()
     if open_s:
         return redirect('wellness:session_live', pk=open_s.pk)
-    profile = _profile(request.user)
     routine = None
     if request.POST.get('routine'):
         routine = get_object_or_404(Routine, pk=request.POST['routine'],
                                     user=request.user)
-    now = timezone.now()
+    s = _new_session(request.user, routine, timezone.localdate(),
+                     timezone.now())
+    return redirect('wellness:session_live', pk=s.pk)
+
+
+def _new_session(user, routine, day, start):
+    """PT-1 - a session, with the routine's sets laid out and last time's
+    numbers suggested. Starting now and logging afterwards share it."""
+    profile = _profile(user)
     s = WorkoutSession.objects.create(
-        user=request.user, routine=routine,
+        user=user, routine=routine,
         name=routine.name if routine else 'Workout',
-        date=timezone.localdate(), started_at=now)
+        date=day, started_at=start)
     if routine:
         for pos, item in enumerate(routine.items.select_related('exercise')):
-            last = _last_sets(request.user, item.exercise, s)
+            last = _last_sets(user, item.exercise, s)
             sug = TR.suggest(item.rep_min, item.rep_max,
                              [(x.weight, x.reps) for x in last],
                              item.exercise.equipment, profile.equipment)
@@ -312,7 +319,7 @@ def session_start(request):
                     ('weight', 'reps') else None,
                     seconds=secs if item.exercise.kind == 'time'
                     else None)
-    return redirect('wellness:session_live', pk=s.pk)
+    return s
 
 
 def _session_blocks(request, s):
@@ -482,6 +489,55 @@ def set_delete(request, pk):
 
 
 @wellness_view
+def session_past(request):
+    """PT-1, 12 Nov 2026 - log a workout you already did: the day, the
+    time it started and how long it took; then tick the sets as usual."""
+    open_s = WorkoutSession.objects.filter(
+        user=request.user, finished_at__isnull=True).first()
+    if open_s:
+        return redirect('wellness:session_live', pk=open_s.pk)
+    day = timezone.localdate()
+    routines = list(Routine.objects.filter(user=request.user))
+    error = ''
+    if request.method == 'POST':
+        try:
+            d = dt.date.fromisoformat(request.POST.get('date') or '')
+            hh, mm = (int(x) for x in
+                      (request.POST.get('time') or '').split(':')[:2])
+            mins = int(request.POST.get('minutes') or 0)
+        except ValueError:
+            d, hh, mm, mins = None, 0, 0, 0
+        if d is None or d > day or d < day - dt.timedelta(days=365):
+            error = 'Pick a day in the last year, up to today.'
+        elif not 1 <= mins <= 600:
+            error = 'How long did it take? Type the minutes, 1 to 600.'
+        else:
+            start = timezone.make_aware(dt.datetime(
+                d.year, d.month, d.day, max(0, min(hh, 23)),
+                max(0, min(mm, 59))))
+            if start > timezone.now():
+                error = 'That time has not come yet today.'
+            else:
+                routine = None
+                if request.POST.get('routine'):
+                    routine = get_object_or_404(
+                        Routine, pk=request.POST['routine'],
+                        user=request.user)
+                s = _new_session(request.user, routine, d, start)
+                s.minutes = mins
+                s.save(update_fields=['minutes'])
+                return redirect('wellness:session_live', pk=s.pk)
+    return render(request, 'wellness/session_past.html', {
+        'tab': 'workouts', 'routines': routines, 'error': error,
+        'date': request.POST.get('date') or day.isoformat(),
+        'max': day.isoformat(),
+        'time': request.POST.get('time') or '07:00',
+        'minutes': request.POST.get('minutes') or '',
+        'routine_pk': request.POST.get('routine') or '',
+    })
+
+
+@wellness_view
 @require_POST
 def session_finish(request, pk):
     s = get_object_or_404(WorkoutSession, pk=pk, user=request.user,
@@ -490,7 +546,9 @@ def session_finish(request, pk):
         s.delete()
         return redirect('wellness:workouts')
     s.sets.filter(done=False).delete()
-    s.finished_at = timezone.now()
+    # PT-1 - logged afterwards: it ends when it really ended.
+    s.finished_at = (s.started_at + dt.timedelta(minutes=s.minutes)
+                     if s.minutes else timezone.now())
     try:
         s.effort = _num(request.POST.get('effort'), int, 1, 10)
     except ValueError:

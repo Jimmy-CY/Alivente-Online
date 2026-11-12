@@ -417,7 +417,8 @@
     var clock = live.querySelector('[data-elapsed]');
     function pad(n) { return (n < 10 ? '0' : '') + n; }
     function fmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + pad(s % 60); }
-    setInterval(function () { clock.textContent = fmt((Date.now() - started) / 1000); }, 1000);
+    // PT-1 - a workout logged afterwards has its length, not a clock.
+    if (clock) setInterval(function () { clock.textContent = fmt((Date.now() - started) / 1000); }, 1000);
     // Keep the screen awake while training, where the phone allows it.
     var lock = null;
     function wake() { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {}); }

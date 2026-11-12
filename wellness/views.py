@@ -297,6 +297,8 @@ def today(request):
         if 'workouts' in mods else {},
         # CY-1 - the cycle line, or nothing (off by default).
         'cycle': _cycle_card(request.user, day),
+        # PT-1, 12 Nov 2026 - "At home today", unless turned off.
+        'home_lines': _home_lines(request.user, day, profile),
         # WL-4a - a badge earned and not yet seen, one at a time.
         'new_badge': _new_badge(profile, request.user, day),
         # WL-8 - challenges finished (keep, again, let go) and missed days.
@@ -322,6 +324,34 @@ def _calm_today(user, day):
     from .models import CalmSession
     return sum(CalmSession.objects.filter(user=user, date=day)
                .values_list('seconds', flat=True)) // 60
+
+
+def _home_lines(user, day, profile):
+    """PT-1 - at most three lines from the rest of Alivente. Never lets
+    a fault there stop Today."""
+    if (profile.prefs or {}).get('home_off'):
+        return []
+    from . import home as HM
+    try:
+        return HM.card_lines(HM.gather(user, day))
+    except Exception:  # noqa: BLE001 - Today must always open
+        return []
+
+
+@wellness_view
+def home_page(request):
+    """PT-1, 12 Nov 2026 - Personal Today: celebrations, meals and your
+    documents, inside Wellness."""
+    from . import home as HM
+    day = _today()
+    g = HM.gather(request.user, day)
+    return render(request, 'wellness/home.html', {
+        'tab': 'today', 'date': day, 'g': g,
+        'nothing': not ((g['cel'] and (g['cel']['rows'] or
+                                       g['cel']['next'])) or g['meals']
+                        or g['docs']),
+        'cel_days': HM.CEL_DAYS, 'doc_days': HM.DOC_DAYS,
+    })
 
 
 def _workout_card(user, day):
@@ -420,6 +450,8 @@ def settings_page(request):
         prefs['line_off'] = not request.POST.get('claude_line')
         # WL-15 - sounds and vibration are on unless turned off here.
         prefs['sounds_off'] = not request.POST.get('sounds')
+        # PT-1 - "At home today" on Today, on unless turned off here.
+        prefs['home_off'] = not request.POST.get('home')
         # WL-4b - the evening and weigh-in reminder times, or none.
         for k in ('remind_checkin', 'remind_weigh'):
             v = (request.POST.get(k) or '').strip()
@@ -440,6 +472,7 @@ def settings_page(request):
         'weekly': bool(prefs.get('weekly_email')),
         'claude_line': not prefs.get('line_off'),
         'sounds': not prefs.get('sounds_off'),
+        'home_on': not prefs.get('home_off'),
         'email': request.user.email,
         'saved': bool(request.GET.get('saved')),
         'push_ready': P.configured(),
@@ -1046,7 +1079,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl22-1'
+SW_VERSION = 'wl23-1'
 
 
 def service_worker(request):

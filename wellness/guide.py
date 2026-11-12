@@ -182,6 +182,23 @@ HOWTO = [
          'Save. Under your goal, Body shows the kilos a week you need, and '
          'after two weeks of weigh-ins whether you are on track.',
          'More than a kilo a week? Body says so - a later date is kinder.']},
+    # PT-1, 12 Nov 2026 - Personal Today; a workout logged afterwards.
+    {'q': 'What is At home today?',
+     'a': 'A small card at the top of Today with the rest of your Alivente: '
+          'your next celebration, today\'s meals and any of your documents '
+          'about to expire. It only appears when there is something to say. '
+          'See all opens the whole page. Turn it off under the cog, At home '
+          'today.'},
+    {'q': 'Set up: log a workout you already did',
+     'a': 'For a run this morning, or a session yesterday you forgot to '
+          'log.',
+     'steps': [
+         'Workouts > Log a past workout.',
+         'Pick the day, when it started and how many minutes it took. '
+         'Choose a routine if it was one.',
+         'Tap Next, tick what you did - a run is one line with its km and '
+         'minutes - and Finish.',
+         'Add your watch\'s calories afterwards as usual.']},
     # WL-19, 12 Nov 2026 - progress photos and the download.
     {'q': 'Set up: progress photos',
      'a': 'Same spot, same light, same clothes, every few weeks. Front and '
@@ -577,12 +594,13 @@ _TOPIC_WORDS = [
     ('setup', ('Samsung phone', 'fingerprint', 'reminders on a Samsung',
                'shortcuts', 'put Wellness on my phone', 'hide the parts',
                'keep me logged in', 'How do reminders work',
-               'turn the sounds off', 'time zone')),
+               'turn the sounds off', 'time zone', 'At home today')),
     ('cycle', ('cycle', 'period', 'PMS', 'pill', 'perimenopause',
                'fertile')),
     ('calm', ('Calm', 'voice', 'Guided')),
     ('body', ('trend weight', 'weigh in', 'goal weight', 'progress photos')),
     ('workouts', ('weight', 'record', 'calories', 'train', 'routine',
+                  'already did',
                   'workout', 'exercise', 'sports and dance')),
     ('journal', ('journal', 'Insights', 'line under the quote')),
     ('privacy', ('see my Wellness', 'badges', 'Monday email',

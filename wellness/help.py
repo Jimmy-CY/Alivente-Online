@@ -236,11 +236,36 @@ SCREENS = {
         'steps': [
             'Make a routine once - then start it in one tap.',
             'Or start an empty workout and add exercises as you go.',
+            'Did one earlier, or another day? Log a past workout.',
             'My equipment tells Wellness which weights you own.',
             'The heading shows workouts this week, and their calories if you '
             'added them.',
         ],
         'signs': [('--w-sand', 'A star marks a personal record.')],
+    },
+    # PT-1, 12 Nov 2026 - a workout logged afterwards; Personal Today.
+    'session_past': {
+        'title': 'Log a past workout',
+        'purpose': 'A workout you already did, on any day this year.',
+        'steps': [
+            'Pick the day, when it started and how many minutes it took.',
+            'Choose a routine, or none and add exercises next.',
+            'Tick what you did, then Finish. It keeps the length you typed.',
+        ],
+        'signs': [],
+    },
+    'home': {
+        'title': 'At home today',
+        'purpose': 'Your celebrations, today\'s meals and your documents.',
+        'steps': [
+            'Coming up: your celebrations in the next two weeks, with the age '
+            'or years where the year is known.',
+            'Today\'s meals: from your meal plan and any shared with you.',
+            'Your documents: yours only, expiring in the next 90 days.',
+            'Tap a line to open it in Alivente.',
+        ],
+        'signs': [('', 'Each part shows only if you can open it in '
+                       'Alivente.')],
     },
     'routine_form': {
         'title': 'A routine',
@@ -564,6 +589,7 @@ SCREENS = {
             'The Monday email is off unless you turn it on.',
             'Download your data: everything as spreadsheets, your photos if '
             'you like.',
+            'At home today: turn the card on Today on or off.',
         ],
         'signs': [],
     },

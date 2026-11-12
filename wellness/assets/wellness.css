@@ -916,3 +916,26 @@ details[data-voice-box] > :not(summary) { margin-top: 12px; }
 .w-compare figcaption { display: flex; justify-content: space-between; font-size: 13px; }
 .w-opt { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; }
 .w-opt input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--w-sage-deep); flex: none; }
+
+/* PT-1, 12 Nov 2026 - At home today. */
+.w-home-card { text-decoration: none; color: inherit; gap: 2px; }
+.w-home-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.w-home-all { font-size: 13px; font-weight: 600; color: var(--w-sage-deep); text-decoration: none; }
+.w-home-row { display: flex; align-items: center; gap: 12px; min-height: 44px; border-top: 1px solid var(--w-line); text-decoration: none; color: inherit; }
+.w-home-head + .w-home-row { border-top: 0; }
+.w-home-row.big { min-height: 56px; }
+.w-home-ico { width: 32px; height: 32px; border-radius: 16px; flex: none; display: flex; align-items: center; justify-content: center; }
+.w-home-ico.cel { background: #F4E6D8; color: #8A4B1C; }
+.w-home-ico.meal { background: #EAF0E6; color: #3F6B3A; }
+.w-home-ico.doc { background: #E4EEF4; color: #2E5B78; }
+.w-home-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.w-home-text b { font-weight: 600; }
+.w-home-text span { font-size: 13px; color: var(--w-quiet); }
+.w-home-when { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.w-home-when.soon { color: #9A5B10; }
+@media (prefers-color-scheme: dark) {
+  .w-home-ico.cel { background: #4A3626; color: #F1C9A5; }
+  .w-home-ico.meal { background: #2F3F2C; color: #BFD9B5; }
+  .w-home-ico.doc { background: #263845; color: #B5D2E6; }
+  .w-home-when.soon { color: #E9B56A; }
+}

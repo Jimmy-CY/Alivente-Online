@@ -1,0 +1,27 @@
+{% extends "wellness/base.html" %}
+{% block title %}Log a past workout · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+{% comment %} PT-1, 12 Nov 2026 - a workout already done: the day, when it started and how long it took. Then the sets are ticked as in a live workout, and it ends when it really ended. {% endcomment %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px">
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">Log a past workout</h1>
+  <label for="p-date" class="w-small w-quiet">The day</label>
+  <input class="w-input" id="p-date" name="date" type="date" value="{{ date }}" max="{{ max }}" required>
+  <label for="p-time" class="w-small w-quiet">It started at</label>
+  <input class="w-input" id="p-time" name="time" type="time" value="{{ time }}" required>
+  <label for="p-min" class="w-small w-quiet">How long it took, in minutes</label>
+  <input class="w-input" id="p-min" name="minutes" inputmode="numeric" value="{{ minutes }}" placeholder="45" autocomplete="off" required>
+  {% if routines %}
+  <label for="p-routine" class="w-small w-quiet">A routine, or leave it empty and add exercises next</label>
+  <select class="w-input" id="p-routine" name="routine">
+    <option value="">No routine</option>
+    {% for r in routines %}<option value="{{ r.pk }}"{% if routine_pk == r.pk|stringformat:'d' %} selected{% endif %}>{{ r.name }}</option>{% endfor %}
+  </select>
+  {% endif %}
+  {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
+  <p class="w-small w-quiet" style="margin:0">Next you tick what you did - a run is one line with its kilometres and minutes - and tap Finish. Add calories from your watch afterwards as usual.</p>
+  <button type="submit" class="w-btn full">Next: what you did</button>
+</form>
+{% endblock %}

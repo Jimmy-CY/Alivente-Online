@@ -340,6 +340,10 @@ class WorkoutSession(models.Model):
     note = models.CharField(max_length=280, blank=True)
     # WL-11, 1 Nov 2026: calories burnt, typed in from the watch. Optional.
     calories = models.PositiveSmallIntegerField(null=True, blank=True)
+    # PT-1, 12 Nov 2026: a workout logged afterwards says how long it took;
+    # finishing it then keeps that length rather than the minutes it took
+    # to type it in.
+    minutes = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         db_table = 'wellness_workout_session'

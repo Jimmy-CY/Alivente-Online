@@ -46,6 +46,8 @@
 
 {% if not open_session %}
 <form method="post" action="{% url 'wellness:session_start' %}">{% csrf_token %}<button class="w-btn ghost full" type="submit">Start an empty workout</button></form>
+{# PT-1, 12 Nov 2026 - a workout already done, on any day this year. #}
+<a class="w-btn quiet full" href="{% url 'wellness:session_past' %}" data-past-link>Log a past workout</a>
 {% endif %}
 
 {% if prs %}
