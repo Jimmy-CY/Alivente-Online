@@ -130,7 +130,7 @@
 </thead>
 <tbody>
     {% for passport in passports %}
-    <tr>
+    <tr data-remind-for="{{ passport.id }}" data-remind="{{ passport.remind_months|default_if_none:'' }}">
         <td data-label="Holder" data-sort-key="holder" data-sort-value="{{ passport.holder_name }}">{{ passport.holder_name }}</td>
         <td data-label="Type" data-sort-key="doc-type" data-sort-value="{{ passport.document_type }}">
             {# PA-2, 3 Oct 2026 - ONE NEUTRAL PILL, and the LABEL from the   #}
@@ -323,6 +323,16 @@
           <div class="form-group">
             <label for="expiry_date"><strong>Expiry Date:</strong></label>
             <input type="date" class="form-control" id="expiry_date" name="expiry_date">
+          </div>
+          {# DC-1, 12 Nov 2026 - an earlier reminder, for slow renewals. #}
+          <div class="form-group">
+            <label for="remind_months"><strong>Remind me:</strong></label>
+            <select class="form-control" id="remind_months" name="remind_months">
+              <option value="">6 months before (usual)</option>
+              {% for value, label in remind_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
           <div class="form-group">
             <label for="status"><strong>Status:</strong> <span class="alv-req">*</span></label>
@@ -674,6 +684,7 @@ function addNewDocument() {
     document.getElementById('addEditForm').reset();
     document.getElementById('passport_id').value = '';
     document.getElementById('form_action').value = 'add';
+    document.getElementById('remind_months').value = '';
     document.getElementById('addEditModalLabel').textContent = 'Add New Passport/ID';
     document.getElementById('submitBtnText').textContent = 'Save';
     document.getElementById('document_file').required = true;
@@ -692,6 +703,10 @@ function editDocument(passportId, holderName, docType, docNumber, country, issue
     document.getElementById('date_of_issue').value = issueDate;
     document.getElementById('expiry_date').value = expiryDate;
     document.getElementById('status').value = status;
+    // DC-1 - the earlier reminder, read from the row rather than added to
+    // the long argument list every Edit button already carries.
+    var remindRow = document.querySelector('[data-remind-for="' + passportId + '"]');
+    document.getElementById('remind_months').value = remindRow ? remindRow.getAttribute('data-remind') : '';
     document.getElementById('addEditModalLabel').textContent = 'Edit Passport/ID Information';
     document.getElementById('submitBtnText').textContent = 'Update';
     document.getElementById('document_file').required = false;

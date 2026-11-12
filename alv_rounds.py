@@ -1595,6 +1595,8 @@ ROUNDS = [
     '.bak_mealshare',
     # PT-1, 12 Nov 2026 - Personal Today inside Wellness; log a past workout.
     '.bak_wellness24',
+    # DC-1 + RC-3, 12 Nov 2026 - Releases 71 and 72.
+    '.bak_docrecipe',
 ]
 
 

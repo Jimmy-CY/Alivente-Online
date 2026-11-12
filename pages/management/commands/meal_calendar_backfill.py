@@ -23,6 +23,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from pages.db_banner import print_banner
 from pages.models import MealCalendar, MealEntry
 
 
@@ -43,6 +44,9 @@ class Command(BaseCommand):
                             help='write the change (otherwise a dry run)')
 
     def handle(self, *args, **opts):
+        # DC-1, 12 Nov 2026 - say which database before anything else, as
+        # every other tool that can run against Live does.
+        print_banner(self.stdout.write)
         loose = MealEntry.objects.filter(calendar__isnull=True)
         n = loose.count()
         cooks = [u for u in User.objects.filter(is_active=True)

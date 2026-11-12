@@ -82,6 +82,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.template.loader import get_template
 from django.utils.text import slugify
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 # PF-2, 19 Oct 2026 - the shared filter. One description of what a
@@ -435,7 +436,8 @@ def recipe_management(request):
         'letter_data': letter_data,
         'has_next': page_obj.has_next(),
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
-        'ingredient_categories': IngredientCategory.objects.prefetch_related('ingredient_set').all().order_by('name'),
+        # RC-3, 12 Nov 2026 - 'ingredient_categories' went: every ingredient,
+        # prefetched on every visit, for a template that never read it.
         'all_recipes_for_book': json.dumps(all_recipes_for_book),
         # Step 3 - nutrition sort
         'nutrition_sort': nutrition_sort,
@@ -731,6 +733,17 @@ def view_recipe(request, recipe_id):
         'show_nutrition_button': show_nutrition_button,
         'show_ai_suggestions': show_ai_suggestions,
     }
+    # RC-3, 12 Nov 2026 - "Cooked it": your own history with this recipe.
+    from pages.models import RecipeCook
+    cooks = list(RecipeCook.objects.filter(recipe=recipe, user=request.user))
+    rated = [c.rating for c in cooks if c.rating]
+    context.update({
+        'cooks': cooks[:6],
+        'cooks_total': len(cooks),
+        'last_cook': cooks[0] if cooks else None,
+        'cook_avg': (round(sum(rated) / len(rated), 1) if rated else None),
+        'today': timezone.localdate(),
+    })
 
     return render(request, 'view_recipe.html', context)
 

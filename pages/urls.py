@@ -431,6 +431,8 @@ urlpatterns = [
     path('recipe/book-detail/<int:recipe_id>/', views.recipe_book_detail, name='recipe_book_detail'),
     path('recipe/check-name/', views.recipe_check_name, name='recipe_check_name'),
     path('recipe/<int:recipe_id>/favourite/', views.toggle_recipe_favourite, name='toggle_recipe_favourite'),
+    # RC-3, 12 Nov 2026 - Cooked it, with a rating and a note.
+    path('recipe/<int:recipe_id>/cooked/', views.recipe_cooked, name='recipe_cooked'),
     path('recipes/<int:recipe_id>/suggest_modification/', views.suggest_recipe_modification, name='suggest_recipe_modification'),
     # Meal Planning URLs
     # MN-1, 18 Oct 2026 - RELEASE 3. Seven routes for seven screens

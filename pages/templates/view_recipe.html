@@ -480,6 +480,7 @@
         padding: 18px;
         border-radius: 12px;
         width: 100%;
+        box-sizing: border-box; /* DR-1: the padding pushed it 36px past a phone's edge */
     }
 
     .recipe-title {
@@ -1604,6 +1605,41 @@
     }
 }
 
+
+/* RC-3, 12 Nov 2026 - Cook mode and Cooked it. */
+.cm-open { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0 0 12px; padding: 0 18px; border-radius: 22px; border: 1px solid var(--alv-accent); background: none; color: var(--alv-accent-ink); font-weight: 600; cursor: pointer; }
+.cm-screen { position: fixed; inset: 0; z-index: 2000; display: flex; flex-direction: column; gap: 20px; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); background: var(--alv-paper); color: var(--alv-ink); overflow-y: auto; }
+.cm-screen[hidden] { display: none; }
+body.cm-on { overflow: hidden; }
+.cm-top { display: flex; justify-content: space-between; align-items: center; }
+.cm-count { font-weight: 600; color: var(--alv-ink-soft); }
+.cm-close { width: 48px; height: 48px; border: 0; background: none; font-size: 32px; line-height: 1; color: var(--alv-ink); cursor: pointer; }
+.cm-group { font-size: 15px; font-weight: 600; color: var(--alv-accent-ink); min-height: 1em; }
+.cm-text { flex: 1; font-size: 26px; line-height: 1.45; }
+.cm-timer-btn { width: 100%; min-height: 56px; border-radius: 28px; border: 2px solid var(--alv-accent); background: none; color: var(--alv-accent-ink); font-size: 18px; font-weight: 600; cursor: pointer; }
+.cm-timer-btn.is-done { border-color: var(--alv-bad); color: var(--alv-bad-ink); }
+.cm-nav { display: flex; gap: 12px; }
+.cm-nav button { flex: 1; min-height: 56px; border-radius: 28px; font-size: 18px; font-weight: 600; cursor: pointer; }
+.cm-prev { border: 1px solid var(--alv-line); background: none; color: var(--alv-ink); }
+.cm-next { border: 0; background: var(--alv-accent); color: var(--alv-on-accent); }
+.cm-prev:disabled { opacity: .4; }
+.cooked-section { margin-top: 24px; }
+.cooked-summary { color: var(--alv-ink-soft); margin: 0 0 12px; }
+.cooked-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cooked-stars { display: flex; gap: 2px; }
+.cooked-star { margin: 0; cursor: pointer; min-width: 36px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; color: var(--alv-line); }
+.cooked-star input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.cooked-stars:hover .cooked-star, .cooked-star:has(input:checked), .cooked-star:has(~ .cooked-star input:checked) { color: var(--alv-spice); }
+.cooked-stars .cooked-star:hover ~ .cooked-star { color: var(--alv-line); }
+.cooked-note { flex: 1 1 220px; width: auto; }
+.cooked-date { width: auto; }
+.cooked-list { list-style: none; margin: 0; padding: 0; }
+.cooked-list li { display: flex; align-items: center; gap: 12px; min-height: 44px; border-top: 1px solid var(--alv-line-soft); }
+.cooked-when { min-width: 96px; font-weight: 600; }
+.cooked-rate { min-width: 32px; color: var(--alv-spice-ink); }
+.cooked-text { flex: 1; color: var(--alv-ink-soft); }
+.cooked-del { margin: 0; }
+.cooked-x { width: 44px; height: 44px; border: 0; background: none; font-size: 22px; color: var(--alv-ink-soft); cursor: pointer; }
 </style>
 
 <div class="recipe-detail-container">
@@ -1880,6 +1916,11 @@
             <h2 class="recipe-section-title">
                 <i class="fas fa-tasks"></i> Instructions
             </h2>
+            {# RC-3, 12 Nov 2026 - COOK MODE: one step at a time, big text, #}
+            {# the screen kept on, and a timer on any step with minutes.    #}
+            {% if instructions %}
+            <button type="button" class="cm-open" data-cook-open><i class="fas fa-play"></i> Cook mode</button>
+            {% endif %}
 
             {% regroup instructions by instruction_group as instruction_groups %}
             {% for group in instruction_groups %}
@@ -1889,7 +1930,7 @@
                     {% endif %}
 
                     {% for instruction in group.list %}
-                    <div class="instruction-step">
+                    <div class="instruction-step" data-cook-step data-minutes="{{ instruction.time_estimate|default_if_none:'' }}" data-group="{{ group.grouper|default_if_none:'' }}">
                         <div class="step-number">{{ instruction.step_number }}</div>
                         <div class="step-content">
                             <div class="step-text">{{ instruction.instruction_text }}</div>
@@ -1910,9 +1951,104 @@
                 </div>
             {% endfor %}
         </div>
+
+        {# RC-3, 12 Nov 2026 - COOKED IT: your own record of this recipe,  #}
+        {# with a rating and a note. Nobody else sees it.                  #}
+        <div class="cooked-section" id="cooked" data-cooked>
+            <h2 class="recipe-section-title">
+                <i class="fas fa-utensils"></i> Cooked it
+            </h2>
+            {% if last_cook %}
+            <p class="cooked-summary" data-cooked-summary>Last cooked {% if last_cook.cooked_on == today %}today{% else %}{{ last_cook.cooked_on|timesince:today }} ago{% endif %}{% if cooks_total > 1 %} &middot; {{ cooks_total }} times{% endif %}{% if cook_avg %} &middot; {{ cook_avg }}&#9733; on average{% endif %}{% if last_cook.note %} &middot; &ldquo;{{ last_cook.note }}&rdquo;{% endif %}</p>
+            {% else %}
+            <p class="cooked-summary">Not cooked yet. Made it? Record it here - how it turned out helps next time.</p>
+            {% endif %}
+            <form method="post" action="{% url 'recipe_cooked' recipe.recipe_id %}" class="cooked-form">
+                {% csrf_token %}
+                <div class="cooked-stars" role="radiogroup" aria-label="How it turned out">
+                    {% for n in "12345" %}<label class="cooked-star"><input type="radio" name="rating" value="{{ n }}"><span aria-hidden="true">&#9733;</span><span class="sr-only">{{ n }} star{{ n|pluralize }}</span></label>{% endfor %}
+                </div>
+                <input type="text" name="note" maxlength="200" class="form-control cooked-note" placeholder="A note - needs more lemon" aria-label="A note">
+                <input type="date" name="cooked_on" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" class="form-control cooked-date" aria-label="Cooked on">
+                <button type="submit" class="btn action-primary">I cooked it</button>
+            </form>
+            {% if cooks %}
+            <ul class="cooked-list">
+                {% for c in cooks %}
+                <li><span class="cooked-when">{{ c.cooked_on|date:"j M Y" }}</span><span class="cooked-rate">{% if c.rating %}{{ c.rating }}&#9733;{% endif %}</span><span class="cooked-text">{{ c.note }}</span>
+                    <form method="post" action="{% url 'recipe_cooked' recipe.recipe_id %}" class="cooked-del">{% csrf_token %}<input type="hidden" name="delete" value="{{ c.pk }}"><button type="submit" class="cooked-x" aria-label="Remove {{ c.cooked_on|date:'j M Y' }}">&times;</button></form></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
     </div>
 
 </div>
+
+{# RC-3 - the cook-mode screen, filled from the steps above by script. #}
+<div class="cm-screen" data-cook-screen hidden role="dialog" aria-modal="true" aria-label="Cook mode">
+    <div class="cm-top"><span class="cm-count" data-cook-count></span><button type="button" class="cm-close" data-cook-close aria-label="Close cook mode">&times;</button></div>
+    <div class="cm-group" data-cook-group></div>
+    <div class="cm-text" data-cook-text></div>
+    <div class="cm-timer" data-cook-timer hidden><button type="button" class="cm-timer-btn" data-cook-timer-btn></button></div>
+    <div class="cm-nav"><button type="button" class="cm-prev" data-cook-prev>&larr; Back</button><button type="button" class="cm-next" data-cook-next>Next &rarr;</button></div>
+</div>
+<script>
+(function () {
+    var open = document.querySelector('[data-cook-open]');
+    var scr = document.querySelector('[data-cook-screen]');
+    if (!open || !scr) return;
+    var steps = [].slice.call(document.querySelectorAll('[data-cook-step]')).map(function (el) {
+        var t = el.querySelector('.step-text');
+        return { text: t ? t.textContent.trim() : '', mins: parseInt(el.getAttribute('data-minutes'), 10) || 0, group: el.getAttribute('data-group') || '' };
+    });
+    var i = 0, lock = null, tick = null, left = 0;
+    var $ = function (s) { return scr.querySelector(s); };
+    function wake() { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {}); }
+    function fmt(s) { var m = Math.floor(s / 60), x = s % 60; return m + ':' + (x < 10 ? '0' : '') + x; }
+    function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
+    function draw() {
+        var s = steps[i];
+        $('[data-cook-count]').textContent = 'Step ' + (i + 1) + ' of ' + steps.length;
+        $('[data-cook-group]').textContent = s.group;
+        $('[data-cook-text]').textContent = s.text;
+        $('[data-cook-prev]').disabled = i === 0;
+        $('[data-cook-next]').textContent = i === steps.length - 1 ? 'Done' : 'Next →';
+        stopTimer();
+        var box = $('[data-cook-timer]'), btn = $('[data-cook-timer-btn]');
+        if (s.mins) { box.hidden = false; btn.textContent = 'Start ' + s.mins + ' min timer'; btn.className = 'cm-timer-btn'; }
+        else { box.hidden = true; }
+    }
+    $('[data-cook-timer-btn]').addEventListener('click', function () {
+        var btn = this, s = steps[i];
+        if (tick) { stopTimer(); btn.textContent = 'Start ' + s.mins + ' min timer'; return; }
+        left = s.mins * 60; btn.textContent = fmt(left) + ' - tap to stop'; btn.className = 'cm-timer-btn is-running';
+        tick = setInterval(function () {
+            left -= 1;
+            if (left <= 0) {
+                stopTimer(); btn.textContent = 'Time is up'; btn.className = 'cm-timer-btn is-done';
+                if (navigator.vibrate) { try { navigator.vibrate([300, 150, 300, 150, 300]); } catch (e) {} }
+                try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination); g.gain.value = 0.2; o.start(); o.stop(a.currentTime + 0.8); } catch (e) {}
+                return;
+            }
+            btn.textContent = fmt(left) + ' - tap to stop';
+        }, 1000);
+    });
+    function show() { i = 0; scr.hidden = false; document.body.classList.add('cm-on'); wake(); draw(); }
+    function hide() { stopTimer(); scr.hidden = true; document.body.classList.remove('cm-on'); if (lock) { try { lock.release(); } catch (e) {} lock = null; } }
+    open.addEventListener('click', show);
+    $('[data-cook-close]').addEventListener('click', hide);
+    $('[data-cook-prev]').addEventListener('click', function () { if (i > 0) { i -= 1; draw(); } });
+    $('[data-cook-next]').addEventListener('click', function () { if (i < steps.length - 1) { i += 1; draw(); } else { hide(); } });
+    document.addEventListener('keydown', function (e) {
+        if (scr.hidden) return;
+        if (e.key === 'Escape') hide();
+        else if (e.key === 'ArrowRight') $('[data-cook-next]').click();
+        else if (e.key === 'ArrowLeft') $('[data-cook-prev]').click();
+    });
+    document.addEventListener('visibilitychange', function () { if (!scr.hidden && document.visibilityState === 'visible') wake(); });
+})();
+</script>
 
 <!-- ============================================================
      CONVERSION MINI-MODAL — fix unconvertible ingredients inline

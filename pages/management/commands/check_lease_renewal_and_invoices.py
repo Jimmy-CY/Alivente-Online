@@ -536,14 +536,22 @@ class Command(BaseCommand):
             # 1. An expiry date (not blank)
             # 2. Status = 'active'
             # 3. Expiry date within 6 months or already expired
+            # DC-1, 12 Nov 2026 - a document may ask to be reminded earlier
+            # (9 or 12 months, for slow renewals). Read the widest window,
+            # then keep each document only inside its own.
             expiring_passports = Passport.objects.filter(
                 expiry_date__isnull=False,  # Must have an expiry date
                 status='active',             # Must be active status
-                expiry_date__lte=six_months_from_now  # Expiring within 6 months or already expired
+                expiry_date__lte=today + timedelta(
+                    days=max(Passport.REMIND_DAYS.values()))
             ).order_by('expiry_date')
 
             passport_list = []
             for passport in expiring_passports:
+                window = Passport.REMIND_DAYS.get(passport.remind_months,
+                                                  Passport.REMIND_DAYS[None])
+                if passport.expiry_date > today + timedelta(days=window):
+                    continue
                 days_until_expiry = (passport.expiry_date - today).days
 
                 passport_list.append({

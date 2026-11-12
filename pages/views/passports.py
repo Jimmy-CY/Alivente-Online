@@ -42,6 +42,15 @@ from ..workspace import ensure_workspace
 
 @login_required
 @permission_required('auth.can_access_passports', raise_exception=True)
+def _remind(request):
+    """DC-1, 12 Nov 2026 - 9 or 12 months, or None for the usual six."""
+    try:
+        v = int(request.POST.get('remind_months') or 0)
+    except ValueError:
+        return None
+    return v if v in dict(Passport.REMIND_CHOICES) else None
+
+
 def passport_management(request):
     # Guarantee the current user has a workspace before any data operation.
     workspace = ensure_workspace(request.user)
@@ -76,6 +85,7 @@ def passport_management(request):
                     expiry_date=expiry_date,
                     status=status,
                     document_file=document_file,
+                    remind_months=_remind(request),
                 )
                 messages.success(request, f'Passport/ID for {holder_name} added successfully!')
             except Exception as e:
@@ -98,6 +108,7 @@ def passport_management(request):
             passport.date_of_issue = request.POST.get('date_of_issue') or None
             passport.expiry_date = request.POST.get('expiry_date') or None
             passport.status = request.POST.get('status')
+            passport.remind_months = _remind(request)
 
             # Update file if a new one is uploaded
             if request.FILES.get('document_file'):
@@ -218,6 +229,7 @@ def passport_management(request):
         'passports': passports,
         'holders': holders,
         'doc_types': Passport.DOCUMENT_TYPE_CHOICES,
+        'remind_choices': Passport.REMIND_CHOICES,
         'statuses': Passport.STATUS_CHOICES,
         'countries': countries,
         'selected_holder': selected_holder,

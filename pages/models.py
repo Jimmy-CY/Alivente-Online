@@ -1860,7 +1860,20 @@ class Passport(models.Model):
         ('drivers_license', 'Driver\'s License'),
         ('visa', 'Visa'),
         ('arc', 'Alien Registration Card'),
+        # DC-1, 12 Nov 2026 - Demetri: "We can add these additional
+        # document types." Same reminders as a passport.
+        ('health', 'Health Card'),
+        ('residence', 'Residence Certificate'),
+        ('car_reg', 'Car Registration'),
+        ('mot', 'MOT'),
+        ('insurance', 'Insurance'),
+        ('tax_id', 'Tax ID'),
     ]
+    # DC-1 - "an earlier reminder for slow renewals as an optional
+    # choice". Empty: the usual six months. A Greek passport, say, can be
+    # set to nine or twelve months before it expires.
+    REMIND_CHOICES = [(9, '9 months before'), (12, '12 months before')]
+    REMIND_DAYS = {None: 180, 9: 270, 12: 365}
 
     STATUS_CHOICES = [
         ('active', 'Active'),
@@ -1899,6 +1912,9 @@ class Passport(models.Model):
     date_of_issue = models.DateField(null=True, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    remind_months = models.PositiveSmallIntegerField(
+        choices=REMIND_CHOICES, null=True, blank=True,
+        help_text='Remind earlier than six months before expiry')
     document_file = models.FileField(upload_to='passports/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -3260,6 +3276,28 @@ class RecipeFavourite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.recipe.recipe_name}"
+
+class RecipeCook(models.Model):
+    """RC-3, 12 Nov 2026 - "Cooked it": one time somebody made a recipe,
+    with how it turned out. Private to whoever cooked it, so a recipe can
+    say "last cooked 3 weeks ago, 4 stars - needs more lemon"."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='recipe_cooks')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
+                               related_name='cooks')
+    cooked_on = models.DateField()
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    note = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'recipe_cooks'
+        ordering = ['-cooked_on', '-created_at']
+
+    def __str__(self):
+        return '%s cooked %s on %s' % (self.user, self.recipe_id,
+                                       self.cooked_on)
+
 
 class PantryStaple(models.Model):
     """

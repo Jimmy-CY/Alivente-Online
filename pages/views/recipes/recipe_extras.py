@@ -68,6 +68,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from pages.models import (
@@ -467,6 +468,40 @@ def preview_imported_recipe(request, temp_id):
     }
 
     return render(request, 'preview_imported_recipe.html', context)
+
+
+@login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
+@require_POST
+def recipe_cooked(request, recipe_id):
+    """RC-3, 12 Nov 2026 - "Cooked it", with a rating and a note. Anyone
+    who can open recipes can keep their own record; nobody else sees it."""
+    import datetime as _dt
+    from django.utils import timezone
+    from pages.models import Recipe, RecipeCook
+    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    if request.POST.get('delete'):
+        RecipeCook.objects.filter(pk=request.POST.get('delete'),
+                                  user=request.user, recipe=recipe).delete()
+        return redirect('%s#cooked' % reverse('view_recipe',
+                                              args=[recipe_id]))
+    today = timezone.localdate()
+    try:
+        when = _dt.date.fromisoformat(request.POST.get('cooked_on') or '')
+    except ValueError:
+        when = today
+    when = min(when, today)
+    try:
+        rating = int(request.POST.get('rating') or 0)
+    except ValueError:
+        rating = 0
+    RecipeCook.objects.create(
+        user=request.user, recipe=recipe, cooked_on=when,
+        rating=rating if 1 <= rating <= 5 else None,
+        note=(request.POST.get('note') or '').strip()[:200])
+    messages.success(request, 'Saved - cooked %s.' % (
+        'today' if when == today else when.strftime('%d %b')))
+    return redirect('%s#cooked' % reverse('view_recipe', args=[recipe_id]))
 
 
 @login_required
