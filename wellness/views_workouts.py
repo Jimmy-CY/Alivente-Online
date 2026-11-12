@@ -127,7 +127,9 @@ def routine_edit(request, pk=None):
             routine.items.filter(pk=action.split(':')[1]).delete()
         elif action.startswith('up:') or action.startswith('down:'):
             _move(routine, action)
-        if action in ('save', 'add', 'add-first') or ':' in action:
+        elif action == 'order':
+            _order(routine, request.POST.get('order', ''))
+        if action in ('save', 'add', 'add-first', 'order') or ':' in action:
             routine.name = ((request.POST.get('name') or routine.name)
                             .strip()[:80] or routine.name)
             routine.weekdays = ''.join(sorted({
@@ -140,6 +142,10 @@ def routine_edit(request, pk=None):
                 _save_item(item, request.POST)
         if action == 'save':
             return redirect('wellness:workouts')
+        if (action == 'order' and
+                request.headers.get('x-requested-with') == 'fetch'):
+            return JsonResponse({'ok': True, 'order': [
+                i.pk for i in routine.items.all()]})
         if new_item is not None:
             return redirect('%s?new=%d#item-%d' % (
                 reverse('wellness:routine_edit', args=[routine.pk]),
@@ -191,6 +197,24 @@ def _save_item(item, post):
         if r is not None:
             item.rest = r
     item.save()
+
+
+def _order(routine, text):
+    """WL-18 - the order the exercises were dragged into: their ids,
+    comma separated. Applied only when it names exactly this routine's
+    exercises, each once."""
+    try:
+        ids = [int(x) for x in text.split(',') if x.strip()]
+    except ValueError:
+        return False
+    items = {i.pk: i for i in routine.items.all()}
+    if sorted(ids) != sorted(items):
+        return False
+    for n, pk in enumerate(ids):
+        if items[pk].position != n:
+            items[pk].position = n
+            items[pk].save(update_fields=['position'])
+    return True
 
 
 def _move(routine, action):

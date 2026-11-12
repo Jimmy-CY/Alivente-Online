@@ -94,6 +94,61 @@ def pace(current, goal, rate, today):
     return today + dt.timedelta(days=int(round(weeks * 7)))
 
 
+def goal_check(current, goal, rate, today, goal_date):
+    """WL-18 - the goal date put to work. None without a goal and a date.
+
+    {'state': 'reached' | 'passed' | 'early' | 'on_track' | 'behind',
+     'need': kg a week still needed (signed), 'fast': more than a kilo a
+     week, 'pace': the date this trend gets there, or None}"""
+    if current is None or goal is None or goal_date is None:
+        return None
+    gap = float(goal) - current
+    if abs(gap) < 0.05:
+        return {'state': 'reached', 'need': 0.0, 'fast': False, 'pace': today}
+    days = (goal_date - today).days
+    if days <= 0:
+        return {'state': 'passed', 'need': None, 'fast': False, 'pace': None}
+    need = gap / (days / 7.0)
+    when = pace(current, goal, rate, today)
+    if not rate:
+        state = 'early'
+    elif when is not None and when <= goal_date:
+        state = 'on_track'
+    else:
+        state = 'behind'
+    return {'state': state, 'need': need, 'fast': abs(need) > 1.0,
+            'pace': when}
+
+
+def goal_words(chk, goal_date):
+    """The line Body shows under the goal."""
+    if not chk:
+        return ''
+    when = '%d %s' % (goal_date.day, goal_date.strftime('%B'))
+    st = chk['state']
+    if st == 'reached':
+        return 'Goal reached - well done.'
+    if st == 'passed':
+        return '%s has passed - set a new date in Goal and height.' % when
+    need = abs(chk['need'])
+    way = 'lose' if chk['need'] < 0 else 'gain'
+    head = 'To reach it by %s: %s %s kg a week.' % (when, way, kg(need))
+    tail = ''
+    if st == 'early':
+        tail = ' Whether you are on track shows after two weeks of weigh-ins.'
+    elif st == 'on_track':
+        tail = ' You are on track.'
+    elif chk['pace']:
+        p = chk['pace']
+        tail = ' At your current pace you get there on %d %s.' % (
+            p.day, p.strftime('%B %Y'))
+    else:
+        tail = ' Your trend is not heading that way yet.'
+    if chk['fast']:
+        tail += ' More than a kilo a week is a lot - a later date is kinder.'
+    return head + tail
+
+
 def progress(start, current, goal):
     """0..1 of the way from the first trend value to the goal."""
     if start is None or current is None or goal is None:

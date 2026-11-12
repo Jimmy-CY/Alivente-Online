@@ -160,7 +160,8 @@ SCREENS = {
             'note.',
             'The evening check-in (three short questions and a mood) is '
             'there any time; after five, Today invites you to it.',
-            'Open Search to find an entry by a word or a tag.',
+            'Open Search and type a word, or tap a mood or a tag - it '
+            'searches at once. Each mood shows how many entries have it.',
         ],
         'signs': [
             ('--w-sage', 'The line is your mood: higher is brighter.'),
@@ -190,7 +191,8 @@ SCREENS = {
         'steps': [
             'Weigh in - mornings, before food, are the steadiest.',
             'Add measurements now and then: waist is the most useful.',
-            'Set a goal to see the pace you are on.',
+            'Set a goal, and a date if you like: Body says the kilos a week '
+            'you need and whether you are on track.',
             'Open Recent weigh-ins to delete a wrong one with the ×.',
         ],
         'signs': [
@@ -223,7 +225,9 @@ SCREENS = {
         'steps': ['Height is used for the waist-to-height ratio - under 0.5 '
                   'is the usual guide.',
                   'The pace you are on shows on Body after two weeks of '
-                  'weigh-ins.'],
+                  'weigh-ins.',
+                  'With a date, Body shows what you need each week and '
+                  'whether you are on track to get there in time.'],
         'signs': [],
     },
     'workouts': {
@@ -252,6 +256,8 @@ SCREENS = {
             'Do every rep on every set and the next workout suggests the '
             'next weight you own; reps only, one more rep; a hold, a little '
             'longer.',
+            'Drag the ⠿ grip to put the exercises in order - or use the '
+            'arrows.',
             'Choose the days it shows on Today.',
         ],
         'signs': [],
@@ -496,6 +502,52 @@ SCREENS = {
         'signs': [('--w-sand', 'Patterns, not proof - other things change '
                                'from day to day too.')],
     },
+    # WL-19, 12 Nov 2026 - progress photos and the download.
+    'photos': {
+        'title': 'Progress photos',
+        'purpose': 'Photos of your progress, locked like your journal.',
+        'steps': [
+            'Tap Add a photo, take one or pick one, and say which way you '
+            'face.',
+            'Tap a photo to see it large, compare it with your first, or '
+            'delete it.',
+            'Compare two photos shows them side by side, with the days '
+            'between and the change in your trend weight.',
+        ],
+        'signs': [('', 'Only you can see these. They are locked before they '
+                       'are saved.')],
+    },
+    'photo_new': {
+        'title': 'Add a photo',
+        'purpose': 'One progress photo.',
+        'steps': [
+            'Tap the box to take a photo or choose one from your gallery.',
+            'Pick Front, Side, Back or Other, and the day it was taken.',
+            'Save. It is locked before it is stored.',
+        ],
+        'signs': [],
+    },
+    'photo_compare': {
+        'title': 'Compare',
+        'purpose': 'Two photos side by side.',
+        'steps': [
+            'It starts with your first and latest photo facing the same way.',
+            'Pick any two under Before and After, then Show these two.',
+        ],
+        'signs': [],
+    },
+    'export': {
+        'title': 'Download your data',
+        'purpose': 'Everything you have put into Wellness, as one ZIP file.',
+        'steps': [
+            'Choose whether to include your journal and your photos, then '
+            'tap Download.',
+            'Each part is a spreadsheet that opens in Excel or Google '
+            'Sheets.',
+            'The download is not locked - keep it somewhere private.',
+        ],
+        'signs': [],
+    },
     'settings': {
         'title': 'Settings',
         'purpose': 'Your sections, badges, the cycle tracker, reminders, the '
@@ -510,6 +562,8 @@ SCREENS = {
             'Sounds and vibration: the ding for a tick, the chime for the '
             'whole day and a badge. On unless you turn it off.',
             'The Monday email is off unless you turn it on.',
+            'Download your data: everything as spreadsheets, your photos if '
+            'you like.',
         ],
         'signs': [],
     },
@@ -534,6 +588,7 @@ ALIASES = {
     'journal_new': 'journal_form', 'journal_edit': 'journal_form',
     'routine_new': 'routine_form', 'routine_edit': 'routine_form',
     'exercise_edit': 'exercise_new',
+    'photo_detail': 'photos',
 }
 
 # Addresses that are not screens a person reads: actions and the app
@@ -546,6 +601,7 @@ NOT_SCREENS = {
     'badges_seen', 'push_subscribe', 'push_unsubscribe', 'push_test',
     'calm_done', 'cycle_quick', 'session_calories',
     'exercise_delete', 'exercise_hide',
+    'photo_image', 'photo_delete',
 }
 
 

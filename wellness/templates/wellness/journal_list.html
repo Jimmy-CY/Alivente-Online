@@ -44,15 +44,16 @@
 <details class="w-card"{% if filtered %} open{% endif %}>
 <summary class="w-label" style="cursor:pointer;min-height:44px;display:flex;align-items:center">Search your journal</summary>
 <form method="get" style="display:flex;flex-direction:column;gap:10px" role="search">
-  <label for="j-q" class="w-small w-quiet">A word, a mood or a tag</label>
+  <label for="j-q" class="w-small w-quiet">A word, or tap a mood or a tag</label>
   <input class="w-input" id="j-q" name="q" value="{{ q }}" placeholder="A word, a name, a place" autocomplete="off">
-  <div class="w-chips" aria-label="Filter by mood">
-    {% for n, label in moods %}
-    <label class="w-chip"><input type="radio" name="mood" value="{{ n }}"{% if mood == n %} checked{% endif %}><span>{{ label }}</span></label>
+  {% comment %} WL-18, 12 Nov 2026 - a mood or a tag searches as soon as it is tapped; each mood shows how many entries carry it. {% endcomment %}
+  <div class="w-chips" aria-label="Filter by mood" data-search-now>
+    {% for n, label, c in moods %}
+    <label class="w-chip"><input type="radio" name="mood" value="{{ n }}"{% if mood == n %} checked{% endif %}><span><i class="w-dot m{{ n }}"></i>{{ label }}{% if c %} · {{ c }}{% endif %}</span></label>
     {% endfor %}
   </div>
   {% if tags %}
-  <div class="w-chips" aria-label="Filter by tag">
+  <div class="w-chips" aria-label="Filter by tag" data-search-now>
     {% for t in tags %}<label class="w-chip"><input type="radio" name="tag" value="{{ t }}"{% if tag == t %} checked{% endif %}><span>#{{ t }}</span></label>{% endfor %}
   </div>
   {% endif %}

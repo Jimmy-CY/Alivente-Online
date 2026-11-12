@@ -168,6 +168,41 @@ HOWTO = [
          'At the bottom: Delete. Wellness says first where it is used.',
          'Logged in a workout? Hide it instead - it leaves the lists and '
          'routines, and your past workouts keep it.']},
+    # WL-18, 12 Nov 2026 - drag to order, the goal date, mood search.
+    {'q': 'How do I change the order of exercises in a routine?',
+     'a': 'Open the routine and drag an exercise by its grip (the dots on '
+          'the left of its name) to where you want it. The order is saved as '
+          'soon as you let go. The arrows do the same, one step at a time.'},
+    {'q': 'Set up: a goal weight with a date',
+     'a': 'Body tells you what you need each week to get there, and whether '
+          'your trend is on track.',
+     'steps': [
+         'Body > Goal and height.',
+         'Type your goal weight, then pick the date under "By when".',
+         'Save. Under your goal, Body shows the kilos a week you need, and '
+         'after two weeks of weigh-ins whether you are on track.',
+         'More than a kilo a week? Body says so - a later date is kinder.']},
+    # WL-19, 12 Nov 2026 - progress photos and the download.
+    {'q': 'Set up: progress photos',
+     'a': 'Same spot, same light, same clothes, every few weeks. Front and '
+          'side are the most useful.',
+     'steps': [
+         'Body > Progress photos > Add a photo.',
+         'Tap the box: take the photo, or choose one from your gallery.',
+         'Pick Front, Side, Back or Other and Save. It is locked like '
+         'your journal - only you can see it.',
+         'Later: Compare two photos to see them side by side, with the days '
+         'between and your trend weight on each.']},
+    {'q': 'Can I download everything I put into Wellness?',
+     'a': 'Yes. Settings > Download your data gives one ZIP file with a '
+          'spreadsheet for habits and every ticked day, weigh-ins and '
+          'measurements, workouts and sets, Calm, your journal and your '
+          'cycle days - and your photos if you tick the box. The download '
+          'is not locked, so keep it somewhere private.'},
+    {'q': 'How do I find old journal entries by mood?',
+     'a': 'Journal > Search your journal, then tap a mood - Low to Great. '
+          'Each one shows how many entries have it, and the list changes at '
+          'once. Tap Clear to see everything again.'},
     {'q': 'Where do sports and dance go?',
      'a': 'Padel, tennis, squash, netball, soccer and other games are under '
           'Sports; dance, Zumba and spin class under Cardio. They are timed '
@@ -546,11 +581,12 @@ _TOPIC_WORDS = [
     ('cycle', ('cycle', 'period', 'PMS', 'pill', 'perimenopause',
                'fertile')),
     ('calm', ('Calm', 'voice', 'Guided')),
-    ('body', ('trend weight', 'weigh in')),
+    ('body', ('trend weight', 'weigh in', 'goal weight', 'progress photos')),
     ('workouts', ('weight', 'record', 'calories', 'train', 'routine',
                   'workout', 'exercise', 'sports and dance')),
     ('journal', ('journal', 'Insights', 'line under the quote')),
-    ('privacy', ('see my Wellness', 'badges', 'Monday email')),
+    ('privacy', ('see my Wellness', 'badges', 'Monday email',
+                 'download everything')),
     ('habits', ('streak', 'Done, Missed', 'missed day', 'established',
                 'forgot', 'break from', 'challenge', 'habit',
                 'minutes habit')),

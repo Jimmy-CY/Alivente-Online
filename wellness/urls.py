@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from . import views_calm as CALM
 from . import views_cycle as CY
+from . import views_photos as PH
 from . import views_workouts as W
 
 app_name = 'wellness'
@@ -31,6 +32,16 @@ urlpatterns = [
     path('body/measure/', views.body_measure, name='body_measure'),
     path('body/goal/', views.body_goal, name='body_goal'),
     path('body/<int:pk>/delete/', views.body_delete, name='body_delete'),
+    # WL-19, 12 Nov 2026 - progress photos, and the download of everything.
+    path('body/photos/', PH.photos_home, name='photos'),
+    path('body/photos/new/', PH.photo_new, name='photo_new'),
+    path('body/photos/compare/', PH.photo_compare, name='photo_compare'),
+    path('body/photos/<int:pk>/', PH.photo_detail, name='photo_detail'),
+    path('body/photos/<int:pk>/<str:size>.jpg', PH.photo_image,
+         name='photo_image'),
+    path('body/photos/<int:pk>/delete/', PH.photo_delete,
+         name='photo_delete'),
+    path('settings/export/', PH.export_page, name='export'),
     # WL-3, 30 Oct 2026 - Workouts.
     path('workouts/', W.home, name='workouts'),
     path('workouts/kit/', W.kit, name='kit'),

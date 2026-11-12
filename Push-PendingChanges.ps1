@@ -1296,6 +1296,8 @@ $sentinels = @(
     @{ File = 'wellness/modules.py'; Text = 'def tz_or_none('; What = 'WL-9/WL-16: the section switches and the time zone reader are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
     @{ File = 'pages/css_files.py'; Text = 'def stylesheet(request, digest):'; What = 'SP-1: base.html links its stylesheets from here - without it every page loses its styling' },
+    @{ File = 'wellness/crypto.py'; Text = 'def seal_bytes('; What = 'WL-19: the lock for progress photos is on disk - without it no photo can be saved or shown' },
+    @{ File = 'wellness/body.py'; Text = 'def goal_check('; What = 'WL-18: Body puts the goal date to work - without it the Body page cannot open' },
     @{ File = 'wellness/training.py'; Text = 'def in_minutes('; What = 'WL-17: the workout rules know minutes from seconds - without them no workout can be started' },
     @{ File = 'wellness/modules.py'; Text = 'def phone_now('; What = "WL-16: Wellness runs on the phone's clock - without it no Wellness page can be drawn" },
     @{ File = 'wellness/templatetags/wellness_modules.py'; Text = 'def fx_state('; What = 'WL-15: the sounds-and-vibration switch is on disk - without it no Wellness page can be drawn' },
@@ -1303,7 +1305,7 @@ $sentinels = @(
     @{ File = 'wellness/guide.py'; Text = 'def grouped('; What = 'WL-13: the guide questions are on disk in their topics - without them the help sheet on every Wellness page fails' },
     @{ File = 'wellness/views_workouts.py'; Text = 'def clean_calories('; What = 'WL-11: workout calories are checked - without it a finished workout cannot save its calories' },
     @{ File = 'wellness/views_cycle.py'; Text = 'def _hm_ok('; What = 'CY-3: the pill reminder time is checked - without it Cycle settings cannot save' },
-    @{ File = 'wellness/body.py'; Text = 'def trend('; What = 'WL-2: the trend weight is on disk - without it Body and Today cannot be drawn' },
+    @{ File = 'wellness/body.py'; Text = 'def goal_words('; What = 'WL-2/WL-18: the trend weight and the goal line are on disk - without them Body and Today cannot be drawn' },
     @{ File = 'pages/templates/login.html'; Text = 'id="passkeyLogin"'; What = 'PK-1: the login page offers the fingerprint - without it nobody can use the passkey they added' },
     @{ File = 'wellness/habits.py'; Text = 'def is_paused_on('; What = 'WL-1/WL-13: the Wellness habit rules are on disk, paused days as Rest - without them Today cannot be drawn' },
     @{ File = 'pages/models.py'; Text = 'def _fh_unchanged('; What = 'VS-1: a budget or revenue save that changes nothing appends no snapshot - without it every save adds an identical history row' },
@@ -3272,7 +3274,11 @@ $suites = @(
     # WL-17, 12 Nov 2026 - Wellness: workouts - sports, starting numbers, your own exercises.
     'test_wellness_twentyone.py',
     # SP-1, 12 Nov 2026 - the speed round: base's CSS as cached files, kept connections, three workers.
-    'test_speed_one.py'
+    'test_speed_one.py',
+    # WL-18, 12 Nov 2026 - Wellness: the goal date, drag to order, mood search.
+    'test_wellness_twentytwo.py',
+    # WL-19, 12 Nov 2026 - Wellness: progress photos and download your data.
+    'test_wellness_twentythree.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

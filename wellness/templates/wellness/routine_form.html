@@ -18,10 +18,13 @@
   <section class="w-card" style="gap:14px">
     <h2 class="w-h2" style="font-size:16px">Exercises</h2>
     {% comment %} WL-17, 12 Nov 2026 - what each exercise asks for: sets, reps (one number; a range if you want), a starting weight and rest; seconds for a hold; minutes for cardio, dance and sports. A new one opens asking for its starting numbers. {% endcomment %}
+    {% comment %} WL-18, 12 Nov 2026 - drag the grip to put the exercises in order; the arrows still work. {% endcomment %}
+    <div data-routine-list style="display:flex;flex-direction:column;gap:14px">
+    <input type="hidden" name="order" value="" data-routine-order>
     {% for it in items %}
-    <div id="item-{{ it.pk }}" class="w-ritem{% if new_pk == it.pk|stringformat:'d' %} is-new{% endif %}" style="display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--w-line)" data-routine-item>
+    <div id="item-{{ it.pk }}" class="w-ritem{% if new_pk == it.pk|stringformat:'d' %} is-new{% endif %}" style="display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--w-line)" data-routine-item data-pk="{{ it.pk }}">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <strong>{{ it.exercise.name }}</strong>
+        <span style="display:flex;align-items:center;gap:6px;min-width:0">{% if items|length > 1 %}<button type="button" class="w-icon-btn w-grip" data-drag aria-label="Drag {{ it.exercise.name }} to move it" title="Drag to move">⠿</button>{% endif %}<strong>{{ it.exercise.name }}</strong></span>
         <span style="display:flex;gap:2px">
           <button class="w-icon-btn" name="action" value="up:{{ it.pk }}" aria-label="Move {{ it.exercise.name }} up">↑</button>
           <button class="w-icon-btn" name="action" value="down:{{ it.pk }}" aria-label="Move {{ it.exercise.name }} down">↓</button>
@@ -58,6 +61,7 @@
     {% empty %}
     <p class="w-small w-quiet" style="margin:0">No exercises yet. Add the first below.</p>
     {% endfor %}
+    </div>
     <label for="r-add" class="w-small w-quiet">Add an exercise</label>
     <select class="w-select w-input" id="r-add" name="exercise">
       {% for g in groups %}<optgroup label="{{ g.label }}">{% for e in g.exercises %}<option value="{{ e.pk }}">{{ e.name }}</option>{% endfor %}</optgroup>{% endfor %}

@@ -1022,6 +1022,11 @@
     var form = e.target;
     if (e.defaultPrevented || !form.closest('.w-wrap, main, body')) return;
     if ((form.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+    // WL-19 - a download stays on the page: nothing to wait for.
+    if (form.hasAttribute('data-download')) return;
+    if (form.hasAttribute('data-confirm') && !window.confirm(form.getAttribute('data-confirm'))) {
+      e.preventDefault(); return;
+    }
     if (form.getAttribute('data-busy') === '1') { e.preventDefault(); return; }
     var btn = e.submitter || form.querySelector('button[type=submit], button:not([type])');
     form.setAttribute('data-busy', '1');
@@ -1063,5 +1068,95 @@
     requestAnimationFrame(function () { t.classList.add('is-on'); });
     setTimeout(function () { t.classList.remove('is-on'); }, 2000);
     setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2400);
+  })();
+  // ---- WL-18, 12 Nov 2026 - drag an exercise by its grip to put the
+  // routine in order. The new order is saved at once, in the background;
+  // the arrows still work for anyone who would rather tap.
+  (function () {
+    var list = document.querySelector('[data-routine-list]');
+    if (!list) return;
+    var form = list.closest('form');
+    var field = list.querySelector('[data-routine-order]');
+    function items() { return [].slice.call(list.querySelectorAll('[data-routine-item]')); }
+    function order() { return items().map(function (i) { return i.getAttribute('data-pk'); }).join(','); }
+    function toast(words) {
+      var t = document.createElement('div');
+      t.className = 'w-toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
+      t.textContent = words; document.body.appendChild(t);
+      requestAnimationFrame(function () { t.classList.add('is-on'); });
+      setTimeout(function () { t.classList.remove('is-on'); }, 1600);
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2000);
+    }
+    list.addEventListener('pointerdown', function (ev) {
+      var grip = ev.target.closest('[data-drag]');
+      if (!grip || (ev.button !== undefined && ev.button !== 0)) return;
+      var item = grip.closest('[data-routine-item]');
+      var before = order();
+      ev.preventDefault();
+      // Listen on the document, not the grip: moving the exercise in the
+      // page releases the grip's pointer capture.
+      item.classList.add('is-dragging');
+      function move(e) {
+        var y = e.clientY;
+        if (y < 70) window.scrollBy(0, -12);
+        else if (y > window.innerHeight - 70) window.scrollBy(0, 12);
+        var rest = items().filter(function (i) { return i !== item; });
+        var target = null;
+        for (var k = 0; k < rest.length; k++) {
+          var r = rest[k].getBoundingClientRect();
+          if (y < r.top + r.height / 2) { target = rest[k]; break; }
+        }
+        if (target) { if (item.nextElementSibling !== target) list.insertBefore(item, target); }
+        else if (rest.length && rest[rest.length - 1].nextElementSibling !== item) {
+          rest[rest.length - 1].after(item);
+        }
+      }
+      function up() {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        document.removeEventListener('pointercancel', up);
+        item.classList.remove('is-dragging');
+        var now = order();
+        if (now === before) return;
+        field.value = now;
+        // Not post(): this form has buttons named "action", which hide
+        // form.action - so the address is read from the attribute.
+        var data = new FormData(form);
+        data.set('action', 'order'); data.set('order', now);
+        fetch(form.getAttribute('action') || location.pathname, {
+          method: 'POST', body: data, credentials: 'same-origin',
+          headers: {'X-Requested-With': 'fetch'}
+        }).then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        }).then(function () {
+          toast('Order saved');
+          if (navigator.vibrate) { try { navigator.vibrate(10); } catch (e) { /* fine */ } }
+        }).catch(function () { toast('Not saved - tap Save routine'); });
+      }
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+      document.addEventListener('pointercancel', up);
+    });
+  })();
+
+  // ---- WL-18 - Journal search: tapping a mood or a tag searches at once.
+  document.querySelectorAll('[data-search-now] input[type=radio]').forEach(function (r) {
+    r.addEventListener('change', function () { if (r.form) r.form.submit(); });
+  });
+  // ---- WL-19, 12 Nov 2026 - a progress photo shows itself before Save.
+  (function () {
+    var input = document.querySelector('[data-photo-input]');
+    if (!input) return;
+    var img = document.querySelector('[data-photo-preview]');
+    var label = document.querySelector('[data-photo-label]');
+    input.addEventListener('change', function () {
+      var f = input.files && input.files[0];
+      if (!f) return;
+      if (label) label.textContent = 'Change the photo';
+      if (img && /^image\/(jpeg|png|webp|gif)$/.test(f.type)) {
+        img.src = URL.createObjectURL(f); img.hidden = false;
+      } else if (img) { img.hidden = true; }
+    });
   })();
 })();

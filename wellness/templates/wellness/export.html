@@ -1,0 +1,16 @@
+{% extends "wellness/base.html" %}
+{% block title %}Download your data · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:settings' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Settings</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+{% comment %} WL-19, 12 Nov 2026 - everything as one ZIP of spreadsheets; the journal opened; photos if asked for. {% endcomment %}
+<form method="post" style="display:flex;flex-direction:column;gap:16px" data-download>
+  {% csrf_token %}
+  <h1 class="w-hello" style="font-size:28px">Download your data</h1>
+  <p class="w-quiet" style="margin:0">One ZIP file with a spreadsheet for each part of Wellness: habits and every ticked day, weigh-ins and measurements, workouts and their sets, Calm{% if cycle_on %}, your cycle days{% endif %}. They open in Excel or Google Sheets.</p>
+  <label class="w-opt"><input type="checkbox" name="journal" value="1" checked> <span>Include my journal, opened so I can read it</span></label>
+  {% if n_photos %}<label class="w-opt"><input type="checkbox" name="photos" value="1"> <span>Include my {{ n_photos }} progress photo{{ n_photos|pluralize }}</span></label>{% endif %}
+  <p class="w-small" style="margin:0"><strong>The file is not locked.</strong> Inside Wellness your journal and photos are encrypted; in the download they are ordinary files. Keep it somewhere private.</p>
+  <button type="submit" class="w-btn full">Download</button>
+</form>
+{% endblock %}

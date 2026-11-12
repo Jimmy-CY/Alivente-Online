@@ -1,0 +1,17 @@
+{% extends "wellness/base.html" %}
+{% block title %}Photo · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:photos' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Progress photos</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<img class="w-photo-full" src="{% url 'wellness:photo_image' p.pk 'full' %}" alt="{{ p.get_pose_display }}, {{ p.date|date:'j F Y' }}" width="{{ p.width }}" height="{{ p.height }}">
+<div>
+  <div style="font-weight:600">{{ p.date|date:"j F Y" }} · {{ p.get_pose_display }}</div>
+  {% if kg %}<div class="w-small w-quiet">Trend weight that day: {{ kg }} kg</div>{% endif %}
+  {% if p.note %}<div class="w-small">{{ p.note }}</div>{% endif %}
+</div>
+{% if first %}<a class="w-btn ghost full" href="{% url 'wellness:photo_compare' %}?a={{ first.pk }}&amp;b={{ p.pk }}">Compare with {{ first.date|date:"j M Y" }}</a>{% endif %}
+<form method="post" action="{% url 'wellness:photo_delete' p.pk %}" data-confirm="Delete this photo? It cannot be brought back.">
+  {% csrf_token %}
+  <button class="w-btn quiet" type="submit" style="padding:0">Delete this photo</button>
+</form>
+{% endblock %}

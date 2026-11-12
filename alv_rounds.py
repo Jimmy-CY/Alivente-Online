@@ -1587,6 +1587,10 @@ ROUNDS = [
     '.bak_wellness21',
     # SP-1, 12 Nov 2026 - the speed round.
     '.bak_speed1',
+    # WL-18, 12 Nov 2026 - Wellness: the goal date, drag to order, mood search.
+    '.bak_wellness22',
+    # WL-19, 12 Nov 2026 - Wellness: progress photos and download your data.
+    '.bak_wellness23',
 ]
 
 

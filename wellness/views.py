@@ -1046,7 +1046,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl19-1'
+SW_VERSION = 'wl21-1'
 
 
 def service_worker(request):
@@ -1203,7 +1203,10 @@ def journal_list(request):
         by_date.setdefault(e.date, []).append(e)
     return render(request, 'wellness/journal_list.html', {
         'tab': 'journal', 'rows': rows, 'q': q, 'tag': tag, 'mood': mood,
-        'tags': tags, 'moods': JournalEntry.MOODS,
+        # WL-18, 12 Nov 2026 - each mood says how many entries carry it.
+        'tags': tags, 'moods': [
+            (n, label, sum(1 for e in all_entries if e.mood == n))
+            for n, label in JournalEntry.MOODS],
         'filtered': bool(q or tag or mood),
         'mood_line': JN.mood_line(all_entries, day),
         'on_this_day': [(lbl, e, JN.words(e).get('preview', ''))
@@ -1325,6 +1328,10 @@ def body_summary(user, day):
         'goal': profile.weight_goal,
         'goal_pace': B.pace(current, goal, rate, day),
         'progress': B.progress(start, current, goal),
+        # WL-18, 12 Nov 2026 - the goal date, put to work.
+        'goal_line': B.goal_words(
+            B.goal_check(current, goal, rate, day, profile.goal_date),
+            profile.goal_date),
         'words': _trend_words(c7),
     }
 

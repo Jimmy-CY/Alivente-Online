@@ -418,7 +418,10 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def trend('" in gate, '  with a sentinel on the trend')
+# WL-18 moved the body.py row to 'def goal_words(' - body.py was backed up
+# again, and 'def trend(' is in every backup, so it could no longer fail.
+ok("Text = 'def trend('" in gate or "Text = 'def goal_words('" in gate,
+   '  with a sentinel on the trend')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')

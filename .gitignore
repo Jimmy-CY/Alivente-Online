@@ -54,3 +54,6 @@ live-invoices/
 
 # Sample pages written by test_db_error_page.py
 /error_*.html
+
+# WL-19, 12 Nov 2026 - progress photos (encrypted) on a laptop; never committed.
+/wellness_private/

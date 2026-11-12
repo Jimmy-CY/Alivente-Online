@@ -63,3 +63,17 @@ def open_(token):
         return json.loads(_fernet().decrypt(token.encode()).decode('utf-8'))
     except (InvalidToken, ValueError):
         return {'locked': True}
+
+
+# WL-19, 12 Nov 2026 - the same lock for a progress photo's bytes.
+def seal_bytes(data):
+    """bytes -> token (bytes)."""
+    return _fernet().encrypt(data)
+
+
+def open_bytes(token):
+    """token (bytes) -> bytes, or None when it cannot be opened."""
+    try:
+        return _fernet().decrypt(token)
+    except (InvalidToken, ValueError, TypeError):
+        return None

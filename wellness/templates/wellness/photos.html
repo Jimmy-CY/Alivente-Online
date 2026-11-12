@@ -1,0 +1,27 @@
+{% extends "wellness/base.html" %}
+{% block title %}Progress photos · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:body' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Body</a>{% endblock %}
+{% block content %}
+{% comment %} WL-19, 12 Nov 2026 - progress photos: locked like the journal, kept out of the public media folder, shown only to their owner. {% endcomment %}
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+  <h1 class="w-hello" style="font-size:28px;margin:0">Progress photos</h1>
+  <a class="w-btn" href="{% url 'wellness:photo_new' %}" data-photo-add>Add a photo</a>
+</div>
+<p class="w-small w-quiet" style="margin:0">Locked like your journal - only you can see them.</p>
+{% if can_compare %}<a class="w-btn ghost full" href="{% url 'wellness:photo_compare' %}" data-photo-compare>Compare two photos</a>{% endif %}
+{% if rows %}
+<div class="w-photos" data-photo-grid>
+  {% for r in rows %}
+  <a class="w-photo" href="{% url 'wellness:photo_detail' r.p.pk %}">
+    <img src="{% url 'wellness:photo_image' r.p.pk 'thumb' %}" alt="{{ r.p.get_pose_display }}, {{ r.p.date|date:'j M Y' }}" loading="lazy" width="{{ r.p.width }}" height="{{ r.p.height }}">
+    <span class="w-photo-cap"><strong>{{ r.p.date|date:"j M Y" }}</strong><span>{{ r.p.get_pose_display }}{% if r.kg %} · {{ r.kg }} kg{% endif %}</span></span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<section class="w-card">
+  <p style="margin:0;font-weight:600">No photos yet</p>
+  <p class="w-small w-quiet" style="margin:0">Same spot, same light, same clothes, every few weeks - front and side are the most useful. The scale misses what a photo shows.</p>
+</section>
+{% endif %}
+{% endblock %}

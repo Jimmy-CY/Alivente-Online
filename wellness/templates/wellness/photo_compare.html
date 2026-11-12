@@ -1,0 +1,23 @@
+{% extends "wellness/base.html" %}
+{% block title %}Compare · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:photos' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Progress photos</a>{% endblock %}
+{% block tabs %}{% endblock %}
+{% block content %}
+<h1 class="w-hello" style="font-size:28px">Compare</h1>
+<div class="w-compare" data-photo-pair>
+  {% for x, k in pair %}
+  <figure>
+    <img src="{% url 'wellness:photo_image' x.pk 'full' %}" alt="{{ x.get_pose_display }}, {{ x.date|date:'j M Y' }}" width="{{ x.width }}" height="{{ x.height }}">
+    <figcaption><strong>{{ x.date|date:"j M Y" }}</strong>{% if k %}<span>{{ k }} kg</span>{% endif %}</figcaption>
+  </figure>
+  {% endfor %}
+</div>
+<p class="w-small" style="margin:0" data-compare-line>{{ days }} day{{ days|pluralize }} apart{% if diff is not None %} · {% if diff > 0 %}+{% endif %}{{ diff }} kg on the trend{% endif %}.</p>
+<form method="get" style="display:flex;flex-direction:column;gap:10px">
+  <label for="c-a" class="w-small w-quiet">Before</label>
+  <select class="w-input" id="c-a" name="a">{% for x in mine %}<option value="{{ x.pk }}"{% if x.pk == a.pk %} selected{% endif %}>{{ x.date|date:"j M Y" }} · {{ x.get_pose_display }}</option>{% endfor %}</select>
+  <label for="c-b" class="w-small w-quiet">After</label>
+  <select class="w-input" id="c-b" name="b">{% for x in mine %}<option value="{{ x.pk }}"{% if x.pk == b.pk %} selected{% endif %}>{{ x.date|date:"j M Y" }} · {{ x.get_pose_display }}</option>{% endfor %}</select>
+  <button class="w-btn ghost" type="submit">Show these two</button>
+</form>
+{% endblock %}

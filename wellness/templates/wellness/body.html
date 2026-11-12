@@ -40,11 +40,12 @@
 <section class="w-card">
   {% if profile.weight_goal %}
   <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
-    <span style="font-weight:600">Goal {{ profile.weight_goal }} kg</span>
+    <span style="font-weight:600">Goal {{ profile.weight_goal }} kg{% if profile.goal_date %} by {{ profile.goal_date|date:"j M Y" }}{% endif %}</span>
     <span class="w-small w-quiet">{% if s.goal_pace %}On pace for {{ s.goal_pace|date:"j F Y" }}{% elif s.has %}Pace appears after two weeks{% endif %}</span>
   </div>
   {% if s.progress is not None %}<div class="w-bar" role="img" aria-label="{{ s.progress|floatformat:2 }} of the way"><i style="width:{% widthratio s.progress 1 100 %}%"></i></div>{% endif %}
   {% if s.rate is not None %}<div class="w-small w-quiet">{% if s.rate > 0 %}+{% endif %}{{ s.rate }} kg a week, from the last two weeks of the trend.</div>{% endif %}
+  {% if s.goal_line %}<div class="w-small" data-goal-line>{{ s.goal_line }}</div>{% endif %}
   {% else %}
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
     <span class="w-quiet">No goal set - that is fine.</span>
@@ -81,6 +82,9 @@
   {% endfor %}
 </details>
 {% endif %}
+
+{# WL-19, 12 Nov 2026 - progress photos. #}
+<a class="w-card w-row-link" href="{% url 'wellness:photos' %}" data-photos-link style="text-decoration:none;color:inherit;flex-direction:row;justify-content:space-between;align-items:center"><span><strong>Progress photos</strong><br><span class="w-small w-quiet">Locked like your journal. Compare any two.</span></span><span aria-hidden="true">›</span></a>
 
 <div class="w-btn-row">
   <a class="w-btn ghost" href="{% url 'wellness:body_measure' %}">Measure</a>

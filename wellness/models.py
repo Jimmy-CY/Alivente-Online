@@ -396,6 +396,33 @@ class CalmSession(models.Model):
         return '%s, %s' % (self.get_kind_display(), self.date)
 
 
+class ProgressPhoto(models.Model):
+    """WL-19, 12 Nov 2026 - a progress photo. THE PICTURE IS LOCKED like
+    the journal: the file on disk is encrypted with the journal key and is
+    kept outside the public media folder (wellness/photos.py). The row
+    holds only the date, the pose, a note and the file's name."""
+    POSES = [('front', 'Front'), ('side', 'Side'), ('back', 'Back'),
+             ('other', 'Other')]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             related_name='wellness_photos')
+    date = models.DateField()
+    pose = models.CharField(max_length=8, choices=POSES, default='front')
+    note = models.CharField(max_length=120, blank=True)
+    stem = models.CharField(max_length=64, unique=True)
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'wellness_progress_photo'
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return 'Photo of %s on %s' % (self.user, self.date)
+
+
 class CycleRecord(models.Model):
     """CY-1, 30 Oct 2026 - the cycle tracker's whole record, one row per
     person who has turned it on.
@@ -449,4 +476,3 @@ class PushDevice(models.Model):
 
     def __str__(self):
         return 'Push device of %s' % self.user
-

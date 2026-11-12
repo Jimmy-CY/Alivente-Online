@@ -83,4 +83,11 @@
   {% if email %}<p class="w-small w-quiet" style="margin:0">It goes to {{ email }} - only you.</p>{% else %}<p class="w-small w-quiet" style="margin:0">There is no email address on your account yet. Add one in My Profile first.</p>{% endif %}
   <button type="submit" class="w-btn full">Save</button>
 </form>
+
+{# WL-19, 12 Nov 2026 - everything, as a download. #}
+<section class="w-card">
+  <h2 class="w-h2" style="font-size:16px">Your data</h2>
+  <p class="w-small w-quiet" style="margin:0">Download everything you have put into Wellness as spreadsheets - and your photos, if you like.</p>
+  <a class="w-btn ghost" href="{% url 'wellness:export' %}" data-export-link>Download your data</a>
+</section>
 {% endblock %}
