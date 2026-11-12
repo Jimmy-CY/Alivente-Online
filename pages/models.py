@@ -3093,6 +3093,12 @@ class MealEntry(models.Model):
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='meal_entries')
+    # MS-1, 12 Nov 2026 - whose meal plan this meal is on. Empty only for
+    # meals planned before sharing existed, until the backfill places
+    # them; see pages/meal_calendar.py.
+    calendar = models.ForeignKey(
+        'pages.MealCalendar', on_delete=models.CASCADE, null=True,
+        blank=True, related_name='entries')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -3122,6 +3128,28 @@ class MealEntry(models.Model):
     def counts_on_shopping_list(self):
         """A note buys nothing, and leftovers were bought once already."""
         return bool(self.recipe) and self.leftover_of_id is None
+
+
+class MealCalendar(models.Model):
+    """MS-1, 12 Nov 2026 - one person's meal plan, and who it is shared
+    with. Shown as "Demetri's meal plan". Everyone it is shared with can
+    see and change it; only the owner changes who that is."""
+    owner = models.OneToOneField(User, on_delete=models.CASCADE,
+                                 related_name='meal_calendar')
+    shared_with = models.ManyToManyField(
+        User, blank=True, related_name='shared_meal_calendars')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'meal_calendars'
+
+    def __str__(self):
+        return self.label
+
+    @property
+    def label(self):
+        name = (self.owner.first_name or self.owner.username).strip()
+        return "%s's meal plan" % name
 
 
 class Menu(models.Model):

@@ -234,9 +234,11 @@ def claims(text):
     c['the planner view exists'] = 'def meal_planner(request):' in vcode
     c['  and normalises the week to a Monday'] = (
         'week_start -= timedelta(days=week_start.weekday())' in vcode)
-    c['  in ONE query for the week'] = (
-        'MealEntry.objects.filter(date__gte=week_start, date__lte=week_end)'
-        in vcode)
+    # MS-1, 12 Nov 2026 - the week is read through the meal plan being
+    # looked at (MC.entries()), still in one query.
+    c['  in ONE query for the week'] = any(
+        ('%s.filter(date__gte=week_start, date__lte=week_end)' % q) in vcode
+        for q in ('MealEntry.objects', 'MC.entries()'))
     c['add, remove and servings are three views'] = all(
         ('def %s(request):' % n) in vcode
         for n in ('add_meal_entry', 'remove_meal_entry', 'set_meal_servings'))
@@ -770,7 +772,11 @@ if django_up:
     # PK-1, 19 Oct 2026 - fourteen. One more, for the courses the
     # picker's filter strip is built from. One query, not one per
     # course and not one per card.
-    ok(q_big <= 14, '  and that number is under 14', q_big)
+    # MS-1, 12 Nov 2026 - eighteen. Four more, all fixed: whose plan
+    # this is, the plans shared with you, who yours is shared with, and
+    # the people the Share dialog offers (one query, however many).
+    # None of them grows with the meals - the check above proves that.
+    ok(q_big <= 18, '  and that number is under 18', q_big)
 
     head('8f. the shopping list shops a range')
     r, q = cost('/meal_plans/shopping_list/?from=2026-10-19&to=2026-10-25')

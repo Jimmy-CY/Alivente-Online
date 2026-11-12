@@ -458,6 +458,12 @@ ok(seq_of(oldcode).count('S') == 2,
 oldv = BEFORE[VIEW]
 for name in ('copy_week_rows', 'delete_menu', 'copy_meal_week'):
     a, b = fn(oldv, name), fn(NOW[VIEW], name)
+    # MS-1, 12 Nov 2026 - meals are read and written on the meal plan
+    # being looked at. That is the only change to these three; undo it
+    # and they must still be the same to the byte.
+    b = (b.replace('MealEntry.objects.create(calendar=MC.current(), ',
+                   'MealEntry.objects.create(')
+         .replace('MC.entries()', 'MealEntry.objects'))
     ok(bool(a) and a == b,
        'CONTROL: %s is byte-identical before and after' % name,
        'len before %d, len after %d' % (len(a), len(b)))

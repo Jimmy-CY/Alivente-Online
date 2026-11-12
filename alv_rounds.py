@@ -1591,6 +1591,8 @@ ROUNDS = [
     '.bak_wellness22',
     # WL-19, 12 Nov 2026 - Wellness: progress photos and download your data.
     '.bak_wellness23',
+    # MS-1, 12 Nov 2026 - one meal plan per person, shared with whom they choose.
+    '.bak_mealshare',
 ]
 
 

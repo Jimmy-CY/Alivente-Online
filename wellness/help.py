@@ -521,7 +521,7 @@ SCREENS = {
         'title': 'Add a photo',
         'purpose': 'One progress photo.',
         'steps': [
-            'Tap the box to take a photo or choose one from your gallery.',
+            'Tap Take a photo to use the camera, or Choose from gallery.',
             'Pick Front, Side, Back or Other, and the day it was taken.',
             'Save. It is locked before it is stored.',
         ],

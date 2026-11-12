@@ -188,7 +188,7 @@ HOWTO = [
           'side are the most useful.',
      'steps': [
          'Body > Progress photos > Add a photo.',
-         'Tap the box: take the photo, or choose one from your gallery.',
+         'Tap Take a photo to use the camera, or Choose from gallery.',
          'Pick Front, Side, Back or Other and Save. It is locked like '
          'your journal - only you can see it.',
          'Later: Compare two photos to see them side by side, with the days '

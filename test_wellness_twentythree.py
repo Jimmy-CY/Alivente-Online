@@ -132,8 +132,9 @@ mins = re.findall(r'min-height:\s*(\d+)px', css)
 ok(all(int(m) >= 44 for m in mins), '  still no min-height under 44px')
 base = read(J(WT, 'base.html'))
 vv = re.findall(r'\?v=([\w-]+)', base)
-ok(vv and set(vv) == {'wl21-1'} and
-   "SW_VERSION = 'wl21-1'" in read(J(APP, 'views.py')),
+# Loosened by MS-1: a later round bumps the version again.
+ok(vv and len(set(vv)) == 1 and vv[0] not in ('wl20-1',) and
+   ("SW_VERSION = '%s'" % vv[0]) in read(J(APP, 'views.py')),
    'the app files carry a new version', vv)
 
 # ==========================================================================

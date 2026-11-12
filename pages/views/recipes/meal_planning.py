@@ -133,6 +133,9 @@ from django.views.decorators.http import require_POST
 # this; meal_planning.py is the third.
 logger = logging.getLogger(__name__)
 
+# MS-1, 12 Nov 2026 - every meal read or written here is on the meal plan
+# being looked at; see pages/meal_calendar.py.
+from pages import meal_calendar as MC
 from pages.models import (
     CustomProtein,
     HouseholdMember,
@@ -437,6 +440,43 @@ def aggregate_meal_entries(entries):
 
 @login_required
 @permission_required('auth.can_access_recipes', raise_exception=True)
+def meal_plan_share(request):
+    """MS-1, 12 Nov 2026 - who can see and change MY meal plan.
+
+    The planner's Share dialog posts here. Only ever the poster's own
+    plan: a shared plan's people are its owner's choice. The choice is
+    everyone who can open Recipes - nobody else could open a planner.
+    """
+    cal = MC.own(request.user)
+    if request.method == 'POST':
+        people = share_people(request.user)
+        want = set(request.POST.getlist('share'))
+        chosen = [u for u in people if str(u.pk) in want]
+        cal.shared_with.set(chosen)
+        messages.success(request, 'Saved - %s.' % (
+            'shared with %d' % len(chosen) if chosen
+            else 'not shared with anyone'))
+    return redirect('%s?calendar=%d' % (reverse('meal_planner'), cal.pk))
+
+
+def share_people(user):
+    """Everyone, other than `user`, who can open Recipes."""
+    from django.contrib.auth.models import User
+    from django.db.models import Q
+    # ONE query, however many people: has_perm per person would ask the
+    # database twice for each of them.
+    code = 'can_access_recipes'
+    return list(User.objects.filter(is_active=True).filter(
+        Q(is_superuser=True) |
+        Q(user_permissions__codename=code,
+          user_permissions__content_type__app_label='auth') |
+        Q(groups__permissions__codename=code,
+          groups__permissions__content_type__app_label='auth'))
+        .exclude(pk=user.pk).distinct().order_by('first_name', 'username'))
+
+
+@login_required
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def meal_planner(request):
     """The calendar, at one of three zoom levels.
 
@@ -524,7 +564,7 @@ def meal_planner(request):
     # retro-fitted. The old calendar asked for each day and then for
     # that day's recipes, seven times over.
     entries = list(
-        MealEntry.objects.filter(date__gte=week_start, date__lte=week_end)
+        MC.entries().filter(date__gte=week_start, date__lte=week_end)
         # MO-1, 19 Oct 2026 - leftover_of joins the ONE query. The
         # leftover row prints the date of the meal it came from, and
         # that is a query per row without this. [E29]
@@ -605,7 +645,7 @@ def meal_planner(request):
     # per day is not enough - and asking per day would be thirty-one
     # queries to paint one screen. [E29]
     month_by_date = {}
-    for e in (MealEntry.objects
+    for e in (MC.entries()
               .filter(date__gte=first_of_month, date__lte=month_end)
               .select_related('recipe', 'leftover_of')
               .order_by('date', 'sort_order', 'meal_entry_id')):
@@ -735,6 +775,14 @@ def meal_planner(request):
             span_days=Coalesce(Max('items__day_index'), -1) + 1,
         ).order_by('name'),
     }
+    # MS-1, 12 Nov 2026 - the Share dialog, on your own plan only.
+    cal = getattr(request, 'meal_calendar', None)
+    if cal is not None and cal.owner_id == request.user.pk:
+        chosen = set(cal.shared_with.values_list('pk', flat=True))
+        context['share_people'] = [
+            {'pk': u.pk, 'name': u.get_full_name() or u.username,
+             'on': u.pk in chosen} for u in share_people(request.user)]
+        context['share_count'] = len(chosen)
     return render(request, 'meal_planner.html', context)
 
 
@@ -778,7 +826,7 @@ def week_of(value, fallback):
 # from what the calendar will show when you close it.
 def day_payload(when):
     """Every meal on `when`, in the order the planner draws them."""
-    rows = (MealEntry.objects
+    rows = (MC.entries()
             .filter(date=when)
             .select_related('recipe')
             .order_by('sort_order', 'meal_entry_id'))
@@ -909,7 +957,7 @@ def meal_plan_print(request):
     grid_end = monday_of(end) + timedelta(days=6)
 
     by_day = defaultdict(list)
-    for e in (MealEntry.objects
+    for e in (MC.entries()
               .filter(date__gte=grid_start, date__lte=grid_end)
               .select_related('recipe', 'leftover_of')
               .order_by('date', 'sort_order')):
@@ -1066,13 +1114,13 @@ def add_meal_entry(request):
     except (TypeError, ValueError):
         servings = recipe.servings or household_size(request.user)
 
-    last = MealEntry.objects.filter(date=when).aggregate(
+    last = MC.entries().filter(date=when).aggregate(
         Max('sort_order'))['sort_order__max']
     # KEPT, WHICH IT WAS NOT - AP-1, 20 Oct 2026. The row was created
     # and dropped on the floor, so the JSON branch could describe the
     # DAY and never the thing it had just added. An Undo needs
     # something to point at.
-    entry = MealEntry.objects.create(
+    entry = MealEntry.objects.create(calendar=MC.current(), 
         date=when, recipe=recipe, servings=servings,
         sort_order=(last or 0) + 1, created_by=request.user)
 
@@ -1207,7 +1255,7 @@ def move_meal_entry(request):
     one level would strand the third row on a date nobody chose.
     """
     try:
-        entry = MealEntry.objects.select_related(
+        entry = MC.entries().select_related(
             'recipe', 'leftover_of').get(
                 meal_entry_id=request.POST.get('meal_entry_id'))
     except (MealEntry.DoesNotExist, ValueError, TypeError):
@@ -1318,7 +1366,7 @@ def reorder_meal_day(request):
     if len(set(ids)) != len(ids):
         return JsonResponse({'ok': False, 'why': 'twice'}, status=400)
 
-    on_day = list(MealEntry.objects.filter(date=day)
+    on_day = list(MC.entries().filter(date=day)
                   .order_by('sort_order', 'meal_entry_id')
                   .values_list('meal_entry_id', flat=True))
     if set(ids) != set(on_day):
@@ -1327,7 +1375,7 @@ def reorder_meal_day(request):
 
     with transaction.atomic():
         for n, eid in enumerate(ids, start=1):
-            MealEntry.objects.filter(meal_entry_id=eid).update(sort_order=n)
+            MC.entries().filter(meal_entry_id=eid).update(sort_order=n)
 
     return JsonResponse({'ok': True, 'order': ids})
 
@@ -1338,7 +1386,7 @@ def reorder_meal_day(request):
 def remove_meal_entry(request):
     """Take a meal off its date."""
     try:
-        entry = MealEntry.objects.select_related('recipe').get(
+        entry = MC.entries().select_related('recipe').get(
             meal_entry_id=request.POST.get('meal_entry_id'))
     except (MealEntry.DoesNotExist, ValueError, TypeError):
         messages.error(request, 'That meal is no longer on the planner.')
@@ -1373,7 +1421,7 @@ def set_meal_servings(request):
     number over the recipe's yield.
     """
     try:
-        entry = MealEntry.objects.select_related('recipe').get(
+        entry = MC.entries().select_related('recipe').get(
             meal_entry_id=request.POST.get('meal_entry_id'))
     except (MealEntry.DoesNotExist, ValueError, TypeError):
         return JsonResponse({'success': False,
@@ -1444,7 +1492,7 @@ def range_entries(start, end):
     shape, so a menu saved over three days and a menu saved over a
     week are read the same way.
     """
-    return (MealEntry.objects
+    return (MC.entries()
             .filter(date__gte=start, date__lte=end)
             .select_related('recipe')
             .order_by('date', 'sort_order', 'meal_entry_id'))
@@ -1461,7 +1509,7 @@ def span_label(start, end):
 
 def week_entries(week_start):
     """Every meal on the seven days from week_start."""
-    return (MealEntry.objects
+    return (MC.entries()
             .filter(date__gte=week_start,
                     date__lte=week_start + timedelta(days=6))
             .select_related('recipe')
@@ -1510,11 +1558,11 @@ def copy_week_rows(rows, src_start, dst_start, user):
         offset = (entry.date - src_start).days
         when = dst_start + timedelta(days=offset)
         if when not in tails:
-            last = MealEntry.objects.filter(date=when).aggregate(
+            last = MC.entries().filter(date=when).aggregate(
                 Max('sort_order'))['sort_order__max']
             tails[when] = last or 0
         tails[when] += 1
-        return MealEntry.objects.create(
+        return MealEntry.objects.create(calendar=MC.current(), 
             date=when, recipe=entry.recipe, note=entry.note,
             servings=entry.servings, sort_order=tails[when],
             leftover_of=parent, created_by=user)
@@ -1558,7 +1606,7 @@ def meal_week_preview(request):
             return JsonResponse({'success': False,
                                  'error': 'A copy covers at most '
                                           '13 weeks.'}, status=400)
-        span = list(MealEntry.objects
+        span = list(MC.entries()
                     .filter(date__gte=first, date__lte=last)
                     .only('date'))
         return JsonResponse({
@@ -1675,7 +1723,7 @@ def copy_meal_range(request):
                        % (day_label(start), day_label(end)))
         return redirect(back)
 
-    rows = list(MealEntry.objects
+    rows = list(MC.entries()
                 .filter(date__gte=start, date__lte=end)
                 .select_related('recipe', 'leftover_of')
                 .order_by('date', 'sort_order'))
@@ -1825,11 +1873,11 @@ def apply_menu(request):
                 continue
             when = onto + timedelta(days=it.day_index)
             if when not in tails:
-                last = MealEntry.objects.filter(date=when).aggregate(
+                last = MC.entries().filter(date=when).aggregate(
                     Max('sort_order'))['sort_order__max']
                 tails[when] = last or 0
             tails[when] += 1
-            MealEntry.objects.create(
+            MealEntry.objects.create(calendar=MC.current(), 
                 date=when, recipe=it.recipe, note=it.note,
                 servings=it.servings, sort_order=tails[when],
                 created_by=request.user)
@@ -1901,9 +1949,9 @@ def add_meal_note(request):
         messages.error(request, 'A note needs some words.')
         return redirect(back)
 
-    last = MealEntry.objects.filter(date=when).aggregate(
+    last = MC.entries().filter(date=when).aggregate(
         Max('sort_order'))['sort_order__max']
-    MealEntry.objects.create(date=when, recipe=None, note=note,
+    MealEntry.objects.create(calendar=MC.current(), date=when, recipe=None, note=note,
                              servings=0, sort_order=(last or 0) + 1,
                              created_by=request.user)
     messages.success(request, 'Added "%s" to %s.' % (note, day_label(when)))
@@ -1929,7 +1977,7 @@ def add_leftover(request):
     """
     when = week_of(request.POST.get('date'), None)
     try:
-        src = MealEntry.objects.select_related('recipe', 'leftover_of').get(
+        src = MC.entries().select_related('recipe', 'leftover_of').get(
             meal_entry_id=request.POST.get('meal_entry_id'))
     except (MealEntry.DoesNotExist, ValueError, TypeError):
         messages.error(request, 'That meal no longer exists.')
@@ -1951,9 +1999,9 @@ def add_leftover(request):
                        % (root.recipe.recipe_name, day_label(root.date)))
         return redirect(back)
 
-    last = MealEntry.objects.filter(date=when).aggregate(
+    last = MC.entries().filter(date=when).aggregate(
         Max('sort_order'))['sort_order__max']
-    MealEntry.objects.create(
+    MealEntry.objects.create(calendar=MC.current(), 
         date=when, recipe=root.recipe, note=root.note,
         servings=root.servings, sort_order=(last or 0) + 1,
         leftover_of=root, created_by=request.user)
@@ -1996,7 +2044,7 @@ def meal_shopping_list(request):
 
     try:
         entries = (
-            MealEntry.objects.filter(date__gte=start, date__lte=end)
+            MC.entries().filter(date__gte=start, date__lte=end)
             .select_related('recipe')
             .prefetch_related(
                 Prefetch('recipe__recipe_ingredients',
@@ -2133,7 +2181,7 @@ def send_meal_plan_shopping_list(request):
         # C18's lesson survives the model change: this counts MEALS,
         # not days. A seven-day range used to be emailed as
         # "7 recipes" whatever was on it.
-        total_recipes = MealEntry.objects.filter(
+        total_recipes = MC.entries().filter(
             date__gte=start, date__lte=end,
             recipe__isnull=False, leftover_of__isnull=True).count()
 

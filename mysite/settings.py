@@ -77,6 +77,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # MS-1, 12 Nov 2026 - which meal plan a meal_plans/ request is about.
+    "pages.meal_calendar.MealCalendarMiddleware",
     'pages.workspace.WorkspaceMiddleware',    
     # WL-1, 30 Oct 2026 - 30 days for Wellness on a phone, the main app's
     # hour kept. Before ModuleAccessMiddleware, so an expired hour goes to

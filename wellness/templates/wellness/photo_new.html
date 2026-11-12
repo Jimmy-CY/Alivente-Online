@@ -6,11 +6,16 @@
 <form method="post" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:16px">
   {% csrf_token %}
   <h1 class="w-hello" style="font-size:28px">Add a photo</h1>
+  {% comment %} MS-1, 12 Nov 2026 - Demetri: "if I'm on my phone, the phone camera should allow me to take a photo." Two buttons, so the camera does not depend on what the phone's file picker offers: Take a photo opens the camera, Choose from gallery the photos. Without script, tapping the box gives the phone's own choice. {% endcomment %}
   <label class="w-photo-pick" for="ph-file">
     <input id="ph-file" name="photo" type="file" accept="image/*" required data-photo-input>
-    <span data-photo-label>Take a photo or choose one</span>
+    <span data-photo-label>Tap to add a photo</span>
     <img alt="" hidden data-photo-preview>
   </label>
+  <div class="w-btn-row" data-photo-ways hidden>
+    <button type="button" class="w-btn" data-photo-camera>Take a photo</button>
+    <button type="button" class="w-btn ghost" data-photo-gallery>Choose from gallery</button>
+  </div>
   <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">Which way are you facing?</legend>
     <div class="w-chips">{% for k, l in poses %}<label class="w-chip"><input type="radio" name="pose" value="{{ k }}"{% if k == pose %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div>
   </fieldset>

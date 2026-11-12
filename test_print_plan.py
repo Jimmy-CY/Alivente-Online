@@ -202,8 +202,9 @@ def claims(bundle, page):
     c['  and the days outside the range are still known'] = (
         "'in_range'" in code)
     c['  one query for the whole grid, not one per day'] = (
-        'for e in (MealEntry.objects' in code
-        and code.count('MealEntry.objects') == 1)
+        # MS-1, 12 Nov 2026 - read through the meal plan being looked at.
+        any(('for e in (%s' % q) in code and code.count(q) == 1
+            for q in ('MealEntry.objects', 'MC.entries()')))
     c['  the same 13-week ceiling the shopping list has'] = (
         '(end - start).days > 92' in code)
     c['  and a reversed pair is read, not refused'] = (

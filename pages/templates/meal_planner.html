@@ -1822,11 +1822,41 @@
            scroll sideways rather than that every control is 44. */
         .recipe-item { flex-wrap: wrap; row-gap: 6px; }
     }
+    /* MS-1, 12 Nov 2026 - whose meal plan. */
+    .mp-whose { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 0 12px; }
+    .mp-whose-label { margin: 0; font-size: 13px; color: var(--alv-ink-soft); }
+    .mp-whose-tab { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--alv-line); border-radius: 22px; color: var(--alv-ink); text-decoration: none; }
+    .mp-whose-tab.is-on { border: 2px solid var(--alv-accent); color: var(--alv-accent-ink); font-weight: 600; }
+    .mp-whose-name { font-weight: 600; }
+    .mp-whose-share { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; background: none; border: 0; color: var(--alv-accent-ink); padding: 0 4px; }
+    .mp-share-list { list-style: none; margin: 0; padding: 0; }
+    .mp-share-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+    .mp-share-list label { display: flex; align-items: center; gap: 12px; min-height: 44px; margin: 0; cursor: pointer; }
+    .mp-whose-note { font-size: 13px; color: var(--alv-ink-soft); }
 </style>
 
 <div class="calendar-container">
 
     <h2 class="page-title-h2">MEAL PLANNER</h2>
+
+    {# MS-1, 12 Nov 2026 - WHOSE PLAN. One per person. Links, not a form: #}
+    {# the plans shared with you appear beside yours; Share opens a      #}
+    {# dialog on your own.                                               #}
+    {% if request.meal_calendar %}
+    <div class="mp-whose" data-meal-calendar>
+        {% if request.meal_calendars|length > 1 %}
+        <span class="mp-whose-label">Meal plan:</span>
+        {% for c in request.meal_calendars %}<a class="mp-whose-tab{% if c.pk == request.meal_calendar.pk %} is-on{% endif %}" href="?calendar={{ c.pk }}&amp;date={{ anchor|date:'Y-m-d' }}&amp;view={{ view_mode }}" data-meal-calendar-tab{% if c.pk == request.meal_calendar.pk %} aria-current="true"{% endif %}>{% if c.owner_id == request.user.pk %}My meal plan{% else %}{{ c.label }}{% endif %}</a>{% endfor %}
+        {% else %}
+        <span class="mp-whose-name">{{ request.meal_calendar.label }}</span>
+        {% endif %}
+        {% if request.meal_calendar.owner_id == request.user.pk %}
+        <button type="button" class="mp-whose-share" data-toggle="modal" data-target="#mealShareModal"><i class="fas fa-user-friends"></i> {% if share_count %}Shared with {{ share_count }}{% else %}Share{% endif %}</button>
+        {% else %}
+        <span class="mp-whose-note">Shared with you - you can change it</span>
+        {% endif %}
+    </div>
+    {% endif %}
 
     {# ONE BAR, and Back is LAST and carries no colour - test_bar_top. #}
     {# Help sits before it, as it does on all five meal-plan screens.  #}
@@ -2981,6 +3011,40 @@
 {#                                                                  #}
 {# TWO SIBLING FORMS, because they post to different endpoints and  #}
 {# a form cannot nest. Both endpoints are untouched by this round.  #}
+{# MS-1, 12 Nov 2026 - who can see and change my meal plan. #}
+{% if share_people is not None %}
+<div class="modal fade" id="mealShareModal" tabindex="-1" role="dialog"
+     aria-labelledby="mealShareLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'meal_plan_share' %}">
+                {% csrf_token %}
+                <div class="modal-header alv-modal-head">
+                    <h5 class="modal-title" id="mealShareLabel">
+                        <i class="fas fa-user-friends"></i> Share {{ request.meal_calendar.label }}
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted" style="font-size:13px;">Everyone you tick can see your meal plan and change it - add and remove meals, copy days, use saved menus and make the shopping list. Untick someone and it leaves their planner. Nobody else sees it.</p>
+                    {% if share_people %}
+                    <ul class="mp-share-list" data-share-people>
+                        {% for p in share_people %}<li><label><input type="checkbox" name="share" value="{{ p.pk }}"{% if p.on %} checked{% endif %}> <span>{{ p.name }}</span></label></li>{% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted" style="font-size:13px;margin:0;">Nobody else can open Recipes yet, so there is nobody to share with.</p>
+                    {% endif %}
+                    <div class="mp-share-actions">
+                        <button type="submit" class="btn action-primary">Update sharing</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 <div class="modal fade" id="menusModal" tabindex="-1" role="dialog"
      aria-labelledby="menusLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

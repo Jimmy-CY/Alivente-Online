@@ -448,6 +448,8 @@ urlpatterns = [
     path('meal_plans/shopping_list/', views.meal_shopping_list, name='meal_shopping_list'),
     # PP-1, 20 Oct 2026 - the plan, laid out for paper. Beside the
     # shopping list because it takes the same two parameters.
+    # MS-1, 12 Nov 2026 - who can see and change my meal plan.
+    path('meal_plans/share/', views.meal_plan_share, name='meal_plan_share'),
     path('meal_plans/print/', views.meal_plan_print,
          name='meal_plan_print'),
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),

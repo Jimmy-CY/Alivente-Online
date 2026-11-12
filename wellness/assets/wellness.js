@@ -1150,6 +1150,21 @@
     if (!input) return;
     var img = document.querySelector('[data-photo-preview]');
     var label = document.querySelector('[data-photo-label]');
+    // MS-1 - the camera, or the gallery: the same input, with or
+    // without capture, so only one file is ever sent.
+    var ways = document.querySelector('[data-photo-ways]');
+    if (ways) {
+      ways.hidden = false;
+      if (label) label.textContent = 'Your photo shows here';
+      var pick = input.closest('label');
+      if (pick) pick.addEventListener('click', function (e) { if (e.target !== input) e.preventDefault(); });
+      ways.querySelector('[data-photo-camera]').addEventListener('click', function () {
+        input.setAttribute('capture', 'environment'); input.click();
+      });
+      ways.querySelector('[data-photo-gallery]').addEventListener('click', function () {
+        input.removeAttribute('capture'); input.click();
+      });
+    }
     input.addEventListener('change', function () {
       var f = input.files && input.files[0];
       if (!f) return;
