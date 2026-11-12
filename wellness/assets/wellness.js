@@ -17,6 +17,24 @@
     });
   }
 
+  // ---- WL-16, 12 Nov 2026 - the phone's clock. Tell Wellness this
+  // phone's time zone on every page; if the page was drawn on another
+  // clock (a first visit, or after flying), draw it again, once.
+  (function () {
+    var tz = '';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return; }
+    if (!tz) return;
+    // Zone names are letters, '/', '_', '-' and '+': safe in a cookie as they are.
+    if (!/^[A-Za-z0-9_\/+-]{1,64}$/.test(tz)) return;
+    document.cookie = 'w_tz=' + tz + '; path=/; max-age=31536000; samesite=lax';
+    var drawn = document.body.getAttribute('data-tz') || '';
+    if (drawn && drawn !== tz) {
+      var key = 'w-tz-redrawn-' + tz;
+      try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) { return; }
+      location.reload();
+    }
+  })();
+
   // ---- WL-15, 2 Nov 2026 - a little joy (Demetri, 19:36-19:39): a soft
   // sound, a short vibration and a little movement for a tick, the whole
   // day done and a badge; Settings > Sounds and vibration (on by default).
@@ -73,6 +91,50 @@
     };
   })();
   window.WellnessFX = FX;
+
+  // WL-16, 12 Nov 2026 - the whole day done (Demetri, 07:29: "like a
+  // thing popping and confetti"): the ring pops, confetti bursts out of
+  // it and falls across the screen, and "All done for today" slides in.
+  // Once a day; still under reduce motion; the sound follows Settings.
+  function dayDone(ring) {
+    var key = 'w-day-done-' + (document.body.getAttribute('data-day') || '');
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) { /* show it */ }
+    var card = ring.closest('section') || ring.parentNode;
+    var banner = document.createElement('div');
+    banner.className = 'w-day-banner';
+    banner.setAttribute('role', 'status');
+    banner.textContent = 'All done for today \uD83C\uDF89';
+    card.appendChild(banner);
+    requestAnimationFrame(function () { banner.classList.add('is-on'); });
+    if (FX.still()) return;
+    ring.classList.remove('w-glow', 'w-pop');
+    void ring.getBoundingClientRect();
+    ring.classList.add('w-glow', 'w-pop');
+    var r = ring.getBoundingClientRect();
+    var fall = document.createElement('div');
+    fall.className = 'w-confetti';
+    fall.setAttribute('aria-hidden', 'true');
+    var colours = ['var(--w-sage)', 'var(--w-sand-line)', 'var(--w-sage-deep)', 'var(--w-sky)', '#E7B7A3'];
+    var w = window.innerWidth, h = window.innerHeight;
+    for (var i = 0; i < 46; i++) {
+      var bit = document.createElement('i');
+      var ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.4;
+      var up = 120 + Math.random() * 160;
+      bit.style.left = (r.left + r.width / 2) + 'px';
+      bit.style.top = (r.top + r.height / 2) + 'px';
+      bit.style.setProperty('--ux', Math.round(Math.cos(ang) * up) + 'px');
+      bit.style.setProperty('--uy', Math.round(Math.sin(ang) * up) + 'px');
+      bit.style.setProperty('--dx', Math.round((Math.random() - 0.5) * w * 0.9) + 'px');
+      bit.style.setProperty('--dy', Math.round(h * (0.55 + Math.random() * 0.45)) + 'px');
+      bit.style.setProperty('--r', Math.round(360 + Math.random() * 720) + 'deg');
+      bit.style.setProperty('--t', (1.1 + Math.random() * 0.7).toFixed(2) + 's');
+      bit.style.background = colours[i % colours.length];
+      if (i % 3 === 0) bit.style.borderRadius = '50%';
+      fall.appendChild(bit);
+    }
+    document.body.appendChild(fall);
+    setTimeout(function () { if (fall.parentNode) fall.parentNode.removeChild(fall); }, 2200);
+  }
 
   // A badge, celebrated: the medallion rises into the middle, a short burst
   // of sage and sand behind it, the chime - then Nice.
@@ -183,16 +245,24 @@
     if (!was) { void row.offsetWidth; row.classList.add('w-settle'); }
     updateRing();
     // WL-15 - a tick sounds and taps; the last one of the day, a little more.
+    var ring = document.querySelector('[data-today-ring]');
     if (!was) {
       var all = document.querySelectorAll('[data-habit-row]').length;
       var got = document.querySelectorAll('[data-habit-row].is-done').length;
-      var ring = document.querySelector('[data-today-ring]');
-      if (all && got === all) {
+      // The whole day - on Today only (Catch up has no ring).
+      if (ring && all && got === all) {
         FX.allDone();
-        if (ring && !FX.still()) { ring.classList.remove('w-glow'); void ring.getBoundingClientRect(); ring.classList.add('w-glow'); }
+        dayDone(ring);
       } else {
         FX.tick();
       }
+    }
+    // WL-16 - Catch up: the picked day's count follows the ticks.
+    var chip = document.querySelector('[data-catch-day].picked .d-left');
+    if (chip) {
+      var left = document.querySelectorAll('[data-habit-row]:not([data-flex]):not(.is-done)').length;
+      chip.textContent = left ? left + ' left' : '\u2713';
+      chip.parentNode.classList.toggle('clear', !left);
     }
     post(form).then(function (res) {
       row.classList.toggle('is-done', res.done);

@@ -58,19 +58,71 @@ def next_weight(current, equipment_kind, kit):
 
 def suggest(rep_min, rep_max, last_sets, equipment_kind, kit):
     """Double progression. `last_sets` = [(weight, reps), ...] of the last
-    session's done working sets. Returns {'weight', 'reps', 'why'}."""
+    session's done working sets. Returns {'weight', 'reps', 'why'}.
+
+    WL-17, 12 Nov 2026 - one number works too (rep_min == rep_max: "3 sets
+    of 10"): every rep on every set and the next weight up is suggested.
+    With no weight (reps only), every rep on every set suggests one more."""
     done = [(w, r) for w, r in last_sets if r]
     if not done:
         return {'weight': None, 'reps': rep_min, 'why': 'first'}
     weight = max((w for w, _ in done if w is not None), default=None)
     at_top = [r for w, r in done if w == weight]
     if at_top and all(r >= rep_max for r in at_top):
+        if weight is None:
+            return {'weight': None, 'reps': max(at_top) + 1,
+                    'why': 'more_reps'}
         up = next_weight(weight, equipment_kind, kit) if weight else None
         if up:
             return {'weight': up, 'reps': rep_min, 'why': 'up'}
         return {'weight': weight, 'reps': rep_max, 'why': 'top'}
     return {'weight': weight, 'reps': min(rep_max, max(at_top or [0]) + 1),
             'why': 'reps'}
+
+
+# --------------------------------------------------------------------------
+# WL-17, 12 Nov 2026 - time in the units people use. Demetri, 08:01: "For
+# Zumba or other dances, would we would not measure in seconds?? Maybe 3
+# sets of 15 minutes with 5 minute rest between??"
+# --------------------------------------------------------------------------
+HOLD_STEP = 5      # seconds longer, once every set was held in full
+
+
+def in_minutes(exercise):
+    """Cardio, dance and sports are timed in minutes; a hold (a plank) in
+    seconds."""
+    return exercise.kind in ('time', 'distance') and \
+        exercise.muscle in ('cardio', 'sport')
+
+
+def suggest_hold(target, last_seconds):
+    """A hold: every set held for the whole target last time - a little
+    longer today. Returns (seconds, why)."""
+    done = [s for s in last_seconds if s]
+    if target and done and all(s >= target for s in done):
+        return max(done) + HOLD_STEP, 'longer'
+    return target, ''
+
+
+def item_words(item):
+    """'3 × 10', '3 × 8–12', '3 × 45 s', '1 × 45 min' - a routine line."""
+    ex = item.exercise
+    if ex.kind in ('time', 'distance'):
+        secs = item.seconds or 0
+        if in_minutes(ex):
+            return '%d × %d min' % (item.sets, secs // 60)
+        return '%d × %d s' % (item.sets, secs)
+    if item.rep_min == item.rep_max:
+        reps = '%d' % item.rep_max
+    else:
+        reps = '%d–%d' % (item.rep_min, item.rep_max)
+    return '%d × %s' % (item.sets, reps)
+
+
+def rest_words(seconds, minutes=False):
+    if minutes or (seconds and seconds >= 120 and seconds % 60 == 0):
+        return '%d min' % (seconds // 60)
+    return '%d s' % seconds
 
 
 def records(sets):

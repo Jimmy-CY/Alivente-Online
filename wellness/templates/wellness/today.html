@@ -97,6 +97,10 @@
   </div>
   {% endfor %}
   {% endfor %}
+  {% if catch_up_left %}
+  {% comment %} WL-16, 12 Nov 2026 - forgot to tick a day? {% endcomment %}
+  <a href="{% url 'wellness:catch_up' %}" class="w-catch-line" data-catch-up-line>{{ catch_up_left }} habit{{ catch_up_left|pluralize }} left unticked this past week <span>Catch up &rsaquo;</span></a>
+  {% endif %}
 </section>
 {% elif has_any %}
 <section class="w-card soft">

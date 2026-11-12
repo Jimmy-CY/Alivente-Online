@@ -223,12 +223,15 @@ def run(now, client=None, write=print):
               'service - no lines made.')
         return 0
     made = waiting = 0
+    from . import modules as MOD
     for p in due_people(now):
+        # WL-16 - the person's own date, on their phone's clock.
+        day = MOD.phone_now(now, p.prefs).date()
         if (p.prefs or {}).get('daily_line', {}).get('date') == \
-                now.date().isoformat() or (p.prefs or {}).get('line_off'):
+                day.isoformat() or (p.prefs or {}).get('line_off'):
             continue
         waiting += 1
-        if make(p, now.date(), client=client):
+        if make(p, day, client=client):
             made += 1
     if waiting:
         write('Wellness daily line: %d made, %d waiting for one.'

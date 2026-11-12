@@ -295,7 +295,11 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def section_of('" in gate, '  with a sentinel on the switches')
+# WL-16, 12 Nov 2026: the row moved to 'def tz_or_none(' when modules.py
+# was backed up (a Text in every backup can never fail).
+ok("Text = 'def section_of('" in gate or
+   "File = 'wellness/modules.py'; Text = 'def tz_or_none('" in gate,
+   '  with a sentinel on the switches')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')

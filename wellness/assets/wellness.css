@@ -836,3 +836,61 @@ details[data-voice-box] > :not(summary) { margin-top: 12px; }
   .w-btn.is-busy::before { animation-duration: 1.6s; }
 }
 
+/* ==========================================================================
+   WL-16, 12 Nov 2026 - Catch up (tick what you forgot, a week back), and
+   the whole day done: the ring pops and confetti falls (Demetri, 07:29).
+   ========================================================================== */
+.w-catch-line {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px;
+  margin-top: 4px; padding: 0 4px; color: var(--w-quiet); font-size: 14px; text-decoration: none;
+  border-top: 1px solid var(--w-line);
+}
+.w-catch-line span { color: var(--w-sage-deep); font-weight: 600; white-space: nowrap; }
+.w-catch-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.w-catch-day {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 7px; min-height: 64px;
+  border-radius: 14px; background: var(--w-card); color: inherit; text-decoration: none;
+  box-shadow: inset 0 0 0 1.5px var(--w-miss);
+}
+.w-catch-day .d-label { font-size: 11px; color: var(--w-quiet); }
+.w-catch-day .d-num { font-size: 17px; font-weight: 600; }
+.w-catch-day .d-left { font-size: 11px; font-weight: 600; color: var(--w-ink); }
+.w-catch-day.clear { box-shadow: none; background: var(--w-empty); }
+.w-catch-day.clear .d-left { color: var(--w-sage-deep); }
+.w-catch-day.picked { outline: 2px solid var(--w-ink); outline-offset: 2px; }
+/* The ring pops. */
+.w-pop { animation: w-pop .6s cubic-bezier(.2, .9, .3, 1.5), w-glow 1.2s ease-out; }
+@keyframes w-pop { 0% { transform: scale(1); } 35% { transform: scale(1.22); } 65% { transform: scale(.94); } 100% { transform: scale(1); } }
+/* Confetti: up and out of the ring, then down across the screen. */
+.w-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 65; overflow: hidden; }
+.w-confetti i { position: fixed; width: 8px; height: 12px; margin: -6px 0 0 -4px; border-radius: 2px; opacity: 0;
+  animation: w-fall var(--t, 1.4s) cubic-bezier(.2, .6, .4, 1) forwards; }
+@keyframes w-fall {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  25% { transform: translate(var(--ux), var(--uy)) rotate(calc(var(--r) / 4)); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; }
+}
+/* "All done for today" slides in under the ring. */
+.w-day-banner {
+  align-self: stretch; text-align: center; font-weight: 600; color: var(--w-sage-deep); background: var(--w-sage-track);
+  border-radius: 12px; padding: 10px 12px; opacity: 0; transform: translateY(8px); transition: opacity .3s ease, transform .3s ease;
+}
+.w-day-banner.is-on { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .w-pop, .w-confetti i { animation: none !important; }
+}
+
+/* ==========================================================================
+   WL-17, 12 Nov 2026 - a routine's numbers: what each exercise asks for, in
+   its own units, and a newly added one asking for its starting numbers.
+   ========================================================================== */
+.w-rgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 8px; }
+.w-rbox { display: flex; flex-direction: column; gap: 4px; }
+.w-rbox .w-input { min-height: 44px; padding: 6px; text-align: center; }
+.w-unit { position: relative; display: block; }
+.w-unit .w-input { width: 100%; padding-right: 26px; }
+.w-unit em { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 13px; color: var(--w-quiet); pointer-events: none; }
+.w-ritem.is-new { background: var(--w-sage-track); box-shadow: 0 0 0 2px var(--w-sage); border-radius: 16px; padding: 12px; border-bottom: 0 !important; }
+.w-ritem.is-new .w-input { box-shadow: inset 0 0 0 1.5px var(--w-sage-deep); }
+

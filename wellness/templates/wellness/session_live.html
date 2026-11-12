@@ -18,26 +18,29 @@
 <section class="w-card" style="gap:10px" aria-label="{{ b.exercise.name }}">
   <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
     <a href="{% url 'wellness:exercise_detail' b.exercise.pk %}" style="font-family:var(--w-serif);font-size:20px;color:inherit;text-decoration:none">{{ b.exercise.name }}</a>
-    {% if b.item %}<span class="w-small w-quiet">{% if b.exercise.kind == 'time' %}{{ b.item.seconds }} s{% else %}{{ b.item.rep_min }}–{{ b.item.rep_max }} reps{% endif %} · rest {{ b.rest }} s</span>{% endif %}
+    {% comment %} WL-17 - "3 × 10 · rest 90 s", "1 × 45 min". {% endcomment %}
+    {% if b.item %}<span class="w-small w-quiet" data-item-words>{{ b.words }}{% if b.rest %} · rest {{ b.rest_words }}{% endif %}</span>{% endif %}
   </div>
   {% if b.hint %}<div class="w-small" style="color:var(--w-sage-deep)">{{ b.hint }}</div>{% endif %}
   <div class="w-sets">
     <div class="w-set head"><span class="n">Set</span><span>Last time</span>
       {% if b.exercise.kind == 'weight' %}<span style="text-align:center">kg</span><span style="text-align:center">Reps</span>
       {% elif b.exercise.kind == 'reps' %}<span></span><span style="text-align:center">Reps</span>
-      {% elif b.exercise.kind == 'time' %}<span></span><span style="text-align:center">Sec</span>
+      {% elif b.exercise.kind == 'time' %}<span></span><span style="text-align:center">{% if b.in_min %}Min{% else %}Sec{% endif %}</span>
       {% else %}<span style="text-align:center">km</span><span style="text-align:center">Min</span>{% endif %}<span></span></div>
     {% for r in b.rows %}
     <form class="w-set{% if r.set.done %} is-done{% endif %}" method="post" action="{% url 'wellness:set_save' r.set.pk %}" data-set data-rest="{{ b.rest }}">
       {% csrf_token %}
       <input type="hidden" name="done" value="{% if r.set.done %}0{% else %}1{% endif %}">
       <span class="n">{{ r.set.set_no }}</span>
-      <span class="prev">{% if r.prev %}{% if r.prev.weight is not None %}{{ r.prev.weight|floatformat:"-2" }} × {{ r.prev.reps }}{% elif r.prev.reps %}{{ r.prev.reps }} reps{% elif r.prev.seconds %}{{ r.prev.seconds }} s{% elif r.prev.distance_m %}{% widthratio r.prev.distance_m 1000 1 %} km{% endif %}{% else %}—{% endif %}</span>
+      <span class="prev">{% if r.prev %}{% if r.prev.weight is not None %}{{ r.prev.weight|floatformat:"-2" }} × {{ r.prev.reps }}{% elif r.prev.reps %}{{ r.prev.reps }} reps{% elif r.prev.seconds and b.in_min %}{% widthratio r.prev.seconds 60 1 %} min{% elif r.prev.seconds %}{{ r.prev.seconds }} s{% elif r.prev.distance_m %}{% widthratio r.prev.distance_m 1000 1 %} km{% endif %}{% else %}—{% endif %}</span>
       {% if b.exercise.kind == 'weight' %}
       <input name="weight" inputmode="decimal" value="{{ r.set.weight|default_if_none:''|floatformat:'-2' }}" aria-label="Set {{ r.set.set_no }} weight in kilos">
       <input name="reps" inputmode="numeric" value="{{ r.set.reps|default_if_none:'' }}" aria-label="Set {{ r.set.set_no }} reps">
       {% elif b.exercise.kind == 'reps' %}
       <span></span><input name="reps" inputmode="numeric" value="{{ r.set.reps|default_if_none:'' }}" aria-label="Set {{ r.set.set_no }} reps">
+      {% elif b.exercise.kind == 'time' and b.in_min %}
+      <span></span><input name="minutes" inputmode="numeric" value="{% if r.set.seconds %}{% widthratio r.set.seconds 60 1 %}{% endif %}" aria-label="Set {{ r.set.set_no }} minutes">
       {% elif b.exercise.kind == 'time' %}
       <span></span><input name="seconds" inputmode="numeric" value="{{ r.set.seconds|default_if_none:'' }}" aria-label="Set {{ r.set.set_no }} seconds">
       {% else %}

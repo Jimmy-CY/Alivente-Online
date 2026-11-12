@@ -1,21 +1,47 @@
 {% extends "wellness/base.html" %}
-{% block title %}New exercise · Wellness{% endblock %}
-{% block top_left %}<a class="w-home" href="{% if next %}{{ next }}{% else %}{% url 'wellness:workouts' %}{% endif %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Back</a>{% endblock %}
+{% block title %}{% if ex %}{{ ex.name }}{% else %}New exercise{% endif %} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% if ex %}{% url 'wellness:my_exercises' %}{% elif next %}{{ next }}{% else %}{% url 'wellness:workouts' %}{% endif %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> {% if ex %}My exercises{% else %}Back{% endif %}</a>{% endblock %}
 {% block tabs %}{% endblock %}
 {% block content %}
+{% comment %} WL-17, 12 Nov 2026 - one form for a new exercise and for editing your own: Sports, Racket or ball, and how it is counted fixed once it is logged. {% endcomment %}
 <form method="post" style="display:flex;flex-direction:column;gap:16px">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
-  <h1 class="w-hello" style="font-size:28px">Your own exercise</h1>
+  <h1 class="w-hello" style="font-size:28px">{% if ex %}Edit your exercise{% else %}Your own exercise{% endif %}</h1>
   <label for="x-name" class="w-small w-quiet">Name</label>
-  <input class="w-input" id="x-name" name="name" maxlength="80" autocomplete="off">
+  <input class="w-input" id="x-name" name="name" maxlength="80" autocomplete="off" value="{{ ex.name|default:'' }}">
   <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">How is it counted?</legend>
-    <div class="w-chips">{% for k, l in types %}<label class="w-chip"><input type="radio" name="kind" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
+    {% if ex and logged %}
+    <input type="hidden" name="kind" value="{{ ex.kind }}">
+    <div class="w-chips">{% for k, l in types %}{% if k == ex.kind %}<label class="w-chip"><input type="radio" checked disabled aria-label="{{ l }}"><span>{{ l }}</span></label>{% endif %}{% endfor %}</div>
+    <span class="w-small w-quiet" data-kind-fixed>Logged in {{ logged }} workout{{ logged|pluralize }}, so this stays as it is - your past numbers keep their meaning.</span>
+    {% else %}
+    <div class="w-chips">{% for k, l in types %}<label class="w-chip"><input type="radio" name="kind" value="{{ k }}"{% if ex %}{% if ex.kind == k %} checked{% endif %}{% elif forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div>
+    {% endif %}
+    <span class="w-small w-quiet" style="display:block;margin-top:6px">Time is in minutes for cardio, dance and sports; in seconds for holds like a plank.</span></fieldset>
   <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">Mostly works</legend>
-    <div class="w-chips">{% for k, l in muscles %}<label class="w-chip"><input type="radio" name="muscle" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
+    <div class="w-chips">{% for k, l in muscles %}<label class="w-chip"><input type="radio" name="muscle" value="{{ k }}"{% if ex %}{% if ex.muscle == k %} checked{% endif %}{% elif forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div>
+    <span class="w-small w-quiet" style="display:block;margin-top:6px">Dance and fitness classes like Zumba: Cardio. Games like padel or netball: Sports.</span></fieldset>
   <fieldset style="border:0;padding:0;margin:0"><legend class="w-small w-quiet" style="margin-bottom:8px">With</legend>
-    <div class="w-chips">{% for k, l in equipment %}<label class="w-chip"><input type="radio" name="equipment" value="{{ k }}"{% if forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
+    <div class="w-chips">{% for k, l in equipment %}<label class="w-chip"><input type="radio" name="equipment" value="{{ k }}"{% if ex %}{% if ex.equipment == k %} checked{% endif %}{% elif forloop.first %} checked{% endif %}><span>{{ l }}</span></label>{% endfor %}</div></fieldset>
   {% if error %}<div class="w-error">{{ error }}</div>{% endif %}
   <button class="w-btn full" type="submit">Save</button>
 </form>
+{% if ex %}
+<details class="w-card" data-exercise-delete>
+  <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center">{% if logged %}Hide this exercise{% else %}Delete this exercise{% endif %}</summary>
+  {% if logged %}
+  <p class="w-quiet" style="margin:0">You logged {{ ex.name }} in {{ logged }} workout{{ logged|pluralize }}, so it cannot be deleted without losing them. Hide it instead: it leaves the exercise list{% if routines %} and {{ routines|length }} routine{{ routines|length|pluralize }}{% endif %}, and your past workouts keep it. Bring it back from My exercises any time.</p>
+  <form method="post" action="{% url 'wellness:exercise_hide' ex.pk %}">{% csrf_token %}<button class="w-btn ghost full" type="submit">Hide it</button></form>
+  {% elif routines %}
+  <p class="w-quiet" style="margin:0">It is in {{ routines|length }} routine{{ routines|length|pluralize }}: {% for r in routines %}{{ r.name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Deleting takes it out of {% if routines|length == 1 %}it{% else %}them{% endif %}.</p>
+  <form method="post" action="{% url 'wellness:exercise_delete' ex.pk %}" style="display:flex;flex-direction:column;gap:12px">{% csrf_token %}
+    <label style="display:flex;gap:10px;align-items:center;min-height:44px"><input type="checkbox" name="confirm" value="yes" required style="width:22px;height:22px"> Yes, take it out of {% if routines|length == 1 %}that routine{% else %}those routines{% endif %} too</label>
+    <button class="w-btn ghost" type="submit">Delete</button></form>
+  {% else %}
+  <p class="w-quiet" style="margin:0">It is not in any routine or workout. Delete it?</p>
+  <form method="post" action="{% url 'wellness:exercise_delete' ex.pk %}">{% csrf_token %}<button class="w-btn ghost full" type="submit">Delete</button></form>
+  {% endif %}
+</details>
+{% endif %}
 {% endblock %}

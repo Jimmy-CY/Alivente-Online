@@ -253,11 +253,14 @@ class Exercise(models.Model):
         ('chest', 'Chest'), ('back', 'Back'), ('shoulders', 'Shoulders'),
         ('arms', 'Arms'), ('legs', 'Legs'), ('core', 'Core'),
         ('full', 'Full body'), ('cardio', 'Cardio'),
+        # WL-17, 12 Nov 2026 - Demetri, 07:54: "add a section like Sports".
+        ('sport', 'Sports'),
     ]
     EQUIPMENT = [
         ('dumbbell', 'Dumbbells'), ('barbell', 'Barbell'),
         ('kettlebell', 'Kettlebell'), ('bodyweight', 'Bodyweight'),
         ('machine', 'Machine or cable'), ('band', 'Band'),
+        ('ball', 'Racket or ball'),
         ('none', 'Nothing'),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
@@ -267,6 +270,9 @@ class Exercise(models.Model):
     kind = models.CharField(max_length=10, choices=TYPES, default='weight')
     muscle = models.CharField(max_length=10, choices=MUSCLES)
     equipment = models.CharField(max_length=12, choices=EQUIPMENT)
+    # WL-17 - your own exercise, hidden: off every list and routine, still in
+    # the workouts it was logged in. Bring it back from My exercises.
+    hidden_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'wellness_exercise'
@@ -309,6 +315,11 @@ class RoutineItem(models.Model):
     rep_max = models.PositiveSmallIntegerField(default=12)
     seconds = models.PositiveIntegerField(null=True, blank=True)
     rest = models.PositiveSmallIntegerField(default=60)
+    # WL-17, 12 Nov 2026 - the starting weight (Demetri, 08:01: "Why do we
+    # not put our starting weight when we set up the routine"). Fills the
+    # first workout; after that last time's numbers lead.
+    weight = models.DecimalField(max_digits=6, decimal_places=2, null=True,
+                                 blank=True)
 
     class Meta:
         db_table = 'wellness_routine_item'

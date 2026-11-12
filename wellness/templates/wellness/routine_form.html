@@ -17,8 +17,9 @@
   {% if routine %}
   <section class="w-card" style="gap:14px">
     <h2 class="w-h2" style="font-size:16px">Exercises</h2>
+    {% comment %} WL-17, 12 Nov 2026 - what each exercise asks for: sets, reps (one number; a range if you want), a starting weight and rest; seconds for a hold; minutes for cardio, dance and sports. A new one opens asking for its starting numbers. {% endcomment %}
     {% for it in items %}
-    <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--w-line)">
+    <div id="item-{{ it.pk }}" class="w-ritem{% if new_pk == it.pk|stringformat:'d' %} is-new{% endif %}" style="display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--w-line)" data-routine-item>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <strong>{{ it.exercise.name }}</strong>
         <span style="display:flex;gap:2px">
@@ -27,16 +28,32 @@
           <button class="w-icon-btn" name="action" value="remove:{{ it.pk }}" aria-label="Remove {{ it.exercise.name }}">×</button>
         </span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
-        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">Sets<input class="w-input" name="sets_{{ it.pk }}" value="{{ it.sets }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
-        {% if it.exercise.kind == 'time' %}
-        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px;grid-column:span 2">Seconds<input class="w-input" name="seconds_{{ it.pk }}" value="{{ it.seconds|default_if_none:'' }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+      {% if new_pk == it.pk|stringformat:'d' %}<span class="w-small" style="color:var(--w-sage-deep);font-weight:600" data-new-item>Set your starting numbers</span>{% endif %}
+      <div class="w-rgrid">
+        <label class="w-small w-quiet w-rbox">Sets<input class="w-input" name="sets_{{ it.pk }}" value="{{ it.sets }}" inputmode="numeric"{% if new_pk == it.pk|stringformat:'d' %} autofocus{% endif %}></label>
+        {% if it.exercise.kind == 'time' or it.exercise.kind == 'distance' %}
+        {% if it.in_min %}
+        <label class="w-small w-quiet w-rbox">Time<span class="w-unit"><input class="w-input" name="minutes_{{ it.pk }}" value="{{ it.minutes }}" inputmode="numeric"><em>min</em></span></label>
+        <label class="w-small w-quiet w-rbox">Rest<span class="w-unit"><input class="w-input" name="rest_min_{{ it.pk }}" value="{{ it.rest_min }}" inputmode="numeric"><em>min</em></span></label>
         {% else %}
-        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">Reps from<input class="w-input" name="rep_min_{{ it.pk }}" value="{{ it.rep_min }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
-        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">to<input class="w-input" name="rep_max_{{ it.pk }}" value="{{ it.rep_max }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+        <label class="w-small w-quiet w-rbox">Hold<span class="w-unit"><input class="w-input" name="seconds_{{ it.pk }}" value="{{ it.seconds|default_if_none:'' }}" inputmode="numeric"><em>s</em></span></label>
+        <label class="w-small w-quiet w-rbox">Rest<span class="w-unit"><input class="w-input" name="rest_{{ it.pk }}" value="{{ it.rest }}" inputmode="numeric"><em>s</em></span></label>
         {% endif %}
-        <label class="w-small w-quiet" style="display:flex;flex-direction:column;gap:4px">Rest (s)<input class="w-input" name="rest_{{ it.pk }}" value="{{ it.rest }}" inputmode="numeric" style="min-height:44px;padding:6px;text-align:center"></label>
+        {% else %}
+        {% if it.show_range %}
+        <label class="w-small w-quiet w-rbox">Reps from<input class="w-input" name="rep_min_{{ it.pk }}" value="{{ it.rep_min }}" inputmode="numeric"></label>
+        <label class="w-small w-quiet w-rbox">to<input class="w-input" name="rep_max_{{ it.pk }}" value="{{ it.rep_max }}" inputmode="numeric"></label>
+        {% else %}
+        <label class="w-small w-quiet w-rbox">Reps<input class="w-input" name="reps_{{ it.pk }}" value="{{ it.rep_max }}" inputmode="numeric"></label>
+        {% endif %}
+        {% if it.exercise.kind == 'weight' %}
+        <label class="w-small w-quiet w-rbox">Weight<span class="w-unit"><input class="w-input" name="weight_{{ it.pk }}" value="{{ it.weight|default_if_none:''|floatformat:'-2' }}" inputmode="decimal" placeholder="—"><em>kg</em></span></label>
+        {% endif %}
+        <label class="w-small w-quiet w-rbox">Rest<span class="w-unit"><input class="w-input" name="rest_{{ it.pk }}" value="{{ it.rest }}" inputmode="numeric"><em>s</em></span></label>
+        {% endif %}
       </div>
+      {% if it.exercise.kind == 'weight' or it.exercise.kind == 'reps' %}{% if not it.show_range %}<a class="w-small" href="?range={{ it.pk }}#item-{{ it.pk }}">Aim for a range instead</a>{% elif it.rep_min == it.rep_max %}<a class="w-small" href="?#item-{{ it.pk }}">Use one number</a>{% endif %}{% endif %}
+      {% if new_pk == it.pk|stringformat:'d' and it.exercise.kind == 'weight' %}<span class="w-small w-quiet">Your first workout starts from these. After that, last time's numbers lead.</span>{% endif %}
     </div>
     {% empty %}
     <p class="w-small w-quiet" style="margin:0">No exercises yet. Add the first below.</p>
@@ -47,7 +64,7 @@
     </select>
     <button class="w-btn ghost" name="action" value="add">Add it</button>
     <a class="w-small" href="{% url 'wellness:exercise_new' %}?next={{ request.path|urlencode }}">Not in the list? Make your own</a>
-    <p class="w-small w-quiet" style="margin:0">The rep range drives progress: reach the top on every set and the next workout suggests a little more weight - one you own.</p>
+    <p class="w-small w-quiet" style="margin:0">Do every rep on every set and the next workout suggests a little more weight - one you own. Reps only: one more rep. A hold: a little longer.</p>
   </section>
   {% endif %}
 

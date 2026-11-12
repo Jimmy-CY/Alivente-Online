@@ -110,7 +110,10 @@ HOWTO = [
           'We offer to mark it established; it moves to a quiet list, off '
           'Today and with no reminders. "Bring back to Today" undoes it.'},
     {'q': 'How do I fill in a day I forgot?',
-     'a': 'Open the habit. The row of the last seven days takes a tap on '
+     'a': 'Easiest: Habits > Catch up (or "Catch up" under your habits on '
+          'Today). Pick the day and tick everything you did - up to a week '
+          'back. For one habit: open the habit. The row of the last seven '
+          'days takes a tap on '
           'any day. For a minutes or count habit, the tap puts that day in '
           'the box below - type the amount and Save; 0 clears it. Today and '
           'the six days before it. Ticking a day before the habit began '
@@ -137,11 +140,39 @@ HOWTO = [
           'What matters most is the same conditions: morning, after the '
           'bathroom, before food.'},
     {'q': 'How does Wellness suggest the next weight?',
-     'a': 'Each exercise in a routine has a rep range, say 8 to 12. When you '
-          'reach the top of the range on every set, the next workout suggests '
-          'the next weight up that you own (set your kit under My '
-          'equipment). Until then it suggests the same weight and one more '
-          'rep. This is called double progression.'},
+     'a': 'Each exercise in a routine has its reps - say 3 x 10. Do every '
+          'rep on every set and the next workout suggests the next weight '
+          'up that you own (set your kit under My equipment) - "Try 22 kg '
+          'today". Miss some and it keeps the weight until you get them all. '
+          'Prefer a range, say 8 to 12? Tap "Aim for a range instead": the '
+          'top of it then drives the next weight. Reps only: every rep '
+          'suggests one more. A hold like a plank: held in full, a little '
+          'longer. Cardio, dance and sports are not pushed.'},
+    # WL-17, 12 Nov 2026 - Workouts.
+    {'q': 'Set up: a routine with your starting numbers',
+     'a': 'Each exercise asks for what fits it, starting from sensible '
+          'numbers you only change where you differ.',
+     'steps': [
+         'Workouts > New routine. Name it, then Next: add exercises.',
+         'Pick an exercise and tap Add it. It opens highlighted: "Set your '
+         'starting numbers".',
+         'Weights: sets, reps, a starting weight and rest (3 x 10 at 20 kg, '
+         'rest 90 s). A plank: seconds. Zumba, padel, a run: minutes.',
+         'Add the next one the same way, then Save routine.']},
+    {'q': 'Set up: edit or delete an exercise you made',
+     'a': 'Only your own - the built-in ones stay as they are.',
+     'steps': [
+         'Workouts > My exercises, then Edit beside it.',
+         'Change the name, group (Sports, Cardio...) or kit. How it is '
+         'counted can change only until you log it.',
+         'At the bottom: Delete. Wellness says first where it is used.',
+         'Logged in a workout? Hide it instead - it leaves the lists and '
+         'routines, and your past workouts keep it.']},
+    {'q': 'Where do sports and dance go?',
+     'a': 'Padel, tennis, squash, netball, soccer and other games are under '
+          'Sports; dance, Zumba and spin class under Cardio. They are timed '
+          'in minutes - "1 x 90 min" - and add your watch\'s calories at '
+          'the end as usual.'},
     {'q': 'What counts as a record?',
      'a': 'Your heaviest weight on an exercise, the most reps at a weight, '
           'your best estimated one-rep max, or your longest time or distance. '
@@ -397,14 +428,14 @@ HOWTO += [
           'it. Less than your aim is kept, but the day is not Done.'},
     # ---- Workouts
     {'q': 'Set up: a routine that tells you when to go heavier',
-     'a': 'Wellness suggests the next weight once you reach the top of the '
-          'rep range on every set - but only weights you own.',
+     'a': 'Wellness suggests the next weight once you do every rep on '
+          'every set - but only weights you own.',
      'steps': [
          'Workouts > My equipment: type your dumbbells (for example 2 4 6 '
          '8), kettlebells, and your heaviest barbell load. Save.',
          'Workouts > New routine. Give it a name.',
-         'Add an exercise, then set Sets, Reps from - to (say 8 to 12) and '
-         'Rest.',
+         'Add an exercise, then set Sets, Reps (say 10), a starting Weight '
+         'and Rest.',
          'Under "Show it on Today on...", pick its days. Save.',
          'Start it from Today or Workouts. Grey numbers are last time.']},
     {'q': 'Set up: log a workout and its calories',
@@ -448,6 +479,23 @@ HOWTO += [
          'Phone Settings > Apps > Chrome > Notifications: allowed.',
          'Phone Settings > Apps > Chrome > Battery: Unrestricted.',
          'Check Do not disturb is off, then tap "Send me a test".']},
+    # WL-16, 12 Nov 2026.
+    {'q': 'Set up: catch up on days you forgot',
+     'a': 'Tick a whole day\'s habits in one place, up to a week back.',
+     'steps': [
+         'Habits > Catch up - or tap "Catch up" under your habits on Today '
+         'when something is left.',
+         'The days across the top say how many habits are still unticked. '
+         'Tap a day.',
+         'Tick each habit you did that day. A tick records your aim.',
+         'Different amount? Tap the arrow beside it and type it for that '
+         'day.']},
+    {'q': 'Does Wellness follow my time zone when I travel?',
+     'a': 'Yes. The date, the good-morning greeting and which day a tick '
+          'counts for all follow your phone\'s own clock and time zone. '
+          'Reminders follow the time zone your phone last showed Wellness, '
+          'so an 08:00 reminder comes at 08:00 where you are - open '
+          'Wellness once after you land.'},
     {'q': 'Can I turn the sounds off?',
      'a': 'Yes. Tap the cog and untick "Sounds and vibration", then Save. '
           'It covers the soft ding when you tick a habit, the chime when '
@@ -494,13 +542,13 @@ _TOPIC_WORDS = [
     ('setup', ('Samsung phone', 'fingerprint', 'reminders on a Samsung',
                'shortcuts', 'put Wellness on my phone', 'hide the parts',
                'keep me logged in', 'How do reminders work',
-               'turn the sounds off')),
+               'turn the sounds off', 'time zone')),
     ('cycle', ('cycle', 'period', 'PMS', 'pill', 'perimenopause',
                'fertile')),
     ('calm', ('Calm', 'voice', 'Guided')),
     ('body', ('trend weight', 'weigh in')),
     ('workouts', ('weight', 'record', 'calories', 'train', 'routine',
-                  'workout')),
+                  'workout', 'exercise', 'sports and dance')),
     ('journal', ('journal', 'Insights', 'line under the quote')),
     ('privacy', ('see my Wellness', 'badges', 'Monday email')),
     ('habits', ('streak', 'Done, Missed', 'missed day', 'established',

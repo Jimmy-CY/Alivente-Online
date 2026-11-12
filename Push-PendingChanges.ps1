@@ -1284,7 +1284,7 @@ $sentinels = @(
     @{ File = 'pages/views/lease_signing_sign.py'; Text = 'read_to_end'; What = 'ES-4: the server enforces reading to the end, because a disabled button is a courtesy to somebody using the page and not a check - and with no certificate, read_to_end is the difference between somebody having the link and somebody having read the lease' },
     @{ File = 'pages/views/lease_signing_create.py'; Text = 'from .lease_signing_sign import _invite'; What = 'ES-3b: one spelling of mint-a-link-and-send-it, imported from ES-4 rather than copied - a second copy here would be a second answer to what a resend does to the old link, and ES-1 made that a rule when it stored the token hashed' },
     @{ File = 'pages/management/commands/check_lease_renewal_and_invoices.py'; Text = 'Celebration email to %s'; What = 'CX-1: the celebrations email retries like the others - without it one mail-server hiccup loses every celebration email for the day' },
-    @{ File = 'wellness/training.py'; Text = 'def suggest('; What = 'WL-3: the workout rules are on disk - without them no workout can start' },
+    @{ File = 'wellness/training.py'; Text = 'def suggest_hold('; What = 'WL-3/WL-17: the workout rules are on disk, holds included - without them no workout can start' },
     @{ File = 'wellness/cycle.py'; Text = 'open_period'; What = 'CY-1/CY-2: the cycle rules are on disk, with the one-tap period - without them the tracker cannot open' },
     @{ File = 'wellness/badges.py'; Text = 'First breath'; What = 'WL-4a/WL-7: the badge rules are on disk, with the Calm badges - without them Today cannot open' },
     @{ File = 'wellness/reminders.py'; Text = 'MOD.checkin_on(mods)'; What = 'WL-4b/WL-9: the reminder rules are on disk, skipping switched-off sections - without them the reminder job cannot run' },
@@ -1293,8 +1293,10 @@ $sentinels = @(
     @{ File = 'wellness/help.py'; Text = 'calm_practice'; What = 'WL-6/WL-7: the help for each screen is on disk, Calm included - without it every Wellness page fails' },
     @{ File = 'wellness/calm.py'; Text = 'def tick_value('; What = 'WL-7: the Calm practices and minutes are on disk - without them the Calm tab cannot open' },
     @{ File = 'wellness/challenge.py'; Text = 'def week_state('; What = 'WL-8/CY-3/WL-12: the challenge rules are on disk, weekly challenges included - without them Today cannot open' },
-    @{ File = 'wellness/modules.py'; Text = 'def section_of('; What = 'WL-9: the section switches are on disk - without them no Wellness page opens' },
+    @{ File = 'wellness/modules.py'; Text = 'def tz_or_none('; What = 'WL-9/WL-16: the section switches and the time zone reader are on disk - without them no Wellness page opens' },
     @{ File = 'wellness/phases.py'; Text = 'DISCLAIMER = ('; What = 'CY-2/CY-4: the cycle phases are on disk, honestly worded - without them the cycle tracker cannot open' },
+    @{ File = 'wellness/training.py'; Text = 'def in_minutes('; What = 'WL-17: the workout rules know minutes from seconds - without them no workout can be started' },
+    @{ File = 'wellness/modules.py'; Text = 'def phone_now('; What = "WL-16: Wellness runs on the phone's clock - without it no Wellness page can be drawn" },
     @{ File = 'wellness/templatetags/wellness_modules.py'; Text = 'def fx_state('; What = 'WL-15: the sounds-and-vibration switch is on disk - without it no Wellness page can be drawn' },
     @{ File = 'wellness/insights.py'; Text = 'def trim('; What = 'WL-14: Insights starts at your first week and drops empty charts - without it the Insights page cannot open' },
     @{ File = 'wellness/guide.py'; Text = 'def grouped('; What = 'WL-13: the guide questions are on disk in their topics - without them the help sheet on every Wellness page fails' },
@@ -3263,7 +3265,11 @@ $suites = @(
     # WL-15, 2 Nov 2026 - Wellness: sounds, movement, Saved.
     'test_wellness_nineteen.py',
     # GS-2, 2 Nov 2026 - two more suites that only pass alone run alone.
-    'test_gate_solo.py'
+    'test_gate_solo.py',
+    # WL-16, 12 Nov 2026 - Wellness: catch up, the whole day done, the phone's clock.
+    'test_wellness_twenty.py',
+    # WL-17, 12 Nov 2026 - Wellness: workouts - sports, starting numbers, your own exercises.
+    'test_wellness_twentyone.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

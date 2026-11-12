@@ -1,0 +1,73 @@
+{% extends 'wellness/base.html' %}
+{% block title %}Catch up · Wellness{% endblock %}
+{% block top_left %}
+<a class="w-home" href="{% url 'wellness:habit_list' %}">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Habits
+</a>
+{% endblock %}
+{% block content %}
+{% comment %} WL-16, 12 Nov 2026 - tick what you forgot, up to a week back (Demetri, 07:29 and 07:32). {% endcomment %}
+<div>
+  <h1 class="w-title">Catch up</h1>
+  <p class="w-quiet" style="margin:6px 0 0">Forgot to tick something? Pick the day, then tick what you did.</p>
+</div>
+
+<nav class="w-catch-days" aria-label="The last seven days">
+  {% for d in days %}
+  <a href="?day={{ d.iso }}" class="w-catch-day{% if d.iso == pick.iso %} picked{% endif %}{% if not d.left %} clear{% endif %}"{% if d.iso == pick.iso %} aria-current="date"{% endif %} data-catch-day>
+    <span class="d-label">{{ d.label }}</span>
+    <span class="d-num">{{ d.date.day }}</span>
+    <span class="d-left">{% if d.left %}{{ d.left }} left{% else %}&#10003;{% endif %}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+<section class="w-card" aria-labelledby="cu-h">
+  <h2 class="w-h2" id="cu-h">{{ pick_words }}</h2>
+  {% if pick.rows %}
+  {% for r in pick.rows %}
+  {% if not r.flexible %}
+  <div class="w-habit-wrap">
+    <form method="post" action="{% url 'wellness:habit_check' r.habit.pk %}" data-tick style="flex:1;display:flex">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ pick.iso }}">
+      <input type="hidden" name="op" value="toggle">
+      <input type="hidden" name="next" value="{% url 'wellness:catch_up' %}?day={{ pick.iso }}">
+      <button type="submit" class="w-habit{% if r.done %} is-done{% endif %}" data-habit-row aria-pressed="{% if r.done %}true{% else %}false{% endif %}">
+        <span class="w-check"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="w-habit-name">{{ r.habit.name }}</span>
+        {% if r.habit.measured %}<span class="w-habit-meta">{{ r.habit.target }} {% if r.habit.kind == 'duration' %}min{% else %}{{ r.habit.unit|default:'times' }}{% endif %}</span>{% endif %}
+      </button>
+    </form>
+    <a class="w-habit-open" href="{% url 'wellness:habit_detail' r.habit.pk %}?day={{ pick.iso }}#w-entry" aria-label="Open {{ r.habit.name }} for another amount">
+      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% for r in pick.rows %}{% if r.flexible %}
+  {% ifchanged r.flexible %}<span class="w-label" style="margin-top:8px">Times a week - tick it if you did it</span>{% endifchanged %}
+  <div class="w-habit-wrap">
+    <form method="post" action="{% url 'wellness:habit_check' r.habit.pk %}" data-tick style="flex:1;display:flex">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ pick.iso }}">
+      <input type="hidden" name="op" value="toggle">
+      <input type="hidden" name="next" value="{% url 'wellness:catch_up' %}?day={{ pick.iso }}">
+      <button type="submit" class="w-habit{% if r.done %} is-done{% endif %}" data-habit-row data-flex aria-pressed="{% if r.done %}true{% else %}false{% endif %}">
+        <span class="w-check"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="w-habit-name">{{ r.habit.name }}</span>
+        {% if r.habit.measured %}<span class="w-habit-meta">{{ r.habit.target }} {% if r.habit.kind == 'duration' %}min{% else %}{{ r.habit.unit|default:'times' }}{% endif %}</span>{% endif %}
+      </button>
+    </form>
+    <a class="w-habit-open" href="{% url 'wellness:habit_detail' r.habit.pk %}?day={{ pick.iso }}#w-entry" aria-label="Open {{ r.habit.name }} for another amount">
+      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+  {% endif %}{% endfor %}
+  <p class="w-small w-quiet" style="margin:4px 0 0">A tick records your aim. Did a different amount? Tap the arrow to type it.</p>
+  {% else %}
+  <p class="w-quiet" style="margin:0">Nothing was planned for this day.</p>
+  {% endif %}
+</section>
+{% endblock %}

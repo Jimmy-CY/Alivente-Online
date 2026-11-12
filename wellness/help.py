@@ -28,8 +28,13 @@ SCREENS = {
             'Tap a habit when it is done. Tap again to undo. A minutes or '
             'count habit records its aim - open it to type another amount.',
             'A tick gives a soft ding and a short vibration; the last habit '
-            'of the day, a little chime and the ring glows. A new badge '
-            'appears in the middle of the screen.',
+            'of the day, a chime, the ring pops, confetti falls and "All '
+            'done for today" appears. A new badge appears in the middle of '
+            'the screen.',
+            'Forgot some days? "Left unticked this past week - Catch up" '
+            'under your habits takes you there.',
+            'The date, the greeting and which day a tick counts for follow '
+            'your phone\'s own clock and time zone.',
             'A times-a-week habit leaves Today once that week\'s number is '
             'done, and is back on Monday.',
             'Tap the arrow beside a habit to see its calendar and streak.',
@@ -46,12 +51,35 @@ SCREENS = {
                          'allow it, a line from Claude.'),
         ],
     },
+    # WL-16, 12 Nov 2026 - Catch up.
+    'catch_up': {
+        'title': 'Catch up',
+        'purpose': 'Tick what you forgot, for today and the six days '
+                   'before it.',
+        'steps': [
+            'The days across the top show how many planned habits are still '
+            'unticked - a tick means that day is complete.',
+            'Tap a day, then tick each habit you did. Tap again to undo.',
+            'A tick records your aim. Did a different amount? Tap the arrow '
+            'and type it for that day.',
+            'Times-a-week habits are listed too: tick them on the days you '
+            'did them.',
+            'Catching up a weekly challenge\'s runs clears a "fell short" '
+            'card by itself.',
+        ],
+        'signs': [
+            ('--w-miss', 'An outlined day still has habits left to tick.'),
+            ('--w-empty', 'A filled day with a tick is complete.'),
+        ],
+    },
     'habit_list': {
         'title': 'Habits',
         'purpose': 'All your habits, with how each is going.',
         'steps': [
             'Tap Add a habit to start a new one - an example fills it in '
             'for you.',
+            'Forgot to tick some days? Tap Catch up to tick them, up to a '
+            'week back.',
             'Tap a habit to see its calendar, streak and history.',
             'Paused habits stay here but leave Today until you resume them; '
             'paused days count as Rest.',
@@ -212,11 +240,18 @@ SCREENS = {
     },
     'routine_form': {
         'title': 'A routine',
-        'purpose': 'A saved workout: its exercises, sets, reps and rest.',
+        'purpose': 'A saved workout: its exercises, sets, reps, weight and '
+                   'rest.',
         'steps': [
-            'Add exercises from the library, or make your own.',
-            'Set the rep range - when you reach the top on every set, the '
-            'next workout suggests the next weight you own.',
+            'Add exercises from the library, or make your own. A new one '
+            'opens asking for its starting numbers.',
+            'Weights: sets, reps, a starting weight and rest - "3 x 10 at '
+            '20 kg, rest 90 s". Reps only: sets, reps and rest.',
+            'A hold like a plank: seconds. Cardio, dance and sports: '
+            'minutes - "1 x 45 min".',
+            'Do every rep on every set and the next workout suggests the '
+            'next weight you own; reps only, one more rep; a hold, a little '
+            'longer.',
             'Choose the days it shows on Today.',
         ],
         'signs': [],
@@ -225,8 +260,10 @@ SCREENS = {
         'title': 'The live workout',
         'purpose': 'Log each set as you go.',
         'steps': [
-            'The grey numbers are last time - beat them by a rep or a '
-            'little weight.',
+            'The grey numbers are last time. A line under the name says '
+            'what to try today - "Try 22 kg" after every rep last time.',
+            'Cardio, dance and sports are in minutes, and just show last '
+            'time - no pushing.',
             'Change the weight or reps if you need to, then tick the set.',
             'A tick starts the rest timer. Skip it whenever you are ready.',
             'Finish when you are done - unticked sets are left out.',
@@ -258,9 +295,31 @@ SCREENS = {
     },
     'exercise_new': {
         'title': 'Your own exercise',
-        'purpose': 'Add an exercise the library does not have.',
+        'purpose': 'Add an exercise the library does not have - or edit '
+                   'one you made.',
         'steps': ['Choose how it is measured: weight and reps, reps only, '
-                  'time or distance.'],
+                  'time or distance. Time is minutes for cardio, dance and '
+                  'sports; seconds for a hold.',
+                  'Mostly works: dance and classes like Zumba are Cardio; '
+                  'games like padel or netball are Sports.',
+                  'Editing: the name, group and kit can always change; how '
+                  'it is counted, only until it is logged in a workout.',
+                  'Delete asks first. Logged in a workout? Hide it instead - '
+                  'your past workouts keep it.'],
+        'signs': [],
+    },
+    # WL-17, 12 Nov 2026 - your own exercises.
+    'my_exercises': {
+        'title': 'My exercises',
+        'purpose': 'The exercises you made, to edit, delete or hide.',
+        'steps': ['Tap Edit to change one, or to delete it at the bottom.',
+                  'Never used: Delete removes it. In routines only: it is '
+                  'taken out of them, once you tick that.',
+                  'Logged in workouts: it can only be hidden - off every '
+                  'list and routine, still in your past workouts.',
+                  'A hidden one says so here; Bring back puts it back in '
+                  'the lists.',
+                  'The built-in exercises stay as they are.'],
         'signs': [],
     },
     'kit': {
@@ -474,6 +533,7 @@ ALIASES = {
     'habit_new': 'habit_form', 'habit_edit': 'habit_form',
     'journal_new': 'journal_form', 'journal_edit': 'journal_form',
     'routine_new': 'routine_form', 'routine_edit': 'routine_form',
+    'exercise_edit': 'exercise_new',
 }
 
 # Addresses that are not screens a person reads: actions and the app
@@ -485,6 +545,7 @@ NOT_SCREENS = {
     'cycle_delete', 'tip_seen', 'manifest', 'service_worker', 'asset',
     'badges_seen', 'push_subscribe', 'push_unsubscribe', 'push_test',
     'calm_done', 'cycle_quick', 'session_calories',
+    'exercise_delete', 'exercise_hide',
 }
 
 
@@ -546,8 +607,9 @@ TIPS = {
         'A workout left open is kept - tap In progress to carry on.',
     ],
     'routine_form': [
-        'A rep range like 8 to 12 works for most: reach 12 on every set and '
-        'the next weight up is suggested.',
+        'Most people do 3 x 8 to 12 reps. Prefer a range? Tap "Aim for a '
+        'range instead" - the top of it then drives the next weight.',
+        'No starting weight? Leave it empty - your first workout asks.',
         'Rest of 60 to 90 seconds suits most lifts; 2 to 3 minutes for the '
         'heaviest.',
     ],

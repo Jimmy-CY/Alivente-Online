@@ -1,0 +1,30 @@
+{% extends "wellness/base.html" %}
+{% block title %}My exercises · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
+{% block content %}
+{% comment %} WL-17, 12 Nov 2026 - the exercises you made: edit, delete or hide them. {% endcomment %}
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <h1 class="w-title">My exercises</h1>
+  <a class="w-btn" href="{% url 'wellness:exercise_new' %}?next={% url 'wellness:my_exercises' %}" style="min-height:44px;padding:0 18px;font-size:15px">Make one</a>
+</div>
+<p class="w-quiet" style="margin:0">The ones you made. The built-in exercises stay as they are.</p>
+{% if rows %}
+<section class="w-card w-list" style="gap:0;padding:4px 20px">
+  {% for r in rows %}
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:60px;{% if not forloop.last %}border-bottom:1px solid var(--w-line){% endif %}" data-my-exercise>
+    <span style="display:flex;flex-direction:column;gap:2px">
+      <strong>{{ r.ex.name }}{% if r.ex.hidden_at %} <span class="w-small w-quiet">· hidden</span>{% endif %}</strong>
+      <span class="w-small w-quiet">{{ r.group }} · {{ r.counted }} · {% if r.routines or r.logged %}{% if r.routines %}in {{ r.routines }} routine{{ r.routines|pluralize }}{% endif %}{% if r.routines and r.logged %}, {% endif %}{% if r.logged %}{{ r.logged }} workout{{ r.logged|pluralize }}{% endif %}{% else %}not used yet{% endif %}</span>
+    </span>
+    {% if r.ex.hidden_at %}
+    <form method="post" action="{% url 'wellness:exercise_hide' r.ex.pk %}">{% csrf_token %}<input type="hidden" name="back" value="1"><button class="w-btn ghost" type="submit" style="min-height:44px;padding:0 14px">Bring back</button></form>
+    {% else %}
+    <a class="w-small" href="{% url 'wellness:exercise_edit' r.ex.pk %}" style="font-weight:600;min-height:44px;display:flex;align-items:center">Edit &rsaquo;</a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% else %}
+<section class="w-card soft"><p style="margin:0">None yet. When an exercise is not in the list, Make one - it appears here to edit later.</p></section>
+{% endif %}
+{% endblock %}

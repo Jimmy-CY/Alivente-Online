@@ -136,15 +136,21 @@ def mark_sent(prof, day, keys):
 
 
 def run(now, dry_run=False, write=print):
-    """One pass for everybody with a phone allowed. Returns (sent, people)."""
+    """One pass for everybody with a phone allowed. Returns (sent, people).
+    WL-16 - each person's reminders go by their phone's time zone."""
+    now_all = now
     from . import push as P
     from .models import PushDevice, WellnessProfile
     users = {d.user for d in PushDevice.objects.select_related('user')
              if d.user.is_active}
     sent = 0
+    from . import modules as MOD
     for user in users:
         prof, _ = WellnessProfile.objects.get_or_create(user=user)
-        todo = due(now, items_for(user, now), sent_today(prof, now.date()))
+        # WL-16 - on this person's phone's clock, as last seen.
+        now_here = MOD.phone_now(now_all, prof.prefs)
+        todo = due(now_here, items_for(user, now_here),
+                   sent_today(prof, now_here.date()))
         if not todo:
             continue
         done = []
@@ -160,5 +166,5 @@ def run(now, dry_run=False, write=print):
             # not tried again every quarter of an hour all day.
             done.append(it['key'])
         if done:
-            mark_sent(prof, now.date(), done)
+            mark_sent(prof, now_here.date(), done)
     return sent, len(users)

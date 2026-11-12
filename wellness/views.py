@@ -61,13 +61,43 @@ def wellness_view(fn):
                 not MOD.is_on(request.user, sec):
             return redirect('%s?off=%s#sections'
                             % (reverse('wellness:settings'), sec))
-        return fn(request, *args, **kwargs)
+        # WL-16 - the page runs on the phone's clock (see modules.py).
+        z = _phone_tz(request)
+        if z is None:
+            return fn(request, *args, **kwargs)
+        with timezone.override(z):
+            return fn(request, *args, **kwargs)
     return login_required(permission_required(PERM, raise_exception=True)(
         guarded))
 
 
 def _today():
     return timezone.localdate()
+
+
+def _phone_tz(request):
+    """WL-16 - the phone's time zone: what it says now (the w_tz cookie),
+    else the last one it said, else None (the site's own). A new one is
+    kept, so reminders follow the phone between visits."""
+    from . import modules as MOD
+    from urllib.parse import unquote
+    said = unquote(request.COOKIES.get(MOD.TZ_COOKIE, ''))
+    z = MOD.tz_or_none(said)
+    try:
+        prof = WellnessProfile.objects.filter(user=request.user).first()
+    except Exception:  # noqa: BLE001 - a clock must never break a page
+        return z
+    if prof is None:
+        return z
+    prefs = prof.prefs or {}
+    if z is not None:
+        if prefs.get('tz') != said:
+            prefs = dict(prefs)
+            prefs['tz'] = said
+            prof.prefs = prefs
+            prof.save(update_fields=['prefs', 'updated_at'])
+        return z
+    return MOD.tz_or_none(prefs.get('tz'))
 
 
 def _profile(user):
@@ -88,6 +118,66 @@ def _greeting(now):
     if h < 18:
         return 'Good afternoon', 'afternoon'
     return 'Good evening', 'evening'
+
+
+# --------------------------------------------------------------------------
+# WL-16, 12 Nov 2026 - Catch up. Demetri, 07:29: "I want the ability to be
+# able to tick off a habit that I forgot to tick off in the past ... maybe
+# see some sort of calendar view and see unticked habits and be allowed to
+# tick off". 07:32: "a catch up of 7 days is sufficient".
+#
+# A strip of today and the six days before it (BACKFILL_DAYS - the same
+# reach as a habit's own seven days), each with how many planned habits
+# are still unticked; tap a day for that day's habits as circles, ticked
+# the way Today ticks. Times-a-week habits are never "left" - they are
+# offered as "if you did it" on every day.
+# --------------------------------------------------------------------------
+def _catch_up_days(user, day):
+    """[{date, label, left, rows}] for today and the six days before it,
+    newest first. rows: [{habit, done, flexible}] for habits that could
+    have been done that day."""
+    habits = [h for h in Habit.objects.filter(
+        user=user, archived_at__isnull=True,
+        established_at__isnull=True).order_by('time_of_day', 'position', 'pk')]
+    done = {h.pk: _done_dates(h) for h in habits}
+    out = []
+    for i in range(BACKFILL_DAYS):
+        d = day - dt.timedelta(days=i)
+        rows, left = [], 0
+        for h in habits:
+            if d < h.started_on or not H.scheduled(h, d):
+                continue
+            flex = H.is_flexible(h)
+            is_done = d in done[h.pk]
+            if not flex and not is_done:
+                left += 1
+            rows.append({'habit': h, 'done': is_done, 'flexible': flex})
+        out.append({'date': d, 'iso': d.isoformat(), 'left': left,
+                    'rows': rows,
+                    'label': 'Today' if i == 0 else d.strftime('%a')})
+    return out
+
+
+def catch_up_left(user, day):
+    """Planned habits left unticked on the six days before today."""
+    return sum(x['left'] for x in _catch_up_days(user, day)[1:])
+
+
+@wellness_view
+def catch_up(request):
+    day = _today()
+    days = _catch_up_days(request.user, day)
+    want = request.GET.get('day') or ''
+    pick = next((x for x in days if x['iso'] == want), None)
+    if pick is None:
+        # The newest past day with something left; else yesterday.
+        pick = next((x for x in days[1:] if x['left']), days[1])
+    return render(request, 'wellness/catch_up.html', {
+        'tab': 'habits', 'days': days, 'pick': pick,
+        'pick_words': ('Today' if pick['date'] == day else
+                       pick['date'].strftime('%A ') + str(pick['date'].day) +
+                       pick['date'].strftime(' %B')),
+    })
 
 
 def _first_name(user):
@@ -195,6 +285,9 @@ def today(request):
         'ring': _ring(done_n, total, 27),
         'mood': mood,
         'has_any': has_any,
+        # WL-16 - planned habits left unticked in the past six days.
+        'catch_up_left': catch_up_left(request.user, day)
+        if 'habits' in mods else 0,
         'tip': _tip(profile, ['today_tap', 'today_ring']) if total else None,
         # WL-2 - the weigh-in card, the evening card, On this day.
         'mods': mods,
@@ -953,7 +1046,7 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl17-1'
+SW_VERSION = 'wl19-1'
 
 
 def service_worker(request):

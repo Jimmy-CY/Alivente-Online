@@ -90,6 +90,38 @@ def checkin_on(mods):
     return 'journal' in mods
 
 
+# --------------------------------------------------------------------------
+# WL-16, 12 Nov 2026 - the phone's own clock. Demetri, 07:29: the date and
+# "Good morning" "need to be driven by the phone time and date ... If that
+# phone is on a different time zone, this needs to be taken into account."
+# 07:32: "Everything should follow the phone's time zone."
+#
+# The phone says its time zone (a cookie, w_tz, set by wellness.js on every
+# page); each Wellness page then runs in it - the date, the greeting, which
+# day a tick counts for, the evening check-in, challenge days. The last one
+# seen is kept in prefs['tz'], so reminders and the daily line follow the
+# phone too while nobody has Wellness open.
+# --------------------------------------------------------------------------
+TZ_COOKIE = 'w_tz'
+
+
+def tz_or_none(name):
+    """A real time zone from its name ('Europe/London'), or None."""
+    if not name or len(name) > 64:
+        return None
+    try:
+        from zoneinfo import ZoneInfo
+        return ZoneInfo(name)
+    except Exception:  # noqa: BLE001 - anything odd is simply not a zone
+        return None
+
+
+def phone_now(now, prefs):
+    """`now` (an aware datetime) on the phone's clock, as last seen."""
+    z = tz_or_none((prefs or {}).get('tz'))
+    return now.astimezone(z) if z else now
+
+
 def name_of(key):
     for k, n, _l in MODULES:
         if k == key:

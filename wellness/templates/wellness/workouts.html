@@ -1,4 +1,5 @@
 {% extends "wellness/base.html" %}
+{% load wellness_modules %}
 {% block title %}Workouts · Wellness{% endblock %}
 {% block content %}
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -53,7 +54,7 @@
   {% for p in prs %}
   <a href="{% url 'wellness:exercise_detail' p.exercise.pk %}" class="w-row" style="min-height:44px">
     <span>{{ p.exercise.name }}</span>
-    <span class="w-small w-quiet">{% if p.weight is not None %}{{ p.weight|floatformat:"-2" }} kg × {{ p.reps }}{% elif p.reps %}{{ p.reps }} reps{% elif p.seconds %}{{ p.seconds }} s{% endif %} · {{ p.session.date|date:"j M" }}</span>
+    <span class="w-small w-quiet">{% if p.weight is not None %}{{ p.weight|floatformat:"-2" }} kg × {{ p.reps }}{% elif p.reps %}{{ p.reps }} reps{% elif p.seconds %}{{ p.seconds|nice_secs }}{% endif %} · {{ p.session.date|date:"j M" }}</span>
   </a>
   {% endfor %}
 </section>
@@ -71,5 +72,6 @@
 </section>
 {% endif %}
 
-<a class="w-btn quiet" href="{% url 'wellness:kit' %}" style="align-self:flex-start;padding:0">My equipment</a>
+<span style="display:flex;gap:18px;flex-wrap:wrap"><a class="w-btn quiet" href="{% url 'wellness:kit' %}" style="align-self:flex-start;padding:0">My equipment</a>
+<a class="w-btn quiet" href="{% url 'wellness:my_exercises' %}" style="align-self:flex-start;padding:0" data-my-exercises-link>My exercises</a></span>
 {% endblock %}

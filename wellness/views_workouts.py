@@ -24,11 +24,30 @@ WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 
 def _exercises(user):
-    return Exercise.objects.filter(Q(user__isnull=True) | Q(user=user))
+    """What can be picked: the library and your own, less the hidden."""
+    return Exercise.objects.filter(Q(user__isnull=True) | Q(user=user),
+                                   hidden_at__isnull=True)
 
 
 def _my_exercise(user, pk):
-    return get_object_or_404(_exercises(user), pk=pk)
+    """Any exercise you can see - a hidden one of yours too, for its
+    history."""
+    return get_object_or_404(
+        Exercise.objects.filter(Q(user__isnull=True) | Q(user=user)), pk=pk)
+
+
+# WL-17, 12 Nov 2026 - a new exercise in a routine opens asking for its
+# starting numbers (Demetri, 08:01-08:05), with these filled in to change.
+def _starting(ex):
+    """{sets, rep_min, rep_max, seconds, rest} for a newly added one."""
+    if ex.kind in ('time', 'distance'):
+        if TR.in_minutes(ex):
+            return {'sets': 1, 'rep_min': 1, 'rep_max': 1, 'seconds': 30 * 60,
+                    'rest': 0}
+        return {'sets': 3, 'rep_min': 1, 'rep_max': 1, 'seconds': 30,
+                'rest': 30}
+    return {'sets': 3, 'rep_min': 10, 'rep_max': 10, 'seconds': None,
+            'rest': 90 if ex.kind == 'weight' else 60}
 
 
 def _done_sets(user, exercise, exclude_session=None):
@@ -98,15 +117,12 @@ def routine_edit(request, pk=None):
             if not name:
                 return _routine_page(request, None, 'Give it a short name.')
             routine = Routine.objects.create(user=request.user, name=name)
+        new_item = None
         if action == 'add':
             ex = _my_exercise(request.user, request.POST.get('exercise'))
-            RoutineItem.objects.create(
+            new_item = RoutineItem.objects.create(
                 routine=routine, exercise=ex,
-                position=routine.items.count(),
-                sets=3, rep_min=8 if ex.kind != 'time' else 1,
-                rep_max=12 if ex.kind != 'time' else 1,
-                seconds=30 if ex.kind == 'time' else None,
-                rest=60)
+                position=routine.items.count(), **_starting(ex))
         elif action.startswith('remove:'):
             routine.items.filter(pk=action.split(':')[1]).delete()
         elif action.startswith('up:') or action.startswith('down:'):
@@ -118,24 +134,63 @@ def routine_edit(request, pk=None):
                 d for d in request.POST.getlist('weekdays')
                 if len(d) == 1 and d in '0123456'}))
             routine.save()
-            for item in routine.items.all():
-                for f, lo, hi in (('sets', 1, 20), ('rep_min', 1, 100),
-                                  ('rep_max', 1, 100), ('rest', 0, 600),
-                                  ('seconds', 1, 7200)):
-                    v = request.POST.get('%s_%d' % (f, item.pk))
-                    if v not in (None, ''):
-                        try:
-                            n = max(lo, min(hi, int(v)))
-                        except ValueError:
-                            continue
-                        setattr(item, f, n)
-                if item.rep_max < item.rep_min:
-                    item.rep_max = item.rep_min
-                item.save()
+            for item in routine.items.select_related('exercise'):
+                if new_item is not None and item.pk == new_item.pk:
+                    continue
+                _save_item(item, request.POST)
         if action == 'save':
             return redirect('wellness:workouts')
+        if new_item is not None:
+            return redirect('%s?new=%d#item-%d' % (
+                reverse('wellness:routine_edit', args=[routine.pk]),
+                new_item.pk, new_item.pk))
         return redirect('wellness:routine_edit', pk=routine.pk)
     return _routine_page(request, routine, '')
+
+
+def _save_item(item, post):
+    """WL-17 - one exercise's numbers from the routine form: sets, reps
+    (one number - or a range, if it shows one), a starting weight, time in
+    minutes (cardio, dance, sports) or seconds (a hold), and rest."""
+    def got(name, lo, hi, cls=int):
+        v = post.get('%s_%d' % (name, item.pk))
+        if v in (None, ''):
+            return None
+        try:
+            return max(lo, min(hi, cls(str(v).replace(',', '.'))))
+        except (ValueError, InvalidOperation):
+            return None
+    minutes = TR.in_minutes(item.exercise)
+    n = got('sets', 1, 20)
+    if n is not None:
+        item.sets = n
+    one = got('reps', 1, 100)
+    if one is not None:
+        item.rep_min = item.rep_max = one
+    lo, hi = got('rep_min', 1, 100), got('rep_max', 1, 100)
+    if lo is not None:
+        item.rep_min = lo
+    if hi is not None:
+        item.rep_max = hi
+    if item.rep_max < item.rep_min:
+        item.rep_max = item.rep_min
+    if '%s_%d' % ('weight', item.pk) in post:
+        item.weight = got('weight', Decimal('0'), Decimal('1000'), Decimal)
+    if minutes:
+        m = got('minutes', 1, 600)
+        if m is not None:
+            item.seconds = m * 60
+        r = got('rest_min', 0, 60)
+        if r is not None:
+            item.rest = r * 60
+    else:
+        s = got('seconds', 1, 7200)
+        if s is not None:
+            item.seconds = s
+        r = got('rest', 0, 600)
+        if r is not None:
+            item.rest = r
+    item.save()
 
 
 def _move(routine, action):
@@ -162,10 +217,16 @@ def _routine_page(request, routine, error):
         xs = [e for e in lib if e.muscle == code]
         if xs:
             groups.append({'label': label, 'exercises': xs})
+    items = list(routine.items.select_related('exercise')) if routine else []
+    rng = request.GET.get('range', '')
+    for it in items:
+        it.in_min = TR.in_minutes(it.exercise)
+        it.minutes = (it.seconds or 0) // 60
+        it.rest_min = (it.rest or 0) // 60
+        it.show_range = it.rep_min != it.rep_max or rng == str(it.pk)
     return render(request, 'wellness/routine_form.html', {
         'tab': 'workouts', 'routine': routine, 'error': error,
-        'items': list(routine.items.select_related('exercise'))
-        if routine else [],
+        'items': items, 'new_pk': request.GET.get('new', ''),
         'groups': groups,
         'weekdays': [{'num': str(i), 'name': n,
                       'on': routine and str(i) in routine.weekdays}
@@ -208,15 +269,24 @@ def session_start(request):
             sug = TR.suggest(item.rep_min, item.rep_max,
                              [(x.weight, x.reps) for x in last],
                              item.exercise.equipment, profile.equipment)
+            # WL-17 - the very first time, the routine's starting weight.
+            weight = sug['weight']
+            if sug['why'] == 'first' and item.weight is not None:
+                weight = item.weight
+            secs = item.seconds
+            if item.exercise.kind == 'time' and \
+                    not TR.in_minutes(item.exercise):
+                secs, _w = TR.suggest_hold(item.seconds,
+                                           [x.seconds for x in last])
             for n in range(1, item.sets + 1):
                 WorkoutSet.objects.create(
                     session=s, exercise=item.exercise, position=pos,
                     set_no=n,
-                    weight=(Decimal(str(sug['weight']))
-                            if sug['weight'] is not None else None),
+                    weight=(Decimal(str(weight))
+                            if weight is not None else None),
                     reps=sug['reps'] if item.exercise.kind in
                     ('weight', 'reps') else None,
-                    seconds=item.seconds if item.exercise.kind == 'time'
+                    seconds=secs if item.exercise.kind == 'time'
                     else None)
     return redirect('wellness:session_live', pk=s.pk)
 
@@ -241,9 +311,22 @@ def _session_blocks(request, s):
                              it.rep_max if it else 12,
                              [(x.weight, x.reps) for x in last],
                              st.exercise.equipment, profile.equipment)
+            mins = TR.in_minutes(st.exercise)
+            hint = _hint(sug, it)
+            if st.exercise.kind == 'time' and not mins and it:
+                secs, why = TR.suggest_hold(it.seconds,
+                                            [x.seconds for x in last])
+                if why:
+                    hint = 'You held it every set last time - try %d s.' % secs
+            elif mins:
+                done_m = sum((x.seconds or 0) for x in last) // 60
+                hint = ('Last time: %d min. No pushing here - just enjoy '
+                        'it.' % done_m) if done_m else ''
             b = {'exercise': st.exercise, 'rows': [], 'item': it,
                  'rest': it.rest if it else 60, 'last': last,
-                 'hint': _hint(sug, it), 'position': st.position}
+                 'hint': hint, 'position': st.position, 'in_min': mins,
+                 'words': TR.item_words(it) if it else '',
+                 'rest_words': TR.rest_words(it.rest if it else 60, mins)}
             by_ex[st.exercise_id] = b
             blocks.append(b)
         prev = b['last'][len(b['rows'])] if len(b['last']) > len(
@@ -254,8 +337,10 @@ def _session_blocks(request, s):
 
 def _hint(sug, item):
     if sug['why'] == 'up':
-        return 'You topped the range last time - %s kg today.' % TR._kg(
-            sug['weight'])
+        return ('You did every rep last time - try %s kg today, the next '
+                'weight you own.' % TR._kg(sug['weight']))
+    if sug['why'] == 'more_reps':
+        return 'Every rep last time - aim for %d today.' % sug['reps']
     if sug['why'] == 'reps' and sug['weight'] is not None:
         return 'Same weight, aim for %d reps.' % sug['reps']
     if sug['why'] == 'top':
@@ -542,6 +627,107 @@ def exercise_new(request):
         'muscles': Exercise.MUSCLES, 'equipment': Exercise.EQUIPMENT,
         'next': request.GET.get('next', ''),
     })
+
+
+# --------------------------------------------------------------------------
+# WL-17, 12 Nov 2026 - your own exercises: edited, deleted or hidden.
+# Demetri, 07:54: "once I have create my own exercise, then I should have
+# the ability to Edit it and to Delete it (with the appropriate checks)".
+#
+#   - Only your own; the library stays as it is.
+#   - Name, group and kit can always change. How it is counted can change
+#     only until it is logged - a past 3 x 10 at 20 kg means nothing as
+#     "time".
+#   - Delete says where it is used first:
+#       never used            -> gone;
+#       in routines only      -> taken out of them, once you tick that;
+#       logged in workouts    -> cannot be deleted without losing them, so
+#                                Hide it: off every list and routine, still
+#                                in the workouts, back any time.
+# --------------------------------------------------------------------------
+def _own(user, pk):
+    return get_object_or_404(Exercise, pk=pk, user=user)
+
+
+def _uses(ex):
+    """(routines it is in, number of workouts it was logged in)."""
+    routines = list(Routine.objects.filter(items__exercise=ex,
+                                           archived=False).distinct())
+    logged = WorkoutSession.objects.filter(sets__exercise=ex).distinct() \
+        .count()
+    return routines, logged
+
+
+@wellness_view
+def my_exercises(request):
+    rows = []
+    for ex in Exercise.objects.filter(user=request.user).order_by(
+            'hidden_at', 'name'):
+        routines, logged = _uses(ex)
+        rows.append({'ex': ex, 'routines': len(routines), 'logged': logged,
+                     'group': dict(Exercise.MUSCLES).get(ex.muscle, ''),
+                     'counted': dict(Exercise.TYPES).get(ex.kind, '').lower()})
+    return render(request, 'wellness/my_exercises.html', {
+        'tab': 'workouts', 'rows': rows,
+    })
+
+
+@wellness_view
+def exercise_edit(request, pk):
+    ex = _own(request.user, pk)
+    routines, logged = _uses(ex)
+    error = ''
+    if request.method == 'POST':
+        name = (request.POST.get('name') or '').strip()[:80]
+        kind = request.POST.get('kind') or ex.kind
+        muscle = request.POST.get('muscle')
+        equip = request.POST.get('equipment')
+        if not name:
+            error = 'Give it a name.'
+        elif (kind not in dict(Exercise.TYPES) or muscle not in
+              dict(Exercise.MUSCLES) or equip not in dict(Exercise.EQUIPMENT)):
+            error = 'Choose how it is counted, the group and the kit.'
+        elif logged and kind != ex.kind:
+            error = ('It is logged in %d workout%s, so how it is counted '
+                     'stays as it is.' % (logged, '' if logged == 1 else 's'))
+        else:
+            ex.name, ex.kind, ex.muscle, ex.equipment = name, kind, muscle, \
+                equip
+            ex.save()
+            return redirect('wellness:my_exercises')
+    return render(request, 'wellness/exercise_form.html', {
+        'tab': 'workouts', 'error': error, 'types': Exercise.TYPES,
+        'muscles': Exercise.MUSCLES, 'equipment': Exercise.EQUIPMENT,
+        'ex': ex, 'logged': logged, 'routines': routines,
+        'next': '',
+    })
+
+
+@wellness_view
+@require_POST
+def exercise_delete(request, pk):
+    ex = _own(request.user, pk)
+    routines, logged = _uses(ex)
+    if logged:
+        return HttpResponseBadRequest('logged in workouts - hide it instead')
+    if routines and request.POST.get('confirm') != 'yes':
+        return HttpResponseBadRequest('not confirmed')
+    RoutineItem.objects.filter(exercise=ex).delete()
+    ex.delete()
+    return redirect('wellness:my_exercises')
+
+
+@wellness_view
+@require_POST
+def exercise_hide(request, pk):
+    ex = _own(request.user, pk)
+    if request.POST.get('back') == '1':
+        ex.hidden_at = None
+    else:
+        ex.hidden_at = timezone.now()
+        RoutineItem.objects.filter(exercise=ex).delete()
+    ex.save(update_fields=['hidden_at'])
+    return redirect('wellness:my_exercises')
 
 
 @wellness_view

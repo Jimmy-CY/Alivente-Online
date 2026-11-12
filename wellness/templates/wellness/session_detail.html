@@ -1,4 +1,5 @@
 {% extends "wellness/base.html" %}
+{% load wellness_modules %}
 {% block title %}{{ s.name }} · Wellness{% endblock %}
 {% block top_left %}<a class="w-home" href="{% url 'wellness:workouts' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Workouts</a>{% endblock %}
 {% block content %}
@@ -29,14 +30,14 @@
 {% for r in records %}
 <div class="w-card sand" style="flex-direction:row;align-items:center;gap:12px;padding:14px 18px">
   <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5l4.4 9 9.6 1.3-7 6.7 1.7 9.6L20 27l-8.7 4.6 1.7-9.6-7-6.7 9.6-1.3z" fill="#E8DCC8" stroke="#A0824F" stroke-width="1.6" stroke-linejoin="round"/></svg>
-  <span><strong>{{ r.exercise.name }}</strong> · {% if r.weight is not None %}{{ r.weight|floatformat:"-2" }} kg × {{ r.reps }}{% elif r.reps %}{{ r.reps }} reps{% elif r.seconds %}{{ r.seconds }} s{% endif %}</span>
+  <span><strong>{{ r.exercise.name }}</strong> · {% if r.weight is not None %}{{ r.weight|floatformat:"-2" }} kg × {{ r.reps }}{% elif r.reps %}{{ r.reps }} reps{% elif r.seconds %}{{ r.seconds|nice_secs }}{% endif %}</span>
 </div>
 {% endfor %}
 {% for b in blocks %}
 <section class="w-list">
   <a href="{% url 'wellness:exercise_detail' b.exercise.pk %}" class="w-h2" style="font-size:16px;display:flex;min-height:52px;align-items:center;color:inherit;text-decoration:none">{{ b.exercise.name }}</a>
   {% for st in b.sets %}
-  <div class="w-row" style="min-height:44px"><span class="w-quiet">Set {{ st.set_no }}</span><span>{% if st.weight is not None %}{{ st.weight|floatformat:"-2" }} kg × {{ st.reps }}{% elif st.reps %}{{ st.reps }} reps{% elif st.distance_m %}{% widthratio st.distance_m 1000 1 %} km{% endif %}{% if st.seconds %} · {{ st.seconds }} s{% endif %}{% if st.is_pr %} ★{% endif %}</span></div>
+  <div class="w-row" style="min-height:44px"><span class="w-quiet">Set {{ st.set_no }}</span><span>{% if st.weight is not None %}{{ st.weight|floatformat:"-2" }} kg × {{ st.reps }}{% elif st.reps %}{{ st.reps }} reps{% elif st.distance_m %}{% widthratio st.distance_m 1000 1 %} km{% endif %}{% if st.seconds %} · {{ st.seconds|nice_secs }}{% endif %}{% if st.is_pr %} ★{% endif %}</span></div>
   {% endfor %}
 </section>
 {% endfor %}

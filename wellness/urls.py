@@ -11,6 +11,8 @@ urlpatterns = [
     path('', views.today, name='today'),
     path('welcome/', views.welcome, name='welcome'),
     path('habits/', views.habit_list, name='habit_list'),
+    # WL-16 - tick what you forgot, up to a week back.
+    path('habits/catch-up/', views.catch_up, name='catch_up'),
     path('habits/new/', views.habit_new, name='habit_new'),
     path('habits/<int:pk>/', views.habit_detail, name='habit_detail'),
     path('habits/<int:pk>/edit/', views.habit_edit, name='habit_edit'),
@@ -49,6 +51,14 @@ urlpatterns = [
     path('workouts/sets/<int:pk>/', W.set_save, name='set_save'),
     path('workouts/sets/<int:pk>/delete/', W.set_delete, name='set_delete'),
     path('workouts/exercises/new/', W.exercise_new, name='exercise_new'),
+    # WL-17 - your own exercises: edit, delete, hide.
+    path('workouts/exercises/mine/', W.my_exercises, name='my_exercises'),
+    path('workouts/exercises/<int:pk>/edit/', W.exercise_edit,
+         name='exercise_edit'),
+    path('workouts/exercises/<int:pk>/delete/', W.exercise_delete,
+         name='exercise_delete'),
+    path('workouts/exercises/<int:pk>/hide/', W.exercise_hide,
+         name='exercise_hide'),
     path('workouts/exercises/<int:pk>/', W.exercise_detail,
          name='exercise_detail'),
     # CY-1, 30 Oct 2026 - the cycle tracker (opt-in). No pk anywhere:

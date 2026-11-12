@@ -44,3 +44,17 @@ def fx_state(context):
         return 'off' if p and (p.prefs or {}).get('sounds_off') else 'on'
     except Exception:  # noqa: BLE001 - a sound must never break a page
         return 'on'
+
+
+@register.filter
+def nice_secs(seconds):
+    """WL-17, 12 Nov 2026 - 45 -> '45 s', 2700 -> '45 min', 90 -> '90 s':
+    a Zumba class reads in minutes, a plank in seconds."""
+    try:
+        s = int(seconds)
+    except (TypeError, ValueError):
+        return ''
+    if s >= 120:
+        return '%d min' % round(s / 60.0)
+    return '%d s' % s
+

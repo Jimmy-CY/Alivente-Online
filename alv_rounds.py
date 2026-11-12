@@ -1581,6 +1581,10 @@ ROUNDS = [
     '.bak_wellness19',
     # GS-2, 2 Nov 2026 - two more suites pinned to run alone.
     '.bak_gatesolo',
+    # WL-16, 12 Nov 2026 - Wellness: catch up, the whole day done, the phone's clock.
+    '.bak_wellness20',
+    # WL-17, 12 Nov 2026 - Wellness: workouts - sports, starting numbers, your own exercises.
+    '.bak_wellness21',
 ]
 
 

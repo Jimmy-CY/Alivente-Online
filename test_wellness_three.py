@@ -406,7 +406,11 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def suggest('" in gate, '  with a sentinel on the progression')
+# WL-17, 12 Nov 2026: the row moved to 'def suggest_hold(' when training.py
+# was backed up again (a Text in every backup can never fail).
+ok("Text = 'def suggest('" in gate or
+   "File = 'wellness/training.py'; Text = 'def suggest_hold('" in gate,
+   '  with a sentinel on the progression')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')
