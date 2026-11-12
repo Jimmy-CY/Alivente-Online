@@ -1227,6 +1227,7 @@ $sentinels = @(
     @{ File = 'pages/views/recipes/meal_planning.py'; Text = "prefetch_related('courses')"; What = 'PK-1: the course ids come from one query, not one per card' },
     # ------------------------------------------------- GS-1, 19 Oct 2026
     @{ File = 'alv_run.py'; Text = 'CONTENDED = ['; What = 'GS-1: a suite whose verdict moves with the load runs alone, because a pool failure cancels the rest of the sweep' },
+    @{ File = 'alv_run.py'; Text = "    'test_gate_walk.py',"; What = 'GS-2: the ratio suite and the e-sign suite run alone - each stopped a push in a pool and passed by itself' },
     @{ File = 'alv_run.py'; Text = 'Only this list prevents it'; What = 'GS-1: and the phase 3 rescue is left alone - it explains a stop, it cannot undo one' },
     # ------------------------------------------------- MX-1, 19 Oct 2026
     @{ File = 'pages/migrations/0101_drop_meal_plan.py'; Text = "DeleteModel(name='MealPlanRecipe')"; What = 'MX-1: the old planner three tables go, children first - the step 0100 said would come last' },
@@ -3260,7 +3261,9 @@ $suites = @(
     # WL-14, 2 Nov 2026 - Wellness: Insights without empty charts.
     'test_wellness_eighteen.py',
     # WL-15, 2 Nov 2026 - Wellness: sounds, movement, Saved.
-    'test_wellness_nineteen.py'
+    'test_wellness_nineteen.py',
+    # GS-2, 2 Nov 2026 - two more suites that only pass alone run alone.
+    'test_gate_solo.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

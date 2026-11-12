@@ -151,9 +151,31 @@ PLANTERS = [
 #
 # Phase 3 is deliberately LEFT ALONE: it is how the next name gets
 # found, and it has already found one.
+#
+# GS-2, 2 Nov 2026 - TWO MORE, BOTH FOUND BY PHASE 3 ON DEMETRI'S LAPTOP,
+# each costing a stopped sweep and a --resume. Demetri, 21:32: "Yes
+# please" to pinning them.
+#
+#   test_gate_walk.py       46.1s alone, passed; 7.19s vs 40.58s in a pool. It
+#                           measures a RATIO of two timings - the claim
+#                           is "more than ten times cheaper". Pool of
+#                           three, push of Release 62 (2 Nov, 357/503):
+#                           7.19s vs 40.58s, 5.6 times, FAILED. Alone:
+#                           passed in 46.1s. A ratio of two timings taken
+#                           while other workers share the CPU is a number
+#                           about the machine.
+#
+#   test_signing_finish.py  9.6s alone, passed; crashed in a pool. Push of
+#                           Release 59 (1 Nov, 460/500): the
+#                           process itself died, rc 3221227274 (Windows
+#                           0xC0000409, a fast-fail crash), not a failed
+#                           check. Alone: passed in 9.6s. A crash under
+#                           load and a clean pass alone.
 CONTENDED = [
+    'test_gate_walk.py',
     'test_print_buttons.py',
     'test_print_queries.py',
+    'test_signing_finish.py',
 ]
 
 

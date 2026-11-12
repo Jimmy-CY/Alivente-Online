@@ -1579,6 +1579,8 @@ ROUNDS = [
     '.bak_wellness18',
     # WL-15, 2 Nov 2026 - Wellness: sounds, movement, Saved.
     '.bak_wellness19',
+    # GS-2, 2 Nov 2026 - two more suites pinned to run alone.
+    '.bak_gatesolo',
 ]
 
 

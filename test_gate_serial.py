@@ -173,8 +173,11 @@ contended = listed(NOW, 'CONTENDED')
 ok(contended is not None,
    'alv_run.py declares CONTENDED as a module-level list - parsed out '
    'of the syntax tree, not found as a string')
-ok(contended == sorted(SLOW),
-   '  and it holds exactly the names that were MEASURED: %s'
+# GS-2, 2 Nov 2026: the list grows as phase 3 finds names (it has found
+# test_gate_walk and test_signing_finish since) - so the two measured
+# here must still be there, in order, rather than be the whole list.
+ok(set(SLOW) <= set(contended or []) and contended == sorted(contended),
+   '  and it holds the names that were MEASURED: %s'
    % ', '.join(SLOW), 'got %r' % (contended,))
 
 # THE MEASUREMENT IS IN THE FILE. A list of names with no numbers
