@@ -3774,7 +3774,23 @@ function toggleFavourite(recipeId, btn) {
 // ==================== END FAVOURITES ====================
 
 // ==================== BOOK VIEW ====================
-const BOOK_RECIPES = {{ all_recipes_for_book|safe }};
+// BV-1, 13 Nov 2026 - fetched when the book is first opened, not sent with
+// every visit (135 KB of the page, measured on Live). Same address, same
+// filters, ?book=1.
+let BOOK_RECIPES = [];
+let bookLoading = null;
+function loadBookRecipes() {
+    if (!bookLoading) {
+        const q = new URLSearchParams(window.location.search);
+        q.set('book', '1');
+        bookLoading = fetch(window.location.pathname + '?' + q.toString(),
+                            {credentials: 'same-origin'})
+            .then(r => r.ok ? r.json() : [])
+            .then(d => { BOOK_RECIPES = Array.isArray(d) ? d : []; })
+            .catch(() => { bookLoading = null; });
+    }
+    return bookLoading;
+}
 let bookCurrentSpread = 0;
 let bookMode = 'grid';
 let bookDetailRecipeId = null;
@@ -3824,7 +3840,7 @@ function initBookView() {
         const btn = document.getElementById(`bookLayout${n}`);
         if (btn) btn.classList.toggle('active', n === bookRecipesPerPage);
     });
-    renderBookSpread();
+    loadBookRecipes().then(renderBookSpread);
 }
 
 function bookPageWrap(recipes) {

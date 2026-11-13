@@ -662,6 +662,29 @@
     .filter-title { font-size: 15px; }
     #clearAllBtn { flex: 0 0 auto; }
 }
+
+/* CG-1, 13 Nov 2026 - Gifts and Greeting: small outline buttons, a list,
+   and the pop-up's own button row (not a modal-footer). */
+.gift-btn {
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px; min-height: 36px;
+    margin-top: 8px; padding: 4px 12px; border-radius: 18px;
+    border: 1px solid currentColor; font-size: 0.9rem; cursor: pointer;
+    color: var(--alv-accent);
+}
+button.gift-btn { background: transparent; }
+.greet-btn { margin-top: 0; margin-left: 8px; }
+.gift-count { font-weight: 700; }
+.gift-list { list-style: none; padding: 0; margin: 0 0 12px; }
+.gift-list li { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid currentColor; border-top-color: rgba(127,127,127,.25); }
+.gift-list li:first-child { border-top: 0; }
+.gift-list .gift-when { min-width: 88px; font-weight: 600; font-size: 0.9rem; }
+.gift-list .gift-what { flex: 1; }
+.gift-list .gift-idea { font-style: italic; }
+.gift-list .gift-row-btn { border: 0; padding: 6px 8px; min-height: 36px; cursor: pointer; color: var(--alv-ink-soft); }
+.gift-list button.gift-row-btn { background: transparent; }
+.gift-kind { display: flex; gap: 20px; margin-bottom: 10px; }
+.gift-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px; }
 </style>
 
 <h2 class="page-title-h2">CELEBRATION MANAGEMENT</h2>
@@ -693,6 +716,11 @@
         </button>
         {% endif %}
 
+        {# CG-1, 13 Nov 2026 - My gifts and the Christmas list. #}
+        <a href="{% url 'celebration_gifts' %}" class="btn action-secondary">
+            <i class="fas fa-gift"></i> My gifts
+        </a>
+
         <button class="btn action-secondary" id="viewToggleBtn" onclick="toggleView()">
             <i class="fas fa-th-large"></i> Compact View
         </button>
@@ -713,6 +741,9 @@
                     <i class="fas fa-file-upload"></i> Import from Excel
                 </button>
                 {% endif %}
+                <a href="{% url 'celebration_gifts' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-gift"></i> My gifts
+                </a>
                 <button type="button" class="action-more-item" role="menuitem" id="viewToggleMoreItem" onclick="toggleView()">
                     <i class="fas fa-th-large"></i> Compact View
                 </button>
@@ -854,6 +885,12 @@
                         <i class="fas fa-sticky-note"></i> {{ contact.notes }}
                     </div>
                     {% endif %}
+                    {# CG-1 - gifts, private, on my own celebrations only. #}
+                    {% if contact.is_mine %}
+                    <button type="button" class="gift-btn" id="gifts-{{ contact.id }}" data-gift-open="{{ contact.id }}" data-gift-name="{{ contact.name }}">
+                        <i class="fas fa-gift"></i> Gifts{% if contact.gift_count %} <span class="gift-count">{{ contact.gift_count }}</span>{% endif %}
+                    </button>
+                    {% endif %}
                 </div>
                 <!-- Desktop contact actions (hidden on mobile via CSS) -->
                 <div class="contact-actions row-actions">
@@ -898,6 +935,12 @@
                                     (Turning {{ event.get_age }})
                                 {% elif event.get_years %}
                                     ({{ event.get_years }} years)
+                                {% endif %}
+                                {% if event.is_mine %}
+                                {# A link, not a button: the contact pop-up copies this row and drives its buttons by position. #}
+                                <a href="#" role="button" class="gift-btn greet-btn" data-greet="{{ event.id }}" data-greet-name="{{ contact.name }}" data-greet-what="{{ event.get_event_type_display }}">
+                                    <i class="fab fa-whatsapp"></i> Greeting
+                                </a>
                                 {% endif %}
                             </div>
                             <div class="event-countdown {% if event.days_until <= 1 %}imminent{% elif event.days_until <= 7 %}soon{% endif %}">
@@ -1272,6 +1315,7 @@
                     <div class="text-center">
                         <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
                         <h5>Delete contact "<span id="delete_contact_name"></span>"?</h5>
+                        <p class="text-muted small" data-gift-kept>Any gifts you recorded for them are kept in My gifts.</p>
                         <p class="text-muted">This will also delete all events for this contact. This action cannot be undone.</p>
                     </div>
                 </div>
@@ -1312,6 +1356,113 @@
                     <button type="submit" class="btn action-secondary action-danger">Delete Event</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+{% comment %} CG-1, 13 Nov 2026 - the gift pop-up, the "you have gifts for them" warning, and the greeting. Private: filled from this person's own gift rows only. {% endcomment %}
+<div class="modal fade" id="giftModal" tabindex="-1" role="dialog" aria-labelledby="giftModalTitle">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="giftModalTitle">Gifts</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-2">Only you can see these.</p>
+                <ul class="gift-list" id="giftList"></ul>
+                <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-form" id="giftForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add">
+                    <input type="hidden" name="contact_id" id="gift_contact_id">
+                    <input type="hidden" name="next" id="gift_next">
+                    <div class="gift-kind" role="radiogroup" aria-label="Given or an idea">
+                        <label><input type="radio" name="kind" value="given" checked> Given</label>
+                        <label><input type="radio" name="kind" value="idea"> An idea</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="gift_what"><strong>What</strong></label>
+                        <input type="text" class="form-control" id="gift_what" name="what" maxlength="200" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-6 form-group">
+                            <label for="gift_occasion"><strong>Occasion</strong></label>
+                            <select class="form-control" id="gift_occasion" name="occasion">
+                                {% for v, n in gift_occasions %}<option value="{{ v }}">{{ n }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-3 form-group">
+                            <label for="gift_year"><strong>Year</strong></label>
+                            <input type="number" class="form-control" id="gift_year" name="year" value="{{ this_year }}" min="1950" max="{{ this_year|add:5 }}">
+                        </div>
+                        <div class="col-3 form-group">
+                            <label for="gift_amount"><strong id="gift_amount_label">Cost</strong></label>
+                            <input type="text" class="form-control" id="gift_amount" name="amount" inputmode="decimal" placeholder="€">
+                        </div>
+                    </div>
+                    <div class="gift-actions">
+                        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn action-primary"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'celebration_gift_save' %}" id="giftRowForm" hidden>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" id="gift_row_action">
+                    <input type="hidden" name="gift_id" id="gift_row_id">
+                    <input type="hidden" name="what" id="gift_row_what">
+                    <input type="hidden" name="amount" id="gift_row_amount">
+                    <input type="hidden" name="next" id="gift_row_next">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="giftKeepModal" tabindex="-1" role="dialog" aria-labelledby="giftKeepTitle">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="giftKeepTitle">You have gifts recorded</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p id="giftKeepText"></p>
+                <p class="text-muted small">They are kept, and stay in My gifts. The Gifts button just won't show on this contact while none of their celebrations are yours.</p>
+                <div class="gift-actions">
+                    <button type="button" class="btn action-secondary" data-gift-keep="cancel">Keep me on</button>
+                    <button type="button" class="btn action-primary" data-gift-keep="go">Take me off</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="greetingModal" tabindex="-1" role="dialog" aria-labelledby="greetingTitle">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="greetingTitle">Greeting</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="greeting_language"><strong>Language</strong></label>
+                    <select class="form-control" id="greeting_language">
+                        <option value="English">English</option>
+                        <option value="Greek">Greek</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="greeting_text"><strong>Message</strong></label>
+                    <small class="text-muted d-block mb-1">Written by Claude - change anything.</small>
+                    <textarea class="form-control" id="greeting_text" rows="5" maxlength="600"></textarea>
+                    <small class="text-muted" id="greeting_status" aria-live="polite"></small>
+                </div>
+                <div class="gift-actions">
+                    <button type="button" class="btn action-secondary" id="greeting_again"><i class="fas fa-redo"></i> Write another</button>
+                    <a class="btn action-primary" id="greeting_send" href="#" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Open in WhatsApp</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1918,6 +2069,174 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 {% endif %}
+</script>
+
+
+<script type="application/json" id="gift-data">{{ gift_json }}</script>
+<script type="application/json" id="my-member-ids">{{ members_json }}</script>
+<script>
+/* CG-1, 13 Nov 2026 - gifts (private: this page only ever holds the
+   signed-in person's own rows), the warning before taking yourself off a
+   contact's last celebration while gifts are recorded for them, and the
+   greeting written by Claude and opened in WhatsApp. */
+(function () {
+    var gd = document.getElementById('gift-data');
+    var md = document.getElementById('my-member-ids');
+    var GIFTS = gd ? JSON.parse(gd.textContent || '{}') : {};
+    var MINE = md ? JSON.parse(md.textContent || '[]') : [];
+    var here = window.location.pathname;
+
+    function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+    }
+    function rowPost(action, id, what, amount, cid) {
+        document.getElementById('gift_row_action').value = action;
+        document.getElementById('gift_row_id').value = id;
+        document.getElementById('gift_row_what').value = what || '';
+        document.getElementById('gift_row_amount').value = amount || '';
+        document.getElementById('gift_row_next').value = here + '?gifts=' + cid + '#gifts-' + cid;
+        document.getElementById('giftRowForm').submit();
+    }
+    function openGifts(cid, name) {
+        document.getElementById('giftModalTitle').textContent = 'Gifts for ' + name;
+        document.getElementById('gift_contact_id').value = cid;
+        document.getElementById('gift_next').value = here + '?gifts=' + cid + '#gifts-' + cid;
+        var list = document.getElementById('giftList');
+        list.textContent = '';
+        var rows = GIFTS[cid] || [];
+        if (!rows.length) list.appendChild(el('li', 'text-muted', 'Nothing recorded yet.'));
+        rows.forEach(function (g) {
+            var li = el('li');
+            li.appendChild(el('span', 'gift-when', g.year + ' ' + g.occasion));
+            var w = el('span', 'gift-what' + (g.given ? '' : ' gift-idea'),
+                       (g.given ? g.what : 'Idea: ' + g.idea) +
+                       (g.given && g.cost ? ' - €' + g.cost.replace(/\.00$/, '') : '') +
+                       (!g.given && g.budget ? ' - about €' + g.budget.replace(/\.00$/, '') : ''));
+            li.appendChild(w);
+            if (!g.given) {
+                var given = el('button', 'gift-row-btn', 'Given');
+                given.type = 'button';
+                given.title = 'Mark this idea as given';
+                given.addEventListener('click', function () {
+                    var cost = window.prompt('What did it cost? (leave empty if you would rather not say)', g.budget || '');
+                    if (cost === null) return;
+                    rowPost('given', g.id, g.idea, cost, cid);
+                });
+                li.appendChild(given);
+            }
+            var del = el('button', 'gift-row-btn', '\u00d7');
+            del.type = 'button';
+            del.title = 'Remove';
+            del.setAttribute('aria-label', 'Remove ' + (g.what || 'this'));
+            del.addEventListener('click', function () { rowPost('delete', g.id, '', '', cid); });
+            li.appendChild(del);
+            list.appendChild(li);
+        });
+        $('#giftModal').modal('show');
+    }
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-gift-open]');
+        if (b) openGifts(b.getAttribute('data-gift-open'), b.getAttribute('data-gift-name'));
+    });
+    document.querySelectorAll('input[name="kind"]').forEach(function (r) {
+        r.addEventListener('change', function () {
+            document.getElementById('gift_amount_label').textContent =
+                this.value === 'idea' ? 'Budget' : 'Cost';
+        });
+    });
+    // Back from saving: open the same pop-up again.
+    var again = new URLSearchParams(window.location.search).get('gifts');
+    if (again) {
+        var btn = document.querySelector('[data-gift-open="' + again + '"]');
+        if (btn) openGifts(again, btn.getAttribute('data-gift-name'));
+    }
+
+    // THE WARNING. Taking yourself off the last of someone's celebrations
+    // hides their Gifts button; the gifts themselves are never touched.
+    if (typeof window.updateNotification === 'function') {
+        var original = window.updateNotification;
+        var pending = null;
+        window.updateNotification = function (cb) {
+            var mine = MINE.indexOf(parseInt(cb.dataset.memberId, 10)) !== -1;
+            var card = cb.closest('.contact-card');
+            var gb = card && card.querySelector('[data-gift-open]');
+            var cid = gb ? gb.getAttribute('data-gift-open') : null;
+            var rows = cid ? (GIFTS[cid] || []) : [];
+            if (cb.checked || !mine || !rows.length) return original(cb);
+            var stillMine = Array.prototype.some.call(
+                card.querySelectorAll('input.notify-checkbox'), function (x) {
+                    return x !== cb && x.checked &&
+                        MINE.indexOf(parseInt(x.dataset.memberId, 10)) !== -1;
+                });
+            if (stillMine) return original(cb);
+            var given = rows.filter(function (g) { return g.given; }).length;
+            var ideas = rows.length - given;
+            var name = card.querySelector('.contact-name').textContent;
+            document.getElementById('giftKeepText').textContent =
+                'You have ' + given + ' gift' + (given === 1 ? '' : 's') + ' and ' +
+                ideas + ' idea' + (ideas === 1 ? '' : 's') + ' recorded for ' + name + '.';
+            pending = cb;
+            $('#giftKeepModal').modal('show');
+        };
+        document.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-gift-keep]');
+            if (!b || !pending) return;
+            var cb = pending;
+            pending = null;
+            $('#giftKeepModal').modal('hide');
+            if (b.getAttribute('data-gift-keep') === 'go') original(cb);
+            else cb.checked = true;
+        });
+        if (window.jQuery) $('#giftKeepModal').on('hidden.bs.modal', function () {
+            if (pending) { pending.checked = true; pending = null; }
+        });
+    }
+
+    // THE GREETING - Claude writes it; WhatsApp sends it.
+    var greetId = null, greetNumber = '';
+    function sendLink() {
+        var t = document.getElementById('greeting_text').value;
+        document.getElementById('greeting_send').href =
+            'https://wa.me/' + greetNumber + '?text=' + encodeURIComponent(t);
+    }
+    function writeGreeting() {
+        var status = document.getElementById('greeting_status');
+        status.textContent = 'Claude is writing...';
+        var body = new FormData();
+        body.append('language', document.getElementById('greeting_language').value);
+        body.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        fetch('/celebrations/event/' + greetId + '/greeting/', {method: 'POST', body: body, credentials: 'same-origin'})
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (d.text) {
+                    document.getElementById('greeting_text').value = d.text;
+                    greetNumber = d.number || '';
+                    status.textContent = greetNumber ? '' : 'No phone number on this contact - WhatsApp will ask who to send it to.';
+                } else {
+                    status.textContent = d.error || 'Could not write one just now.';
+                }
+                sendLink();
+            })
+            .catch(function () { status.textContent = 'Could not reach Claude just now.'; });
+    }
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-greet]');
+        if (!b) return;
+        e.preventDefault();
+        greetId = b.getAttribute('data-greet');
+        document.getElementById('greetingTitle').textContent =
+            b.getAttribute('data-greet-what') + ' greeting for ' + b.getAttribute('data-greet-name');
+        document.getElementById('greeting_text').value = '';
+        $('#greetingModal').modal('show');
+        writeGreeting();
+    });
+    document.getElementById('greeting_again').addEventListener('click', writeGreeting);
+    document.getElementById('greeting_language').addEventListener('change', writeGreeting);
+    document.getElementById('greeting_text').addEventListener('input', sendLink);
+})();
 </script>
 
 {% endblock %}

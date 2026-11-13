@@ -684,8 +684,9 @@ ok('--strict --recipes' in ps1,
 # ES-6, 25 Oct 2026 - the envelope page joins both counts. (was 124, 149)
 # LS-1, 27 Oct 2026 - tenant_lease_signing_status.html, the Lease Signing Status report, an ordinary pages/templates page that joins every tree-wide count.
 # GL-1, 28 Oct 2026 - 128 of 153: company_details.html joins both halves.
-ok(len(sb.templates(False)) == 128 and len(sb.templates(True)) == 153,
-   '  which is %d of %d' % (128, 153),
+# CG-1, 13 Nov 2026 - celebration_gifts.html, the My gifts page with the Christmas list, it joins the page count only, measured - the narrow half stays 128. (was 128 of 153)
+ok(len(sb.templates(False)) == 128 and len(sb.templates(True)) == 154,
+   '  which is %d of %d' % (128, 154),
    '%d of %d' % (len(sb.templates(False)), len(sb.templates(True))))
 
 # ==========================================================================

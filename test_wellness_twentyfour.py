@@ -114,7 +114,8 @@ ok('{% if home %}' in td and 'data-home-card' in td,
    'TODAY: a card only when there is something to say')
 v = read(J(APP, 'views.py'))
 ok("if (profile.prefs or {}).get('home_off'):" in v and
-   "prefs['home_off'] = not request.POST.get('home')" in v and
+   # PT-3, 13 Nov 2026 - the switch moved into Your sections.
+   "hp['home_off'] = not request.POST.get('home')" in v and
    'except Exception:  # noqa: BLE001 - Today must always open' in v,
    '  it can be turned off in Settings, and a fault there never stops Today')
 vw = read(J(APP, 'views_workouts.py'))

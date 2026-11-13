@@ -593,8 +593,8 @@ SCREENS = {
             'The Monday email is off unless you turn it on.',
             'Download your data: everything as spreadsheets, your photos if '
             'you like.',
-            'At home today: the card on Today with today\'s celebrations, '
-            'meals and your documents. Turn it on or off.',
+            'Your sections also switches At home today, the card at the '
+            'top of Today, on or off.',
         ],
         'signs': [],
     },

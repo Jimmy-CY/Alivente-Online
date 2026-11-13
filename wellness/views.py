@@ -419,6 +419,13 @@ def settings_page(request):
         # WL-9 - Your sections. Nothing is deleted by switching off.
         wanted = set(request.POST.getlist('module'))
         MOD.save(profile, wanted)
+        # PT-3, 13 Nov 2026 - At home today is one of Your sections now
+        # (Demetri, 07:00: "like any other module"), each person's own.
+        profile.refresh_from_db(fields=['prefs'])
+        hp = dict(profile.prefs or {})
+        hp['home_off'] = not request.POST.get('home')
+        profile.prefs = hp
+        profile.save(update_fields=['prefs', 'updated_at'])
         cy_on = CY.is_on(request.user)
         if 'cycle' in wanted and not cy_on:
             # Its welcome page first, as always.
@@ -435,8 +442,6 @@ def settings_page(request):
         prefs['line_off'] = not request.POST.get('claude_line')
         # WL-15 - sounds and vibration are on unless turned off here.
         prefs['sounds_off'] = not request.POST.get('sounds')
-        # PT-1 - "At home today" on Today, on unless turned off here.
-        prefs['home_off'] = not request.POST.get('home')
         # WL-4b - the evening and weigh-in reminder times, or none.
         for k in ('remind_checkin', 'remind_weigh'):
             v = (request.POST.get(k) or '').strip()
@@ -453,7 +458,9 @@ def settings_page(request):
                     for k, n, ln in MOD.MODULES],
         'off_name': MOD.name_of(off_key) if off_key in MOD.KEYS else '',
         'sections_open': bool(request.GET.get('s') or off_key),
-        'on_names': ', '.join(n for k, n, _l in MOD.MODULES if k in on),
+        'on_names': ', '.join([n for k, n, _l in MOD.MODULES if k in on]
+                              + ([] if prefs.get('home_off')
+                                 else ['At home today'])),
         'weekly': bool(prefs.get('weekly_email')),
         'claude_line': not prefs.get('line_off'),
         'sounds': not prefs.get('sounds_off'),

@@ -141,6 +141,10 @@ CALL_SITES = {
     # quote, made ahead by the reminder job. Same small model as invoice
     # verification, changeable through WELLNESS_LINE_MODEL.
     'wellness/daily_line.py': 'the line under the Wellness daily quote',
+    # CG-1, 13 Nov 2026 - the seventh: a short birthday or name-day greeting
+    # for one of your own celebrations, opened in WhatsApp. The same small
+    # model as the daily line, changeable through GREETING_MODEL.
+    'pages/views/celebration_gifts.py': 'the celebration greeting',
 }
 
 passed = failed = skipped = 0

@@ -189,7 +189,7 @@ HOWTO = [
           'documents due for renewal - from six months before they expire, '
           'or the nine or twelve chosen under Remind me. Tap a recipe to '
           'open it here, with Cook mode. The card only appears when there '
-          'is something to say. Turn it off under the cog, At home today.'},
+          'is something to say. Turn it off under the cog, Your sections.'},
     {'q': 'Set up: log a workout you already did',
      'a': 'For a run this morning, or a session yesterday you forgot to '
           'log.',

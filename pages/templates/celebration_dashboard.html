@@ -103,6 +103,10 @@
     <a href="{% url 'celebration_calendar' %}" class="btn action-secondary">
         <i class="fas fa-calendar-alt"></i> View Events
     </a>
+    {# CG-1, 13 Nov 2026 - My gifts and the Christmas list. #}
+    <a href="{% url 'celebration_gifts' %}" class="btn action-secondary">
+        <i class="fas fa-gift"></i> My gifts
+    </a>
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
             <i class="fas fa-question-circle"></i> Help
         </button>
@@ -118,6 +122,9 @@
             <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
                 <a href="{% url 'celebration_calendar' %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-calendar-alt"></i> View Events
+                </a>
+                <a href="{% url 'celebration_gifts' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-gift"></i> My gifts
                 </a>
                 <button type="button" class="action-more-item" role="menuitem"
                         data-toggle="modal" data-target="#celebration_dashboardHelpModal">

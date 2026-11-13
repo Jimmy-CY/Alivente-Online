@@ -388,34 +388,14 @@ def recipe_management(request):
     # the model, and leaving one copy behind leaves that true.
     authors = [{'value': v, 'name': n} for v, n in Recipe.AUTHOR_CHOICES]
 
-    # Serialize filtered recipes for book view (use already-filtered queryset)
-    all_recipes_for_book = []
-    for r in recipes:
-        nutrition_values = None
-        if nutrition_sort:
-            cache = getattr(r, 'nutrition_cache', None)
-            if cache:
-                nutrition_values = {
-                    'calories': float(cache.calories_per_100g) if cache.calories_per_100g is not None else None,
-                    'protein':  float(cache.protein_per_100g)  if cache.protein_per_100g  is not None else None,
-                    'carbs':    float(cache.carbs_per_100g)    if cache.carbs_per_100g    is not None else None,
-                    'fat':      float(cache.fat_per_100g)      if cache.fat_per_100g      is not None else None,
-                }
-        all_recipes_for_book.append({
-            'recipe_id': r.recipe_id,
-            'recipe_name': r.recipe_name,
-            'recipe_image': r.photo_url,
-            'prep_time': r.prep_time,
-            'cook_time': r.cook_time,
-            'servings': r.servings,
-            'difficulty_level': r.difficulty_level,
-            'is_vegetarian': r.is_vegetarian,
-            'author': r.author,
-            'courses': [c.name for c in r.courses.all()],
-            'categories': [c.name for c in r.categories.all()],
-            'proteins': [p.name for p in r.proteins.all()],
-            'nutrition_values': nutrition_values,
-        })
+    # BV-1, 13 Nov 2026 - the book's recipes, only when the book asks.
+    # Every visit used to build all ~290 (135 KB of the page's 876 KB,
+    # measured on Live 12 Nov) for a view most visits never open, and
+    # evaluating them ran the whole filtered list through its prefetches.
+    # The book now fetches this same address with ?book=1 - same filters,
+    # same order - when it is first opened.
+    if request.GET.get('book') == '1':
+        return JsonResponse(_book_rows(recipes, nutrition_sort), safe=False)
 
     context = {
         'recipes': page_obj,
@@ -438,7 +418,6 @@ def recipe_management(request):
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
         # RC-3, 12 Nov 2026 - 'ingredient_categories' went: every ingredient,
         # prefetched on every visit, for a template that never read it.
-        'all_recipes_for_book': json.dumps(all_recipes_for_book),
         # Step 3 - nutrition sort
         'nutrition_sort': nutrition_sort,
         'nutrition_order': nutrition_order,
@@ -1390,3 +1369,36 @@ def edit_recipe(request, recipe_id):
     }
 
     return render(request, 'preview_imported_recipe.html', context)
+
+
+def _book_rows(recipes, nutrition_sort):
+    """BV-1 - the recipe book's rows: the filtered recipes, as the book
+    has always read them (moved here unchanged from recipe_management)."""
+    all_recipes_for_book = []
+    for r in recipes:
+        nutrition_values = None
+        if nutrition_sort:
+            cache = getattr(r, 'nutrition_cache', None)
+            if cache:
+                nutrition_values = {
+                    'calories': float(cache.calories_per_100g) if cache.calories_per_100g is not None else None,
+                    'protein':  float(cache.protein_per_100g)  if cache.protein_per_100g  is not None else None,
+                    'carbs':    float(cache.carbs_per_100g)    if cache.carbs_per_100g    is not None else None,
+                    'fat':      float(cache.fat_per_100g)      if cache.fat_per_100g      is not None else None,
+                }
+        all_recipes_for_book.append({
+            'recipe_id': r.recipe_id,
+            'recipe_name': r.recipe_name,
+            'recipe_image': r.photo_url,
+            'prep_time': r.prep_time,
+            'cook_time': r.cook_time,
+            'servings': r.servings,
+            'difficulty_level': r.difficulty_level,
+            'is_vegetarian': r.is_vegetarian,
+            'author': r.author,
+            'courses': [c.name for c in r.courses.all()],
+            'categories': [c.name for c in r.categories.all()],
+            'proteins': [p.name for p in r.proteins.all()],
+            'nutrition_values': nutrition_values,
+        })
+    return all_recipes_for_book

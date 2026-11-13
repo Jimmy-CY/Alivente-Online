@@ -49,7 +49,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from ..models import CelebrationEvent, Contact, HouseholdMember
+from ..models import CelebrationEvent, Contact, Gift, HouseholdMember
 from pages.workspace import ensure_workspace
 
 
@@ -105,8 +105,18 @@ def celebration_management(request):
             try:
                 contact = Contact.objects.for_user(request.user).get(id=contact_id)
                 name = contact.name
+                # CG-1, 13 Nov 2026 - gifts survive the contact (SET_NULL,
+                # name kept). The one deleting is told now; anyone else
+                # with gifts for this person is told on their next visit.
+                kept = Gift.objects.filter(owner=request.user, contact=contact)
+                n_kept = kept.count()
+                kept.update(orphan_told=True)
                 contact.delete()
-                messages.success(request, f'Contact "{name}" deleted successfully!')
+                messages.success(request, f'Contact "{name}" deleted successfully!'
+                                 + (f' Your {n_kept} gift record'
+                                    f'{"" if n_kept == 1 else "s"} for them '
+                                    f'{"is" if n_kept == 1 else "are"} kept in My gifts.'
+                                    if n_kept else ''))
             except Contact.DoesNotExist:
                 messages.error(request, 'Contact not found.')
 
@@ -255,7 +265,32 @@ def celebration_management(request):
     # Sort by days until
     all_events.sort(key=lambda x: x['days_until'])
 
+    # CG-1, 13 Nov 2026 - gifts, on "my own" celebrations only: the
+    # contacts with an event this person is relevant to. Private - only
+    # their own gift rows are read.
+    from . import celebration_gifts as CG
+    CG.tell_orphans(request)
+    my_members = CG.my_member_ids(request.user)
+    my_contacts = set()
+    for contact in contacts:
+        for event in contact.celebration_events.all():
+            event.is_mine = bool(event.relevant_member_ids & my_members)
+            if event.is_mine:
+                my_contacts.add(contact.id)
+    gifts = CG.gifts_by_contact(request.user, my_contacts)
+    for contact in contacts:
+        contact.is_mine = contact.id in my_contacts
+        contact.gift_count = len(gifts.get(contact.id, []))
+
     return render(request, 'celebration_management.html', {
+        # Written out as JSON here rather than with json_script, so the
+        # element ids are in the template where the page's scripts read
+        # them (test_req_marker reads the template, not the page).
+        'gift_json': CG.as_json(gifts),
+        'members_json': CG.as_json(sorted(my_members)),
+        'gift_counts': {cid: len(rows) for cid, rows in gifts.items()},
+        'gift_occasions': Gift.OCCASION_CHOICES,
+        'this_year': today.year,
         'contacts': contacts,
         'upcoming_events': all_events[:10],  # Top 10 upcoming
         'household_members': household_members,

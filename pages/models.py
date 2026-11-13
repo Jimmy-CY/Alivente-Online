@@ -3668,6 +3668,65 @@ class CelebrationEvent(models.Model):
                 emails.append(m.email.strip())
         return emails
 
+class Gift(models.Model):
+    """CG-1, 13 Nov 2026 - a present given, an idea for one, or a line on the
+    Christmas list. Demetri, 12 Nov: "Gifts must be private to the person
+    capturing them. We don't need shared gifts."
+
+    PRIVATE: every read is filtered by owner; nobody else ever sees a row.
+    NEVER LOST: it hangs on the contact, not the event, and the contact may
+    go (SET_NULL) - contact_name keeps who it was for, and the owner is
+    told once (orphan_told) on their next visit to Celebrations.
+    PLAN AND PURCHASE ARE SEPARATE (Demetri, 12 Nov: "If I decided to plan
+    one thing and then buy a completely different gift, that should be OK
+    as well"): idea and budget are the plan; gift and cost are what was
+    bought. An idea is a row not yet given.
+    """
+    OCCASION_CHOICES = [
+        ('birthday', 'Birthday'),
+        ('nameday', 'Name day'),
+        ('anniversary', 'Anniversary'),
+        ('christmas', 'Christmas'),
+        ('other', 'Other'),
+    ]
+    owner = models.ForeignKey(User, on_delete=models.CASCADE,
+                              related_name='gifts')
+    contact = models.ForeignKey(Contact, on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='gifts')
+    contact_name = models.CharField(max_length=200)
+    year = models.PositiveIntegerField()
+    occasion = models.CharField(max_length=20, choices=OCCASION_CHOICES,
+                                default='birthday')
+    idea = models.CharField(max_length=200, blank=True)
+    budget = models.DecimalField(max_digits=9, decimal_places=2, null=True,
+                                 blank=True)
+    gift = models.CharField(max_length=200, blank=True)
+    cost = models.DecimalField(max_digits=9, decimal_places=2, null=True,
+                               blank=True)
+    given = models.BooleanField(default=False)
+    note = models.CharField(max_length=200, blank=True)
+    orphan_told = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'celebration_gifts'
+        ordering = ['-year', 'contact_name', 'id']
+
+    def __str__(self):
+        return '%s, %s %s' % (self.contact_name, self.get_occasion_display(),
+                              self.year)
+
+    @property
+    def who(self):
+        return self.contact.name if self.contact_id else self.contact_name
+
+    @property
+    def what(self):
+        """What it is: the gift bought, else the plan."""
+        return self.gift or self.idea
+
+
 class EventNotification(models.Model):
     """Track which notifications have been sent"""
     NOTIFICATION_TYPE_CHOICES = [
