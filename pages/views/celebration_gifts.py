@@ -82,6 +82,7 @@ def gifts_by_contact(user, contact_ids):
     for g in Gift.objects.filter(owner=user, contact_id__in=contact_ids):
         out.setdefault(g.contact_id, []).append({
             'id': g.pk, 'year': g.year, 'occasion': g.get_occasion_display(),
+            'occasion_key': g.occasion,   # CG-2 - for Edit
             'what': g.what, 'idea': g.idea, 'gift': g.gift,
             'budget': str(g.budget) if g.budget is not None else '',
             'cost': str(g.cost) if g.cost is not None else '',
@@ -174,6 +175,32 @@ def celebration_gift_save(request):
             g.given = True
             g.save()
         return _gift_back(request, 'celebration_management')
+    if action == 'edit':
+        # CG-2, 13 Nov 2026 - Demetri, 12:09: "Or Edit the gift from 2025?"
+        # Everything about one of your gifts can change. A gift keeps its
+        # plan (the idea) when its details change; turned back into an
+        # idea, what was bought is cleared - it was not bought after all.
+        g = mine.filter(pk=request.POST.get('gift_id')).first()
+        text = (request.POST.get('what') or '').strip()[:200]
+        if g and text:
+            occasion = request.POST.get('occasion') or g.occasion
+            if occasion in dict(Gift.OCCASION_CHOICES):
+                g.occasion = occasion
+            try:
+                y = int(request.POST.get('year'))
+                g.year = min(max(y, 1950), timezone.localdate().year + 5)
+            except (TypeError, ValueError):
+                pass
+            amount = money(request.POST.get('amount'))
+            if request.POST.get('kind') == 'idea':
+                g.idea, g.budget = text, amount
+                g.gift, g.cost, g.given = '', None, False
+            else:
+                g.gift, g.cost, g.given = text, amount, True
+            g.save()
+        elif g:
+            messages.error(request, 'Say what the gift is.')
+        return _gift_back(request, 'celebration_management')
     return _gift_back(request, 'celebration_management')
 
 
@@ -239,6 +266,7 @@ def my_gifts(request):
 
     tell_orphans(request)
     ctx = {'tab': tab, 'xyear': xyear, 'today': today,
+           'occasions': Gift.OCCASION_CHOICES,   # CG-2 - for Edit
            'years_choice': list(range(today.year + 1, today.year - 4, -1))}
 
     # MY GIFTS - everything given, by year, then the ideas still to use.

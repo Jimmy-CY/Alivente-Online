@@ -1605,6 +1605,8 @@ ROUNDS = [
     '.bak_greetwell',
     # LL-1, 13 Nov 2026 - Release 77: the recipe list view on demand.
     '.bak_listlazy',
+    # CG-2, 13 Nov 2026 - Release 78: edit and delete any gift.
+    '.bak_giftedit',
 ]
 
 

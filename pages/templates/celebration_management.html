@@ -1373,7 +1373,8 @@ button.gift-btn { background: transparent; }
                 <ul class="gift-list" id="giftList"></ul>
                 <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-form" id="giftForm">
                     {% csrf_token %}
-                    <input type="hidden" name="action" value="add">
+                    <input type="hidden" name="action" value="add" id="gift_action">
+                    <input type="hidden" name="gift_id" id="gift_edit_id">
                     <input type="hidden" name="contact_id" id="gift_contact_id">
                     <input type="hidden" name="next" id="gift_next">
                     <div class="gift-kind" role="radiogroup" aria-label="Given or an idea">
@@ -1402,7 +1403,8 @@ button.gift-btn { background: transparent; }
                     </div>
                     <div class="gift-actions">
                         <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn action-primary"><i class="fas fa-plus"></i> Add</button>
+                        <button type="button" class="btn action-secondary" id="gift_edit_cancel" hidden>Cancel edit</button>
+                        <button type="submit" class="btn action-primary" id="gift_submit"><i class="fas fa-plus"></i> Add</button>
                     </div>
                 </form>
                 <form method="post" action="{% url 'celebration_gift_save' %}" id="giftRowForm" hidden>
@@ -2100,7 +2102,34 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('gift_row_next').value = here + '?gifts=' + cid + '#gifts-' + cid;
         document.getElementById('giftRowForm').submit();
     }
+    function kindIs(k) {
+        document.querySelectorAll('#giftForm input[name="kind"]').forEach(function (r) { r.checked = (r.value === k); });
+        document.getElementById('gift_amount_label').textContent = k === 'idea' ? 'Budget' : 'Cost';
+    }
+    function addMode() {
+        document.getElementById('gift_action').value = 'add';
+        document.getElementById('gift_edit_id').value = '';
+        document.getElementById('gift_what').value = '';
+        document.getElementById('gift_amount').value = '';
+        document.getElementById('gift_year').value = document.getElementById('gift_year').defaultValue;
+        document.getElementById('gift_submit').innerHTML = '<i class="fas fa-plus"></i> Add';
+        document.getElementById('gift_edit_cancel').hidden = true;
+        kindIs('given');
+    }
+    function editGift(g) {
+        document.getElementById('gift_action').value = 'edit';
+        document.getElementById('gift_edit_id').value = g.id;
+        kindIs(g.given ? 'given' : 'idea');
+        document.getElementById('gift_what').value = g.given ? (g.gift || g.what) : g.idea;
+        document.getElementById('gift_amount').value = (g.given ? g.cost : g.budget) || '';
+        document.getElementById('gift_year').value = g.year;
+        document.getElementById('gift_occasion').value = g.occasion_key;
+        document.getElementById('gift_submit').textContent = 'Save';
+        document.getElementById('gift_edit_cancel').hidden = false;
+        document.getElementById('gift_what').focus();
+    }
     function openGifts(cid, name) {
+        addMode();
         document.getElementById('giftModalTitle').textContent = 'Gifts for ' + name;
         document.getElementById('gift_contact_id').value = cid;
         document.getElementById('gift_next').value = here + '?gifts=' + cid + '#gifts-' + cid;
@@ -2127,11 +2156,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 li.appendChild(given);
             }
+            // CG-2, 13 Nov 2026 - Edit, and a question before Delete.
+            var ed = el('button', 'gift-row-btn', 'Edit');
+            ed.type = 'button';
+            ed.setAttribute('aria-label', 'Edit ' + (g.what || 'this'));
+            ed.addEventListener('click', function () { editGift(g); });
+            li.appendChild(ed);
             var del = el('button', 'gift-row-btn', '\u00d7');
             del.type = 'button';
-            del.title = 'Remove';
-            del.setAttribute('aria-label', 'Remove ' + (g.what || 'this'));
-            del.addEventListener('click', function () { rowPost('delete', g.id, '', '', cid); });
+            del.title = 'Delete';
+            del.setAttribute('aria-label', 'Delete ' + (g.what || 'this'));
+            del.addEventListener('click', function () {
+                if (window.confirm('Delete this gift (' + (g.what || 'no name') + ', ' + g.year + ')? This cannot be undone.')) {
+                    rowPost('delete', g.id, '', '', cid);
+                }
+            });
             li.appendChild(del);
             list.appendChild(li);
         });
@@ -2141,6 +2180,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var b = e.target.closest('[data-gift-open]');
         if (b) openGifts(b.getAttribute('data-gift-open'), b.getAttribute('data-gift-name'));
     });
+    document.getElementById('gift_edit_cancel').addEventListener('click', addMode);
     document.querySelectorAll('input[name="kind"]').forEach(function (r) {
         r.addEventListener('change', function () {
             document.getElementById('gift_amount_label').textContent =

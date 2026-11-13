@@ -3300,7 +3300,9 @@ $suites = @(
     # PT-4, 13 Nov 2026 - Release 76: a celebration on Today opens its greeting.
     'test_wellness_twentysix.py',
     # LL-1, 13 Nov 2026 - Release 77: the recipe list view built only when used.
-    'test_recipe_list.py'
+    'test_recipe_list.py',
+    # CG-2, 13 Nov 2026 - Release 78: edit and delete any gift.
+    'test_gift_edit.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
