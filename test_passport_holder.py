@@ -158,7 +158,14 @@ for base, _d, files in os.walk(os.path.join(ROOT, 'pages')):
         s = ast.unparse(ast.parse(read(p)))
         if re.search(r'\bholder\s*=\s*(?!models\.)', s) or \
            re.search(r'\.holder\b(?!_name)', s):
-            if 'backfill_passport_holder' not in f:
+            # PT-2, 12 Nov 2026 - the documents view now WRITES the link
+            # when a document is added or edited, by the backfill's own
+            # rule (pages/passport_holder.py). Demetri saw none of his
+            # documents on Wellness Today because nothing ever had. The
+            # view is let through; anything else still is not.
+            if 'backfill_passport_holder' not in f and \
+                    os.path.relpath(p, ROOT).replace(os.sep, '/') != \
+                    'pages/views/passports.py':
                 pyreaders.append(os.path.relpath(p, ROOT))
 ok(not pyreaders,
    '  and no view or form does either, except the backfill command',

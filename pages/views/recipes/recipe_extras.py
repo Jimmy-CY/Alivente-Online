@@ -483,8 +483,7 @@ def recipe_cooked(request, recipe_id):
     if request.POST.get('delete'):
         RecipeCook.objects.filter(pk=request.POST.get('delete'),
                                   user=request.user, recipe=recipe).delete()
-        return redirect('%s#cooked' % reverse('view_recipe',
-                                              args=[recipe_id]))
+        return _cooked_back(request, recipe_id)
     today = timezone.localdate()
     try:
         when = _dt.date.fromisoformat(request.POST.get('cooked_on') or '')
@@ -499,9 +498,19 @@ def recipe_cooked(request, recipe_id):
         user=request.user, recipe=recipe, cooked_on=when,
         rating=rating if 1 <= rating <= 5 else None,
         note=(request.POST.get('note') or '').strip()[:200])
-    messages.success(request, 'Saved - cooked %s.' % (
-        'today' if when == today else when.strftime('%d %b')))
-    return redirect('%s#cooked' % reverse('view_recipe', args=[recipe_id]))
+    if request.POST.get('from') != 'wellness':
+        messages.success(request, 'Saved - cooked %s.' % (
+            'today' if when == today else when.strftime('%d %b')))
+    return _cooked_back(request, recipe_id)
+
+
+def _cooked_back(request, recipe_id):
+    """PT-2, 12 Nov 2026 - back to the page the form was on: the recipe
+    in Recipes, or the same recipe opened from Wellness Today. A flag, not
+    an address, so nothing posted can send the person anywhere else."""
+    name = ('wellness:recipe' if request.POST.get('from') == 'wellness'
+            else 'view_recipe')
+    return redirect('%s#cooked' % reverse(name, args=[recipe_id]))
 
 
 @login_required

@@ -1,32 +1,54 @@
 # -*- coding: utf-8 -*-
-"""wellness/home.py - PT-1, 12 Nov 2026. Personal Today, inside Wellness.
+"""wellness/home.py - PT-1, 12 Nov 2026; PT-2 the same evening.
+At home today: the rest of Alivente, on one card at the top of Today.
 
-Demetri, 14:32-14:38: the rest of the Personal side - celebrations, the
-meal plan, documents - on one page, "in an app format like the Wellness
-app", and reached from Wellness itself without making it clumsy.
+PT-1 put a small card on Today and a whole page behind "See all". Demetri,
+12 Nov 21:45-21:48, having used it: celebrations "only today (non-
+clickable and non-expandable)"; every recipe planned for today, each
+opening the recipe "without exiting to the recipe module", with Cook mode;
+his expiring documents, "non-clickable". The card is the whole feature
+now - the page behind it is gone (21:48, "Yes").
 
-So: one compact "At home today" card at the top of Wellness Today (three
-lines at most, gone when there is nothing to say, and switched off in
-Settings if not wanted), and "See all" opens the whole page inside
-Wellness. Each part shows only to someone who can open that part of
-Alivente, and only what is theirs:
+Each part shows only to someone who can open that part of Alivente, and
+only what is theirs:
 
-  CELEBRATIONS  events relevant to them (they are in "relevant to"), the
-                next 14 days. None in the window: one line naming the next.
-                No events at all: nothing.
-  MEALS         today, from their own meal plan and plans shared with them.
-  DOCUMENTS     only documents whose holder is them, expiring within 90
-                days or already expired. (The Documents section itself still
-                shows everybody's - his decision.)
-  WELLNESS      the ring, today's workout, the weigh-in - on the full page.
+  CELEBRATIONS  today only: events relevant to them (they are in
+                "relevant to"). Nobody today: no line.
+  MEALS         every meal planned today, from their own meal plan and
+                plans shared with them. A recipe opens inside Wellness
+                (views_recipe.py).
+  DOCUMENTS     only their own, from the start of the document's own
+                reminder window (six months, or the nine or twelve chosen
+                under "Remind me") until it is renewed or set Inactive.
+                "Their own" is the holder link OR, where a document has
+                none, the typed name by passport_holder's rule - the link
+                was empty on every document added since October.
+
+Switched off in Settings, At home today, if not wanted.
 """
 import datetime as dt
 
-CEL_DAYS = 14
-DOC_DAYS = 90
 CEL_PERM = 'auth.can_access_celebrations'
 MEAL_PERM = 'auth.can_access_recipes'
 DOC_PERM = 'auth.can_access_passports'
+
+# How a document reads on the card: "Greek passport", "Cyprus driver's
+# license". A country not here reads by its own name ("Spain ID" would be
+# odd, so Spain is here); nothing is guessed.
+ADJECTIVE = {
+    'Greece': 'Greek', 'South Africa': 'South African', 'Cyprus': 'Cyprus',
+    'United Kingdom': 'UK', 'UK': 'UK', 'Spain': 'Spanish',
+    'Ireland': 'Irish', 'Germany': 'German', 'France': 'French',
+    'Italy': 'Italian', 'United States': 'US', 'USA': 'US',
+    'Australia': 'Australian', 'Switzerland': 'Swiss',
+}
+NOUN = {
+    'passport': 'passport', 'id': 'ID', 'drivers_license': "driver's license",
+    'visa': 'visa', 'arc': 'alien registration card',
+    'health': 'health card', 'residence': 'residence certificate',
+    'car_reg': 'car registration', 'mot': 'MOT', 'insurance': 'insurance',
+    'tax_id': 'tax ID',
+}
 
 
 def _members(user):
@@ -35,84 +57,99 @@ def _members(user):
 
 
 def celebrations(user, day):
-    """{'rows': [...], 'next': row or None, 'any': bool} or None."""
+    """Today's celebrations that are theirs: [{'name', 'what'}], or None."""
     if not user.has_perm(CEL_PERM):
         return None
     from pages.models import CelebrationEvent
     members = _members(user)
     if not members:
         return None
-    events = list(CelebrationEvent.objects.filter(relevant_to__in=members)
-                  .select_related('contact').distinct())
-    if not events:
-        return None
     rows = []
-    for e in events:
-        when = e.get_next_occurrence()
-        if when is None:
+    for e in (CelebrationEvent.objects.filter(relevant_to__in=members)
+              .select_related('contact').distinct()):
+        if e.get_next_occurrence() != day:
             continue
-        days = (when - day).days
-        if days < 0:
-            continue
-        n = e.age_at(when) or e.years_at(when)
-        what = e.get_event_type_display()
+        n = e.age_at(day) or e.years_at(day)
+        what = e.get_event_type_display().lower()
         if e.event_type == 'birthday' and n:
-            what = 'Birthday - turns %d' % n
+            what = 'birthday, turns %d' % n
         elif e.event_type == 'anniversary' and n:
-            what = 'Anniversary - %d years' % n
-        rows.append({'name': e.contact.name, 'what': what, 'when': when,
-                     'days': days, 'kind': e.event_type,
-                     'soon': days <= 3})
-    rows.sort(key=lambda r: (r['when'], r['name']))
-    near = [r for r in rows if r['days'] <= CEL_DAYS]
-    return {'rows': near, 'next': rows[0] if rows and not near else None,
-            'any': True}
+            what = 'anniversary, %d years' % n
+        rows.append({'name': e.contact.name, 'what': what})
+    rows.sort(key=lambda r: r['name'])
+    return rows
 
 
 def meals(user, day):
-    """[{'name', 'owner', 'recipe_id', 'leftover', 'note'}] or None."""
+    """[{'name', 'owner', 'recipe_id', 'leftover'}] or None."""
     if not user.has_perm(MEAL_PERM):
         return None
     from django.db.models import Q
     from pages import meal_calendar as MC
     from pages.models import MealEntry
     cals = MC.accessible(user)
-    rows = (MealEntry.objects.filter(date=day)
-            .filter(Q(calendar__in=cals) | Q(calendar__isnull=True))
-            .select_related('recipe', 'calendar__owner')
-            .order_by('sort_order', 'meal_entry_id'))
     out = []
-    for e in rows:
+    for e in (MealEntry.objects.filter(date=day)
+              .filter(Q(calendar__in=cals) | Q(calendar__isnull=True))
+              .select_related('recipe', 'calendar__owner')
+              .order_by('sort_order', 'meal_entry_id')):
         owner = ''
         if e.calendar_id and e.calendar.owner_id != user.pk:
             owner = e.calendar.label
         out.append({'name': (e.recipe.recipe_name if e.recipe
                              else (e.note or 'A note')),
                     'recipe_id': e.recipe_id, 'owner': owner,
-                    'leftover': bool(e.leftover_of_id),
-                    'note': not e.recipe_id})
+                    'leftover': bool(e.leftover_of_id)})
     return out
 
 
+def doc_label(p):
+    noun = NOUN.get(p.document_type, p.get_document_type_display())
+    country = (p.country_of_issue or '').strip()
+    adj = ADJECTIVE.get(country, country)
+    return ('%s %s' % (adj, noun)).strip()
+
+
 def documents(user, day):
-    """Their own documents expiring soon, soonest first, or None."""
+    """Their own documents inside their reminder window, soonest first."""
     if not user.has_perm(DOC_PERM):
         return None
-    from pages.models import Passport
+    from django.db.models import Q
+    from pages import passport_holder as PH
+    from pages.models import HouseholdMember, Passport
     members = _members(user)
     if not members:
         return None
-    rows = []
-    for p in (Passport.objects.filter(holder__in=members, status='active',
-                                      expiry_date__isnull=False,
-                                      expiry_date__lte=day + dt.timedelta(
-                                          days=DOC_DAYS))
-              .order_by('expiry_date')):
+    mine = {m.pk for m in members}
+    spaces = {m.workspace_id for m in members}
+    widest = max(Passport.REMIND_DAYS.values())
+    rows = (Passport.objects
+            .filter(status__in=('active', 'renewal'),
+                    expiry_date__isnull=False,
+                    expiry_date__lte=day + dt.timedelta(days=widest))
+            .filter(Q(holder__in=members) |
+                    Q(holder__isnull=True, workspace_id__in=spaces))
+            .order_by('expiry_date', 'id'))
+    by_space = {}
+    out = []
+    for p in rows:
+        if p.holder_id is None:
+            if p.workspace_id not in by_space:
+                by_space[p.workspace_id] = list(
+                    HouseholdMember.objects.filter(
+                        workspace_id=p.workspace_id))
+            hits = PH.matches(by_space[p.workspace_id], p.holder_name)
+            if len(hits) != 1 or hits[0].pk not in mine:
+                continue
+        window = Passport.REMIND_DAYS.get(p.remind_months, 180)
         days = (p.expiry_date - day).days
-        rows.append({'what': p.get_document_type_display(),
-                     'country': p.country_of_issue, 'when': p.expiry_date,
-                     'days': days, 'gone': days < 0, 'soon': days <= 30})
-    return rows
+        if days > window:
+            continue
+        out.append({'what': doc_label(p), 'when': p.expiry_date,
+                    'days': days, 'gone': days < 0,
+                    'soon': days <= 30,
+                    'renewing': p.status == 'renewal'})
+    return out
 
 
 def gather(user, day):
@@ -120,39 +157,9 @@ def gather(user, day):
             'docs': documents(user, day)}
 
 
-def card_lines(g):
-    """At most three lines for the card on Wellness Today."""
-    lines = []
-    cel = g.get('cel')
-    if cel and cel['rows']:
-        r = cel['rows'][0]
-        lines.append({'kind': 'cel', 'text': '%s - %s' % (r['name'],
-                                                       r['what'].lower()
-                                                       if r['what'] else ''),
-                      'when': _in_days(r['days']), 'soon': r['soon']})
-    m = g.get('meals')
-    if m:
-        first = m[0]['name']
-        more = len(m) - 1
-        lines.append({'kind': 'meal',
-                      'text': first + (' and %d more' % more if more else ''),
-                      'when': 'Today', 'soon': False})
-    d = g.get('docs')
-    if d:
-        r = d[0]
-        lines.append({'kind': 'doc',
-                      'text': 'Your %s %s' % (r['what'].lower(),
-                                              'expired' if r['gone']
-                                              else 'expires'),
-                      'when': ('%d days ago' % -r['days']) if r['gone']
-                      else _in_days(r['days']),
-                      'soon': r['soon']})
-    return lines[:3]
-
-
-def _in_days(n):
-    if n == 0:
-        return 'Today'
-    if n == 1:
-        return 'Tomorrow'
-    return 'In %d days' % n
+def card(user, day):
+    """What the card on Today shows, or None when there is nothing."""
+    g = gather(user, day)
+    if not (g['cel'] or g['meals'] or g['docs']):
+        return None
+    return g

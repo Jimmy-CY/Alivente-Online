@@ -184,11 +184,12 @@ HOWTO = [
          'More than a kilo a week? Body says so - a later date is kinder.']},
     # PT-1, 12 Nov 2026 - Personal Today; a workout logged afterwards.
     {'q': 'What is At home today?',
-     'a': 'A small card at the top of Today with the rest of your Alivente: '
-          'your next celebration, today\'s meals and any of your documents '
-          'about to expire. It only appears when there is something to say. '
-          'See all opens the whole page. Turn it off under the cog, At home '
-          'today.'},
+     'a': 'A card at the top of Today with the rest of your Alivente: who '
+          'celebrates today, every meal planned for today and your own '
+          'documents due for renewal - from six months before they expire, '
+          'or the nine or twelve chosen under Remind me. Tap a recipe to '
+          'open it here, with Cook mode. The card only appears when there '
+          'is something to say. Turn it off under the cog, At home today.'},
     {'q': 'Set up: log a workout you already did',
      'a': 'For a run this morning, or a session yesterday you forgot to '
           'log.',

@@ -36,6 +36,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
+from .. import passport_holder as PH
 from ..models import Passport
 from ..workspace import ensure_workspace
 
@@ -86,6 +87,8 @@ def passport_management(request):
                     status=status,
                     document_file=document_file,
                     remind_months=_remind(request),
+                    # PT-2, 12 Nov 2026 - the person, as well as the name.
+                    holder=PH.member_for(workspace.pk, holder_name),
                 )
                 messages.success(request, f'Passport/ID for {holder_name} added successfully!')
             except Exception as e:
@@ -101,7 +104,16 @@ def passport_management(request):
                 id=passport_id,
             )
 
+            was = passport.holder_name
             passport.holder_name = request.POST.get('holder_name')
+            # PT-2, 12 Nov 2026 - the link to the person follows the name.
+            # A name that matches nobody keeps the link it had, unless the
+            # name itself changed - then it no longer says who it was.
+            who = PH.member_for(passport.workspace_id, passport.holder_name)
+            if who is not None:
+                passport.holder = who
+            elif passport.holder_name != was:
+                passport.holder = None
             passport.document_type = request.POST.get('document_type')
             passport.document_number = request.POST.get('document_number')
             passport.country_of_issue = request.POST.get('country_of_issue')

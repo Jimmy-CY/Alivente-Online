@@ -297,8 +297,9 @@ def today(request):
         if 'workouts' in mods else {},
         # CY-1 - the cycle line, or nothing (off by default).
         'cycle': _cycle_card(request.user, day),
-        # PT-1, 12 Nov 2026 - "At home today", unless turned off.
-        'home_lines': _home_lines(request.user, day, profile),
+        # PT-1, 12 Nov 2026 - "At home today", unless turned off. PT-2:
+        # the whole of it, on the card.
+        'home': _home_card(request.user, day, profile),
         # WL-4a - a badge earned and not yet seen, one at a time.
         'new_badge': _new_badge(profile, request.user, day),
         # WL-8 - challenges finished (keep, again, let go) and missed days.
@@ -326,32 +327,16 @@ def _calm_today(user, day):
                .values_list('seconds', flat=True)) // 60
 
 
-def _home_lines(user, day, profile):
-    """PT-1 - at most three lines from the rest of Alivente. Never lets
-    a fault there stop Today."""
+def _home_card(user, day, profile):
+    """PT-1 / PT-2 - the rest of Alivente on Today. Never lets a fault
+    there stop Today."""
     if (profile.prefs or {}).get('home_off'):
-        return []
+        return None
     from . import home as HM
     try:
-        return HM.card_lines(HM.gather(user, day))
+        return HM.card(user, day)
     except Exception:  # noqa: BLE001 - Today must always open
-        return []
-
-
-@wellness_view
-def home_page(request):
-    """PT-1, 12 Nov 2026 - Personal Today: celebrations, meals and your
-    documents, inside Wellness."""
-    from . import home as HM
-    day = _today()
-    g = HM.gather(request.user, day)
-    return render(request, 'wellness/home.html', {
-        'tab': 'today', 'date': day, 'g': g,
-        'nothing': not ((g['cel'] and (g['cel']['rows'] or
-                                       g['cel']['next'])) or g['meals']
-                        or g['docs']),
-        'cel_days': HM.CEL_DAYS, 'doc_days': HM.DOC_DAYS,
-    })
+        return None
 
 
 def _workout_card(user, day):
@@ -1079,7 +1064,8 @@ def manifest(request):
 # WL-1b - bump this AND the ?v= in wellness/base.html whenever the style
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
-SW_VERSION = 'wl23-1'
+# PT-2, 12 Nov 2026 - the card's lines and the recipe page.
+SW_VERSION = 'wl24-1'
 
 
 def service_worker(request):

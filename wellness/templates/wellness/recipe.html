@@ -1,0 +1,142 @@
+{% extends "wellness/base.html" %}
+{% block title %}{{ recipe.recipe_name }} · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:today' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</a>{% endblock %}
+{% block content %}
+{% comment %} PT-2, 12 Nov 2026 - a recipe from today's meals, without leaving Wellness: the same ingredients and method as Recipes, Cook mode and Cooked it. {% endcomment %}
+<header style="display:flex;flex-direction:column;gap:4px;padding:0 4px 8px" data-w-recipe>
+  <div class="w-eyebrow">Today's meal</div>
+  <h1 class="w-hello" style="font-size:28px">{{ recipe.recipe_name }}</h1>
+</header>
+
+{% if recipe.recipe_image %}<img class="w-rc-photo" src="{{ recipe.photo_url }}" alt="{{ recipe.recipe_name }}">{% endif %}
+
+<section class="w-card">
+  {% if recipe.recipe_description %}<p style="margin:0">{{ recipe.recipe_description }}</p>{% endif %}
+  <div class="w-rc-meta">
+    {% if recipe.prep_time %}<span><b>{{ recipe.prep_time }} min</b>Prep</span>{% endif %}
+    {% if recipe.cook_time %}<span><b>{{ recipe.cook_time }} min</b>Cook</span>{% endif %}
+    {% if recipe.total_time %}<span><b>{{ recipe.total_time }} min</b>Total</span>{% endif %}
+    {% if recipe.servings %}<span><b>{{ recipe.servings }}</b>Servings</span>{% endif %}
+  </div>
+</section>
+
+<section class="w-card" data-w-recipe-ingredients>
+  <h2 class="w-h2" style="font-size:18px;margin:0">Ingredients</h2>
+  {% regroup ingredients by ingredient_group as ingredient_groups %}
+  {% for group in ingredient_groups %}
+  {% if group.grouper %}<span class="w-label">{{ group.grouper }}</span>{% endif %}
+  <ul class="w-rc-ings">
+    {% for ing in group.list %}
+    <li><span class="w-rc-amt">{{ ing.formatted_amount|default:'' }} {{ ing.unit.abbreviation|default:ing.unit.name|default:'' }}</span><span>{{ ing.ingredient.name }}{% if ing.preparation %}, {{ ing.preparation.name }}{% endif %}{% if ing.weight_equivalent %} <span class="w-quiet">({{ ing.weight_equivalent }})</span>{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% empty %}
+  <p class="w-small w-quiet" style="margin:0">No ingredients written down.</p>
+  {% endfor %}
+</section>
+
+<section class="w-card" data-w-recipe-method>
+  <h2 class="w-h2" style="font-size:18px;margin:0">Method</h2>
+  {% if instructions %}
+  <button type="button" class="w-btn full cm-open" data-cook-open>Cook mode</button>
+  {% endif %}
+  {% regroup instructions by instruction_group as instruction_groups %}
+  {% for group in instruction_groups %}
+  {% if group.grouper %}<span class="w-label">{{ group.grouper }}</span>{% endif %}
+  {% for instruction in group.list %}
+  <div class="w-rc-step" data-cook-step data-minutes="{{ instruction.time_estimate|default_if_none:'' }}" data-group="{{ group.grouper|default_if_none:'' }}"><span class="w-rc-n">{{ instruction.step_number }}</span><div><div class="step-text">{{ instruction.instruction_text }}</div>{% if instruction.time_estimate %}<div class="w-small w-quiet">About {{ instruction.time_estimate }} minutes</div>{% endif %}</div></div>
+  {% endfor %}
+  {% empty %}
+  <p class="w-small w-quiet" style="margin:0">No method written down.</p>
+  {% endfor %}
+</section>
+
+<section class="w-card" id="cooked" data-cooked>
+  <h2 class="w-h2" style="font-size:18px;margin:0">Cooked it</h2>
+  {% if last_cook %}
+  <p class="w-small w-quiet" style="margin:0" data-cooked-summary>Last cooked {% if last_cook.cooked_on == today %}today{% else %}{{ last_cook.cooked_on|timesince:today }} ago{% endif %}{% if cooks_total > 1 %} &middot; {{ cooks_total }} times{% endif %}{% if cook_avg %} &middot; {{ cook_avg }}&#9733; on average{% endif %}{% if last_cook.note %} &middot; &ldquo;{{ last_cook.note }}&rdquo;{% endif %}</p>
+  {% else %}
+  <p class="w-small w-quiet" style="margin:0">Not cooked yet. Made it? Record how it turned out.</p>
+  {% endif %}
+  <form method="post" action="{% url 'recipe_cooked' recipe.recipe_id %}" class="w-rc-cooked">{% csrf_token %}<input type="hidden" name="from" value="wellness">
+    <div class="w-rc-stars" role="radiogroup" aria-label="How it turned out">
+      {% for n in "12345" %}<label class="w-rc-star"><input type="radio" name="rating" value="{{ n }}"><span aria-hidden="true">&#9733;</span><span class="w-sr">{{ n }} star{{ n|pluralize }}</span></label>{% endfor %}
+    </div>
+    <input type="text" name="note" maxlength="200" class="w-input" placeholder="A note - needs more lemon" aria-label="A note">
+    <input type="hidden" name="cooked_on" value="{{ today|date:'Y-m-d' }}">
+    <button type="submit" class="w-btn full">I cooked it today</button>
+  </form>
+  {% if cooks %}
+  <ul class="w-rc-cooks">
+    {% for c in cooks %}
+    <li><span class="w-rc-when">{{ c.cooked_on|date:"j M Y" }}</span><span class="w-rc-rate">{% if c.rating %}{{ c.rating }}&#9733;{% endif %}</span><span class="w-quiet" style="flex:1">{{ c.note }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{# PT-2 - Cook mode, the same screen and the same script as Recipes (test_wellness_twentyfive holds the two copies together). #}
+<div class="cm-screen" data-cook-screen hidden role="dialog" aria-modal="true" aria-label="Cook mode">
+    <div class="cm-top"><span class="cm-count" data-cook-count></span><button type="button" class="cm-close" data-cook-close aria-label="Close cook mode">&times;</button></div>
+    <div class="cm-group" data-cook-group></div>
+    <div class="cm-text" data-cook-text></div>
+    <div class="cm-timer" data-cook-timer hidden><button type="button" class="cm-timer-btn" data-cook-timer-btn></button></div>
+    <div class="cm-nav"><button type="button" class="cm-prev" data-cook-prev>&larr; Back</button><button type="button" class="cm-next" data-cook-next>Next &rarr;</button></div>
+</div>
+<script>
+(function () {
+    var open = document.querySelector('[data-cook-open]');
+    var scr = document.querySelector('[data-cook-screen]');
+    if (!open || !scr) return;
+    var steps = [].slice.call(document.querySelectorAll('[data-cook-step]')).map(function (el) {
+        var t = el.querySelector('.step-text');
+        return { text: t ? t.textContent.trim() : '', mins: parseInt(el.getAttribute('data-minutes'), 10) || 0, group: el.getAttribute('data-group') || '' };
+    });
+    var i = 0, lock = null, tick = null, left = 0;
+    var $ = function (s) { return scr.querySelector(s); };
+    function wake() { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () {}); }
+    function fmt(s) { var m = Math.floor(s / 60), x = s % 60; return m + ':' + (x < 10 ? '0' : '') + x; }
+    function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
+    function draw() {
+        var s = steps[i];
+        $('[data-cook-count]').textContent = 'Step ' + (i + 1) + ' of ' + steps.length;
+        $('[data-cook-group]').textContent = s.group;
+        $('[data-cook-text]').textContent = s.text;
+        $('[data-cook-prev]').disabled = i === 0;
+        $('[data-cook-next]').textContent = i === steps.length - 1 ? 'Done' : 'Next →';
+        stopTimer();
+        var box = $('[data-cook-timer]'), btn = $('[data-cook-timer-btn]');
+        if (s.mins) { box.hidden = false; btn.textContent = 'Start ' + s.mins + ' min timer'; btn.className = 'cm-timer-btn'; }
+        else { box.hidden = true; }
+    }
+    $('[data-cook-timer-btn]').addEventListener('click', function () {
+        var btn = this, s = steps[i];
+        if (tick) { stopTimer(); btn.textContent = 'Start ' + s.mins + ' min timer'; return; }
+        left = s.mins * 60; btn.textContent = fmt(left) + ' - tap to stop'; btn.className = 'cm-timer-btn is-running';
+        tick = setInterval(function () {
+            left -= 1;
+            if (left <= 0) {
+                stopTimer(); btn.textContent = 'Time is up'; btn.className = 'cm-timer-btn is-done';
+                if (navigator.vibrate) { try { navigator.vibrate([300, 150, 300, 150, 300]); } catch (e) {} }
+                try { var a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination); g.gain.value = 0.2; o.start(); o.stop(a.currentTime + 0.8); } catch (e) {}
+                return;
+            }
+            btn.textContent = fmt(left) + ' - tap to stop';
+        }, 1000);
+    });
+    function show() { i = 0; scr.hidden = false; document.body.classList.add('cm-on'); wake(); draw(); }
+    function hide() { stopTimer(); scr.hidden = true; document.body.classList.remove('cm-on'); if (lock) { try { lock.release(); } catch (e) {} lock = null; } }
+    open.addEventListener('click', show);
+    $('[data-cook-close]').addEventListener('click', hide);
+    $('[data-cook-prev]').addEventListener('click', function () { if (i > 0) { i -= 1; draw(); } });
+    $('[data-cook-next]').addEventListener('click', function () { if (i < steps.length - 1) { i += 1; draw(); } else { hide(); } });
+    document.addEventListener('keydown', function (e) {
+        if (scr.hidden) return;
+        if (e.key === 'Escape') hide();
+        else if (e.key === 'ArrowRight') $('[data-cook-next]').click();
+        else if (e.key === 'ArrowLeft') $('[data-cook-prev]').click();
+    });
+    document.addEventListener('visibilitychange', function () { if (!scr.hidden && document.visibilityState === 'visible') wake(); });
+})();
+</script>
+{% endblock %}

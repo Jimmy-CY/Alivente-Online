@@ -38,6 +38,9 @@ SCREENS = {
             'A times-a-week habit leaves Today once that week\'s number is '
             'done, and is back on Monday.',
             'Tap the arrow beside a habit to see its calendar and streak.',
+            'At home today, at the top: who celebrates today, today\'s '
+            'meals (tap a recipe to open it, with Cook mode) and your '
+            'documents due for renewal.',
             'Take a breath, weigh in, or write a few lines, from the cards '
             'below.',
             'A challenge shows its day or week beside the habit, and asks '
@@ -254,18 +257,19 @@ SCREENS = {
         ],
         'signs': [],
     },
-    'home': {
-        'title': 'At home today',
-        'purpose': 'Your celebrations, today\'s meals and your documents.',
+    # PT-2, 12 Nov 2026 - At home today is the card on Today; a recipe
+    # from it opens here.
+    'recipe': {
+        'title': 'A recipe',
+        'purpose': 'A meal from today\'s plan, without leaving Wellness.',
         'steps': [
-            'Coming up: your celebrations in the next two weeks, with the age '
-            'or years where the year is known.',
-            'Today\'s meals: from your meal plan and any shared with you.',
-            'Your documents: yours only, expiring in the next 90 days.',
-            'Tap a line to open it in Alivente.',
+            'Ingredients and method, as in Recipes.',
+            'Cook mode: one step at a time in big type, the screen kept on. '
+            'A step with minutes has a timer.',
+            'Cooked it: give it stars and a note when you have made it.',
+            '‹ Today goes back.',
         ],
-        'signs': [('', 'Each part shows only if you can open it in '
-                       'Alivente.')],
+        'signs': [],
     },
     'routine_form': {
         'title': 'A routine',
@@ -589,7 +593,8 @@ SCREENS = {
             'The Monday email is off unless you turn it on.',
             'Download your data: everything as spreadsheets, your photos if '
             'you like.',
-            'At home today: turn the card on Today on or off.',
+            'At home today: the card on Today with today\'s celebrations, '
+            'meals and your documents. Turn it on or off.',
         ],
         'signs': [],
     },

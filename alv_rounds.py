@@ -1597,6 +1597,8 @@ ROUNDS = [
     '.bak_wellness24',
     # DC-1 + RC-3, 12 Nov 2026 - Releases 71 and 72.
     '.bak_docrecipe',
+    # PT-2, 12 Nov 2026 - Release 73: the Today card, a recipe in Wellness.
+    '.bak_todaycard',
 ]
 
 

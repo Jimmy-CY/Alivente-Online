@@ -106,10 +106,12 @@ ok('relevant_to__in=members' in hm and 'holder__in=members' in hm and
    'MC.accessible(user)' in hm,
    '  only their celebrations, only their documents, their meal plans')
 td = read(J(WT, 'today.html'))
-ok('{% if home_lines %}' in td and "{% url 'wellness:home' %}" in td and
-   'See all' in td,
-   'TODAY: a card only when there is something to say, See all opens '
-   'the page')
+# PT-2, 12 Nov 2026 - the card is the whole of At home today now, and the
+# page behind See all is gone (Demetri, 21:48). test_wellness_twentyfive
+# holds the card; this keeps only what PT-1 still owns: a card, only when
+# there is something to say.
+ok('{% if home %}' in td and 'data-home-card' in td,
+   'TODAY: a card only when there is something to say')
 v = read(J(APP, 'views.py'))
 ok("if (profile.prefs or {}).get('home_off'):" in v and
    "prefs['home_off'] = not request.POST.get('home')" in v and
@@ -143,7 +145,8 @@ django.setup()
 import datetime as dt                                       # noqa: E402
 from wellness import help as HELP                           # noqa: E402
 from wellness import guide as G                             # noqa: E402
-ok(HELP.for_url_name('home') and HELP.for_url_name('session_past') and
+# PT-2 - the At home page is gone; its help went with it.
+ok(HELP.for_url_name('session_past') and
    'Log a past workout' in ' '.join(HELP.for_url_name('workouts')['steps'])
    and 'At home today' in ' '.join(HELP.for_url_name('settings')['steps']),
    'HELP: both new screens; Workouts and Settings mention them')
@@ -232,19 +235,21 @@ if have_db:
             MealEntry.objects.create(date=day, note='Bo private meal',
                                      calendar=calb)
 
+            # PT-2, 12 Nov 2026 - the card shows today's celebrations
+            # only, and the page behind it is gone, so Kiddo's birthday in
+            # three days is no longer on it. What PT-1 promised still
+            # holds and is checked here: his meal, his own document, and
+            # nothing of Bo's. test_wellness_twentyfive drives the rest.
             t = ca.get('/wellness/').content.decode()
-            ok('data-home-card' in t and 'Kiddo - birthday - turns 21' in t
-               and 'Souvlaki night' in t and 'Your passport expires' in t,
-               'TODAY: Al sees his card - Kiddo turns 21 in 3 days, '
-               'Souvlaki night, his passport')
-            ok('Nobody' not in t and 'Bo private meal' not in t,
-               '  and not Bo\'s celebration or Bo\'s meal plan')
-            t = ca.get('/wellness/home/').content.decode()
-            ok('Kiddo' in t and 'In 3 days' in t and 'Greece' in t and
-               'Cyprus' not in t and 'Souvlaki night' in t,
-               'THE PAGE: his celebration, his meal, only his own document')
+            ok('data-home-card' in t and 'Souvlaki night' in t and
+               'Greek passport' in t,
+               'TODAY: Al sees his card - Souvlaki night, his passport')
+            ok('Nobody' not in t and 'Bo private meal' not in t and
+               'Cyprus passport' not in t,
+               '  and not Bo\'s celebration, Bo\'s meal plan or Bo\'s '
+               'passport')
             calb.shared_with.add(a)
-            t = ca.get('/wellness/home/').content.decode()
+            t = ca.get('/wellness/').content.decode()
             ok('Bo private meal' in t and 'Bo&#x27;s meal plan' in t,
                '  a plan shared with him joins, saying whose it is')
             ok('data-home-card' not in cb.get('/wellness/').content
@@ -307,7 +312,8 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def card_lines(g):'" in gate, '  with a sentinel on the card')
+# PT-2 - card_lines went with the page; the sentinel moved to card().
+ok("Text = 'def card(user, day):'" in gate, '  with a sentinel on the card')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 
 print('')
