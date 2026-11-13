@@ -2361,6 +2361,12 @@
 
 <!-- List View -->
 <div class="recipe-list" id="recipeListView" style="display: none;">
+    {# LL-1, 13 Nov 2026 - the list is built only when it is the view in  #}
+    {# use: the same 48 recipes as the grid, 201 KB of the page's 742 on   #}
+    {# Live (13 Nov) for a view most visits never show. A cookie says list #}
+    {# and it is built here; otherwise the page fetches ?part=list when    #}
+    {# List is first chosen, and the two markers below are what it keeps. #}
+    <!--list:start-->{% if render_list %}
     {% for recipe in recipes %}
     <div class="recipe-list-item">
         {# THE THUMBNAIL OPENS IT TOO - RD-3, 20 Oct 2026. The list is  #}
@@ -2513,6 +2519,7 @@
         <p class="text-muted">Try adjusting your filters or add a new recipe!</p>
     </div>
     {% endfor %}
+    {% endif %}<!--list:end-->
 </div>
 
 <!-- Book View -->
@@ -4152,6 +4159,8 @@ switchView = function(view) {
 
     currentView = view;
     localStorage.setItem('recipeView', view);
+    // LL-1 - the server reads this to know whether to build the list.
+    document.cookie = 'recipeView=' + view + '; path=/; max-age=31536000; SameSite=Lax';
 
     if (view === 'grid') {
         gridView.style.display = 'grid';
@@ -4161,6 +4170,7 @@ switchView = function(view) {
         listView.style.display = 'block';
         listBtn.classList.add('active');
         if (countContainer) countContainer.style.display = 'flex';
+        loadListView();
     } else if (view === 'book') {
         bookView.style.display = 'block';
         if (bookBtn) bookBtn.classList.add('active');
@@ -4173,6 +4183,30 @@ switchView = function(view) {
     }
 };
 // ==================== END BOOK VIEW ====================
+
+// LL-1, 13 Nov 2026 - the list, fetched the first time List is chosen
+// when the page was not built with it. Same address, same filters,
+// ?part=list. Its rows go in FIRST: anything Load more already added
+// to the list belongs after the first page.
+let listLoaded = {% if render_list %}true{% else %}false{% endif %};
+let listLoading = null;
+function loadListView() {
+    if (listLoaded || listLoading) return listLoading;
+    const q = new URLSearchParams(window.location.search);
+    q.set('part', 'list');
+    const listView = document.getElementById('recipeListView');
+    listLoading = fetch(window.location.pathname + '?' + q.toString(),
+                        {credentials: 'same-origin'})
+        .then(r => r.ok ? r.text() : '')
+        .then(html => {
+            listView.insertAdjacentHTML('afterbegin', html);
+            listLoaded = true;
+            updateRecipeCount();
+        })
+        .catch(() => {})
+        .finally(() => { listLoading = null; });
+    return listLoading;
+}
 
 </script>
 

@@ -363,6 +363,14 @@ def ask_greeting(prompt, client=None):
 @require_POST
 def celebration_greeting(request, event_id):
     """{"text", "wa"} - a greeting for one of MY celebrations."""
+    return greeting_response(request, event_id)
+
+
+def greeting_response(request, event_id):
+    """The greeting, for Celebrations and for Wellness alike. PT-5, 13 Nov
+    2026: Wellness asks through its own address (wellness/greeting/<id>/
+    write/) - on a phone the main app's hour had run out, so asking here
+    met the login page and the phone said "Could not reach Claude"."""
     mine = my_member_ids(request.user)
     event = (CelebrationEvent.objects
              .filter(pk=event_id, relevant_to__in=mine,

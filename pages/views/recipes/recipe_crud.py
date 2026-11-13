@@ -424,6 +424,19 @@ def recipe_management(request):
         'hidden_by_nutrition_sort': hidden_by_nutrition_sort,
     }
 
+    # LL-1, 13 Nov 2026 - the list view only when it is the view in use
+    # (the cookie the page sets) or asked for (?part=list, when List is
+    # first chosen). ?part=list answers with the list's rows alone.
+    want = request.GET.get('part') == 'list'
+    context['render_list'] = want or request.COOKIES.get('recipeView') == 'list'
+    if want:
+        # The page as the browser would get it, cut to the list's rows -
+        # a browser render, not a string for mail or a PDF.
+        html = render(request, 'recipe_management.html',
+                      context).content.decode()
+        a, b = html.find('<!--list:start-->'), html.find('<!--list:end-->')
+        return HttpResponse(html[a + len('<!--list:start-->'):b]
+                            if a >= 0 and b > a else '')
     return render(request, 'recipe_management.html', context)
 
 

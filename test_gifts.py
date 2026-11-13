@@ -403,7 +403,9 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def my_gifts(request):'" in gate and
+# PT-5, 13 Nov 2026 - LL-1 backed celebration_gifts.py up again, so its
+# sentinel moved to text that backup does not hold.
+ok("Text = 'def greeting_response(request, event_id):'" in gate and
    "Text = 'class Gift(models.Model):'" in gate,
    '  with sentinels on the gifts page and the model')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')

@@ -383,7 +383,9 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def recipe(request, recipe_id):'" in gate and
+# PT-5, 13 Nov 2026 - LL-1 backed views_recipe.py up again, so its
+# sentinel moved to text that backup does not hold.
+ok("Text = 'def cooked(request, recipe_id):'" in gate and
    "Text = 'def member_for(workspace_id, holder_name):'" in gate,
    '  with sentinels on the recipe page and the name rule')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')

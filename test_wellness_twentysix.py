@@ -101,10 +101,12 @@ cel = td[td.index('{% for r in home.cel %}'):td.index('{% endfor %}',
 ok("{% url 'wellness:greeting' r.event_id %}" in cel,
    'TODAY: a celebration line opens its greeting')
 gt = read(J(WT, 'greeting.html'))
-ok("{% url 'celebration_greeting' event.id %}" in gt and
+# PT-5, 13 Nov 2026 - asked through Wellness's own address now (a phone's
+# main-app hour sent the old one to the login page); same checks behind it.
+ok("{% url 'wellness:greeting_write' event.id %}" in gt and
    'value="Greek"' in gt and 'https://wa.me/' in gt and
    "encodeURIComponent(text.value)" in gt,
-   'GREETING: the one Celebrations endpoint; English or Greek; WhatsApp '
+   'GREETING: asked through Wellness; English or Greek; WhatsApp '
    'with the words as they stand')
 gv = read(J(APP, 'views_greeting.py'))
 ok('relevant_to__in=CG.my_member_ids(request.user)' in gv and
@@ -199,7 +201,7 @@ if have_db:
             ok(r.status_code == 200 and 'W26 Eleni' in t and
                'Anniversary, 27 years' in t and
                'data-number="35799123456"' in t and
-               '/celebrations/event/%d/greeting/' % e.pk in t,
+               '/wellness/greeting/%d/write/' % e.pk in t,
                'GREETING: her name, 27 years, her WhatsApp number')
             ok(cb.get('/wellness/greeting/%d/' % e.pk).status_code == 404,
                '  Bo, whose celebration it is not, gets nothing')
@@ -234,7 +236,9 @@ import alv_rounds as R                                      # noqa: E402
 ok(SUFFIX in R.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 gate = read(J(ROOT, PS1))
 ok("'%s'" % ME in gate, 'on the push gate suite list')
-ok("Text = 'def greeting(request, event_id):'" in gate,
+# PT-5, 13 Nov 2026 - LL-1 backed views_greeting.py up again, so its
+# sentinel moved to text that backup does not hold.
+ok("Text = 'def greeting_write(request, event_id):'" in gate,
    '  with a sentinel on the greeting page')
 ok(os.path.isfile(J(ROOT, PATCHER)), 'the patcher is on disk')
 

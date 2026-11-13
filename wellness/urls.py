@@ -48,6 +48,10 @@ urlpatterns = [
     path('recipe/<int:recipe_id>/', RC.recipe, name='recipe'),
     # PT-4, 13 Nov 2026 - a greeting for today's celebration, by WhatsApp.
     path('greeting/<int:event_id>/', GR.greeting, name='greeting'),
+    # PT-5, 13 Nov 2026 - asked through Wellness, so a phone's 30 days hold.
+    path('greeting/<int:event_id>/write/', GR.greeting_write,
+         name='greeting_write'),
+    path('recipe/<int:recipe_id>/cooked/', RC.cooked, name='recipe_cooked'),
     # WL-3, 30 Oct 2026 - Workouts.
     path('workouts/', W.home, name='workouts'),
     path('workouts/kit/', W.kit, name='kit'),

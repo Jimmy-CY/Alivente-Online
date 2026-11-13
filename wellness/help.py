@@ -648,6 +648,8 @@ NOT_SCREENS = {
     'calm_done', 'cycle_quick', 'session_calories',
     'exercise_delete', 'exercise_hide',
     'photo_image', 'photo_delete',
+    # PT-5, 13 Nov 2026 - the greeting and Cooked it, asked through Wellness.
+    'greeting_write', 'recipe_cooked',
 }
 
 

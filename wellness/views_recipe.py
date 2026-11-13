@@ -11,6 +11,7 @@ Cooked it. Only for someone who can open Recipes. "‹ Today" goes back.
 """
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_POST
 
 from .views import _today, wellness_view
 
@@ -36,3 +37,16 @@ def recipe(request, recipe_id):
         'cook_avg': (round(sum(rated) / len(rated), 1) if rated else None),
         'today': _today(),
     })
+
+
+@wellness_view
+@require_POST
+def cooked(request, recipe_id):
+    """PT-5, 13 Nov 2026 - Cooked it, saved through Wellness's own address
+    for the reason views_greeting.greeting_write gives: on a phone the
+    main app's hour runs out, and /recipe/<id>/cooked/ met the login page.
+    Recipes' own view does the work - the same rules, the same rows."""
+    if not request.user.has_perm(PERM):
+        raise PermissionDenied
+    from pages.views.recipes.recipe_extras import recipe_cooked
+    return recipe_cooked(request, recipe_id)

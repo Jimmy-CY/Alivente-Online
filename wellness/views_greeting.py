@@ -14,6 +14,7 @@ for one of your own celebrations; anyone else's is a 404.
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
 from .views import wellness_view
 
@@ -45,3 +46,19 @@ def greeting(request, event_id):
         'tab': 'today', 'event': event, 'name': event.contact.name,
         'what': what, 'number': CG.wa_number(event.contact.phone),
     })
+
+
+@wellness_view
+@require_POST
+def greeting_write(request, event_id):
+    """PT-5, 13 Nov 2026 - the greeting, asked for through Wellness's own
+    address. Demetri, 10:55, on his phone: "Could not reach Claude right
+    now". The page asked /celebrations/..., a main-app address, and on a
+    phone the main app's hour (wellness/session.py) had run out: the
+    answer was the login page. Under /wellness/ the 30-day sign-in holds.
+    The same checks and the same Claude call as Celebrations."""
+    if not request.user.has_perm(PERM):
+        raise PermissionDenied
+    import importlib
+    CG = importlib.import_module('pages.views.celebration_gifts')
+    return CG.greeting_response(request, event_id)

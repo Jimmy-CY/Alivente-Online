@@ -8,7 +8,7 @@
   <h1 class="w-hello" style="font-size:28px">{{ name }}</h1>
 </header>
 
-<section class="w-card" data-greeting data-url="{% url 'celebration_greeting' event.id %}" data-number="{{ number }}">
+<section class="w-card" data-greeting data-url="{% url 'wellness:greeting_write' event.id %}" data-number="{{ number }}">
   {% csrf_token %}
   <span class="w-label" id="gr-lang-label">Language</span>
   <div class="w-chips" role="radiogroup" aria-labelledby="gr-lang-label">
@@ -40,20 +40,45 @@
     var on = box.querySelector('input[name="gr_lang"]:checked');
     return on ? on.value : 'English';
   }
+  // PT-5, 13 Nov 2026 - asked through Wellness's own address; gives up
+  // after 40 seconds; says what went wrong; and leaves the box ready for
+  // a message of your own.
+  function giveUp(why) {
+    status.textContent = why;
+    text.placeholder = 'Write your message here';
+    link();
+  }
   function write() {
     status.textContent = 'Claude is writing...';
+    text.placeholder = 'Claude is writing...';
     var body = new FormData();
     body.append('language', lang());
     body.append('csrfmiddlewaretoken', box.querySelector('[name=csrfmiddlewaretoken]').value);
-    fetch(box.getAttribute('data-url'), {method: 'POST', body: body, credentials: 'same-origin'})
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.text) { text.value = d.text; status.textContent = ''; }
-        else { status.textContent = d.error || 'Could not write one just now - write your own.'; }
-        if (d.number) number = d.number;
-        link();
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, 40000) : null;
+    fetch(box.getAttribute('data-url'), {method: 'POST', body: body, credentials: 'same-origin',
+                                         headers: {'X-Requested-With': 'fetch'},
+                                         signal: ctl ? ctl.signal : undefined})
+      .then(function (r) {
+        var json = (r.headers.get('Content-Type') || '').indexOf('json') !== -1;
+        if (!json) {
+          throw new Error(r.redirected || r.status === 200 ? 'You are signed out - open Wellness again.'
+                          : 'The server said ' + r.status + '.');
+        }
+        return r.json();
       })
-      .catch(function () { status.textContent = 'Could not reach Claude just now - write your own.'; });
+      .then(function (d) {
+        if (timer) clearTimeout(timer);
+        if (d.number) number = d.number;
+        if (d.text) { text.value = d.text; status.textContent = ''; link(); }
+        else { giveUp(d.error || 'Claude could not write one just now - write your own.'); }
+      })
+      .catch(function (e) {
+        if (timer) clearTimeout(timer);
+        giveUp(e && e.name === 'AbortError' ? 'Claude took too long - try Write another, or write your own.'
+               : (e && e.message && e.message.indexOf('signed out') !== -1 ? e.message
+                  : 'Could not reach Claude just now (' + ((e && e.message) || 'no answer') + ') - write your own.'));
+      });
   }
   box.querySelectorAll('input[name="gr_lang"]').forEach(function (r) { r.addEventListener('change', write); });
   box.querySelector('[data-gr-again]').addEventListener('click', write);

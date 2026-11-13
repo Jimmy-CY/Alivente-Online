@@ -58,7 +58,7 @@
   {% else %}
   <p class="w-small w-quiet" style="margin:0">Not cooked yet. Made it? Record how it turned out.</p>
   {% endif %}
-  <form method="post" action="{% url 'recipe_cooked' recipe.recipe_id %}" class="w-rc-cooked">{% csrf_token %}<input type="hidden" name="from" value="wellness">
+  <form method="post" action="{% url 'wellness:recipe_cooked' recipe.recipe_id %}" class="w-rc-cooked">{% csrf_token %}<input type="hidden" name="from" value="wellness">
     <div class="w-rc-stars" role="radiogroup" aria-label="How it turned out">
       {% for n in "12345" %}<label class="w-rc-star"><input type="radio" name="rating" value="{{ n }}"><span aria-hidden="true">&#9733;</span><span class="w-sr">{{ n }} star{{ n|pluralize }}</span></label>{% endfor %}
     </div>
