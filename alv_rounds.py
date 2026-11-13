@@ -1601,6 +1601,8 @@ ROUNDS = [
     '.bak_todaycard',
     # BV-1 + CG-1, 13 Nov 2026 - Releases 74 and 75: the book on demand; gifts.
     '.bak_gifts',
+    # PT-4, 13 Nov 2026 - Release 76: the greeting from Wellness Today.
+    '.bak_greetwell',
 ]
 
 

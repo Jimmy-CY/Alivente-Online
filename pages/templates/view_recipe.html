@@ -1623,6 +1623,14 @@ body.cm-on { overflow: hidden; }
 .cm-prev { border: 1px solid var(--alv-line); background: none; color: var(--alv-ink); }
 .cm-next { border: 0; background: var(--alv-accent); color: var(--alv-on-accent); }
 .cm-prev:disabled { opacity: .4; }
+/* PT-4, 13 Nov 2026 - cook mode on a wide screen (Demetri, 09:14: "does
+   not look good on Desktop"): one centred reading column, larger type,
+   the buttons under the step rather than across the window. */
+@media screen and (min-width: 720px) {
+  .cm-screen { align-items: center; justify-content: center; padding-top: 48px; padding-bottom: 48px; }
+  .cm-screen > * { width: 100%; max-width: 680px; }
+  .cm-text { flex: 0 1 auto; font-size: 32px; min-height: 30vh; }
+}
 .cooked-section { margin-top: 24px; }
 .cooked-summary { color: var(--alv-ink-soft); margin: 0 0 12px; }
 .cooked-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }

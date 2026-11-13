@@ -980,8 +980,21 @@ body.cm-on { overflow: hidden; }
 .cm-prev { border: 1px solid var(--w-line); background: none; color: var(--w-ink); }
 .cm-next { border: 0; background: var(--w-sage-deep); color: var(--w-on-accent); }
 .cm-prev:disabled { opacity: .4; }
+/* PT-4, 13 Nov 2026 - cook mode on a wide screen (Demetri, 09:14: "does
+   not look good on Desktop"): one centred reading column, larger type,
+   the buttons under the step rather than across the window. */
+@media screen and (min-width: 720px) {
+  .cm-screen { align-items: center; justify-content: center; padding-top: 48px; padding-bottom: 48px; }
+  .cm-screen > * { width: 100%; max-width: 680px; }
+  .cm-text { flex: 0 1 auto; font-size: 32px; min-height: 30vh; }
+}
 @media (prefers-color-scheme: dark) {
   .w-home-when.gone, .cm-timer-btn.is-done { color: #F0A097; }
   .cm-timer-btn.is-done { border-color: #F0A097; }
   .w-rc-star:has(input:checked), .w-rc-star:has(~ .w-rc-star input:checked), .w-rc-stars:hover .w-rc-star, .w-rc-rate { color: #E9B56A; }
 }
+
+/* PT-4, 13 Nov 2026 - the greeting page: a roomy message box and the
+   WhatsApp button with its mark. */
+.w-gr-text { min-height: 150px; resize: vertical; font-size: 16px; line-height: 1.5; padding: 12px 14px; }
+.w-gr-send { display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }

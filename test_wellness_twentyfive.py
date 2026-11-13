@@ -111,8 +111,10 @@ cel = td[td.index('{% for r in home.cel %}'):td.index('{% endfor %}',
                                                       td.index('{% for r in home.cel %}'))]
 doc = td[td.index('{% for d in home.docs %}'):td.index('{% endfor %}',
                                                        td.index('{% for d in home.docs %}'))]
-ok('<a ' not in cel and '<a ' not in doc,
-   '  celebrations and documents are plain lines, not links')
+# PT-4, 13 Nov 2026 - a celebration now opens its greeting (Demetri, 09:01);
+# documents stay plain lines. test_wellness_twentysix holds the greeting.
+ok('<a ' not in doc,
+   '  documents are plain lines, not links')
 ok(not os.path.isfile(J(WT, 'home.html')),
    'THE PAGE: wellness/home.html is gone',
    'delete wellness\\templates\\wellness\\home.html before pushing')

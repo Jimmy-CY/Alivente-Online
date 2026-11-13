@@ -1072,7 +1072,8 @@ def manifest(request):
 # or script changes: the installed app keeps the old files until the
 # version moves. test_wellness_one.py checks the two agree.
 # PT-2, 12 Nov 2026 - the card's lines and the recipe page.
-SW_VERSION = 'wl24-1'
+# PT-4, 13 Nov 2026 - the greeting page.
+SW_VERSION = 'wl25-1'
 
 
 def service_worker(request):

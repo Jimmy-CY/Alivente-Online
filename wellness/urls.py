@@ -4,6 +4,7 @@ from . import views
 from . import views_calm as CALM
 from . import views_cycle as CY
 from . import views_photos as PH
+from . import views_greeting as GR
 from . import views_recipe as RC
 from . import views_workouts as W
 
@@ -45,6 +46,8 @@ urlpatterns = [
     path('settings/export/', PH.export_page, name='export'),
     # PT-2, 12 Nov 2026 - a recipe from today's meals, inside Wellness.
     path('recipe/<int:recipe_id>/', RC.recipe, name='recipe'),
+    # PT-4, 13 Nov 2026 - a greeting for today's celebration, by WhatsApp.
+    path('greeting/<int:event_id>/', GR.greeting, name='greeting'),
     # WL-3, 30 Oct 2026 - Workouts.
     path('workouts/', W.home, name='workouts'),
     path('workouts/kit/', W.kit, name='kit'),

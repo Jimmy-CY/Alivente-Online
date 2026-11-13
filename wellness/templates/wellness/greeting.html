@@ -1,0 +1,65 @@
+{% extends "wellness/base.html" %}
+{% block title %}Greeting · Wellness{% endblock %}
+{% block top_left %}<a class="w-home" href="{% url 'wellness:today' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Today</a>{% endblock %}
+{% block content %}
+{% comment %} PT-4, 13 Nov 2026 - a greeting for one of today's celebrations: Claude writes it (English or Greek), you change anything, WhatsApp sends it. The same endpoint as Celebrations. {% endcomment %}
+<header style="display:flex;flex-direction:column;gap:4px;padding:0 4px 8px">
+  <div class="w-eyebrow">{{ what }}</div>
+  <h1 class="w-hello" style="font-size:28px">{{ name }}</h1>
+</header>
+
+<section class="w-card" data-greeting data-url="{% url 'celebration_greeting' event.id %}" data-number="{{ number }}">
+  {% csrf_token %}
+  <span class="w-label" id="gr-lang-label">Language</span>
+  <div class="w-chips" role="radiogroup" aria-labelledby="gr-lang-label">
+    <label class="w-chip"><input type="radio" name="gr_lang" value="English" checked><span>English</span></label>
+    <label class="w-chip"><input type="radio" name="gr_lang" value="Greek"><span>Ελληνικά</span></label>
+  </div>
+  <label class="w-label" for="gr-text">Message</label>
+  <textarea class="w-input w-gr-text" id="gr-text" rows="6" maxlength="600" data-gr-text placeholder="Claude is writing..."></textarea>
+  <p class="w-small w-quiet" style="margin:0" role="status" aria-live="polite" data-gr-status></p>
+  <a class="w-btn full w-gr-send" href="https://wa.me/" target="_blank" rel="noopener" data-gr-send>
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.5c0 3.5 2.6 6.5 6.5 6.5l1-1.6-2-1-1 .9c-1.2-.5-2.3-1.6-2.8-2.8l.9-1-1-2z" fill="currentColor"/></svg>
+    Open in WhatsApp
+  </a>
+  <button type="button" class="w-btn ghost full" data-gr-again>Write another</button>
+  {% if not number %}<p class="w-small w-quiet" style="margin:0">No phone number on {{ name }}'s contact, so WhatsApp will ask who to send it to.</p>{% endif %}
+</section>
+
+<script>
+(function () {
+  var box = document.querySelector('[data-greeting]');
+  var text = box.querySelector('[data-gr-text]');
+  var status = box.querySelector('[data-gr-status]');
+  var send = box.querySelector('[data-gr-send]');
+  var number = box.getAttribute('data-number') || '';
+  function link() {
+    send.href = 'https://wa.me/' + number + '?text=' + encodeURIComponent(text.value);
+  }
+  function lang() {
+    var on = box.querySelector('input[name="gr_lang"]:checked');
+    return on ? on.value : 'English';
+  }
+  function write() {
+    status.textContent = 'Claude is writing...';
+    var body = new FormData();
+    body.append('language', lang());
+    body.append('csrfmiddlewaretoken', box.querySelector('[name=csrfmiddlewaretoken]').value);
+    fetch(box.getAttribute('data-url'), {method: 'POST', body: body, credentials: 'same-origin'})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.text) { text.value = d.text; status.textContent = ''; }
+        else { status.textContent = d.error || 'Could not write one just now - write your own.'; }
+        if (d.number) number = d.number;
+        link();
+      })
+      .catch(function () { status.textContent = 'Could not reach Claude just now - write your own.'; });
+  }
+  box.querySelectorAll('input[name="gr_lang"]').forEach(function (r) { r.addEventListener('change', write); });
+  box.querySelector('[data-gr-again]').addEventListener('click', write);
+  text.addEventListener('input', link);
+  link();
+  write();
+})();
+</script>
+{% endblock %}

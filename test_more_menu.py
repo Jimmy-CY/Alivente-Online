@@ -308,7 +308,8 @@ head('1. THE CENSUS')
 # page the tree serves. Section 3 measures the round from the
 # backups and nobody should read any of these as its size.
 # CX-1, 29 Oct 2026 - 32 -> 33: the Gantt Chart gains a More menu (Help).
-ok(len(pages) == 33, '33 pages carry the More menu in markup', len(pages))
+# PT-4, 13 Nov 2026 - 33 -> 35: Lease Signing's list and envelope page.
+ok(len(pages) == 35, '35 pages carry the More menu in markup', len(pages))
 ok(len(TOUCHED) == 27, '  27 of them are this round\'s, from its backups',
    len(TOUCHED))
 ok(GONE == ['view_meal_plan.html'],
@@ -316,9 +317,11 @@ ok(GONE == ['view_meal_plan.html'],
    % (GONE[0] if GONE else 'none'), GONE)
 ok(len(mine) == 26, '  so 26 of this round\'s pages are still in the tree',
    len(mine))
-ok(LATER == ['meal_planner.html', 'projects/project_gantt.html'],
-   '  and 2 pages were put on the binder by LATER rounds - the planner '
-   '(MW-1, 19 Oct 2026) and the Gantt Chart (CX-1, 29 Oct 2026)', LATER)
+ok(LATER == ['lease_signing_detail.html', 'lease_signing_list.html',
+             'meal_planner.html', 'projects/project_gantt.html'],
+   '  and 4 pages were put on the binder by LATER rounds - the planner '
+   '(MW-1, 19 Oct 2026), the Gantt Chart (CX-1, 29 Oct 2026) and Lease '
+   'Signing\'s list and envelope page (PT-4, 13 Nov 2026)', LATER)
 ok(len(DEFERRED) == 3, '  3 keep a hand-inlined handler, on purpose')
 ok(len(ALREADY) == 2, '  2 were already on the binder before it started')
 for n in DEFERRED + ALREADY:

@@ -65,6 +65,31 @@
             data-target="#lease_signingHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
+    {# PT-4, 13 Nov 2026 - Demetri, 09:15: "Buttons do not look right on  #}
+    {# mobile" - four wide buttons in a phone's width, Start e-signing cut. #}
+    {# The house "More": below 768px base hides the two secondaries above  #}
+    {# and they are in here, so a phone gets Start e-signing, More, Back.  #}
+    <div class="action-more-wrapper" data-menu>
+        <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
+                aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
+            {% if show_all %}
+            <a href="{% url 'lease_signing_list' %}" class="action-more-item" role="menuitem">
+                <i class="fas fa-hourglass-half"></i> Live only
+            </a>
+            {% else %}
+            <a href="{% url 'lease_signing_list' %}?all=1" class="action-more-item" role="menuitem">
+                <i class="fas fa-clock-rotate-left"></i> Include finished
+            </a>
+            {% endif %}
+            <button type="button" class="action-more-item" role="menuitem"
+                    data-toggle="modal" data-target="#lease_signingHelpModal">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+        </div>
+    </div>
     <a href="{% url 'admin_apms' %}?tab=functional" class="btn action-back"
        role="button" aria-label="Back to Administration">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>

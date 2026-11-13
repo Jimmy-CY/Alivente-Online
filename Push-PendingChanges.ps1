@@ -1302,6 +1302,7 @@ $sentinels = @(
     @{ File = 'pages/passport_holder.py'; Text = 'def member_for(workspace_id, holder_name):'; What = 'PT-2: a document is matched to its holder - without it no document can be added or saved' },
     @{ File = 'pages/models.py'; Text = 'class Gift(models.Model):'; What = 'CG-1: gifts - without it migration 0119 has no model and Celebrations cannot open' },
     @{ File = 'pages/views/celebration_gifts.py'; Text = 'def my_gifts(request):'; What = 'CG-1: My gifts and the Christmas list - without it the Celebrations links go nowhere' },
+    @{ File = 'wellness/views_greeting.py'; Text = 'def greeting(request, event_id):'; What = 'PT-4: a celebration on Today opens its greeting - without it the card links to nothing' },
     @{ File = 'pages/meal_calendar.py'; Text = 'class MealCalendarMiddleware:'; What = 'MS-1: which meal plan a request is about - without it the planner cannot open' },
     @{ File = 'wellness/crypto.py'; Text = 'def seal_bytes('; What = 'WL-19: the lock for progress photos is on disk - without it no photo can be saved or shown' },
     @{ File = 'wellness/body.py'; Text = 'def goal_check('; What = 'WL-18: Body puts the goal date to work - without it the Body page cannot open' },
@@ -3295,7 +3296,9 @@ $suites = @(
     # PT-2, 12 Nov 2026 - Release 73: At home today is one card; a recipe opens in Wellness.
     'test_wellness_twentyfive.py',
     # BV-1 + CG-1, 13 Nov 2026 - Releases 74 and 75: the recipe book on demand; gifts.
-    'test_gifts.py'
+    'test_gifts.py',
+    # PT-4, 13 Nov 2026 - Release 76: a celebration on Today opens its greeting.
+    'test_wellness_twentysix.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

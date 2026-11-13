@@ -283,7 +283,9 @@ def today(p):
 
 
 # CX-1, 29 Oct 2026 - 32 -> 33: the Gantt Chart gains a More menu (Help).
-ok(len(pages) == 33, '33 pages carry a More menu', len(pages))
+# PT-4, 13 Nov 2026 - 33 -> 35: Lease Signing's list and its envelope page
+# gain a More menu, so a phone's bar fits (Demetri, 09:15-09:16).
+ok(len(pages) == 35, '35 pages carry a More menu', len(pages))
 off = [rel for rel, p in pages
        if not all(a in markup(today(p)) for a in ATTRS)]
 ok(not off, '  and every one of them is on base\'s binder', off)

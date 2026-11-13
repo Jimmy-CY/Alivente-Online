@@ -185,7 +185,9 @@ HOWTO = [
     # PT-1, 12 Nov 2026 - Personal Today; a workout logged afterwards.
     {'q': 'What is At home today?',
      'a': 'A card at the top of Today with the rest of your Alivente: who '
-          'celebrates today, every meal planned for today and your own '
+          'celebrates today (tap them for a greeting Claude writes, in '
+          'English or Greek, to send by WhatsApp), every meal planned for '
+          'today and your own '
           'documents due for renewal - from six months before they expire, '
           'or the nine or twelve chosen under Remind me. Tap a recipe to '
           'open it here, with Cook mode. The card only appears when there '

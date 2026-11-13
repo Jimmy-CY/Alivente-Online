@@ -13,7 +13,8 @@ Each part shows only to someone who can open that part of Alivente, and
 only what is theirs:
 
   CELEBRATIONS  today only: events relevant to them (they are in
-                "relevant to"). Nobody today: no line.
+                "relevant to"). Nobody today: no line. PT-4, 13 Nov: a tap
+                opens a greeting written by Claude, sent by WhatsApp.
   MEALS         every meal planned today, from their own meal plan and
                 plans shared with them. A recipe opens inside Wellness
                 (views_recipe.py).
@@ -75,7 +76,9 @@ def celebrations(user, day):
             what = 'birthday, turns %d' % n
         elif e.event_type == 'anniversary' and n:
             what = 'anniversary, %d years' % n
-        rows.append({'name': e.contact.name, 'what': what})
+        rows.append({'name': e.contact.name, 'what': what,
+                     # PT-4 - a tap opens the greeting (views_greeting).
+                     'event_id': e.pk})
     rows.sort(key=lambda r: r['name'])
     return rows
 

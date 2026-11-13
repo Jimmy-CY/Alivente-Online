@@ -60,6 +60,36 @@
         <i class="fas fa-file-word"></i> Word version
     </a>
     {% endif %}
+    {# PT-4, 13 Nov 2026 - Demetri, 09:16: on a phone the bar ran off the  #}
+    {# edge. The house "More": below 768px base hides the secondaries     #}
+    {# above, and they are in here - Decline as a red item, still through #}
+    {# its own form and its own "cannot be undone" question.             #}
+    {% if awaiting and user.is_superuser or env.sealed_pdf or env.word_docx %}
+    <div class="action-more-wrapper" data-menu>
+        <button type="button" class="btn action-more-btn" id="actionMoreBtn" data-menu-toggle
+                aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="action-more-menu" id="actionMoreMenu" data-menu-panel role="menu" hidden>
+            {% if env.sealed_pdf %}
+            <a href="{% url 'lease_signing_sealed' env.pk %}" class="action-more-item" role="menuitem"
+               onclick="openPdfViewer('{% url 'lease_signing_sealed' env.pk as sealed_url2 %}{{ sealed_url2|escapejs }}', 'Signed lease &mdash; {{ tenant.tenant_display_name|escapejs }}', 'lease-agreement-signed-{{ env.pk|escapejs }}.pdf'); return false;">
+                <i class="fas fa-file-pdf"></i> View signed lease
+            </a>
+            {% endif %}
+            {% if env.word_docx %}
+            <a href="{% url 'lease_signing_word' env.pk %}" class="action-more-item" role="menuitem">
+                <i class="fas fa-file-word"></i> Word version
+            </a>
+            {% endif %}
+            {% if awaiting and user.is_superuser %}
+            <button type="submit" form="lsd-decline-form" class="action-more-item action-more-item-danger" role="menuitem">
+                <i class="fas fa-times"></i> Decline
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
     <a href="{% url 'lease_signing_list' %}?all=1" class="btn action-back"
        role="button" aria-label="Back to Lease Signing">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>

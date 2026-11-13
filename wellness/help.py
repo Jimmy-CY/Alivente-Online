@@ -38,9 +38,9 @@ SCREENS = {
             'A times-a-week habit leaves Today once that week\'s number is '
             'done, and is back on Monday.',
             'Tap the arrow beside a habit to see its calendar and streak.',
-            'At home today, at the top: who celebrates today, today\'s '
-            'meals (tap a recipe to open it, with Cook mode) and your '
-            'documents due for renewal.',
+            'At home today, at the top: who celebrates today (tap to send '
+            'a greeting), today\'s meals (tap a recipe for Cook mode) and '
+            'your documents due for renewal.',
             'Take a breath, weigh in, or write a few lines, from the cards '
             'below.',
             'A challenge shows its day or week beside the habit, and asks '
@@ -259,6 +259,21 @@ SCREENS = {
     },
     # PT-2, 12 Nov 2026 - At home today is the card on Today; a recipe
     # from it opens here.
+    # PT-4, 13 Nov 2026 - a celebration on the card opens its greeting.
+    'greeting': {
+        'title': 'A greeting',
+        'purpose': 'A message for someone celebrating today, sent by '
+                   'WhatsApp.',
+        'steps': [
+            'Claude writes a short message. Pick English or Ελληνικά and it '
+            'writes it again in that language.',
+            'Change anything you like in the box.',
+            'Open in WhatsApp: it goes to their number, or WhatsApp asks '
+            'who to send it to.',
+            'Write another, for a different one.',
+        ],
+        'signs': [],
+    },
     'recipe': {
         'title': 'A recipe',
         'purpose': 'A meal from today\'s plan, without leaving Wellness.',

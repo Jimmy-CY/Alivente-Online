@@ -1079,8 +1079,9 @@ head('4. THE TWO PAGE COUNTS - 31 to 32, the second move in two days')
 wearing = [p for p in T.templates(include_base=False)
            if 'actionMoreBtn' in T.code_only(read(p))]
 # CX-1, 29 Oct 2026 - 32 -> 33: the Gantt Chart gains a More menu.
-ok(len(wearing) == 33,
-   '33 pages in both roots carry base\'s More menu', len(wearing))
+# PT-4, 13 Nov 2026 - 33 -> 35: Lease Signing's list and envelope page.
+ok(len(wearing) == 35,
+   '35 pages in both roots carry base\'s More menu', len(wearing))
 ok(os.path.join('pages', 'templates', 'meal_planner.html')
    in '\n'.join(wearing), '  and the planner is one of them')
 ok(not [p for p in wearing if T.code_only(read(p)).count(
@@ -1090,8 +1091,9 @@ ok(not [p for p in wearing if T.code_only(read(p)).count(
 for suite, label in ((MM, 'test_more_menu.py'), (LM, 'test_last_menus.py')):
     body = read(suite)
     # CX-1, 29 Oct 2026 - both now read 33 (the Gantt Chart's menu).
-    ok('== 33' in body and MARK in body,
-       '%s reads 33, and says which round moved it' % label)
+    # PT-4, 13 Nov 2026 - and both read 35 now (Lease Signing's two).
+    ok('== 35' in body and MARK in body,
+       '%s reads 35, and says which round moved it' % label)
     ok('== 31' not in body, '  with no 31 left in it')
 # AND THE REPAIR, WHICH IS THE PART THAT MATTERS. Each suite now reads
 # its present-tense census with a present-tense read. test_more_menu
@@ -1105,7 +1107,8 @@ ok('alv_tree.touched_by(SUFFIX)' in mm_body,
 ok('mine = [(n, p) for n, p in pages if n in TOUCHED]' in mm_body,
    '  and not by subtracting two lists from today\'s census')
 # CX-1, 29 Oct 2026 - and now the Gantt Chart beside it.
-ok("LATER == ['meal_planner.html', 'projects/project_gantt.html']" in mm_body,
+# PT-4, 13 Nov 2026 - and Lease Signing's two ahead of them.
+ok("LATER == ['lease_signing_detail.html', 'lease_signing_list.html'," in mm_body,
    '  and NAMES the pages later rounds put on the binder')
 ok('def today(p):' in lm_body,
    'test_last_menus reads its present-tense census in the present tense')
