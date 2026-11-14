@@ -1377,9 +1377,9 @@ button.gift-btn { background: transparent; }
                     <input type="hidden" name="gift_id" id="gift_edit_id">
                     <input type="hidden" name="contact_id" id="gift_contact_id">
                     <input type="hidden" name="next" id="gift_next">
-                    <div class="gift-kind" role="radiogroup" aria-label="Given or an idea">
-                        <label><input type="radio" name="kind" value="given" checked> Given</label>
-                        <label><input type="radio" name="kind" value="idea"> An idea</label>
+                    <div class="gift-kind" role="radiogroup" aria-label="Bought or just an idea">
+                        <label><input type="radio" name="kind" value="given" checked> Bought</label>
+                        <label><input type="radio" name="kind" value="idea"> Just an idea</label>
                     </div>
                     <div class="form-group">
                         <label for="gift_what"><strong>What</strong></label>
@@ -2146,7 +2146,7 @@ document.addEventListener('DOMContentLoaded', function() {
                        (!g.given && g.budget ? ' - about €' + g.budget.replace(/\.00$/, '') : ''));
             li.appendChild(w);
             if (!g.given) {
-                var given = el('button', 'gift-row-btn', 'Given');
+                var given = el('button', 'gift-row-btn', 'Bought');
                 given.type = 'button';
                 given.title = 'Mark this idea as given';
                 given.addEventListener('click', function () {

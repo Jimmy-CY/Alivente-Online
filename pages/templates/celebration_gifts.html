@@ -3,6 +3,7 @@
 {% block title %}My Gifts{% endblock %}
 
 {# MY GIFTS AND THE CHRISTMAS LIST - CG-1, 13 Nov 2026. CG-2: Edit and Delete on every gift. #}
+{# CG-4, 14 Nov 2026: My gifts shows each person once in a year, gifts under them; Bought / Just an idea. #}
 {# CG-3, 14 Nov 2026: the Christmas list also as a table - people down, years across, newest first; what was bought only. #}
 {# MY GIFTS AND THE CHRISTMAS LIST - CG-1, 13 Nov 2026. Private: every row #}
 {# here is the signed-in person's own; nobody else ever sees them.         #}
@@ -18,9 +19,6 @@
 .gift-tab.is-on { font-weight: 700; border-width: 2px; }
 .gift-year { margin-bottom: 22px; }
 .gift-year-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.gift-rows { list-style: none; margin: 0; padding: 0; }
-.gift-rows li { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 10px 0; border-top: 1px solid currentColor; border-top-color: rgba(127,127,127,.25); }
-.gift-rows li:first-child { border-top: 0; }
 .gift-who { font-weight: 600; min-width: 160px; }
 .gift-what { flex: 1; min-width: 160px; }
 .gift-amt { font-variant-numeric: tabular-nums; }
@@ -30,19 +28,46 @@
 .xmas-totals b { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 .xmas-row { padding: 14px 0; border-top: 1px solid currentColor; border-top-color: rgba(127,127,127,.25); }
 .xmas-row:first-of-type { border-top: 0; }
-.xmas-row-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
-.xmas-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 8px 12px; }
+.xmas-row-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; max-width: 760px; }
+.xmas-grid { display: grid; grid-template-columns: minmax(0, 1fr) 130px; gap: 8px 12px; max-width: 760px; }
+.xmas-grid .form-control { width: 100%; min-width: 0; box-sizing: border-box; }
+.xmas-row > .xmas-row-actions { max-width: 760px; }
+.xmas-past { position: relative; }
+.xmas-past summary { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; cursor: pointer; color: var(--alv-accent); font-size: 0.9rem; list-style: none; }
+.xmas-past summary::-webkit-details-marker { display: none; }
+.xmas-past-table { position: absolute; right: 0; top: 100%; z-index: 5; display: block; min-width: 260px; max-width: min(380px, 90vw); max-height: 280px; overflow-y: auto; margin: 4px 0 0; padding: 8px 12px; background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); box-shadow: 0 6px 18px rgba(16, 34, 40, .12); }
+.xmas-past-table th, .xmas-past-table td { padding: 4px 14px 4px 0; text-align: left; vertical-align: top; }
+.xmas-past-table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .02em; color: var(--alv-ink-soft); border-bottom: 1px solid var(--alv-line-soft); }
+.xmas-past-table tbody th { font-variant-numeric: tabular-nums; }
+.xmas-past-table td:first-of-type { color: var(--alv-ink-soft); }
+.xmas-past-none { color: var(--alv-ink-faint); }
+.xmas-copy { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 4px 0 14px; }
+.xmas-grid input[name="budget"], .xmas-grid input[name="cost"] { text-align: right; font-variant-numeric: tabular-nums; }
+.xmas-as-planned { grid-column: 1 / -1; }
 .xmas-grid label { font-size: 0.8rem; margin: 0; color: var(--alv-ink-soft); }
-.xmas-done { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.xmas-grid .xmas-done { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; margin: 0; font-size: 0.95rem; }
+.xmas-grid .xmas-done { color: var(--alv-ink); }
+.xmas-grid .xmas-done:has(input:disabled) { color: var(--alv-ink-faint); }
+.xmas-row input[readonly] { background: var(--alv-surface); }
 .xmas-row-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
-.gift-edit { flex-basis: 100%; }
-.gift-edit summary { display: inline-flex; align-items: center; min-height: 36px; cursor: pointer; color: var(--alv-accent); font-size: 0.9rem; }
+.gift-person { padding: 10px 0; border-top: 1px solid var(--alv-line-soft); }
+.gift-person:first-of-type { border-top: 0; }
+.gift-person-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 4px 0; }
+.gift-line { margin: 0; }
+.gift-line summary { display: flex; align-items: baseline; gap: 6px 12px; min-height: 36px; padding: 4px 0 4px 18px; cursor: pointer; list-style: none; }
+.gift-line summary::-webkit-details-marker { display: none; }
+.gift-line .gift-what { flex: 0 1 auto; min-width: 0; }
+.gift-edit-link { color: var(--alv-accent); font-size: 0.9rem; margin-left: 8px; white-space: nowrap; }
+.gift-line .gift-amt { margin-left: auto; margin-right: 96px; white-space: nowrap; color: var(--alv-ink-soft); }
+@media screen and (max-width: 575.98px) { .gift-line .gift-amt { margin-right: 56px; } }
+.gift-line[open] .gift-edit-link { font-weight: 700; }
+.gift-line > form { padding-left: 18px; }
 .gift-edit-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px 12px; margin: 6px 0; }
 .gift-edit-grid label { font-size: 0.8rem; margin: 0; color: var(--alv-ink-soft); }
 .gift-edit-kind { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; margin-right: 16px; }
 .xmas-pick { max-height: 320px; overflow-y: auto; columns: 2 220px; margin: 8px 0 12px; }
 .xmas-pick label { display: flex; align-items: center; gap: 8px; min-height: 36px; break-inside: avoid; }
-@media screen and (max-width: 575.98px) { .xmas-grid, .gift-edit-grid { grid-template-columns: 1fr; } }
+@media screen and (max-width: 575.98px) { .gift-edit-grid { grid-template-columns: 1fr; } .xmas-grid { grid-template-columns: minmax(0, 1fr) 100px; } }
 .xmas-views { margin: 0 0 14px; }
 .xt-scroll { max-height: 70vh; overflow: auto; }
 .xt-table thead th, .xt-table tbody th, .xt-table td { text-align: left; }
@@ -79,43 +104,48 @@
             <h3 class="form-section-title">{{ y.year }}</h3>
             {% if y.total is not None %}<span class="gift-amt">Spent €{{ y.total|floatformat:"-2" }}</span>{% endif %}
         </div>
-        <ul class="gift-rows">
-            {% for g in y.rows %}
-            <li>
-                <span class="gift-who">{{ g.who }}{% if not g.contact_id %} <span class="gift-gone">(contact deleted)</span>{% endif %}</span>
-                <span class="gift-what">{{ g.gift|default:g.idea }} <span class="text-muted small">&middot; {{ g.get_occasion_display }}</span>{% if g.idea and g.gift and g.idea != g.gift %} <span class="text-muted small">&middot; planned: {{ g.idea }}</span>{% endif %}</span>
-                {% if g.cost is not None %}<span class="gift-amt">€{{ g.cost|floatformat:"-2" }}</span>{% endif %}
-                {# CG-2, 13 Nov 2026 - change or delete it, here as well as on the contact. #}
-                <details class="gift-edit" data-gift-edit>
-                    <summary>Edit</summary>
-                    <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-edit-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="edit">
-                        <input type="hidden" name="gift_id" value="{{ g.pk }}">
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <div class="gift-edit-grid">
-                            <div><label for="w{{ g.pk }}">What</label><input type="text" class="form-control" id="w{{ g.pk }}" name="what" value="{{ g.gift|default:g.idea }}" maxlength="200" required></div>
-                            <div><label for="o{{ g.pk }}">Occasion</label><select class="form-control" id="o{{ g.pk }}" name="occasion">{% for v, n in occasions %}<option value="{{ v }}"{% if v == g.occasion %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
-                            <div><label for="y{{ g.pk }}">Year</label><input type="number" class="form-control" id="y{{ g.pk }}" name="year" value="{{ g.year }}"></div>
-                            <div><label for="a{{ g.pk }}">{% if g.given %}Cost{% else %}Budget{% endif %} &euro;</label><input type="text" class="form-control" id="a{{ g.pk }}" name="amount" value="{{ g.cost|default_if_none:'' }}" inputmode="decimal"></div>
-                        </div>
-                        <label class="gift-edit-kind"><input type="radio" name="kind" value="given"{% if g.given %} checked{% endif %}> Given</label>
-                        <label class="gift-edit-kind"><input type="radio" name="kind" value="idea"{% if not g.given %} checked{% endif %}> An idea</label>
-                        <div class="xmas-row-actions">
-                            <button type="submit" class="btn action-primary btn-sm">Save</button>
-                        </div>
-                    </form>
-                    <form method="post" action="{% url 'celebration_gift_save' %}" class="xmas-row-actions" onsubmit="return confirm('Delete this gift? This cannot be undone.');">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="gift_id" value="{{ g.pk }}">
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <button type="submit" class="btn action-secondary action-danger btn-sm">Delete</button>
-                    </form>
-                </details>
-            </li>
+        {# CG-4, 14 Nov 2026 - each person once, their gifts under them; Edit beside the gift, amounts in one column. #}
+        {% for p in y.people %}
+        <div class="gift-person" data-gift-person>
+            <div class="gift-person-head">
+                <span class="gift-who">{{ p.who }}{% if p.gone %} <span class="gift-gone">(contact deleted)</span>{% endif %}</span>
+                {% if p.total is not None %}<span class="gift-amt">€{{ p.total|floatformat:"-2" }}</span>{% endif %}
+            </div>
+            {% for g in p.rows %}
+            {# CG-2, 13 Nov 2026 - change or delete it, here as well as on the contact. #}
+            <details class="gift-edit gift-line" data-gift-edit>
+                <summary>
+                    <span class="gift-what">{{ g.gift|default:g.idea }} <span class="text-muted small">&middot; {{ g.get_occasion_display }}</span>{% if g.idea and g.gift and g.idea != g.gift %} <span class="text-muted small">(planned: {{ g.idea }})</span>{% endif %} <span class="gift-edit-link">Edit</span></span>
+                    <span class="gift-amt">{% if g.cost is not None %}€{{ g.cost|floatformat:"-2" }}{% endif %}</span>
+                </summary>
+                <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-edit-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="gift_id" value="{{ g.pk }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <div class="gift-edit-grid">
+                        <div><label for="w{{ g.pk }}">What</label><input type="text" class="form-control" id="w{{ g.pk }}" name="what" value="{{ g.gift|default:g.idea }}" maxlength="200" required></div>
+                        <div><label for="o{{ g.pk }}">Occasion</label><select class="form-control" id="o{{ g.pk }}" name="occasion">{% for v, n in occasions %}<option value="{{ v }}"{% if v == g.occasion %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
+                        <div><label for="y{{ g.pk }}">Year</label><input type="number" class="form-control" id="y{{ g.pk }}" name="year" value="{{ g.year }}"></div>
+                        <div><label for="a{{ g.pk }}">{% if g.given %}Cost{% else %}Budget{% endif %} &euro;</label><input type="text" class="form-control" id="a{{ g.pk }}" name="amount" value="{{ g.cost|default_if_none:'' }}" inputmode="decimal"></div>
+                    </div>
+                    <label class="gift-edit-kind"><input type="radio" name="kind" value="given"{% if g.given %} checked{% endif %}> Bought</label>
+                    <label class="gift-edit-kind"><input type="radio" name="kind" value="idea"{% if not g.given %} checked{% endif %}> Just an idea</label>
+                    <div class="xmas-row-actions">
+                        <button type="submit" class="btn action-primary btn-sm">Save</button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'celebration_gift_save' %}" class="xmas-row-actions" onsubmit="return confirm('Delete this gift? This cannot be undone.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="gift_id" value="{{ g.pk }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn action-secondary action-danger btn-sm">Delete</button>
+                </form>
+            </details>
             {% endfor %}
-        </ul>
+        </div>
+        {% endfor %}
     </section>
     {% empty %}
     <p class="text-muted">Nothing given yet. Open a contact's Gifts button in Celebrations to record one.</p>
@@ -124,43 +154,46 @@
     {% if ideas %}
     <section class="gift-year">
         <h3 class="form-section-title">Ideas</h3>
-        <ul class="gift-rows">
-            {% for g in ideas %}
-            <li>
-                <span class="gift-who">{{ g.who }}{% if not g.contact_id %} <span class="gift-gone">(contact deleted)</span>{% endif %}</span>
-                <span class="gift-what">{{ g.idea }} <span class="text-muted small">&middot; {{ g.get_occasion_display }} {{ g.year }}</span></span>
-                {% if g.budget is not None %}<span class="gift-amt">about €{{ g.budget|floatformat:"-2" }}</span>{% endif %}
-
-                <details class="gift-edit" data-gift-edit>
-                    <summary>Edit</summary>
-                    <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-edit-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="edit">
-                        <input type="hidden" name="gift_id" value="{{ g.pk }}">
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <div class="gift-edit-grid">
-                            <div><label for="w{{ g.pk }}">What</label><input type="text" class="form-control" id="w{{ g.pk }}" name="what" value="{{ g.idea }}" maxlength="200" required></div>
-                            <div><label for="o{{ g.pk }}">Occasion</label><select class="form-control" id="o{{ g.pk }}" name="occasion">{% for v, n in occasions %}<option value="{{ v }}"{% if v == g.occasion %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
-                            <div><label for="y{{ g.pk }}">Year</label><input type="number" class="form-control" id="y{{ g.pk }}" name="year" value="{{ g.year }}"></div>
-                            <div><label for="a{{ g.pk }}">{% if g.given %}Cost{% else %}Budget{% endif %} &euro;</label><input type="text" class="form-control" id="a{{ g.pk }}" name="amount" value="{{ g.budget|default_if_none:'' }}" inputmode="decimal"></div>
-                        </div>
-                        <label class="gift-edit-kind"><input type="radio" name="kind" value="given"{% if g.given %} checked{% endif %}> Given</label>
-                        <label class="gift-edit-kind"><input type="radio" name="kind" value="idea"{% if not g.given %} checked{% endif %}> An idea</label>
-                        <div class="xmas-row-actions">
-                            <button type="submit" class="btn action-primary btn-sm">Save</button>
-                        </div>
-                    </form>
-                    <form method="post" action="{% url 'celebration_gift_save' %}" class="xmas-row-actions" onsubmit="return confirm('Delete this gift? This cannot be undone.');">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="gift_id" value="{{ g.pk }}">
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <button type="submit" class="btn action-secondary action-danger btn-sm">Delete</button>
-                    </form>
-                </details>
-            </li>
+        {% for p in idea_people %}
+        <div class="gift-person" data-gift-person>
+            <div class="gift-person-head">
+                <span class="gift-who">{{ p.who }}{% if p.gone %} <span class="gift-gone">(contact deleted)</span>{% endif %}</span>
+                {% if p.total is not None %}<span class="gift-amt">about €{{ p.total|floatformat:"-2" }}</span>{% endif %}
+            </div>
+            {% for g in p.rows %}
+            <details class="gift-edit gift-line" data-gift-edit>
+                <summary>
+                    <span class="gift-what">{{ g.idea }} <span class="text-muted small">&middot; {{ g.get_occasion_display }} {{ g.year }}</span> <span class="gift-edit-link">Edit</span></span>
+                    <span class="gift-amt">{% if g.budget is not None %}about €{{ g.budget|floatformat:"-2" }}{% endif %}</span>
+                </summary>
+                <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-edit-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="gift_id" value="{{ g.pk }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <div class="gift-edit-grid">
+                        <div><label for="w{{ g.pk }}">What</label><input type="text" class="form-control" id="w{{ g.pk }}" name="what" value="{{ g.idea }}" maxlength="200" required></div>
+                        <div><label for="o{{ g.pk }}">Occasion</label><select class="form-control" id="o{{ g.pk }}" name="occasion">{% for v, n in occasions %}<option value="{{ v }}"{% if v == g.occasion %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
+                        <div><label for="y{{ g.pk }}">Year</label><input type="number" class="form-control" id="y{{ g.pk }}" name="year" value="{{ g.year }}"></div>
+                        <div><label for="a{{ g.pk }}">{% if g.given %}Cost{% else %}Budget{% endif %} &euro;</label><input type="text" class="form-control" id="a{{ g.pk }}" name="amount" value="{{ g.budget|default_if_none:'' }}" inputmode="decimal"></div>
+                    </div>
+                    <label class="gift-edit-kind"><input type="radio" name="kind" value="given"{% if g.given %} checked{% endif %}> Bought</label>
+                    <label class="gift-edit-kind"><input type="radio" name="kind" value="idea"{% if not g.given %} checked{% endif %}> Just an idea</label>
+                    <div class="xmas-row-actions">
+                        <button type="submit" class="btn action-primary btn-sm">Save</button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'celebration_gift_save' %}" class="xmas-row-actions" onsubmit="return confirm('Delete this gift? This cannot be undone.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="gift_id" value="{{ g.pk }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn action-secondary action-danger btn-sm">Delete</button>
+                </form>
+            </details>
             {% endfor %}
-        </ul>
+        </div>
+        {% endfor %}
     </section>
     {% endif %}
 </div>
@@ -207,6 +240,17 @@
             {% for y in years_choice %}<option value="{{ y }}"{% if y == xyear %} selected{% endif %}>{{ y }}</option>{% endfor %}
         </select>
     </form>
+    {% if prev_missing %}
+    {# CG-4, 14 Nov 2026 - next year's list in one tap: last year's people, nothing else. #}
+    <form method="post" class="xmas-copy" data-xmas-copy>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="copy_people">
+        <input type="hidden" name="tab" value="christmas">
+        <input type="hidden" name="year" value="{{ xyear }}">
+        <button type="submit" class="btn action-secondary btn-sm"><i class="fas fa-copy"></i> Copy the people from {{ prev_year }}</button>
+        <span class="text-muted small">{{ prev_missing }} {% if prev_missing == 1 %}person{% else %}people{% endif %} from {{ prev_year }}&rsquo;s list &mdash; just the names; plans start empty.</span>
+    </form>
+    {% endif %}
 
     <div class="xmas-totals" data-xmas-totals>
         <div><span class="text-muted small">Planned</span><b>€{{ planned|default_if_none:0|floatformat:"-2" }}</b></div>
@@ -222,13 +266,28 @@
         <input type="hidden" name="gift_id" value="{{ g.pk }}">
         <div class="xmas-row-head">
             <strong>{{ g.who }}{% if not g.contact_id %} <span class="gift-gone">(contact deleted)</span>{% endif %}</strong>
-            <label class="xmas-done"><input type="checkbox" name="given" value="1"{% if g.given %} checked{% endif %}> Bought</label>
+            {# CG-4, 14 Nov 2026 - what they got in earlier Christmases, a tap away. #}
+            {% if g.history %}
+            <details class="xmas-past" data-xmas-past>
+                <summary><i class="fas fa-history" aria-hidden="true"></i> Past Christmases ({{ g.history|length }})</summary>
+                <table class="xmas-past-table">
+                    <thead><tr><th scope="col">Year</th><th scope="col">Planned</th><th scope="col">Bought</th></tr></thead>
+                    <tbody>
+                        {% for y, plan, what in g.history %}<tr><th scope="row">{{ y }}</th><td>{% if plan %}{{ plan }}{% else %}<span class="xmas-past-none">-</span>{% endif %}</td><td>{{ what }}</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </details>
+            {% else %}
+            <span class="text-muted small">No past Christmases</span>
+            {% endif %}
         </div>
         <div class="xmas-grid">
             <div><label for="idea_{{ g.pk }}">The plan</label><input type="text" class="form-control" id="idea_{{ g.pk }}" name="idea" value="{{ g.idea }}" maxlength="200" placeholder="An idea"></div>
             <div><label for="budget_{{ g.pk }}">Budget €</label><input type="text" class="form-control" id="budget_{{ g.pk }}" name="budget" value="{{ g.budget|default_if_none:'' }}" inputmode="decimal"></div>
-            <div><label for="gift_{{ g.pk }}">What I bought</label><input type="text" class="form-control" id="gift_{{ g.pk }}" name="gift" value="{{ g.gift }}" maxlength="200" placeholder="Can be something else"></div>
-            <div><label for="cost_{{ g.pk }}">Cost €</label><input type="text" class="form-control" id="cost_{{ g.pk }}" name="cost" value="{{ g.cost|default_if_none:'' }}" inputmode="decimal"></div>
+            {# CG-4 - between the plan and what was bought: it joins the two. #}
+            <div class="xmas-as-planned"><label class="xmas-done"><input type="checkbox" name="as_planned" value="1"{% if g.as_planned %} checked{% endif %}{% if g.typed %} disabled{% endif %} data-as-planned> Bought as planned</label></div>
+            <div><label for="gift_{{ g.pk }}">What I bought</label><input type="text" class="form-control" id="gift_{{ g.pk }}" name="gift" value="{% if g.as_planned %}{{ g.idea }}{% else %}{{ g.gift }}{% endif %}" maxlength="200" placeholder="Can be something else"{% if g.as_planned %} readonly{% endif %}></div>
+            <div><label for="cost_{{ g.pk }}">Cost €</label><input type="text" class="form-control" id="cost_{{ g.pk }}" name="cost" value="{% if g.as_planned %}{{ g.budget|default_if_none:'' }}{% else %}{{ g.cost|default_if_none:'' }}{% endif %}" inputmode="decimal"{% if g.as_planned %} readonly{% endif %}></div>
         </div>
         <div class="xmas-row-actions">
             <button type="submit" name="action" value="remove_row" class="btn action-secondary action-danger btn-sm">Remove</button>
@@ -239,6 +298,41 @@
     <p class="text-muted">Nobody on the list for {{ xyear }} yet. Tick the people below.</p>
     {% endfor %}
 </div>
+<script>
+/* CG-4, 14 Nov 2026 - Bought as planned. Demetri: "If this is ticked, it
+   copies the Plan and the Budget to the What I bought and the Cost fields.
+   It also greys these fields out. If I type something in the What I bought
+   or cost fields, then the Bought as Planned is greyed out and is
+   unticked." Unticking clears the copies. The server does the same copy,
+   so a row saved without this script is still right. */
+(function () {
+    document.querySelectorAll('[data-xmas-row]').forEach(function (row) {
+        var tick = row.querySelector('[data-as-planned]');
+        var idea = row.querySelector('[name="idea"]');
+        var budget = row.querySelector('[name="budget"]');
+        var gift = row.querySelector('[name="gift"]');
+        var cost = row.querySelector('[name="cost"]');
+        if (!tick || !idea || !budget || !gift || !cost) { return; }
+        function copy() {
+            if (tick.checked) { gift.value = idea.value; cost.value = budget.value; }
+        }
+        function lock() {
+            gift.readOnly = cost.readOnly = tick.checked;
+            tick.disabled = !tick.checked &&
+                !!(gift.value.trim() || cost.value.trim());
+        }
+        tick.addEventListener('change', function () {
+            if (tick.checked) { copy(); } else { gift.value = ''; cost.value = ''; }
+            lock();
+        });
+        idea.addEventListener('input', copy);
+        budget.addEventListener('input', copy);
+        gift.addEventListener('input', lock);
+        cost.addEventListener('input', lock);
+        lock();
+    });
+})();
+</script>
 
 {% if candidates %}
 <div class="form-card">

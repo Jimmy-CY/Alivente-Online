@@ -1609,6 +1609,8 @@ ROUNDS = [
     '.bak_giftedit',
     # CG-3, 14 Nov 2026 - Release 79: the Christmas list as a table.
     '.bak_xmastable',
+    # CG-4, 14 Nov 2026 - Release 80: My gifts by person.
+    '.bak_giftpeople',
 ]
 
 

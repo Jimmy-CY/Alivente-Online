@@ -247,15 +247,46 @@ def my_gifts(request):
                 messages.success(request, 'Added %d %s to Christmas %d.' % (
                     n, 'person' if n == 1 else 'people', xyear))
             return redirect(here)
+        if action == 'copy_people':
+            # CG-4, 14 Nov 2026 - Demetri: "quickly create a Shopping List
+            # for 2027, copying the same people as last year. Then I should
+            # be able to add or remove people." The people only - plans,
+            # budgets and gifts start empty; anyone already on is left be.
+            have = set(mine.filter(occasion='christmas', year=xyear,
+                                   contact__isnull=False)
+                       .values_list('contact_id', flat=True))
+            n = 0
+            for g in (mine.filter(occasion='christmas', year=xyear - 1,
+                                  contact__isnull=False)
+                      .select_related('contact').order_by('contact_name')):
+                if g.contact_id in have:
+                    continue
+                have.add(g.contact_id)
+                Gift.objects.create(owner=request.user, contact=g.contact,
+                                    contact_name=g.contact.name, year=xyear,
+                                    occasion='christmas')
+                n += 1
+            if n:
+                messages.success(request, 'Copied %d %s from Christmas %d.' % (
+                    n, 'person' if n == 1 else 'people', xyear - 1))
+            return redirect(here)
         if action == 'save_row':
             g = mine.filter(pk=request.POST.get('gift_id'),
                             occasion='christmas').first()
             if g:
                 g.idea = (request.POST.get('idea') or '').strip()[:200]
                 g.budget = money(request.POST.get('budget'))
-                g.gift = (request.POST.get('gift') or '').strip()[:200]
-                g.cost = money(request.POST.get('cost'))
-                g.given = bool(request.POST.get('given'))
+                # CG-4, 14 Nov 2026 - Demetri: "why do I need to tick the
+                # bought box, if I save something with its cost in the What
+                # I bought field?" Writing what was bought IS buying it.
+                # "Bought as planned" copies the plan and the budget across.
+                as_planned = bool(request.POST.get('as_planned'))
+                if as_planned:
+                    g.gift, g.cost = g.idea, g.budget
+                else:
+                    g.gift = (request.POST.get('gift') or '').strip()[:200]
+                    g.cost = money(request.POST.get('cost'))
+                g.given = bool(as_planned or g.gift or g.cost is not None)
                 g.save()
             return redirect('%s#gift-%s' % (here, g.pk if g else ''))
         if action == 'remove_row':
@@ -278,11 +309,13 @@ def my_gifts(request):
         years[-1]['rows'].append(g)
     for y in years:
         y['total'] = _total(g.cost for g in y['rows'])
+        y['people'] = by_person(y['rows'], lambda g: g.cost)   # CG-4
     ctx['years'] = years
     ctx['ideas'] = list(mine.filter(given=False).exclude(idea='')
                         .exclude(occasion='christmas')
                         .select_related('contact')
                         .order_by('contact_name', '-year'))
+    ctx['idea_people'] = by_person(ctx['ideas'], lambda g: g.budget)
 
     # CG-3, 14 Nov 2026 - the Christmas list has two views: the list for
     # one year (plan and buy) and the table of every year (what was bought).
@@ -294,16 +327,65 @@ def my_gifts(request):
     # THE CHRISTMAS LIST for the chosen year.
     rows = list(mine.filter(occasion='christmas', year=xyear)
                 .select_related('contact').order_by('contact_name', 'id'))
+    # CG-4, 14 Nov 2026 - Demetri: "click somewhere (per person on the Xmas
+    # List), that shows me ... the Xmas gifts bought for that person for
+    # the past years - literally Year and Gift." Only what was bought,
+    # newest first, every Christmas before the one on screen.
+    past = {}
+    for p in (mine.filter(occasion='christmas', year__lt=xyear)
+              .order_by('-year', 'id')):
+        what = bought(p)
+        if what:
+            key = p.contact_id or p.contact_name.strip().lower()
+            # Demetri, 08:56: "headings: Year, Planned, Bought"
+            past.setdefault(key, []).append((p.year, p.idea, what))
+    for g in rows:
+        g.history = past.get(g.contact_id or g.contact_name.strip().lower(),
+                             [])
+    for g in rows:   # CG-4 - opens ticked when it was bought as planned
+        g.as_planned = g.given and g.gift in ('', g.idea) and (
+            g.cost is None or g.cost == g.budget)
+        g.typed = not g.as_planned and bool(g.gift or g.cost is not None)
     ctx['xrows'] = rows
     ctx['planned'] = _total(g.budget for g in rows)
     ctx['spent'] = _total(g.cost for g in rows)
     ctx['to_buy'] = [g for g in rows if not g.given]
     on_list = {g.contact_id for g in rows if g.contact_id}
+    # CG-4 - how many of last year's people are not on this year's list yet
+    ctx['prev_year'] = xyear - 1
+    ctx['prev_missing'] = (mine.filter(occasion='christmas', year=xyear - 1,
+                                       contact__isnull=False)
+                           .exclude(contact_id__in=on_list)
+                           .values('contact_id').distinct().count())
     ctx['candidates'] = [c for c in Contact.objects.for_user(request.user)
                          .order_by('name') if c.pk not in on_list]
     ctx['shopping_link'] = 'https://wa.me/?text=' + quote(
         shopping_text(xyear, ctx['to_buy']))
     return render(request, 'celebration_gifts.html', ctx)
+
+
+def by_person(rows, amount):
+    """CG-4, 14 Nov 2026 - each person once, their gifts under them.
+
+    Demetri, 14 Nov: "wouldn't it make more sense to consolidate a person
+    (like Aki) instead of having two separate sections?" Rows keep their
+    order within a person; people go by name; each carries the total of
+    `amount` over their rows (None when none has one). A deleted contact
+    stays a person of their own, under the name the gift was saved with.
+    """
+    people, at = [], {}
+    for g in rows:
+        key = ('c', g.contact_id) if g.contact_id else (
+            'n', g.contact_name.strip().lower())
+        if key not in at:
+            at[key] = len(people)
+            people.append({'who': g.who, 'gone': not g.contact_id,
+                           'rows': []})
+        people[at[key]]['rows'].append(g)
+    for p in people:
+        p['total'] = _total(amount(g) for g in p['rows'])
+    people.sort(key=lambda p: p['who'].lower())
+    return people
 
 
 def bought(g):
