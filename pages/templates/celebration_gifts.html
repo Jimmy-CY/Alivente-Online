@@ -3,6 +3,7 @@
 {% block title %}My Gifts{% endblock %}
 
 {# MY GIFTS AND THE CHRISTMAS LIST - CG-1, 13 Nov 2026. CG-2: Edit and Delete on every gift. #}
+{# CG-3, 14 Nov 2026: the Christmas list also as a table - people down, years across, newest first; what was bought only. #}
 {# MY GIFTS AND THE CHRISTMAS LIST - CG-1, 13 Nov 2026. Private: every row #}
 {# here is the signed-in person's own; nobody else ever sees them.         #}
 {# Demetri, 12 Nov: everything given, by year and by person, with the     #}
@@ -42,13 +43,18 @@
 .xmas-pick { max-height: 320px; overflow-y: auto; columns: 2 220px; margin: 8px 0 12px; }
 .xmas-pick label { display: flex; align-items: center; gap: 8px; min-height: 36px; break-inside: avoid; }
 @media screen and (max-width: 575.98px) { .xmas-grid, .gift-edit-grid { grid-template-columns: 1fr; } }
+.xmas-views { margin: 0 0 14px; }
+.xt-scroll { max-height: 70vh; overflow: auto; }
+.xt-table thead th, .xt-table tbody th, .xt-table td { text-align: left; }
+@media screen and (max-width: 575.98px) { .xt-table th.alv-matrix-row-head { min-width: 0; max-width: 120px; white-space: normal; } .xt-table td { min-width: 130px; } }
+.xt-table td { white-space: normal; min-width: 150px; max-width: 260px; vertical-align: top; }
 </style>
 
 <h2 class="page-title-h2">CELEBRATIONS</h2>
 <h4 class="page-subtitle-h4">MY GIFTS</h4>
 
 <div class="page-action-buttons">
-    {% if tab == 'christmas' %}
+    {% if tab == 'christmas' and view != 'table' %}
     <a href="{{ shopping_link }}" class="btn action-primary" target="_blank" rel="noopener" data-shopping-list>
         <i class="fab fa-whatsapp"></i> Shopping list to me
     </a>
@@ -160,6 +166,39 @@
 </div>
 
 {% else %}
+<div class="alv-seg xmas-views" role="group" aria-label="Christmas view">
+    <a href="?tab=christmas&amp;year={{ xyear }}"{% if view != 'table' %} aria-current="page"{% endif %}><i class="fas fa-list"></i> List</a>
+    <a href="?tab=christmas&amp;view=table&amp;year={{ xyear }}"{% if view == 'table' %} aria-current="page"{% endif %}><i class="fas fa-table"></i> Table</a>
+</div>
+
+{% if view == 'table' %}
+<div class="form-card" data-xmas-table>
+    {% if xt_rows %}
+    <p class="text-muted small">What you bought each Christmas, newest year first. Scroll sideways for the earlier years.</p>
+    <div class="alv-matrix-scroll xt-scroll" tabindex="0" role="region" aria-label="Christmas gifts by year">
+        <table class="alv-matrix xt-table">
+            <thead>
+                <tr>
+                    <th scope="col" class="alv-matrix-row-head">Person</th>
+                    {% for y in xt_years %}<th scope="col">{{ y }}</th>{% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in xt_rows %}
+                <tr>
+                    <th scope="row" class="alv-matrix-row-head">{{ r.who }}{% if r.gone %} <span class="gift-gone">(contact deleted)</span>{% endif %}</th>
+                    {% for c in r.cells %}{% if c %}<td>{{ c }}</td>{% else %}<td class="alv-matrix-absent">-</td>{% endif %}{% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">Nothing bought yet. Fill in <strong>What I bought</strong> on the list, and it shows here.</p>
+    {% endif %}
+</div>
+
+{% else %}
 <div class="form-card" data-xmas>
     <form method="get" class="form-inline mb-2">
         <input type="hidden" name="tab" value="christmas">
@@ -217,6 +256,7 @@
         <button type="submit" class="btn action-primary"><i class="fas fa-plus"></i> Add the ticked people</button>
     </form>
 </div>
+{% endif %}
 {% endif %}
 {% endif %}
 

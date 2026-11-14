@@ -284,6 +284,13 @@ def my_gifts(request):
                         .select_related('contact')
                         .order_by('contact_name', '-year'))
 
+    # CG-3, 14 Nov 2026 - the Christmas list has two views: the list for
+    # one year (plan and buy) and the table of every year (what was bought).
+    view = request.GET.get('view')
+    ctx['view'] = 'table' if view == 'table' else 'list'
+    if tab == 'christmas' and ctx['view'] == 'table':
+        ctx.update(christmas_table(mine))
+
     # THE CHRISTMAS LIST for the chosen year.
     rows = list(mine.filter(occasion='christmas', year=xyear)
                 .select_related('contact').order_by('contact_name', 'id'))
@@ -297,6 +304,52 @@ def my_gifts(request):
     ctx['shopping_link'] = 'https://wa.me/?text=' + quote(
         shopping_text(xyear, ctx['to_buy']))
     return render(request, 'celebration_gifts.html', ctx)
+
+
+def bought(g):
+    """What was bought for one Christmas row, or '' if nothing was. A row
+    ticked Bought with nothing written under What I bought was the plan."""
+    if g.gift:
+        return g.gift
+    return g.idea if g.given else ''
+
+
+def christmas_table(mine):
+    """CG-3, 14 Nov 2026 - every Christmas, side by side.
+
+    Demetri, 14 Nov: "The columns are the latest year on the left, moving
+    down, to the first year that a gift was captured ... the rows must be
+    all of the people that I have personally captured Christmas gifts for
+    ... If I didn't capture a gift for someone for a year, then we can
+    merely insert '-' ... I just want to show What We Bought. No Budget,
+    No Plan, No Cost."
+
+    Only what was bought: a row that is still only a plan is left out, and
+    a person with nothing bought in any year is not a row. Every year from
+    the latest to the first is a column, even one with nothing in it, so a
+    gap reads as a gap. Two gifts for one person in one year share a cell.
+    A deleted contact keeps their row under the name the gift was saved
+    with. Private, like everything here: only the owner's rows.
+    """
+    cells, who, gone = {}, {}, {}
+    for g in (mine.filter(occasion='christmas').select_related('contact')
+              .order_by('id')):
+        what = bought(g)
+        if not what:
+            continue
+        key = ('c', g.contact_id) if g.contact_id else (
+            'n', g.contact_name.strip().lower())
+        who.setdefault(key, g.who)
+        gone[key] = not g.contact_id
+        cells.setdefault(key, {}).setdefault(g.year, []).append(what)
+    if not cells:
+        return {'xt_years': [], 'xt_rows': []}
+    years = {y for c in cells.values() for y in c}
+    cols = list(range(max(years), min(years) - 1, -1))
+    rows = [{'who': who[k], 'gone': gone[k],
+             'cells': [' \u00b7 '.join(cells[k].get(y, [])) for y in cols]}
+            for k in sorted(cells, key=lambda k: who[k].lower())]
+    return {'xt_years': cols, 'xt_rows': rows}
 
 
 def shopping_text(year, rows):
