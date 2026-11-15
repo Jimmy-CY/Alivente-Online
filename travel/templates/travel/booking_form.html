@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}{% if b.pk %}Edit booking{% else %}Add booking{% endif %} - Travel{% endblock %}
+{# TRAVEL - TR-1, 15 Nov 2026. Add or change a booking. #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{% if b.pk %}EDIT BOOKING{% else %}ADD A BOOKING{% endif %}</h4>
+
+<div class="page-action-buttons">
+    <a href="{% if b.pk %}{% url 'travel:booking' b.pk %}{% else %}{% url 'travel:trip' trip.pk %}{% endif %}" class="btn action-back" aria-label="Back">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="tv-wrap">
+<p class="tv-sub">{{ trip.name }}</p>
+{% if problems %}<div class="alert alert-danger" role="alert">{% for p in problems %}<div>{{ p }}</div>{% endfor %}
+{% if dupe %}<div style="margin-top: 6px">It matches <a href="{% url 'travel:booking' dupe.pk %}" target="_blank" rel="noopener">{{ dupe.title }}</a>{% if dupe.start_date %}, {{ dupe.start_date|date:"D j M" }}{% endif %}. Change that one instead, or save this as a second booking. Attach any files again before saving.</div>
+<button type="submit" form="booking-form" name="dupe_ok" value="1" class="btn action-secondary btn-sm" style="margin-top: 8px">Save it as a second booking</button>{% endif %}
+</div>{% endif %}
+
+<form method="post" enctype="multipart/form-data" id="booking-form" data-booking-form>
+{% csrf_token %}
+<section class="form-card">
+    <h3 class="form-section-title">What</h3>
+    <div class="tv-form-grid">
+        <div><label for="bk">Kind</label><select id="bk" name="kind" class="form-control">{% for v, n in kinds %}<option value="{{ v }}"{% if v == b.kind %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
+        <div><label for="bt">Name <span class="req-marker" aria-hidden="true">*</span></label><input id="bt" name="title" class="form-control" maxlength="160" required value="{{ b.title }}" placeholder="e.g. TAP TP 1307, or Casa do Largo"></div>
+        <div><label for="bp">With</label><input id="bp" name="provider" class="form-control" maxlength="120" value="{{ b.provider }}" placeholder="Airline, hotel, Booking.com&hellip;"></div>
+        <div><label for="br">Booking reference</label><input id="br" name="reference" class="form-control" maxlength="60" value="{{ b.reference }}"></div>
+    </div>
+</section>
+
+<section class="form-card">
+    <h3 class="form-section-title">When &amp; where</h3>
+    <div class="tv-form-grid">
+        <div><label for="sd">Starts (check-in, pick-up, departs)</label><input id="sd" type="date" name="start_date" class="form-control" value="{{ b.start_date|date:'Y-m-d' }}"></div>
+        <div><label for="st">Time</label><input id="st" type="time" name="start_time" class="form-control" value="{{ b.start_time|time:'H:i' }}"></div>
+        <div><label for="ed">Ends (check-out, drop-off, arrives)</label><input id="ed" type="date" name="end_date" class="form-control" value="{{ b.end_date|date:'Y-m-d' }}"></div>
+        <div><label for="et">Time</label><input id="et" type="time" name="end_time" class="form-control" value="{{ b.end_time|time:'H:i' }}"></div>
+        <div><label for="fp">From</label><input id="fp" name="from_place" class="form-control" maxlength="120" value="{{ b.from_place }}" placeholder="e.g. Larnaca (LCA)"></div>
+        <div><label for="tp">To</label><input id="tp" name="to_place" class="form-control" maxlength="120" value="{{ b.to_place }}" placeholder="e.g. Lisbon (LIS)"></div>
+        <div class="tv-wide"><label for="ad">Address</label><input id="ad" name="address" class="form-control" maxlength="255" value="{{ b.address }}"></div>
+        <div><label for="ph">Phone</label><input id="ph" name="phone" class="form-control" maxlength="40" value="{{ b.phone }}" inputmode="tel"></div>
+        <div><label for="lk">Manage-booking link</label><input id="lk" name="link" class="form-control" maxlength="500" value="{{ b.link }}" inputmode="url"></div>
+        <div class="tv-wide"><label for="dt">Details</label><textarea id="dt" name="details" class="form-control" rows="3" placeholder="Seats, room type, baggage, what's included&hellip;">{{ b.details }}</textarea></div>
+    </div>
+</section>
+
+<section class="form-card">
+    <h3 class="form-section-title">Cost</h3>
+    <div class="tv-form-grid">
+        <div><label for="am">Amount</label><input id="am" name="amount" class="form-control tv-money" inputmode="decimal" value="{{ b.amount|default_if_none:'' }}"></div>
+        <div><label for="cu">Currency</label><select id="cu" name="currency" class="form-control">{% for c in currencies %}<option value="{{ c }}"{% if c == b.currency %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+        <div class="tv-wide"><label for="ae">In euros (from your card statement, if not paid in euros)</label><input id="ae" name="amount_eur" class="form-control tv-money" inputmode="decimal" style="max-width: 220px" value="{% if b.currency != 'EUR' %}{{ b.amount_eur|default_if_none:'' }}{% endif %}"><div class="tv-sub small">Leave it empty and the ECB rate for the day is used.</div></div>
+        <div><label for="pd">Paid?</label><select id="pd" name="paid" class="form-control">{% for v, n in paids %}<option value="{{ v }}"{% if v == b.paid %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
+        <div><label for="pa">If part paid, how much (in the booking&rsquo;s currency)</label><input id="pa" name="paid_amount" class="form-control tv-money" inputmode="decimal" value="{{ b.paid_amount|default_if_none:'' }}"></div>
+        <div><label for="pb">Pay the balance by</label><input id="pb" type="date" name="pay_by" class="form-control" value="{{ b.pay_by|date:'Y-m-d' }}"></div>
+        <div><label for="cn">Free cancellation until</label><input id="cn" type="date" name="cancel_until" class="form-control" value="{{ b.cancel_until|date:'Y-m-d' }}"></div>
+    </div>
+</section>
+
+<section class="form-card">
+    <h3 class="form-section-title">Tickets &amp; documents</h3>
+    {% if files %}<ul class="tv-files" style="margin-bottom: 10px">{% for f in files %}<li><i class="fas fa-paperclip" aria-hidden="true"></i> <a href="{% url 'travel:file' f.pk %}" target="_blank" rel="noopener">{{ f.name }}</a> <button type="submit" form="del-file-{{ f.pk }}" class="btn action-secondary action-danger btn-sm">Remove</button></li>{% endfor %}</ul>{% endif %}
+    <label for="fl">Attach PDFs or pictures (up to 15 MB each)</label>
+    <input id="fl" type="file" name="files" class="form-control" multiple accept=".pdf,image/*,.pkpass">
+</section>
+
+<div class="page-action-buttons" style="justify-content: flex-start; max-width: 820px">
+    <button type="submit" class="btn action-primary">Save booking</button>
+    {% if b.pk %}<button type="submit" form="del-booking" class="btn action-secondary action-danger">Delete booking</button>{% endif %}
+</div>
+</form>
+{% if b.pk %}
+<form id="del-booking" method="post" action="{% url 'travel:booking_delete' b.pk %}" onsubmit="return confirm('Delete this booking and its documents? This cannot be undone.');">{% csrf_token %}</form>
+{% for f in files %}<form id="del-file-{{ f.pk }}" method="post" action="{% url 'travel:file_delete' f.pk %}" onsubmit="return confirm('Remove {{ f.name|escapejs }}?');">{% csrf_token %}</form>{% endfor %}
+{% endif %}
+</div>
+{% endblock %}

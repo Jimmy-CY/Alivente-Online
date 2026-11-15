@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ b.title }} - Travel{% endblock %}
+{# TRAVEL - TR-1, 15 Nov 2026. One booking, everything about it. #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }}</h4>
+
+<div class="page-action-buttons">
+    <a href="{% url 'travel:booking_edit' b.pk %}" class="btn action-primary"><i class="fas fa-pen"></i> Edit</a>
+    <a href="{% url 'travel:trip' trip.pk %}" class="btn action-back" aria-label="Back to the trip">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="tv-wrap tv-cols">
+<div class="tv-main">
+    <section class="form-card" data-booking-detail>
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0"><i class="fas {{ b.icon }}" aria-hidden="true"></i> {{ b.title }}</h3><span class="tv-tag tv-shared">{{ b.kind_label }}</span></div>
+        {% if b.start_date %}
+        <div class="tv-row" style="margin-top: 10px">
+            <div><div class="tv-sub">{% if b.kind == 'stay' %}Check-in{% elif b.kind == 'car' %}Pick-up{% else %}Starts{% endif %}</div><b>{{ b.start_date|date:"D j M Y" }}</b>{% if b.start_time %}<div class="tv-sub">{{ b.start_time|time:"H:i" }}</div>{% endif %}</div>
+            {% if nights %}<div class="tv-sub">{{ nights }} night{{ nights|pluralize }}</div>{% endif %}
+            {% if b.end_date or b.end_time %}<div style="text-align: right"><div class="tv-sub">{% if b.kind == 'stay' %}Check-out{% elif b.kind == 'car' %}Drop-off{% else %}Ends{% endif %}</div><b>{{ b.end_date|default:b.start_date|date:"D j M Y" }}</b>{% if b.end_time %}<div class="tv-sub">{{ b.end_time|time:"H:i" }}</div>{% endif %}</div>{% endif %}
+        </div>
+        {% endif %}
+    </section>
+    <section class="form-card">
+        <dl class="tv-kv">
+            {% if b.reference %}<dt>Reference</dt><dd class="tv-ref">{{ b.reference }}</dd>{% endif %}
+            {% if b.provider %}<dt>With</dt><dd>{{ b.provider }}</dd>{% endif %}
+            {% if b.route %}<dt>Route</dt><dd>{{ b.route }}</dd>{% endif %}
+            {% if b.address %}<dt>Address</dt><dd>{{ b.address }} &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query={{ b.address|urlencode }}" target="_blank" rel="noopener">Map</a></dd>{% endif %}
+            {% if b.phone %}<dt>Phone</dt><dd><a href="tel:{{ b.phone }}">{{ b.phone }}</a></dd>{% endif %}
+            {% if b.link %}<dt>Manage it</dt><dd><a href="{{ b.link }}" target="_blank" rel="noopener">{{ b.link|truncatechars:60 }}</a></dd>{% endif %}
+            {% if b.cancel_until %}<dt>Free cancellation</dt><dd class="{% if b.cancel_until >= today %}tv-due{% endif %}">until {{ b.cancel_until|date:"D j M Y" }}</dd>{% endif %}
+            {% if b.details %}<dt>Details</dt><dd style="white-space: pre-line">{{ b.details }}</dd>{% endif %}
+        </dl>
+    </section>
+</div>
+<aside class="tv-side">
+    <section class="form-card" data-booking-cost>
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Cost</h3>{% if b.amount is not None %}<span class="tv-tag {% if b.paid == 'paid' %}tv-paid{% else %}tv-due{% endif %}">{{ b.status_label }}</span>{% endif %}</div>
+        {% if b.amount is not None %}
+        <div class="tv-row"><span class="tv-sub">Total</span><b>{{ b.eur_label|default:"rate pending" }}</b></div>
+        {% if b.orig_label %}<div class="tv-row"><span class="tv-sub">Charged</span><span>{{ b.orig_label }}</span></div>
+        <div class="tv-sub small">{% if b.eur_typed %}Euro amount typed from the card statement.{% elif b.fx_rate %}At the ECB rate of {{ b.fx_rate|floatformat:4 }} on {{ b.fx_date|date:"j M Y" }}.{% else %}Waiting for the exchange rate.{% endif %}</div>{% endif %}
+        <div class="tv-row"><span class="tv-sub">Paid</span><b class="tv-paid">{{ paid_label|default:"€0" }}</b></div>
+        {% if b.paid != 'paid' %}<div class="tv-row"><span class="tv-sub">Still to pay</span><b class="tv-due">{{ due_label|default:"–" }}</b></div>{% endif %}
+        {% if b.pay_by and b.paid != 'paid' %}<div class="tv-sub small">Pay by {{ b.pay_by|date:"D j M Y" }}</div>{% endif %}
+        {% else %}<p class="tv-sub" style="margin: 0">No cost entered.</p>{% endif %}
+    </section>
+    <section class="form-card" data-booking-files>
+        <h3 class="form-section-title">Tickets &amp; documents</h3>
+        {% if files %}<ul class="tv-files">{% for f in files %}<li><i class="fas fa-paperclip" aria-hidden="true"></i> <a href="{% url 'travel:file' f.pk %}" target="_blank" rel="noopener">{{ f.name }}</a></li>{% endfor %}</ul>
+        {% else %}<p class="tv-sub" style="margin: 0">None yet. Attach the confirmation or ticket under Edit.</p>{% endif %}
+    </section>
+    {% if changes %}
+    <details class="form-card" data-booking-changes>
+        <summary style="cursor: pointer; font-weight: 700; min-height: 32px">Changes ({{ changes|length }})</summary>
+        {% for c in changes %}
+        <div style="border-top: 1px solid var(--alv-line-soft); padding-top: 8px; margin-top: 8px">
+            <div class="tv-sub small">{{ c.when|date:"D j M Y, H:i" }} &middot; {% if c.source == 'email' %}from an email{% else %}by {{ c.by.get_full_name|default:c.by.username|default:"someone" }}{% endif %}{% if c.note %} &middot; {{ c.note }}{% endif %}</div>
+            {% for x in c.changes %}<div class="small"><b>{{ x.label }}</b>: {% if x.old %}<s class="tv-sub">{{ x.old }}</s> &rarr; {% endif %}{{ x.new|default:"(cleared)" }}</div>{% endfor %}
+        </div>
+        {% endfor %}
+    </details>
+    {% endif %}
+    <p class="tv-sub small">Added by {{ b.added_by.get_full_name|default:b.added_by.username|default:"someone" }} &middot; {{ b.created_at|date:"j M Y" }}</p>
+</aside>
+</div>
+{% endblock %}

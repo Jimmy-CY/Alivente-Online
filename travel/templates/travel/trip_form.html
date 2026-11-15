@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Edit trip - Travel{% endblock %}
+{# TRAVEL - TR-1, 15 Nov 2026. A trip's name, dates and countries. #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">EDIT TRIP</h4>
+<div class="page-action-buttons">
+    <a href="{% url 'travel:trip' trip.pk %}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+<form method="post" class="form-card" style="max-width: 820px">
+    {% csrf_token %}
+    <div class="tv-form-grid">
+        <div class="tv-wide"><label for="tn">Name <span class="req-marker" aria-hidden="true">*</span></label><input id="tn" name="name" class="form-control" maxlength="120" required value="{{ trip.name }}"></div>
+        <div><label for="ts">From</label><input id="ts" type="date" name="start_date" class="form-control" value="{{ trip.start_date|date:'Y-m-d' }}"></div>
+        <div><label for="te">To</label><input id="te" type="date" name="end_date" class="form-control" value="{{ trip.end_date|date:'Y-m-d' }}"></div>
+        <div class="tv-wide"><label for="tc">Countries</label><input id="tc" name="countries" class="form-control" maxlength="200" value="{{ trip.countries }}"></div>
+        <div class="tv-wide"><label for="no">Notes</label><textarea id="no" name="notes" class="form-control" rows="4">{{ trip.notes }}</textarea></div>
+        <div class="tv-wide tv-sub small">Leave the dates empty and they follow the bookings.</div>
+        <div class="tv-wide"><button type="submit" class="btn action-primary">Save trip</button>
+        {% if is_owner %}<button type="submit" form="del-trip" class="btn action-secondary action-danger">Delete trip</button>{% endif %}</div>
+    </div>
+</form>
+{% if is_owner %}<form id="del-trip" method="post" action="{% url 'travel:trip_delete' trip.pk %}" onsubmit="return confirm('Delete this trip, every booking in it and their documents? This cannot be undone.');">{% csrf_token %}</form>{% endif %}
+</div>
+{% endblock %}

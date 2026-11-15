@@ -867,6 +867,9 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # stripped, so 'wellness/' would miss /wellness/ itself.
             ('wellness', 'auth.can_access_wellness'),
 
+            # ---------- TRAVEL (TR-1, 15 Nov 2026) ----------
+            ('travel', 'auth.can_access_travel'),
+
             # ---------- RECIPES ----------
             ('recipe_management', 'auth.can_access_recipes'),
             ('recipes/', 'auth.can_access_recipes'),

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}{{ trip.name }} - Travel{% endblock %}
+{# TRAVEL - TR-1, 15 Nov 2026. One trip: its bookings by day, its costs. #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }}</h4>
+
+<div class="page-action-buttons">
+    <a href="{% url 'travel:booking_new' trip.pk %}" class="btn action-primary"><i class="fas fa-plus"></i> Add booking</a>
+    {% if is_owner %}<a href="{% url 'travel:trip_share' trip.pk %}" class="btn action-secondary"><i class="fas fa-share-alt"></i> Share</a>{% endif %}
+    <a href="{% url 'travel:trip_edit' trip.pk %}" class="btn action-secondary"><i class="fas fa-pen"></i> Edit trip</a>
+    <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="tv-wrap">
+<p class="tv-sub" data-trip-span>{% if start %}{{ start|date:"D j M" }}{% if end and end != start %} – {{ end|date:"D j M Y" }}{% if nights %} · {{ nights }} night{{ nights|pluralize }}{% endif %}{% else %} {{ start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if trip.countries %} · {{ trip.countries }}{% endif %}</p>
+
+<nav class="tv-tabs" aria-label="Trip">
+    <a class="tv-chip{% if tab == 'bookings' %} is-on{% endif %}" href="{% url 'travel:trip' trip.pk %}"{% if tab == 'bookings' %} aria-current="page"{% endif %}>Bookings <span class="tv-sub">{{ bookings|length }}</span></a>
+    <a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>Costs</a>
+</nav>
+
+<div class="tv-cols">
+<div class="tv-main">
+{% if tab == 'bookings' %}
+    {% if kinds|length > 1 %}
+    <nav class="tv-chips" aria-label="Kind">
+        <a class="tv-chip{% if not want %} is-on{% endif %}" href="{% url 'travel:trip' trip.pk %}">All {{ bookings|length }}</a>
+        {% for k in kinds %}<a class="tv-chip{% if want == k.key %} is-on{% endif %}" href="?kind={{ k.key }}"><i class="fas {{ k.icon }}" aria-hidden="true"></i> {{ k.label }} {{ k.n }}</a>{% endfor %}
+    </nav>
+    {% endif %}
+    {% for day, list in days %}
+    <section class="form-card tv-day" data-day>
+        <h3>{{ day|date:"l j F" }}</h3>
+        {% for b in list %}{% include 'travel/_booking_row.html' %}{% endfor %}
+    </section>
+    {% endfor %}
+    {% if undated %}
+    <section class="form-card tv-day" data-day>
+        <h3>No date yet</h3>
+        {% for b in undated %}{% include 'travel/_booking_row.html' %}{% endfor %}
+    </section>
+    {% endif %}
+    {% if not bookings %}
+    <section class="form-card">
+        <p style="margin: 0">No bookings yet. <a href="{% url 'travel:booking_new' trip.pk %}">Add the first one</a> &mdash; a flight, a stay, a car&hellip; Attach the ticket or confirmation as a PDF.</p>
+    </section>
+    {% endif %}
+{% else %}
+    <section class="form-card" data-costs>
+        <div class="tv-row">
+            <div><div class="tv-sub">Total</div><b style="font-size: 1.5rem">{{ money.total|default:"€0" }}</b></div>
+            <div><div class="tv-sub">Paid</div><b style="font-size: 1.5rem" class="tv-paid">{{ money.paid|default:"€0" }}</b></div>
+            <div><div class="tv-sub">Still to pay</div><b style="font-size: 1.5rem" class="tv-due">{{ money.due|default:"€0" }}</b></div>
+        </div>
+        {% if money.pending %}<p class="tv-sub" style="margin: 10px 0 0">{{ money.pending }} cost{{ money.pending|pluralize }} waiting for an exchange rate &mdash; not counted yet.</p>{% endif %}
+    </section>
+    {% if money.by_kind %}
+    <section class="form-card">
+        <h3 class="form-section-title">By kind</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+        {% for k in money.by_kind %}<div class="tv-kindbar"><span><i class="fas {{ k.icon }}" aria-hidden="true"></i> {{ k.kind }}</span><div class="tv-bar" aria-hidden="true"><span style="width: {{ k.pct }}%"></span></div><b class="tv-money">{{ k.eur }}</b></div>{% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    <section class="form-card">
+        <h3 class="form-section-title">Every cost</h3>
+        {% for b in bookings %}{% include 'travel/_booking_row.html' %}{% empty %}<p class="text-muted" style="margin: 0">No bookings yet.</p>{% endfor %}
+        <p class="tv-sub" style="margin: 10px 0 0">Other currencies are shown in euros at the European Central Bank&rsquo;s rate for the day. Type the euro amount from your card statement on a booking to use that instead.</p>
+    </section>
+{% endif %}
+</div>
+
+<aside class="tv-side">
+    {% if tab == 'bookings' and money.any %}
+    <section class="form-card">
+        <h3 class="form-section-title">Costs</h3>
+        <div class="tv-row"><span class="tv-sub">Total</span><b>{{ money.total }}</b></div>
+        <div class="tv-row"><span class="tv-sub">Paid</span><b class="tv-paid">{{ money.paid }}</b></div>
+        <div class="tv-row"><span class="tv-sub">Still to pay</span><b class="tv-due">{{ money.due }}</b></div>
+        <div class="tv-bar" aria-hidden="true" style="margin-top: 6px"><span style="width: {{ money.pct }}%"></span></div>
+        <a href="{% url 'travel:trip_costs' trip.pk %}" class="small">See every cost</a>
+    </section>
+    {% endif %}
+    {% if coming %}
+    <section class="form-card" data-coming>
+        <h3 class="form-section-title">Coming up</h3>
+        {% for c in coming %}<a href="{% url 'travel:booking' c.id %}" class="small" style="display: block; margin-bottom: 6px; color: inherit"><b class="tv-due">{{ c.what }}</b> &middot; {{ c.day|date:"D j M" }}<br><span class="tv-sub">{{ c.sub }}</span></a>{% endfor %}
+    </section>
+    {% endif %}
+    <section class="form-card">
+        <h3 class="form-section-title">On this trip</h3>
+        {% for p in people %}<div class="small">{{ p.get_full_name|default:p.username }}{% if forloop.first %} <span class="tv-sub">&middot; owner</span>{% endif %}</div>{% endfor %}
+        {% if is_owner %}<a href="{% url 'travel:trip_share' trip.pk %}" class="small">Share with family</a>{% endif %}
+    </section>
+    {% if trip.notes %}<section class="form-card"><h3 class="form-section-title">Notes</h3><p class="small" style="white-space: pre-line; margin: 0">{{ trip.notes }}</p></section>{% endif %}
+</aside>
+</div>
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Share - Travel{% endblock %}
+{# TRAVEL - TR-1, 15 Nov 2026. Who else is on this trip - like a meal plan. #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">SHARE {{ trip.name|upper }}</h4>
+<div class="page-action-buttons">
+    <a href="{% url 'travel:trip' trip.pk %}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+<form method="post" class="form-card" style="max-width: 620px" data-share>
+    {% csrf_token %}
+    <p class="small">Everyone you tick sees the whole trip &mdash; bookings, costs, documents &mdash; and can add and change bookings. Only you can delete the trip or change who it is shared with.</p>
+    {% for p in people %}
+    <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; border-top: 1px solid var(--alv-line-soft); margin: 0">
+        <input type="checkbox" name="people" value="{{ p.pk }}"{% if p.on %} checked{% endif %} style="width: 20px; height: 20px">
+        <span>{{ p.get_full_name|default:p.username }}</span>
+    </label>
+    {% empty %}
+    <p class="tv-sub">Nobody else has Travel yet. Give someone the Travel permission in User Administration first.</p>
+    {% endfor %}
+    {% if people %}<button type="submit" class="btn action-primary" style="margin-top: 12px">Save sharing</button>{% endif %}
+</form>
+</div>
+{% endblock %}

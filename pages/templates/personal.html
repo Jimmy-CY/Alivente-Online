@@ -65,6 +65,15 @@
       </a>
       {% endif %}
 
+      {% if perms_map.travel %}
+      <!-- Travel - TR-1, 15 Nov 2026. Its own app at /travel/. Beside
+           Passports: Demetri, 15 Nov - "Travel sits next to Passports". -->
+      <a href="{% url 'travel:trips' %}" class="admin-btn btn-personal">
+        <i class="fas fa-plane"></i>
+        <h6>Travel</h6>
+      </a>
+      {% endif %}
+
       {% if perms_map.recipes %}
       <!-- Recipes -->
       <a href="{% url 'recipe_management' %}" class="admin-btn btn-personal">
@@ -82,9 +91,10 @@
       {% endif %}
 
       {% if perms_map.wellness %}
-      <!-- Wellness - WL-1, 30 Oct 2026. The fourth tile; the module
-           behind it is its own app at /wellness/. -->
-      <a href="{% url 'wellness:today' %}" class="admin-btn btn-personal">
+      <!-- Wellness - WL-1, 30 Oct 2026. Its own app at /wellness/.
+           TR-1, 15 Nov 2026: across the bottom, full width - the grid
+           stays even with five tiles. -->
+      <a href="{% url 'wellness:today' %}" class="admin-btn btn-personal admin-btn-wide">
         <i class="fas fa-spa"></i>
         <h6>Wellness</h6>
       </a>
@@ -190,6 +200,8 @@ function switchTab(tab) {
   }
 
   /* Coming-soon tile is non-interactive */
+  /* TR-1, 15 Nov 2026 - Wellness across the bottom of the Personal grid. */
+  .admin-grid .admin-btn-wide { grid-column: 1 / -1; }
   .admin-btn.coming-soon {
     opacity: 0.5;
     cursor: default;

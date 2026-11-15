@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     "crs",
     # WL-1, 30 Oct 2026 - Wellness: its own app, outside the house standard.
     "wellness",
+    # TR-1, 15 Nov 2026 - Travel: its own app, like Wellness.
+    "travel",
     # PK-1, 30 Oct 2026 - sign in with a fingerprint. No templates.
     "passkeys",
     "whitenoise.runserver_nostatic",

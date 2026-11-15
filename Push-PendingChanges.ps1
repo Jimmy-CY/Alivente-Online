@@ -3308,7 +3308,9 @@ $suites = @(
     # CG-4, 14 Nov 2026 - Release 80: My gifts by person; Bought / Just an idea.
     'test_gift_people.py',
     # CG-5, 15 Nov 2026 - Release 81: the gifts pages tidied.
-    'test_gift_tidy.py'
+    'test_gift_tidy.py',
+    # TR-1, 15 Nov 2026 - Release 82: Travel, stage 1.
+    'test_travel_one.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

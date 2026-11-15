@@ -42,6 +42,9 @@ MODULE_PERMISSIONS = [
     # access is never access to anyone else's - every query is filtered
     # by the login, superusers included.
     {'codename': 'can_access_wellness',       'edit_codename': None,                      'label': 'Wellness',              'icon': 'fa-spa'},
+    # TR-1, 15 Nov 2026 - Travel. No edit tier, like Wellness: a trip is
+    # its owner's, and shared ones are shared to change as well as see.
+    {'codename': 'can_access_travel',         'edit_codename': None,                      'label': 'Travel',                'icon': 'fa-plane'},
 ]
 
 # `can_access_fsr` is checked in the Issues module and granted to the Property

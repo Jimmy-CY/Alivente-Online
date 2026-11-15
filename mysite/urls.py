@@ -82,6 +82,8 @@ urlpatterns = [
     # WL-1, 30 Oct 2026 - Wellness. wellness/app/ (the installable-app
     # shell) answers without a login; everything else needs one.
     path("wellness/", include("wellness.urls")),
+    # TR-1, 15 Nov 2026 - Travel, under Personal.
+    path("travel/", include("travel.urls")),
     # PK-1, 30 Oct 2026 - passkeys. Under login/ (public, like the
     # password form) and my-profile/ (login only), so the middleware's
     # existing rules already cover them.

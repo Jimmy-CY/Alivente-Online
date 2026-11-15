@@ -1613,6 +1613,8 @@ ROUNDS = [
     '.bak_giftpeople',
     # CG-5, 15 Nov 2026 - Release 81: the gifts pages tidied.
     '.bak_gifttidy',
+    # TR-1, 15 Nov 2026 - Release 82: Travel, stage 1.
+    '.bak_travel1',
 ]
 
 
