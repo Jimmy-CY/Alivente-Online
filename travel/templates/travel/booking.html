@@ -51,11 +51,17 @@
         {% if b.pay_by and b.paid != 'paid' %}<div class="tv-sub small">Pay by {{ b.pay_by|date:"D j M Y" }}</div>{% endif %}
         {% else %}<p class="tv-sub" style="margin: 0">No cost entered.</p>{% endif %}
     </section>
-    {% if b.pass_code or b.wallet_link %}
+    {% if passes %}
     <section class="form-card" data-boarding-pass>
-        <h3 class="form-section-title"><i class="fas fa-qrcode" aria-hidden="true"></i> Boarding pass</h3>
-        <p class="tv-sub small" style="margin: 0 0 6px">Received{% if b.pass_format %} ({{ b.pass_format|upper }} code){% endif %}. It will show, ready to scan, in the Travel app for your phone. Until then, open the airline&rsquo;s PDF below.</p>
-        {% if b.wallet_link %}<a href="{{ b.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
+        <h3 class="form-section-title"><i class="fas fa-qrcode" aria-hidden="true"></i> Boarding pass{{ passes|length|pluralize }}</h3>
+        {% for p in passes %}
+        <div style="border-top: 1px solid var(--alv-line-soft); padding-top: 8px; margin-top: 8px">
+            <div class="tv-row small"><b>{{ p.name|default:"Passenger" }}</b><span>{{ p.flight }}{% if p.seat_shown %} &middot; seat {{ p.seat_shown }}{% endif %}</span></div>
+            {% if p.svg %}<div class="tv-passcode" data-barcode="{{ p.format }}">{{ p.svg|safe }}</div>{% endif %}
+            {% if p.wallet_link %}<a href="{{ p.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
+        </div>
+        {% endfor %}
+        <p class="tv-sub small" style="margin: 8px 0 0">On the phone, Travel &rarr; Passes shows them one a screen, and keeps them for when there is no signal.</p>
     </section>
     {% endif %}
     <section class="form-card" data-booking-files>

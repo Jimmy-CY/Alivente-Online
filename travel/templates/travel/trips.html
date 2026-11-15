@@ -46,6 +46,13 @@
 {% endfor %}
 </div>
 
+{% if phone_qr %}
+<section class="form-card tv-phone" data-phone-app style="margin-top: 22px">
+    <div class="tv-passcode" style="margin: 0">{{ phone_qr|safe }}</div>
+    <div><h3 class="form-section-title" style="margin: 0 0 4px">Travel on your phone</h3><p class="small" style="margin: 0">Point your phone&rsquo;s camera here, or open <b>alivente.online/travel/m/</b>, then <em>Add to Home screen</em>. Today, your boarding passes (even with no signal) and To check &mdash; and on Android, <em>Share &rarr; Travel</em> sends a ticket or an email straight in.</p></div>
+</section>
+{% endif %}
+
 <section class="form-card" id="new-trip" style="margin-top: 22px; max-width: 820px">
     <h3 class="form-section-title">New trip</h3>
     <form method="post" action="{% url 'travel:trip_new' %}" class="tv-form-grid">

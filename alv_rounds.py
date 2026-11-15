@@ -1617,6 +1617,8 @@ ROUNDS = [
     '.bak_travel1',
     # TR-2, 15 Nov 2026 - Release 83: Travel, stage 2 - emails.
     '.bak_travel2',
+    # TR-3, 15 Nov 2026 - Release 84: Travel, stage 3 - the phone app.
+    '.bak_travel3',
 ]
 
 

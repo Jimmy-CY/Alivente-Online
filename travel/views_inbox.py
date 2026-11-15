@@ -86,7 +86,39 @@ def show(item):
         eur(a) if (d.get('currency') or 'EUR') == 'EUR' else
         '%s %s' % ('{:,.2f}'.format(a), d.get('currency')))
     item.suggested_name = inbox.trip_name(d) if d.get('kind') else ''
+    # TR-3 - the dates as people read them: "Thu 19 Nov 2026, 06:40".
+    item.when = ''
+    try:
+        import datetime as _dt
+        s = _dt.date.fromisoformat(d['start_date']) if d.get('start_date') \
+            else None
+        e = _dt.date.fromisoformat(d['end_date']) if d.get('end_date') \
+            else None
+    except (TypeError, ValueError):
+        s = e = None
+    if s:
+        item.when = s.strftime('%a %d %b %Y').replace(' 0', ' ')
+        if d.get('start_time'):
+            item.when += ', ' + d['start_time']
+        if e and e != s:
+            item.when += ' – ' + e.strftime('%a %d %b').replace(' 0', ' ')
     return item
+
+
+def suggest(items, user):
+    """TR-3 - the trip each waiting booking would go on, worked out again
+    each time To check opens: once the first of a holiday's emails has made
+    its trip, the rest of them offer that trip, not a new one each. Shown
+    in date order, so the first one added is the first day."""
+    for i in items:
+        if i.state == 'open' and i.what in ('new', 'join') and \
+                not i.trip_id and (i.data or {}).get('start_date'):
+            i.trip = inbox.suggest_trip(user, i.data)
+    far = '9999'
+    items.sort(key=lambda i: (i.what in ('new', 'join', 'maybe', 'update'),
+                              (i.data or {}).get('start_date') or far,
+                              (i.data or {}).get('start_time') or ''))
+    return items
 
 
 def my_requests(user):
@@ -104,9 +136,9 @@ def my_requests(user):
 def check(request):
     inbox.kick()
     me = request.user
-    items = [show(i) for i in CheckItem.objects.filter(
+    items = suggest([show(i) for i in CheckItem.objects.filter(
         user=me, state__in=('open', 'asked')).select_related(
-        'booking', 'trip', 'other_trip__owner')]
+        'booking', 'trip', 'other_trip__owner')], me)
     since = timezone.now() - timezone.timedelta(days=14)
     done = [show(i) for i in CheckItem.objects.filter(
         user=me, state='done', created_at__gte=since).select_related(
@@ -120,6 +152,15 @@ def check(request):
         'items': items, 'done': done, 'waiting': waiting,
         'trips': trips, 'requests': my_requests(me),
         'address': inbox.inbox_address()})
+
+
+def _back(request):
+    """TR-3 - back to To check: the desktop page, or the phone app's when
+    the action was taken there (it posts next=/travel/m/...)."""
+    nxt = request.POST.get('next') or ''
+    if nxt.startswith('/travel/') and '//' not in nxt:
+        return redirect(nxt)
+    return redirect('travel:check')
 
 
 def _item(request, item_id, states=('open',)):
@@ -153,12 +194,29 @@ def check_add(request, item_id):
     else:
         t = get_object_or_404(trips_for(request.user), pk=pick or 0)
     with transaction.atomic():
-        b = inbox.create(t, item.data, request.user, item.email,
-                         inbox.files_of(item))
+        # TR-3 (his first real run, 15 Nov): the confirmation and the
+        # boarding pass for CY 313 both waited as new bookings. Whichever
+        # is added second finds the first on the trip by its reference and
+        # flight, and goes onto it - the pass attached - not beside it.
+        same = None
+        if item.what != 'maybe' or request.POST.get('keep') != 'both':
+            same, _ = inbox.same_booking(item.data, list(t.bookings.all()))
+        if same and item.what != 'maybe':
+            e = item.email or InboundEmail(subject=item.data.get('subject',
+                                                                 ''))
+            inbox.apply(same, item.data, request.user, e,
+                        inbox.files_of(item))
+            b = same
+            note = 'Went onto %s, already on %s' % (b.title, t.name)
+        else:
+            b = inbox.create(t, item.data, request.user, item.email,
+                             inbox.files_of(item))
+            note = 'Added to %s' % t.name
         item.booking, item.trip = b, t
-        _finish(item, note='Added to %s' % t.name)
-    messages.success(request, '%s added to %s.' % (b.title, t.name))
-    return redirect('travel:check')
+        _finish(item, note=note)
+    messages.success(request, '%s: %s.' % (b.title, note[0].lower() +
+                                           note[1:]))
+    return _back(request)
 
 
 @travel_view
@@ -176,7 +234,7 @@ def check_merge(request, item_id):
         _finish(item, note=('Updated: ' + ', '.join(changed)) if changed
                 else 'Already up to date')
     messages.success(request, '%s updated.' % item.booking.title)
-    return redirect('travel:check')
+    return _back(request)
 
 
 @travel_view
@@ -185,7 +243,7 @@ def check_dismiss(request, item_id):
     item = _item(request, item_id)
     _finish(item, state='dismissed')
     messages.success(request, 'Dismissed.')
-    return redirect('travel:check')
+    return _back(request)
 
 
 @travel_view
@@ -206,7 +264,7 @@ def check_ask(request, item_id):
     item.save()
     messages.success(request, 'Asked %s. It stays here until they answer.'
                      % name_of(t.owner))
-    return redirect('travel:check')
+    return _back(request)
 
 
 def check_add_to(request, item, t):
@@ -224,7 +282,7 @@ def check_add_to(request, item, t):
         item.booking, item.trip = b, t
         _finish(item, note='Added to %s' % t.name)
     messages.success(request, '%s added to %s.' % (b.title, t.name))
-    return redirect('travel:check')
+    return _back(request)
 
 
 @travel_view
@@ -274,10 +332,7 @@ def answer(request, request_id):
                 item.save()
                 messages.success(request, 'Said no. %s can keep it as '
                                  'their own trip.' % name_of(r.by))
-    nxt = request.POST.get('next') or ''
-    if nxt.startswith('/travel/'):
-        return redirect(nxt)
-    return redirect('travel:check')
+    return _back(request)
 
 
 # ------------------------------------------------------------------ merge

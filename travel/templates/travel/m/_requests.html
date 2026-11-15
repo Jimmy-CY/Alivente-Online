@@ -1,0 +1,9 @@
+{% comment %} TR-3 - asks waiting for this person's yes or no, on the phone. The owner is always asked. {% endcomment %}{% for r in requests %}
+<section class="tv-card" data-join-request style="border-color: var(--tv-teal)">
+  <p style="margin: 0">{% if r.from_trip %}<b>{{ r.by.get_full_name|default:r.by.username }}</b> asks to merge your trip <b>{{ r.from_trip.name }}</b> into <b>{{ r.trip.name }}</b>.{% else %}<b>{{ r.by.get_full_name|default:r.by.username }}</b> asks to join <b>{{ r.trip.name }}</b>{% if r.title %} with <b>{{ r.title }}</b>{% endif %}.{% endif %}</p>
+  <form method="post" action="{% url 'travel:m_answer' r.pk %}" class="tv-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+    <button type="submit" name="answer" value="yes" class="tv-btn">{% if r.from_trip %}Merge{% else %}Share and add{% endif %}</button>
+    <button type="submit" name="answer" value="no" class="tv-btn sec">No</button>
+  </form>
+</section>
+{% endfor %}

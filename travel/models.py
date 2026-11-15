@@ -368,3 +368,30 @@ class JoinRequest(models.Model):
         """Who has to say yes: the owner of the trip that gives something
         up - the trip joined, or for a merge the trip merged away."""
         return self.from_trip.owner if self.from_trip_id else self.trip.owner
+
+
+class BoardingPass(models.Model):
+    """TR-3, 15 Nov 2026 - one passenger's boarding pass for one flight.
+
+    A family flies on one booking reference, but each person has a pass of
+    their own: Alexandra's must not overwrite Demetri's when her email
+    comes in second. So the pass is its own row, one per passenger (the
+    name the barcode itself carries), and Booking.pass_code keeps only the
+    latest as stage 2 left it."""
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE,
+                                related_name='passes')
+    name = models.CharField(max_length=80, blank=True, default='')
+    code = models.TextField()
+    format = models.CharField(max_length=12, default='aztec')
+    seat = models.CharField(max_length=8, blank=True, default='')
+    wallet_link = models.URLField(max_length=1000, blank=True, default='')
+    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                 blank=True, related_name='+')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'travel_boarding_passes'
+        ordering = ['name', 'id']
+
+    def __str__(self):
+        return '%s %s' % (self.booking, self.name)

@@ -37,7 +37,14 @@ PHONE_MARKS = ('Mobi', 'Android', 'iPhone', 'iPad')
 # pages a person needs in order to log in again or that are public anyway.
 FREE = ('/wellness/', '/login/', '/logout/', '/static/', '/media/',
         '/version/', '/forgot-password/', '/set-password/', '/sign/',
-        '/robots.txt', '/favicon.ico')
+        '/robots.txt', '/favicon.ico',
+        # TR-3, 15 Nov 2026 - the Travel phone app is the second app with
+        # the phone's 30 days (Demetri: "like Wellness"): its pages, its
+        # shell, and the door the email Worker uses.
+        '/travel/m/', '/travel/app/', '/travel/inbound/')
+
+# The apps whose pages, opened on a phone, give the session its 30 days.
+LONG_APPS = ('/wellness/', '/travel/m/')
 
 
 def main_hour():
@@ -66,7 +73,7 @@ class WellnessSessionMiddleware:
         if user is not None and user.is_authenticated:
             path = request.path
             s = request.session
-            if path.startswith('/wellness/'):
+            if path.startswith(LONG_APPS):
                 if is_phone(request):
                     if MAIN_UNTIL not in s:
                         # A session from before this release: its hour

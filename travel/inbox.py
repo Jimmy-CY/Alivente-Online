@@ -36,9 +36,9 @@ from django.db.models import Q
 from django.utils import timezone
 
 from . import extract, fx, inbound
-from .models import (Booking, BookingChange, BookingFile, CheckItem,
-                     InboundEmail, InboundFile, TravelAddress, Trip,
-                     trips_for)
+from .models import (BoardingPass, Booking, BookingChange, BookingFile,
+                     CheckItem, InboundEmail, InboundFile, TravelAddress,
+                     Trip, trips_for)
 
 logger = logging.getLogger(__name__)
 
@@ -495,6 +495,27 @@ def travellers(b, item):
         b.save(update_fields=['traveller_names'])
 
 
+def keep_pass(b, item, user):
+    """TR-3 - the boarding pass as its passenger's own row: a second
+    passenger's pass for the same flight is added beside the first, and
+    the same passenger's again replaces theirs."""
+    code = item.get('pass_code')
+    if not code:
+        return None
+    from .barcodes import bcbp
+    info = bcbp(code, b.start_date.year if b.start_date else None)
+    name = (info.get('name') or '')[:80]
+    p = BoardingPass.objects.filter(booking=b, name=name).first() or \
+        BoardingPass(booking=b, name=name, added_by=user)
+    p.code = code
+    p.format = (item.get('pass_format') or 'aztec')[:12]
+    p.seat = (info.get('seat') or '')[:8]
+    if item.get('wallet_link'):
+        p.wallet_link = item['wallet_link'][:1000]
+    p.save()
+    return p
+
+
 def attach(b, files, user):
     """The email's tickets and passes onto the booking - the same stored
     file, once per name."""
@@ -523,6 +544,7 @@ def apply(b, item, user, e, files):
     b.save()
     attach(b, files, user)
     travellers(b, item)
+    keep_pass(b, item, user)
     changes = diff(before, b)
     if was_status != b.status:
         changes.append({'label': 'Status',
@@ -555,6 +577,7 @@ def create(trip, item, user, e=None, files=()):
     b.save()
     attach(b, files, user)
     travellers(b, item)
+    keep_pass(b, item, user)
     return b
 
 

@@ -1,0 +1,6 @@
+{% comment %} TR-3 - one booking as a row on the phone. {% endcomment %}<a href="{% url 'travel:m_booking' b.pk %}" class="tv-item{% if b.cancelled %} tv-off{% endif %}" data-booking>
+  <span class="tv-ico">{% include 'travel/m/_icon.html' with kind=b.kind %}</span>
+  <span style="min-width: 0"><b>{% if b.label %}{{ b.label }}: {% endif %}{{ b.title }}</b>{% if b.cancelled %} <span class="tv-tag due">Cancelled</span>{% endif %}
+    <span class="tv-muted" style="display: block">{% if b.when %}<span class="tv-time">{{ b.when|time:"H:i" }}</span>{% elif b.start_time and not b.label %}<span class="tv-time">{{ b.start_time|time:"H:i" }}</span>{% endif %}{% if b.route %}{% if b.when or b.start_time and not b.label %} · {% endif %}{{ b.route }}{% elif b.address %}{% if b.when or b.start_time and not b.label %} · {% endif %}{{ b.address|truncatechars:40 }}{% endif %}{% if b.reference %}{% if b.when or b.route or b.address or b.start_time and not b.label %} · {% endif %}{{ b.reference }}{% endif %}</span></span>
+  <span class="tv-muted" aria-hidden="true">›</span>
+</a>

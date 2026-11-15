@@ -165,6 +165,12 @@ def shape(b):
     return b
 
 
+def phone_qr(request):
+    from .barcodes import svg
+    return svg(request.build_absolute_uri('/travel/m/'), 'qr',
+               'Scan to open Travel on your phone')
+
+
 def requests_for(user, trip=None):
     """Join and merge requests waiting for this person's answer."""
     out = []
@@ -219,6 +225,8 @@ def trips(request):
         'countries': sorted(countries), 'count': len(rows),
         'checks': inbox.open_count(request.user),
         'address': inbox.inbox_address(),
+        # TR-3 - point the phone's camera at this to open the phone app.
+        'phone_qr': phone_qr(request),
         'requests': requests_for(request.user)})
 
 
@@ -507,8 +515,10 @@ def booking(request, booking_id):
         shape(b)
     nights = (b.end_date - b.start_date).days \
         if b.kind == 'stay' and b.start_date and b.end_date else None
+    from .phone import pass_card
     return render(request, 'travel/booking.html', {
         'b': b, 'trip': b.trip, 'files': list(b.files.all()),
+        'passes': [pass_card(p) for p in b.passes.all()],
         'nights': nights, 'paid_label': eur(b.paid_eur),
         'due_label': eur(b.due_eur),
         'changes': list(b.changes.select_related('by')),

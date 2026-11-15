@@ -1,0 +1,20 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-3 - My trips on the phone: yours and the ones shared with you. {% endcomment %}
+{% block title %}Trips - Travel{% endblock %}
+{% block top %}<h1>My trips</h1>{% endblock %}
+{% block sub %}<div class="sub">Yours and the ones shared with you</div>{% endblock %}
+{% block content %}
+<nav class="tv-chips" aria-label="Show"><a class="tv-chip{% if not past %} on{% endif %}" href="{% url 'travel:m_trips' %}">Upcoming</a><a class="tv-chip{% if past %} on{% endif %}" href="?show=past">Past</a></nav>
+{% for t in trips %}
+<a href="{% url 'travel:m_trip' t.pk %}" class="tv-card" data-trip>
+  <div class="tv-row"><p class="tv-h2">{{ t.name }}</p>{% if t.people|length > 1 %}<span class="tv-tag sh">Shared</span>{% endif %}</div>
+  <div class="tv-muted">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.countries %} · {{ t.countries }}{% endif %}</div>
+  <div class="tv-row tv-small"><span>{{ t.n }} booking{{ t.n|pluralize }}</span><span style="display: flex; padding-left: 6px">{% for p in t.people %}<span class="tv-av" title="{{ p.get_full_name|default:p.username }}">{{ p.first_name|default:p.username|slice:":1"|upper }}{{ p.last_name|slice:":1"|upper }}</span>{% endfor %}</span></div>
+  {% if t.money.any %}<div class="tv-meter" aria-hidden="true"><span style="width: {{ t.money.pct }}%"></span></div>
+  <div class="tv-row tv-small"><span><b>{{ t.money.total }}</b> total</span><span style="color: var(--tv-good); font-weight: 600">{{ t.money.paid }} paid</span><span style="color: var(--tv-warn); font-weight: 600">{{ t.money.due }} to pay</span></div>{% endif %}
+</a>
+{% empty %}
+<section class="tv-card"><p class="tv-muted" style="margin: 0">{% if past %}No past trips.{% else %}No trips coming up. New trips are made on the computer, or from To check.{% endif %}</p></section>
+{% endfor %}
+<a href="{% url 'travel:trips' %}" class="tv-muted tv-out" style="text-align: center">Open Travel on the full site</a>
+{% endblock %}

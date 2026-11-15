@@ -762,6 +762,12 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # it; nothing is ever served from here. Only this one path:
             # every other page under travel/ keeps its permission check.
             'travel/inbound/',
+            # TR-3, 15 Nov 2026 - TRAVEL'S PHONE-APP SHELL, as wellness/app/
+            # above: the manifest, service worker, style, script and icons,
+            # fetched by a phone before anyone is signed in. Nothing
+            # personal is served under it; the pages are under travel/m/
+            # and keep their check.
+            'travel/app/',
             'media/',  # Media files
             'static/',  # Static files
             # Removed empty string '' that was matching everything

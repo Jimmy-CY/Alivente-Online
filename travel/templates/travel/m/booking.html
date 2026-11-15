@@ -1,0 +1,43 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-3 - one booking on the phone: everything needed on the day, one tap from calling, the map or the airline. {% endcomment %}
+{% block title %}{{ b.title }} - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>{{ b.title }}</h1></div>{% endblock %}
+{% block sub %}<div class="sub">{{ b.kind_label }}{% if b.provider %} · {{ b.provider }}{% endif %}</div>{% endblock %}
+{% block content %}
+{% if b.cancelled %}<div class="tv-msg err" data-cancelled>This booking was cancelled.</div>{% endif %}
+{% if b.start_date %}
+<section class="tv-card" data-when>
+  <div class="tv-row" style="align-items: flex-start">
+    <div><div class="tv-muted">{% if b.kind == 'stay' %}Check in{% elif b.kind == 'car' %}Pick up{% else %}Leaves{% endif %}</div><b>{{ b.start_date|date:"D j M" }}</b>{% if b.start_time %}<div class="tv-time" style="font-size: 22px">{{ b.start_time|time:"H:i" }}</div>{% endif %}{% if b.from_place %}<div class="tv-muted">{{ b.from_place }}</div>{% endif %}</div>
+    {% if nights %}<span class="tv-tag sh">{{ nights }} night{{ nights|pluralize }}</span>{% endif %}
+    {% if b.end_date or b.end_time or b.to_place %}<div style="text-align: right"><div class="tv-muted">{% if b.kind == 'stay' %}Check out{% elif b.kind == 'car' %}Drop off{% else %}Arrives{% endif %}</div><b>{{ b.end_date|default:b.start_date|date:"D j M" }}</b>{% if b.end_time %}<div class="tv-time" style="font-size: 22px">{{ b.end_time|time:"H:i" }}</div>{% endif %}{% if b.to_place %}<div class="tv-muted">{{ b.to_place }}</div>{% endif %}</div>{% endif %}
+  </div>
+</section>
+{% endif %}
+{% if passes %}<a href="{% url 'travel:m_passes' %}" class="tv-btn wide" data-has-pass><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2M3 9h15"/></svg> Boarding pass{{ passes|length|pluralize }}</a>{% endif %}
+<div class="tv-btns" data-actions>
+  {% if b.phone %}<a class="tv-btn sec" href="tel:{{ b.phone }}">Call</a>{% endif %}
+  {% if b.address %}<a class="tv-btn sec" href="https://www.google.com/maps/search/?api=1&amp;query={{ b.address|urlencode }}" target="_blank" rel="noopener">Map</a>{% endif %}
+  {% if b.link %}<a class="tv-btn sec" href="{{ b.link }}" target="_blank" rel="noopener">Manage</a>{% endif %}
+</div>
+<section class="tv-card">
+  <dl class="tv-kv">
+    {% if b.reference %}<dt>Reference</dt><dd style="font-family: ui-monospace, Menlo, monospace; font-size: 17px">{{ b.reference }}{% if b.segment %} <span class="tv-muted">· {{ b.segment }}</span>{% endif %}</dd>{% endif %}
+    {% if b.who %}<dt>Travelling</dt><dd>{{ b.who }}</dd>{% endif %}
+    {% if b.address %}<dt>Address</dt><dd>{{ b.address }}</dd>{% endif %}
+    {% if b.phone %}<dt>Phone</dt><dd>{{ b.phone }}</dd>{% endif %}
+    {% if b.cancel_until %}<dt>Free cancel</dt><dd>until {{ b.cancel_until|date:"D j M Y" }}</dd>{% endif %}
+    {% if b.details %}<dt>Details</dt><dd style="white-space: pre-line; font-weight: 400">{{ b.details }}</dd>{% endif %}
+  </dl>
+</section>
+{% if b.amount is not None %}
+<section class="tv-card" data-cost>
+  <div class="tv-row"><span class="tv-muted">Cost</span><b>{{ b.eur_label|default:"rate pending" }}</b></div>
+  {% if b.orig_label %}<div class="tv-row"><span class="tv-muted">Charged</span><span>{{ b.orig_label }}</span></div>{% endif %}
+  <div class="tv-row"><span class="tv-muted">Paid</span><b style="color: var(--tv-good)">{{ paid_label|default:"€0" }}</b></div>
+  {% if b.paid != 'paid' %}<div class="tv-row"><span class="tv-muted">Still to pay</span><b style="color: var(--tv-warn)">{{ due_label|default:"–" }}</b></div>{% endif %}
+</section>
+{% endif %}
+{% if files %}<section class="tv-card" data-files><p class="tv-h2">Tickets &amp; documents</p>{% for f in files %}<a href="{% url 'travel:m_file' f.pk %}" class="tv-item" target="_blank" rel="noopener"><span class="tv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg></span><span style="min-width: 0; overflow-wrap: anywhere">{{ f.name }}</span><span class="tv-muted" aria-hidden="true">›</span></a>{% endfor %}</section>{% endif %}
+<a href="{% url 'travel:booking' b.pk %}" class="tv-muted tv-small tv-out" style="text-align: center">Change it on the full site</a>
+{% endblock %}

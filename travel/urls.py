@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, views_inbox
+from . import phone, views, views_inbox
 
 app_name = 'travel'
 
@@ -36,4 +36,20 @@ urlpatterns = [
     path('request/<int:request_id>/', views_inbox.answer, name='answer'),
     path('forwarding/', views_inbox.forwarding, name='forwarding'),
     path('<int:trip_id>/merge/', views_inbox.trip_merge, name='trip_merge'),
+    # TR-3, 15 Nov 2026 - stage 3: the phone app (m/) and its shell (app/).
+    path('m/', phone.today, name='m_today'),
+    path('m/trips/', phone.trips, name='m_trips'),
+    path('m/trip/<int:trip_id>/', phone.trip, name='m_trip'),
+    path('m/booking/<int:booking_id>/', phone.booking, name='m_booking'),
+    path('m/passes/', phone.passes, name='m_passes'),
+    path('m/check/', phone.check, name='m_check'),
+    path('m/check/<int:item_id>/<str:action>/', phone.check_action,
+         name='m_check_action'),
+    path('m/request/<int:request_id>/', phone.answer, name='m_answer'),
+    path('m/file/<int:file_id>/', phone.booking_file, name='m_file'),
+    path('m/share/', phone.share, name='m_share'),
+    path('m/help/', phone.help_page, name='m_help'),
+    path('app/manifest.webmanifest', phone.manifest, name='manifest'),
+    path('app/sw.js', phone.service_worker, name='service_worker'),
+    path('app/<str:name>', phone.asset, name='asset'),
 ]

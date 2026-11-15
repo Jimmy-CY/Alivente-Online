@@ -1,0 +1,50 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-3 - To check on the phone: the same choices as on the computer. {% endcomment %}
+{% block title %}To check - Travel{% endblock %}
+{% block top %}<h1>To check</h1>{% endblock %}
+{% block sub %}<div class="sub">Read from emails you forwarded or shared</div>{% endblock %}
+{% block content %}
+{% include 'travel/m/_requests.html' %}
+{% if waiting %}<div class="tv-msg" data-reading>Reading {{ waiting }} email{{ waiting|pluralize }}&hellip; <a href="{% url 'travel:m_check' %}">refresh</a> in a minute.</div>{% endif %}
+{% for i in items %}
+<section class="tv-card" data-check-item data-what="{{ i.what }}">
+  <div class="tv-row"><span class="tv-tag sh">{{ i.label }}</span>{% if i.cost %}<b>{{ i.cost }}</b>{% endif %}</div>
+  {% if i.what == 'gmail' %}
+    <p style="margin: 0">Gmail asks to confirm forwarding from <b>{{ i.d.who }}</b>.{% if i.d.code %} Code: <b>{{ i.d.code }}</b>{% endif %}</p>
+    <div class="tv-inline">{% if i.d.link %}<a href="{{ i.d.link }}" class="tv-btn" target="_blank" rel="noopener">Confirm in Gmail</a>{% endif %}<form method="post" action="{% url 'travel:m_check_action' i.pk 'dismiss' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="tv-btn sec" type="submit">Done</button></form></div>
+  {% elif i.what == 'failed' or i.what == 'none' %}
+    <p style="margin: 0">{% if i.what == 'failed' %}Could not be read{% if i.note %}: {{ i.note }}{% endif %}{% else %}{{ i.note|default:"No booking found in it." }}{% endif %}</p>
+    <p class="tv-muted tv-small" style="margin: 0">{{ i.d.subject }}</p>
+    <form method="post" action="{% url 'travel:m_check_action' i.pk 'dismiss' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="tv-btn sec" type="submit">Dismiss</button></form>
+  {% else %}
+    <div style="display: flex; gap: 12px; align-items: flex-start"><span class="tv-ico">{% include 'travel/m/_icon.html' with kind=i.d.kind %}</span><div style="min-width: 0"><b>{{ i.d.title }}</b>{% if i.d.status == 'cancelled' %} <span class="tv-tag due">Cancelled</span>{% endif %}
+      <div class="tv-muted">{{ i.when }}{% if i.route %}{% if i.when %} · {% endif %}{{ i.route }}{% endif %}{% if i.d.reference %}{% if i.when or i.route %} · {% endif %}{{ i.d.reference }}{% endif %}</div></div></div>
+    {% if i.note %}<p class="tv-muted tv-small" style="margin: 0">{{ i.note }}</p>{% endif %}
+    {% if i.state == 'asked' %}
+      <p class="tv-small" style="margin: 0">Waiting for {{ i.other_trip.owner.get_full_name|default:i.other_trip.owner.username }} to answer.</p>
+    {% elif i.what == 'update' or i.what == 'maybe' %}
+      <p class="tv-small" style="margin: 0">{% if i.what == 'maybe' %}Looks like{% else %}A later email about{% endif %} <b>{{ i.booking.title }}</b> on {{ i.trip.name }}.</p>
+      <div class="tv-inline">
+        <form method="post" action="{% url 'travel:m_check_action' i.pk 'merge' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="tv-btn" type="submit">{% if i.what == 'maybe' %}Merge into it{% else %}Update it{% endif %}</button></form>
+        {% if i.what == 'maybe' %}<form method="post" action="{% url 'travel:m_check_action' i.pk 'add' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><input type="hidden" name="trip" value="{{ i.trip.pk }}"><button class="tv-btn sec" type="submit">Keep both</button></form>{% endif %}
+        <form method="post" action="{% url 'travel:m_check_action' i.pk 'dismiss' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="tv-btn sec" type="submit">Dismiss</button></form>
+      </div>
+    {% else %}
+      {% if i.what == 'join' and i.other_trip %}
+      <p class="tv-small" style="margin: 0"><b>{{ i.other_trip.owner.get_full_name|default:i.other_trip.owner.username }}</b> has a trip for this: <b>{{ i.other_trip.name }}</b>.</p>
+      <form method="post" action="{% url 'travel:m_check_action' i.pk 'ask' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="tv-btn wide" type="submit">Ask to join</button></form>
+      {% endif %}
+      <form method="post" action="{% url 'travel:m_check_action' i.pk 'add' %}" class="tv-form" data-add-form>{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+        <label for="tp{{ i.pk }}" class="tv-muted tv-small">Add to</label>
+        <select id="tp{{ i.pk }}" name="trip" class="tv-select" data-trip-pick="nm{{ i.pk }}">{% for t in trips %}<option value="{{ t.pk }}"{% if i.trip and t.pk == i.trip.pk %} selected{% endif %}>{{ t.name }}</option>{% endfor %}<option value="new"{% if not i.trip %} selected{% endif %}>A new trip&hellip;</option></select>
+        <input type="text" id="nm{{ i.pk }}" name="name" class="tv-input" maxlength="120" value="{{ i.suggested_name }}" aria-label="New trip name">
+        <div class="tv-inline"><button class="tv-btn" type="submit">{% if i.what == 'join' %}Keep as my own{% else %}Add{% endif %}</button><button class="tv-btn sec" type="submit" form="dm{{ i.pk }}">Dismiss</button></div>
+      </form>
+      <form method="post" id="dm{{ i.pk }}" action="{% url 'travel:m_check_action' i.pk 'dismiss' %}" hidden>{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"></form>
+    {% endif %}
+  {% endif %}
+</section>
+{% empty %}
+<section class="tv-card" data-check-empty><p class="tv-h2">Nothing to check</p><p class="tv-muted" style="margin: 0">Forward a booking email to <b>{{ address }}</b>, or share a ticket, an email or a screenshot to <b>Travel</b> from your phone.</p></section>
+{% endfor %}
+{% endblock %}
