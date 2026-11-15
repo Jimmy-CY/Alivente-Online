@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Forwarding - Travel{% endblock %}
+{% comment %} TRAVEL - TR-2, 15 Nov 2026. Where to forward booking emails, and from which of your addresses. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">FORWARDING</h4>
+
+<div class="page-action-buttons">
+    <a href="{% url 'travel:check' %}" class="btn action-secondary"><i class="fas fa-inbox"></i> To check</a>
+    <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="tv-wrap" style="max-width: 860px; display: flex; flex-direction: column; gap: 14px">
+{% if not ready %}<div class="alert alert-warning" role="status" data-not-ready>Email reading is not switched on yet: the server has no TRAVEL_INBOUND_KEY. Until it has, forwarded emails are not received.</div>{% endif %}
+
+{% for i in gmail %}
+<section class="form-card tv-ask" data-gmail>
+    <p style="margin: 0">Gmail asks to confirm forwarding from <b>{{ i.d.who }}</b>.{% if i.d.code %} Confirmation code: <span class="tv-code">{{ i.d.code }}</span>{% endif %}</p>
+    <div class="tv-acts">{% if i.d.link %}<a href="{{ i.d.link }}" target="_blank" rel="noopener" class="btn action-primary btn-sm">Confirm in Gmail</a>{% endif %}
+    <form method="post" action="{% url 'travel:check_dismiss' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-secondary btn-sm">Done</button></form></div>
+</section>
+{% endfor %}
+
+<section class="form-card" data-inbox-address>
+    <h3 class="form-section-title">Forward booking emails to</h3>
+    <p class="tv-code" style="margin: 0 0 6px">{{ address }}</p>
+    <p class="tv-sub small" style="margin: 0">Flights, hotels, car hire, trains, ferries, tickets &mdash; the confirmation, any change, a cancellation, the boarding pass. Forward it as it is, attachments and all.</p>
+</section>
+
+<section class="form-card" data-addresses>
+    <h3 class="form-section-title">Your addresses</h3>
+    <p class="tv-sub small">Emails are yours when they are forwarded from one of these. Anything from an address no one has added is ignored and not kept.</p>
+    <ul class="tv-files" style="margin-bottom: 10px">
+        <li><i class="fas fa-user" aria-hidden="true"></i> {{ login|default:"(no login email)" }} <span class="tv-sub small">&middot; your login</span></li>
+        {% for a in extra %}<li><i class="fas fa-envelope" aria-hidden="true"></i> {{ a.email }}
+            <form method="post" style="display: inline">{% csrf_token %}<button type="submit" name="remove" value="{{ a.pk }}" class="btn action-secondary action-danger btn-sm">Remove</button></form></li>{% endfor %}
+    </ul>
+    <form method="post" class="tv-acts">{% csrf_token %}
+        <label for="fe" class="small" style="margin: 0">Add an address you forward from</label>
+        <input id="fe" type="email" name="email" class="form-control form-control-sm" style="max-width: 300px" maxlength="190" required placeholder="you@gmail.com">
+        <button type="submit" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Add</button>
+    </form>
+</section>
+
+<section class="form-card" data-how>
+    <h3 class="form-section-title">Forwarding automatically</h3>
+    <p class="small"><b>Gmail</b>: Settings &rarr; See all settings &rarr; <em>Forwarding and POP/IMAP</em> &rarr; Add a forwarding address &rarr; {{ address }}. Gmail sends a confirmation to that address; it appears here and in To check with its code and a <em>Confirm in Gmail</em> button. Then make a filter (from: booking.com OR ryanair.com OR &hellip;) and choose <em>Forward it to</em> {{ address }}.</p>
+    <p class="small"><b>Outlook</b>: Settings &rarr; Mail &rarr; Rules &rarr; Add a rule: when the sender contains booking.com (and the others), <em>Forward to</em> {{ address }}.</p>
+    <p class="small" style="margin: 0"><b>By hand</b> works just as well: open the email and Forward it to {{ address }}.</p>
+</section>
+
+{% if recent %}
+<section class="form-card" data-recent>
+    <h3 class="form-section-title">Your last emails</h3>
+    {% for e in recent %}<div class="small" style="border-top: 1px solid var(--alv-line-soft); padding: 6px 0">{{ e.received|date:"D j M, H:i" }} &middot; {{ e.subject|truncatechars:60 }} &middot; <span class="tv-sub">{{ e.get_state_display }}{% if e.note %} &mdash; {{ e.note }}{% endif %}</span></div>{% endfor %}
+</section>
+{% endif %}
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import views, views_inbox
 
 app_name = 'travel'
 
@@ -22,4 +22,18 @@ urlpatterns = [
     path('file/<int:file_id>/', views.booking_file, name='file'),
     path('file/<int:file_id>/delete/', views.booking_file_delete,
          name='file_delete'),
+    # TR-2, 15 Nov 2026 - stage 2: bookings read from forwarded emails.
+    path('inbound/', views_inbox.inbound_view, name='inbound'),
+    path('check/', views_inbox.check, name='check'),
+    path('check/<int:item_id>/add/', views_inbox.check_add,
+         name='check_add'),
+    path('check/<int:item_id>/merge/', views_inbox.check_merge,
+         name='check_merge'),
+    path('check/<int:item_id>/dismiss/', views_inbox.check_dismiss,
+         name='check_dismiss'),
+    path('check/<int:item_id>/ask/', views_inbox.check_ask,
+         name='check_ask'),
+    path('request/<int:request_id>/', views_inbox.answer, name='answer'),
+    path('forwarding/', views_inbox.forwarding, name='forwarding'),
+    path('<int:trip_id>/merge/', views_inbox.trip_merge, name='trip_merge'),
 ]

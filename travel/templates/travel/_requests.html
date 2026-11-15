@@ -1,0 +1,15 @@
+{% comment %} TR-2, 15 Nov 2026 - asks waiting for this person's answer: someone wants to join one of your trips with a booking, or to merge one of your trips into theirs. The owner is always asked (Demetri). {% endcomment %}
+{% for r in requests %}
+<section class="form-card tv-ask" data-join-request style="margin-bottom: 14px">
+    {% if r.from_trip %}
+    <p style="margin: 0"><b>{{ r.by.get_full_name|default:r.by.username }}</b> asks to merge your trip <b>{{ r.from_trip.name }}</b> into <b>{{ r.trip.name }}</b>. Its bookings would move there, the same booking twice would become one, and you would be on the merged trip.</p>
+    {% else %}
+    <p style="margin: 0"><b>{{ r.by.get_full_name|default:r.by.username }}</b> asks to join your trip <b>{{ r.trip.name }}</b>{% if r.title %} and add <b>{{ r.title }}</b>{% endif %}. Say yes and the trip is shared with them, costs included.</p>
+    {% endif %}
+    <form method="post" action="{% url 'travel:answer' r.pk %}" class="tv-acts">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+        <button type="submit" name="answer" value="yes" class="btn action-primary btn-sm">{% if r.from_trip %}Merge them{% else %}Share the trip and add it{% endif %}</button>
+        <button type="submit" name="answer" value="no" class="btn action-secondary btn-sm">No</button>
+    </form>
+</section>
+{% endfor %}

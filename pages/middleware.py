@@ -755,6 +755,13 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # uninstallable. Nothing personal is served under it - the
             # pages themselves are under wellness/ and keep their check.
             'wellness/app/',
+            # TR-2, 15 Nov 2026 - TRAVEL'S EMAIL DOOR. Cloudflare's Email
+            # Worker posts each forwarded booking email here, with no
+            # session - it is a machine, not a person. The shared key in
+            # the X-Travel-Key header is the credential and the view checks
+            # it; nothing is ever served from here. Only this one path:
+            # every other page under travel/ keeps its permission check.
+            'travel/inbound/',
             'media/',  # Media files
             'static/',  # Static files
             # Removed empty string '' that was matching everything

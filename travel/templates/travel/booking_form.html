@@ -28,7 +28,15 @@
         <div><label for="bt">Name <span class="req-marker" aria-hidden="true">*</span></label><input id="bt" name="title" class="form-control" maxlength="160" required value="{{ b.title }}" placeholder="e.g. TAP TP 1307, or Casa do Largo"></div>
         <div><label for="bp">With</label><input id="bp" name="provider" class="form-control" maxlength="120" value="{{ b.provider }}" placeholder="Airline, hotel, Booking.com&hellip;"></div>
         <div><label for="br">Booking reference</label><input id="br" name="reference" class="form-control" maxlength="60" value="{{ b.reference }}"></div>
+        <div><label for="bs">Part (flight or train number)</label><input id="bs" name="segment" class="form-control" maxlength="40" value="{{ b.segment }}" placeholder="e.g. CY 326, when one reference has several"></div>
+        <div style="align-self: end"><div class="form-check"><input class="form-check-input" type="checkbox" id="bx" name="cancelled" value="1"{% if b.status == 'cancelled' %} checked{% endif %}><label class="form-check-label" for="bx">Cancelled</label></div></div>
     </div>
+</section>
+
+<section class="form-card" data-travellers>
+    <h3 class="form-section-title">Who&rsquo;s travelling</h3>
+    <div class="tv-chips" style="margin-bottom: 8px">{% for p in people %}<div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="tr{{ p.pk }}" name="travellers" value="{{ p.pk }}"{% if p.on %} checked{% endif %}><label class="form-check-label" for="tr{{ p.pk }}">{{ p.get_full_name|default:p.username }}</label></div>{% endfor %}</div>
+    <label for="tw">Anyone else</label><input id="tw" name="traveller_names" class="form-control" maxlength="255" value="{{ b.traveller_names }}" placeholder="Names, separated by commas">
 </section>
 
 <section class="form-card">

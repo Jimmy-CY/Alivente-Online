@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Merge trips - Travel{% endblock %}
+{% comment %} TRAVEL - TR-2, 15 Nov 2026. Merge another trip into this one: a preview first; the other trip's owner is asked when it is not yours. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">MERGE INTO {{ trip.name|upper }}</h4>
+
+<div class="page-action-buttons">
+    <a href="{% url 'travel:trip' trip.pk %}" class="btn action-back" aria-label="Back to the trip">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="tv-wrap" style="max-width: 860px; display: flex; flex-direction: column; gap: 14px">
+<section class="form-card">
+    <h3 class="form-section-title">Which trip?</h3>
+    {% if others %}
+    <form method="get" class="tv-acts" style="margin: 0">
+        <select name="from" class="form-control form-control-sm" aria-label="Trip to merge in">{% for o in others %}<option value="{{ o.pk }}"{% if src and o.pk == src.pk %} selected{% endif %}>{{ o.name }}{% if o.start %} ({{ o.start|date:"j M Y" }}){% endif %} &middot; {{ o.owner.get_full_name|default:o.owner.username }}</option>{% endfor %}</select>
+        <button type="submit" class="btn action-secondary btn-sm">Preview</button>
+    </form>
+    {% else %}<p class="tv-sub" style="margin: 0">You have no other trip to merge. A trip someone else has not shared with you cannot be merged &mdash; ask them to share it first.</p>{% endif %}
+</section>
+{% if src %}
+<section class="form-card" data-merge-preview>
+    <h3 class="form-section-title">{{ src.name }} &rarr; {{ trip.name }}</h3>
+    {% for b in preview %}<div class="small" style="border-top: 1px solid var(--alv-line-soft); padding: 6px 0"><i class="fas {{ b.icon }}" aria-hidden="true"></i> <b>{{ b.title }}</b>{% if b.start_date %} &middot; {{ b.start_date|date:"D j M" }}{% endif %} &middot; {% if b.same %}<span class="tv-paid">already here as {{ b.same.title }} &mdash; becomes one</span>{% else %}moves across{% endif %}</div>{% empty %}<p class="tv-sub">It has no bookings.</p>{% endfor %}
+    <p class="tv-sub small">Who added each booking is kept. Everyone on {{ src.name }} is added to {{ trip.name }}, and {{ src.name }} goes.</p>
+    <form method="post" class="tv-acts">{% csrf_token %}<input type="hidden" name="from" value="{{ src.pk }}">
+        <button type="submit" class="btn action-primary">{% if src.owner == request.user %}Merge{% else %}Ask {{ src.owner.get_full_name|default:src.owner.username }} to merge{% endif %}</button>
+    </form>
+</section>
+{% endif %}
+</div>
+{% endblock %}

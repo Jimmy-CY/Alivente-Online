@@ -21,7 +21,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from . import fx
-from .models import Booking, BookingChange, BookingFile, Trip, trips_for
+from .models import (Booking, BookingChange, BookingFile, InboundFile,
+                     JoinRequest, Trip, trips_for)
 
 PERM = 'auth.can_access_travel'
 MAX_FILE = 15 * 1024 * 1024
@@ -77,6 +78,20 @@ def _money(v):
     return d if d >= 0 else None
 
 
+def drop_file(f):
+    """Delete a booking file's row, and the stored file only when nothing
+    else uses it - TR-2: one emailed e-ticket can sit on both flights of a
+    return booking, and on the email it came with."""
+    name = f.file.name
+    f.delete()
+    if name and not BookingFile.objects.filter(file=name).exists() and \
+            not InboundFile.objects.filter(file=name).exists():
+        try:
+            f.file.storage.delete(name)
+        except Exception:                               # noqa: BLE001
+            pass
+
+
 def eur(v):
     """€1,234.50 - or '' for nothing."""
     if v is None:
@@ -98,7 +113,7 @@ def totals(bookings):
     pending = 0
     kinds = OrderedDict()
     for b in bookings:
-        if b.amount is None:
+        if b.amount is None or b.status == 'cancelled':
             continue
         if b.amount_eur is None:
             pending += 1
@@ -119,6 +134,8 @@ def totals(bookings):
 def coming_up(bookings, today):
     out = []
     for b in bookings:
+        if b.status == 'cancelled':
+            continue
         if b.cancel_until and b.cancel_until >= today:
             out.append({'day': b.cancel_until, 'what': 'Free cancellation ends',
                         'sub': b.title, 'warn': True, 'id': b.pk})
@@ -137,12 +154,36 @@ def shape(b):
         '%s %s' % ('{:,.2f}'.format(b.amount), b.currency)
     b.status_label = dict(Booking.PAID).get(b.paid, '')
     b.route = ' → '.join(x for x in (b.from_place, b.to_place) if x)
+    b.cancelled = b.status == 'cancelled'
+    if b.pk:
+        names = [u.get_full_name() or u.username for u in b.travellers.all()]
+        names += [x.strip() for x in (b.traveller_names or '').split(',')
+                  if x.strip()]
+        b.who = ', '.join(names)
+    else:
+        b.who = ''
     return b
+
+
+def requests_for(user, trip=None):
+    """Join and merge requests waiting for this person's answer."""
+    out = []
+    qs = JoinRequest.objects.filter(state='open').select_related(
+        'trip__owner', 'from_trip__owner', 'by', 'item')
+    if trip is not None:
+        qs = qs.filter(Q(trip=trip) | Q(from_trip=trip))
+    for r in qs:
+        if r.asks.pk == user.pk:
+            r.title = (r.item.data or {}).get('title') if r.item else ''
+            out.append(r)
+    return out
 
 
 # ---------------------------------------------------------------- trips
 @travel_view
 def trips(request):
+    from . import inbox
+    inbox.kick()
     today = dt.date.today()
     show = request.GET.get('show') or 'upcoming'
     rows = []
@@ -175,7 +216,10 @@ def trips(request):
     sel.sort(key=lambda t: (t.start or far), reverse=(show == 'past'))
     return render(request, 'travel/trips.html', {
         'trips': sel, 'show': show, 'years': sorted(years, reverse=True),
-        'countries': sorted(countries), 'count': len(rows)})
+        'countries': sorted(countries), 'count': len(rows),
+        'checks': inbox.open_count(request.user),
+        'address': inbox.inbox_address(),
+        'requests': requests_for(request.user)})
 
 
 @travel_view
@@ -198,7 +242,7 @@ def trip(request, trip_id):
     t = _trip(request, trip_id)
     tab = 'costs' if request.resolver_match.url_name == 'trip_costs' \
         else 'bookings'
-    bs = list(t.bookings.all())
+    bs = list(t.bookings.prefetch_related('travellers'))
     fx.convert_pending(bs)
     bs = [shape(b) for b in bs]
     start, end = span(t, bs)
@@ -227,7 +271,8 @@ def trip(request, trip_id):
         'want': want if want in kinds else '',
         'money': totals(bs), 'coming': coming_up(bs, dt.date.today()),
         'people': [t.owner] + list(t.shared_with.all()),
-        'is_owner': t.owner_id == request.user.id})
+        'is_owner': t.owner_id == request.user.id,
+        'requests': requests_for(request.user, t)})
 
 
 @travel_view
@@ -256,7 +301,7 @@ def trip_delete(request, trip_id):
     if t.owner_id != request.user.id:
         raise Http404
     for f in BookingFile.objects.filter(booking__trip=t):
-        f.file.delete(save=False)
+        drop_file(f)
     t.delete()
     messages.success(request, 'Trip deleted.')
     return redirect('travel:trips')
@@ -294,7 +339,8 @@ def trip_share(request, trip_id):
 # ------------------------------------------------------------- bookings
 # What the change trail watches, and how it names each field.
 TRACKED = [('kind', 'Kind'), ('title', 'Name'), ('provider', 'With'),
-           ('reference', 'Reference'), ('start_date', 'Starts'),
+           ('reference', 'Reference'), ('segment', 'Part'),
+           ('start_date', 'Starts'),
            ('start_time', 'Start time'), ('end_date', 'Ends'),
            ('end_time', 'End time'), ('from_place', 'From'),
            ('to_place', 'To'), ('address', 'Address'), ('phone', 'Phone'),
@@ -302,7 +348,8 @@ TRACKED = [('kind', 'Kind'), ('title', 'Name'), ('provider', 'With'),
            ('currency', 'Currency'), ('amount', 'Amount'),
            ('amount_eur', 'In euros'), ('paid', 'Paid?'),
            ('paid_amount', 'Part paid'), ('pay_by', 'Pay by'),
-           ('cancel_until', 'Free cancellation until')]
+           ('cancel_until', 'Free cancellation until'),
+           ('status', 'Status'), ('traveller_names', 'Also travelling')]
 
 
 def _shown(b, f):
@@ -313,6 +360,8 @@ def _shown(b, f):
         return dict(Booking.KINDS).get(v, v)
     if f == 'paid':
         return dict(Booking.PAID).get(v, v)
+    if f == 'status':
+        return dict(Booking.STATUSES).get(v, v)
     if isinstance(v, dt.date):
         return v.strftime('%a %d %b %Y').replace(' 0', ' ')
     if isinstance(v, dt.time):
@@ -340,8 +389,9 @@ def diff(before, b):
 
 
 FIELDS_TEXT = (('title', 160), ('provider', 120), ('reference', 60),
-               ('from_place', 120), ('to_place', 120), ('address', 255),
-               ('phone', 40), ('link', 500))
+               ('segment', 40), ('from_place', 120), ('to_place', 120),
+               ('address', 255), ('phone', 40), ('link', 500),
+               ('traveller_names', 255))
 
 
 def save_booking(request, b):
@@ -376,6 +426,7 @@ def save_booking(request, b):
     b.paid_amount = _money(P.get('paid_amount')) if b.paid == 'part' else None
     b.pay_by = _date(P.get('pay_by'))
     b.cancel_until = _date(P.get('cancel_until'))
+    b.status = 'cancelled' if P.get('cancelled') else 'ok'
     if not b.title:
         problems.append('Say what the booking is.')
     if b.end_date and b.start_date and b.end_date < b.start_date:
@@ -410,6 +461,10 @@ def booking_form(request, trip_id=None, booking_id=None):
                     kind=request.GET.get('kind') or 'flight')
     problems = []
     dupe = None
+    people = [t.owner] + list(t.shared_with.all())
+    on = set(b.travellers.values_list('pk', flat=True)) if b.pk else set()
+    for u in people:
+        u.on = u.pk in on
     if request.method == 'POST':
         before = snapshot(b) if b.pk else None
         problems = save_booking(request, b)
@@ -424,6 +479,10 @@ def booking_form(request, trip_id=None, booking_id=None):
                                 'trip.' % b.reference)
         if not problems:
             b.save()
+            # WHO IS TRAVELLING: ticked from the trip's people.
+            picked = {int(x) for x in request.POST.getlist('travellers')
+                      if x.isdigit()}
+            b.travellers.set([u for u in people if u.pk in picked])
             if before is not None:
                 changed = diff(before, b)
                 if changed:
@@ -437,7 +496,7 @@ def booking_form(request, trip_id=None, booking_id=None):
         'trip': t, 'b': b, 'problems': problems, 'dupe': dupe,
         'kinds': Booking.KINDS,
         'paids': Booking.PAID, 'currencies': fx.CURRENCIES,
-        'files': list(b.files.all()) if b.pk else []})
+        'files': list(b.files.all()) if b.pk else [], 'people': people})
 
 
 @travel_view
@@ -461,8 +520,8 @@ def booking(request, booking_id):
 def booking_delete(request, booking_id):
     b = _booking(request, booking_id)
     t = b.trip
-    for f in b.files.all():
-        f.file.delete(save=False)
+    for f in list(b.files.all()):
+        drop_file(f)
     b.delete()
     messages.success(request, 'Booking deleted.')
     return redirect('travel:trip', trip_id=t.pk)
@@ -492,7 +551,6 @@ def booking_file_delete(request, file_id):
     if not f.booking.trip.can_see(request.user):
         raise Http404
     bid = f.booking_id
-    f.file.delete(save=False)
-    f.delete()
+    drop_file(f)
     messages.success(request, 'File removed.')
     return redirect(reverse('travel:booking_edit', args=[bid]))

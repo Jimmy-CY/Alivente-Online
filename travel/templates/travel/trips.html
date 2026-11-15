@@ -9,13 +9,16 @@
 
 <div class="page-action-buttons">
     <a href="#new-trip" class="btn action-primary" data-new-trip><i class="fas fa-plus"></i> New trip</a>
+    <a href="{% url 'travel:check' %}" class="btn action-secondary" data-to-check><i class="fas fa-inbox"></i> To check{% if checks %} <span class="tv-count">{{ checks }}</span>{% endif %}</a>
+    <a href="{% url 'travel:forwarding' %}" class="btn action-secondary"><i class="fas fa-envelope"></i> Forwarding</a>
     <a href="{% url 'personal_page' %}" class="btn action-back" aria-label="Back to Personal">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
 
 <div class="tv-wrap">
-<p class="text-muted small">Your trips, and the ones shared with you. Everyone on a shared trip sees everything in it, costs included.</p>
+{% include 'travel/_requests.html' %}
+<p class="text-muted small">Your trips, and the ones shared with you. Everyone on a shared trip sees everything in it, costs included. Forward booking emails to <b>{{ address }}</b> and they wait for you under <a href="{% url 'travel:check' %}">To check</a>.</p>
 
 {% if count %}
 <nav class="tv-chips" aria-label="Show">

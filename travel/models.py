@@ -102,6 +102,30 @@ class Booking(models.Model):
     pay_by = models.DateField(null=True, blank=True)
     cancel_until = models.DateField(null=True, blank=True)
     source = models.CharField(max_length=10, default='manual')
+    # TR-2, 15 Nov 2026 - read from emails. A cancellation marks a booking
+    # Cancelled rather than deleting it (Demetri's rule); it stays on the
+    # trip, struck through, and out of the totals.
+    STATUSES = [('ok', 'Booked'), ('cancelled', 'Cancelled')]
+    status = models.CharField(max_length=10, choices=STATUSES, default='ok')
+    # One part of a booking that has several under one reference - a
+    # flight number ("CY 326") or a leg ("LCA-ATH"). Two flights on one
+    # booking reference are two bookings; this tells them apart.
+    segment = models.CharField(max_length=40, blank=True, default='')
+    # The Date of the latest email applied. An older email arriving later
+    # (forwarded out of order) never overwrites what a newer one said.
+    email_date = models.DateTimeField(null=True, blank=True)
+    # A boarding pass: the barcode's own text (BCBP for a flight) and its
+    # symbology, kept for the Travel phone app to draw; the airline's own
+    # wallet link where the email had one.
+    pass_code = models.TextField(blank=True, default='')
+    pass_format = models.CharField(max_length=12, blank=True, default='')
+    wallet_link = models.URLField(max_length=1000, blank=True, default='')
+    # WHO IS TRAVELLING (Demetri, 15 Nov). People with Travel, ticked; and
+    # names from an email that matched nobody, kept as written.
+    travellers = models.ManyToManyField(User, blank=True,
+                                        related_name='travel_bookings')
+    traveller_names = models.CharField(max_length=255, blank=True,
+                                       default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -198,3 +222,149 @@ class BookingChange(models.Model):
     class Meta:
         db_table = 'travel_booking_changes'
         ordering = ['-when', '-id']
+
+
+# ==========================================================================
+# TR-2, 15 Nov 2026 - STAGE 2: BOOKINGS READ FROM FORWARDED EMAILS.
+#
+# The road: a family member forwards a booking email to the trips address;
+# Cloudflare hands it to the app (travel:inbound); the sender decides whose
+# it is; Claude reads it; each booking in it becomes a CheckItem in that
+# person's To check list - or, when it is a later email about a booking
+# already on one of their trips, it updates that booking directly and the
+# change trail says so.
+# ==========================================================================
+class TravelAddress(models.Model):
+    """An email address someone forwards from, beyond their login email.
+    An address belongs to one person only, and never to another user's
+    login email."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='travel_addresses')
+    email = models.EmailField(max_length=190, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'travel_addresses'
+        ordering = ['email']
+
+    def __str__(self):
+        return self.email
+
+
+def inbox_path(instance, filename):
+    base = os.path.basename(filename)[-120:] or 'file'
+    return 'travel/inbox/%s/%s' % (uuid.uuid4().hex, base)
+
+
+class InboundEmail(models.Model):
+    STATES = [('new', 'Waiting to be read'), ('reading', 'Being read'),
+              ('done', 'Read'), ('failed', 'Could not be read'),
+              ('ignored', 'Ignored')]
+    received = models.DateTimeField(auto_now_add=True)
+    # Unique, so the same email forwarded twice is taken once. Hashed when
+    # longer than the column.
+    message_id = models.CharField(max_length=190, unique=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                             blank=True, related_name='+')
+    sender = models.CharField(max_length=190, blank=True, default='')
+    subject = models.CharField(max_length=255, blank=True, default='')
+    sent = models.DateTimeField(null=True, blank=True)
+    # Cloudflare's own check of the sender (SPF / DKIM / DMARC). An email
+    # that did not pass changes nothing by itself - every booking in it
+    # waits in To check.
+    trusted = models.BooleanField(default=False)
+    state = models.CharField(max_length=8, choices=STATES, default='new')
+    started = models.DateTimeField(null=True, blank=True)
+    tries = models.PositiveSmallIntegerField(default=0)
+    note = models.CharField(max_length=255, blank=True, default='')
+    # The email itself, only until it has been read. It can carry a PIN or
+    # the last digits of a card, so it is deleted as soon as it is read.
+    raw = models.FileField(upload_to=inbox_path, max_length=255, blank=True)
+
+    class Meta:
+        db_table = 'travel_inbound_emails'
+        ordering = ['-received', '-id']
+
+    def __str__(self):
+        return self.subject or self.message_id
+
+
+class InboundFile(models.Model):
+    """A ticket, confirmation or pass that came attached to an email. It
+    becomes a BookingFile (the same stored file) when its booking is
+    added or updated."""
+    email = models.ForeignKey(InboundEmail, on_delete=models.CASCADE,
+                              related_name='files')
+    file = models.FileField(upload_to=inbox_path, max_length=255)
+    name = models.CharField(max_length=160)
+
+    class Meta:
+        db_table = 'travel_inbound_files'
+        ordering = ['id']
+
+
+class CheckItem(models.Model):
+    """One booking read from an email, waiting for its person in To check.
+
+    what:  new     - a booking not on any of your trips
+           maybe   - no reference to go on, but it looks like one you have
+           update  - a later email about a booking you have (held only
+                     when the sender could not be confirmed)
+           join    - it belongs with someone else's trip you are not on
+           gmail   - Gmail asks to confirm forwarding to the trips address
+           none    - the email had no booking in it
+           failed  - the email could not be read
+    """
+    WHATS = ['new', 'maybe', 'update', 'join', 'gmail', 'none', 'failed']
+    STATES = [('open', 'To check'), ('asked', 'Asked the owner'),
+              ('done', 'Done'), ('dismissed', 'Dismissed')]
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='travel_checks')
+    email = models.ForeignKey(InboundEmail, on_delete=models.SET_NULL,
+                              null=True, blank=True, related_name='items')
+    what = models.CharField(max_length=8, default='new')
+    data = models.JSONField(default=dict)
+    booking = models.ForeignKey(Booking, on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='+')
+    trip = models.ForeignKey(Trip, on_delete=models.SET_NULL, null=True,
+                             blank=True, related_name='+')
+    other_trip = models.ForeignKey(Trip, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='+')
+    state = models.CharField(max_length=10, choices=STATES, default='open')
+    note = models.CharField(max_length=255, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'travel_check_items'
+        ordering = ['-created_at', '-id']
+
+
+class JoinRequest(models.Model):
+    """THE OWNER IS ALWAYS ASKED (Demetri, 15 Nov: "An owner should be
+    asked before merging" ... "or before somebody joins their trip").
+
+    Either a person asks to join `trip` with a booking from their To check
+    (item), or the owner of `trip` asks to merge `from_trip` - someone
+    else's - into it. Nothing moves until the owner of the trip that gives
+    something up says yes."""
+    STATES = [('open', 'Waiting'), ('yes', 'Agreed'), ('no', 'Declined')]
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='join_requests')
+    by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+    item = models.ForeignKey(CheckItem, on_delete=models.SET_NULL,
+                             null=True, blank=True, related_name='requests')
+    from_trip = models.ForeignKey(Trip, on_delete=models.CASCADE, null=True,
+                                  blank=True, related_name='merge_requests')
+    state = models.CharField(max_length=4, choices=STATES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'travel_join_requests'
+        ordering = ['-created_at', '-id']
+
+    @property
+    def asks(self):
+        """Who has to say yes: the owner of the trip that gives something
+        up - the trip joined, or for a merge the trip merged away."""
+        return self.from_trip.owner if self.from_trip_id else self.trip.owner

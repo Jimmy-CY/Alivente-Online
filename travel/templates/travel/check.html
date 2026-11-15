@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}To check - Travel{% endblock %}
+{% comment %} TRAVEL - TR-2, 15 Nov 2026. To check: bookings read from forwarded emails, waiting for their person. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">TO CHECK</h4>
+
+<div class="page-action-buttons">
+    <a href="{% url 'travel:forwarding' %}" class="btn action-secondary"><i class="fas fa-envelope"></i> Forwarding</a>
+    <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+</div>
+
+<div class="tv-wrap" style="max-width: 860px">
+{% include 'travel/_requests.html' %}
+<p class="text-muted small">Forward a booking email to <b>{{ address }}</b> and it is read for you. New bookings wait here for you to choose their trip. A later email about a booking you already have &mdash; a change, a cancellation, a boarding pass &mdash; updates it by itself and shows under <em>Done</em>.</p>
+{% if waiting %}<div class="alert alert-info" role="status" data-reading><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Reading {{ waiting }} email{{ waiting|pluralize }}&hellip; <a href="{% url 'travel:check' %}">Refresh</a> in a minute.</div>{% endif %}
+
+{% for i in items %}
+<section class="form-card" data-check-item data-what="{{ i.what }}" style="margin-bottom: 14px">
+  <div class="tv-item">
+    <span class="tv-ico"><i class="fas {% if i.what == 'gmail' %}fa-envelope{% elif i.what == 'failed' or i.what == 'none' %}fa-question{% else %}{{ i.icon }}{% endif %}" aria-hidden="true"></i></span>
+    <div style="min-width: 0">
+      <div class="tv-row"><span class="tv-tag tv-shared">{{ i.label }}</span>{% if i.d.subject %}<span class="tv-sub small">{{ i.d.subject|truncatechars:70 }}</span>{% endif %}</div>
+      {% if i.what == 'gmail' %}
+        <p style="margin: 8px 0 0">Gmail asks to confirm forwarding from <b>{{ i.d.who }}</b>.{% if i.d.code %} Confirmation code: <span class="tv-code">{{ i.d.code }}</span>{% endif %}</p>
+        <div class="tv-acts">{% if i.d.link %}<a href="{{ i.d.link }}" target="_blank" rel="noopener" class="btn action-primary btn-sm">Confirm in Gmail</a>{% endif %}
+          <form method="post" action="{% url 'travel:check_dismiss' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-secondary btn-sm">Done</button></form></div>
+      {% elif i.what == 'failed' or i.what == 'none' %}
+        <p style="margin: 8px 0 0">{% if i.what == 'failed' %}This email could not be read{% if i.note %}: {{ i.note }}{% endif %}. Add its booking by hand, or forward it again later.{% else %}{{ i.note|default:"No booking was found in this email." }}{% endif %}</p>
+        <div class="tv-acts"><form method="post" action="{% url 'travel:check_dismiss' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-secondary btn-sm">Dismiss</button></form></div>
+      {% else %}
+        <p style="margin: 8px 0 2px"><b>{{ i.d.title }}</b>{% if i.d.status == 'cancelled' %} <span class="tv-tag tv-due">Cancelled</span>{% endif %}{% if i.d.boarding_pass %} <span class="tv-tag tv-paid">Boarding pass</span>{% endif %}</p>
+        <div class="tv-sub small">{% if i.d.start_date %}{{ i.d.start_date }}{% if i.d.start_time %} {{ i.d.start_time }}{% endif %}{% if i.d.end_date and i.d.end_date != i.d.start_date %} &ndash; {{ i.d.end_date }}{% endif %} &middot; {% endif %}{% if i.route %}{{ i.route }} &middot; {% endif %}{% if i.d.provider %}{{ i.d.provider }} &middot; {% endif %}{% if i.d.reference %}ref {{ i.d.reference }}{% endif %}{% if i.cost %} &middot; <b>{{ i.cost }}</b>{% endif %}{% if i.d.travellers %} &middot; {{ i.d.travellers|join:", " }}{% endif %}</div>
+        {% if i.note %}<p class="tv-sub small" style="margin: 6px 0 0">{{ i.note }}</p>{% endif %}
+
+        {% if i.state == 'asked' %}
+          <p class="small" style="margin: 8px 0 0"><i class="fas fa-hourglass-half" aria-hidden="true"></i> Waiting for {{ i.other_trip.owner.get_full_name|default:i.other_trip.owner.username }} to answer.</p>
+        {% elif i.what == 'update' %}
+          <p class="small" style="margin: 8px 0 0">A later email about <a href="{% url 'travel:booking' i.booking.pk %}">{{ i.booking.title }}</a> on {{ i.trip.name }}.</p>
+          <div class="tv-acts">
+            <form method="post" action="{% url 'travel:check_merge' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-primary btn-sm">Update the booking</button></form>
+            <form method="post" action="{% url 'travel:check_dismiss' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-secondary btn-sm">Ignore</button></form>
+          </div>
+        {% elif i.what == 'maybe' %}
+          <p class="small" style="margin: 8px 0 0">Looks like <a href="{% url 'travel:booking' i.booking.pk %}">{{ i.booking.title }}</a> on {{ i.trip.name }} &mdash; same day, same kind, same place.</p>
+          <div class="tv-acts">
+            <form method="post" action="{% url 'travel:check_merge' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-primary btn-sm">Merge into it</button></form>
+            <form method="post" action="{% url 'travel:check_add' i.pk %}">{% csrf_token %}<input type="hidden" name="trip" value="{{ i.trip.pk }}"><button type="submit" class="btn action-secondary btn-sm">Keep both</button></form>
+            <form method="post" action="{% url 'travel:check_dismiss' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-secondary btn-sm">Dismiss</button></form>
+          </div>
+        {% else %}
+          {% if i.what == 'join' and i.other_trip %}
+          <p class="small" style="margin: 8px 0 0"><b>{{ i.other_trip.owner.get_full_name|default:i.other_trip.owner.username }}</b> has a trip for this: <b>{{ i.other_trip.name }}</b>. Ask to join it, or keep this as your own trip.</p>
+          <div class="tv-acts"><form method="post" action="{% url 'travel:check_ask' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-primary btn-sm">Ask to join</button></form></div>
+          {% endif %}
+          <form method="post" action="{% url 'travel:check_add' i.pk %}" class="tv-acts" data-add-form>
+            {% csrf_token %}
+            <label for="tp{{ i.pk }}" class="small" style="margin: 0">Add to</label>
+            <select id="tp{{ i.pk }}" name="trip" class="form-control form-control-sm" onchange="var n=document.getElementById('nm{{ i.pk }}');if(n){n.hidden=this.value!=='new';}">
+              {% for t in trips %}<option value="{{ t.pk }}"{% if i.trip and t.pk == i.trip.pk %} selected{% endif %}>{{ t.name }}{% if t.start %} ({{ t.start|date:"j M Y" }}){% endif %}</option>{% endfor %}
+              <option value="new"{% if not i.trip %} selected{% endif %}>A new trip&hellip;</option>
+            </select>
+            <input type="text" id="nm{{ i.pk }}" name="name" class="form-control form-control-sm" maxlength="120" value="{{ i.suggested_name }}" aria-label="New trip name"{% if i.trip %} hidden{% endif %}>
+            <button type="submit" class="btn {% if i.what == 'join' %}action-secondary{% else %}action-primary{% endif %} btn-sm">{% if i.what == 'join' %}Keep as my own{% else %}Add{% endif %}</button>
+          </form>
+          <div class="tv-acts"><form method="post" action="{% url 'travel:check_dismiss' i.pk %}">{% csrf_token %}<button type="submit" class="btn action-secondary btn-sm">Dismiss</button></form></div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% empty %}
+<section class="form-card" data-check-empty><p style="margin: 0">Nothing to check. Forward a booking email to <b>{{ address }}</b> &mdash; see <a href="{% url 'travel:forwarding' %}">Forwarding</a> for how.</p></section>
+{% endfor %}
+
+{% if done %}
+<details class="form-card" data-check-done style="margin-top: 18px">
+    <summary style="cursor: pointer; font-weight: 700; min-height: 32px">Done in the last two weeks ({{ done|length }})</summary>
+    {% for i in done %}<div class="small" style="border-top: 1px solid var(--alv-line-soft); padding: 6px 0">{% if i.booking %}<a href="{% url 'travel:booking' i.booking.pk %}">{{ i.booking.title }}</a>{% else %}{{ i.d.title|default:i.label }}{% endif %} &middot; <span class="tv-sub">{{ i.note }}</span></div>{% endfor %}
+</details>
+{% endif %}
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

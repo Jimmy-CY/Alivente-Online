@@ -16,7 +16,7 @@
 <div class="tv-wrap tv-cols">
 <div class="tv-main">
     <section class="form-card" data-booking-detail>
-        <div class="tv-row"><h3 class="form-section-title" style="margin: 0"><i class="fas {{ b.icon }}" aria-hidden="true"></i> {{ b.title }}</h3><span class="tv-tag tv-shared">{{ b.kind_label }}</span></div>
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0"><i class="fas {{ b.icon }}" aria-hidden="true"></i> {{ b.title }}</h3><span>{% if b.cancelled %}<span class="tv-tag tv-due" data-cancelled>Cancelled</span> {% endif %}<span class="tv-tag tv-shared">{{ b.kind_label }}</span></span></div>
         {% if b.start_date %}
         <div class="tv-row" style="margin-top: 10px">
             <div><div class="tv-sub">{% if b.kind == 'stay' %}Check-in{% elif b.kind == 'car' %}Pick-up{% else %}Starts{% endif %}</div><b>{{ b.start_date|date:"D j M Y" }}</b>{% if b.start_time %}<div class="tv-sub">{{ b.start_time|time:"H:i" }}</div>{% endif %}</div>
@@ -27,7 +27,8 @@
     </section>
     <section class="form-card">
         <dl class="tv-kv">
-            {% if b.reference %}<dt>Reference</dt><dd class="tv-ref">{{ b.reference }}</dd>{% endif %}
+            {% if b.reference %}<dt>Reference</dt><dd class="tv-ref">{{ b.reference }}{% if b.segment %} <span class="tv-sub">&middot; {{ b.segment }}</span>{% endif %}</dd>{% endif %}
+            {% if b.who %}<dt>Travelling</dt><dd data-who>{{ b.who }}</dd>{% endif %}
             {% if b.provider %}<dt>With</dt><dd>{{ b.provider }}</dd>{% endif %}
             {% if b.route %}<dt>Route</dt><dd>{{ b.route }}</dd>{% endif %}
             {% if b.address %}<dt>Address</dt><dd>{{ b.address }} &middot; <a href="https://www.google.com/maps/search/?api=1&amp;query={{ b.address|urlencode }}" target="_blank" rel="noopener">Map</a></dd>{% endif %}
@@ -50,6 +51,13 @@
         {% if b.pay_by and b.paid != 'paid' %}<div class="tv-sub small">Pay by {{ b.pay_by|date:"D j M Y" }}</div>{% endif %}
         {% else %}<p class="tv-sub" style="margin: 0">No cost entered.</p>{% endif %}
     </section>
+    {% if b.pass_code or b.wallet_link %}
+    <section class="form-card" data-boarding-pass>
+        <h3 class="form-section-title"><i class="fas fa-qrcode" aria-hidden="true"></i> Boarding pass</h3>
+        <p class="tv-sub small" style="margin: 0 0 6px">Received{% if b.pass_format %} ({{ b.pass_format|upper }} code){% endif %}. It will show, ready to scan, in the Travel app for your phone. Until then, open the airline&rsquo;s PDF below.</p>
+        {% if b.wallet_link %}<a href="{{ b.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
+    </section>
+    {% endif %}
     <section class="form-card" data-booking-files>
         <h3 class="form-section-title">Tickets &amp; documents</h3>
         {% if files %}<ul class="tv-files">{% for f in files %}<li><i class="fas fa-paperclip" aria-hidden="true"></i> <a href="{% url 'travel:file' f.pk %}" target="_blank" rel="noopener">{{ f.name }}</a></li>{% endfor %}</ul>
@@ -66,7 +74,7 @@
         {% endfor %}
     </details>
     {% endif %}
-    <p class="tv-sub small">Added by {{ b.added_by.get_full_name|default:b.added_by.username|default:"someone" }} &middot; {{ b.created_at|date:"j M Y" }}</p>
+    <p class="tv-sub small">Added by {{ b.added_by.get_full_name|default:b.added_by.username|default:"someone" }}{% if b.source == 'email' %} from an email{% endif %} &middot; {{ b.created_at|date:"j M Y" }}</p>
 </aside>
 </div>
 {% endblock %}

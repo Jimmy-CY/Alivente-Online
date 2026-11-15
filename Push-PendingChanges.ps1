@@ -3310,7 +3310,10 @@ $suites = @(
     # CG-5, 15 Nov 2026 - Release 81: the gifts pages tidied.
     'test_gift_tidy.py',
     # TR-1, 15 Nov 2026 - Release 82: Travel, stage 1.
-    'test_travel_one.py'
+    'test_travel_one.py',
+    # TR-2, 15 Nov 2026 - Release 83: Travel, stage 2 - bookings read from
+    # forwarded emails.
+    'test_travel_two.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

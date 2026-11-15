@@ -145,6 +145,10 @@ CALL_SITES = {
     # for one of your own celebrations, opened in WhatsApp. The same small
     # model as the daily line, changeable through GREETING_MODEL.
     'pages/views/celebration_gifts.py': 'the celebration greeting',
+    # TR-2, 15 Nov 2026 - the eighth: reading a forwarded booking email
+    # (and its PDF tickets) into Travel bookings. Sonnet, as the recipe
+    # importer, for reading documents; changeable through TRAVEL_AI_MODEL.
+    'travel/extract.py': 'reading booking emails into Travel',
 }
 
 passed = failed = skipped = 0
